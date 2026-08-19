@@ -90,7 +90,6 @@ import co.touchlab.kermit.Logger as KermitLogger
 import co.touchlab.kermit.Severity
 import co.touchlab.kermit.platformLogWriter
 import com.getkeepsafe.relinker.ReLinker
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.m2049r.levin.util.NetCipherHelper
 import com.m2049r.levin.util.NetCipherHelper.OnStatusChangedListener
 import com.m2049r.xmrwallet.model.WalletManager
@@ -279,15 +278,6 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
         }
 
         RxJavaPlugins.setErrorHandler { e: Throwable? ->
-            Log.w("RxJava ErrorHandler", e)
-            e?.let {
-                if (localStorage.shareCrashDataEnabled) {
-                    FirebaseCrashlytics.getInstance().recordException(e)
-                }
-            }
-        }
-
-        RxJavaPlugins.setErrorHandler { e: Throwable? ->
             Timber.tag("RxJava ErrorHandler").e(e ?: return@setErrorHandler)
         }
 
@@ -323,11 +313,6 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
         get<TransactionNotificationCoordinator>().start()
 
         startTasks()
-
-        // Never report from the disposable baseline-profile sandbox: it reuses the
-        // production Firebase app_id, so its generation crashes/ANRs must not reach prod.
-        FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled =
-            !BuildConfig.BASELINE_PROFILE_MODE && localStorage.shareCrashDataEnabled
     }
 
     /**
