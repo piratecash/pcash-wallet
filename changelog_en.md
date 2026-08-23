@@ -1,3 +1,18 @@
+## 🚀 Version 0.59.3 Update
+_Release date: August 23, 2026_
+
+### ⚙️ Improvements
+
+- **Improved security in Pseudo Calculator Mode**
+  The hidden wallet access mechanism has been refined for stronger protection.
+
+- **Improved Cosanta charts**
+  All necessary time ranges are now available on the charts.
+
+### 🐛 Fixes
+
+- **Fixed a possible app crash while updating the Monero balance**
+
 ## 🚀 Version 0.59.2 Update
 _Release date: August 19, 2026_
 
