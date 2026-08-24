@@ -15,7 +15,6 @@ class ZcashSendBalanceTest {
     @Test
     fun calculateZcashAvailableToSend_noLocalPending_subtractsFeeFromAdapterAvailable() {
         val availableToSend = calculateZcashAvailableToSend(
-            adjustedAvailable = null,
             adapterAvailable = BigDecimal("4.065"),
             fee = BigDecimal("0.0001")
         )
@@ -24,10 +23,9 @@ class ZcashSendBalanceTest {
     }
 
     @Test
-    fun calculateZcashAvailableToSend_localPending_subtractsFeeFromAdjustedAvailable() {
+    fun calculateZcashAvailableToSend_pendingRowsExist_usesAuthoritativeAdapterAvailable() {
         val availableToSend = calculateZcashAvailableToSend(
-            adjustedAvailable = BigDecimal("3.9999"),
-            adapterAvailable = BigDecimal("4.9999"),
+            adapterAvailable = BigDecimal("3.9999"),
             fee = BigDecimal("0.0001")
         )
 
@@ -37,8 +35,7 @@ class ZcashSendBalanceTest {
     @Test
     fun calculateZcashAvailableToSend_feeGreaterThanAvailable_returnsZero() {
         val availableToSend = calculateZcashAvailableToSend(
-            adjustedAvailable = BigDecimal("0.00005"),
-            adapterAvailable = BigDecimal("0.5"),
+            adapterAvailable = BigDecimal("0.00005"),
             fee = BigDecimal("0.0001")
         )
 

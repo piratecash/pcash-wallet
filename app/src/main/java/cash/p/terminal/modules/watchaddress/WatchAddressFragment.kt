@@ -30,7 +30,6 @@ import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.HeaderText
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.MenuItem
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.ui_compose.components.HudHelper
 import kotlinx.coroutines.delay
@@ -39,7 +38,7 @@ class WatchAddressFragment : BaseComposeFragment() {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val input = navController.getInput<ManageAccountsModule.Input>()
+        val input = getInput<ManageAccountsModule.Input>()
         val popUpToInclusiveId = input?.popOffOnSuccess ?: R.id.watchAddressFragment
         val inclusive = input?.popOffInclusive ?: true
         WatchAddressScreen(navController, popUpToInclusiveId, inclusive)

@@ -34,7 +34,6 @@ import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.ui_compose.BaseComposeFragment
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.core.managers.FaqManager
 import cash.p.terminal.navigation.slideFromBottom
 import cash.p.terminal.modules.manageaccount.showextendedkey.ShowExtendedKeyModule.DisplayKeyType
@@ -66,7 +65,7 @@ class ShowExtendedKeyFragment : BaseComposeFragment(screenshotEnabled = false) {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val input = navController.getInput<Input>()
+        val input = getInput<Input>()
         val hdExtendedKey = input?.extendedRootKey
         val displayKeyType = input?.displayKeyType
 

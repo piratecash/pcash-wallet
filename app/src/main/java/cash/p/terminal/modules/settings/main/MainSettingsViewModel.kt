@@ -14,7 +14,7 @@ import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.modules.walletconnect.WCSessionManager
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.supportsTonConnect
-import cash.z.ecc.android.sdk.ext.collectWith
+import io.horizontalsystems.core.collectWith
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.IPinComponent
 import io.horizontalsystems.core.ISystemInfoManager

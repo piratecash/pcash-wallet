@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.manageaccount.publickeys
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -15,7 +14,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import cash.p.terminal.R
-import cash.p.terminal.core.App
 import cash.p.terminal.modules.manageaccount.evmaddress.PublicViewKeyFragment
 import cash.p.terminal.modules.manageaccount.showextendedkey.ShowExtendedKeyFragment
 import cash.p.terminal.modules.manageaccount.ui.KeyActionItem
@@ -24,7 +22,6 @@ import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.ui_compose.BaseComposeFragment
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.HsBackButton
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Account
 
@@ -32,14 +29,9 @@ class PublicKeysFragment : BaseComposeFragment() {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val account = navController.getInput<cash.p.terminal.wallet.Account>()
-
-        if (account == null) {
-            Toast.makeText(App.instance, "Account parameter is missing", Toast.LENGTH_SHORT).show()
-            navController.popBackStack()
-            return
+        withInput<Account>(navController) { account ->
+            ManageAccountScreen(navController, account)
         }
-        ManageAccountScreen(navController, account)
     }
 
 }

@@ -20,7 +20,6 @@ import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.ui_compose.BaseComposeFragment
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.core.managers.FaqManager
 import cash.p.terminal.modules.manageaccount.ui.ActionButton
 import cash.p.terminal.modules.manageaccount.ui.ConfirmCopyBottomSheet
@@ -46,7 +45,7 @@ class EvmPrivateKeyFragment : BaseComposeFragment(screenshotEnabled = false) {
     override fun GetContent(navController: NavController) {
         EvmPrivateKeyScreen(
             navController = navController,
-            evmPrivateKey = navController.getInput<Input>()?.evmPrivateKey ?: ""
+            evmPrivateKey = getInput<Input>()?.evmPrivateKey ?: ""
         )
     }
 

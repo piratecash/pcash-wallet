@@ -23,6 +23,11 @@ class PendingTransactionStorage(appDatabase: AppDatabase) {
         dao.markBalanceConfirmed(ids, confirmedAt)
     }
 
+    suspend fun rebaseSdkBalanceAtCreation(ids: List<String>, atomic: String) {
+        if (ids.isEmpty()) return
+        dao.rebaseSdkBalanceAtCreation(ids, atomic)
+    }
+
     suspend fun deleteById(id: String) = dao.deleteById(id)
 
     suspend fun getExpired(): List<PendingTransactionEntity> =

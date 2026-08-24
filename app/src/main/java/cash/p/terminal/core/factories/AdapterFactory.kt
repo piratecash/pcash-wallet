@@ -35,7 +35,6 @@ import cash.p.terminal.core.adapters.stellar.StellarAdapter
 import cash.p.terminal.core.adapters.stellar.StellarAssetAdapter
 import cash.p.terminal.core.adapters.stellar.StellarTransactionsAdapter
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
-import cash.p.terminal.core.adapters.zcash.ZcashSingleUseAddressManager
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.providers.BitcoinCashFeeRateProvider
 import cash.p.terminal.core.providers.BitcoinFeeRateProvider
@@ -68,6 +67,7 @@ import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
 import cash.p.terminal.wallet.isStakingWallet
 import cash.p.terminal.wallet.litecoinMwebAccountIds
 import cash.p.terminal.wallet.transaction.TransactionSource
@@ -100,6 +100,18 @@ class AdapterFactory(
     private val walletManager: IWalletManager,
 ) {
     private val logger = AppLogger("adapter-factory")
+
+    private fun createZcashAdapter(wallet: Wallet, addressSpecTyped: AddressSpecType?) =
+        ZcashAdapter(
+            wallet = wallet,
+            addressSpecTyped = addressSpecTyped,
+            backgroundManager = backgroundManager,
+            singleUseAddressManager = getKoinInstance { parametersOf(wallet.account.id) },
+            sessionManager = getKoinInstance(),
+            ironwoodMigrations = getKoinInstance(),
+            addressDeriver = getKoinInstance(),
+            dispatcherProvider = dispatcherProvider,
+        )
 
     private suspend fun getEvmAdapter(wallet: Wallet): IAdapter? {
         val blockchainType = evmBlockchainManager.getBlockchain(wallet.token)?.type ?: return null
@@ -272,25 +284,7 @@ class AdapterFactory(
 
             is TokenType.AddressSpecTyped -> {
                 when (wallet.token.blockchainType) {
-                    BlockchainType.Zcash -> {
-                        val zcashSingleUseAddressManager =
-                            getKoinInstance<ZcashSingleUseAddressManager> {
-                                parametersOf(wallet.account.id)
-                            }
-                        ZcashAdapter(
-                            context = context,
-                            wallet = wallet,
-                            restoreSettings = restoreSettingsManager.settings(
-                                wallet.account,
-                                wallet.token.blockchainType
-                            ),
-                            addressSpecTyped = tokenType.type,
-                            localStorage = localStorage,
-                            backgroundManager = backgroundManager,
-                            singleUseAddressManager = zcashSingleUseAddressManager,
-                            dispatcherProvider = getKoinInstance()
-                        )
-                    }
+                    BlockchainType.Zcash -> createZcashAdapter(wallet, tokenType.type)
 
                     else -> null
                 }
@@ -376,25 +370,7 @@ class AdapterFactory(
                     )
                 }
 
-                BlockchainType.Zcash -> {
-                    val zcashSingleUseAddressManager =
-                        getKoinInstance<ZcashSingleUseAddressManager> {
-                            parametersOf(wallet.account.id)
-                        }
-                    ZcashAdapter(
-                        context = context,
-                        wallet = wallet,
-                        restoreSettings = restoreSettingsManager.settings(
-                            wallet.account,
-                            wallet.token.blockchainType
-                        ),
-                        addressSpecTyped = null,
-                        localStorage = localStorage,
-                        backgroundManager = backgroundManager,
-                        singleUseAddressManager = zcashSingleUseAddressManager,
-                        dispatcherProvider = getKoinInstance()
-                    )
-                }
+                BlockchainType.Zcash -> createZcashAdapter(wallet, addressSpecTyped = null)
 
                 BlockchainType.Ethereum,
                 BlockchainType.BinanceSmartChain,

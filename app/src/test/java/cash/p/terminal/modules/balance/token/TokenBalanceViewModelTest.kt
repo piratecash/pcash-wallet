@@ -6,12 +6,14 @@ import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.ISendMoneroAdapter
 import cash.p.terminal.core.MoneroSpendReadiness
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
+import cash.p.terminal.core.adapters.zcash.convertZatoshiToZec
 import cash.p.terminal.core.managers.AmlStatusManager
 import cash.p.terminal.core.managers.AddressLabelManager
 import cash.p.terminal.core.managers.ConnectivityManager
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.core.managers.OfflineKey
 import cash.p.terminal.core.managers.OfflineModeManager
+import cash.p.terminal.core.managers.PendingTransactionRegistrar
 import cash.p.terminal.core.managers.PoisonAddressManager
 import cash.p.terminal.core.usecase.UpdateSwapProviderTransactionsStatusUseCase
 import cash.p.terminal.modules.contacts.ContactsRepository
@@ -26,6 +28,7 @@ import cash.p.terminal.modules.offline.OperationAvailability
 import cash.p.terminal.core.managers.TransactionHiddenManager
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.entities.OfflineBlockchain
+import cash.p.terminal.entities.PendingTransactionDraft
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.balance.BalanceViewItem
 import cash.p.terminal.modules.balance.BalanceViewItemFactory
@@ -61,18 +64,17 @@ import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.WalletFactory
 import cash.p.terminal.wallet.tokenQueryId
 import cash.p.terminal.wallet.zcashTransparentWallet
-import cash.z.ecc.android.sdk.model.FirstClassByteArray
 import com.piratecash.monero.signer.HardwareWalletErrorCode
 import com.piratecash.monero.signer.HardwareWalletOperationException
 import io.horizontalsystems.core.CoreApp
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
-import io.horizontalsystems.core.toHexReversed
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
 import java.math.BigDecimal
@@ -134,6 +136,7 @@ class TokenBalanceViewModelTest : KoinTest {
     private val contactsRepository = mockk<ContactsRepository>(relaxed = true)
     private val adapterManager = mockk<IAdapterManager>(relaxed = true)
     private val locallyCreatedTransactionRepository = mockk<LocallyCreatedTransactionRepository>(relaxed = true)
+    private val pendingRegistrar = mockk<PendingTransactionRegistrar>(relaxed = true)
     private val addressLabelsChangedFlow = MutableSharedFlow<Unit>()
     private val addressLabelManager = mockk<AddressLabelManager>(relaxed = true) {
         every { labelsChangedFlow } returns addressLabelsChangedFlow
@@ -166,6 +169,7 @@ class TokenBalanceViewModelTest : KoinTest {
                 single { mockk<UpdateSwapProviderTransactionsStatusUseCase>(relaxed = true) }
                 single { adapterManager }
                 single { locallyCreatedTransactionRepository }
+                single<PendingTransactionRegistrar> { pendingRegistrar }
                 single {
                     mockk<SwapProviderTransactionsStorage>(relaxed = true) {
                         every { observeByToken(any(), any(), any()) } returns flowOf(emptyList())
@@ -954,31 +958,32 @@ class TokenBalanceViewModelTest : KoinTest {
     }
 
     @Test
-    fun proposeShielding_success_marksLocallyCreatedTransaction() = runTest(dispatcher) {
+    fun proposeShielding_success_registersPendingRowForShieldedTarget() = runTest(dispatcher) {
         testWallet = createTestWallet(
             coin = Coin(uid = "zcash", name = "Zcash", code = "ZEC"),
             blockchainType = BlockchainType.Zcash,
             blockchainName = "Zcash",
             tokenType = TokenType.AddressSpecTyped(TokenType.AddressSpecType.Shielded),
         )
-        val txId = FirstClassByteArray(ByteArray(32) { it.toByte() })
+        val target = ZcashAdapter.ShieldingTarget(address = "zs1shielded", amount = 100_000L)
         val zcashAdapter = mockk<ZcashAdapter> {
-            coEvery { proposeShielding() } returns txId
+            coEvery { shieldingTarget() } returns target
+            coEvery { proposeShielding(target) } returns SHIELDING_TX_HASH
             every { ironwoodMigrationRequiredBalance } returns null
         }
         every { adapterManager.getAdapterForWallet<ZcashAdapter>(testWallet) } returns zcashAdapter
+        val draft = slot<PendingTransactionDraft>()
+        coEvery { pendingRegistrar.register(capture(draft)) } answers { draft.captured.id }
 
         val viewModel = createViewModel()
 
         viewModel.proposeShielding()
         advanceUntilIdle()
 
-        coVerify {
-            locallyCreatedTransactionRepository.markCreated(
-                testWallet,
-                txId.byteArray.toHexReversed()
-            )
-        }
+        assertEquals(target.address, draft.captured.toAddress)
+        assertEquals(target.amount.convertZatoshiToZec(), draft.captured.amount)
+        assertEquals(null, draft.captured.fee)
+        coVerify { pendingRegistrar.updateTxId(draft.captured.id, SHIELDING_TX_HASH) }
     }
 
     private fun setupFeeWarningMocks() {
@@ -2053,5 +2058,6 @@ class TokenBalanceViewModelTest : KoinTest {
 
     private companion object {
         const val OFFLINE_SINCE = 1_700_000_000_000L
+        const val SHIELDING_TX_HASH = "a1b2c3"
     }
 }

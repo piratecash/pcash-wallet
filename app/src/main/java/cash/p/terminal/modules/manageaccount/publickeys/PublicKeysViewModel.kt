@@ -105,7 +105,7 @@ class PublicKeysViewModel(
             )
             marketKitWrapper.token(tokenQuery)
                 ?.let { adapterManager.getAdapterForToken<ZcashAdapter>(it) }
-                ?.getFirstAccount()?.ufvk?.let { zcashUfvk ->
+                ?.ufvk()?.let { zcashUfvk ->
                     return zcashUfvk
                 }
         }

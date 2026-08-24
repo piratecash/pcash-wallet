@@ -232,9 +232,8 @@ class AdapterManager(
             }
         }
 
-        // Stop old adapters that won't be reused BEFORE creating new ones.
-        // This is critical for Zcash: its SDK forbids creating a new Synchronizer
-        // while another one with the same alias is still active.
+        // Start releasing obsolete adapters before creating replacements to limit lifecycle
+        // overlap; release is asynchronous, so session handles are serialised by ZcashSessionManager.
         currentAdapters.forEach { (wallet, adapter) ->
             cancelBalanceSubscription(wallet)
             adapter.stop()
@@ -485,8 +484,10 @@ class AdapterManager(
 
     override fun getAdjustedBalanceData(wallet: Wallet): BalanceData? {
         val adapter = getBalanceAdapterForWallet(wallet) ?: return null
-        val rawBalance = adapter.balanceData
-        return pendingBalanceCalculator.adjustBalance(wallet, rawBalance)
+        return pendingBalanceCalculator.adjustBalance(
+            wallet = wallet,
+            rawBalance = adapter.balanceData,
+        )
     }
 
     override fun getAdjustedBalanceDataForToken(token: Token): BalanceData? {

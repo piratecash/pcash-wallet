@@ -1,6 +1,7 @@
 package cash.p.terminal.core.providers
 
 import cash.p.terminal.core.adapters.zcash.ZcashAddressDeriver
+import cash.p.terminal.core.adapters.zcash.ZcashKey
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.Token
@@ -9,6 +10,7 @@ import cash.p.terminal.wallet.entities.HardwarePublicKey
 import cash.p.terminal.wallet.entities.SecretString
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
+import cash.p.zcash.Addresses
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -25,16 +27,11 @@ class ZcashFallbackAddressProviderTest {
     private val deriver = mockk<ZcashAddressDeriver>()
     private val provider = ZcashFallbackAddressProvider(deriver)
 
-    private val mnemonicAccountType = mockk<AccountType.Mnemonic> {
-        every { seed } returns SEED
-    }
+    private val mnemonicAccountType = AccountType.Mnemonic(WORDS, PASSPHRASE)
 
     @Before
     fun setup() {
-        coEvery { deriver.deriveUnifiedAddressFromSeed(SEED) } returns UNIFIED
-        coEvery { deriver.deriveUnifiedAddressFromUfvk(UFVK) } returns UNIFIED
-        coEvery { deriver.saplingReceiver(UNIFIED) } returns SAPLING
-        coEvery { deriver.transparentReceiver(UNIFIED) } returns TRANSPARENT
+        coEvery { deriver.addresses(any()) } returns ADDRESSES
     }
 
     private fun wallet(
@@ -65,6 +62,7 @@ class ZcashFallbackAddressProviderTest {
     @Test
     fun getAddress_mnemonicUnifiedToken_returnsUnifiedAddress() = runTest {
         assertEquals(UNIFIED, provider.getAddress(wallet()))
+        coVerify { deriver.addresses(ZcashKey.Phrase(WORDS, PASSPHRASE)) }
     }
 
     @Test
@@ -87,11 +85,11 @@ class ZcashFallbackAddressProviderTest {
     }
 
     @Test
-    fun getAddress_ufvkAccount_derivesFromViewingKeyNotSeed() = runTest {
+    fun getAddress_ufvkAccount_derivesFromViewingKeyNotPhrase() = runTest {
         val wallet = wallet(accountType = AccountType.ZCashUfvKey(UFVK))
 
         assertEquals(UNIFIED, provider.getAddress(wallet))
-        coVerify(exactly = 0) { deriver.deriveUnifiedAddressFromSeed(any()) }
+        coVerify { deriver.addresses(ZcashKey.ViewingKey(UFVK)) }
     }
 
     @Test
@@ -105,6 +103,7 @@ class ZcashFallbackAddressProviderTest {
         )
 
         assertEquals(UNIFIED, provider.getAddress(wallet))
+        coVerify { deriver.addresses(ZcashKey.ViewingKey(UFVK)) }
     }
 
     @Test
@@ -119,16 +118,24 @@ class ZcashFallbackAddressProviderTest {
 
     @Test
     fun getAddress_deriverThrows_returnsNull() = runTest {
-        coEvery { deriver.deriveUnifiedAddressFromSeed(SEED) } throws UnsatisfiedLinkError("no .so")
+        coEvery { deriver.addresses(any()) } throws UnsatisfiedLinkError("no .so")
 
         assertNull(provider.getAddress(wallet()))
     }
 
     private companion object {
-        val SEED = ByteArray(64) { it.toByte() }
+        val WORDS = List(24) { "word$it" }
+        const val PASSPHRASE = ""
         const val UFVK = "uview1testviewingkey"
         const val UNIFIED = "u1testunifiedaddress"
         const val SAPLING = "zs1testsaplingreceiver"
         const val TRANSPARENT = "t1testtransparentreceiver"
+        val ADDRESSES = Addresses(
+            unified = UNIFIED,
+            sapling = SAPLING,
+            orchard = "orchardreceiver",
+            transparent = TRANSPARENT,
+            diversifierIndex = 0,
+        )
     }
 }

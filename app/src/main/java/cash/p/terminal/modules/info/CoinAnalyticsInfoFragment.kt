@@ -17,7 +17,6 @@ import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.ui_compose.BaseComposeFragment
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.AnalyticInfo
 import cash.p.terminal.modules.info.ui.BulletedText
 import cash.p.terminal.modules.info.ui.InfoBody
@@ -33,7 +32,7 @@ class CoinAnalyticsInfoFragment : BaseComposeFragment() {
     @Composable
     override fun GetContent(navController: NavController) {
         CoinAnalyticsInfoScreen(
-            navController.getInput()
+            getInput()
         ) { navController.popBackStackSafely() }
     }
 

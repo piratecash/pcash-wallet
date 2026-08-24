@@ -31,8 +31,12 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings {
     var marketSearchRecentCoinUids: List<String>
     var zcashAccountIds: Set<String>
 
+    /** Accounts whose rebuilt database has already re-derived its one-time transparent addresses. */
+    var zcashDiscoveredAccountIds: Set<String>
+
     /** Orchard -> Ironwood migration transactions, keyed as `accountId:canonicalTransactionHash`. */
     var zcashIronwoodMigrationTxIds: Set<String>
+
     var autoLockInterval: AutoLockInterval
 
     var recipientAddressBaseCheckEnabled: Boolean

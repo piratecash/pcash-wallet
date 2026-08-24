@@ -85,7 +85,7 @@ android {
         buildConfigField "String", "TRON_KIT_VERSION", "\"${libs.versions.piratecash.tron.get()}\""
         buildConfigField "String", "MONERO_KIT_VERSION", "\"${libs.versions.monero.kit.android.get()}\""
         buildConfigField "String", "STELLAR_KIT_VERSION", "\"${libs.versions.stellar.kit.get()}\""
-        buildConfigField "String", "ZCASH_SDK_VERSION", "\"${libs.versions.zcashAndroidSdk.get()}\""
+        buildConfigField "String", "ZCASH_SDK_VERSION", "\"${libs.versions.zcashSdkKmp.get()}\""
         buildConfigField "String", "GIT_BRANCH", "\"${gitBranchProvider.getOrElse("unknown")}\""
         // True only for the disposable baseline-profile generation build type (see baselinegen).
         buildConfigField "boolean", "BASELINE_PROFILE_MODE", "false"
@@ -435,9 +435,8 @@ dependencies {
     implementation libs.tron.kit
     // Zcash SDK
     coreLibraryDesugaring libs.desugar.jdk.libs
-    implementation libs.zcash.android.sdk
-    implementation libs.zcash.android.backend
-    implementation(libs.grpc.api)
+    implementation libs.kermit
+    implementation libs.zcash.sdk.kmp
 
     // Exclude old version from wherever it's coming
     configurations.configureEach {

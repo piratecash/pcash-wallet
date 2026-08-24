@@ -4,6 +4,29 @@ import cash.p.terminal.entities.PendingTransactionDraft
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 
+/** Marks a failure that provably happened before the transaction bytes reached the network. */
+class NotBroadcastException(override val cause: Throwable) : Exception(cause)
+
+/**
+ * Holds a pending row across a broadcast. The row is dropped only on [NotBroadcastException] —
+ * every other failure, cancellation included, may already have been accepted by the network, and a
+ * row removed there would return the amount to the available balance and invite a second send.
+ */
+suspend fun PendingTransactionRegistrar.broadcasting(
+    draft: PendingTransactionDraft,
+    broadcast: suspend () -> String,
+): String {
+    val draftId = register(draft)
+    val txId = try {
+        broadcast()
+    } catch (e: NotBroadcastException) {
+        withContext(NonCancellable) { deleteFailed(draftId) }
+        throw e.cause
+    }
+    updateTxId(draftId, txId)
+    return txId
+}
+
 interface PendingTransactionRegistrar {
     /**
      * Registers a pending transaction after successful broadcast

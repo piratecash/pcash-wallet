@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cash.z.ecc.android.sdk.ext.collectWith
+import io.horizontalsystems.core.collectWith
 import cash.p.terminal.core.adapters.nft.INftAdapter
 import cash.p.terminal.core.managers.NftMetadataManager
 import cash.p.terminal.entities.Address

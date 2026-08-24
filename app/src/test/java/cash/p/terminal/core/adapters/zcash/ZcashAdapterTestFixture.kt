@@ -1,32 +1,30 @@
 package cash.p.terminal.core.adapters.zcash
 
-import android.content.Context
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.adapters.zcash.session.ZcashSession
+import cash.p.terminal.core.adapters.zcash.session.ZcashSessionManager
+import cash.p.terminal.core.adapters.zcash.session.ZcashSessionResult
+import cash.p.terminal.core.adapters.zcash.session.ZcashSessionState
 import cash.p.terminal.core.managers.BackgroundKeepAliveManager
 import cash.p.terminal.core.managers.OfflineModeManager
-import cash.p.terminal.core.managers.RestoreSettings
-import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
-import cash.z.ecc.android.sdk.SdkSynchronizer
-import cash.z.ecc.android.sdk.Synchronizer
-import cash.z.ecc.android.sdk.block.processor.CompactBlockProcessor
-import cash.z.ecc.android.sdk.model.AccountBalance
-import cash.z.ecc.android.sdk.model.AccountUuid
-import cash.z.ecc.android.sdk.model.BlockHeight
-import cash.z.ecc.android.sdk.model.PercentDecimal
-import cash.z.ecc.android.sdk.model.TransactionOverview
+import cash.p.zcash.AccountInfo
+import cash.p.zcash.Addresses
+import cash.p.zcash.PoolBalance
+import cash.p.zcash.SyncState
+import cash.p.zcash.Transaction
+import cash.p.zcash.ZcashWallet
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
 import io.horizontalsystems.core.CoreApp
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,6 +32,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
@@ -44,47 +43,42 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 
 /**
- * Shared harness for [ZcashAdapter] tests: a real adapter on top of a mockk synchronizer.
+ * Shared harness for [ZcashAdapter] tests: a real adapter on top of a mocked session.
  *
- * Every adapter coroutine — recovery, status jobs, subscriptions — runs on the single
- * [StandardTestDispatcher] the subclass passes to `runTest`, so waits are driven by the
- * virtual-time scheduler instead of real timeouts.
- *
- * A subclass only adds what is specific to its scenarios: synchronizer stubs in
- * [stubSynchronizer] and companion-object stubs in [stubSynchronizerCompanion].
+ * The session's state is a plain [MutableStateFlow] the test drives directly, so a
+ * "sync -> funds arrive" sequence plays out on virtual time; [zcashWallet] answers every call
+ * the adapter routes through `withOperation`.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class ZcashAdapterTestFixture {
 
     protected val dispatcher = StandardTestDispatcher()
 
-    // Separate from the `runTest` scope on purpose: the adapter's subscriber collectors are
-    // parented to synchronizer.coroutineScope (ZcashAdapter.subscribe()) and never complete on
-    // their own. If they were children of the `runTest` scope, `runTest` would hang waiting for
-    // them. They live in `appScope` instead, cancelled explicitly in tearDownFixture().
+    // Separate from the `runTest` scope on purpose: the adapter's collectors never complete on
+    // their own, and as children of the `runTest` scope they would make it hang. They live in
+    // `appScope` instead, cancelled explicitly in tearDownFixture().
     protected val appScope = CoroutineScope(SupervisorJob() + dispatcher)
 
-    protected val context = mockk<Context>(relaxed = true)
     protected val wallet = mockk<Wallet>(relaxed = true)
     protected val localStorage = mockk<ILocalStorage>(relaxed = true)
     protected val backgroundManager = mockk<BackgroundManager>(relaxed = true)
     protected val singleUseAddressManager = mockk<ZcashSingleUseAddressManager>(relaxed = true)
-    protected val clearZCashWalletDataUseCase = mockk<ClearZCashWalletDataUseCase>(relaxed = true)
     protected val backgroundKeepAliveManager = mockk<BackgroundKeepAliveManager>(relaxed = true)
     protected val offlineModeManager = mockk<OfflineModeManager>(relaxed = true)
-    protected val restoreSettings = RestoreSettings().apply { birthdayHeight = 2000000L }
+    protected val addressDeriver = mockk<ZcashAddressDeriver>()
 
-    protected val statusFlow = MutableStateFlow(Synchronizer.Status.SYNCING)
-    protected val progressFlow = MutableStateFlow(PercentDecimal.ZERO_PERCENT)
-    protected val walletBalancesFlow = MutableStateFlow<Map<AccountUuid, AccountBalance>?>(null)
-    protected val processorInfoFlow = MutableStateFlow(
-        CompactBlockProcessor.ProcessorInfo(null, null, null)
+    /** In-memory stand-in for the persisted set, so a restart can be simulated. */
+    protected var migrationTxIds = emptySet<String>()
+    protected val ironwoodMigrations = ZcashIronwoodMigrationRegistry(localStorage)
+
+    private val sessionStateFlow = MutableStateFlow(
+        ZcashSessionState(syncState = SyncState.Connecting)
     )
-    protected val allTransactionsFlow = MutableStateFlow<List<TransactionOverview>>(emptyList())
+    protected val backgroundStateFlow = MutableStateFlow(BackgroundManagerState.Unknown)
 
-    protected val accountUuid = AccountUuid.new(ByteArray(16) { it.toByte() })
-
-    protected lateinit var mockSynchronizer: SdkSynchronizer
+    protected val zcashWallet = mockk<ZcashWallet>(relaxed = true)
+    protected lateinit var session: ZcashSession
+    protected val sessionManager = mockk<ZcashSessionManager>(relaxed = true)
     protected lateinit var adapter: ZcashAdapter
 
     @Before
@@ -94,63 +88,83 @@ abstract class ZcashAdapterTestFixture {
 
         startKoin {
             modules(module {
-                single { clearZCashWalletDataUseCase }
                 single { backgroundKeepAliveManager }
                 single { offlineModeManager }
             })
         }
 
+        stubAccount()
+        stubLocalStorage()
+        stubZcashWallet()
+        stubWallet()
+        stubSession()
+        stubSessionManager()
+    }
+
+    private fun stubAccount() {
         val accountType = mockk<AccountType.Mnemonic>(relaxed = true) {
-            every { seed } returns ByteArray(64) { it.toByte() }
+            every { words } returns List(24) { "abandon" }
+            every { passphrase } returns ""
         }
         val account = mockk<Account>(relaxed = true) {
-            every { id } returns "test-account-id"
+            every { id } returns ACCOUNT_ID
             every { name } returns "Test"
             every { type } returns accountType
             every { origin } returns AccountOrigin.Created
         }
         every { wallet.account } returns account
-        every { localStorage.zcashAccountIds } returns setOf("test-account-id")
-        every { localStorage.torEnabled } returns false
-        every { backgroundManager.stateFlow } returns MutableStateFlow(BackgroundManagerState.Unknown)
-        every {
-            clearZCashWalletDataUseCase.getValidAliasFromAccountId(any(), any())
-        } returns "zcash_test"
+        every { backgroundManager.stateFlow } returns backgroundStateFlow
+        coEvery { addressDeriver.addresses(any()) } returns Addresses(
+            unified = "u1test",
+            sapling = "zs1test",
+            orchard = null,
+            transparent = "t1test",
+            diversifierIndex = 0,
+        )
+    }
 
-        mockkObject(BlockHeight.Companion)
-        coEvery { BlockHeight.ofLatestCheckpoint(any(), any()) } returns BlockHeight.new(2500000L)
-
-        mockSynchronizer = mockk<SdkSynchronizer>(relaxed = true) {
-            every { status } returns statusFlow
-            every { progress } returns progressFlow
-            every { walletBalances } returns walletBalancesFlow
-            every { processorInfo } returns processorInfoFlow
-            every { allTransactions } returns allTransactionsFlow
-            every { coroutineScope } returns appScope
-            every { latestHeight } returns null
-            // Mirrors SdkSynchronizer: STOPPED is only published with a non-running lifecycle state.
-            // Relaxed mocks would answer with the first constant (Running) and hide a dead instance.
-            every { lifecycleState } answers {
-                MutableStateFlow(
-                    if (statusFlow.value == Synchronizer.Status.STOPPED) {
-                        Synchronizer.LifecycleState.TerminallyStopped
-                    } else {
-                        Synchronizer.LifecycleState.Running
-                    }
-                )
-            }
+    private fun stubLocalStorage() {
+        every { localStorage.zcashIronwoodMigrationTxIds } answers { migrationTxIds }
+        every { localStorage.zcashIronwoodMigrationTxIds = any() } answers {
+            migrationTxIds = firstArg()
         }
-        stubSynchronizer()
+    }
 
-        mockkObject(Synchronizer)
-        every {
-            Synchronizer.newBlocking(
-                context = any(), zcashNetwork = any(), alias = any(),
-                lightWalletEndpoint = any(), birthday = any(), walletInitMode = any(),
-                setup = any(), isTorEnabled = any(), isExchangeRateEnabled = any()
+    private fun stubZcashWallet() {
+        coEvery { zcashWallet.accounts() } returns listOf(
+            AccountInfo(
+                id = DB_ACCOUNT_ID,
+                name = "Test",
+                birthHeight = BIRTHDAY,
+                accountIndex = 0,
+                diversifierIndex = 0,
+                position = 0,
+                height = 0,
+                time = 0L,
+                balance = 0L,
+                hidden = false,
+                enabled = true,
+                internal = false,
+                hardwareWallet = false,
             )
-        } returns mockSynchronizer
-        stubSynchronizerCompanion()
+        )
+        coEvery { zcashWallet.balance(any(), any()) } returns PoolBalance(emptyMap())
+        coEvery { zcashWallet.transactions(any()) } returns emptyList()
+        coEvery { zcashWallet.latestHeight() } returns 0
+    }
+
+    private fun stubSession() {
+        session = mockk<ZcashSession>(relaxed = true) {
+            every { accountId } returns ACCOUNT_ID
+            every { dbAccountId } returns DB_ACCOUNT_ID
+            every { state } returns sessionStateFlow
+            coEvery { withOperation(any<suspend (ZcashWallet) -> Any?>()) } coAnswers {
+                ZcashSessionResult.Success(firstArg<suspend (ZcashWallet) -> Any?>()(zcashWallet))
+            }
+            coEvery { reserveForBroadcast(any()) } returns ZcashSessionResult.Success(Unit)
+            coEvery { refresh() } returns ZcashSessionResult.Success(Unit)
+        }
+        coEvery { sessionManager.acquire(any()) } returns session
     }
 
     @After
@@ -164,20 +178,57 @@ abstract class ZcashAdapterTestFixture {
         unmockkAll()
     }
 
-    /** Stubs on [mockSynchronizer] itself that are specific to the subclass's scenarios. */
-    protected open fun stubSynchronizer() = Unit
+    /** Stubs on [zcashWallet] that are specific to the subclass's scenarios. */
+    protected open fun stubWallet() = Unit
 
-    /** Stubs on the [Synchronizer] companion that are specific to the subclass's scenarios. */
-    protected open fun stubSynchronizerCompanion() = Unit
+    /** Stubs on [sessionManager] that are specific to the subclass's scenarios. */
+    protected open fun stubSessionManager() = Unit
 
     protected fun createAdapter(addressSpecTyped: AddressSpecType? = null) = ZcashAdapter(
-        context = context,
         wallet = wallet,
-        restoreSettings = restoreSettings,
         addressSpecTyped = addressSpecTyped,
-        localStorage = localStorage,
         backgroundManager = backgroundManager,
         singleUseAddressManager = singleUseAddressManager,
+        sessionManager = sessionManager,
+        ironwoodMigrations = ironwoodMigrations,
+        addressDeriver = addressDeriver,
         dispatcherProvider = TestDispatcherProvider(dispatcher, appScope),
     )
+
+    protected fun emitSessionSyncState(syncState: SyncState) {
+        sessionStateFlow.update { state ->
+            state.copy(
+                syncState = syncState,
+                latestHeight = (syncState as? SyncState.Syncing)?.target ?: state.latestHeight,
+            )
+        }
+    }
+
+    protected fun emitSessionBalance(balance: PoolBalance) {
+        sessionStateFlow.update { it.copy(balance = balance) }
+    }
+
+    protected fun emitSessionTransactions(transactions: List<Transaction>) {
+        sessionStateFlow.update { it.copy(minedTransactions = transactions) }
+    }
+
+    protected fun emitSessionState(
+        syncState: SyncState,
+        balance: PoolBalance,
+        transactions: List<Transaction>,
+        latestHeight: Int,
+    ) {
+        sessionStateFlow.value = ZcashSessionState(
+            syncState = syncState,
+            balance = balance,
+            latestHeight = latestHeight,
+            minedTransactions = transactions,
+        )
+    }
+
+    protected companion object {
+        const val ACCOUNT_ID = "test-account-id"
+        const val DB_ACCOUNT_ID = 0
+        const val BIRTHDAY = 2_000_000
+    }
 }

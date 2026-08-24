@@ -175,7 +175,6 @@ class TokenBalanceService(
         val zcashAdapter = adapter as? ISendZcashAdapter
         if (token?.blockchainType == BlockchainType.Zcash && zcashAdapter != null) {
             return calculateZcashAvailableToSend(
-                adjustedAvailable = adjustedAvailable,
                 adapterAvailable = zcashAdapter.balanceData.available,
                 fee = zcashAdapter.fee.value
             )

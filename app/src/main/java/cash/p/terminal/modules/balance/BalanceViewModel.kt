@@ -10,7 +10,7 @@ import cash.p.terminal.core.App
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
-import cash.p.terminal.core.adapters.zcash.ZcashAddressValidator
+import cash.p.terminal.core.adapters.zcash.isValidZcashAddress
 import cash.p.terminal.core.factories.uriScheme
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
@@ -562,7 +562,7 @@ class BalanceViewModel(
             -1 -> text
             else -> text.substring(0, pos)
         }
-        return ZcashAddressValidator.validate(address)
+        return isValidZcashAddress(address)
     }
 
     private fun handleAddressData(text: String) {

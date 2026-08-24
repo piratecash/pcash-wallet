@@ -214,7 +214,7 @@ val viewModelModule = module {
     viewModel { (wallet: Wallet) ->
         ZcashMigrationViewModel(
             wallet = wallet,
-            locallyCreatedTransactionRepository = get(),
+            pendingRegistrar = get(),
             numberFormatter = get(),
             adapterManager = get(),
             xRateService = XRateService(get(), get<CurrencyManager>().baseCurrency)
