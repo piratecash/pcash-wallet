@@ -61,6 +61,8 @@ class ZcashWalletOpenerImpl(
         return when {
             stored != null && stored > 0 -> stored.toInt()
             account.origin == AccountOrigin.Created ->
+                // Birthday persistence predates the P.CASH fork, so a missing value cannot
+                // identify a migrated P.CASH wallet. Avoid a full scan for incomplete setup data.
                 birthdayProvider.getLatestCheckpointBlockHeight().toInt()
 
             else -> 0
