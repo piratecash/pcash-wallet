@@ -31,7 +31,12 @@ class ZcashWalletOpenerImpl(
 
         val accountId = wallet.account.id
         val dbKey = dbKeyProvider.keyFor(accountId)
-        if (dbKey.newlyGenerated) databaseFiles.delete(accountId)
+        if (dbKey.newlyGenerated) {
+            databaseFiles.delete(accountId)
+            // Discovery state belongs to the deleted database; keeping it would hide restored
+            // one-time transparent addresses.
+            localStorage.invalidateZcashAddressDiscovery(accountId)
+        }
 
         val dbFile = databaseFiles.databaseFile(accountId)
         val zcashWallet = ZcashWallet.open(dbFile.path, ZcashNetwork.MAIN, serverConfig(), dbKey.bytes)

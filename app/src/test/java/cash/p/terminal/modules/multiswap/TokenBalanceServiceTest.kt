@@ -42,18 +42,18 @@ class TokenBalanceServiceTest {
     )
 
     @Test
-    fun setToken_zcashNativeWithLocalPending_usesFeeAdjustedAvailableBalance() {
+    fun setToken_zcashNativeWithLocalPending_usesAuthoritativeAdapterAvailable() {
         stubZcashBalance()
 
         val service = TokenBalanceService(adapterManager, marketKit)
         service.setToken(token)
 
-        assertBigDecimalEquals("3.9998", service.stateFlow.value.balance)
+        assertBigDecimalEquals("4.9998", service.stateFlow.value.balance)
         assertBigDecimalEquals("3.9999", service.stateFlow.value.displayBalance)
     }
 
     @Test
-    fun feeChanged_zcashNativeWithLocalPending_updatesAvailableBalance() = runTest {
+    fun feeChanged_zcashNativeWithLocalPending_recalculatesAuthoritativeAdapterAvailable() = runTest {
         stubZcashBalance()
 
         val service = TokenBalanceService(adapterManager, marketKit)
@@ -65,7 +65,7 @@ class TokenBalanceServiceTest {
             feeFlow.value = BigDecimal("0.0002")
             advanceUntilIdle()
 
-            assertBigDecimalEquals("3.9997", service.stateFlow.value.balance)
+            assertBigDecimalEquals("4.9997", service.stateFlow.value.balance)
             assertBigDecimalEquals("3.9999", service.stateFlow.value.displayBalance)
         } finally {
             serviceScope.cancel()

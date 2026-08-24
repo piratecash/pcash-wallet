@@ -41,6 +41,7 @@ class ZcashWalletOpenerImplTest {
     private val birthdayProvider = mockk<ZcashBirthdayProvider>(relaxed = true)
     private val dbKeyProvider = mockk<ZcashDbKeyProvider>(relaxed = true)
     private val zcashWallet = mockk<ZcashWallet>(relaxed = true)
+    private var discoveredAccountIds = emptySet<String>()
 
     @Before
     fun setUp() {
@@ -57,7 +58,12 @@ class ZcashWalletOpenerImplTest {
         every { dbKeyProvider.keyFor(ACCOUNT_ID) } returns ZcashDbKey(ByteArray(32), newlyGenerated = false)
         every { restoreSettingsManager.settings(any(), any()) } returns
             RestoreSettings().apply { birthdayHeight = BIRTHDAY.toLong() }
-        every { localStorage.zcashDiscoveredAccountIds } returns setOf(ACCOUNT_ID)
+        discoveredAccountIds = setOf(ACCOUNT_ID)
+        every { localStorage.zcashDiscoveredAccountIds } answers { discoveredAccountIds }
+        every { localStorage.zcashDiscoveredAccountIds = any() } answers {
+            discoveredAccountIds = firstArg()
+        }
+        every { localStorage.invalidateZcashAddressDiscovery(any()) } answers { callOriginal() }
     }
 
     @After
@@ -89,7 +95,7 @@ class ZcashWalletOpenerImplTest {
     }
 
     @Test
-    fun open_lostDbKey_dropsTheUnreadableDatabaseAndRestores() = runTest {
+    fun open_lostDbKey_dropsDatabaseAndRediscoversTransparentAddresses() = runTest {
         val leftover = databaseFiles.databaseFile(ACCOUNT_ID)
             .apply { parentFile?.mkdirs() }
             .apply { writeText("encrypted with a key that is gone") }
@@ -99,6 +105,7 @@ class ZcashWalletOpenerImplTest {
 
         assertFalse(leftover.exists())
         coVerify(exactly = 1) { zcashWallet.restoreAccount(any(), any(), any(), any()) }
+        coVerify(exactly = 1) { zcashWallet.discoverTransparentAddresses(DB_ACCOUNT_ID) }
     }
 
     private fun opener() = ZcashWalletOpenerImpl(

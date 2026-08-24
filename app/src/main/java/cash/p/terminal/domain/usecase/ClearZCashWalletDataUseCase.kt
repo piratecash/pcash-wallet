@@ -39,7 +39,7 @@ class ClearZCashWalletDataUseCase(
             val addresses = tryOrNull {
                 // Discovery runs once per account, so the flag goes first: rows deleted behind a
                 // surviving flag are never rediscovered, while the reverse only repeats a scan.
-                localStorage.zcashDiscoveredAccountIds -= accountId
+                localStorage.invalidateZcashAddressDiscovery(accountId)
                 zcashSingleUseAddressStorage.deleteAccountAddresses(accountId)
             } != null
 

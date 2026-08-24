@@ -36,6 +36,7 @@ class ClearZCashWalletDataUseCaseTest {
     private val localStorage = mockk<ILocalStorage>(relaxed = true) {
         every { zcashDiscoveredAccountIds } answers { discoveredAccountIds }
         every { zcashDiscoveredAccountIds = any() } answers { discoveredAccountIds = firstArg() }
+        every { invalidateZcashAddressDiscovery(any()) } answers { callOriginal() }
     }
 
     @Before

@@ -34,6 +34,10 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings {
     /** Accounts whose rebuilt database has already re-derived its one-time transparent addresses. */
     var zcashDiscoveredAccountIds: Set<String>
 
+    fun invalidateZcashAddressDiscovery(accountId: String) {
+        zcashDiscoveredAccountIds -= accountId
+    }
+
     /** Orchard -> Ironwood migration transactions, keyed as `accountId:canonicalTransactionHash`. */
     var zcashIronwoodMigrationTxIds: Set<String>
 
