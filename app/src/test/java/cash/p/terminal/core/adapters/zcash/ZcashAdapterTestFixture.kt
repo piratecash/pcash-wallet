@@ -16,6 +16,7 @@ import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
 import cash.p.zcash.AccountInfo
 import cash.p.zcash.Addresses
 import cash.p.zcash.PoolBalance
+import cash.p.zcash.PoolSet
 import cash.p.zcash.SyncState
 import cash.p.zcash.Transaction
 import cash.p.zcash.ZcashWallet
@@ -204,8 +205,11 @@ abstract class ZcashAdapterTestFixture {
         }
     }
 
-    protected fun emitSessionBalance(balance: PoolBalance) {
-        sessionStateFlow.update { it.copy(balance = balance) }
+    protected fun emitSessionBalance(
+        balance: PoolBalance,
+        maxSpendable: Map<PoolSet, Long> = emptyMap(),
+    ) {
+        sessionStateFlow.update { it.copy(balance = balance, maxSpendable = maxSpendable) }
     }
 
     protected fun emitSessionTransactions(transactions: List<Transaction>) {
@@ -217,10 +221,12 @@ abstract class ZcashAdapterTestFixture {
         balance: PoolBalance,
         transactions: List<Transaction>,
         latestHeight: Int,
+        maxSpendable: Map<PoolSet, Long> = emptyMap(),
     ) {
         sessionStateFlow.value = ZcashSessionState(
             syncState = syncState,
             balance = balance,
+            maxSpendable = maxSpendable,
             latestHeight = latestHeight,
             minedTransactions = transactions,
         )

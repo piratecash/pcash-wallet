@@ -24,7 +24,6 @@ import cash.p.terminal.modules.multiswap.ui.DataField
 import cash.p.terminal.modules.send.SendModule
 import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.zcash.SendZCashAddressService
-import cash.p.terminal.modules.send.zcash.getZcashAvailableToSend
 import cash.p.terminal.modules.send.zcash.zcashPendingDraft
 import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.wallet.Token
@@ -45,7 +44,7 @@ class SendTransactionServiceZCash(
 
     private val xRateService = XRateService(App.marketKit, App.currencyManager.baseCurrency)
     private val availableToSend: BigDecimal
-        get() = getZcashAvailableToSend(adapter)
+        get() = adapter.maxSpendableBalance
 
     private val amountService = SendAmountService(
         amountValidator = AmountValidator(),

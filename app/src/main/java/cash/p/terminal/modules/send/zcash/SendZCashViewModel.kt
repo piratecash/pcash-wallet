@@ -116,8 +116,10 @@ class SendZCashViewModel(
         adapter.balanceUpdatedFlow.collectWith(viewModelScope) {
             updateAvailableBalance()
         }
+        // The flow is hot: a maximum published before this subscription would be lost.
+        updateAvailableBalance()
         fee.collectWith(viewModelScope) {
-            updateAvailableBalance()
+            emitState()
         }
         viewModelScope.launch {
             addressService.setAddress(address)
@@ -149,7 +151,7 @@ class SendZCashViewModel(
     }
 
     private fun updateAvailableBalance() {
-        amountService.updateAvailableBalance(getZcashAvailableToSend(adapter))
+        amountService.updateAvailableBalance(adapter.maxSpendableBalance)
     }
 
     fun onEnterAmount(amount: BigDecimal?) {

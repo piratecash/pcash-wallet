@@ -13,36 +13,6 @@ import java.math.BigDecimal
 class ZcashSendBalanceTest {
 
     @Test
-    fun calculateZcashAvailableToSend_noLocalPending_subtractsFeeFromAdapterAvailable() {
-        val availableToSend = calculateZcashAvailableToSend(
-            adapterAvailable = BigDecimal("4.065"),
-            fee = BigDecimal("0.0001")
-        )
-
-        assertBigDecimalEquals("4.0649", availableToSend)
-    }
-
-    @Test
-    fun calculateZcashAvailableToSend_pendingRowsExist_usesAuthoritativeAdapterAvailable() {
-        val availableToSend = calculateZcashAvailableToSend(
-            adapterAvailable = BigDecimal("3.9999"),
-            fee = BigDecimal("0.0001")
-        )
-
-        assertBigDecimalEquals("3.9998", availableToSend)
-    }
-
-    @Test
-    fun calculateZcashAvailableToSend_feeGreaterThanAvailable_returnsZero() {
-        val availableToSend = calculateZcashAvailableToSend(
-            adapterAvailable = BigDecimal("0.00005"),
-            fee = BigDecimal("0.0001")
-        )
-
-        assertBigDecimalEquals("0", availableToSend)
-    }
-
-    @Test
     fun getZcashSdkBalance_adapterAvailable_returnsAdapterAvailable() {
         val wallet = mockk<Wallet>()
         val balanceAdapter = mockk<IBalanceAdapter> {

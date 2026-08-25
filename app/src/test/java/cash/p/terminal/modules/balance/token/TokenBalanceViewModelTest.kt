@@ -1975,7 +1975,6 @@ class TokenBalanceViewModelTest : KoinTest {
         swapAvailability = OperationAvailability.Unavailable,
         errorMessage = null,
         isWatchAccount = false,
-        isSendDisabled = false,
         isShowShieldFunds = false,
         warning = null
     )

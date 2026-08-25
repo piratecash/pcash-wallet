@@ -1,10 +1,13 @@
 package cash.p.terminal.core.adapters.zcash.session
 
+import cash.p.terminal.core.adapters.zcash.pools
 import cash.p.terminal.core.adapters.zcash.zcashRestartDelayFor
 import cash.p.terminal.core.adapters.zcash.zcashErrorName
 import cash.p.terminal.core.adapters.zcash.zcashLogger
+import cash.p.terminal.wallet.entities.TokenType
 import cash.p.zcash.MempoolEvent
 import cash.p.zcash.PoolBalance
+import cash.p.zcash.PoolSet
 import cash.p.zcash.SyncState
 import cash.p.zcash.Transaction
 import cash.p.zcash.ZcashWallet
@@ -40,6 +43,7 @@ sealed interface ZcashSessionResult<out T> {
 internal data class ZcashSessionState(
     val syncState: SyncState = SyncState.Stopped,
     val balance: PoolBalance = PoolBalance(emptyMap()),
+    val maxSpendable: Map<PoolSet, Long> = emptyMap(),
     val latestHeight: Int = 0,
     internal val minedTransactions: List<Transaction> = emptyList(),
     internal val unconfirmedTransactions: Map<String, Transaction> = emptyMap(),
@@ -65,6 +69,7 @@ class ZcashSession(
 
     private data class LocalState(
         val balance: PoolBalance,
+        val maxSpendable: Map<PoolSet, Long>,
         val minedTransactions: List<Transaction>,
     )
 
@@ -279,6 +284,9 @@ class ZcashSession(
 
     private suspend fun readLocalState() = LocalState(
         balance = wallet.balance(dbAccountId, CONFIRMATIONS),
+        maxSpendable = SPENDING_POOL_SETS.associateWith {
+            wallet.maxSpendable(dbAccountId, it, CONFIRMATIONS)
+        },
         minedTransactions = wallet.transactions(dbAccountId),
     )
 
@@ -288,6 +296,7 @@ class ZcashSession(
 
     private fun ZcashSessionState.withLocalState(localState: LocalState) = copy(
         balance = localState.balance,
+        maxSpendable = localState.maxSpendable,
         minedTransactions = localState.minedTransactions,
         unconfirmedTransactions = unconfirmedTransactions - localState.minedTransactions.txids(),
     )
@@ -389,6 +398,10 @@ class ZcashSession(
 
     private companion object {
         const val CONFIRMATIONS = 10
+
+        /** One per address spec, so a spec added later cannot be left without a maximum. */
+        val SPENDING_POOL_SETS: List<PoolSet> =
+            TokenType.AddressSpecType.entries.map { it.pools() }.distinct()
         const val MEMPOOL_RETRY_BASE_MS = 5_000L
         const val MEMPOOL_RETRY_MAX_MS = 60_000L
         // Chain expiry is 40 blocks — about 50 minutes — after which the transaction can no

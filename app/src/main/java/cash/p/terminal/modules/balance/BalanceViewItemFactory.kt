@@ -51,7 +51,6 @@ data class BalanceViewItem(
     val swapAvailability: OperationAvailability = OperationAvailability.Unavailable,
     val errorMessage: String?,
     val isWatchAccount: Boolean,
-    val isSendDisabled: Boolean,
     val isShowShieldFunds: Boolean,
     val warning: WarningText?,
     val diff: BigDecimal? = null,
@@ -445,8 +444,6 @@ class BalanceViewItemFactory(
             }
         }
 
-        val sendDisabled =
-            (item.wallet.token.type as? TokenType.AddressSpecTyped)?.type == TokenType.AddressSpecType.Transparent
         val isShowShieldFunds =
             (item.wallet.token.type as? TokenType.AddressSpecTyped)?.type == TokenType.AddressSpecType.Transparent &&
                     item.balanceData.available > ZcashAdapter.MINERS_FEE
@@ -471,7 +468,6 @@ class BalanceViewItemFactory(
             errorMessage = (displaySyncState as? AdapterState.NotSynced)?.error?.message,
             isWatchAccount = watchAccount,
             warning = item.warning?.warningText,
-            isSendDisabled = sendDisabled,
             isShowShieldFunds = isShowShieldFunds,
             diff = item.coinPrice?.diffPercentage,
             fullDiff = getFullDiff(item, displayDiffOptionType, currency),

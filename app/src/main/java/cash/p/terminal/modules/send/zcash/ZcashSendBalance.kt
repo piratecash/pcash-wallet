@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.send.zcash
 
-import cash.p.terminal.core.ISendZcashAdapter
 import cash.p.terminal.entities.PendingTransactionDraft
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Wallet
@@ -38,19 +37,6 @@ internal fun IAdapterManager.zcashPendingDraft(
     txHash = txHash,
     timeToLiveMs = ZCASH_PENDING_TIME_TO_LIVE_MS,
 )
-
-internal fun getZcashAvailableToSend(adapter: ISendZcashAdapter): BigDecimal =
-    calculateZcashAvailableToSend(
-        adapterAvailable = adapter.balanceData.available,
-        fee = adapter.fee.value,
-    )
-
-internal fun calculateZcashAvailableToSend(
-    adapterAvailable: BigDecimal,
-    fee: BigDecimal,
-): BigDecimal {
-    return (adapterAvailable - fee).coerceAtLeast(BigDecimal.ZERO)
-}
 
 internal fun IAdapterManager.getZcashSdkBalance(
     wallet: Wallet,

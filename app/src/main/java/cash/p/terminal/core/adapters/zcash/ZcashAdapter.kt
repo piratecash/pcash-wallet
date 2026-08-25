@@ -1,10 +1,12 @@
 package cash.p.terminal.core.adapters.zcash
 
 import android.os.SystemClock
+import cash.p.terminal.R
 import cash.p.terminal.core.BroadcastRawTransactionResult
 import cash.p.terminal.core.BroadcastRawTransactionStatus
 import cash.p.terminal.core.ISendZcashAdapter
 import cash.p.terminal.core.ITransactionsAdapter
+import cash.p.terminal.core.LocalizedException
 import cash.p.terminal.core.OfflineBroadcastMetadata
 import cash.p.terminal.core.OfflineSignRequest
 import cash.p.terminal.core.OfflineZcashSignRequest
@@ -54,6 +56,7 @@ import cash.p.zcash.PaymentOptions
 import cash.p.zcash.Pool
 import cash.p.zcash.PoolBalance
 import cash.p.zcash.PoolSet
+import cash.p.zcash.PreparedTransaction
 import cash.p.zcash.Recipient
 import cash.p.zcash.SyncState
 import cash.p.zcash.Transaction
@@ -142,6 +145,9 @@ class ZcashAdapter(
     private var poolBalance: PoolBalance? = null
 
     @Volatile
+    private var maxSpendableZatoshi: Long = 0L
+
+    @Volatile
     private var latestHeight: Int = 0
 
     @Volatile
@@ -167,8 +173,14 @@ class ZcashAdapter(
             }
         }
 
+    /** A payment from this wallet spends from these pools only; shielding always spends transparent. */
+    private val sourcePools: PoolSet = addressSpecTyped.pools()
+
     private val balance: Balance
         get() = poolBalance?.forSpec(addressSpecTyped) ?: Balance()
+
+    override val maxSpendableBalance: BigDecimal
+        get() = maxSpendableZatoshi.convertZatoshiToZec()
 
     // region lifecycle
 
@@ -326,7 +338,9 @@ class ZcashAdapter(
 
     private suspend fun onSessionState(state: ZcashSessionState) {
         val previous = appliedSessionState
-        if (previous?.balance != state.balance) onBalance(state.balance)
+        if (previous?.balance != state.balance || previous.maxSpendable != state.maxSpendable) {
+            onLocalState(state)
+        }
         if (previous?.transactions != state.transactions) {
             transactionsProvider.onTransactions(state.transactions)
         }
@@ -365,8 +379,9 @@ class ZcashAdapter(
         return AdapterState.Syncing(progress = progress, blocksRemained = remained.toLong())
     }
 
-    private fun onBalance(balance: PoolBalance) {
-        poolBalance = balance
+    private fun onLocalState(state: ZcashSessionState) {
+        poolBalance = state.balance
+        maxSpendableZatoshi = state.maxSpendable[sourcePools] ?: 0L
         balanceUpdatedSubject.onNext(Unit)
         startOneTimeAddressBalanceCheck()
         logDiag()
@@ -461,12 +476,6 @@ class ZcashAdapter(
     private var feeGeneration = 0L
     override val fee: StateFlow<BigDecimal> = _fee.asStateFlow()
 
-    override val maxSpendableBalance: BigDecimal
-        get() {
-            val spendable = balance.available - fee.value.convertZecToZatoshi()
-            return if (spendable <= 0) BigDecimal.ZERO else spendable.convertZatoshiToZec()
-        }
-
     /**
      * Under ZIP-317 the fee depends on which pools and how many notes are spent, and after NU6.3
      * activation funds move between Orchard and Ironwood without changing the total — so the fee
@@ -522,7 +531,7 @@ class ZcashAdapter(
                 val prepared = zcash.prepare(
                     account = id,
                     recipients = listOf(Recipient(address = donateAddress, amount = available)),
-                    options = PaymentOptions(recipientPaysFee = true),
+                    options = PaymentOptions(sourcePools = sourcePools, recipientPaysFee = true),
                 )
                 zcash.plan(prepared).fee.convertZatoshiToZec()
             }
@@ -550,7 +559,7 @@ class ZcashAdapter(
     ): String {
         zcashLogger.d { "Send started" }
         return withSpendingKey { key ->
-            broadcastSigned(listOf(recipient(amount, address, memo)), key)
+            broadcastSigned(listOf(recipient(amount, address, memo)), key, PaymentOptions(sourcePools = sourcePools))
         }
     }
 
@@ -562,11 +571,11 @@ class ZcashAdapter(
     private suspend fun broadcastSigned(
         recipients: List<Recipient>,
         spendingKey: ByteArray,
-        options: PaymentOptions = PaymentOptions(),
+        options: PaymentOptions,
     ): String {
         val (raw, height) = beforeBroadcast {
             requireWallet { zcash, id ->
-                val prepared = zcash.prepare(account = id, recipients = recipients, options = options)
+                val prepared = zcash.prepareOrInsufficient(id, recipients, options)
                 val height = zcash.plan(prepared).height
                 zcash.extract(zcash.sign(account = id, transaction = prepared, spendingKey = spendingKey)) to height
             }
@@ -575,6 +584,20 @@ class ZcashAdapter(
         val result = requireWallet { zcash, id -> zcash.broadcast(id, raw, height) }
         check(result.accepted) { "Broadcast rejected (${result.errorCode}): ${result.message}" }
         return result.message
+    }
+
+    /** The native layer reports every planning failure as [ZcashException], message included. */
+    private suspend fun ZcashWallet.prepareOrInsufficient(
+        account: Int,
+        recipients: List<Recipient>,
+        options: PaymentOptions,
+    ): PreparedTransaction = try {
+        prepare(account, recipients, options)
+    } catch (e: ZcashException) {
+        if (e.message?.contains(NO_FEASIBLE_SELECTION) == true) {
+            throw LocalizedException(R.string.Swap_ErrorInsufficientBalance)
+        }
+        throw e
     }
 
     private suspend fun <T> beforeBroadcast(block: suspend () -> T): T = try {
@@ -606,7 +629,11 @@ class ZcashAdapter(
         val recipient = recipient(request.amount, request.address, request.memo)
         return withSpendingKey { key ->
             requireWallet { zcash, id ->
-                val prepared = zcash.prepare(account = id, recipients = listOf(recipient))
+                val prepared = zcash.prepareOrInsufficient(
+                    account = id,
+                    recipients = listOf(recipient),
+                    options = PaymentOptions(sourcePools = sourcePools),
+                )
                 val fee = zcash.plan(prepared).fee
                 val raw = zcash.extract(zcash.sign(account = id, transaction = prepared, spendingKey = key))
                 SignedOfflineZcashTransaction(
@@ -864,17 +891,22 @@ class ZcashAdapter(
         /** NU6.3 activation on mainnet. */
         private const val IRONWOOD_ACTIVATION_HEIGHT = 3_428_143
 
+        private const val NO_FEASIBLE_SELECTION = "No feasible note selection found"
+
         private const val MINERS_FEE_ZATOSHI = 10_000L
         val MINERS_FEE: BigDecimal = MINERS_FEE_ZATOSHI.convertZatoshiToZec()
     }
 }
 
 /** Which pools an address spec spends from; Unified holds Orchard and its Ironwood change. */
-internal fun PoolBalance.forSpec(spec: AddressSpecType?): Balance = when (spec) {
-    null, AddressSpecType.Shielded -> get(Pool.SAPLING)
-    AddressSpecType.Transparent -> get(Pool.TRANSPARENT)
-    AddressSpecType.Unified -> get(Pool.ORCHARD) + get(Pool.IRONWOOD)
+internal fun AddressSpecType?.pools(): PoolSet = when (this) {
+    null, AddressSpecType.Shielded -> PoolSet.of(Pool.SAPLING)
+    AddressSpecType.Transparent -> PoolSet.of(Pool.TRANSPARENT)
+    AddressSpecType.Unified -> PoolSet.of(Pool.ORCHARD, Pool.IRONWOOD)
 }
+
+internal fun PoolBalance.forSpec(spec: AddressSpecType?): Balance =
+    spec.pools().toList().fold(Balance()) { total, pool -> total + get(pool) }
 
 internal fun Balance.toBalanceData() = BalanceData(
     available = available.convertZatoshiToZec(),

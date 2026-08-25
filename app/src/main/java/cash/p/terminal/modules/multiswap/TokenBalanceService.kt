@@ -5,7 +5,6 @@ import cash.p.terminal.core.ServiceState
 import cash.p.terminal.core.getFeeTokenBalance
 import cash.p.terminal.core.isNative
 import cash.p.terminal.modules.send.hasInsufficientFeeTokenBalance
-import cash.p.terminal.modules.send.zcash.calculateZcashAvailableToSend
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IBalanceAdapter
@@ -174,10 +173,7 @@ class TokenBalanceService(
     ): BigDecimal? {
         val zcashAdapter = adapter as? ISendZcashAdapter
         if (token?.blockchainType == BlockchainType.Zcash && zcashAdapter != null) {
-            return calculateZcashAvailableToSend(
-                adapterAvailable = zcashAdapter.balanceData.available,
-                fee = zcashAdapter.fee.value
-            )
+            return zcashAdapter.maxSpendableBalance
         }
 
         val adapterAvailableBalance = adapter?.maxSpendableBalance

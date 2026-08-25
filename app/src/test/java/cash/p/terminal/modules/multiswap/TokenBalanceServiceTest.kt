@@ -33,7 +33,7 @@ class TokenBalanceServiceTest {
     private val balanceUpdatedFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     private val feeFlow = MutableStateFlow(BigDecimal("0.0001"))
     private var adjustedBalanceData = BalanceData(available = BigDecimal("3.9999"))
-    private var adapterBalanceData = BalanceData(available = BigDecimal("4.9999"))
+    private var zcashMaxSpendable = BigDecimal("4.9998")
     private val token = Token(
         coin = Coin(uid = "zcash", name = "Zcash", code = "ZEC"),
         blockchain = Blockchain(BlockchainType.Zcash, "Zcash", null),
@@ -62,6 +62,7 @@ class TokenBalanceServiceTest {
             service.start(serviceScope)
             service.setToken(token)
 
+            zcashMaxSpendable = BigDecimal("4.9997")
             feeFlow.value = BigDecimal("0.0002")
             advanceUntilIdle()
 
@@ -96,7 +97,7 @@ class TokenBalanceServiceTest {
     private fun stubZcashBalance() {
         every { adapterManager.getAdapterForToken<IBalanceAdapter>(token) } returns adapter
         every { adapterManager.getAdjustedBalanceDataForToken(token) } answers { adjustedBalanceData }
-        every { adapter.balanceData } answers { adapterBalanceData }
+        every { adapter.maxSpendableBalance } answers { zcashMaxSpendable }
         every { adapter.balanceUpdatedFlow } returns balanceUpdatedFlow
         every { adapter.fee } returns feeFlow
         every { marketKit.token(any()) } returns token
