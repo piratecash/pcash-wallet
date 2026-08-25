@@ -35,11 +35,6 @@ class PinComponent(
 ) : IPinComponent {
 
     init {
-        backgroundManager.onAppSessionEnded = {
-            if (isPinSet) {
-                lock()
-            }
-        }
         scope.launch {
             backgroundManager.stateFlow.collect { state ->
                 when (state) {

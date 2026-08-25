@@ -66,6 +66,11 @@ internal fun calculatorPauseProtection(
     else -> CalculatorPauseProtection.ShowCalculator
 }
 
+internal fun shouldLockOnCreate(
+    hasSavedInstanceState: Boolean,
+    pinSet: Boolean,
+): Boolean = !hasSavedInstanceState && pinSet
+
 open class MainActivity : BaseActivity() {
 
     val viewModel: MainActivityViewModel by inject()
@@ -135,8 +140,16 @@ open class MainActivity : BaseActivity() {
         // If SQLCipher failed, BaseActivity redirected to error screen - don't continue
         if (App.sqlCipherLoadFailed) return
 
+        if (
+            shouldLockOnCreate(
+                hasSavedInstanceState = savedInstanceState != null,
+                pinSet = pinComponent.isPinSet,
+            )
+        ) {
+            pinComponent.lock()
+        }
+
         cardSdkProvider.register(this)
-        applyTaskDescription(localStorage.isCalculatorModeEnabled)
 
         setContentView(R.layout.activity_main)
 
@@ -215,6 +228,10 @@ open class MainActivity : BaseActivity() {
 
         val composeView = findViewById<ComposeView>(R.id.pinLockComposeView)
         pinLockComposeView = composeView
+        applyLockScreenState(
+            isLocked = pinComponent.isLockedFlow.value,
+            calculatorMode = localStorage.isCalculatorModeEnabled,
+        )
         composeView.setContent {
             ComposeAppTheme {
                 val calculatorMode by localStorage.isCalculatorModeEnabledFlow
@@ -286,14 +303,18 @@ open class MainActivity : BaseActivity() {
                 localStorage.isCalculatorModeEnabledFlow,
             ) { locked, calculatorMode -> locked to calculatorMode }
                 .collect { (isLocked, calculatorMode) ->
-                    showPinLockScreen = isLocked
-                    pinLockComposeView?.visibility = if (isLocked) VISIBLE else GONE
-                    applyTaskDescription(calculatorMode)
-                    applyLockWindowFlags(isLocked, calculatorMode)
-                    if (isLocked) {
-                        closeWindowsAboveLockScreen()
-                    }
+                    applyLockScreenState(isLocked, calculatorMode)
                 }
+        }
+    }
+
+    private fun applyLockScreenState(isLocked: Boolean, calculatorMode: Boolean) {
+        showPinLockScreen = isLocked
+        pinLockComposeView?.visibility = if (isLocked) VISIBLE else GONE
+        applyTaskDescription(calculatorMode)
+        applyLockWindowFlags(isLocked, calculatorMode)
+        if (isLocked) {
+            closeWindowsAboveLockScreen()
         }
     }
 

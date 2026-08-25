@@ -20,7 +20,6 @@ class BackgroundManager(application: Application) : Application.ActivityLifecycl
         get() = _stateFlow
 
     var onBeforeEnterBackground: (() -> Unit)? = null
-    var onAppSessionEnded: (() -> Unit)? = null
 
     init {
         application.registerActivityLifecycleCallbacks(this)
@@ -71,9 +70,6 @@ class BackgroundManager(application: Application) : Application.ActivityLifecycl
         aliveActivityCount--
 
         if (aliveActivityCount == 0) {
-            if (!activity.isChangingConfigurations) {
-                onAppSessionEnded?.invoke()
-            }
             scope.launch {
                 _stateFlow.emit(BackgroundManagerState.AllActivitiesDestroyed)
             }
