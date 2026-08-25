@@ -1,39 +1,74 @@
 package cash.p.terminal.modules.main
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class MainActivityLockScreenPolicyTest {
 
-    @Test
-    fun shouldLockOnCreate_savedStateAbsentWithPin_locks() {
-        assertTrue(
+    private fun assertLockDecision(
+        expected: Boolean,
+        hasSavedInstanceState: Boolean,
+        pinSet: Boolean,
+        currentTaskId: Int = 42,
+        previouslyResumedTaskId: Int? = null,
+    ) {
+        assertEquals(
+            expected,
             shouldLockOnCreate(
-                hasSavedInstanceState = false,
-                pinSet = true,
+                hasSavedInstanceState = hasSavedInstanceState,
+                pinSet = pinSet,
+                currentTaskId = currentTaskId,
+                previouslyResumedTaskId = previouslyResumedTaskId,
             )
+        )
+    }
+
+    @Test
+    fun shouldLockOnCreate_savedStateAbsentWithPinAndNoPreviousActivity_locks() {
+        assertLockDecision(
+            expected = true,
+            hasSavedInstanceState = false,
+            pinSet = true,
+        )
+    }
+
+    @Test
+    fun shouldLockOnCreate_sameTaskActivityAlreadyResumed_doesNotLock() {
+        assertLockDecision(
+            expected = false,
+            hasSavedInstanceState = false,
+            pinSet = true,
+            currentTaskId = 42,
+            previouslyResumedTaskId = 42,
+        )
+    }
+
+    @Test
+    fun shouldLockOnCreate_differentTaskActivityResumed_locks() {
+        assertLockDecision(
+            expected = true,
+            hasSavedInstanceState = false,
+            pinSet = true,
+            currentTaskId = 42,
+            previouslyResumedTaskId = 41,
         )
     }
 
     @Test
     fun shouldLockOnCreate_savedStatePresentWithPin_doesNotLock() {
-        assertFalse(
-            shouldLockOnCreate(
-                hasSavedInstanceState = true,
-                pinSet = true,
-            )
+        assertLockDecision(
+            expected = false,
+            hasSavedInstanceState = true,
+            pinSet = true,
         )
     }
 
     @Test
     fun shouldLockOnCreate_savedStateAbsentWithoutPin_doesNotLock() {
-        assertFalse(
-            shouldLockOnCreate(
-                hasSavedInstanceState = false,
-                pinSet = false,
-            )
+        assertLockDecision(
+            expected = false,
+            hasSavedInstanceState = false,
+            pinSet = false,
         )
     }
 

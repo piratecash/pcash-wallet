@@ -43,6 +43,7 @@ import cash.p.terminal.navigation.slideFromRightClearingBackStack
 import cash.p.terminal.tangem.domain.sdk.CardSdkProvider
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import com.reown.walletkit.client.Wallet
+import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.IPinComponent
 import io.horizontalsystems.core.hideKeyboard
 import kotlinx.coroutines.flow.combine
@@ -69,7 +70,9 @@ internal fun calculatorPauseProtection(
 internal fun shouldLockOnCreate(
     hasSavedInstanceState: Boolean,
     pinSet: Boolean,
-): Boolean = !hasSavedInstanceState && pinSet
+    currentTaskId: Int,
+    previouslyResumedTaskId: Int?,
+): Boolean = !hasSavedInstanceState && pinSet && previouslyResumedTaskId != currentTaskId
 
 open class MainActivity : BaseActivity() {
 
@@ -78,6 +81,7 @@ open class MainActivity : BaseActivity() {
     private val appIconService: AppIconService by inject()
     private val localStorage: ILocalStorage by inject()
     private val pinComponent: IPinComponent by inject()
+    private val backgroundManager: BackgroundManager by inject()
     private val appUpdateChecker: AppUpdateChecker by inject()
     private var pinLockComposeView: ComposeView? = null
     private var showPinLockScreen by mutableStateOf(false)
@@ -144,6 +148,8 @@ open class MainActivity : BaseActivity() {
             shouldLockOnCreate(
                 hasSavedInstanceState = savedInstanceState != null,
                 pinSet = pinComponent.isPinSet,
+                currentTaskId = taskId,
+                previouslyResumedTaskId = backgroundManager.currentActivity?.taskId,
             )
         ) {
             pinComponent.lock()
