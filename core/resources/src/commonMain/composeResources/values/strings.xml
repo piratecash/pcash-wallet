@@ -2656,6 +2656,7 @@ Proceed only if you\'re sure.</string>
     <string name="transactions_migrate_to_ironwood">to Ironwood</string>
     <string name="zcash_migration_publicly_visible_title">Publicly Visible Amount</string>
     <string name="zcash_migration_publicly_visible_description">Moving funds between pools requires the migrated amount to be publicly visible on the blockchain. The sender, recipient and your addresses remain private.</string>
+    <string name="zcash_migration_error_nothing_to_migrate">Nothing can be moved right now.</string>
     <string name="declined_tokens_title">Custom Tokens Found</string>
     <string name="declined_tokens_description">These tokens are not in the verified token list: %s</string>
     <plurals name="declined_tokens_count">

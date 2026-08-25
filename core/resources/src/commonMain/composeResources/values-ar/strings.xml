@@ -2239,6 +2239,7 @@
     <string name="transactions_migrate_to_ironwood">إلى Ironwood</string>
     <string name="zcash_migration_publicly_visible_title">مبلغ مرئي للعامة</string>
     <string name="zcash_migration_publicly_visible_description">يتطلب نقل الأموال بين التجمّعات أن يكون المبلغ المُرحَّل مرئيًا للعامة على البلوكشين. يبقى المُرسِل والمُستلِم وعناوينك خاصة.</string>
+    <string name="zcash_migration_error_nothing_to_migrate">لا يوجد شيء يمكن نقله في الوقت الحالي.</string>
     <string name="declined_tokens_title">تم العثور على رموز مخصصة</string>
     <string name="declined_tokens_description">هذه الرموز غير موجودة في قائمة الرموز الموثّقة: %s</string>
     <plurals name="declined_tokens_count">

@@ -2210,6 +2210,7 @@
     <string name="transactions_migrate_to_ironwood">Ironwood로</string>
     <string name="zcash_migration_publicly_visible_title">공개적으로 표시되는 금액</string>
     <string name="zcash_migration_publicly_visible_description">풀 간 자금 이동을 위해서는 마이그레이션된 금액이 블록체인에 공개적으로 표시되어야 합니다. 발신자, 수신자 및 주소는 비공개 상태로 유지됩니다.</string>
+    <string name="zcash_migration_error_nothing_to_migrate">지금은 옮길 수 있는 항목이 없습니다.</string>
     <string name="declined_tokens_title">사용자 지정 토큰 발견됨</string>
     <string name="declined_tokens_description">이 토큰은 검증된 토큰 목록에 없습니다: %s</string>
     <plurals name="declined_tokens_count">

@@ -15,6 +15,8 @@ import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
 import cash.p.zcash.AccountInfo
 import cash.p.zcash.Addresses
+import cash.p.zcash.MigrationPhase
+import cash.p.zcash.MigrationStatus
 import cash.p.zcash.PoolBalance
 import cash.p.zcash.PoolSet
 import cash.p.zcash.SyncState
@@ -152,6 +154,12 @@ abstract class ZcashAdapterTestFixture {
         coEvery { zcashWallet.balance(any(), any()) } returns PoolBalance(emptyMap())
         coEvery { zcashWallet.transactions(any()) } returns emptyList()
         coEvery { zcashWallet.latestHeight() } returns 0
+        coEvery { zcashWallet.migrationStatus(any()) } returns MigrationStatus(
+            phase = MigrationPhase.MIGRATING,
+            standardNotes = 1,
+            nonStandardNotes = 0,
+            migratedNotes = 0,
+        )
     }
 
     private fun stubSession() {

@@ -2217,6 +2217,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="transactions_migrate_to_ironwood">Ironwood\'a</string>
     <string name="zcash_migration_publicly_visible_title">Herkese açık görünür tutar</string>
     <string name="zcash_migration_publicly_visible_description">Havuzlar arasında para transferi, geçirilen tutarın blokzincirde herkese açık şekilde görünür olmasını gerektirir. Gönderici, alıcı ve adresleriniz özel kalır.</string>
+    <string name="zcash_migration_error_nothing_to_migrate">Şu anda taşınabilecek bir şey yok.</string>
     <string name="declined_tokens_title">Özel Tokenler Bulundu</string>
     <string name="declined_tokens_description">Bu tokenler doğrulanmış token listesinde değil: %s</string>
     <plurals name="declined_tokens_count">

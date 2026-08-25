@@ -2216,6 +2216,7 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="transactions_migrate_to_ironwood">para Ironwood</string>
     <string name="zcash_migration_publicly_visible_title">Quantidade visível publicamente</string>
     <string name="zcash_migration_publicly_visible_description">Mover fundos entre pools requer que o valor migrado seja visível publicamente na blockchain. O remetente, destinatário e seus endereços permanecem privados.</string>
+    <string name="zcash_migration_error_nothing_to_migrate">No momento, não há nada para mover.</string>
     <string name="declined_tokens_title">Tokens personalizados encontrados</string>
     <string name="declined_tokens_description">Esses tokens não estão na lista de tokens verificados: %s</string>
     <plurals name="declined_tokens_count">

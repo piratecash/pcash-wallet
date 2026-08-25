@@ -2201,6 +2201,7 @@
     <string name="transactions_migrate_to_ironwood">至 Ironwood</string>
     <string name="zcash_migration_publicly_visible_title">公开可见金额</string>
     <string name="zcash_migration_publicly_visible_description">在池之间转移资金需要迁移金额在区块链上公开可见。发送人、接收人和您的地址保持隐私。</string>
+    <string name="zcash_migration_error_nothing_to_migrate">目前没有可转移的内容。</string>
     <string name="declined_tokens_title">发现自定义代币</string>
     <string name="declined_tokens_description">这些代币不在已验证代币列表中：%s</string>
     <plurals name="declined_tokens_count">

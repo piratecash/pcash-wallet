@@ -145,6 +145,9 @@ class ZcashAdapter(
     private var poolBalance: PoolBalance? = null
 
     @Volatile
+    private var ironwoodMigrationAmount: Long? = null
+
+    @Volatile
     private var maxSpendableZatoshi: Long = 0L
 
     @Volatile
@@ -337,6 +340,9 @@ class ZcashAdapter(
     // region state
 
     private suspend fun onSessionState(state: ZcashSessionState) {
+        // Resolved before the balance is published: a later flip would be swallowed by
+        // BalanceItem equality suppression and never reach the UI.
+        ironwoodMigrationAmount = resolveIronwoodMigrationAmount(state)
         val previous = appliedSessionState
         if (previous?.balance != state.balance || previous.maxSpendable != state.maxSpendable) {
             onLocalState(state)
@@ -356,20 +362,21 @@ class ZcashAdapter(
         logDiag()
     }
 
-    private fun SyncState.toAdapterState(): AdapterState {
-        if (syncState is AdapterState.Synced && isCaughtUpPoll()) return AdapterState.Synced
-        return when (this) {
-            // In this SDK `Stopped` only means no sync pass has run yet, not a failure.
-            SyncState.Stopped, SyncState.Connecting -> AdapterState.Connecting
-            SyncState.Synced -> AdapterState.Synced
-            is SyncState.Failed -> AdapterState.NotSynced(error)
-            is SyncState.Syncing -> syncingState(this)
-        }
+    private fun SyncState.toAdapterState(): AdapterState = when {
+        isSynced() -> AdapterState.Synced
+        this is SyncState.Failed -> AdapterState.NotSynced(error)
+        this is SyncState.Syncing -> syncingState(this)
+        // In this SDK `Stopped` only means no sync pass has run yet, not a failure.
+        else -> AdapterState.Connecting
     }
 
     private fun SyncState.isCaughtUpPoll(): Boolean =
         this == SyncState.Stopped || this == SyncState.Connecting ||
             this is SyncState.Syncing && current >= target
+
+    /** The only two routes to [AdapterState.Synced]: a finished sync, or a poll that stays caught up. */
+    private fun SyncState.isSynced(): Boolean =
+        this == SyncState.Synced || (syncState is AdapterState.Synced && isCaughtUpPoll())
 
     private fun syncingState(state: SyncState.Syncing): AdapterState {
         val anchor = syncAnchor ?: state.current.also { syncAnchor = it }
@@ -716,20 +723,36 @@ class ZcashAdapter(
     /**
      * The Orchard balance that has to be moved to Ironwood, or `null` when migration is not
      * applicable. Orchard and Ironwood are both surfaced by the unified token, so only that
-     * adapter can migrate.
+     * adapter can migrate. Resolved in [onSessionState] before any balance is published.
      */
     val ironwoodMigrationRequiredBalance: BigDecimal?
-        get() {
-            if (addressSpecTyped != AddressSpecType.Unified) return null
-            if (wallet.account.type !is AccountType.Mnemonic) return null
-            if (syncState !is AdapterState.Synced) return null
-            if (latestHeight < IRONWOOD_ACTIVATION_HEIGHT) return null
-            val orchard = poolBalance?.get(Pool.ORCHARD) ?: return null
-            // Migration spends the whole pool and fails while any Orchard note is still pending,
-            // so offering it before everything is spendable only produces an unactionable error.
-            if (orchard.available <= 0 || orchard.pending > 0) return null
-            return orchard.available.convertZatoshiToZec()
+        get() = ironwoodMigrationAmount?.convertZatoshiToZec()
+
+    private suspend fun resolveIronwoodMigrationAmount(state: ZcashSessionState): Long? {
+        if (addressSpecTyped != AddressSpecType.Unified) return null
+        if (wallet.account.type !is AccountType.Mnemonic) return null
+        if (!state.syncState.isSynced()) return null
+        if (state.latestHeight < IRONWOOD_ACTIVATION_HEIGHT) return null
+        val orchard = state.balance[Pool.ORCHARD]
+        // Migration spends the whole pool and fails while any Orchard note is still pending,
+        // so offering it before everything is spendable only produces an unactionable error.
+        if (orchard.available <= 0 || orchard.pending > 0) return null
+        // Below the SDK's standard-denomination floor migration is already complete: it would
+        // plan no transaction at all.
+        return orchard.available.takeIf { migrationIncomplete() }
+    }
+
+    private suspend fun migrationIncomplete(): Boolean {
+        val status = try {
+            walletOrNull { zcash, id -> zcash.migrationStatus(id) }
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Throwable) {
+            zcashLogger.w { "Ironwood migration status failed error=${error.zcashErrorName}" }
+            null
         }
+        return status != null && status.phase != MigrationPhase.COMPLETE
+    }
 
     /**
      * The migration moves notes one at a time, so the total fee is only known once every step has
@@ -739,8 +762,11 @@ class ZcashAdapter(
         val available = checkNotNull(poolBalance?.get(Pool.ORCHARD)?.available?.takeIf { it > 0 }) {
             "No spendable Orchard balance"
         }
-        val fee = requireWallet { zcash, id -> zcash.migrationStatus(id) }.remainingSteps() *
-            MINERS_FEE_ZATOSHI
+        val steps = requireWallet { zcash, id -> zcash.migrationStatus(id) }.remainingSteps()
+        // A zero-step proposal would leave the Migrate button enabled for a migration that
+        // plans nothing.
+        if (steps == 0L) throw LocalizedException(R.string.zcash_migration_error_nothing_to_migrate)
+        val fee = steps * MINERS_FEE_ZATOSHI
         return IronwoodMigrationProposal(
             amount = (available - fee).coerceAtLeast(0).convertZatoshiToZec(),
             fee = fee.convertZatoshiToZec(),
@@ -768,7 +794,9 @@ class ZcashAdapter(
         } finally {
             rememberIronwoodMigration(txIds)
         }
-        txIds.firstOrNull() ?: error("Migration produced no transaction")
+        txIds.firstOrNull() ?: throw NotBroadcastException(
+            LocalizedException(R.string.zcash_migration_error_nothing_to_migrate)
+        )
     }
 
     /**
@@ -921,9 +949,9 @@ private operator fun Balance.plus(other: Balance) = Balance(
     valuePending = valuePending + other.valuePending,
 )
 
-/** Notes are split into standard denominations first, then moved one at a time. */
+/** Every remaining Orchard standard note needs one step, plus one to split the non-standard ones. */
 private fun MigrationStatus.remainingSteps(): Long =
-    (standardNotes - migratedNotes).coerceAtLeast(0).toLong() + if (nonStandardNotes > 0) 1 else 0
+    standardNotes.toLong() + if (nonStandardNotes > 0) 1 else 0
 
 internal fun BroadcastResult.toBroadcastResult(txHash: String): BroadcastRawTransactionResult = when {
     // An accepted broadcast reports the txid it assigned; a rejection reports the node's reason.

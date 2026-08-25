@@ -2367,6 +2367,7 @@
     <string name="transactions_migrate_to_ironwood">на Ironwood</string>
     <string name="zcash_migration_publicly_visible_title">Публічно видима сума</string>
     <string name="zcash_migration_publicly_visible_description">Переміщення коштів між пулами вимагає, щоб сума, яка переноситься, була публічно видима в блокчейні. Відправник, отримувач і ваші адреси залишаються приватними.</string>
+    <string name="zcash_migration_error_nothing_to_migrate">Зараз немає чого переносити.</string>
     <string name="declined_tokens_title">Знайдено користувацькі токени</string>
     <string name="declined_tokens_description">Цих токенів немає у списку перевірених токенів: %s</string>
     <plurals name="declined_tokens_count">
