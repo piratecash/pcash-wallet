@@ -393,7 +393,7 @@ private fun SoftwareUpdateScreenUpdatePreview() {
                         minor = "0.58",
                         tagName = "v0.58.0-fdroid",
                         publishedAt = Instant.EPOCH,
-                        htmlUrl = "https://github.com/piratecash/pcash-wallet-android/releases",
+                        htmlUrl = "https://github.com/piratecash/pcash-wallet/releases",
                         apkSizeBytes = 12345678L,
                         apkDownloadUrl = "https://example.apk",
                     ),
