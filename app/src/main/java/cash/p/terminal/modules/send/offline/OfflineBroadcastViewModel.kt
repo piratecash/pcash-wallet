@@ -38,6 +38,7 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.useCases.WalletUseCase
+import co.touchlab.kermit.Logger
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.ViewModelUiState
 import io.horizontalsystems.core.entities.Blockchain
@@ -285,6 +286,7 @@ class OfflineBroadcastViewModel(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
+            Logger.e(throwable = e, tag = "OfflineBroadcast") { "Broadcast failed network=$networkName" }
             recordBroadcastAttempt()
             val message = e.offlineBroadcastErrorMessage(wallet.token.coin.code)
             offlineRecordKey?.let {

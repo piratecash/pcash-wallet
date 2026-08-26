@@ -156,8 +156,11 @@ class ZcashSession(
         publishLocalState(readLocalState())
     }
 
-    suspend fun reserveForBroadcast(rawTransaction: ByteArray): ZcashSessionResult<Unit> =
-        withOperation { wallet.reserveForBroadcast(dbAccountId, rawTransaction) }
+    suspend fun reserveForBroadcast(
+        rawTransaction: ByteArray,
+        requireOwnInputs: Boolean = true,
+    ): ZcashSessionResult<Unit> =
+        withOperation { wallet.reserveForBroadcast(dbAccountId, rawTransaction, requireOwnInputs) }
 
     /** Cancellation is SDK-wide, so it may only be issued while this session is syncing. */
     suspend fun cancelSync() = stopSync(invalidateState = true)

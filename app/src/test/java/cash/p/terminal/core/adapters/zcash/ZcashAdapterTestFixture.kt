@@ -170,7 +170,7 @@ abstract class ZcashAdapterTestFixture {
             coEvery { withOperation(any<suspend (ZcashWallet) -> Any?>()) } coAnswers {
                 ZcashSessionResult.Success(firstArg<suspend (ZcashWallet) -> Any?>()(zcashWallet))
             }
-            coEvery { reserveForBroadcast(any()) } returns ZcashSessionResult.Success(Unit)
+            coEvery { reserveForBroadcast(any(), any()) } returns ZcashSessionResult.Success(Unit)
             coEvery { refresh() } returns ZcashSessionResult.Success(Unit)
         }
         coEvery { sessionManager.acquire(any()) } returns session

@@ -615,11 +615,11 @@ class ZcashAdapter(
         throw e as? NotBroadcastException ?: NotBroadcastException(e)
     }
 
-    private suspend fun reserveBeforeBroadcast(raw: ByteArray) {
+    private suspend fun reserveBeforeBroadcast(raw: ByteArray, requireOwnInputs: Boolean = true) {
         val current = session ?: throw NotBroadcastException(
             IllegalStateException("Zcash wallet session is unavailable")
         )
-        when (beforeBroadcast { current.reserveForBroadcast(raw) }) {
+        when (beforeBroadcast { current.reserveForBroadcast(raw, requireOwnInputs) }) {
             is ZcashSessionResult.Success -> Unit
             ZcashSessionResult.Unavailable -> throw NotBroadcastException(
                 IllegalStateException("Zcash wallet session is unavailable")
@@ -656,18 +656,19 @@ class ZcashAdapter(
         rawTransactionHex: String,
         metadata: OfflineBroadcastMetadata?,
     ): BroadcastRawTransactionResult {
-        val (zcashMetadata, raw, height) = beforeBroadcast {
-            val zcashMetadata = metadata as? OfflineBroadcastMetadata.Zcash
-                ?: throw UnsupportedException("Zcash raw broadcast requires P.CASH payload metadata")
+        val (txHash, raw, height) = beforeBroadcast {
             val normalizedRawHex = rawTransactionHex.trim()
             require(OfflineTransactionPayloadEncoder.isRawTransactionHex(normalizedRawHex)) {
                 "Valid raw transaction hex is required"
             }
-            Triple(zcashMetadata, normalizedRawHex.hexToByteArray(), requireWallet { zcash, _ -> zcash.latestHeight() })
+            val rawBytes = normalizedRawHex.hexToByteArray()
+            val hash = (metadata as? OfflineBroadcastMetadata.Zcash)?.txHash
+                ?: ZcashSdk.transactionId(rawBytes)
+            Triple(hash, rawBytes, requireWallet { zcash, _ -> zcash.latestHeight() })
         }
-        reserveBeforeBroadcast(raw)
-        return requireWallet { zcash, id -> zcash.broadcast(id, raw, height) }
-            .toBroadcastResult(zcashMetadata.txHash)
+        reserveBeforeBroadcast(raw, requireOwnInputs = false)
+        return requireWallet { zcash, id -> zcash.broadcast(id, raw, height, requireOwnInputs = false) }
+            .toBroadcastResult(txHash)
     }
 
     private fun recipient(amount: BigDecimal, address: String, memo: String) = Recipient(

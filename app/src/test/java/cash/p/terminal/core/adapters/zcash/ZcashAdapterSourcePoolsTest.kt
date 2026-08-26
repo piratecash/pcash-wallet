@@ -19,6 +19,7 @@ import cash.p.zcash.ZcashSdk
 import cash.p.zcash.deriveSpendingKey
 import cash.p.zcash.transactionId
 import io.mockk.coEvery
+import io.mockk.coVerifyOrder
 import io.mockk.mockkStatic
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
@@ -59,7 +60,7 @@ class ZcashAdapterSourcePoolsTest : ZcashAdapterTestFixture() {
         )
         coEvery { zcashWallet.sign(any(), any(), any()) } returns PREPARED
         coEvery { zcashWallet.extract(any()) } returns RAW
-        coEvery { zcashWallet.broadcast(any(), any(), any()) } returns
+        coEvery { zcashWallet.broadcast(any(), any(), any(), any()) } returns
             BroadcastResult(errorCode = 0, message = TX_ID)
     }
 
@@ -150,6 +151,18 @@ class ZcashAdapterSourcePoolsTest : ZcashAdapterTestFixture() {
     // endregion
 
     // region Shortfall is refused, never topped up from another pool
+
+    @Test
+    fun send_ownTransaction_reservesAndBroadcastsRequiringOwnInputs() = runTest(dispatcher) {
+        startAdapter(AddressSpecType.Transparent)
+
+        adapter.send(AMOUNT, RECIPIENT, memo = "")
+
+        coVerifyOrder {
+            session.reserveForBroadcast(any(), requireOwnInputs = true)
+            zcashWallet.broadcast(DB_ACCOUNT_ID, any(), HEIGHT, requireOwnInputs = true)
+        }
+    }
 
     @Test
     fun send_noFeasibleNoteSelection_reportsInsufficientBalance() = runTest(dispatcher) {
