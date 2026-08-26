@@ -113,7 +113,7 @@ internal class FlipGestureRecognizer {
     fun onSensorChanged(z: Float, elapsedMs: Long): Boolean {
         val smoothedZ = smooth(z)
         val startedAtMs = faceDownAtMs
-        val isFaceDown = isStableOrientation(z, smoothedZ, FACE_DOWN_Z)
+        val isFaceDown = isBelowFaceDownThreshold(z, smoothedZ)
         val isFaceUp = isStableOrientation(z, smoothedZ, FACE_UP_Z)
 
         return when {
@@ -145,8 +145,11 @@ internal class FlipGestureRecognizer {
         range: ClosedFloatingPointRange<Float>,
     ) = rawZ in range && smoothedZ in range
 
+    private fun isBelowFaceDownThreshold(rawZ: Float, smoothedZ: Float) =
+        rawZ <= FACE_DOWN_THRESHOLD_Z && smoothedZ <= FACE_DOWN_THRESHOLD_Z
+
     private companion object {
-        val FACE_DOWN_Z = -10.5f..-8f
+        const val FACE_DOWN_THRESHOLD_Z = -8f
         val FACE_UP_Z = 6f..10.5f
         const val FILTER_PREVIOUS_WEIGHT = 0.25f
         const val FLIP_WINDOW_MS = 3000L

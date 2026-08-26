@@ -27,6 +27,16 @@ class FlipGestureRecognizerTest {
     }
 
     @Test
+    fun onSensorChanged_fastFlipOvershootsFaceDownRange_emitsOnce() {
+        val recognizer = initializedRecognizer()
+
+        val emissions = feed(recognizer, FAST_FLIP_FACE_DOWN_Z, startMs = 300L) +
+            feed(recognizer, FACE_UP_Z, startMs = 900L)
+
+        assertEquals(1, emissions)
+    }
+
+    @Test
     fun onSensorChanged_faceUpAfterFaceDown_emitsOnSecondStableSample() {
         val recognizer = initializedRecognizer()
         feed(recognizer, FACE_DOWN_Z, startMs = 300L)
@@ -106,6 +116,7 @@ class FlipGestureRecognizerTest {
     private companion object {
         const val FACE_UP_Z = 9.81f
         const val FACE_DOWN_Z = -9.81f
+        const val FAST_FLIP_FACE_DOWN_Z = -24f
         const val TILTED_FACE_UP_Z = 6.5f
         const val IMPULSE_Z = 30f
         const val SAMPLE_INTERVAL_MS = 50L
