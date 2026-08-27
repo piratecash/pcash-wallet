@@ -27,6 +27,8 @@ import cash.p.terminal.modules.settings.advancedsecurity.AdvancedSecurityViewMod
 import cash.p.terminal.modules.settings.advancedsecurity.securereset.SecureResetTermsViewModel
 import cash.p.terminal.modules.settings.advancedsecurity.terms.DeleteContactsTermsViewModel
 import cash.p.terminal.modules.settings.advancedsecurity.terms.HiddenWalletTermsViewModel
+import cash.p.terminal.modules.softwareupdate.changelog.VersionChangelogViewModel
+import cash.p.terminal.modules.softwareupdate.domain.ChangelogRequest
 import cash.p.terminal.core.notifications.polling.TransactionPollingManager
 import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedDialog
 import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedViewModel
@@ -97,6 +99,7 @@ class KoinGraphTest : KoinTest {
             definition<PayCorePaymentViewModel>(PayCorePaymentParams::class),
             definition<PayCoreExchangeDetailViewModel>(Long::class),
             definition<TransactionPollingManager>(List::class),
+            definition<VersionChangelogViewModel>(ChangelogRequest::class),
         )
 
         fullModule.verify(
