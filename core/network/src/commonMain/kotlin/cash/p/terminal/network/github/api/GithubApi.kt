@@ -7,6 +7,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.parameter
 import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
@@ -44,12 +45,21 @@ internal class GithubApi(
      * Raw markdown file by its repo-root-relative [path] (e.g. "release-notes/en/0.57.x.md").
      * Returns null when the file genuinely does not exist (404) so callers can fall back.
      */
-    suspend fun getRawFile(path: String): String? {
-        val response = requestWithFallback(
-            primaryUrl = "${config.rawBaseUrl}/$path",
-            proxyUrl = "${config.rawProxyBaseUrl}/$path",
-            accept = null,
-        )
+    suspend fun getRawFile(path: String, ref: String? = null): String? {
+        val response = if (ref == null) {
+            requestWithFallback(
+                primaryUrl = "${config.rawBaseUrl}/$path",
+                proxyUrl = "${config.rawProxyBaseUrl}/$path",
+                accept = null,
+            )
+        } else {
+            requestWithFallback(
+                primaryUrl = "${config.apiBaseUrl}/contents/$path",
+                proxyUrl = "${config.apiProxyBaseUrl}/contents/$path",
+                accept = GITHUB_RAW_ACCEPT,
+                queryParameters = mapOf(REF_PARAMETER to ref),
+            )
+        }
         return when {
             response.status.isSuccess() -> response.bodyAsText()
             response.status == HttpStatusCode.NotFound -> null
@@ -61,17 +71,23 @@ internal class GithubApi(
         primaryUrl: String,
         proxyUrl: String,
         accept: String?,
+        queryParameters: Map<String, String> = emptyMap(),
     ): HttpResponse {
-        val primary = tryRequest(primaryUrl, accept)
+        val primary = tryRequest(primaryUrl, accept, queryParameters)
         if (primary != null && !primary.shouldFallback()) return primary
-        return tryRequest(proxyUrl, accept) ?: primary ?: throw GithubApiException(null)
+        return tryRequest(proxyUrl, accept, queryParameters) ?: primary ?: throw GithubApiException(null)
     }
 
-    private suspend fun tryRequest(requestUrl: String, accept: String?): HttpResponse? =
+    private suspend fun tryRequest(
+        requestUrl: String,
+        accept: String?,
+        queryParameters: Map<String, String>,
+    ): HttpResponse? =
         try {
             httpClient.get {
                 url(requestUrl)
                 if (accept != null) header(HttpHeaders.Accept, accept)
+                queryParameters.forEach { (name, value) -> parameter(name, value) }
             }
         } catch (e: CancellationException) {
             throw e
@@ -87,6 +103,8 @@ internal class GithubApi(
 
     private companion object {
         const val GITHUB_ACCEPT = "application/vnd.github+json"
+        const val GITHUB_RAW_ACCEPT = "application/vnd.github.raw+json"
+        const val REF_PARAMETER = "ref"
     }
 }
 

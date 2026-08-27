@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.modules.releasenotes.ReleaseNotesUiState
+import cash.p.terminal.modules.softwareupdate.domain.ChangelogRequest
 import cash.p.terminal.modules.softwareupdate.domain.GetReleaseChangelogUseCase
 import cash.p.terminal.ui_compose.entities.ViewState
 import kotlinx.coroutines.CancellationException
@@ -19,8 +20,7 @@ import kotlinx.coroutines.launch
  * renderer and footer instead of a bespoke screen.
  */
 class VersionChangelogViewModel(
-    private val minor: String,
-    private val isActiveBranch: Boolean,
+    private val request: ChangelogRequest,
     private val getReleaseChangelogUseCase: GetReleaseChangelogUseCase,
     private val localStorage: ILocalStorage,
 ) : ViewModel() {
@@ -52,7 +52,7 @@ class VersionChangelogViewModel(
         uiState = uiState.copy(viewState = ViewState.Loading)
         viewModelScope.launch {
             val markdown = try {
-                getReleaseChangelogUseCase(minor, isActiveBranch)
+                getReleaseChangelogUseCase(request)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

@@ -93,7 +93,7 @@ val viewModelModule = module {
     viewModelOf(::MainActivityViewModel)
     viewModelOf(::SoftwareUpdateViewModel)
     viewModelOf(::VersionHistoryViewModel)
-    viewModel { params -> VersionChangelogViewModel(params.get(), params.get(), get(), get()) }
+    viewModel { params -> VersionChangelogViewModel(params.get(), get(), get()) }
     viewModelOf(::DisplayTransactionsViewModel)
     viewModelOf(::OfflineBroadcastViewModel)
     viewModelOf(::OfflineSignedTransactionsViewModel)

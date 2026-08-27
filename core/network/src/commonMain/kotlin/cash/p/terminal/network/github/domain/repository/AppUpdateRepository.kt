@@ -13,12 +13,13 @@ interface AppUpdateRepository {
 
     /**
      * Localized changelog markdown for a minor branch (e.g. minor = "0.57").
-     * [isActiveBranch] uses the root changelog_{lang}.md; otherwise the archived
-     * release-notes/{lang}/{minor}.x.md, with a fallback to the root file and to English.
+     * [isActiveBranch] uses the root changelog_{lang}.md at [tagName], when provided; otherwise
+     * it uses the archived release-notes/{lang}/{minor}.x.md. Both paths fall back to English.
      */
     suspend fun getChangelogMarkdown(
         minor: String,
         isActiveBranch: Boolean,
+        tagName: String?,
         language: String,
     ): String?
 }
