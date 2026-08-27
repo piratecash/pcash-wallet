@@ -82,7 +82,9 @@ object TrezorPublicKeySpecs {
         BlockchainType.Polygon,
         BlockchainType.ArbitrumOne,
         BlockchainType.Optimism,
-        BlockchainType.Base -> fixedPath(query, TrezorPublicKeyRequest::Ethereum, "m/44'/60'/0'/0/0")
+        BlockchainType.Base,
+        BlockchainType.RobinhoodChain ->
+            fixedPath(query, TrezorPublicKeyRequest::Ethereum, "m/44'/60'/0'/0/0")
         BlockchainType.Solana -> fixedPath(query, TrezorPublicKeyRequest::Solana, "m/44'/501'/0'/0'")
         BlockchainType.Stellar -> fixedPath(query, TrezorPublicKeyRequest::Stellar, "m/44'/148'/0'")
         BlockchainType.Tron -> fixedPath(query, TrezorPublicKeyRequest::Tron, "m/44'/195'/0'/0/0")

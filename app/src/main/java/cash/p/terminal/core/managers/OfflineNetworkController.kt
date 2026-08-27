@@ -34,7 +34,8 @@ class OfflineNetworkController(
             BlockchainType.Ton -> tonKitManager.pauseNetwork(account)
             BlockchainType.Stellar -> stellarKitManager.pauseNetwork(account)
             BlockchainType.Monero -> moneroKitManager.pauseNetwork(account)
-            in EVM_BLOCKCHAIN_TYPES -> evmBlockchainManager.getEvmKitManager(blockchainType).pauseNetwork(account)
+            in EvmBlockchainManager.blockchainTypes ->
+                evmBlockchainManager.getEvmKitManager(blockchainType).pauseNetwork(account)
             else -> Unit
         }
     }
@@ -51,7 +52,8 @@ class OfflineNetworkController(
             BlockchainType.Ton -> tonKitManager.resumeNetwork(account)
             BlockchainType.Stellar -> stellarKitManager.resumeNetwork(account)
             BlockchainType.Monero -> moneroKitManager.resumeNetwork(account)
-            in EVM_BLOCKCHAIN_TYPES -> evmBlockchainManager.getEvmKitManager(blockchainType).resumeNetwork(account)
+            in EvmBlockchainManager.blockchainTypes ->
+                evmBlockchainManager.getEvmKitManager(blockchainType).resumeNetwork(account)
             else -> Unit
         }
     }
@@ -82,7 +84,7 @@ class OfflineNetworkController(
                     moneroKitManager.currentAccount, account, moneroKitManager.moneroKitWrapper?.isNetworkOnline,
                 )
 
-            in EVM_BLOCKCHAIN_TYPES -> {
+            in EvmBlockchainManager.blockchainTypes -> {
                 val kitManager = evmBlockchainManager.getEvmKitManager(blockchainType)
                 isDisconnected(kitManager.currentAccount, account, kitManager.evmKitWrapper?.evmKit?.isStarted)
             }
@@ -96,19 +98,4 @@ class OfflineNetworkController(
 
     private fun isDisconnected(kitAccount: Account?, account: Account, started: Boolean?): Boolean =
         kitAccount != account || started != true
-
-    private companion object {
-        val EVM_BLOCKCHAIN_TYPES = setOf(
-            BlockchainType.Ethereum,
-            BlockchainType.BinanceSmartChain,
-            BlockchainType.Polygon,
-            BlockchainType.Avalanche,
-            BlockchainType.Optimism,
-            BlockchainType.ArbitrumOne,
-            BlockchainType.Gnosis,
-            BlockchainType.Fantom,
-            BlockchainType.Base,
-            BlockchainType.ZkSync,
-        )
-    }
 }

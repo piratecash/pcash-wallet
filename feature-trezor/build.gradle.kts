@@ -46,6 +46,7 @@ dependencies {
     implementation(libs.androidx.material3.android)
 
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.ktor.client.core)
 
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.timber)
@@ -62,4 +63,5 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockk)
+    testImplementation(libs.ktor.client.mock)
 }

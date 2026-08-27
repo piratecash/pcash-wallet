@@ -38,6 +38,7 @@ data object Wallet2CardConfig : CardConfig {
             BlockchainType.ArbitrumOne -> EllipticCurve.Secp256k1
             BlockchainType.Avalanche -> EllipticCurve.Secp256k1
             BlockchainType.ZkSync,
+            BlockchainType.RobinhoodChain,
             BlockchainType.ECash,
             BlockchainType.BinanceSmartChain -> EllipticCurve.Secp256k1
 

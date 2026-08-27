@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import java.net.URI
 
+internal const val ROBINHOOD_RPC_URL = "https://rpc.mainnet.chain.robinhood.com"
+
 class EvmSyncSourceManager(
     private val blockchainSettingsStorage: BlockchainSettingsStorage,
     private val evmSyncSourceStorage: EvmSyncSourceStorage,
@@ -39,6 +41,7 @@ class EvmSyncSourceManager(
             BlockchainType.Gnosis -> TransactionSource.gnosis(AppConfigProvider.etherscanApiKey)
             BlockchainType.Fantom -> TransactionSource.fantom(AppConfigProvider.etherscanApiKey)
             BlockchainType.ZkSync -> TransactionSource.zkSync(AppConfigProvider.otherScanApiKey)
+            BlockchainType.RobinhoodChain -> TransactionSource.robinhood(AppConfigProvider.etherscanApiKey)
             else -> throw Exception("Non-supported EVM blockchain")
         }
     }
@@ -176,6 +179,15 @@ class EvmSyncSourceManager(
                     blockchainType,
                     "ZKsync",
                     RpcSource.zkSyncRpcHttp(),
+                    defaultTransactionSource(blockchainType)
+                )
+            )
+
+            BlockchainType.RobinhoodChain -> listOf(
+                evmSyncSource(
+                    blockchainType,
+                    "Robinhood Chain",
+                    RpcSource.Http(listOf(URI(ROBINHOOD_RPC_URL)), null),
                     defaultTransactionSource(blockchainType)
                 )
             )

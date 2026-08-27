@@ -2,6 +2,7 @@ package cash.p.terminal.trezor.di
 
 import android.content.Context
 import android.hardware.usb.UsbManager
+import cash.p.terminal.trezor.client.TrezorEthereumDefinitionsProviderImpl
 import cash.p.terminal.trezor.client.TrezorUsbPermissionRequester
 import cash.p.terminal.trezor.client.UsbTrezorClientProvider
 import cash.p.terminal.trezor.domain.TrezorAccountIdentityValidator
@@ -11,6 +12,7 @@ import cash.p.terminal.trezor.domain.usecase.FetchTrezorPublicKeysUseCaseImpl
 import cash.p.terminal.trezor.domain.usecase.TrezorScanToAddUseCase
 import cash.p.terminal.trezor.ui.TrezorWalletViewModel
 import cash.p.terminal.trezorkit.client.ITrezorClient
+import cash.p.terminal.trezorkit.client.TrezorEthereumDefinitionsProvider
 import cash.p.terminal.trezorkit.transport.TrezorUsbCoordinator
 import cash.p.terminal.trezorkit.transport.UsbPermissionRequester
 import cash.p.terminal.wallet.useCases.ScanToAddUseCase
@@ -29,6 +31,7 @@ val featureTrezorModule = module {
     }
     singleOf(::TrezorUsbPermissionRequester) bind UsbPermissionRequester::class
     single { TrezorUsbCoordinator(get(), get()) }
+    singleOf(::TrezorEthereumDefinitionsProviderImpl) bind TrezorEthereumDefinitionsProvider::class
     singleOf(::UsbTrezorClientProvider) bind ITrezorClient::class
 
     singleOf(::TrezorAccountIdentityValidator)
