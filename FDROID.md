@@ -54,8 +54,8 @@ Replicates F-Droid's exact build environment:
 
 ```bash
 # Clone repository at specific version
-git clone --branch 0.51.4 --depth 1 https://github.com/piratecash/pcash-wallet-android
-cd pcash-wallet-android
+git clone --branch 0.51.4 --depth 1 https://github.com/piratecash/pcash-wallet
+cd pcash-wallet
 
 # Build using F-Droid's buildserver image
 docker run --rm \
@@ -72,8 +72,8 @@ ls -la app/build/outputs/apk/release/
 
 ```bash
 # Clone and checkout version
-git clone https://github.com/piratecash/pcash-wallet-android
-cd pcash-wallet-android
+git clone https://github.com/piratecash/pcash-wallet
+cd pcash-wallet
 git checkout 0.51.4
 
 # Build with F-Droid flag

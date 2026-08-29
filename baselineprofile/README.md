@@ -59,7 +59,7 @@ What it does, end to end:
 
 Use the Gradle tool window (elephant icon):
 
-`pcash-wallet-android → app → Tasks → baseline profile → bakeBaselineProfile` — double-click.
+`pcash-wallet → app → Tasks → baseline profile → bakeBaselineProfile` — double-click.
 
 Pick the target device in the top toolbar device dropdown first. Output goes to the same
 `app/src/main/baseline-prof.txt`.
