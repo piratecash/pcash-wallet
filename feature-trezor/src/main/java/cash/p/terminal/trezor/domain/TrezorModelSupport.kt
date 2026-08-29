@@ -20,6 +20,7 @@ object TrezorModelSupport {
         BlockchainType.ArbitrumOne,
         BlockchainType.Optimism,
         BlockchainType.Base,
+        BlockchainType.RobinhoodChain,
         BlockchainType.Stellar,
     )
 

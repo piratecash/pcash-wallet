@@ -178,6 +178,7 @@ object AppConfigProvider {
             BlockchainType.Optimism to "0x52be29951B0D10d5eFa48D58363a25fE5Cc097e9",
             BlockchainType.Base to "0x52be29951B0D10d5eFa48D58363a25fE5Cc097e9",
             BlockchainType.ZkSync to "0x52be29951B0D10d5eFa48D58363a25fE5Cc097e9",
+            BlockchainType.RobinhoodChain to "0x52be29951B0D10d5eFa48D58363a25fE5Cc097e9",
             BlockchainType.ArbitrumOne to "0x52be29951B0D10d5eFa48D58363a25fE5Cc097e9",
             BlockchainType.Solana to "CefzHT5zCUncm3yhTLck9bCRYkbjHrKToT1GpPUyqCMa",
             BlockchainType.Gnosis to "0x52be29951B0D10d5eFa48D58363a25fE5Cc097e9",

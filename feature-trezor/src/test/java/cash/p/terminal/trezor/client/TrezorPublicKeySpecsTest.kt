@@ -126,9 +126,10 @@ class TrezorPublicKeySpecsTest {
                 native(BlockchainType.Ethereum),
                 TokenQuery(BlockchainType.BinanceSmartChain, TokenType.Eip20("0xabc")),
                 native(BlockchainType.Base),
+                native(BlockchainType.RobinhoodChain),
             )
         )
-        assertEquals(3, specs.size)
+        assertEquals(4, specs.size)
         assertEquals(1, specs.map { it.request }.distinct().size)
         assertEquals(
             TrezorPublicKeyRequest.Ethereum(TrezorDerivationPath.parse("m/44'/60'/0'/0/0")),

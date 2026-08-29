@@ -18,6 +18,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.math.BigInteger
 
 class BlockchainTypeSupportTest {
 
@@ -379,5 +380,28 @@ class BlockchainTypeSupportTest {
     @Test
     fun isSupported_tronTrc10_returnsFalse() {
         assertFalse(TokenQuery.trc10("1005114").isSupported)
+    }
+
+    @Test
+    fun robinhoodChain_nativeAndEip20_areSupportedEvmTokens() {
+        assertTrue(TokenQuery(BlockchainType.RobinhoodChain, TokenType.Native).isSupported)
+        assertTrue(
+            TokenQuery(
+                BlockchainType.RobinhoodChain,
+                TokenType.Eip20("0x1111111111111111111111111111111111111111")
+            ).isSupported
+        )
+        assertTrue(BlockchainType.RobinhoodChain.isEvm)
+        assertTrue(BlockchainType.RobinhoodChain in BlockchainType.supported)
+    }
+
+    @Test
+    fun supports_robinhoodWithEvmAccounts_returnsTrue() {
+        assertTrue(
+            BlockchainType.RobinhoodChain.supports(
+                AccountType.EvmAddress("0x1111111111111111111111111111111111111111")
+            )
+        )
+        assertTrue(BlockchainType.RobinhoodChain.supports(AccountType.EvmPrivateKey(BigInteger.ONE)))
     }
 }

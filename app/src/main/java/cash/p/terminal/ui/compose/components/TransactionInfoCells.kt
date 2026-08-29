@@ -1054,6 +1054,7 @@ private fun openTransactionOptionsModule(
         BlockchainType.Solana,
         BlockchainType.Gnosis,
         BlockchainType.Fantom,
+        BlockchainType.RobinhoodChain,
         BlockchainType.Monero,
         BlockchainType.Tron,
         BlockchainType.Ton,
