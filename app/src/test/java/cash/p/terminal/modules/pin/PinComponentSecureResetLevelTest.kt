@@ -1,7 +1,5 @@
 package cash.p.terminal.modules.pin
 
-import android.app.Activity
-import android.app.Application
 import cash.p.terminal.core.App
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.TestDispatcherProvider
@@ -95,55 +93,8 @@ class PinComponentSecureResetLevelTest {
         scope = testScope
     )
 
-    private fun createBackgroundManager() = BackgroundManager(mockk<Application>(relaxed = true))
-
-    private fun endAppSession(backgroundManager: BackgroundManager) {
-        val activity = mockk<Activity>(relaxed = true) {
-            every { isChangingConfigurations } returns false
-        }
-        backgroundManager.onActivityCreated(activity, null)
-        backgroundManager.onActivityDestroyed(activity)
-    }
-
     private fun setUserLevel(level: Int) {
         currentUserLevel = level
-    }
-
-    @Test
-    fun appSessionEnded_lastActivityDestroyedWithPin_locksSynchronously() {
-        val backgroundManager = createBackgroundManager()
-        val pinComponent = createPinComponent(backgroundManager)
-        pinComponent.setPin("1234")
-        assertFalse(pinComponent.isLockedFlow.value)
-
-        endAppSession(backgroundManager)
-
-        assertTrue(pinComponent.isLockedFlow.value)
-    }
-
-    @Test
-    fun appSessionEnded_withoutPin_remainsUnlocked() {
-        val backgroundManager = createBackgroundManager()
-        val pinComponent = createPinComponent(backgroundManager)
-
-        endAppSession(backgroundManager)
-
-        assertFalse(pinComponent.isLockedFlow.value)
-    }
-
-    @Test
-    fun appSessionEnded_lastLevelPinCleared_remainsUnlocked() {
-        val backgroundManager = createBackgroundManager()
-        val pinComponent = createPinComponent(backgroundManager)
-        pinComponent.setPin("1234")
-        pinComponent.setDuressPin("5678")
-        setUserLevel(1)
-        pinComponent.disablePin()
-        assertFalse(pinComponent.isPinSet)
-
-        endAppSession(backgroundManager)
-
-        assertFalse(pinComponent.isLockedFlow.value)
     }
 
     @Test(expected = IllegalStateException::class)

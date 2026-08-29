@@ -43,6 +43,7 @@ import cash.p.terminal.navigation.slideFromRightClearingBackStack
 import cash.p.terminal.tangem.domain.sdk.CardSdkProvider
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import com.reown.walletkit.client.Wallet
+import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.IPinComponent
 import io.horizontalsystems.core.hideKeyboard
 import kotlinx.coroutines.flow.combine
@@ -66,6 +67,13 @@ internal fun calculatorPauseProtection(
     else -> CalculatorPauseProtection.ShowCalculator
 }
 
+internal fun shouldLockOnCreate(
+    hasSavedInstanceState: Boolean,
+    pinSet: Boolean,
+    currentTaskId: Int,
+    previouslyResumedTaskId: Int?,
+): Boolean = !hasSavedInstanceState && pinSet && previouslyResumedTaskId != currentTaskId
+
 open class MainActivity : BaseActivity() {
 
     val viewModel: MainActivityViewModel by inject()
@@ -73,6 +81,7 @@ open class MainActivity : BaseActivity() {
     private val appIconService: AppIconService by inject()
     private val localStorage: ILocalStorage by inject()
     private val pinComponent: IPinComponent by inject()
+    private val backgroundManager: BackgroundManager by inject()
     private val appUpdateChecker: AppUpdateChecker by inject()
     private var pinLockComposeView: ComposeView? = null
     private var showPinLockScreen by mutableStateOf(false)
@@ -135,8 +144,18 @@ open class MainActivity : BaseActivity() {
         // If SQLCipher failed, BaseActivity redirected to error screen - don't continue
         if (App.sqlCipherLoadFailed) return
 
+        if (
+            shouldLockOnCreate(
+                hasSavedInstanceState = savedInstanceState != null,
+                pinSet = pinComponent.isPinSet,
+                currentTaskId = taskId,
+                previouslyResumedTaskId = backgroundManager.currentActivity?.taskId,
+            )
+        ) {
+            pinComponent.lock()
+        }
+
         cardSdkProvider.register(this)
-        applyTaskDescription(localStorage.isCalculatorModeEnabled)
 
         setContentView(R.layout.activity_main)
 
@@ -215,6 +234,10 @@ open class MainActivity : BaseActivity() {
 
         val composeView = findViewById<ComposeView>(R.id.pinLockComposeView)
         pinLockComposeView = composeView
+        applyLockScreenState(
+            isLocked = pinComponent.isLockedFlow.value,
+            calculatorMode = localStorage.isCalculatorModeEnabled,
+        )
         composeView.setContent {
             ComposeAppTheme {
                 val calculatorMode by localStorage.isCalculatorModeEnabledFlow
@@ -286,14 +309,18 @@ open class MainActivity : BaseActivity() {
                 localStorage.isCalculatorModeEnabledFlow,
             ) { locked, calculatorMode -> locked to calculatorMode }
                 .collect { (isLocked, calculatorMode) ->
-                    showPinLockScreen = isLocked
-                    pinLockComposeView?.visibility = if (isLocked) VISIBLE else GONE
-                    applyTaskDescription(calculatorMode)
-                    applyLockWindowFlags(isLocked, calculatorMode)
-                    if (isLocked) {
-                        closeWindowsAboveLockScreen()
-                    }
+                    applyLockScreenState(isLocked, calculatorMode)
                 }
+        }
+    }
+
+    private fun applyLockScreenState(isLocked: Boolean, calculatorMode: Boolean) {
+        showPinLockScreen = isLocked
+        pinLockComposeView?.visibility = if (isLocked) VISIBLE else GONE
+        applyTaskDescription(calculatorMode)
+        applyLockWindowFlags(isLocked, calculatorMode)
+        if (isLocked) {
+            closeWindowsAboveLockScreen()
         }
     }
 
