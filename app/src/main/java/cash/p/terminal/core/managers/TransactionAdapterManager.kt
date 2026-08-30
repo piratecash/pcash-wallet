@@ -8,6 +8,7 @@ import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.transaction.TransactionSource
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.BlockchainType
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -17,6 +18,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import timber.log.Timber
 
 class TransactionAdapterManager(
     private val adapterManager: IAdapterManager,
@@ -88,9 +90,8 @@ class TransactionAdapterManager(
                 val entry = currentEntries[source]
                     ?.takeIf { it.walletAdapterRefs == walletAdapterRefs }
                     ?.also { reusedSources += source }
-                    ?: createTransactionAdapter(adapter, source)?.let { txAdapter ->
-                        AdapterEntry(walletAdapterRefs, txAdapter)
-                    }
+                    ?: skipOnFailure(source) { createTransactionAdapter(adapter, source) }
+                        ?.let { txAdapter -> AdapterEntry(walletAdapterRefs, txAdapter) }
 
                 entry?.let {
                     newEntries[source] = it
@@ -99,11 +100,22 @@ class TransactionAdapterManager(
 
             val sourcesToUnlink = currentEntries.keys - reusedSources
             sourcesToUnlink.forEach { source ->
-                adapterFactory.unlinkAdapter(source)
+                skipOnFailure(source) { adapterFactory.unlinkAdapter(source) }
             }
 
             adapterEntries = newEntries
             _adaptersState.value = newEntries.mapValues { it.value.transactionsAdapter }
+        }
+
+    /** A throw here would kill the only collector and freeze the adapter map for the whole process. */
+    private suspend fun <T> skipOnFailure(source: TransactionSource, block: suspend () -> T): T? =
+        try {
+            block()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            Timber.e(e, "Transaction adapter failed for ${source.blockchain.type}")
+            null
         }
 
     private suspend fun createTransactionAdapter(

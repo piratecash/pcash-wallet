@@ -469,9 +469,14 @@ private fun TokenBalanceScreenContent(
             }
         }
         var headerHeightPx by remember { mutableIntStateOf(0) }
+        val notSyncedSectionVisible = shouldShowNotSyncedSection(
+            failedIconVisible = failedIconVisible,
+            syncing = uiState.syncing,
+            transactions = transactionItems,
+        )
         // Opening search auto-focuses the field and shows the keyboard
         val searchHeaderIndex = 1 +
-                (if (failedIconVisible) 1 else 0) +
+                (if (notSyncedSectionVisible) 1 else 0) +
                 (if (uiState.offlineSince != null) 1 else 0) +
                 (if (uiState.showAmlPromo) 1 else 0)
         LaunchedEffect(uiState.searchActive, searchHeaderIndex) {
@@ -508,7 +513,7 @@ private fun TokenBalanceScreenContent(
                         }
                     }
 
-                    if (failedIconVisible) {
+                    if (notSyncedSectionVisible) {
                         item {
                             TokenNotSyncedSection(
                                 onBlockchainStatusClick = {
@@ -1276,6 +1281,15 @@ private fun TokenOfflineSectionPreview() {
 // own Window and would leak wallet UI above the calculator/PIN disguise (deanonymization).
 internal fun shouldAutoShowSyncError(failedIconVisible: Boolean, appLocked: Boolean): Boolean =
     failedIconVisible && !appLocked
+
+// While a sync runs over already loaded transactions, the list itself stays on screen, so the
+// only thing left to tell the user is that what they see may be stale.
+internal fun shouldShowNotSyncedSection(
+    failedIconVisible: Boolean,
+    syncing: Boolean,
+    transactions: Map<String, List<TransactionViewItem>>?,
+): Boolean =
+    failedIconVisible || (syncing && transactions?.values?.any { it.isNotEmpty() } == true)
 
 private fun onSyncErrorClicked(
     viewItem: BalanceViewItem,

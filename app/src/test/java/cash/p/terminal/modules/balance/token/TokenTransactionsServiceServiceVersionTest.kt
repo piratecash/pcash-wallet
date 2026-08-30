@@ -32,6 +32,7 @@ import org.koin.test.KoinTestRule
 import java.util.Collections
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Proves the serviceVersion guard in [TokenTransactionsService] is necessary.
@@ -389,6 +390,137 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
         assertTrue(
             "Init did not reload the filter selected during the initial load",
             incomingSetReached.await(5, TimeUnit.SECONDS)
+        )
+
+        service.clear()
+    }
+
+    @Test
+    fun start_adapterNeverBecomesReady_initializesAfterTimeout() = runBlocking {
+        val source = mockk<TransactionSource>(relaxed = true)
+        every { wallet.transactionSource } returns source
+        every { adapterManager.adaptersReadyFlow } returns MutableStateFlow(emptyMap())
+
+        val initialized = CountDownLatch(1)
+        every { syncStateRepository.setTransactionWallets(any()) } answers { initialized.countDown() }
+
+        val service = TokenTransactionsService(
+            wallet = wallet,
+            rateRepository = rateRepository,
+            transactionSyncStateRepository = syncStateRepository,
+            transactionAdapterManager = adapterManager,
+            nftMetadataService = nftMetadataService,
+            spamManager = spamManager,
+        )
+        service.start()
+
+        assertTrue(
+            "Initialization never ran while the adapter stayed unavailable",
+            initialized.await(10, TimeUnit.SECONDS)
+        )
+
+        service.clear()
+    }
+
+    @Test
+    fun start_adapterAppearsAfterFallbackInitialization_initializesAgain() = runBlocking {
+        val source = mockk<TransactionSource>(relaxed = true)
+        val adapter = mockk<ITransactionsAdapter>(relaxed = true)
+        every { wallet.transactionSource } returns source
+
+        val adaptersFlow = MutableStateFlow<Map<TransactionSource, ITransactionsAdapter>>(emptyMap())
+        every { adapterManager.adaptersReadyFlow } returns adaptersFlow
+
+        val initializations = AtomicInteger(0)
+        every { syncStateRepository.setTransactionWallets(any()) } answers {
+            initializations.incrementAndGet()
+            Unit
+        }
+
+        val service = TokenTransactionsService(
+            wallet = wallet,
+            rateRepository = rateRepository,
+            transactionSyncStateRepository = syncStateRepository,
+            transactionAdapterManager = adapterManager,
+            nftMetadataService = nftMetadataService,
+            spamManager = spamManager,
+        )
+        service.start()
+
+        waitUntil(10_000) { initializations.get() == 1 }
+        assertEquals(1, initializations.get())
+
+        adaptersFlow.value = mapOf(source to adapter)
+
+        waitUntil { initializations.get() == 2 }
+        assertEquals(2, initializations.get())
+
+        service.clear()
+    }
+
+    @Test
+    fun handleUpdatedRecords_onlyEmptyBatchArrives_marksRecordsLoaded() = runBlocking {
+        val service = TokenTransactionsService(
+            wallet = wallet,
+            rateRepository = rateRepository,
+            transactionSyncStateRepository = syncStateRepository,
+            transactionAdapterManager = adapterManager,
+            nftMetadataService = nftMetadataService,
+            spamManager = spamManager,
+        )
+
+        service.start()
+        waitUntil { repositoryItemsFlow.subscriptionCount.value >= 1 }
+
+        // An empty wallet reports its history in a single empty batch; nothing follows it.
+        repositoryItemsFlow.emit(RecordsBatch(emptyList()))
+
+        waitUntil { service.recordsLoadedFlow.value }
+        assertTrue(
+            "An empty wallet stays blocked on the sync placeholder forever",
+            service.recordsLoadedFlow.value
+        )
+
+        service.clear()
+    }
+
+    @Test
+    fun handleInitialization_adapterReplacedWithoutReload_keepsRecordsLoaded() = runBlocking {
+        val source = mockk<TransactionSource>(relaxed = true)
+        every { wallet.transactionSource } returns source
+        val adaptersFlow = MutableStateFlow<Map<TransactionSource, ITransactionsAdapter>>(
+            mapOf(source to mockk(relaxed = true))
+        )
+        every { adapterManager.adaptersReadyFlow } returns adaptersFlow
+        // Only the first set() reports a pending reload; the repeated one has nothing to reload.
+        every { repository.set(any(), any(), any(), any(), any(), any()) } returnsMany listOf(true, false)
+
+        val initializations = AtomicInteger(0)
+        every { syncStateRepository.setTransactionWallets(any()) } answers {
+            initializations.incrementAndGet()
+            Unit
+        }
+
+        val service = TokenTransactionsService(
+            wallet = wallet,
+            rateRepository = rateRepository,
+            transactionSyncStateRepository = syncStateRepository,
+            transactionAdapterManager = adapterManager,
+            nftMetadataService = nftMetadataService,
+            spamManager = spamManager,
+        )
+        service.start()
+
+        waitUntil { repositoryItemsFlow.subscriptionCount.value >= 1 && initializations.get() == 1 }
+        repositoryItemsFlow.emit(RecordsBatch(listOf(mockRecord("a1", source))))
+        waitUntil { service.recordsLoadedFlow.value }
+
+        adaptersFlow.value = mapOf(source to mockk(relaxed = true))
+        waitUntil { initializations.get() == 2 }
+
+        assertTrue(
+            "Cached records were dropped back to the loading state without a reload to end it",
+            service.recordsLoadedFlow.value
         )
 
         service.clear()

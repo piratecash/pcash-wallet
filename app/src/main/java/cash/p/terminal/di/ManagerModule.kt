@@ -350,7 +350,9 @@ val managerModule = module {
     singleOf(::DeeplinkParser)
     singleOf(::CheckAmlIncomingTransactionUseCase)
     singleOf(::TransactionAdapterManager)
-    singleOf(::TransactionSyncStateRepository)
+    // Per-screen: the token screen owns its repository and clear()s it, so a shared instance
+    // would let one closing screen cancel the sync monitoring of another still open.
+    factoryOf(::TransactionSyncStateRepository)
     singleOf(::BalanceHiddenManager) bind IBalanceHiddenManager::class
     singleOf(::DeviceFlipDetector)
     singleOf(::BalanceHideOnFlipManager) { createdAtStart() }

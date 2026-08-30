@@ -873,6 +873,182 @@ class TransactionRecordRepositoryWalletSwitchTest {
         repository.clear()
     }
 
+    @Test
+    fun itemsFlow_loadCompletedBeforeSubscription_lateCollectorReceivesBatch() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+
+        val token = createToken()
+        val source = createSource("account-1", token.blockchain)
+        val wallet = walletFor(token, source)
+        val record = createBitcoinOutgoingRecord(
+            token = token,
+            source = source,
+            uid = "record-cached",
+            timestamp = 1_715_000_000L,
+            amount = BigDecimal("-0.00000563"),
+            toAddress = "some-address",
+        )
+
+        val repository = createRepository(adapterManager(source, simpleAdapter(listOf(record))), testDispatcher, this)
+
+        // The page finishes loading before anyone subscribes - the screen's collector is started
+        // by a separate coroutine and can lose that race on a warm local database.
+        repository.setAndReload(
+            transactionWallets = listOf(wallet),
+            wallet = wallet,
+            transactionType = FilterTransactionType.All,
+            blockchain = null,
+            contact = null,
+            searchQuery = null,
+        )
+        advanceUntilIdle()
+
+        val (emissions, collectorJob) = collectRecordUids(repository, testDispatcher)
+        advanceUntilIdle()
+
+        assertEquals(listOf(listOf("record-cached")), emissions.toList())
+
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
+    fun reload_oneSourceThrows_stillEmitsHealthySourceRecords() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+
+        val token = createToken()
+        val throwingSource = createSource("account-1", Blockchain(BlockchainType.Ethereum, "Ethereum", null))
+        val healthySource = createSource("account-1", token.blockchain)
+        val throwingWallet = TransactionWallet(token = null, source = throwingSource, badge = null)
+        val healthyWallet = walletFor(token, healthySource)
+        val record = createBitcoinOutgoingRecord(
+            token = token,
+            source = healthySource,
+            uid = "record-healthy",
+            timestamp = 1_715_000_000L,
+            amount = BigDecimal("-0.00000563"),
+            toAddress = "some-address",
+        )
+
+        val adapterManager = mockk<TransactionAdapterManager>(relaxed = true) {
+            every { getAdapter(throwingSource) } returns throwingAdapter()
+            every { getAdapter(healthySource) } returns simpleAdapter(listOf(record))
+        }
+        val repository = createRepository(adapterManager, testDispatcher, this)
+
+        val (emissions, collectorJob) = collectRecordUids(repository, testDispatcher)
+
+        repository.setAndReload(
+            transactionWallets = listOf(throwingWallet, healthyWallet),
+            wallet = null,
+            transactionType = FilterTransactionType.All,
+            blockchain = null,
+            contact = null,
+            searchQuery = null,
+        )
+        advanceUntilIdle()
+
+        assertEquals(listOf(listOf("record-healthy")), emissions.toList())
+
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
+    fun reload_adapterNeverReturns_emitsBatchAfterTimeout() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+
+        val token = createToken()
+        val source = createSource("account-1", token.blockchain)
+        val wallet = walletFor(token, source)
+
+        val stalledAdapter = mockk<ITransactionsAdapter>(relaxed = true) {
+            coEvery { getTransactions(any(), any(), any(), any(), any()) } coAnswers {
+                CompletableDeferred<List<TransactionRecord>>().await()
+            }
+            every { getTransactionRecordsFlow(any(), any(), any()) } returns emptyFlow()
+            every { getTransactionUrl(any()) } returns ""
+        }
+        val repository = createRepository(adapterManager(source, stalledAdapter), testDispatcher, this)
+
+        val (emissions, collectorJob) = collectRecordUids(repository, testDispatcher)
+
+        repository.setAndReload(
+            transactionWallets = listOf(wallet),
+            wallet = wallet,
+            transactionType = FilterTransactionType.All,
+            blockchain = null,
+            contact = null,
+            searchQuery = null,
+        )
+        advanceUntilIdle()
+
+        assertEquals(listOf(emptyList<String>()), emissions.toList())
+
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
+    fun loadNext_oneSourceTimedOut_pageIsNotTreatedAsFullyLoaded() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+
+        val token = createToken()
+        val healthySource = createSource("account-1", token.blockchain)
+        val stalledSource = createSource("account-1", Blockchain(BlockchainType.Ethereum, "Ethereum", null))
+        val healthyWallet = walletFor(token, healthySource)
+        val stalledWallet = TransactionWallet(token = null, source = stalledSource, badge = null)
+        val record = createBitcoinOutgoingRecord(
+            token = token,
+            source = healthySource,
+            uid = "record-healthy",
+            timestamp = 1_715_000_000L,
+            amount = BigDecimal("-0.00000563"),
+            toAddress = "some-address",
+        )
+
+        val stalledAdapter = mockk<ITransactionsAdapter>(relaxed = true) {
+            coEvery { getTransactions(any(), any(), any(), any(), any()) } coAnswers {
+                CompletableDeferred<List<TransactionRecord>>().await()
+            }
+            every { getTransactionRecordsFlow(any(), any(), any()) } returns emptyFlow()
+            every { getTransactionUrl(any()) } returns ""
+        }
+        val adapterManager = mockk<TransactionAdapterManager>(relaxed = true) {
+            every { getAdapter(healthySource) } returns simpleAdapter(listOf(record))
+            every { getAdapter(stalledSource) } returns stalledAdapter
+        }
+        val repository = createRepository(adapterManager, testDispatcher, this)
+
+        val (emissions, collectorJob) = collectRecordUids(repository, testDispatcher)
+
+        repository.setAndReload(
+            transactionWallets = listOf(healthyWallet, stalledWallet),
+            wallet = null,
+            transactionType = FilterTransactionType.All,
+            blockchain = null,
+            contact = null,
+            searchQuery = null,
+        )
+        advanceUntilIdle()
+
+        repository.loadNext()
+        advanceUntilIdle()
+
+        assertEquals(
+            "The silent source made the page look short, so loadNext() was refused as fully loaded",
+            2,
+            emissions.size
+        )
+
+        collectorJob.cancel()
+        repository.clear()
+    }
+
     private fun startKoinForTests() {
         startKoin {
             modules(module {

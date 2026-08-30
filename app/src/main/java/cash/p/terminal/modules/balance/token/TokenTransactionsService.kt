@@ -23,14 +23,19 @@ import cash.p.terminal.wallet.transaction.TransactionSource
 import io.horizontalsystems.core.entities.CurrencyValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.java.KoinJavaComponent.inject
 import java.util.concurrent.Executors
 
@@ -55,6 +60,7 @@ class TokenTransactionsService(
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
     private var lastHiddenOnlyLoadKey: String? = null
+    private var emptyBatchFallbackJob: Job? = null
 
     @Volatile
     private var serviceVersion = 0
@@ -106,15 +112,26 @@ class TokenTransactionsService(
             // Wait for this wallet's specific adapter to be ready rather than
             // relying on initializationFlow, which may fire before all adapters
             // are in the map due to partial-batch emissions from AdapterManager.
-            transactionAdapterManager.adaptersReadyFlow
-                .filter { it.containsKey(wallet.transactionSource) }
-                .first()
+            // Bounded: an adapter that never arrives (its creation failed) would otherwise
+            // leave the screen on the sync placeholder until the process is restarted.
+            val adapterFlow = transactionAdapterManager.adaptersReadyFlow
+                .map { it[wallet.transactionSource] }
+                .distinctUntilChanged()
+            withTimeoutOrNull(ADAPTER_READY_TIMEOUT_MS) { adapterFlow.filterNotNull().first() }
+            // Compared against the adapter the initialization ran with, not simply dropped: the
+            // adapter can arrive between the timeout above and this subscription.
+            var initializedAdapter = transactionAdapterManager.adaptersReadyFlow
+                .value[wallet.transactionSource]
             handleInitialization()
+            adapterFlow.collect { adapter ->
+                if (adapter == initializedAdapter) return@collect
+                initializedAdapter = adapter
+                handleInitialization()
+            }
         }
     }
 
     private fun handleInitialization() {
-        _recordsLoadedFlow.value = false
         lastHiddenOnlyLoadKey = null
         transactionSyncStateRepository.setTransactionWallets(listOf(transactionWallet))
         val loadedType = selectedTransactionType
@@ -138,7 +155,11 @@ class TokenTransactionsService(
             contact = null,
             searchQuery = searchQuery,
         )
-        if (willReload) transactionRecordRepository.reloadItems()
+        // Only a real reload may reopen the loading window: without a batch to close it again the
+        // screen would keep already loaded records behind the sync placeholder indefinitely.
+        if (!willReload) return
+        _recordsLoadedFlow.value = false
+        transactionRecordRepository.reloadItems()
     }
 
     fun setTransactionType(transactionType: FilterTransactionType) {
@@ -178,6 +199,18 @@ class TokenTransactionsService(
         _transactionItems.value = emptyList()
         if (initialized) {
             loadTransactions()
+        }
+    }
+
+    /**
+     * The swallowed batch may have been the wallet's real (empty) history, in which case nothing
+     * follows it: release the screen instead of blocking it on a page that never arrives.
+     */
+    private fun scheduleEmptyBatchFallback() {
+        emptyBatchFallbackJob?.cancel()
+        emptyBatchFallbackJob = coroutineScope.launch {
+            delay(EMPTY_BATCH_FALLBACK_MS)
+            _recordsLoadedFlow.value = true
         }
     }
 
@@ -270,8 +303,12 @@ class TokenTransactionsService(
         // instead of leaving the UI stuck on the scanning spinner.
         if (initialClearPending) {
             initialClearPending = false
-            if (transactionRecords.isEmpty() && !searchCompleted) return
+            if (transactionRecords.isEmpty() && !searchCompleted) {
+                scheduleEmptyBatchFallback()
+                return
+            }
         }
+        emptyBatchFallbackJob?.cancel()
 
         val capturedVersion = serviceVersion
         val nftUids = transactionRecords.nftUids
@@ -406,5 +443,10 @@ class TokenTransactionsService(
         transactionSyncStateRepository.clear()
         coroutineScope.cancel()
         executorService.shutdown()
+    }
+
+    private companion object {
+        const val ADAPTER_READY_TIMEOUT_MS = 3_000L
+        const val EMPTY_BATCH_FALLBACK_MS = 500L
     }
 }
