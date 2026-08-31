@@ -32,7 +32,8 @@ class PoisonAddressManager(
     )
 
     companion object {
-        private const val SIMILARITY_CHARS = 3
+        private const val PREFIX_SIMILARITY_CHARS = 2
+        private const val SUFFIX_SIMILARITY_CHARS = 3
         private const val WHITELIST_MIN_SEND_COUNT = 3
         private const val SIMILARITY_MIN_SEND_COUNT = 1
     }
@@ -208,13 +209,13 @@ class PoisonAddressManager(
         blockchainType: BlockchainType,
     ): Boolean {
         val prefixChars = prefixCharsToMatch(blockchainType)
-        if (normalizedAddress.length < prefixChars + SIMILARITY_CHARS) return false
+        if (normalizedAddress.length < prefixChars + SUFFIX_SIMILARITY_CHARS) return false
         val prefix = normalizedAddress.take(prefixChars)
-        val suffix = normalizedAddress.takeLast(SIMILARITY_CHARS)
+        val suffix = normalizedAddress.takeLast(SUFFIX_SIMILARITY_CHARS)
         return knownAddresses.any { known ->
             known != normalizedAddress &&
                     known.take(prefixChars) == prefix &&
-                    known.takeLast(SIMILARITY_CHARS) == suffix
+                    known.takeLast(SUFFIX_SIMILARITY_CHARS) == suffix
         }
     }
 
@@ -224,11 +225,11 @@ class PoisonAddressManager(
      * Some chains begin every address with a constant, auto-generated service prefix
      * (e.g. EVM `0x`, Tron `T`). Matching that prefix is effectively free for an attacker,
      * so it must not count as meaningful entropy. Instead of stripping the prefix we extend
-     * the comparison window by its length, keeping [SIMILARITY_CHARS] significant characters
-     * after it.
+     * the comparison window by its length, keeping [PREFIX_SIMILARITY_CHARS] significant
+     * characters after it.
      */
     private fun prefixCharsToMatch(blockchainType: BlockchainType): Int =
-        SIMILARITY_CHARS + constantPrefixLength(blockchainType)
+        PREFIX_SIMILARITY_CHARS + constantPrefixLength(blockchainType)
 
     /**
      * Length of the constant service prefix for chains in scope (EVM and account-based chains).
