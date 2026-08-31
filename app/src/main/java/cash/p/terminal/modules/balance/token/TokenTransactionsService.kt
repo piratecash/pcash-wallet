@@ -26,7 +26,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -122,12 +121,8 @@ class TokenTransactionsService(
             // are in the map due to partial-batch emissions from AdapterManager.
             // distinctUntilChanged runs before filterNotNull so the gap left by a removed adapter
             // is still observed: the same instance coming back is a restore, not a duplicate.
-            // The timeout bounds only how long a bare spinner is shown: an adapter that never
-            // arrives is reported as a failed read, never as an empty history.
-            val readyTimeout = launch {
-                delay(ADAPTER_READY_TIMEOUT_MS)
-                _recordsLoadFailedFlow.value = true
-            }
+            // Slow adapter creation is not a failed history read. The repository reports a real
+            // read failure after an adapter becomes available and a load is actually attempted.
             // Collected directly: no operator buffers the hand-off, so the collector is never
             // woken for an adapter the manager has already replaced. An adapter that still
             // disappears before the repository resolves it yields a failed regular read, not an
@@ -137,9 +132,6 @@ class TokenTransactionsService(
                 .distinctUntilChanged()
                 .filterNotNull()
                 .collect {
-                    // Join, not just cancel: a timeout already past its delay has no suspension
-                    // point left before its write, so only joining orders it before the load.
-                    readyTimeout.cancelAndJoin()
                     handleInitialization()
                 }
         }
@@ -509,7 +501,6 @@ class TokenTransactionsService(
     }
 
     private companion object {
-        const val ADAPTER_READY_TIMEOUT_MS = 3_000L
         const val EMPTY_BATCH_FALLBACK_MS = 500L
     }
 }

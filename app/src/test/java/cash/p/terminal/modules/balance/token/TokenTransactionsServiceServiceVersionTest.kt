@@ -407,19 +407,21 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
     }
 
     @Test
-    fun start_adapterNeverBecomesReady_marksLoadFailedWithoutInitializing() = runBlocking {
+    fun start_adapterRemainsUnavailable_keepsLoadingWithoutInitializing() = runBlocking {
         val initializations = AtomicInteger(0)
         every { syncStateRepository.setTransactionWallets(any()) } answers {
             initializations.incrementAndGet()
             Unit
         }
 
-        val service = startAndAwaitAdapterFailure()
+        val service = startWithoutAdapter()
+        Thread.sleep(LEGACY_ADAPTER_READY_TIMEOUT_WINDOW_MS)
 
-        assertTrue(
-            "A missing adapter was not reported as a failed read",
-            service.recordsLoadFailedFlow.value
+        assertFalse(
+            "Slow adapter initialization was reported as a failed history read",
+            service.recordsLoadFailedFlow.value,
         )
+        assertFalse(service.recordsLoadedFlow.value)
         assertEquals(
             "Initialization ran without an adapter and would answer \"no transactions\"",
             0,
@@ -430,7 +432,7 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
     }
 
     @Test
-    fun start_adapterArrivesLate_initializesOnceAndClearsLoadFailed() = runBlocking {
+    fun start_adapterArrivesAfterLegacyTimeout_initializesWithoutFailure() = runBlocking {
         val source = mockk<TransactionSource>(relaxed = true)
         val adapter = mockk<ITransactionsAdapter>(relaxed = true)
         every { wallet.transactionSource } returns source
@@ -448,19 +450,15 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
         val service = createService()
         service.start()
 
-        waitUntil(ADAPTER_WAIT_MS) { service.recordsLoadFailedFlow.value }
+        waitUntil { adaptersFlow.subscriptionCount.value >= 1 }
+        Thread.sleep(LEGACY_ADAPTER_READY_TIMEOUT_WINDOW_MS)
+        assertFalse(service.recordsLoadFailedFlow.value)
         assertEquals(0, initializations.get())
 
         adaptersFlow.value = mapOf(source to adapter)
 
-        // The flag clears in loadTransactions(), which runs after the wallets are set:
-        // the counter alone is not a settled state.
         waitUntil { initializations.get() == 1 && !service.recordsLoadFailedFlow.value }
         assertEquals(1, initializations.get())
-        assertFalse(
-            "The late adapter started a real read but the failure stayed raised",
-            service.recordsLoadFailedFlow.value
-        )
 
         service.clear()
     }
@@ -746,7 +744,7 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
 
     @Test
     fun reload_beforeInitialization_requestsAdapterRefreshInsteadOfRepositoryRead() = runBlocking {
-        val service = startAndAwaitAdapterFailure()
+        val service = startWithoutAdapter()
 
         service.reload()
 
@@ -802,29 +800,25 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
         }
 
     @Test
-    fun setTransactionType_beforeInitialization_keepsLoadFailedRaised() = runBlocking {
-        val service = startAndAwaitAdapterFailure()
+    fun setTransactionType_beforeInitialization_keepsLoading() = runBlocking {
+        val service = startWithoutAdapter()
 
         service.setTransactionType(FilterTransactionType.Incoming)
 
-        assertTrue(
-            "The filter switch cleared a failure that no new read will ever refute",
-            service.recordsLoadFailedFlow.value
-        )
+        assertFalse(service.recordsLoadFailedFlow.value)
+        assertFalse(service.recordsLoadedFlow.value)
 
         service.clear()
     }
 
     @Test
-    fun setSearchQuery_beforeInitialization_keepsLoadFailedRaised() = runBlocking {
-        val service = startAndAwaitAdapterFailure()
+    fun setSearchQuery_beforeInitialization_keepsLoading() = runBlocking {
+        val service = startWithoutAdapter()
 
         service.setSearchQuery("query")
 
-        assertTrue(
-            "The search cleared a failure that no new read will ever refute",
-            service.recordsLoadFailedFlow.value
-        )
+        assertFalse(service.recordsLoadFailedFlow.value)
+        assertFalse(service.recordsLoadedFlow.value)
 
         service.clear()
     }
@@ -845,19 +839,22 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
         return service
     }
 
-    /** Starts a service whose transaction adapter never appears and waits for the failed read. */
-    private fun startAndAwaitAdapterFailure(): TokenTransactionsService {
+    private fun startWithoutAdapter(): TokenTransactionsService {
         every { wallet.transactionSource } returns mockk<TransactionSource>(relaxed = true)
-        every { adapterManager.adaptersReadyFlow } returns MutableStateFlow(emptyMap())
+        val adaptersFlow = MutableStateFlow<Map<TransactionSource, ITransactionsAdapter>>(emptyMap())
+        every { adapterManager.adaptersReadyFlow } returns adaptersFlow
         val service = createService()
         service.start()
-        waitUntil(ADAPTER_WAIT_MS) { service.recordsLoadFailedFlow.value }
+        waitUntil { adaptersFlow.subscriptionCount.value >= 1 }
         return service
     }
 
     private companion object {
-        /** Outlives the service's own adapter-ready timeout. */
+        /** Wait budget for asynchronous service operations. */
         const val ADAPTER_WAIT_MS = 10_000L
+
+        /** Long enough to cross the removed wall-clock failure boundary. */
+        const val LEGACY_ADAPTER_READY_TIMEOUT_WINDOW_MS = 3_200L
 
         /** Outlives the service's empty-batch fallback delay. */
         const val FALLBACK_WINDOW_MS = 1_000L
