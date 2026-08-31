@@ -46,6 +46,11 @@ class TokenTransactionsService(
     private val nftMetadataService: NftMetadataService,
     private val spamManager: SpamManager,
 ) : Clearable {
+    private enum class RecordsLoadFailure {
+        AdapterUnavailable,
+        RepositoryRead,
+    }
+
     private val transactionRecordRepository: ITransactionRecordRepository by inject(
         ITransactionRecordRepository::class.java
     )
@@ -56,6 +61,8 @@ class TokenTransactionsService(
     val recordsLoadedFlow: StateFlow<Boolean> = _recordsLoadedFlow.asStateFlow()
     private val _recordsLoadFailedFlow = MutableStateFlow(false)
     val recordsLoadFailedFlow: StateFlow<Boolean> = _recordsLoadFailedFlow.asStateFlow()
+    private val recordsLoadFailureLock = Any()
+    private var recordsLoadFailure: RecordsLoadFailure? = null
     val syncingFlow: StateFlow<Boolean> = transactionSyncStateRepository.syncingFlow
     private val _searchScanStateFlow = MutableStateFlow(SearchScanState.Idle)
     val searchScanStateFlow: StateFlow<SearchScanState> = _searchScanStateFlow.asStateFlow()
@@ -116,6 +123,14 @@ class TokenTransactionsService(
             }
         }
         coroutineScope.launch {
+            // Completion is emitted only after TransactionAdapterManager has published its final
+            // adapter map. Until then a missing adapter is merely slow, not a failed history read.
+            transactionAdapterManager.initializationFlow
+                .collect { initialized ->
+                    updateAdapterUnavailableFailure(initialized)
+                }
+        }
+        coroutineScope.launch {
             // Wait for this wallet's specific adapter to be ready rather than
             // relying on initializationFlow, which may fire before all adapters
             // are in the map due to partial-batch emissions from AdapterManager.
@@ -132,6 +147,7 @@ class TokenTransactionsService(
                 .distinctUntilChanged()
                 .filterNotNull()
                 .collect {
+                    clearAdapterUnavailableFailure()
                     handleInitialization()
                 }
         }
@@ -177,12 +193,35 @@ class TokenTransactionsService(
     /** A real read is starting: the previous read's failure no longer describes the screen. */
     private fun openLoadingWindow() {
         dropToLoading()
-        _recordsLoadFailedFlow.value = false
+        setRecordsLoadFailure(null)
     }
 
     private fun markRecordsLoaded() {
         _recordsLoadedFlow.value = true
-        _recordsLoadFailedFlow.value = false
+        setRecordsLoadFailure(null)
+    }
+
+    private fun setRecordsLoadFailure(failure: RecordsLoadFailure?) =
+        synchronized(recordsLoadFailureLock) {
+            recordsLoadFailure = failure
+            _recordsLoadFailedFlow.value = failure != null
+        }
+
+    private fun updateAdapterUnavailableFailure(initialized: Boolean) =
+        synchronized(recordsLoadFailureLock) {
+            val adapterUnavailable = initialized &&
+                transactionAdapterManager.getAdapter(wallet.transactionSource) == null
+            if (recordsLoadFailure != RecordsLoadFailure.RepositoryRead) {
+                recordsLoadFailure = RecordsLoadFailure.AdapterUnavailable.takeIf { adapterUnavailable }
+                _recordsLoadFailedFlow.value = adapterUnavailable
+            }
+        }
+
+    private fun clearAdapterUnavailableFailure() = synchronized(recordsLoadFailureLock) {
+        if (recordsLoadFailure == RecordsLoadFailure.AdapterUnavailable) {
+            recordsLoadFailure = null
+            _recordsLoadFailedFlow.value = false
+        }
     }
 
     fun setTransactionType(transactionType: FilterTransactionType) {
@@ -324,7 +363,7 @@ class TokenTransactionsService(
         if (loadFailed) {
             initialClearPending = false
             emptyBatchFallbackJob?.cancel()
-            _recordsLoadFailedFlow.value = true
+            setRecordsLoadFailure(RecordsLoadFailure.RepositoryRead)
             return
         }
         // The repository emits a synthetic empty list once, when wallets are first set, to clear the

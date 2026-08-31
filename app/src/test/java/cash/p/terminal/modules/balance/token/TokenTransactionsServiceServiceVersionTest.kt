@@ -66,6 +66,7 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
     private val koinAdapterManager = mockk<IAdapterManager>(relaxed = true)
 
     private lateinit var repositoryItemsFlow: MutableSharedFlow<RecordsBatch>
+    private lateinit var initializationFlow: MutableStateFlow<Boolean>
 
     @get:Rule
     val koinRule = KoinTestRule.create {
@@ -80,6 +81,7 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
     @Before
     fun setUp() {
         repositoryItemsFlow = MutableSharedFlow(replay = 0, extraBufferCapacity = 8)
+        initializationFlow = MutableStateFlow(false)
         every { repository.itemsFlow } returns repositoryItemsFlow
         every { rateRepository.dataExpiredFlow } returns MutableSharedFlow()
         every { rateRepository.historicalRateFlow } returns MutableSharedFlow()
@@ -88,6 +90,7 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
         every { syncStateRepository.syncingFlow } returns MutableStateFlow(false)
         // emptyMap never contains wallet.transactionSource -> handleInitialization() never runs
         every { adapterManager.adaptersReadyFlow } returns MutableStateFlow(emptyMap())
+        every { adapterManager.initializationFlow } returns initializationFlow
         every { nftMetadataService.assetsBriefMetadataFlow } returns MutableStateFlow(emptyMap())
         every { spamManager.shouldHide(any()) } returns false
     }
@@ -432,36 +435,16 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
     }
 
     @Test
-    fun start_adapterArrivesAfterLegacyTimeout_initializesWithoutFailure() = runBlocking {
-        val source = mockk<TransactionSource>(relaxed = true)
-        val adapter = mockk<ITransactionsAdapter>(relaxed = true)
-        every { wallet.transactionSource } returns source
-        every { repository.set(any(), any(), any(), any(), any(), any()) } returns true
+    fun start_adapterArrivesAfterLegacyTimeoutWhileInitializationInProgress_initializesWithoutFailure() =
+        adapterInitializationScenario().verifyLateAdapterWaitsWithoutFailure()
 
-        val adaptersFlow = MutableStateFlow<Map<TransactionSource, ITransactionsAdapter>>(emptyMap())
-        every { adapterManager.adaptersReadyFlow } returns adaptersFlow
+    @Test
+    fun start_initializationCompletesWithoutWalletAdapter_marksLoadFailedAndRetryRefreshesAdapter() =
+        adapterInitializationScenario().verifyMissingFinalAdapterFailsAndRetries()
 
-        val initializations = AtomicInteger(0)
-        every { syncStateRepository.setTransactionWallets(any()) } answers {
-            initializations.incrementAndGet()
-            Unit
-        }
-
-        val service = createService()
-        service.start()
-
-        waitUntil { adaptersFlow.subscriptionCount.value >= 1 }
-        Thread.sleep(LEGACY_ADAPTER_READY_TIMEOUT_WINDOW_MS)
-        assertFalse(service.recordsLoadFailedFlow.value)
-        assertEquals(0, initializations.get())
-
-        adaptersFlow.value = mapOf(source to adapter)
-
-        waitUntil { initializations.get() == 1 && !service.recordsLoadFailedFlow.value }
-        assertEquals(1, initializations.get())
-
-        service.clear()
-    }
+    @Test
+    fun start_adapterAppearsAfterInitializationFailure_clearsFailureAndLoadsHistory() =
+        adapterInitializationScenario().verifyLateAdapterRecoversHistory()
 
     @Test
     fun start_adapterRemoved_doesNotInitializeWithoutAdapter() = runBlocking {
@@ -832,6 +815,17 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
         spamManager = spamManager,
     )
 
+    private fun adapterInitializationScenario() = AdapterInitializationScenario(
+        repository = repository,
+        syncStateRepository = syncStateRepository,
+        adapterManager = adapterManager,
+        wallet = wallet,
+        koinAdapterManager = koinAdapterManager,
+        initializationFlow = initializationFlow,
+        repositoryItemsFlow = repositoryItemsFlow,
+        createService = ::createService,
+    )
+
     private fun startAndAwaitSubscription(): TokenTransactionsService {
         val service = createService()
         service.start()
@@ -845,23 +839,124 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
         every { adapterManager.adaptersReadyFlow } returns adaptersFlow
         val service = createService()
         service.start()
-        waitUntil { adaptersFlow.subscriptionCount.value >= 1 }
+        waitUntil {
+            adaptersFlow.subscriptionCount.value >= 1 && initializationFlow.subscriptionCount.value >= 1
+        }
         return service
     }
 
-    private companion object {
-        /** Wait budget for asynchronous service operations. */
-        const val ADAPTER_WAIT_MS = 10_000L
+}
 
-        /** Long enough to cross the removed wall-clock failure boundary. */
-        const val LEGACY_ADAPTER_READY_TIMEOUT_WINDOW_MS = 3_200L
+/** Wait budget for asynchronous service operations. */
+private const val ADAPTER_WAIT_MS = 10_000L
 
-        /** Outlives the service's empty-batch fallback delay. */
-        const val FALLBACK_WINDOW_MS = 1_000L
+/** Long enough to cross the removed wall-clock failure boundary. */
+private const val LEGACY_ADAPTER_READY_TIMEOUT_WINDOW_MS = 3_200L
 
-        /** Long enough for the IO collector to observe an emission that has no side effect. */
-        const val SETTLE_MS = 200L
+/** Outlives the service's empty-batch fallback delay. */
+private const val FALLBACK_WINDOW_MS = 1_000L
+
+/** Long enough for the IO collector to observe an emission that has no side effect. */
+private const val SETTLE_MS = 200L
+
+private class AdapterInitializationScenario(
+    val repository: ITransactionRecordRepository,
+    val syncStateRepository: TransactionSyncStateRepository,
+    val adapterManager: TransactionAdapterManager,
+    val wallet: Wallet,
+    val koinAdapterManager: IAdapterManager,
+    val initializationFlow: MutableStateFlow<Boolean>,
+    val repositoryItemsFlow: MutableSharedFlow<RecordsBatch>,
+    val createService: () -> TokenTransactionsService,
+)
+
+private fun AdapterInitializationScenario.verifyLateAdapterWaitsWithoutFailure() = runBlocking {
+    val source = mockk<TransactionSource>(relaxed = true)
+    val adapter = mockk<ITransactionsAdapter>(relaxed = true)
+    every { wallet.transactionSource } returns source
+    every { repository.set(any(), any(), any(), any(), any(), any()) } returns true
+    val adaptersFlow = MutableStateFlow<Map<TransactionSource, ITransactionsAdapter>>(emptyMap())
+    every { adapterManager.adaptersReadyFlow } returns adaptersFlow
+    every { adapterManager.getAdapter(source) } answers { adaptersFlow.value[source] }
+    val initializations = AtomicInteger(0)
+    every { syncStateRepository.setTransactionWallets(any()) } answers {
+        initializations.incrementAndGet()
+        Unit
     }
+
+    val service = createService()
+    service.start()
+    waitUntil {
+        adaptersFlow.subscriptionCount.value >= 1 && initializationFlow.subscriptionCount.value >= 1
+    }
+    Thread.sleep(LEGACY_ADAPTER_READY_TIMEOUT_WINDOW_MS)
+    assertFalse(service.recordsLoadFailedFlow.value)
+    assertEquals(0, initializations.get())
+
+    adaptersFlow.value = mapOf(source to adapter)
+
+    waitUntil { initializations.get() == 1 && !service.recordsLoadFailedFlow.value }
+    assertEquals(1, initializations.get())
+    verify(timeout = ADAPTER_WAIT_MS, exactly = 1) { repository.reloadItems() }
+    service.clear()
+}
+
+private fun AdapterInitializationScenario.verifyMissingFinalAdapterFailsAndRetries() = runBlocking {
+    val source = mockk<TransactionSource>(relaxed = true)
+    every { wallet.transactionSource } returns source
+    val adaptersFlow = MutableStateFlow<Map<TransactionSource, ITransactionsAdapter>>(emptyMap())
+    every { adapterManager.adaptersReadyFlow } returns adaptersFlow
+    every { adapterManager.getAdapter(source) } answers { adaptersFlow.value[source] }
+
+    val service = createService()
+    service.start()
+    waitUntil {
+        adaptersFlow.subscriptionCount.value >= 1 && initializationFlow.subscriptionCount.value >= 1
+    }
+    initializationFlow.value = true
+    waitUntil { service.recordsLoadFailedFlow.value }
+    assertFalse(service.recordsLoadedFlow.value)
+    verify(exactly = 0) { syncStateRepository.setTransactionWallets(any()) }
+    verify(exactly = 0) { repository.reloadItems() }
+
+    service.reload()
+
+    verify(exactly = 1) { koinAdapterManager.refreshAdapters(listOf(wallet)) }
+    verify(exactly = 0) { repository.reload() }
+    initializationFlow.value = false
+    waitUntil { !service.recordsLoadFailedFlow.value }
+    service.clear()
+}
+
+private fun AdapterInitializationScenario.verifyLateAdapterRecoversHistory() = runBlocking {
+    val source = mockk<TransactionSource>(relaxed = true)
+    val adapter = mockk<ITransactionsAdapter>(relaxed = true)
+    val record = mockRecord("r1", source)
+    every { wallet.transactionSource } returns source
+    every { repository.set(any(), any(), any(), any(), any(), any()) } returns true
+    val adaptersFlow = MutableStateFlow<Map<TransactionSource, ITransactionsAdapter>>(emptyMap())
+    every { adapterManager.adaptersReadyFlow } returns adaptersFlow
+    every { adapterManager.getAdapter(source) } answers { adaptersFlow.value[source] }
+
+    val service = createService()
+    service.start()
+    waitUntil {
+        repositoryItemsFlow.subscriptionCount.value >= 1 &&
+            adaptersFlow.subscriptionCount.value >= 1 &&
+            initializationFlow.subscriptionCount.value >= 1
+    }
+    initializationFlow.value = true
+    waitUntil { service.recordsLoadFailedFlow.value }
+    adaptersFlow.value = mapOf(source to adapter)
+
+    verify(timeout = ADAPTER_WAIT_MS, exactly = 1) { repository.reloadItems() }
+    waitUntil { !service.recordsLoadFailedFlow.value }
+    repositoryItemsFlow.emit(RecordsBatch(listOf(record)))
+    waitUntil {
+        service.recordsLoadedFlow.value && service.transactionItemsFlow.value.any { it.record.uid == "r1" }
+    }
+    assertFalse(service.recordsLoadFailedFlow.value)
+    service.clear()
 }
 
 /** Reports every collect, so a subscription that is released and retaken becomes observable. */
