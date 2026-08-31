@@ -137,7 +137,7 @@ class OffChainSwapProviderSupport(
                     Address(depositAddress)
                 )
 
-                SendTransactionData.Evm(transactionData, null, amount = amountIn)
+                SendTransactionData.Evm(transactionData, null, amount = amountIn, recipientAddress = depositAddress)
             }
 
             tokenIn.blockchainType == BlockchainType.Tron -> {
