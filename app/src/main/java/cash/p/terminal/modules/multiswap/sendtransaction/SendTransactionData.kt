@@ -10,11 +10,14 @@ import java.math.BigDecimal
 import java.math.BigInteger
 
 sealed class SendTransactionData {
+    open val recipientAddress: String? = null
+
     data class Evm(
         val transactionData: TransactionData,
         val gasLimit: Long?,
         val feesMap: Map<FeeType, CoinValue> = mapOf(),
-        val amount: BigDecimal? = null
+        val amount: BigDecimal? = null,
+        override val recipientAddress: String? = null,
     ) : SendTransactionData()
 
     data class Btc(
@@ -26,13 +29,17 @@ sealed class SendTransactionData {
         val changeToFirstInput: Boolean,
         val utxoFilters: UtxoFilters,
         val feesMap: Map<FeeType, CoinValue>
-    ) : SendTransactionData()
+    ) : SendTransactionData() {
+        override val recipientAddress: String = address
+    }
 
     sealed class Tron : SendTransactionData() {
         data class Regular(
             val address: String,
             val amount: BigDecimal
-        ) : Tron()
+        ) : Tron() {
+            override val recipientAddress: String = address
+        }
 
         data class WithContract(val contract: Contract) : Tron()
         data class WithCreateTransaction(val transaction: CreatedTransaction) : Tron()
@@ -42,7 +49,9 @@ sealed class SendTransactionData {
         data class Regular(
             val address: String,
             val amount: BigDecimal
-        ) : Solana()
+        ) : Solana() {
+            override val recipientAddress: String = address
+        }
 
         data class WithRawTransaction(
             val rawTransactionStr: String,
@@ -56,7 +65,9 @@ sealed class SendTransactionData {
             val address: String,
             val memo: String,
             val amount: BigDecimal
-        ) : Stellar()
+        ) : Stellar() {
+            override val recipientAddress: String = address
+        }
 
         data class WithTransactionEnvelope(val transactionEnvelope: String) : Stellar()
     }
@@ -65,7 +76,9 @@ sealed class SendTransactionData {
         val address: String,
         val amount: BigDecimal,
         val memo: String?
-    ) : SendTransactionData()
+    ) : SendTransactionData() {
+        override val recipientAddress: String = address
+    }
 
     data class TonSwap(
         val forwardGas: BigInteger,
@@ -82,7 +95,9 @@ sealed class SendTransactionData {
     class Monero(
         val address: String,
         val amount: BigDecimal
-    ) : SendTransactionData()
+    ) : SendTransactionData() {
+        override val recipientAddress: String = address
+    }
 
     object Unsupported : SendTransactionData()
 }

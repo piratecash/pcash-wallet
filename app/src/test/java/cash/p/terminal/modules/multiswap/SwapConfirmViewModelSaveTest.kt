@@ -6,6 +6,7 @@ import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.MoneroSpendReadiness
 import cash.p.terminal.core.ServiceStateFlow
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.managers.PoisonAddressManager
 import cash.p.terminal.core.ethereum.CautionViewItem
 import cash.p.terminal.core.storage.PendingMultiSwapStorage
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
@@ -29,8 +30,10 @@ import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.Currency
+import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.FullTransaction
 import io.horizontalsystems.ethereumkit.models.Transaction
+import io.horizontalsystems.ethereumkit.models.TransactionData
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -60,6 +63,7 @@ import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import java.math.BigDecimal
+import java.math.BigInteger
 import kotlin.coroutines.cancellation.CancellationException
 import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.modules.send.mockConnectivityManager
@@ -82,6 +86,7 @@ class SwapConfirmViewModelSaveTest {
     private val pendingMultiSwapStorage = mockk<PendingMultiSwapStorage>(relaxed = true)
     private val localStorage = mockk<ILocalStorage>(relaxed = true)
     private val swapProviderTransactionsStorage = mockk<SwapProviderTransactionsStorage>(relaxed = true)
+    private val poisonAddressManager = mockk<PoisonAddressManager>(relaxed = true)
 
     private val previewWallet = WalletFactory.previewWallet()
     private val token: Token = previewWallet.token
@@ -127,6 +132,7 @@ class SwapConfirmViewModelSaveTest {
                 single<ILocalStorage> { localStorage }
                 single<PendingMultiSwapStorage> { pendingMultiSwapStorage }
                 single<SwapProviderTransactionsStorage> { swapProviderTransactionsStorage }
+                single<PoisonAddressManager> { poisonAddressManager }
                 single<MarketKitWrapper> { mockk(relaxed = true) }
                 single<IBalanceHiddenManager> {
                     mockk(relaxed = true) {
@@ -148,7 +154,10 @@ class SwapConfirmViewModelSaveTest {
     }
 
     /** Stubs `fetchFinalQuote` to return a real quote carrying [transaction]. */
-    private fun <T : IMultiSwapProvider> T.stubFetchFinalQuote(transaction: SwapProviderTransaction): T {
+    private fun <T : IMultiSwapProvider> T.stubFetchFinalQuote(
+        transaction: SwapProviderTransaction,
+        sendTransactionData: SendTransactionData = SendTransactionData.Unsupported,
+    ): T {
         every { mevProtectionAvailable } returns false
         coEvery { fetchFinalQuote(any(), any(), any(), any(), any(), any()) } returns SwapFinalQuoteThorChain(
             tokenIn = token,
@@ -156,13 +165,47 @@ class SwapConfirmViewModelSaveTest {
             amountIn = BigDecimal.ONE,
             amountOut = BigDecimal.ONE,
             amountOutMin = BigDecimal.ONE,
-            sendTransactionData = SendTransactionData.Unsupported,
+            sendTransactionData = sendTransactionData,
             priceImpact = null,
             fields = emptyList(),
             cautions = mutableListOf(),
             swapProviderTransaction = transaction,
         )
         return this
+    }
+
+    private fun createSuccessfulSendService(): ISendTransactionService<Nothing> =
+        mockk(relaxed = true) {
+            every { hasSettings() } returns false
+            every { mevProtectionAvailable } returns false
+            every { stateFlow } returns ServiceStateFlow(MutableStateFlow(sendTransactionServiceState))
+            every { sendTransactionSettingsFlow } returns MutableStateFlow(SendTransactionSettings.Common)
+            coEvery { send(any()) } returns SendTransactionResult.Btc("uid", "hash")
+        }
+
+    private fun evmTransactionData(
+        to: String,
+        recipientAddress: String? = null,
+    ) = SendTransactionData.Evm(
+        transactionData = TransactionData(Address(to), BigInteger.ZERO, byteArrayOf()),
+        gasLimit = null,
+        recipientAddress = recipientAddress,
+    )
+
+    private fun executeSwap(
+        provider: IMultiSwapProvider,
+        sendTransactionService: ISendTransactionService<*> = createSuccessfulSendService(),
+    ) {
+        val viewModel = createViewModel(provider, serviceOverride = sendTransactionService)
+        dispatcher.scheduler.advanceUntilIdle()
+        viewModel.onClickSendWithWarningCheck()
+        dispatcher.scheduler.advanceUntilIdle()
+    }
+
+    private fun verifyNoKnownAddressSaved() {
+        verify(exactly = 0) {
+            poisonAddressManager.saveKnownAddress(any(), any(), any())
+        }
     }
 
     private fun createViewModel(
@@ -423,6 +466,67 @@ class SwapConfirmViewModelSaveTest {
     )
 
     private interface ExactOutProvider : IMultiSwapProvider, IExactOutSwapProvider
+
+    @Test
+    fun executeSwap_offChainEvmTransfer_savesDepositAddressNotTokenContract() = runTest(dispatcher) {
+        val depositAddress = "0x1111111111111111111111111111111111111111"
+        val tokenContract = "0x2222222222222222222222222222222222222222"
+        val provider = mockk<OffChainSwapProvider>(relaxed = true).stubFetchFinalQuote(
+            testTransaction,
+            evmTransactionData(tokenContract, depositAddress),
+        )
+        executeSwap(provider)
+
+        verify(exactly = 1) {
+            poisonAddressManager.saveKnownAddress(
+                depositAddress,
+                token.blockchainType,
+                previewWallet.account.id,
+            )
+        }
+        verify(exactly = 0) {
+            poisonAddressManager.saveKnownAddress(tokenContract, any(), any())
+        }
+    }
+
+    @Test
+    fun executeSwap_offChainRawEvmTransaction_doesNotSaveContractAddress() = runTest(dispatcher) {
+        val contractAddress = "0x3333333333333333333333333333333333333333"
+        val provider = mockk<OffChainSwapProvider>(relaxed = true).stubFetchFinalQuote(
+            testTransaction,
+            evmTransactionData(contractAddress),
+        )
+        executeSwap(provider)
+
+        verifyNoKnownAddressSaved()
+    }
+
+    @Test
+    fun executeSwap_onChainProvider_doesNotSaveRecipient() = runTest(dispatcher) {
+        val routerAddress = "0x4444444444444444444444444444444444444444"
+        val provider = mockk<IMultiSwapProvider>(relaxed = true).stubFetchFinalQuote(
+            testTransaction,
+            evmTransactionData(routerAddress, routerAddress),
+        )
+        executeSwap(provider)
+
+        verifyNoKnownAddressSaved()
+    }
+
+    @Test
+    fun executeSwap_failedOffChainSend_doesNotSaveRecipient() = runTest(dispatcher) {
+        val depositAddress = "0x5555555555555555555555555555555555555555"
+        val provider = mockk<OffChainSwapProvider>(relaxed = true).stubFetchFinalQuote(
+            testTransaction,
+            evmTransactionData(depositAddress, depositAddress),
+        )
+        val sendService = createSuccessfulSendService().also {
+            coEvery { it.send(any()) } throws IllegalStateException("send failed")
+        }
+        executeSwap(provider, sendService)
+
+        verifyNoKnownAddressSaved()
+    }
 
     @Test
     fun onTransactionCompleted_btcResultOnChainProvider_savesUidAndCanonicalHashSeparately() = runTest(dispatcher) {
