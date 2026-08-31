@@ -34,9 +34,12 @@ interface ITransactionRecordRepository : Clearable {
  * One emission of the records flow.
  * @param searchCompleted true only on the terminal emission of a search scan.
  * @param searchExhausted true when the scan exhausted the source (a further loadNext would be a no-op).
+ * @param loadFailed true when the batch is empty only because a source did not answer - an empty
+ *   batch with this flag unset is a trustworthy "no transactions".
  */
 data class RecordsBatch(
     val records: List<TransactionRecord>,
     val searchCompleted: Boolean = false,
     val searchExhausted: Boolean = false,
+    val loadFailed: Boolean = false,
 )

@@ -153,6 +153,7 @@ class TokenBalanceViewModelTest : KoinTest {
     private lateinit var amlEnabledStateFlow: MutableStateFlow<Boolean>
     private lateinit var syncingFlow: MutableStateFlow<Boolean>
     private lateinit var recordsLoadedFlow: MutableStateFlow<Boolean>
+    private lateinit var recordsLoadFailedFlow: MutableStateFlow<Boolean>
     private lateinit var searchScanStateFlow: MutableStateFlow<SearchScanState>
     private lateinit var nativeBalanceUpdatedFlow: MutableSharedFlow<Unit>
     private var nativeBalanceData = BalanceData(available = BigDecimal.ZERO)
@@ -207,8 +208,10 @@ class TokenBalanceViewModelTest : KoinTest {
         every { transactionsService.transactionItemsFlow } returns transactionItemsFlow
         syncingFlow = MutableStateFlow(true)
         recordsLoadedFlow = MutableStateFlow(false)
+        recordsLoadFailedFlow = MutableStateFlow(false)
         every { transactionsService.syncingFlow } returns syncingFlow
         every { transactionsService.recordsLoadedFlow } returns recordsLoadedFlow
+        every { transactionsService.recordsLoadFailedFlow } returns recordsLoadFailedFlow
         searchScanStateFlow = MutableStateFlow(SearchScanState.Idle)
         every { transactionsService.searchScanStateFlow } returns searchScanStateFlow
         every { transactionsService.setSearchQuery(any()) } returns Unit
@@ -387,6 +390,72 @@ class TokenBalanceViewModelTest : KoinTest {
         advanceUntilIdle()
 
         assertEquals(false, viewModel.uiState.syncing)
+        assertEquals(1, viewModel.uiState.transactions?.values?.flatten()?.size)
+    }
+
+    @Test
+    fun recordsLoadFailedFlow_emitsTrue_stopsSyncingAndFlagsFailure() = runTest(dispatcher) {
+        syncingFlow.value = false
+        recordsLoadedFlow.value = false
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        assertEquals(true, viewModel.uiState.syncing)
+
+        recordsLoadFailedFlow.value = true
+        advanceUntilIdle()
+
+        assertEquals(false, viewModel.uiState.syncing)
+        assertEquals(true, viewModel.uiState.transactionsLoadFailed)
+    }
+
+    @Test
+    fun refresh_afterFailedLoad_reloadsTransactions() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        recordsLoadFailedFlow.value = true
+        advanceUntilIdle()
+
+        viewModel.refresh()
+        advanceUntilIdle()
+
+        verify(exactly = 1) { transactionsService.reload() }
+    }
+
+    @Test
+    fun refresh_afterSuccessfulLoad_doesNotReloadTransactions() = runTest(dispatcher) {
+        syncingFlow.value = false
+        recordsLoadedFlow.value = true
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.refresh()
+        advanceUntilIdle()
+
+        verify(exactly = 0) { transactionsService.reload() }
+    }
+
+    @Test
+    fun recordsLoaded_reopensAfterTransactionsKnown_keepsTransactionsVisible() = runTest(dispatcher) {
+        syncingFlow.value = false
+        recordsLoadedFlow.value = true
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        transactionItemsFlow.value = listOf(createTransactionItem("tx-1"))
+        advanceUntilIdle()
+
+        assertEquals(1, viewModel.uiState.transactions?.values?.flatten()?.size)
+
+        recordsLoadedFlow.value = false
+        syncingFlow.value = true
+        advanceUntilIdle()
+
+        assertEquals(true, viewModel.uiState.syncing)
         assertEquals(1, viewModel.uiState.transactions?.values?.flatten()?.size)
     }
 

@@ -957,7 +957,7 @@ class TransactionRecordRepositoryWalletSwitchTest {
     }
 
     @Test
-    fun reload_adapterNeverReturns_emitsBatchAfterTimeout() = runTest {
+    fun reload_adapterNeverReturns_emitsFailedBatchAfterTimeout() = runTest {
         val testDispatcher = UnconfinedTestDispatcher(testScheduler)
         startKoinForTests()
 
@@ -974,7 +974,7 @@ class TransactionRecordRepositoryWalletSwitchTest {
         }
         val repository = createRepository(adapterManager(source, stalledAdapter), testDispatcher, this)
 
-        val (emissions, collectorJob) = collectRecordUids(repository, testDispatcher)
+        val (emissions, collectorJob) = collectBatches(repository, testDispatcher)
 
         repository.setAndReload(
             transactionWallets = listOf(wallet),
@@ -986,7 +986,164 @@ class TransactionRecordRepositoryWalletSwitchTest {
         )
         advanceUntilIdle()
 
-        assertEquals(listOf(emptyList<String>()), emissions.toList())
+        assertEquals(1, emissions.size)
+        assertEquals(emptyList<TransactionRecord>(), emissions.single().records)
+        assertTrue(
+            "an empty batch from an unanswered source must be marked as a failed read",
+            emissions.single().loadFailed
+        )
+
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
+    fun reload_adapterTimesOutWithRecordsFromAnotherSource_batchIsNotMarkedFailed() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+
+        val token = createToken()
+        val healthySource = createSource("account-1", token.blockchain)
+        val stalledSource = createSource("account-1", Blockchain(BlockchainType.Ethereum, "Ethereum", null))
+        val healthyWallet = walletFor(token, healthySource)
+        val stalledWallet = TransactionWallet(token = null, source = stalledSource, badge = null)
+        val record = createBitcoinOutgoingRecord(
+            token = token,
+            source = healthySource,
+            uid = "record-healthy",
+            timestamp = 1_715_000_000L,
+            amount = BigDecimal("-0.00000563"),
+            toAddress = "some-address",
+        )
+
+        val stalledAdapter = mockk<ITransactionsAdapter>(relaxed = true) {
+            coEvery { getTransactions(any(), any(), any(), any(), any()) } coAnswers {
+                CompletableDeferred<List<TransactionRecord>>().await()
+            }
+            every { getTransactionRecordsFlow(any(), any(), any()) } returns emptyFlow()
+            every { getTransactionUrl(any()) } returns ""
+        }
+        val adapterManager = mockk<TransactionAdapterManager>(relaxed = true) {
+            every { getAdapter(stalledSource) } returns stalledAdapter
+            every { getAdapter(healthySource) } returns simpleAdapter(listOf(record))
+        }
+        val repository = createRepository(adapterManager, testDispatcher, this)
+
+        val (emissions, collectorJob) = collectBatches(repository, testDispatcher)
+
+        repository.setAndReload(
+            transactionWallets = listOf(stalledWallet, healthyWallet),
+            wallet = null,
+            transactionType = FilterTransactionType.All,
+            blockchain = null,
+            contact = null,
+            searchQuery = null,
+        )
+        advanceUntilIdle()
+
+        assertEquals(listOf("record-healthy"), emissions.single().records.map { it.uid })
+        assertEquals(false, emissions.single().loadFailed)
+
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
+    fun reload_allAdaptersAnswerWithNoRecords_batchIsNotMarkedFailed() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+
+        val token = createToken()
+        val source = createSource("account-1", token.blockchain)
+        val wallet = walletFor(token, source)
+        val repository = createRepository(
+            adapterManager(source, simpleAdapter(emptyList())),
+            testDispatcher,
+            this,
+        )
+
+        val (emissions, collectorJob) = collectBatches(repository, testDispatcher)
+
+        repository.setAndReload(
+            transactionWallets = listOf(wallet),
+            wallet = wallet,
+            transactionType = FilterTransactionType.All,
+            blockchain = null,
+            contact = null,
+            searchQuery = null,
+        )
+        advanceUntilIdle()
+
+        assertEquals(emptyList<TransactionRecord>(), emissions.single().records)
+        assertEquals(false, emissions.single().loadFailed)
+
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
+    fun reload_adapterMissingForSelectedWallet_batchIsMarkedFailed() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+
+        val token = createToken()
+        val source = createSource("account-1", token.blockchain)
+        val wallet = walletFor(token, source)
+        // The adapter is gone by the time the repository resolves it, so nothing is read at all.
+        // A vacuously complete empty result must not be published as a trustworthy empty history.
+        val adapterManager = mockk<TransactionAdapterManager>(relaxed = true) {
+            every { getAdapter(source) } returns null
+        }
+        val repository = createRepository(adapterManager, testDispatcher, this)
+
+        val (emissions, collectorJob) = collectBatches(repository, testDispatcher)
+
+        repository.setAndReload(
+            transactionWallets = listOf(wallet),
+            wallet = wallet,
+            transactionType = FilterTransactionType.All,
+            blockchain = null,
+            contact = null,
+            searchQuery = null,
+        )
+        advanceUntilIdle()
+
+        assertEquals(emptyList<TransactionRecord>(), emissions.single().records)
+        assertTrue(
+            "a load that resolved no adapter must be reported as a failed read",
+            emissions.single().loadFailed
+        )
+
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
+    fun reload_swapFilterExtraAdapterTimesOut_batchIsMarkedFailed() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+
+        val fixture = createSwapFilterFixture("swap-never-returns")
+        val adapter = swapFilterAdapter(
+            token = fixture.token,
+            outgoingRecords = { CompletableDeferred<List<TransactionRecord>>().await() },
+        )
+        val repository = createRepository(
+            adapterManager = adapterManager(fixture.source, adapter),
+            dispatcher = testDispatcher,
+            scope = this,
+        )
+
+        val (emissions, collectorJob) = collectBatches(repository, testDispatcher)
+
+        repository.setSwapWallet(fixture.wallet)
+        advanceUntilIdle()
+
+        assertEquals(emptyList<TransactionRecord>(), emissions.single().records)
+        assertTrue(
+            "an unanswered extra swap source must mark the empty batch as a failed read",
+            emissions.single().loadFailed
+        )
 
         collectorJob.cancel()
         repository.clear()
@@ -1089,7 +1246,7 @@ class TransactionRecordRepositoryWalletSwitchTest {
 
     private fun swapFilterAdapter(
         token: Token,
-        outgoingRecords: () -> List<TransactionRecord>,
+        outgoingRecords: suspend () -> List<TransactionRecord>,
         outgoingUpdates: Flow<List<TransactionRecord>> = emptyFlow(),
     ) = mockk<ITransactionsAdapter>(relaxed = true) {
         coEvery {
@@ -1097,7 +1254,7 @@ class TransactionRecordRepositoryWalletSwitchTest {
         } returns emptyList()
         coEvery {
             getTransactions(any(), token, any(), FilterTransactionType.Outgoing, any())
-        } answers { outgoingRecords() }
+        } coAnswers { outgoingRecords() }
         every {
             getTransactionRecordsFlow(any(), FilterTransactionType.Swap, any())
         } returns emptyFlow()
@@ -1169,18 +1326,27 @@ class TransactionRecordRepositoryWalletSwitchTest {
         return SwapFilterFixture(token, source, wallet, record)
     }
 
-    private fun TestScope.collectRecordUids(
+    private fun <T> TestScope.collectEmissions(
         repository: TransactionRecordRepository,
         dispatcher: TestDispatcher,
-    ): Pair<MutableList<List<String>>, Job> {
-        val emissions = mutableListOf<List<String>>()
+        transform: (RecordsBatch) -> T,
+    ): Pair<MutableList<T>, Job> {
+        val emissions = mutableListOf<T>()
         val collectorJob = launch(dispatcher) {
-            repository.itemsFlow.collect { batch ->
-                emissions.add(batch.records.map { it.uid })
-            }
+            repository.itemsFlow.collect { batch -> emissions.add(transform(batch)) }
         }
         return emissions to collectorJob
     }
+
+    private fun TestScope.collectRecordUids(
+        repository: TransactionRecordRepository,
+        dispatcher: TestDispatcher,
+    ) = collectEmissions(repository, dispatcher) { batch -> batch.records.map { it.uid } }
+
+    private fun TestScope.collectBatches(
+        repository: TransactionRecordRepository,
+        dispatcher: TestDispatcher,
+    ) = collectEmissions(repository, dispatcher) { it }
 
     // Mirrors the production contract: TransactionsService calls set() and only reloads
     // when it reports a change. set() no longer triggers the reload itself.

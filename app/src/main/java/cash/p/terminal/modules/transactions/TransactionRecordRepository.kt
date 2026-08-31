@@ -418,7 +418,16 @@ class TransactionRecordRepository(
         if (extraRecords.complete && extraRecords.sourceRecordsCount < itemsCount) {
             allExtraLoaded.set(true)
         }
-        handleRecords(normalRecords.records, extraRecords.records, page, normalRecords.complete)
+        // Selected wallets whose adapter could not be resolved read nothing at all, so the empty
+        // result is vacuous and must not be published as a trustworthy empty history.
+        val nothingWasRead = adapters.isEmpty() && activeWallets().isNotEmpty()
+        handleRecords(
+            records = normalRecords.records,
+            extraRecords = extraRecords.records,
+            page = page,
+            complete = normalRecords.complete && !nothingWasRead,
+            extraComplete = extraRecords.complete,
+        )
     }
 
     private suspend fun CoroutineScope.loadSearchPage(
@@ -534,6 +543,7 @@ class TransactionRecordRepository(
         extraRecords: List<TransactionRecord>,
         page: Int,
         complete: Boolean,
+        extraComplete: Boolean,
     ) {
         val expectedItemsCount = page * itemsPerPage
 
@@ -553,7 +563,13 @@ class TransactionRecordRepository(
             .take(expectedItemsCount)
 
         loadedPageNumber = page
-        _itemsFlow.tryEmit(RecordsBatch((normalSortedRecords + extraSortedRecords).sortedDescending()))
+        val sortedRecords = (normalSortedRecords + extraSortedRecords).sortedDescending()
+        _itemsFlow.tryEmit(
+            RecordsBatch(
+                records = sortedRecords,
+                loadFailed = sortedRecords.isEmpty() && !(complete && extraComplete),
+            )
+        )
     }
 
     private fun isMatchingSwapProviderTransaction(record: TransactionRecord): Boolean {
