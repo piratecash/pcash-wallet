@@ -78,8 +78,11 @@ class TokenTransactionsServiceSearchTest : KoinTest {
 
     private fun readyService(source: TransactionSource): TokenTransactionsService {
         val adapter = mockk<ITransactionsAdapter>(relaxed = true)
+        val adaptersFlow = MutableStateFlow(mapOf(source to adapter))
         every { wallet.transactionSource } returns source
-        every { adapterManager.adaptersReadyFlow } returns MutableStateFlow(mapOf(source to adapter))
+        every { adapterManager.adaptersReadyFlow } returns adaptersFlow
+        every { adapterManager.initializationFlow } returns MutableStateFlow(true)
+        every { adapterManager.getAdapter(source) } answers { adaptersFlow.value[source] }
 
         val service = TokenTransactionsService(
             wallet = wallet,

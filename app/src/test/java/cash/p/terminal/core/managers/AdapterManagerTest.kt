@@ -63,7 +63,7 @@ class AdapterManagerTest {
         restoreModeUpdatedSubject = PublishSubject.create()
 
         walletManager = mockk(relaxed = true) {
-            every { activeWallets } returns emptyList()
+            every { activeWallets } answers { activeWalletsFlow.value }
             every { activeWalletsFlow } returns this@AdapterManagerTest.activeWalletsFlow
         }
 
@@ -472,6 +472,45 @@ class AdapterManagerTest {
             offlineModeManager.onSubscribed(walletA, newAdapter, AdapterState.Connecting)
         }
         assertSame(newAdapter, adapterManager.getAdapterForWallet<IAdapter>(walletA))
+    }
+
+    @Test
+    fun refreshAdapters_missingActiveWallet_createsAndPublishesAdapter() = testScope.runTest {
+        val walletA = wallet("account")
+        val recoveredAdapter: IAdapter = mockk(relaxed = true)
+        var creates = 0
+        coEvery { adapterFactory.getAdapterOrNull(walletA, any()) } coAnswers {
+            creates += 1
+            recoveredAdapter.takeIf { creates > 1 }
+        }
+        val observer = adapterManager.adaptersReadyObservable.test()
+
+        activeWalletsFlow.value = listOf(walletA)
+        adapterManager.startAdapterManager()
+        advanceUntilIdle()
+        assertNull(adapterManager.getAdapterForWallet<IAdapter>(walletA))
+
+        adapterManager.refreshAdapters(listOf(walletA))
+        advanceUntilIdle()
+
+        coVerify(exactly = 2) { adapterFactory.getAdapterOrNull(walletA, any()) }
+        assertSame(recoveredAdapter, adapterManager.getAdapterForWallet<IAdapter>(walletA))
+        assertTrue(observer.values().any { it[walletA] === recoveredAdapter })
+        observer.cancel()
+    }
+
+    @Test
+    fun refreshAdapters_missingInactiveWallet_doesNotCreateAdapter() = testScope.runTest {
+        val walletA = wallet("account")
+        val observer = adapterManager.adaptersReadyObservable.test()
+
+        adapterManager.refreshAdapters(listOf(walletA))
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { adapterFactory.getAdapterOrNull(walletA, any()) }
+        assertNull(adapterManager.getAdapterForWallet<IAdapter>(walletA))
+        assertTrue(observer.values().none { it.containsKey(walletA) })
+        observer.cancel()
     }
 
     @Test

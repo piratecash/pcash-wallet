@@ -313,8 +313,9 @@ class AdapterManager(
     override fun refreshAdapters(wallets: List<Wallet>) {
         coroutineScope.launch {
             mutex.withLock {
-                val walletsToRefresh = wallets.filter { adaptersMap.containsKey(it) }
-                val activeLitecoinMwebAccounts = walletManager.activeWallets.litecoinMwebAccountIds()
+                val activeWallets = walletManager.activeWallets
+                val walletsToRefresh = wallets.filter { it in activeWallets }
+                val activeLitecoinMwebAccounts = activeWallets.litecoinMwebAccountIds()
 
                 // remove and stop adapters
                 walletsToRefresh.forEach { wallet ->
