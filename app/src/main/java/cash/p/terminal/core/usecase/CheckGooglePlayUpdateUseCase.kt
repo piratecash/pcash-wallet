@@ -31,5 +31,6 @@ internal fun AppUpdateInfo.toGooglePlayUpdateAvailability(): GooglePlayUpdateAva
         UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS ->
             GooglePlayUpdateAvailability.DeveloperTriggeredUpdateInProgress(availableVersionCode())
 
-        else -> GooglePlayUpdateAvailability.NotAvailable
+        UpdateAvailability.UPDATE_NOT_AVAILABLE -> GooglePlayUpdateAvailability.NotAvailable
+        else -> GooglePlayUpdateAvailability.Error
     }

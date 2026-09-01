@@ -12,10 +12,12 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import java.time.Instant
@@ -108,12 +110,12 @@ class CheckAppUpdateUseCaseTest {
     }
 
     @Test
-    fun invoke_repositoryFails_returnsErrorButStillPersistsTimestamp() = runTest(dispatcher) {
+    fun invoke_repositoryFails_returnsErrorWithoutPersistingTimestamp() = runTest(dispatcher) {
         every { systemInfoManager.appVersion } returns "0.58.0"
         coEvery { repository.getLatestRelease() } throws RuntimeException("network")
 
         assertEquals(UpdateStatus.Error, useCase())
-        verify { localStorage.lastUpdateCheckTimestamp = CHECK_TIME }
+        verify(exactly = 0) { localStorage.lastUpdateCheckTimestamp = any() }
     }
 
     @Test
@@ -148,6 +150,20 @@ class CheckAppUpdateUseCaseTest {
 
         coVerify(exactly = 0) { repository.getLatestRelease() }
         verify(exactly = 0) { localStorage.latestKnownVersion = any() }
+        verify { localStorage.lastUpdateCheckTimestamp = CHECK_TIME }
+    }
+
+    @Test
+    fun invoke_googlePlayCancellation_propagatesWithoutPersistingTimestamp() {
+        every { installSourceProvider.installSource } returns InstallSource.GOOGLE_PLAY
+        coEvery { googlePlayUpdateAvailabilityProvider.getAvailability() } throws
+            CancellationException("cancelled")
+
+        assertThrows(CancellationException::class.java) {
+            runTest(dispatcher) { useCase() }
+        }
+
+        verify(exactly = 0) { localStorage.lastUpdateCheckTimestamp = any() }
     }
 
     @Test
@@ -176,6 +192,7 @@ class CheckAppUpdateUseCaseTest {
 
         coVerify(exactly = 0) { repository.getLatestRelease() }
         verify(exactly = 0) { localStorage.latestKnownVersion = any() }
+        verify(exactly = 0) { localStorage.lastUpdateCheckTimestamp = any() }
     }
 
     @Test

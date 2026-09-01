@@ -21,7 +21,7 @@ class CheckAppUpdateUseCase(
     private val googlePlayUpdateAvailabilityProvider: GooglePlayUpdateAvailabilityProvider,
 ) {
     suspend operator fun invoke(): UpdateStatus = withContext(dispatcherProvider.io) {
-        try {
+        val status = try {
             when (installSourceProvider.installSource) {
                 InstallSource.GOOGLE_PLAY -> checkGooglePlay()
                 InstallSource.FDROID,
@@ -33,9 +33,11 @@ class CheckAppUpdateUseCase(
         } catch (e: Exception) {
             Timber.e(e, "Update check failed")
             UpdateStatus.Error
-        } finally {
+        }
+        if (status is UpdateStatus.Available || status is UpdateStatus.UpToDate) {
             localStorage.lastUpdateCheckTimestamp = timeProvider.now()
         }
+        status
     }
 
     private suspend fun checkGooglePlay(): UpdateStatus =

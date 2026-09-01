@@ -49,6 +49,15 @@ class CheckGooglePlayUpdateUseCaseTest {
     }
 
     @Test
+    fun getAvailability_unknown_returnsErrorWithoutReadingVersionCode() = runTest {
+        val info = updateInfo(UpdateAvailability.UNKNOWN)
+        every { appUpdateManager.appUpdateInfo } returns Tasks.forResult(info)
+
+        assertEquals(GooglePlayUpdateAvailability.Error, useCase.getAvailability())
+        verify(exactly = 0) { info.availableVersionCode() }
+    }
+
+    @Test
     fun getAvailability_apiFailure_returnsError() = runTest {
         every { appUpdateManager.appUpdateInfo } returns Tasks.forException(RuntimeException("Play API"))
 
