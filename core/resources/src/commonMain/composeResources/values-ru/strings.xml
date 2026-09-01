@@ -1346,6 +1346,7 @@
     <string name="RecoveryPhrase_CopyWarning_Title">Риск копирования</string>
     <!-- Evm Private Key -->
     <string name="spend_key">Ключ просмотра трат</string>
+    <string name="monero_keys_unavailable">Ключи недоступны для этого кошелька</string>
     <string name="EvmPrivateKey_Title">Приватный ключ EVM</string>
     <string name="EvmPrivateKey_ShowPrivateKey">Нажмите, чтобы показать приватный ключ</string>
     <!-- Bip32 Root Key -->

@@ -2230,4 +2230,5 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="balance_hide_on_flip_info_description">Para ocultar o mostrar tu saldo, simplemente gira la pantalla del dispositivo hacia abajo o desactívalo en los ajustes de seguridad.</string>
     <string name="balance_hide_on_flip_dont_show_again">No volver a mostrar</string>
     <string name="badge_new">Nuevo</string>
+    <string name="monero_keys_unavailable">Las claves no están disponibles para esta billetera</string>
 </resources>

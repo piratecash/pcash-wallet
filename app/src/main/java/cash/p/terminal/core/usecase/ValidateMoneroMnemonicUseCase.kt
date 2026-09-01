@@ -1,7 +1,7 @@
 package cash.p.terminal.core.usecase
 
 import cash.p.terminal.core.managers.WordsManager
-import java.util.zip.CRC32
+import cash.p.terminal.core.utils.MoneroWalletSeedConverter
 
 class ValidateMoneroMnemonicUseCase(
     private val commonWordsManager: WordsManager
@@ -19,17 +19,8 @@ class ValidateMoneroMnemonicUseCase(
             throw IllegalArgumentException("Monero mnemonic must be 25 words long")
         }
 
-        val prefixLength = 3
-        val words24 = mnemonicWords.take(24)
         val checksumWord = mnemonicWords[24]
-
-        val concatenated = words24.joinToString("") { it.take(prefixLength) }
-
-        val crc = CRC32()
-        crc.update(concatenated.toByteArray(Charsets.UTF_8))
-        val checksumIndex = (crc.value % 24).toInt()
-
-        val expectedChecksumWord = words24[checksumIndex]
+        val expectedChecksumWord = MoneroWalletSeedConverter.checksumWord(mnemonicWords.take(24))
 
         if (expectedChecksumWord != checksumWord) {
             throw IllegalArgumentException(

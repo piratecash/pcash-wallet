@@ -2229,4 +2229,5 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="balance_hide_on_flip_info_description">Um Ihren Kontostand aus- oder einzublenden, drehen Sie das Gerät einfach mit dem Bildschirm nach unten oder deaktivieren Sie die Funktion in den Sicherheitseinstellungen.</string>
     <string name="balance_hide_on_flip_dont_show_again">Nicht mehr anzeigen</string>
     <string name="badge_new">Neu</string>
+    <string name="monero_keys_unavailable">Schlüssel sind für diese Wallet nicht verfügbar</string>
 </resources>
