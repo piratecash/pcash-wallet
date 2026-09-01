@@ -73,7 +73,7 @@ internal fun SoftwareUpdateScreen(
     onRetry: () -> Unit,
     onHistoryClick: () -> Unit,
     onDetailsClick: (ChangelogRequest) -> Unit,
-    onUpdateNowClick: (AppRelease) -> Unit,
+    onUpdateNowClick: (AppRelease?) -> Unit,
 ) {
     Scaffold(
         containerColor = ComposeAppTheme.colors.tyler,
@@ -109,26 +109,42 @@ internal fun SoftwareUpdateScreen(
             }
 
             VSpacer(32.dp)
-            when (val status = uiState.updateStatus) {
-                UpdateStatus.Unknown -> CheckingBlock()
-                is UpdateStatus.UpToDate -> UpToDateBlock(
-                    version = uiState.currentVersion,
-                    onDetailsClick = { onDetailsClick(status.changelogRequest(uiState.currentVersion)) },
-                )
-
-                is UpdateStatus.Available -> AvailableSection(
-                    status = status,
-                    installSource = uiState.installSource,
-                    onDetailsClick = {
-                        onDetailsClick(ChangelogRequest.active(status.release.minor, status.release.tagName))
-                    },
-                    onUpdateNowClick = { onUpdateNowClick(status.release) },
-                )
-
-                UpdateStatus.Error -> ErrorBlock(onRetry)
-            }
+            UpdateStatusBlock(uiState, onRetry, onDetailsClick, onUpdateNowClick)
             VSpacer(32.dp)
         }
+    }
+}
+
+@Composable
+private fun UpdateStatusBlock(
+    uiState: SoftwareUpdateUiState,
+    onRetry: () -> Unit,
+    onDetailsClick: (ChangelogRequest) -> Unit,
+    onUpdateNowClick: (AppRelease?) -> Unit,
+) {
+    when (val status = uiState.updateStatus) {
+        UpdateStatus.Unknown -> CheckingBlock()
+        is UpdateStatus.UpToDate -> {
+            val detailsClick = if (
+                uiState.installSource != InstallSource.GOOGLE_PLAY || status.release != null
+            ) {
+                { onDetailsClick(status.changelogRequest(uiState.currentVersion)) }
+            } else {
+                null
+            }
+            UpToDateBlock(version = uiState.currentVersion, onDetailsClick = detailsClick)
+        }
+
+        is UpdateStatus.Available -> AvailableSection(
+            status = status,
+            installSource = uiState.installSource,
+            onDetailsClick = status.release?.let { release ->
+                { onDetailsClick(ChangelogRequest.active(release.minor, release.tagName)) }
+            },
+            onUpdateNowClick = { onUpdateNowClick(status.release) },
+        )
+
+        UpdateStatus.Error -> ErrorBlock(onRetry)
     }
 }
 
@@ -194,7 +210,7 @@ private fun CheckingBlock() {
 }
 
 @Composable
-private fun UpToDateBlock(version: String, onDetailsClick: () -> Unit) {
+private fun UpToDateBlock(version: String, onDetailsClick: (() -> Unit)?) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -217,13 +233,15 @@ private fun UpToDateBlock(version: String, onDetailsClick: () -> Unit) {
         headline2_leah(text = stringResource(R.string.update_up_to_date))
         VSpacer(4.dp)
         subhead2_grey(text = stringResource(R.string.update_version_label, version))
-        VSpacer(12.dp)
-        subhead2_jacob(
-            modifier = Modifier
-                .clickable(onClick = onDetailsClick)
-                .padding(8.dp),
-            text = stringResource(R.string.update_details),
-        )
+        onDetailsClick?.let {
+            VSpacer(12.dp)
+            subhead2_jacob(
+                modifier = Modifier
+                    .clickable(onClick = it)
+                    .padding(8.dp),
+                text = stringResource(R.string.update_details),
+            )
+        }
     }
 }
 
@@ -231,7 +249,7 @@ private fun UpToDateBlock(version: String, onDetailsClick: () -> Unit) {
 private fun AvailableSection(
     status: UpdateStatus.Available,
     installSource: InstallSource,
-    onDetailsClick: () -> Unit,
+    onDetailsClick: (() -> Unit)?,
     onUpdateNowClick: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -248,22 +266,28 @@ private fun AvailableSection(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 AvailableCardHeader(status.release)
-                VSpacer(20.dp)
-                val snippet = status.changelogSnippet
-                subhead2_grey(
-                    text = if (snippet != null) {
-                        stringResource(R.string.update_improvements_fixes, snippet.improvements, snippet.fixes)
-                    } else {
-                        stringResource(R.string.update_available_title)
-                    },
-                )
-                VSpacer(4.dp)
-                subhead2_jacob(
-                    modifier = Modifier
-                        .clickable(onClick = onDetailsClick)
-                        .padding(vertical = 8.dp),
-                    text = stringResource(R.string.update_details_ellipsis),
-                )
+                onDetailsClick?.let {
+                    VSpacer(20.dp)
+                    val snippet = status.changelogSnippet
+                    subhead2_grey(
+                        text = if (snippet != null) {
+                            stringResource(
+                                R.string.update_improvements_fixes,
+                                snippet.improvements,
+                                snippet.fixes,
+                            )
+                        } else {
+                            stringResource(R.string.update_available_title)
+                        },
+                    )
+                    VSpacer(4.dp)
+                    subhead2_jacob(
+                        modifier = Modifier
+                            .clickable(onClick = it)
+                            .padding(vertical = 8.dp),
+                        text = stringResource(R.string.update_details_ellipsis),
+                    )
+                }
             }
             HorizontalDivider(thickness = 1.dp, color = ComposeAppTheme.colors.steel10)
             Column(modifier = Modifier.padding(16.dp)) {
@@ -284,7 +308,7 @@ private fun AvailableSection(
 }
 
 @Composable
-private fun AvailableCardHeader(release: AppRelease) {
+private fun AvailableCardHeader(release: AppRelease?) {
     val context = LocalContext.current
     val inspection = LocalInspectionMode.current
     val appIcon = remember(inspection) {
@@ -310,8 +334,13 @@ private fun AvailableCardHeader(release: AppRelease) {
             )
         }
         Column(modifier = Modifier.padding(start = 16.dp)) {
-            body_leah(text = stringResource(R.string.update_version_label, release.version))
-            release.apkSizeBytes?.let { size ->
+            val title = if (release != null) {
+                stringResource(R.string.update_version_label, release.version)
+            } else {
+                stringResource(R.string.update_available_title)
+            }
+            body_leah(text = title)
+            release?.apkSizeBytes?.let { size ->
                 subhead2_grey(text = Formatter.formatShortFileSize(context, size))
             }
         }
@@ -372,7 +401,7 @@ private fun SoftwareUpdateScreenPreview() {
                 interval = UpdateCheckInterval.DAY,
                 lastCheckTimestamp = 0L,
                 updateStatus = UpdateStatus.UpToDate(release = null),
-                installSource = InstallSource.GOOGLE_PLAY,
+                installSource = InstallSource.OTHER,
             ),
             onBack = {},
             onIntervalChange = {},
