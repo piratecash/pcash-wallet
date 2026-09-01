@@ -12,10 +12,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import cash.p.terminal.core.composablePage
+import cash.p.terminal.core.usecase.toGooglePlayUpdateAvailability
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.modules.releasenotes.ReleaseNotesScreen
 import cash.p.terminal.modules.softwareupdate.changelog.VersionChangelogViewModel
 import cash.p.terminal.modules.softwareupdate.domain.ChangelogRequest
+import cash.p.terminal.modules.softwareupdate.domain.GooglePlayUpdateAvailability
 import cash.p.terminal.modules.softwareupdate.domain.InstallSource
 import cash.p.terminal.modules.softwareupdate.domain.InstallSourceProvider
 import cash.p.terminal.modules.softwareupdate.history.VersionHistoryScreen
@@ -26,9 +28,9 @@ import cash.p.terminal.ui.helpers.LinkHelper
 import cash.p.terminal.ui_compose.BaseComposeFragment
 import cash.p.terminal.ui_compose.ScreenWithoutConnectionPanel
 import com.google.android.play.core.appupdate.AppUpdateManager
+import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateOptions
 import com.google.android.play.core.install.model.AppUpdateType
-import com.google.android.play.core.install.model.UpdateAvailability
 import kotlinx.serialization.Serializable
 import org.koin.android.ext.android.inject
 import org.koin.compose.viewmodel.koinViewModel
@@ -47,37 +49,71 @@ class SoftwareUpdateFragment : BaseComposeFragment() {
         SoftwareUpdateNavHost(navController, onUpdateNow = ::onUpdateNow)
     }
 
-    private fun onUpdateNow(release: AppRelease) {
-        val destinationUrl = installSourceProvider.updateDestinationUrl(release)
+    override fun onResume() {
+        super.onResume()
         if (installSourceProvider.installSource == InstallSource.GOOGLE_PLAY) {
-            startGooglePlayUpdate(fallbackUrl = destinationUrl)
-        } else {
+            requestGooglePlayUpdate { info, availability ->
+                if (availability is GooglePlayUpdateAvailability.DeveloperTriggeredUpdateInProgress) {
+                    startImmediateUpdate(info)
+                }
+            }
+        }
+    }
+
+    private fun onUpdateNow(release: AppRelease?) {
+        if (installSourceProvider.installSource == InstallSource.GOOGLE_PLAY) {
+            requestGooglePlayUpdate(::handleGooglePlayUpdate)
+            return
+        }
+        installSourceProvider.updateDestinationUrl(release)?.let { destinationUrl ->
             openUrl(requireContext(), destinationUrl)
         }
     }
 
-    /** Native Google Play in-app update for Play installs; falls back to the store page. */
-    private fun startGooglePlayUpdate(fallbackUrl: String) {
+    private fun requestGooglePlayUpdate(
+        onResult: (AppUpdateInfo, GooglePlayUpdateAvailability) -> Unit,
+    ) {
         appUpdateManager.appUpdateInfo
             .addOnSuccessListener { info ->
-                // The task completes asynchronously; bail out if the fragment is already detached.
-                val context = context ?: return@addOnSuccessListener
-                val started = isAdded &&
-                    info.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
-                    info.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE) &&
-                    tryOrNull {
-                        appUpdateManager.startUpdateFlowForResult(
-                            info,
-                            updateFlowLauncher,
-                            AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build(),
-                        )
-                    } == true
-                if (!started) openUrl(context, fallbackUrl)
+                onResult(info, info.toGooglePlayUpdateAvailability())
             }
-            .addOnFailureListener {
-                val context = context ?: return@addOnFailureListener
-                openUrl(context, fallbackUrl)
+    }
+
+    private fun handleGooglePlayUpdate(
+        info: AppUpdateInfo,
+        availability: GooglePlayUpdateAvailability,
+    ) {
+        when (availability) {
+            is GooglePlayUpdateAvailability.Available -> {
+                if (!info.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE) || !startImmediateUpdate(info)) {
+                    openGooglePlayPage()
+                }
             }
+
+            is GooglePlayUpdateAvailability.DeveloperTriggeredUpdateInProgress ->
+                startImmediateUpdate(info)
+
+            GooglePlayUpdateAvailability.NotAvailable,
+            GooglePlayUpdateAvailability.Error,
+            -> Unit
+        }
+    }
+
+    private fun startImmediateUpdate(info: AppUpdateInfo): Boolean {
+        if (!isAdded) return false
+        return tryOrNull {
+            appUpdateManager.startUpdateFlowForResult(
+                info,
+                updateFlowLauncher,
+                AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build(),
+            )
+        } == true
+    }
+
+    private fun openGooglePlayPage() {
+        val context = context ?: return
+        val destinationUrl = installSourceProvider.updateDestinationUrl(release = null) ?: return
+        openUrl(context, destinationUrl)
     }
 }
 
@@ -99,7 +135,7 @@ private sealed class SoftwareUpdateRoute {
 @Composable
 private fun SoftwareUpdateNavHost(
     fragmentNavController: NavController,
-    onUpdateNow: (AppRelease) -> Unit,
+    onUpdateNow: (AppRelease?) -> Unit,
 ) {
     val navController = rememberNavController()
     val openChangelog = { request: ChangelogRequest -> navController.navigateToChangelog(request) }
