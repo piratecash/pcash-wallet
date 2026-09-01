@@ -55,6 +55,7 @@ import cash.p.terminal.modules.settings.guides.GuidesViewModel
 import cash.p.terminal.modules.balance.BalanceAccountsViewModel
 import cash.p.terminal.modules.rateapp.RateAppViewModel
 import cash.p.terminal.modules.subscription.ActivateSubscriptionViewModel
+import cash.p.terminal.modules.manageaccount.zcashkeys.ZcashKeysViewModel
 import cash.p.terminal.modules.walletconnect.request.WCRequestEvmViewModel
 import cash.p.terminal.modules.settings.main.MainSettingsViewModel
 import cash.p.terminal.modules.settings.privacy.PrivacyViewModel
@@ -155,6 +156,7 @@ val viewModelModule = module {
     viewModel { (accountId: String) ->
         BackupKeyViewModel(accountId = accountId, accountManager = get())
     }
+    viewModel { (accountId: String) -> ZcashKeysViewModel(accountId, get(), get()) }
     viewModel { (mode: ManageAccountsModule.Mode) ->
         ManageAccountsViewModel(get(), get(), mode)
     }

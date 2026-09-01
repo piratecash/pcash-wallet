@@ -20,7 +20,9 @@ import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.watchaddress.selectblockchains.SelectBlockchainsFragment
+import cash.p.terminal.modules.zcashconfigure.ZcashConfigureFragment
 import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.slideFromBottomForResult
 import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.FormsInput
@@ -67,6 +69,17 @@ fun WatchAddressScreen(navController: NavController, popUpToInclusiveId: Int, in
             )
             delay(300)
             navController.popBackStack(popUpToInclusiveId, inclusive)
+        }
+    }
+
+    LaunchedEffect(uiState.zcashHeightRequested) {
+        if (!uiState.zcashHeightRequested) return@LaunchedEffect
+
+        viewModel.zcashHeightRequestOpened()
+        navController.slideFromBottomForResult<ZcashConfigureFragment.Result>(
+            R.id.zcashConfigureFragment
+        ) { result ->
+            viewModel.onZcashHeightEntered(result.config)
         }
     }
 
@@ -134,6 +147,7 @@ fun WatchAddressScreen(navController: NavController, popUpToInclusiveId: Int, in
             Spacer(Modifier.height(32.dp))
             FormsInputMultiline(
                 modifier = Modifier.padding(horizontal = 16.dp),
+                initial = viewModel.enteredInput,
                 hint = stringResource(id = R.string.Watch_Address_Hint),
                 qrScannerEnabled = true,
                 qrScannerTitle = stringResource(R.string.qr_scanner_title_smart_scan),

@@ -18,6 +18,7 @@ import cash.p.terminal.core.adapters.zcash.convertZatoshiToZec
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.isCustom
 import cash.p.terminal.core.isNative
+import cash.p.terminal.core.zcashAddressSpecs
 import cash.p.terminal.core.managers.AmlStatusManager
 import cash.p.terminal.core.managers.AddressLabelManager
 import cash.p.terminal.core.managers.ConnectivityManager
@@ -77,6 +78,7 @@ import cash.p.terminal.wallet.balance.BalanceViewType
 import cash.p.terminal.wallet.balance.DeemedValue
 import cash.p.terminal.wallet.canSwap
 import cash.p.terminal.wallet.entities.TokenQuery
+import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.isBackedUpOrNotRequired
 import cash.p.terminal.wallet.isCosanta
@@ -740,9 +742,14 @@ class TokenBalanceViewModel(
         val isTransparent =
             (item.wallet.token.type as? TokenType.AddressSpecTyped)?.type == TokenType.AddressSpecType.Transparent
         if (!isTransparent || item.balanceData.available <= ZcashAdapter.MINERS_FEE) return false
+        if (!canShield(item.wallet.account)) return false
 
         return hasReachedSyncedState()
     }
+
+    /** Shielding spends into this account's own shielded receiver, so it needs both to exist. */
+    private fun canShield(account: Account): Boolean = !account.isWatchAccount &&
+            account.type.zcashAddressSpecs().any { it != TokenType.AddressSpecType.Transparent }
 
     private fun zcashMigrationRequiredAmount(): String? {
         // The typed lookup is an unchecked cast, so it must not be reached for other blockchains.

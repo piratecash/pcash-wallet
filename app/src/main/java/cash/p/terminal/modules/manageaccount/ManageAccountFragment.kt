@@ -71,7 +71,7 @@ class ManageAccountFragment : BaseComposeFragment() {
                         navController.slideFromRight(
                             R.id.generalPrivateKeyFragment,
                             GeneralPrivateKeyFragment.Input(
-                                viewModel.getMoneroViewKey(),
+                                viewModel.getViewKey(),
                                 getString(R.string.view_key)
                             )
                         )
@@ -81,7 +81,7 @@ class ManageAccountFragment : BaseComposeFragment() {
                         navController.slideFromRight(
                             R.id.generalPrivateKeyFragment,
                             GeneralPrivateKeyFragment.Input(
-                                viewModel.getMoneroSpendKey(),
+                                viewModel.getSpendKey(),
                                 getString(R.string.spend_key)
                             )
                         )

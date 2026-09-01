@@ -172,7 +172,7 @@
     <string name="Restore_RestoreBy">Import By</string>
     <string name="Restore_RecoveryPhrase">Recovery Phrase</string>
     <string name="Restore_PrivateKey">Private Key</string>
-    <string name="Restore_PrivateKeyHint">Enter EVM Private Key, BIP32 Root Key, Stellar Secret Key or Account Extended Private Key</string>
+    <string name="Restore_PrivateKeyHint">Enter EVM Private Key, BIP32 Root Key, Stellar Secret Key, Account Extended Private Key or ZCash Sapling Spending Key</string>
     <string name="Restore_PhraseHint">Enter Recovery Phrase</string>
     <string name="monero_restore_seed">Monero restore seed</string>
     <string name="Restore_NonStandardRestore">Non-Standard Import</string>
@@ -181,6 +181,7 @@
     <string name="Restore_Bip_Recommended">(recommended)</string>
 
     <string name="Restore_PrivateKey_InvalidKey">Invalid Key</string>
+    <string name="restore_private_key_is_view_only">This is a view-only key. Add it via Watch Address.</string>
 
     <string name="SelectContacts_All">All</string>
 
@@ -1614,11 +1615,12 @@ Proceed only if you\'re sure.</string>
     <string name="ImportBackupFile_Error_InvalidPassword">Invalid Password</string>
     <string name="ImportBackupFile_BackupPassword">Backup Password</string>
 
-    <string name="Watch_Address_Hint">Enter Your EVM, TRON, TON or Public Address (Bitcoin, Litecoin, Bitcoin Cash), Account xPubKey or ZCash Unified Full Viewing Key</string>
+    <string name="Watch_Address_Hint">Enter Your EVM, TRON, TON or Public Address (Bitcoin, Litecoin, Bitcoin Cash), Account xPubKey or ZCash Viewing Key (Unified or Sapling)</string>
     <string name="Watch_Address_Watch">Watch</string>
     <string name="Watch_Select_Blockchains">Choose Blockchains</string>
     <string name="Watch_Select_Coins">Choose Coins</string>
     <string name="Watch_Error_InvalidAddressFormat">Address format is not supported</string>
+    <string name="watch_address_is_private_key">This is a private key. Add it via Private Key import.</string>
 
     <!--Manage Account-->
     <string name="ManageAccount_Name">Name</string>
@@ -1761,6 +1763,14 @@ Proceed only if you\'re sure.</string>
     <string name="PrivateKeys_AccountExtendedPrivateKey">Account Extended Private Key</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Grants full control over Bitcoin and other UTXO based crypto i.e. Litecoin, Bitcoin Cash, Dash etc. within respective wallet.</string>
     <string name="PrivateKeys_NeverShareWarning">Never share this key with anyone. P.CASH Wallet support team will never ask for it.</string>
+    <string name="private_keys_zec_sapling_spending_key">ZCash Sapling Spending Key</string>
+    <string name="private_keys_zec_sapling_spending_key_description">Grants full control over the shielded ZCash funds of this wallet, including spending them.</string>
+    <string name="private_keys_zec_sapling_spending_key_error">Couldn\'t get the ZCash Sapling spending key</string>
+    <string name="private_keys_zec">ZCash</string>
+    <string name="private_keys_zec_description">Grants full control over the transparent and shielded ZCash funds of this wallet, including spending them.</string>
+    <string name="private_keys_zec_transparent_key">ZCash Transparent Key</string>
+    <string name="private_keys_zec_transparent_key_description">Grants full control over the transparent ZCash funds of this wallet, including spending them.</string>
+    <string name="private_keys_zec_transparent_key_error">Couldn\'t get the ZCash transparent key</string>
     <string name="private_key_conversion_monero_description">
         <![CDATA[
         <p><b>We have converted your seed phrase from %d words to the Monero standard — 25 words.</b></p>
@@ -1777,6 +1787,11 @@ Proceed only if you\'re sure.</string>
     <string name="PublicKeys_AccountExtendedPublicKeyDescription">Allows read-only monitoring of wallets holding Bitcoin and other UTXO based crypto (i.e Litecoin, Bitcoin Cash, Dash etc.).</string>
     <string name="publicKeys_zec_ufvk" translatable="false">ZCash Unified Full Viewing Key</string>
     <string name="publicKeys_zec_ufvk_descritpion">Allows read-only monitoring of ZCash, transparent and shielded transactions for the wallet.</string>
+    <string name="publicKeys_zec_transparent_viewing_key" translatable="false">ZCash Transparent Viewing Key</string>
+    <string name="publicKeys_zec_transparent_viewing_key_description">Allows read-only monitoring of transparent ZCash transactions for the wallet. Shielded transactions are not included.</string>
+    <string name="public_keys_zec_sapling_viewing_key">ZCash Sapling Viewing Key</string>
+    <string name="public_keys_zec_sapling_viewing_key_description">Allows read-only monitoring of the shielded ZCash transactions of this wallet. Transparent transactions are not included.</string>
+    <string name="public_keys_zec_viewing_key_error">Couldn\'t get the ZCash viewing key</string>
 
     <!-- Recovery Phrase Verify -->
     <string name="RecoveryPhraseVerify_Title">Verify</string>

@@ -3,7 +3,6 @@ package cash.p.terminal.modules.balance
 import androidx.compose.runtime.Immutable
 import cash.p.terminal.R
 import cash.p.terminal.core.App
-import cash.p.terminal.core.adapters.zcash.ZcashAdapter
 import cash.p.terminal.core.diffPercentage
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.isNetworkPaused
@@ -24,7 +23,6 @@ import cash.p.terminal.wallet.balance.BalanceViewHelper
 import cash.p.terminal.wallet.balance.BalanceViewHelper.coinValue
 import cash.p.terminal.wallet.balance.BalanceViewType
 import cash.p.terminal.wallet.balance.DeemedValue
-import cash.p.terminal.wallet.entities.TokenType
 import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.entities.Currency
@@ -51,7 +49,6 @@ data class BalanceViewItem(
     val swapAvailability: OperationAvailability = OperationAvailability.Unavailable,
     val errorMessage: String?,
     val isWatchAccount: Boolean,
-    val isShowShieldFunds: Boolean,
     val warning: WarningText?,
     val diff: BigDecimal? = null,
     val fullDiff: String = "",
@@ -444,10 +441,6 @@ class BalanceViewItemFactory(
             }
         }
 
-        val isShowShieldFunds =
-            (item.wallet.token.type as? TokenType.AddressSpecTyped)?.type == TokenType.AddressSpecType.Transparent &&
-                    item.balanceData.available > ZcashAdapter.MINERS_FEE
-
         val syncDisplayState = syncDisplayState(wallet, displaySyncState)
 
         return BalanceViewItem(
@@ -468,7 +461,6 @@ class BalanceViewItemFactory(
             errorMessage = (displaySyncState as? AdapterState.NotSynced)?.error?.message,
             isWatchAccount = watchAccount,
             warning = item.warning?.warningText,
-            isShowShieldFunds = isShowShieldFunds,
             diff = item.coinPrice?.diffPercentage,
             fullDiff = getFullDiff(item, displayDiffOptionType, currency),
             displayDiffOptionType = displayDiffOptionType,

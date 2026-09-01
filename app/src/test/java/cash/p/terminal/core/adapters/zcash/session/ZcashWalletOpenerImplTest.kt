@@ -53,7 +53,7 @@ class ZcashWalletOpenerImplTest {
         coEvery { ZcashSdk.initialize(any(), any()) } returns Unit
         coEvery { ZcashWallet.open(any(), any(), any(), any()) } returns zcashWallet
         coEvery { zcashWallet.accounts() } returns emptyList()
-        coEvery { zcashWallet.restoreAccount(any(), any(), any(), any()) } returns DB_ACCOUNT_ID
+        coEvery { zcashWallet.restoreAccount(any(), any(), any(), any(), any(), any()) } returns DB_ACCOUNT_ID
 
         every { dbKeyProvider.keyFor(ACCOUNT_ID) } returns ZcashDbKey(ByteArray(32), newlyGenerated = false)
         every { restoreSettingsManager.settings(any(), any()) } returns
@@ -77,7 +77,7 @@ class ZcashWalletOpenerImplTest {
         coEvery { zcashWallet.accounts() } returns listOf(accountInfo())
 
         assertEquals(DB_ACCOUNT_ID, opener().open(wallet()).dbAccountId)
-        coVerify(exactly = 0) { zcashWallet.restoreAccount(any(), any(), any(), any()) }
+        coVerify(exactly = 0) { zcashWallet.restoreAccount(any(), any(), any(), any(), any(), any()) }
     }
 
     @Test
@@ -89,7 +89,21 @@ class ZcashWalletOpenerImplTest {
                 name = any(),
                 key = "one two three",
                 birthHeight = BIRTHDAY,
-                passphrase = null,
+                passphrase = "",
+            )
+        }
+    }
+
+    @Test
+    fun open_blankPassphrase_restoresWithItVerbatim() = runTest {
+        opener().open(wallet(passphrase = "  "))
+
+        coVerify(exactly = 1) {
+            zcashWallet.restoreAccount(
+                name = any(),
+                key = "one two three",
+                birthHeight = BIRTHDAY,
+                passphrase = "  ",
             )
         }
     }
@@ -104,7 +118,7 @@ class ZcashWalletOpenerImplTest {
         assertEquals(DB_ACCOUNT_ID, opener().open(wallet()).dbAccountId)
 
         assertFalse(leftover.exists())
-        coVerify(exactly = 1) { zcashWallet.restoreAccount(any(), any(), any(), any()) }
+        coVerify(exactly = 1) { zcashWallet.restoreAccount(any(), any(), any(), any(), any(), any()) }
         coVerify(exactly = 1) { zcashWallet.discoverTransparentAddresses(DB_ACCOUNT_ID) }
     }
 
@@ -116,11 +130,11 @@ class ZcashWalletOpenerImplTest {
         dbKeyProvider = dbKeyProvider,
     )
 
-    private fun wallet() = mockk<Wallet>(relaxed = true) {
+    private fun wallet(passphrase: String = "") = mockk<Wallet>(relaxed = true) {
         every { account } returns Account(
             id = ACCOUNT_ID,
             name = "Zcash",
-            type = AccountType.Mnemonic(listOf("one", "two", "three"), ""),
+            type = AccountType.Mnemonic(listOf("one", "two", "three"), passphrase),
             origin = AccountOrigin.Restored,
             level = 0,
         )

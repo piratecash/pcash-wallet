@@ -1705,7 +1705,6 @@ private fun previewBalanceViewItem() = BalanceViewItem(
     swapAvailability = OperationAvailability.Available,
     errorMessage = null,
     isWatchAccount = false,
-    isShowShieldFunds = false,
     warning = null,
     displayDiffOptionType = DisplayDiffOptionType.NONE,
 )

@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import cash.p.terminal.core.adapters.zcash.ZcashKeyExporter
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.toStellarWallet
 import cash.p.terminal.core.toRawHexString
@@ -16,12 +17,15 @@ import io.horizontalsystems.hdwalletkit.HDExtendedKey
 import io.horizontalsystems.hdwalletkit.HDWallet
 import io.horizontalsystems.hdwalletkit.Mnemonic
 import io.horizontalsystems.stellarkit.StellarKit
+import org.koin.java.KoinJavaComponent.inject
 import java.math.BigInteger
 
 class PrivateKeysViewModel(
-    account: Account,
+    private val account: Account,
     evmBlockchainManager: EvmBlockchainManager,
 ) : ViewModel() {
+
+    private val zcashKeyExporter: ZcashKeyExporter by inject(ZcashKeyExporter::class.java)
 
     var viewState by mutableStateOf(PrivateKeysModule.ViewState())
         private set
@@ -75,7 +79,8 @@ class PrivateKeysViewModel(
             accountExtendedPrivateKey = accountExtendedPrivateKey?.let {
                 PrivateKeysModule.ExtendedKey(it, accountExtendedDisplayType)
             },
-            stellarSecretKey = stellarSecretKey
+            stellarSecretKey = stellarSecretKey,
+            hasZcashKeys = zcashKeyExporter.privateKeyTypes(account.type).isNotEmpty()
         )
     }
 
