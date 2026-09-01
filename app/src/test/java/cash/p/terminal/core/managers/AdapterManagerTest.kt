@@ -11,6 +11,8 @@ import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.BalanceData
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.transaction.TransactionSource
+import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -309,6 +311,93 @@ class AdapterManagerTest {
     }
 
     @Test
+    fun initAdapters_fastSourceReadyBeforeSlowSource_publishesFastSource() = testScope.runTest {
+        val fastWallet = wallet("account", BlockchainType.Ethereum, TokenType.Native)
+        val slowWallet = wallet("account", BlockchainType.Monero, TokenType.Native)
+        val fastAdapter: IAdapter = mockk(relaxed = true)
+        val slowAdapter: IAdapter = mockk(relaxed = true)
+        val slowResult = CompletableDeferred<IAdapter>()
+        coEvery { adapterFactory.getAdapterOrNull(fastWallet, any()) } returns fastAdapter
+        coEvery { adapterFactory.getAdapterOrNull(slowWallet, any()) } coAnswers { slowResult.await() }
+        val observer = adapterManager.adaptersReadyObservable.test()
+
+        activeWalletsFlow.value = listOf(fastWallet, slowWallet)
+        adapterManager.startAdapterManager()
+        advanceUntilIdle()
+
+        assertTrue(observer.values().any { it[fastWallet] === fastAdapter && slowWallet !in it })
+
+        slowResult.complete(slowAdapter)
+        advanceUntilIdle()
+
+        val finalAdapters = observer.values().last()
+        assertSame(fastAdapter, finalAdapters[fastWallet])
+        assertSame(slowAdapter, finalAdapters[slowWallet])
+        observer.cancel()
+    }
+
+    @Test
+    fun initAdapters_sameSourceStillStarting_doesNotPublishPartialSource() = testScope.runTest {
+        val source = transactionSource("account", BlockchainType.Ethereum)
+        val nativeWallet = wallet(source, TokenType.Native)
+        val tokenWallet = wallet(source, TokenType.Eip20("token"))
+        val nativeAdapter: IAdapter = mockk(relaxed = true)
+        val tokenAdapter: IAdapter = mockk(relaxed = true)
+        val tokenResult = CompletableDeferred<IAdapter>()
+        coEvery { adapterFactory.getAdapterOrNull(nativeWallet, any()) } returns nativeAdapter
+        coEvery { adapterFactory.getAdapterOrNull(tokenWallet, any()) } coAnswers { tokenResult.await() }
+        val observer = adapterManager.adaptersReadyObservable.test()
+
+        activeWalletsFlow.value = listOf(nativeWallet, tokenWallet)
+        adapterManager.startAdapterManager()
+        advanceUntilIdle()
+
+        assertTrue(observer.values().none { nativeWallet in it || tokenWallet in it })
+
+        tokenResult.complete(tokenAdapter)
+        advanceUntilIdle()
+
+        assertTrue(observer.values().all { nativeWallet in it && tokenWallet in it })
+        val finalAdapters = observer.values().last()
+        assertSame(nativeAdapter, finalAdapters[nativeWallet])
+        assertSame(tokenAdapter, finalAdapters[tokenWallet])
+        observer.cancel()
+    }
+
+    @Test
+    fun initAdapters_sourceMemberCreationFails_doesNotPublishSourceBeforeFinalSnapshot() =
+        testScope.runTest {
+            val source = transactionSource("account", BlockchainType.Ethereum)
+            val createdWallet = wallet(source, TokenType.Native)
+            val failedWallet = wallet(source, TokenType.Eip20("token"))
+            val slowWallet = wallet("account", BlockchainType.Monero, TokenType.Native)
+            val createdAdapter: IAdapter = mockk(relaxed = true)
+            val slowAdapter: IAdapter = mockk(relaxed = true)
+            val slowResult = CompletableDeferred<IAdapter>()
+            coEvery { adapterFactory.getAdapterOrNull(createdWallet, any()) } returns createdAdapter
+            coEvery { adapterFactory.getAdapterOrNull(failedWallet, any()) } returns null
+            coEvery { adapterFactory.getAdapterOrNull(slowWallet, any()) } coAnswers {
+                slowResult.await()
+            }
+            val observer = adapterManager.adaptersReadyObservable.test()
+
+            activeWalletsFlow.value = listOf(createdWallet, failedWallet, slowWallet)
+            adapterManager.startAdapterManager()
+            advanceUntilIdle()
+
+            assertTrue(observer.values().none { createdWallet in it || failedWallet in it })
+
+            slowResult.complete(slowAdapter)
+            advanceUntilIdle()
+
+            assertTrue(observer.values().dropLast(1).none { createdWallet in it || failedWallet in it })
+            val finalAdapters = observer.values().last()
+            assertSame(createdAdapter, finalAdapters[createdWallet])
+            assertTrue(failedWallet !in finalAdapters)
+            observer.cancel()
+        }
+
+    @Test
     fun stopAdapters_accountId_stopsOnlyMatchingAdapters() = testScope.runTest {
         val targetWallet = wallet("target")
         val otherWallet = wallet("other")
@@ -586,18 +675,33 @@ class AdapterManagerTest {
         accountId: String,
         blockchainType: BlockchainType,
         tokenType: TokenType,
-    ): Wallet {
-        val account = mockk<Account> {
-            every { id } returns accountId
-        }
+    ): Wallet = wallet(transactionSource(accountId, blockchainType), tokenType)
+
+    private fun wallet(source: TransactionSource, tokenType: TokenType): Wallet {
+        val blockchain = source.blockchain
         val token = mockk<Token> {
-            every { this@mockk.blockchainType } returns blockchainType
+            every { this@mockk.blockchain } returns blockchain
+            every { this@mockk.blockchainType } returns blockchain.type
             every { type } returns tokenType
         }
         return mockk {
-            every { this@mockk.account } returns account
+            every { account } returns source.account
             every { this@mockk.token } returns token
+            every { transactionSource } returns source
         }
+    }
+
+    private fun transactionSource(
+        accountId: String,
+        blockchainType: BlockchainType,
+    ): TransactionSource {
+        val account = mockk<Account> {
+            every { id } returns accountId
+        }
+        val blockchain = mockk<Blockchain> {
+            every { type } returns blockchainType
+        }
+        return TransactionSource(blockchain, account, null)
     }
 
     /** Adapter whose sync state can change inside [start], mimicking a kit that syncs instantly. */

@@ -21,10 +21,13 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.subjects.PublishSubject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
@@ -40,7 +43,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
@@ -249,48 +251,72 @@ class AdapterManager(
             (adapter as? IBalanceAdapter)?.let { subscribeToBalanceUpdates(wallet, it) }
         }
 
-        // Emit immediately so transaction loading can start with reusable adapters
-        if (reusable.isNotEmpty()) {
-            adaptersReadySubject.onNext(HashMap(adaptersMap))
-        }
-
-        // Create new adapters in parallel with two-phase emission:
-        // Phase 1: early batch after EARLY_BATCH_DELAY_MS — captures fast adapters
-        // Phase 2: final emission after all adapters complete
-        if (toCreate.isNotEmpty()) {
-            supervisorScope {
-                val jobs = toCreate.map { wallet ->
-                    launch {
-                        try {
-                            adapterFactory.getAdapterOrNull(wallet, activeLitecoinMwebAccounts)?.let {
-                                startAdapter(wallet, it)
-                            }
-                        } catch (ex: Exception) {
-                            Timber.e(ex, "Can't get adapter")
-                        }
-                    }
-                }
-
-                // Early batch: emit whatever is ready after a short delay
-                val earlyBatchJob = launch {
-                    delay(EARLY_BATCH_DELAY_MS)
-                    if (jobs.any { it.isActive }) {
-                        adaptersReadySubject.onNext(HashMap(adaptersMap))
-                    }
-                }
-
-                jobs.joinAll()
-                earlyBatchJob.cancel()
-            }
-
-            // Final emission with all adapters
-            adaptersReadySubject.onNext(HashMap(adaptersMap))
-        }
+        publishAdaptersAsSourcesBecomeReady(
+            reusable = reusable,
+            toCreate = toCreate,
+            activeLitecoinMwebAccounts = activeLitecoinMwebAccounts,
+        )
 
         // Stop observing if account changed
         if (previousAccountId != null && previousAccountId != activeAccountId) {
             pendingBalanceCalculator.stopObserving(previousAccountId)
         }
+    }
+
+    private suspend fun publishAdaptersAsSourcesBecomeReady(
+        reusable: Map<Wallet, IAdapter>,
+        toCreate: List<Wallet>,
+        activeLitecoinMwebAccounts: Set<String>,
+    ) = supervisorScope {
+        val pendingBySource = toCreate.groupBy { it.transactionSource }
+        val publishedAdapters = reusable
+            .filterKeys { it.transactionSource !in pendingBySource }
+            .toMutableMap()
+
+        if (publishedAdapters.isNotEmpty()) {
+            adaptersReadySubject.onNext(HashMap(publishedAdapters))
+        }
+
+        val publicationMutex = Mutex()
+        pendingBySource.map { (source, wallets) ->
+            launch {
+                val sourceCreated = createAdapters(wallets, activeLitecoinMwebAccounts)
+                if (!sourceCreated) return@launch
+
+                // A transaction adapter represents the whole source. Publishing a partial source
+                // would make TransactionAdapterManager repeatedly unlink and recreate that adapter.
+                publicationMutex.withLock {
+                    publishedAdapters.putAll(adaptersMap.filterKeys { it.transactionSource == source })
+                    adaptersReadySubject.onNext(HashMap(publishedAdapters))
+                }
+            }
+        }.joinAll()
+
+        if (toCreate.isNotEmpty()) {
+            // Preserve the final authoritative snapshot before initialization is marked complete.
+            adaptersReadySubject.onNext(HashMap(adaptersMap))
+        }
+    }
+
+    private suspend fun createAdapters(
+        wallets: List<Wallet>,
+        activeLitecoinMwebAccounts: Set<String>,
+    ): Boolean = supervisorScope {
+        wallets.map { wallet ->
+            async {
+                try {
+                    adapterFactory.getAdapterOrNull(wallet, activeLitecoinMwebAccounts)?.let {
+                        startAdapter(wallet, it)
+                        true
+                    } ?: false
+                } catch (ex: CancellationException) {
+                    throw ex
+                } catch (ex: Exception) {
+                    Timber.e(ex, "Can't get adapter")
+                    false
+                }
+            }
+        }.awaitAll().all { it }
     }
 
     private fun Wallet.needsLitecoinMwebRecreate(
@@ -549,9 +575,5 @@ class AdapterManager(
     private fun cancelBalanceSubscription(wallet: Wallet) {
         balanceSubscriptionJobs.remove(wallet)?.cancel()
         offlineModeManager.onAdapterGone(wallet)
-    }
-
-    companion object {
-        private const val EARLY_BATCH_DELAY_MS = 2000L
     }
 }
