@@ -24,7 +24,6 @@ desugar_jdk_libs = "2.1.5"
 firebaseBom = "34.11.0"
 firebaseCrashlyticsGradle = "3.0.6"
 googleServices = "4.4.4"
-grpcApi = "1.80.0"
 kotlin = "2.3.20"
 koin-bom = "4.2.0"
 compose-bom = "2026.05.01"
@@ -66,6 +65,7 @@ javax-inject = "1"
 appcompat = "1.7.1"
 swiperefreshlayout = "1.2.0"
 timber = "5.0.1"
+kermit = "2.1.0"
 
 tonKotlin = "0.5.0" # updated for ktor 3.x compatibility
 piratecash-ton = "v1.0.0-pcash.6"
@@ -92,7 +92,7 @@ android-core-ktx = "1.18.0"
 twitterText = "3.1.0"
 workRuntimeKtx = "2.11.2"
 workRxjava2 = "2.11.2"
-zcashAndroidSdk = "v2.7.0-rc.2-pcash.5"
+zcashSdkKmp = "v1.2.13"
 junitJupiter = "6.0.3"
 google-play-core = "2.1.0"
 bitcoinj = "0.17"
@@ -151,7 +151,6 @@ firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 firebase-crashlytics-ndk = { module = "com.google.firebase:firebase-crashlytics-ndk" }
 firebase-crashlytics-gradle = { module = "com.google.firebase:firebase-crashlytics-gradle", version.ref = "firebaseCrashlyticsGradle" }
 google-services = { module = "com.google.gms:google-services", version.ref = "googleServices" }
-grpc-api = { module = "io.grpc:grpc-api", version.ref = "grpcApi" }
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin-bom" }
 koin-core = { module = "io.insert-koin:koin-core" }
 koin-android = { module = "io.insert-koin:koin-android" }
@@ -252,8 +251,7 @@ javax-inject = { group = "javax.inject", name = "javax.inject", version.ref = "j
 androidx-material3-android = { group = "androidx.compose.material3", name = "material3-android" }
 twitter-text = { module = "com.twitter.twittertext:twitter-text", version.ref = "twitterText" }
 web3j-core = { module = "org.web3j:core", version.ref = "coreVersion" }
-zcash-android-sdk = { module = "com.github.piratecash.zcash-android-wallet-sdk:zcash-android-sdk", version.ref = "zcashAndroidSdk" }
-zcash-android-backend = { module = "com.github.piratecash.zcash-android-wallet-sdk:zcash-android-backend", version.ref = "zcashAndroidSdk" }
+zcash-sdk-kmp = { module = "com.github.piratecash.zcash-sdk-kmp:zcash-sdk", version.ref = "zcashSdkKmp" }
 junit-bom = { group = "org.junit", name = "junit-bom", version.ref = "junitJupiter" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
 junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher" }
@@ -270,6 +268,7 @@ roborazzi-compose = { group = "io.github.takahirom.roborazzi", name = "roborazzi
 roborazzi-preview-scanner-support = { group = "io.github.takahirom.roborazzi", name = "roborazzi-compose-preview-scanner-support", version.ref = "roborazzi" }
 composable-preview-scanner-android = { group = "io.github.sergio-sastre.ComposablePreviewScanner", name = "android", version.ref = "composablePreviewScanner" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 
 tor-android = { group = "info.guardianproject", name = "tor-android", version.ref = "tor-android" }
 

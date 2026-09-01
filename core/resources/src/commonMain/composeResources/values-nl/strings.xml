@@ -2170,7 +2170,6 @@ De app stelt u in staat een back-up te maken met een eenvoudig wachtwoord voor u
     <string name="error_hardware_wallet_some_tokens_not_found">Sommige tokens konden niet worden toegevoegd</string>
     <string name="send_error_address_unavailable">Adres niet beschikbaar</string>
     <string name="send_error_amount_unavailable">Bedrag niet beschikbaar</string>
-    <string name="send_error_zcash_params_not_downloaded">Zcash heeft de bestanden die nodig zijn om te verzenden nog niet gedownload. Maak verbinding met internet en probeer het opnieuw.</string>
     <string name="send_error_fee_rate_unavailable">Fee-tarief niet beschikbaar</string>
     <string name="send_error_balance_unavailable">Saldo niet beschikbaar</string>
     <string name="litecoin_mweb_invalid_amount">Ongeldig Litecoin MWEB-bedrag</string>
@@ -2224,6 +2223,7 @@ De app stelt u in staat een back-up te maken met een eenvoudig wachtwoord voor u
     <string name="transactions_migrate_to_ironwood">naar Ironwood</string>
     <string name="zcash_migration_publicly_visible_title">Publiek zichtbaar bedrag</string>
     <string name="zcash_migration_publicly_visible_description">Het verplaatsen van tegoed tussen pools vereist dat het gemigreerde bedrag publiek zichtbaar is op de blockchain. De afzender, ontvanger en je adressen blijven privé.</string>
+    <string name="zcash_migration_error_nothing_to_migrate">Er kan op dit moment niets worden verplaatst.</string>
     <string name="declined_tokens_title">Aangepaste tokens gevonden</string>
     <string name="declined_tokens_description">Deze tokens staan niet in de lijst met geverifieerde tokens: %s</string>
     <plurals name="declined_tokens_count">

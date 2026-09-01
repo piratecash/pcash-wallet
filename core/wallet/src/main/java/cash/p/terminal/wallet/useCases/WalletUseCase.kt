@@ -14,9 +14,11 @@ import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
 import cash.p.terminal.wallet.latestAccountOr
 import cash.p.terminal.wallet.entities.TokenQuery
+import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.expandedZcashAddressSpecTokens
 import cash.p.terminal.wallet.tokenQueryId
 import kotlinx.coroutines.flow.filter
+import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.coroutines.flow.first
 
 class WalletUseCase(
@@ -37,6 +39,12 @@ class WalletUseCase(
         walletManager.activeWallets.find {
             it.token.coin.uid == coinUid && it.token.blockchainType.uid == blockchainType
         }
+
+    /** Any active wallet of the chain can host its adapter; the native token is preferred. */
+    fun getWalletForBlockchain(blockchainType: BlockchainType): Wallet? {
+        val wallets = walletManager.activeWallets.filter { it.token.blockchainType == blockchainType }
+        return wallets.firstOrNull { it.token.type is TokenType.Native } ?: wallets.firstOrNull()
+    }
 
     suspend fun createWallets(tokensToAdd: Set<Token>): Boolean {
         val account = accountManager.activeAccount ?: return false

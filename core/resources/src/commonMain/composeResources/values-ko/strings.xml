@@ -2157,7 +2157,6 @@
     <string name="error_hardware_wallet_some_tokens_not_found">일부 토큰을 추가할 수 없습니다</string>
     <string name="send_error_address_unavailable">주소를 사용할 수 없습니다</string>
     <string name="send_error_amount_unavailable">금액을 사용할 수 없습니다</string>
-    <string name="send_error_zcash_params_not_downloaded">Zcash가 전송에 필요한 파일을 아직 다운로드하지 않았습니다. 인터넷에 연결한 후 다시 시도해 주세요.</string>
     <string name="send_error_fee_rate_unavailable">수수료율을 사용할 수 없습니다</string>
     <string name="send_error_balance_unavailable">잔액을 사용할 수 없습니다</string>
     <string name="litecoin_mweb_invalid_amount">Litecoin MWEB 금액이 올바르지 않습니다</string>
@@ -2211,6 +2210,7 @@
     <string name="transactions_migrate_to_ironwood">Ironwood로</string>
     <string name="zcash_migration_publicly_visible_title">공개적으로 표시되는 금액</string>
     <string name="zcash_migration_publicly_visible_description">풀 간 자금 이동을 위해서는 마이그레이션된 금액이 블록체인에 공개적으로 표시되어야 합니다. 발신자, 수신자 및 주소는 비공개 상태로 유지됩니다.</string>
+    <string name="zcash_migration_error_nothing_to_migrate">지금은 옮길 수 있는 항목이 없습니다.</string>
     <string name="declined_tokens_title">사용자 지정 토큰 발견됨</string>
     <string name="declined_tokens_description">이 토큰은 검증된 토큰 목록에 없습니다: %s</string>
     <plurals name="declined_tokens_count">

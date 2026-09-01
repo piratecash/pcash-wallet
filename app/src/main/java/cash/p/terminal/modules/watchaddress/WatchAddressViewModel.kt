@@ -2,8 +2,9 @@ package cash.p.terminal.modules.watchaddress
 
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.R
-import cash.p.terminal.core.App
-import cash.p.terminal.core.ILocalStorage
+import cash.p.terminal.core.adapters.zcash.ZcashAddressDeriver
+import cash.p.terminal.core.adapters.zcash.ZcashKey
+import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.entities.Address
 import cash.p.terminal.entities.BitcoinAddress
 import cash.p.terminal.ui_compose.entities.DataState
@@ -11,19 +12,12 @@ import cash.p.terminal.entities.tokenType
 import cash.p.terminal.modules.address.AddressParserChain
 import cash.p.terminal.modules.address.ZCashUfvkParser
 import cash.p.terminal.wallet.AccountType
-import cash.z.ecc.android.sdk.CloseableSynchronizer
-import cash.z.ecc.android.sdk.Synchronizer
-import cash.z.ecc.android.sdk.WalletInitMode
-import cash.z.ecc.android.sdk.model.AccountImportSetup
-import cash.z.ecc.android.sdk.model.AccountPurpose
-import cash.z.ecc.android.sdk.model.UnifiedFullViewingKey
-import cash.z.ecc.android.sdk.model.ZcashNetwork
-import co.electriccoin.lightwallet.client.model.LightWalletEndpoint
 import io.horizontalsystems.core.ViewModelUiState
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.hdwalletkit.HDExtendedKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -34,7 +28,7 @@ class WatchAddressViewModel(
     private val addressParserChain: AddressParserChain
 ) : ViewModelUiState<WatchAddressUiState>() {
 
-    private val localStorage: ILocalStorage by inject(ILocalStorage::class.java)
+    private val zcashAddressDeriver: ZcashAddressDeriver by inject(ZcashAddressDeriver::class.java)
 
     private var accountCreated = false
     private var submitButtonType: SubmitButtonType = SubmitButtonType.Next(false)
@@ -128,59 +122,22 @@ class WatchAddressViewModel(
     }
 
     private suspend fun isValidUfvkKey(input: String): Boolean {
-        var synchronizer: CloseableSynchronizer? = null
-        try {
-            // Clear previous synchronizer
-            Synchronizer.erase(
-                appContext = App.instance,
-                network = ZcashNetwork.Mainnet
-            )
-
-            synchronizer = Synchronizer.new(
-                context = App.instance,
-                zcashNetwork = ZcashNetwork.Mainnet,
-                lightWalletEndpoint = LightWalletEndpoint(
-                    host = "zec.rocks",
-                    port = 443,
-                    isSecure = true
-                ),
-                birthday = null,
-                walletInitMode = WalletInitMode.ExistingWallet,
-                setup = null,
-                isTorEnabled = localStorage.torEnabled,
-                isExchangeRateEnabled = false
-            )
-            (synchronizer as Synchronizer).getAccounts().forEach {
-                println("Account: ${it.ufvk}")
-            }
-            // Check first existing accounts
-            if ((synchronizer as Synchronizer).getAccounts().find { it.ufvk == input } == null) {
-                // Try to import account
-                (synchronizer as Synchronizer).importAccountByUfvk(
-                    AccountImportSetup(
-                        accountName = "check_address",
-                        keySource = "user input",
-                        purpose = AccountPurpose.ViewOnly,
-                        ufvk = UnifiedFullViewingKey(input)
-                    )
-                )
-            }
-            ufvkKey = input
-            type = Type.ZcashUfvk
-            inputState = DataState.Success(input)
-            withContext(Dispatchers.Main) {
-                syncSubmitButtonType()
-                emitState()
-            }
-            return true
-        } catch (t: Throwable) {
-            t.printStackTrace()
+        val unsupported = tryOrNull { zcashAddressDeriver.addresses(ZcashKey.ViewingKey(input)) } == null
+        // tryOrNull also swallows CancellationException, so the job's state is re-checked here.
+        currentCoroutineContext().ensureActive()
+        if (unsupported) {
             inputState = DataState.Error(UnsupportedAddress)
             type = Type.Unsupported
-        } finally {
-            synchronizer?.close()
+            return false
         }
-        return false
+        ufvkKey = input
+        type = Type.ZcashUfvk
+        inputState = DataState.Success(input)
+        withContext(Dispatchers.Main) {
+            syncSubmitButtonType()
+            emitState()
+        }
+        return true
     }
 
     private fun setXPubKey(input: String) {

@@ -1,6 +1,6 @@
 package cash.p.terminal.modules.nft.collection.assets
 
-import cash.z.ecc.android.sdk.ext.collectWith
+import io.horizontalsystems.core.collectWith
 import cash.p.terminal.core.providers.nft.INftProvider
 import cash.p.terminal.core.providers.nft.PaginationData
 import io.horizontalsystems.core.entities.CurrencyValue

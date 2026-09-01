@@ -2167,7 +2167,6 @@
     <string name="error_hardware_wallet_some_tokens_not_found">برخی توکن‌ها اضافه نشدند</string>
     <string name="send_error_address_unavailable">آدرس در دسترس نیست</string>
     <string name="send_error_amount_unavailable">مبلغ در دسترس نیست</string>
-    <string name="send_error_zcash_params_not_downloaded">Zcash هنوز فایل‌های لازم برای ارسال را دانلود نکرده است. به اینترنت متصل شوید و دوباره تلاش کنید.</string>
     <string name="send_error_fee_rate_unavailable">نرخ کارمزد در دسترس نیست</string>
     <string name="send_error_balance_unavailable">موجودی در دسترس نیست</string>
     <string name="litecoin_mweb_invalid_amount">مبلغ Litecoin MWEB نامعتبر است</string>
@@ -2221,6 +2220,7 @@
     <string name="transactions_migrate_to_ironwood">به Ironwood</string>
     <string name="zcash_migration_publicly_visible_title">مبلغ قابل مشاهده عمومی</string>
     <string name="zcash_migration_publicly_visible_description">انتقال وجوه بین استخرها نیاز دارد که مبلغ منتقل‌شده بر روی بلاکچین به صورت عمومی قابل مشاهده باشد. فرستنده، گیرنده و آدرس‌های شما خصوصی باقی می‌مانند.</string>
+    <string name="zcash_migration_error_nothing_to_migrate">در حال حاضر چیزی برای انتقال وجود ندارد.</string>
     <string name="declined_tokens_title">توکن‌های سفارشی یافت شد</string>
     <string name="declined_tokens_description">این توکن‌ها در فهرست توکن‌های تأیید شده نیستند: %s</string>
     <plurals name="declined_tokens_count">

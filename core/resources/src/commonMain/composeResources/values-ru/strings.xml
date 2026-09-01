@@ -1919,7 +1919,6 @@
     <string name="error_hardware_wallet_some_tokens_not_found">Некоторые токены не удалось добавить</string>
     <string name="send_error_address_unavailable">Адрес недоступен</string>
     <string name="send_error_amount_unavailable">Сумма недоступна</string>
-    <string name="send_error_zcash_params_not_downloaded">Zcash ещё не загрузил файлы, нужные для отправки. Подключитесь к интернету и повторите попытку.</string>
     <string name="send_error_fee_rate_unavailable">Ставка комиссии недоступна</string>
     <string name="send_error_balance_unavailable">Баланс недоступен</string>
     <string name="litecoin_mweb_invalid_amount">Некорректная сумма Litecoin MWEB</string>
@@ -2394,6 +2393,7 @@
     <string name="transactions_migrate_to_ironwood">на Ironwood</string>
     <string name="zcash_migration_publicly_visible_title">Публично видимая сумма</string>
     <string name="zcash_migration_publicly_visible_description">Перемещение средств между пулами требует, чтобы переносимая сумма была публично видна в блокчейне. Отправитель, получатель и ваши адреса остаются приватными.</string>
+    <string name="zcash_migration_error_nothing_to_migrate">Сейчас нечего переносить.</string>
     <string name="declined_tokens_title">Найдены пользовательские токены</string>
     <string name="declined_tokens_description">Эти токены отсутствуют в списке проверенных токенов: %s</string>
     <plurals name="declined_tokens_count">

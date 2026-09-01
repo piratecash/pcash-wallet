@@ -2163,7 +2163,6 @@
     <string name="error_hardware_wallet_some_tokens_not_found">Não foi possível adicionar alguns tokens</string>
     <string name="send_error_address_unavailable">Endereço indisponível</string>
     <string name="send_error_amount_unavailable">Montante indisponível</string>
-    <string name="send_error_zcash_params_not_downloaded">O Zcash ainda não descarregou os ficheiros necessários para enviar. Ligue-se à Internet e tente novamente.</string>
     <string name="send_error_fee_rate_unavailable">Taxa de comissão indisponível</string>
     <string name="send_error_balance_unavailable">Saldo indisponível</string>
     <string name="litecoin_mweb_invalid_amount">Montante Litecoin MWEB inválido</string>
@@ -2217,6 +2216,7 @@
     <string name="transactions_migrate_to_ironwood">para Ironwood</string>
     <string name="zcash_migration_publicly_visible_title">Montante publicamente visível</string>
     <string name="zcash_migration_publicly_visible_description">Mover fundos entre pools exige que o montante migrado seja publicamente visível na blockchain. O remetente, o destinatário e os seus endereços permanecem privados.</string>
+    <string name="zcash_migration_error_nothing_to_migrate">Neste momento não há nada para mover.</string>
     <string name="declined_tokens_title">Tokens personalizados encontrados</string>
     <string name="declined_tokens_description">Estes tokens não estão na lista de tokens verificados: %s</string>
     <plurals name="declined_tokens_count">

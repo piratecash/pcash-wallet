@@ -107,12 +107,7 @@ class AdapterManagerTest {
         adapterManager.quit()
     }
 
-    /**
-     * Verifies the fix from commit 69888376b:
-     * Old adapters must be stopped BEFORE new ones are created.
-     * This is critical for Zcash SDK which forbids creating a new Synchronizer
-     * while another one with the same alias is still active.
-     */
+    /** Verifies commit 69888376b: stop() is called before replacement creation begins. */
     @Test
     fun initAdapters_stopsOldAdaptersBeforeCreatingNew() = testScope.runTest {
         val oldWallet: Wallet = mockk(relaxed = true)

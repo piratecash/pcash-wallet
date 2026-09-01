@@ -23,32 +23,24 @@ private val BUCKET_1 = BigDecimal.ONE
 private val BUCKET_10 = BigDecimal.TEN
 private val BUCKET_100 = BigDecimal("100")
 
-/** Three-state view of `ProcessorInfo.overallSyncRange` that never conflates `null` with empty. */
-internal enum class SyncRangeState { Unknown, Empty, NonEmpty }
-
 /**
- * Immutable diagnostic snapshot. Height/range/progress fields are nullable and copied as-is (no
- * rejection). The three balance amounts are also nullable — `null` means the SDK balance had not
- * loaded yet and is kept distinct from a genuine zero; they are only ever coarsened via [coarse].
+ * Immutable diagnostic snapshot. Height fields are nullable and copied as-is (no rejection). The
+ * three balance amounts are also nullable — `null` means the SDK balance had not loaded yet and is
+ * kept distinct from a genuine zero; they are only ever coarsened via [coarse].
  */
 internal data class ZcashDiagSnapshot(
     val pool: String,
     val syncStateDiscriminator: String,
     val chainTipHeight: Long?,
-    val fullyScannedHeight: Long?,
-    val scanProgressPercent: Int?,
-    val recoveryProgressPercent: Int?,
-    val overallSyncRangeState: SyncRangeState,
-    val overallSyncRangeStart: Long?,
-    val overallSyncRangeEnd: Long?,
-    val firstUnenhancedHeight: Long?,
+    val scannedHeight: Long?,
+    val syncTargetHeight: Long?,
     val available: BigDecimal?,
     val changePending: BigDecimal?,
     val valuePending: BigDecimal?,
 ) {
     val scanGap: Long?
-        get() = if (chainTipHeight != null && fullyScannedHeight != null) {
-            chainTipHeight - fullyScannedHeight
+        get() = if (chainTipHeight != null && scannedHeight != null) {
+            chainTipHeight - scannedHeight
         } else {
             null
         }
@@ -112,12 +104,9 @@ internal fun diagFields(s: ZcashDiagSnapshot): Map<String, String> {
         "pool" to s.pool,
         "syncState" to s.syncStateDiscriminator,
         "chainTipHeight" to (s.chainTipHeight?.toString() ?: DASH),
-        "fullyScannedHeight" to (s.fullyScannedHeight?.toString() ?: DASH),
+        "scannedHeight" to (s.scannedHeight?.toString() ?: DASH),
+        "syncTargetHeight" to (s.syncTargetHeight?.toString() ?: DASH),
         "scanGap" to (s.scanGap?.toString() ?: DASH),
-        "scanProgress%" to (s.scanProgressPercent?.toString() ?: DASH),
-        "recoveryProgress%" to (s.recoveryProgressPercent?.toString() ?: DASH),
-        "overallSyncRange" to renderRange(s),
-        "firstUnenhancedHeight" to (s.firstUnenhancedHeight?.toString() ?: DASH),
         "available>0" to coarse.available,
         "changePending>0" to coarse.changePending,
         "valuePending>0" to coarse.valuePending,
@@ -136,10 +125,4 @@ internal fun poolLabel(spec: AddressSpecType?): String = when (spec) {
     AddressSpecType.Transparent -> "Transparent"
     AddressSpecType.Unified -> "Unified"
     null -> "Sapling"
-}
-
-private fun renderRange(s: ZcashDiagSnapshot): String = when (s.overallSyncRangeState) {
-    SyncRangeState.Unknown -> DASH
-    SyncRangeState.Empty -> "empty"
-    SyncRangeState.NonEmpty -> "${s.overallSyncRangeStart}..${s.overallSyncRangeEnd}"
 }

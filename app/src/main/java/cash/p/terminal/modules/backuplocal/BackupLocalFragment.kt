@@ -14,13 +14,12 @@ import cash.p.terminal.modules.backuplocal.fullbackup.SelectBackupItemsScreen
 import cash.p.terminal.modules.backuplocal.password.BackupType
 import cash.p.terminal.modules.backuplocal.password.LocalBackupPasswordScreen
 import cash.p.terminal.modules.backuplocal.terms.LocalBackupTermsScreen
-import cash.p.terminal.ui_compose.getInput
 
 class BackupLocalFragment : BaseComposeFragment(screenshotEnabled = false) {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val account = navController.getInput<Account>()
+        val account = getInput<Account>()
         if (account != null) {
             SingleWalletBackupNavHost(navController, account.id)
         } else {

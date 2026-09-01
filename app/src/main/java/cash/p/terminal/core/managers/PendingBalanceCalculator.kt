@@ -28,6 +28,9 @@ class PendingBalanceCalculator(
 ) : Clearable {
     private companion object {
         val CONFIRMATION_BALANCE_TOLERANCE_RATE = BigDecimal("0.05")
+
+        /** A row here can outlive its broadcast without a hash, so it stays matchable in history. */
+        val HASHLESS_CONFIRMED_BY_BALANCE = setOf(BlockchainType.Ton.uid)
     }
 
     private val pendingCache = ConcurrentHashMap<String, List<PendingTransactionEntity>>()
@@ -69,23 +72,29 @@ class PendingBalanceCalculator(
         pendingCache.clear()
     }
 
-    fun adjustBalance(wallet: Wallet, rawBalance: BalanceData): BalanceData {
+    fun adjustBalance(
+        wallet: Wallet,
+        rawBalance: BalanceData,
+    ): BalanceData {
+        if (wallet.token.blockchainType == BlockchainType.Zcash) return rawBalance
         val pendingList = pendingCache[wallet.account.id] ?: return rawBalance
-        val adjustedAvailable = calculateAdjustedAvailable(pendingList, wallet.token, rawBalance.available)
+        val adjustedAvailable =
+            calculateAdjustedAvailable(pendingList, wallet, rawBalance.available)
         return rawBalance.copy(available = adjustedAvailable)
     }
 
     /**
      * Smart deduction algorithm that automatically handles different SDK behaviors:
      * - TON/EVM: SDK doesn't deduct until confirmed → we apply full deduction
-     * - Bitcoin/Zcash: SDK deducts immediately → we apply 0 deduction
+     * - Bitcoin: SDK deducts immediately → we apply 0 deduction
      * - Mixed: SDK partially deducted → we apply remaining deduction
      */
     private fun calculateAdjustedAvailable(
         pendingList: List<PendingTransactionEntity>,
-        token: Token,
-        currentSdkBalance: BigDecimal
+        wallet: Wallet,
+        currentSdkBalance: BigDecimal,
     ): BigDecimal {
+        val token = wallet.token
         val relevantPending = pendingList.filter { it.matches(token) }
         if (relevantPending.isEmpty()) return currentSdkBalance
 
@@ -127,7 +136,7 @@ class PendingBalanceCalculator(
             decimals = token.decimals,
             isNativeToken = isNativeToken,
             currentSdkBalance = currentSdkBalance,
-            skipCleanupForMweb = isLitecoinMweb,
+            skipCleanup = token.blocksBalanceCleanup(),
         )
 
         return mwebZeroSnapshotFallbackAvailable ?: adjustedAfterDeduction
@@ -138,12 +147,9 @@ class PendingBalanceCalculator(
         decimals: Int,
         isNativeToken: Boolean,
         currentSdkBalance: BigDecimal,
-        skipCleanupForMweb: Boolean,
+        skipCleanup: Boolean,
     ) {
-        if (skipCleanupForMweb) {
-            // MWEB replaces spent confirmed inputs with unconfirmed change right after broadcast.
-            return
-        }
+        if (skipCleanup) return
 
         val idsToDelete = mutableListOf<String>()
         val idsToMarkBalanceConfirmed = mutableListOf<String>()
@@ -154,8 +160,7 @@ class PendingBalanceCalculator(
             }
 
             if (entity.txHash.isNullOrBlank()) {
-                if (entity.blockchainTypeUid == BlockchainType.Ton.uid) {
-                    // TON does not return a hash at broadcast, so the row must remain matchable.
+                if (entity.blockchainTypeUid in HASHLESS_CONFIRMED_BY_BALANCE) {
                     idsToMarkBalanceConfirmed.add(entity.id)
                 }
             } else {
@@ -174,6 +179,9 @@ class PendingBalanceCalculator(
             }
         }
     }
+
+    // MWEB replaces spent confirmed inputs with unconfirmed change right after broadcast.
+    private fun Token.blocksBalanceCleanup() = isLitecoinMweb
 
     private fun PendingTransactionEntity.matches(token: Token): Boolean {
         return coinUid == token.coin.uid &&

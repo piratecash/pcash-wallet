@@ -306,7 +306,6 @@
     <ID>CyclomaticComplexMethod:UnifiedAddressCheckerViewModel.kt$UnifiedAddressCheckerViewModel$private suspend fun performSingleCheck(address: Address, type: IssueType): CheckState</ID>
     <ID>CyclomaticComplexMethod:WatchAddressService.kt$WatchAddressService$fun tokens(accountType: AccountType): List&lt;Token&gt;</ID>
     <ID>CyclomaticComplexMethod:WatchAddressViewModel.kt$WatchAddressViewModel$private fun getAccountType()</ID>
-    <ID>CyclomaticComplexMethod:ZcashAdapter.kt$ZcashAdapter$private suspend fun createNewSynchronizer()</ID>
     <ID>EmptyCatchBlock:CoreUtils.kt$ProcessUtils${ }</ID>
     <ID>EmptyCatchBlock:SwapFragment.kt${ }</ID>
     <ID>EmptyCatchBlock:TorControl.kt$TorControl${ }</ID>
@@ -361,7 +360,6 @@
     <ID>InstanceOfCheckForException:SendBitcoinViewModel.kt$SendBitcoinViewModel$e is TangemSdkError</ID>
     <ID>InstanceOfCheckForException:SendEvmConfirmationFragment.kt$t is JsonRpc.ResponseError.RpcError</ID>
     <ID>InstanceOfCheckForException:SendTonFeeService.kt$SendTonFeeService$e is ClientException</ID>
-    <ID>InstanceOfCheckForException:ZcashAdapter.kt$ZcashAdapter$ex is TransactionEncoderException.ProposalFromParametersException</ID>
     <ID>InvalidPackageDeclaration:BalancePresenterTest.kt$package cash.p.terminal.modules.balance</ID>
     <ID>InvalidPackageDeclaration:BalanceSorterTest.kt$package cash.p.terminal.modules.balance</ID>
     <ID>InvalidPackageDeclaration:BalanceViewItemFactoryTest.kt$package cash.p.terminal.modules.balance</ID>
@@ -420,8 +418,6 @@
     <ID>LargeClass:TransactionRecordRepositoryWalletSwitchTest.kt$TransactionRecordRepositoryWalletSwitchTest</ID>
     <ID>LargeClass:TransactionViewItemFactory.kt$TransactionViewItemFactory</ID>
     <ID>LargeClass:TransactionViewItemFactoryHelper.kt$TransactionViewItemFactoryHelper</ID>
-    <ID>LargeClass:ZcashAdapter.kt$ZcashAdapter : IAdapterIBalanceAdapterIReceiveAdapterITransactionsAdapterISendZcashAdapterOneTimeReceiveAdapter</ID>
-    <ID>LargeClass:ZcashAdapterCorruptionRecoveryTest.kt$ZcashAdapterCorruptionRecoveryTest</ID>
     <ID>LongMethod:AboutFragment.kt$@Composable private fun SettingSections( viewModel: AboutViewModel, navController: NavController )</ID>
     <ID>LongMethod:AboutPremiumScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun AboutPremiumScreen( uiState: AboutPremiumUiState, uiEvents: Flow&lt;TrialPremiumResult&gt;, onRetryClick: () -&gt; Unit, onCloseClick: () -&gt; Unit, onUrlClick: (String) -&gt; Unit, onTryForFreeClick: () -&gt; Unit )</ID>
     <ID>LongMethod:AboutPremiumViewModel.kt$AboutPremiumViewModel$private fun loadContent()</ID>
@@ -723,7 +719,6 @@
     <ID>LongMethod:WatchAddressFragment.kt$@Composable fun WatchAddressScreen(navController: NavController, popUpToInclusiveId: Int, inclusive: Boolean)</ID>
     <ID>LongMethod:WatchAddressService.kt$WatchAddressService$fun tokens(accountType: AccountType): List&lt;Token&gt;</ID>
     <ID>LongMethod:WcRequestScreen.kt$@Composable fun WcRequestScreen( navController: NavController, sessionRequest: Wallet.Model.SessionRequest, wcAction: AbstractWCAction )</ID>
-    <ID>LongMethod:ZcashAdapter.kt$ZcashAdapter$private suspend fun createNewSynchronizer()</ID>
     <ID>LongMethod:ZcashConfigureFragment.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ZcashConfigureScreen( onCloseClick: () -&gt; Unit, onCloseWithResult: (TokenConfig) -&gt; Unit, initialConfig: TokenConfig? = null, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets )</ID>
     <ID>LongParameterList:AdapterFactory.kt$AdapterFactory$( private val context: Context, private val btcBlockchainManager: BtcBlockchainManager, private val evmBlockchainManager: EvmBlockchainManager, private val evmSyncSourceManager: EvmSyncSourceManager, private val solanaKitManager: SolanaKitManager, private val tronKitManager: TronKitManager, private val tonKitManager: TonKitManager, private val stellarKitManager: StellarKitManager, private val moneroKitManager: MoneroKitManager, private val backgroundManager: BackgroundManager, private val restoreSettingsManager: RestoreSettingsManager, private val coinManager: ICoinManager, private val evmLabelManager: EvmLabelManager, private val localStorage: ILocalStorage, private val masterNodesRepository: MasterNodesRepository, private val getBnbAddressUseCase: GetBnbAddressUseCase, private val feeRateProvider: FeeRateProvider, private val dispatcherProvider: DispatcherProvider, private val walletManager: IWalletManager, )</ID>
     <ID>LongParameterList:AdapterManager.kt$AdapterManager$( private val walletManager: IWalletManager, private val adapterFactory: AdapterFactory, private val btcBlockchainManager: BtcBlockchainManager, private val evmBlockchainManager: EvmBlockchainManager, private val solanaKitManager: SolanaKitManager, private val tronKitManager: TronKitManager, private val tonKitManager: TonKitManager, private val moneroKitManager: MoneroKitManager, private val stellarKitManager: StellarKitManager, private val pendingBalanceCalculator: PendingBalanceCalculator, private val fallbackAddressProvider: FallbackAddressProvider, private val offlineModeManager: OfflineModeManager, dispatcherProvider: DispatcherProvider )</ID>
@@ -762,7 +757,7 @@
     <ID>LongParameterList:MultiSwapExchangeScreen.kt$( uiState: MultiSwapExchangeUiState?, timeRemainingProgress: () -&gt; Float?, onSwap: () -&gt; Unit, onRefresh: () -&gt; Unit, onContinueLater: () -&gt; Unit, onDeleteAndClose: () -&gt; Unit, onBack: () -&gt; Unit, onClickProvider: () -&gt; Unit, onClickLeg1: () -&gt; Unit = {}, swapButtonTitle: String = stringResource(R.string.Swap), )</ID>
     <ID>LongParameterList:MultiSwapExchangeViewModel.kt$MultiSwapExchangeViewModel$( private val pendingMultiSwapId: String, private val pendingMultiSwapStorage: PendingMultiSwapStorage, private val marketKit: MarketKitWrapper, private val numberFormatter: IAppNumberFormatter, private val onChainMonitor: MultiSwapOnChainMonitor, private val swapQuoteService: SwapQuoteService, private val swapProvidersRepository: SwapProvidersRepository, private val fetchSwapQuotesUseCase: FetchSwapQuotesUseCase, private val timerService: TimerService, private val syncPendingMultiSwapUseCase: SyncPendingMultiSwapUseCase, private val assetFiatRateService: AssetFiatRateService, currencyManager: CurrencyManager, adapterManager: IAdapterManager, private val balanceHiddenManager: IBalanceHiddenManager, private val walletManager: IWalletManager, private val walletUseCase: WalletUseCase, private val accountManager: IAccountManager, private val syncIntervalMs: Long = SYNC_INTERVAL_MS, )</ID>
     <ID>LongParameterList:PayCoreProvider.kt$PayCoreProvider$( override val walletUseCase: WalletUseCase, private val apiService: PayCoreApiService, private val banksRepository: PayCoreBanksRepository, private val walletApprovalService: PayCoreWalletApprovalService, private val secureStorage: PayCoreSecureStorage, private val featureToggle: PayCoreFeatureToggle, private val accountManager: IAccountManager, private val adapterManager: IAdapterManager, private val swapProviderTransactionsStorage: SwapProviderTransactionsStorage, private val dispatcherProvider: DispatcherProvider, )</ID>
-    <ID>LongParameterList:PendingTransactionRecord.kt$PendingTransactionRecord$( uid: String, transactionHash: String, timestamp: Long, source: TransactionSource, token: Token, val amount: BigDecimal, toAddress: String, fromAddress: String, val expiresAt: Long, memo: String? )</ID>
+    <ID>LongParameterList:PendingTransactionRecord.kt$PendingTransactionRecord$( uid: String, transactionHash: String, timestamp: Long, source: TransactionSource, token: Token, val amount: BigDecimal, toAddress: String, fromAddress: String, val expiresAt: Long, memo: String?, val isIronwoodMigration: Boolean = false, )</ID>
     <ID>LongParameterList:QRScannerScreen.kt$( uiState: QRScannerUiState, title: String, navController: NavController, showPasteButton: Boolean, allowGalleryWithoutPremium: Boolean = false, onScan: (String) -&gt; Unit, onCloseClick: () -&gt; Unit, onCameraPermissionSettingsClick: () -&gt; Unit, onGalleryImagePicked: (Uri) -&gt; Unit, onErrorMessageConsumed: () -&gt; Unit, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, )</ID>
     <ID>LongParameterList:ResetUseCase.kt$ResetUseCase$( private val context: Context, private val localStorage: ILocalStorage, private val appDatabase: AppDatabase, private val accountManager: IAccountManager, private val adapterManager: IAdapterManager, private val accountCleaner: IAccountCleaner, private val contactsRepository: ContactsRepository, private val dispatcherProvider: DispatcherProvider, private val glanceManager: GlanceAppWidgetManager, private val appIconService: AppIconService, )</ID>
     <ID>LongParameterList:RestoreBlockchainsService.kt$RestoreBlockchainsService$( private val accountName: String, private val accountType: AccountType, private val manualBackup: Boolean, private val fileBackup: Boolean, private val accountFactory: IAccountFactory, private val accountManager: IAccountManager, private val walletManager: IWalletManager, private val marketKit: MarketKitWrapper, private val tokenAutoEnableManager: TokenAutoEnableManager, private val blockchainTokensService: BlockchainTokensService, private val restoreSettingsService: RestoreSettingsService )</ID>
@@ -776,7 +771,7 @@
     <ID>LongParameterList:SendMoneroViewModel.kt$SendMoneroViewModel$( wallet: Wallet, val sendToken: Token, val adapter: ISendMoneroAdapter, xRateService: XRateService, private val amountService: SendAmountService, private val addressService: SendMoneroAddressService, override val coinMaxAllowedDecimals: Int, private val showAddressInput: Boolean, private val contactsRepo: ContactsRepository, private val connectivityManager: ConnectivityManager, private val address: Address?, private val adapterManager: IAdapterManager, private val dispatcherProvider: DispatcherProvider, private val offlineTransactionPayloadEncoder: OfflineTransactionPayloadEncoder, private val offlineSignedTransactionRepository: OfflineSignedTransactionRepository, )</ID>
     <ID>LongParameterList:SendSmsNotificationScreen.kt$( navController: NavController, uiState: SendSmsNotificationUiState, onAccountSelected: (Account) -&gt; Unit, onAddressChanged: (String) -&gt; Unit, onMemoChanged: (String) -&gt; Unit, onSaveClick: () -&gt; Unit, onTestSmsClick: () -&gt; Unit, onSaveSuccessShown: () -&gt; Unit, onTestResultShown: () -&gt; Unit, onCancelTest: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
     <ID>LongParameterList:SendZCashScreen.kt$( title: String, navController: NavController, viewModel: SendZCashViewModel, amountInputModeViewModel: AmountInputModeViewModel, prefilledData: PrefilledData?, addressCheckerControl: AddressCheckerControl, onNextClick: (ProceedActionData) -&gt; Unit, onOfflineSignClick: () -&gt; Unit, )</ID>
-    <ID>LongParameterList:SendZecOnDuressUseCase.kt$SendZecOnDuressUseCase$( private val smsNotificationSettings: ISmsNotificationSettings, private val accountsStorage: IAccountsStorage, private val walletManager: IWalletManager, private val dispatcherProvider: DispatcherProvider, private val context: Context, private val localStorage: ILocalStorage, private val backgroundManager: BackgroundManager, private val restoreSettingsManager: RestoreSettingsManager, private val adapterManager: IAdapterManager, private val coinManager: ICoinManager, private val walletFactory: WalletFactory, private val clearZCashWalletDataUseCase: ClearZCashWalletDataUseCase, private val accountManager: IAccountManager, private val offlineModeUseCase: OfflineModeUseCase, )</ID>
+    <ID>LongParameterList:SendZecOnDuressUseCase.kt$SendZecOnDuressUseCase$( private val smsNotificationSettings: ISmsNotificationSettings, private val accountsStorage: IAccountsStorage, private val walletManager: IWalletManager, private val dispatcherProvider: DispatcherProvider, private val adapterFactory: AdapterFactory, private val adapterManager: IAdapterManager, private val coinManager: ICoinManager, private val walletFactory: WalletFactory, private val accountManager: IAccountManager, private val offlineModeUseCase: OfflineModeUseCase, )</ID>
     <ID>LongParameterList:StonFiProvider.kt$StonFiProvider$( offerAddress: String, askAddress: String, units: String, slippageTolerance: BigDecimal, poolAddress: String?, referralAddress: String?, referralFeeBps: Int?, preferredVersions: List&lt;Int&gt; )</ID>
     <ID>LongParameterList:SwapConfirmScreen.kt$( fiatAmount: BigDecimal?, borderTop: Boolean = true, currency: Currency, title: String, amountColor: Color, imageUrl: String?, alternativeImageUrl: String?, imagePlaceholder: Int?, badge: String?, amountFormatted: String?, )</ID>
     <ID>LongParameterList:SwapConfirmScreen.kt$( fragmentNavController: NavController, swapNavController: NavController, quote: SwapProviderQuote, settings: Map&lt;String, Any?&gt;, provider: IMultiSwapProvider?, displayBalance: BigDecimal?, balanceHidden: Boolean, feeToken: Token?, feeCoinBalance: BigDecimal?, onToggleHideBalance: () -&gt; Unit, onOpenSettings: (() -&gt; Unit)? = null, multiSwapLegInfo: MultiSwapLegInfo? = null, )</ID>
@@ -1079,7 +1074,6 @@
     <ID>MaxLineLength:TonHelperKtTest.kt$TonHelperKtTest$val expected = "te6ccgECAwEAARoAAawPin6lAAAAAAAAAE1CPDRgCAAhPiXVKvsD1hxGhnnmesB49ksyqyDn0xoH/5PQAiWc0QAEJ8S6pV9gesOI0M88z1gPHslmVWQc+mNA//J6AESzmgQXcQEB4WZk3iqAAhPiXVKvsD1hxGhnnmesB49ksyqyDn0xoH/5PQAiWc0QAEJ8S6pV9gesOI0M88z1gPHslmVWQc+mNA//J6AESzmiAAhPiXVKvsD1hxGhnnmesB49ksyqyDn0xoH/5PQAiWc0AAAAAAAAAcJAAgCVQL68IAgAIT4l1Sr7A9YcRoZ55nrAePZLMqsg59MaB/+T0AIlnNAAABlAAQnxLqlX2B6w4jQzzzPWA8eyWZVZBz6Y0D/8noARLOaI"</ID>
     <ID>MaxLineLength:TransactionInfoViewItemFactory.kt$TransactionInfoViewItemFactory$if</ID>
     <ID>MaxLineLength:UtxoExpertModeViewModel.kt$UtxoExpertModeViewModel$private fun getUnspentId(unspentOutputInfo: UnspentOutputInfo)</ID>
-    <ID>MaxLineLength:ZcashTransactionsProvider.kt$ZcashTransactionsProvider$filtered.indexOfFirst { it.transactionHash.contentEquals(transactionHash) &amp;&amp; it.timestamp == timestamp &amp;&amp; it.transactionIndex == transactionIndex } + 1</ID>
     <ID>MayBeConst:AppConfigProvider.kt$AppConfigProvider$val fiatDecimal: Int = 2</ID>
     <ID>MayBeConst:ChartIndicatorManager.kt$ChartIndicatorManager.Companion$val rsiPeriod = 12</ID>
     <ID>MayBeConst:TransactionViewItemFactoryHelper.kt$TransactionViewItemFactoryHelper$val zeroAddress = "0x0000000000000000000000000000000000000000"</ID>
@@ -1844,10 +1838,6 @@
     <ID>TooGenericExceptionThrown:WCRequestEvmViewModel.kt$WCRequestEvmViewModel$throw Exception("Invalid Data")</ID>
     <ID>TooGenericExceptionThrown:WCRequestEvmViewModel.kt$WCRequestEvmViewModel$throw Exception("Unsupported Chain")</ID>
     <ID>TooGenericExceptionThrown:WatchAddressViewModel.kt$WatchAddressViewModel$throw Exception()</ID>
-    <ID>TooGenericExceptionThrown:ZcashAdapter.kt$ZcashAdapter$throw Exception("No account found")</ID>
-    <ID>TooGenericExceptionThrown:ZcashAdapter.kt$ZcashAdapter$throw Throwable("Failed to create proposal")</ID>
-    <ID>TooGenericExceptionThrown:ZcashAdapter.kt$throw Exception("Zcash raw transaction broadcast was not attempted")</ID>
-    <ID>TooGenericExceptionThrown:ZcashAdapter.kt$throw Exception(description ?: "Zcash raw transaction broadcast failed: $code")</ID>
     <ID>TooManyFunctions:AccountsDao.kt$AccountsDao</ID>
     <ID>TooManyFunctions:AppDatabase.kt$AppDatabase : RoomDatabase</ID>
     <ID>TooManyFunctions:BackupProvider.kt$BackupProvider</ID>
@@ -2081,8 +2071,6 @@
     <ID>UnusedParameter:MultiSwapExchangeScreen.kt$leg: LegUiState</ID>
     <ID>UnusedParameter:NftMetadataService.kt$NftMetadataService$nftUids: Set&lt;NftUid&gt;</ID>
     <ID>UnusedParameter:NftPreview.kt$onSale: Boolean</ID>
-    <ID>UnusedParameter:ZcashAdapter.kt$ZcashAdapter$errorHeight: BlockHeight</ID>
-    <ID>UnusedParameter:ZcashAdapter.kt$ZcashAdapter$rewindHeight: BlockHeight</ID>
     <ID>UnusedPrivateClass:SwapFragment.kt$SwapSelectLegProviderPage</ID>
     <ID>UnusedPrivateMember:CoinAnalyticsInfoFragment.kt$@Preview @Composable private fun Preview_CoinAnalyticsInfoScreen()</ID>
     <ID>UnusedPrivateMember:Components.kt$@Preview @Composable private fun Preview_AnalyticsBarChartDisabled()</ID>
@@ -2116,7 +2104,6 @@
     <ID>UnusedPrivateMember:SwapFragment.kt$@Composable private fun MultiSwapLegCard( legIndex: Int, quote: SwapProviderQuote, onClickProvider: () -&gt; Unit, navController: NavController, )</ID>
     <ID>UnusedPrivateMember:TransactionDoubleSpendInfoFragment.kt$@Preview @Composable private fun Preview_InfoScreen()</ID>
     <ID>UnusedPrivateMember:ZcashConfigureFragment.kt$@Preview @Composable private fun Preview_ZcashConfigure()</ID>
-    <ID>UnusedPrivateMember:ZcashTransaction.kt$ZcashTransaction$private fun ByteArray?.toUtf8Memo(): String</ID>
     <ID>UnusedPrivateProperty:BalanceSorterTest.kt$BalanceSorterTest$private val sorter = BalanceSorter()</ID>
     <ID>UnusedPrivateProperty:EvmAddressParserTest.kt$EvmAddressParserTest$private lateinit var addressParser: AddressUriParser</ID>
     <ID>UnusedPrivateProperty:NftCollectionAssetsService.kt$NftCollectionAssetsService$private val blockchainType: BlockchainType</ID>
@@ -2173,8 +2160,6 @@
     <ID>UseCheckOrError:TronAddressParser.kt$TronAddressParser$throw IllegalStateException("Wrong uncompressed public key format")</ID>
     <ID>UseCheckOrError:UnifiedAddressCheckerViewModel.kt$UnifiedAddressCheckerViewModel$throw IllegalStateException("No internet connection")</ID>
     <ID>UseCheckOrError:WatchAddressViewModel.kt$WatchAddressViewModel$throw IllegalStateException("Unsupported address type")</ID>
-    <ID>UseCheckOrError:ZcashAdapterCorruptionRecoveryTest.kt$ZcashAdapterCorruptionRecoveryTest$throw IllegalStateException("Another synchronizer with SynchronizerKey")</ID>
-    <ID>UseCheckOrError:ZcashAdapterCorruptionRecoveryTest.kt$ZcashAdapterCorruptionRecoveryTest$throw IllegalStateException("synchronizer still active")</ID>
     <ID>UseRequire:BackupProvider.kt$BackupProvider$throw IllegalArgumentException("Hardware wallets cannot be backed up")</ID>
     <ID>UseRequire:DeniableEncryptionManager.kt$DeniableEncryptionManager$throw IllegalArgumentException("Data is too large: required $requiredSize bytes, maximum is $MAX_CONTAINER_SIZE bytes")</ID>
     <ID>UseRequire:PreferencesExtensions.kt$&lt;no name provided&gt;$throw IllegalArgumentException("Unsupported type ${T::class}")</ID>

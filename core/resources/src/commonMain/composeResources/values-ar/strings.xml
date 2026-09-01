@@ -2186,7 +2186,6 @@
     <string name="error_hardware_wallet_some_tokens_not_found">تعذر إضافة بعض الرموز</string>
     <string name="send_error_address_unavailable">العنوان غير متاح</string>
     <string name="send_error_amount_unavailable">المبلغ غير متاح</string>
-    <string name="send_error_zcash_params_not_downloaded">لم يقم Zcash بعد بتنزيل الملفات اللازمة للإرسال. اتصل بالإنترنت وحاول مرة أخرى.</string>
     <string name="send_error_fee_rate_unavailable">معدل الرسوم غير متاح</string>
     <string name="send_error_balance_unavailable">الرصيد غير متاح</string>
     <string name="litecoin_mweb_invalid_amount">مبلغ Litecoin MWEB غير صالح</string>
@@ -2240,6 +2239,7 @@
     <string name="transactions_migrate_to_ironwood">إلى Ironwood</string>
     <string name="zcash_migration_publicly_visible_title">مبلغ مرئي للعامة</string>
     <string name="zcash_migration_publicly_visible_description">يتطلب نقل الأموال بين التجمّعات أن يكون المبلغ المُرحَّل مرئيًا للعامة على البلوكشين. يبقى المُرسِل والمُستلِم وعناوينك خاصة.</string>
+    <string name="zcash_migration_error_nothing_to_migrate">لا يوجد شيء يمكن نقله في الوقت الحالي.</string>
     <string name="declined_tokens_title">تم العثور على رموز مخصصة</string>
     <string name="declined_tokens_description">هذه الرموز غير موجودة في قائمة الرموز الموثّقة: %s</string>
     <plurals name="declined_tokens_count">

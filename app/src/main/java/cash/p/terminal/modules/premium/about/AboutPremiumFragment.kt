@@ -8,7 +8,6 @@ import cash.p.terminal.modules.markdown.openMarkdownOrWeblink
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.navigation.setNavigationResultX
 import cash.p.terminal.ui_compose.BaseComposeFragment
-import cash.p.terminal.ui_compose.getInput
 import kotlinx.parcelize.Parcelize
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -17,7 +16,7 @@ class AboutPremiumFragment : BaseComposeFragment() {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val closeOnPremium = navController.getInput<CloseOnPremiumInput>()
+        val closeOnPremium = getInput<CloseOnPremiumInput>()
 
         LaunchedEffect(viewModel.uiState.hasPremium) {
             if (viewModel.uiState.hasPremium && closeOnPremium != null) {

@@ -2155,7 +2155,6 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="error_hardware_wallet_some_tokens_not_found">Einige Token konnten nicht hinzugefügt werden</string>
     <string name="send_error_address_unavailable">Adresse nicht verfügbar</string>
     <string name="send_error_amount_unavailable">Betrag nicht verfügbar</string>
-    <string name="send_error_zcash_params_not_downloaded">Zcash hat die zum Senden benötigten Dateien noch nicht heruntergeladen. Stellen Sie eine Internetverbindung her und versuchen Sie es erneut.</string>
     <string name="send_error_fee_rate_unavailable">Gebührensatz nicht verfügbar</string>
     <string name="send_error_balance_unavailable">Guthaben nicht verfügbar</string>
     <string name="litecoin_mweb_invalid_amount">Ungültiger Litecoin-MWEB-Betrag</string>
@@ -2209,6 +2208,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="transactions_migrate_to_ironwood">zu Ironwood</string>
     <string name="zcash_migration_publicly_visible_title">Öffentlich sichtbarer Betrag</string>
     <string name="zcash_migration_publicly_visible_description">Das Verschieben von Geldern zwischen Pools erfordert, dass der migrierte Betrag öffentlich sichtbar auf der Blockchain ist. Absender, Empfänger und Ihre Adressen bleiben privat.</string>
+    <string name="zcash_migration_error_nothing_to_migrate">Derzeit kann nichts verschoben werden.</string>
     <string name="declined_tokens_title">Benutzerdefinierte Tokens gefunden</string>
     <string name="declined_tokens_description">Diese Tokens sind nicht in der Liste verifizierter Tokens enthalten: %s</string>
     <plurals name="declined_tokens_count">

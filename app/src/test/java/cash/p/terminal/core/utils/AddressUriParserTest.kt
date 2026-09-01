@@ -1,8 +1,8 @@
 package cash.p.terminal.core.utils
 
+import cash.p.terminal.core.utils.ZcashMemo.MAX_SIZE_BYTES
 import cash.p.terminal.entities.AddressUri
 import cash.p.terminal.wallet.entities.TokenType
-import cash.z.ecc.android.sdk.ext.ZcashSdk.MAX_MEMO_SIZE
 import io.horizontalsystems.core.entities.BlockchainType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -121,7 +121,7 @@ class AddressUriParserTest {
     }
     @Test
     fun parse_zip321MemoAtByteLimitAndWithPadding_decodesText() {
-        val maxLengthMemo = "a".repeat(MAX_MEMO_SIZE)
+        val maxLengthMemo = "a".repeat(MAX_SIZE_BYTES)
         val maxLengthParsed = parser(BlockchainType.Zcash).uri(
             "zcash:zsaddress?memo=${encodeMemo(maxLengthMemo.encodeToByteArray())}"
         )
@@ -147,7 +147,7 @@ class AddressUriParserTest {
         parser.assertWrongUri("zcash:zsaddress?memo=IA")
         parser.assertWrongUri("zcash:zsaddress?memo=${encodeMemo(byteArrayOf(0xff.toByte()))}")
         parser.assertWrongUri("zcash:zsaddress?memo=${encodeMemo(byteArrayOf(0xf6.toByte(), 1))}")
-        parser.assertWrongUri("zcash:zsaddress?memo=${encodeMemo(ByteArray(MAX_MEMO_SIZE + 1))}")
+        parser.assertWrongUri("zcash:zsaddress?memo=${encodeMemo(ByteArray(MAX_SIZE_BYTES + 1))}")
         parser.assertWrongUri("zcash:t1address?memo=${encodeMemo("memo".encodeToByteArray())}")
     }
     @Test
@@ -249,6 +249,20 @@ class AddressUriParserTest {
         assertEquals("zcash:zsaddress?memo=VGhhbmtzIPCfmYI", encoded)
         assertEquals("Thanks 🙂", parser.uri(encoded).value<String>(AddressUri.Field.Memo))
         assertEquals("zcash:zsaddress?memo=9g", parser.uri(emptyAddressUri))
+    }
+
+    @Test
+    fun uri_zcashMemoOfOnlyNullChars_encodesAsEmptyMemo() {
+        val parser = parser(BlockchainType.Zcash)
+        val nullMemoUri = AddressUri("zcash").apply {
+            address = "zsaddress"
+            parameters[AddressUri.Field.Memo] = "\u0000"
+        }
+
+        val encoded = parser.uri(nullMemoUri)
+
+        assertEquals("zcash:zsaddress?memo=9g", encoded)
+        assertEquals("", parser.uri(encoded).value<String>(AddressUri.Field.Memo))
     }
 
     @Test

@@ -1,13 +1,9 @@
 package cash.p.terminal.core.adapters.zcash
 
-import android.content.Context
-import android.database.sqlite.SQLiteDatabaseCorruptException
-import android.util.Log
+import android.os.SystemClock
 import cash.p.terminal.R
-import cash.p.terminal.core.App
 import cash.p.terminal.core.BroadcastRawTransactionResult
 import cash.p.terminal.core.BroadcastRawTransactionStatus
-import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.ISendZcashAdapter
 import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.LocalizedException
@@ -17,27 +13,29 @@ import cash.p.terminal.core.OfflineZcashSignRequest
 import cash.p.terminal.core.SignedOfflineZcashTransaction
 import cash.p.terminal.core.UnsupportedAccountException
 import cash.p.terminal.core.UnsupportedException
+import cash.p.terminal.core.adapters.zcash.session.ZcashSession
+import cash.p.terminal.core.adapters.zcash.session.ZcashSessionManager
+import cash.p.terminal.core.adapters.zcash.session.ZcashSessionResult
+import cash.p.terminal.core.adapters.zcash.session.ZcashSessionState
 import cash.p.terminal.core.canonicalTransactionHash
 import cash.p.terminal.core.hexToByteArray
 import cash.p.terminal.core.isZcashAlreadyCommittedToBestChainError
+import cash.p.terminal.core.managers.BackgroundKeepAliveManager
+import cash.p.terminal.core.managers.NotBroadcastException
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
-import cash.p.terminal.core.tryOrNull
+import cash.p.terminal.core.managers.isNetworkPaused
 import cash.p.terminal.core.onPollingStarted
 import cash.p.terminal.core.onPollingStopped
-import cash.p.terminal.core.managers.BackgroundKeepAliveManager
-import cash.p.terminal.core.managers.RestoreSettings
-import cash.p.terminal.core.managers.isNetworkPaused
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.core.toRawHexString
-import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
+import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
-import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.IAdapter
@@ -48,104 +46,72 @@ import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.BalanceData
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
-import cash.z.ecc.android.sdk.CloseableSynchronizer
-import cash.z.ecc.android.sdk.SdkSynchronizer
-import cash.z.ecc.android.sdk.Synchronizer
-import cash.z.ecc.android.sdk.WalletInitMode
-import cash.z.ecc.android.sdk.block.processor.CompactBlockProcessor
-import cash.z.ecc.android.sdk.exception.TransactionEncoderException
-import cash.z.ecc.android.sdk.ext.ZcashSdk
-import cash.z.ecc.android.sdk.ext.convertZatoshiToZec
-import cash.z.ecc.android.sdk.ext.convertZecToZatoshi
-import cash.z.ecc.android.sdk.model.Account
-import cash.z.ecc.android.sdk.model.AccountBalance
-import cash.z.ecc.android.sdk.model.AccountCreateSetup
-import cash.z.ecc.android.sdk.model.AccountImportSetup
-import cash.z.ecc.android.sdk.model.AccountPurpose
-import cash.z.ecc.android.sdk.model.AccountUuid
-import cash.z.ecc.android.sdk.model.BlockHeight
-import cash.z.ecc.android.sdk.model.FirstClassByteArray
-import cash.z.ecc.android.sdk.model.PercentDecimal
-import cash.z.ecc.android.sdk.model.Proposal
-import cash.z.ecc.android.sdk.model.SignedRawZcashTransaction
-import cash.z.ecc.android.sdk.model.TransactionSubmitResult
-import cash.z.ecc.android.sdk.model.UnifiedFullViewingKey
-import cash.z.ecc.android.sdk.model.UnifiedSpendingKey
-import cash.z.ecc.android.sdk.model.WalletBalance
-import cash.z.ecc.android.sdk.model.Zatoshi
-import cash.z.ecc.android.sdk.model.ZcashNetwork
-import cash.z.ecc.android.sdk.tool.DerivationTool
-import cash.z.ecc.android.sdk.type.AddressType
-import co.electriccoin.lightwallet.client.model.LightWalletEndpoint
-import io.horizontalsystems.bitcoincore.extensions.toReversedHex
+import cash.p.zcash.Addresses
+import cash.p.zcash.Balance
+import cash.p.zcash.BroadcastResult
+import cash.p.zcash.MigrationEvent
+import cash.p.zcash.MigrationPhase
+import cash.p.zcash.MigrationStatus
+import cash.p.zcash.PaymentOptions
+import cash.p.zcash.Pool
+import cash.p.zcash.PoolBalance
+import cash.p.zcash.PoolSet
+import cash.p.zcash.PreparedTransaction
+import cash.p.zcash.Recipient
+import cash.p.zcash.SyncState
+import cash.p.zcash.Transaction
+import cash.p.zcash.ZcashAddressKind
+import cash.p.zcash.ZcashException
+import cash.p.zcash.ZcashNetwork
+import cash.p.zcash.ZcashSdk
+import cash.p.zcash.ZcashWallet
+import cash.p.zcash.deriveSpendingKey
+import cash.p.zcash.transactionId
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.BlockchainType
-import io.horizontalsystems.core.logger.AppLogger
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.subjects.PublishSubject
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent.inject
-import timber.log.Timber
 import java.math.BigDecimal
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.regex.Pattern
-import kotlin.math.max
 
 class ZcashAdapter(
-    context: Context,
     private val wallet: Wallet,
-    private val restoreSettings: RestoreSettings,
     private val addressSpecTyped: AddressSpecType?,
-    private val localStorage: ILocalStorage,
     private val backgroundManager: BackgroundManager,
     private val singleUseAddressManager: ZcashSingleUseAddressManager,
+    private val sessionManager: ZcashSessionManager,
+    private val ironwoodMigrations: ZcashIronwoodMigrationRegistry,
+    addressDeriver: ZcashAddressDeriver,
     private val dispatcherProvider: DispatcherProvider,
-    private val restartBaseDelayMs: Long = 15_000,
-    private val restartMaxDelayMs: Long = 120_000,
 ) : IAdapter, IBalanceAdapter, IReceiveAdapter, ITransactionsAdapter, ISendZcashAdapter,
     OneTimeReceiveAdapter {
-    private var accountBirthday = 0L
-    private val existingWallet = localStorage.zcashAccountIds.contains(wallet.account.id)
-    private val confirmationsThreshold = 10
-    private val network: ZcashNetwork = ZcashNetwork.Mainnet
-    private val lightWalletEndpoint =
-        LightWalletEndpoint(host = "zec.rocks", port = 443, isSecure = true)
 
-    private val recovering = AtomicBoolean(false)
-    private val corruptionRecovery = AtomicBoolean(false)
+    private val zcashKey = wallet.zcashKey() ?: throw UnsupportedAccountException()
+
+    private val scope = CoroutineScope(SupervisorJob() + dispatcherProvider.io)
+    private val transactionsProvider = ZcashTransactionsProvider()
     private val pollingSessionCount = AtomicInteger(0)
 
-    @Volatile
-    private var synchronizer: CloseableSynchronizer
-    private var transactionsProvider: ZcashTransactionsProvider
-    private val clearZCashWalletDataUseCase: ClearZCashWalletDataUseCase by inject(
-        ClearZCashWalletDataUseCase::class.java
-    )
     private val backgroundKeepAliveManager: BackgroundKeepAliveManager by inject(
         BackgroundKeepAliveManager::class.java
     )
@@ -155,220 +121,52 @@ class ZcashAdapter(
     private val lastBlockUpdatedSubject: PublishSubject<Unit> = PublishSubject.create()
     private val balanceUpdatedSubject: PublishSubject<Unit> = PublishSubject.create()
 
-    private val accountType =
-        (wallet.account.type as? AccountType.Mnemonic)
-            ?: (wallet.account.type as? AccountType.ZCashUfvKey)
-            ?: (wallet.account.type as? AccountType.TrezorDevice)
-            ?: throw UnsupportedAccountException()
+    private val sessionMutex = Mutex()
 
-    private val seed = (accountType as? AccountType.Mnemonic)?.seed ?: ByteArray(0)
+    @Volatile
+    private var session: ZcashSession? = null
+    private var bindJob: Job? = null
+    private var appliedSessionState: ZcashSessionState? = null
+    private var lastDiagLogTimeMs: Long? = null
+    private var lastDiagSyncState: String? = null
 
-    private var zcashAccount: Account? = null
+    @Volatile
+    private var stopped = false
 
-    override var receiveAddress: String
+    private val ownAddresses: Addresses? = runBlocking {
+        tryOrNull { addressDeriver.addresses(zcashKey) }
+    }
 
-    private var startJob: Job? = null
-    private var statusJob: Job? = null
-    private var restartJob: Job? = null
-    private var restartAttempt = 0
-    private var subscriberScope: CoroutineScope? = null
+    override val receiveAddress: String =
+        ownAddresses?.let { addressSpecTyped.selectZcashReceiver(it) }.orEmpty()
     override val isMainNet: Boolean = true
-    private val scope = CoroutineScope(dispatcherProvider.io)
+
+    @Volatile
+    private var poolBalance: PoolBalance? = null
+
+    @Volatile
+    private var ironwoodMigrationAmount: Long? = null
+
+    @Volatile
+    private var maxSpendableZatoshi: Long = 0L
+
+    @Volatile
+    private var latestHeight: Int = 0
+
+    @Volatile
+    private var accountBirthday: Int = 0
+
+    /** Kept for the diagnostic line: only [SyncState.Syncing] carries the scan heights. */
+    @Volatile
+    private var lastSyncing: SyncState.Syncing? = null
+
+    /** The lowest height the current sync pass started from; progress is measured against it. */
+    private var syncAnchor: Int? = null
 
     private var balanceCheckJob: Job? = null
-    private val balanceCheckMutex = Mutex()
 
     val poolName: String
         get() = poolLabel(addressSpecTyped)
-
-    private var importUfvkError : Throwable? = null
-
-    private val feeLock = Any()
-    private var feeJob: Job? = null
-    private var lastFeeSnapshot: AccountBalance? = null
-    private var feeGeneration = 0L
-
-    @Volatile
-    private var ironwoodMigrationProposal: Proposal? = null
-
-    private val migrationTxKeyPrefix = "${wallet.account.id}:"
-
-    companion object {
-        private const val DECIMAL_COUNT = 8
-
-        // NU6.3 (Ironwood) activation heights
-        private const val IRONWOOD_ACTIVATION_HEIGHT_MAINNET = 3_428_143L
-        private const val IRONWOOD_ACTIVATION_HEIGHT_TESTNET = 4_134_000L
-
-        // logcat tag for the stuck-pending diagnostic; filter with `adb logcat -s ZcashDiag`.
-        private const val DIAG_TAG = "ZcashDiag"
-        private val DATABASE_CORRUPTION_MESSAGES = listOf(
-            "database disk image is malformed",
-            "file is not a database",
-            "database is corrupt",
-        )
-
-        val MINERS_FEE = ZcashSdk.MINERS_FEE.convertZatoshiToZec(DECIMAL_COUNT)
-
-        // The fee probe steps down by MINERS_FEE (10,000 zat) per attempt. With funds spread
-        // over several pools ZIP-317 charges per bundle and per input, so a near-max send
-        // easily exceeds the former 4 steps (40,000 zat). 20 attempts cover fees up to
-        // 200,000 zat; the probe only runs to the end in the rare case where the whole
-        // balance cannot be sent at all.
-        private const val FEE_PROBE_ATTEMPTS = 20
-
-        // Every account has its own adapters, but they all update the same stored id set.
-        private val migrationIdsMutex = Mutex()
-    }
-
-    init {
-        val walletInitMode = resolveWalletInitMode()
-        val birthday = resolveBirthday(context)
-
-        birthday?.value?.let {
-            accountBirthday = it
-        }
-
-        val setup = if (!requiresUfvkImport()) {
-            AccountCreateSetup(
-                seed = FirstClassByteArray(seed),
-                accountName = wallet.account.name,
-                keySource = null
-            )
-        } else {
-            null
-        }
-
-        synchronizer = Synchronizer.newBlocking(
-            context = context,
-            zcashNetwork = network,
-            alias = clearZCashWalletDataUseCase.getValidAliasFromAccountId(
-                wallet.account.id,
-                addressSpecTyped
-            ),
-            lightWalletEndpoint = lightWalletEndpoint,
-            birthday = birthday,
-            walletInitMode = walletInitMode,
-            setup = setup,
-            isTorEnabled = localStorage.torEnabled,
-            isExchangeRateEnabled = false,
-            autoStart = !isOffline()
-        )
-
-        runBlocking { importWatchAccountIfNeeded() }
-
-        zcashAccount = runBlocking { tryOrNull { getFirstAccount() } }
-        receiveAddress = runBlocking { getReceiveAddressOrEmpty() }
-        transactionsProvider =
-            ZcashTransactionsProvider(
-                synchronizer = synchronizer as SdkSynchronizer
-            )
-        synchronizer.onProcessorErrorHandler = ::onProcessorError
-        synchronizer.onCriticalErrorHandler = ::onCriticalError
-        synchronizer.onChainErrorHandler = ::onChainError
-
-        subscribeToEvents()
-    }
-
-    override suspend fun generateOneTimeAddress(): String? {
-        val sdk = synchronizer as? SdkSynchronizer ?: return null
-
-        return try {
-            val singleUseAddress = sdk.getSingleUseTransparentAddress(getFirstAccount().accountUuid)
-            singleUseAddressManager.saveNewAddress(singleUseAddress.address)
-            singleUseAddress.address
-        } catch (error: Exception) {
-            Timber.w(error, "Failed to obtain single-use transparent address")
-            singleUseAddressManager.getNextAddress()
-        }
-    }
-
-    private fun requiresUfvkImport(): Boolean {
-        return wallet.account.type is AccountType.ZCashUfvKey
-            || wallet.account.type is AccountType.TrezorDevice
-    }
-
-    private fun isOffline(): Boolean =
-        offlineModeManager.isNetworkPaused(wallet.account.id, BlockchainType.Zcash)
-
-    private fun resolveWalletInitMode(): WalletInitMode {
-        return if (existingWallet || requiresUfvkImport()) {
-            WalletInitMode.ExistingWallet
-        } else when (wallet.account.origin) {
-            AccountOrigin.Created -> WalletInitMode.NewWallet
-            AccountOrigin.Restored -> WalletInitMode.RestoreWallet
-        }
-    }
-
-    private fun resolveBirthday(context: Context): BlockHeight? {
-        return when (wallet.account.origin) {
-            AccountOrigin.Created -> runBlocking { BlockHeight.ofLatestCheckpoint(context, network) }
-            AccountOrigin.Restored -> restoreSettings.birthdayHeight
-                ?.let { height -> max(network.saplingActivationHeight.value, height) }
-                ?.let { BlockHeight.new(it) }
-        }
-    }
-
-    private suspend fun importWatchAccountIfNeeded() {
-        if (!requiresUfvkImport()) return
-        if (isOffline()) return
-        val key = wallet.zcashWatchOnlyUfvk() ?: return
-        try {
-            (synchronizer as Synchronizer).importAccountByUfvk(
-                AccountImportSetup(
-                    accountName = wallet.account.name,
-                    keySource = null,
-                    purpose = AccountPurpose.ViewOnly,
-                    ufvk = UnifiedFullViewingKey(key)
-                )
-            )
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to import watch-only ZCash account")
-            importUfvkError = e
-        }
-    }
-
-    private suspend fun getReceiveAddressOrEmpty(): String {
-        return try {
-            val account = getFirstAccount()
-            addressSpecTyped.selectZcashReceiver(
-                sapling = { synchronizer.getSaplingAddress(account) },
-                transparent = { synchronizer.getTransparentAddress(account) },
-                unified = { synchronizer.getUnifiedAddress(account) },
-            )
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to get receive address")
-            ""
-        }
-    }
-
-    private fun subscribeToEvents() {
-        scope.launch {
-            backgroundManager.stateFlow.collect { state ->
-                when (state) {
-                    BackgroundManagerState.EnterForeground -> {
-                        // Cancel a pending self-heal restart so it doesn't race with this one.
-                        resetRestart()
-                        start()
-                    }
-                    BackgroundManagerState.EnterBackground -> {
-                        if (!hasActiveBackgroundSession()) {
-                            pauseSynchronizer()
-                        } else {
-                            Timber.tag("TxPoller").d("ZcashAdapter staying alive")
-                        }
-                    }
-                    BackgroundManagerState.Unknown,
-                    BackgroundManagerState.AllActivitiesDestroyed -> {}
-                }
-            }
-        }
-        subscribeToStatus()
-    }
-
-    suspend fun getFirstAccount(): Account {
-        return zcashAccount ?: synchronizer.getAccounts().firstOrNull() ?: throw Exception("No account found")
-    }
 
     private var syncState: AdapterState = AdapterState.Connecting
         set(value) {
@@ -378,90 +176,16 @@ class ZcashAdapter(
             }
         }
 
-    private var lastDownloadProgressDecimal: Float = 0f
-    private var lastNetworkHeight: Long? = null
+    /** A payment from this wallet spends from these pools only; shielding always spends transparent. */
+    private val sourcePools: PoolSet = addressSpecTyped.pools()
 
-    private suspend fun createNewSynchronizer() {
-        val isRecovery = corruptionRecovery.get()
-        val walletInitMode = if (isRecovery) {
-            WalletInitMode.RestoreWallet
-        } else {
-            resolveWalletInitMode()
-        }
+    private val balance: Balance
+        get() = poolBalance?.forSpec(addressSpecTyped) ?: Balance()
 
-        val birthday = if (isRecovery) {
-            restoreSettings.birthdayHeight
-                ?.let { max(network.saplingActivationHeight.value, it) }
-                ?.let { BlockHeight.new(it) }
-        } else {
-            resolveBirthday(App.instance)
-        }
+    override val maxSpendableBalance: BigDecimal
+        get() = maxSpendableZatoshi.convertZatoshiToZec()
 
-        birthday?.value?.let {
-            accountBirthday = it
-        }
-        try {
-            val setup = if (!requiresUfvkImport()) {
-                AccountCreateSetup(
-                    seed = FirstClassByteArray(seed),
-                    accountName = wallet.account.name,
-                    keySource = null
-                )
-            } else {
-                null
-            }
-            synchronizer = Synchronizer.new(
-                context = App.instance,
-                zcashNetwork = network,
-                alias = clearZCashWalletDataUseCase.getValidAliasFromAccountId(
-                    wallet.account.id,
-                    addressSpecTyped
-                ),
-                lightWalletEndpoint = lightWalletEndpoint,
-                birthday = birthday,
-                walletInitMode = walletInitMode,
-                setup = setup,
-                isTorEnabled = localStorage.torEnabled,
-                isExchangeRateEnabled = false,
-                autoStart = !isOffline()
-            )
-
-            importWatchAccountIfNeeded()
-
-        } catch (ex: CancellationException) {
-            throw ex
-        } catch (ex: Exception) {
-            // To prevent crash with synchronizer creation in some situations
-            // when java.lang.IllegalStateException: Another synchronizer with SynchronizerKey
-            Timber.d("Synchronizer creation failed: ${ex.message}")
-            closeSynchronizer()
-            delay(3000)
-            createNewSynchronizer()
-            return
-        }
-
-        corruptionRecovery.set(false)
-        zcashAccount = tryOrNull { getFirstAccount() }
-        receiveAddress = getReceiveAddressOrEmpty()
-        transactionsProvider =
-            ZcashTransactionsProvider(
-                synchronizer = synchronizer as SdkSynchronizer
-            )
-        synchronizer.onProcessorErrorHandler = ::onProcessorError
-        synchronizer.onCriticalErrorHandler = ::onCriticalError
-        synchronizer.onChainErrorHandler = ::onChainError
-    }
-
-    private fun subscribeToStatus() {
-        statusJob?.cancel()
-        statusJob = scope.launch {
-            synchronizer.status.collect {
-                if (it == Synchronizer.Status.SYNCED) {
-                    scheduleFeeRecalculation()
-                }
-            }
-        }
-    }
+    // region lifecycle
 
     // ISendZcashAdapter also declares `start()` (predating this split), so Kotlin requires an
     // explicit override to resolve the diamond; delegate straight to IAdapter's default composition.
@@ -470,32 +194,14 @@ class ZcashAdapter(
     }
 
     override fun attachLocalData() {
-        // Binds the local-data collectors (balances/transactions/progress) to whichever
-        // synchronizer instance is current. Both subscribe() and subscribeToStatus() cancel
-        // their previous scope/job first, so rebinding after a later recreation is safe.
-        subscribe(synchronizer as SdkSynchronizer)
-        subscribeToStatus()
+        scope.launch { acquireSession() }
+        subscribeToBackground()
     }
 
     override fun resumeNetwork() {
-        // Corruption recovery owns the whole lifecycle: it closes, erases, and recreates the
-        // synchronizer itself, so every other restart trigger (foreground, polling, self-heal)
-        // must stay out of the way while it is in flight.
-        if (recovering.get()) return
-        importUfvkError?.let {
-            syncState = AdapterState.NotSynced(it)
-            return
-        }
-        startJob?.cancel()
-        startJob = scope.launch {
-            try {
-                startSynchronizer()
-            } catch (e: IllegalStateException) {
-                // Previous synchronizer still closing, wait and retry
-                Timber.d("Synchronizer conflict, retrying after delay: ${e.message}")
-                delay(1000)
-                startSynchronizer()
-            }
+        scope.launch {
+            acquireSession()
+            session?.resumeMempool()
         }
     }
 
@@ -503,74 +209,245 @@ class ZcashAdapter(
         scope.launch { pauseNetworkAndAwait() }
     }
 
-    suspend fun pauseNetworkAndAwait() = synchronizer.pauseSync()
-    // Authoritative for offline mode: the sync status cannot tell a resumable pause from a
-    // terminal stop, so the lifecycle is the only source that distinguishes them.
+    /** Only the network work stops: the session stays open so balances and history are readable. */
+    suspend fun pauseNetworkAndAwait() {
+        session?.cancelSync()
+        session?.pauseMempool()
+    }
+
     val isNetworkPaused: Boolean
-        get() = synchronizer.lifecycleState.value != Synchronizer.LifecycleState.Running
-
-    private suspend fun startSynchronizer() {
-        // status/STOPPED cannot tell a resumable pause from a terminal failure (fail() sets the
-        // same status), so the decision is made from lifecycleState instead. resumeSync()'s
-        // return value has to be read: the state can turn terminal between the check and the
-        // call (e.g. a concurrent close() from stop()).
-        val paused = synchronizer.lifecycleState.value == Synchronizer.LifecycleState.Paused
-        val alive = synchronizer.lifecycleState.value != Synchronizer.LifecycleState.Closed &&
-            synchronizer.lifecycleState.value != Synchronizer.LifecycleState.TerminallyStopped
-        val resumed = paused && synchronizer.resumeSync()
-        when {
-            resumed -> importWatchAccountIfNeeded()
-            // Paused but resumeSync() failed: the pause can no longer be trusted, recreate.
-            paused -> createNewSynchronizer()
-            // Still Running: nothing to recreate, subscribe() below just rebinds to the instance.
-            alive -> {}
-            else -> createNewSynchronizer()
-        }
-        subscribe(synchronizer as SdkSynchronizer)
-        subscribeToStatus()
-        if (!existingWallet) {
-            localStorage.zcashAccountIds += wallet.account.id
-        }
-    }
-
-    private fun closeSynchronizer() {
-        balanceCheckJob?.cancel()
-        statusJob?.cancel()
-        subscriberScope?.cancel()
-        subscriberScope = null
-        tryOrNull { synchronizer.close() }
-    }
-
-    private fun pauseSynchronizer() {
-        startJob?.cancel()
-        closeSynchronizer()
-    }
+        get() = offlineModeManager.isNetworkPaused(wallet.account.id, BlockchainType.Zcash)
 
     override fun stop() {
-        scope.cancel()
-        closeSynchronizer()
+        stopped = true
+        scope.launch {
+            releaseSession()
+            scope.cancel()
+        }
     }
 
-    override suspend fun refresh() = withContext(dispatcherProvider.io) {
-        with(synchronizer as SdkSynchronizer) {
-            refreshAllBalances()
-            refreshTransactions()
-        }
+    override suspend fun refresh() {
+        session?.refresh()
     }
 
     fun startForPolling() {
         pollingSessionCount.onPollingStarted {
-            // Unlike resumeNetwork(), polling is an incidental trigger: it must not lift a pause
-            // the user asked for. Adapter creation is gated by AdapterManager, this path is not.
-            if (isOffline()) return@onPollingStarted
             start()
         }
     }
 
     fun stopForPolling() {
         pollingSessionCount.onPollingStopped(backgroundManager) {
-            pauseSynchronizer()
+            scope.launch { releaseSession() }
         }
+    }
+
+    private fun subscribeToBackground() = scope.launch {
+        backgroundManager.stateFlow.collect { state ->
+            when (state) {
+                BackgroundManagerState.EnterForeground -> acquireSession()
+                BackgroundManagerState.EnterBackground ->
+                    if (!hasActiveBackgroundSession()) releaseSession()
+
+                BackgroundManagerState.Unknown,
+                BackgroundManagerState.AllActivitiesDestroyed -> Unit
+            }
+        }
+    }
+
+    // ZEC is intentionally kept running in the background during an active polling session or
+    // realtime keep-alive, so the session must survive those cases too, not only the foreground.
+    private fun hasActiveBackgroundSession(): Boolean =
+        pollingSessionCount.get() > 0 || backgroundKeepAliveManager.isKeepAlive(BlockchainType.Zcash)
+
+    private suspend fun acquireSession() {
+        sessionMutex.withLock {
+            if (stopped || session != null) return
+            val acquired = sessionManager.acquire(wallet)
+            session = acquired
+            bindJob = scope.launch { bind(acquired) }
+        }
+        // Opening the wallet takes seconds, and a pause that arrived meanwhile found no session to
+        // stop, so the offline state is re-read once the session is reachable.
+        if (isNetworkPaused) pauseNetworkAndAwait()
+    }
+
+    private suspend fun releaseSession() {
+        val released = sessionMutex.withLock {
+            val current = session ?: return
+            session = null
+            bindJob?.cancel()
+            bindJob = null
+            feeGeneration++
+            current
+        }
+        sessionManager.release(released)
+    }
+
+    private suspend fun bind(session: ZcashSession) = coroutineScope {
+        appliedSessionState = null
+        launch { session.state.collect(::onSessionState) }
+        launch { recalculateFeeOnChange(session) }
+
+        accountBirthday = walletOrNull { zcash, id ->
+            zcash.accounts().firstOrNull { it.id == id }?.birthHeight
+        } ?: 0
+        // A session may never sync — offline, or an account the scheduler is skipping — so the
+        // local database is published once on bind, otherwise every screen stays empty.
+        session.refresh()
+    }
+
+    // endregion
+
+    // region session access
+
+    private suspend fun <T> withWallet(block: suspend (ZcashWallet, Int) -> T): ZcashSessionResult<T> {
+        val current = session ?: return ZcashSessionResult.Unavailable
+        return current.withOperation { block(it, current.dbAccountId) }
+    }
+
+    private suspend fun <T> requireWallet(block: suspend (ZcashWallet, Int) -> T): T =
+        when (val result = withWallet(block)) {
+            is ZcashSessionResult.Success -> result.value
+            ZcashSessionResult.Unavailable -> error("Zcash wallet session is unavailable")
+        }
+
+    private suspend fun <T> walletOrNull(block: suspend (ZcashWallet, Int) -> T): T? =
+        (withWallet(block) as? ZcashSessionResult.Success)?.value
+
+    /** The unified full viewing key of this account, or null while the session is unavailable. */
+    suspend fun ufvk(): String? = walletOrNull { zcash, id -> zcash.viewingKey(id) }
+
+    private suspend fun <T> withSpendingKey(block: suspend (ByteArray) -> T): T {
+        val phrase = zcashKey as? ZcashKey.Phrase
+            ?: throw UnsupportedException("Zcash spending requires a mnemonic account")
+        // The wallet database was restored without an explicit account index, so index 0 is the
+        // only key that matches it.
+        val key = ZcashSdk.deriveSpendingKey(
+            phrase = phrase.words.joinToString(" "),
+            network = ZcashNetwork.MAIN,
+            passphrase = phrase.passphrase.ifEmpty { null },
+        )
+        return try {
+            block(key)
+        } finally {
+            key.fill(0)
+        }
+    }
+
+    // endregion
+
+    // region state
+
+    private suspend fun onSessionState(state: ZcashSessionState) {
+        // Resolved before the balance is published: a later flip would be swallowed by
+        // BalanceItem equality suppression and never reach the UI.
+        ironwoodMigrationAmount = resolveIronwoodMigrationAmount(state)
+        val previous = appliedSessionState
+        if (previous?.balance != state.balance || previous.maxSpendable != state.maxSpendable) {
+            onLocalState(state)
+        }
+        if (previous?.transactions != state.transactions) {
+            transactionsProvider.onTransactions(state.transactions)
+        }
+        if (previous?.latestHeight != state.latestHeight) onLatestHeight(state.latestHeight)
+        appliedSessionState = state
+        if (previous?.syncState != state.syncState) onSyncState(state.syncState)
+    }
+
+    private fun onSyncState(state: SyncState) {
+        lastSyncing = state as? SyncState.Syncing
+        if (state !is SyncState.Syncing) syncAnchor = null
+        syncState = state.toAdapterState()
+        logDiag()
+    }
+
+    private fun SyncState.toAdapterState(): AdapterState = when {
+        isSynced() -> AdapterState.Synced
+        this is SyncState.Failed -> AdapterState.NotSynced(error)
+        this is SyncState.Syncing -> syncingState(this)
+        // In this SDK `Stopped` only means no sync pass has run yet, not a failure.
+        else -> AdapterState.Connecting
+    }
+
+    private fun SyncState.isCaughtUpPoll(): Boolean =
+        this == SyncState.Stopped || this == SyncState.Connecting ||
+            this is SyncState.Syncing && current >= target
+
+    /** The only two routes to [AdapterState.Synced]: a finished sync, or a poll that stays caught up. */
+    private fun SyncState.isSynced(): Boolean =
+        this == SyncState.Synced || (syncState is AdapterState.Synced && isCaughtUpPoll())
+
+    private fun syncingState(state: SyncState.Syncing): AdapterState {
+        val anchor = syncAnchor ?: state.current.also { syncAnchor = it }
+        val remained = (state.target - state.current).coerceAtLeast(0)
+        val total = (state.target - anchor).takeIf { it > 0 }
+        val progress = total?.let { ((it - remained).toDouble() / it * 100.0).coerceIn(0.0, 100.0) }
+        return AdapterState.Syncing(progress = progress, blocksRemained = remained.toLong())
+    }
+
+    private fun onLocalState(state: ZcashSessionState) {
+        poolBalance = state.balance
+        maxSpendableZatoshi = state.maxSpendable[sourcePools] ?: 0L
+        balanceUpdatedSubject.onNext(Unit)
+        startOneTimeAddressBalanceCheck()
+        logDiag()
+    }
+
+    private fun onLatestHeight(height: Int) {
+        latestHeight = height
+        lastBlockUpdatedSubject.onNext(Unit)
+        logDiag()
+    }
+
+    private fun startOneTimeAddressBalanceCheck() {
+        if (balanceCheckJob?.isActive == true) return
+        balanceCheckJob = scope.launch { checkTransparentAddressesBalance() }
+    }
+
+    private suspend fun checkTransparentAddressesBalance() {
+        singleUseAddressManager.getAddressesForBalanceCheck().forEach { address ->
+            val balance = try {
+                walletOrNull { zcash, id -> zcash.transparentBalance(id, address) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (error: Throwable) {
+                zcashLogger.w { "Transparent balance check failed error=${error.zcashErrorName}" }
+                null
+            }
+            if (balance != null && balance > 0) {
+                singleUseAddressManager.updateAddressBalance(address, true)
+            }
+        }
+    }
+
+    // Privacy-safe diagnostic line for the stuck-pending investigation; only coarse
+    // booleans/buckets and public block heights are logged, never amounts/keys/addresses.
+    private fun logDiag() {
+        val snapshot = readDiagSnapshot()
+        val now = SystemClock.elapsedRealtime()
+        val stateChanged = snapshot.syncStateDiscriminator != lastDiagSyncState
+        val throttled = lastDiagLogTimeMs?.let { now - it < DIAG_INTERVAL_MS } == true
+        if (!stateChanged && throttled) return
+
+        lastDiagLogTimeMs = now
+        lastDiagSyncState = snapshot.syncStateDiscriminator
+        tryOrNull { zcashLogger.d { diagFields(snapshot).toString() } }
+    }
+
+    private fun readDiagSnapshot(): ZcashDiagSnapshot {
+        val syncing = lastSyncing
+        val balance = poolBalance?.forSpec(addressSpecTyped)
+        return ZcashDiagSnapshot(
+            pool = poolName,
+            syncStateDiscriminator = syncState::class.simpleName ?: "Unknown",
+            chainTipHeight = latestHeight.takeIf { it > 0 }?.toLong(),
+            scannedHeight = syncing?.current?.toLong(),
+            syncTargetHeight = syncing?.target?.toLong(),
+            available = balance?.available?.convertZatoshiToZec(),
+            changePending = balance?.changePending?.convertZatoshiToZec(),
+            valuePending = balance?.valuePending?.convertZatoshiToZec(),
+        )
     }
 
     override val debugInfo: String
@@ -583,92 +460,362 @@ class ZcashAdapter(
         get() = adapterStateUpdatedSubject.toFlowable(BackpressureStrategy.BUFFER).asFlow()
 
     override val balanceData: BalanceData
-        get() = walletBalance.toBalanceData(DECIMAL_COUNT)
-
-    override val statusInfo: Map<String, Any>
-        get() {
-            val statusInfo = LinkedHashMap<String, Any>()
-            statusInfo["Last Block Info"] = lastBlockInfo ?: ""
-            statusInfo["Sync State"] = safeSyncStateLabel(syncState)
-            statusInfo["Birthday Height"] = accountBirthday
-            return statusInfo
-        }
-
-    private val accountBalance: AccountBalance?
-        get() = synchronizer.walletBalances.value?.get(zcashAccount?.accountUuid)
-
-    private val walletBalance: WalletBalance
-        get() = poolWalletBalanceOrNull(synchronizer)
-            ?: WalletBalance(Zatoshi(0), Zatoshi(0), Zatoshi(0))
-
-    /**
-     * The pool's balance, or `null` when the SDK has not published any balances for this account yet.
-     * `null` is kept distinct from a real zero so the diagnostic never reports "not loaded" as empty;
-     * the UI-facing [walletBalance] still substitutes zero as before.
-     */
-    private fun poolWalletBalanceOrNull(sync: Synchronizer): WalletBalance? {
-        val accountBalance = sync.walletBalances.value?.get(zcashAccount?.accountUuid) ?: return null
-        return when (addressSpecTyped) {
-            null,
-            AddressSpecType.Shielded -> accountBalance.sapling
-
-            AddressSpecType.Transparent -> WalletBalance(
-                available = accountBalance.unshielded,
-                changePending = Zatoshi(0),
-                valuePending = Zatoshi(0)
-            )
-
-            // After NU6.3 activation the turnstile forbids adding value to Orchard, so change
-            // and payments to Orchard recipients are built in an Ironwood bundle. A unified
-            // address therefore holds funds in both pools and its balance is their sum.
-            AddressSpecType.Unified -> WalletBalance(
-                available = accountBalance.orchard.available + accountBalance.ironwood.available,
-                changePending = accountBalance.orchard.changePending +
-                    accountBalance.ironwood.changePending,
-                valuePending = accountBalance.orchard.valuePending + accountBalance.ironwood.valuePending
-            )
-        }
-    }
+        get() = balance.toBalanceData()
 
     override val balanceUpdatedFlow: Flow<Unit>
         get() = balanceUpdatedSubject.toFlowable(BackpressureStrategy.BUFFER).asFlow()
 
-    private fun readDiagSnapshot(): ZcashDiagSnapshot {
-        // Capture one synchronizer generation so processor and balance fields never mix generations.
-        val sync = synchronizer as SdkSynchronizer
-        val processor = sync.processor
-        val processorInfo = processor.processorInfo.value
-        val range = processorInfo.overallSyncRange
-        val rangeState = when {
-            range == null -> SyncRangeState.Unknown
-            range.isEmpty() -> SyncRangeState.Empty
-            else -> SyncRangeState.NonEmpty
+    override val statusInfo: Map<String, Any>
+        get() = linkedMapOf(
+            "Last Block Info" to (lastBlockInfo ?: ""),
+            "Sync State" to safeSyncStateLabel(syncState),
+            "Birthday Height" to accountBirthday,
+        )
+
+    // endregion
+
+    // region fee
+
+    private val _fee: MutableStateFlow<BigDecimal> = MutableStateFlow(MINERS_FEE)
+
+    /** Balance the published [_fee] was calculated for; null until one is published. */
+    private var feeBalance: PoolBalance? = null
+    private var feeGeneration = 0L
+    override val fee: StateFlow<BigDecimal> = _fee.asStateFlow()
+
+    /**
+     * Under ZIP-317 the fee depends on which pools and how many notes are spent, and after NU6.3
+     * activation funds move between Orchard and Ironwood without changing the total — so the fee
+     * follows the balance, not the first sync. [feeBalance] is the balance the published fee was
+     * calculated for: a repeated `Synced` on the same balance costs nothing, while a calculation
+     * that failed is not remembered as done.
+     *
+     * While the published fee is still the default one the balance is not enough to conclude the
+     * fee is current — ZIP-317 also depends on the proposal target height, which changes at NU6.3
+     * activation without touching any balance field — so it is recalculated on every trigger
+     * until a real fee is known.
+     */
+    private suspend fun recalculateFeeOnChange(session: ZcashSession) {
+        coroutineScope {
+            var calculation: Job? = null
+            session.state.collect { state ->
+                if (state.syncState !is SyncState.Synced) return@collect
+                val balance = state.balance
+                val generation = sessionMutex.withLock {
+                    if (balance == feeBalance && _fee.value != MINERS_FEE) null
+                    else ++feeGeneration
+                } ?: return@collect
+                calculation?.cancel()
+                calculation = launch { publishFee(session, balance, generation) }
+            }
         }
-        val balance = poolWalletBalanceOrNull(sync)
-        return ZcashDiagSnapshot(
-            pool = poolName,
-            syncStateDiscriminator = syncState::class.simpleName ?: "Unknown",
-            chainTipHeight = processor.networkHeight.value?.value,
-            fullyScannedHeight = processor.fullyScannedHeight.value?.value,
-            scanProgressPercent = processor.scanProgress.value.toPercentage(),
-            recoveryProgressPercent = processor.recoveryProgress.value?.toPercentage(),
-            overallSyncRangeState = rangeState,
-            overallSyncRangeStart = range?.start?.value,
-            overallSyncRangeEnd = range?.endInclusive?.value,
-            firstUnenhancedHeight = processorInfo.firstUnenhancedHeight?.value,
-            available = balance?.available?.convertZatoshiToZec(DECIMAL_COUNT),
-            changePending = balance?.changePending?.convertZatoshiToZec(DECIMAL_COUNT),
-            valuePending = balance?.valuePending?.convertZatoshiToZec(DECIMAL_COUNT),
+    }
+
+    /** Cancelling a planning call in flight is not guaranteed, so a superseded fee is dropped. */
+    private suspend fun publishFee(
+        session: ZcashSession,
+        balance: PoolBalance,
+        generation: Long,
+    ) {
+        val fee = calculateFee(balance.forSpec(addressSpecTyped).available) ?: return
+        sessionMutex.withLock {
+            if (this@ZcashAdapter.session !== session || feeGeneration != generation) return@withLock
+            if (session.state.value.balance != balance) return@withLock
+            _fee.value = fee
+            feeBalance = balance
+        }
+    }
+
+    /**
+     * The fee of spending the whole balance: `recipientPaysFee` keeps that plan solvable, so one
+     * planning pass answers what the old probe searched for by stepping the amount down.
+     */
+    private suspend fun calculateFee(available: Long): BigDecimal? {
+        if (available <= 0) return MINERS_FEE
+        val donateAddress = AppConfigProvider.donateAddresses[BlockchainType.Zcash] ?: return null
+        return tryOrNull {
+            walletOrNull { zcash, id ->
+                val prepared = zcash.prepare(
+                    account = id,
+                    recipients = listOf(Recipient(address = donateAddress, amount = available)),
+                    options = PaymentOptions(sourcePools = sourcePools, recipientPaysFee = true),
+                )
+                zcash.plan(prepared).fee.convertZatoshiToZec()
+            }
+        }
+    }
+
+    // endregion
+
+    // region send
+
+    override suspend fun validate(address: String): ZCashAddressType {
+        if (address == receiveAddress) throw ZcashError.SendToSelfNotAllowed
+        return when (zcashAddressKind(address)) {
+            null -> throw ZcashError.InvalidAddress
+            ZcashAddressKind.TRANSPARENT -> ZCashAddressType.Transparent
+            ZcashAddressKind.SAPLING, ZcashAddressKind.TEX -> ZCashAddressType.Shielded
+            ZcashAddressKind.UNIFIED -> ZCashAddressType.Unified
+        }
+    }
+
+    override suspend fun send(
+        amount: BigDecimal,
+        address: String,
+        memo: String,
+    ): String {
+        zcashLogger.d { "Send started" }
+        return withSpendingKey { key ->
+            broadcastSigned(listOf(recipient(amount, address, memo)), key, PaymentOptions(sourcePools = sourcePools))
+        }
+    }
+
+    /**
+     * Builds, signs and broadcasts in separate steps so a failure that provably precedes the
+     * broadcast is marked as such: only then may the caller drop its pending row. A failure on the
+     * broadcast itself, cancellation included, stays unmarked — the bytes may already be out.
+     */
+    private suspend fun broadcastSigned(
+        recipients: List<Recipient>,
+        spendingKey: ByteArray,
+        options: PaymentOptions,
+    ): String {
+        val (raw, height) = beforeBroadcast {
+            requireWallet { zcash, id ->
+                val prepared = zcash.prepareOrInsufficient(id, recipients, options)
+                val height = zcash.plan(prepared).height
+                zcash.extract(zcash.sign(account = id, transaction = prepared, spendingKey = spendingKey)) to height
+            }
+        }
+        reserveBeforeBroadcast(raw)
+        val result = requireWallet { zcash, id -> zcash.broadcast(id, raw, height) }
+        check(result.accepted) { "Broadcast rejected (${result.errorCode}): ${result.message}" }
+        return result.message
+    }
+
+    /** The native layer reports every planning failure as [ZcashException], message included. */
+    private suspend fun ZcashWallet.prepareOrInsufficient(
+        account: Int,
+        recipients: List<Recipient>,
+        options: PaymentOptions,
+    ): PreparedTransaction = try {
+        prepare(account, recipients, options)
+    } catch (e: ZcashException) {
+        if (e.message?.contains(NO_FEASIBLE_SELECTION) == true) {
+            throw LocalizedException(R.string.Swap_ErrorInsufficientBalance)
+        }
+        throw e
+    }
+
+    private suspend fun <T> beforeBroadcast(block: suspend () -> T): T = try {
+        block()
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Throwable) {
+        throw e as? NotBroadcastException ?: NotBroadcastException(e)
+    }
+
+    private suspend fun reserveBeforeBroadcast(raw: ByteArray, requireOwnInputs: Boolean = true) {
+        val current = session ?: throw NotBroadcastException(
+            IllegalStateException("Zcash wallet session is unavailable")
+        )
+        when (beforeBroadcast { current.reserveForBroadcast(raw, requireOwnInputs) }) {
+            is ZcashSessionResult.Success -> Unit
+            ZcashSessionResult.Unavailable -> throw NotBroadcastException(
+                IllegalStateException("Zcash wallet session is unavailable")
+            )
+        }
+        when (current.refresh()) {
+            is ZcashSessionResult.Success -> Unit
+            ZcashSessionResult.Unavailable -> error("Zcash wallet session became unavailable")
+        }
+    }
+
+    override suspend fun signOffline(request: OfflineSignRequest): SignedOfflineZcashTransaction {
+        require(request is OfflineZcashSignRequest) { "OfflineZcashSignRequest is required" }
+        val recipient = recipient(request.amount, request.address, request.memo)
+        return withSpendingKey { key ->
+            requireWallet { zcash, id ->
+                val prepared = zcash.prepareOrInsufficient(
+                    account = id,
+                    recipients = listOf(recipient),
+                    options = PaymentOptions(sourcePools = sourcePools),
+                )
+                val fee = zcash.plan(prepared).fee
+                val raw = zcash.extract(zcash.sign(account = id, transaction = prepared, spendingKey = key))
+                SignedOfflineZcashTransaction(
+                    rawHex = raw.toRawHexString(),
+                    txHash = ZcashSdk.transactionId(raw).canonicalTransactionHash(),
+                    fee = fee.convertZatoshiToZec(),
+                )
+            }
+        }
+    }
+
+    override suspend fun broadcastRawTransaction(
+        rawTransactionHex: String,
+        metadata: OfflineBroadcastMetadata?,
+    ): BroadcastRawTransactionResult {
+        val (txHash, raw, height) = beforeBroadcast {
+            val normalizedRawHex = rawTransactionHex.trim()
+            require(OfflineTransactionPayloadEncoder.isRawTransactionHex(normalizedRawHex)) {
+                "Valid raw transaction hex is required"
+            }
+            val rawBytes = normalizedRawHex.hexToByteArray()
+            val hash = (metadata as? OfflineBroadcastMetadata.Zcash)?.txHash
+                ?: ZcashSdk.transactionId(rawBytes)
+            Triple(hash, rawBytes, requireWallet { zcash, _ -> zcash.latestHeight() })
+        }
+        reserveBeforeBroadcast(raw, requireOwnInputs = false)
+        return requireWallet { zcash, id -> zcash.broadcast(id, raw, height, requireOwnInputs = false) }
+            .toBroadcastResult(txHash)
+    }
+
+    private fun recipient(amount: BigDecimal, address: String, memo: String) = Recipient(
+        address = address,
+        amount = amount.convertZecToZatoshi(),
+        memo = memo.takeIf { it.isNotBlank() },
+    )
+
+    override suspend fun getOwnAddresses(): List<String> =
+        listOfNotNull(ownAddresses?.sapling, ownAddresses?.unified)
+
+    /** Resolved before the pending row is registered, so the caller knows what is about to move. */
+    suspend fun shieldingTarget(): ShieldingTarget = requireWallet { zcash, id ->
+        val transparent = zcash.balance(id, SHIELDING_CONFIRMATIONS)[Pool.TRANSPARENT].available
+        check(transparent > SHIELDING_THRESHOLD) { "Nothing to shield" }
+        val shielded = requireNotNull(ownAddresses?.unified ?: ownAddresses?.orchard) {
+            "No shielded receiver to shield into"
+        }
+        ShieldingTarget(address = shielded, amount = transparent)
+    }
+
+    suspend fun proposeShielding(target: ShieldingTarget): String = withSpendingKey { key ->
+        broadcastSigned(
+            recipients = listOf(Recipient(address = target.address, amount = target.amount)),
+            spendingKey = key,
+            options = PaymentOptions(
+                sourcePools = PoolSet.of(Pool.TRANSPARENT),
+                recipientPaysFee = true,
+                confirmations = SHIELDING_CONFIRMATIONS,
+            ),
         )
     }
 
-    // Privacy-safe diagnostic line for the stuck-pending investigation; only coarse
-    // booleans/buckets and public block heights are logged, never amounts/keys/addresses.
-    private fun logDiag() {
-        // Best-effort: a diagnostic must never propagate into the flow collectors
-        // (onStatus/onProcessorInfo/onBalance) and kill sync or self-heal restart.
-        tryOrNull { Log.d(DIAG_TAG, diagFields(readDiagSnapshot()).toString()) }
+    override suspend fun generateOneTimeAddress(): String? = try {
+        val address = requireWallet { zcash, id -> zcash.nextTransparentAddress(id) }
+        if (address == null) {
+            singleUseAddressManager.getNextAddress()
+        } else {
+            singleUseAddressManager.saveNewAddress(address)
+            address
+        }
+    } catch (error: CancellationException) {
+        throw error
+    } catch (error: Throwable) {
+        zcashLogger.w { "Single-use transparent address failed error=${error.zcashErrorName}" }
+        singleUseAddressManager.getNextAddress()
     }
+
+    // endregion
+
+    // region Ironwood migration
+
+    /**
+     * The Orchard balance that has to be moved to Ironwood, or `null` when migration is not
+     * applicable. Orchard and Ironwood are both surfaced by the unified token, so only that
+     * adapter can migrate. Resolved in [onSessionState] before any balance is published.
+     */
+    val ironwoodMigrationRequiredBalance: BigDecimal?
+        get() = ironwoodMigrationAmount?.convertZatoshiToZec()
+
+    private suspend fun resolveIronwoodMigrationAmount(state: ZcashSessionState): Long? {
+        if (addressSpecTyped != AddressSpecType.Unified) return null
+        if (wallet.account.type !is AccountType.Mnemonic) return null
+        if (!state.syncState.isSynced()) return null
+        if (state.latestHeight < IRONWOOD_ACTIVATION_HEIGHT) return null
+        val orchard = state.balance[Pool.ORCHARD]
+        // Migration spends the whole pool and fails while any Orchard note is still pending,
+        // so offering it before everything is spendable only produces an unactionable error.
+        if (orchard.available <= 0 || orchard.pending > 0) return null
+        // Below the SDK's standard-denomination floor migration is already complete: it would
+        // plan no transaction at all.
+        return orchard.available.takeIf { migrationIncomplete() }
+    }
+
+    private suspend fun migrationIncomplete(): Boolean {
+        val status = try {
+            walletOrNull { zcash, id -> zcash.migrationStatus(id) }
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Throwable) {
+            zcashLogger.w { "Ironwood migration status failed error=${error.zcashErrorName}" }
+            null
+        }
+        return status != null && status.phase != MigrationPhase.COMPLETE
+    }
+
+    /**
+     * The migration moves notes one at a time, so the total fee is only known once every step has
+     * run; what is offered up front is the per-step minimum multiplied by the steps still due.
+     */
+    suspend fun proposeIronwoodMigration(): IronwoodMigrationProposal {
+        val available = checkNotNull(poolBalance?.get(Pool.ORCHARD)?.available?.takeIf { it > 0 }) {
+            "No spendable Orchard balance"
+        }
+        val steps = requireWallet { zcash, id -> zcash.migrationStatus(id) }.remainingSteps()
+        // A zero-step proposal would leave the Migrate button enabled for a migration that
+        // plans nothing.
+        if (steps == 0L) throw LocalizedException(R.string.zcash_migration_error_nothing_to_migrate)
+        val fee = steps * MINERS_FEE_ZATOSHI
+        return IronwoodMigrationProposal(
+            amount = (available - fee).coerceAtLeast(0).convertZatoshiToZec(),
+            fee = fee.convertZatoshiToZec(),
+        )
+    }
+
+    /**
+     * Runs the migration to completion and reports the first transaction it broadcast. It stops on
+     * the first step that changes nothing — the next anchor block has not arrived yet — so what is
+     * left is migrated by the next attempt rather than by paying for a step that does not advance.
+     */
+    suspend fun executeIronwoodMigration(): String = withSpendingKey { key ->
+        val txIds = mutableListOf<String>()
+        var status = beforeBroadcast { requireWallet { zcash, id -> zcash.migrationStatus(id) } }
+        try {
+            while (status.phase != MigrationPhase.COMPLETE) {
+                val step = migrationStepAndRefresh(
+                    step = { requireWallet { zcash, id -> zcash.migrationStep(id, key) } },
+                    refresh = this@ZcashAdapter::refresh,
+                )
+                step.txid?.let(txIds::add)
+                if (step.event == MigrationEvent.NOTHING_TO_DO || step.status == status) break
+                status = step.status
+            }
+        } finally {
+            rememberIronwoodMigration(txIds)
+        }
+        txIds.firstOrNull() ?: throw NotBroadcastException(
+            LocalizedException(R.string.zcash_migration_error_nothing_to_migrate)
+        )
+    }
+
+    /**
+     * Once the transaction is mined and rescanned from chain its outputs are reported as change
+     * and no longer as recipients of this account, so the "transfer to self" heuristic stops
+     * matching. Only the recorded transaction id keeps the migration label.
+     */
+    private suspend fun rememberIronwoodMigration(transactionHashes: List<String>) =
+        ironwoodMigrations.remember(wallet.account.id, transactionHashes)
+
+    data class IronwoodMigrationProposal(val amount: BigDecimal, val fee: BigDecimal)
+
+    /** The whole transparent balance moves; the recipient pays the fee out of it. */
+    data class ShieldingTarget(val address: String, val amount: Long)
+
+    // endregion
+
+    // region transactions
 
     override val explorerTitle: String
         get() = "blockchair.com"
@@ -680,11 +827,10 @@ class ZcashAdapter(
         get() = adapterStateUpdatedSubject.toFlowable(BackpressureStrategy.BUFFER)
 
     override val lastBlockInfo: LastBlockInfo?
-        get() = synchronizer.latestHeight?.value?.toInt()?.let { LastBlockInfo(it) }
+        get() = latestHeight.takeIf { it > 0 }?.let { LastBlockInfo(it) }
 
     override val lastBlockUpdatedFlowable: Flowable<Unit>
         get() = lastBlockUpdatedSubject.toFlowable(BackpressureStrategy.BUFFER)
-
 
     override suspend fun getTransactions(
         from: TransactionRecord?,
@@ -693,677 +839,68 @@ class ZcashAdapter(
         transactionType: FilterTransactionType,
         address: String?,
     ): List<TransactionRecord> {
-        val fromParams = from?.let {
-            val transactionHash = it.transactionHash.hexToByteArray().reversedArray()
-            Triple(transactionHash, it.timestamp, it.transactionIndex)
-        }
-        return transactionsProvider.getTransactions(
-            fromParams,
-            transactionType,
-            address,
-            limit
-        ).map {
-            getTransactionRecord(it)
-        }
+        val fromParams = from?.let { Triple(it.transactionHash, it.timestamp, it.transactionIndex) }
+        return transactionsProvider
+            .getTransactions(fromParams, transactionType, address, limit)
+            .map(::getTransactionRecord)
     }
 
     override fun getTransactionRecordsFlow(
         token: Token?,
         transactionType: FilterTransactionType,
         address: String?,
-    ): Flow<List<TransactionRecord>> {
-        return transactionsProvider.getNewTransactionsFlowable(transactionType, address)
-            .map { transactions ->
-                transactions.map { getTransactionRecord(it) }
-            }
-    }
+    ): Flow<List<TransactionRecord>> =
+        transactionsProvider.getNewTransactionsFlowable(transactionType, address)
+            .map { transactions -> transactions.map(::getTransactionRecord) }
+
+    override fun getTransactionsReloadSignalFlow(): Flow<Unit> =
+        transactionsProvider.transactionsReloadSignalFlow
 
     override fun getTransactionUrl(transactionHash: String): String =
         "https://blockchair.com/zcash/transaction/$transactionHash"
 
-    override val maxSpendableBalance: BigDecimal
-        get() {
-            return with(walletBalance) {
-                val defaultFee = fee.value.convertZecToZatoshi()
-                if (available <= defaultFee) {
-                    BigDecimal.ZERO
-                } else {
-                    available.minus(defaultFee)
-                        .convertZatoshiToZec(DECIMAL_COUNT)
-                }
-            }
-        }
-
-    private val _fee: MutableStateFlow<BigDecimal> = MutableStateFlow(MINERS_FEE)
-    override val fee: StateFlow<BigDecimal> = _fee.asStateFlow()
-
-    /**
-     * Restarts the fee calculation whenever the account balance changes.
-     *
-     * The marker is the whole [AccountBalance] rather than `available` alone: under ZIP-317 the
-     * fee depends on which pools are involved, and after NU6.3 activation funds can move from
-     * Orchard to Ironwood without changing the total. The snapshot is read under the lock
-     * because this runs both from `onBalance` (main dispatcher) and from the status collector
-     * (IO): otherwise an older call could overwrite the marker and cancel the calculation
-     * started for the fresher balance.
-     *
-     * While the published fee is still the default one the snapshot is not enough to conclude
-     * the fee is current — ZIP-317 also depends on the proposal target height, which changes at
-     * NU6.3 activation without touching any balance field — so the calculation repeats on every
-     * trigger until a real fee is known.
-     */
-    private fun scheduleFeeRecalculation() {
-        synchronized(feeLock) {
-            val snapshot = accountBalance
-            if (snapshot == lastFeeSnapshot && _fee.value != MINERS_FEE) return
-            lastFeeSnapshot = snapshot
-            val generation = ++feeGeneration
-            val available = walletBalance.available
-            feeJob?.cancel()
-            feeJob = scope.launch {
-                val calculated = calculateFee(available)
-                synchronized(feeLock) {
-                    // The probe may have passed its last cancellation point and returned after a
-                    // fresher calculation already published its fee. Ownership is checked by
-                    // calculation number rather than by snapshot value: on an A -> B -> A balance
-                    // cycle the stale probe would match the snapshot again and publish an
-                    // outdated fee.
-                    if (feeGeneration != generation) return@launch
-                    if (calculated == null) {
-                        // The probe found no workable fee — clear the marker so the next balance
-                        // tick retries it instead of treating the fee as already calculated.
-                        lastFeeSnapshot = null
-                    } else {
-                        _fee.value = calculated
-                    }
-                }
-            }
-        }
-    }
-
-    /** Returns the discovered fee, or `null` when the probe failed outright. */
-    private suspend fun calculateFee(
-        balance: Zatoshi = walletBalance.available,
-        tryCounter: Int = FEE_PROBE_ATTEMPTS
-    ): BigDecimal? = withContext(dispatcherProvider.io) {
-        try {
-            if (balance == Zatoshi(0)) {
-                return@withContext MINERS_FEE
-            }
-            synchronizer.proposeTransfer(
-                account = getFirstAccount(),
-                recipient = AppConfigProvider.donateAddresses[BlockchainType.Zcash]
-                    .orEmpty(),
-                amount = balance
-            ).totalFeeRequired().convertZatoshiToZec(DECIMAL_COUNT)
-        } catch (ex: Exception) {
-            if (ex is TransactionEncoderException.ProposalFromParametersException && tryCounter > 0) {
-                // Not enough money to send with commission
-                // Prevent problems with negative Zatoshi
-                try {
-                    calculateFee(balance - MINERS_FEE.convertZecToZatoshi(), tryCounter - 1)
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (_: Throwable) {
-                    null
-                }
-            } else {
-                null
-            }
-        }
-    }
-
-    override suspend fun validate(address: String): ZCashAddressType {
-        if (address == receiveAddress) throw ZcashError.SendToSelfNotAllowed
-        return when (synchronizer.validateAddress(address)) {
-            is AddressType.Invalid -> throw ZcashError.InvalidAddress
-            is AddressType.Transparent -> ZCashAddressType.Transparent
-            is AddressType.Shielded -> ZCashAddressType.Shielded
-            is AddressType.Tex -> ZCashAddressType.Shielded
-            AddressType.Unified -> ZCashAddressType.Unified
-        }
-    }
-
-    override suspend fun send(
-        amount: BigDecimal,
-        address: String,
-        memo: String,
-        logger: AppLogger?
-    ): FirstClassByteArray {
-        logger?.info("call synchronizer.sendToAddress")
-        val account = getFirstAccount()
-        val proposal = transferProposal(account, amount, address, memo)
-        return localizingMissingParams {
-            synchronizer.createProposedTransactions(
-                proposal = proposal,
-                usk = spendingKey(account)
-            ).first().txId
-        }
-    }
-
-    /**
-     * Translates the SDK's missing proving parameters failure into a localized message at the
-     * single boundary where this adapter talks to the transaction encoder.
-     */
-    private suspend fun <T> localizingMissingParams(block: suspend () -> T): T =
-        try {
-            block()
-        } catch (_: TransactionEncoderException.MissingParamsException) {
-            throw LocalizedException(R.string.send_error_zcash_params_not_downloaded)
-        }
-
-    override suspend fun signOffline(request: OfflineSignRequest): SignedOfflineZcashTransaction {
-        require(request is OfflineZcashSignRequest) { "OfflineZcashSignRequest is required" }
-        val account = getFirstAccount()
-        val proposal = transferProposal(
-            account = account,
-            amount = request.amount,
-            address = request.address,
-            memo = request.memo,
-        )
-        val signedTransactions = localizingMissingParams {
-            synchronizer.createSignedTransactions(
-                proposal = proposal,
-                usk = spendingKey(account),
-            )
-        }
-        val signed = signedTransactions.singleOrNull()
-            ?: throw UnsupportedException("Zcash offline signing supports exactly one transaction")
-
-        return SignedOfflineZcashTransaction(
-            rawHex = signed.raw.byteArray.toRawHexString(),
-            txHash = signed.txIdString().canonicalTransactionHash(),
-            fee = proposal.totalFeeRequired().convertZatoshiToZec(DECIMAL_COUNT),
-        )
-    }
-
-    override suspend fun broadcastRawTransaction(
-        rawTransactionHex: String,
-        metadata: OfflineBroadcastMetadata?,
-    ): BroadcastRawTransactionResult {
-        val zcashMetadata = metadata as? OfflineBroadcastMetadata.Zcash
-            ?: throw UnsupportedException("Zcash raw broadcast requires P.CASH payload metadata")
-        val normalizedRawHex = rawTransactionHex.trim()
-        require(OfflineTransactionPayloadEncoder.isRawTransactionHex(normalizedRawHex)) {
-            "Valid raw transaction hex is required"
-        }
-        val signedRawTransaction = SignedRawZcashTransaction(
-            raw = FirstClassByteArray(normalizedRawHex.hexToByteArray()),
-            txId = FirstClassByteArray(zcashMetadata.txHash.hexToByteArray().reversedArray()),
-            expiryHeight = null,
-        )
-        return synchronizer.submitRawTransaction(signedRawTransaction).toZcashRawBroadcastResult()
-    }
-
-    private suspend fun transferProposal(
-        account: Account,
-        amount: BigDecimal,
-        address: String,
-        memo: String,
-    ): Proposal =
-        synchronizer.proposeTransfer(
-            account = account,
-            recipient = address,
-            amount = amount.convertZecToZatoshi(),
-            memo = memo,
-        )
-
-    private suspend fun spendingKey(account: Account): UnifiedSpendingKey {
-        val mnemonic = wallet.account.type as? AccountType.Mnemonic
-            ?: throw UnsupportedException("Zcash offline signing requires a mnemonic account")
-        val accountIndex = account.hdAccountIndex
-            ?: throw UnsupportedException("Zcash account index is unavailable")
-        return DerivationTool.getInstance()
-            .deriveUnifiedSpendingKey(mnemonic.seed, network, accountIndex)
-    }
-
-    override suspend fun getOwnAddresses(): List<String> {
-        val account = getFirstAccount()
-        return listOfNotNull(
-            tryOrNull { synchronizer.getSaplingAddress(account) },
-            tryOrNull { synchronizer.getUnifiedAddress(account) }
-        )
-    }
-
-    suspend fun proposeShielding(): FirstClassByteArray = withContext(dispatcherProvider.io) {
-        val account = getFirstAccount()
-        val proposal = synchronizer.proposeShielding(
-            account = account,
-            shieldingThreshold = Zatoshi(100000L),
-            // Using empty string for memo to clear the default memo prefix value defined in
-            // the SDK
-            memo = "",
-            // Using null will select whichever of the account's trans. receivers has funds
-            // to shield
-            transparentReceiver = null
-        )
-        if (proposal == null) {
-            throw Throwable("Failed to create proposal")
-        }
-        localizingMissingParams {
-            synchronizer.createProposedTransactions(
-                proposal = proposal,
-                usk = spendingKey(account)
-            ).first().txId
-        }
-    }
-
-    private val ironwoodActivationHeight: Long
-        get() = when (network) {
-            ZcashNetwork.Testnet -> IRONWOOD_ACTIVATION_HEIGHT_TESTNET
-            else -> IRONWOOD_ACTIVATION_HEIGHT_MAINNET
-        }
-
-    /**
-     * The Orchard balance that has to be moved to Ironwood, or `null` when migration is not
-     * applicable. Orchard and Ironwood are both surfaced by the unified token, so only that
-     * adapter can migrate.
-     */
-    val ironwoodMigrationRequiredBalance: BigDecimal?
-        get() {
-            if (addressSpecTyped != AddressSpecType.Unified) return null
-            if (wallet.account.type !is AccountType.Mnemonic) return null
-            if (syncState !is AdapterState.Synced) return null
-            val tipHeight = synchronizer.latestHeight?.value ?: return null
-            if (tipHeight < ironwoodActivationHeight) return null
-            val orchard = accountBalance?.orchard ?: return null
-            // The migration proposal is all-or-nothing and fails while any Orchard note is
-            // still pending, so offering it before the whole pool is spendable only produces
-            // an error the user cannot act on.
-            if (orchard.available.value <= 0 || orchard.pending.value > 0) return null
-            return orchard.available.convertZatoshiToZec(DECIMAL_COUNT)
-        }
-
-    suspend fun proposeIronwoodMigration(): IronwoodMigrationProposal =
-        withContext(dispatcherProvider.io) {
-            val orchard = checkNotNull(accountBalance?.orchard) { "Orchard balance is not loaded" }
-            check(orchard.available.value > 0) { "No spendable Orchard balance" }
-            val proposal = synchronizer.proposeOrchardToIronwoodMigration(getFirstAccount())
-            ironwoodMigrationProposal = proposal
-            val feePaid = proposal.totalFeeRequired()
-            IronwoodMigrationProposal(
-                amount = Zatoshi((orchard.available.value - feePaid.value).coerceAtLeast(0))
-                    .convertZatoshiToZec(DECIMAL_COUNT),
-                fee = feePaid.convertZatoshiToZec(DECIMAL_COUNT)
-            )
-        }
-
-    suspend fun executeIronwoodMigration(): String = withContext(dispatcherProvider.io) {
-        // Taken once and never reused, whatever happens next: the proposal names the exact notes
-        // to spend, and no failure of the SDK reliably reports whether the transactions were
-        // already stored. A repeat attempt has to ask for a fresh proposal instead, which the
-        // backend builds with MaxSpendMode::Everything and therefore refuses outright when an
-        // earlier attempt has spent part of the pool.
-        val proposal = checkNotNull(ironwoodMigrationProposal) { "Migration was not proposed" }
-        ironwoodMigrationProposal = null
-
-        val usk = spendingKey(getFirstAccount())
-        val results = localizingMissingParams {
-            synchronizer
-                .createProposedTransactions(proposal = proposal, usk = usk)
-                .toList()
-        }
-        rememberIronwoodMigration(results.map { it.txIdString() })
-
-        results.firstOrNull { it !is TransactionSubmitResult.Success }
-            ?.let { error("Migration transaction was not submitted: ${it.txIdString()}") }
-        results.firstOrNull()?.txIdString() ?: error("Migration returned no transaction id")
-    }
-
-    /**
-     * Once the transaction is mined and rescanned from chain its outputs are reported as change
-     * and no longer as recipients of this account, so the "transfer to self" heuristic stops
-     * matching. Only the recorded transaction id keeps the migration label.
-     */
-    private suspend fun rememberIronwoodMigration(transactionHashes: List<String>) {
-        if (transactionHashes.isEmpty()) return
-        migrationIdsMutex.withLock {
-            localStorage.zcashIronwoodMigrationTxIds = localStorage.zcashIronwoodMigrationTxIds +
-                transactionHashes.map { migrationTxKey(it) }
-        }
-    }
-
-    /**
-     * Read from storage on every check instead of caching: the same transaction is also listed by
-     * the sibling Zcash adapters of this account, which never write the migration ids themselves.
-     */
-    private fun isIronwoodMigration(transactionHashHex: String) =
-        migrationTxKey(transactionHashHex) in localStorage.zcashIronwoodMigrationTxIds
-
-    private fun migrationTxKey(transactionHashHex: String) =
-        migrationTxKeyPrefix + transactionHashHex.canonicalTransactionHash()
-
-    data class IronwoodMigrationProposal(val amount: BigDecimal, val fee: BigDecimal)
-
-    private fun subscribe(synchronizer: SdkSynchronizer) {
-        subscriberScope?.cancel()
-        val handler = CoroutineExceptionHandler { _, exception ->
-            Timber.w(exception, "Zcash synchronizer flow error")
-            if (isDatabaseCorruption(exception)) {
-                handleDatabaseCorruption(exception)
-            }
-        }
-        val parentJob = synchronizer.coroutineScope.coroutineContext[Job]
-        val scope = CoroutineScope(dispatcherProvider.main + SupervisorJob(parentJob) + handler)
-        subscriberScope = scope
-        synchronizer.allTransactions.safeCollectIn(scope, transactionsProvider::onTransactions)
-        synchronizer.status.safeCollectIn(scope, ::onStatus)
-        synchronizer.progress.safeCollectIn(scope, ::onDownloadProgress)
-        synchronizer.walletBalances.safeCollectIn(scope, ::onBalance)
-        synchronizer.processorInfo.safeCollectIn(scope, ::onProcessorInfo)
-    }
-
-    private fun <T> Flow<T>.safeCollectIn(scope: CoroutineScope, block: (T) -> Unit) {
-        scope.launch {
-            catch { e ->
-                Timber.e(e, "Zcash flow collection error")
-                if (isDatabaseCorruption(e)) {
-                    handleDatabaseCorruption(e)
-                }
-            }.collect { block(it) }
-        }
-    }
-
-    private fun isDatabaseCorruption(error: Throwable): Boolean {
-        return error.causeSequence().any { cause ->
-            cause is SQLiteDatabaseCorruptException ||
-                    cause.message.isDatabaseCorruptionMessage()
-        }
-    }
-
-    private fun Throwable.causeSequence(): Sequence<Throwable> {
-        return generateSequence(this) { it.cause }
-    }
-
-    private fun String?.isDatabaseCorruptionMessage(): Boolean {
-        val message = this?.lowercase() ?: return false
-        return DATABASE_CORRUPTION_MESSAGES.any(message::contains)
-    }
-
-    private fun handleDatabaseCorruption(cause: Throwable) {
-        // Never erase local data while offline: the flows re-subscribed by attachLocalData()/
-        // startSynchronizer() will hit the same corruption again once back online, which retries
-        // recovery naturally without any extra pending-recovery state.
-        if (isOffline()) {
-            Timber.w(cause, "Zcash database corruption detected while offline, deferring recovery")
-            return
-        }
-        if (!recovering.compareAndSet(false, true)) return
-        Timber.e(cause, "Zcash database corruption detected, recovering")
-        scope.launch {
-            try {
-                syncState = AdapterState.NotSynced(Exception("Database corrupted, recovering"))
-                try {
-                    synchronizer.close()
-                } catch (e: Exception) {
-                    Timber.w(e, "Error closing corrupted synchronizer")
-                }
-                eraseWithRetry()
-                corruptionRecovery.set(true)
-                createNewSynchronizer()
-                if (!isActive) {
-                    closeSynchronizer()
-                    return@launch
-                }
-                subscribe(synchronizer as SdkSynchronizer)
-                subscribeToStatus()
-            } catch (e: CancellationException) {
-                closeSynchronizer()
-                throw e
-            } catch (e: Exception) {
-                Timber.e(e, "Zcash database corruption recovery failed")
-                syncState = AdapterState.NotSynced(Exception("Recovery failed", e))
-            } finally {
-                recovering.set(false)
-            }
-        }
-    }
-
-    private suspend fun eraseWithRetry() {
-        val alias = clearZCashWalletDataUseCase.getValidAliasFromAccountId(
-            wallet.account.id, addressSpecTyped
-        )
-        repeat(3) { attempt ->
-            try {
-                Synchronizer.erase(App.instance, network, alias)
-                return
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: IllegalStateException) {
-                if (attempt < 2) {
-                    val delayMs = 1000L * (attempt + 1)
-                    Timber.d("Synchronizer still active, retrying erase in ${delayMs}ms (attempt ${attempt + 1}/3)")
-                    delay(delayMs)
-                } else {
-                    throw IllegalStateException("Failed to erase corrupted database after 3 attempts", e)
-                }
-            }
-        }
-    }
-
-    private fun onProcessorError(error: Throwable?): Boolean {
-        Timber.e(error, "Zcash processor error")
-        if (error != null && isDatabaseCorruption(error)) {
-            handleDatabaseCorruption(error)
-            return false
-        }
-        return true
-    }
-
-    private fun onCriticalError(error: Throwable?): Boolean {
-        Timber.e(error, "Zcash critical error")
-        if (error != null && isDatabaseCorruption(error)) {
-            handleDatabaseCorruption(error)
-            return false
-        }
-        return true
-    }
-
-    private fun onChainError(errorHeight: BlockHeight, rewindHeight: BlockHeight) = Unit
-
-    // ZEC is intentionally kept running in the background during an active polling session or
-    // realtime keep-alive (see EnterBackground above), so self-heal must be allowed in those
-    // cases too, not just while the app is in the foreground.
-    private fun hasActiveBackgroundSession(): Boolean =
-        pollingSessionCount.get() > 0 || backgroundKeepAliveManager.isKeepAlive(BlockchainType.Zcash)
-
-    private fun scheduleRestart() {
-        if (recovering.get()) return
-        // pauseSync() (going offline) also publishes Status.STOPPED, which onStatus() cannot
-        // tell apart from a genuine failure — self-heal must stay out of the way while offline.
-        if (isOffline()) return
-        if (!backgroundManager.inForeground && !hasActiveBackgroundSession()) return
-        if (restartJob?.isActive == true) return
-        val delayMs = zcashRestartDelayFor(restartAttempt, restartBaseDelayMs, restartMaxDelayMs)
-        restartAttempt++
-        restartJob = scope.launch {
-            delay(delayMs)
-            // No syncState re-check here: resetRestart() already cancels this job the moment
-            // SYNCING/SYNCED is observed, so reaching this point means the restart is still due.
-            // (syncState itself is unreliable at this point - subscribe()'s eager resubscription
-            // to the progress/processorInfo flows can transiently flip it back to Syncing.)
-            if (backgroundManager.inForeground || hasActiveBackgroundSession()) {
-                start()
-            }
-        }
-    }
-
-    private fun resetRestart() {
-        restartAttempt = 0
-        restartJob?.cancel()
-        restartJob = null
-    }
-
-    private fun onStatus(status: Synchronizer.Status) {
-        syncState = when (status) {
-            Synchronizer.Status.STOPPED -> AdapterState.NotSynced(Exception("stopped"))
-            Synchronizer.Status.DISCONNECTED -> AdapterState.NotSynced(Exception("disconnected"))
-            Synchronizer.Status.SYNCING -> if (syncState is AdapterState.Syncing) syncState else AdapterState.Syncing()
-            Synchronizer.Status.SYNCED -> AdapterState.Synced
-            else -> syncState
-        }
-        // Self-heal on terminal STOPPED; reset backoff once syncing resumes. DISCONNECTED and
-        // PREPARING are left to the SDK's own reconnect loop.
-        when (status) {
-            Synchronizer.Status.STOPPED -> scheduleRestart()
-            Synchronizer.Status.SYNCING,
-            Synchronizer.Status.SYNCED -> resetRestart()
-            else -> {}
-        }
-        logDiag()
-    }
-
-    private fun startOneTimeAddressBalanceCheck() {
-        if (balanceCheckJob?.isActive == true) return
-
-        balanceCheckJob = scope.launch {
-            try {
-                balanceCheckMutex.withLock {
-                    checkTransparentAddressesBalance()
-                }
-            } finally {
-                balanceCheckJob = null
-            }
-        }
-    }
-
-    private fun onDownloadProgress(progress: PercentDecimal) {
-        lastDownloadProgressDecimal = progress.decimal
-        updateSyncingState()
-    }
-
-    private fun onProcessorInfo(processorInfo: CompactBlockProcessor.ProcessorInfo) {
-        processorInfo.networkBlockHeight?.value?.let { lastNetworkHeight = it }
-        updateSyncingState()
-        lastBlockUpdatedSubject.onNext(Unit)
-        logDiag()
-    }
-
-    // ZCash SDK 2.4 reports `synchronizer.progress` as a fraction over commitment-tree leaves
-    // (Sapling+Orchard notes), not blocks. Recovery weight skews heavily to recent history,
-    // so the raw decimal stays near 0 for a long time. We expose blocksRemained as the
-    // block-equivalent of the SDK's decimal so the UI reads consistently.
-    private fun updateSyncingState() {
-        if (syncState is AdapterState.Synced) {
-            return
-        }
-
-        if (lastDownloadProgressDecimal >= 1f) {
-            syncState = AdapterState.Syncing(progress = 100.0, blocksRemained = null)
-            return
-        }
-
-        val effectiveBirthday = max(accountBirthday, network.saplingActivationHeight.value)
-        val totalBlocks = lastNetworkHeight?.let { it - effectiveBirthday }?.takeIf { it > 0 }
-        val blocksRemained = totalBlocks?.let {
-            ((1f - lastDownloadProgressDecimal) * it).toLong().coerceAtLeast(0L)
-        }
-        val rawPercent = lastDownloadProgressDecimal.toDouble() * 100.0
-        val progressPercent = (Math.round(rawPercent * 10000.0) / 10000.0).coerceIn(0.0, 100.0)
-        syncState = AdapterState.Syncing(progress = progressPercent, blocksRemained = blocksRemained)
-    }
-
-    private fun onBalance(balance: Map<AccountUuid, AccountBalance>?) {
-        balance?.get(zcashAccount?.accountUuid)?.sapling?.let {
-            balanceUpdatedSubject.onNext(Unit)
-        }
-        // The pool composition changes at runtime: after NU6.3 activation change arrives in
-        // Ironwood and the available balance no longer matches a fee calculated for a single
-        // pool. Recalculate on every balance change, not only on the first sync.
-        if (syncState is AdapterState.Synced) {
-            scheduleFeeRecalculation()
-        }
-        startOneTimeAddressBalanceCheck()
-        logDiag()
-    }
-
-    private suspend fun checkTransparentAddressesBalance() = withContext(dispatcherProvider.io) {
-        val addresses = singleUseAddressManager.getAddressesForBalanceCheck()
-        val sdk = synchronizer as? SdkSynchronizer ?: return@withContext
-
-        addresses.forEach { address ->
-            try {
-                val balance = sdk.getTransparentBalance(address)
-                if (balance.value > 0) {
-                    singleUseAddressManager.updateAddressBalance(address, true)
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (error: Throwable) {
-                Timber.w(error, "Failed to check balance for t-address: $address")
-            }
-        }
-    }
-
-    private fun getTransactionRecord(transaction: ZcashTransaction): TransactionRecord =
-        if (transaction.isIncoming) {
-            incomingTransactionRecord(transaction)
-        } else {
-            outgoingTransactionRecord(transaction)
-        }
-
-    private fun incomingTransactionRecord(transaction: ZcashTransaction): TransactionRecord {
-        val transactionHashHex = transaction.transactionHash.toReversedHex()
-        return BitcoinTransactionRecord(
-            token = wallet.token,
-            uid = transactionHashHex,
-            transactionHash = transactionHashHex,
-            transactionIndex = transaction.transactionIndex,
-            blockHeight = transaction.minedHeight?.toInt(),
-            confirmationsThreshold = confirmationsThreshold,
-            timestamp = transaction.timestamp,
-            fee = transaction.feePaid?.convertZatoshiToZec(DECIMAL_COUNT)
-                ?.let { TransactionValue.CoinValue(wallet.token, it) },
-            failed = transaction.failed,
-            lockInfo = null,
-            conflictingHash = null,
-            showRawTransaction = false,
-            amount = transaction.value.convertZatoshiToZec(DECIMAL_COUNT),
-            from = null,
-            to = transaction.toAddress?.let(::listOf),
-            changeAddresses = null,
-            memo = transaction.memo,
-            source = wallet.transactionSource,
-            transactionRecordType = TransactionRecordType.BITCOIN_INCOMING
-        )
-    }
-
-    private fun outgoingTransactionRecord(transaction: ZcashTransaction): TransactionRecord {
-        val transactionHashHex = transaction.transactionHash.toReversedHex()
-        val isIronwoodMigration = isIronwoodMigration(transactionHashHex)
-        // A migration keeps the funds in the wallet, so the moved amount is what was
-        // received back rather than the net change of the balance.
-        val amount = if (isIronwoodMigration) {
-            transaction.totalReceived.convertZatoshiToZec(DECIMAL_COUNT)
-        } else {
-            transaction.value.convertZatoshiToZec(DECIMAL_COUNT).negate()
+    private fun getTransactionRecord(transaction: Transaction): TransactionRecord {
+        val isIronwoodMigration = !transaction.isIncoming &&
+            ironwoodMigrations.contains(wallet.account.id, transaction.txid)
+        // A migration keeps the funds in the wallet, so the moved amount is what was received
+        // back rather than the net change of the balance. Everything else takes the SDK's signed
+        // value as it is: negative when funds leave.
+        val amount = when {
+            isIronwoodMigration -> transaction.totalReceived.convertZatoshiToZec()
+            else -> transaction.value.convertZatoshiToZec()
         }
         return BitcoinTransactionRecord(
             token = wallet.token,
-            uid = transactionHashHex,
-            transactionHash = transactionHashHex,
-            transactionIndex = transaction.transactionIndex,
-            blockHeight = transaction.minedHeight?.toInt(),
-            confirmationsThreshold = confirmationsThreshold,
-            timestamp = transaction.timestamp,
-            fee = transaction.feePaid?.let { it.convertZatoshiToZec(DECIMAL_COUNT) }
-                ?.let { TransactionValue.CoinValue(wallet.token, it) },
-            failed = transaction.failed,
+            uid = transaction.txid,
+            transactionHash = transaction.txid,
+            transactionIndex = transaction.id,
+            blockHeight = transaction.height.takeIf { it > 0 },
+            confirmationsThreshold = CONFIRMATIONS_THRESHOLD,
+            timestamp = transaction.time,
+            fee = transaction.fee.takeIf { it > 0 }
+                ?.let { TransactionValue.CoinValue(wallet.token, it.convertZatoshiToZec()) },
+            failed = false,
             lockInfo = null,
             conflictingHash = null,
             showRawTransaction = false,
             amount = amount,
-            to = transaction.toAddress?.let(::listOf),
             from = null,
+            to = transaction.recipient?.let(::listOf),
             changeAddresses = null,
             sentToSelf = false,
             memo = transaction.memo,
             source = wallet.transactionSource,
             replaceable = false,
-            transactionRecordType = TransactionRecordType.BITCOIN_OUTGOING,
-            isIronwoodMigration = isIronwoodMigration
+            transactionRecordType = if (transaction.isIncoming) {
+                TransactionRecordType.BITCOIN_INCOMING
+            } else {
+                TransactionRecordType.BITCOIN_OUTGOING
+            },
+            isIronwoodMigration = isIronwoodMigration,
         )
     }
+
+    // endregion
 
     enum class ZCashAddressType {
         Shielded, Transparent, Unified
@@ -1373,66 +910,73 @@ class ZcashAdapter(
         object InvalidAddress : ZcashError()
         object SendToSelfNotAllowed : ZcashError()
     }
+
+    companion object {
+        private const val CONFIRMATIONS_THRESHOLD = 10
+        private const val SHIELDING_CONFIRMATIONS = 1
+        private const val SHIELDING_THRESHOLD = 100_000L
+        private const val DIAG_INTERVAL_MS = 30_000L
+
+        /** NU6.3 activation on mainnet. */
+        private const val IRONWOOD_ACTIVATION_HEIGHT = 3_428_143
+
+        private const val NO_FEASIBLE_SELECTION = "No feasible note selection found"
+
+        private const val MINERS_FEE_ZATOSHI = 10_000L
+        val MINERS_FEE: BigDecimal = MINERS_FEE_ZATOSHI.convertZatoshiToZec()
+    }
 }
 
-internal fun TransactionSubmitResult.toZcashRawBroadcastResult(): BroadcastRawTransactionResult =
-    when (this) {
-        is TransactionSubmitResult.Success -> toSubmittedBroadcastResult()
-        is TransactionSubmitResult.Failure -> {
-            if (description.isZcashAlreadyCommittedToBestChainError()) {
-                toAlreadyKnownBroadcastResult()
-            } else {
-                throw Exception(description ?: "Zcash raw transaction broadcast failed: $code")
-            }
-        }
-        is TransactionSubmitResult.NotAttempted -> throw Exception("Zcash raw transaction broadcast was not attempted")
-    }
+/** Which pools an address spec spends from; Unified holds Orchard and its Ironwood change. */
+internal fun AddressSpecType?.pools(): PoolSet = when (this) {
+    null, AddressSpecType.Shielded -> PoolSet.of(Pool.SAPLING)
+    AddressSpecType.Transparent -> PoolSet.of(Pool.TRANSPARENT)
+    AddressSpecType.Unified -> PoolSet.of(Pool.ORCHARD, Pool.IRONWOOD)
+}
 
-private fun TransactionSubmitResult.toSubmittedBroadcastResult() =
-    BroadcastRawTransactionResult(
-        txHash = txIdString().canonicalTransactionHash(),
+internal fun PoolBalance.forSpec(spec: AddressSpecType?): Balance =
+    spec.pools().toList().fold(Balance()) { total, pool -> total + get(pool) }
+
+internal fun Balance.toBalanceData() = BalanceData(
+    available = available.convertZatoshiToZec(),
+    pending = pending.convertZatoshiToZec(),
+    timeLocked = locked.convertZatoshiToZec(),
+)
+
+private operator fun Balance.plus(other: Balance) = Balance(
+    available = available + other.available,
+    locked = locked + other.locked,
+    changePending = changePending + other.changePending,
+    valuePending = valuePending + other.valuePending,
+)
+
+/** Every remaining Orchard standard note needs one step, plus one to split the non-standard ones. */
+private fun MigrationStatus.remainingSteps(): Long =
+    standardNotes.toLong() + if (nonStandardNotes > 0) 1 else 0
+
+internal fun BroadcastResult.toBroadcastResult(txHash: String): BroadcastRawTransactionResult = when {
+    // An accepted broadcast reports the txid it assigned; a rejection reports the node's reason.
+    accepted -> BroadcastRawTransactionResult(
+        txHash = message.canonicalTransactionHash(),
         status = BroadcastRawTransactionStatus.Submitted,
     )
 
-private fun TransactionSubmitResult.toAlreadyKnownBroadcastResult() =
-    BroadcastRawTransactionResult(
-        txHash = txIdString().canonicalTransactionHash(),
+    message.isZcashAlreadyCommittedToBestChainError() -> BroadcastRawTransactionResult(
+        txHash = txHash.canonicalTransactionHash(),
         status = BroadcastRawTransactionStatus.AlreadyKnown,
     )
 
-internal fun WalletBalance.toBalanceData(decimalCount: Int) = BalanceData(
-    available = available.convertZatoshiToZec(decimalCount),
-    pending = pending.convertZatoshiToZec(decimalCount)
-)
+    else -> throw ZcashException("Zcash raw transaction broadcast failed ($errorCode): $message")
+}
 
 internal fun zcashRestartDelayFor(attempt: Int, baseMs: Long, maxMs: Long): Long =
     (baseMs shl attempt.coerceAtMost(3)).coerceAtMost(maxMs)
 
-object ZcashAddressValidator {
-    fun validate(address: String): Boolean {
-        return isValidZcashAddress(address)
-    }
-
-    fun isTransparentAddress(address: String): Boolean {
-        return isValidTransparentAddress(address)
-    }
-
-    private fun isValidTransparentAddress(address: String): Boolean {
-        val transparentPattern = Pattern.compile("^t[0-9a-zA-Z]{34}$")
-        return transparentPattern.matcher(address).matches()
-    }
-
-    private fun isValidShieldedAddress(address: String): Boolean {
-        val shieldedPattern = Pattern.compile("^z[0-9a-zA-Z]{77}$")
-        return shieldedPattern.matcher(address).matches()
-    }
-
-    private fun isValidUnifiedAddress(address: String): Boolean {
-        val unifiedPattern = Pattern.compile("^u1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{100,220}$")
-        return unifiedPattern.matcher(address).matches()
-    }
-
-    private fun isValidZcashAddress(address: String): Boolean {
-        return isValidTransparentAddress(address) || isValidShieldedAddress(address) || isValidUnifiedAddress(address)
-    }
+internal suspend fun <T> migrationStepAndRefresh(
+    step: suspend () -> T,
+    refresh: suspend () -> Unit,
+): T = try {
+    step()
+} finally {
+    refresh()
 }
