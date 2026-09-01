@@ -2424,12 +2424,13 @@ class MoneroKitWrapper(
         health: MoneroWalletHealthSnapshot,
     ) {
         try {
-            if (
+            val refreshDidNotCompleteHealthy =
                 !controlledLiveRefreshCommitted ||
-                !health.isFullyHealthy ||
-                wallet == null ||
-                wallet.hasUnknownKeyImages()
-            ) {
+                    !health.isFullyHealthy ||
+                    wallet == null ||
+                    wallet.hasUnknownKeyImages()
+
+            if (refreshDidNotCompleteHealthy) {
                 setSpendReadinessForSession(session, MoneroSpendReadiness.Syncing)
                 controlledRefreshFinalization?.completeExceptionally(
                     IllegalStateException("Monero controlled refresh did not complete with a healthy wallet"),
