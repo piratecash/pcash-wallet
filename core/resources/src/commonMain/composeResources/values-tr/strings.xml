@@ -2238,4 +2238,5 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="balance_hide_on_flip_info_description">Bakiyenizi gizlemek veya göstermek için cihazın ekranını aşağı çevirin ya da güvenlik ayarlarından kapatın.</string>
     <string name="balance_hide_on_flip_dont_show_again">Tekrar gösterme</string>
     <string name="badge_new">Yeni</string>
+    <string name="monero_keys_unavailable">Bu cüzdan için anahtarlar kullanılamıyor</string>
 </resources>

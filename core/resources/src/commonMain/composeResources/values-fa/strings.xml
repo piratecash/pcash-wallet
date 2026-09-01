@@ -2241,4 +2241,5 @@
     <string name="balance_hide_on_flip_info_description">برای پنهان یا نمایش موجودی خود، کافی است صفحه‌نمایش دستگاه را رو به پایین بچرخانید یا آن را در تنظیمات امنیتی خاموش کنید.</string>
     <string name="balance_hide_on_flip_dont_show_again">دیگر نمایش داده نشود</string>
     <string name="badge_new">جدید</string>
+    <string name="monero_keys_unavailable">کلیدها برای این کیف پول در دسترس نیستند</string>
 </resources>
