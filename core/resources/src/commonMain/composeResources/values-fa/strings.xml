@@ -1355,7 +1355,8 @@
     <string name="PublicKeys_EvmAddress">EVM Address</string>
     <string name="PublicKeys_EvmAddress_Description">Allows read-only monitoring of wallets holding assets on Ethereum, Binance Smart Chain and other EVM based blockchains.</string>
     <string name="PublicKeys_AccountExtendedPublicKeyDescription">Allows read-only monitoring of wallets holding Bitcoin and other UTXO based crypto (i.e Litecoin, Bitcoin Cash, Dash etc.).</string>
-    <string name="publicKeys_zec_ufvk_descritpion">Allows read-only monitoring of ZCash, transparent and shielded transactions for the wallet.</string>
+    <string name="publicKeys_zec_ufvk">کلید مشاهدهٔ ZCash</string>
+    <string name="publicKeys_zec_ufvk_descritpion">امکان نظارت فقط‌خواندنی بر همهٔ تراکنش‌های شفاف و محافظت‌شدهٔ ZCash این کیف پول را فراهم می‌کند.</string>
     <string name="publicKeys_zec_transparent_viewing_key_description">امکان نظارت فقط‌خواندنی بر تراکنش‌های شفاف ZCash کیف پول را فراهم می‌کند. تراکنش‌های محافظت‌شده شامل نمی‌شوند.</string>
     <string name="public_keys_zec_sapling_viewing_key">کلید مشاهدهٔ ZCash Sapling</string>
     <string name="public_keys_zec_sapling_viewing_key_description">امکان نظارت فقط‌خواندنی بر تراکنش‌های محافظت‌شدهٔ ZCash این کیف پول را فراهم می‌کند. تراکنش‌های شفاف شامل نمی‌شوند.</string>

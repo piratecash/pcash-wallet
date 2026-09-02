@@ -1352,7 +1352,8 @@
     <string name="PublicKeys_EvmAddress">EVM 주소</string>
     <string name="PublicKeys_EvmAddress_Description">Ethereum, Binance Smart Chain 및 기타 EVM 기반 블록체인에 자산을 보유하고 있는 지갑의 읽기 전용 모니터링을 허용합니다.</string>
     <string name="PublicKeys_AccountExtendedPublicKeyDescription">Bitcoin 및 기타 UTXO 기반 암호화폐(예: Litecoin, Bitcoin Cash, Dash 등)를 보유한 지갑의 읽기 전용 모니터링을 허용합니다.</string>
-    <string name="publicKeys_zec_ufvk_descritpion">Allows read-only monitoring of ZCash, transparent and shielded transactions for the wallet.</string>
+    <string name="publicKeys_zec_ufvk">ZCash 열람 키</string>
+    <string name="publicKeys_zec_ufvk_descritpion">이 지갑의 모든 투명 및 보호된 ZCash 거래를 읽기 전용으로 모니터링할 수 있습니다.</string>
     <string name="publicKeys_zec_transparent_viewing_key_description">지갑의 투명 ZCash 거래를 읽기 전용으로 모니터링할 수 있습니다. 보호된 거래는 포함되지 않습니다.</string>
     <string name="public_keys_zec_sapling_viewing_key">ZCash Sapling 열람 키</string>
     <string name="public_keys_zec_sapling_viewing_key_description">이 지갑의 보호된 ZCash 거래를 읽기 전용으로 모니터링할 수 있습니다. 투명 거래는 포함되지 않습니다.</string>

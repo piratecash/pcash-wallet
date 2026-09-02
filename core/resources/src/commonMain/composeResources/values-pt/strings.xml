@@ -1351,7 +1351,8 @@
     <string name="PublicKeys_EvmAddress">Endereço EVM</string>
     <string name="PublicKeys_EvmAddress_Description">Permite o monitoramento somente leitura de carteiras mantendo ativos na Ethereum, na Binance Smart Chain e em outras blockchains baseadas em EVM.</string>
     <string name="PublicKeys_AccountExtendedPublicKeyDescription">Permite monitoramento somente leitura das carteiras segurando Bitcoin e outras cripto baseadas em UTXO (ou seja, Litecoin, Bitcoin Cash, Dash etc.).</string>
-    <string name="publicKeys_zec_ufvk_descritpion">Allows read-only monitoring of ZCash, transparent and shielded transactions for the wallet.</string>
+    <string name="publicKeys_zec_ufvk">Chave de visualização ZCash</string>
+    <string name="publicKeys_zec_ufvk_descritpion">Permite a monitorização apenas de leitura de todas as transações ZCash transparentes e blindadas desta carteira.</string>
     <string name="publicKeys_zec_transparent_viewing_key_description">Permite a monitorização apenas de leitura das transações transparentes ZCash da carteira. As transações blindadas não estão incluídas.</string>
     <string name="public_keys_zec_sapling_viewing_key">Chave de visualização ZCash Sapling</string>
     <string name="public_keys_zec_sapling_viewing_key_description">Permite a monitorização apenas de leitura das transações ZCash blindadas desta carteira. As transações transparentes não estão incluídas.</string>

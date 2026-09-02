@@ -98,18 +98,7 @@ fun ManageAccountScreen(navController: NavController, account: Account) {
                 }
             }
             viewModel.viewState.zcashViewKey?.let { viewKey ->
-                val (titleResId, descriptionResId) = when (viewKey.kind) {
-                    ZcashViewKeyKind.Unified ->
-                        R.string.publicKeys_zec_ufvk to R.string.publicKeys_zec_ufvk_descritpion
-
-                    ZcashViewKeyKind.Sapling ->
-                        R.string.public_keys_zec_sapling_viewing_key to
-                                R.string.public_keys_zec_sapling_viewing_key_description
-
-                    ZcashViewKeyKind.Transparent ->
-                        R.string.publicKeys_zec_transparent_viewing_key to
-                                R.string.publicKeys_zec_transparent_viewing_key_description
-                }
+                val (titleResId, descriptionResId) = zcashViewKeyLabels(viewKey.kind)
                 KeyActionItem(
                     title = stringResource(id = titleResId),
                     description = stringResource(id = descriptionResId),
@@ -126,4 +115,17 @@ fun ManageAccountScreen(navController: NavController, account: Account) {
             }
         }
     }
+}
+
+internal fun zcashViewKeyLabels(kind: ZcashViewKeyKind): Pair<Int, Int> = when (kind) {
+    ZcashViewKeyKind.Unified ->
+        R.string.publicKeys_zec_ufvk to R.string.publicKeys_zec_ufvk_descritpion
+
+    ZcashViewKeyKind.Sapling ->
+        R.string.public_keys_zec_sapling_viewing_key to
+                R.string.public_keys_zec_sapling_viewing_key_description
+
+    ZcashViewKeyKind.Transparent ->
+        R.string.publicKeys_zec_transparent_viewing_key to
+                R.string.publicKeys_zec_transparent_viewing_key_description
 }

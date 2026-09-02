@@ -1342,7 +1342,8 @@
     <string name="PublicKeys_EvmAddress">EVM 地址</string>
     <string name="PublicKeys_EvmAddress_Description">允许只读监视持有Etherum、 Binance Smart Chain和其他基于 EVM 的区块链的钱包。</string>
     <string name="PublicKeys_AccountExtendedPublicKeyDescription">允许只读监视持有比特币和其他基于 UTXO 的加密钱包(即Liteco、 比特币现金、 破折号等)。</string>
-    <string name="publicKeys_zec_ufvk_descritpion">Allows read-only monitoring of ZCash, transparent and shielded transactions for the wallet.</string>
+    <string name="publicKeys_zec_ufvk">ZCash 查看密钥</string>
+    <string name="publicKeys_zec_ufvk_descritpion">允许以只读方式监控该钱包的所有透明和屏蔽 ZCash 交易。</string>
     <string name="publicKeys_zec_transparent_viewing_key_description">允許以唯讀方式監控錢包的透明 ZCash 交易。不包含遮蔽交易。</string>
     <string name="public_keys_zec_sapling_viewing_key">ZCash Sapling 查看密钥</string>
     <string name="public_keys_zec_sapling_viewing_key_description">允许以只读方式监控该钱包的屏蔽 ZCash 交易。不包含透明交易。</string>

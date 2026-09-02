@@ -1349,7 +1349,8 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="PublicKeys_EvmAddress">Adresse EVM</string>
     <string name="PublicKeys_EvmAddress_Description">Permet de contrôler en lecture seule les portefeuilles détenant des actifs sur Ethereum, Binance Smart Chain et d\'autres blockchains basées sur l\'EVM.</string>
     <string name="PublicKeys_AccountExtendedPublicKeyDescription">Permet de contrôler en lecture seule les portefeuilles contenant du Bitcoin et d\'autres crypto-monnaies basées sur l\'UTXO (c\'est-à-dire Litecoin, Bitcoin Cash, Dash, etc.).</string>
-    <string name="publicKeys_zec_ufvk_descritpion">Allows read-only monitoring of ZCash, transparent and shielded transactions for the wallet.</string>
+    <string name="publicKeys_zec_ufvk">Clé de visualisation ZCash</string>
+    <string name="publicKeys_zec_ufvk_descritpion">Permet la surveillance en lecture seule de toutes les transactions ZCash transparentes et blindées de ce portefeuille.</string>
     <string name="publicKeys_zec_transparent_viewing_key_description">Permet la surveillance en lecture seule des transactions transparentes ZCash du portefeuille. Les transactions blindées ne sont pas incluses.</string>
     <string name="public_keys_zec_sapling_viewing_key">Clé de visualisation ZCash Sapling</string>
     <string name="public_keys_zec_sapling_viewing_key_description">Permet la surveillance en lecture seule des transactions ZCash blindées de ce portefeuille. Les transactions transparentes ne sont pas incluses.</string>

@@ -1365,7 +1365,8 @@
     <string name="PublicKeys_EvmAddress">EVM адреса</string>
     <string name="PublicKeys_EvmAddress_Description">Дозволяє відстежувати гаманці з активами на Ethereum, Binance Smart Chain та інших блокчейнах на базі EVM, лише для читання.</string>
     <string name="PublicKeys_AccountExtendedPublicKeyDescription">Дозволяє здійснювати моніторинг гаманців, що містять Bitcoin та інші криптовалюти на основі UTXO (наприклад, Litecoin, Bitcoin Cash, Dash тощо), лише для читання.</string>
-    <string name="publicKeys_zec_ufvk_descritpion">Дозволяє моніторинг лише для читання ZCash, прозорих та захищених транзакцій для гаманця.</string>
+    <string name="publicKeys_zec_ufvk">Ключ перегляду ZCash</string>
+    <string name="publicKeys_zec_ufvk_descritpion">Дозволяє моніторинг лише для читання всіх прозорих та екранованих транзакцій ZCash цього гаманця.</string>
     <string name="publicKeys_zec_transparent_viewing_key_description">Дозволяє моніторинг лише для читання прозорих транзакцій ZCash для гаманця. Захищені транзакції не відображаються.</string>
     <string name="public_keys_zec_sapling_viewing_key">Ключ перегляду ZCash Sapling</string>
     <string name="public_keys_zec_sapling_viewing_key_description">Дозволяє моніторинг лише для читання екранованих транзакцій ZCash цього гаманця. Прозорі транзакції не відображаються.</string>

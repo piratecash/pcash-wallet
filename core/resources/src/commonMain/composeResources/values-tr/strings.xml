@@ -1353,7 +1353,8 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="PublicKeys_EvmAddress">EVM Adresi</string>
     <string name="PublicKeys_EvmAddress_Description">Ethereum, Binance Smart Chain ve diğer EVM tabanlı blok zincirlerinde varlık tutan cüzdanların salt okunur olarak izlenmesini sağlar.</string>
     <string name="PublicKeys_AccountExtendedPublicKeyDescription">Bitcoin ve diğer UTXO tabanlı kriptoları (örneğin Litecoin, Bitcoin Cash, Dash vb.) tutan cüzdanların salt okunur olarak izlenmesine izin verir.</string>
-    <string name="publicKeys_zec_ufvk_descritpion">Allows read-only monitoring of ZCash, transparent and shielded transactions for the wallet.</string>
+    <string name="publicKeys_zec_ufvk">ZCash görüntüleme anahtarı</string>
+    <string name="publicKeys_zec_ufvk_descritpion">Bu cüzdanın tüm şeffaf ve korumalı ZCash işlemlerinin salt okunur izlenmesini sağlar.</string>
     <string name="publicKeys_zec_transparent_viewing_key_description">Cüzdanın şeffaf ZCash işlemlerinin salt okunur izlenmesini sağlar. Korumalı işlemler dahil değildir.</string>
     <string name="public_keys_zec_sapling_viewing_key">ZCash Sapling görüntüleme anahtarı</string>
     <string name="public_keys_zec_sapling_viewing_key_description">Bu cüzdanın korumalı ZCash işlemlerinin salt okunur izlenmesini sağlar. Şeffaf işlemler dahil değildir.</string>
