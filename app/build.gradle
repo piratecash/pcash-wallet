@@ -423,7 +423,17 @@ dependencies {
     // Wallet kits
     implementation(libs.ton.kit)
     implementation(libs.ton.kotlin.contract)
+    implementation libs.bitcoin.core
     implementation libs.bitcoin.kit
+    implementation libs.bitcoin.cash.kit
+    implementation libs.bitcoin.ecash.kit
+    implementation libs.bitcoin.litecoin.kit
+    implementation libs.bitcoin.dash.kit
+    implementation libs.bitcoin.dogecoin.kit
+    implementation libs.bitcoin.cosanta.kit
+    implementation libs.bitcoin.piratecash.kit
+    implementation libs.bitcoin.hodler
+    implementation libs.hd.wallet.kit
     implementation libs.ethereum.kit
     implementation libs.solana.kit
     implementation libs.stellar.kit
@@ -435,6 +445,7 @@ dependencies {
     implementation libs.tron.kit
     // Zcash SDK
     coreLibraryDesugaring libs.desugar.jdk.libs
+    implementation libs.kermit
     implementation libs.zcash.android.sdk
     implementation libs.zcash.android.backend
     implementation(libs.grpc.api)
@@ -510,6 +521,7 @@ dependencies {
     testImplementation libs.robolectric
     testImplementation libs.androidx.test.core
     testImplementation libs.kotlinx.coroutines.test
+    testRuntimeOnly libs.secp256k1.jni.jvm
     testImplementation libs.powermock.api.mockito2
     testImplementation libs.powermock.module.junit4
     testImplementation libs.koin.test.junit4

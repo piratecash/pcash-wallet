@@ -1,8 +1,8 @@
 package cash.p.terminal.core.utils
 
 import cash.p.terminal.core.toFixedSize
+import cash.p.terminal.wallet.MnemonicSeed
 import com.m2049r.xmrwallet.util.ledger.Monero
-import io.horizontalsystems.hdwalletkit.Mnemonic
 import org.bitcoinj.crypto.DeterministicKey
 import org.bitcoinj.crypto.HDKeyDerivation
 import org.bitcoinj.crypto.HDPath.parsePath
@@ -15,18 +15,14 @@ object MoneroWalletSeedConverter {
     /**
      * Convert a BIP39 mnemonic to a Monero 25-word legacy seed.
      *
-     * The caller MUST pass NFKD-normalized [words] and [passphrase]. BIP39 PBKDF2 derives
-     * the seed from the UTF-8 bytes of the mnemonic, so two visually identical strings
-     * with different Unicode normalization forms (e.g. precomposed "á" vs "a"+combining
-     * acute) produce different seeds and therefore different Monero accounts. Skipping
-     * normalization on non-English wordlists silently routes users to the wrong wallet.
+     * Account inputs are derived exactly as stored so non-standard accounts keep their legacy keys.
      */
     fun getLegacySeedFromBip39(
         words: List<String>,
         passphrase: String = "",
         accountIndex: Int = 0
     ): List<String> {
-        val seed = Mnemonic().toSeed(words, passphrase)
+        val seed = MnemonicSeed.derive(words, passphrase)
         val bip32Seed = derivePath(seed, "m/44'/128'/$accountIndex'/0/0")
         val spendKey = reduceECKey(bip32Seed.privKeyBytes.toFixedSize(32))
         return encodePhrase(spendKey)

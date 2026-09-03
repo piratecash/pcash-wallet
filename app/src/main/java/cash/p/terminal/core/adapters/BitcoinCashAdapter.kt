@@ -1,10 +1,10 @@
 package cash.p.terminal.core.adapters
 
-import cash.p.terminal.core.App
 import cash.p.terminal.core.IFeeRateProvider
 import cash.p.terminal.core.ISendBitcoinAdapter
 import cash.p.terminal.core.UnsupportedAccountException
 import cash.p.terminal.core.bitcoinCashCoinType
+import cash.p.terminal.core.managers.BitcoinKitEnvironment
 import cash.p.terminal.wallet.entities.UsedAddress
 import cash.p.terminal.core.kitCoinType
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
@@ -37,8 +37,15 @@ class BitcoinCashAdapter(
         syncMode: BitcoinCore.SyncMode,
         backgroundManager: BackgroundManager,
         addressType: TokenType.AddressType,
+        environment: BitcoinKitEnvironment,
         feeRateProvider: IFeeRateProvider? = null
-    ) : this(createKit(wallet, syncMode, addressType), syncMode, backgroundManager, wallet, feeRateProvider)
+    ) : this(
+        createKit(wallet, syncMode, addressType, environment),
+        syncMode,
+        backgroundManager,
+        wallet,
+        feeRateProvider,
+    )
 
     init {
         kit.listener = this
@@ -97,17 +104,21 @@ class BitcoinCashAdapter(
         private const val KIT_CONFIRMATIONS_THRESHOLD = 1
         private const val DISPLAY_CONFIRMATIONS_THRESHOLD = 3
 
+        @Suppress("LongMethod")
         private fun createKit(
             wallet: Wallet,
             syncMode: BitcoinCore.SyncMode,
-            addressType: TokenType.AddressType
+            addressType: TokenType.AddressType,
+            environment: BitcoinKitEnvironment,
         ): BitcoinCashKit {
             val account = wallet.account
             val networkType = getNetworkType(addressType.kitCoinType)
             when (val accountType = account.type) {
                 is AccountType.HdExtendedKey -> {
                     return BitcoinCashKit(
-                        context = App.instance,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
                         extendedKey = accountType.hdExtendedKey,
                         walletId = account.id,
                         syncMode = syncMode,
@@ -118,9 +129,10 @@ class BitcoinCashAdapter(
 
                 is AccountType.Mnemonic -> {
                     return BitcoinCashKit(
-                        context = App.instance,
-                        words = accountType.words,
-                        passphrase = accountType.passphrase,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        seed = accountType.seed,
                         walletId = account.id,
                         syncMode = syncMode,
                         networkType = networkType,
@@ -130,7 +142,9 @@ class BitcoinCashAdapter(
 
                 is AccountType.BitcoinAddress -> {
                     return BitcoinCashKit(
-                        context = App.instance,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
                         watchAddress = accountType.address,
                         walletId = account.id,
                         syncMode = syncMode,
@@ -151,8 +165,10 @@ class BitcoinCashAdapter(
                         tokenType = wallet.token.type,
                     )
                     return BitcoinCashKit(
-                        context = App.instance,
-                        extendedKey = wallet.getHDExtendedKey()!!,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        extendedKey = requireNotNull(wallet.getHDExtendedKey()),
                         walletId = account.id,
                         syncMode = syncMode,
                         networkType = networkType,
@@ -170,7 +186,9 @@ class BitcoinCashAdapter(
                         coin = "Bcash"
                     )
                     val kit = BitcoinCashKit(
-                        context = App.instance,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
                         extendedKey = requireNotNull(wallet.getHDExtendedKey()),
                         walletId = account.id,
                         syncMode = syncMode,
@@ -186,10 +204,6 @@ class BitcoinCashAdapter(
                 else -> throw UnsupportedAccountException()
             }
 
-        }
-
-        fun clear(walletId: String) {
-            BitcoinCashKit.clear(App.instance, getNetworkType(), walletId)
         }
 
         private fun getNetworkType(kitCoinType: MainNetBitcoinCash.CoinType = MainNetBitcoinCash.CoinType.Type145) =

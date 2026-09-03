@@ -1,9 +1,9 @@
 package cash.p.terminal.core.adapters
 
-import cash.p.terminal.core.App
 import cash.p.terminal.core.IFeeRateProvider
 import cash.p.terminal.core.ISendBitcoinAdapter
 import cash.p.terminal.core.UnsupportedAccountException
+import cash.p.terminal.core.managers.BitcoinKitEnvironment
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.Wallet
@@ -33,9 +33,10 @@ class PirateCashAdapter(
         wallet: Wallet,
         syncMode: BitcoinCore.SyncMode,
         backgroundManager: BackgroundManager,
+        environment: BitcoinKitEnvironment,
         feeRateProvider: IFeeRateProvider? = null
     ) : this(
-        kit = createKit(wallet, syncMode),
+        kit = createKit(wallet, syncMode, environment),
         syncMode = syncMode,
         backgroundManager = backgroundManager,
         wallet = wallet,
@@ -111,16 +112,20 @@ class PirateCashAdapter(
         private const val KIT_CONFIRMATIONS_THRESHOLD = 1
         private const val DISPLAY_CONFIRMATIONS_THRESHOLD = 3
 
+        @Suppress("LongMethod")
         private fun createKit(
             wallet: Wallet,
             syncMode: BitcoinCore.SyncMode,
+            environment: BitcoinKitEnvironment,
         ): PirateCashKit {
             val account = wallet.account
 
             when (val accountType = account.type) {
                 is AccountType.HdExtendedKey -> {
                     return PirateCashKit(
-                        context = App.instance,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
                         extendedKey = accountType.hdExtendedKey,
                         walletId = account.id,
                         syncMode = syncMode,
@@ -131,9 +136,10 @@ class PirateCashAdapter(
 
                 is AccountType.Mnemonic -> {
                     return PirateCashKit(
-                        context = App.instance,
-                        words = accountType.words,
-                        passphrase = accountType.passphrase,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        seed = accountType.seed,
                         walletId = account.id,
                         syncMode = syncMode,
                         networkType = NetworkType.MainNet,
@@ -143,7 +149,9 @@ class PirateCashAdapter(
 
                 is AccountType.BitcoinAddress -> {
                     return PirateCashKit(
-                        context = App.instance,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
                         watchAddress = accountType.address,
                         walletId = account.id,
                         syncMode = syncMode,
@@ -164,8 +172,10 @@ class PirateCashAdapter(
                         tokenType = wallet.token.type,
                     )
                     return PirateCashKit(
-                        context = App.instance,
-                        extendedKey = wallet.getHDExtendedKey()!!,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        extendedKey = requireNotNull(wallet.getHDExtendedKey()),
                         walletId = account.id,
                         syncMode = syncMode,
                         confirmationsThreshold = KIT_CONFIRMATIONS_THRESHOLD,
@@ -179,8 +189,5 @@ class PirateCashAdapter(
             }
         }
 
-        fun clear(walletId: String) {
-            PirateCashKit.clear(App.instance, NetworkType.MainNet, walletId)
-        }
     }
 }

@@ -1,10 +1,10 @@
 package cash.p.terminal.core.adapters
 
 import android.util.Log
-import cash.p.terminal.core.App
 import cash.p.terminal.core.IFeeRateProvider
 import cash.p.terminal.core.ISendBitcoinAdapter
 import cash.p.terminal.core.UnsupportedAccountException
+import cash.p.terminal.core.managers.BitcoinKitEnvironment
 import cash.p.terminal.core.splitToAddresses
 import cash.p.terminal.core.utils.Utils.getIpByUrl
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
@@ -44,9 +44,10 @@ class DashAdapter(
         backgroundManager: BackgroundManager,
         customPeers: String,
         masterNodesRepository: MasterNodesRepository,
+        environment: BitcoinKitEnvironment,
         feeRateProvider: IFeeRateProvider? = null
     ) : this(
-        kit = createKit(wallet, syncMode, customPeers, masterNodesRepository),
+        kit = createKit(wallet, syncMode, customPeers, masterNodesRepository, environment),
         syncMode = syncMode,
         backgroundManager = backgroundManager,
         wallet = wallet,
@@ -120,18 +121,22 @@ class DashAdapter(
         private const val MIN_CONNECTED_PEER_TO_SEND_SIZE = 1
         private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+        @Suppress("LongMethod")
         private fun createKit(
             wallet: Wallet,
             syncMode: BitcoinCore.SyncMode,
             userPeers: String,
             masterNodesRepository: MasterNodesRepository,
+            environment: BitcoinKitEnvironment,
         ): DashKit {
             val account = wallet.account
 
             return when (val accountType = account.type) {
                 is AccountType.HdExtendedKey -> {
                     DashKit(
-                        context = App.instance,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
                         extendedKey = accountType.hdExtendedKey,
                         walletId = account.id,
                         syncMode = syncMode,
@@ -144,9 +149,10 @@ class DashAdapter(
 
                 is AccountType.Mnemonic -> {
                     DashKit(
-                        context = App.instance,
-                        words = accountType.words,
-                        passphrase = accountType.passphrase,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        seed = accountType.seed,
                         walletId = account.id,
                         syncMode = syncMode,
                         networkType = NetworkType.MainNet,
@@ -158,7 +164,9 @@ class DashAdapter(
 
                 is AccountType.BitcoinAddress -> {
                     DashKit(
-                        context = App.instance,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
                         watchAddress = accountType.address,
                         walletId = account.id,
                         syncMode = syncMode,
@@ -181,8 +189,10 @@ class DashAdapter(
                         tokenType = wallet.token.type,
                     )
                     DashKit(
-                        context = App.instance,
-                        extendedKey = wallet.getHDExtendedKey()!!,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        extendedKey = requireNotNull(wallet.getHDExtendedKey()),
                         walletId = account.id,
                         syncMode = syncMode,
                         networkType = NetworkType.MainNet,
@@ -202,7 +212,9 @@ class DashAdapter(
                         coin = "Dash"
                     )
                     val kit = DashKit(
-                        context = App.instance,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
                         extendedKey = requireNotNull(wallet.getHDExtendedKey()),
                         walletId = account.id,
                         syncMode = syncMode,
@@ -221,10 +233,6 @@ class DashAdapter(
             }.apply {
                 setupPeers(masterNodesRepository, userPeers)
             }
-        }
-
-        fun clear(walletId: String) {
-            DashKit.clear(App.instance, NetworkType.MainNet, walletId)
         }
 
         private fun DashKit.setupPeers(

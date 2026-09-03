@@ -66,6 +66,31 @@ class BitcoinAdapterOfflinePollingTest {
     }
 
     @Test
+    fun stop_activeAdapter_disposesKitWithoutCallingLegacyStop() {
+        val adapter = createAdapter()
+
+        adapter.stop()
+
+        verify(exactly = 1) { kit.dispose() }
+        verify(exactly = 0) { kit.stop() }
+    }
+
+    @Test
+    fun enterBackground_attachedAdapter_pausesWithoutDisposingKit() {
+        val adapter = createAdapter()
+        adapter.attachLocalData()
+
+        try {
+            backgroundState.value = BackgroundManagerState.EnterBackground
+
+            verify(timeout = COLLECTOR_TIMEOUT_MS) { kit.onEnterBackground() }
+            verify(exactly = 0) { kit.dispose() }
+        } finally {
+            adapter.stop()
+        }
+    }
+
+    @Test
     fun startStopForPolling_networkPaused_leavesPollingCounterAtZero() {
         val adapter = createAdapter()
         adapter.attachLocalData()

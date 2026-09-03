@@ -47,7 +47,7 @@ dependencies {
     implementation(project(":feature-tangem"))
 
     implementation(libs.bitcoinj)
-    implementation(libs.bitcoin.kit)
+    implementation(libs.hd.wallet.kit)
     implementation(libs.timber)
     implementation(libs.tangem.sdk)
 

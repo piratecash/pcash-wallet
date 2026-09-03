@@ -1,12 +1,7 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.core.adapters.BitcoinAdapter
-import cash.p.terminal.core.adapters.BitcoinCashAdapter
-import cash.p.terminal.core.adapters.DashAdapter
-import cash.p.terminal.core.adapters.ECashAdapter
 import cash.p.terminal.core.adapters.Eip20Adapter
 import cash.p.terminal.core.adapters.EvmAdapter
-import cash.p.terminal.core.adapters.LitecoinAdapter
 import cash.p.terminal.core.adapters.SolanaAdapter
 import cash.p.terminal.core.adapters.TronAdapter
 import cash.p.terminal.core.storage.MoneroFileDao
@@ -23,6 +18,7 @@ import cash.p.terminal.wallet.useCases.RemoveMoneroWalletFilesUseCase
 import io.horizontalsystems.core.ISmsNotificationSettings
 import io.horizontalsystems.core.entities.BlockchainType
 
+@Suppress("LongParameterList")
 class AccountCleaner(
     private val clearZCashWalletDataUseCase: ClearZCashWalletDataUseCase,
     private val removeMoneroWalletFilesUseCase: RemoveMoneroWalletFilesUseCase,
@@ -33,22 +29,18 @@ class AccountCleaner(
     private val smsNotificationSettings: ISmsNotificationSettings,
     private val pinDbStorage: PinDbStorage,
     private val accountStorageCleaner: AccountStorageCleaner,
+    private val bitcoinKitDatabaseManager: BitcoinKitDatabaseManager,
 ) : IAccountCleaner {
 
     /** Storage rows go last: their failure must reach the caller without skipping the wipes above. */
     override suspend fun clearAccounts(accountIds: List<String>) {
+        adapterManager.stopAdapters(accountIds)
         accountIds.forEach { clearAccount(it) }
         accountStorageCleaner.clearAccounts(accountIds)
     }
 
-
     private suspend fun clearAccount(accountId: String) {
-        BitcoinAdapter.clear(accountId)
-        BitcoinCashAdapter.clear(accountId)
-        ECashAdapter.clear(accountId)
-        LitecoinAdapter.clear(accountId)
-        LitecoinAdapter.clearMweb(accountId)
-        DashAdapter.clear(accountId)
+        bitcoinKitDatabaseManager.clear(accountId)
         EvmAdapter.clear(accountId)
         Eip20Adapter.clear(accountId)
         clearWalletDataForBlockchainIfInactive(accountId, BlockchainType.Monero)
@@ -90,7 +82,7 @@ class AccountCleaner(
         if (isWalletActive(accountId, BlockchainType.Litecoin)) {
             adapterManager.stopAdapters(listOf(accountId), BlockchainType.Litecoin)
         }
-        LitecoinAdapter.clearMweb(accountId)
+        bitcoinKitDatabaseManager.clearMweb(accountId)
     }
 
     private suspend fun clearWalletDataForBlockchainIfInactive(

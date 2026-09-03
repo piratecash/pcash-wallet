@@ -21,7 +21,13 @@ import cash.p.terminal.core.managers.BackgroundKeepAliveManager
 import cash.p.terminal.core.managers.BackupManager
 import cash.p.terminal.core.managers.BalanceHiddenManager
 import cash.p.terminal.core.managers.BalanceHideOnFlipManager
+import cash.p.terminal.core.managers.BitcoinKitConnectionManager
+import cash.p.terminal.core.managers.BitcoinKitDatabaseKeyProvider
+import cash.p.terminal.core.managers.BitcoinKitDatabaseManager
+import cash.p.terminal.core.managers.BitcoinKitDatabaseOperations
 import cash.p.terminal.core.managers.BtcBlockchainManager
+import cash.p.terminal.core.managers.DefaultBitcoinKitDatabaseKeyProvider
+import cash.p.terminal.core.managers.DefaultBitcoinKitDatabaseOperations
 import cash.p.terminal.core.managers.DeviceFlipDetector
 import cash.p.terminal.core.managers.EffectiveMonitoredChains
 import cash.p.terminal.modules.send.offline.OfflineBroadcastTokenResolver
@@ -167,6 +173,7 @@ import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import cash.p.terminal.wallet.managers.ITransactionHiddenManager
 import cash.p.terminal.wallet.managers.UserManager
 import com.m2049r.xmrwallet.service.MoneroWalletService
+import io.horizontalsystems.bitcoincore.core.IConnectionManager
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.CurrentDateProvider
@@ -269,6 +276,10 @@ val managerModule = module {
         get<Context>().getSystemService(Context.CONNECTIVITY_SERVICE) as AndroidConnectivityManager
     }
     singleOf(::ConnectivityManager) bind IConnectivityManager::class
+    singleOf(::BitcoinKitConnectionManager) bind IConnectionManager::class
+    singleOf(::DefaultBitcoinKitDatabaseKeyProvider) bind BitcoinKitDatabaseKeyProvider::class
+    singleOf(::DefaultBitcoinKitDatabaseOperations) bind BitcoinKitDatabaseOperations::class
+    singleOf(::BitcoinKitDatabaseManager)
     singleOf(::EvmSyncSourceManager)
     singleOf(::TokenAutoEnableManager)
     singleOf(::EvmBlockchainManager)

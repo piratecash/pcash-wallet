@@ -31,7 +31,7 @@ private const val REVALIDATE_INTERVAL_MS = 15_000L
 private const val CALLBACK_RETRY_DELAY_MS = 2_000L
 
 class ConnectivityManager(
-    backgroundManager: BackgroundManager,
+    private val backgroundManager: BackgroundManager,
     private val localStorage: ILocalStorage,
     private val backgroundKeepAliveManager: BackgroundKeepAliveManager,
     private val systemConnectivityManager: AndroidConnectivityManager,
@@ -51,6 +51,8 @@ class ConnectivityManager(
 
     override val torEnabled: Boolean
         get() = localStorage.torEnabled
+
+    override fun refresh() = refreshFromSystem(forceEmit = false)
 
     private var callback: ConnectionStatusCallback? = null
     private val isCallbackRegistered = AtomicBoolean(false)
@@ -103,6 +105,16 @@ class ConnectivityManager(
                     BackgroundManagerState.Unknown -> {
                         // do nothing
                     }
+                }
+            }
+        }
+
+        scope.launch {
+            backgroundKeepAliveManager.keepAliveBlockchains.collect { blockchains ->
+                if (blockchains.isNotEmpty()) {
+                    startBackgroundMonitoring()
+                } else if (!backgroundManager.inForeground) {
+                    unregisterCallbackSafely()
                 }
             }
         }
@@ -178,8 +190,18 @@ class ConnectivityManager(
 
     private fun cleanup() {
         stopRevalidateTimer()
-        unregisterCallbackSafely()
-        callback = null
+        if (backgroundKeepAliveManager.keepAliveBlockchains.value.isEmpty()) {
+            unregisterCallbackSafely()
+            callback = null
+        }
+    }
+
+    private fun startBackgroundMonitoring() {
+        if (callback == null) {
+            callback = ConnectionStatusCallback()
+        }
+        refreshFromSystem(forceEmit = false)
+        registerCallback()
     }
 
     private fun registerCallback(isRetry: Boolean = false) {
@@ -209,9 +231,11 @@ class ConnectivityManager(
     }
 
     private fun unregisterCallbackSafely() {
-        if (isCallbackRegistered.getAndSet(false) && callback != null) {
-            runCatching {
-                systemConnectivityManager.unregisterNetworkCallback(callback!!)
+        if (isCallbackRegistered.getAndSet(false)) {
+            callback?.let { registeredCallback ->
+                runCatching {
+                    systemConnectivityManager.unregisterNetworkCallback(registeredCallback)
+                }
             }
         }
     }
@@ -231,7 +255,7 @@ class ConnectivityManager(
         revalidateJob = null
     }
 
-    private fun refreshFromSystem(forceEmit: Boolean) {
+    private fun refreshFromSystem(forceEmit: Boolean): Boolean {
         val network = systemConnectivityManager.activeNetwork
         val hasValidInternet = network?.let { activeNetwork ->
             systemConnectivityManager.getNetworkCapabilities(activeNetwork)?.let { caps ->
@@ -247,6 +271,7 @@ class ConnectivityManager(
                 forceEmit = forceEmit
             )
         )
+        return network != null && hasValidInternet
     }
 
     inner class ConnectionStatusCallback : AndroidConnectivityManager.NetworkCallback() {

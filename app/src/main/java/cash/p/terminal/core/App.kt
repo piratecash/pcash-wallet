@@ -86,6 +86,9 @@ import coil3.gif.GifDecoder
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.crossfade
 import coil3.svg.SvgDecoder
+import co.touchlab.kermit.Logger as KermitLogger
+import co.touchlab.kermit.Severity
+import co.touchlab.kermit.platformLogWriter
 import com.getkeepsafe.relinker.ReLinker
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.m2049r.levin.util.NetCipherHelper
@@ -96,6 +99,7 @@ import com.reown.android.CoreClient
 import com.reown.android.relay.ConnectionType
 import com.reown.walletkit.client.Wallet
 import com.reown.walletkit.client.WalletKit
+import io.horizontalsystems.bitcoincore.core.BitcoinCoreContextInitializer
 import io.horizontalsystems.core.CoreApp
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.IAppNumberFormatter
@@ -248,6 +252,10 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
 
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
+            KermitLogger.setLogWriters(platformLogWriter())
+            KermitLogger.setMinSeverity(Severity.Debug)
+        } else {
+            KermitLogger.setLogWriters(emptyList())
         }
 
         instance = this
@@ -257,6 +265,8 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
             showFatalErrorAndExit(errorLoading)
             return
         }
+
+        BitcoinCoreContextInitializer().create(this)
 
         startKoin {
             androidContext(this@App)

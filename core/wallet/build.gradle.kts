@@ -58,12 +58,13 @@ dependencies {
     implementation(libs.kotlinx.coroutines.rx2)
 
     implementation(libs.ton.kit)
-    implementation(libs.bitcoin.kit)
+    implementation(libs.hd.wallet.kit)
     implementation(libs.ethereum.kit)
     implementation(libs.blockchain.fee.kit)
     implementation(libs.tron.kit)
     implementation(libs.monero.kit)
     implementation(libs.stellar.kit)
+    implementation(libs.kermit)
 
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
@@ -88,6 +89,7 @@ dependencies {
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.kotlin.test.junit)
+    testRuntimeOnly(libs.secp256k1.jni.jvm)
 }
 
 android {

@@ -20,7 +20,6 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.ethereumkit.core.signer.Signer
 import io.horizontalsystems.hdwalletkit.HDExtendedKey
 import io.horizontalsystems.hdwalletkit.HDWallet
-import io.horizontalsystems.hdwalletkit.Mnemonic
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -41,7 +40,7 @@ class PublicKeysViewModel(
         val evmAddress: String? = when (val accountType = account.type) {
             is AccountType.Mnemonic -> {
                 val chain = evmBlockchainManager.getChain(BlockchainType.Ethereum)
-                Signer.address(accountType.words, accountType.passphrase, chain).eip55
+                Signer.address(accountType.seed, chain).eip55
             }
 
             is AccountType.EvmPrivateKey -> {
@@ -54,16 +53,13 @@ class PublicKeysViewModel(
             else -> null
         }
 
+        val mnemonicType = account.type as? AccountType.Mnemonic
         val hdExtendedKey = (account.type as? AccountType.HdExtendedKey)?.hdExtendedKey
         var accountPublicKey = AccountPublicKey(false)
 
-        val publicKey = if (account.type is AccountType.Mnemonic) {
+        val publicKey = if (mnemonicType != null) {
             accountPublicKey = AccountPublicKey(true)
-            val seed = Mnemonic().toSeed(
-                (account.type as AccountType.Mnemonic).words,
-                (account.type as AccountType.Mnemonic).passphrase
-            )
-            HDExtendedKey(seed, HDWallet.Purpose.BIP44)
+            HDExtendedKey(mnemonicType.seed, HDWallet.Purpose.BIP44)
         } else if (hdExtendedKey?.derivedType == HDExtendedKey.DerivedType.Master) {
             accountPublicKey = AccountPublicKey(true)
             hdExtendedKey
