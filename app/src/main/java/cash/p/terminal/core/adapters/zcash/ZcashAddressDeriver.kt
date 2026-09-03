@@ -5,7 +5,7 @@ import cash.p.zcash.Addresses
 import cash.p.zcash.ZcashNetwork
 import cash.p.zcash.ZcashSdk
 import cash.p.zcash.deriveAddresses
-import cash.p.zcash.deriveAddressesFromViewingKey
+import cash.p.zcash.deriveAddressesFromKey
 
 /** Single source of truth for which ZEC receiver an address spec maps to; `null` spec means Native. */
 fun AddressSpecType?.selectZcashReceiver(addresses: Addresses): String? = when (this) {
@@ -24,9 +24,9 @@ class ZcashAddressDeriver {
         is ZcashKey.Phrase -> ZcashSdk.deriveAddresses(
             phrase = key.words.joinToString(" "),
             network = ZcashNetwork.MAIN,
-            passphrase = key.passphrase.ifEmpty { null },
+            passphrase = key.passphrase,
         )
 
-        is ZcashKey.ViewingKey -> ZcashSdk.deriveAddressesFromViewingKey(key.key, ZcashNetwork.MAIN)
+        is ZcashKey.Standalone -> ZcashSdk.deriveAddressesFromKey(key.key, ZcashNetwork.MAIN)
     }
 }

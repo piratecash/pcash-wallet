@@ -136,7 +136,7 @@
     <string name="Restore_RestoreBy">Через</string>
     <string name="Restore_RecoveryPhrase">Фраза восстановления</string>
     <string name="Restore_PrivateKey">Приватный ключ</string>
-    <string name="Restore_PrivateKeyHint">Введите приватный ключ EVM, BIP32 Root Key или Account Extended Private Key</string>
+    <string name="Restore_PrivateKeyHint">Введите приватный ключ EVM, BIP32 Root Key, Account Extended Private Key или ZCash Sapling Spending Key</string>
     <string name="Restore_PhraseHint">Введите фразу восстановления</string>
     <string name="monero_restore_seed">Фраза восстановления Monero</string>
     <string name="Restore_NonStandardRestore">Нестандартный импорт</string>
@@ -144,6 +144,7 @@
 \n\nЕсли вы являетесь затронутым пользователем, то баланс вашего кошелька будет отображаться как 0 после восстановления такого кошелька в версии 0.29 или выше.Эта страница позволит вам восстановить доступ к вашему нестандартному кошельку. После восстановления рекомендуется создать новый кошелек (который будет соответствовать стандарту) и перевести туда средства.</string>
     <string name="Restore_Bip_Recommended">(рекомендовано)</string>
     <string name="Restore_PrivateKey_InvalidKey">Неверный ключ</string>
+    <string name="restore_private_key_is_view_only">Это ключ только для просмотра. Добавьте его через «Наблюдать за адресом».</string>
     <string name="SelectContacts_All">Все</string>
     <string name="Restore_BirthdayHeight">Блок создания</string>
     <string name="restore_birthday_height_or_date">Блок создания или дата создания</string>
@@ -1239,11 +1240,12 @@
     <string name="ImportBackupFile_EnterPassword_Description">Введите пароль резервной копии для импорта вашего кошелька.</string>
     <string name="ImportBackupFile_Error_InvalidPassword">Неверный пароль</string>
     <string name="ImportBackupFile_BackupPassword">Пароль для резервной копии</string>
-    <string name="Watch_Address_Hint">Адрес или домен</string>
+    <string name="Watch_Address_Hint">Введите EVM-, TRON-, TON- или публичный адрес (Bitcoin, Litecoin, Bitcoin Cash), Account xPubKey или ZCash Viewing Key (Unified или Sapling)</string>
     <string name="Watch_Address_Watch">Смотреть</string>
     <string name="Watch_Select_Blockchains">Блокчейны</string>
     <string name="Watch_Select_Coins">Выберите токены</string>
     <string name="Watch_Error_InvalidAddressFormat">Формат адреса не поддерживается</string>
+    <string name="watch_address_is_private_key">Это приватный ключ. Добавьте его через импорт по приватному ключу.</string>
     <!--Manage Account-->
     <string name="ManageAccount_Name">Название</string>
     <string name="ManageAccount_Save">Сохранить</string>
@@ -1362,6 +1364,14 @@
     <string name="PrivateKeys_AccountExtendedPrivateKey">Расширенный приватный ключ аккаунта</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Предоставляет полный контроль над Bitcoin и другими криптовалютами на базе UTXO, такими как Litecoin, Bitcoin Cash, Dash и т.д. в пределах соответствующего кошелька.</string>
     <string name="PrivateKeys_NeverShareWarning">Никогда ни с кем не делитесь вашей фразой восстановления. Команда P.CASH никогда не запросит вашу фразу восстановления.</string>
+    <string name="private_keys_zec_sapling_spending_key">Ключ трат ZCash Sapling</string>
+    <string name="private_keys_zec_sapling_spending_key_description">Даёт полный контроль над экранированными средствами ZCash этого кошелька, включая их отправку.</string>
+    <string name="private_keys_zec_sapling_spending_key_error">Не удалось получить ключ трат ZCash Sapling</string>
+    <string name="private_keys_zec">ZCash</string>
+    <string name="private_keys_zec_description">Даёт полный контроль над прозрачными и экранированными средствами ZCash этого кошелька, включая их отправку.</string>
+    <string name="private_keys_zec_transparent_key">Прозрачный ключ ZCash</string>
+    <string name="private_keys_zec_transparent_key_description">Даёт полный контроль над прозрачными средствами ZCash этого кошелька, включая их отправку.</string>
+    <string name="private_keys_zec_transparent_key_error">Не удалось получить прозрачный ключ ZCash</string>
     <string name="private_key_conversion_monero_description">
         <![CDATA[
         <p><b>Мы преобразовали вашу сид-фразу из %d слов в стандарт Monero — 25 слов.</b></p>
@@ -1376,6 +1386,10 @@
     <string name="PublicKeys_EvmAddress_Description">Позволяет отслеживать кошельки с активами на Ethereum, Binance Smart Chain и других блокчейнах на базе EVM, только для чтения.</string>
     <string name="PublicKeys_AccountExtendedPublicKeyDescription">Позволяет осуществлять мониторинг кошельков, содержащих Bitcoin и другие криптовалюты на основе UTXO (например, Litecoin, Bitcoin Cash, Dash и т.д.), только для чтения.</string>
     <string name="publicKeys_zec_ufvk_descritpion">Allows read-only monitoring of ZCash, transparent and shielded transactions for the wallet.</string>
+    <string name="publicKeys_zec_transparent_viewing_key_description">Позволяет в режиме только для чтения отслеживать прозрачные транзакции ZCash. Экранированные транзакции не отображаются.</string>
+    <string name="public_keys_zec_sapling_viewing_key">Ключ просмотра ZCash Sapling</string>
+    <string name="public_keys_zec_sapling_viewing_key_description">Позволяет в режиме только для чтения отслеживать экранированные транзакции ZCash этого кошелька. Прозрачные транзакции не отображаются.</string>
+    <string name="public_keys_zec_viewing_key_error">Не удалось получить ключ просмотра ZCash</string>
     <!-- Recovery Phrase Verify -->
     <string name="RecoveryPhraseVerify_Title">Подтвердить</string>
     <string name="RecoveryPhraseVerify_Description">Выберите запрошенные слова из вашей фразы восстановления</string>
@@ -2346,6 +2360,10 @@
     <string name="duration_short_seconds">%1$dс</string>
     <string name="send_trezor_mweb_not_supported">Trezor не поддерживает MWEB. Отправьте Litecoin на обычный (не MWEB) адрес.</string>
     <string name="send_trezor_time_lock_not_supported">Trezor не поддерживает транзакции с временной блокировкой.</string>
+    <string name="send_trezor_zcash_memo_not_supported">Trezor не может добавить memo к транзакции Zcash. Удалите memo, чтобы продолжить.</string>
+    <string name="send_trezor_zcash_transparent_only">Trezor может отправлять Zcash только на прозрачные адреса.</string>
+    <string name="send_trezor_zcash_unified_no_transparent_receiver">Этот unified-адрес не содержит прозрачного получателя, поэтому Trezor не может отправить на него перевод.</string>
+    <string name="send_trezor_zcash_firmware_required">%1$s требует прошивку %2$s или новее для отправки на unified-адреса Zcash. Обновите устройство и повторите попытку — версия прошивки будет проверена заново при следующей транзакции Zcash.</string>
     <string name="send_failed_offline_prompt_title">Транзакция не отправлена</string>
     <string name="send_failed_offline_prompt_message">Подписать транзакцию офлайн и отправить позже?</string>
 

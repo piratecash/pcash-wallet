@@ -133,13 +133,14 @@
     <string name="Restore_RestoreBy">Через</string>
     <string name="Restore_RecoveryPhrase">Фраза відновлення</string>
     <string name="Restore_PrivateKey">Приватний ключ</string>
-    <string name="Restore_PrivateKeyHint">Введіть приватний ключ EVM, BIP32 Root Key або Account Extended Private Key</string>
+    <string name="Restore_PrivateKeyHint">Введіть приватний ключ EVM, BIP32 Root Key, Account Extended Private Key або ZCash Sapling Spending Key</string>
     <string name="Restore_PhraseHint">Введіть фразу відновлення</string>
     <string name="monero_restore_seed">Фраза відновлення Monero</string>
     <string name="Restore_NonStandardRestore">Нестандартний імпорт</string>
     <string name="Restore_NonStandard_Description">На цій сторінці представлено спеціальний механізм відновлення гаманця для користувачів P.CASH з нестандартним гаманцем. Як правило, такі гаманці могли бути створені у версіях P.CASH 0.27–0.28 з використанням неангломовного списку мнемонічних слів та/або спеціального символу в парольній фразі гаманця (наприклад, діакритичного знака).\n\nЯкщо ви є таким користувачем, то баланс вашого гаманця буде відображатися як 0 після відновлення такого гаманця у версії 0.29 або вище. Ця сторінка дозволить вам відновити доступ до вашого нестандартного гаманця. Після відновлення рекомендується створити новий гаманець (який буде відповідати стандарту) та перевести туди кошти.</string>
     <string name="Restore_Bip_Recommended">(рекомендовано)</string>
     <string name="Restore_PrivateKey_InvalidKey">Невірний ключ</string>
+    <string name="restore_private_key_is_view_only">Це ключ лише для перегляду. Додайте його через «Спостерігати за адресою».</string>
     <string name="SelectContacts_All">Всі</string>
     <string name="Restore_BirthdayHeight">Блок створення</string>
     <string name="restore_birthday_height_or_date">Блок створення або дата створення</string>
@@ -1219,11 +1220,12 @@
     <string name="ImportBackupFile_EnterPassword_Description">Введіть пароль резервної копії для імпорту вашого гаманця.</string>
     <string name="ImportBackupFile_Error_InvalidPassword">Невірний пароль</string>
     <string name="ImportBackupFile_BackupPassword">Пароль для резервної копії</string>
-    <string name="Watch_Address_Hint">Адреса або домен</string>
+    <string name="Watch_Address_Hint">Введіть EVM-, TRON-, TON- або публічну адресу (Bitcoin, Litecoin, Bitcoin Cash), Account xPubKey або ZCash Viewing Key (Unified або Sapling)</string>
     <string name="Watch_Address_Watch">Дивитися</string>
     <string name="Watch_Select_Blockchains">Блокчейни</string>
     <string name="Watch_Select_Coins">Виберіть токени</string>
     <string name="Watch_Error_InvalidAddressFormat">Формат адреси не підтримується</string>
+    <string name="watch_address_is_private_key">Це приватний ключ. Додайте його через імпорт за приватним ключем.</string>
     <!--Manage Account-->
     <string name="ManageAccount_Name">Назва</string>
     <string name="ManageAccount_Save">Зберегти</string>
@@ -1342,6 +1344,14 @@
     <string name="PrivateKeys_AccountExtendedPrivateKey">Розширений приватний ключ акаунта</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Надає повний контроль над Bitcoin та іншими криптовалютами на базі UTXO, такими як Litecoin, Bitcoin Cash, Dash і т.д. в межах відповідного гаманця.</string>
     <string name="PrivateKeys_NeverShareWarning">Ніколи ні з ким не діліться вашою фразою відновлення. Команда P.CASH ніколи не запитає вашу фразу відновлення.</string>
+    <string name="private_keys_zec_sapling_spending_key">Ключ витрат ZCash Sapling</string>
+    <string name="private_keys_zec_sapling_spending_key_description">Надає повний контроль над екранованими коштами ZCash цього гаманця, зокрема їх витрачання.</string>
+    <string name="private_keys_zec_sapling_spending_key_error">Не вдалося отримати ключ витрат ZCash Sapling</string>
+    <string name="private_keys_zec">ZCash</string>
+    <string name="private_keys_zec_description">Надає повний контроль над прозорими та екранованими коштами ZCash цього гаманця, зокрема їх витрачання.</string>
+    <string name="private_keys_zec_transparent_key">Прозорий ключ ZCash</string>
+    <string name="private_keys_zec_transparent_key_description">Надає повний контроль над прозорими коштами ZCash цього гаманця, зокрема їх витрачання.</string>
+    <string name="private_keys_zec_transparent_key_error">Не вдалося отримати прозорий ключ ZCash</string>
     <string name="private_key_conversion_monero_description">
 
         &lt;p&gt;&lt;b&gt;Ми перетворили вашу сід-фразу з %d слів на стандарт Monero — 25 слів.&lt;/b&gt;&lt;/p&gt;
@@ -1356,6 +1366,10 @@
     <string name="PublicKeys_EvmAddress_Description">Дозволяє відстежувати гаманці з активами на Ethereum, Binance Smart Chain та інших блокчейнах на базі EVM, лише для читання.</string>
     <string name="PublicKeys_AccountExtendedPublicKeyDescription">Дозволяє здійснювати моніторинг гаманців, що містять Bitcoin та інші криптовалюти на основі UTXO (наприклад, Litecoin, Bitcoin Cash, Dash тощо), лише для читання.</string>
     <string name="publicKeys_zec_ufvk_descritpion">Дозволяє моніторинг лише для читання ZCash, прозорих та захищених транзакцій для гаманця.</string>
+    <string name="publicKeys_zec_transparent_viewing_key_description">Дозволяє моніторинг лише для читання прозорих транзакцій ZCash для гаманця. Захищені транзакції не відображаються.</string>
+    <string name="public_keys_zec_sapling_viewing_key">Ключ перегляду ZCash Sapling</string>
+    <string name="public_keys_zec_sapling_viewing_key_description">Дозволяє моніторинг лише для читання екранованих транзакцій ZCash цього гаманця. Прозорі транзакції не відображаються.</string>
+    <string name="public_keys_zec_viewing_key_error">Не вдалося отримати ключ перегляду ZCash</string>
     <!-- Recovery Phrase Verify -->
     <string name="RecoveryPhraseVerify_Title">Підтвердити</string>
     <string name="RecoveryPhraseVerify_Description">Виберіть запитані слова з вашої фрази відновлення</string>
@@ -2320,6 +2334,10 @@
     <string name="swap_sort_best_time">Найшвидший</string>
     <string name="send_trezor_mweb_not_supported">Trezor не підтримує MWEB. Надішліть Litecoin на звичайну (не MWEB) адресу.</string>
     <string name="send_trezor_time_lock_not_supported">Trezor не підтримує транзакції з часовим блокуванням.</string>
+    <string name="send_trezor_zcash_memo_not_supported">Trezor не може додати memo до транзакції Zcash. Видаліть memo, щоб продовжити.</string>
+    <string name="send_trezor_zcash_transparent_only">Trezor може надсилати Zcash лише на прозорі адреси.</string>
+    <string name="send_trezor_zcash_unified_no_transparent_receiver">Ця unified-адреса не містить прозорого отримувача, тому Trezor не може надіслати на неї переказ.</string>
+    <string name="send_trezor_zcash_firmware_required">%1$s потребує прошивку %2$s або новішу для надсилання на unified-адреси Zcash. Оновіть пристрій і спробуйте ще раз — версія прошивки буде перевірена знову під час наступної транзакції Zcash.</string>
     <string name="send_failed_offline_prompt_title">Транзакцію не надіслано</string>
     <string name="send_failed_offline_prompt_message">Підписати транзакцію офлайн і надіслати пізніше?</string>
 

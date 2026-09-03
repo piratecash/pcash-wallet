@@ -144,13 +144,14 @@
     <string name="Restore_RestoreBy">Restore By</string>
     <string name="Restore_RecoveryPhrase">Recovery Phrase</string>
     <string name="Restore_PrivateKey">Private Key</string>
-    <string name="Restore_PrivateKeyHint">Enter EVM Private Key, BIP32 Root Key or Account Extended Private Key</string>
+    <string name="Restore_PrivateKeyHint">کلید خصوصی EVM، BIP32 Root Key، Stellar Secret Key، Account Extended Private Key یا ZCash Sapling Spending Key را وارد کنید</string>
     <string name="Restore_PhraseHint">Enter 12, 15, 18, 21 or 24 words</string>
     <string name="monero_restore_seed">عبارت بازیابی مونرو</string>
     <string name="Restore_NonStandardRestore">Non-Standard Restore</string>
     <string name="Restore_NonStandard_Description">This page provides a special wallet restore mechanism to P.CASH users who have a non-standard wallet. Such wallets might have been created in P.CASH version 0.27 - 0.28 using a non-English recovery phrase and/or a special character in the wallet passphrase (i.e. diacritic symbol).\n\nIf you\'re an affected user then your wallet balance will be shown 0 after restoring such wallet in version 0.29 or above. This page will enable you to restore access to your non-standard wallet. Once restored you\'re recommended to create a new wallet (which will be standard compliant) and move funds there.</string>
     <string name="Restore_Bip_Recommended">(recommended)</string>
     <string name="Restore_PrivateKey_InvalidKey">Invalid Key</string>
+    <string name="restore_private_key_is_view_only">این یک کلید فقط برای مشاهده است. آن را از طریق «مشاهدهٔ آدرس» اضافه کنید.</string>
     <string name="SelectContacts_All">All</string>
     <string name="Restore_BirthdayHeight">قد تولد</string>
     <string name="restore_birthday_height_or_date">قد تولد یا تاریخ</string>
@@ -1219,11 +1220,12 @@
     <string name="ImportBackupFile_EnterPassword_Description">Enter the backup password to import your wallet.</string>
     <string name="ImportBackupFile_Error_InvalidPassword">Invalid Password</string>
     <string name="ImportBackupFile_BackupPassword">Backup Password</string>
-    <string name="Watch_Address_Hint">آدرس یا دامنه</string>
+    <string name="Watch_Address_Hint">آدرس EVM، TRON، TON یا آدرس عمومی خود (Bitcoin، Litecoin، Bitcoin Cash)، Account xPubKey یا ZCash Viewing Key (Unified یا Sapling) را وارد کنید</string>
     <string name="Watch_Address_Watch">مشاهده</string>
     <string name="Watch_Select_Blockchains">انتخاب زنجیره های بلوکی</string>
     <string name="Watch_Select_Coins">سکه ها را انتخاب کنید</string>
     <string name="Watch_Error_InvalidAddressFormat">Address format is not supported</string>
+    <string name="watch_address_is_private_key">این یک کلید خصوصی است. آن را از طریق ورود با «کلید خصوصی» اضافه کنید.</string>
     <!--Manage Account-->
     <string name="ManageAccount_Name">نام</string>
     <string name="ManageAccount_Save">ذخیره</string>
@@ -1340,12 +1342,24 @@
     <string name="PrivateKeys_AccountExtendedPrivateKey">Account Extended Private Key</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Grants full control over Bitcoin and other UTXO based crypto i.e. Litecoin, Bitcoin Cash, Dash etc. within respective wallet.</string>
     <string name="PrivateKeys_NeverShareWarning">Never share this key with anyone. P.CASH Wallet support team will never ask for it.</string>
+    <string name="private_keys_zec_sapling_spending_key">کلید خرج ZCash Sapling</string>
+    <string name="private_keys_zec_sapling_spending_key_description">کنترل کامل بر وجوه محافظت‌شدهٔ ZCash این کیف پول، از جمله خرج کردن آن‌ها را می‌دهد.</string>
+    <string name="private_keys_zec_sapling_spending_key_error">دریافت کلید خرج ZCash Sapling ممکن نشد</string>
+    <string name="private_keys_zec">ZCash</string>
+    <string name="private_keys_zec_description">کنترل کامل بر وجوه شفاف و محافظت‌شدهٔ ZCash این کیف پول، از جمله خرج کردن آن‌ها را می‌دهد.</string>
+    <string name="private_keys_zec_transparent_key">کلید شفاف ZCash</string>
+    <string name="private_keys_zec_transparent_key_description">کنترل کامل بر وجوه شفاف ZCash این کیف پول، از جمله خرج کردن آن‌ها را می‌دهد.</string>
+    <string name="private_keys_zec_transparent_key_error">دریافت کلید شفاف ZCash ممکن نشد</string>
     <!-- Public Keys -->
     <string name="PublicKeys_Title">کلیدهای عمومی</string>
     <string name="PublicKeys_EvmAddress">EVM Address</string>
     <string name="PublicKeys_EvmAddress_Description">Allows read-only monitoring of wallets holding assets on Ethereum, Binance Smart Chain and other EVM based blockchains.</string>
     <string name="PublicKeys_AccountExtendedPublicKeyDescription">Allows read-only monitoring of wallets holding Bitcoin and other UTXO based crypto (i.e Litecoin, Bitcoin Cash, Dash etc.).</string>
     <string name="publicKeys_zec_ufvk_descritpion">Allows read-only monitoring of ZCash, transparent and shielded transactions for the wallet.</string>
+    <string name="publicKeys_zec_transparent_viewing_key_description">امکان نظارت فقط‌خواندنی بر تراکنش‌های شفاف ZCash کیف پول را فراهم می‌کند. تراکنش‌های محافظت‌شده شامل نمی‌شوند.</string>
+    <string name="public_keys_zec_sapling_viewing_key">کلید مشاهدهٔ ZCash Sapling</string>
+    <string name="public_keys_zec_sapling_viewing_key_description">امکان نظارت فقط‌خواندنی بر تراکنش‌های محافظت‌شدهٔ ZCash این کیف پول را فراهم می‌کند. تراکنش‌های شفاف شامل نمی‌شوند.</string>
+    <string name="public_keys_zec_viewing_key_error">دریافت کلید مشاهدهٔ ZCash ممکن نشد</string>
     <!-- Recovery Phrase Verify -->
     <string name="RecoveryPhraseVerify_Title">تایید</string>
     <string name="RecoveryPhraseVerify_Description">کلمات درخواستی را از عبارت بازیابی کیف پول خود انتخاب کنید</string>
@@ -2173,6 +2187,10 @@
     <string name="litecoin_hardware_extended_public_key_required">کیف پول سخت‌افزاری Litecoin به کلید عمومی توسعه‌یافته نیاز دارد</string>
     <string name="send_trezor_mweb_not_supported">Trezor از MWEB پشتیبانی نمی‌کند. لایت‌کوین را به یک آدرس عادی (غیر MWEB) ارسال کنید.</string>
     <string name="send_trezor_time_lock_not_supported">Trezor از تراکنش‌های زمان‌قفل پشتیبانی نمی‌کند.</string>
+    <string name="send_trezor_zcash_memo_not_supported">Trezor نمی‌تواند به تراکنش Zcash یادداشت اضافه کند. برای ادامه، یادداشت را حذف کنید.</string>
+    <string name="send_trezor_zcash_transparent_only">Trezor فقط می‌تواند Zcash را به آدرس‌های شفاف ارسال کند.</string>
+    <string name="send_trezor_zcash_unified_no_transparent_receiver">این آدرس یکپارچه (unified) گیرنده شفافی ندارد، بنابراین Trezor نمی‌تواند تراکنشی به آن ارسال کند.</string>
+    <string name="send_trezor_zcash_firmware_required">%1$s برای ارسال به آدرس‌های یکپارچه Zcash به فریمور %2$s یا جدیدتر نیاز دارد. دستگاه را به‌روزرسانی کنید و دوباره تلاش کنید — نسخه فریمور در تراکنش بعدی Zcash دوباره بررسی می‌شود.</string>
     <string name="send_failed_offline_prompt_title">تراکنش ارسال نشد</string>
     <string name="send_failed_offline_prompt_message">تراکنش را آفلاین امضا کرده و بعداً ارسال کنید؟</string>
 
