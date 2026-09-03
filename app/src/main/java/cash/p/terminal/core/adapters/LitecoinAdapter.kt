@@ -15,7 +15,6 @@ import cash.p.terminal.core.OfflineSignRequest
 import cash.p.terminal.core.SignedOfflineBitcoinTransaction
 import cash.p.terminal.core.TransactionExplorerData
 import cash.p.terminal.core.UnsupportedAccountException
-import cash.p.terminal.core.derivation
 import cash.p.terminal.core.hexToByteArray
 import cash.p.terminal.core.managers.LITECOIN_MWEB_PEG_IN_MATCH_TIMESTAMP_TOLERANCE_SECONDS
 import cash.p.terminal.core.managers.LitecoinMwebRestoreHeight
@@ -1667,11 +1666,10 @@ class LitecoinAdapter(
             when (accountType) {
                 is AccountType.Mnemonic -> {
                     val seed = accountType.seed
-                    val derivation = tokenType.derivation ?: throw IllegalArgumentException()
 
                     val address = LitecoinKit.firstAddress(
                         seed,
-                        derivation.purpose,
+                        tokenType.purpose,
                         NetworkType.MainNet
                     )
 
@@ -1680,10 +1678,9 @@ class LitecoinAdapter(
 
                 is AccountType.HdExtendedKey -> {
                     val key = accountType.hdExtendedKey
-                    val derivation = tokenType.derivation ?: throw IllegalArgumentException()
                     val address = LitecoinKit.firstAddress(
                         key,
-                        derivation.purpose,
+                        tokenType.purpose,
                         NetworkType.MainNet
                     )
 
