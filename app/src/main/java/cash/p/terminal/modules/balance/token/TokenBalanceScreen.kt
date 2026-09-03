@@ -469,6 +469,10 @@ private fun TokenBalanceScreenContent(
             }
         }
         var headerHeightPx by remember { mutableIntStateOf(0) }
+        val notSyncedRetryVisible = shouldShowNotSyncedRetry(
+            failedIconVisible = failedIconVisible,
+            loadFailed = uiState.transactionsLoadFailed,
+        )
         val notSyncedSectionVisible = shouldShowNotSyncedSection(
             failedIconVisible = failedIconVisible,
             loadFailed = uiState.transactionsLoadFailed,
@@ -526,6 +530,7 @@ private fun TokenBalanceScreenContent(
                                     }
                                 },
                                 onRetry = onRefresh,
+                                showRetry = notSyncedRetryVisible,
                             )
                         }
                     }
@@ -1188,9 +1193,10 @@ private fun LockedBalanceCell(
 }
 
 @Composable
-private fun TokenNotSyncedSection(
+internal fun TokenNotSyncedSection(
     onBlockchainStatusClick: () -> Unit,
     onRetry: () -> Unit,
+    showRetry: Boolean,
 ) {
     Column {
         BlockchainStatusButton(onClick = onBlockchainStatusClick)
@@ -1205,32 +1211,39 @@ private fun TokenNotSyncedSection(
             iconColor = ComposeAppTheme.colors.grey,
         ) {
             subhead2_grey(text = stringResource(R.string.token_not_synced_description))
-            ButtonSecondary(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = onRetry,
-                border = BorderStroke(1.dp, ComposeAppTheme.colors.steel20),
-                buttonColors = SecondaryButtonDefaults.buttonColors(
-                    backgroundColor = ComposeAppTheme.colors.transparent,
-                ),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-                content = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            modifier = Modifier.size(20.dp),
-                            painter = painterResource(R.drawable.ic_refresh_20),
-                            contentDescription = null,
-                            tint = ComposeAppTheme.colors.grey
-                        )
-                        HSpacer(8.dp)
-                        subhead1_leah(text = stringResource(R.string.token_not_synced_retry))
-                    }
-                }
-            )
+            if (showRetry) {
+                TokenNotSyncedRetryButton(onRetry = onRetry)
+            }
         }
     }
+}
+
+@Composable
+private fun TokenNotSyncedRetryButton(onRetry: () -> Unit) {
+    ButtonSecondary(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onRetry,
+        border = BorderStroke(1.dp, ComposeAppTheme.colors.steel20),
+        buttonColors = SecondaryButtonDefaults.buttonColors(
+            backgroundColor = ComposeAppTheme.colors.transparent,
+        ),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+        content = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    modifier = Modifier.size(20.dp),
+                    painter = painterResource(R.drawable.ic_refresh_20),
+                    contentDescription = null,
+                    tint = ComposeAppTheme.colors.grey
+                )
+                HSpacer(8.dp)
+                subhead1_leah(text = stringResource(R.string.token_not_synced_retry))
+            }
+        }
+    )
 }
 
 @Preview
@@ -1240,6 +1253,19 @@ private fun TokenNotSyncedSectionPreview() {
         TokenNotSyncedSection(
             onBlockchainStatusClick = {},
             onRetry = {},
+            showRetry = true,
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun TokenNotSyncedSectionSyncingPreview() {
+    ComposeAppTheme {
+        TokenNotSyncedSection(
+            onBlockchainStatusClick = {},
+            onRetry = {},
+            showRetry = false,
         )
     }
 }
@@ -1295,6 +1321,9 @@ private fun TokenOfflineSectionPreview() {
 internal fun shouldAutoShowSyncError(failedIconVisible: Boolean, appLocked: Boolean): Boolean =
     failedIconVisible && !appLocked
 
+internal fun shouldShowNotSyncedRetry(failedIconVisible: Boolean, loadFailed: Boolean): Boolean =
+    failedIconVisible || loadFailed
+
 // While a sync runs over already loaded transactions, the list itself stays on screen, so the
 // only thing left to tell the user is that what they see may be stale.
 internal fun shouldShowNotSyncedSection(
@@ -1303,7 +1332,7 @@ internal fun shouldShowNotSyncedSection(
     syncing: Boolean,
     transactions: Map<String, List<TransactionViewItem>>?,
 ): Boolean =
-    failedIconVisible || loadFailed ||
+    shouldShowNotSyncedRetry(failedIconVisible, loadFailed) ||
         (syncing && transactions?.values?.any { it.isNotEmpty() } == true)
 
 internal enum class TransactionsPlaceholder { SearchInProgress, SearchEmpty, WaitForSync, EmptyList, None }
