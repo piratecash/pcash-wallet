@@ -28,6 +28,9 @@ class TrezorPublicKeySpecsTest {
     private fun bch(addressType: TokenType.AddressType) =
         TokenQuery(BlockchainType.BitcoinCash, TokenType.AddressTyped(addressType))
 
+    private fun zcash(addressSpecType: TokenType.AddressSpecType) =
+        TokenQuery(BlockchainType.Zcash, TokenType.AddressSpecTyped(addressSpecType))
+
     private fun specFor(query: TokenQuery) =
         TrezorPublicKeySpecs.buildQuerySpecs(listOf(query)).singleOrNull()
 
@@ -172,6 +175,48 @@ class TrezorPublicKeySpecsTest {
         assertNull(specFor(native(BlockchainType.Ton)))
         // BTC requires an explicit derivation - a Native query is not derivable.
         assertNull(specFor(native(BlockchainType.Bitcoin)))
+    }
+
+    @Test
+    fun buildQuerySpecs_zcashTransparent_mapsBip44PathAndSpendAddress() {
+        val spec = checkNotNull(specFor(zcash(TokenType.AddressSpecType.Transparent)))
+
+        assertEquals("m/44'/133'/0'", spec.derivationPath)
+        assertEquals(
+            TrezorPublicKeyRequest.Bitcoin(
+                "Zcash",
+                TrezorDerivationPath.parse("m/44'/133'/0'"),
+                TrezorInputScriptType.SPENDADDRESS,
+            ),
+            spec.request,
+        )
+        assertEquals(HDWallet.Purpose.BIP44, spec.expectedPurpose)
+    }
+
+    @Test
+    fun buildQuerySpecs_zcashShieldedAndUnified_areNull() {
+        assertNull(specFor(zcash(TokenType.AddressSpecType.Shielded)))
+        assertNull(specFor(zcash(TokenType.AddressSpecType.Unified)))
+    }
+
+    @Test
+    fun supports_zcash_onlyTransparentAgreesWithSpecForAndIsModelIndependent() {
+        TokenType.AddressSpecType.entries.forEach { addressSpecType ->
+            val expected = addressSpecType == TokenType.AddressSpecType.Transparent
+            assertEquals(
+                expected,
+                TrezorPublicKeySpecs.supports(null, BlockchainType.Zcash, TokenType.AddressSpecTyped(addressSpecType)),
+            )
+            // Zcash is advertised for every model (and the unknown/null model), unlike Tron/Solana.
+            assertEquals(
+                expected,
+                TrezorPublicKeySpecs.supports(
+                    TrezorModel.One,
+                    BlockchainType.Zcash,
+                    TokenType.AddressSpecTyped(addressSpecType),
+                ),
+            )
+        }
     }
 
     @Test

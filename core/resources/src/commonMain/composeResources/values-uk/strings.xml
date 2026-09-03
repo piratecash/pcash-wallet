@@ -2334,6 +2334,10 @@
     <string name="swap_sort_best_time">Найшвидший</string>
     <string name="send_trezor_mweb_not_supported">Trezor не підтримує MWEB. Надішліть Litecoin на звичайну (не MWEB) адресу.</string>
     <string name="send_trezor_time_lock_not_supported">Trezor не підтримує транзакції з часовим блокуванням.</string>
+    <string name="send_trezor_zcash_memo_not_supported">Trezor не може додати memo до транзакції Zcash. Видаліть memo, щоб продовжити.</string>
+    <string name="send_trezor_zcash_transparent_only">Trezor може надсилати Zcash лише на прозорі адреси.</string>
+    <string name="send_trezor_zcash_unified_no_transparent_receiver">Ця unified-адреса не містить прозорого отримувача, тому Trezor не може надіслати на неї переказ.</string>
+    <string name="send_trezor_zcash_firmware_required">%1$s потребує прошивку %2$s або новішу для надсилання на unified-адреси Zcash. Оновіть пристрій і спробуйте ще раз — версія прошивки буде перевірена знову під час наступної транзакції Zcash.</string>
     <string name="send_failed_offline_prompt_title">Транзакцію не надіслано</string>
     <string name="send_failed_offline_prompt_message">Підписати транзакцію офлайн і надіслати пізніше?</string>
 

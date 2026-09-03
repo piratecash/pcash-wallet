@@ -2183,6 +2183,10 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="litecoin_hardware_extended_public_key_required">A carteira hardware Litecoin requer uma chave pública estendida</string>
     <string name="send_trezor_mweb_not_supported">A Trezor não é compatível com MWEB. Envie Litecoin para um endereço comum (não MWEB).</string>
     <string name="send_trezor_time_lock_not_supported">A Trezor não é compatível com transações com bloqueio de tempo.</string>
+    <string name="send_trezor_zcash_memo_not_supported">A Trezor não pode anexar um memo a uma transação Zcash. Remova o memo para continuar.</string>
+    <string name="send_trezor_zcash_transparent_only">A Trezor só pode enviar Zcash para endereços transparentes.</string>
+    <string name="send_trezor_zcash_unified_no_transparent_receiver">Este endereço unificado não contém um destinatário transparente, então a Trezor não pode enviar uma transferência para ele.</string>
+    <string name="send_trezor_zcash_firmware_required">A %1$s precisa do firmware %2$s ou mais recente para enviar para endereços unificados do Zcash. Atualize o dispositivo e tente novamente — a versão do firmware será verificada novamente na próxima transação do Zcash.</string>
     <string name="send_failed_offline_prompt_title">Transação não enviada</string>
     <string name="send_failed_offline_prompt_message">Assinar a transação off-line e enviá-la mais tarde?</string>
 

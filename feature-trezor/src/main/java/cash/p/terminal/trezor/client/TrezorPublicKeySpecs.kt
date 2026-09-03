@@ -86,7 +86,16 @@ object TrezorPublicKeySpecs {
         BlockchainType.Solana -> fixedPath(query, TrezorPublicKeyRequest::Solana, "m/44'/501'/0'/0'")
         BlockchainType.Stellar -> fixedPath(query, TrezorPublicKeyRequest::Stellar, "m/44'/148'/0'")
         BlockchainType.Tron -> fixedPath(query, TrezorPublicKeyRequest::Tron, "m/44'/195'/0'/0/0")
+        BlockchainType.Zcash -> zcashSpec(query)
         else -> null
+    }
+
+    /** ZEC — only the transparent address spec is derivable; shielded/unified have no BIP-32 path. */
+    private fun zcashSpec(query: TokenQuery): QuerySpec? {
+        if ((query.tokenType as? TokenType.AddressSpecTyped)?.type != TokenType.AddressSpecType.Transparent) {
+            return null
+        }
+        return bitcoinSpec(query, "Zcash", zcashCoinType, HDWallet.Purpose.BIP44)
     }
 
     /** BTC/LTC — the derivation is chosen by the user via `TokenType.Derived`. */
@@ -169,6 +178,9 @@ object TrezorPublicKeySpecs {
     private val litecoinCoinType = MainNetLitecoin().coinType
     private val dogecoinCoinType = MainNetDogecoin().coinType
     private val dashCoinType = MainNetDash().coinType
+
+    // SLIP-44 registered coin type for Zcash; no MainNetZcash wrapper exists in this codebase.
+    private const val zcashCoinType = 133
 
     private val BITCOIN_PURPOSES = setOf(
         HDWallet.Purpose.BIP44,

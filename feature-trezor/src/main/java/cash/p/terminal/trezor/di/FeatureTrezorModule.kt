@@ -5,6 +5,7 @@ import android.hardware.usb.UsbManager
 import cash.p.terminal.trezor.client.TrezorUsbPermissionRequester
 import cash.p.terminal.trezor.client.UsbTrezorClientProvider
 import cash.p.terminal.trezor.domain.TrezorAccountIdentityValidator
+import cash.p.terminal.trezor.domain.TrezorFirmwareVersionRecorder
 import cash.p.terminal.trezor.domain.policy.TrezorHardwareWalletTokenPolicy
 import cash.p.terminal.trezor.domain.usecase.FetchTrezorPublicKeysUseCase
 import cash.p.terminal.trezor.domain.usecase.FetchTrezorPublicKeysUseCaseImpl
@@ -32,6 +33,7 @@ val featureTrezorModule = module {
     singleOf(::UsbTrezorClientProvider) bind ITrezorClient::class
 
     singleOf(::TrezorAccountIdentityValidator)
+    singleOf(::TrezorFirmwareVersionRecorder)
     singleOf(::FetchTrezorPublicKeysUseCaseImpl) bind FetchTrezorPublicKeysUseCase::class
     factory<ScanToAddUseCase>(named("trezor")) { TrezorScanToAddUseCase(get(), get(), get()) }
 

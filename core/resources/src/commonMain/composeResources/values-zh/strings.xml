@@ -2168,6 +2168,10 @@
     <string name="litecoin_hardware_extended_public_key_required">硬件 Litecoin 钱包需要扩展公钥</string>
     <string name="send_trezor_mweb_not_supported">Trezor 不支持 MWEB。请将莱特币发送到普通（非 MWEB）地址。</string>
     <string name="send_trezor_time_lock_not_supported">Trezor 不支持时间锁定交易。</string>
+    <string name="send_trezor_zcash_memo_not_supported">Trezor 无法为 Zcash 交易添加备注。请删除备注后继续。</string>
+    <string name="send_trezor_zcash_transparent_only">Trezor 只能将 Zcash 发送到透明地址。</string>
+    <string name="send_trezor_zcash_unified_no_transparent_receiver">该统一地址不包含透明接收方，因此 Trezor 无法向其发送转账。</string>
+    <string name="send_trezor_zcash_firmware_required">%1$s 需要 %2$s 或更高版本的固件才能发送到 Zcash 统一地址。请更新设备后重试——应用会在您下次进行 Zcash 交易时重新检查固件版本。</string>
     <string name="send_failed_offline_prompt_title">交易未发送</string>
     <string name="send_failed_offline_prompt_message">离线签署交易并稍后发送？</string>
 

@@ -2177,6 +2177,10 @@
     <string name="litecoin_hardware_extended_public_key_required">하드웨어 Litecoin 지갑에는 확장 공개 키가 필요합니다</string>
     <string name="send_trezor_mweb_not_supported">Trezor는 MWEB를 지원하지 않습니다. 일반(비 MWEB) 주소로 라이트코인을 보내세요.</string>
     <string name="send_trezor_time_lock_not_supported">Trezor는 시간 잠금 거래를 지원하지 않습니다.</string>
+    <string name="send_trezor_zcash_memo_not_supported">Trezor는 Zcash 트랜잭션에 메모를 첨부할 수 없습니다. 계속하려면 메모를 삭제하세요.</string>
+    <string name="send_trezor_zcash_transparent_only">Trezor는 투명(transparent) 주소로만 Zcash를 보낼 수 있습니다.</string>
+    <string name="send_trezor_zcash_unified_no_transparent_receiver">이 유니파이드(unified) 주소에는 투명 수신자가 없어 Trezor에서 전송할 수 없습니다.</string>
+    <string name="send_trezor_zcash_firmware_required">%1$s에서 Zcash 유니파이드 주소로 보내려면 펌웨어 %2$s 이상이 필요합니다. 기기를 업데이트한 후 다시 시도하세요 — 다음 Zcash 거래 시 펌웨어 버전을 다시 확인합니다.</string>
     <string name="send_failed_offline_prompt_title">거래가 전송되지 않음</string>
     <string name="send_failed_offline_prompt_message">거래를 오프라인으로 서명하고 나중에 전송하시겠습니까?</string>
 

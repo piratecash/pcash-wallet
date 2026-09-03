@@ -2184,6 +2184,10 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="litecoin_hardware_extended_public_key_required">Donanım Litecoin cüzdanı genişletilmiş açık anahtar gerektirir</string>
     <string name="send_trezor_mweb_not_supported">Trezor MWEB\'i desteklemiyor. Litecoin\'i normal (MWEB olmayan) bir adrese gönderin.</string>
     <string name="send_trezor_time_lock_not_supported">Trezor zaman kilitli işlemleri desteklemiyor.</string>
+    <string name="send_trezor_zcash_memo_not_supported">Trezor, Zcash işlemine not (memo) ekleyemez. Devam etmek için notu kaldırın.</string>
+    <string name="send_trezor_zcash_transparent_only">Trezor, Zcash\'i yalnızca şeffaf adreslere gönderebilir.</string>
+    <string name="send_trezor_zcash_unified_no_transparent_receiver">Bu unified adresin şeffaf bir alıcısı yok, bu yüzden Trezor ona transfer gönderemez.</string>
+    <string name="send_trezor_zcash_firmware_required">%1$s, unified Zcash adreslerine gönderim yapmak için %2$s veya daha yeni bir üretici yazılımı gerektirir. Cihazı güncelleyip tekrar deneyin — üretici yazılımı sürümü bir sonraki Zcash işleminizde yeniden kontrol edilecek.</string>
     <string name="send_failed_offline_prompt_title">İşlem gönderilmedi</string>
     <string name="send_failed_offline_prompt_message">İşlemi çevrimdışı imzalayıp daha sonra göndermek ister misiniz?</string>
 

@@ -2206,6 +2206,10 @@
     <string name="litecoin_hardware_extended_public_key_required">تتطلب محفظة Litecoin للأجهزة مفتاحًا عامًا موسعًا</string>
     <string name="send_trezor_mweb_not_supported">لا يدعم Trezor بروتوكول MWEB. أرسل Litecoin إلى عنوان عادي (غير MWEB).</string>
     <string name="send_trezor_time_lock_not_supported">لا يدعم Trezor المعاملات المقفلة زمنيًا.</string>
+    <string name="send_trezor_zcash_memo_not_supported">لا يمكن لجهاز Trezor إرفاق مذكرة بمعاملة Zcash. احذف المذكرة للمتابعة.</string>
+    <string name="send_trezor_zcash_transparent_only">يمكن لجهاز Trezor إرسال Zcash فقط إلى العناوين الشفافة.</string>
+    <string name="send_trezor_zcash_unified_no_transparent_receiver">لا يحتوي هذا العنوان الموحّد (unified) على مستلم شفاف، لذا لا يمكن لـ Trezor إرسال تحويل إليه.</string>
+    <string name="send_trezor_zcash_firmware_required">يحتاج %1$s إلى البرنامج الثابت %2$s أو أحدث لإرسال Zcash إلى العناوين الموحّدة. حدّث الجهاز ثم أعد المحاولة — سيتم التحقق من إصدار البرنامج الثابت مرة أخرى في معاملة Zcash التالية.</string>
     <string name="send_failed_offline_prompt_title">لم يتم إرسال المعاملة</string>
     <string name="send_failed_offline_prompt_message">توقيع المعاملة دون اتصال وإرسالها لاحقًا؟</string>
 
