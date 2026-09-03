@@ -375,15 +375,20 @@ class SendTronViewModel(
         }
     }
 
+    private fun requireOfflineSignAdapter() = offlineSignAdapter
+        ?: throw LocalizedException(R.string.offline_broadcast_unsupported_blockchain)
+
+    // Reject an anchor too old to still fall inside the ~54h TAPOS ref-block window (e.g. reconnect
+    // refresh never completed). Fail closed to the "prepare online" error instead of building a
+    // transaction the network would reject; a reconnect then refreshes the anchor.
+    private fun requireFreshAnchor() =
+        offlineAnchor?.takeIf { elapsedRealtimeMs - it.elapsedAtFetch < OFFLINE_ANCHOR_MAX_AGE_MS }
+            ?: throw LocalizedException(R.string.offline_transaction_anchor_required)
+
     private suspend fun signedOfflineTransaction(): OfflineSignResult {
         val confirmationData = getConfirmationData()
-        val signingAdapter = offlineSignAdapter
-            ?: throw LocalizedException(R.string.offline_broadcast_unsupported_blockchain)
-        // Reject an anchor too old to still fall inside the ~54h TAPOS ref-block window (e.g. reconnect
-        // refresh never completed). Fail closed to the "prepare online" error instead of building a
-        // transaction the network would reject; a reconnect then refreshes the anchor.
-        val anchor = offlineAnchor?.takeIf { elapsedRealtimeMs - it.elapsedAtFetch < OFFLINE_ANCHOR_MAX_AGE_MS }
-            ?: throw LocalizedException(R.string.offline_transaction_anchor_required)
+        val signingAdapter = requireOfflineSignAdapter()
+        val anchor = requireFreshAnchor()
         val feeLimit = offlineFeeLimit
         if (sendToken.type != TokenType.Native && feeLimit == null) {
             throw LocalizedException(R.string.send_error_fee_rate_unavailable)

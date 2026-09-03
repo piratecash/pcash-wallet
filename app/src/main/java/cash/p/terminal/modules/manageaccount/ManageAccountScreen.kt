@@ -137,7 +137,7 @@ internal fun ManageAccountScreen(
                         ),
                         text = stringResource(R.string.AccountRecovery_MigrationRequired),
                         onClick = {
-                            FaqManager.showFaqPage(FaqManager.faqPathMigrationRequired)
+                            FaqManager.showFaqPage(FaqManager.faqMigrationRequired)
                         }
                     )
                 }
@@ -151,7 +151,7 @@ internal fun ManageAccountScreen(
                         ),
                         text = stringResource(R.string.AccountRecovery_MigrationRecommended),
                         onClick = {
-                            FaqManager.showFaqPage(FaqManager.faqPathMigrationRecommended)
+                            FaqManager.showFaqPage(FaqManager.faqMigrationRecommended)
                         },
                         onClose = null
                     )

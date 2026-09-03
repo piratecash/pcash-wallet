@@ -396,6 +396,9 @@ val TokenType.derivation: TokenType.Derivation?
         else -> null
     }
 
+val TokenType.purpose: HDWallet.Purpose
+    get() = requireNotNull(derivation) { "$this has no derivation" }.purpose
+
 val TokenType.bitcoinCashCoinType: TokenType.AddressType?
     get() = when (this) {
         is TokenType.AddressTyped -> this.type

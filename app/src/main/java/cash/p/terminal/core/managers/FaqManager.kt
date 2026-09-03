@@ -17,7 +17,6 @@ import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.entities.Faq
 import cash.p.terminal.entities.FaqMap
-import cash.p.terminal.modules.markdown.MarkdownFragment
 import cash.p.terminal.modules.markdown.localreader.MarkdownLocalFragment
 import cash.p.terminal.navigation.slideFromBottom
 import io.horizontalsystems.core.BackgroundManager
@@ -32,12 +31,9 @@ object FaqManager {
 
     private val faqListUrl = AppConfigProvider.faqUrl
 
-    const val faqPathMigrationRequired = "management/migration_required.md"
-    const val faqPathMigrationRecommended = "management/migration_recommended.md"
-    const val faqPathPrivateKeys = "management/what-are-private-keys-mnemonic-phrase-wallet-seed.md"
-
-    private fun getFaqUrl(faqPath: String, language: String): String =
-        URL(URL(faqListUrl), "faq/$language/$faqPath").toString()
+    const val faqMigrationRequired = "faq_migration_required_"
+    const val faqMigrationRecommended = "faq_migration_recommended_"
+    const val faqPrivateKeys = "faq_private_keys_"
 
     private val gson = GsonBuilder()
         .setDateFormat("yyyy-MM-dd")
@@ -45,17 +41,17 @@ object FaqManager {
         .registerTypeAdapter(Faq::class.java, FaqDeserializer(faqListUrl))
         .create()
 
-    fun showFaqPage(path: String, language: String = "en") {
+    fun showFaqPage(assetPrefix: String) {
         navigateToMarkdown(
-            destinationId = R.id.markdownFragment,
-            input = MarkdownFragment.Input(getFaqUrl(path, language), true)
+            destinationId = R.id.markdownLocalFragment,
+            input = MarkdownLocalFragment.Input.Asset(assetPrefix, showAsPopup = true)
         )
     }
 
     fun showFaqPage(@StringRes resId: Int) {
         navigateToMarkdown(
             destinationId = R.id.markdownLocalFragment,
-            input = MarkdownLocalFragment.Input(resId, true)
+            input = MarkdownLocalFragment.Input.Resource(resId, showAsPopup = true)
         )
     }
 

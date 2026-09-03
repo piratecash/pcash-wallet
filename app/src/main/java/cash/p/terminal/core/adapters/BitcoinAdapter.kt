@@ -3,7 +3,6 @@ package cash.p.terminal.core.adapters
 import cash.p.terminal.core.App
 import cash.p.terminal.core.IFeeRateProvider
 import cash.p.terminal.core.UnsupportedAccountException
-import cash.p.terminal.core.derivation
 import cash.p.terminal.core.purpose
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.wallet.AccountType
@@ -213,11 +212,10 @@ class BitcoinAdapter(
             when (accountType) {
                 is AccountType.Mnemonic -> {
                     val seed = accountType.seed
-                    val derivation = tokenType.derivation ?: throw IllegalArgumentException()
 
                     val address = BitcoinKit.firstAddress(
                         seed,
-                        derivation.purpose,
+                        tokenType.purpose,
                         NetworkType.MainNet
                     )
 
@@ -226,10 +224,9 @@ class BitcoinAdapter(
 
                 is AccountType.HdExtendedKey -> {
                     val key = accountType.hdExtendedKey
-                    val derivation = tokenType.derivation ?: throw IllegalArgumentException()
                     val address = BitcoinKit.firstAddress(
                         key,
-                        derivation.purpose,
+                        tokenType.purpose,
                         NetworkType.MainNet
                     )
 

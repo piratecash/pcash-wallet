@@ -26,6 +26,7 @@ import cash.p.terminal.modules.softwareupdate.SoftwareUpdateViewModel
 import cash.p.terminal.modules.softwareupdate.changelog.VersionChangelogViewModel
 import cash.p.terminal.modules.softwareupdate.history.VersionHistoryViewModel
 import cash.p.terminal.modules.pin.unlock.PinUnlockViewModel
+import cash.p.terminal.modules.markdown.localreader.MarkdownLocalViewModel
 import cash.p.terminal.modules.moneroconfigure.MoneroConfigureViewModel
 import cash.p.terminal.modules.mwebconfigure.MwebConfigureViewModel
 import cash.p.terminal.modules.premium.about.AboutPremiumViewModel
@@ -109,6 +110,7 @@ val viewModelModule = module {
     viewModelOf(::SecuritySettingsViewModel)
     viewModelOf(::MainSettingsViewModel)
     viewModelOf(::ReleaseNotesViewModel)
+    viewModelOf(::MarkdownLocalViewModel)
     viewModelOf(::RestoreMnemonicViewModel)
     viewModelOf(::AppStatusViewModel)
     viewModel { params -> AddressPoisoningViewModel(params[0], params[1], params[2], get(), get(), get(), get()) }
