@@ -4,18 +4,27 @@ import cash.p.terminal.wallet.entities.TokenType
 import com.tangem.common.core.TangemSdkError
 import com.tangem.crypto.hdWallet.DerivationNode
 import com.tangem.crypto.hdWallet.DerivationPath
-import io.horizontalsystems.ethereumkit.crypto.CryptoUtils.CURVE
-import io.horizontalsystems.ethereumkit.crypto.CryptoUtils.HALF_CURVE_ORDER
+import io.horizontalsystems.ethereumkit.spv.core.toBytes
 import io.horizontalsystems.hdwalletkit.ECDSASignature
 import io.horizontalsystems.hdwalletkit.HDWallet
+import java.math.BigInteger
 
 fun Throwable.isHardwareWalletUserCancelled(): Boolean = this is TangemSdkError.UserCancelled
 
-internal fun ECDSASignature.canonicalise() = if (s > HALF_CURVE_ORDER) {
-    ECDSASignature(r, CURVE.n.subtract(s))
-} else {
-    this
+internal fun ECDSASignature.canonicalise(): ECDSASignature {
+    val sValue = BigInteger(1, s)
+    return if (sValue > HALF_CURVE_ORDER) {
+        ECDSASignature.fromCompact(r + CURVE_ORDER.subtract(sValue).toBytes(32))
+    } else {
+        this
+    }
 }
+
+private val CURVE_ORDER = BigInteger(
+    "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141",
+    16,
+)
+private val HALF_CURVE_ORDER = CURVE_ORDER.shiftRight(1)
 
 internal fun TokenType.getPurpose(): String {
     return when (this) {

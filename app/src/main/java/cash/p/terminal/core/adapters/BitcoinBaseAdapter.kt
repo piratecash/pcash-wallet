@@ -313,7 +313,7 @@ abstract class BitcoinBaseAdapter(
     }
 
     override fun stop() {
-        kit.stop()
+        kit.dispose()
         scope.cancel()
     }
 

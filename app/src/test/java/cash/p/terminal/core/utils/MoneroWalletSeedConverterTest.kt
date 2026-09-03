@@ -134,12 +134,9 @@ class MoneroWalletSeedConverterTest {
     }
 
     @Test
-    fun getLegacySeedFromBip39_unnormalizedDecomposedInput_yieldsDifferentSeed() {
-        // Reverse contract: if the caller skips NFKD, decomposed input MUST drift away
-        // from precomposed (PBKDF2 hashes raw UTF-8 bytes). This test guards the KDoc
-        // contract — it's the user-visible failure mode the comment warns about.
-        val precomposed = List(11) { "ábaco" } + "abierto"           // skipped NFKD
-        val decomposed = List(11) { "ábaco" } + "abierto"           // skipped NFKD
+    fun getLegacySeedFromBip39_unnormalizedStoredInput_preservesOriginalBytes() {
+        val precomposed = List(11) { "ábaco" } + "abierto"
+        val decomposed = List(11) { "ábaco" } + "abierto"
 
         val seedFromPrecomposed =
             MoneroWalletSeedConverter.getLegacySeedFromBip39(precomposed, accountIndex = 0)
@@ -147,8 +144,7 @@ class MoneroWalletSeedConverterTest {
             MoneroWalletSeedConverter.getLegacySeedFromBip39(decomposed, accountIndex = 0)
 
         assertNotEquals(
-            "Without NFKD, precomposed and decomposed inputs MUST differ — proves the " +
-                    "normalization contract is load-bearing, not cosmetic.",
+            "Non-standard stored input must retain its legacy derivation",
             seedFromPrecomposed,
             seedFromDecomposed
         )

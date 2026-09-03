@@ -1,9 +1,9 @@
 package cash.p.terminal.core.adapters
 
-import cash.p.terminal.core.App
 import cash.p.terminal.core.IFeeRateProvider
 import cash.p.terminal.core.UnsupportedAccountException
 import cash.p.terminal.core.derivation
+import cash.p.terminal.core.managers.BitcoinKitEnvironment
 import cash.p.terminal.core.purpose
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.wallet.AccountType
@@ -35,9 +35,10 @@ class BitcoinAdapter(
         syncMode: BitcoinCore.SyncMode,
         backgroundManager: BackgroundManager,
         derivation: TokenType.Derivation,
+        environment: BitcoinKitEnvironment,
         feeRateProvider: IFeeRateProvider? = null
     ) : this(
-        kit = createKit(wallet, syncMode, derivation),
+        kit = createKit(wallet, syncMode, derivation, environment),
         syncMode = syncMode,
         backgroundManager = backgroundManager,
         wallet = wallet,
@@ -110,17 +111,21 @@ class BitcoinAdapter(
         private const val KIT_CONFIRMATIONS_THRESHOLD = 1
         private const val DISPLAY_CONFIRMATIONS_THRESHOLD = 3
 
+        @Suppress("LongMethod")
         private fun createKit(
             wallet: Wallet,
             syncMode: BitcoinCore.SyncMode,
-            derivation: TokenType.Derivation
+            derivation: TokenType.Derivation,
+            environment: BitcoinKitEnvironment,
         ): BitcoinKit {
             val account = wallet.account
 
             when (val accountType = account.type) {
                 is AccountType.HdExtendedKey -> {
                     return BitcoinKit(
-                        context = App.instance,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
                         extendedKey = accountType.hdExtendedKey,
                         purpose = derivation.purpose,
                         walletId = account.id,
@@ -132,9 +137,10 @@ class BitcoinAdapter(
 
                 is AccountType.Mnemonic -> {
                     return BitcoinKit(
-                        context = App.instance,
-                        words = accountType.words,
-                        passphrase = accountType.passphrase,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        seed = accountType.seed,
                         walletId = account.id,
                         syncMode = syncMode,
                         networkType = NetworkType.MainNet,
@@ -145,7 +151,9 @@ class BitcoinAdapter(
 
                 is AccountType.BitcoinAddress -> {
                     return BitcoinKit(
-                        context = App.instance,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
                         watchAddress = accountType.address,
                         walletId = account.id,
                         syncMode = syncMode,
@@ -166,8 +174,10 @@ class BitcoinAdapter(
                         tokenType = wallet.token.type,
                     )
                     return BitcoinKit(
-                        context = App.instance,
-                        extendedKey = wallet.getHDExtendedKey()!!,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        extendedKey = requireNotNull(wallet.getHDExtendedKey()),
                         purpose = derivation.purpose,
                         walletId = account.id,
                         syncMode = syncMode,
@@ -186,7 +196,9 @@ class BitcoinAdapter(
                         coin = "Bitcoin"
                     )
                     val kit = BitcoinKit(
-                        context = App.instance,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
                         extendedKey = requireNotNull(wallet.getHDExtendedKey()),
                         purpose = derivation.purpose,
                         walletId = account.id,
@@ -203,10 +215,6 @@ class BitcoinAdapter(
                 else -> throw UnsupportedAccountException()
             }
 
-        }
-
-        fun clear(walletId: String) {
-            BitcoinKit.clear(App.instance, NetworkType.MainNet, walletId)
         }
 
         fun firstAddress(accountType: AccountType, tokenType: TokenType): String {
