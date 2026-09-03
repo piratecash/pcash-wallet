@@ -80,6 +80,7 @@ val TokenQuery.isSupported: Boolean
         BlockchainType.Optimism,
         BlockchainType.Base,
         BlockchainType.ZkSync,
+        BlockchainType.RobinhoodChain,
         BlockchainType.ArbitrumOne,
         BlockchainType.Gnosis,
         BlockchainType.Fantom,
@@ -121,6 +122,7 @@ val Blockchain.description: String
         BlockchainType.Optimism -> "L2 chain"
         BlockchainType.Base -> "L2 chain"
         BlockchainType.ZkSync -> "L2 chain"
+        BlockchainType.RobinhoodChain -> "L2 chain"
         BlockchainType.ArbitrumOne -> "L2 chain"
         BlockchainType.Solana -> "SOL, SPL tokens"
         BlockchainType.Gnosis -> "xDAI, ERC20 tokens"
@@ -173,6 +175,7 @@ private val blockchainOrderMap: Map<BlockchainType, Int> by lazy {
         BlockchainType.Stellar,
         BlockchainType.Base,
         BlockchainType.ZkSync,
+        BlockchainType.RobinhoodChain,
         BlockchainType.Avalanche,
         BlockchainType.Zcash,
         BlockchainType.BitcoinCash,
@@ -201,6 +204,7 @@ val BlockchainType.tokenIconPlaceholder: Int
         BlockchainType.Optimism -> R.drawable.optimism_erc20
         BlockchainType.Base -> R.drawable.base_erc20
         BlockchainType.ZkSync -> R.drawable.zksync_erc20
+        BlockchainType.RobinhoodChain -> R.drawable.robinhood_chain
         BlockchainType.ArbitrumOne -> R.drawable.arbitrum_erc20
         BlockchainType.Gnosis -> R.drawable.gnosis_erc20
         BlockchainType.Fantom -> R.drawable.fantom_erc20
@@ -230,6 +234,7 @@ val BlockchainType.brandColor: Color?
         BlockchainType.Base -> Color(0xFF2759F6)
         BlockchainType.ZkSync -> Color(0xFF8D8FF0)
         BlockchainType.ArbitrumOne -> Color(0xFF96BEDC)
+        BlockchainType.RobinhoodChain -> Color(0xFF00C805)
         else -> null
     }
 
@@ -250,6 +255,7 @@ val BlockchainType.isEvm: Boolean
         BlockchainType.Gnosis,
         BlockchainType.Optimism,
         BlockchainType.Polygon,
+        BlockchainType.RobinhoodChain,
         BlockchainType.ZkSync,
             -> true
 
@@ -292,6 +298,7 @@ val BlockchainType.isBtcLike: Boolean
         BlockchainType.Gnosis,
         BlockchainType.Optimism,
         BlockchainType.Polygon,
+        BlockchainType.RobinhoodChain,
         BlockchainType.ZkSync,
         BlockchainType.Solana,
         BlockchainType.Stellar,
@@ -353,30 +360,8 @@ fun BlockchainType.supports(accountType: AccountType): Boolean {
             this === accountType.blockchainType
         }
 
-        is AccountType.EvmAddress ->
-            this == BlockchainType.Ethereum
-                    || this == BlockchainType.BinanceSmartChain
-                    || this == BlockchainType.Polygon
-                    || this == BlockchainType.Avalanche
-                    || this == BlockchainType.Optimism
-                    || this == BlockchainType.Base
-                    || this == BlockchainType.ZkSync
-                    || this == BlockchainType.ArbitrumOne
-                    || this == BlockchainType.Gnosis
-                    || this == BlockchainType.Fantom
-
-        is AccountType.EvmPrivateKey -> {
-            this == BlockchainType.Ethereum
-                    || this == BlockchainType.BinanceSmartChain
-                    || this == BlockchainType.Polygon
-                    || this == BlockchainType.Avalanche
-                    || this == BlockchainType.Optimism
-                    || this == BlockchainType.Base
-                    || this == BlockchainType.ZkSync
-                    || this == BlockchainType.ArbitrumOne
-                    || this == BlockchainType.Gnosis
-                    || this == BlockchainType.Fantom
-        }
+        is AccountType.EvmAddress,
+        is AccountType.EvmPrivateKey -> isEvm
 
         is AccountType.SolanaAddress ->
             this == BlockchainType.Solana
@@ -658,6 +643,7 @@ val BlockchainType.Companion.supported: List<BlockchainType>
         BlockchainType.Optimism,
         BlockchainType.Base,
         BlockchainType.ZkSync,
+        BlockchainType.RobinhoodChain,
         BlockchainType.ArbitrumOne,
         BlockchainType.Gnosis,
         BlockchainType.Fantom,

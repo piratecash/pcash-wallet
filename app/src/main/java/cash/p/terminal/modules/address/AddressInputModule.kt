@@ -40,6 +40,7 @@ object AddressInputModule {
                 BlockchainType.Optimism,
                 BlockchainType.Base,
                 BlockchainType.ZkSync,
+                BlockchainType.RobinhoodChain,
                 BlockchainType.Gnosis,
                 BlockchainType.Fantom,
                 BlockchainType.ArbitrumOne -> {
@@ -108,6 +109,7 @@ object AddressInputModule {
                 BlockchainType.Optimism,
                 BlockchainType.Base,
                 BlockchainType.ZkSync,
+                BlockchainType.RobinhoodChain,
                 BlockchainType.Gnosis,
                 BlockchainType.Fantom,
                 BlockchainType.ArbitrumOne -> {

@@ -18,17 +18,21 @@ import cash.p.terminal.modules.transactions.TransactionWallet
 import cash.p.terminal.modules.transactions.TransactionsRateRepository
 import cash.p.terminal.modules.transactions.currencyValue
 import cash.p.terminal.wallet.Clearable
+import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.transaction.TransactionSource
 import io.horizontalsystems.core.entities.CurrencyValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
@@ -42,19 +46,30 @@ class TokenTransactionsService(
     private val nftMetadataService: NftMetadataService,
     private val spamManager: SpamManager,
 ) : Clearable {
+    private enum class RecordsLoadFailure {
+        AdapterUnavailable,
+        RepositoryRead,
+    }
+
     private val transactionRecordRepository: ITransactionRecordRepository by inject(
         ITransactionRecordRepository::class.java
     )
+    private val adapterManager: IAdapterManager by inject(IAdapterManager::class.java)
     private val _transactionItems = MutableStateFlow<List<TransactionItem>>(emptyList())
     val transactionItemsFlow: StateFlow<List<TransactionItem>> = _transactionItems.asStateFlow()
     private val _recordsLoadedFlow = MutableStateFlow(false)
     val recordsLoadedFlow: StateFlow<Boolean> = _recordsLoadedFlow.asStateFlow()
+    private val _recordsLoadFailedFlow = MutableStateFlow(false)
+    val recordsLoadFailedFlow: StateFlow<Boolean> = _recordsLoadFailedFlow.asStateFlow()
+    private val recordsLoadFailureLock = Any()
+    private var recordsLoadFailure: RecordsLoadFailure? = null
     val syncingFlow: StateFlow<Boolean> = transactionSyncStateRepository.syncingFlow
     private val _searchScanStateFlow = MutableStateFlow(SearchScanState.Idle)
     val searchScanStateFlow: StateFlow<SearchScanState> = _searchScanStateFlow.asStateFlow()
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
     private var lastHiddenOnlyLoadKey: String? = null
+    private var emptyBatchFallbackJob: Job? = null
 
     @Volatile
     private var serviceVersion = 0
@@ -78,7 +93,12 @@ class TokenTransactionsService(
     fun start() {
         coroutineScope.launch {
             transactionRecordRepository.itemsFlow.collect {
-                handleUpdatedRecords(it.records, it.searchCompleted, it.searchExhausted)
+                handleUpdatedRecords(
+                    transactionRecords = it.records,
+                    searchCompleted = it.searchCompleted,
+                    searchExhausted = it.searchExhausted,
+                    loadFailed = it.loadFailed,
+                )
             }
         }
         coroutineScope.launch {
@@ -103,18 +123,37 @@ class TokenTransactionsService(
             }
         }
         coroutineScope.launch {
+            // Completion is emitted only after TransactionAdapterManager has published its final
+            // adapter map. Until then a missing adapter is merely slow, not a failed history read.
+            transactionAdapterManager.initializationFlow
+                .collect { initialized ->
+                    updateAdapterUnavailableFailure(initialized)
+                }
+        }
+        coroutineScope.launch {
             // Wait for this wallet's specific adapter to be ready rather than
             // relying on initializationFlow, which may fire before all adapters
             // are in the map due to partial-batch emissions from AdapterManager.
+            // distinctUntilChanged runs before filterNotNull so the gap left by a removed adapter
+            // is still observed: the same instance coming back is a restore, not a duplicate.
+            // Slow adapter creation is not a failed history read. The repository reports a real
+            // read failure after an adapter becomes available and a load is actually attempted.
+            // Collected directly: no operator buffers the hand-off, so the collector is never
+            // woken for an adapter the manager has already replaced. An adapter that still
+            // disappears before the repository resolves it yields a failed regular read, not an
+            // empty history. The collector never ends, so the screen recovers once it reappears.
             transactionAdapterManager.adaptersReadyFlow
-                .filter { it.containsKey(wallet.transactionSource) }
-                .first()
-            handleInitialization()
+                .map { it[wallet.transactionSource] }
+                .distinctUntilChanged()
+                .filterNotNull()
+                .collect {
+                    clearAdapterUnavailableFailure()
+                    handleInitialization()
+                }
         }
     }
 
     private fun handleInitialization() {
-        _recordsLoadedFlow.value = false
         lastHiddenOnlyLoadKey = null
         transactionSyncStateRepository.setTransactionWallets(listOf(transactionWallet))
         val loadedType = selectedTransactionType
@@ -138,7 +177,51 @@ class TokenTransactionsService(
             contact = null,
             searchQuery = searchQuery,
         )
-        if (willReload) transactionRecordRepository.reloadItems()
+        // Only a real reload may reopen the loading window: without a batch to close it again the
+        // screen would keep already loaded records behind the sync placeholder indefinitely.
+        if (!willReload) return
+        openLoadingWindow()
+        transactionRecordRepository.reloadItems()
+    }
+
+    /** A new selection invalidates the visible list; a pending fallback must not close it. */
+    private fun dropToLoading() {
+        emptyBatchFallbackJob?.cancel()
+        _recordsLoadedFlow.value = false
+    }
+
+    /** A real read is starting: the previous read's failure no longer describes the screen. */
+    private fun openLoadingWindow() {
+        dropToLoading()
+        setRecordsLoadFailure(null)
+    }
+
+    private fun markRecordsLoaded() {
+        _recordsLoadedFlow.value = true
+        setRecordsLoadFailure(null)
+    }
+
+    private fun setRecordsLoadFailure(failure: RecordsLoadFailure?) =
+        synchronized(recordsLoadFailureLock) {
+            recordsLoadFailure = failure
+            _recordsLoadFailedFlow.value = failure != null
+        }
+
+    private fun updateAdapterUnavailableFailure(initialized: Boolean) =
+        synchronized(recordsLoadFailureLock) {
+            val adapterUnavailable = initialized &&
+                transactionAdapterManager.getAdapter(wallet.transactionSource) == null
+            if (recordsLoadFailure != RecordsLoadFailure.RepositoryRead) {
+                recordsLoadFailure = RecordsLoadFailure.AdapterUnavailable.takeIf { adapterUnavailable }
+                _recordsLoadFailedFlow.value = adapterUnavailable
+            }
+        }
+
+    private fun clearAdapterUnavailableFailure() = synchronized(recordsLoadFailureLock) {
+        if (recordsLoadFailure == RecordsLoadFailure.AdapterUnavailable) {
+            recordsLoadFailure = null
+            _recordsLoadFailedFlow.value = false
+        }
     }
 
     fun setTransactionType(transactionType: FilterTransactionType) {
@@ -148,7 +231,7 @@ class TokenTransactionsService(
         // stale list of the old type stays visible until the first filtered page arrives.
         selectedTransactionType = transactionType
         serviceVersion++
-        _recordsLoadedFlow.value = false
+        dropToLoading()
         // Set before clearing the list: a search re-scan is driven by the resulting reload, so
         // the scan state must already read Scanning by the time collectors see the empty list -
         // otherwise a stale Finished/Idle could slip through and flash the old results as final.
@@ -172,12 +255,24 @@ class TokenTransactionsService(
     fun setSearchQuery(query: String?) {
         searchQuery = query
         serviceVersion++
-        _recordsLoadedFlow.value = false
+        dropToLoading()
         lastHiddenOnlyLoadKey = null
         _searchScanStateFlow.value = if (query != null) SearchScanState.Scanning else SearchScanState.Idle
         _transactionItems.value = emptyList()
         if (initialized) {
             loadTransactions()
+        }
+    }
+
+    /**
+     * The swallowed batch may have been the wallet's real (empty) history, in which case nothing
+     * follows it: release the screen instead of blocking it on a page that never arrives.
+     */
+    private fun scheduleEmptyBatchFallback() {
+        emptyBatchFallbackJob?.cancel()
+        emptyBatchFallbackJob = coroutineScope.launch {
+            delay(EMPTY_BATCH_FALLBACK_MS)
+            markRecordsLoaded()
         }
     }
 
@@ -260,7 +355,17 @@ class TokenTransactionsService(
         transactionRecords: List<TransactionRecord>,
         searchCompleted: Boolean,
         searchExhausted: Boolean,
+        loadFailed: Boolean,
     ) {
+        // A source did not answer, so this empty batch is not a verdict about the wallet: keep the
+        // published items and report the failure. The pending initial clear is consumed here so a
+        // later successful empty batch still takes the normal path and releases the screen.
+        if (loadFailed) {
+            initialClearPending = false
+            emptyBatchFallbackJob?.cancel()
+            setRecordsLoadFailure(RecordsLoadFailure.RepositoryRead)
+            return
+        }
         // The repository emits a synthetic empty list once, when wallets are first set, to clear the
         // UI before the initial page loads. That clear is not a completed load: marking records as
         // loaded on it would let an already-synced wallet briefly show "no transactions" before its
@@ -270,8 +375,12 @@ class TokenTransactionsService(
         // instead of leaving the UI stuck on the scanning spinner.
         if (initialClearPending) {
             initialClearPending = false
-            if (transactionRecords.isEmpty() && !searchCompleted) return
+            if (transactionRecords.isEmpty() && !searchCompleted) {
+                scheduleEmptyBatchFallback()
+                return
+            }
         }
+        emptyBatchFallbackJob?.cancel()
 
         val capturedVersion = serviceVersion
         val nftUids = transactionRecords.nftUids
@@ -293,13 +402,30 @@ class TokenTransactionsService(
         }
 
         if (newRecords.isNotEmpty() && newRecords.all { spamManager.shouldHide(it) }) {
-            _recordsLoadedFlow.value = true
+            markRecordsLoaded()
             handleAllSpamPage(newRecords, searchCompleted, searchExhausted, capturedVersion)
             return
         }
 
         lastHiddenOnlyLoadKey = null
 
+        publishRecords(transactionRecords, nftMetadata, capturedVersion)
+
+        // Mark loaded only after the items are published, so a consumer that observes
+        // syncing flip to false always sees the new list — never an empty intermediate state.
+        markRecordsLoaded()
+        // A search batch is always the terminal answer for its requested page; flip out of
+        // Scanning so the UI shows the (possibly empty) results instead of a spinner.
+        if (searchCompleted && capturedVersion == serviceVersion) {
+            _searchScanStateFlow.value = SearchScanState.Finished
+        }
+    }
+
+    private suspend fun publishRecords(
+        transactionRecords: List<TransactionRecord>,
+        nftMetadata: Map<NftUid, NftAssetBriefMetadata>,
+        capturedVersion: Int,
+    ) {
         _transactionItems.update { latestItems ->
             // Re-check inside the CAS loop: setTransactionType() may have run between the
             // outer check and here.
@@ -320,15 +446,6 @@ class TokenTransactionsService(
                     existingItem.withUpdatedListData(record = record)
                 }
             }
-        }
-
-        // Mark loaded only after the items are published, so a consumer that observes
-        // syncing flip to false always sees the new list — never an empty intermediate state.
-        _recordsLoadedFlow.value = true
-        // A search batch is always the terminal answer for its requested page; flip out of
-        // Scanning so the UI shows the (possibly empty) results instead of a spinner.
-        if (searchCompleted && capturedVersion == serviceVersion) {
-            _searchScanStateFlow.value = SearchScanState.Finished
         }
     }
 
@@ -372,6 +489,20 @@ class TokenTransactionsService(
         }
     }
 
+    fun reload() {
+        if (!initialized || transactionAdapterManager.getAdapter(wallet.transactionSource) == null) {
+            // No transaction adapter: a repository read would run against an empty adapter map and
+            // answer "no transactions", and the repository can only rebuild it on set(), not on
+            // reload(). Asking for the adapter back is the real retry. The adapter can also be gone
+            // after initialization, when it disappeared between the emission and the repository
+            // resolving it.
+            adapterManager.refreshAdapters(listOf(wallet))
+            return
+        }
+        openLoadingWindow()
+        transactionRecordRepository.reload()
+    }
+
     fun loadNext() {
         executorService.submit {
             transactionRecordRepository.loadNext()
@@ -406,5 +537,9 @@ class TokenTransactionsService(
         transactionSyncStateRepository.clear()
         coroutineScope.cancel()
         executorService.shutdown()
+    }
+
+    private companion object {
+        const val EMPTY_BATCH_FALLBACK_MS = 500L
     }
 }

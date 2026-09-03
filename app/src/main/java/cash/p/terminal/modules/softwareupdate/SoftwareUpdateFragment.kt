@@ -15,6 +15,7 @@ import cash.p.terminal.core.composablePage
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.modules.releasenotes.ReleaseNotesScreen
 import cash.p.terminal.modules.softwareupdate.changelog.VersionChangelogViewModel
+import cash.p.terminal.modules.softwareupdate.domain.ChangelogRequest
 import cash.p.terminal.modules.softwareupdate.domain.InstallSource
 import cash.p.terminal.modules.softwareupdate.domain.InstallSourceProvider
 import cash.p.terminal.modules.softwareupdate.history.VersionHistoryScreen
@@ -88,7 +89,11 @@ private sealed class SoftwareUpdateRoute {
     data object History : SoftwareUpdateRoute()
 
     @Serializable
-    data class Changelog(val minor: String, val isActiveBranch: Boolean) : SoftwareUpdateRoute()
+    data class Changelog(
+        val minor: String,
+        val isActiveBranch: Boolean,
+        val tagName: String?,
+    ) : SoftwareUpdateRoute()
 }
 
 @Composable
@@ -97,6 +102,7 @@ private fun SoftwareUpdateNavHost(
     onUpdateNow: (AppRelease) -> Unit,
 ) {
     val navController = rememberNavController()
+    val openChangelog = { request: ChangelogRequest -> navController.navigateToChangelog(request) }
 
     NavHost(
         navController = navController,
@@ -110,9 +116,7 @@ private fun SoftwareUpdateNavHost(
                 onIntervalChange = viewModel::onIntervalChange,
                 onRetry = viewModel::retry,
                 onHistoryClick = { navController.navigate(SoftwareUpdateRoute.History) },
-                onDetailsClick = { minor ->
-                    navController.navigate(SoftwareUpdateRoute.Changelog(minor, isActiveBranch = true))
-                },
+                onDetailsClick = openChangelog,
                 onUpdateNowClick = onUpdateNow,
             )
         }
@@ -122,16 +126,19 @@ private fun SoftwareUpdateNavHost(
                 uiState = viewModel.uiState,
                 onBack = navController::popBackStackSafely,
                 onRetry = viewModel::retry,
-                onVersionClick = { minor, isActiveBranch ->
-                    navController.navigate(SoftwareUpdateRoute.Changelog(minor, isActiveBranch))
-                },
+                onVersionClick = openChangelog,
             )
         }
         composablePage<SoftwareUpdateRoute.Changelog> { backStackEntry ->
             val context = LocalContext.current
             val route = backStackEntry.toRoute<SoftwareUpdateRoute.Changelog>()
+            val request = if (route.isActiveBranch) {
+                ChangelogRequest.active(route.minor, route.tagName)
+            } else {
+                ChangelogRequest.archived(route.minor)
+            }
             val viewModel: VersionChangelogViewModel =
-                koinViewModel(parameters = { parametersOf(route.minor, route.isActiveBranch) })
+                koinViewModel(parameters = { parametersOf(request) })
             ScreenWithoutConnectionPanel {
                 ReleaseNotesScreen(
                     closeablePopup = false,
@@ -145,6 +152,16 @@ private fun SoftwareUpdateNavHost(
             }
         }
     }
+}
+
+private fun NavController.navigateToChangelog(request: ChangelogRequest) {
+    navigate(
+        SoftwareUpdateRoute.Changelog(
+            minor = request.minor,
+            isActiveBranch = request.isActiveBranch,
+            tagName = request.tagName,
+        )
+    )
 }
 
 private fun openUrl(context: Context, url: String) {

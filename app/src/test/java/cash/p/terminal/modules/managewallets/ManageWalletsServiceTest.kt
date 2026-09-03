@@ -30,6 +30,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -42,6 +43,8 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ManageWalletsServiceTest : KoinTest {
@@ -134,14 +137,30 @@ class ManageWalletsServiceTest : KoinTest {
     fun disable_lastWalletOfChain_resetsOfflineModeAfterDeletion() = runTest(dispatcher) {
         val token = bitcoinToken()
         activeWallets = listOf(wallet(token))
+        val offlineModeReset = signalOn(token)
 
         service.disable(token)
-        advanceUntilIdle()
+        advanceUntilSignalled(offlineModeReset)
 
         coVerifyOrder {
             walletManager.deleteByTokenQueryIds(account.id, setOf(token.tokenQuery.id))
             offlineModeUseCase.resetIfBlockchainRemoved(account, BlockchainType.Bitcoin)
         }
+    }
+
+    private fun signalOn(token: Token) = CountDownLatch(1).also { signal ->
+        every {
+            offlineModeUseCase.resetIfBlockchainRemoved(account, token.blockchainType)
+        } answers { signal.countDown() }
+    }
+
+    /** The service holds its mutex across a Dispatchers.IO hop, which one drain can outrun. */
+    private fun TestScope.advanceUntilSignalled(signal: CountDownLatch) {
+        repeat(SETTLE_ATTEMPTS) {
+            advanceUntilIdle()
+            if (signal.await(SETTLE_STEP_MS, TimeUnit.MILLISECONDS)) return
+        }
+        advanceUntilIdle()
     }
 
     private fun bitcoinToken() = Token(
@@ -239,6 +258,8 @@ class ManageWalletsServiceTest : KoinTest {
 
     private companion object {
         const val MONERO_RESTORE_HEIGHT = 3_529_956L
+        const val SETTLE_ATTEMPTS = 200
+        const val SETTLE_STEP_MS = 10L
     }
 
 }

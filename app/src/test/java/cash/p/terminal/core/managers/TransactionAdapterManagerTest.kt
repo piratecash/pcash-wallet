@@ -174,6 +174,40 @@ class TransactionAdapterManagerTest {
         assertSame(secondTransactionsAdapter, transactionAdapterManager.getAdapter(source))
     }
 
+    @Test
+    fun initAdapters_adapterCreationThrows_keepsHandlingLaterEmissions() = testScope.runTest {
+        val failingSource = transactionSource(BlockchainType.Ethereum)
+        coEvery {
+            adapterFactory.evmTransactionsAdapter(failingSource, BlockchainType.Ethereum)
+        } throws IllegalStateException("adapter creation failed")
+
+        emitAdapters(mapOf(wallet(failingSource) to walletAdapter()))
+
+        val healthySource = transactionSource()
+        val healthyAdapter = walletTransactionsAdapter()
+        emitAdapters(mapOf(wallet(healthySource) to healthyAdapter))
+
+        assertSame(healthyAdapter, transactionAdapterManager.getAdapter(healthySource))
+    }
+
+    @Test
+    fun initAdapters_unlinkThrows_keepsHandlingLaterEmissions() = testScope.runTest {
+        val removedSource = transactionSource(BlockchainType.Ethereum)
+        coEvery {
+            adapterFactory.evmTransactionsAdapter(removedSource, BlockchainType.Ethereum)
+        } returns transactionsAdapter()
+        coEvery { adapterFactory.unlinkAdapter(removedSource) } throws IllegalStateException("unlink failed")
+
+        emitAdapters(mapOf(wallet(removedSource) to walletAdapter()))
+        emitAdapters(emptyMap())
+
+        val healthySource = transactionSource()
+        val healthyAdapter = walletTransactionsAdapter()
+        emitAdapters(mapOf(wallet(healthySource) to healthyAdapter))
+
+        assertSame(healthyAdapter, transactionAdapterManager.getAdapter(healthySource))
+    }
+
     private fun emitAdapters(adapters: Map<Wallet, IAdapter>) {
         adaptersReadyProcessor.onNext(adapters)
         testScope.advanceUntilIdle()

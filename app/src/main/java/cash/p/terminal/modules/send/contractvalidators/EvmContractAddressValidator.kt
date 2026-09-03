@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.send.contractvalidators
 
 import cash.p.terminal.network.binance.api.EthereumRpcApi
+import cash.p.terminal.core.managers.ROBINHOOD_RPC_URL
 import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -31,6 +32,7 @@ internal class EvmContractAddressValidator(
             BlockchainType.Optimism -> "https://mainnet.optimism.io"
             BlockchainType.Base -> "https://base.llamarpc.com"
             BlockchainType.ZkSync -> "https://mainnet.era.zksync.io"
+            BlockchainType.RobinhoodChain -> ROBINHOOD_RPC_URL
             BlockchainType.ArbitrumOne -> "https://arb1.arbitrum.io/rpc"
             BlockchainType.Gnosis -> "https://rpc.gnosischain.com"
             BlockchainType.Fantom -> "https://rpcapi.fantom.network/"

@@ -7,6 +7,7 @@ import cash.p.terminal.network.github.domain.entity.AppRelease
 import cash.p.terminal.network.github.domain.repository.AppUpdateRepository
 import io.horizontalsystems.core.ISystemInfoManager
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -15,7 +16,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.time.Instant
@@ -47,24 +47,58 @@ class CheckAppUpdateUseCaseTest {
     }
 
     @Test
-    fun invoke_newerVersion_returnsAvailableAndPersists() = runTest(dispatcher) {
+    fun invoke_newerVersion_returnsTaggedChangelogAndPersists() = runTest(dispatcher) {
         every { systemInfoManager.appVersion } returns "0.57.0"
-        coEvery { repository.getLatestRelease() } returns release("0.58.0", "0.58")
-        coEvery { repository.getChangelogMarkdown(any(), any(), any()) } returns null
+        val latest = release("0.58.0", "0.58")
+        coEvery { repository.getLatestRelease() } returns latest
+        coEvery {
+            repository.getChangelogMarkdown(
+                minor = latest.minor,
+                isActiveBranch = true,
+                tagName = latest.tagName,
+                language = "en",
+            )
+        } returns """
+            ## 🚀 Version 0.58.0 Update
+            ### Improvements
+            - Improved update details
+            ### Fixes
+            - Fixed changelog version
+        """.trimIndent()
 
         val result = useCase()
 
-        assertTrue(result is UpdateStatus.Available)
+        assertEquals(UpdateStatus.Available(latest, ChangelogSnippet(improvements = 1, fixes = 1)), result)
+        coVerify(exactly = 1) {
+            repository.getChangelogMarkdown(
+                minor = latest.minor,
+                isActiveBranch = true,
+                tagName = latest.tagName,
+                language = "en",
+            )
+        }
         verify { localStorage.latestKnownVersion = "0.58.0" }
         verify { localStorage.lastUpdateCheckTimestamp = CHECK_TIME }
     }
 
     @Test
-    fun invoke_sameOrOlderVersion_returnsUpToDate() = runTest(dispatcher) {
+    fun invoke_sameVersion_returnsUpToDateWithRelease() = runTest(dispatcher) {
+        every { systemInfoManager.appVersion } returns "0.58.0"
+        val latest = release("0.58.0", "0.58")
+        coEvery { repository.getLatestRelease() } returns latest
+
+        assertEquals(UpdateStatus.UpToDate(latest), useCase())
+        coVerify(exactly = 0) { repository.getChangelogMarkdown(any(), any(), any(), any()) }
+        verify { localStorage.lastUpdateCheckTimestamp = CHECK_TIME }
+    }
+
+    @Test
+    fun invoke_olderLatestVersion_returnsUpToDateWithoutRelease() = runTest(dispatcher) {
         every { systemInfoManager.appVersion } returns "0.58.0"
         coEvery { repository.getLatestRelease() } returns release("0.57.2", "0.57")
 
-        assertEquals(UpdateStatus.UpToDate, useCase())
+        assertEquals(UpdateStatus.UpToDate(release = null), useCase())
+        coVerify(exactly = 0) { repository.getChangelogMarkdown(any(), any(), any(), any()) }
         verify { localStorage.lastUpdateCheckTimestamp = CHECK_TIME }
     }
 

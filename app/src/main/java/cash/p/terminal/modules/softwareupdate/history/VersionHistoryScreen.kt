@@ -17,6 +17,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
+import cash.p.terminal.modules.softwareupdate.domain.ChangelogRequest
 import cash.p.terminal.network.github.domain.entity.AppRelease
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
@@ -35,7 +36,7 @@ internal fun VersionHistoryScreen(
     uiState: VersionHistoryUiState,
     onBack: () -> Unit,
     onRetry: () -> Unit,
-    onVersionClick: (String, Boolean) -> Unit,
+    onVersionClick: (ChangelogRequest) -> Unit,
 ) {
     Scaffold(
         containerColor = ComposeAppTheme.colors.tyler,
@@ -55,7 +56,12 @@ internal fun VersionHistoryScreen(
                 item {
                     CellUniversalLawrenceSection {
                         CurrentVersionRow(current) {
-                            onVersionClick(current.minor, uiState.currentIsActiveBranch)
+                            val request = if (uiState.currentIsActiveBranch) {
+                                ChangelogRequest.active(current.minor, current.tagName)
+                            } else {
+                                ChangelogRequest.archived(current.minor)
+                            }
+                            onVersionClick(request)
                         }
                     }
                     VSpacer(24.dp)
@@ -70,7 +76,7 @@ internal fun VersionHistoryScreen(
                 }
                 item {
                     val cells: List<@Composable () -> Unit> = uiState.oldMinors.map { minor ->
-                        { OldVersionRow(minor) { onVersionClick(minor, false) } }
+                        { OldVersionRow(minor) { onVersionClick(ChangelogRequest.archived(minor)) } }
                     }
                     CellUniversalLawrenceSection(composableItems = cells)
                 }

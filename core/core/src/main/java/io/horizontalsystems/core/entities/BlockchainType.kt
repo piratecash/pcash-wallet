@@ -157,6 +157,14 @@ sealed class BlockchainType : Parcelable {
     }
 
     @Parcelize
+    object RobinhoodChain : BlockchainType() {
+        @IgnoredOnParcel
+        override val uid = "robinhood"
+        @IgnoredOnParcel
+        override val stringRepresentation = "robinhoodChain"
+    }
+
+    @Parcelize
     object Monero : BlockchainType() {
         @IgnoredOnParcel
         override val uid = "monero"
@@ -204,6 +212,7 @@ sealed class BlockchainType : Parcelable {
             "cosanta" -> Cosanta
             "piratecash" -> PirateCash
             "zksync" -> ZkSync
+            "robinhood" -> RobinhoodChain
             "monero" -> Monero
             "stellar" -> Stellar
             else -> Unsupported(uid)

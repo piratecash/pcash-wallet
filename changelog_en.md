@@ -1,3 +1,22 @@
+## 🚀 Version 0.59.4 Update
+_Release date: August 31, 2026_
+
+### ✨ New Features
+
+- **Added support for Robinhood Chain**
+
+### ⚙️ Improvements
+
+- **Improved balance hiding by flipping the phone**
+  The feature is now available on devices without a gyroscope.
+
+- **Strengthened Address Poisoning protection**
+  Increased the sensitivity of suspicious address detection.
+
+### 🐛 Fixes
+
+- **Fixed token balance display on the Ethereum network**
+
 ## 🚀 Version 0.59.3 Update
 _Release date: August 23, 2026_
 

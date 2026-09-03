@@ -12,7 +12,6 @@ import cash.p.terminal.core.managers.ReleaseNotesManager
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.domain.usecase.GetLocalizedAssetUseCase
 import cash.p.terminal.ui_compose.entities.ViewState
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -57,7 +56,7 @@ class ReleaseNotesViewModel(
     }
 
     private fun loadContent() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             try {
                 val content = getLocalizedAssetUseCase(GetLocalizedAssetUseCase.CHANGELOG_PREFIX)
                 uiState = uiState.copy(

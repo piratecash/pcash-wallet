@@ -153,8 +153,12 @@ class TokenBalanceViewModel(
 
     private var balanceViewItem: BalanceViewItem? = null
     private var transactions: Map<String, List<TransactionViewItem>>? = null
-    private var syncing: Boolean =
-        transactionsService.syncingFlow.value || !transactionsService.recordsLoadedFlow.value
+    private var transactionsLoadFailed: Boolean = transactionsService.recordsLoadFailedFlow.value
+    private var syncing: Boolean = isSyncing(
+        syncing = transactionsService.syncingFlow.value,
+        recordsLoaded = transactionsService.recordsLoadedFlow.value,
+        recordsLoadFailed = transactionsLoadFailed,
+    )
     private var hasHiddenTransactions: Boolean = false
     private var amlPromoAlertEnabled = premiumSettings.getAmlCheckShowAlert()
 
@@ -298,12 +302,14 @@ class TokenBalanceViewModel(
         viewModelScope.launch {
             combine(
                 transactionsService.syncingFlow,
-                transactionsService.recordsLoadedFlow
-            ) { syncing, recordsLoaded ->
-                syncing || !recordsLoaded
-            }.collect { newSyncing ->
+                transactionsService.recordsLoadedFlow,
+                transactionsService.recordsLoadFailedFlow,
+            ) { syncing, recordsLoaded, recordsLoadFailed ->
+                isSyncing(syncing, recordsLoaded, recordsLoadFailed) to recordsLoadFailed
+            }.collect { (newSyncing, loadFailed) ->
                 val wasSyncing = syncing
                 syncing = newSyncing
+                transactionsLoadFailed = loadFailed
                 if (wasSyncing && !newSyncing && transactions == null) {
                     updateTransactions(
                         transactionsService.transactionItemsFlow.value, transactionsService.searchScanStateFlow.value
@@ -506,6 +512,7 @@ class TokenBalanceViewModel(
         zcashMigrationRequiredAmount = zcashMigrationRequiredAmount(),
         networkFeeWarning = networkFeeWarning,
         syncing = syncing,
+        transactionsLoadFailed = transactionsLoadFailed,
         transactionFiltersEnabled = transactionFiltersEnabled,
         transactionFilterTypes = if (transactionFiltersEnabled) {
             FilterTransactionType.entries.map { Filter(it, it == selectedTransactionType) }
@@ -956,10 +963,17 @@ class TokenBalanceViewModel(
         }
     }
 
+    /** A failed read releases the spinner: the screen shows the retry banner, not an endless wait. */
+    private fun isSyncing(syncing: Boolean, recordsLoaded: Boolean, recordsLoadFailed: Boolean) =
+        syncing || (!recordsLoaded && !recordsLoadFailed)
+
     fun refresh() = viewModelScope.launch {
         refreshing = true
         balanceService.refreshRates()
 
+        if (transactionsLoadFailed) {
+            transactionsService.reload()
+        }
         adapterManager.refreshByWallet(wallet)
         delay(1000) // to show refresh indicator because `refreshByWallet` works asynchronously
         refreshing = false

@@ -44,6 +44,13 @@ class TrezorModelSupportTest {
         }
         assertTrue(TrezorModelSupport.isSupported(null, BlockchainType.Zcash))
     }
+    
+    @Test
+    fun allModels_supportRobinhoodChain() {
+        TrezorModel.entries.forEach { model ->
+            assertTrue(TrezorModelSupport.isSupported(model, BlockchainType.RobinhoodChain))
+        }
+    }
 
     @Test
     fun onlyT1B1AndT2T1_supportDash() {

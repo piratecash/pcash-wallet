@@ -46,6 +46,7 @@ object DerivationConfigV1 : DerivationConfig() {
 
             BlockchainType.Ethereum,
             BlockchainType.ZkSync,
+            BlockchainType.RobinhoodChain,
             BlockchainType.Base,
                 -> mapOf(AddressType.Default to DerivationPath("m/44'/60'/0'/0/0"))
 

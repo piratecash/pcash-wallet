@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import timber.log.Timber
 import kotlin.coroutines.cancellation.CancellationException
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -49,7 +50,9 @@ class TransactionRecordRepository(
     private var selectedSearchQuery: String? = null
     private val searchScanner = TransactionSearchScanner(::isMatchingSwapProviderTransaction)
 
-    private val _itemsFlow = MutableSharedFlow<RecordsBatch>(extraBufferCapacity = 4)
+    // replay = 1: the load can finish before the screen's collector subscribes (both are
+    // started by separate coroutines), and a dropped batch leaves the screen without data.
+    private val _itemsFlow = MutableSharedFlow<RecordsBatch>(replay = 1, extraBufferCapacity = 4)
     override val itemsFlow: SharedFlow<RecordsBatch> = _itemsFlow.asSharedFlow()
 
     @Volatile
@@ -135,6 +138,7 @@ class TransactionRecordRepository(
                 BlockchainType.Optimism,
                 BlockchainType.Base,
                 BlockchainType.ZkSync,
+                BlockchainType.RobinhoodChain,
                 BlockchainType.ArbitrumOne,
                 BlockchainType.Gnosis,
                 BlockchainType.Fantom,
@@ -374,7 +378,8 @@ class TransactionRecordRepository(
                 loadItemsForContext(page, itemsCount, requestContext, adapters)
             } catch (e: CancellationException) {
                 throw e
-            } catch (_: Throwable) {
+            } catch (e: Throwable) {
+                Timber.e(e, "Transaction page load failed")
             }
         }
     }
@@ -399,7 +404,7 @@ class TransactionRecordRepository(
         requestContext: FilterContext,
         adapters: List<TransactionAdapterWrapper>,
     ) {
-        val records = loadAdapterRecords(
+        val normalRecords = loadAdapterRecords(
             adapters = adapters,
             limit = itemsCount,
             transactionType = requestContext.transactionType,
@@ -410,10 +415,19 @@ class TransactionRecordRepository(
         val extraRecords = loadRegularSwapExtraRecords(itemsCount, requestContext)
         if (!isActive || requestContext.isStale()) return
 
-        if (extraRecords.sourceRecordsCount < itemsCount) {
+        if (extraRecords.complete && extraRecords.sourceRecordsCount < itemsCount) {
             allExtraLoaded.set(true)
         }
-        handleRecords(records, extraRecords.records, page)
+        // Selected wallets whose adapter could not be resolved read nothing at all, so the empty
+        // result is vacuous and must not be published as a trustworthy empty history.
+        val nothingWasRead = adapters.isEmpty() && activeWallets().isNotEmpty()
+        handleRecords(
+            records = normalRecords.records,
+            extraRecords = extraRecords.records,
+            page = page,
+            complete = normalRecords.complete && !nothingWasRead,
+            extraComplete = extraRecords.complete,
+        )
     }
 
     private suspend fun CoroutineScope.loadSearchPage(
@@ -446,18 +460,19 @@ class TransactionRecordRepository(
         requestContext: FilterContext,
     ): ExtraRecordsResult {
         if (requestContext.transactionType != FilterTransactionType.Swap) {
-            return ExtraRecordsResult(emptyList(), 0)
+            return ExtraRecordsResult(emptyList(), 0, complete = true)
         }
 
-        val records = loadAdapterRecords(
+        val loaded = loadAdapterRecords(
             adapters = activeSwapExtraAdapters,
             limit = itemsCount,
             transactionType = FilterTransactionType.Outgoing,
             contact = requestContext.contact,
         )
         return ExtraRecordsResult(
-            records = records.filter(::isMatchingSwapProviderTransaction),
-            sourceRecordsCount = records.size,
+            records = loaded.records.filter(::isMatchingSwapProviderTransaction),
+            sourceRecordsCount = loaded.records.size,
+            complete = loaded.complete,
         )
     }
 
@@ -466,19 +481,25 @@ class TransactionRecordRepository(
         limit: Int,
         transactionType: FilterTransactionType,
         contact: Contact?,
-    ): List<TransactionRecord> = coroutineScope {
-        adapters
+    ): AdapterRecords = coroutineScope {
+        val pages = adapters
             .map { wrapper ->
                 async {
-                    wrapper.get(
-                        limit = limit,
-                        requestedFilterType = transactionType,
-                        requestedContact = contact
-                    )
+                    adapterCallOrNull {
+                        wrapper.get(
+                            limit = limit,
+                            requestedFilterType = transactionType,
+                            requestedContact = contact
+                        )
+                    }
                 }
             }
             .awaitAll()
-            .flatten()
+
+        AdapterRecords(
+            records = pages.filterNotNull().flatten(),
+            complete = pages.none { it == null },
+        )
     }
 
     private fun activeSearchExtraAdapters(requestContext: FilterContext): List<TransactionAdapterWrapper> {
@@ -520,7 +541,9 @@ class TransactionRecordRepository(
     private fun handleRecords(
         records: List<TransactionRecord>,
         extraRecords: List<TransactionRecord>,
-        page: Int
+        page: Int,
+        complete: Boolean,
+        extraComplete: Boolean,
     ) {
         val expectedItemsCount = page * itemsPerPage
 
@@ -528,7 +551,10 @@ class TransactionRecordRepository(
             .sortedDescending()
             .take(expectedItemsCount)
 
-        if (normalSortedRecords.size < expectedItemsCount) {
+        // A source that timed out contributes nothing, so a short page proves the history is
+        // exhausted only when every source actually answered - otherwise loadNext() would be
+        // refused for good and the rest of the history would stay unreachable.
+        if (complete && normalSortedRecords.size < expectedItemsCount) {
             allNormalLoaded.set(true)
         }
 
@@ -537,7 +563,13 @@ class TransactionRecordRepository(
             .take(expectedItemsCount)
 
         loadedPageNumber = page
-        _itemsFlow.tryEmit(RecordsBatch((normalSortedRecords + extraSortedRecords).sortedDescending()))
+        val sortedRecords = (normalSortedRecords + extraSortedRecords).sortedDescending()
+        _itemsFlow.tryEmit(
+            RecordsBatch(
+                records = sortedRecords,
+                loadFailed = sortedRecords.isEmpty() && !(complete && extraComplete),
+            )
+        )
     }
 
     private fun isMatchingSwapProviderTransaction(record: TransactionRecord): Boolean {
@@ -566,6 +598,22 @@ class TransactionRecordRepository(
     }
 
 }
+
+private const val ADAPTER_CALL_TIMEOUT_MS = 3000L
+
+/**
+ * A stalled or failing source must contribute nothing rather than strand the whole load: without
+ * this the page never reaches its emission and the screen keeps waiting for records forever.
+ */
+private suspend fun <T> adapterCallOrNull(block: suspend () -> T): T? =
+    try {
+        withTimeoutOrNull(ADAPTER_CALL_TIMEOUT_MS) { block() }
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Throwable) {
+        Timber.e(e, "Transaction adapter call failed")
+        null
+    }
 
 /**
  * Scans adapter pages newest-first across all active sources to satisfy an in-app search query,
@@ -721,24 +769,15 @@ private class TransactionSearchScanner(
             return
         }
 
-        // A failing source is treated like a timeout: mark it finished and keep scanning the
-        // rest, so the search still reaches its terminal emission instead of stranding the UI
-        // in a permanent "scanning" state.
-        val page = try {
-            withTimeoutOrNull(adapterCallTimeoutMs) {
-                source.wrapper.search(
-                    limit = expectedItemsCount,
-                    scanLimit = scanLimit,
-                    requestedFilterType = source.transactionType,
-                    requestedContact = requestContext.contact,
-                    query = query,
-                    matcher = searchMatcher,
-                )
-            }
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Throwable) {
-            null
+        val page = adapterCallOrNull {
+            source.wrapper.search(
+                limit = expectedItemsCount,
+                scanLimit = scanLimit,
+                requestedFilterType = source.transactionType,
+                requestedContact = requestContext.contact,
+                query = query,
+                matcher = searchMatcher,
+            )
         }
 
         if (page == null) {
@@ -799,7 +838,6 @@ private class TransactionSearchScanner(
         private const val searchBatchSize = 100
         private const val maxScannedRecordsPerSource = 1000
         private const val maxTotalScannedRecords = 5000
-        private const val adapterCallTimeoutMs = 3000L
     }
 }
 
@@ -822,9 +860,15 @@ private data class SearchLoadResult(
     val extraLoaded: Boolean,
 )
 
+private data class AdapterRecords(
+    val records: List<TransactionRecord>,
+    val complete: Boolean,
+)
+
 private data class ExtraRecordsResult(
     val records: List<TransactionRecord>,
     val sourceRecordsCount: Int,
+    val complete: Boolean,
 )
 
 private data class SearchRoundResult(

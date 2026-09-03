@@ -30,6 +30,7 @@ class GithubApiTest {
     )
 
     private val requested = mutableListOf<String>()
+    private val requestedAcceptHeaders = mutableListOf<String?>()
 
     private val latestReleaseJson =
         """{"tag_name":"v0.58.0-fdroid","html_url":"u","published_at":"2020-01-01T00:00:00Z","assets":[]}"""
@@ -75,6 +76,47 @@ class GithubApiTest {
         assertTrue(requested.any { it.startsWith(config.rawProxyBaseUrl) })
     }
 
+    @Test
+    fun getRawFile_taggedPrimarySuccess_usesContentsApiWithRawAccept() = runTest {
+        val api = api { url ->
+            if (url.startsWith(config.apiBaseUrl)) respond("tagged body", HttpStatusCode.OK)
+            else respond("", HttpStatusCode.InternalServerError)
+        }
+
+        assertEquals("tagged body", api.getRawFile("changelog_en.md", RELEASE_TAG))
+        assertEquals(
+            listOf("${config.apiBaseUrl}/contents/changelog_en.md?ref=$RELEASE_TAG"),
+            requested,
+        )
+        assertEquals(listOf(GITHUB_RAW_ACCEPT), requestedAcceptHeaders)
+    }
+
+    @Test
+    fun getRawFile_taggedPrimaryNetworkError_fallsBackWithSameRef() = runTest {
+        val api = api { url ->
+            if (url.startsWith(config.apiProxyBaseUrl)) respond("tagged proxy body", HttpStatusCode.OK)
+            else throw IOException("boom")
+        }
+
+        assertEquals("tagged proxy body", api.getRawFile("changelog_ru.md", RELEASE_TAG))
+        assertEquals(
+            listOf(
+                "${config.apiBaseUrl}/contents/changelog_ru.md?ref=$RELEASE_TAG",
+                "${config.apiProxyBaseUrl}/contents/changelog_ru.md?ref=$RELEASE_TAG",
+            ),
+            requested,
+        )
+        assertEquals(listOf(GITHUB_RAW_ACCEPT, GITHUB_RAW_ACCEPT), requestedAcceptHeaders)
+    }
+
+    @Test
+    fun getRawFile_tagged404_returnsNullWithoutProxy() = runTest {
+        val api = api { respond("", HttpStatusCode.NotFound) }
+
+        assertNull(api.getRawFile("changelog_en.md", RELEASE_TAG))
+        assertTrue(requested.none { it.startsWith(config.apiProxyBaseUrl) })
+    }
+
     private fun MockRequestHandleScope.respondJson(body: String): HttpResponseData =
         respond(body, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
 
@@ -82,6 +124,7 @@ class GithubApiTest {
         val engine = MockEngine { request ->
             val url = request.url.toString()
             requested += url
+            requestedAcceptHeaders += request.headers[HttpHeaders.Accept]
             handler(url)
         }
         val client = HttpClient(engine) {
@@ -90,5 +133,10 @@ class GithubApiTest {
             }
         }
         return GithubApi(client, config)
+    }
+
+    private companion object {
+        const val RELEASE_TAG = "v0.58.0-fdroid"
+        const val GITHUB_RAW_ACCEPT = "application/vnd.github.raw+json"
     }
 }

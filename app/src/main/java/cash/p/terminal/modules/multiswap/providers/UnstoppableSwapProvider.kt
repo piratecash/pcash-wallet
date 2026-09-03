@@ -184,6 +184,7 @@ internal class UnstoppableTokenResolver(
             "8453" to BlockchainType.Base,
             "42161" to BlockchainType.ArbitrumOne,
             "43114" to BlockchainType.Avalanche,
+            "4663" to BlockchainType.RobinhoodChain,
             "728126428" to BlockchainType.Tron,
             "solana" to BlockchainType.Solana,
             "bitcoin" to BlockchainType.Bitcoin,

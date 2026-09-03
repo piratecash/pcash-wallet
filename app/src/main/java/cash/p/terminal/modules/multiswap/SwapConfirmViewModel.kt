@@ -130,6 +130,7 @@ class SwapConfirmViewModel(
     private var quoteFields: List<DataField> = listOf()
     private var criticalError: String? = null
     private var swapProviderTransaction: SwapProviderTransaction? = null
+    private var swapRecipientAddress: String? = null
     private var isAdvancedSettingsAvailable: Boolean = sendTransactionService.hasSettings()
     private var fetchJob: Job? = null
     private var moneroPreparationJob: Job? = null
@@ -361,6 +362,7 @@ class SwapConfirmViewModel(
 
     private fun fetchFinalQuote() {
         fetchJob?.cancel()
+        swapRecipientAddress = null
         fetchJob = viewModelScope.launch(dispatcherProvider.io) {
             try {
                 val finalQuote = fetchFinalQuoteByExecutionMode()
@@ -373,6 +375,8 @@ class SwapConfirmViewModel(
                 finalQuoteCautions = finalQuote.cautions
                 criticalError = null
                 swapProviderTransaction = finalQuote.swapProviderTransaction
+                swapRecipientAddress = finalQuote.sendTransactionData.recipientAddress
+                    ?.takeIf { swapProvider.isOffChain && it.isNotBlank() }
 
                 fiatServiceIn.setAmount(amountIn)
                 fiatServiceOut.setAmount(amountOut)
@@ -445,6 +449,7 @@ class SwapConfirmViewModel(
     private fun setCriticalError(error: String) {
         loading = false
         criticalError = error
+        swapRecipientAddress = null
         emitState()
     }
 
@@ -464,7 +469,9 @@ class SwapConfirmViewModel(
 
         viewModelScope.launch {
             try {
+                val recipientAddress = swapRecipientAddress
                 val result = swap()
+                onSendSuccess(recipientAddress)
                 handleMultiSwapCompletion(result)
                 onTransactionCompleted(result)
 

@@ -14,6 +14,7 @@ fun Chain.toBlockchainType(): BlockchainType {
         Chain.Gnosis -> BlockchainType.Gnosis
         Chain.Base -> BlockchainType.Base
         Chain.ZkSync -> BlockchainType.ZkSync
+        Chain.RobinhoodChain -> BlockchainType.RobinhoodChain
         Chain.Fantom -> BlockchainType.Fantom
         Chain.EthereumGoerli -> BlockchainType.Unsupported("ethereum-goerli")
     }

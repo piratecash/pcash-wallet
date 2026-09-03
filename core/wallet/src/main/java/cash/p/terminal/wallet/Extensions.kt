@@ -129,6 +129,7 @@ val BlockchainType.title: String
         BlockchainType.Optimism -> "Optimism"
         BlockchainType.Base -> "Base"
         BlockchainType.ZkSync -> "ZKsync"
+        BlockchainType.RobinhoodChain -> "Robinhood Chain"
         BlockchainType.Solana -> "Solana"
         BlockchainType.Gnosis -> "Gnosis"
         BlockchainType.Fantom -> "Fantom"

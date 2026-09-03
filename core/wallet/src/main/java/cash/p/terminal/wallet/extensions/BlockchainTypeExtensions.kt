@@ -12,6 +12,7 @@ internal fun BlockchainType.isEvmLike(): Boolean = when (this) {
     BlockchainType.Gnosis,
     BlockchainType.Optimism,
     BlockchainType.Polygon,
+    BlockchainType.RobinhoodChain,
     BlockchainType.ZkSync -> true
 
     BlockchainType.Bitcoin,

@@ -48,6 +48,7 @@ object DerivationConfigV2 : DerivationConfig() {
             BlockchainType.Gnosis,
             BlockchainType.Optimism,
             BlockchainType.ZkSync,
+            BlockchainType.RobinhoodChain,
             BlockchainType.BinanceSmartChain,
             BlockchainType.Base
                 -> mapOf(AddressType.Default to DerivationPath("m/44'/60'/0'/0/0"))

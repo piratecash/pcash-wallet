@@ -40,6 +40,7 @@ import androidx.core.graphics.drawable.toBitmap
 import cash.p.terminal.R
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.modules.settings.main.HsSettingCell
+import cash.p.terminal.modules.softwareupdate.domain.ChangelogRequest
 import cash.p.terminal.modules.softwareupdate.domain.ChangelogSnippet
 import cash.p.terminal.modules.softwareupdate.domain.InstallSource
 import cash.p.terminal.modules.softwareupdate.domain.UpdateCheckInterval
@@ -71,7 +72,7 @@ internal fun SoftwareUpdateScreen(
     onIntervalChange: (UpdateCheckInterval) -> Unit,
     onRetry: () -> Unit,
     onHistoryClick: () -> Unit,
-    onDetailsClick: (String) -> Unit,
+    onDetailsClick: (ChangelogRequest) -> Unit,
     onUpdateNowClick: (AppRelease) -> Unit,
 ) {
     Scaffold(
@@ -110,15 +111,17 @@ internal fun SoftwareUpdateScreen(
             VSpacer(32.dp)
             when (val status = uiState.updateStatus) {
                 UpdateStatus.Unknown -> CheckingBlock()
-                UpdateStatus.UpToDate -> UpToDateBlock(
+                is UpdateStatus.UpToDate -> UpToDateBlock(
                     version = uiState.currentVersion,
-                    onDetailsClick = { onDetailsClick(uiState.currentVersion.toMinor()) },
+                    onDetailsClick = { onDetailsClick(status.changelogRequest(uiState.currentVersion)) },
                 )
 
                 is UpdateStatus.Available -> AvailableSection(
                     status = status,
                     installSource = uiState.installSource,
-                    onDetailsClick = { onDetailsClick(status.release.minor) },
+                    onDetailsClick = {
+                        onDetailsClick(ChangelogRequest.active(status.release.minor, status.release.tagName))
+                    },
                     onUpdateNowClick = { onUpdateNowClick(status.release) },
                 )
 
@@ -353,6 +356,9 @@ private fun InstallSource.labelRes(): Int = when (this) {
 
 private fun String.toMinor(): String = split('.').take(2).joinToString(".")
 
+private fun UpdateStatus.UpToDate.changelogRequest(currentVersion: String) =
+    ChangelogRequest.active(currentVersion.toMinor(), release?.tagName)
+
 private fun formatDate(timestamp: Long): String =
     DateFormat.getDateInstance(DateFormat.LONG).format(Date(timestamp))
 
@@ -365,7 +371,7 @@ private fun SoftwareUpdateScreenPreview() {
                 currentVersion = "0.58.0",
                 interval = UpdateCheckInterval.DAY,
                 lastCheckTimestamp = 0L,
-                updateStatus = UpdateStatus.UpToDate,
+                updateStatus = UpdateStatus.UpToDate(release = null),
                 installSource = InstallSource.GOOGLE_PLAY,
             ),
             onBack = {},
@@ -393,7 +399,7 @@ private fun SoftwareUpdateScreenUpdatePreview() {
                         minor = "0.58",
                         tagName = "v0.58.0-fdroid",
                         publishedAt = Instant.EPOCH,
-                        htmlUrl = "https://github.com/piratecash/pcash-wallet-android/releases",
+                        htmlUrl = "https://github.com/piratecash/pcash-wallet/releases",
                         apkSizeBytes = 12345678L,
                         apkDownloadUrl = "https://example.apk",
                     ),

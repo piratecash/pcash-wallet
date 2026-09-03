@@ -27,11 +27,12 @@ internal class AppUpdateRepositoryImpl(
     override suspend fun getChangelogMarkdown(
         minor: String,
         isActiveBranch: Boolean,
+        tagName: String?,
         language: String,
     ): String? {
         val lang = if (language in SUPPORTED_LANGUAGES) language else FALLBACK_LANGUAGE
         if (isActiveBranch) {
-            return rootChangelog(lang) ?: rootChangelog(FALLBACK_LANGUAGE)
+            return rootChangelog(lang, tagName) ?: rootChangelog(FALLBACK_LANGUAGE, tagName)
         }
         // Archived version: only ever the release-notes files (localized, then English). Never the
         // root changelog — that is the CURRENT active version and would be wrong for an old row.
@@ -41,8 +42,8 @@ internal class AppUpdateRepositoryImpl(
     private suspend fun archivedChangelog(lang: String, minor: String): String? =
         githubApi.getRawFile("release-notes/$lang/$minor.x.md")
 
-    private suspend fun rootChangelog(lang: String): String? =
-        githubApi.getRawFile("changelog_$lang.md")
+    private suspend fun rootChangelog(lang: String, tagName: String?): String? =
+        githubApi.getRawFile("changelog_$lang.md", tagName)
 
     private companion object {
         val SUPPORTED_LANGUAGES = setOf("en", "ru")

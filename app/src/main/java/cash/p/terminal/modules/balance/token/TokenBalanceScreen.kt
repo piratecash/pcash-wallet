@@ -469,9 +469,15 @@ private fun TokenBalanceScreenContent(
             }
         }
         var headerHeightPx by remember { mutableIntStateOf(0) }
+        val notSyncedSectionVisible = shouldShowNotSyncedSection(
+            failedIconVisible = failedIconVisible,
+            loadFailed = uiState.transactionsLoadFailed,
+            syncing = uiState.syncing,
+            transactions = transactionItems,
+        )
         // Opening search auto-focuses the field and shows the keyboard
         val searchHeaderIndex = 1 +
-                (if (failedIconVisible) 1 else 0) +
+                (if (notSyncedSectionVisible) 1 else 0) +
                 (if (uiState.offlineSince != null) 1 else 0) +
                 (if (uiState.showAmlPromo) 1 else 0)
         LaunchedEffect(uiState.searchActive, searchHeaderIndex) {
@@ -508,7 +514,7 @@ private fun TokenBalanceScreenContent(
                         }
                     }
 
-                    if (failedIconVisible) {
+                    if (notSyncedSectionVisible) {
                         item {
                             TokenNotSyncedSection(
                                 onBlockchainStatusClick = {
@@ -628,26 +634,38 @@ private fun TokenBalanceScreenContent(
                                         (placeholderTopPx.coerceAtLeast(0) + keyboardOverlapPx).toDp()
                                     }
                                 )
-                                if (uiState.searchScanning) {
-                                    Box(modifier = Modifier.padding(paddingValues)) {
-                                        SearchInProgressView()
-                                    }
-                                } else if (uiState.searchEmptyResult) {
-                                    Box(modifier = Modifier.padding(paddingValues)) {
-                                        SearchEmptyResultsView()
-                                    }
-                                } else if (transactionItems == null || uiState.syncing) {
-                                    ListEmptyView(
+                                val placeholder = transactionsPlaceholder(
+                                    searchScanning = uiState.searchScanning,
+                                    searchEmptyResult = uiState.searchEmptyResult,
+                                    loadFailed = uiState.transactionsLoadFailed,
+                                    syncing = uiState.syncing,
+                                    transactionsKnown = transactionItems != null,
+                                )
+                                when (placeholder) {
+                                    TransactionsPlaceholder.SearchInProgress ->
+                                        Box(modifier = Modifier.padding(paddingValues)) {
+                                            SearchInProgressView()
+                                        }
+
+                                    TransactionsPlaceholder.SearchEmpty ->
+                                        Box(modifier = Modifier.padding(paddingValues)) {
+                                            SearchEmptyResultsView()
+                                        }
+
+                                    TransactionsPlaceholder.WaitForSync -> ListEmptyView(
                                         text = stringResource(R.string.Transactions_WaitForSync),
                                         icon = R.drawable.ic_clock,
                                         paddingValues = paddingValues
                                     )
-                                } else {
-                                    ListEmptyView(
+
+                                    TransactionsPlaceholder.EmptyList -> ListEmptyView(
                                         text = stringResource(R.string.Transactions_EmptyList),
                                         icon = R.drawable.ic_outgoingraw,
                                         paddingValues = paddingValues
                                     )
+
+                                    // The banner above already states the failure and carries the retry.
+                                    TransactionsPlaceholder.None -> Unit
                                 }
                             }
                         }
@@ -1277,6 +1295,35 @@ private fun TokenOfflineSectionPreview() {
 internal fun shouldAutoShowSyncError(failedIconVisible: Boolean, appLocked: Boolean): Boolean =
     failedIconVisible && !appLocked
 
+// While a sync runs over already loaded transactions, the list itself stays on screen, so the
+// only thing left to tell the user is that what they see may be stale.
+internal fun shouldShowNotSyncedSection(
+    failedIconVisible: Boolean,
+    loadFailed: Boolean,
+    syncing: Boolean,
+    transactions: Map<String, List<TransactionViewItem>>?,
+): Boolean =
+    failedIconVisible || loadFailed ||
+        (syncing && transactions?.values?.any { it.isNotEmpty() } == true)
+
+internal enum class TransactionsPlaceholder { SearchInProgress, SearchEmpty, WaitForSync, EmptyList, None }
+
+// loadFailed wins over a search spinner: a query typed while the read is dead never reaches the
+// repository, so its scan state would otherwise hang over a screen that has already given up.
+internal fun transactionsPlaceholder(
+    searchScanning: Boolean,
+    searchEmptyResult: Boolean,
+    loadFailed: Boolean,
+    syncing: Boolean,
+    transactionsKnown: Boolean,
+): TransactionsPlaceholder = when {
+    loadFailed -> TransactionsPlaceholder.None
+    searchScanning -> TransactionsPlaceholder.SearchInProgress
+    searchEmptyResult -> TransactionsPlaceholder.SearchEmpty
+    !transactionsKnown || syncing -> TransactionsPlaceholder.WaitForSync
+    else -> TransactionsPlaceholder.EmptyList
+}
+
 private fun onSyncErrorClicked(
     viewItem: BalanceViewItem,
     viewModel: TokenBalanceViewModel,
@@ -1627,6 +1674,14 @@ internal fun TokenBalanceScreenContentSearchNoTabsPreview() {
     )
 }
 
+@Preview(name = "Transactions load failed")
+@Composable
+internal fun TokenBalanceScreenContentLoadFailedPreview() {
+    PreviewTokenBalanceScreenContent(
+        previewTokenBalanceUiState(transactionsLoadFailed = true)
+    )
+}
+
 @Composable
 private fun PreviewTokenBalanceScreenContent(
     uiState: TokenBalanceModule.TokenBalanceUiState
@@ -1668,6 +1723,7 @@ private fun PreviewTokenBalanceScreenContent(
 private fun previewTokenBalanceUiState(
     transactionFiltersEnabled: Boolean = true,
     searchActive: Boolean = false,
+    transactionsLoadFailed: Boolean = false,
 ) = TokenBalanceModule.TokenBalanceUiState(
     title = "Preview Coin",
     coinCode = "PCN",
@@ -1686,6 +1742,7 @@ private fun previewTokenBalanceUiState(
     searchActive = searchActive,
     searchQuery = if (searchActive) "0x1f9840" else "",
     searchEmptyResult = searchActive,
+    transactionsLoadFailed = transactionsLoadFailed,
 )
 
 private fun previewBalanceViewItem() = BalanceViewItem(

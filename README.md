@@ -39,7 +39,7 @@ Devices with Android versions 8.1 and above
 
 ## Source Code
 
-[https://github.com/piratecash/pcash-wallet-android](https://github.com/piratecash/pcash-wallet-android)
+[https://github.com/piratecash/pcash-wallet](https://github.com/piratecash/pcash-wallet)
 
 ## Performance — Baseline Profile
 
@@ -74,4 +74,4 @@ This wallet is open source and available under the terms of the MIT License.
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=piratecash/pcash-wallet-android&type=Date)](https://www.star-history.com/#piratecash/pcash-wallet-android&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=piratecash/pcash-wallet&type=Date)](https://www.star-history.com/#piratecash/pcash-wallet&Date)

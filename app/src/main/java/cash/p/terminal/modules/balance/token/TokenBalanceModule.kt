@@ -148,6 +148,7 @@ class TokenBalanceModule {
         val zcashMigrationRequiredAmount: String? = null,
         val networkFeeWarning: NetworkFeeWarningBannerData? = null,
         val syncing: Boolean = true,
+        val transactionsLoadFailed: Boolean = false,
         val transactionFiltersEnabled: Boolean = false,
         val transactionFilterTypes: List<Filter<FilterTransactionType>> = emptyList(),
         val searchActive: Boolean = false,

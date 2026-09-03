@@ -16,7 +16,7 @@ data class ChangelogSnippet(val improvements: Int, val fixes: Int)
 
 sealed interface UpdateStatus {
     data object Unknown : UpdateStatus
-    data object UpToDate : UpdateStatus
+    data class UpToDate(val release: AppRelease?) : UpdateStatus
     data class Available(
         val release: AppRelease,
         val changelogSnippet: ChangelogSnippet?,

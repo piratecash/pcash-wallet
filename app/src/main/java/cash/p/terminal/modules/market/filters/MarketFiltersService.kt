@@ -32,6 +32,7 @@ class MarketFiltersService(
         BlockchainType.Optimism,
         BlockchainType.Base,
         BlockchainType.ZkSync,
+        BlockchainType.RobinhoodChain,
         BlockchainType.Polygon,
         BlockchainType.Unsupported("solana"),
         BlockchainType.Unsupported("sora"),

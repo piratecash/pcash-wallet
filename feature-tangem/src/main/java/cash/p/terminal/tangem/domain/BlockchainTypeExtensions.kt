@@ -37,6 +37,7 @@ fun BlockchainType.getSupportedCurves(): List<EllipticCurve> {
         BlockchainType.ECash,
         BlockchainType.Optimism,
         BlockchainType.ZkSync,
+        BlockchainType.RobinhoodChain,
         BlockchainType.Base,
             -> listOf(EllipticCurve.Secp256k1)
 
