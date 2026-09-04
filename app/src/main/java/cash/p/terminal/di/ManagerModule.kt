@@ -11,6 +11,7 @@ import cash.p.terminal.core.ITermsManager
 import cash.p.terminal.core.ITorManager
 import cash.p.terminal.core.adapters.zcash.ZcashAddressDeriver
 import cash.p.terminal.core.adapters.zcash.ZcashIronwoodMigrationRegistry
+import cash.p.terminal.core.adapters.zcash.ZcashKeyExporter
 import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFiles
 import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProvider
 import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProviderImpl
@@ -214,6 +215,7 @@ val managerModule = module {
     singleOf(::DefaultCurrencyManager) bind CurrencyManager::class
     singleOf(::SolanaRpcSourceManager)
     singleOf(::ZcashAddressDeriver)
+    singleOf(::ZcashKeyExporter)
     singleOf(::ZcashDatabaseFiles)
     singleOf(::ZcashDbKeyProviderImpl) bind ZcashDbKeyProvider::class
     singleOf(::ZcashWalletOpenerImpl) bind ZcashWalletOpener::class

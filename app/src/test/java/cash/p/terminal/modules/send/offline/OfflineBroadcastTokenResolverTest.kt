@@ -13,10 +13,15 @@ import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.zcash.Pool
+import cash.p.zcash.PoolSet
+import cash.p.zcash.ZcashSdk
+import cash.p.zcash.keyPools
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
@@ -59,6 +64,10 @@ class OfflineBroadcastTokenResolverTest {
             val query = firstArg<TokenQuery>()
             token(query.blockchainType, query.tokenType)
         }
+        // A viewing key advertises only the pools it carries; this fixture stands for a full one.
+        mockkStatic("cash.p.zcash.ZcashSdkKt")
+        every { ZcashSdk.keyPools(any(), any()) } returns
+            PoolSet.of(Pool.TRANSPARENT, Pool.SAPLING, Pool.ORCHARD)
     }
 
     @After

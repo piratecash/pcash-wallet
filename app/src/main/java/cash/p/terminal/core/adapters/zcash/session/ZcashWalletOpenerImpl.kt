@@ -53,10 +53,10 @@ class ZcashWalletOpenerImpl(
             name = account.name,
             key = when (key) {
                 is ZcashKey.Phrase -> key.words.joinToString(" ")
-                is ZcashKey.ViewingKey -> key.key
+                is ZcashKey.Standalone -> key.key
             },
             birthHeight = birthHeight(account),
-            passphrase = (key as? ZcashKey.Phrase)?.passphrase?.takeIf { it.isNotBlank() },
+            passphrase = (key as? ZcashKey.Phrase)?.passphrase,
         )
     }
 

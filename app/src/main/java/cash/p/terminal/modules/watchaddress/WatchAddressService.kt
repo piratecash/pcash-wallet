@@ -2,10 +2,13 @@ package cash.p.terminal.modules.watchaddress
 
 import cash.p.terminal.core.IAccountFactory
 import cash.p.terminal.core.managers.EvmBlockchainManager
+import cash.p.terminal.core.managers.RestoreSettings
+import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.core.managers.WalletActivator
 import cash.p.terminal.core.order
 import cash.p.terminal.core.supports
+import cash.p.terminal.core.zcashAddressSpecs
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.Token
@@ -21,6 +24,7 @@ class WatchAddressService(
     private val accountFactory: IAccountFactory,
     private val marketKit: MarketKitWrapper,
     private val evmBlockchainManager: EvmBlockchainManager,
+    private val restoreSettingsManager: RestoreSettingsManager,
 ) {
 
     fun nextWatchAccountName() = accountFactory.getNextWatchAccountName()
@@ -41,13 +45,8 @@ class WatchAddressService(
                     }
                 }
 
-                is AccountType.ZCashUfvKey -> {
-                    if (BlockchainType.Zcash.supports(accountType)) {
-                        add(TokenQuery(BlockchainType.Zcash, TokenType.AddressSpecTyped(AddressSpecType.Shielded)))
-                        add(TokenQuery(BlockchainType.Zcash, TokenType.AddressSpecTyped(AddressSpecType.Transparent)))
-                        add(TokenQuery(BlockchainType.Zcash, TokenType.AddressSpecTyped(AddressSpecType.Unified)))
-                    }
-                }
+                is AccountType.ZCashUfvKey,
+                is AccountType.ZCashSaplingKey -> addZcashQueries(accountType)
 
                 is AccountType.TronAddress -> {
                     if (BlockchainType.Tron.supports(accountType)) {
@@ -105,6 +104,8 @@ class WatchAddressService(
                     if (BlockchainType.ECash.supports(accountType)) {
                         add(TokenQuery(BlockchainType.ECash, TokenType.Native))
                     }
+
+                    addZcashQueries(accountType)
                 }
             }
         }
@@ -113,15 +114,35 @@ class WatchAddressService(
             .sortedBy { it.blockchainType.order }
     }
 
-    fun watchAll(accountType: AccountType, name: String?) {
-        watchTokens(accountType, tokens(accountType), name)
+    private fun MutableList<TokenQuery>.addZcashQueries(accountType: AccountType) {
+        val specs = accountType.zcashAddressSpecs()
+        AddressSpecType.entries.filter { it in specs }.forEach {
+            add(TokenQuery(BlockchainType.Zcash, TokenType.AddressSpecTyped(it)))
+        }
     }
 
-    fun watchTokens(accountType: AccountType, tokens: List<Token>, name: String? = null) {
+    fun watchAll(accountType: AccountType, name: String?, zcashBirthdayHeight: Long? = null) {
+        watchTokens(accountType, tokens(accountType), name, zcashBirthdayHeight)
+    }
+
+    fun watchTokens(
+        accountType: AccountType,
+        tokens: List<Token>,
+        name: String? = null,
+        zcashBirthdayHeight: Long? = null
+    ) {
         val accountName = name ?: accountFactory.getNextWatchAccountName()
         val account = accountFactory.watchAccount(accountName, accountType)
 
         accountManager.save(account)
+
+        zcashBirthdayHeight?.let { height ->
+            restoreSettingsManager.save(
+                settings = RestoreSettings().apply { birthdayHeight = height },
+                account = account,
+                blockchainType = BlockchainType.Zcash
+            )
+        }
 
         try {
             walletActivator.activateTokens(account, tokens)

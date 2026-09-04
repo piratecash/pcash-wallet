@@ -143,7 +143,7 @@
     <string name="Restore_RestoreBy">Wiederherstellen von</string>
     <string name="Restore_RecoveryPhrase">Wiederherstellungsphrase</string>
     <string name="Restore_PrivateKey">Privater Schlüssel</string>
-    <string name="Restore_PrivateKeyHint">Geben Sie EVM privaten Schlüssel, BIP32 Root-Schlüssel oder  Account Extended Private Key ein</string>
+    <string name="Restore_PrivateKeyHint">Geben Sie EVM privaten Schlüssel, BIP32 Root-Schlüssel, Account Extended Private Key oder ZCash Sapling Spending Key ein</string>
     <string name="Restore_PhraseHint">12, 15, 18, 21 oder 24 Wörter eingeben</string>
     <string name="monero_restore_seed">Monero-Wiederherstellungsphrase</string>
     <string name="Restore_NonStandardRestore">Nicht standardmäßige Wiederherstellung</string>
@@ -151,6 +151,7 @@
 \n\nWenn Sie ein betroffener Benutzer sind, wird Ihr Wallet-Guthaben nach der Wiederherstellung eines solchen Wallets in Version 0.29 oder höher als 0 angezeigt.Auf dieser Seite können Sie den Zugriff auf Ihre nicht standardmäßige Brieftasche wiederherstellen. Nach der Wiederherstellung wird empfohlen, eine neue Brieftasche zu erstellen (die standardkonform ist) und Gelder dorthin zu verschieben.</string>
     <string name="Restore_Bip_Recommended">(durchschnitt)</string>
     <string name="Restore_PrivateKey_InvalidKey">Ungültiger Schlüssel</string>
+    <string name="restore_private_key_is_view_only">Dies ist ein Nur-Lese-Schlüssel. Fügen Sie ihn über „Adresse beobachten“ hinzu.</string>
     <string name="SelectContacts_All">Alle</string>
     <string name="Restore_BirthdayHeight">Geburtstagshöhe</string>
     <string name="restore_birthday_height_or_date">Geburtstagshöhe oder Datum</string>
@@ -1207,11 +1208,12 @@
     <string name="ImportBackupFile_EnterPassword_Description">Geben Sie das Sicherungspasswort ein, um Ihre Brieftasche zu importieren.</string>
     <string name="ImportBackupFile_Error_InvalidPassword">Ungültiges Passwort</string>
     <string name="ImportBackupFile_BackupPassword">Passwort sichern</string>
-    <string name="Watch_Address_Hint">Adresse oder Domäne</string>
+    <string name="Watch_Address_Hint">Geben Sie Ihre EVM-, TRON-, TON- oder öffentliche Adresse (Bitcoin, Litecoin, Bitcoin Cash), Account xPubKey oder ZCash Viewing Key (Unified oder Sapling) ein</string>
     <string name="Watch_Address_Watch">Beobachten</string>
     <string name="Watch_Select_Blockchains">Blockchain auswählen</string>
     <string name="Watch_Select_Coins">Coins auswählen</string>
     <string name="Watch_Error_InvalidAddressFormat">Adressformat wird nicht unterstützt</string>
+    <string name="watch_address_is_private_key">Dies ist ein privater Schlüssel. Fügen Sie ihn über den Import „Privater Schlüssel“ hinzu.</string>
     <!--Manage Account-->
     <string name="ManageAccount_Name">Name</string>
     <string name="ManageAccount_Save">Speichern</string>
@@ -1328,12 +1330,25 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="PrivateKeys_AccountExtendedPrivateKey">Account Extended Private Key</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Gewährt volle Kontrolle über Bitcoin und andere auf UTXO basierende Kryptos, z.B. Litecoin, Bitcoin Cash, Dash, etc. innerhalb der jeweiligen Wallet.</string>
     <string name="PrivateKeys_NeverShareWarning">Teilen Sie niemals Ihre Wiederherstellungsphrase mit niemandem. Das unaufhaltsame Team wird niemals nach Ihrer Wiederherstellungsphrase fragen.</string>
+    <string name="private_keys_zec_sapling_spending_key">ZCash-Sapling-Ausgabeschlüssel</string>
+    <string name="private_keys_zec_sapling_spending_key_description">Gewährt volle Kontrolle über die abgeschirmten ZCash-Guthaben dieser Wallet, einschließlich des Ausgebens.</string>
+    <string name="private_keys_zec_sapling_spending_key_error">ZCash-Sapling-Ausgabeschlüssel konnte nicht abgerufen werden</string>
+    <string name="private_keys_zec">ZCash</string>
+    <string name="private_keys_zec_description">Gewährt volle Kontrolle über die transparenten und abgeschirmten ZCash-Guthaben dieser Wallet, einschließlich des Ausgebens.</string>
+    <string name="private_keys_zec_transparent_key">ZCash-Transparenzschlüssel</string>
+    <string name="private_keys_zec_transparent_key_description">Gewährt volle Kontrolle über die transparenten ZCash-Guthaben dieser Wallet, einschließlich des Ausgebens.</string>
+    <string name="private_keys_zec_transparent_key_error">ZCash-Transparenzschlüssel konnte nicht abgerufen werden</string>
     <!-- Public Keys -->
     <string name="PublicKeys_Title">Öffentliche Schlüssel</string>
     <string name="PublicKeys_EvmAddress">EVM-Adresse</string>
     <string name="PublicKeys_EvmAddress_Description">Ermöglicht die bloße Überwachung von Brieftaschen mit Assets auf Ethereum, Binance Smart Chain und anderen EVM-basierten Blockchains.</string>
     <string name="PublicKeys_AccountExtendedPublicKeyDescription">Ermöglicht die schreibgeschützte Überwachung von Brieftaschen mit Bitcoin und anderen auf UTXO basierenden Verschlüsselungen (z.B. Litecoin, Bitcoin Cash, Dash, etc.).</string>
-    <string name="publicKeys_zec_ufvk_descritpion">Allows read-only monitoring of ZCash, transparent and shielded transactions for the wallet.</string>
+    <string name="publicKeys_zec_ufvk">ZCash-Ansichtsschlüssel</string>
+    <string name="publicKeys_zec_ufvk_descritpion">Ermöglicht die schreibgeschützte Überwachung aller transparenten und abgeschirmten ZCash-Transaktionen dieser Wallet.</string>
+    <string name="publicKeys_zec_transparent_viewing_key_description">Ermöglicht die schreibgeschützte Überwachung transparenter ZCash-Transaktionen für das Wallet. Abgeschirmte Transaktionen sind nicht enthalten.</string>
+    <string name="public_keys_zec_sapling_viewing_key">ZCash-Sapling-Ansichtsschlüssel</string>
+    <string name="public_keys_zec_sapling_viewing_key_description">Ermöglicht die schreibgeschützte Überwachung der abgeschirmten ZCash-Transaktionen dieser Wallet. Transparente Transaktionen sind nicht enthalten.</string>
+    <string name="public_keys_zec_viewing_key_error">ZCash-Ansichtsschlüssel konnte nicht abgerufen werden</string>
     <!-- Recovery Phrase Verify -->
     <string name="RecoveryPhraseVerify_Title">Prüfen</string>
     <string name="RecoveryPhraseVerify_Description">Wählen Sie zwei angeforderte Wörter aus Ihrer Wallet-Wiederherstellungsphrase</string>

@@ -18,7 +18,7 @@ class CreateRequiredTokensUseCaseImpl(
     private val accountManager: IAccountManager
 ) : CreateRequiredTokensUseCase {
     override suspend fun invoke(account: Account, tokenQueries: List<TokenQuery>) {
-        val expandedTokenQueries = tokenQueries.expandedZcashAddressSpecQueries()
+        val expandedTokenQueries = tokenQueries.expandedZcashAddressSpecQueries(account.type)
         userDeletedWalletManager.unmarkAsDeleted(account.id, expandedTokenQueries.map { it.id })
 
         val refreshedAccount = if (account.isHardwareWalletAccount) {

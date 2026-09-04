@@ -143,13 +143,14 @@
     <string name="Restore_RestoreBy">Restaurar por</string>
     <string name="Restore_RecoveryPhrase">Frase de Recuperación</string>
     <string name="Restore_PrivateKey">Clave privada</string>
-    <string name="Restore_PrivateKeyHint">Introduzca la clave privada EVM, BIP32 Root Key o Account Extended Private Key</string>
+    <string name="Restore_PrivateKeyHint">Introduzca la clave privada EVM, BIP32 Root Key, Account Extended Private Key o ZCash Sapling Spending Key</string>
     <string name="Restore_PhraseHint">Introduzca 12, 15, 18, 21 o 24 palabras</string>
     <string name="monero_restore_seed">Frase de recuperación de Monero</string>
     <string name="Restore_NonStandardRestore">Restauración no estándar</string>
     <string name="Restore_NonStandard_Description">Esta página proporciona un mecanismo especial de restauración de monedero para usuarios de P.CASH que tienen un monedero no estándar. Por lo general, dichos monederos se podrían haber creado en la versión 0.27 - 0.28 de P.CASH utilizando una lista de palabras mnemotécnicas que no están en inglés y/o un carácter especial en la frase de contraseña del monedero (es decir, un símbolo diacrítico).\n\nSi es un usuario afectado, el saldo de su billetera se mostrará en 0 después de restaurar dicha billetera en la versión 0.29 o superior. Esta página te permitirá restaurar el acceso a tu monedero no estándar. Una vez restaurado, se recomienda crear un nuevo monedero (que cumplirá con los estándares) y mover todos los fondos allí.</string>
     <string name="Restore_Bip_Recommended">(promedio)</string>
     <string name="Restore_PrivateKey_InvalidKey">Clave no válida</string>
+    <string name="restore_private_key_is_view_only">Esta es una clave de solo lectura. Añádela mediante «Observar dirección».</string>
     <string name="SelectContacts_All">Todo</string>
     <string name="Restore_BirthdayHeight">Altura de Cumpleaños</string>
     <string name="restore_birthday_height_or_date">Altura de Cumpleaños o fecha</string>
@@ -1207,11 +1208,12 @@
     <string name="ImportBackupFile_EnterPassword_Description">Introduzca la contraseña de copia de seguridad para importar su cartera.</string>
     <string name="ImportBackupFile_Error_InvalidPassword">Contraseña no válida</string>
     <string name="ImportBackupFile_BackupPassword">Copiar contraseña</string>
-    <string name="Watch_Address_Hint">Dominio o dirección</string>
+    <string name="Watch_Address_Hint">Introduzca su dirección EVM, TRON, TON o pública (Bitcoin, Litecoin, Bitcoin Cash), Account xPubKey o ZCash Viewing Key (Unified o Sapling)</string>
     <string name="Watch_Address_Watch">Ver</string>
     <string name="Watch_Select_Blockchains">Elegir Blockchain</string>
     <string name="Watch_Select_Coins">Elegir monedas</string>
     <string name="Watch_Error_InvalidAddressFormat">El formato de dirección no está soportado</string>
+    <string name="watch_address_is_private_key">Esta es una clave privada. Añádela mediante la importación «Clave privada».</string>
     <!--Manage Account-->
     <string name="ManageAccount_Name">Nombre</string>
     <string name="ManageAccount_Save">Guardar</string>
@@ -1328,12 +1330,25 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="PrivateKeys_AccountExtendedPrivateKey">Account Extended Private Key</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Otorga control total sobre Bitcoin y otras criptomonedas basadas en UTXO, es decir, Litecoin, Bitcoin Cash, Dash, etc. dentro de su respectiva cartera.</string>
     <string name="PrivateKeys_NeverShareWarning">Nunca comparta su frase de recuperación con nadie. El equipo imparable nunca pedirá su frase de recuperación.</string>
+    <string name="private_keys_zec_sapling_spending_key">Clave de gasto ZCash Sapling</string>
+    <string name="private_keys_zec_sapling_spending_key_description">Otorga control total sobre los fondos blindados de ZCash de esta cartera, incluido su gasto.</string>
+    <string name="private_keys_zec_sapling_spending_key_error">No se pudo obtener la clave de gasto ZCash Sapling</string>
+    <string name="private_keys_zec">ZCash</string>
+    <string name="private_keys_zec_description">Otorga control total sobre los fondos transparentes y blindados de ZCash de esta cartera, incluido su gasto.</string>
+    <string name="private_keys_zec_transparent_key">Clave transparente de ZCash</string>
+    <string name="private_keys_zec_transparent_key_description">Otorga control total sobre los fondos transparentes de ZCash de esta cartera, incluido su gasto.</string>
+    <string name="private_keys_zec_transparent_key_error">No se pudo obtener la clave transparente de ZCash</string>
     <!-- Public Keys -->
     <string name="PublicKeys_Title">Claves públicas</string>
     <string name="PublicKeys_EvmAddress">Dirección EVM</string>
     <string name="PublicKeys_EvmAddress_Description">Permite el monitoreo de sólo lectura de carteras que poseen activos en Ethereum, Binance Smart Chain y otros blockchains basados en EVM.</string>
     <string name="PublicKeys_AccountExtendedPublicKeyDescription">Permite el monitoreo de sólo lectura de carteras con cripto de Bitcoin y otros basados en UTXO (es decir, Litecoin, Bitcoin Cash, Dash, etc.).</string>
-    <string name="publicKeys_zec_ufvk_descritpion">Allows read-only monitoring of ZCash, transparent and shielded transactions for the wallet.</string>
+    <string name="publicKeys_zec_ufvk">Clave de visualización ZCash</string>
+    <string name="publicKeys_zec_ufvk_descritpion">Permite la supervisión de solo lectura de todas las transacciones ZCash transparentes y blindadas de esta cartera.</string>
+    <string name="publicKeys_zec_transparent_viewing_key_description">Permite la supervisión de solo lectura de las transacciones transparentes de ZCash de la billetera. Las transacciones blindadas no están incluidas.</string>
+    <string name="public_keys_zec_sapling_viewing_key">Clave de visualización ZCash Sapling</string>
+    <string name="public_keys_zec_sapling_viewing_key_description">Permite la supervisión de solo lectura de las transacciones blindadas de ZCash de esta cartera. Las transacciones transparentes no están incluidas.</string>
+    <string name="public_keys_zec_viewing_key_error">No se pudo obtener la clave de visualización de ZCash</string>
     <!-- Recovery Phrase Verify -->
     <string name="RecoveryPhraseVerify_Title">Verificar</string>
     <string name="RecoveryPhraseVerify_Description">Seleccione dos palabras solicitadas de su frase de recuperación de cartera</string>

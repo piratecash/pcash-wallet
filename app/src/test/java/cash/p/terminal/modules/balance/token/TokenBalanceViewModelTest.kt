@@ -64,6 +64,14 @@ import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.WalletFactory
 import cash.p.terminal.wallet.tokenQueryId
 import cash.p.terminal.wallet.zcashTransparentWallet
+import cash.p.zcash.Pool
+import cash.p.zcash.PoolSet
+import cash.p.zcash.ZcashSdk
+import cash.p.zcash.keyPools
+import io.horizontalsystems.hdwalletkit.Curve
+import io.horizontalsystems.hdwalletkit.HDExtendedKey
+import io.horizontalsystems.hdwalletkit.HDExtendedKeyVersion
+import io.horizontalsystems.hdwalletkit.HDKeychain
 import com.piratecash.monero.signer.HardwareWalletErrorCode
 import com.piratecash.monero.signer.HardwareWalletOperationException
 import io.horizontalsystems.core.CoreApp
@@ -75,6 +83,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
 import java.math.BigDecimal
@@ -89,6 +98,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -635,6 +645,61 @@ class TokenBalanceViewModelTest : KoinTest {
         advanceUntilIdle()
 
         assertEquals(true, viewModel.uiState.isShowShieldFunds)
+    }
+
+    @Test
+    fun isShowShieldFunds_mnemonicAccount_showsShieldFunds() = runTest(dispatcher) {
+        assertShieldFundsOffer(AccountType.Mnemonic(List(12) { "word$it" }, ""), expected = true)
+    }
+
+    @Test
+    fun isShowShieldFunds_transparentPrivateKeyAccount_hidesShieldFunds() = runTest(dispatcher) {
+        assertShieldFundsOffer(AccountType.HdExtendedKey(ACCOUNT_XPRV), expected = false)
+    }
+
+    @Test
+    fun isShowShieldFunds_transparentPublicKeyAccount_hidesShieldFunds() = runTest(dispatcher) {
+        assertShieldFundsOffer(AccountType.HdExtendedKey(ACCOUNT_XPUB), expected = false)
+    }
+
+    @Test
+    fun isShowShieldFunds_unifiedViewingKeyAccount_hidesShieldFunds() = runTest(dispatcher) {
+        mockkStatic(ZCASH_SDK_EXTENSIONS)
+        every { ZcashSdk.keyPools(any(), any()) } returns PoolSet.of(Pool.TRANSPARENT, Pool.ORCHARD)
+
+        assertShieldFundsOffer(AccountType.ZCashUfvKey(UFVK), expected = false)
+    }
+
+    /** A transparent ZEC wallet with enough to shield — only the account type varies. */
+    private fun TestScope.assertShieldFundsOffer(accountType: AccountType, expected: Boolean) {
+        testWallet = zcashTransparentWallet(
+            Account(
+                id = "zcash-account",
+                name = "Zcash Account",
+                type = accountType,
+                origin = AccountOrigin.Restored,
+                level = 0,
+                isBackedUp = true,
+            )
+        )
+        balanceItemFlow.value = createBalanceItem(
+            wallet = testWallet,
+            balanceData = BalanceData(
+                available = ZcashAdapter.MINERS_FEE + BigDecimal.ONE,
+                pending = BigDecimal.ZERO
+            )
+        )
+        every { balanceService.balanceItem } answers { balanceItemFlow.value }
+        every {
+            balanceViewItemFactory.viewItem(
+                any(), any(), any(), any(), any(), any(), any()
+            )
+        } returns createBalanceViewItem()
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        assertEquals(expected, viewModel.uiState.isShowShieldFunds)
     }
 
     // endregion
@@ -2044,7 +2109,6 @@ class TokenBalanceViewModelTest : KoinTest {
         swapAvailability = OperationAvailability.Unavailable,
         errorMessage = null,
         isWatchAccount = false,
-        isShowShieldFunds = false,
         warning = null
     )
 
@@ -2127,5 +2191,16 @@ class TokenBalanceViewModelTest : KoinTest {
     private companion object {
         const val OFFLINE_SINCE = 1_700_000_000_000L
         const val SHIELDING_TX_HASH = "a1b2c3"
+        const val ZCASH_SDK_EXTENSIONS = "cash.p.zcash.ZcashSdkKt"
+        const val UFVK = "uview1qunifiedviewingkey"
+
+        private val zcashAccountKey =
+            HDKeychain(ByteArray(64) { (it + 1).toByte() }, Curve.Secp256K1)
+                .getKeyByPath("m/44'/0'/0'")
+
+        val ACCOUNT_XPRV: String =
+            HDExtendedKey(zcashAccountKey, HDExtendedKeyVersion.xprv).serializePrivate()
+        val ACCOUNT_XPUB: String =
+            HDExtendedKey(zcashAccountKey, HDExtendedKeyVersion.xprv).serializePublic()
     }
 }

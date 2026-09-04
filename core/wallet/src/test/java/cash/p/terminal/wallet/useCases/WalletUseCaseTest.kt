@@ -409,6 +409,7 @@ class WalletUseCaseTest {
             zcashTokens.first { it.type == TokenType.AddressSpecTyped(TokenType.AddressSpecType.Unified) }
         val zcashWallets = zcashTokens.map { wallet(it, account) }
 
+        every { accountManager.activeAccount } returns account
         every { marketKit.tokens(zcashAddressSpecTokenQueries) } returns zcashTokens
 
         activeWallets = emptyList()

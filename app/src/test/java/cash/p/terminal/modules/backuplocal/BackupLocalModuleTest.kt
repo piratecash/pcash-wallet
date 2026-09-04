@@ -239,23 +239,24 @@ class BackupLocalModuleTest {
 
     @Test
     fun `mnemonic encode and decode round-trip without passphrase`() = runBlockingSuspend {
-        val original = AccountType.Mnemonic(validMnemonicWords, "")
-        val typeString = BackupLocalModule.getAccountTypeString(original)
-        val data = BackupLocalModule.getDataForEncryption(original)
-        val decoded = BackupLocalModule.getAccountTypeFromData(typeString, data!!)
-
-        assertTrue(decoded is AccountType.Mnemonic)
-        val decodedMnemonic = decoded as AccountType.Mnemonic
-        assertEquals(original.words, decodedMnemonic.words)
-        assertEquals(original.passphrase, decodedMnemonic.passphrase)
+        assertMnemonicRoundTrip("")
     }
 
     @Test
     fun `mnemonic encode and decode round-trip with passphrase`() = runBlockingSuspend {
-        val original = AccountType.Mnemonic(validMnemonicWords, "secretPass123")
+        assertMnemonicRoundTrip("secretPass123")
+    }
+
+    @Test
+    fun backup_mnemonicWithBlankPassphrase_roundTripsBackToTheSamePassphrase() = runBlockingSuspend {
+        assertMnemonicRoundTrip("  ")
+    }
+
+    private suspend fun assertMnemonicRoundTrip(passphrase: String) {
+        val original = AccountType.Mnemonic(validMnemonicWords, passphrase)
         val typeString = BackupLocalModule.getAccountTypeString(original)
-        val data = BackupLocalModule.getDataForEncryption(original)
-        val decoded = BackupLocalModule.getAccountTypeFromData(typeString, data!!)
+        val data = requireNotNull(BackupLocalModule.getDataForEncryption(original))
+        val decoded = BackupLocalModule.getAccountTypeFromData(typeString, data)
 
         assertTrue(decoded is AccountType.Mnemonic)
         val decodedMnemonic = decoded as AccountType.Mnemonic
@@ -272,6 +273,25 @@ class BackupLocalModuleTest {
 
         assertTrue(decoded is AccountType.EvmAddress)
         assertEquals(original.address, (decoded as AccountType.EvmAddress).address)
+    }
+
+    @Test
+    fun backup_zcashSaplingSpendingKey_roundTripsBackToTheSameType() = runBlockingSuspend {
+        assertSaplingKeyRoundTrip("secret-extended-key-main1qsaplingspendingkey")
+    }
+
+    @Test
+    fun backup_zcashSaplingViewingKey_roundTripsBackToTheSameType() = runBlockingSuspend {
+        assertSaplingKeyRoundTrip("zxviews1qsaplingviewingkey")
+    }
+
+    private suspend fun assertSaplingKeyRoundTrip(key: String) {
+        val original = AccountType.ZCashSaplingKey(key)
+        val typeString = BackupLocalModule.getAccountTypeString(original)
+        val data = BackupLocalModule.getDataForEncryption(original)
+
+        assertEquals("zcash_sapling_key", typeString)
+        assertEquals(original, BackupLocalModule.getAccountTypeFromData(typeString, data!!))
     }
 
     // endregion

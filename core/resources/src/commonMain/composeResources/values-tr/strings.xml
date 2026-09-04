@@ -144,13 +144,14 @@
     <string name="Restore_RestoreBy">Geri Yükle</string>
     <string name="Restore_RecoveryPhrase">Kurtarma cümlesi</string>
     <string name="Restore_PrivateKey">Gizli Anahtar</string>
-    <string name="Restore_PrivateKeyHint">EVM Özel Anahtarını, BIP32 Root Key veya Account Extended Private Key girin</string>
+    <string name="Restore_PrivateKeyHint">EVM Özel Anahtarını, BIP32 Root Key, Account Extended Private Key veya ZCash Sapling Spending Key girin</string>
     <string name="Restore_PhraseHint">12, 15, 18, 21 veya 24 kelime girin</string>
     <string name="monero_restore_seed">Monero kurtarma cümlesi</string>
     <string name="Restore_NonStandardRestore">Standart Olmayan Geri Yükleme</string>
     <string name="Restore_NonStandard_Description">Bu sayfa, standart olmayan bir cüzdanı olan P.CASH kullanıcıları için özel geri yükleme mekanizması sağlar. Genel olarak, bu tür cüzdanlar, İngilizce olmayan bir anımsatma kelimeleri listesi ve/veya cüzdan şifresinde özel bir karakter (yani aksan simgesi) kullanılarak P.CASH 0.27 - 0.28 sürümünde oluşturulmuş olabilir.\n\n Bu durumdan etkilenen bir kullanıcıysanız, 0.29 sürümüne güncelledikten sonra cüzdan bakiyeniz 0 olarak görüntülenir. Bu sayfa, standart olmayan cüzdanınıza erişimi geri yüklemenizi sağlayacaktır. Geri yüklendikten sonra, yeni bir cüzdan oluşturmanız (standartlarla uyumlu) ve paranızı oraya taşımanız önerilir.</string>
     <string name="Restore_Bip_Recommended">(ortalama)</string>
     <string name="Restore_PrivateKey_InvalidKey">Geçersiz Anahtar</string>
+    <string name="restore_private_key_is_view_only">Bu yalnızca görüntüleme anahtarıdır. “Adres İzle” ile ekleyin.</string>
     <string name="SelectContacts_All">Hepsi</string>
     <string name="Restore_BirthdayHeight">Oluşturulma Günü Üst Sınırı</string>
     <string name="restore_birthday_height_or_date">Oluşturulma Günü Üst Sınırı veya Tarih</string>
@@ -1217,11 +1218,12 @@
     <string name="ImportBackupFile_EnterPassword_Description">Cüzdanınızı içe aktarmak için yedek parolayı girin.</string>
     <string name="ImportBackupFile_Error_InvalidPassword">Geçersiz şifre</string>
     <string name="ImportBackupFile_BackupPassword">Yedek Şifre</string>
-    <string name="Watch_Address_Hint">Adres veya Domain</string>
+    <string name="Watch_Address_Hint">EVM, TRON, TON veya genel adresinizi (Bitcoin, Litecoin, Bitcoin Cash), Account xPubKey ya da ZCash Viewing Key (Unified veya Sapling) girin</string>
     <string name="Watch_Address_Watch">İzle</string>
     <string name="Watch_Select_Blockchains">Blok Zincirleri Seç</string>
     <string name="Watch_Select_Coins">Kripto Parayı Seç</string>
     <string name="Watch_Error_InvalidAddressFormat">Adres formatı desteklenmiyor</string>
+    <string name="watch_address_is_private_key">Bu bir özel anahtardır. “Özel Anahtar” içe aktarma ile ekleyin.</string>
     <!--Manage Account-->
     <string name="ManageAccount_Name">İsim</string>
     <string name="ManageAccount_Save">Kaydet</string>
@@ -1338,12 +1340,25 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="PrivateKeys_AccountExtendedPrivateKey">Account Extended Private Key</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Ilgili cüzdan içinde Bitcoin ve diğer UTXO tabanlı kriptolar üzerinde tam kontrol sağlar, yani Litecoin, Bitcoin Cash, Dash vb.</string>
     <string name="PrivateKeys_NeverShareWarning">Kurtarma ifadenizi asla kimseyle paylaşmayın. P.CASH ekip asla kurtarma ifadenizi istemez.</string>
+    <string name="private_keys_zec_sapling_spending_key">ZCash Sapling harcama anahtarı</string>
+    <string name="private_keys_zec_sapling_spending_key_description">Bu cüzdandaki korumalı ZCash bakiyesi üzerinde harcama dahil tam kontrol sağlar.</string>
+    <string name="private_keys_zec_sapling_spending_key_error">ZCash Sapling harcama anahtarı alınamadı</string>
+    <string name="private_keys_zec">ZCash</string>
+    <string name="private_keys_zec_description">Bu cüzdandaki şeffaf ve korumalı ZCash bakiyesi üzerinde harcama dahil tam kontrol sağlar.</string>
+    <string name="private_keys_zec_transparent_key">ZCash şeffaf anahtarı</string>
+    <string name="private_keys_zec_transparent_key_description">Bu cüzdandaki şeffaf ZCash bakiyesi üzerinde harcama dahil tam kontrol sağlar.</string>
+    <string name="private_keys_zec_transparent_key_error">ZCash şeffaf anahtarı alınamadı</string>
     <!-- Public Keys -->
     <string name="PublicKeys_Title">Genel Anahtarlar</string>
     <string name="PublicKeys_EvmAddress">EVM Adresi</string>
     <string name="PublicKeys_EvmAddress_Description">Ethereum, Binance Smart Chain ve diğer EVM tabanlı blok zincirlerinde varlık tutan cüzdanların salt okunur olarak izlenmesini sağlar.</string>
     <string name="PublicKeys_AccountExtendedPublicKeyDescription">Bitcoin ve diğer UTXO tabanlı kriptoları (örneğin Litecoin, Bitcoin Cash, Dash vb.) tutan cüzdanların salt okunur olarak izlenmesine izin verir.</string>
-    <string name="publicKeys_zec_ufvk_descritpion">Allows read-only monitoring of ZCash, transparent and shielded transactions for the wallet.</string>
+    <string name="publicKeys_zec_ufvk">ZCash görüntüleme anahtarı</string>
+    <string name="publicKeys_zec_ufvk_descritpion">Bu cüzdanın tüm şeffaf ve korumalı ZCash işlemlerinin salt okunur izlenmesini sağlar.</string>
+    <string name="publicKeys_zec_transparent_viewing_key_description">Cüzdanın şeffaf ZCash işlemlerinin salt okunur izlenmesini sağlar. Korumalı işlemler dahil değildir.</string>
+    <string name="public_keys_zec_sapling_viewing_key">ZCash Sapling görüntüleme anahtarı</string>
+    <string name="public_keys_zec_sapling_viewing_key_description">Bu cüzdanın korumalı ZCash işlemlerinin salt okunur izlenmesini sağlar. Şeffaf işlemler dahil değildir.</string>
+    <string name="public_keys_zec_viewing_key_error">ZCash görüntüleme anahtarı alınamadı</string>
     <!-- Recovery Phrase Verify -->
     <string name="RecoveryPhraseVerify_Title">Doğrula</string>
     <string name="RecoveryPhraseVerify_Description">Cüzdan kurtarma ifadenizden istenen iki kelimeyi seçin</string>

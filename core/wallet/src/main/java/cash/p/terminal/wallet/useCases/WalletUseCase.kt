@@ -48,7 +48,8 @@ class WalletUseCase(
 
     suspend fun createWallets(tokensToAdd: Set<Token>): Boolean {
         val account = accountManager.activeAccount ?: return false
-        val expandedTokensToAdd = tokensToAdd.expandedZcashAddressSpecTokens(marketKit).toSet()
+        val expandedTokensToAdd = tokensToAdd.expandedZcashAddressSpecTokens(marketKit, account.type)
+            .toSet()
         return if (account.isHardwareWalletAccount) {
             createWalletsForHardwareWallet(
                 account = account,
@@ -131,7 +132,8 @@ class WalletUseCase(
         getWallet(token) ?: if (createWallets(setOf(token))) getWallet(token) else null
 
     suspend fun awaitWallets(tokens: Set<Token>) {
-        val expandedTokens = tokens.expandedZcashAddressSpecTokens(marketKit).toSet()
+        val account = accountManager.activeAccount ?: return
+        val expandedTokens = tokens.expandedZcashAddressSpecTokens(marketKit, account.type).toSet()
         if (expandedTokens.all { getWallet(it) != null }) return
 
         walletManager.activeWalletsFlow

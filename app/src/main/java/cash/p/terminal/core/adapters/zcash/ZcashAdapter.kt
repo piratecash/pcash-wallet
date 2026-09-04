@@ -66,6 +66,7 @@ import cash.p.zcash.ZcashNetwork
 import cash.p.zcash.ZcashSdk
 import cash.p.zcash.ZcashWallet
 import cash.p.zcash.deriveSpendingKey
+import cash.p.zcash.importSpendingKey
 import cash.p.zcash.transactionId
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
@@ -315,19 +316,21 @@ class ZcashAdapter(
     private suspend fun <T> walletOrNull(block: suspend (ZcashWallet, Int) -> T): T? =
         (withWallet(block) as? ZcashSessionResult.Success)?.value
 
-    /** The unified full viewing key of this account, or null while the session is unavailable. */
-    suspend fun ufvk(): String? = walletOrNull { zcash, id -> zcash.viewingKey(id) }
-
     private suspend fun <T> withSpendingKey(block: suspend (ByteArray) -> T): T {
-        val phrase = zcashKey as? ZcashKey.Phrase
-            ?: throw UnsupportedException("Zcash spending requires a mnemonic account")
-        // The wallet database was restored without an explicit account index, so index 0 is the
-        // only key that matches it.
-        val key = ZcashSdk.deriveSpendingKey(
-            phrase = phrase.words.joinToString(" "),
-            network = ZcashNetwork.MAIN,
-            passphrase = phrase.passphrase.ifEmpty { null },
-        )
+        val key = when (val ownership = zcashKey) {
+            // The wallet database was restored without an explicit account index, so index 0 is
+            // the only key that matches it.
+            is ZcashKey.Phrase -> ZcashSdk.deriveSpendingKey(
+                phrase = ownership.words.joinToString(" "),
+                network = ZcashNetwork.MAIN,
+                passphrase = ownership.passphrase,
+            )
+
+            is ZcashKey.SpendingKey -> ZcashSdk.importSpendingKey(ownership.key, ZcashNetwork.MAIN)
+
+            is ZcashKey.ViewingKey ->
+                throw UnsupportedException("Zcash spending requires a spending key")
+        }
         return try {
             block(key)
         } finally {
