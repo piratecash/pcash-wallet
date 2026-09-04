@@ -35,7 +35,7 @@ import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
-import cash.z.ecc.android.sdk.ext.collectWith
+import io.horizontalsystems.core.collectWith
 import com.tangem.common.extensions.isZero
 import cash.p.terminal.modules.send.BaseSendViewModel
 import io.horizontalsystems.core.DispatcherProvider

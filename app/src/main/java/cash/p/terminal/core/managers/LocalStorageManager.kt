@@ -163,6 +163,12 @@ class LocalStorageManager(
             preferences.edit().putStringSet("zcashAccountIds", value).apply()
         }
 
+    override var zcashDiscoveredAccountIds: Set<String>
+        get() = preferences.getStringSet("zcashDiscoveredAccountIds", setOf()) ?: setOf()
+        set(value) {
+            preferences.edit { putStringSet("zcashDiscoveredAccountIds", value) }
+        }
+
     override var zcashIronwoodMigrationTxIds: Set<String>
         get() = preferences.getStringSet("zcashIronwoodMigrationTxIds", setOf()) ?: setOf()
         set(value) {

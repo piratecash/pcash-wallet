@@ -29,7 +29,6 @@ import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.InfoText
 import cash.p.terminal.ui_compose.components.HeaderText
 import cash.p.terminal.ui_compose.components.HsBackButton
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.core.hasNFC
@@ -41,7 +40,7 @@ class HardwareWalletFragment : BaseComposeFragment() {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val input = navController.getInput<ManageAccountsModule.Input>()
+        val input = getInput<ManageAccountsModule.Input>()
         val popUpToInclusiveId = input?.popOffOnSuccess ?: R.id.hardwareWalletFragment
         val inclusive = input?.popOffInclusive != false
         val viewModel = koinViewModel<HardwareWalletViewModel>()

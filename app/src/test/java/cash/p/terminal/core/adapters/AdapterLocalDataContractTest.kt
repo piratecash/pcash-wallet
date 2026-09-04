@@ -32,7 +32,10 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.koin.core.context.loadKoinModules
@@ -43,6 +46,7 @@ import org.koin.dsl.module
  * cleared after construction, which may legitimately touch the kit, so each test observes
  * `attachLocalData()` alone.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class AdapterLocalDataContractTest : ZcashAdapterTestFixture() {
 
     @Before
@@ -249,18 +253,16 @@ class AdapterLocalDataContractTest : ZcashAdapterTestFixture() {
         verify { moneroKitWrapper wasNot Called }
     }
 
+    // The session is itself the local-data source (balances, history and the chain tip are read
+    // straight out of the wallet database), so the contract here is "no sync", not "no call".
     @Test
-    fun attachLocalData_zcashAdapter_doesNotTouchNetwork() {
-        // The synchronizer is itself the local-data source (balances/transactions/progress are
-        // Room-backed flows), so the contract here is "no network entry point", not "no call".
+    fun attachLocalData_zcashAdapter_doesNotTouchNetwork() = runTest(dispatcher) {
         adapter = createAdapter()
-        clearMocks(mockSynchronizer, answers = false)
 
         adapter.attachLocalData()
+        advanceUntilIdle()
 
-        coVerify(exactly = 0) { mockSynchronizer.resumeSync() }
-        coVerify(exactly = 0) { mockSynchronizer.refreshAllBalances() }
-        verify(exactly = 0) { mockSynchronizer.refreshTransactions() }
+        coVerify(exactly = 0) { session.sync() }
     }
 
     private companion object {

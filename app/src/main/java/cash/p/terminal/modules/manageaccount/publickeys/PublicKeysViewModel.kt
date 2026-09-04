@@ -5,24 +5,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cash.p.terminal.core.adapters.zcash.ZcashAdapter
+import cash.p.terminal.core.adapters.zcash.ZcashKeyExporter
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.modules.manageaccount.publickeys.PublicKeysModule.ExtendedPublicKey
+import cash.p.terminal.modules.manageaccount.publickeys.PublicKeysModule.ZcashViewKey
 import cash.p.terminal.modules.manageaccount.showextendedkey.ShowExtendedKeyModule.DisplayKeyType.AccountPublicKey
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
-import cash.p.terminal.wallet.IAdapterManager
-import cash.p.terminal.wallet.MarketKitWrapper
-import cash.p.terminal.wallet.entities.TokenQuery
-import cash.p.terminal.wallet.entities.TokenType
-import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.ethereumkit.core.signer.Signer
 import io.horizontalsystems.hdwalletkit.HDExtendedKey
 import io.horizontalsystems.hdwalletkit.HDWallet
 import io.horizontalsystems.hdwalletkit.Mnemonic
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
 
@@ -34,8 +29,7 @@ class PublicKeysViewModel(
     var viewState by mutableStateOf(PublicKeysModule.ViewState())
         private set
 
-    private val marketKitWrapper: MarketKitWrapper by inject(MarketKitWrapper::class.java)
-    private val adapterManager: IAdapterManager by inject(IAdapterManager::class.java)
+    private val zcashKeyExporter: ZcashKeyExporter by inject(ZcashKeyExporter::class.java)
 
     init {
         val evmAddress: String? = when (val accountType = account.type) {
@@ -75,42 +69,22 @@ class PublicKeysViewModel(
             null
         }
 
-        viewModelScope.launch(Dispatchers.IO + CoroutineExceptionHandler { _, _ -> }) {
-            requestZCashUfvk()
-        }
-
         viewState = PublicKeysModule.ViewState(
             evmAddress = evmAddress,
             extendedPublicKey = publicKey?.let { ExtendedPublicKey(it, accountPublicKey) }
         )
+
+        loadZcashViewKey(account.type)
     }
 
-    private suspend fun requestZCashUfvk() {
-        getZCashUfvk()?.let {
+    /** The key belongs to this account alone — an adapter lookup would resolve the active one. */
+    private fun loadZcashViewKey(accountType: AccountType) {
+        viewModelScope.launch(CoroutineExceptionHandler { _, _ -> }) {
+            val viewKey = zcashKeyExporter.viewingKey(accountType)
             viewState = viewState.copy(
-                zcashUfvk = it
+                zcashViewKey = viewKey?.let(::ZcashViewKey),
+                zcashViewKeyFailed = viewKey == null && zcashKeyExporter.supportsViewingKey(accountType)
             )
         }
     }
-
-    /***
-     * Check all address types and find the first one that has a valid ufvk
-     * @return ufvk or null if not found
-     */
-    private suspend fun getZCashUfvk(): String? {
-        AddressSpecType.entries.forEach { type ->
-            val tokenQuery = TokenQuery(
-                BlockchainType.Zcash,
-                TokenType.AddressSpecTyped(type)
-            )
-            marketKitWrapper.token(tokenQuery)
-                ?.let { adapterManager.getAdapterForToken<ZcashAdapter>(it) }
-                ?.getFirstAccount()?.ufvk?.let { zcashUfvk ->
-                    return zcashUfvk
-                }
-        }
-
-        return null
-    }
-
 }

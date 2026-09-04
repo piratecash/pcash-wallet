@@ -9,7 +9,6 @@ import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.ui_compose.BaseComposeFragment
 import cash.p.terminal.ui_compose.CoinFragmentInput
-import cash.p.terminal.ui_compose.getInput
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.math.BigDecimal
 
@@ -25,7 +24,7 @@ class StackingFragment : BaseComposeFragment() {
         }
 
         if(!isSetPreselected) {
-            navController.getInput<StackingType>()?.let {
+            getInput<StackingType>()?.let {
                 viewModel.setStackingType(it)
             }
             isSetPreselected = true

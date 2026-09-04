@@ -16,7 +16,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import java.util.concurrent.TimeUnit
 
 class PendingTransactionRepository(
     private val storage: PendingTransactionStorage,
@@ -80,6 +79,12 @@ class PendingTransactionRepository(
         }
     }
 
+    suspend fun rebaseSdkBalanceAtCreation(ids: List<String>, atomic: String) = mutex.withLock {
+        withContext(dispatcherProvider.io) {
+            storage.rebaseSdkBalanceAtCreation(ids, atomic)
+        }
+    }
+
     suspend fun deleteById(id: String) = mutex.withLock {
         withContext(dispatcherProvider.io) {
             storage.deleteById(id)
@@ -113,7 +118,7 @@ class PendingTransactionRepository(
             nonce = draft.nonce,
             memo = draft.memo,
             createdAt = draft.timestamp,
-            expiresAt = draft.timestamp + TimeUnit.HOURS.toMillis(1),
+            expiresAt = draft.timestamp + draft.timeToLiveMs,
         )
     }
 

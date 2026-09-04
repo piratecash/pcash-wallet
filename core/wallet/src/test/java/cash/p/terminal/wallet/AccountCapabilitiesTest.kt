@@ -7,9 +7,11 @@ import cash.p.terminal.wallet.AccountType.Mnemonic
 import cash.p.terminal.wallet.AccountType.MnemonicMonero
 import cash.p.terminal.wallet.AccountType.StellarAddress
 import cash.p.terminal.wallet.AccountType.TonAddress
+import cash.p.terminal.wallet.AccountType.ZCashSaplingKey
 import cash.p.terminal.wallet.AccountType.ZCashUfvKey
 import java.math.BigInteger
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -23,6 +25,8 @@ class AccountCapabilitiesTest {
             TonAddress("ton1"),
             StellarAddress("stellar1"),
             ZCashUfvKey("ufvk"),
+            saplingSpendingKey,
+            saplingViewingKey,
         )
 
         supported.forEach { type ->
@@ -47,6 +51,26 @@ class AccountCapabilitiesTest {
         assertTrue(accountOf(hardwareType()).supportsTonConnect())
         assertFalse(accountOf(evmPrivateKeyType()).supportsTonConnect())
         assertFalse(accountOf(TonAddress("ton1")).supportsTonConnect())
+    }
+
+    @Test
+    fun isWatchAccountType_zcashSaplingKey_followsTheKeyHrp() {
+        assertFalse(saplingSpendingKey.isWatchAccountType)
+        assertTrue(saplingViewingKey.isWatchAccountType)
+    }
+
+    @Test
+    fun description_zcashSaplingKey_namesTheSubtype() {
+        assertEquals("ZCash Sapling Key", saplingSpendingKey.description)
+        assertEquals("ZCash Sapling Viewing Key", saplingViewingKey.description)
+    }
+
+    @Test
+    fun zcashSaplingKey_addsNoTokensAndNoDerivations() {
+        listOf(saplingSpendingKey, saplingViewingKey).forEach { type ->
+            assertFalse(type.canAddTokens, "$type should not add tokens")
+            assertEquals(emptyList(), type.supportedDerivations, "$type should have no derivations")
+        }
     }
 
     private fun accountOf(type: AccountType) = Account(
@@ -74,6 +98,10 @@ class AccountCapabilitiesTest {
     )
 
     private fun evmPrivateKeyType() = EvmPrivateKey(BigInteger.ONE)
+
+    private val saplingSpendingKey = ZCashSaplingKey("secret-extended-key-main1qsaplingspendingkey")
+
+    private val saplingViewingKey = ZCashSaplingKey("zxviews1qsaplingviewingkey")
 
     private val validMnemonicWords = listOf(
         "abandon",

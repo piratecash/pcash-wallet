@@ -10,6 +10,15 @@ import cash.p.terminal.core.IRateAppManager
 import cash.p.terminal.core.ITermsManager
 import cash.p.terminal.core.ITorManager
 import cash.p.terminal.core.adapters.zcash.ZcashAddressDeriver
+import cash.p.terminal.core.adapters.zcash.ZcashIronwoodMigrationRegistry
+import cash.p.terminal.core.adapters.zcash.ZcashKeyExporter
+import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFiles
+import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProvider
+import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProviderImpl
+import cash.p.terminal.core.adapters.zcash.session.ZcashSessionManager
+import cash.p.terminal.core.adapters.zcash.session.ZcashSyncScheduler
+import cash.p.terminal.core.adapters.zcash.session.ZcashWalletOpener
+import cash.p.terminal.core.adapters.zcash.session.ZcashWalletOpenerImpl
 import cash.p.terminal.core.address.AddressCheckManager
 import cash.p.terminal.core.converters.PendingTransactionConverter
 import cash.p.terminal.core.deeplink.DeeplinkParser
@@ -206,6 +215,12 @@ val managerModule = module {
     singleOf(::DefaultCurrencyManager) bind CurrencyManager::class
     singleOf(::SolanaRpcSourceManager)
     singleOf(::ZcashAddressDeriver)
+    singleOf(::ZcashKeyExporter)
+    singleOf(::ZcashDatabaseFiles)
+    singleOf(::ZcashDbKeyProviderImpl) bind ZcashDbKeyProvider::class
+    singleOf(::ZcashWalletOpenerImpl) bind ZcashWalletOpener::class
+    singleOf(::ZcashSyncScheduler)
+    singleOf(::ZcashSessionManager)
     singleOf(::TonFallbackAddressProvider)
     singleOf(::ZcashFallbackAddressProvider)
     single<FallbackAddressProvider> {
@@ -435,4 +450,5 @@ val managerModule = module {
     singleOf(::PendingTransactionMatcher)
     singleOf(::PendingAccountProviderImpl) bind PendingAccountProvider::class
     singleOf(::PendingTransactionConverter)
+    singleOf(::ZcashIronwoodMigrationRegistry)
 }

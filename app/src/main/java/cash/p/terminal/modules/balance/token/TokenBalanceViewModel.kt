@@ -14,16 +14,19 @@ import cash.p.terminal.core.isEligibleForMoneroFullWalletRecovery
 import cash.p.terminal.core.MoneroSpendReadiness
 import cash.p.terminal.core.requiresTrezorPreparation
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
+import cash.p.terminal.core.adapters.zcash.convertZatoshiToZec
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.isCustom
 import cash.p.terminal.core.isNative
+import cash.p.terminal.core.zcashAddressSpecs
 import cash.p.terminal.core.managers.AmlStatusManager
 import cash.p.terminal.core.managers.AddressLabelManager
 import cash.p.terminal.core.managers.ConnectivityManager
-import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.core.managers.MarketFavoritesManager
 import cash.p.terminal.core.managers.OfflineKey
 import cash.p.terminal.core.managers.OfflineModeManager
+import cash.p.terminal.core.managers.PendingTransactionRegistrar
+import cash.p.terminal.core.managers.broadcasting
 import cash.p.terminal.core.managers.PoisonAddressManager
 import cash.p.terminal.core.managers.PriceManager
 import cash.p.terminal.core.managers.StackingManager
@@ -49,6 +52,7 @@ import cash.p.terminal.modules.send.fee.getWarningThreshold
 import cash.p.terminal.modules.send.hardwareWalletUserMessageRes
 import cash.p.terminal.modules.send.isHardwareWalletCancelled
 import cash.p.terminal.modules.send.zcash.SendZCashViewModel
+import cash.p.terminal.modules.send.zcash.zcashPendingDraft
 import cash.p.terminal.modules.transactions.AmlStatus
 import cash.p.terminal.modules.transactions.addressMetadataChangesFlow
 import cash.p.terminal.modules.transactions.Filter
@@ -74,6 +78,7 @@ import cash.p.terminal.wallet.balance.BalanceViewType
 import cash.p.terminal.wallet.balance.DeemedValue
 import cash.p.terminal.wallet.canSwap
 import cash.p.terminal.wallet.entities.TokenQuery
+import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.isBackedUpOrNotRequired
 import cash.p.terminal.wallet.isCosanta
@@ -86,7 +91,6 @@ import io.horizontalsystems.core.ViewModelUiState
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.hoursUntil
 import io.horizontalsystems.core.logger.AppLogger
-import io.horizontalsystems.core.toHexReversed
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -139,7 +143,7 @@ class TokenBalanceViewModel(
     private val marketKit: MarketKitWrapper = getKoinInstance()
     private val poisonAddressManager: PoisonAddressManager = getKoinInstance()
     private val addressLabelManager: AddressLabelManager = getKoinInstance()
-    private val locallyCreatedTransactionRepository: LocallyCreatedTransactionRepository = getKoinInstance()
+    private val pendingRegistrar: PendingTransactionRegistrar = getKoinInstance()
 
     private val title = wallet.token.coin.name
 
@@ -745,9 +749,14 @@ class TokenBalanceViewModel(
         val isTransparent =
             (item.wallet.token.type as? TokenType.AddressSpecTyped)?.type == TokenType.AddressSpecType.Transparent
         if (!isTransparent || item.balanceData.available <= ZcashAdapter.MINERS_FEE) return false
+        if (!canShield(item.wallet.account)) return false
 
         return hasReachedSyncedState()
     }
+
+    /** Shielding spends into this account's own shielded receiver, so it needs both to exist. */
+    private fun canShield(account: Account): Boolean = !account.isWatchAccount &&
+            account.type.zcashAddressSpecs().any { it != TokenType.AddressSpecType.Transparent }
 
     private fun zcashMigrationRequiredAmount(): String? {
         // The typed lookup is an unchecked cast, so it must not be reached for other blockchains.
@@ -932,9 +941,17 @@ class TokenBalanceViewModel(
             try {
                 sendResult = SendResult.Sending
                 val zcashAdapter = adapterManager.getAdapterForWallet<ZcashAdapter>(wallet)
-                val txHash = zcashAdapter?.proposeShielding()?.byteArray?.toHexReversed()
-                txHash?.let {
-                    locallyCreatedTransactionRepository.markCreated(wallet, it)
+                    ?: error("Zcash adapter is unavailable")
+                val target = zcashAdapter.shieldingTarget()
+                val draft = adapterManager.zcashPendingDraft(
+                    wallet = wallet,
+                    amount = target.amount.convertZatoshiToZec(),
+                    // The recipient pays out of the shielded amount, so nothing is charged on top.
+                    fee = null,
+                    toAddress = target.address,
+                )
+                val txHash = pendingRegistrar.broadcasting(draft) {
+                    zcashAdapter.proposeShielding(target)
                 }
                 sendResult = SendResult.Sent(txHash)
             } catch (e: Throwable) {

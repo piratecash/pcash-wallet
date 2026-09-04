@@ -48,6 +48,7 @@ import cash.p.terminal.core.storage.AppDatabase
 import cash.p.terminal.core.storage.BlockchainSettingsStorage
 import cash.p.terminal.core.storage.EvmSyncSourceStorage
 import cash.p.terminal.core.storage.NftStorage
+import cash.p.terminal.domain.usecase.ClearLegacyZcashDataUseCase
 import cash.p.terminal.modules.backuplocal.fullbackup.BackupProvider
 import cash.p.terminal.modules.balance.BalanceViewTypeManager
 import cash.p.terminal.modules.chart.ChartIndicatorManager
@@ -86,6 +87,9 @@ import coil3.gif.GifDecoder
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.crossfade
 import coil3.svg.SvgDecoder
+import co.touchlab.kermit.Logger as KermitLogger
+import co.touchlab.kermit.Severity
+import co.touchlab.kermit.platformLogWriter
 import com.getkeepsafe.relinker.ReLinker
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.m2049r.levin.util.NetCipherHelper
@@ -248,6 +252,10 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
 
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
+            KermitLogger.setLogWriters(platformLogWriter())
+            KermitLogger.setMinSeverity(Severity.Debug)
+        } else {
+            KermitLogger.setLogWriters(emptyList())
         }
 
         instance = this
@@ -536,6 +544,7 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
             contactsRepository.initialize()
             evmLabelManager.sync()
             AppLog.cleanupOldLogs()
+            get<ClearLegacyZcashDataUseCase>().invoke()
         }
     }
 

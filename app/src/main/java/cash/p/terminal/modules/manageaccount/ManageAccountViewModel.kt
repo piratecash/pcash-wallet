@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.R
+import cash.p.terminal.core.adapters.zcash.ZcashKeyExporter
 import cash.p.terminal.modules.balance.headerNote
 import cash.p.terminal.modules.manageaccount.ManageAccountModule.BackupItem
 import cash.p.terminal.modules.manageaccount.ManageAccountModule.KeyAction
@@ -32,6 +33,11 @@ class ManageAccountViewModel(
 
     private val tangemSdkManager: TangemSdkManager by inject(TangemSdkManager::class.java)
     private val walletManager: IWalletManager by inject(IWalletManager::class.java)
+
+    // We have only one active Monero wallet, so MoneroWalletService is enough to get active wallet
+    private val moneroWalletService: MoneroWalletService by inject(MoneroWalletService::class.java)
+
+    private val zcashKeyExporter: ZcashKeyExporter by inject(ZcashKeyExporter::class.java)
 
     var viewState by mutableStateOf(
         ManageAccountModule.ViewState(
@@ -156,7 +162,7 @@ class ManageAccountViewModel(
     }
 
     private suspend fun getKeyActions(account: Account): List<KeyAction> {
-        if (!account.isBackedUp && !account.isFileBackedUp && account.supportsBackup) {
+        if (!account.hasAnyBackup && account.supportsBackup) {
             return emptyList()
         }
         return when (account.type) {
@@ -194,6 +200,8 @@ class ManageAccountViewModel(
             is AccountType.TrezorDevice -> listOf()
 
             is AccountType.ZCashUfvKey,
+            is AccountType.ZCashSaplingKey -> zcashKeyActions(account.type, zcashKeyExporter)
+
             is AccountType.EvmAddress,
             is AccountType.SolanaAddress,
             is AccountType.TronAddress,
@@ -211,17 +219,9 @@ class ManageAccountViewModel(
         }
     }
 
-    fun getMoneroViewKey(): String {
-        // We have only one active Monero wallet, so MoneroWalletService is enough to get active wallet
-        val moneroWalletService: MoneroWalletService by inject(MoneroWalletService::class.java)
-        return moneroWalletService.wallet?.secretViewKey ?: ""
-    }
+    fun getViewKey(): String = moneroWalletService.wallet?.secretViewKey.orEmpty()
 
-    fun getMoneroSpendKey(): String {
-        // We have only one active Monero wallet, so MoneroWalletService is enough to get active wallet
-        val moneroWalletService: MoneroWalletService by inject(MoneroWalletService::class.java)
-        return moneroWalletService.wallet?.secretSpendKey ?: ""
-    }
+    fun getSpendKey(): String = moneroWalletService.wallet?.secretSpendKey.orEmpty()
 
     private suspend fun handleUpdatedAccounts(accounts: List<Account>) {
         val account = accounts.find { it.id == account.id }
@@ -234,4 +234,13 @@ class ManageAccountViewModel(
             viewState.copy(closeScreen = true)
         }
     }
+}
+
+/** Rows reflect what the exporter yields now; a later derivation failure is reported on the screen. */
+internal suspend fun zcashKeyActions(
+    type: AccountType,
+    exporter: ZcashKeyExporter,
+): List<KeyAction> = buildList {
+    if (exporter.privateKeyTypes(type).isNotEmpty()) add(KeyAction.PrivateKeys)
+    if (exporter.viewingKey(type) != null) add(KeyAction.PublicKeys)
 }

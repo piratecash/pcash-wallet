@@ -9,10 +9,10 @@ import cash.p.terminal.core.App
 import cash.p.terminal.core.ISendZcashAdapter
 import cash.p.terminal.core.ethereum.CautionViewItem
 import cash.p.terminal.core.managers.PendingTransactionRegistrar
+import cash.p.terminal.core.managers.broadcasting
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.entities.Address
 import cash.p.terminal.entities.CoinValue
-import cash.p.terminal.entities.PendingTransactionDraft
 import cash.p.terminal.modules.amount.AmountValidator
 import cash.p.terminal.modules.amount.SendAmountService
 import cash.p.terminal.modules.multiswap.sendtransaction.ISendTransactionService
@@ -24,14 +24,11 @@ import cash.p.terminal.modules.multiswap.ui.DataField
 import cash.p.terminal.modules.send.SendModule
 import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.zcash.SendZCashAddressService
-import cash.p.terminal.modules.send.zcash.getZcashAvailableToSend
-import cash.p.terminal.modules.send.zcash.getZcashSdkBalance
+import cash.p.terminal.modules.send.zcash.zcashPendingDraft
 import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.wallet.Token
-import cash.z.ecc.android.sdk.ext.collectWith
+import io.horizontalsystems.core.collectWith
 import io.horizontalsystems.core.entities.CurrencyValue
-import io.horizontalsystems.core.logger.AppLogger
-import io.horizontalsystems.core.toHexReversed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -47,7 +44,7 @@ class SendTransactionServiceZCash(
 
     private val xRateService = XRateService(App.marketKit, App.currencyManager.baseCurrency)
     private val availableToSend: BigDecimal
-        get() = adapterManager.getZcashAvailableToSend(wallet, adapter)
+        get() = adapter.maxSpendableBalance
 
     private val amountService = SendAmountService(
         amountValidator = AmountValidator(),
@@ -60,7 +57,6 @@ class SendTransactionServiceZCash(
     val coinMaxAllowedDecimals = wallet.token.decimals
     val fiatMaxAllowedDecimals = AppConfigProvider.fiatDecimal
 
-    private var pendingTxId: String? = null
     private val pendingRegistrar: PendingTransactionRegistrar by inject(PendingTransactionRegistrar::class.java)
 
     private var amountState = amountService.stateFlow.value
@@ -69,8 +65,6 @@ class SendTransactionServiceZCash(
 
     var coinRate by mutableStateOf(xRateService.getRate(wallet.coin.uid))
         private set
-
-    private val logger = AppLogger("Send-${wallet.coin.code}")
 
     override fun start(coroutineScope: CoroutineScope) {
         xRateService.getRateFlow(wallet.coin.uid).collectWith(coroutineScope) {
@@ -166,38 +160,23 @@ class SendTransactionServiceZCash(
     }
 
     override suspend fun sendTransaction(mevProtectionEnabled: Boolean): SendTransactionResult {
+        val amount = checkNotNull(amountState.amount)
+        val address = checkNotNull(addressState.address).hex
         try {
-            val sdkBalance = adapterManager.getZcashSdkBalance(wallet, amountState.availableBalance)
-            val draft = PendingTransactionDraft(
+            val draft = adapterManager.zcashPendingDraft(
                 wallet = wallet,
-                token = wallet.token,
-                amount = amountState.amount!!,
+                amount = amount,
                 fee = adapter.fee.firstOrNull(),
-                sdkBalanceAtCreation = sdkBalance,
-                fromAddress = "",  // ZCash doesn't require from address
-                toAddress = addressState.address!!.hex,
+                toAddress = address,
                 memo = memo,
-                txHash = null  // ZCash doesn't return hash immediately
+                availableBalance = amountState.availableBalance,
             )
-
-            pendingTxId = pendingRegistrar.register(draft)
-
-            val txId = adapter.send(
-                amount = amountState.amount!!,
-                address = addressState.address!!.hex,
-                memo = memo,
-                logger = logger
-            )
-            pendingTxId?.let {
-                pendingRegistrar.updateTxId(it, txId.byteArray.toHexReversed())
+            val txId = pendingRegistrar.broadcasting(draft) {
+                adapter.send(amount = amount, address = address, memo = memo)
             }
 
-            return SendTransactionResult.ZCash(SendResult.Sent(txId.byteArray.toHexReversed()))
+            return SendTransactionResult.ZCash(SendResult.Sent(txId))
         } catch (e: Throwable) {
-            pendingTxId?.let {
-                pendingRegistrar.deleteFailed(it)
-            }
-
             cautions = listOf(createCaution(e))
             emitState()
             throw e

@@ -48,7 +48,6 @@ import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.body_leah
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
@@ -59,7 +58,7 @@ class CreateAccountFragment : BaseComposeFragment() {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val input = navController.getInput<Input>()
+        val input = getInput<Input>()
         val popUpToInclusiveId = input?.popOffOnSuccess ?: R.id.createAccountFragment
         val inclusive = input?.popOffInclusive != false
         val preselectMonero = input?.preselectMonero == true

@@ -21,6 +21,7 @@ import cash.p.terminal.core.usecase.SyncPendingMultiSwapUseCase
 import cash.p.terminal.core.usecase.UpdateSwapProviderTransactionsStatusUseCase
 import cash.p.terminal.core.usecase.ValidateMoneroHeightUseCase
 import cash.p.terminal.core.usecase.ValidateMoneroMnemonicUseCase
+import cash.p.terminal.domain.usecase.ClearLegacyZcashDataUseCase
 import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
 import cash.p.terminal.domain.usecase.GetLocalizedAssetUseCase
 import cash.p.terminal.domain.usecase.DeleteAllContactsUseCase
@@ -62,6 +63,7 @@ val useCaseModule = module {
     factoryOf(::GetMoneroWalletFilesNameUseCase) bind IGetMoneroWalletFilesNameUseCase::class
     singleOf(::TorConnectionStatusUseCase) bind ITorConnectionStatusUseCase::class
     singleOf(::ClearZCashWalletDataUseCase)
+    factoryOf(::ClearLegacyZcashDataUseCase)
     singleOf(::OfflineModeUseCase)
     singleOf(::DeleteAllContactsUseCase)
     singleOf(::ResetUseCase)

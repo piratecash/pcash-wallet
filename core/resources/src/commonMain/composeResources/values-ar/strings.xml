@@ -144,13 +144,14 @@
     <string name="Restore_RestoreBy">استيراد بواسطة</string>
     <string name="Restore_RecoveryPhrase">كلمات الاسترجاع</string>
     <string name="Restore_PrivateKey">المفتاح الخاص</string>
-    <string name="Restore_PrivateKeyHint">أدخل مفتاح EVM الخاص، أو مفتاح روت BIP32 أو المفتاح الخاص الموسع للحساب</string>
+    <string name="Restore_PrivateKeyHint">أدخل مفتاح EVM الخاص، أو مفتاح روت BIP32، أو المفتاح الخاص الموسع للحساب، أو مفتاح الإنفاق ZCash Sapling</string>
     <string name="Restore_PhraseHint">أدخل كلمات الاسترجاع الخاصة بك</string>
     <string name="monero_restore_seed">كلمات استرجاع مونيرو</string>
     <string name="Restore_NonStandardRestore">Non-Standard Import</string>
     <string name="Restore_NonStandard_Description">This page provides a special wallet restore mechanism to P.CASH users who have a non-standard wallet. Such wallets might have been created in P.CASH version 0.27 - 0.28 using a non-English recovery phrase and/or a special character in the wallet passphrase (i.e. diacritic symbol).\n\nIf you\'re an affected user then your wallet balance will be shown 0 after restoring such wallet in version 0.29 or above. This page will enable you to restore access to your non-standard wallet. Once restored you\'re recommended to create a new wallet (which will be standard compliant) and move funds there.</string>
     <string name="Restore_Bip_Recommended">(recommended)</string>
     <string name="Restore_PrivateKey_InvalidKey">Invalid Key</string>
+    <string name="restore_private_key_is_view_only">هذا مفتاح للعرض فقط. أضفه عبر «مراقبة العنوان».</string>
     <string name="SelectContacts_All">All</string>
     <string name="Restore_BirthdayHeight">Birthday Height</string>
     <string name="restore_birthday_height_or_date">ارتفاع الميلاد أو التاريخ</string>
@@ -1219,11 +1220,12 @@
     <string name="ImportBackupFile_EnterPassword_Description">Enter the backup password to import your wallet.</string>
     <string name="ImportBackupFile_Error_InvalidPassword">Invalid Password</string>
     <string name="ImportBackupFile_BackupPassword">Backup Password</string>
-    <string name="Watch_Address_Hint">Enter Your EVM, TRON, TON or Public Address (Bitcoin, Litecoin, Bitcoin Cash), Account xPubKey or ZCash Unified Full Viewing Key</string>
+    <string name="Watch_Address_Hint">أدخل عنوان EVM أو TRON أو TON أو العنوان العام (Bitcoin، Litecoin، Bitcoin Cash) أو Account xPubKey أو ZCash Viewing Key (Unified أو Sapling)</string>
     <string name="Watch_Address_Watch">Watch</string>
     <string name="Watch_Select_Blockchains">Choose Blockchains</string>
     <string name="Watch_Select_Coins">Choose Coins</string>
     <string name="Watch_Error_InvalidAddressFormat">Address format is not supported</string>
+    <string name="watch_address_is_private_key">هذا مفتاح خاص. أضفه عبر استيراد «المفتاح الخاص».</string>
     <!--Manage Account-->
     <string name="ManageAccount_Name">Name</string>
     <string name="ManageAccount_Save">حفظ</string>
@@ -1340,12 +1342,25 @@
     <string name="PrivateKeys_AccountExtendedPrivateKey">Account Extended Private Key</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Grants full control over Bitcoin and other UTXO based crypto i.e. Litecoin, Bitcoin Cash, Dash etc. within respective wallet.</string>
     <string name="PrivateKeys_NeverShareWarning">Never share this key with anyone. P.CASH Wallet support team will never ask for it.</string>
+    <string name="private_keys_zec_sapling_spending_key">مفتاح إنفاق ZCash Sapling</string>
+    <string name="private_keys_zec_sapling_spending_key_description">يمنح تحكمًا كاملاً في أموال ZCash المحمية في هذه المحفظة، بما في ذلك إنفاقها.</string>
+    <string name="private_keys_zec_sapling_spending_key_error">تعذّر الحصول على مفتاح إنفاق ZCash Sapling</string>
+    <string name="private_keys_zec">ZCash</string>
+    <string name="private_keys_zec_description">يمنح تحكمًا كاملاً في أموال ZCash الشفافة والمحمية في هذه المحفظة، بما في ذلك إنفاقها.</string>
+    <string name="private_keys_zec_transparent_key">مفتاح ZCash الشفاف</string>
+    <string name="private_keys_zec_transparent_key_description">يمنح تحكمًا كاملاً في أموال ZCash الشفافة في هذه المحفظة، بما في ذلك إنفاقها.</string>
+    <string name="private_keys_zec_transparent_key_error">تعذّر الحصول على مفتاح ZCash الشفاف</string>
     <!-- Public Keys -->
     <string name="PublicKeys_Title">Public Keys</string>
     <string name="PublicKeys_EvmAddress">EVM Address</string>
     <string name="PublicKeys_EvmAddress_Description">Allows read-only monitoring of wallets holding assets on Ethereum, Binance Smart Chain and other EVM based blockchains.</string>
     <string name="PublicKeys_AccountExtendedPublicKeyDescription">Allows read-only monitoring of wallets holding Bitcoin and other UTXO based crypto (i.e Litecoin, Bitcoin Cash, Dash etc.).</string>
-    <string name="publicKeys_zec_ufvk_descritpion">Allows read-only monitoring of ZCash, transparent and shielded transactions for the wallet.</string>
+    <string name="publicKeys_zec_ufvk">مفتاح عرض ZCash</string>
+    <string name="publicKeys_zec_ufvk_descritpion">يتيح المراقبة للقراءة فقط لجميع معاملات ZCash الشفافة والمحمية في هذه المحفظة.</string>
+    <string name="publicKeys_zec_transparent_viewing_key_description">يتيح المراقبة للقراءة فقط لمعاملات ZCash الشفافة للمحفظة. المعاملات المحمية غير مشمولة.</string>
+    <string name="public_keys_zec_sapling_viewing_key">مفتاح عرض ZCash Sapling</string>
+    <string name="public_keys_zec_sapling_viewing_key_description">يتيح المراقبة للقراءة فقط لمعاملات ZCash المحمية في هذه المحفظة. المعاملات الشفافة غير مشمولة.</string>
+    <string name="public_keys_zec_viewing_key_error">تعذّر الحصول على مفتاح عرض ZCash</string>
     <!-- Recovery Phrase Verify -->
     <string name="RecoveryPhraseVerify_Title">Verify</string>
     <string name="RecoveryPhraseVerify_Description">Select requested words from your wallet recovery phrase</string>
@@ -2186,7 +2201,6 @@
     <string name="error_hardware_wallet_some_tokens_not_found">تعذر إضافة بعض الرموز</string>
     <string name="send_error_address_unavailable">العنوان غير متاح</string>
     <string name="send_error_amount_unavailable">المبلغ غير متاح</string>
-    <string name="send_error_zcash_params_not_downloaded">لم يقم Zcash بعد بتنزيل الملفات اللازمة للإرسال. اتصل بالإنترنت وحاول مرة أخرى.</string>
     <string name="send_error_fee_rate_unavailable">معدل الرسوم غير متاح</string>
     <string name="send_error_balance_unavailable">الرصيد غير متاح</string>
     <string name="litecoin_mweb_invalid_amount">مبلغ Litecoin MWEB غير صالح</string>
@@ -2240,6 +2254,7 @@
     <string name="transactions_migrate_to_ironwood">إلى Ironwood</string>
     <string name="zcash_migration_publicly_visible_title">مبلغ مرئي للعامة</string>
     <string name="zcash_migration_publicly_visible_description">يتطلب نقل الأموال بين التجمّعات أن يكون المبلغ المُرحَّل مرئيًا للعامة على البلوكشين. يبقى المُرسِل والمُستلِم وعناوينك خاصة.</string>
+    <string name="zcash_migration_error_nothing_to_migrate">لا يوجد شيء يمكن نقله في الوقت الحالي.</string>
     <string name="declined_tokens_title">تم العثور على رموز مخصصة</string>
     <string name="declined_tokens_description">هذه الرموز غير موجودة في قائمة الرموز الموثّقة: %s</string>
     <plurals name="declined_tokens_count">
