@@ -12,10 +12,12 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import java.time.Instant
@@ -29,6 +31,8 @@ class CheckAppUpdateUseCaseTest {
     private val localStorage = mockk<ILocalStorage>(relaxed = true)
     private val languageManager = mockk<LanguageManager>()
     private val timeProvider = mockk<TimeProvider>()
+    private val installSourceProvider = mockk<InstallSourceProvider>()
+    private val googlePlayUpdateAvailabilityProvider = mockk<GooglePlayUpdateAvailabilityProvider>()
 
     private lateinit var useCase: CheckAppUpdateUseCase
 
@@ -36,6 +40,7 @@ class CheckAppUpdateUseCaseTest {
     fun setup() {
         every { languageManager.currentLanguage } returns "en"
         every { timeProvider.now() } returns CHECK_TIME
+        every { installSourceProvider.installSource } returns InstallSource.OTHER
         useCase = CheckAppUpdateUseCase(
             repository = repository,
             systemInfoManager = systemInfoManager,
@@ -43,6 +48,8 @@ class CheckAppUpdateUseCaseTest {
             languageManager = languageManager,
             dispatcherProvider = TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)),
             timeProvider = timeProvider,
+            installSourceProvider = installSourceProvider,
+            googlePlayUpdateAvailabilityProvider = googlePlayUpdateAvailabilityProvider,
         )
     }
 
@@ -103,12 +110,102 @@ class CheckAppUpdateUseCaseTest {
     }
 
     @Test
-    fun invoke_repositoryFails_returnsErrorButStillPersistsTimestamp() = runTest(dispatcher) {
+    fun invoke_repositoryFails_returnsErrorWithoutPersistingTimestamp() = runTest(dispatcher) {
         every { systemInfoManager.appVersion } returns "0.58.0"
         coEvery { repository.getLatestRelease() } throws RuntimeException("network")
 
         assertEquals(UpdateStatus.Error, useCase())
+        verify(exactly = 0) { localStorage.lastUpdateCheckTimestamp = any() }
+    }
+
+    @Test
+    fun invoke_googlePlayNotAvailable_ignoresGithubAndCachedVersion() = runTest(dispatcher) {
+        every { installSourceProvider.installSource } returns InstallSource.GOOGLE_PLAY
+        every { systemInfoManager.appVersion } returns "0.59.4"
+        coEvery { repository.getLatestRelease() } returns release("0.60.0", "0.60")
+        coEvery { googlePlayUpdateAvailabilityProvider.getAvailability() } returns
+            GooglePlayUpdateAvailability.NotAvailable
+
+        assertEquals(UpdateStatus.UpToDate(release = null), useCase())
+
+        coVerify(exactly = 0) { repository.getLatestRelease() }
+        verify(exactly = 0) { localStorage.latestKnownVersion = any() }
         verify { localStorage.lastUpdateCheckTimestamp = CHECK_TIME }
+    }
+
+    @Test
+    fun invoke_googlePlayAvailable_returnsGenericUpdateWithVersionCode() = runTest(dispatcher) {
+        every { installSourceProvider.installSource } returns InstallSource.GOOGLE_PLAY
+        coEvery { googlePlayUpdateAvailabilityProvider.getAvailability() } returns
+            GooglePlayUpdateAvailability.Available(versionCode = 257)
+
+        assertEquals(
+            UpdateStatus.Available(
+                release = null,
+                changelogSnippet = null,
+                availableVersionCode = 257,
+            ),
+            useCase(),
+        )
+
+        coVerify(exactly = 0) { repository.getLatestRelease() }
+        verify(exactly = 0) { localStorage.latestKnownVersion = any() }
+        verify { localStorage.lastUpdateCheckTimestamp = CHECK_TIME }
+    }
+
+    @Test
+    fun invoke_googlePlayCancellation_propagatesWithoutPersistingTimestamp() {
+        every { installSourceProvider.installSource } returns InstallSource.GOOGLE_PLAY
+        coEvery { googlePlayUpdateAvailabilityProvider.getAvailability() } throws
+            CancellationException("cancelled")
+
+        assertThrows(CancellationException::class.java) {
+            runTest(dispatcher) { useCase() }
+        }
+
+        verify(exactly = 0) { localStorage.lastUpdateCheckTimestamp = any() }
+    }
+
+    @Test
+    fun invoke_googlePlayUpdateInProgress_returnsGenericUpdateWithVersionCode() = runTest(dispatcher) {
+        every { installSourceProvider.installSource } returns InstallSource.GOOGLE_PLAY
+        coEvery { googlePlayUpdateAvailabilityProvider.getAvailability() } returns
+            GooglePlayUpdateAvailability.DeveloperTriggeredUpdateInProgress(versionCode = 257)
+
+        assertEquals(
+            UpdateStatus.Available(
+                release = null,
+                changelogSnippet = null,
+                availableVersionCode = 257,
+            ),
+            useCase(),
+        )
+    }
+
+    @Test
+    fun invoke_googlePlayError_returnsErrorWithoutGithubFallback() = runTest(dispatcher) {
+        every { installSourceProvider.installSource } returns InstallSource.GOOGLE_PLAY
+        coEvery { googlePlayUpdateAvailabilityProvider.getAvailability() } returns
+            GooglePlayUpdateAvailability.Error
+
+        assertEquals(UpdateStatus.Error, useCase())
+
+        coVerify(exactly = 0) { repository.getLatestRelease() }
+        verify(exactly = 0) { localStorage.latestKnownVersion = any() }
+        verify(exactly = 0) { localStorage.lastUpdateCheckTimestamp = any() }
+    }
+
+    @Test
+    fun invoke_fdroidInstall_usesGithubAndSkipsGooglePlay() = runTest(dispatcher) {
+        every { installSourceProvider.installSource } returns InstallSource.FDROID
+        every { systemInfoManager.appVersion } returns "0.58.0"
+        val latest = release("0.58.0", "0.58")
+        coEvery { repository.getLatestRelease() } returns latest
+
+        assertEquals(UpdateStatus.UpToDate(latest), useCase())
+
+        coVerify(exactly = 0) { googlePlayUpdateAvailabilityProvider.getAvailability() }
+        verify { localStorage.latestKnownVersion = latest.version }
     }
 
     private fun release(version: String, minor: String) = AppRelease(
