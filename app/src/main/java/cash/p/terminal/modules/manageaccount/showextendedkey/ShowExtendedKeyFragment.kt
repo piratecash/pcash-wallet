@@ -144,7 +144,7 @@ private fun ShowExtendedKeyScreen(
                             title = TranslatableString.ResString(R.string.Info_Title),
                             icon = R.drawable.ic_info_24,
                             onClick = {
-                                FaqManager.showFaqPage(FaqManager.faqPathPrivateKeys)
+                                FaqManager.showFaqPage(FaqManager.faqPrivateKeys)
                             }
                         )
                     )
