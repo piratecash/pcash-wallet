@@ -2230,4 +2230,5 @@
     <string name="balance_hide_on_flip_info_description">잔액을 숨기거나 표시하려면 기기 화면을 아래로 뒤집거나 보안 설정에서 끄면 됩니다.</string>
     <string name="balance_hide_on_flip_dont_show_again">다시 표시 안 함</string>
     <string name="badge_new">신규</string>
+    <string name="monero_keys_unavailable">이 지갑의 키를 사용할 수 없습니다</string>
 </resources>

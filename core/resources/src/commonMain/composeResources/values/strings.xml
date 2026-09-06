@@ -1729,6 +1729,7 @@ Proceed only if you\'re sure.</string>
 
     <string name="view_key">View key</string>
     <string name="spend_key">Spend key</string>
+    <string name="monero_keys_unavailable">Keys are not available for this wallet</string>
 
     <!-- Evm Private Key -->
     <string name="EvmPrivateKey_Title">EVM Private Key</string>

@@ -2236,4 +2236,5 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="balance_hide_on_flip_info_description">Pour masquer ou afficher votre solde, retournez simplement l\'écran de l\'appareil vers le bas, ou désactivez-le dans les paramètres de sécurité.</string>
     <string name="balance_hide_on_flip_dont_show_again">Ne plus afficher</string>
     <string name="badge_new">Nouveau</string>
+    <string name="monero_keys_unavailable">Les clés ne sont pas disponibles pour ce portefeuille</string>
 </resources>

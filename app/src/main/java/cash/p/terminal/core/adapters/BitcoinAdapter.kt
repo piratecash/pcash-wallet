@@ -221,11 +221,10 @@ class BitcoinAdapter(
             when (accountType) {
                 is AccountType.Mnemonic -> {
                     val seed = accountType.seed
-                    val derivation = tokenType.derivation ?: throw IllegalArgumentException()
 
                     val address = BitcoinKit.firstAddress(
                         seed,
-                        derivation.purpose,
+                        tokenType.purpose,
                         NetworkType.MainNet
                     )
 
@@ -234,10 +233,9 @@ class BitcoinAdapter(
 
                 is AccountType.HdExtendedKey -> {
                     val key = accountType.hdExtendedKey
-                    val derivation = tokenType.derivation ?: throw IllegalArgumentException()
                     val address = BitcoinKit.firstAddress(
                         key,
-                        derivation.purpose,
+                        tokenType.purpose,
                         NetworkType.MainNet
                     )
 

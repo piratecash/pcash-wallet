@@ -2221,4 +2221,5 @@
     <string name="balance_hide_on_flip_info_description">若要隐藏或显示余额，只需将设备屏幕朝下翻转，或在安全设置中将其关闭。</string>
     <string name="balance_hide_on_flip_dont_show_again">不再显示</string>
     <string name="badge_new">新</string>
+    <string name="monero_keys_unavailable">此钱包的密钥不可用</string>
 </resources>

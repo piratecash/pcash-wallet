@@ -27,6 +27,7 @@ import cash.p.terminal.domain.usecase.DeleteAllContactsUseCase
 import cash.p.terminal.domain.usecase.ResetUseCase
 import cash.p.terminal.manager.ITorConnectionStatusUseCase
 import cash.p.terminal.modules.pin.SendZecOnDuressUseCase
+import cash.p.terminal.modules.softwareupdate.domain.GooglePlayUpdateAvailabilityProvider
 import cash.p.terminal.modules.tor.TorConnectionStatusUseCase
 import cash.p.terminal.tangem.domain.usecase.ICreateHardwareWalletUseCase
 import cash.p.terminal.trezor.domain.usecase.ICreateTrezorWalletUseCase
@@ -51,7 +52,7 @@ val useCaseModule = module {
     factoryOf(::ValidateMoneroHeightUseCase) bind TrezorMoneroRestoreHeightResolver::class
     singleOf(::AddMoneroToTrezorAccountUseCase)
     factoryOf(::GetLocalizedAssetUseCase)
-    factoryOf(::CheckGooglePlayUpdateUseCase)
+    factoryOf(::CheckGooglePlayUpdateUseCase) bind GooglePlayUpdateAvailabilityProvider::class
     factoryOf(::MoneroWalletUseCase)
     factoryOf(::GenerateMoneroWalletUseCase)
     factoryOf(::GetRestoreHeightForWalletUseCase)

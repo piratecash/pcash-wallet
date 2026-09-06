@@ -1,6 +1,8 @@
 package cash.p.terminal.modules.manageaccount
 
 import android.os.Parcelable
+import android.view.View
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -33,10 +35,10 @@ class ManageAccountFragment : BaseComposeFragment() {
 
     @Composable
     private fun ManageAccountContent(navController: NavController, input: Input) {
+        val view = LocalView.current
         val accountManager: IAccountManager by inject(IAccountManager::class.java)
         val account = remember { accountManager.account(input.accountId) }
         if (account == null) {
-            val view = LocalView.current
             LaunchedEffect(Unit) {
                 HudHelper.showErrorMessage(view, getString(R.string.error_no_active_account))
                 navController.popBackStack()
@@ -65,32 +67,44 @@ class ManageAccountFragment : BaseComposeFragment() {
             onCloseClicked = viewModel::onClose,
             onSaveClicked = viewModel::onSave,
             onNameChanged = viewModel::onChange,
-            onActionClick = {
-                if (it == ManageAccountModule.KeyAction.ViewKey) {
-                    navController.authorizedAction {
-                        navController.slideFromRight(
-                            R.id.generalPrivateKeyFragment,
-                            GeneralPrivateKeyFragment.Input(
-                                viewModel.getMoneroViewKey(),
-                                getString(R.string.view_key)
-                            )
-                        )
-                    }
-                } else if (it == ManageAccountModule.KeyAction.SpendKey) {
-                    navController.authorizedAction {
-                        navController.slideFromRight(
-                            R.id.generalPrivateKeyFragment,
-                            GeneralPrivateKeyFragment.Input(
-                                viewModel.getMoneroSpendKey(),
-                                getString(R.string.spend_key)
-                            )
-                        )
-                    }
-                } else {
-                    viewModel.onActionClick(it)
+            onActionClick = { action ->
+                when (action) {
+                    ManageAccountModule.KeyAction.ViewKey -> openMoneroKey(
+                        navController = navController,
+                        view = view,
+                        key = viewModel.getMoneroViewKey(),
+                        titleRes = R.string.view_key
+                    )
+
+                    ManageAccountModule.KeyAction.SpendKey -> openMoneroKey(
+                        navController = navController,
+                        view = view,
+                        key = viewModel.getMoneroSpendKey(),
+                        titleRes = R.string.spend_key
+                    )
+
+                    else -> viewModel.onActionClick(action)
                 }
             }
         )
+    }
+
+    private fun openMoneroKey(
+        navController: NavController,
+        view: View,
+        key: String?,
+        @StringRes titleRes: Int
+    ) {
+        if (key == null) {
+            HudHelper.showErrorMessage(view, getString(R.string.monero_keys_unavailable))
+            return
+        }
+        navController.authorizedAction {
+            navController.slideFromRight(
+                R.id.generalPrivateKeyFragment,
+                GeneralPrivateKeyFragment.Input(key, getString(titleRes))
+            )
+        }
     }
 
     @Parcelize

@@ -2238,4 +2238,5 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="balance_hide_on_flip_info_description">Para ocultar ou mostrar seu saldo, basta virar a tela do dispositivo para baixo ou desativá-lo nas configurações de segurança.</string>
     <string name="balance_hide_on_flip_dont_show_again">Não mostrar novamente</string>
     <string name="badge_new">Novo</string>
+    <string name="monero_keys_unavailable">As chaves não estão disponíveis para esta carteira</string>
 </resources>
