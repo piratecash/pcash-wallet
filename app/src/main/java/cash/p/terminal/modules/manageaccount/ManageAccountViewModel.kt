@@ -7,6 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.R
 import cash.p.terminal.core.adapters.zcash.ZcashKeyExporter
+import cash.p.terminal.core.tryOrNull
+import cash.p.terminal.core.utils.MoneroSecretKeys
+import cash.p.terminal.core.utils.MoneroWalletSeedConverter
 import cash.p.terminal.modules.balance.headerNote
 import cash.p.terminal.modules.manageaccount.ManageAccountModule.BackupItem
 import cash.p.terminal.modules.manageaccount.ManageAccountModule.KeyAction
@@ -17,7 +20,6 @@ import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.canBeDuplicated
 import cash.p.terminal.wallet.entities.TokenType
-import com.m2049r.xmrwallet.service.MoneroWalletService
 import com.tangem.common.card.Card
 import com.tangem.common.doOnSuccess
 import io.horizontalsystems.core.entities.BlockchainType
@@ -33,9 +35,6 @@ class ManageAccountViewModel(
 
     private val tangemSdkManager: TangemSdkManager by inject(TangemSdkManager::class.java)
     private val walletManager: IWalletManager by inject(IWalletManager::class.java)
-
-    // We have only one active Monero wallet, so MoneroWalletService is enough to get active wallet
-    private val moneroWalletService: MoneroWalletService by inject(MoneroWalletService::class.java)
 
     private val zcashKeyExporter: ZcashKeyExporter by inject(ZcashKeyExporter::class.java)
 
@@ -58,6 +57,16 @@ class ManageAccountViewModel(
 
     private val _showAccessCodeRecoveryDialog = Channel<Card>(Channel.UNLIMITED)
     val showAccessCodeRecoveryDialog = _showAccessCodeRecoveryDialog.receiveAsFlow()
+
+    private val moneroKeys: MoneroSecretKeys? by lazy {
+        (account.type as? AccountType.MnemonicMonero)?.let {
+            tryOrNull { MoneroWalletSeedConverter.getSecretKeys(it.words) }
+        }
+    }
+
+    fun getMoneroViewKey(): String? = moneroKeys?.viewKey
+
+    fun getMoneroSpendKey(): String? = moneroKeys?.spendKey
 
     init {
         viewModelScope.launch {
@@ -161,6 +170,14 @@ class ManageAccountViewModel(
             } != null
     }
 
+    private fun moneroKeyActions(): List<KeyAction> = buildList {
+        add(KeyAction.RecoveryPhrase)
+        if (moneroKeys != null) {
+            add(KeyAction.ViewKey)
+            add(KeyAction.SpendKey)
+        }
+    }
+
     private suspend fun getKeyActions(account: Account): List<KeyAction> {
         if (!account.hasAnyBackup && account.supportsBackup) {
             return emptyList()
@@ -175,11 +192,7 @@ class ManageAccountViewModel(
                 add(KeyAction.PublicKeys)
             }
 
-            is AccountType.MnemonicMonero -> listOf(
-                KeyAction.RecoveryPhrase,
-                KeyAction.ViewKey,
-                KeyAction.SpendKey,
-            )
+            is AccountType.MnemonicMonero -> moneroKeyActions()
 
             is AccountType.EvmPrivateKey -> listOf(
                 KeyAction.PrivateKeys,
@@ -218,10 +231,6 @@ class ManageAccountViewModel(
             }
         }
     }
-
-    fun getViewKey(): String = moneroWalletService.wallet?.secretViewKey.orEmpty()
-
-    fun getSpendKey(): String = moneroWalletService.wallet?.secretSpendKey.orEmpty()
 
     private suspend fun handleUpdatedAccounts(accounts: List<Account>) {
         val account = accounts.find { it.id == account.id }
