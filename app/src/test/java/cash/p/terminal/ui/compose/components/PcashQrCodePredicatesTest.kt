@@ -12,6 +12,21 @@ import org.junit.Test
 class PcashQrCodePredicatesTest {
 
     @Test
+    fun isReadablePcashQrCode_smallContent_returnsTrue() {
+        assertTrue(isReadablePcashQrCode("pcash:tx:v1:bitcoin:body"))
+    }
+
+    @Test
+    fun isReadablePcashQrCode_atReadabilityLimit_returnsTrue() {
+        assertTrue(isReadablePcashQrCode("a".repeat(MAX_READABLE_QR_PAYLOAD_SIZE)))
+    }
+
+    @Test
+    fun isReadablePcashQrCode_pastReadabilityBoundary_returnsFalse() {
+        assertFalse(isReadablePcashQrCode("a".repeat(MAX_READABLE_QR_PAYLOAD_SIZE + 1)))
+    }
+
+    @Test
     fun canEncodeAsPcashQrCode_pastReadabilityLimit_returnsTrue() {
         assertTrue(canEncodeAsPcashQrCode("a".repeat(DENSE_PAYLOAD_SIZE)))
     }
@@ -27,6 +42,9 @@ class PcashQrCodePredicatesTest {
     }
 
     private companion object {
+        /** Longest byte-mode payload that still fits PcashQrCodeDefaults.MaxReadableModules. */
+        const val MAX_READABLE_QR_PAYLOAD_SIZE = 661
+
         /** 121 modules — denser than the cap, well inside what the encoder handles. */
         const val DENSE_PAYLOAD_SIZE = 745
     }
