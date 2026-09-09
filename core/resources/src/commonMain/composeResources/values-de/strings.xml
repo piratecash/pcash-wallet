@@ -1227,7 +1227,7 @@
     <string name="ManageAccount_BackupRequired_Title">Sicherung erforderlich</string>
     <string name="ManageAccount_BackupRequired_Description">Sie müssen %1$s sichern, bevor Sie %2$s empfangen können.</string>
     <string name="ManageAccount_Delete_ConfirmationRemove">Damit wird das Wallet von diesem Gerät gelöscht.</string>
-    <string name="ManageAccount_Delete_ConfirmationLose">Wenn Sie den Private Key für dieses Wallet nicht gesichert haben, verlieren Sie den Zugang zu Ihrem Guthaben.</string>
+    <string name="ManageAccount_Delete_ConfirmationLose">Stellen Sie sicher, dass Sie Ihre Wiederherstellungsphrase oder Ihren privaten Schlüssel gesichert haben. Ohne diese können Sie dauerhaft den Zugriff auf Ihr Wallet und Ihr Guthaben verlieren.</string>
     <string name="ManageAccount_MigrationRequired_Title">Migration erforderlich</string>
     <string name="ManageAccount_BirthdayHeight">%s Geburtstagshöhe</string>
     <string name="ManageAccount_NWords">%s Wörter</string>

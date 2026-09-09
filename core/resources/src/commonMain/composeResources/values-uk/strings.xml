@@ -1239,7 +1239,7 @@
     <string name="ManageAccount_BackupRequired_Title">Необхідна резервна копія</string>
     <string name="ManageAccount_BackupRequired_Description">Вам потрібно зробити резервну копію %1$s перед отриманням %2$s.</string>
     <string name="ManageAccount_Delete_ConfirmationRemove">Ця дія видалить ваш гаманець з цього пристрою.</string>
-    <string name="ManageAccount_Delete_ConfirmationLose">Якщо ви не зробили резервну копію приватного ключа для цього гаманця, ви втратите доступ до ваших коштів.</string>
+    <string name="ManageAccount_Delete_ConfirmationLose">Переконайтеся, що у вас збережена фраза відновлення або приватний ключ. Без них ви можете назавжди втратити доступ до гаманця та коштів.</string>
     <string name="ManageAccount_MigrationRequired_Title">Потрібна міграція</string>
     <string name="ManageAccount_BirthdayHeight">%s Блок створення</string>
     <string name="ManageAccount_NWords">%s слів</string>

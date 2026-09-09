@@ -1228,7 +1228,7 @@
     <string name="ManageAccount_BackupRequired_Title">需要备份</string>
     <string name="ManageAccount_BackupRequired_Description">您必须备份%1$s才能收到%2$s。</string>
     <string name="ManageAccount_Delete_ConfirmationRemove">该操作将从此设备删除本钱包。</string>
-    <string name="ManageAccount_Delete_ConfirmationLose">如果您尚未对此钱包备份私钥，您将失去您的资金。</string>
+    <string name="ManageAccount_Delete_ConfirmationLose">请确保您已保存恢复助记词或私钥。如果没有这些信息，您可能会永久失去对钱包和资金的访问权限。</string>
     <string name="ManageAccount_MigrationRequired_Title">需要迁移</string>
     <string name="ManageAccount_BirthdayHeight">%s 生日高度</string>
     <string name="ManageAccount_NWords">%s 个单词</string>

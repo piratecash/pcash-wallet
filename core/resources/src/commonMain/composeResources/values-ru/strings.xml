@@ -1259,7 +1259,7 @@
     <string name="ManageAccount_BackupRequired_Title">Необходима резервная копия</string>
     <string name="ManageAccount_BackupRequired_Description">Вам нужно сделать резервную копию %1$s перед получением %2$s.</string>
     <string name="ManageAccount_Delete_ConfirmationRemove">Это действие удалит ваш кошелек с этого устройства.</string>
-    <string name="ManageAccount_Delete_ConfirmationLose">Если вы не сделали резервную копию приватного ключа для этого кошелька, вы потеряете доступ к вашим средствам.</string>
+    <string name="ManageAccount_Delete_ConfirmationLose">Убедитесь, что у вас сохранена фраза восстановления или приватный ключ. Без них вы можете навсегда потерять доступ к кошельку и средствам.</string>
     <string name="ManageAccount_MigrationRequired_Title">Требуется миграция</string>
     <string name="ManageAccount_BirthdayHeight">%s Блок создания</string>
     <string name="ManageAccount_NWords">%s слов</string>

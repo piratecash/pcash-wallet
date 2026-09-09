@@ -1235,7 +1235,7 @@
     <string name="ManageAccount_BackupRequired_Title">Backup necessário</string>
     <string name="ManageAccount_BackupRequired_Description">Você precisa fazer um backup de %1$s antes de poder receber %2$s.</string>
     <string name="ManageAccount_Delete_ConfirmationRemove">Esta ação irá apagar do dispositivo a carteira selecionada.</string>
-    <string name="ManageAccount_Delete_ConfirmationLose">Se você não fizer o backup da chave privada desta carteira, perderá o acesso aos seus fundos.</string>
+    <string name="ManageAccount_Delete_ConfirmationLose">Certifique-se de que você salvou sua frase de recuperação ou chave privada. Sem elas, você poderá perder permanentemente o acesso à sua carteira e aos seus fundos.</string>
     <string name="ManageAccount_MigrationRequired_Title">Migração Necessária</string>
     <string name="ManageAccount_BirthdayHeight">Altura de aniversário</string>
     <string name="ManageAccount_NWords">%s palavras</string>

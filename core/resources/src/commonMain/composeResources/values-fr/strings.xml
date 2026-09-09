@@ -1233,7 +1233,7 @@
     <string name="ManageAccount_BackupRequired_Title">Sauvegarde requise</string>
     <string name="ManageAccount_BackupRequired_Description">Vous devez sauvegarder %1$s avant de recevoir %2$s.</string>
     <string name="ManageAccount_Delete_ConfirmationRemove">L\'action va supprimer ce portefeuille de l\'appareil.</string>
-    <string name="ManageAccount_Delete_ConfirmationLose">Si vous n\'avez pas sauvegardé la clé privée de ce portefeuille, vous perdrez l\'accès à vos fonds.</string>
+    <string name="ManageAccount_Delete_ConfirmationLose">Assurez-vous d\'avoir sauvegardé votre phrase de récupération ou votre clé privée. Sans elles, vous risquez de perdre définitivement l\'accès à votre portefeuille et à vos fonds.</string>
     <string name="ManageAccount_MigrationRequired_Title">Migration Requise</string>
     <string name="ManageAccount_BirthdayHeight">Hauteur de l\'anniversaire %s</string>
     <string name="ManageAccount_NWords">%s mots</string>
