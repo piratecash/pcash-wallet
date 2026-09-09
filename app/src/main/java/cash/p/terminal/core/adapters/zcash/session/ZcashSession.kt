@@ -15,6 +15,7 @@ import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
@@ -34,10 +35,46 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.time.TimeSource
 
 sealed interface ZcashSessionResult<out T> {
     data class Success<T>(val value: T) : ZcashSessionResult<T>
     data object Unavailable : ZcashSessionResult<Nothing>
+}
+
+/** One walk in flight, and the epoch it was started for. */
+internal class DiscoveryRun(val epoch: Int, val deferred: Deferred<Boolean>)
+
+/** The outcome of the scheduler's last discovery attempt, whether it walked or not. */
+internal data class ZcashDiscoveryMark(
+    val epoch: Int,
+    val lastAttemptUptime: Long,
+    val succeeded: Boolean,
+)
+
+/**
+ * Per-account discovery memo — it outlives any one [ZcashSession], because a session closes and
+ * reopens on every screen visit while the account's discovery progress must not be forgotten.
+ * Owned by [ZcashSessionManager], handed to the [ZcashSession] it opens for the account.
+ */
+internal class ZcashDiscoveryState {
+    val gate = Mutex()
+    val discoveredEpoch = MutableStateFlow(0)
+
+    /** Rises on every completed walk, including a revalidation of an already-published epoch. */
+    val completedWalks = MutableStateFlow(0)
+    var current: DiscoveryRun? = null
+
+    /** The highest epoch demanded so far. Touched only inside [gate]. */
+    var demanded: Int = 0
+
+    /** Written by [ZcashSyncScheduler] after every attempt; read off-thread for the diagnostics row. */
+    @Volatile
+    var mark: ZcashDiscoveryMark? = null
+
+    /** Class name of the last failure of the Receive screen's address selector; null once it succeeds. */
+    @Volatile
+    var lastSelectorError: String? = null
 }
 
 internal data class ZcashSessionState(
@@ -56,12 +93,19 @@ internal data class ZcashSessionState(
  * The only door to a [ZcashWallet]. Every call is counted, because the SDK checks its own closed
  * flag when a call starts and never again — so closing must wait for the calls already inside.
  */
-class ZcashSession(
+class ZcashSession internal constructor(
     val accountId: String,
     private val wallet: ZcashWallet,
     val dbAccountId: Int,
     networkPaused: Boolean,
     dispatcherProvider: DispatcherProvider,
+    private val supportsTransparent: Boolean,
+    /**
+     * False for a pristine account: its database already holds every address it ever issued, so
+     * only the steady walk is owed.
+     */
+    private val deepSweepRequired: Boolean,
+    internal val discovery: ZcashDiscoveryState,
 ) {
     private enum class Phase { ACTIVE, DRAINING, CLOSED }
 
@@ -100,6 +144,20 @@ class ZcashSession(
      */
     private val _state = MutableStateFlow(ZcashSessionState())
     internal val state: StateFlow<ZcashSessionState> = _state.asStateFlow()
+
+    /**
+     * Depth the account still owes; unknown until the SDK's coverage record has been read, unless
+     * the account is pristine.
+     */
+    @Volatile
+    private var deepSweepOwed: Boolean? = if (deepSweepRequired) null else false
+
+    /** Trim generation seen on the previous read, and the one a re-arm has been spent on. */
+    private var seenTrim: Long = -1
+
+    /** Written under [ZcashDiscoveryState.gate] by [isCovered], released off it by a failed walk. */
+    @Volatile
+    private var revalidatedTrim: Long = -1
 
     init {
         scope.launch { mempoolGate.withLock { startMempool() } }
@@ -161,6 +219,98 @@ class ZcashSession(
         requireOwnInputs: Boolean = true,
     ): ZcashSessionResult<Unit> =
         withOperation { wallet.reserveForBroadcast(dbAccountId, rawTransaction, requireOwnInputs) }
+
+    /**
+     * Ensures the account's transparent address space has been walked for [epoch]. Two callers
+     * never run the same walk twice — the second joins the first — and a newer epoch chains
+     * behind a walk in flight instead of starting a second one beside it, so at most one native
+     * walk exists per session at any moment.
+     */
+    suspend fun discoverForEpoch(epoch: Int): Boolean {
+        if (!supportsTransparent) return true
+        while (true) {
+            val run = discovery.gate.withLock {
+                if (isCovered(epoch)) return true
+                discovery.demanded = maxOf(discovery.demanded, epoch)
+                discovery.current?.takeIf { it.deferred.isActive } ?: newRun(discovery.demanded)
+            }
+            val outcome = run.deferred.await()
+            if (run.epoch >= epoch) return outcome
+            // An older run finished: loop and start ONE walk for the newest epoch demanded —
+            // never one per waiter, and never beside the run in flight.
+        }
+    }
+
+    /**
+     * Covered means this epoch was walked, at the depth the account owes, over a database no
+     * trim has invalidated since. Caller holds [ZcashDiscoveryState.gate].
+     */
+    private suspend fun isCovered(epoch: Int): Boolean {
+        if (discovery.discoveredEpoch.value < epoch || owesDeepSweep()) return false
+        val coverage = withOperation { wallet.transparentCoverage(dbAccountId) }
+        if (coverage !is ZcashSessionResult.Success) return false
+        if (coverage.value.certified) return true
+        val trim = coverage.value.trim
+        val settled = trim == seenTrim
+        seenTrim = trim
+        if (!settled || revalidatedTrim == trim) return true
+        revalidatedTrim = trim
+        return false
+    }
+
+    /**
+     * Read on first use rather than at session open, so a walk can never start against an
+     * unread default — and a failed read stays uncached, to be asked again on the next call.
+     * Caller holds [ZcashDiscoveryState.gate].
+     */
+    private suspend fun owesDeepSweep(): Boolean {
+        deepSweepOwed?.let { return it }
+        val coverage = withOperation { wallet.transparentCoverage(dbAccountId) }
+        if (coverage !is ZcashSessionResult.Success) return true
+        return (coverage.value.gap < DEEP_GAP_LIMIT).also { deepSweepOwed = it }
+    }
+
+    /** Caller holds [ZcashDiscoveryState.gate]. */
+    private suspend fun newRun(epoch: Int): DiscoveryRun {
+        val deep = owesDeepSweep()
+        return DiscoveryRun(epoch, scope.async { runDiscovery(epoch, deep) })
+            .also { discovery.current = it }
+    }
+
+    private suspend fun runDiscovery(epoch: Int, deep: Boolean): Boolean {
+        zcashLogger.i { "Transparent discovery started deep=$deep epoch=$epoch" }
+        val started = TimeSource.Monotonic.markNow()
+        var succeeded = false
+        var added = -1
+        try {
+            val outcome = withOperation {
+                added = wallet.discoverTransparentAddresses(
+                    dbAccountId,
+                    if (deep) DEEP_GAP_LIMIT else STEADY_GAP_LIMIT,
+                    DISCOVERY_CONCURRENCY,
+                )
+                // Read back rather than assumed: the SDK wrote the record, and it is the only
+                // thing that decides whether the obligation is discharged. A pristine account owes
+                // nothing, so its steady record must not re-arm a deep obligation.
+                if (deepSweepRequired) {
+                    deepSweepOwed = wallet.transparentCoverage(dbAccountId).gap < DEEP_GAP_LIMIT
+                }
+                discovery.discoveredEpoch.update { maxOf(it, epoch) }
+                // Strictly increasing, unlike the epoch: a revalidation walk of an epoch already
+                // published must still reach a Receive screen showing the fallback.
+                discovery.completedWalks.update { it + 1 }
+            }
+            succeeded = outcome is ZcashSessionResult.Success
+            return succeeded && deepSweepOwed == false
+        } finally {
+            // A re-arm that bought nothing is given back, so the retry cadence can spend it again.
+            if (!succeeded) revalidatedTrim = -1
+            zcashLogger.i {
+                "Transparent discovery finished deep=$deep succeeded=$succeeded " +
+                    "elapsed=${started.elapsedNow().inWholeMilliseconds}ms added=$added"
+            }
+        }
+    }
 
     /** Cancellation is SDK-wide, so it may only be issued while this session is syncing. */
     suspend fun cancelSync() = stopSync(invalidateState = true)
@@ -399,7 +549,7 @@ class ZcashSession(
 
     private fun List<Transaction>.txids() = mapTo(mutableSetOf()) { it.txid }
 
-    private companion object {
+    internal companion object {
         const val CONFIRMATIONS = 10
 
         /** One per address spec, so a spec added later cannot be left without a maximum. */
@@ -410,5 +560,14 @@ class ZcashSession(
         // Chain expiry is 40 blocks — about 50 minutes — after which the transaction can no
         // longer be mined at all.
         const val UNCONFIRMED_TTL_MS = 60 * 60 * 1000L
+
+        /** Consecutive-unused-index limit for the account's first, recovery-scoped walk. */
+        const val DEEP_GAP_LIMIT = 500
+
+        /** Consecutive-unused-index limit for every walk once the deep sweep has landed. */
+        const val STEADY_GAP_LIMIT = 20
+
+        /** Probes in flight per batch; the SDK halves it on server errors. */
+        const val DISCOVERY_CONCURRENCY = 32
     }
 }

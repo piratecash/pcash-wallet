@@ -99,6 +99,27 @@ class ZcashAdapterLifecycleTest : ZcashAdapterTestFixture() {
         coVerify(exactly = 0) { sessionManager.release(any()) }
     }
 
+    @Test
+    fun acquireSession_openThrows_publishesAFailedStateAndKeepsCollectingForeground() = runTest(dispatcher) {
+        val error = IOException("open failed")
+        coEvery { sessionManager.acquire(wallet) } throws error
+        startAdapter()
+
+        // start() calls both attachLocalData() and resumeNetwork(); since neither claims
+        // `session` on failure, both independently retry against the broken session manager.
+        assertEquals(AdapterState.NotSynced(error), adapter.balanceState)
+        coVerify(exactly = 2) { sessionManager.acquire(wallet) }
+
+        coEvery { sessionManager.acquire(wallet) } returns session
+        backgroundStateFlow.value = BackgroundManagerState.EnterForeground
+        advanceUntilIdle()
+
+        coVerify(exactly = 3) { sessionManager.acquire(wallet) }
+        emitSessionSyncState(SyncState.Synced)
+        advanceUntilIdle()
+        assertEquals(AdapterState.Synced, adapter.balanceState)
+    }
+
     // --- sync state mapping ---
 
     @Test

@@ -2,6 +2,7 @@ package cash.p.terminal.core.adapters.zcash
 
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.adapters.zcash.session.ZcashDiscoveryState
 import cash.p.terminal.core.adapters.zcash.session.ZcashSession
 import cash.p.terminal.core.adapters.zcash.session.ZcashSessionManager
 import cash.p.terminal.core.adapters.zcash.session.ZcashSessionResult
@@ -82,10 +83,14 @@ abstract class ZcashAdapterTestFixture {
         ZcashSessionState(syncState = SyncState.Connecting)
     )
     protected val backgroundStateFlow = MutableStateFlow(BackgroundManagerState.Unknown)
+    protected val foregroundEpochFlow = MutableStateFlow(0)
 
     protected val zcashWallet = mockk<ZcashWallet>(relaxed = true)
     protected lateinit var session: ZcashSession
     protected val sessionManager = mockk<ZcashSessionManager>(relaxed = true)
+
+    /** The account's discovery holder [ZcashSessionManager.discoveryState] hands out. */
+    internal val discoveryState = ZcashDiscoveryState()
     protected lateinit var adapter: ZcashAdapter
 
     @Before
@@ -122,6 +127,8 @@ abstract class ZcashAdapterTestFixture {
         }
         every { wallet.account } returns account
         every { backgroundManager.stateFlow } returns backgroundStateFlow
+        every { backgroundManager.inForeground } returns true
+        every { backgroundManager.foregroundEpoch } returns foregroundEpochFlow
         coEvery { addressDeriver.addresses(any()) } returns Addresses(
             unified = "u1test",
             sapling = "zs1test",
@@ -218,6 +225,7 @@ abstract class ZcashAdapterTestFixture {
             coEvery { refresh() } returns ZcashSessionResult.Success(Unit)
         }
         coEvery { sessionManager.acquire(any()) } returns session
+        every { sessionManager.discoveryState(any()) } returns discoveryState
     }
 
     @After

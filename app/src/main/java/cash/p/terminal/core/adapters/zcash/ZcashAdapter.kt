@@ -12,6 +12,7 @@ import cash.p.terminal.core.OfflineSignRequest
 import cash.p.terminal.core.OfflineZcashSignRequest
 import cash.p.terminal.core.SignedOfflineZcashTransaction
 import cash.p.terminal.core.UnsupportedAccountException
+import cash.p.terminal.core.adapters.zcash.session.ZcashDiscoveryState
 import cash.p.terminal.core.adapters.zcash.session.ZcashSession
 import cash.p.terminal.core.adapters.zcash.session.ZcashSessionManager
 import cash.p.terminal.core.adapters.zcash.session.ZcashSessionResult
@@ -87,6 +88,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
@@ -129,6 +131,15 @@ class ZcashAdapter(
 
     private val sessionMutex = Mutex()
 
+    /**
+     * Serializes the two allocators that share the account's transparent address space:
+     * [generateOneTimeAddress]'s SDK allocation + reservation write, and [freshReceiveAddress]'s
+     * exclusion snapshot + selector call. Discovery is deliberately outside it — the SDK's own
+     * `SYNCING` guard already closes that half of the race, and holding this lock across a walk
+     * would block a swap payout for its whole duration.
+     */
+    private val transparentAddressMutex = Mutex()
+
     @Volatile
     private var session: ZcashSession? = null
     private var bindJob: Job? = null
@@ -146,6 +157,70 @@ class ZcashAdapter(
     override val receiveAddress: String =
         ownAddresses?.let { addressSpecTyped.selectZcashReceiver(it) }.orEmpty()
     override val isMainNet: Boolean = true
+
+    /**
+     * The account's own holder outlives any one session, so a screen open through a failed
+     * acquire still hears about the walk a later foreground runs.
+     */
+    override val freshReceiveAddressChanges: Flow<Unit>
+        get() = if (addressSpecTyped == AddressSpecType.Transparent) {
+            discoveryState.completedWalks.map { }
+        } else {
+            super.freshReceiveAddressChanges
+        }
+
+    /**
+     * Only the transparent spec risks reuse: shielded and unified addresses are meant to be shown
+     * again. A failed discovery or a failed selector call both fall back to [receiveAddress], since
+     * the address already on screen must not be replaced by an error page.
+     */
+    override suspend fun freshReceiveAddress(): String {
+        if (addressSpecTyped != AddressSpecType.Transparent) return super.freshReceiveAddress()
+        // The Receive screen outlives the foreground, so a walk finishing in the background must
+        // not reopen the session [subscribeToBackground] released — park until it may be held.
+        backgroundManager.stateFlow.first { mayHoldSession() }
+        acquireSession()
+        discoverCurrentEpoch()
+        return try {
+            val found = transparentAddressMutex.withLock {
+                val excluded = singleUseAddressManager.getAllAddresses()
+                requireWallet { zcash, id -> zcash.nextUnusedTransparentAddress(id, excluded) }
+            }?.takeIf { it.certified }
+            discoveryState.lastSelectorError = null
+            found?.address ?: receiveAddress
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            zcashLogger.w { "Fresh receive address selector failed error=${e.zcashErrorName}" }
+            discoveryState.lastSelectorError = e.zcashErrorName
+            receiveAddress
+        }
+    }
+
+    /**
+     * Walks the foreground epoch current when the call started, then re-checks once: a foreground
+     * that arrived while the walk was running gets one more walk, not a chase without end. A
+     * discovery failure is swallowed here so the caller still asks the selector rather than
+     * abandoning the call. Offline mode suppresses the walk here as it does in the scheduler.
+     */
+    private suspend fun discoverCurrentEpoch() {
+        if (isNetworkPaused) return
+        try {
+            val epoch = backgroundManager.foregroundEpoch.value
+            sessionOrThrow().discoverForEpoch(epoch)
+            val laterEpoch = backgroundManager.foregroundEpoch.value
+            if (laterEpoch > epoch) sessionOrThrow().discoverForEpoch(laterEpoch)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            zcashLogger.w { "Transparent discovery failed error=${e.zcashErrorName}" }
+        }
+    }
+
+    private fun sessionOrThrow(): ZcashSession = session ?: error("Zcash wallet session is unavailable")
+
+    private val discoveryState: ZcashDiscoveryState
+        get() = sessionManager.discoveryState(wallet)
 
     @Volatile
     private var poolBalance: PoolBalance? = null
@@ -266,12 +341,29 @@ class ZcashAdapter(
     private fun hasActiveBackgroundSession(): Boolean =
         pollingSessionCount.get() > 0 || backgroundKeepAliveManager.isKeepAlive(BlockchainType.Zcash)
 
+    // Read from the activity count, not from the emitted state: BackgroundManager emits
+    // asynchronously, so a stale EnterForeground can still be the current value.
+    private fun mayHoldSession(): Boolean =
+        backgroundManager.inForeground || hasActiveBackgroundSession()
+
+    /**
+     * A throw here must never escape: this runs inside [subscribeToBackground]'s collector, and an
+     * uncaught exception would cancel it — leaving the adapter permanently deaf to foreground
+     * events, including the periodic discovery the scheduler arms on them.
+     */
     private suspend fun acquireSession() {
-        sessionMutex.withLock {
-            if (stopped || session != null) return
-            val acquired = sessionManager.acquire(wallet)
-            session = acquired
-            bindJob = scope.launch { bind(acquired) }
+        try {
+            sessionMutex.withLock {
+                if (stopped || session != null) return
+                val acquired = sessionManager.acquire(wallet)
+                session = acquired
+                bindJob = scope.launch { bind(acquired) }
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            syncState = AdapterState.NotSynced(e)
+            return
         }
         // Opening the wallet takes seconds, and a pause that arrived meanwhile found no session to
         // stop, so the offline state is re-read once the session is reachable.
@@ -465,7 +557,22 @@ class ZcashAdapter(
             "Last Block Info" to (lastBlockInfo ?: ""),
             "Sync State" to safeSyncStateLabel(syncState),
             "Birthday Height" to accountBirthday,
+            "Transparent discovery" to transparentDiscoveryLabel(),
         )
+
+    /**
+     * Observability without consequence: a failed discovery must not affect [balanceState], so
+     * its only visible trace is this diagnostic row. The 3-minute retry cadence is what actually
+     * repairs it.
+     */
+    private fun transparentDiscoveryLabel(): String {
+        val state = discoveryState
+        val selector = state.lastSelectorError?.let { ", selector failed ($it)" }.orEmpty()
+        val mark = state.mark ?: return "not attempted yet$selector"
+        val ageSeconds = (SystemClock.elapsedRealtime() - mark.lastAttemptUptime) / 1000
+        val outcome = if (mark.succeeded) "succeeded" else "failed"
+        return "epoch=${mark.epoch} $outcome ${ageSeconds}s ago$selector"
+    }
 
     // endregion
 
@@ -724,13 +831,10 @@ class ZcashAdapter(
     )
 
     override suspend fun generateOneTimeAddress(): String? = try {
-        val address = requireWallet { zcash, id -> zcash.nextTransparentAddress(id) }
-        if (address == null) {
-            singleUseAddressManager.getNextAddress()
-        } else {
-            singleUseAddressManager.saveNewAddress(address)
-            address
-        }
+        transparentAddressMutex.withLock {
+            val address = requireWallet { zcash, id -> zcash.nextTransparentAddress(id) }
+            address?.also { singleUseAddressManager.saveNewAddress(it) }
+        } ?: singleUseAddressManager.getNextAddress()
     } catch (error: CancellationException) {
         throw error
     } catch (error: Throwable) {

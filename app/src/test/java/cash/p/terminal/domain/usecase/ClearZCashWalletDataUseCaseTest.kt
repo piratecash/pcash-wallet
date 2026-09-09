@@ -1,7 +1,6 @@
 package cash.p.terminal.domain.usecase
 
 import android.content.Context
-import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFiles
 import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProvider
 import cash.p.terminal.core.adapters.zcash.session.ZcashSessionManager
@@ -15,6 +14,7 @@ import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -31,13 +31,6 @@ class ClearZCashWalletDataUseCaseTest {
     private val sessionManager = mockk<ZcashSessionManager>()
     private val dbKeyProvider = mockk<ZcashDbKeyProvider>(relaxed = true)
     private val addressStorage = mockk<ZcashSingleUseAddressStorage>(relaxed = true)
-
-    private var discoveredAccountIds = setOf(ACCOUNT_ID)
-    private val localStorage = mockk<ILocalStorage>(relaxed = true) {
-        every { zcashDiscoveredAccountIds } answers { discoveredAccountIds }
-        every { zcashDiscoveredAccountIds = any() } answers { discoveredAccountIds = firstArg() }
-        every { invalidateZcashAddressDiscovery(any()) } answers { callOriginal() }
-    }
 
     @Before
     fun setUp() {
@@ -63,7 +56,6 @@ class ClearZCashWalletDataUseCaseTest {
         assertTrue(databasePaths().all { it.exists() })
         verify(exactly = 0) { dbKeyProvider.drop(any()) }
         coVerify(exactly = 0) { addressStorage.deleteAccountAddresses(any()) }
-        assertEquals(setOf(ACCOUNT_ID), discoveredAccountIds)
     }
 
     @Test
@@ -73,8 +65,21 @@ class ClearZCashWalletDataUseCaseTest {
         assertTrue(databasePaths().none { it.exists() })
         verify(exactly = 1) { dbKeyProvider.drop(ACCOUNT_ID) }
         coVerify(exactly = 1) { addressStorage.deleteAccountAddresses(ACCOUNT_ID) }
-        // Without this the restored wallet would skip transparent-address discovery for good.
-        assertEquals(emptySet<String>(), discoveredAccountIds)
+    }
+
+    /**
+     * There is no separate discovery flag any more: the coverage record lives in the database
+     * file, so deleting it is what makes the account's next restore sweep deep again. That must
+     * hold even when the other artifacts fail to clear.
+     */
+    @Test
+    fun clear_zcashAccount_forgetsTheDeepSweepFlag() = runTest {
+        every { dbKeyProvider.drop(ACCOUNT_ID) } returns false
+        coEvery { addressStorage.deleteAccountAddresses(ACCOUNT_ID) } throws RuntimeException("locked")
+
+        assertEquals(ZcashEraseResult.PARTIAL, useCase().invoke(ACCOUNT_ID))
+
+        assertTrue(databasePaths().none { it.exists() })
     }
 
     @Test
@@ -103,15 +108,6 @@ class ClearZCashWalletDataUseCaseTest {
     }
 
     @Test
-    fun invoke_addressRowsSurvive_stillClearsTheDiscoveryFlag() = runTest {
-        coEvery { addressStorage.deleteAccountAddresses(ACCOUNT_ID) } throws RuntimeException("locked")
-
-        assertEquals(ZcashEraseResult.PARTIAL, useCase().invoke(ACCOUNT_ID))
-
-        assertEquals(emptySet<String>(), discoveredAccountIds)
-    }
-
-    @Test
     fun invoke_always_deletesOnlyAfterTheSessionIsClosed() = runTest {
         var databaseIntactWhileClosing = false
         coEvery { sessionManager.closeForErase(ACCOUNT_ID) } coAnswers {
@@ -128,12 +124,30 @@ class ClearZCashWalletDataUseCaseTest {
         }
     }
 
+    @Test
+    fun invoke_sessionClosed_erasesThePristineMark() = runTest {
+        databaseFiles.markPristine(ACCOUNT_ID)
+
+        assertEquals(ZcashEraseResult.ALL, useCase().invoke(ACCOUNT_ID))
+
+        assertFalse(databaseFiles.isPristine(ACCOUNT_ID))
+    }
+
+    @Test
+    fun invoke_drainTimesOut_keepsThePristineMark() = runTest {
+        databaseFiles.markPristine(ACCOUNT_ID)
+        coEvery { sessionManager.closeForErase(ACCOUNT_ID) } returns false
+
+        assertEquals(ZcashEraseResult.NONE, useCase().invoke(ACCOUNT_ID))
+
+        assertTrue(databaseFiles.isPristine(ACCOUNT_ID))
+    }
+
     private fun useCase() = ClearZCashWalletDataUseCase(
         sessionManager = sessionManager,
         databaseFiles = databaseFiles,
         dbKeyProvider = dbKeyProvider,
         zcashSingleUseAddressStorage = addressStorage,
-        localStorage = localStorage,
     )
 
     /** A non-empty directory in place of a database file: `File.delete` refuses it. */

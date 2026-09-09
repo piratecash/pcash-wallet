@@ -10,6 +10,7 @@ import cash.p.zcash.Pool
 import cash.p.zcash.PoolBalance
 import cash.p.zcash.SyncState
 import cash.p.zcash.Transaction
+import cash.p.zcash.TransparentCoverage
 import cash.p.zcash.ZcashWallet
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -54,28 +55,62 @@ private const val CLEANUP_MS = 1_000L
 private const val UNCONFIRMED_TTL_MS = 60 * 60 * 1000L
 private val FIRST_RETRY_MS = zcashRestartDelayFor(attempt = 1, baseMs = 5_000L, maxMs = 60_000L)
 
+/**
+ * A minimal stand-in for the SDK's own coverage record: a walk only ever widens [gap]. Shared
+ * (not private) so [ZcashSessionManagerTest] can drive the same realistic record across a
+ * session reopen, where a session-local field alone could not prove the memo survives.
+ */
+internal class FakeCoverage(var certified: Boolean = false, var gap: Int = 0, var trim: Long = 0)
+
+/** Wires [wallet]'s coverage read and walk call to a shared, mutable [state]. */
+internal fun stubDiscovery(wallet: ZcashWallet, state: FakeCoverage) {
+    coEvery { wallet.transparentCoverage(any()) } answers {
+        TransparentCoverage(certified = state.certified, gap = state.gap, trim = state.trim)
+    }
+    coEvery { wallet.discoverTransparentAddresses(any(), any(), any()) } coAnswers {
+        state.gap = maxOf(state.gap, secondArg())
+        state.certified = true
+        0
+    }
+}
+
+internal fun zcashWalletMock(
+    mempoolEvents: MutableSharedFlow<MempoolEvent> = MutableSharedFlow(extraBufferCapacity = 8),
+) = mockk<ZcashWallet>(relaxed = true) {
+    every { mempool() } returns mempoolEvents
+    coEvery { balance(any(), any()) } returns PoolBalance(emptyMap())
+    coEvery { transactions(any()) } returns emptyList<Transaction>()
+    coEvery { latestHeight() } returns 0
+}
+
+internal fun TestScope.zcashSession(
+    wallet: ZcashWallet,
+    networkPaused: Boolean = false,
+    supportsTransparent: Boolean = true,
+    deepSweepRequired: Boolean = true,
+    discovery: ZcashDiscoveryState = ZcashDiscoveryState(),
+) = ZcashSession(
+    accountId = "account",
+    wallet = wallet,
+    dbAccountId = DB_ACCOUNT_ID,
+    networkPaused = networkPaused,
+    dispatcherProvider = TestDispatcherProvider(
+        dispatcher = StandardTestDispatcher(testScheduler),
+        applicationScope = backgroundScope,
+    ),
+    supportsTransparent = supportsTransparent,
+    deepSweepRequired = deepSweepRequired,
+    discovery = discovery,
+)
+
 @OptIn(ExperimentalCoroutinesApi::class, InternalCoroutinesApi::class)
 class ZcashSessionTest {
 
     private val mempoolEvents = MutableSharedFlow<MempoolEvent>(extraBufferCapacity = 8)
 
-    private val wallet = mockk<ZcashWallet>(relaxed = true) {
-        every { mempool() } returns mempoolEvents
-        coEvery { balance(any(), any()) } returns PoolBalance(emptyMap())
-        coEvery { transactions(any()) } returns emptyList<Transaction>()
-        coEvery { latestHeight() } returns 0
-    }
+    private val wallet = zcashWalletMock(mempoolEvents)
 
-    private fun TestScope.session(networkPaused: Boolean = false) = ZcashSession(
-        accountId = "account",
-        wallet = wallet,
-        dbAccountId = DB_ACCOUNT_ID,
-        networkPaused = networkPaused,
-        dispatcherProvider = TestDispatcherProvider(
-            dispatcher = StandardTestDispatcher(testScheduler),
-            applicationScope = backgroundScope,
-        ),
-    )
+    private fun TestScope.session(networkPaused: Boolean = false) = zcashSession(wallet, networkPaused = networkPaused)
 
     private fun unconfirmed(value: Long, txid: String = TXID) = MempoolEvent.Unconfirmed(
         txid = txid,

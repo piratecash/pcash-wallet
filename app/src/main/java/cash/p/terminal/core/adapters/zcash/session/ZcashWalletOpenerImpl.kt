@@ -6,7 +6,6 @@ import cash.p.terminal.core.adapters.zcash.ZcashKey
 import cash.p.terminal.core.adapters.zcash.zcashKey
 import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.ZcashBirthdayProvider
-import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.Wallet
@@ -31,18 +30,18 @@ class ZcashWalletOpenerImpl(
 
         val accountId = wallet.account.id
         val dbKey = dbKeyProvider.keyFor(accountId)
-        if (dbKey.newlyGenerated) {
+        if (dbKey.newlyGenerated && databaseFiles.databaseFile(accountId).exists()) {
+            // Deletes the coverage record with the file it lives in: the freshly-opened wallet
+            // reads back an absent record, so its first discovery walk is a deep one. The pristine
+            // mark goes with the rows that made the account pristine.
             databaseFiles.delete(accountId)
-            // Discovery state belongs to the deleted database; keeping it would hide restored
-            // one-time transparent addresses.
-            localStorage.invalidateZcashAddressDiscovery(accountId)
         }
+        val deepSweepRequired = !databaseFiles.isPristine(accountId)
 
         val dbFile = databaseFiles.databaseFile(accountId)
         val zcashWallet = ZcashWallet.open(dbFile.path, ZcashNetwork.MAIN, serverConfig(), dbKey.bytes)
         val dbAccountId = zcashWallet.accounts().firstOrNull()?.id ?: restore(zcashWallet, wallet)
-        discoverTransparentAddresses(zcashWallet, accountId, dbAccountId)
-        return OpenedZcashWallet(zcashWallet, dbAccountId)
+        return OpenedZcashWallet(zcashWallet, dbAccountId, deepSweepRequired)
     }
 
     private suspend fun restore(zcashWallet: ZcashWallet, wallet: Wallet): Int {
@@ -72,21 +71,6 @@ class ZcashWalletOpenerImpl(
 
             else -> 0
         }
-    }
-
-    /**
-     * One-time addresses are not derived by a restore, and looking for them once the pool has
-     * reached the tip finds nothing — so it has to happen before the first sync, and it has to
-     * survive being offline, hence the flag is only raised on success.
-     */
-    private suspend fun discoverTransparentAddresses(
-        zcashWallet: ZcashWallet,
-        accountId: String,
-        dbAccountId: Int,
-    ) {
-        if (accountId in localStorage.zcashDiscoveredAccountIds) return
-        tryOrNull { zcashWallet.discoverTransparentAddresses(dbAccountId) } ?: return
-        localStorage.zcashDiscoveredAccountIds += accountId
     }
 
     private fun serverConfig() = ServerConfig(
