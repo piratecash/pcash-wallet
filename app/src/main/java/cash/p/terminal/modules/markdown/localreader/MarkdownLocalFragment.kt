@@ -6,7 +6,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.fragment.app.viewModels
 import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.modules.markdown.MarkdownContent
@@ -19,16 +18,19 @@ import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import kotlinx.parcelize.Parcelize
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MarkdownLocalFragment : BaseComposeFragment() {
-    private val viewModel: MarkdownLocalViewModel by viewModels<MarkdownLocalViewModel>()
+    private val viewModel: MarkdownLocalViewModel by viewModel()
 
     @Composable
     override fun GetContent(navController: NavController) {
         val input = getInput<Input>()
         LaunchedEffect(Unit) {
-            input?.let {
-                viewModel.parseContent(getString(input.resId))
+            when (input) {
+                is Input.Resource -> viewModel.parseContent(getString(input.resId))
+                is Input.Asset -> viewModel.loadAsset(input.prefix)
+                null -> Unit
             }
         }
 
@@ -42,11 +44,21 @@ class MarkdownLocalFragment : BaseComposeFragment() {
         )
     }
 
-    @Parcelize
-    data class Input(
-        val resId: Int,
-        val showAsPopup: Boolean = false,
-    ) : Parcelable
+    sealed interface Input : Parcelable {
+        val showAsPopup: Boolean
+
+        @Parcelize
+        data class Resource(
+            val resId: Int,
+            override val showAsPopup: Boolean = false,
+        ) : Input
+
+        @Parcelize
+        data class Asset(
+            val prefix: String,
+            override val showAsPopup: Boolean = false,
+        ) : Input
+    }
 }
 
 @Composable
