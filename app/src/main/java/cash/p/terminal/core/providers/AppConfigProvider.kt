@@ -59,8 +59,8 @@ object AppConfigProvider {
     val etherscanApiKey by lazy {
         EncodedSecrets.ETHERSCAN_KEY.split(",").map { it.trim() }
     }
-    val otherScanApiKey by lazy {
-        EncodedSecrets.OTHER_SCAN_KEY.split(",").map { it.trim() }
+    val blockscoutApiKey by lazy {
+        EncodedSecrets.BLOCKSCOUT_KEY.split(",").map { it.trim() }
     }
     val bscscanApiKey by lazy {
         EncodedSecrets.BSCSCAN_KEY.split(",").map { it.trim() }
