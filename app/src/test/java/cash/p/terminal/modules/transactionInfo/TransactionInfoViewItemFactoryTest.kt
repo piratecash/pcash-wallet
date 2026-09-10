@@ -256,7 +256,7 @@ class TransactionInfoViewItemFactoryTest {
     }
 }
 
-private class TestCoreApp : CoreApp() {
+internal class TestCoreApp : CoreApp() {
     override fun localizedContext() = this
     override val isSwapEnabled: Boolean = false
 }
