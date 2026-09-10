@@ -47,6 +47,11 @@ plugins {
 subprojects {
     apply plugin: 'io.gitlab.arturbosch.detekt'
 
+    tasks.withType(Test).configureEach {
+        // Robolectric accesses file descriptor internals when initializing Android SDK 36+.
+        jvmArgs '--add-opens=java.base/jdk.internal.access=ALL-UNNAMED'
+    }
+
     detekt {
         buildUponDefaultConfig = true
         config.setFrom("$rootDir/config/detekt/detekt.yml")
