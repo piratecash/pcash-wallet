@@ -99,7 +99,7 @@ class TrezorStellarSigner(
             timeboundsStart = bounds?.minTime.toTimeboundLong("timebounds start"),
             timeboundsEnd = bounds?.maxTime.toTimeboundLong("timebounds end"),
             memo = memo.toTrezorMemo(),
-            operations = operations.map { it.toTrezorOperation() }
+            operations = operations.map { operation: Operation -> operation.toTrezorOperation() }
         )
     }
 

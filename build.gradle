@@ -2,18 +2,18 @@
 
 buildscript {
     ext {
-        compile_sdk_version = 36
+        compile_sdk_version = 37
+        target_sdk_version = 36
         min_sdk_version = 27
         lifecycle_version = '2.10.0'
 
         compose_version = '1.11.2'
-        kotlin_version = '2.3.20'
+        kotlin_version = libs.versions.kotlin.get()
         material_version = "1.13.0"
         appcompat_version = "1.7.1"
         constraint_version = "2.2.1"
         core_ktx_version = "1.18.0"
         fragment_ktx_version = "1.8.9"
-        navigation_ktx_version = "2.9.7"
         rxjava_version = "2.2.21"
         biometric_version = "1.1.0"
         junit_version = "4.13.2"
@@ -37,7 +37,7 @@ buildscript {
 }
 
 plugins {
-    id 'com.google.devtools.ksp' version '2.3.2' apply false
+    alias(libs.plugins.devtools.ksp) apply false
     alias(libs.plugins.jetbrains.kotlin.jvm) apply false
     alias(libs.plugins.androidx.baselineprofile) apply false
     alias(libs.plugins.android.test) apply false
