@@ -9,7 +9,7 @@ plugins {
 android {
     namespace = "cash.p.terminal.feature.miniapp"
 
-    compileSdk = 36
+    compileSdk = rootProject.ext.get("compile_sdk_version") as Int
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

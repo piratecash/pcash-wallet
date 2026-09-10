@@ -9,7 +9,7 @@ val marketApiKey = "IQf1uAjkthZp1i2pYzkXFDom"
 
 android {
     namespace = "cash.p.terminal.wallet"
-    compileSdk = 36
+    compileSdk = rootProject.ext.get("compile_sdk_version") as Int
 
     defaultConfig {
         consumerProguardFiles("consumer-rules.pro")
