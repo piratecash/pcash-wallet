@@ -69,7 +69,7 @@ import cash.p.terminal.ui.compose.components.HsBottomNavigation
 import cash.p.terminal.ui.compose.components.HsBottomNavigationItem
 import cash.p.terminal.ui.extensions.WalletSwitchBottomSheet
 import cash.p.terminal.ui_compose.BaseComposeFragment
-import cash.p.terminal.ui_compose.BalanceHideOnFlipHandling
+import cash.p.terminal.ui.compose.BalanceHideOnFlipHandling
 import cash.p.terminal.ui_compose.ModalOverlayTracker
 import cash.p.terminal.ui_compose.findNavController
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
