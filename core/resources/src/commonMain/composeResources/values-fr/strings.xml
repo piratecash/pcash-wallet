@@ -1333,7 +1333,7 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="PrivateKeys_Bip32RootKeyDescription">Permet d\'exercer un contrôle total sur les actifs du portefeuille correspondant.</string>
     <string name="PrivateKeys_AccountExtendedPrivateKey">Account Extended Private Key</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Permet un contrôle total du Bitcoin et des autres crypto-monnaies basées sur l\'UTXO, c\'est-à-dire Litecoin, Bitcoin Cash, Dash, etc. dans leur portefeuille respectif.</string>
-    <string name="PrivateKeys_NeverShareWarning">Ne partagez jamais votre phrase de récupération avec quiconque. Une équipe imparable ne demandera jamais votre phrase de récupération.</string>
+    <string name="PrivateKeys_NeverShareWarning">Ne partagez jamais votre clé privée, votre phrase de récupération ou toute autre donnée confidentielle du portefeuille avec qui que ce soit. L\'équipe P.CASH ne vous demandera jamais ces informations.</string>
     <!-- Public Keys -->
     <string name="PublicKeys_Title">Clés publiques</string>
     <string name="PublicKeys_EvmAddress">Adresse EVM</string>

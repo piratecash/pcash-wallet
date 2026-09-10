@@ -1362,7 +1362,7 @@
     <string name="PrivateKeys_Bip32RootKeyDescription">Предоставляет полный контроль над активами на соответствующем кошельке.</string>
     <string name="PrivateKeys_AccountExtendedPrivateKey">Расширенный приватный ключ аккаунта</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Предоставляет полный контроль над Bitcoin и другими криптовалютами на базе UTXO, такими как Litecoin, Bitcoin Cash, Dash и т.д. в пределах соответствующего кошелька.</string>
-    <string name="PrivateKeys_NeverShareWarning">Никогда ни с кем не делитесь вашей фразой восстановления. Команда P.CASH никогда не запросит вашу фразу восстановления.</string>
+    <string name="PrivateKeys_NeverShareWarning">Никогда и никому не передавайте приватный ключ, фразу восстановления или другие конфиденциальные данные кошелька. Команда P.CASH никогда не запрашивает эту информацию.</string>
     <string name="private_key_conversion_monero_description">
         <![CDATA[
         <p><b>Мы преобразовали вашу сид-фразу из %d слов в стандарт Monero — 25 слов.</b></p>

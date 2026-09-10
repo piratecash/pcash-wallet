@@ -1327,7 +1327,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="PrivateKeys_Bip32RootKeyDescription">Gewährt die volle Kontrolle über die Vermögenswerte auf der jeweiligen Brieftasche.</string>
     <string name="PrivateKeys_AccountExtendedPrivateKey">Account Extended Private Key</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Gewährt volle Kontrolle über Bitcoin und andere auf UTXO basierende Kryptos, z.B. Litecoin, Bitcoin Cash, Dash, etc. innerhalb der jeweiligen Wallet.</string>
-    <string name="PrivateKeys_NeverShareWarning">Teilen Sie niemals Ihre Wiederherstellungsphrase mit niemandem. Das unaufhaltsame Team wird niemals nach Ihrer Wiederherstellungsphrase fragen.</string>
+    <string name="PrivateKeys_NeverShareWarning">Geben Sie Ihren privaten Schlüssel, Ihre Wiederherstellungsphrase oder andere vertrauliche Wallet-Daten niemals an Dritte weiter. Das P.CASH-Team wird diese Informationen niemals anfordern.</string>
     <!-- Public Keys -->
     <string name="PublicKeys_Title">Öffentliche Schlüssel</string>
     <string name="PublicKeys_EvmAddress">EVM-Adresse</string>

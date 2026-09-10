@@ -1326,7 +1326,7 @@
     <string name="PrivateKeys_Bip32RootKeyDescription">授予对相应钱包上的资产的完全控制。</string>
     <string name="PrivateKeys_AccountExtendedPrivateKey">Account Extended Private Key</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">授予对比特币和基于加密货币的其他未花费交易输出（UTXO）的完全控制，即在相应钱包内的莱特币、比特币现金、达世币等。</string>
-    <string name="PrivateKeys_NeverShareWarning">永远不会与任何人分享您的恢复短语。无法阻止的团队将永远不会要求您的恢复短语。</string>
+    <string name="PrivateKeys_NeverShareWarning">切勿与任何人分享您的私钥、恢复短语或其他钱包机密数据。P.CASH 团队绝不会索要这些信息。</string>
     <!-- Public Keys -->
     <string name="PublicKeys_Title">公钥</string>
     <string name="PublicKeys_EvmAddress">EVM 地址</string>
