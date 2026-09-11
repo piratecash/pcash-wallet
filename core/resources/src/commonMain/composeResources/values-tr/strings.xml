@@ -1239,7 +1239,7 @@
     <string name="ManageAccount_BackupRequired_Title">Yedekleme Gerekli</string>
     <string name="ManageAccount_BackupRequired_Description">%1$s almadan önce %2$s anahtarlarınızı yedeklemeniz gerekiyor.</string>
     <string name="ManageAccount_Delete_ConfirmationRemove">Bu işlem Cüzdanını bu cihazdan kaldıracak.</string>
-    <string name="ManageAccount_Delete_ConfirmationLose">Bu cüzdanın özel anahtarını yedeklemediyseniz, fonlarınıza erişiminizi kaybedersiniz.</string>
+    <string name="ManageAccount_Delete_ConfirmationLose">Kurtarma ifadenizi veya özel anahtarınızı kaydettiğinizden emin olun. Bunlar olmadan cüzdanınıza ve fonlarınıza erişiminizi kalıcı olarak kaybedebilirsiniz.</string>
     <string name="ManageAccount_MigrationRequired_Title">Taşıma Gerekli</string>
     <string name="ManageAccount_BirthdayHeight">%s Oluşturulma Günü Üst Sınırı</string>
     <string name="ManageAccount_NWords">%s kelime</string>
@@ -1339,7 +1339,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="PrivateKeys_Bip32RootKeyDescription">İlgili cüzdandaki varlıklar üzerinde tam kontrol sağlar.</string>
     <string name="PrivateKeys_AccountExtendedPrivateKey">Account Extended Private Key</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Ilgili cüzdan içinde Bitcoin ve diğer UTXO tabanlı kriptolar üzerinde tam kontrol sağlar, yani Litecoin, Bitcoin Cash, Dash vb.</string>
-    <string name="PrivateKeys_NeverShareWarning">Kurtarma ifadenizi asla kimseyle paylaşmayın. P.CASH ekip asla kurtarma ifadenizi istemez.</string>
+    <string name="PrivateKeys_NeverShareWarning">Özel anahtarınızı, kurtarma ifadenizi veya cüzdanınıza ait diğer gizli verileri asla kimseyle paylaşmayın. P.CASH ekibi bu bilgileri asla istemez.</string>
     <string name="private_keys_zec_sapling_spending_key">ZCash Sapling harcama anahtarı</string>
     <string name="private_keys_zec_sapling_spending_key_description">Bu cüzdandaki korumalı ZCash bakiyesi üzerinde harcama dahil tam kontrol sağlar.</string>
     <string name="private_keys_zec_sapling_spending_key_error">ZCash Sapling harcama anahtarı alınamadı</string>

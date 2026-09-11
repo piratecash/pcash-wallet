@@ -1229,7 +1229,7 @@
     <string name="ManageAccount_BackupRequired_Title">Se requiere una copia de seg</string>
     <string name="ManageAccount_BackupRequired_Description">Necesita una Copia de seguridad %1$s antes de poder recibir %2$s.</string>
     <string name="ManageAccount_Delete_ConfirmationRemove">Esta acción eliminará los monederos de este dispositivo.</string>
-    <string name="ManageAccount_Delete_ConfirmationLose">Si usted no respaldó la clave privada para este monedero, perderá el acceso a sus fondos.</string>
+    <string name="ManageAccount_Delete_ConfirmationLose">Asegúrese de haber guardado su frase de recuperación o clave privada. Sin ellas, podría perder permanentemente el acceso a su monedero y a sus fondos.</string>
     <string name="ManageAccount_MigrationRequired_Title">Migración Requerida</string>
     <string name="ManageAccount_BirthdayHeight">%s Altura de Cumpleaños</string>
     <string name="ManageAccount_NWords">%s palabras</string>
@@ -1329,7 +1329,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="PrivateKeys_Bip32RootKeyDescription">Otorga total control sobre los activos de la respectiva cartera.</string>
     <string name="PrivateKeys_AccountExtendedPrivateKey">Account Extended Private Key</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Otorga control total sobre Bitcoin y otras criptomonedas basadas en UTXO, es decir, Litecoin, Bitcoin Cash, Dash, etc. dentro de su respectiva cartera.</string>
-    <string name="PrivateKeys_NeverShareWarning">Nunca comparta su frase de recuperación con nadie. El equipo imparable nunca pedirá su frase de recuperación.</string>
+    <string name="PrivateKeys_NeverShareWarning">Nunca comparta con nadie su clave privada, su frase de recuperación ni otros datos confidenciales de la billetera. El equipo de P.CASH nunca le pedirá esta información.</string>
     <string name="private_keys_zec_sapling_spending_key">Clave de gasto ZCash Sapling</string>
     <string name="private_keys_zec_sapling_spending_key_description">Otorga control total sobre los fondos blindados de ZCash de esta cartera, incluido su gasto.</string>
     <string name="private_keys_zec_sapling_spending_key_error">No se pudo obtener la clave de gasto ZCash Sapling</string>

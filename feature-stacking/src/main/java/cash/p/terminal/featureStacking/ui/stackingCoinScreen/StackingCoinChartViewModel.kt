@@ -3,7 +3,6 @@ package cash.p.terminal.featureStacking.ui.stackingCoinScreen
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.featureStacking.ui.PirateInvestmentChartService
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
-import io.horizontalsystems.chartview.chart.ChartCurrencyValueFormatterSignificant
 import io.horizontalsystems.chartview.chart.ChartViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch

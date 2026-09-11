@@ -1,6 +1,5 @@
 package cash.p.terminal.feature.miniapp.domain.model
 
-import java.math.BigDecimal
 
 /**
  * Data for Step 5 "Special Proposal" screen.

@@ -1637,7 +1637,7 @@ Proceed only if you\'re sure.</string>
     <string name="ManageAccount_BackupRequired_Title">Backup Required</string>
     <string name="ManageAccount_BackupRequired_Description">You need to backup %1$s before you may receive %2$s.</string>
     <string name="ManageAccount_Delete_ConfirmationRemove">This action will delete the selected wallet from this device.</string>
-    <string name="ManageAccount_Delete_ConfirmationLose">If you didn\'t backup the private key for this wallet, you will lose access to your funds.</string>
+    <string name="ManageAccount_Delete_ConfirmationLose">Make sure you have saved your recovery phrase or private key. Without them, you may permanently lose access to your wallet and funds.</string>
     <string name="ManageAccount_MigrationRequired_Title">Migration Required</string>
     <string name="ManageAccount_BirthdayHeight">%s Birthday Height</string>
     <string name="ManageAccount_NWords">%s words</string>
@@ -1763,7 +1763,7 @@ Proceed only if you\'re sure.</string>
     <string name="PrivateKeys_Bip32RootKeyDescription">Grants full control over the assets on the respective wallet.</string>
     <string name="PrivateKeys_AccountExtendedPrivateKey">Account Extended Private Key</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Grants full control over Bitcoin and other UTXO based crypto i.e. Litecoin, Bitcoin Cash, Dash etc. within respective wallet.</string>
-    <string name="PrivateKeys_NeverShareWarning">Never share this key with anyone. P.CASH Wallet support team will never ask for it.</string>
+    <string name="PrivateKeys_NeverShareWarning">Never share your private key, recovery phrase, or any other confidential wallet data with anyone. The P.CASH team will never ask for this information.</string>
     <string name="private_keys_zec_sapling_spending_key">ZCash Sapling Spending Key</string>
     <string name="private_keys_zec_sapling_spending_key_description">Grants full control over the shielded ZCash funds of this wallet, including spending them.</string>
     <string name="private_keys_zec_sapling_spending_key_error">Couldn\'t get the ZCash Sapling spending key</string>

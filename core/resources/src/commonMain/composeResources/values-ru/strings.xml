@@ -1261,7 +1261,7 @@
     <string name="ManageAccount_BackupRequired_Title">Необходима резервная копия</string>
     <string name="ManageAccount_BackupRequired_Description">Вам нужно сделать резервную копию %1$s перед получением %2$s.</string>
     <string name="ManageAccount_Delete_ConfirmationRemove">Это действие удалит ваш кошелек с этого устройства.</string>
-    <string name="ManageAccount_Delete_ConfirmationLose">Если вы не сделали резервную копию приватного ключа для этого кошелька, вы потеряете доступ к вашим средствам.</string>
+    <string name="ManageAccount_Delete_ConfirmationLose">Убедитесь, что у вас сохранена фраза восстановления или приватный ключ. Без них вы можете навсегда потерять доступ к кошельку и средствам.</string>
     <string name="ManageAccount_MigrationRequired_Title">Требуется миграция</string>
     <string name="ManageAccount_BirthdayHeight">%s Блок создания</string>
     <string name="ManageAccount_NWords">%s слов</string>
@@ -1364,7 +1364,7 @@
     <string name="PrivateKeys_Bip32RootKeyDescription">Предоставляет полный контроль над активами на соответствующем кошельке.</string>
     <string name="PrivateKeys_AccountExtendedPrivateKey">Расширенный приватный ключ аккаунта</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Предоставляет полный контроль над Bitcoin и другими криптовалютами на базе UTXO, такими как Litecoin, Bitcoin Cash, Dash и т.д. в пределах соответствующего кошелька.</string>
-    <string name="PrivateKeys_NeverShareWarning">Никогда ни с кем не делитесь вашей фразой восстановления. Команда P.CASH никогда не запросит вашу фразу восстановления.</string>
+    <string name="PrivateKeys_NeverShareWarning">Никогда и никому не передавайте приватный ключ, фразу восстановления или другие конфиденциальные данные кошелька. Команда P.CASH никогда не запрашивает эту информацию.</string>
     <string name="private_keys_zec_sapling_spending_key">Ключ трат ZCash Sapling</string>
     <string name="private_keys_zec_sapling_spending_key_description">Даёт полный контроль над экранированными средствами ZCash этого кошелька, включая их отправку.</string>
     <string name="private_keys_zec_sapling_spending_key_error">Не удалось получить ключ трат ZCash Sapling</string>
