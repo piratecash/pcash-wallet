@@ -229,7 +229,7 @@ class SendZCashViewModelTest : KoinTest {
         xRateService = xRateService,
         amountService = SendAmountService(AmountValidator(), wallet.coin.code, seededAvailableBalance),
         addressService = SendZCashAddressService(adapter),
-        memoService = SendZCashMemoService(),
+        memoService = SendZCashMemoService(memoSupportedByAccount = true),
         contactsRepo = contactsRepository,
         address = null,
         showAddressInput = true,

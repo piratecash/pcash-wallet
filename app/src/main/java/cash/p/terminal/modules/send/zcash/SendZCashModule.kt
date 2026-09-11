@@ -11,6 +11,7 @@ import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.amount.AmountValidator
 import cash.p.terminal.modules.amount.SendAmountService
 import cash.p.terminal.modules.xrate.XRateService
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.DispatcherProvider
@@ -44,7 +45,9 @@ object SendZCashModule {
                 availableBalance = availableBalance
             )
             val addressService = SendZCashAddressService(adapter)
-            val memoService = SendZCashMemoService()
+            val memoService = SendZCashMemoService(
+                memoSupportedByAccount = wallet.account.type !is AccountType.TrezorDevice
+            )
 
             return SendZCashViewModel(
                 adapter = adapter,

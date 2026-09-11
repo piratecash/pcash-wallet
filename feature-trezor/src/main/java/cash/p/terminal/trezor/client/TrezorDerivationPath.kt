@@ -5,7 +5,7 @@ package cash.p.terminal.trezor.client
  * (`"m/84'/0'/0'"`) and the list-of-ints form the [cash.p.terminal.trezorkit.client.ITrezorClient]
  * API expects (hardened segments carry the `0x80000000` bit).
  */
-internal object TrezorDerivationPath {
+object TrezorDerivationPath {
 
     private const val HARDENED_BIT = 0x80000000.toInt()
 
