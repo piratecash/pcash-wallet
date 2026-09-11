@@ -16,7 +16,8 @@ class PendingTransactionRecord(
     toAddress: String,
     fromAddress: String,
     val expiresAt: Long,
-    memo: String?
+    memo: String?,
+    val isIronwoodMigration: Boolean = false,
 ) : TransactionRecord(
     uid = uid,
     transactionHash = transactionHash,
@@ -31,10 +32,14 @@ class PendingTransactionRecord(
     token = token,
     to = listOf(toAddress),
     from = fromAddress,
-    sentToSelf = false,
+    sentToSelf = isIronwoodMigration,
     memo = memo
 ) {
-    override val mainValue = TransactionValue.CoinValue(token, amount.negate())
+    // A migration keeps the funds in the wallet, so its amount is a transfer, not a spend.
+    override val mainValue = TransactionValue.CoinValue(
+        token,
+        if (isIronwoodMigration) amount else amount.negate(),
+    )
 
     override fun status(lastBlockHeight: Int?) = TransactionStatus.Pending
 

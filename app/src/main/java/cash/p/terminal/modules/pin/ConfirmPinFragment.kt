@@ -9,14 +9,13 @@ import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.navigation.setNavigationResultX
 import cash.p.terminal.modules.pin.ui.PinConfirm
 import cash.p.terminal.ui_compose.BaseComposeFragment
-import cash.p.terminal.ui_compose.getInput
 import kotlinx.parcelize.Parcelize
 
 class ConfirmPinFragment : BaseComposeFragment(screenshotEnabled = false) {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val input = navController.getInput<InputConfirm>()
+        val input = getInput<InputConfirm>()
 
         PinConfirm(
             title = stringResource(input?.descriptionResId ?: R.string.Unlock_EnterPasscode),

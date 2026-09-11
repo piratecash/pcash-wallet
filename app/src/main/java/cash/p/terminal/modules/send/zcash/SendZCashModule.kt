@@ -37,7 +37,7 @@ object SendZCashModule {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             val xRateService = XRateService(App.marketKit, App.currencyManager.baseCurrency)
-            val availableBalance = adapterManager.getZcashAvailableToSend(wallet, adapter)
+            val availableBalance = adapter.maxSpendableBalance
             val amountService = SendAmountService(
                 amountValidator = AmountValidator(),
                 coinCode = wallet.coin.code,

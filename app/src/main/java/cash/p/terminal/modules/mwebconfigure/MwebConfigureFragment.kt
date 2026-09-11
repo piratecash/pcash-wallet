@@ -15,7 +15,6 @@ import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.navigation.setNavigationResultX
 import cash.p.terminal.ui_compose.BaseComposeFragment
 import cash.p.terminal.ui_compose.findNavController
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.wallet.entities.TokenType
 import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.parcelize.Parcelize
@@ -32,7 +31,7 @@ class MwebConfigureFragment : BaseComposeFragment() {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val initialConfig = navController.getInput<Input>()?.initialConfig
+        val initialConfig = getInput<Input>()?.initialConfig
         val viewModel: MwebConfigureViewModel = koinViewModel()
 
         LaunchedEffect(initialConfig) {

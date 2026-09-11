@@ -17,7 +17,6 @@ import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.ui_compose.BaseComposeFragment
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.navigation.setNavigationResultX
 import cash.p.terminal.modules.contacts.model.Contact
 import cash.p.terminal.ui_compose.components.AppBar
@@ -38,7 +37,7 @@ class SelectContactFragment : BaseComposeFragment() {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        SelectContactScreen(navController, navController.getInput())
+        SelectContactScreen(navController, getInput())
     }
 
     @Parcelize

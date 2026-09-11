@@ -55,7 +55,6 @@ import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.navigation.popBackStackSafely
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.navigation.slideFromBottom
 import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.ui_compose.entities.ViewState
@@ -118,7 +117,7 @@ class NftAssetFragment : BaseComposeFragment() {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val input = navController.getInput<NftAssetModule.Input>()
+        val input = getInput<NftAssetModule.Input>()
         NftAssetScreen(
             navController,
             input?.collectionUid,

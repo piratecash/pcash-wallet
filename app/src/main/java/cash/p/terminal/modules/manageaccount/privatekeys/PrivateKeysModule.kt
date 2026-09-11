@@ -21,6 +21,7 @@ object PrivateKeysModule {
         val bip32RootKey: ExtendedKey? = null,
         val accountExtendedPrivateKey: ExtendedKey? = null,
         val stellarSecretKey: String? = null,
+        val hasZcashKeys: Boolean = false,
     )
 
     data class ExtendedKey(

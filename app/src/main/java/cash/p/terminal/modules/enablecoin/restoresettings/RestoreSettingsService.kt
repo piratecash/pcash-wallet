@@ -90,14 +90,7 @@ class RestoreSettingsService(
     fun enter(tokenConfig: TokenConfig, token: Token): Boolean {
         val settings = RestoreSettings()
         settings.birthdayHeight = when (token.blockchainType) {
-            BlockchainType.Zcash -> {
-                if (tokenConfig.restoreAsNew) {
-                    tokenConfig.birthdayHeight?.toLongOrNull()
-                        ?: zcashBirthdayProvider.getLatestCheckpointBlockHeight()
-                } else {
-                    tokenConfig.birthdayHeight?.toLongOrNull()
-                }
-            }
+            BlockchainType.Zcash -> tokenConfig.zcashBirthdayHeight(zcashBirthdayProvider)
 
             BlockchainType.Monero -> {
                 tokenConfig.birthdayHeight?.toLongOrNull() ?: -1

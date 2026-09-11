@@ -29,7 +29,7 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.ActiveAccountState
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.core.deeplink.DeeplinkParser
-import cash.z.ecc.android.sdk.ext.collectWith
+import io.horizontalsystems.core.collectWith
 import io.horizontalsystems.core.IPinComponent
 import io.horizontalsystems.core.ViewModelUiState
 import kotlinx.coroutines.delay

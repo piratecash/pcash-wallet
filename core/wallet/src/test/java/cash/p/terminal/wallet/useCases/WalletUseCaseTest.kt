@@ -38,6 +38,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
@@ -408,6 +409,7 @@ class WalletUseCaseTest {
             zcashTokens.first { it.type == TokenType.AddressSpecTyped(TokenType.AddressSpecType.Unified) }
         val zcashWallets = zcashTokens.map { wallet(it, account) }
 
+        every { accountManager.activeAccount } returns account
         every { marketKit.tokens(zcashAddressSpecTokenQueries) } returns zcashTokens
 
         activeWallets = emptyList()
@@ -448,6 +450,37 @@ class WalletUseCaseTest {
         assertEquals("0x123", address)
     }
 
+    @Test
+    fun getWalletForBlockchain_tokenWalletBeforeNative_returnsNativeWallet() {
+        val account = softwareAccount()
+        val usdt = wallet(bscToken("USDT", TokenType.Eip20("0x55d3")), account)
+        val bnb = wallet(bscToken("BNB", TokenType.Native), account)
+        activeWallets = listOf(
+            wallet(token("BTC", BlockchainType.Bitcoin), account),
+            usdt,
+            bnb
+        )
+
+        assertSame(bnb, useCase.getWalletForBlockchain(BlockchainType.BinanceSmartChain))
+    }
+
+    @Test
+    fun getWalletForBlockchain_noNativeWallet_returnsFirstTokenWallet() {
+        val account = softwareAccount()
+        val usdt = wallet(bscToken("USDT", TokenType.Eip20("0x55d3")), account)
+        val busd = wallet(bscToken("BUSD", TokenType.Eip20("0xe9e7")), account)
+        activeWallets = listOf(usdt, busd)
+
+        assertSame(usdt, useCase.getWalletForBlockchain(BlockchainType.BinanceSmartChain))
+    }
+
+    @Test
+    fun getWalletForBlockchain_chainNotEnabled_returnsNull() {
+        activeWallets = listOf(wallet(token("BTC", BlockchainType.Bitcoin), softwareAccount()))
+
+        assertNull(useCase.getWalletForBlockchain(BlockchainType.BinanceSmartChain))
+    }
+
     private fun token(
         symbol: String,
         blockchainType: BlockchainType,
@@ -462,6 +495,9 @@ class WalletUseCaseTest {
         val blockchain = Blockchain(blockchainType, blockchainType.uid, null)
         return Token(coin, blockchain, type, decimals)
     }
+
+    private fun bscToken(symbol: String, type: TokenType) =
+        token(symbol, BlockchainType.BinanceSmartChain, type)
 
     private fun softwareAccount(id: String = UUID.randomUUID().toString()) = Account(
         id = id,

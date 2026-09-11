@@ -275,13 +275,19 @@ class PendingBalanceCalculatorTest {
         pendingFlow.value = listOf(createPendingEntity("ton-pending-without-hash"))
         advanceUntilIdle()
 
-        calculator.adjustBalance(wallet, BalanceData(available = BigDecimal("7.2657")))
+        calculator.adjustBalance(
+            wallet,
+            BalanceData(available = BigDecimal("7.2657")),
+        )
         advanceUntilIdle()
 
         pendingFlow.value = emptyList()
         advanceUntilIdle()
 
-        val afterIncoming = calculator.adjustBalance(wallet, BalanceData(available = BigDecimal("12.2657")))
+        val afterIncoming = calculator.adjustBalance(
+            wallet,
+            BalanceData(available = BigDecimal("12.2657")),
+        )
 
         assertEquals(
             BigDecimal("12.2657").stripTrailingZeros(),
@@ -311,6 +317,28 @@ class PendingBalanceCalculatorTest {
         coVerify(exactly = 0) { pendingRepository.markBalanceConfirmed(any()) }
     }
 
+    @Test
+    fun adjustBalance_zcashPendingExists_returnsSdkBalanceWithoutLocalDeduction() = runTest(dispatcher) {
+        val calculator = PendingBalanceCalculator(pendingRepository, dispatcherProvider)
+        calculator.onPendingInserted(createPendingEntity("zcash-pending"))
+        val rawBalance = BalanceData(
+            available = BigDecimal("3.5"),
+            pending = BigDecimal("0.2"),
+            timeLocked = BigDecimal("1.1"),
+        )
+
+        val adjusted = calculator.adjustBalance(
+            createZcashWallet(),
+            rawBalance,
+        )
+        advanceUntilIdle()
+
+        assertEquals(rawBalance, adjusted)
+        coVerify(exactly = 0) { pendingRepository.deleteByIds(any()) }
+        coVerify(exactly = 0) { pendingRepository.markBalanceConfirmed(any()) }
+        coVerify(exactly = 0) { pendingRepository.rebaseSdkBalanceAtCreation(any(), any()) }
+    }
+
     private fun createMockWallet(): Wallet {
         val account = mockk<Account> {
             every { id } returns "account-1"
@@ -329,6 +357,17 @@ class PendingBalanceCalculatorTest {
 
     private fun createMwebLitecoinWallet(): Wallet {
         return createLitecoinWallet(TokenType.Mweb)
+    }
+
+    private fun createZcashWallet(): Wallet {
+        val account = mockk<Account> { every { id } returns "account-1" }
+        val token = mockk<Token> {
+            every { blockchainType } returns BlockchainType.Zcash
+        }
+        return mockk {
+            every { this@mockk.account } returns account
+            every { this@mockk.token } returns token
+        }
     }
 
     private fun createLitecoinWallet(tokenType: TokenType): Wallet {

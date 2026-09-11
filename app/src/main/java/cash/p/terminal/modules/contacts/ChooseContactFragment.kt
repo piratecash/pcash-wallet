@@ -27,7 +27,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.navigation.popBackStackSafely
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.navigation.setNavigationResultX
 import cash.p.terminal.strings.helpers.shorten
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
@@ -52,7 +51,7 @@ class ChooseContactFragment : BaseComposeFragment() {
     @Composable
     override fun GetContent(navController: NavController) {
         ChooseContactScreen(
-            navController.getInput(),
+            getInput(),
             navController
         )
     }

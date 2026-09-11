@@ -7,7 +7,6 @@ import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.ui_compose.BaseComposeFragment
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.navigation.setNavigationResultX
 import cash.p.terminal.modules.pin.ui.PinSet
 import kotlinx.parcelize.Parcelize
@@ -16,7 +15,7 @@ class SetPinFragment : BaseComposeFragment(screenshotEnabled = false) {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val input = navController.getInput<Input>()
+        val input = getInput<Input>()
 
         PinSet(
             title = stringResource(R.string.PinSet_Title),

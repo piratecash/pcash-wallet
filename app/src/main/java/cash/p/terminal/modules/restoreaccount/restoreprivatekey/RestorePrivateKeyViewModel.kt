@@ -12,6 +12,7 @@ import cash.p.terminal.modules.restoreaccount.restoreprivatekey.RestorePrivateKe
 import cash.p.terminal.modules.restoreaccount.restoreprivatekey.RestorePrivateKeyModule.RestoreError.NoValidKey
 import cash.p.terminal.modules.restoreaccount.restoreprivatekey.RestorePrivateKeyModule.RestoreError.NonPrivateKey
 import cash.p.terminal.modules.restoreaccount.restoreprivatekey.RestorePrivateKeyModule.RestoreError.NotSupportedDerivedType
+import cash.p.terminal.modules.address.ZcashKeyParser
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.wallet.AccountType
 import io.horizontalsystems.ethereumkit.core.signer.Signer
@@ -47,12 +48,16 @@ class RestorePrivateKeyViewModel(
         return try {
             accountType(text)
         } catch (e: Exception) {
-            inputState = DataState.Error(
-                Exception(Translator.getString(R.string.Restore_PrivateKey_InvalidKey))
-            )
+            inputState = DataState.Error(Exception(Translator.getString(e.errorText)))
             null
         }
     }
+
+    private val Exception.errorText
+        get() = when (this) {
+            NonPrivateKey -> R.string.restore_private_key_is_view_only
+            else -> R.string.Restore_PrivateKey_InvalidKey
+        }
 
     @Throws(Exception::class)
     private fun accountType(text: String): AccountType {
@@ -71,21 +76,29 @@ class RestorePrivateKeyViewModel(
             return AccountType.StellarSecretKey(textCleaned)
         }
 
-        try {
-            val extendedKey = HDExtendedKey(textCleaned)
-            if (extendedKey.isPublic) {
-                throw NonPrivateKey
-            }
-            when (extendedKey.derivedType) {
-                HDExtendedKey.DerivedType.Master,
-                HDExtendedKey.DerivedType.Account -> {
-                    return AccountType.HdExtendedKey(extendedKey.serializePrivate())
-                }
+        if (ZcashKeyParser.isSaplingSpendingKey(textCleaned)) {
+            return AccountType.ZCashSaplingKey(textCleaned)
+        }
 
-                else -> throw NotSupportedDerivedType
-            }
+        if (ZcashKeyParser.isUfvk(textCleaned) || ZcashKeyParser.isSaplingViewingKey(textCleaned)) {
+            throw NonPrivateKey
+        }
+
+        val extendedKey = try {
+            HDExtendedKey(textCleaned)
         } catch (e: Throwable) {
             throw NoValidKey
+        }
+
+        if (extendedKey.isPublic) {
+            throw NonPrivateKey
+        }
+
+        return when (extendedKey.derivedType) {
+            HDExtendedKey.DerivedType.Master,
+            HDExtendedKey.DerivedType.Account -> AccountType.HdExtendedKey(extendedKey.serializePrivate())
+
+            else -> throw NotSupportedDerivedType
         }
     }
 

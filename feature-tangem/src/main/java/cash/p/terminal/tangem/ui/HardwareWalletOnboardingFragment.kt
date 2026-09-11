@@ -5,7 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import cash.p.terminal.tangem.ui.onboarding.OnboardingScreen
 import cash.p.terminal.ui_compose.BaseComposeFragment
-import cash.p.terminal.ui_compose.getInput
 import kotlinx.parcelize.Parcelize
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -14,7 +13,7 @@ class HardwareWalletOnboardingFragment : BaseComposeFragment() {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val accountNameInput = navController.getInput<Input>()
+        val accountNameInput = getInput<Input>()
         if (accountNameInput == null) {
             navController.popBackStack()
             return

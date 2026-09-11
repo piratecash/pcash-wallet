@@ -36,7 +36,6 @@ import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.subhead2_leah
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.ui_compose.components.HudHelper
@@ -49,7 +48,7 @@ class ResetToFactorySettingsFragment : BaseComposeFragment() {
     @Composable
     override fun GetContent(navController: NavController) {
         val viewModel: ResetToFactorySettingsViewModel by viewModel<ResetToFactorySettingsViewModel>()
-        navController.getInput<Input>()?.let {
+        getInput<Input>()?.let {
             viewModel.account = it.account
         }
 

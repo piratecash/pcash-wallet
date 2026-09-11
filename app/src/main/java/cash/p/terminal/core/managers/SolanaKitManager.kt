@@ -4,6 +4,7 @@ import android.util.Log
 import cash.p.terminal.core.App
 import cash.p.terminal.core.UnsupportedAccountException
 import cash.p.terminal.core.UnsupportedException
+import cash.p.terminal.core.hexToByteArray
 import cash.p.terminal.core.onPollingStartedSuspend
 import cash.p.terminal.core.onPollingStoppedSuspend
 import cash.p.terminal.core.storage.HardwarePublicKeyStorage
@@ -13,7 +14,6 @@ import cash.p.terminal.trezor.signer.TrezorSolanaSigner
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.entities.HardwarePublicKey
-import cash.z.ecc.android.sdk.ext.fromHex
 import com.solana.core.PublicKey
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
@@ -102,7 +102,7 @@ class SolanaKitManager(
         is AccountType.HardwareCard,
         is AccountType.TrezorDevice -> {
             val key = getHardwarePublicKey(account.id)
-            Base58.encode(key.key.value.fromHex())
+            Base58.encode(key.key.value.hexToByteArray())
         }
         is AccountType.BitcoinAddress,
         is AccountType.EvmAddress,
@@ -113,7 +113,8 @@ class SolanaKitManager(
         is AccountType.StellarSecretKey,
         is AccountType.TonAddress,
         is AccountType.TronAddress,
-        is AccountType.ZCashUfvKey -> throw UnsupportedAccountException()
+        is AccountType.ZCashUfvKey,
+        is AccountType.ZCashSaplingKey -> throw UnsupportedAccountException()
     }
 
     suspend fun getSolanaKitWrapper(account: Account): SolanaKitWrapper = mutex.withLock {
@@ -175,7 +176,7 @@ class SolanaKitManager(
     ): SolanaKitWrapper {
         val hardwarePublicKey = getHardwarePublicKey(accountId)
         val account = HardwareWalletSolanaAccountSigner(
-            publicKey = PublicKey(hardwarePublicKey.key.value.fromHex()),
+            publicKey = PublicKey(hardwarePublicKey.key.value.hexToByteArray()),
             hardwarePublicKey = hardwarePublicKey
         )
         return createHardwareKitInstance(accountId, hardwarePublicKey, account)
@@ -186,7 +187,7 @@ class SolanaKitManager(
     ): SolanaKitWrapper {
         val hardwarePublicKey = getHardwarePublicKey(accountId)
         val account = TrezorSolanaSigner(
-            publicKey = PublicKey(hardwarePublicKey.key.value.fromHex()),
+            publicKey = PublicKey(hardwarePublicKey.key.value.hexToByteArray()),
             derivationPath = hardwarePublicKey.derivationPath,
             trezorClient = trezorClient
         )
@@ -200,7 +201,7 @@ class SolanaKitManager(
     ): SolanaKitWrapper {
         val signer = Signer(account)
         return SolanaKitWrapper(
-            createKit(Base58.encode(hardwarePublicKey.key.value.fromHex()), accountId),
+            createKit(Base58.encode(hardwarePublicKey.key.value.hexToByteArray()), accountId),
             signer
         )
     }

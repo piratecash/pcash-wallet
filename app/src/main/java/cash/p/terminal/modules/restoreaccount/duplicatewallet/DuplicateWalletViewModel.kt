@@ -34,6 +34,7 @@ import cash.p.terminal.wallet.AccountType.StellarAddress
 import cash.p.terminal.wallet.AccountType.StellarSecretKey
 import cash.p.terminal.wallet.AccountType.TonAddress
 import cash.p.terminal.wallet.AccountType.TronAddress
+import cash.p.terminal.wallet.AccountType.ZCashSaplingKey
 import cash.p.terminal.wallet.AccountType.ZCashUfvKey
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IEnabledWalletStorage
@@ -199,6 +200,7 @@ class DuplicateWalletViewModel(
                 is TonAddress,
                 is TronAddress,
                 is ZCashUfvKey,
+                is ZCashSaplingKey,
                 is EvmPrivateKey,
                 is HardwareCard,
                 is TrezorDevice,

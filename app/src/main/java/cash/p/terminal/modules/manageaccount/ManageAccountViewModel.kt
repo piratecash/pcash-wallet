@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.R
+import cash.p.terminal.core.adapters.zcash.ZcashKeyExporter
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.core.utils.MoneroSecretKeys
 import cash.p.terminal.core.utils.MoneroWalletSeedConverter
@@ -34,6 +35,8 @@ class ManageAccountViewModel(
 
     private val tangemSdkManager: TangemSdkManager by inject(TangemSdkManager::class.java)
     private val walletManager: IWalletManager by inject(IWalletManager::class.java)
+
+    private val zcashKeyExporter: ZcashKeyExporter by inject(ZcashKeyExporter::class.java)
 
     var viewState by mutableStateOf(
         ManageAccountModule.ViewState(
@@ -176,7 +179,7 @@ class ManageAccountViewModel(
     }
 
     private suspend fun getKeyActions(account: Account): List<KeyAction> {
-        if (!account.isBackedUp && !account.isFileBackedUp && account.supportsBackup) {
+        if (!account.hasAnyBackup && account.supportsBackup) {
             return emptyList()
         }
         return when (account.type) {
@@ -210,6 +213,8 @@ class ManageAccountViewModel(
             is AccountType.TrezorDevice -> listOf()
 
             is AccountType.ZCashUfvKey,
+            is AccountType.ZCashSaplingKey -> zcashKeyActions(account.type, zcashKeyExporter)
+
             is AccountType.EvmAddress,
             is AccountType.SolanaAddress,
             is AccountType.TronAddress,
@@ -238,4 +243,13 @@ class ManageAccountViewModel(
             viewState.copy(closeScreen = true)
         }
     }
+}
+
+/** Rows reflect what the exporter yields now; a later derivation failure is reported on the screen. */
+internal suspend fun zcashKeyActions(
+    type: AccountType,
+    exporter: ZcashKeyExporter,
+): List<KeyAction> = buildList {
+    if (exporter.privateKeyTypes(type).isNotEmpty()) add(KeyAction.PrivateKeys)
+    if (exporter.viewingKey(type) != null) add(KeyAction.PublicKeys)
 }

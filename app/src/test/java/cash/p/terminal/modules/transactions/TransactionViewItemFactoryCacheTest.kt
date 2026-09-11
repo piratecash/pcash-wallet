@@ -24,6 +24,7 @@ import cash.p.terminal.modules.contacts.model.Contact
 import cash.p.terminal.modules.transactions.poison_status.PoisonStatus
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.strings.helpers.Translator
+import cash.p.terminal.ui_compose.ColorName
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.MarketKitWrapper
@@ -61,6 +62,8 @@ class TransactionViewItemFactoryCacheTest {
         const val TX_HASH = "0e850ae3cb3963672d2880a4940172732ccab477f0ea3fc93a8914e912c670ad"
         const val PENDING_TIMESTAMP = 1_779_766_789L
         const val BRIDGE_ADDRESS = "0x579fedB9253ccA1b3114d5e2fA44F8158d61e436"
+        const val RECIPIENT_ADDRESS = "t1Js8mMvZzCY2gUpTpKcNetJrMihqaPbSXF"
+        const val MIGRATION_SUBTITLE = "To Ironwood pool"
 
         val ZEC_AMOUNT: BigDecimal = BigDecimal("0.01285429")
     }
@@ -412,6 +415,40 @@ class TransactionViewItemFactoryCacheTest {
         }
     }
 
+    @Test
+    fun convertToViewItemCached_pendingMigration_looksLikeAMigrationNotAnOutgoingTransfer() =
+        runTest {
+            stubNoSwapMatch()
+            every {
+                Translator.getString(R.string.transactions_migrate_to_ironwood)
+            } returns MIGRATION_SUBTITLE
+            val record = createPendingRecord(transactionHash = TX_HASH, isIronwoodMigration = true)
+
+            val viewItem = factory.convertToViewItemCached(createTransactionItem(record))
+
+            assertEquals(MIGRATION_SUBTITLE, viewItem.subtitle)
+            assertEquals(
+                TransactionViewItem.Icon.ImageResource(R.drawable.ic_migrate_24),
+                viewItem.icon,
+            )
+            assertEquals("ZEC:0.01285429", viewItem.primaryValue?.value)
+            assertEquals(ColorName.Leah, viewItem.primaryValue?.color)
+            assertTrue(viewItem.sentToSelf)
+        }
+
+    @Test
+    fun convertToViewItemCached_pendingOutgoing_showsTheSpentAmountAndTheRecipient() = runTest {
+        stubNoSwapMatch()
+        stubAddressTranslation(RECIPIENT_ADDRESS)
+        val record = createPendingRecord(transactionHash = TX_HASH)
+
+        val viewItem = factory.convertToViewItemCached(createTransactionItem(record))
+
+        assertNotEquals(MIGRATION_SUBTITLE, viewItem.subtitle)
+        assertEquals("-ZEC:0.01285429", viewItem.primaryValue?.value)
+        assertEquals(ColorName.Lucian, viewItem.primaryValue?.color)
+    }
+
     private fun createUnknownSwapRecord(
         uid: String,
         valueOut: TransactionValue?,
@@ -512,6 +549,7 @@ class TransactionViewItemFactoryCacheTest {
 
     private fun createPendingRecord(
         transactionHash: String,
+        isIronwoodMigration: Boolean = false,
     ): PendingTransactionRecord {
         val token = createZcashToken()
 
@@ -526,10 +564,11 @@ class TransactionViewItemFactoryCacheTest {
             ),
             token = token,
             amount = ZEC_AMOUNT,
-            toAddress = "t1Js8mMvZzCY2gUpTpKcNetJrMihqaPbSXF",
+            toAddress = RECIPIENT_ADDRESS,
             fromAddress = "from-address",
             expiresAt = Long.MAX_VALUE,
             memo = null,
+            isIronwoodMigration = isIronwoodMigration,
         )
     }
 
@@ -576,6 +615,13 @@ class TransactionViewItemFactoryCacheTest {
                 timestamp = PENDING_TIMESTAMP * 1_000,
             )
         } returns swap
+    }
+
+    private fun stubNoSwapMatch() {
+        every { swapProviderTransactionsStorage.getByOutgoingRecordUid(any()) } returns null
+        every {
+            swapProviderTransactionsStorage.getByCoinUidIn(any(), any(), any(), any())
+        } returns null
     }
 
     private fun stubAddressTranslation(value: String) {

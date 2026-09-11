@@ -37,7 +37,6 @@ import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.ui_compose.BaseComposeFragment
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.ui_compose.CoinFragmentInput
@@ -67,7 +66,7 @@ class CoinRankFragment : BaseComposeFragment() {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val type = navController.getInput<RankType>()
+        val type = getInput<RankType>()
 
         type?.let { rankType ->
             CoinRankScreen(

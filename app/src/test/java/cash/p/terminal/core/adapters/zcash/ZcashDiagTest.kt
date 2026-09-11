@@ -33,37 +33,25 @@ class ZcashDiagTest {
     // ---- diagFields ----
 
     @Test
-    fun diagFields_nullHeightsAndRange_renderDash() {
+    fun diagFields_nullHeights_renderDash() {
         val fields = diagFields(
             snapshot(
                 chainTipHeight = null,
-                fullyScannedHeight = null,
-                recoveryProgressPercent = null,
-                firstUnenhancedHeight = null,
-                overallSyncRangeState = SyncRangeState.Unknown,
+                scannedHeight = null,
+                syncTargetHeight = null,
             )
         )
         assertEquals("—", fields["chainTipHeight"])
-        assertEquals("—", fields["fullyScannedHeight"])
+        assertEquals("—", fields["scannedHeight"])
+        assertEquals("—", fields["syncTargetHeight"])
         assertEquals("—", fields["scanGap"])
-        assertEquals("—", fields["recoveryProgress%"])
-        assertEquals("—", fields["firstUnenhancedHeight"])
-        assertEquals("—", fields["overallSyncRange"])
     }
 
     @Test
-    fun diagFields_overallSyncRange_rendersThreeStates() {
-        assertEquals("—", diagFields(snapshot(overallSyncRangeState = SyncRangeState.Unknown))["overallSyncRange"])
-        assertEquals("empty", diagFields(snapshot(overallSyncRangeState = SyncRangeState.Empty))["overallSyncRange"])
+    fun diagFields_bothHeightsKnown_rendersScanGap() {
         assertEquals(
-            "2000000..2500000",
-            diagFields(
-                snapshot(
-                    overallSyncRangeState = SyncRangeState.NonEmpty,
-                    overallSyncRangeStart = 2_000_000,
-                    overallSyncRangeEnd = 2_500_000,
-                )
-            )["overallSyncRange"]
+            "100",
+            diagFields(snapshot(chainTipHeight = 2_400_000, scannedHeight = 2_399_900))["scanGap"]
         )
     }
 
@@ -161,13 +149,8 @@ class ZcashDiagTest {
         pool: String = "Unified",
         syncStateDiscriminator: String = "Syncing",
         chainTipHeight: Long? = 2_400_000,
-        fullyScannedHeight: Long? = 2_399_900,
-        scanProgressPercent: Int? = 90,
-        recoveryProgressPercent: Int? = null,
-        overallSyncRangeState: SyncRangeState = SyncRangeState.NonEmpty,
-        overallSyncRangeStart: Long? = 2_000_000,
-        overallSyncRangeEnd: Long? = 2_400_000,
-        firstUnenhancedHeight: Long? = 2_399_950,
+        scannedHeight: Long? = 2_399_900,
+        syncTargetHeight: Long? = 2_400_000,
         available: BigDecimal? = BigDecimal("1.0"),
         changePending: BigDecimal? = BigDecimal.ZERO,
         valuePending: BigDecimal? = BigDecimal("4.065"),
@@ -175,13 +158,8 @@ class ZcashDiagTest {
         pool = pool,
         syncStateDiscriminator = syncStateDiscriminator,
         chainTipHeight = chainTipHeight,
-        fullyScannedHeight = fullyScannedHeight,
-        scanProgressPercent = scanProgressPercent,
-        recoveryProgressPercent = recoveryProgressPercent,
-        overallSyncRangeState = overallSyncRangeState,
-        overallSyncRangeStart = overallSyncRangeStart,
-        overallSyncRangeEnd = overallSyncRangeEnd,
-        firstUnenhancedHeight = firstUnenhancedHeight,
+        scannedHeight = scannedHeight,
+        syncTargetHeight = syncTargetHeight,
         available = available,
         changePending = changePending,
         valuePending = valuePending,

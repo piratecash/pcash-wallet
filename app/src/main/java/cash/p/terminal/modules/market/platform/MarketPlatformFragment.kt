@@ -45,7 +45,6 @@ import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.title3_leah
 import cash.p.terminal.ui_compose.entities.ViewState
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.chartview.chart.ChartViewModel
 import io.horizontalsystems.chartview.ui.Chart
@@ -55,7 +54,7 @@ class MarketPlatformFragment : BaseComposeFragment() {
     @Composable
     override fun GetContent(navController: NavController) {
 
-        val platform = navController.getInput<Platform>()
+        val platform = getInput<Platform>()
 
         if (platform == null) {
             navController.popBackStack()
