@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.backuplocal
 
+import cash.p.terminal.wallet.MnemonicDerivation
 import android.util.Base64
 import cash.p.terminal.core.IAccountFactory
 import cash.p.terminal.core.installEthereumCryptoProviderForTest
@@ -188,7 +189,7 @@ internal abstract class BackupProviderRestoreTestFixture {
     protected val restoredAccount = Account(
         id = "restored-account-id",
         name = "Restored",
-        type = AccountType.Mnemonic(List(12) { "abandon" }, ""),
+        type = AccountType.Mnemonic(List(12) { "abandon" }, "", MnemonicDerivation.Legacy),
         origin = AccountOrigin.Restored,
         level = 0
     )

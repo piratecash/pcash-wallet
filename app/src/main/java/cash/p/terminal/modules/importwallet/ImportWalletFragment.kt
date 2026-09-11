@@ -96,10 +96,7 @@ private fun ImportWalletScreen(
                             ManageAccountsModule.Input(
                                 popOffOnSuccess = popUpToInclusiveId,
                                 popOffInclusive = inclusive,
-                                prefillWords = event.words,
-                                prefillPassphrase = event.passphrase,
-                                prefillMoneroHeight = event.moneroHeight,
-                                prefillMnemonicLanguageName = event.language?.name
+                                mnemonicDraft = event.draft
                             )
                         )
                     }

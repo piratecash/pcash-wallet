@@ -9,6 +9,7 @@ import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.usecase.MoneroWalletUseCase
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
+import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IEnabledWalletStorage
@@ -78,7 +79,7 @@ class DuplicateWalletViewModelTest {
     private val accountToCopy = Account(
         id = "source-account-id",
         name = "Main",
-        type = AccountType.Mnemonic(sourceWords, ""),
+        type = AccountType.Mnemonic(sourceWords, "", MnemonicDerivation.Legacy),
         origin = AccountOrigin.Restored,
         level = 0
     )
@@ -405,6 +406,7 @@ class DuplicateWalletViewModelTest {
         val created = slot<Account>()
         verify { accountManager.save(capture(created), any()) }
         assertEquals(expectedPassphrase, (created.captured.type as AccountType.Mnemonic).passphrase)
+        assertEquals(MnemonicDerivation.Bip39, (created.captured.type as AccountType.Mnemonic).derivation)
     }
 
     private fun DuplicateWalletViewModel.enterPassphrase(value: String) {
@@ -415,7 +417,7 @@ class DuplicateWalletViewModelTest {
     /** [sourcePassphrase] varies the source identity; the destination one is set through the UI. */
     private fun createViewModel(sourcePassphrase: String = "") = DuplicateWalletViewModel(
         accountToCopy = accountToCopy.copy(
-            type = AccountType.Mnemonic(sourceWords, sourcePassphrase)
+            type = AccountType.Mnemonic(sourceWords, sourcePassphrase, MnemonicDerivation.Bip39)
         ),
         accountManager = accountManager,
         accountFactory = accountFactory,

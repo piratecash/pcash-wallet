@@ -1,14 +1,14 @@
 package cash.p.terminal.modules.restoreaccount.restoremnemonicnonstandard
 
+import cash.p.terminal.modules.restoreaccount.MnemonicImportViewModel
+import cash.p.terminal.modules.restoreaccount.MnemonicInput
+import cash.p.terminal.core.managers.SeedPhraseQrCrypto
 import cash.p.terminal.R
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.core.IAccountFactory
-import io.horizontalsystems.core.ViewModelUiState
 import cash.p.terminal.core.managers.WordsManager
 import cash.p.terminal.modules.restoreaccount.restoremnemonic.RestoreMnemonicModule
 import cash.p.terminal.modules.restoreaccount.restoremnemonicnonstandard.RestoreMnemonicNonStandardModule.UiState
-import cash.p.terminal.wallet.AccountType
-import io.horizontalsystems.core.CoreApp
 import io.horizontalsystems.core.IThirdKeyboard
 import io.horizontalsystems.hdwalletkit.Language
 import io.horizontalsystems.hdwalletkit.Mnemonic
@@ -17,101 +17,36 @@ import io.horizontalsystems.hdwalletkit.WordList
 class RestoreMnemonicNonStandardViewModel(
     accountFactory: IAccountFactory,
     private val wordsManager: WordsManager,
-    private val thirdKeyboardStorage: IThirdKeyboard,
-) : ViewModelUiState<UiState>() {
+    thirdKeyboardStorage: IThirdKeyboard,
+    seedPhraseQrCrypto: SeedPhraseQrCrypto,
+) : MnemonicImportViewModel<UiState>(accountFactory, thirdKeyboardStorage, seedPhraseQrCrypto) {
 
     val mnemonicLanguages = Language.entries.toList()
 
-    private var passphraseEnabled: Boolean = false
-    private var passphrase: String = ""
-    private var passphraseError: String? = null
     private var wordItems: List<RestoreMnemonicModule.WordItem> = listOf()
     private var invalidWordItems: List<RestoreMnemonicModule.WordItem> = listOf()
     private var invalidWordRanges: List<IntRange> = listOf()
-    private var error: String? = null
-    private var accountType: AccountType? = null
     private var wordSuggestions: RestoreMnemonicModule.WordSuggestions? = null
-    private var language = Language.English
-    private var text = ""
-    private var cursorPosition = 0
-    private var mnemonicWordList = WordList.wordList(language)
-
-    private val regex = Regex("\\S+")
-
-    val defaultName = accountFactory.getNextAccountName()
-    var accountName: String = defaultName
-        get() = field.ifBlank { defaultName }
-        private set
-
-    val isThirdPartyKeyboardAllowed: Boolean
-        get() = CoreApp.thirdKeyboardStorage.isThirdPartyKeyboardAllowed
 
     override fun createState() = UiState(
-        passphraseEnabled = passphraseEnabled,
+        draft = draft,
+        passphraseEnabled = draft.passphraseEnabled,
         passphraseError = passphraseError,
         invalidWordRanges = invalidWordRanges,
         error = error,
         accountType = accountType,
         wordSuggestions = wordSuggestions,
-        language = language,
+        language = draft.language,
     )
 
-    private fun processText() {
-        wordItems = wordItems(text)
-        invalidWordItems = wordItems.filter { !mnemonicWordList.validWord(it.word, false) }
-
-        val wordItemWithCursor = wordItems.find {
-            it.range.contains(cursorPosition - 1)
-        }
-
-        val invalidWordItemsExcludingCursoredPartiallyValid = when {
-            wordItemWithCursor != null && mnemonicWordList.validWord(wordItemWithCursor.word, true) -> {
-                invalidWordItems.filter { it != wordItemWithCursor }
-            }
-
-            else -> invalidWordItems
-        }
-
-        invalidWordRanges = invalidWordItemsExcludingCursoredPartiallyValid.map { it.range }
-        wordSuggestions = wordItemWithCursor?.let {
-            RestoreMnemonicModule.WordSuggestions(it, mnemonicWordList.fetchSuggestions(it.word))
-        }
-    }
-
-    fun onTogglePassphrase(enabled: Boolean) {
-        passphraseEnabled = enabled
-        passphrase = ""
-        passphraseError = null
-
-        emitState()
-    }
-
-    fun onEnterName(name: String) {
-        accountName = name
-    }
-
-    fun onEnterPassphrase(passphrase: String) {
-        this.passphrase = passphrase
-        passphraseError = null
-
-        emitState()
-    }
-
-    fun onEnterMnemonicPhrase(text: String, cursorPosition: Int) {
-        error = null
-        this.text = text
-        this.cursorPosition = cursorPosition
-        processText()
-
-        emitState()
-    }
-
-    fun setMnemonicLanguage(language: Language) {
-        this.language = language
-        mnemonicWordList = WordList.wordList(language)
-        processText()
-
-        emitState()
+    override fun processText() {
+        wordItems = draft.wordItems()
+        if (draft.isJapanese) draft = draft.copy(language = Language.Japanese)
+        val mnemonicWordList = WordList.wordList(draft.language)
+        val analysis = MnemonicInput.analyze(wordItems, draft.cursorPosition, mnemonicWordList, false)
+        invalidWordItems = analysis.invalidItems
+        invalidWordRanges = analysis.invalidRanges
+        wordSuggestions = analysis.suggestions
     }
 
     fun onProceed() {
@@ -126,7 +61,7 @@ class RestoreMnemonicNonStandardViewModel(
                 )
             }
 
-            passphraseEnabled && passphrase.isBlank() -> {
+            !draft.preservesRaw && draft.passphraseEnabled && draft.passphrase.isBlank() -> {
                 passphraseError =
                     Translator.getString(R.string.Restore_Error_EmptyPassphrase)
             }
@@ -136,7 +71,7 @@ class RestoreMnemonicNonStandardViewModel(
                     val words = wordItems.map { it.word }
                     wordsManager.validateChecksum(words)
 
-                    accountType = AccountType.Mnemonic(words, passphrase)
+                    accountType = draft.accountType(nonStandard = true)
                     error = null
                 } catch (checksumException: Exception) {
                     error = Translator.getString(R.string.Restore_InvalidChecksum)
@@ -147,19 +82,4 @@ class RestoreMnemonicNonStandardViewModel(
         emitState()
     }
 
-    fun onSelectCoinsShown() {
-        accountType = null
-
-        emitState()
-    }
-
-    fun onAllowThirdPartyKeyboard() {
-        thirdKeyboardStorage.isThirdPartyKeyboardAllowed = true
-    }
-
-    private fun wordItems(text: String): List<RestoreMnemonicModule.WordItem> {
-        return regex.findAll(text.lowercase())
-            .map { RestoreMnemonicModule.WordItem(it.value, it.range) }
-            .toList()
-    }
 }

@@ -7,11 +7,9 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -28,7 +26,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.UriHandler
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextDecoration
@@ -43,17 +40,14 @@ import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
+import cash.p.terminal.ui_compose.components.CheckboxWithInfo
 import cash.p.terminal.ui_compose.components.CustomSnackbar
 import cash.p.terminal.ui_compose.components.HsBackButton
-import cash.p.terminal.ui_compose.components.HsCheckbox
-import cash.p.terminal.ui_compose.components.HsIconButton
 import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.components.InfoBottomSheet
-import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.SectionUniversalLawrence
 import cash.p.terminal.ui_compose.components.SnackbarDuration
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.subhead2_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.core.entities.CurrencyValue
 
@@ -297,7 +291,7 @@ private fun OfflineFormatSection(
                 OfflineFormatCell(
                     format = format,
                     selected = selectedFormat == format,
-                    onClick = { onFormatSelect(format) },
+                    onSelect = { onFormatSelect(format) },
                     onInfoClick = { onInfoClick(format) },
                 )
             }
@@ -343,34 +337,15 @@ private fun OfflineSignBottomActions(
 private fun OfflineFormatCell(
     format: OfflineTransactionFormat,
     selected: Boolean,
-    onClick: () -> Unit,
+    onSelect: () -> Unit,
     onInfoClick: () -> Unit,
 ) {
-    RowUniversal(
-        modifier = Modifier.padding(horizontal = 16.dp),
-        onClick = onClick,
-    ) {
-        HsCheckbox(
-            checked = selected,
-            onCheckedChange = { onClick() },
-        )
-        subhead2_leah(
-            modifier = Modifier
-                .padding(start = 16.dp),
-            text = stringResource(format.titleRes),
-        )
-        HsIconButton(
-            onClick = onInfoClick,
-            minWidth = 36.dp
-        ) {
-            Icon(
-                modifier = Modifier.size(20.dp),
-                painter = painterResource(R.drawable.ic_info_20),
-                contentDescription = stringResource(R.string.Info_Title),
-                tint = ComposeAppTheme.colors.grey,
-            )
-        }
-    }
+    CheckboxWithInfo(
+        title = stringResource(format.titleRes),
+        checked = selected,
+        onCheckedChange = { onSelect() },
+        onInfoClick = onInfoClick,
+    )
 }
 
 private val OfflineTransactionFormat.titleRes: Int

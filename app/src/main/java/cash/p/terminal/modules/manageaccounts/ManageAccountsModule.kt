@@ -3,10 +3,8 @@ package cash.p.terminal.modules.manageaccounts
 import android.os.Parcelable
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import cash.p.terminal.core.tryOrNull
+import cash.p.terminal.modules.restoreaccount.MnemonicImportDraft
 import cash.p.terminal.premium.domain.usecase.PremiumType
-import io.horizontalsystems.hdwalletkit.Language
-import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 
 object ManageAccountsModule {
@@ -16,16 +14,8 @@ object ManageAccountsModule {
         val popOffInclusive: Boolean,
         val defaultRoute: String? = null,
         val accountId: String? = null,
-        // Pre-filled seed phrase data from QR scan
-        val prefillWords: List<String>? = null,
-        val prefillPassphrase: String? = null,
-        val prefillMoneroHeight: Long? = null,
-        val prefillMnemonicLanguageName: String? = null
-    ) : Parcelable {
-        @IgnoredOnParcel
-        val prefillMnemonicLanguage: Language?
-            get() = prefillMnemonicLanguageName?.let { tryOrNull { Language.valueOf(it) } }
-    }
+        val mnemonicDraft: MnemonicImportDraft? = null
+    ) : Parcelable
 
     data class AccountViewItem(
         val accountId: String,

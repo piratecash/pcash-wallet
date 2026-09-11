@@ -2,7 +2,6 @@ package cash.p.terminal.core.utils
 
 import androidx.annotation.VisibleForTesting
 import cash.p.terminal.core.toFixedSize
-import cash.p.terminal.wallet.MnemonicSeed
 import cash.p.terminal.core.toRawHexString
 import com.m2049r.xmrwallet.util.ledger.Monero
 import org.bitcoinj.crypto.DeterministicKey
@@ -34,14 +33,12 @@ object MoneroWalletSeedConverter {
     /**
      * Convert a BIP39 mnemonic to a Monero 25-word legacy seed.
      *
-     * Account inputs are derived exactly as stored so non-standard accounts keep their legacy keys.
+     * The caller supplies the selected account seed so restore and export use the same derivation.
      */
     fun getLegacySeedFromBip39(
-        words: List<String>,
-        passphrase: String = "",
+        seed: ByteArray,
         accountIndex: Int = 0
     ): List<String> {
-        val seed = MnemonicSeed.derive(words, passphrase)
         val bip32Seed = derivePath(seed, "m/44'/128'/$accountIndex'/0/0")
         val spendKey = reduceECKey(bip32Seed.privKeyBytes.toFixedSize(32))
         return encodePhrase(spendKey)

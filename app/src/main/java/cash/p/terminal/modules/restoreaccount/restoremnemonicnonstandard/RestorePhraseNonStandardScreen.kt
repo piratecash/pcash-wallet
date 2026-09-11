@@ -22,12 +22,16 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
+import androidx.activity.compose.BackHandler
+import androidx.compose.runtime.LaunchedEffect
+import cash.p.terminal.modules.restoreaccount.rememberMnemonicScanner
+import cash.p.terminal.modules.restoreaccount.MnemonicImportDraft
+import cash.p.terminal.modules.mnemonic.JapaneseLegacyCell
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -98,15 +102,22 @@ fun RestorePhraseNonStandard(
 ) {
     val viewModel =
         viewModel<RestoreMnemonicNonStandardViewModel>(factory = RestoreMnemonicNonStandardModule.Factory())
-    val uiState = viewModel.uiState
     val context = LocalContext.current
     val view = LocalView.current
     val focusManager = LocalFocusManager.current
     val scannerTitle = stringResource(R.string.Restore_RecoveryPhrase)
 
-    var textState by rememberSaveable("", stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(TextFieldValue(""))
+    val uiState = viewModel.uiState
+    val initialDraft = remember(viewModel) { mainViewModel.mnemonicDraft }
+    var textState by remember(viewModel) {
+        mutableStateOf(TextFieldValue(
+            initialDraft.text, TextRange(initialDraft.selectionStart, initialDraft.cursorPosition)
+        ))
     }
+    val onScan = rememberMnemonicScanner(viewModel, mainViewModel) { draft ->
+        textState = TextFieldValue(draft.text, TextRange(draft.selectionStart, draft.cursorPosition))
+    }
+    BackHandler { mainViewModel.setDraft(viewModel.draft); onBackClick() }
     var showCustomKeyboardDialog by remember { mutableStateOf(false) }
     var isMnemonicPhraseInputFocused by remember { mutableStateOf(false) }
     val keyboardState by observeKeyboardState()
@@ -122,7 +133,7 @@ fun RestorePhraseNonStandard(
         AppBar(
             title = stringResource(R.string.Restore_NonStandardRestore),
             navigationIcon = {
-                HsBackButton(onClick = onBackClick)
+                HsBackButton(onClick = { mainViewModel.setDraft(viewModel.draft); onBackClick() })
             },
             menuItems = listOf(
                 MenuItem(
@@ -177,7 +188,7 @@ fun RestorePhraseNonStandard(
                         onValueChange = {
                             textState = it
 
-                            viewModel.onEnterMnemonicPhrase(it.text, it.selection.max)
+                            viewModel.onEnterMnemonicPhrase(it.text, it.selection.end, it.selection.start)
 
                             showCustomKeyboardDialog =
                                 !viewModel.isThirdPartyKeyboardAllowed && Utils.isUsingCustomKeyboard(
@@ -231,7 +242,7 @@ fun RestorePhraseNonStandard(
                                 icon = R.drawable.ic_delete_20,
                                 onClick = {
                                     textState = textState.copy(text = "", selection = TextRange(0))
-                                    viewModel.onEnterMnemonicPhrase("", "".length)
+                                    viewModel.applyDraft(MnemonicImportDraft())
                                 }
                             )
                         } else {
@@ -240,13 +251,7 @@ fun RestorePhraseNonStandard(
                                 icon = R.drawable.ic_qr_scan_20,
                                 onClick = {
                                     coroutineScope.launchAfterClearingFocus(focusManager) {
-                                        view.findNavController().openQrScanner(scannerTitle) { scannedText ->
-                                            textState = textState.copy(
-                                                text = scannedText,
-                                                selection = TextRange(scannedText.length)
-                                            )
-                                            viewModel.onEnterMnemonicPhrase(scannedText, scannedText.length)
-                                        }
+                                        view.findNavController().openQrScanner(scannerTitle, onResult = onScan)
                                     }
                                 }
                             )
@@ -286,6 +291,7 @@ fun RestorePhraseNonStandard(
                 Spacer(Modifier.height(24.dp))
 
                 BottomSection(viewModel, uiState, coroutineScope)
+                JapaneseLegacyCell(uiState.draft, viewModel::onToggleLegacy)
 
                 Spacer(Modifier.height(44.dp))
             }
@@ -406,11 +412,18 @@ private fun BottomSection(
         )
     )
 
+    val passphraseState = remember { mutableStateOf(TextFieldValue(viewModel.draft.passphrase)) }
+    LaunchedEffect(uiState.draft.passphrase) {
+        if (passphraseState.value.text != uiState.draft.passphrase) {
+            passphraseState.value = TextFieldValue(uiState.draft.passphrase)
+        }
+    }
     if (uiState.passphraseEnabled) {
         Spacer(modifier = Modifier.height(24.dp))
         FormsInputPassword(
             modifier = Modifier.padding(horizontal = 16.dp),
             hint = stringResource(R.string.Passphrase),
+            textState = passphraseState,
             state = uiState.passphraseError?.let { DataState.Error(Exception(it)) },
             onValueChange = viewModel::onEnterPassphrase,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),

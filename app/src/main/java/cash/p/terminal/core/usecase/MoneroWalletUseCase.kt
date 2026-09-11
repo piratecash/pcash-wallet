@@ -134,11 +134,10 @@ class MoneroWalletUseCase(
     }
 
     suspend fun restoreFromBip39(
-        words: List<String>,
-        passphrase: String,
+        seed: ByteArray,
         height: Long
     ): AccountType.MnemonicMonero? =
-        restore(MoneroWalletSeedConverter.getLegacySeedFromBip39(words, passphrase), height)
+        restore(MoneroWalletSeedConverter.getLegacySeedFromBip39(seed), height)
 
     suspend fun restore(
         words: List<String>,

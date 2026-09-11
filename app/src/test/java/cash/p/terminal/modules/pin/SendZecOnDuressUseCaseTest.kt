@@ -1,5 +1,7 @@
 package cash.p.terminal.modules.pin
 
+import cash.p.terminal.wallet.MnemonicDerivation
+
 import android.content.Context
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.ILocalStorage
@@ -436,7 +438,8 @@ class SendZecOnDuressUseCaseTest {
             name = "Test Account",
             type = AccountType.Mnemonic(
                 words = List(12) { "word$it" },
-                passphrase = ""
+                passphrase = "",
+            derivation = MnemonicDerivation.Legacy
             ),
             origin = AccountOrigin.Created,
             level = 0,

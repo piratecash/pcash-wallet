@@ -30,7 +30,7 @@ internal class GetBnbAddressUseCaseImpl(
         return when (account.type) {
             is AccountType.Mnemonic -> {
                 val mnemonicType = account.type as AccountType.Mnemonic
-                seedToEvmAddressUseCase(mnemonicType.words, mnemonicType.passphrase)
+                seedToEvmAddressUseCase(mnemonicType.seed)
             }
 
             is AccountType.TrezorDevice,

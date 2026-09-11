@@ -2237,4 +2237,8 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="balance_hide_on_flip_dont_show_again">Ne plus afficher</string>
     <string name="badge_new">Nouveau</string>
     <string name="monero_keys_unavailable">Les clés ne sont pas disponibles pour ce portefeuille</string>
+    <string name="mnemonic_legacy_option">Utiliser l’ancien format P.CASH</string>
+    <string name="mnemonic_legacy_info">Le format japonais standard BIP-39 est utilisé par défaut. Laissez cette option désactivée lors du transfert d’un portefeuille depuis une autre application.\n\nActivez-la uniquement pour restaurer un portefeuille créé dans P.CASH avec l’ancien format. Ce mode conserve ses adresses précédentes.</string>
+    <string name="mnemonic_bip39_format">Format japonais : BIP-39</string>
+    <string name="mnemonic_legacy_format">Format japonais : P.CASH (ancien)</string>
 </resources>

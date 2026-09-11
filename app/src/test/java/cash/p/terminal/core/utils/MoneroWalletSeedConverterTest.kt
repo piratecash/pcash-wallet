@@ -8,6 +8,13 @@ import org.bouncycastle.jcajce.provider.digest.Keccak
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
+import cash.p.terminal.core.usecase.MoneroWalletUseCase
+import io.mockk.mockk
+import io.mockk.coEvery
+import kotlinx.coroutines.test.runTest
+import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.MnemonicDerivation
+import cash.p.terminal.wallet.MnemonicSeed
 import org.junit.Test
 import kotlin.test.assertFailsWith
 
@@ -27,11 +34,17 @@ class MoneroWalletSeedConverterTest {
                 .split(" ")
 
         val legacySeed =
-            MoneroWalletSeedConverter.getLegacySeedFromBip39(bip39Seed, accountIndex = 0)
+            MoneroWalletSeedConverter.getLegacySeedFromBip39(
+                MnemonicSeed.derive(bip39Seed, MnemonicDerivation.Legacy),
+                accountIndex = 0
+            )
         assertEquals(expectedLegacySeed0, legacySeed)
 
         val legacySeed1 =
-            MoneroWalletSeedConverter.getLegacySeedFromBip39(bip39Seed, accountIndex = 1)
+            MoneroWalletSeedConverter.getLegacySeedFromBip39(
+                MnemonicSeed.derive(bip39Seed, MnemonicDerivation.Legacy),
+                accountIndex = 1
+            )
         assertEquals(expectedLegacySeed1, legacySeed1)
     }
 
@@ -147,7 +160,10 @@ class MoneroWalletSeedConverterTest {
     fun getLegacySeedFromBip39_japaneseAllZeroEntropy_producesValidMoneroSeed() {
         val input = (List(11) { "あいこくしん" } + "あおぞら").map { it.normalizeNFKD() }
 
-        val moneroSeed = MoneroWalletSeedConverter.getLegacySeedFromBip39(input, accountIndex = 0)
+        val moneroSeed = MoneroWalletSeedConverter.getLegacySeedFromBip39(
+            MnemonicSeed.derive(input, MnemonicDerivation.Legacy),
+            accountIndex = 0
+        )
 
         assertMoneroSeedShape(moneroSeed)
     }
@@ -156,7 +172,10 @@ class MoneroWalletSeedConverterTest {
     fun getLegacySeedFromBip39_simplifiedChineseAllZeroEntropy_producesValidMoneroSeed() {
         val input = (List(11) { "的" } + "在").map { it.normalizeNFKD() }
 
-        val moneroSeed = MoneroWalletSeedConverter.getLegacySeedFromBip39(input, accountIndex = 0)
+        val moneroSeed = MoneroWalletSeedConverter.getLegacySeedFromBip39(
+            MnemonicSeed.derive(input, MnemonicDerivation.Legacy),
+            accountIndex = 0
+        )
 
         assertMoneroSeedShape(moneroSeed)
     }
@@ -165,7 +184,10 @@ class MoneroWalletSeedConverterTest {
     fun getLegacySeedFromBip39_koreanAllZeroEntropy_producesValidMoneroSeed() {
         val input = (List(11) { "가격" } + "가능").map { it.normalizeNFKD() }
 
-        val moneroSeed = MoneroWalletSeedConverter.getLegacySeedFromBip39(input, accountIndex = 0)
+        val moneroSeed = MoneroWalletSeedConverter.getLegacySeedFromBip39(
+            MnemonicSeed.derive(input, MnemonicDerivation.Legacy),
+            accountIndex = 0
+        )
 
         assertMoneroSeedShape(moneroSeed)
     }
@@ -174,7 +196,10 @@ class MoneroWalletSeedConverterTest {
     fun getLegacySeedFromBip39_spanishAllZeroEntropy_producesValidMoneroSeed() {
         val input = (List(11) { "ábaco" } + "abierto").map { it.normalizeNFKD() }
 
-        val moneroSeed = MoneroWalletSeedConverter.getLegacySeedFromBip39(input, accountIndex = 0)
+        val moneroSeed = MoneroWalletSeedConverter.getLegacySeedFromBip39(
+            MnemonicSeed.derive(input, MnemonicDerivation.Legacy),
+            accountIndex = 0
+        )
 
         assertMoneroSeedShape(moneroSeed)
     }
@@ -183,8 +208,14 @@ class MoneroWalletSeedConverterTest {
     fun getLegacySeedFromBip39_japaneseInput_isDeterministic() {
         val input = (List(11) { "あいこくしん" } + "あおぞら").map { it.normalizeNFKD() }
 
-        val first = MoneroWalletSeedConverter.getLegacySeedFromBip39(input, accountIndex = 0)
-        val second = MoneroWalletSeedConverter.getLegacySeedFromBip39(input, accountIndex = 0)
+        val first = MoneroWalletSeedConverter.getLegacySeedFromBip39(
+            MnemonicSeed.derive(input, MnemonicDerivation.Legacy),
+            accountIndex = 0
+        )
+        val second = MoneroWalletSeedConverter.getLegacySeedFromBip39(
+            MnemonicSeed.derive(input, MnemonicDerivation.Legacy),
+            accountIndex = 0
+        )
 
         assertEquals("Same input must produce same output", first, second)
     }
@@ -197,9 +228,15 @@ class MoneroWalletSeedConverterTest {
         val japaneseInput = (List(11) { "あいこくしん" } + "あおぞら").map { it.normalizeNFKD() }
 
         val englishSeed =
-            MoneroWalletSeedConverter.getLegacySeedFromBip39(englishInput, accountIndex = 0)
+            MoneroWalletSeedConverter.getLegacySeedFromBip39(
+                MnemonicSeed.derive(englishInput, MnemonicDerivation.Legacy),
+                accountIndex = 0
+            )
         val japaneseSeed =
-            MoneroWalletSeedConverter.getLegacySeedFromBip39(japaneseInput, accountIndex = 0)
+            MoneroWalletSeedConverter.getLegacySeedFromBip39(
+                MnemonicSeed.derive(japaneseInput, MnemonicDerivation.Legacy),
+                accountIndex = 0
+            )
 
         assertTrue(
             "Different BIP39 languages must yield different Monero seeds",
@@ -225,9 +262,15 @@ class MoneroWalletSeedConverterTest {
             .map { it.normalizeNFKD() }
 
         val seedFromPrecomposed =
-            MoneroWalletSeedConverter.getLegacySeedFromBip39(precomposed, accountIndex = 0)
+            MoneroWalletSeedConverter.getLegacySeedFromBip39(
+                MnemonicSeed.derive(precomposed, MnemonicDerivation.Legacy),
+                accountIndex = 0
+            )
         val seedFromDecomposed =
-            MoneroWalletSeedConverter.getLegacySeedFromBip39(decomposed, accountIndex = 0)
+            MoneroWalletSeedConverter.getLegacySeedFromBip39(
+                MnemonicSeed.derive(decomposed, MnemonicDerivation.Legacy),
+                accountIndex = 0
+            )
 
         assertEquals(
             "Precomposed and decomposed Spanish input must yield the same Monero seed",
@@ -242,9 +285,15 @@ class MoneroWalletSeedConverterTest {
         val decomposed = List(11) { "ábaco" } + "abierto"
 
         val seedFromPrecomposed =
-            MoneroWalletSeedConverter.getLegacySeedFromBip39(precomposed, accountIndex = 0)
+            MoneroWalletSeedConverter.getLegacySeedFromBip39(
+                MnemonicSeed.derive(precomposed, MnemonicDerivation.Legacy),
+                accountIndex = 0
+            )
         val seedFromDecomposed =
-            MoneroWalletSeedConverter.getLegacySeedFromBip39(decomposed, accountIndex = 0)
+            MoneroWalletSeedConverter.getLegacySeedFromBip39(
+                MnemonicSeed.derive(decomposed, MnemonicDerivation.Legacy),
+                accountIndex = 0
+            )
 
         assertNotEquals(
             "Non-standard stored input must retain its legacy derivation",
@@ -269,6 +318,29 @@ class MoneroWalletSeedConverterTest {
                 "Word '$word' must be in Monero English wordlist",
                 word in moneroWordSet
             )
+        }
+    }
+    @Test
+    fun getLegacySeedFromBip39_selectedJapaneseSeed_matchesIndependentSpendAndViewKeys() = runTest {
+        val words = List(11) { "あいこくしん" } + "あおぞら"
+        val expected = listOf(
+            MoneroSecretKeys("e44451dc58ddb309d1e9a94f22a658796211729e645c84ec43de02c5f233640b",
+                "a2a5d806e7ebc36884634cba75f742b3f1cfa9c5ef68991039959d3efab56e0e"),
+            MoneroSecretKeys("7802c805257f06c7facf43a642fc9ba1ede689471b4401e31fb434a741cb9109",
+                "089423cf775be92335295ada7888f7025dd14d706df1c0a5c8e99f4f2f876b08")
+        )
+        val restorer = mockk<MoneroWalletUseCase>()
+        coEvery { restorer.restoreFromBip39(any(), any()) } coAnswers { callOriginal() }
+        coEvery { restorer.restore(any(), any(), any(), any()) } answers {
+            AccountType.MnemonicMonero(firstArg(), "", secondArg(), "public-fixture")
+        }
+        MnemonicDerivation.entries.forEachIndexed { index, mode ->
+            val account = AccountType.Mnemonic(words, "páss", mode)
+            val phrase = MoneroWalletSeedConverter.getLegacySeedFromBip39(account.seed)
+            assertEquals(expected[index], MoneroWalletSeedConverter.getSecretKeys(phrase))
+            val restored = requireNotNull(restorer.restoreFromBip39(account.seed, 123L))
+            assertEquals(123L, restored.height)
+            assertEquals(expected[index], MoneroWalletSeedConverter.getSecretKeys(restored.words))
         }
     }
 }

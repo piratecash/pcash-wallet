@@ -1,5 +1,7 @@
 package cash.p.terminal.modules.tonconnect
 
+import cash.p.terminal.wallet.MnemonicDerivation
+
 import cash.p.terminal.core.TestDispatcherProvider
 import io.horizontalsystems.core.DispatcherProvider
 import cash.p.terminal.core.managers.TonConnectManager
@@ -277,7 +279,7 @@ class TonConnectNewViewModelTest {
     private fun tonAccount(id: String) = Account(
         id = id,
         name = "Ton $id",
-        type = AccountType.Mnemonic(mnemonicWords, ""),
+        type = AccountType.Mnemonic(mnemonicWords, "", MnemonicDerivation.Legacy),
         origin = AccountOrigin.Created,
         level = 1,
         isBackedUp = true

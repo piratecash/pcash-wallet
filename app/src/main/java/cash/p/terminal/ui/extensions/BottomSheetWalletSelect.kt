@@ -28,6 +28,7 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HeaderText
 import cash.p.terminal.ui_compose.components.HsRadioButton
@@ -281,14 +282,22 @@ private fun WalletSwitchContentPreview() {
         Account(
             id = "1",
             name = "Wallet 1",
-            type = AccountType.Mnemonic(words = listOf(), passphrase = ""),
+            type = AccountType.Mnemonic(
+                words = listOf(),
+                passphrase = "",
+                derivation = MnemonicDerivation.Legacy
+            ),
             origin = AccountOrigin.Created,
             level = 0
         ),
         Account(
             id = "2",
             name = "Wallet 2",
-            type = AccountType.Mnemonic(words = listOf(), passphrase = ""),
+            type = AccountType.Mnemonic(
+                words = listOf(),
+                passphrase = "",
+                derivation = MnemonicDerivation.Legacy
+            ),
             origin = AccountOrigin.Restored,
             level = 0
         )

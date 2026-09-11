@@ -1,5 +1,7 @@
 package cash.p.terminal.modules.send.solana
 
+import cash.p.terminal.wallet.MnemonicDerivation
+
 import cash.p.terminal.core.ISendSolanaAdapter
 import cash.p.terminal.core.OfflineSolanaSignRequest
 import cash.p.terminal.core.OfflineTransactionAdapter
@@ -100,7 +102,7 @@ class SendSolanaViewModelTest : KoinTest {
     private val account = Account(
         id = "account-id",
         name = "Account",
-        type = AccountType.Mnemonic(List(12) { "word$it" }, ""),
+        type = AccountType.Mnemonic(List(12) { "word$it" }, "", MnemonicDerivation.Legacy),
         origin = AccountOrigin.Created,
         level = 0,
         isBackedUp = true,
