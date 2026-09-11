@@ -34,7 +34,6 @@ import cash.p.terminal.ui_compose.components.TitleAndValueCell
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import kotlinx.coroutines.launch
-import java.math.BigDecimal
 
 @Composable
 internal fun SpecialProposalStepScreen(

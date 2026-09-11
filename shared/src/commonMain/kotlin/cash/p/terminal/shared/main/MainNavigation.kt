@@ -4,10 +4,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
 import cash.p.terminal.resources.Balance_Title
 import cash.p.terminal.resources.Market_Title
 import cash.p.terminal.resources.Res
@@ -17,13 +13,32 @@ import cash.p.terminal.resources.ic_market_24
 import cash.p.terminal.resources.ic_settings
 import cash.p.terminal.resources.ic_transactions
 import cash.p.terminal.resources.ic_wallet_24
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 private val MainDestination.resources: MainDestinationResources
     get() = when (this) {
-        MainDestination.Balance -> MainDestinationResources(Res.string.Balance_Title, Res.drawable.ic_wallet_24)
-        MainDestination.Transactions -> MainDestinationResources(Res.string.Transactions_Title, Res.drawable.ic_transactions)
-        MainDestination.Market -> MainDestinationResources(Res.string.Market_Title, Res.drawable.ic_market_24)
-        MainDestination.Settings -> MainDestinationResources(Res.string.Settings_Title, Res.drawable.ic_settings)
+        MainDestination.Balance -> MainDestinationResources(
+            Res.string.Balance_Title,
+            Res.drawable.ic_wallet_24
+        )
+
+        MainDestination.Transactions -> MainDestinationResources(
+            Res.string.Transactions_Title,
+            Res.drawable.ic_transactions
+        )
+
+        MainDestination.Market -> MainDestinationResources(
+            Res.string.Market_Title,
+            Res.drawable.ic_market_24
+        )
+
+        MainDestination.Settings -> MainDestinationResources(
+            Res.string.Settings_Title,
+            Res.drawable.ic_settings
+        )
     }
 
 private data class MainDestinationResources(
@@ -32,7 +47,8 @@ private data class MainDestinationResources(
 )
 
 @Composable
-fun MainDestinationTitle(destination: MainDestination): String = stringResource(destination.resources.title)
+fun MainDestinationTitle(destination: MainDestination): String =
+    stringResource(destination.resources.title)
 
 @Composable
 fun MainDestinationIcon(
