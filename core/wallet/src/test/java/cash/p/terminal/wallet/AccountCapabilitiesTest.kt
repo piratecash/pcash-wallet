@@ -57,7 +57,7 @@ class AccountCapabilitiesTest {
         level = 0
     )
 
-    private fun mnemonicType() = Mnemonic(validMnemonicWords, passphrase = "")
+    private fun mnemonicType() = Mnemonic(validMnemonicWords, passphrase = "", MnemonicDerivation.Legacy)
 
     private fun moneroMnemonicType() = MnemonicMonero(
         words = validMnemonicWords,

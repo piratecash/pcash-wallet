@@ -2245,4 +2245,8 @@ De app stelt u in staat een back-up te maken met een eenvoudig wachtwoord voor u
     <string name="balance_hide_on_flip_dont_show_again">Niet meer tonen</string>
     <string name="badge_new">Nieuw</string>
     <string name="monero_keys_unavailable">Sleutels zijn niet beschikbaar voor deze wallet</string>
+    <string name="mnemonic_legacy_option">Oud P.CASH-formaat gebruiken</string>
+    <string name="mnemonic_legacy_info">Standaard wordt het Japanse BIP-39-standaardformaat gebruikt. Laat deze optie uitgeschakeld wanneer u een wallet vanuit een andere app overzet.\n\nSchakel deze alleen in om een wallet te herstellen die in P.CASH met het oude formaat is gemaakt. Deze modus behoudt de eerdere adressen.</string>
+    <string name="mnemonic_bip39_format">Japans formaat: BIP-39</string>
+    <string name="mnemonic_legacy_format">Japans formaat: P.CASH (oud)</string>
 </resources>

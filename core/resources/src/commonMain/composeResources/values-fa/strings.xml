@@ -2242,4 +2242,8 @@
     <string name="balance_hide_on_flip_dont_show_again">دیگر نمایش داده نشود</string>
     <string name="badge_new">جدید</string>
     <string name="monero_keys_unavailable">کلیدها برای این کیف پول در دسترس نیستند</string>
+    <string name="mnemonic_legacy_option">استفاده از قالب قدیمی P.CASH</string>
+    <string name="mnemonic_legacy_info">به‌طور پیش‌فرض از قالب استاندارد ژاپنی BIP-39 استفاده می‌شود. هنگام انتقال کیف پول از برنامه‌ای دیگر، این گزینه را خاموش نگه دارید.\n\nآن را فقط برای بازیابی کیف پولی فعال کنید که در P.CASH با قالب قدیمی ساخته شده است. این حالت آدرس‌های قبلی آن را حفظ می‌کند.</string>
+    <string name="mnemonic_bip39_format">قالب ژاپنی: BIP-39</string>
+    <string name="mnemonic_legacy_format">قالب ژاپنی: P.CASH (قدیمی)</string>
 </resources>

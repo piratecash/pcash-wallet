@@ -516,10 +516,7 @@ fun BalanceItems(
             ManageAccountsModule.Input(
                 popOffOnSuccess = R.id.mainFragment,
                 popOffInclusive = false,
-                prefillWords = restore.words,
-                prefillPassphrase = restore.passphrase,
-                prefillMoneroHeight = restore.moneroHeight,
-                prefillMnemonicLanguageName = restore.language?.name
+                mnemonicDraft = restore.draft
             )
         )
         viewModel.onRestoreFromQrOpened()
