@@ -12,18 +12,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImagePainter
-import coil3.compose.rememberAsyncImagePainter
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cash.p.terminal.entities.CoinValue
-import io.horizontalsystems.core.entities.CurrencyValue
 import cash.p.terminal.ui_compose.components.captionSB_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import coil3.compose.AsyncImagePainter
+import coil3.compose.rememberAsyncImagePainter
+import io.horizontalsystems.core.entities.CurrencyValue
 
 @Composable
 fun NftAssetPreview(
@@ -50,8 +52,8 @@ fun NftAssetPreview(
                 .background(ComposeAppTheme.colors.steel20)
         ) {
             val painter = rememberAsyncImagePainter(imageUrl)
-            @Suppress("USELESS_IS_CHECK")
-            if (painter.state !is AsyncImagePainter.State.Success) {
+            val painterState by painter.state.collectAsStateWithLifecycle()
+            if (painterState !is AsyncImagePainter.State.Success) {
                 Text(
                     modifier = Modifier
                         .padding(start = 12.dp, end = 12.dp)

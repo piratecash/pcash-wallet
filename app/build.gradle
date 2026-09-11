@@ -74,7 +74,7 @@ android {
         applicationId "cash.p.terminal"
         compileSdk compile_sdk_version
         minSdkVersion min_sdk_version
-        targetSdkVersion compile_sdk_version
+        targetSdkVersion target_sdk_version
         versionCode 256
         versionName "0.59.4"
         buildConfigField "String", "GIT_HASH", "\"${getGitVersionSuffix()}\""

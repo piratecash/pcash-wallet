@@ -7,25 +7,24 @@ browser = "1.10.0"
 coreSplashscreen = "1.2.0"
 coreTesting = "2.2.0"
 glanceAppwidget = "1.1.1"
-gradle = "9.0.1"
-kotlinReflect = "2.3.20"
+kotlin = "2.4.20"
+ksp = "2.3.10"
 lifecycleExtensions = "2.2.0"
 lifecycleLivedataKtx = "2.10.0"
 lifecycleCommonJava8 = "2.10.0"
-navigationSafeArgsGradlePlugin = "2.9.7"
+navigation = "2.10.1"
 portmapper = "2.0.6"
 preferenceKtx = "1.2.1"
 qrose = "1.1.2"
 relinker = "1.4.5"
 reownBom = "1.4.9"
-androidGradlePlugin = "9.0.1"
+androidGradlePlugin = "9.1.1"
 coreVersion = "5.0.2"
 desugar_jdk_libs = "2.1.5"
 firebaseBom = "34.11.0"
 firebaseCrashlyticsGradle = "3.0.6"
 googleServices = "4.4.4"
 grpcApi = "1.80.0"
-kotlin = "2.3.20"
 koin-bom = "4.2.0"
 compose-bom = "2026.05.01"
 composeMultiplatform = "1.10.1"
@@ -34,7 +33,6 @@ composeMaterial3 = "1.10.0-alpha05"
 leakcanaryAndroid = "3.0-alpha-9"
 material = "1.13.0"
 mockk = "1.14.9"
-navigationUiKtx = "2.9.7"
 powermockApiMockito2 = "2.0.9"
 powermockModuleJunit4 = "2.0.9"
 profileinstaller = "1.4.1"
@@ -54,8 +52,6 @@ spekRunnerJunit5 = "2.0.19"
 spekDslJvm = "2.0.19"
 stellarSdk = "2.2.3"
 androidx-fragment-ktx = "1.8.9"
-navigationRuntimeKtx = "2.9.7"
-navigationFragmentKtx = "2.9.7"
 rxjava = "2.2.21"
 kotlinx-coroutines-android = "1.10.2"
 kotlinx-coroutines-test = "1.10.2"
@@ -83,7 +79,6 @@ tangem-sdk = "3.9.2-pcash.3"
 gson = "2.13.2"
 retrofit = "3.0.0"
 okhttp-logging-interceptor = "4.12.0"
-jetbrainsKotlinJvm = "2.3.20"
 crashlytics = "3.0.6"
 ktor = "3.4.2"
 kotlinx-serialization-json = "1.10.0"
@@ -98,7 +93,7 @@ google-play-core = "2.1.0"
 bitcoinj = "0.17"
 junit = "4.13.2"
 junitVersion = "1.3.0"
-robolectric = "4.16"
+robolectric = "4.17-beta-4"
 roborazzi = "1.65.0"
 composablePreviewScanner = "0.9.0"
 androidxTestCore = "1.7.0"
@@ -130,19 +125,19 @@ androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefre
 androidx-work-rxjava2 = { module = "androidx.work:work-rxjava2", version.ref = "workRxjava2" }
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 circleindicator = { module = "me.relex:circleindicator", version.ref = "circleindicator" }
-gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
-kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlinReflect" }
+gradle = { module = "com.android.tools.build:gradle", version.ref = "androidGradlePlugin" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 portmapper = { module = "com.offbynull.portmapper:portmapper", version.ref = "portmapper" }
 qrose = { module = "io.github.alexzhirkevich:qrose", version.ref = "qrose" }
 relinker = { module = "com.getkeepsafe.relinker:relinker", version.ref = "relinker" }
 reown-core = { module = "com.reown:android-core" }
 reown-walletkit = { module = "com.reown:walletkit" }
-androidx-navigation-safe-args-gradle-plugin = { module = "androidx.navigation:navigation-safe-args-gradle-plugin", version.ref = "navigationSafeArgsGradlePlugin" }
+androidx-navigation-safe-args-gradle-plugin = { module = "androidx.navigation:navigation-safe-args-gradle-plugin", version.ref = "navigation" }
 
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
-androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationUiKtx" }
-androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigationUiKtx" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation" }
+androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigation" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 androidx-room-rxjava2 = { module = "androidx.room:room-rxjava2", version.ref = "roomRxjava2" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
@@ -183,8 +178,8 @@ lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-ru
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "androidx-fragment-ktx" }
-androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigationRuntimeKtx" }
-androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
+androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigation" }
+androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigation" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
 powermock-api-mockito2 = { module = "org.powermock:powermock-api-mockito2", version.ref = "powermockApiMockito2" }
 powermock-module-junit4 = { module = "org.powermock:powermock-module-junit4", version.ref = "powermockModuleJunit4" }
@@ -297,8 +292,8 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 kotlin-parcelize = { id = "kotlin-parcelize", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-devtools-ksp = { id = "com.google.devtools.ksp" }
-jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
+devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlytics" }
 androidx-baselineprofile = { id = "androidx.baselineprofile", version.ref = "benchmark" }
 android-test = { id = "com.android.test", version.ref = "androidGradlePlugin" }

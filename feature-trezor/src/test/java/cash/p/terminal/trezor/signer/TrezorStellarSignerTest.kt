@@ -51,7 +51,7 @@ class TrezorStellarSignerTest {
     private val signTxSlot = slot<TrezorStellarSignTx>()
 
     private val derivationPath = "m/44'/148'/0'"
-    private val networkPassphrase = Network.PUBLIC.networkPassphrase
+    private val networkPassphrase: String = Network.PUBLIC.networkPassphrase
     private val signerPublicKey = ByteArray(32) { it.toByte() }
     private val deviceSignature = ByteArray(64) { (it + 100).toByte() }
 

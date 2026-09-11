@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "cash.p.terminal.premium"
-    compileSdk = 36
+    compileSdk = rootProject.ext.get("compile_sdk_version") as Int
 
     defaultConfig {
         minSdk = 27

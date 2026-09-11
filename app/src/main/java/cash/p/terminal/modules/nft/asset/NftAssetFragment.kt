@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ShareCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -211,10 +212,10 @@ private fun NftAssetInfo(
         .crossfade(true)
         .build()
     val painter = rememberAsyncImagePainter(model)
+    val painterState by painter.state.collectAsStateWithLifecycle()
 
-    @Suppress("USELESS_IS_CHECK")
     if (combinedState !is ViewState.Error) {
-        if (painter.state is AsyncImagePainter.State.Loading) {
+        if (painterState is AsyncImagePainter.State.Loading) {
             combinedState = ViewState.Loading
         }
     }
@@ -248,6 +249,7 @@ private fun AssetContent(
     val context = LocalContext.current
     val view = LocalView.current
     val pinComponent = remember { getKoinInstance<IPinComponent>() }
+    val painterState by painter.state.collectAsStateWithLifecycle()
     var showActionSelectorDialog by remember { mutableStateOf(false) }
     val offlineGatedAction = rememberOfflineGatedAction(asset.wallet)
 
@@ -269,8 +271,7 @@ private fun AssetContent(
         item {
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                 Spacer(modifier = Modifier.height(12.dp))
-                @Suppress("USELESS_IS_CHECK")
-                if (painter.state is AsyncImagePainter.State.Success) {
+                if (painterState is AsyncImagePainter.State.Success) {
                     Image(
                         modifier = Modifier
                             .fillMaxWidth()

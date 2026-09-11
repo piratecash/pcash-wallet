@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "cash.p.terminal.ui_compose"
-    compileSdk = 36
+    compileSdk = rootProject.ext.get("compile_sdk_version") as Int
 
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
