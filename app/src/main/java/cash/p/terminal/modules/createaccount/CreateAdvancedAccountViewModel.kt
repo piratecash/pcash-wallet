@@ -19,6 +19,7 @@ import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
+import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.PassphraseValidator
@@ -241,7 +242,15 @@ class CreateAdvancedAccountViewModel(
         return try {
             val words = wordsManager.generateWords(wordCount, selectedLanguage)
                 .map { it.normalizeNFKD() }
-            AccountType.Mnemonic(words, passphrase.normalizeNFKD())
+            AccountType.Mnemonic(
+                words = words,
+                passphrase = passphrase.normalizeNFKD(),
+                derivation = if (selectedLanguage == Language.Japanese) {
+                    MnemonicDerivation.Bip39
+                } else {
+                    MnemonicDerivation.Legacy
+                }
+            )
         } catch (e: Throwable) {
             Timber.e(e, "Failed to generate mnemonic words")
             error = Translator.getString(R.string.create_wallet_error_failed)

@@ -9,6 +9,7 @@ import cash.p.terminal.wallet.IDeletedWalletRestorer
 import cash.p.terminal.wallet.IReceiveAdapter
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.MarketKitWrapper
+import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
@@ -466,7 +467,7 @@ class WalletUseCaseTest {
     private fun softwareAccount(id: String = UUID.randomUUID().toString()) = Account(
         id = id,
         name = "Account-$id",
-        type = AccountType.Mnemonic(List(12) { "word$it" }, ""),
+        type = AccountType.Mnemonic(List(12) { "word$it" }, "", MnemonicDerivation.Legacy),
         origin = AccountOrigin.Created,
         level = 0
     )

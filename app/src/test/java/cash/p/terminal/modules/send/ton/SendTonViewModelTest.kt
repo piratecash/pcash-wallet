@@ -1,5 +1,7 @@
 package cash.p.terminal.modules.send.ton
 
+import cash.p.terminal.wallet.MnemonicDerivation
+
 import cash.p.terminal.R
 import cash.p.terminal.core.ISendTonAdapter
 import cash.p.terminal.core.OfflineTonSignRequest
@@ -108,7 +110,7 @@ class SendTonViewModelTest : KoinTest {
     private val account = Account(
         id = "account-id",
         name = "Account",
-        type = AccountType.Mnemonic(List(12) { "word$it" }, ""),
+        type = AccountType.Mnemonic(List(12) { "word$it" }, "", MnemonicDerivation.Legacy),
         origin = AccountOrigin.Created,
         level = 0,
         isBackedUp = true,

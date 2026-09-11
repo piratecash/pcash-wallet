@@ -746,8 +746,7 @@ class MoneroKitWrapper(
         val accountType = account.type as? AccountType.Mnemonic
             ?: throw UnsupportedAccountException()
         val restoredAccount = moneroWalletUseCase.restoreFromBip39(
-            accountType.words,
-            accountType.passphrase,
+            accountType.seed,
             height
         ) ?: throw IllegalStateException("Failed to restore account from 12 words")
         moneroFileDao.insert(

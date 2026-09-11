@@ -2231,4 +2231,8 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="balance_hide_on_flip_dont_show_again">No volver a mostrar</string>
     <string name="badge_new">Nuevo</string>
     <string name="monero_keys_unavailable">Las claves no están disponibles para esta billetera</string>
+    <string name="mnemonic_legacy_option">Usar el formato antiguo de P.CASH</string>
+    <string name="mnemonic_legacy_info">Se usa el formato japonés estándar BIP-39 de forma predeterminada. Deje esta opción desactivada al transferir una cartera desde otra aplicación.\n\nActívela solo para restaurar una cartera creada en P.CASH con el formato antiguo. Este modo conserva sus direcciones anteriores.</string>
+    <string name="mnemonic_bip39_format">Formato japonés: BIP-39</string>
+    <string name="mnemonic_legacy_format">Formato japonés: P.CASH (antiguo)</string>
 </resources>

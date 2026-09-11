@@ -1,5 +1,14 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.wallet.MnemonicDerivation
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.int
+import java.security.MessageDigest
+import javax.crypto.Cipher
+import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.SecretKeySpec
 import android.util.Base64
 import io.horizontalsystems.hdwalletkit.Language
 import io.horizontalsystems.hdwalletkit.Mnemonic
@@ -700,5 +709,44 @@ class SeedPhraseQrCryptoTest {
 
         val result = crypto.decrypt(encrypted)
         assertTrue(result.isFailure)
+    }
+    @Test
+    fun encrypt_bip39Mode_emitsExplicitV3RejectedByV2Reader() {
+        val qr = crypto.encrypt(words12, "páss", derivation = MnemonicDerivation.Bip39)
+        val payload = decryptedJson(qr)
+        assertEquals(3, requireNotNull(payload["v"]).jsonPrimitive.int)
+        assertEquals("bip39", requireNotNull(payload["derivation"]).jsonPrimitive.content)
+        // The unchanged v2 reader accepts only v == 2 (omitted v defaults to 2).
+        assertFalse((payload["v"]?.jsonPrimitive?.int ?: 2) == 2)
+        val decoded = crypto.decrypt(qr).getOrThrow()
+        assertEquals(MnemonicDerivation.Bip39, decoded.derivation)
+        assertEquals("páss", decoded.passphrase)
+        val legacy = decryptedJson(crypto.encrypt(words12, ""))
+        assertEquals(2, legacy["v"]?.jsonPrimitive?.int ?: 2)
+        assertNull(legacy["derivation"])
+    }
+
+    @Test
+    fun decrypt_invalidV3Metadata_rejectsWithoutPlainTextFallback() {
+        val words = words12.joinToString(",") { "\"$it\"" }
+        val invalid = listOf(
+            "{\"v\":3,\"words\":[$words]}",
+            "{\"v\":3,\"derivation\":\"future\",\"words\":[$words]}",
+            "{\"v\":4,\"derivation\":\"bip39\",\"words\":[$words]}",
+            "{\"v\":3,\"derivation\":\"bip39\",\"height\":123,\"words\":[$words]}"
+        )
+        invalid.forEach { assertTrue(crypto.decrypt(crypto.encryptRawForTest(it)).isFailure) }
+        val native = List(25) { "\"word\"" }.joinToString(",")
+        val invalidNative = "{\"v\":3,\"derivation\":\"legacy\",\"height\":123,\"words\":[$native]}"
+        assertTrue(crypto.decrypt(crypto.encryptRawForTest(invalidNative)).isFailure)
+    }
+
+    private fun decryptedJson(qr: String) = run {
+        val data = Base64.decode(qr.removePrefix(SeedPhraseQrCrypto.QR_PREFIX), Base64.NO_WRAP)
+        val password = timePasswordProvider.generateTimePassword().toByteArray()
+        val key = MessageDigest.getInstance("SHA-256").digest(password).copyOf(16)
+        val cipher = Cipher.getInstance("AES/CTR/NoPadding")
+        cipher.init(Cipher.DECRYPT_MODE, SecretKeySpec(key, "AES"), IvParameterSpec(data.copyOfRange(0, 16)))
+        Json.parseToJsonElement(String(cipher.doFinal(data.copyOfRange(16, data.size)), Charsets.UTF_8)).jsonObject
     }
 }

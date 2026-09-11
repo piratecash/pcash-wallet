@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.wallet.MnemonicDerivation
 import android.util.Base64
 import androidx.annotation.VisibleForTesting
 import io.horizontalsystems.hdwalletkit.Language
@@ -17,8 +18,8 @@ import javax.crypto.spec.SecretKeySpec
  * Encrypts and decrypts seed phrases for QR code sharing.
  * Uses time-based AES-128-CTR encryption with a 3-hour validity window.
  *
- * Encoder always emits JSON v2 plaintext. Decoder dispatches on the first non-whitespace
- * character: '{' => JSON v2, otherwise legacy "words@passphrase|height" format.
+ * Encoder emits JSON v2 for Legacy and explicit v3 for BIP39. Decoder dispatches on the first non-whitespace
+ * character: '{' => versioned JSON, otherwise legacy "words@passphrase|height" format.
  *
  * Legacy parser is conservative — '|height' is only honoured for 25-word seeds, so a
  * BIP39 passphrase ending in '|<digits>' is preserved verbatim instead of being
@@ -29,10 +30,10 @@ class SeedPhraseQrCrypto(
 ) {
 
     /**
-     * Encrypt seed phrase for QR code (JSON v2 format).
+     * Encrypt seed phrase using v2 for Legacy or explicit v3 for BIP39.
      *
-     * @param words Seed phrase words. Must be NFKD-normalized by the caller.
-     * @param passphrase BIP39 passphrase (empty string if none). Must be NFKD-normalized.
+     * @param words Seed phrase words. Preserved exactly as stored.
+     * @param passphrase BIP39 passphrase (empty string if none). Preserved exactly as stored.
      * @param height Monero restore height. Required for 25-word Monero seeds, null otherwise.
      * @param language BIP39 wordlist language hint. Optional — improves decoder UX
      *  by avoiding autodetect when the producer already knows the language.
@@ -41,14 +42,15 @@ class SeedPhraseQrCrypto(
         words: List<String>,
         passphrase: String,
         height: Long? = null,
-        language: Language? = null
+        language: Language? = null,
+        derivation: MnemonicDerivation = MnemonicDerivation.Legacy
     ): String {
-        val plaintext = buildJsonPlaintext(words, passphrase, height, language)
+        val plaintext = buildJsonPlaintext(words, passphrase, height, language, derivation)
         return encryptString(plaintext)
     }
 
     /**
-     * Decrypt seed phrase from QR code. Accepts both JSON v2 and legacy plaintext formats.
+     * Decrypt seed phrase from QR code. Accepts JSON v2/v3 and legacy plaintext.
      */
     fun decrypt(qrContent: String): Result<DecryptedSeed> {
         if (!qrContent.startsWith(QR_PREFIX)) {
@@ -122,15 +124,19 @@ class SeedPhraseQrCrypto(
         return QR_PREFIX + Base64.encodeToString(iv + ciphertext, Base64.NO_WRAP)
     }
 
-    // ==================== JSON v2 ====================
+    // ==================== Versioned JSON ====================
 
     private fun buildJsonPlaintext(
         words: List<String>,
         passphrase: String,
         height: Long?,
-        language: Language?
+        language: Language?,
+        derivation: MnemonicDerivation
     ): String {
+        require(derivation == MnemonicDerivation.Legacy || (words.size != MONERO_WORD_COUNT && height == null))
         val payload = JsonPayloadV2(
+            v = if (derivation == MnemonicDerivation.Bip39) 3 else JSON_VERSION,
+            derivation = derivation.qrValue.takeIf { derivation == MnemonicDerivation.Bip39 },
             words = words,
             passphrase = passphrase.takeIf { it.isNotEmpty() },
             height = height,
@@ -145,12 +151,18 @@ class SeedPhraseQrCrypto(
         } catch (_: Exception) {
             return null
         }
-        if (payload.v != JSON_VERSION) return null
+        val derivation = when (payload.v) {
+            JSON_VERSION -> MnemonicDerivation.Legacy
+            3 -> MnemonicDerivation.fromQrValue(payload.derivation) ?: return null
+            else -> return null
+        }
+        if (payload.v == 3 && (payload.words.size == MONERO_WORD_COUNT || payload.height != null)) return null
         val seed = DecryptedSeed(
             words = payload.words,
             passphrase = payload.passphrase.orEmpty(),
             height = payload.height,
-            language = payload.language?.toLanguageOrNull()
+            language = payload.language?.toLanguageOrNull(),
+            derivation = derivation
         )
         return seed.takeIf { it.isStructurallyValid() }
     }
@@ -235,13 +247,15 @@ class SeedPhraseQrCrypto(
         val words: List<String>,
         val passphrase: String,
         val height: Long?,        // Non-null for 25-word Monero seeds
-        val language: Language?   // Non-null only when the producer included a hint (v2 only)
+        val language: Language?,
+        val derivation: MnemonicDerivation = MnemonicDerivation.Legacy
     )
 
     @Serializable
     private data class JsonPayloadV2(
         @SerialName("v") val v: Int = JSON_VERSION,
         @SerialName("words") val words: List<String>,
+        @SerialName("derivation") val derivation: String? = null,
         @SerialName("passphrase") val passphrase: String? = null,
         @SerialName("height") val height: Long? = null,
         @SerialName("language") val language: String? = null

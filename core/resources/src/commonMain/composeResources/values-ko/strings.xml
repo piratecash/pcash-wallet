@@ -2231,4 +2231,8 @@
     <string name="balance_hide_on_flip_dont_show_again">다시 표시 안 함</string>
     <string name="badge_new">신규</string>
     <string name="monero_keys_unavailable">이 지갑의 키를 사용할 수 없습니다</string>
+    <string name="mnemonic_legacy_option">기존 P.CASH 형식 사용</string>
+    <string name="mnemonic_legacy_info">기본적으로 표준 일본어 BIP-39 형식이 사용됩니다. 다른 앱에서 지갑을 가져올 때는 이 옵션을 끈 상태로 두세요.\n\nP.CASH에서 이전 형식으로 만든 지갑을 복구할 때만 켜세요. 이 모드는 지갑의 이전 주소를 유지합니다.</string>
+    <string name="mnemonic_bip39_format">일본어 형식: BIP-39</string>
+    <string name="mnemonic_legacy_format">일본어 형식: P.CASH (이전)</string>
 </resources>

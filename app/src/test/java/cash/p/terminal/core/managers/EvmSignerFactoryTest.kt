@@ -1,5 +1,7 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.wallet.MnemonicDerivation
+
 import cash.p.terminal.core.installEthereumCryptoProviderForTest
 import cash.p.terminal.tangem.common.CustomXPubKeyAddressParser
 import cash.p.terminal.tangem.signer.HardwareWalletEvmSigner
@@ -159,7 +161,8 @@ class EvmSignerFactoryTest {
         name = "Mnemonic",
         type = AccountType.Mnemonic(
             "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about".split(" "),
-            ""
+            "",
+            MnemonicDerivation.Legacy
         ),
         origin = AccountOrigin.Created,
         level = 0

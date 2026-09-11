@@ -1,5 +1,7 @@
 package cash.p.terminal.modules.send.monero
 
+import cash.p.terminal.wallet.MnemonicDerivation
+
 import cash.p.terminal.core.ISendMoneroAdapter
 import cash.p.terminal.core.OfflineMoneroSignRequest
 import cash.p.terminal.core.SignedOfflineMoneroTransaction
@@ -101,7 +103,7 @@ class SendMoneroViewModelTest : KoinTest {
     private val account = Account(
         id = "account-id",
         name = "Account",
-        type = AccountType.Mnemonic(List(12) { "word$it" }, ""),
+        type = AccountType.Mnemonic(List(12) { "word$it" }, "", MnemonicDerivation.Legacy),
         origin = AccountOrigin.Created,
         level = 0,
         isBackedUp = true,

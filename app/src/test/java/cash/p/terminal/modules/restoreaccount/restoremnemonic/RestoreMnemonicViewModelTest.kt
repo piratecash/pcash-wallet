@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.restoreaccount.restoremnemonic
 
+import cash.p.terminal.modules.restoreaccount.MnemonicImportDraft
 import cash.p.terminal.R
 import cash.p.terminal.core.IAccountFactory
 import cash.p.terminal.core.managers.SeedPhraseQrCrypto
@@ -97,12 +98,12 @@ class RestoreMnemonicViewModelTest {
             val viewModel = createViewModel()
 
             viewModel.setMnemonicLanguage(Language.French)
-            viewModel.applyMnemonicPhrase(
+            viewModel.applyDraft(MnemonicImportDraft.decoded(SeedPhraseQrCrypto.DecryptedSeed(
                 words = List(25) { "word$it" },
                 passphrase = "",
-                moneroHeight = 123L,
+                height = 123L,
                 language = null
-            )
+            )))
             advanceUntilIdle()
 
             assertTrue(viewModel.uiState.isMoneroMnemonic)
@@ -111,7 +112,7 @@ class RestoreMnemonicViewModelTest {
 
             viewModel.onToggleMoneroMnemonic(false)
             advanceUntilIdle()
-            assertEquals(Language.French, viewModel.uiState.language)
+            assertEquals(Language.English, viewModel.uiState.language)
         }
 
     // ==================== Language autodetect on user input (#6) ====================
@@ -204,12 +205,12 @@ class RestoreMnemonicViewModelTest {
         runTest(dispatcher) {
             val viewModel = createViewModel()
 
-            viewModel.applyMnemonicPhrase(
+            viewModel.applyDraft(MnemonicImportDraft.decoded(SeedPhraseQrCrypto.DecryptedSeed(
                 words = spanishSeed12,
                 passphrase = "",
-                moneroHeight = null,
+                height = null,
                 language = Language.Spanish
-            )
+            )))
             advanceUntilIdle()
 
             assertEquals(Language.Spanish, viewModel.uiState.language)
@@ -226,12 +227,12 @@ class RestoreMnemonicViewModelTest {
                 Bip39LanguageDetector.detectExact(simplifiedChineseSeed12).firstOrNull()
             )
 
-            viewModel.applyMnemonicPhrase(
+            viewModel.applyDraft(MnemonicImportDraft.decoded(SeedPhraseQrCrypto.DecryptedSeed(
                 words = simplifiedChineseSeed12,
                 passphrase = "",
-                moneroHeight = null,
+                height = null,
                 language = Language.TraditionalChinese
-            )
+            )))
             advanceUntilIdle()
 
             assertEquals(Language.TraditionalChinese, viewModel.uiState.language)
@@ -256,7 +257,7 @@ class RestoreMnemonicViewModelTest {
 
         assertEquals(
             Language.Spanish,
-            result.language,
+            result.draft.language,
             "Consumer must forward decrypted.language; null breaks the JSON v2 hint contract"
         )
     }
@@ -277,7 +278,7 @@ class RestoreMnemonicViewModelTest {
         val result = viewModel.handleScannedQrData("seed:legacy")
             as RestoreMnemonicModule.QrScanResult.Success
 
-        assertEquals(null, result.language)
+        assertEquals(Language.Japanese, result.draft.language)
     }
 
     @Test
@@ -287,12 +288,12 @@ class RestoreMnemonicViewModelTest {
             // from the words themselves.
             val viewModel = createViewModel()
 
-            viewModel.applyMnemonicPhrase(
+            viewModel.applyDraft(MnemonicImportDraft.decoded(SeedPhraseQrCrypto.DecryptedSeed(
                 words = japaneseSeed12,
                 passphrase = "",
-                moneroHeight = null,
+                height = null,
                 language = null
-            )
+            )))
             advanceUntilIdle()
 
             assertEquals(Language.Japanese, viewModel.uiState.language)

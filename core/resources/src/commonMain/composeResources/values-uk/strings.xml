@@ -2391,4 +2391,8 @@
     <string name="balance_hide_on_flip_info_description">Щоб приховати або показати свій баланс, просто переверніть екран пристрою вниз або вимкніть його в налаштуваннях безпеки.</string>
     <string name="balance_hide_on_flip_dont_show_again">Більше не показувати</string>
     <string name="badge_new">Нове</string>
+    <string name="mnemonic_legacy_option">Використовувати застарілий формат P.CASH</string>
+    <string name="mnemonic_legacy_info">За замовчуванням використовується стандартний японський формат BIP-39. Під час перенесення гаманця з іншого застосунку залиште опцію вимкненою.\n\nУвімкніть її лише для відновлення гаманця, створеного в P.CASH із застарілим форматом. Цей режим зберігає його попередні адреси.</string>
+    <string name="mnemonic_bip39_format">Японський формат: BIP-39</string>
+    <string name="mnemonic_legacy_format">Японський формат: P.CASH (застарілий)</string>
 </resources>

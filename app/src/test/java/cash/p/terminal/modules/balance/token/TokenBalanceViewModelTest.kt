@@ -1,5 +1,7 @@
 package cash.p.terminal.modules.balance.token
 
+import cash.p.terminal.wallet.MnemonicDerivation
+
 import cash.p.terminal.R
 import cash.p.terminal.core.INativeBalanceProvider
 import cash.p.terminal.core.ILocalStorage
@@ -1917,7 +1919,7 @@ class TokenBalanceViewModelTest : KoinTest {
         val account = Account(
             id = "monero-account",
             name = "Monero",
-            type = AccountType.Mnemonic(emptyList(), ""),
+            type = AccountType.Mnemonic(emptyList(), "", MnemonicDerivation.Legacy),
             origin = AccountOrigin.Created,
             level = 0,
         )

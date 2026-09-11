@@ -1,5 +1,7 @@
 package cash.p.terminal.modules.restoreaccount.restoreblockchains
 
+import cash.p.terminal.wallet.MnemonicDerivation
+
 import cash.p.terminal.core.IAccountFactory
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.managers.RestoreSettings
@@ -183,7 +185,7 @@ class RestoreBlockchainsServiceTest : KoinTest {
     private fun account() = Account(
         id = "account-id",
         name = "Account",
-        type = AccountType.Mnemonic(List(12) { "word" }, ""),
+        type = AccountType.Mnemonic(List(12) { "word" }, "", MnemonicDerivation.Legacy),
         origin = AccountOrigin.Restored,
         level = 0
     )

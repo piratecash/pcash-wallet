@@ -2239,4 +2239,8 @@
     <string name="balance_hide_on_flip_dont_show_again">Não mostrar novamente</string>
     <string name="badge_new">Novo</string>
     <string name="monero_keys_unavailable">As chaves não estão disponíveis para esta carteira</string>
+    <string name="mnemonic_legacy_option">Utilizar o formato antigo do P.CASH</string>
+    <string name="mnemonic_legacy_info">Por predefinição, é utilizado o formato japonês padrão BIP-39. Deixe esta opção desativada ao transferir uma carteira de outra aplicação.\n\nAtive-a apenas para restaurar uma carteira criada no P.CASH com o formato antigo. Este modo preserva os endereços anteriores.</string>
+    <string name="mnemonic_bip39_format">Formato japonês: BIP-39</string>
+    <string name="mnemonic_legacy_format">Formato japonês: P.CASH (antigo)</string>
 </resources>

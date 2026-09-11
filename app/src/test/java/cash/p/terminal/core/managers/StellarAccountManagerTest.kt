@@ -1,5 +1,7 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.wallet.MnemonicDerivation
+
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -38,7 +40,7 @@ class StellarAccountManagerTest {
     private val account = Account(
         id = "account-id",
         name = "Account",
-        type = AccountType.Mnemonic(emptyList(), ""),
+        type = AccountType.Mnemonic(emptyList(), "", MnemonicDerivation.Legacy),
         origin = AccountOrigin.Created,
         level = 0,
         isBackedUp = true,

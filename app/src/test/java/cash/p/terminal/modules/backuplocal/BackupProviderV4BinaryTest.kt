@@ -7,6 +7,7 @@ import cash.p.terminal.modules.backuplocal.fullbackup.BackupSource
 import cash.p.terminal.modules.backuplocal.fullbackup.DecryptedFullBackup
 import cash.p.terminal.modules.backuplocal.fullbackup.RestoreOutcome
 import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.Token
@@ -32,6 +33,35 @@ import kotlin.test.assertFailsWith
  */
 internal class BackupProviderV4BinaryTest : BackupProviderRestoreTestFixture() {
 
+    @Test
+    fun encryptedBackup_japaneseModesAndWhitespace_fullAndSingleRestoreExactAccounts() = runTest {
+        val words = List(11) { "あいこくしん" } + "あおぞら"
+        val accounts = MnemonicDerivation.entries.map { mode ->
+            Account(mode.name, mode.name, AccountType.Mnemonic(words, "  ", mode), AccountOrigin.Restored, 0)
+        }
+        every { accountManager.accounts } returns accounts
+        every { accountFactory.getUniqueName(any(), any()) } answers { firstArg() }
+        every { accountFactory.account(any(), any(), any(), any(), any()) } answers {
+            Account(firstArg(), firstArg(), secondArg(), AccountOrigin.Restored, 0)
+        }
+        val full = backupProvider.createFullBackupV4Binary(accounts.map { it.id }, "public-backup-password", null, null)
+        val restored = requireNotNull(backupProvider.restoreFromV4BinaryBackup(full, "public-backup-password"))
+        assertEquals(2, restored.wallets.size)
+        assertEquals(accounts.map { it.type }.toSet(), restored.wallets.map { it.account.type }.toSet())
+        accounts.forEach { original ->
+            val single = backupProvider.createSingleWalletBackupV4Binary(original, "public-backup-password")
+            val singleBackup = requireNotNull(
+                backupProvider.restoreFromV4BinaryBackup(single, "public-backup-password")
+            )
+            val restoredSingle = singleBackup.wallets.single().account
+            val originalType = original.type as AccountType.Mnemonic
+            val restoredType = restoredSingle.type as AccountType.Mnemonic
+            assertEquals(originalType, restoredType)
+            assertTrue(originalType.seed.contentEquals(restoredType.seed))
+            assertEquals(original.name, restoredSingle.name)
+        }
+    }
+
     // region V4 Binary Backup Creation with Retry
 
     @Test
@@ -54,7 +84,7 @@ internal class BackupProviderV4BinaryTest : BackupProviderRestoreTestFixture() {
         val account = Account(
             id = "account-id",
             name = "Wallet",
-            type = AccountType.Mnemonic(List(12) { "abandon" }, ""),
+            type = AccountType.Mnemonic(List(12) { "abandon" }, "", MnemonicDerivation.Legacy),
             origin = AccountOrigin.Created,
             level = 0
         )
@@ -323,7 +353,7 @@ internal class BackupProviderV4BinaryTest : BackupProviderRestoreTestFixture() {
         val accountToBackup = Account(
             id = "backup-account-id",
             name = "Backup",
-            type = AccountType.Mnemonic(List(12) { "abandon" }, ""),
+            type = AccountType.Mnemonic(List(12) { "abandon" }, "", MnemonicDerivation.Legacy),
             origin = AccountOrigin.Created,
             level = 0
         )

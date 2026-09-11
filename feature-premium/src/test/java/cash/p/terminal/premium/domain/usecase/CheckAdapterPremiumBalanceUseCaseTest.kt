@@ -10,6 +10,7 @@ import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.IReceiveAdapter
 import cash.p.terminal.wallet.IWalletManager
+import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
@@ -205,7 +206,8 @@ class CheckAdapterPremiumBalanceUseCaseTest {
         name = "Account",
         type = AccountType.Mnemonic(
             words = List(12) { "abandon" },
-            passphrase = ""
+            passphrase = "",
+            derivation = MnemonicDerivation.Legacy
         ),
         origin = AccountOrigin.Created,
         level = 1,
