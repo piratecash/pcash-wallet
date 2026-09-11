@@ -7,7 +7,6 @@ import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.GasPrice
 import io.horizontalsystems.ethereumkit.models.RawTransaction
 import io.horizontalsystems.ethereumkit.models.Signature
-import io.horizontalsystems.hdwalletkit.ECKey
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
@@ -121,7 +120,7 @@ class EvmSignatureRecoveryTest {
         // SEC1 requires r, s in [1, n-1]; r = 0 and r = n would otherwise reach
         // BigInteger.modInverse inside recovery and throw ArithmeticException.
         val hash = EvmSignatureRecovery.personalSignHash("garbage".toByteArray())
-        val n = ECKey.ecParams.n
+        val n = BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16)
         for (recId in 0..3) {
             assertNull(EvmSignatureRecovery.recoverMessageAddress(hash, BigInteger.ZERO, BigInteger.ONE, recId))
             assertNull(EvmSignatureRecovery.recoverMessageAddress(hash, n, BigInteger.ONE, recId))

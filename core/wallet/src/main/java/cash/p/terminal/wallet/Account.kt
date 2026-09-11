@@ -159,7 +159,7 @@ sealed class AccountType : Parcelable {
     @Parcelize
     data class Mnemonic(val words: List<String>, val passphrase: String) : AccountType() {
         @IgnoredOnParcel
-        val seed by lazy { Mnemonic().toSeed(words, passphrase) }
+        val seed by lazy { MnemonicSeed.derive(words, passphrase) }
 
         @IgnoredOnParcel
         val kind by lazy { MnemonicKind.getKind(words) }

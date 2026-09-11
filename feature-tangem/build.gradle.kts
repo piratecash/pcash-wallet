@@ -49,7 +49,9 @@ dependencies {
     implementation(libs.javax.inject)
 
     implementation(libs.tangem.sdk)
-    implementation(libs.bitcoin.kit)
+    implementation(libs.bitcoin.core)
+    implementation(libs.hd.wallet.kit)
+    implementation(libs.kermit)
 
     implementation(libs.ethereum.kit)
     implementation(libs.solanakt)
@@ -67,4 +69,5 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.kotlin.test.junit)
+    testRuntimeOnly(libs.secp256k1.jni.jvm)
 }

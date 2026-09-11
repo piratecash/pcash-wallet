@@ -87,7 +87,7 @@ class OfflineSigningController<T>(
                     // and auto-navigate into it on the next entry.
                     if (signingJob?.isCancelled != true) {
                         signedTransaction = transaction
-                        signState = OfflineSignState.Signed(format.preferredTransferFormat(transaction))
+                        signState = OfflineSignState.Signed(format)
                     }
                 }
             }

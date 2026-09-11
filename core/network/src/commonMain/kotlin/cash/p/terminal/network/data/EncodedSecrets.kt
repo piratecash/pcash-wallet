@@ -65,4 +65,7 @@ object EncodedSecrets : KoinComponent {
     val UNSTOPPABLE_DEX_API_KEY = decoder.decode(listOf(
         "Q1YHQVBOFE1RVAhTGEFXF0BBDEMABFdYCRRVTBoSHF5AWUVUU0VRFEQXVVkKBhRIVEASQA4XVwdaDV9KA0QXSQ=="
     ))
+    val BLOCKSCOUT_KEY = decoder.decode(listOf(
+        "ABEOEhhELxMYKgpWbgUvI0oRVhpWAAZfBkE/Q0UTTF4RKjsAKSYkGz1HJgorNEAXKD87Jys0FjEjECMWCThIGkQGGRI9DlY4N09JNBMhAw=="
+    ))
 }

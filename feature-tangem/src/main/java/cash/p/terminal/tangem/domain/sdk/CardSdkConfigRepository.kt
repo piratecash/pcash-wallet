@@ -2,6 +2,7 @@ package cash.p.terminal.tangem.domain.sdk
 
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
+import co.touchlab.kermit.Logger
 import com.tangem.TangemSdk
 import com.tangem.common.UserCodeType
 import com.tangem.common.core.UserCodeRequestPolicy
@@ -12,13 +13,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import timber.log.Timber
 
 class CardSdkConfigRepository(
     private val cardSdkProvider: CardSdkProvider,
     private val dispatcherProvider: DispatcherProvider,
     private val accountManager: IAccountManager
 ) {
+    private val logger = Logger.withTag("CardSdkConfigRepository")
 
     private val readerModeTransitionMutex = Mutex()
     private var readerModeTransitionJob: Job? = null
@@ -93,8 +94,8 @@ class CardSdkConfigRepository(
     private fun updateReaderMode(operation: String, action: TangemSdk.() -> Unit) {
         try {
             sdk.action()
-        } catch (e: Throwable) {
-            Timber.e(e, "$operation failed")
+        } catch (error: Throwable) {
+            logger.e(error) { "$operation failed" }
         }
     }
 

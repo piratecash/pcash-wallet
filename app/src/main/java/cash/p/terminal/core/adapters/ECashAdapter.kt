@@ -1,9 +1,9 @@
 package cash.p.terminal.core.adapters
 
-import cash.p.terminal.core.App
 import cash.p.terminal.core.IFeeRateProvider
 import cash.p.terminal.core.ISendBitcoinAdapter
 import cash.p.terminal.core.UnsupportedAccountException
+import cash.p.terminal.core.managers.BitcoinKitEnvironment
 import cash.p.terminal.wallet.entities.UsedAddress
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.wallet.AccountType
@@ -30,8 +30,9 @@ class ECashAdapter(
         wallet: Wallet,
         syncMode: BitcoinCore.SyncMode,
         backgroundManager: BackgroundManager,
+        environment: BitcoinKitEnvironment,
         feeRateProvider: IFeeRateProvider? = null
-    ) : this(createKit(wallet, syncMode), syncMode, backgroundManager, wallet, feeRateProvider)
+    ) : this(createKit(wallet, syncMode, environment), syncMode, backgroundManager, wallet, feeRateProvider)
 
     init {
         kit.listener = this
@@ -89,12 +90,18 @@ class ECashAdapter(
     companion object {
         private const val confirmationsThreshold = 1
 
-        private fun createKit(wallet: Wallet, syncMode: BitcoinCore.SyncMode): ECashKit {
+        private fun createKit(
+            wallet: Wallet,
+            syncMode: BitcoinCore.SyncMode,
+            environment: BitcoinKitEnvironment,
+        ): ECashKit {
             val account = wallet.account
             when (val accountType = account.type) {
                 is AccountType.HdExtendedKey -> {
                     return ECashKit(
-                        context = App.instance,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
                         extendedKey = accountType.hdExtendedKey,
                         walletId = account.id,
                         syncMode = syncMode,
@@ -105,9 +112,10 @@ class ECashAdapter(
 
                 is AccountType.Mnemonic -> {
                     return ECashKit(
-                        context = App.instance,
-                        words = accountType.words,
-                        passphrase = accountType.passphrase,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        seed = accountType.seed,
                         walletId = account.id,
                         syncMode = syncMode,
                         networkType = ECashKit.NetworkType.MainNet,
@@ -117,7 +125,9 @@ class ECashAdapter(
 
                 is AccountType.BitcoinAddress -> {
                     return ECashKit(
-                        context = App.instance,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
                         watchAddress = accountType.address,
                         walletId = account.id,
                         syncMode = syncMode,
@@ -131,8 +141,5 @@ class ECashAdapter(
 
         }
 
-        fun clear(walletId: String) {
-            ECashKit.clear(App.instance, ECashKit.NetworkType.MainNet, walletId)
-        }
     }
 }

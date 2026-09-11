@@ -12,6 +12,8 @@ import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.Chain
 import io.horizontalsystems.ethereumkit.models.GasPrice
 import io.horizontalsystems.ethereumkit.models.RawTransaction
+import io.horizontalsystems.ethereumkit.spv.core.toBytes
+import io.horizontalsystems.hdwalletkit.ECKey
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -127,7 +129,7 @@ class HardwareWalletEvmSignerTest {
     @Test
     fun signPersonalMessage_validCardSignature_recoversWalletAddress() = runBlocking {
         val privateKey = BigInteger("46".repeat(32), 16)
-        val publicKeyBytes = CryptoUtils.CURVE.g.multiply(privateKey).getEncoded(false)
+        val publicKeyBytes = ECKey.fromPrivate(privateKey.toBytes(32), compressed = false).pubKey
         val address = addressOf(publicKeyBytes)
         val message = "Sign in to near.com".toByteArray()
         val hash = EvmSignatureRecovery.personalSignHash(message)
@@ -149,7 +151,7 @@ class HardwareWalletEvmSignerTest {
     @Test
     fun signLegacyHash_rawHash_signsHashDirectlyWithoutEip191Prefix() = runBlocking {
         val privateKey = BigInteger("64".repeat(32), 16)
-        val publicKeyBytes = CryptoUtils.CURVE.g.multiply(privateKey).getEncoded(false)
+        val publicKeyBytes = ECKey.fromPrivate(privateKey.toBytes(32), compressed = false).pubKey
         val address = addressOf(publicKeyBytes)
         // Not a personal_sign hash: if the implementation accidentally applied the EIP-191
         // prefix here, recovery below would fail against the mismatched hash.

@@ -28,10 +28,10 @@ import org.junit.Test
 
 class EvmSignerFactoryTest {
 
-    // BIP32 test vector 1 master public extended key - a well-known, valid xpub.
+    // Public key metadata matches the depth of the hardware derivation path.
     private val xPubKey =
-        "xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ES" +
-                "FjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8"
+        "xpub6H3W6JmYJXN4CCKUSnriaiQRCZmG6aq4sCMDqTu1ACyngw7HShf59hAxYjXg" +
+                "KDuuHThVEUzdHrc3aXCr9kfvQvZPit5dnD3K9xVRBzjK3rX"
 
     private val hardwarePublicKeyStorage: IHardwarePublicKeyStorage = mockk()
     private val trezorClient: ITrezorClient = mockk()

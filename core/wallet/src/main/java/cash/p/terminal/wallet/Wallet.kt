@@ -1,6 +1,7 @@
 package cash.p.terminal.wallet
 
 import android.os.Parcelable
+import co.touchlab.kermit.Logger
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.HardwarePublicKey
 import cash.p.terminal.wallet.entities.HardwarePublicKeyType
@@ -11,7 +12,6 @@ import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.hdwalletkit.HDExtendedKey
 import kotlinx.parcelize.Parcelize
-import timber.log.Timber
 import java.util.Objects
 
 @ConsistentCopyVisibility
@@ -47,7 +47,7 @@ data class Wallet internal constructor(
     fun getHDExtendedKey(): HDExtendedKey? {
         return hardwarePublicKey?.key?.value?.let {
             if (hardwarePublicKey.type == HardwarePublicKeyType.PUBLIC_KEY) {
-                HDExtendedKey(it)
+                PublicHDExtendedKeyParser.parse(it)
             } else {
                 null
             }
@@ -118,20 +118,20 @@ class WalletFactory(
 
     fun create(token: Token, account: Account, hardwarePublicKey: HardwarePublicKey?): Wallet? {
         if (!account.type.isCompatibleWith(token.blockchainType, token.type)) {
-            Timber.d(
+            Logger.d {
                 "Skipping wallet creation for token ${token.blockchainType} ${token.type} - account type " +
-                        "${account.type::class.simpleName} is not supported"
-            )
+                    "${account.type::class.simpleName} is not supported"
+            }
             return null
         }
 
         if (account.isHardwareWalletAccount &&
             !hardwareWalletTokenPolicy.isSupported(account, token)
         ) {
-            Timber.d(
+            Logger.d {
                 "Skipping wallet creation for token ${token.blockchainType} ${token.type} - hardware wallet not " +
-                        "supported"
-            )
+                    "supported"
+            }
             return null
         }
 

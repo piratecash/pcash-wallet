@@ -54,7 +54,13 @@ dependencies {
     implementation(libs.solanakt)
     implementation(libs.stellar.kit)
     implementation(libs.tron.kit)
+    implementation(libs.bitcoin.core)
     implementation(libs.bitcoin.kit)
+    implementation(libs.bitcoin.cash.kit)
+    implementation(libs.bitcoin.litecoin.kit)
+    implementation(libs.bitcoin.dash.kit)
+    implementation(libs.bitcoin.dogecoin.kit)
+    implementation(libs.hd.wallet.kit)
     // api: app-level code (e.g. CreateTrezorWalletUseCase) references ITrezorClient/DTOs directly.
     api(libs.trezor.kit)
     debugImplementation(libs.androidx.ui.tooling)
@@ -64,4 +70,5 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockk)
     testImplementation(libs.ktor.client.mock)
+    testRuntimeOnly(libs.secp256k1.jni.jvm)
 }

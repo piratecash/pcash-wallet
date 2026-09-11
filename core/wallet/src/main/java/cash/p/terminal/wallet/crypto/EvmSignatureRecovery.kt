@@ -5,13 +5,10 @@ import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.GasPrice
 import io.horizontalsystems.ethereumkit.models.RawTransaction
 import io.horizontalsystems.ethereumkit.models.Signature
+import io.horizontalsystems.ethereumkit.spv.core.toBytes
 import io.horizontalsystems.ethereumkit.spv.rlp.RLP
 import io.horizontalsystems.hdwalletkit.ECKey
-import org.bouncycastle.math.ec.ECAlgorithms
-import org.bouncycastle.math.ec.ECPoint
-import org.bouncycastle.math.ec.custom.sec.SecP256K1Curve
 import java.math.BigInteger
-import java.security.SignatureException
 
 /**
  * EVM signature recovery shared by hardware-wallet signers (Trezor, Tangem). Hardware devices
@@ -25,7 +22,12 @@ object EvmSignatureRecovery {
     private const val PRE_EIP155_V_OFFSET = 27
     private const val UNCOMPRESSED_KEY_PREFIX_SIZE = 1
     private const val ADDRESS_BYTE_OFFSET = 12
+    private const val SIGNATURE_COMPONENT_SIZE = 32
     private val EIP1559_TX_TYPE = byteArrayOf(0x02)
+    private val SECP256K1_ORDER = BigInteger(
+        "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141",
+        16,
+    )
 
     /** Keccak-256 of the transaction's signing preimage (EIP-155 for legacy, typed for EIP-1559). */
     fun signingHash(rawTransaction: RawTransaction, chainId: Int): ByteArray =
@@ -133,57 +135,12 @@ object EvmSignatureRecovery {
         s: BigInteger,
         messageHash: ByteArray,
         compressed: Boolean
-    ): ByteArray? = try {
-        recoverPublicKey(recId, r, s, messageHash, compressed)
-    } catch (_: SignatureException) {
-        null
-    } catch (_: IllegalArgumentException) {
-        null
-    }
-
-    private fun recoverPublicKey(
-        recId: Int,
-        r: BigInteger,
-        s: BigInteger,
-        messageHash: ByteArray,
-        compressed: Boolean
     ): ByteArray? {
-        val n = ECKey.ecParams.n
-        val curve = ECKey.ecParams.curve as SecP256K1Curve
-
-        // SEC1: a valid ECDSA signature has r, s in [1, n-1]; anything outside is unrecoverable
-        // (r = 0 or r = n would otherwise throw ArithmeticException from modInverse below).
-        if (r < BigInteger.ONE || r >= n || s < BigInteger.ONE || s >= n) return null
-
-        val i = BigInteger.valueOf(recId.toLong() / 2)
-        val x = r.add(i.multiply(n))
-        if (x >= curve.q) return null
-
-        val pointR = decompressKey(x, (recId and 1) == 1)
-        if (!pointR.multiply(n).isInfinity) return null
-
-        val e = BigInteger(1, messageHash)
-        val eInv = BigInteger.ZERO.subtract(e).mod(n)
-        val rInv = r.modInverse(n)
-        val srInv = rInv.multiply(s).mod(n)
-        val eInvrInv = rInv.multiply(eInv).mod(n)
-        val q = ECAlgorithms.sumOfTwoMultiplies(ECKey.ecParams.g, eInvrInv, pointR, srInv)
-
-        return ECKey(q.getEncoded(compressed)).pubKey
-    }
-
-    private fun decompressKey(xBN: BigInteger, yBit: Boolean): ECPoint {
-        val curve = ECKey.ecParams.curve as SecP256K1Curve
-        val x = curve.fromBigInteger(xBN)
-        val alpha = x.multiply(x.square().add(curve.a)).add(curve.b)
-        val beta = requireNotNull(alpha.sqrt()) { "Invalid point compression" }
-        val nBeta = beta.toBigInteger()
-        return if (nBeta.testBit(0) == yBit) {
-            curve.createPoint(x.toBigInteger(), nBeta)
-        } else {
-            val y = curve.fromBigInteger(curve.q.subtract(nBeta))
-            curve.createPoint(x.toBigInteger(), y.toBigInteger())
+        if (r < BigInteger.ONE || r >= SECP256K1_ORDER || s < BigInteger.ONE || s >= SECP256K1_ORDER) {
+            return null
         }
+        val signature = r.toBytes(SIGNATURE_COMPONENT_SIZE) + s.toBytes(SIGNATURE_COMPONENT_SIZE)
+        return ECKey.recoverPublicKeyFromSignature(messageHash, signature, recId, compressed)
     }
 
     private fun recoveryId(v: Int, chainId: Int, gasPrice: GasPrice): Int = when (gasPrice) {

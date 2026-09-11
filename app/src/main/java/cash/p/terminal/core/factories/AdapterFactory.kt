@@ -46,6 +46,8 @@ import cash.p.terminal.core.providers.FeeRateProvider
 import cash.p.terminal.core.providers.LitecoinFeeRateProvider
 import cash.p.terminal.core.providers.PirateCashFeeRateProvider
 import cash.p.terminal.core.managers.BtcBlockchainManager
+import cash.p.terminal.core.managers.BitcoinKitDatabaseManager
+import cash.p.terminal.core.managers.BitcoinKitEnvironment
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.EvmLabelManager
 import cash.p.terminal.core.managers.EvmSyncSourceManager
@@ -100,6 +102,10 @@ class AdapterFactory(
     private val walletManager: IWalletManager,
 ) {
     private val logger = AppLogger("adapter-factory")
+    private val bitcoinKitDatabaseManager by lazy { getKoinInstance<BitcoinKitDatabaseManager>() }
+
+    private suspend fun bitcoinKitEnvironment(wallet: Wallet): BitcoinKitEnvironment =
+        bitcoinKitDatabaseManager.prepare(wallet.account.id)
 
     private fun createZcashAdapter(wallet: Wallet, addressSpecTyped: AddressSpecType?) =
         ZcashAdapter(
@@ -238,6 +244,7 @@ class AdapterFactory(
                             syncMode = syncMode,
                             backgroundManager = backgroundManager,
                             derivation = tokenType.derivation,
+                            environment = bitcoinKitEnvironment(wallet),
                             feeRateProvider = BitcoinFeeRateProvider(feeRateProvider)
                         )
                     }
@@ -256,6 +263,7 @@ class AdapterFactory(
                             syncMode = syncMode,
                             backgroundManager = backgroundManager,
                             derivation = tokenType.derivation,
+                            environment = bitcoinKitEnvironment(wallet),
                             mwebRestoreSettings = mwebRestoreSettings,
                             dispatcherProvider = dispatcherProvider,
                             feeRateProvider = LitecoinFeeRateProvider(feeRateProvider)
@@ -277,6 +285,7 @@ class AdapterFactory(
                         syncMode = syncMode,
                         backgroundManager = backgroundManager,
                         addressType = tokenType.type,
+                        environment = bitcoinKitEnvironment(wallet),
                         feeRateProvider = BitcoinCashFeeRateProvider(feeRateProvider)
                     )
                 } else null
@@ -306,6 +315,7 @@ class AdapterFactory(
                             wallet.account,
                             wallet.token.blockchainType
                         ),
+                        environment = bitcoinKitEnvironment(wallet),
                         dispatcherProvider = dispatcherProvider,
                         feeRateProvider = LitecoinFeeRateProvider(feeRateProvider)
                     )
@@ -316,7 +326,13 @@ class AdapterFactory(
                 BlockchainType.ECash -> {
                     val syncMode =
                         btcBlockchainManager.syncMode(BlockchainType.ECash, wallet.account.origin)
-                    ECashAdapter(wallet, syncMode, backgroundManager, ECashFeeRateProvider())
+                    ECashAdapter(
+                        wallet = wallet,
+                        syncMode = syncMode,
+                        backgroundManager = backgroundManager,
+                        environment = bitcoinKitEnvironment(wallet),
+                        feeRateProvider = ECashFeeRateProvider(),
+                    )
                 }
 
                 BlockchainType.Dash -> {
@@ -328,6 +344,7 @@ class AdapterFactory(
                         backgroundManager = backgroundManager,
                         customPeers = localStorage.customDashPeers,
                         masterNodesRepository = masterNodesRepository,
+                        environment = bitcoinKitEnvironment(wallet),
                         feeRateProvider = DashFeeRateProvider(feeRateProvider)
                     )
                 }
@@ -339,6 +356,7 @@ class AdapterFactory(
                         wallet = wallet,
                         syncMode = syncMode,
                         backgroundManager = backgroundManager,
+                        environment = bitcoinKitEnvironment(wallet),
                         feeRateProvider = CosantaFeeRateProvider(feeRateProvider)
                     )
                 }
@@ -353,6 +371,7 @@ class AdapterFactory(
                         wallet = wallet,
                         syncMode = syncMode,
                         backgroundManager = backgroundManager,
+                        environment = bitcoinKitEnvironment(wallet),
                         feeRateProvider = PirateCashFeeRateProvider(feeRateProvider)
                     )
                 }
@@ -366,6 +385,7 @@ class AdapterFactory(
                         wallet = wallet,
                         syncMode = syncMode,
                         backgroundManager = backgroundManager,
+                        environment = bitcoinKitEnvironment(wallet),
                         feeRateProvider = DogecoinFeeRateProvider(feeRateProvider)
                     )
                 }
