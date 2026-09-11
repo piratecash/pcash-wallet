@@ -1237,7 +1237,7 @@
     <string name="ManageAccount_BackupRequired_Title">Backup necessário</string>
     <string name="ManageAccount_BackupRequired_Description">Você precisa fazer um backup de %1$s antes de poder receber %2$s.</string>
     <string name="ManageAccount_Delete_ConfirmationRemove">Esta ação irá apagar do dispositivo a carteira selecionada.</string>
-    <string name="ManageAccount_Delete_ConfirmationLose">Se você não fizer o backup da chave privada desta carteira, perderá o acesso aos seus fundos.</string>
+    <string name="ManageAccount_Delete_ConfirmationLose">Certifique-se de que guardou a sua frase de recuperação ou chave privada. Sem elas, poderá perder permanentemente o acesso à sua carteira e aos seus fundos.</string>
     <string name="ManageAccount_MigrationRequired_Title">Migração Necessária</string>
     <string name="ManageAccount_BirthdayHeight">%s Birthday Height</string>
     <string name="ManageAccount_NWords">%s palavras</string>
@@ -1335,7 +1335,7 @@
     <string name="PrivateKeys_Bip32RootKeyDescription">Concede controle total sobre os ativos da respectiva carteira.</string>
     <string name="PrivateKeys_AccountExtendedPrivateKey">Account Extended Private Key</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Concede controle total sobre Bitcoin e outras criptomoedas baseadas em UTXO, ou seja, Litecoin, Bitcoin Cash, Dash etc. dentro da respectiva carteira.</string>
-    <string name="PrivateKeys_NeverShareWarning">Nunca compartilhe sua frase de recuperação com ninguém. A equipe P.CASH nunca pedirá a sua frase de recuperação.</string>
+    <string name="PrivateKeys_NeverShareWarning">Nunca partilhe a sua chave privada, a frase de recuperação ou outros dados confidenciais da carteira com ninguém. A equipa P.CASH nunca pedirá esta informação.</string>
     <!-- Public Keys -->
     <string name="PublicKeys_Title">Chaves públicas</string>
     <string name="PublicKeys_EvmAddress">Endereço EVM</string>

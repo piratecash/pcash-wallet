@@ -32,7 +32,6 @@ import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import cash.p.terminal.wallet.models.CoinPrice
 import cash.p.terminal.wallet.useCases.GetHardwarePublicKeyForWalletUseCase
-import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.hoursUntil
 import io.horizontalsystems.core.helpers.DateHelper

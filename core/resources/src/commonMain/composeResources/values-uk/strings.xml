@@ -1239,7 +1239,7 @@
     <string name="ManageAccount_BackupRequired_Title">Необхідна резервна копія</string>
     <string name="ManageAccount_BackupRequired_Description">Вам потрібно зробити резервну копію %1$s перед отриманням %2$s.</string>
     <string name="ManageAccount_Delete_ConfirmationRemove">Ця дія видалить ваш гаманець з цього пристрою.</string>
-    <string name="ManageAccount_Delete_ConfirmationLose">Якщо ви не зробили резервну копію приватного ключа для цього гаманця, ви втратите доступ до ваших коштів.</string>
+    <string name="ManageAccount_Delete_ConfirmationLose">Переконайтеся, що у вас збережена фраза відновлення або приватний ключ. Без них ви можете назавжди втратити доступ до гаманця та коштів.</string>
     <string name="ManageAccount_MigrationRequired_Title">Потрібна міграція</string>
     <string name="ManageAccount_BirthdayHeight">%s Блок створення</string>
     <string name="ManageAccount_NWords">%s слів</string>
@@ -1342,7 +1342,7 @@
     <string name="PrivateKeys_Bip32RootKeyDescription">Надає повний контроль над активами на відповідному гаманці.</string>
     <string name="PrivateKeys_AccountExtendedPrivateKey">Розширений приватний ключ акаунта</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Надає повний контроль над Bitcoin та іншими криптовалютами на базі UTXO, такими як Litecoin, Bitcoin Cash, Dash і т.д. в межах відповідного гаманця.</string>
-    <string name="PrivateKeys_NeverShareWarning">Ніколи ні з ким не діліться вашою фразою відновлення. Команда P.CASH ніколи не запитає вашу фразу відновлення.</string>
+    <string name="PrivateKeys_NeverShareWarning">Ніколи й нікому не передавайте приватний ключ, фразу відновлення чи інші конфіденційні дані гаманця. Команда P.CASH ніколи не запитує цю інформацію.</string>
     <string name="private_key_conversion_monero_description">
 
         &lt;p&gt;&lt;b&gt;Ми перетворили вашу сід-фразу з %d слів на стандарт Monero — 25 слів.&lt;/b&gt;&lt;/p&gt;

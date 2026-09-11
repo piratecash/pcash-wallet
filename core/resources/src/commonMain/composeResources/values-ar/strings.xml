@@ -1239,7 +1239,7 @@
     <string name="ManageAccount_BackupRequired_Title">Backup Required</string>
     <string name="ManageAccount_BackupRequired_Description">You need to backup %1$s before you may receive %2$s.</string>
     <string name="ManageAccount_Delete_ConfirmationRemove">This action will delete the selected wallet from this device.</string>
-    <string name="ManageAccount_Delete_ConfirmationLose">If you didn\'t backup the private key for this wallet, you will lose access to your funds.</string>
+    <string name="ManageAccount_Delete_ConfirmationLose">تأكد من حفظ عبارة الاسترداد أو المفتاح الخاص. بدونهما، قد تفقد إمكانية الوصول إلى محفظتك وأموالك إلى الأبد.</string>
     <string name="ManageAccount_MigrationRequired_Title">Migration Required</string>
     <string name="ManageAccount_BirthdayHeight">%s Birthday Height</string>
     <string name="ManageAccount_NWords">%s الكلمات</string>
@@ -1339,7 +1339,7 @@
     <string name="PrivateKeys_Bip32RootKeyDescription">Grants full control over the assets on the respective wallet.</string>
     <string name="PrivateKeys_AccountExtendedPrivateKey">Account Extended Private Key</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Grants full control over Bitcoin and other UTXO based crypto i.e. Litecoin, Bitcoin Cash, Dash etc. within respective wallet.</string>
-    <string name="PrivateKeys_NeverShareWarning">Never share this key with anyone. P.CASH Wallet support team will never ask for it.</string>
+    <string name="PrivateKeys_NeverShareWarning">لا تشارك مفتاحك الخاص أو عبارة الاسترداد أو أي بيانات سرية أخرى للمحفظة مع أي شخص أبدًا. فريق P.CASH لن يطلب هذه المعلومات أبدًا.</string>
     <!-- Public Keys -->
     <string name="PublicKeys_Title">Public Keys</string>
     <string name="PublicKeys_EvmAddress">EVM Address</string>
