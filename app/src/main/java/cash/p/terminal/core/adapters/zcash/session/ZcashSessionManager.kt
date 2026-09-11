@@ -2,12 +2,15 @@ package cash.p.terminal.core.adapters.zcash.session
 
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.isNetworkPaused
+import cash.p.terminal.core.zcashAddressSpecs
 import cash.p.terminal.wallet.Wallet
+import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.withContext
 
 /**
@@ -27,6 +30,13 @@ class ZcashSessionManager(
     /** Serializes closes so a removed-but-still-draining session is never reported as closed. */
     private val closeGate = Mutex()
     private val sessions = mutableMapOf<String, Entry>()
+
+    /**
+     * One discovery memo per account, outliving any one session — a session closes on every
+     * screen visit, but the account's discovery progress must not be forgotten with it. Removed
+     * only when the account's data is dropped ([closeForErase]), never on an ordinary [release].
+     */
+    private val discoveryStates = ConcurrentHashMap<String, ZcashDiscoveryState>()
 
     /**
      * The entry a close took out of [sessions]. Adapters release asynchronously, so one may let go
@@ -57,16 +67,25 @@ class ZcashSessionManager(
     private suspend fun open(wallet: Wallet): ZcashSession {
         val accountId = wallet.account.id
         val opened = walletOpener.open(wallet)
+        val supportsTransparent = wallet.account.type.zcashAddressSpecs().contains(AddressSpecType.Transparent)
         // Offline mode is a property of the account, not of the adapter that happened to ask
         // first: a session opened while paused must not start any network work at all.
+        val networkPaused = offlineModeManager.isNetworkPaused(accountId, BlockchainType.Zcash)
         return ZcashSession(
             accountId = accountId,
             wallet = opened.wallet,
             dbAccountId = opened.dbAccountId,
-            networkPaused = offlineModeManager.isNetworkPaused(accountId, BlockchainType.Zcash),
+            networkPaused = networkPaused,
             dispatcherProvider = dispatcherProvider,
+            supportsTransparent = supportsTransparent,
+            deepSweepRequired = opened.deepSweepRequired,
+            discovery = discoveryState(wallet),
         ).also { session -> mutex.withLock { sessions[accountId] = Entry(session, 1) } }
     }
+
+    /** The account's memo, with or without an open session: a Receive screen subscribes before one exists. */
+    internal fun discoveryState(wallet: Wallet): ZcashDiscoveryState =
+        discoveryStates.getOrPut(wallet.account.id) { ZcashDiscoveryState() }
 
     /**
      * Takes the session the caller actually holds: an erase drops the entry while adapters still
@@ -94,10 +113,16 @@ class ZcashSessionManager(
      * Closes the session whoever still holds it — the eraser owns the database next, and an
      * adapter releases asynchronously. False means the drain timed out: nothing was closed and the
      * account is back in service.
+     *
+     * The account's discovery memo is dropped whenever this reports the session gone — whether an
+     * open session was actually drained, or the account had none open at all — because either way
+     * the database the memo describes is about to be deleted.
      */
     suspend fun closeForErase(accountId: String): Boolean = closeGate.withLock {
-        val entry = mutex.withLock { sessions[accountId]?.let(::takeForClose) } ?: return@withLock true
-        close(entry)
+        val entry = mutex.withLock { sessions[accountId]?.let(::takeForClose) }
+        val closed = entry?.let { close(it) } ?: true
+        if (closed) discoveryStates.remove(accountId)
+        closed
     }
 
     /**

@@ -108,7 +108,7 @@ class SendTransactionServiceZCash(
             return SendModule.AmountData(primaryAmountInfo, secondaryAmountInfo)
         }
 
-    private var cautions: List<CautionViewItem> = listOf()
+    private var sendCaution: CautionViewItem? = null
     private var sendable = false
     private var loading = true
     private var fields = listOf<DataField>()
@@ -116,7 +116,7 @@ class SendTransactionServiceZCash(
     override fun createState() = SendTransactionServiceState(
         availableBalance = availableToSend,
         networkFee = feeAmountData,
-        cautions = cautions,
+        cautions = listOfNotNull(addressState.addressError?.let { createCaution(it) }, sendCaution),
         sendable = sendable,
         loading = loading,
         fields = fields
@@ -144,14 +144,17 @@ class SendTransactionServiceZCash(
 
     private fun handleUpdatedAmountState(amountState: SendAmountService.State) {
         this.amountState = amountState
-        sendable = amountState.canBeSend
-
-        emitState()
+        refreshSendability()
     }
 
     private fun handleUpdatedAddressState(addressState: SendZCashAddressService.State) {
         this.addressState = addressState
         loading = false
+        refreshSendability()
+    }
+
+    private fun refreshSendability() {
+        sendable = amountState.canBeSend && addressState.canBeSend
         emitState()
     }
 
@@ -177,7 +180,7 @@ class SendTransactionServiceZCash(
 
             return SendTransactionResult.ZCash(SendResult.Sent(txId))
         } catch (e: Throwable) {
-            cautions = listOf(createCaution(e))
+            sendCaution = createCaution(e)
             emitState()
             throw e
         }

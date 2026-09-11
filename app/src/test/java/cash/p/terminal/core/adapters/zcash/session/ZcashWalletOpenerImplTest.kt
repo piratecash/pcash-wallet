@@ -22,6 +22,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.io.File
@@ -41,7 +42,6 @@ class ZcashWalletOpenerImplTest {
     private val birthdayProvider = mockk<ZcashBirthdayProvider>(relaxed = true)
     private val dbKeyProvider = mockk<ZcashDbKeyProvider>(relaxed = true)
     private val zcashWallet = mockk<ZcashWallet>(relaxed = true)
-    private var discoveredAccountIds = emptySet<String>()
 
     @Before
     fun setUp() {
@@ -58,12 +58,6 @@ class ZcashWalletOpenerImplTest {
         every { dbKeyProvider.keyFor(ACCOUNT_ID) } returns ZcashDbKey(ByteArray(32), newlyGenerated = false)
         every { restoreSettingsManager.settings(any(), any()) } returns
             RestoreSettings().apply { birthdayHeight = BIRTHDAY.toLong() }
-        discoveredAccountIds = setOf(ACCOUNT_ID)
-        every { localStorage.zcashDiscoveredAccountIds } answers { discoveredAccountIds }
-        every { localStorage.zcashDiscoveredAccountIds = any() } answers {
-            discoveredAccountIds = firstArg()
-        }
-        every { localStorage.invalidateZcashAddressDiscovery(any()) } answers { callOriginal() }
     }
 
     @After
@@ -109,7 +103,7 @@ class ZcashWalletOpenerImplTest {
     }
 
     @Test
-    fun open_lostDbKey_dropsDatabaseAndRediscoversTransparentAddresses() = runTest {
+    fun open_lostDbKey_dropsTheDatabaseAndRestoresFresh() = runTest {
         val leftover = databaseFiles.databaseFile(ACCOUNT_ID)
             .apply { parentFile?.mkdirs() }
             .apply { writeText("encrypted with a key that is gone") }
@@ -119,7 +113,48 @@ class ZcashWalletOpenerImplTest {
 
         assertFalse(leftover.exists())
         coVerify(exactly = 1) { zcashWallet.restoreAccount(any(), any(), any(), any(), any(), any()) }
-        coVerify(exactly = 1) { zcashWallet.discoverTransparentAddresses(DB_ACCOUNT_ID) }
+        // Transparent-address discovery is periodic now (ZcashSyncScheduler), not part of opening
+        // the wallet: the coverage record died with the deleted database, so the session's own
+        // first walk will be deep.
+        coVerify(exactly = 0) { zcashWallet.discoverTransparentAddresses(any(), any(), any()) }
+    }
+
+    @Test
+    fun open_pristineAccount_reportsNoDeepSweepRequired() = runTest {
+        databaseFiles.markPristine(ACCOUNT_ID)
+
+        assertFalse(opener().open(wallet()).deepSweepRequired)
+    }
+
+    @Test
+    fun open_accountNotPristine_reportsDeepSweepRequired() = runTest {
+        assertTrue(opener().open(wallet()).deepSweepRequired)
+    }
+
+    @Test
+    fun open_lostDbKeyWithADatabase_dropsTheMarkWithTheDatabase() = runTest {
+        val leftover = databaseFiles.databaseFile(ACCOUNT_ID)
+            .apply { parentFile?.mkdirs() }
+            .apply { writeText("encrypted with a key that is gone") }
+        databaseFiles.markPristine(ACCOUNT_ID)
+        every { dbKeyProvider.keyFor(ACCOUNT_ID) } returns ZcashDbKey(ByteArray(32), newlyGenerated = true)
+
+        val opened = opener().open(wallet())
+
+        assertFalse(leftover.exists())
+        assertFalse(databaseFiles.isPristine(ACCOUNT_ID))
+        assertTrue(opened.deepSweepRequired)
+    }
+
+    @Test
+    fun open_firstOpenOfAPristineAccount_keepsTheMark() = runTest {
+        databaseFiles.markPristine(ACCOUNT_ID)
+        every { dbKeyProvider.keyFor(ACCOUNT_ID) } returns ZcashDbKey(ByteArray(32), newlyGenerated = true)
+
+        val opened = opener().open(wallet())
+
+        assertTrue(databaseFiles.isPristine(ACCOUNT_ID))
+        assertFalse(opened.deepSweepRequired)
     }
 
     private fun opener() = ZcashWalletOpenerImpl(

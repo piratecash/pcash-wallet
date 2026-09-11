@@ -3,6 +3,7 @@ package cash.p.terminal.trezor.domain.usecase
 import cash.p.terminal.trezor.client.TrezorPublicKeySpecs
 import cash.p.terminal.trezor.client.TrezorKeyValidationException
 import cash.p.terminal.trezor.domain.TrezorAccountIdentityValidator
+import cash.p.terminal.trezor.domain.TrezorFirmwareVersionRecorder
 import cash.p.terminal.trezor.domain.TrezorModelSupport
 import cash.p.terminal.trezor.domain.model.TrezorModel
 import cash.p.terminal.trezorkit.client.ITrezorClient
@@ -17,6 +18,7 @@ internal class FetchTrezorPublicKeysUseCaseImpl(
     private val trezorClient: ITrezorClient,
     private val accountManager: IAccountManager,
     private val identityValidator: TrezorAccountIdentityValidator,
+    private val firmwareVersionRecorder: TrezorFirmwareVersionRecorder,
 ) : FetchTrezorPublicKeysUseCase {
 
     override suspend fun invoke(
@@ -32,6 +34,7 @@ internal class FetchTrezorPublicKeysUseCaseImpl(
         return trezorClient.connect {
             val features = getFeatures()
             requireExpectedDevice(accountType, features)
+            firmwareVersionRecorder.record(accountId, features)
             // Firmware capability is only known from a live device, so gate Tron here rather than at the caller.
             val derivable = TrezorModelSupport.filterByFirmwareCapabilities(tokenQueries, features)
             val specs = TrezorPublicKeySpecs.buildQuerySpecs(derivable)

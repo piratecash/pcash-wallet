@@ -12,7 +12,7 @@ import cash.p.terminal.core.OfflineSignRequest
 import cash.p.terminal.core.OfflineZcashSignRequest
 import cash.p.terminal.core.SignedOfflineZcashTransaction
 import cash.p.terminal.core.UnsupportedAccountException
-import cash.p.terminal.core.UnsupportedException
+import cash.p.terminal.core.adapters.zcash.session.ZcashDiscoveryState
 import cash.p.terminal.core.adapters.zcash.session.ZcashSession
 import cash.p.terminal.core.adapters.zcash.session.ZcashSessionManager
 import cash.p.terminal.core.adapters.zcash.session.ZcashSessionResult
@@ -36,8 +36,12 @@ import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.strings.helpers.Translator
+import cash.p.terminal.trezor.domain.TrezorZcashAdmissionPolicy
+import cash.p.terminal.trezor.domain.model.TrezorModel
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.AdapterState
+import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapter
 import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.IReceiveAdapter
@@ -65,8 +69,7 @@ import cash.p.zcash.ZcashException
 import cash.p.zcash.ZcashNetwork
 import cash.p.zcash.ZcashSdk
 import cash.p.zcash.ZcashWallet
-import cash.p.zcash.deriveSpendingKey
-import cash.p.zcash.importSpendingKey
+import cash.p.zcash.addressReceivers
 import cash.p.zcash.transactionId
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
@@ -85,6 +88,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
@@ -103,11 +107,13 @@ class ZcashAdapter(
     private val sessionManager: ZcashSessionManager,
     private val ironwoodMigrations: ZcashIronwoodMigrationRegistry,
     addressDeriver: ZcashAddressDeriver,
+    private val signer: ZcashTransactionSigner,
     private val dispatcherProvider: DispatcherProvider,
 ) : IAdapter, IBalanceAdapter, IReceiveAdapter, ITransactionsAdapter, ISendZcashAdapter,
     OneTimeReceiveAdapter {
 
     private val zcashKey = wallet.zcashKey() ?: throw UnsupportedAccountException()
+    private val isTrezorAccount = wallet.account.type is AccountType.TrezorDevice
 
     private val scope = CoroutineScope(SupervisorJob() + dispatcherProvider.io)
     private val transactionsProvider = ZcashTransactionsProvider()
@@ -117,12 +123,22 @@ class ZcashAdapter(
         BackgroundKeepAliveManager::class.java
     )
     private val offlineModeManager: OfflineModeManager by inject(OfflineModeManager::class.java)
+    private val accountManager: IAccountManager by inject(IAccountManager::class.java)
 
     private val adapterStateUpdatedSubject: PublishSubject<Unit> = PublishSubject.create()
     private val lastBlockUpdatedSubject: PublishSubject<Unit> = PublishSubject.create()
     private val balanceUpdatedSubject: PublishSubject<Unit> = PublishSubject.create()
 
     private val sessionMutex = Mutex()
+
+    /**
+     * Serializes the two allocators that share the account's transparent address space:
+     * [generateOneTimeAddress]'s SDK allocation + reservation write, and [freshReceiveAddress]'s
+     * exclusion snapshot + selector call. Discovery is deliberately outside it — the SDK's own
+     * `SYNCING` guard already closes that half of the race, and holding this lock across a walk
+     * would block a swap payout for its whole duration.
+     */
+    private val transparentAddressMutex = Mutex()
 
     @Volatile
     private var session: ZcashSession? = null
@@ -141,6 +157,70 @@ class ZcashAdapter(
     override val receiveAddress: String =
         ownAddresses?.let { addressSpecTyped.selectZcashReceiver(it) }.orEmpty()
     override val isMainNet: Boolean = true
+
+    /**
+     * The account's own holder outlives any one session, so a screen open through a failed
+     * acquire still hears about the walk a later foreground runs.
+     */
+    override val freshReceiveAddressChanges: Flow<Unit>
+        get() = if (addressSpecTyped == AddressSpecType.Transparent) {
+            discoveryState.completedWalks.map { }
+        } else {
+            super.freshReceiveAddressChanges
+        }
+
+    /**
+     * Only the transparent spec risks reuse: shielded and unified addresses are meant to be shown
+     * again. A failed discovery or a failed selector call both fall back to [receiveAddress], since
+     * the address already on screen must not be replaced by an error page.
+     */
+    override suspend fun freshReceiveAddress(): String {
+        if (addressSpecTyped != AddressSpecType.Transparent) return super.freshReceiveAddress()
+        // The Receive screen outlives the foreground, so a walk finishing in the background must
+        // not reopen the session [subscribeToBackground] released — park until it may be held.
+        backgroundManager.stateFlow.first { mayHoldSession() }
+        acquireSession()
+        discoverCurrentEpoch()
+        return try {
+            val found = transparentAddressMutex.withLock {
+                val excluded = singleUseAddressManager.getAllAddresses()
+                requireWallet { zcash, id -> zcash.nextUnusedTransparentAddress(id, excluded) }
+            }?.takeIf { it.certified }
+            discoveryState.lastSelectorError = null
+            found?.address ?: receiveAddress
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            zcashLogger.w { "Fresh receive address selector failed error=${e.zcashErrorName}" }
+            discoveryState.lastSelectorError = e.zcashErrorName
+            receiveAddress
+        }
+    }
+
+    /**
+     * Walks the foreground epoch current when the call started, then re-checks once: a foreground
+     * that arrived while the walk was running gets one more walk, not a chase without end. A
+     * discovery failure is swallowed here so the caller still asks the selector rather than
+     * abandoning the call. Offline mode suppresses the walk here as it does in the scheduler.
+     */
+    private suspend fun discoverCurrentEpoch() {
+        if (isNetworkPaused) return
+        try {
+            val epoch = backgroundManager.foregroundEpoch.value
+            sessionOrThrow().discoverForEpoch(epoch)
+            val laterEpoch = backgroundManager.foregroundEpoch.value
+            if (laterEpoch > epoch) sessionOrThrow().discoverForEpoch(laterEpoch)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            zcashLogger.w { "Transparent discovery failed error=${e.zcashErrorName}" }
+        }
+    }
+
+    private fun sessionOrThrow(): ZcashSession = session ?: error("Zcash wallet session is unavailable")
+
+    private val discoveryState: ZcashDiscoveryState
+        get() = sessionManager.discoveryState(wallet)
 
     @Volatile
     private var poolBalance: PoolBalance? = null
@@ -261,12 +341,29 @@ class ZcashAdapter(
     private fun hasActiveBackgroundSession(): Boolean =
         pollingSessionCount.get() > 0 || backgroundKeepAliveManager.isKeepAlive(BlockchainType.Zcash)
 
+    // Read from the activity count, not from the emitted state: BackgroundManager emits
+    // asynchronously, so a stale EnterForeground can still be the current value.
+    private fun mayHoldSession(): Boolean =
+        backgroundManager.inForeground || hasActiveBackgroundSession()
+
+    /**
+     * A throw here must never escape: this runs inside [subscribeToBackground]'s collector, and an
+     * uncaught exception would cancel it — leaving the adapter permanently deaf to foreground
+     * events, including the periodic discovery the scheduler arms on them.
+     */
     private suspend fun acquireSession() {
-        sessionMutex.withLock {
-            if (stopped || session != null) return
-            val acquired = sessionManager.acquire(wallet)
-            session = acquired
-            bindJob = scope.launch { bind(acquired) }
+        try {
+            sessionMutex.withLock {
+                if (stopped || session != null) return
+                val acquired = sessionManager.acquire(wallet)
+                session = acquired
+                bindJob = scope.launch { bind(acquired) }
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            syncState = AdapterState.NotSynced(e)
+            return
         }
         // Opening the wallet takes seconds, and a pause that arrived meanwhile found no session to
         // stop, so the offline state is re-read once the session is reachable.
@@ -317,20 +414,7 @@ class ZcashAdapter(
         (withWallet(block) as? ZcashSessionResult.Success)?.value
 
     private suspend fun <T> withSpendingKey(block: suspend (ByteArray) -> T): T {
-        val key = when (val ownership = zcashKey) {
-            // The wallet database was restored without an explicit account index, so index 0 is
-            // the only key that matches it.
-            is ZcashKey.Phrase -> ZcashSdk.deriveSpendingKey(
-                phrase = ownership.words.joinToString(" "),
-                network = ZcashNetwork.MAIN,
-                passphrase = ownership.passphrase,
-            )
-
-            is ZcashKey.SpendingKey -> ZcashSdk.importSpendingKey(ownership.key, ZcashNetwork.MAIN)
-
-            is ZcashKey.ViewingKey ->
-                throw UnsupportedException("Zcash spending requires a spending key")
-        }
+        val key = deriveSpendingKeyBytes(zcashKey)
         return try {
             block(key)
         } finally {
@@ -473,7 +557,22 @@ class ZcashAdapter(
             "Last Block Info" to (lastBlockInfo ?: ""),
             "Sync State" to safeSyncStateLabel(syncState),
             "Birthday Height" to accountBirthday,
+            "Transparent discovery" to transparentDiscoveryLabel(),
         )
+
+    /**
+     * Observability without consequence: a failed discovery must not affect [balanceState], so
+     * its only visible trace is this diagnostic row. The 3-minute retry cadence is what actually
+     * repairs it.
+     */
+    private fun transparentDiscoveryLabel(): String {
+        val state = discoveryState
+        val selector = state.lastSelectorError?.let { ", selector failed ($it)" }.orEmpty()
+        val mark = state.mark ?: return "not attempted yet$selector"
+        val ageSeconds = (SystemClock.elapsedRealtime() - mark.lastAttemptUptime) / 1000
+        val outcome = if (mark.succeeded) "succeeded" else "failed"
+        return "epoch=${mark.epoch} $outcome ${ageSeconds}s ago$selector"
+    }
 
     // endregion
 
@@ -554,12 +653,33 @@ class ZcashAdapter(
 
     override suspend fun validate(address: String): ZCashAddressType {
         if (address == receiveAddress) throw ZcashError.SendToSelfNotAllowed
-        return when (zcashAddressKind(address)) {
-            null -> throw ZcashError.InvalidAddress
+        val kind = zcashAddressKind(address) ?: throw ZcashError.InvalidAddress
+        if (isTrezorAccount) validateTrezorRecipient(kind, address)
+        return when (kind) {
             ZcashAddressKind.TRANSPARENT -> ZCashAddressType.Transparent
             ZcashAddressKind.SAPLING, ZcashAddressKind.TEX -> ZCashAddressType.Shielded
             ZcashAddressKind.UNIFIED -> ZCashAddressType.Unified
         }
+    }
+
+    /** Trezor can only sign a transparent bundle - refuse anything that could route around it. */
+    private fun validateTrezorRecipient(kind: ZcashAddressKind, address: String) {
+        when (kind) {
+            ZcashAddressKind.SAPLING, ZcashAddressKind.TEX -> throw ZcashError.TrezorTransparentOnly
+            ZcashAddressKind.UNIFIED -> validateTrezorUnifiedRecipient(address)
+            ZcashAddressKind.TRANSPARENT -> Unit
+        }
+    }
+
+    private fun validateTrezorUnifiedRecipient(address: String) {
+        if (!ZcashSdk.addressReceivers(address, ZcashNetwork.MAIN).hasTransparent) {
+            throw ZcashError.TrezorUnifiedAddressNoTransparentReceiver
+        }
+        val trezorDevice = accountManager.account(wallet.account.id)?.type as? AccountType.TrezorDevice
+        val supported = trezorDevice != null && TrezorZcashAdmissionPolicy.supportsUnifiedAddress(
+            trezorDevice.model, trezorDevice.firmwareVersion
+        )
+        if (!supported) throw ZcashError.TrezorFirmwareRequired(trezorDevice?.model)
     }
 
     override suspend fun send(
@@ -568,9 +688,11 @@ class ZcashAdapter(
         memo: String,
     ): String {
         zcashLogger.d { "Send started" }
-        return withSpendingKey { key ->
-            broadcastSigned(listOf(recipient(amount, address, memo)), key, PaymentOptions(sourcePools = sourcePools))
-        }
+        val recipient = beforeBroadcast { recipient(amount, address, memo) }
+        return broadcastSigned(
+            listOf(recipient),
+            PaymentOptions(sourcePools = sourcePools, hardwareSigning = isTrezorAccount),
+        )
     }
 
     /**
@@ -580,14 +702,13 @@ class ZcashAdapter(
      */
     private suspend fun broadcastSigned(
         recipients: List<Recipient>,
-        spendingKey: ByteArray,
         options: PaymentOptions,
     ): String {
         val (raw, height) = beforeBroadcast {
             requireWallet { zcash, id ->
                 val prepared = zcash.prepareOrInsufficient(id, recipients, options)
                 val height = zcash.plan(prepared).height
-                zcash.extract(zcash.sign(account = id, transaction = prepared, spendingKey = spendingKey)) to height
+                zcash.extract(signer.sign(zcash, id, prepared)) to height
             }
         }
         reserveBeforeBroadcast(raw)
@@ -637,21 +758,19 @@ class ZcashAdapter(
     override suspend fun signOffline(request: OfflineSignRequest): SignedOfflineZcashTransaction {
         require(request is OfflineZcashSignRequest) { "OfflineZcashSignRequest is required" }
         val recipient = recipient(request.amount, request.address, request.memo)
-        return withSpendingKey { key ->
-            requireWallet { zcash, id ->
-                val prepared = zcash.prepareOrInsufficient(
-                    account = id,
-                    recipients = listOf(recipient),
-                    options = PaymentOptions(sourcePools = sourcePools),
-                )
-                val fee = zcash.plan(prepared).fee
-                val raw = zcash.extract(zcash.sign(account = id, transaction = prepared, spendingKey = key))
-                SignedOfflineZcashTransaction(
-                    rawHex = raw.toRawHexString(),
-                    txHash = ZcashSdk.transactionId(raw).canonicalTransactionHash(),
-                    fee = fee.convertZatoshiToZec(),
-                )
-            }
+        return requireWallet { zcash, id ->
+            val prepared = zcash.prepareOrInsufficient(
+                account = id,
+                recipients = listOf(recipient),
+                options = PaymentOptions(sourcePools = sourcePools, hardwareSigning = isTrezorAccount),
+            )
+            val fee = zcash.plan(prepared).fee
+            val raw = zcash.extract(signer.sign(zcash, id, prepared))
+            SignedOfflineZcashTransaction(
+                rawHex = raw.toRawHexString(),
+                txHash = ZcashSdk.transactionId(raw).canonicalTransactionHash(),
+                fee = fee.convertZatoshiToZec(),
+            )
         }
     }
 
@@ -674,11 +793,20 @@ class ZcashAdapter(
             .toBroadcastResult(txHash)
     }
 
-    private fun recipient(amount: BigDecimal, address: String, memo: String) = Recipient(
-        address = address,
-        amount = amount.convertZecToZatoshi(),
-        memo = memo.takeIf { it.isNotBlank() },
-    )
+    private fun recipient(amount: BigDecimal, address: String, memo: String): Recipient {
+        // A memo rides in a shielded output the planner silently drops for a transparent one.
+        if (isTrezorAccount && memo.isNotBlank()) {
+            throw ZcashError.TrezorMemoNotSupported
+        }
+        return Recipient(
+            address = address,
+            amount = amount.convertZecToZatoshi(),
+            memo = memo.takeIf { it.isNotBlank() },
+            // A Trezor account can only sign a transparent bundle, so a UA recipient must be paid
+            // into its transparent receiver rather than a shielded one.
+            pools = if (isTrezorAccount) PoolSet.of(Pool.TRANSPARENT) else null,
+        )
+    }
 
     override suspend fun getOwnAddresses(): List<String> =
         listOfNotNull(ownAddresses?.sapling, ownAddresses?.unified)
@@ -693,26 +821,20 @@ class ZcashAdapter(
         ShieldingTarget(address = shielded, amount = transparent)
     }
 
-    suspend fun proposeShielding(target: ShieldingTarget): String = withSpendingKey { key ->
-        broadcastSigned(
-            recipients = listOf(Recipient(address = target.address, amount = target.amount)),
-            spendingKey = key,
-            options = PaymentOptions(
-                sourcePools = PoolSet.of(Pool.TRANSPARENT),
-                recipientPaysFee = true,
-                confirmations = SHIELDING_CONFIRMATIONS,
-            ),
-        )
-    }
+    suspend fun proposeShielding(target: ShieldingTarget): String = broadcastSigned(
+        recipients = listOf(Recipient(address = target.address, amount = target.amount)),
+        options = PaymentOptions(
+            sourcePools = PoolSet.of(Pool.TRANSPARENT),
+            recipientPaysFee = true,
+            confirmations = SHIELDING_CONFIRMATIONS,
+        ),
+    )
 
     override suspend fun generateOneTimeAddress(): String? = try {
-        val address = requireWallet { zcash, id -> zcash.nextTransparentAddress(id) }
-        if (address == null) {
-            singleUseAddressManager.getNextAddress()
-        } else {
-            singleUseAddressManager.saveNewAddress(address)
-            address
-        }
+        transparentAddressMutex.withLock {
+            val address = requireWallet { zcash, id -> zcash.nextTransparentAddress(id) }
+            address?.also { singleUseAddressManager.saveNewAddress(it) }
+        } ?: singleUseAddressManager.getNextAddress()
     } catch (error: CancellationException) {
         throw error
     } catch (error: Throwable) {
@@ -912,6 +1034,31 @@ class ZcashAdapter(
     sealed class ZcashError : Exception() {
         object InvalidAddress : ZcashError()
         object SendToSelfNotAllowed : ZcashError()
+
+        object TrezorTransparentOnly : ZcashError() {
+            override val message: String
+                get() = Translator.getString(R.string.send_trezor_zcash_transparent_only)
+        }
+
+        object TrezorMemoNotSupported : ZcashError() {
+            override val message: String
+                get() = Translator.getString(R.string.send_trezor_zcash_memo_not_supported)
+        }
+
+        object TrezorUnifiedAddressNoTransparentReceiver : ZcashError() {
+            override val message: String
+                get() = Translator.getString(R.string.send_trezor_zcash_unified_no_transparent_receiver)
+        }
+
+        /** [deviceModel] is the account's stored internal model id; null when metadata is absent or unrecognized. */
+        class TrezorFirmwareRequired(private val deviceModel: String?) : ZcashError() {
+            override val message: String
+                get() = Translator.getString(
+                    R.string.send_trezor_zcash_firmware_required,
+                    TrezorModel.fromInternalModel(deviceModel)?.displayName ?: DEFAULT_TREZOR_DEVICE_NAME,
+                    TrezorZcashAdmissionPolicy.MIN_UNIFIED_FIRMWARE_VERSION,
+                )
+        }
     }
 
     companion object {
@@ -919,6 +1066,7 @@ class ZcashAdapter(
         private const val SHIELDING_CONFIRMATIONS = 1
         private const val SHIELDING_THRESHOLD = 100_000L
         private const val DIAG_INTERVAL_MS = 30_000L
+        private const val DEFAULT_TREZOR_DEVICE_NAME = "Trezor"
 
         /** NU6.3 activation on mainnet. */
         private const val IRONWOOD_ACTIVATION_HEIGHT = 3_428_143

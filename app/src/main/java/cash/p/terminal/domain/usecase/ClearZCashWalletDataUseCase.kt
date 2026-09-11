@@ -1,6 +1,5 @@
 package cash.p.terminal.domain.usecase
 
-import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFiles
 import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProvider
 import cash.p.terminal.core.adapters.zcash.session.ZcashSessionManager
@@ -17,7 +16,6 @@ class ClearZCashWalletDataUseCase(
     private val databaseFiles: ZcashDatabaseFiles,
     private val dbKeyProvider: ZcashDbKeyProvider,
     private val zcashSingleUseAddressStorage: ZcashSingleUseAddressStorage,
-    private val localStorage: ILocalStorage,
 ) {
 
     private val mutex = Mutex()
@@ -34,12 +32,12 @@ class ClearZCashWalletDataUseCase(
             // close returns the session to service, so the account stays exactly as it was.
             if (!sessionManager.closeForErase(accountId)) return ZcashEraseResult.NONE
 
+            // Discharges the deep-sweep obligation too: the coverage record lives in this file,
+            // so deleting it is what makes the next restore sweep deep again, with nothing to
+            // remember to clear.
             val database = databaseFiles.delete(accountId)
             val dbKey = tryOrNull { dbKeyProvider.drop(accountId) } == true
             val addresses = tryOrNull {
-                // Discovery runs once per account, so the flag goes first: rows deleted behind a
-                // surviving flag are never rediscovered, while the reverse only repeats a scan.
-                localStorage.invalidateZcashAddressDiscovery(accountId)
                 zcashSingleUseAddressStorage.deleteAccountAddresses(accountId)
             } != null
 

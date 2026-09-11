@@ -209,8 +209,12 @@ class OfflineBroadcastTokenResolverTest {
     }
 
     @Test
-    fun resolveTokenToEnable_trezorOnZcash_returnsNull() {
-        assertNull(resolver.resolveTokenToEnable(BlockchainType.Zcash, trezorAccount()))
+    fun resolveTokenToEnable_trezorOnZcash_returnsTransparentAddressSpecToken() {
+        val token = resolver.resolveTokenToEnable(BlockchainType.Zcash, trezorAccount())
+
+        assertNotNull(token)
+        assertEquals(BlockchainType.Zcash, token?.blockchainType)
+        assertEquals(TokenType.AddressSpecTyped(TokenType.AddressSpecType.Transparent), token?.type)
     }
 
     @Test

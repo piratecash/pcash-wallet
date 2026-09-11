@@ -2,6 +2,7 @@ package cash.p.terminal.core.adapters.zcash
 
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.adapters.zcash.session.ZcashDiscoveryState
 import cash.p.terminal.core.adapters.zcash.session.ZcashSession
 import cash.p.terminal.core.adapters.zcash.session.ZcashSessionManager
 import cash.p.terminal.core.adapters.zcash.session.ZcashSessionResult
@@ -11,7 +12,10 @@ import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.Wallet
+import cash.p.terminal.wallet.entities.HardwarePublicKey
+import cash.p.terminal.wallet.entities.SecretString
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
 import cash.p.zcash.AccountInfo
 import cash.p.zcash.Addresses
@@ -69,6 +73,7 @@ abstract class ZcashAdapterTestFixture {
     protected val backgroundKeepAliveManager = mockk<BackgroundKeepAliveManager>(relaxed = true)
     protected val offlineModeManager = mockk<OfflineModeManager>(relaxed = true)
     protected val addressDeriver = mockk<ZcashAddressDeriver>()
+    protected val accountManager = mockk<IAccountManager>(relaxed = true)
 
     /** In-memory stand-in for the persisted set, so a restart can be simulated. */
     protected var migrationTxIds = emptySet<String>()
@@ -78,10 +83,14 @@ abstract class ZcashAdapterTestFixture {
         ZcashSessionState(syncState = SyncState.Connecting)
     )
     protected val backgroundStateFlow = MutableStateFlow(BackgroundManagerState.Unknown)
+    protected val foregroundEpochFlow = MutableStateFlow(0)
 
     protected val zcashWallet = mockk<ZcashWallet>(relaxed = true)
     protected lateinit var session: ZcashSession
     protected val sessionManager = mockk<ZcashSessionManager>(relaxed = true)
+
+    /** The account's discovery holder [ZcashSessionManager.discoveryState] hands out. */
+    internal val discoveryState = ZcashDiscoveryState()
     protected lateinit var adapter: ZcashAdapter
 
     @Before
@@ -93,6 +102,7 @@ abstract class ZcashAdapterTestFixture {
             modules(module {
                 single { backgroundKeepAliveManager }
                 single { offlineModeManager }
+                single { accountManager }
             })
         }
 
@@ -117,6 +127,8 @@ abstract class ZcashAdapterTestFixture {
         }
         every { wallet.account } returns account
         every { backgroundManager.stateFlow } returns backgroundStateFlow
+        every { backgroundManager.inForeground } returns true
+        every { backgroundManager.foregroundEpoch } returns foregroundEpochFlow
         coEvery { addressDeriver.addresses(any()) } returns Addresses(
             unified = "u1test",
             sapling = "zs1test",
@@ -124,6 +136,45 @@ abstract class ZcashAdapterTestFixture {
             transparent = "t1test",
             diversifierIndex = 0,
         )
+    }
+
+    /**
+     * Switches [wallet] to a Trezor account and stubs [accountManager] to answer with the
+     * account's stored (persisted) metadata, which the adapter reads separately from the
+     * frozen [wallet] snapshot. Pass `storedModel = null` to simulate absent/unparseable
+     * stored metadata (`accountManager.account(...)` returns null).
+     */
+    protected fun stubTrezorAccount(
+        storedModel: String? = "T2B1",
+        storedFirmwareVersion: String = "2.6.0",
+    ) {
+        val liveAccountType = AccountType.TrezorDevice(
+            deviceId = "device-1",
+            model = storedModel.orEmpty(),
+            firmwareVersion = storedFirmwareVersion,
+            walletPublicKey = "xpub-test",
+        )
+        val account = mockk<Account>(relaxed = true) {
+            every { id } returns ACCOUNT_ID
+            every { name } returns "Test"
+            every { type } returns liveAccountType
+            every { origin } returns AccountOrigin.Created
+        }
+        every { wallet.account } returns account
+        every { wallet.hardwarePublicKey } returns mockk<HardwarePublicKey>(relaxed = true) {
+            every { key } returns SecretString("trezor-viewing-key")
+        }
+        val storedAccount = storedModel?.let {
+            mockk<Account>(relaxed = true) {
+                every { type } returns AccountType.TrezorDevice(
+                    deviceId = "device-1",
+                    model = storedModel,
+                    firmwareVersion = storedFirmwareVersion,
+                    walletPublicKey = "xpub-test",
+                )
+            }
+        }
+        every { accountManager.account(ACCOUNT_ID) } returns storedAccount
     }
 
     private fun stubLocalStorage() {
@@ -174,6 +225,7 @@ abstract class ZcashAdapterTestFixture {
             coEvery { refresh() } returns ZcashSessionResult.Success(Unit)
         }
         coEvery { sessionManager.acquire(any()) } returns session
+        every { sessionManager.discoveryState(any()) } returns discoveryState
     }
 
     @After
@@ -193,7 +245,10 @@ abstract class ZcashAdapterTestFixture {
     /** Stubs on [sessionManager] that are specific to the subclass's scenarios. */
     protected open fun stubSessionManager() = Unit
 
-    protected fun createAdapter(addressSpecTyped: AddressSpecType? = null) = ZcashAdapter(
+    protected fun createAdapter(
+        addressSpecTyped: AddressSpecType? = null,
+        signer: ZcashTransactionSigner = ZcashSpendingKeySigner(requireNotNull(wallet.zcashKey())),
+    ) = ZcashAdapter(
         wallet = wallet,
         addressSpecTyped = addressSpecTyped,
         backgroundManager = backgroundManager,
@@ -202,6 +257,7 @@ abstract class ZcashAdapterTestFixture {
         ironwoodMigrations = ironwoodMigrations,
         addressDeriver = addressDeriver,
         dispatcherProvider = TestDispatcherProvider(dispatcher, appScope),
+        signer = signer,
     )
 
     protected fun emitSessionSyncState(syncState: SyncState) {

@@ -4,6 +4,7 @@ import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.managers.OfflineKey
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.Wallet
 import cash.p.zcash.MempoolEvent
 import cash.p.zcash.PoolBalance
@@ -44,18 +45,24 @@ private fun ZcashSessionManager.privateMutex(name: String): Mutex =
 @OptIn(ExperimentalCoroutinesApi::class)
 class ZcashSessionManagerTest {
 
+    private val discoveryCoverage = FakeCoverage()
+
     private val zcashWallet = mockk<ZcashWallet>(relaxed = true) {
         every { mempool() } returns flow<MempoolEvent> { awaitCancellation() }
         coEvery { balance(any(), any()) } returns PoolBalance(emptyMap())
         coEvery { transactions(any()) } returns emptyList<Transaction>()
         coEvery { latestHeight() } returns 0
-    }
+    }.also { stubDiscovery(it, discoveryCoverage) }
 
-    private val account = mockk<Account> { every { id } returns ACCOUNT_ID }
+    private val accountType = mockk<AccountType.Mnemonic>(relaxed = true)
+    private val account = mockk<Account> {
+        every { id } returns ACCOUNT_ID
+        every { type } returns accountType
+    }
     private val wallet = mockk<Wallet> { every { this@mockk.account } returns this@ZcashSessionManagerTest.account }
 
     private val walletOpener = mockk<ZcashWalletOpener> {
-        coEvery { open(any()) } returns OpenedZcashWallet(zcashWallet, 0)
+        coEvery { open(any()) } returns OpenedZcashWallet(zcashWallet, 0, deepSweepRequired = true)
     }
 
     private val scheduler = mockk<ZcashSyncScheduler>(relaxed = true)
@@ -378,8 +385,8 @@ class ZcashSessionManagerTest {
             coEvery { latestHeight() } returns 0
         }
         coEvery { walletOpener.open(any()) } returnsMany listOf(
-            OpenedZcashWallet(zcashWallet, 0),
-            OpenedZcashWallet(replacement, 0),
+            OpenedZcashWallet(zcashWallet, 0, deepSweepRequired = true),
+            OpenedZcashWallet(replacement, 0, deepSweepRequired = true),
         )
         val manager = manager()
         val erased = manager.acquire(wallet)
@@ -447,5 +454,88 @@ class ZcashSessionManagerTest {
         advanceUntilIdle()
 
         coVerify(exactly = 1) { zcashWallet.close() }
+    }
+
+    // --- discovery memo lifetime ---
+
+    @Test
+    fun discoveryState_beforeAnySessionIsOpened_isTheHolderTheOpenedSessionUses() = runTest {
+        val manager = manager()
+        val holder = manager.discoveryState(wallet)
+
+        val session = manager.acquire(wallet)
+
+        assertSame(holder, session.discovery)
+        assertSame(holder, manager.discoveryState(wallet))
+    }
+
+    @Test
+    fun acquire_afterTheSessionWasReleasedAndReopened_doesNotRediscoverTheSameEpoch() = runTest {
+        val manager = manager()
+        val session = manager.acquire(wallet)
+        advanceUntilIdle()
+        session.discoverForEpoch(1)
+
+        manager.release(session)
+        advanceUntilIdle()
+        val reopened = manager.acquire(wallet)
+        advanceUntilIdle()
+        reopened.discoverForEpoch(1)
+
+        coVerify(exactly = 1) { zcashWallet.discoverTransparentAddresses(any(), any(), any()) }
+    }
+
+    @Test
+    fun closeForErase_thenReopen_discoversAgain() = runTest {
+        val manager = manager()
+        val session = manager.acquire(wallet)
+        advanceUntilIdle()
+        session.discoverForEpoch(1)
+
+        manager.closeForErase(ACCOUNT_ID)
+        val reopened = manager.acquire(wallet)
+        advanceUntilIdle()
+        reopened.discoverForEpoch(1)
+
+        coVerify(exactly = 2) { zcashWallet.discoverTransparentAddresses(any(), any(), any()) }
+    }
+
+    @Test
+    fun closeForErase_sessionWasNeverOpened_stillDropsTheHolder() = runTest {
+        val manager = manager()
+        val session = manager.acquire(wallet)
+        advanceUntilIdle()
+        session.discoverForEpoch(1)
+        // Releasing the last reference closes the session, but its discovery holder survives —
+        // the erase below finds no open session for the account, taking the early return branch.
+        manager.release(session)
+        advanceUntilIdle()
+
+        manager.closeForErase(ACCOUNT_ID)
+
+        val reopened = manager.acquire(wallet)
+        advanceUntilIdle()
+        reopened.discoverForEpoch(1)
+
+        coVerify(exactly = 2) { zcashWallet.discoverTransparentAddresses(any(), any(), any()) }
+    }
+
+    @Test
+    fun acquire_openerReportsNoDeepSweep_sessionWalksAtTheSteadyGapLimit() = runTest {
+        coEvery { walletOpener.open(any()) } returns
+            OpenedZcashWallet(zcashWallet, 0, deepSweepRequired = false)
+        val manager = manager()
+        val session = manager.acquire(wallet)
+        advanceUntilIdle()
+
+        session.discoverForEpoch(1)
+
+        coVerify(exactly = 1) {
+            zcashWallet.discoverTransparentAddresses(
+                0,
+                ZcashSession.STEADY_GAP_LIMIT,
+                ZcashSession.DISCOVERY_CONCURRENCY,
+            )
+        }
     }
 }
