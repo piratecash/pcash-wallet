@@ -288,18 +288,20 @@ internal class SendTransactionServiceEvm(
                 pendingTxId = pendingRegistrar.register(draft)
             }
 
-            val fullTransaction = evmKitWrapper.sendSingle(
+            val prepared = evmKitWrapper.prepare(
                 transactionData,
                 gasPrice,
                 gasLimit,
                 nonce,
                 mevProtectionEnabled
             )
+            // A lost RPC response still leaves the transaction on-chain, so mark it while the
+            // hash is already final. The broadcast result may identify another transaction.
+            markTransactionCreated(prepared.hash)
 
-            pendingTxId?.let {
-                pendingRegistrar.updateTxId(it, fullTransaction.transaction.hashString)
-            }
-            markTransactionCreated(fullTransaction.transaction.hashString)
+            val fullTransaction = evmKitWrapper.broadcast(prepared)
+
+            pendingTxId?.let { pendingRegistrar.updateTxId(it, prepared.hash) }
 
             return SendTransactionResult.Evm(fullTransaction)
         } catch (e: Throwable) {

@@ -7,6 +7,7 @@ import cash.p.terminal.core.SignedOfflineEvmTransaction
 import cash.p.terminal.core.ServiceStateFlow
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.managers.EvmBlockchainManager
+import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.core.managers.OfflineSignedTransactionRepository
 import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
 import cash.p.terminal.core.managers.PoisonAddressManager
@@ -86,6 +87,8 @@ class SendEvmViewModelTest : KoinTest {
     private val payloadEncoder = mockk<OfflineTransactionPayloadEncoder>()
     private val offlineSignedTransactionRepository = mockk<OfflineSignedTransactionRepository>(relaxed = true)
     private val balanceHiddenManager = mockk<IBalanceHiddenManager>(relaxed = true)
+    private val locallyCreatedTransactionRepository =
+        mockk<LocallyCreatedTransactionRepository>(relaxed = true)
     private val marketKit = mockk<MarketKitWrapper>(relaxed = true)
     private val walletFactory = WalletFactory(object : HardwareWalletTokenPolicy {
         override fun isSupported(blockchainType: BlockchainType, tokenType: TokenType) = true
@@ -138,6 +141,7 @@ class SendEvmViewModelTest : KoinTest {
                 single<IBalanceHiddenManager> { balanceHiddenManager }
                 single<MarketKitWrapper> { marketKit }
                 single { mockk<PoisonAddressManager>(relaxed = true) }
+                single { locallyCreatedTransactionRepository }
             }
         )
     }
@@ -328,6 +332,31 @@ class SendEvmViewModelTest : KoinTest {
             assertEquals(testAddress.hex, draft.toAddress)
             assertTrue(draft.inputOutpoints.isEmpty())
             coVerify { offlineSignedTransactionRepository.save(draft, "payload") }
+        }
+
+    @Test
+    fun onClickSignOffline_validTransaction_marksTransactionLocallyCreated() =
+        runTest(dispatcher) {
+            // The adapter yields the hash without the "0x" prefix, while transaction records
+            // carry it — the mark must be written in the prefixed form or it never matches.
+            val canonicalHash = "5d3f9c0f1e2d3a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3"
+            coEvery { adapter.signOffline(any()) } returns SignedOfflineEvmTransaction(
+                rawHex = "raw",
+                txHash = canonicalHash,
+            )
+            every { sendTransactionService.offlineSignRequest() } returns offlineSignRequest(testTransactionData)
+
+            val viewModel = createViewModel()
+            viewModel.onEnterAddress(testAddress)
+            viewModel.onEnterAmount(testAmount)
+            advanceUntilIdle()
+
+            viewModel.onClickSignOffline(OfflineTransactionFormat.Pcash)
+            advanceUntilIdle()
+
+            coVerify {
+                locallyCreatedTransactionRepository.markCreated(testWallet, "0x$canonicalHash")
+            }
         }
 
     private fun createViewModel(
