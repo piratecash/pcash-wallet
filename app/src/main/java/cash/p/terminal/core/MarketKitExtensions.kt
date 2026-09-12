@@ -448,51 +448,7 @@ fun Token.supports(accountType: AccountType): Boolean {
             type != TokenType.Mweb
         }
 
-        is AccountType.HdExtendedKey -> {
-            when (blockchainType) {
-                BlockchainType.Bitcoin,
-                BlockchainType.Dogecoin,
-                BlockchainType.Litecoin -> {
-                    val type = type
-                    if (type is TokenType.Derived) {
-                        if (!accountType.hdExtendedKey.purposes.contains(type.derivation.purpose)) {
-                            false
-                        } else when (blockchainType) {
-                            BlockchainType.Bitcoin -> accountType.hdExtendedKey.coinTypes.contains(
-                                ExtendedKeyCoinType.Bitcoin
-                            )
-
-                            BlockchainType.Litecoin -> accountType.hdExtendedKey.coinTypes.contains(
-                                ExtendedKeyCoinType.Litecoin
-                            )
-
-                            BlockchainType.Dogecoin -> accountType.hdExtendedKey.coinTypes.contains(
-                                ExtendedKeyCoinType.Dogecoin
-                            ) || accountType.hdExtendedKey.coinTypes.contains(ExtendedKeyCoinType.Bitcoin)
-
-                            else -> false
-                        }
-                    } else {
-                        false
-                    }
-                }
-
-                BlockchainType.Dash -> {
-                    (accountType.hdExtendedKey.coinTypes.contains(
-                        ExtendedKeyCoinType.Dash
-                    ) || accountType.hdExtendedKey.coinTypes.contains(ExtendedKeyCoinType.Bitcoin)) &&
-                            accountType.hdExtendedKey.purposes.contains(HDWallet.Purpose.BIP44)
-                }
-
-                BlockchainType.BitcoinCash,
-                BlockchainType.ECash -> {
-                    accountType.hdExtendedKey.coinTypes.contains(ExtendedKeyCoinType.Bitcoin) &&
-                            accountType.hdExtendedKey.purposes.contains(HDWallet.Purpose.BIP44)
-                }
-
-                else -> false
-            }
-        }
+        is AccountType.HdExtendedKey -> supportsHdExtendedKey(accountType)
 
         is AccountType.Mnemonic -> {
             type != TokenType.Mweb || blockchainType == BlockchainType.Litecoin
@@ -515,6 +471,50 @@ fun Token.supports(accountType: AccountType): Boolean {
         }
 
         else -> true
+    }
+}
+
+private fun Token.supportsHdExtendedKey(accountType: AccountType.HdExtendedKey): Boolean =
+    when (blockchainType) {
+        BlockchainType.Bitcoin,
+        BlockchainType.Dogecoin,
+        BlockchainType.Litecoin -> supportsDerivation(accountType)
+
+        BlockchainType.Dash -> {
+            (accountType.hdExtendedKey.coinTypes.contains(
+                ExtendedKeyCoinType.Dash
+            ) || accountType.hdExtendedKey.coinTypes.contains(ExtendedKeyCoinType.Bitcoin)) &&
+                    accountType.hdExtendedKey.purposes.contains(HDWallet.Purpose.BIP44)
+        }
+
+        BlockchainType.BitcoinCash,
+        BlockchainType.ECash -> {
+            accountType.hdExtendedKey.coinTypes.contains(ExtendedKeyCoinType.Bitcoin) &&
+                    accountType.hdExtendedKey.purposes.contains(HDWallet.Purpose.BIP44)
+        }
+
+        else -> false
+    }
+
+private fun Token.supportsDerivation(accountType: AccountType.HdExtendedKey): Boolean {
+    val type = type
+    if (type !is TokenType.Derived) return false
+    if (!accountType.hdExtendedKey.purposes.contains(type.derivation.purpose)) return false
+
+    return when (blockchainType) {
+        BlockchainType.Bitcoin -> accountType.hdExtendedKey.coinTypes.contains(
+            ExtendedKeyCoinType.Bitcoin
+        )
+
+        BlockchainType.Litecoin -> accountType.hdExtendedKey.coinTypes.contains(
+            ExtendedKeyCoinType.Litecoin
+        )
+
+        BlockchainType.Dogecoin -> accountType.hdExtendedKey.coinTypes.contains(
+            ExtendedKeyCoinType.Dogecoin
+        ) || accountType.hdExtendedKey.coinTypes.contains(ExtendedKeyCoinType.Bitcoin)
+
+        else -> false
     }
 }
 
