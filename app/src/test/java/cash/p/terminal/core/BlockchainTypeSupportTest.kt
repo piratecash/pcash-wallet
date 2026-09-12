@@ -287,6 +287,16 @@ class BlockchainTypeSupportTest {
     }
 
     @Test
+    fun tokenSupports_dogecoinDerivedBip44WithBip84OnlyKey_returnsFalse() {
+        val account = hdExtendedKeyAccount(
+            coinTypes = listOf(ExtendedKeyCoinType.Dogecoin),
+            purposes = listOf(HDWallet.Purpose.BIP84)
+        )
+        val derivedToken = token(BlockchainType.Dogecoin, TokenType.Derived(TokenType.Derivation.Bip44))
+        assertFalse(derivedToken.supports(account))
+    }
+
+    @Test
     fun tokenSupports_moneroNativeWithMoneroMnemonic_returnsTrue() {
         assertTrue(token(BlockchainType.Monero).supports(moneroMnemonicAccount()))
     }
