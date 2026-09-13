@@ -49,7 +49,7 @@ internal fun SpecialProposalStepScreen(
     // Show JWT expired state
     if (uiState.isJwtExpired) {
         JwtExpiredStepContent(
-            stepTitle = stringResource(R.string.connect_mini_app_step_5),
+            stepTitle = stringResource(R.string.connect_mini_app_step_2),
             stepIndicatorState = stepIndicatorState,
             onOpenMiniAppClick = onOpenMiniAppClick,
             modifier = modifier
@@ -60,7 +60,7 @@ internal fun SpecialProposalStepScreen(
     // Show error state with retry
     if (uiState.error != null) {
         MiniAppStepScaffold(
-            stepTitle = stringResource(R.string.connect_mini_app_step_5),
+            stepTitle = stringResource(R.string.connect_mini_app_step_2),
             stepDescription = uiState.error,
             descriptionStyle = StepDescriptionStyle.Red,
             stepIndicatorState = stepIndicatorState,
@@ -79,8 +79,8 @@ internal fun SpecialProposalStepScreen(
 
     MiniAppStepScaffold(
         isLoading = uiState.isLoading,
-        stepTitle = stringResource(R.string.connect_mini_app_step_5),
-        stepDescription = stringResource(R.string.connect_mini_app_step_5_description),
+        stepTitle = stringResource(R.string.connect_mini_app_step_2),
+        stepDescription = stringResource(R.string.connect_mini_app_step_2_description),
         descriptionStyle = StepDescriptionStyle.Yellow,
         stepIndicatorState = stepIndicatorState,
         modifier = modifier,
@@ -217,6 +217,7 @@ private fun StatsCard(
     selectedTab: CoinType
 ) {
     val isPirate = selectedTab == CoinType.PIRATE
+    val hasPremium = if (isPirate) data.hasPiratePremium else data.hasCosaPremium
     val notEnough = if (isPirate) data.pirateNotEnough else data.cosaNotEnough
     val notEnoughFiat = if (isPirate) data.pirateNotEnoughFiat else data.cosaNotEnoughFiat
     val roi = if (isPirate) data.pirateRoi else data.cosaRoi
@@ -225,23 +226,27 @@ private fun StatsCard(
         if (isPirate) data.pirateMonthlyIncomeFiat else data.cosaMonthlyIncomeFiat
 
     CellUniversalLawrenceSection(
-        listOf(
-            {
-                TitleAndTwoValuesCell(
-                    stringResource(R.string.connect_mini_app_not_enough),
-                    notEnough,
-                    notEnoughFiat
-                )
-            },
-            { TitleAndValueCell(stringResource(R.string.connect_mini_app_roi), roi) },
-            {
+        buildList<@Composable () -> Unit> {
+            // With premium already reached the missing amount is always zero, and "Not enough: 0"
+            // reads as a warning.
+            if (!hasPremium) {
+                add {
+                    TitleAndTwoValuesCell(
+                        stringResource(R.string.connect_mini_app_not_enough),
+                        notEnough,
+                        notEnoughFiat
+                    )
+                }
+            }
+            add { TitleAndValueCell(stringResource(R.string.connect_mini_app_roi), roi) }
+            add {
                 TitleAndTwoValuesCell(
                     stringResource(R.string.connect_mini_app_monthly_income),
                     monthlyIncome,
                     monthlyIncomeFiat
                 )
             }
-        )
+        }
     )
 }
 
@@ -284,7 +289,7 @@ private fun SpecialProposalStepScreenPreview() {
                 selectedTab = CoinType.PIRATE,
                 isPremium = false
             ),
-            stepIndicatorState = rememberStepIndicatorState(initialStep = 5),
+            stepIndicatorState = rememberStepIndicatorState(initialStep = 2),
             onTabSelected = {},
             onBuyClick = {},
             onConnectClick = {},
@@ -321,7 +326,7 @@ private fun SpecialProposalStepScreenCosaTabPreview() {
                 selectedTab = CoinType.COSA,
                 isPremium = false
             ),
-            stepIndicatorState = rememberStepIndicatorState(initialStep = 5),
+            stepIndicatorState = rememberStepIndicatorState(initialStep = 2),
             onTabSelected = {},
             onBuyClick = {},
             onConnectClick = {},
@@ -358,7 +363,7 @@ private fun SpecialProposalStepScreenPremiumPreview() {
                 selectedTab = CoinType.PIRATE,
                 isPremium = true
             ),
-            stepIndicatorState = rememberStepIndicatorState(initialStep = 5),
+            stepIndicatorState = rememberStepIndicatorState(initialStep = 2),
             onTabSelected = {},
             onBuyClick = {},
             onConnectClick = {},
@@ -374,7 +379,7 @@ private fun SpecialProposalStepScreenLoadingPreview() {
     ComposeAppTheme {
         SpecialProposalStepScreen(
             uiState = SpecialProposalUiState(isLoading = true),
-            stepIndicatorState = rememberStepIndicatorState(initialStep = 5),
+            stepIndicatorState = rememberStepIndicatorState(initialStep = 2),
             onTabSelected = {},
             onBuyClick = {},
             onConnectClick = {},
@@ -390,7 +395,7 @@ private fun SpecialProposalStepScreenErrorPreview() {
     ComposeAppTheme {
         SpecialProposalStepScreen(
             uiState = SpecialProposalUiState(error = "Failed to load data"),
-            stepIndicatorState = rememberStepIndicatorState(initialStep = 5),
+            stepIndicatorState = rememberStepIndicatorState(initialStep = 2),
             onTabSelected = {},
             onBuyClick = {},
             onConnectClick = {},
@@ -406,7 +411,7 @@ private fun SpecialProposalStepScreenJwtExpiredPreview() {
     ComposeAppTheme {
         SpecialProposalStepScreen(
             uiState = SpecialProposalUiState(isJwtExpired = true),
-            stepIndicatorState = rememberStepIndicatorState(initialStep = 5),
+            stepIndicatorState = rememberStepIndicatorState(initialStep = 2),
             onTabSelected = {},
             onBuyClick = {},
             onConnectClick = {},

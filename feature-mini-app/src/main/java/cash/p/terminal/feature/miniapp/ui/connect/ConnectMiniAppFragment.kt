@@ -1,6 +1,7 @@
 package cash.p.terminal.feature.miniapp.ui.connect
 
 import android.content.Intent
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -18,9 +19,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.fragment.findNavController
 import cash.p.terminal.feature.miniapp.R
 import cash.p.terminal.feature.miniapp.ui.TELEGRAM_BOT_URL
+import cash.p.terminal.feature.miniapp.ui.components.MiniAppStepScaffold
+import cash.p.terminal.feature.miniapp.ui.components.StepDescriptionStyle
 import cash.p.terminal.feature.miniapp.ui.components.rememberStepIndicatorState
-import cash.p.terminal.feature.miniapp.ui.connect.screens.AcceptTermsStepScreen
-import cash.p.terminal.feature.miniapp.ui.connect.screens.CaptchaStepScreen
 import cash.p.terminal.feature.miniapp.ui.connect.screens.CreateWalletStepScreen
 import cash.p.terminal.feature.miniapp.ui.connect.screens.FinishStepScreen
 import cash.p.terminal.feature.miniapp.ui.connect.screens.SpecialProposalStepScreen
@@ -36,6 +37,7 @@ import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.BaseComposeFragment
 import cash.p.terminal.ui_compose.components.AppBar
+import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.IAccountManager
@@ -114,6 +116,24 @@ private fun ConnectMiniAppNavHost(
                 when (uiState.currentStep) {
                     ConnectMiniAppViewModel.STEP_WALLET -> {
                         when {
+                            uiState.tokenCheckError != null -> {
+                                MiniAppStepScaffold(
+                                    stepTitle = stringResource(R.string.connect_mini_app_step_1),
+                                    stepDescription = uiState.tokenCheckError.orEmpty(),
+                                    descriptionStyle = StepDescriptionStyle.Red,
+                                    stepIndicatorState = stepIndicatorState,
+                                    modifier = Modifier.padding(paddingValues),
+                                    bottomContent = {
+                                        ButtonPrimaryYellow(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            title = stringResource(R.string.Button_Retry),
+                                            onClick = viewModel::onRetryTokenCheck
+                                        )
+                                    },
+                                    content = {}
+                                )
+                            }
+
                             uiState.isCheckingTokens -> {
                                 TokenCheckingScreen(
                                     stepIndicatorState = stepIndicatorState,
@@ -121,7 +141,7 @@ private fun ConnectMiniAppNavHost(
                                 )
                             }
 
-                            uiState.missingTokenNames.isNotEmpty() -> {
+                            uiState.missingTokenQueries.isNotEmpty() -> {
                                 TokenMissingScreen(
                                     allTokensText = uiState.allTokensText,
                                     missingTokenNames = uiState.missingTokenNames,
@@ -181,34 +201,6 @@ private fun ConnectMiniAppNavHost(
                                 )
                             }
                         }
-                    }
-
-                    ConnectMiniAppViewModel.STEP_TERMS -> {
-                        AcceptTermsStepScreen(
-                            isAgreed = uiState.termsAgreed,
-                            onAgreedChange = viewModel::onTermsAgreedChange,
-                            onContinueClick = viewModel::onTermsAccepted,
-                            modifier = Modifier.padding(paddingValues),
-                            stepIndicatorState = stepIndicatorState
-                        )
-                    }
-
-                    ConnectMiniAppViewModel.STEP_CAPTCHA -> {
-                        CaptchaStepScreen(
-                            captchaImageBase64 = uiState.captchaImageBase64,
-                            expiresInSeconds = uiState.captchaExpiresIn,
-                            code = uiState.captchaCode,
-                            error = uiState.captchaError,
-                            isLoading = uiState.isCaptchaLoading,
-                            isVerifying = uiState.isCaptchaVerifying,
-                            isJwtExpired = uiState.isJwtExpired,
-                            onCodeChange = viewModel::onCaptchaCodeChange,
-                            onRefreshClick = viewModel::refreshCaptcha,
-                            onVerifyClick = viewModel::verifyCaptcha,
-                            onOpenMiniAppClick = onOpenMiniAppClick,
-                            stepIndicatorState = stepIndicatorState,
-                            modifier = Modifier.padding(paddingValues)
-                        )
                     }
 
                     ConnectMiniAppViewModel.STEP_SPECIAL_PROPOSAL -> {
