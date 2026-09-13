@@ -7,7 +7,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,28 +18,24 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.feature.miniapp.R
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
+import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.body_jacob
-import cash.p.terminal.ui_compose.components.caption_leah
-import cash.p.terminal.ui_compose.components.caption_yellow50
+import cash.p.terminal.ui_compose.components.caption_bran
 import cash.p.terminal.ui_compose.components.subhead1_grey
+import cash.p.terminal.ui_compose.components.title3_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @Composable
@@ -48,6 +43,7 @@ fun MiniAppScreen(
     uiState: MiniAppUiState,
     onConnectionClick: () -> Unit,
     onStartEarningClick: () -> Unit,
+    onBuyNftClick: () -> Unit,
     onClose: () -> Unit
 ) {
     Scaffold(
@@ -68,10 +64,8 @@ fun MiniAppScreen(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            PremiumBonusCard(
-                isConnected = uiState.isConnected,
-                pirateBalanceText = uiState.pirateBalanceText,
-                bonusFiatValue = uiState.bonusFiatValue,
+            NftBannerCard(
+                onBuyClick = onBuyNftClick,
                 modifier = Modifier.padding(top = 24.dp)
             )
 
@@ -115,21 +109,18 @@ fun MiniAppScreen(
 }
 
 @Composable
-private fun PremiumBonusCard(
-    isConnected: Boolean,
-    pirateBalanceText: String?,
-    bonusFiatValue: String,
+private fun NftBannerCard(
+    onBuyClick: () -> Unit,
     modifier: Modifier
 ) {
     Column(
-        horizontalAlignment = Alignment.End,
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
             .border(1.dp, ComposeAppTheme.colors.jacob, RoundedCornerShape(12.dp))
             .background(ComposeAppTheme.colors.lawrence)
-            .padding(top = 22.dp, bottom = 12.dp, start = 12.dp, end = 12.dp)
+            .padding(12.dp)
     ) {
         Row(
             verticalAlignment = Alignment.Top
@@ -137,45 +128,33 @@ private fun PremiumBonusCard(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                body_jacob(stringResource(R.string.mini_app_bonus_title))
+                caption_bran(stringResource(R.string.mini_app_nft_banner_label))
 
-                caption_leah(
-                    text = stringResource(R.string.mini_app_bonus_description),
-                    modifier = Modifier.padding(top = 12.dp)
+                title3_leah(
+                    text = stringResource(R.string.mini_app_nft_banner_title),
+                    modifier = Modifier.padding(top = 6.dp)
+                )
+
+                caption_bran(
+                    text = stringResource(R.string.mini_app_nft_banner_description),
+                    modifier = Modifier.padding(top = 8.dp)
                 )
             }
 
             Image(
-                painter = painterResource(R.drawable.ic_treasure_chest),
+                painter = painterResource(R.drawable.img_nft_mystery),
                 contentDescription = null,
-                modifier = Modifier
-                    .padding(top = 7.dp)
-                    .size(74.dp)
+                modifier = Modifier.size(91.dp)
             )
         }
 
-        if (isConnected && pirateBalanceText != null) {
-            val guaranteedText = buildAnnotatedString {
-                withStyle(SpanStyle(color = ComposeAppTheme.colors.leah)) {
-                    append(stringResource(R.string.mini_app_bonus_guaranteed))
-                    append(" ")
-                }
-                withStyle(SpanStyle(color = ComposeAppTheme.colors.jacob)) {
-                    append(pirateBalanceText)
-                }
-            }
-            Text(
-                text = guaranteedText,
-                style = ComposeAppTheme.typography.subhead2,
-                modifier = Modifier.padding(top = 6.dp)
-            )
-
-            if (bonusFiatValue.isNotEmpty()) {
-                caption_yellow50(bonusFiatValue)
-            }
-        } else {
-            Spacer(Modifier.height(10.dp))
-        }
+        ButtonPrimaryTransparent(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp),
+            title = stringResource(R.string.mini_app_nft_banner_button),
+            onClick = onBuyClick
+        )
     }
 }
 
@@ -205,9 +184,10 @@ private fun GamepadIcon(
 private fun MiniAppScreenPreview() {
     ComposeAppTheme {
         MiniAppScreen(
-            uiState = MiniAppUiState(bonusFiatValue = "+$20", pirateBalanceText = "100", isConnected = true),
+            uiState = MiniAppUiState(isConnected = true),
             onConnectionClick = {},
             onStartEarningClick = {},
+            onBuyNftClick = {},
             onClose = {}
         )
     }

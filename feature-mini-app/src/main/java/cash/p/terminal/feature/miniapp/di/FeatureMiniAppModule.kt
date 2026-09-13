@@ -1,13 +1,8 @@
 package cash.p.terminal.feature.miniapp.di
 
 import cash.p.terminal.feature.miniapp.data.api.MiniAppApi
-import cash.p.terminal.feature.miniapp.data.detector.EmulatorDetector
-import cash.p.terminal.feature.miniapp.data.repository.CaptchaRepository
-import cash.p.terminal.feature.miniapp.domain.usecase.CaptchaUseCase
-import cash.p.terminal.feature.miniapp.domain.usecase.CheckIfEmulatorUseCase
 import cash.p.terminal.feature.miniapp.domain.usecase.CheckRequiredTokensUseCase
-import cash.p.terminal.feature.miniapp.domain.usecase.CollectDeviceEnvironmentUseCase
-import cash.p.terminal.feature.miniapp.domain.usecase.GetMiniAppBalanceUseCase
+import cash.p.terminal.feature.miniapp.domain.usecase.ConnectMiniAppWalletUseCase
 import cash.p.terminal.feature.miniapp.domain.usecase.GetSpecialProposalDataUseCase
 import cash.p.terminal.feature.miniapp.ui.connect.ConnectMiniAppViewModel
 import cash.p.terminal.feature.miniapp.ui.miniapp.MiniAppViewModel
@@ -18,41 +13,28 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val featureMiniAppModule = module {
-    // Detector
-    singleOf(::EmulatorDetector)
-
     // API
     singleOf(::MiniAppApi)
 
-    // Repository
-    singleOf(::CaptchaRepository)
-
     // Use cases
-    singleOf(::CheckIfEmulatorUseCase)
-    singleOf(::CollectDeviceEnvironmentUseCase)
-    singleOf(::CaptchaUseCase)
     singleOf(::GetSpecialProposalDataUseCase)
     singleOf(::CheckRequiredTokensUseCase)
-    singleOf(::GetMiniAppBalanceUseCase)
+    singleOf(::ConnectMiniAppWalletUseCase)
 
     // ViewModels
     viewModelOf(::MiniAppViewModel)
     viewModel { params ->
         ConnectMiniAppViewModel(
-            checkIfEmulatorUseCase = get(),
-            collectDeviceEnvironmentUseCase = get(),
             checkPremiumUseCase = get(),
-            captchaUseCase = get(),
             getSpecialProposalDataUseCase = get(),
             checkRequiredTokensUseCase = get(),
             createRequiredTokensUseCase = get(),
+            connectMiniAppWalletUseCase = get(),
             accountManager = get(),
             marketKitWrapper = get(),
             balanceService = get(named("wallet")),
-            getBnbAddressUseCase = get(),
             uniqueCodeStorage = get(),
-            savedStateHandle = params.get(),
-            getTonAddressUseCase = get()
+            savedStateHandle = params.get()
         )
     }
 }

@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 import cash.p.terminal.feature.miniapp.R
+import cash.p.terminal.feature.miniapp.ui.GETGEMS_COLLECTION_URL
 import cash.p.terminal.feature.miniapp.ui.TELEGRAM_BOT_START_URL
 import cash.p.terminal.navigation.openQrScanner
 import cash.p.terminal.ui_compose.BaseComposeFragment
@@ -42,6 +43,10 @@ class MiniAppFragment : BaseComposeFragment() {
             },
             onStartEarningClick = {
                 val intent = Intent(Intent.ACTION_VIEW, TELEGRAM_BOT_START_URL.toUri())
+                context.startActivity(intent)
+            },
+            onBuyNftClick = {
+                val intent = Intent(Intent.ACTION_VIEW, GETGEMS_COLLECTION_URL.toUri())
                 context.startActivity(intent)
             },
             onClose = navController::popBackStackSafely
