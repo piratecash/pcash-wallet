@@ -56,7 +56,9 @@ data class SwapProviderTransaction(
 
         SwapProvider.PAYCORE -> Translator.getString(R.string.paycore_support) to AppConfigProvider.payCoreSupportUrl
         SwapProvider.EXOLIX -> ExolixHelper.EXOLIX_URL to ExolixHelper.getViewTransactionUrl(transactionId)
-        SwapProvider.YIFI -> YiFiHelper.YIFI_URL to YiFiHelper.getViewTransactionUrl(transactionId)
+        SwapProvider.YIFI -> YiFiHelper.YIFI_URL to YiFiHelper.getViewTransactionUrl(
+            transactionId, addressOut
+        )
         SwapProvider.THORCHAIN,
         SwapProvider.MAYA,
         SwapProvider.UNSTOPPABLE -> null
