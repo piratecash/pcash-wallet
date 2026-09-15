@@ -1,12 +1,7 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.core.adapters.BitcoinAdapter
-import cash.p.terminal.core.adapters.BitcoinCashAdapter
-import cash.p.terminal.core.adapters.DashAdapter
-import cash.p.terminal.core.adapters.ECashAdapter
 import cash.p.terminal.core.adapters.Eip20Adapter
 import cash.p.terminal.core.adapters.EvmAdapter
-import cash.p.terminal.core.adapters.LitecoinAdapter
 import cash.p.terminal.core.adapters.SolanaAdapter
 import cash.p.terminal.core.adapters.TronAdapter
 import cash.p.terminal.core.storage.MoneroFileDao
@@ -28,6 +23,7 @@ import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -54,6 +50,7 @@ class AccountCleanerTest {
     private lateinit var smsNotificationSettings: ISmsNotificationSettings
     private lateinit var pinDbStorage: PinDbStorage
     private lateinit var accountStorageCleaner: AccountStorageCleaner
+    private lateinit var bitcoinKitDatabaseManager: BitcoinKitDatabaseManager
 
     @Before
     fun setUp() {
@@ -66,6 +63,7 @@ class AccountCleanerTest {
         smsNotificationSettings = mockk(relaxed = true)
         pinDbStorage = mockk(relaxed = true)
         accountStorageCleaner = mockk(relaxed = true)
+        bitcoinKitDatabaseManager = mockk(relaxed = true)
 
         coEvery { clearZCashWalletDataUseCase.invoke(any()) } returns ZcashEraseResult.ALL
         coEvery { removeMoneroWalletFilesUseCase.invoke(any<Account>()) } returns true
@@ -84,6 +82,7 @@ class AccountCleanerTest {
             smsNotificationSettings,
             pinDbStorage,
             accountStorageCleaner,
+            bitcoinKitDatabaseManager,
         )
     }
 
@@ -159,13 +158,11 @@ class AccountCleanerTest {
         val account = account("acc-litecoin")
         val token = token(BlockchainType.Litecoin, TokenType.Mweb)
 
-        mockkObject(LitecoinAdapter)
-        every { LitecoinAdapter.clearMweb(any()) } returns Unit
         every { walletManager.activeWallets } returns emptyList()
 
         accountCleaner.clearWalletForAccount(account.id, token)
 
-        verify(exactly = 1) { LitecoinAdapter.clearMweb(account.id) }
+        coVerify(exactly = 1) { bitcoinKitDatabaseManager.clearMweb(account.id) }
     }
 
     @Test
@@ -173,15 +170,12 @@ class AccountCleanerTest {
         val account = account("acc-litecoin-public")
         val token = token(BlockchainType.Litecoin, TokenType.Mweb)
 
-        mockkObject(LitecoinAdapter)
-        every { LitecoinAdapter.clear(any()) } returns Unit
-        every { LitecoinAdapter.clearMweb(any()) } returns Unit
         every { walletManager.activeWallets } returns emptyList()
 
         accountCleaner.clearWalletForAccount(account.id, token)
 
-        verify(exactly = 0) { LitecoinAdapter.clear(any()) }
-        verify(exactly = 1) { LitecoinAdapter.clearMweb(account.id) }
+        coVerify(exactly = 0) { bitcoinKitDatabaseManager.clear(account.id) }
+        coVerify(exactly = 1) { bitcoinKitDatabaseManager.clearMweb(account.id) }
     }
 
     @Test
@@ -194,14 +188,12 @@ class AccountCleanerTest {
             every { this@mockk.token } returns token
         }
 
-        mockkObject(LitecoinAdapter)
-        every { LitecoinAdapter.clearMweb(any()) } returns Unit
         every { walletManager.activeWallets } returns listOf(wallet)
 
         accountCleaner.clearWalletForAccount(account.id, mwebToken)
 
         coVerify(exactly = 1) { adapterManager.stopAdapters(listOf(account.id), BlockchainType.Litecoin) }
-        verify(exactly = 1) { LitecoinAdapter.clearMweb(account.id) }
+        coVerify(exactly = 1) { bitcoinKitDatabaseManager.clearMweb(account.id) }
     }
 
     @Test
@@ -213,14 +205,12 @@ class AccountCleanerTest {
             every { this@mockk.token } returns token
         }
 
-        mockkObject(LitecoinAdapter)
-        every { LitecoinAdapter.clearMweb(any()) } returns Unit
         every { walletManager.activeWallets } returns listOf(wallet)
 
         accountCleaner.clearWalletForAccount(account.id, token)
 
         coVerify(exactly = 1) { adapterManager.stopAdapters(listOf(account.id), BlockchainType.Litecoin) }
-        verify(exactly = 1) { LitecoinAdapter.clearMweb(account.id) }
+        coVerify(exactly = 1) { bitcoinKitDatabaseManager.clearMweb(account.id) }
     }
 
     @Test
@@ -254,13 +244,14 @@ class AccountCleanerTest {
     }
 
     @Test
-    fun clearAccounts_severalAccounts_delegatesSameIdsToStorageCleaner() = runTest {
+    fun clearAccounts_severalAccounts_stopsOnceAndDelegatesSameIdsToStorageCleaner() = runTest {
         val accountIds = listOf("acc-a", "acc-b")
 
         mockAdapterClears()
 
         accountCleaner.clearAccounts(accountIds)
 
+        coVerify(exactly = 1) { adapterManager.stopAdapters(accountIds) }
         coVerify(exactly = 1) { accountStorageCleaner.clearAccounts(accountIds) }
     }
 
@@ -279,7 +270,7 @@ class AccountCleanerTest {
             thrown = e
         }
 
-        verify(exactly = 1) { BitcoinAdapter.clear(accountId) }
+        coVerify(exactly = 1) { bitcoinKitDatabaseManager.clear(accountId) }
         coVerify(exactly = 1) { clearZCashWalletDataUseCase.invoke(accountId) }
         assertNotNull(thrown)
     }
@@ -319,25 +310,27 @@ class AccountCleanerTest {
         verify(exactly = 0) { smsNotificationSettings.setSmsNotificationMemo(any(), any()) }
     }
 
+    @Test
+    fun clearAccounts_anyAccount_stopsAdaptersBeforeClearingBitcoinDatabases() = runTest {
+        val accountId = "acc-order"
+        mockAdapterClears()
+
+        accountCleaner.clearAccounts(listOf(accountId))
+
+        coVerifyOrder {
+            adapterManager.stopAdapters(listOf(accountId))
+            bitcoinKitDatabaseManager.clear(accountId)
+        }
+    }
+
     private fun mockAdapterClears() {
         mockkObject(
-            BitcoinAdapter,
-            BitcoinCashAdapter,
-            ECashAdapter,
-            LitecoinAdapter,
-            DashAdapter,
             EvmAdapter,
             Eip20Adapter,
             SolanaAdapter,
             TronAdapter
         )
 
-        every { BitcoinAdapter.clear(any()) } returns Unit
-        every { BitcoinCashAdapter.clear(any()) } returns Unit
-        every { ECashAdapter.clear(any()) } returns Unit
-        every { LitecoinAdapter.clear(any()) } returns Unit
-        every { LitecoinAdapter.clearMweb(any()) } returns Unit
-        every { DashAdapter.clear(any()) } returns Unit
         every { EvmAdapter.clear(any()) } returns Unit
         every { Eip20Adapter.clear(any()) } returns Unit
         every { SolanaAdapter.clear(any()) } returns Unit
@@ -345,12 +338,7 @@ class AccountCleanerTest {
     }
 
     private fun verifyAdapterClears(accountId: String) {
-        verify(exactly = 1) { BitcoinAdapter.clear(accountId) }
-        verify(exactly = 1) { BitcoinCashAdapter.clear(accountId) }
-        verify(exactly = 1) { ECashAdapter.clear(accountId) }
-        verify(exactly = 1) { LitecoinAdapter.clear(accountId) }
-        verify(exactly = 1) { LitecoinAdapter.clearMweb(accountId) }
-        verify(exactly = 1) { DashAdapter.clear(accountId) }
+        coVerify(exactly = 1) { bitcoinKitDatabaseManager.clear(accountId) }
         verify(exactly = 1) { EvmAdapter.clear(accountId) }
         verify(exactly = 1) { Eip20Adapter.clear(accountId) }
         verify(exactly = 1) { SolanaAdapter.clear(accountId) }

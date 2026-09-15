@@ -100,6 +100,7 @@ import com.reown.android.CoreClient
 import com.reown.android.relay.ConnectionType
 import com.reown.walletkit.client.Wallet
 import com.reown.walletkit.client.WalletKit
+import io.horizontalsystems.bitcoincore.core.BitcoinCoreContextInitializer
 import io.horizontalsystems.core.CoreApp
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.IAppNumberFormatter
@@ -265,6 +266,8 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
             showFatalErrorAndExit(errorLoading)
             return
         }
+
+        BitcoinCoreContextInitializer().create(this)
 
         startKoin {
             androidContext(this@App)

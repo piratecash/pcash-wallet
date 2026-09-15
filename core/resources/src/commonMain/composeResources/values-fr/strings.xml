@@ -1235,7 +1235,7 @@
     <string name="ManageAccount_BackupRequired_Title">Sauvegarde requise</string>
     <string name="ManageAccount_BackupRequired_Description">Vous devez sauvegarder %1$s avant de recevoir %2$s.</string>
     <string name="ManageAccount_Delete_ConfirmationRemove">L\'action va supprimer ce portefeuille de l\'appareil.</string>
-    <string name="ManageAccount_Delete_ConfirmationLose">Si vous n\'avez pas sauvegardé la clé privée de ce portefeuille, vous perdrez l\'accès à vos fonds.</string>
+    <string name="ManageAccount_Delete_ConfirmationLose">Assurez-vous d\'avoir sauvegardé votre phrase de récupération ou votre clé privée. Sans elles, vous risquez de perdre définitivement l\'accès à votre portefeuille et à vos fonds.</string>
     <string name="ManageAccount_MigrationRequired_Title">Migration Requise</string>
     <string name="ManageAccount_BirthdayHeight">Hauteur de l\'anniversaire %s</string>
     <string name="ManageAccount_NWords">%s mots</string>
@@ -1335,7 +1335,7 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="PrivateKeys_Bip32RootKeyDescription">Permet d\'exercer un contrôle total sur les actifs du portefeuille correspondant.</string>
     <string name="PrivateKeys_AccountExtendedPrivateKey">Account Extended Private Key</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Permet un contrôle total du Bitcoin et des autres crypto-monnaies basées sur l\'UTXO, c\'est-à-dire Litecoin, Bitcoin Cash, Dash, etc. dans leur portefeuille respectif.</string>
-    <string name="PrivateKeys_NeverShareWarning">Ne partagez jamais votre phrase de récupération avec quiconque. Une équipe imparable ne demandera jamais votre phrase de récupération.</string>
+    <string name="PrivateKeys_NeverShareWarning">Ne partagez jamais votre clé privée, votre phrase de récupération ou toute autre donnée confidentielle du portefeuille avec qui que ce soit. L\'équipe P.CASH ne vous demandera jamais ces informations.</string>
     <string name="private_keys_zec_sapling_spending_key">Clé de dépense ZCash Sapling</string>
     <string name="private_keys_zec_sapling_spending_key_description">Donne un contrôle total sur les fonds ZCash blindés de ce portefeuille, y compris leur dépense.</string>
     <string name="private_keys_zec_sapling_spending_key_error">Impossible d\'obtenir la clé de dépense ZCash Sapling</string>

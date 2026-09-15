@@ -1229,7 +1229,7 @@
     <string name="ManageAccount_BackupRequired_Title">Sicherung erforderlich</string>
     <string name="ManageAccount_BackupRequired_Description">Sie müssen %1$s sichern, bevor Sie %2$s empfangen können.</string>
     <string name="ManageAccount_Delete_ConfirmationRemove">Damit wird das Wallet von diesem Gerät gelöscht.</string>
-    <string name="ManageAccount_Delete_ConfirmationLose">Wenn Sie den Private Key für dieses Wallet nicht gesichert haben, verlieren Sie den Zugang zu Ihrem Guthaben.</string>
+    <string name="ManageAccount_Delete_ConfirmationLose">Stellen Sie sicher, dass Sie Ihre Wiederherstellungsphrase oder Ihren privaten Schlüssel gesichert haben. Ohne diese können Sie dauerhaft den Zugriff auf Ihr Wallet und Ihr Guthaben verlieren.</string>
     <string name="ManageAccount_MigrationRequired_Title">Migration erforderlich</string>
     <string name="ManageAccount_BirthdayHeight">%s Geburtstagshöhe</string>
     <string name="ManageAccount_NWords">%s Wörter</string>
@@ -1329,7 +1329,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="PrivateKeys_Bip32RootKeyDescription">Gewährt die volle Kontrolle über die Vermögenswerte auf der jeweiligen Brieftasche.</string>
     <string name="PrivateKeys_AccountExtendedPrivateKey">Account Extended Private Key</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Gewährt volle Kontrolle über Bitcoin und andere auf UTXO basierende Kryptos, z.B. Litecoin, Bitcoin Cash, Dash, etc. innerhalb der jeweiligen Wallet.</string>
-    <string name="PrivateKeys_NeverShareWarning">Teilen Sie niemals Ihre Wiederherstellungsphrase mit niemandem. Das unaufhaltsame Team wird niemals nach Ihrer Wiederherstellungsphrase fragen.</string>
+    <string name="PrivateKeys_NeverShareWarning">Geben Sie Ihren privaten Schlüssel, Ihre Wiederherstellungsphrase oder andere vertrauliche Wallet-Daten niemals an Dritte weiter. Das P.CASH-Team wird diese Informationen niemals anfordern.</string>
     <string name="private_keys_zec_sapling_spending_key">ZCash-Sapling-Ausgabeschlüssel</string>
     <string name="private_keys_zec_sapling_spending_key_description">Gewährt volle Kontrolle über die abgeschirmten ZCash-Guthaben dieser Wallet, einschließlich des Ausgebens.</string>
     <string name="private_keys_zec_sapling_spending_key_error">ZCash-Sapling-Ausgabeschlüssel konnte nicht abgerufen werden</string>

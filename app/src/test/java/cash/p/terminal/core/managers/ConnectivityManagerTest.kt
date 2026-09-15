@@ -7,6 +7,7 @@ import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.TestDispatcherProvider
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
+import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
@@ -45,10 +46,12 @@ class ConnectivityManagerTest {
     private val bgState = MutableStateFlow<BackgroundManagerState>(BackgroundManagerState.Unknown)
     private val backgroundManager = mockk<BackgroundManager> {
         every { stateFlow } returns bgState
+        every { inForeground } answers { appInForeground }
     }
     private val localStorage = mockk<ILocalStorage>(relaxed = true)
-    private val keepAliveManager = mockk<BackgroundKeepAliveManager>(relaxed = true)
+    private val keepAliveManager = BackgroundKeepAliveManager()
     private val systemConnectivityManager = mockk<AndroidConnectivityManager>(relaxed = true)
+    private var appInForeground = false
 
     @After
     fun tearDown() {
@@ -63,6 +66,43 @@ class ConnectivityManagerTest {
         enterForeground()
 
         assertTrue(manager.isConnected.value)
+    }
+
+    @Test
+    fun refresh_backgroundNetworkChanged_updatesConnectivityWithoutLifecycleEvent() {
+        every { systemConnectivityManager.activeNetwork } returns null
+        val manager = createManager()
+        assertFalse(manager.isConnected.value)
+        every { systemConnectivityManager.activeNetwork } returns validatedNetwork()
+
+        assertTrue(manager.refresh())
+        scheduler.runCurrent()
+
+        assertTrue(manager.isConnected.value)
+    }
+
+    @Test
+    fun keepAlive_withoutActivities_keepsNetworkCallbackRegistered() {
+        createManager()
+
+        keepAliveManager.setKeepAlive(setOf(BlockchainType.Bitcoin))
+        scheduler.runCurrent()
+        bgState.value = BackgroundManagerState.AllActivitiesDestroyed
+        scheduler.runCurrent()
+
+        verify(exactly = 1) {
+            systemConnectivityManager.registerNetworkCallback(any(), any<AndroidConnectivityManager.NetworkCallback>())
+        }
+        verify(exactly = 0) {
+            systemConnectivityManager.unregisterNetworkCallback(any<AndroidConnectivityManager.NetworkCallback>())
+        }
+
+        keepAliveManager.clear()
+        scheduler.runCurrent()
+
+        verify(exactly = 1) {
+            systemConnectivityManager.unregisterNetworkCallback(any<AndroidConnectivityManager.NetworkCallback>())
+        }
     }
 
     @Test
@@ -129,6 +169,7 @@ class ConnectivityManagerTest {
     }
 
     private fun enterForeground() {
+        appInForeground = true
         bgState.value = BackgroundManagerState.EnterForeground
         scheduler.runCurrent()
     }

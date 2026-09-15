@@ -47,6 +47,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import java.math.BigDecimal
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -177,6 +178,25 @@ class TransactionMonitorTest {
         every { this@mockk.spam } returns spam
         every { this@mockk.transactionRecordType } returns transactionRecordType
     }
+
+    @Test
+    fun start_realtimeAfterProcessRecreation_restoresKeepAliveUntilStop() =
+        runTest(StandardTestDispatcher()) {
+            every { walletManager.activeWallets } returns listOf(
+                mockWallet(BlockchainType.Bitcoin)
+            )
+            every { transactionAdapterManager.adaptersReadyFlow } returns MutableStateFlow(emptyMap())
+
+            val monitor = createMonitor()
+
+            monitor.start(backgroundScope)
+
+            assertTrue(keepAliveManager.isKeepAlive(BlockchainType.Bitcoin))
+
+            monitor.stop()
+
+            assertFalse(keepAliveManager.isKeepAlive(BlockchainType.Bitcoin))
+        }
 
     @Test
     fun launchPolling_doesNotPollImmediately() =
