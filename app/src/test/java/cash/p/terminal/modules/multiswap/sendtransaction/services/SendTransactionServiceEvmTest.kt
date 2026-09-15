@@ -18,6 +18,7 @@ import cash.p.terminal.wallet.WalletFactory
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.policy.HardwareWalletTokenPolicy
@@ -90,7 +91,7 @@ class SendTransactionServiceEvmTest : KoinTest {
     private val testAccount = Account(
         id = "account-id",
         name = "Account",
-        type = AccountType.Mnemonic(List(12) { "word$it" }, ""),
+        type = AccountType.Mnemonic(List(12) { "word$it" }, "", MnemonicDerivation.Legacy),
         origin = AccountOrigin.Created,
         level = 0,
         isBackedUp = true,

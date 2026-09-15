@@ -6,6 +6,7 @@ import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IHardwarePublicKeyStorage
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.MarketKitWrapper
+import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
@@ -81,7 +82,7 @@ class CheckRequiredTokensUseCaseTest {
     private val mnemonicAccount = Account(
         id = "mnemonic-1",
         name = "Mnemonic",
-        type = AccountType.Mnemonic(words = listOf("a", "b"), passphrase = ""),
+        type = AccountType.Mnemonic(words = listOf("a", "b"), passphrase = "", derivation = MnemonicDerivation.Legacy),
         origin = AccountOrigin.Created,
         level = 0
     )
