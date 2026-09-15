@@ -24,7 +24,7 @@ import cash.p.terminal.entities.transactionrecords.solana.SolanaTransactionRecor
 import cash.p.terminal.entities.transactionrecords.stellar.StellarTransactionRecord
 import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
 import cash.p.terminal.entities.transactionrecords.tron.TronTransactionRecord
-import cash.p.terminal.modules.multiswap.providers.UnstoppableProvider
+import cash.p.terminal.entities.swapProviderDisplayTitle
 import cash.p.terminal.modules.paycore.PayCoreAssetResolver
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.network.changenow.domain.entity.toStatus
@@ -1596,8 +1596,7 @@ class TransactionViewItemFactory(
                 (providerStatus.ordinal + 1) * (1f / (TransactionStatusEnum.FINISHED.ordinal + 1))
             },
             title = Translator.getString(titleStringRes),
-            subtitle = UnstoppableProvider.displayTitle(transaction.unstoppableSubProviderId)
-                ?: transaction.provider.title,
+            subtitle = swapProviderDisplayTitle(transaction.provider, transaction.unstoppableSubProviderId),
             primaryValue = primaryValue,
             secondaryValue = secondaryValue,
             showAmount = showAmount,

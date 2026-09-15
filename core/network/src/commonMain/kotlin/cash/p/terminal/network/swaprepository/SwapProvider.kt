@@ -8,4 +8,5 @@ enum class SwapProvider(val title: String) {
     THORCHAIN("THORChain"),
     MAYA("Maya Protocol"),
     UNSTOPPABLE("Unstoppable"),
+    YIFI("YiFi"),
 }

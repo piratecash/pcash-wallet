@@ -634,6 +634,7 @@
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">不支持的代币</string>
     <string name="zec_transparent_used">在创建兑换时会使用临时 t 地址：%s。该地址会提供给兑换服务提供商，如果兑换未完成，则需要用于退款。使用 t 地址可能会导致交易部分去匿名化。</string>
+    <string name="swap_yifi_memo_unsupported">兑换提供商要求提供存款备注（memo），但该备注无法从此网络发送。请选择其他提供商。</string>
     <!-- Swap Settings -->
     <string name="SwapSettings_Title">Swap 设置</string>
     <string name="SwapSettings_SlippageTitle">无效滑点</string>

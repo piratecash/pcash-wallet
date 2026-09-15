@@ -638,6 +638,7 @@
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">Token não suportado</string>
     <string name="zec_transparent_used">Ao criar a troca, um endereço t temporário é utilizado: %s. Ele é enviado ao provedor de troca e é necessário para o reembolso caso a troca não seja concluída. O uso de um endereço t pode resultar na desanonimização parcial da transação.</string>
+    <string name="swap_yifi_memo_unsupported">O provedor de swap exige um memo de depósito que não pode ser enviado a partir desta rede. Escolha outro provedor.</string>
     <!-- Swap Settings -->
     <string name="SwapSettings_Title">Configurações de swap</string>
     <string name="SwapSettings_SlippageTitle">Tolerância de Slippage</string>

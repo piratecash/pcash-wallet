@@ -100,9 +100,10 @@ enum class UnstoppableProvider(
         /**
          * QuickEx and Exolix are excluded because this app already integrates them directly via
          * [QuickexProvider]/[ExolixProvider] — routing them a second time through Unstoppable
-         * would duplicate the same liquidity under a different provider id.
+         * would duplicate the same liquidity under a different provider id. LetsExchange is
+         * routed through [YiFiProvider] instead.
          */
-        val EXCLUDED: Set<UnstoppableProvider> = setOf(QuickEx, Exolix)
+        val EXCLUDED: Set<UnstoppableProvider> = setOf(QuickEx, Exolix, LetsExchange)
 
         fun registrable(): List<UnstoppableProvider> = entries.filterNot { it in EXCLUDED }
 

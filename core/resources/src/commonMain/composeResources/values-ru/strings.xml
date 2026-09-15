@@ -642,6 +642,7 @@
     <string name="unexpected_error">Непредвиденная ошибка</string>
     <string name="unsupported_token">Токен не поддерживается</string>
     <string name="zec_transparent_used">При создании обмена используется временный t-адрес: %s. Он передаётся обменному провайдеру и нужен для возврата средств, если обмен не будет завершён. Использование t-адреса может привести к частичной деанонимизации транзакции.</string>
+    <string name="swap_yifi_memo_unsupported">Провайдер свопа требует memo для депозита, которое нельзя отправить из этой сети. Выберите другого провайдера.</string>
     <!-- Swap Settings -->
     <string name="Fee_LiquidityFee">Комиссия за ликвидность</string>
     <string name="SwapSettings_Title">Настройки свапа</string>

@@ -51,6 +51,7 @@ data class PendingMultiSwap(
             "changenow" -> SwapProvider.CHANGENOW
             "quickex" -> SwapProvider.QUICKEX
             "exolix" -> SwapProvider.EXOLIX
+            "yifi" -> SwapProvider.YIFI
             "thorchain" -> SwapProvider.THORCHAIN
             "mayachain" -> SwapProvider.MAYA
             // Every Unstoppable sub-provider (id "u_<apiId>") tracks through the single UNSTOPPABLE backend.

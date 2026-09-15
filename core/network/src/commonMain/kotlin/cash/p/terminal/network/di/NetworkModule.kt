@@ -26,6 +26,8 @@ import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.network.swaprepository.SwapProviderTransactionStatusRepository
 import cash.p.terminal.network.unstoppable.data.repository.UnstoppableRepositoryImpl
 import cash.p.terminal.network.unstoppable.di.networkUnstoppableModule
+import cash.p.terminal.network.yifi.data.repository.YiFiRepository
+import cash.p.terminal.network.yifi.di.networkYiFiModule
 import cash.p.terminal.network.zcash.di.networkZcashModule
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.qualifier.named
@@ -55,6 +57,9 @@ private val commonNetworkModule = module {
     single<SwapProviderTransactionStatusRepository>(named(SwapProvider.UNSTOPPABLE)) {
         get<UnstoppableRepositoryImpl>()
     }
+    single<SwapProviderTransactionStatusRepository>(named(SwapProvider.YIFI)) {
+        get<YiFiRepository>()
+    }
 
     includes(
         networkPirateModule,
@@ -62,6 +67,7 @@ private val commonNetworkModule = module {
         networkQuickexModule,
         networkExolixModule,
         networkUnstoppableModule,
+        networkYiFiModule,
         networkPirateNewsModule,
         networkStonFiModule,
         networkZcashModule,
