@@ -4,6 +4,7 @@ import cash.p.terminal.tangem.domain.canonicalise
 import cash.p.terminal.tangem.domain.usecase.SignHashesTransactionUseCase
 import cash.p.terminal.tangem.domain.usecase.SignMultipleHashesUseCase
 import cash.p.terminal.wallet.entities.HardwarePublicKey
+import co.touchlab.kermit.Logger
 import com.tangem.common.CompletionResult
 import com.tangem.crypto.hdWallet.DerivationPath
 import com.tangem.operations.sign.SignData
@@ -21,12 +22,11 @@ import io.horizontalsystems.bitcoincore.transactions.scripts.ScriptType
 import io.horizontalsystems.bitcoincore.utils.Utils
 import io.horizontalsystems.hdwalletkit.ECDSASignature
 import org.koin.java.KoinJavaComponent.inject
-import timber.log.Timber
-import java.math.BigInteger
 
 class HardwareWalletEcdaSigner(
     private val hardwarePublicKey: HardwarePublicKey
 ) : IInputSigner, IEcdsaInputBatchSigner {
+    private val logger = Logger.withTag("HardwareWalletSigner")
 
     private val signHashesTransactionUseCase: SignHashesTransactionUseCase by inject(
         SignHashesTransactionUseCase::class.java
@@ -74,7 +74,7 @@ class HardwareWalletEcdaSigner(
         val addressIndexSegment = publicKey.index.toString()
         val fullDerivationPathString =
             "${hardwarePublicKey.derivationPath}/$changeSegment/$addressIndexSegment"
-        Timber.tag("HardwareWalletSigner").d("sigScriptEcdsaData $fullDerivationPathString")
+        logger.d { "sigScriptEcdsaData $fullDerivationPathString" }
         val signResponse: CompletionResult<SignResponse> = signHashesTransactionUseCase(
             hashes = arrayOf(hashToSign),
             walletPublicKey = hardwarePublicKey.publicKey,
@@ -86,9 +86,9 @@ class HardwareWalletEcdaSigner(
                     ?: throw Error("No signature returned from signing operation")
                 val rBytes = rawSignatureFromTangem.copyOfRange(0, 32)
                 val sBytes = rawSignatureFromTangem.copyOfRange(32, 64)
-                val r = BigInteger(1, rBytes)
-                var s = BigInteger(1, sBytes)
-                val derSignatureFromTangem = ECDSASignature(r, s).canonicalise().encodeToDER()
+                val derSignatureFromTangem = ECDSASignature.fromCompact(rBytes + sBytes)
+                    .canonicalise()
+                    .encodeToDER()
                 val finalSignature = derSignatureFromTangem + network.sigHashValue
                 return when (prevOutput.scriptType) {
                     ScriptType.P2PK -> listOf(finalSignature)
@@ -101,8 +101,7 @@ class HardwareWalletEcdaSigner(
     }
 
     override suspend fun prepareDataForEcdsaSigning(mutableTransaction: MutableTransaction): List<DataToSign> {
-        Timber.tag("HardwareWalletSigner")
-            .d("prepareDataForEcdsaSigning ${mutableTransaction.inputsToSign.size}")
+        logger.d { "prepareDataForEcdsaSigning ${mutableTransaction.inputsToSign.size}" }
         val transactionSerializer =
             requireNotNull(transactionSerializer) { "Transaction serializer must be set before signing" }
         val network = requireNotNull(network) { "Network must be set before signing" }
@@ -132,12 +131,11 @@ class HardwareWalletEcdaSigner(
     }
 
     override suspend fun sigScriptEcdsaData(data: List<DataToSign>): List<List<ByteArray>> {
-        Timber.tag("HardwareWalletSigner")
-            .d("sigScriptEcdsaData with MultipleSignCommand: ${data.size}")
+        logger.d { "sigScriptEcdsaData with MultipleSignCommand: ${data.size}" }
         val network = requireNotNull(network) { "Network must be set before signing" }
 
         if (data.isEmpty()) {
-            Timber.tag("HardwareWalletEcdaSigner").w("No data to sign")
+            logger.w { "No data to sign" }
             return emptyList()
         }
 
@@ -174,9 +172,9 @@ class HardwareWalletEcdaSigner(
                     val rawSignature = response.signature
                     val rBytes = rawSignature.copyOfRange(0, 32)
                     val sBytes = rawSignature.copyOfRange(32, 64)
-                    val r = BigInteger(1, rBytes)
-                    val s = BigInteger(1, sBytes)
-                    val derSignature = ECDSASignature(r, s).canonicalise().encodeToDER()
+                    val derSignature = ECDSASignature.fromCompact(rBytes + sBytes)
+                        .canonicalise()
+                        .encodeToDER()
                     val finalSignature = derSignature + network.sigHashValue
 
                     when (dataToSign.scriptType) {

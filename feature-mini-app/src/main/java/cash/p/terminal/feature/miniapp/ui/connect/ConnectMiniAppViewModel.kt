@@ -27,7 +27,6 @@ import cash.p.terminal.premium.domain.usecase.PremiumType
 import cash.p.terminal.strings.R
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.wallet.Account
-import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.BuildConfig
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.MarketKitWrapper

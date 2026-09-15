@@ -55,16 +55,17 @@ class TransactionMonitor(
     var onPremiumExpired: (() -> Unit)? = null
 
     fun start(scope: CoroutineScope) {
-        stop()
+        resetMonitoring()
 
         monitoredTypes = activeWalletTypesIn(effectiveMonitoredChains.chains())
         activeWallets = walletManager.activeWallets
+        val interval = localStorage.pushPollingInterval
+        val keepAliveTypes = if (interval == PollingInterval.REALTIME) monitoredTypes else emptySet()
+        keepAliveManager.setKeepAlive(keepAliveTypes)
 
         if (monitoredTypes.isEmpty()) return
 
         resetBaseline(monitoredTypes)
-
-        val interval = localStorage.pushPollingInterval
 
         monitoringJob = scope.launch {
             if (interval == PollingInterval.REALTIME) {
@@ -81,9 +82,13 @@ class TransactionMonitor(
     }
 
     fun stop() {
+        resetMonitoring()
+        keepAliveManager.clear()
+    }
+
+    private fun resetMonitoring() {
         monitoringJob?.cancel()
         monitoringJob = null
-        keepAliveManager.clear()
         deduplicator.reset()
     }
 

@@ -1241,7 +1241,7 @@
     <string name="ManageAccount_BackupRequired_Title">تهیه نسخه پشتیبان لازم است</string>
     <string name="ManageAccount_BackupRequired_Description">قبل از دریافت بودجه %2$s، باید از کیف پول%1$s نسخه پشتیبان تهیه کنید.</string>
     <string name="ManageAccount_Delete_ConfirmationRemove">این عمل کیف پول را از این دستگاه پاک خواهد کرد.</string>
-    <string name="ManageAccount_Delete_ConfirmationLose">اگر از کلید خصوصی این کیف پول نسخه پشتیبان تهیه نکرده اید، دسترسی به بودجه خود را از دست خواهید داد.</string>
+    <string name="ManageAccount_Delete_ConfirmationLose">مطمئن شوید که عبارت بازیابی یا کلید خصوصی خود را ذخیره کرده‌اید. بدون آن‌ها ممکن است دسترسی به کیف پول و دارایی‌های خود را برای همیشه از دست بدهید.</string>
     <string name="ManageAccount_MigrationRequired_Title">Migration Required</string>
     <string name="ManageAccount_BirthdayHeight">%s قد تولد</string>
     <string name="ManageAccount_NWords">%s کلمه</string>
@@ -1341,7 +1341,7 @@
     <string name="PrivateKeys_Bip32RootKeyDescription">Grants full control over the assets on the respective wallet.</string>
     <string name="PrivateKeys_AccountExtendedPrivateKey">Account Extended Private Key</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Grants full control over Bitcoin and other UTXO based crypto i.e. Litecoin, Bitcoin Cash, Dash etc. within respective wallet.</string>
-    <string name="PrivateKeys_NeverShareWarning">Never share this key with anyone. P.CASH Wallet support team will never ask for it.</string>
+    <string name="PrivateKeys_NeverShareWarning">هرگز کلید خصوصی، عبارت بازیابی یا سایر اطلاعات محرمانه کیف پول خود را با کسی به اشتراک نگذارید. تیم P.CASH هرگز این اطلاعات را درخواست نمی‌کند.</string>
     <string name="private_keys_zec_sapling_spending_key">کلید خرج ZCash Sapling</string>
     <string name="private_keys_zec_sapling_spending_key_description">کنترل کامل بر وجوه محافظت‌شدهٔ ZCash این کیف پول، از جمله خرج کردن آن‌ها را می‌دهد.</string>
     <string name="private_keys_zec_sapling_spending_key_error">دریافت کلید خرج ZCash Sapling ممکن نشد</string>
