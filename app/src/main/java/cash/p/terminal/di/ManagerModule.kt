@@ -68,6 +68,7 @@ import cash.p.terminal.core.managers.AddressLabelManager
 import cash.p.terminal.core.managers.AddressMetadataManager
 import cash.p.terminal.core.managers.EvmSignerFactory
 import cash.p.terminal.core.managers.EvmSyncSourceManager
+import cash.p.terminal.core.managers.EvmPersonalSignerImpl
 import cash.p.terminal.core.managers.GetTonAddressUseCaseImpl
 import cash.p.terminal.core.managers.GuidesManager
 import cash.p.terminal.core.managers.KeyStoreCleaner
@@ -142,6 +143,7 @@ import cash.p.terminal.core.providers.ZcashFallbackAddressProvider
 import cash.p.terminal.wallet.FallbackAddressProvider
 import cash.p.terminal.feature.miniapp.domain.storage.IUniqueCodeStorage
 import cash.p.terminal.feature.miniapp.domain.usecase.CreateRequiredTokensUseCase
+import cash.p.terminal.feature.miniapp.domain.usecase.EvmPersonalSigner
 import cash.p.terminal.feature.miniapp.domain.usecase.GetTonAddressUseCase
 import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.modules.addtoken.AddTokenService
@@ -307,6 +309,7 @@ val managerModule = module {
     singleOf(::TonKitManager)
     singleOf(::GetTonAddressUseCaseImpl) bind GetTonAddressUseCase::class
     singleOf(::CreateRequiredTokensUseCaseImpl) bind CreateRequiredTokensUseCase::class
+    singleOf(::EvmPersonalSignerImpl) bind EvmPersonalSigner::class
     singleOf(::TronKitManager)
     singleOf(::StackingManager)
     singleOf(::RestoreSettingsManager)

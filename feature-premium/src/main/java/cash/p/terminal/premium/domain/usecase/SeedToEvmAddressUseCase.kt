@@ -1,6 +1,5 @@
 package cash.p.terminal.premium.domain.usecase
 
-import cash.p.terminal.wallet.MnemonicSeed
 import org.bitcoinj.crypto.ECKey
 import org.bitcoinj.crypto.DeterministicKey
 import org.bitcoinj.crypto.HDKeyDerivation
@@ -11,11 +10,9 @@ import java.math.BigInteger
 class SeedToEvmAddressUseCase {
 
     operator fun invoke(
-        words: List<String>,
-        passphrase: String = "",
+        seed: ByteArray,
         accountIndex: Int = 0
     ): String {
-        val seed = MnemonicSeed.derive(words, passphrase)
         val privateKey = derivePath(seed, "m/44'/60'/0'/0/$accountIndex")
         val publicKey = generatePublicKey(privateKey.privKeyBytes)
         return generateEvmAddress(publicKey)

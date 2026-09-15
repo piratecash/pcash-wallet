@@ -3,6 +3,7 @@ package cash.p.terminal.core
 import cash.p.terminal.core.managers.RestoreSettingType
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.AccountType.MnemonicMonero
+import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenQuery
@@ -44,7 +45,8 @@ class BlockchainTypeSupportTest {
 
     private fun mnemonicAccount() = AccountType.Mnemonic(
         words = List(12) { "abandon" },
-        passphrase = ""
+        passphrase = "",
+        derivation = MnemonicDerivation.Legacy
     )
 
     private fun hardwareCardAccount() = AccountType.HardwareCard(
@@ -281,6 +283,16 @@ class BlockchainTypeSupportTest {
         val account = hdExtendedKeyAccount(
             coinTypes = listOf(ExtendedKeyCoinType.Litecoin),
             purposes = listOf(HDWallet.Purpose.BIP44)
+        )
+        val derivedToken = token(BlockchainType.Dogecoin, TokenType.Derived(TokenType.Derivation.Bip44))
+        assertFalse(derivedToken.supports(account))
+    }
+
+    @Test
+    fun tokenSupports_dogecoinDerivedBip44WithBip84OnlyKey_returnsFalse() {
+        val account = hdExtendedKeyAccount(
+            coinTypes = listOf(ExtendedKeyCoinType.Dogecoin),
+            purposes = listOf(HDWallet.Purpose.BIP84)
         )
         val derivedToken = token(BlockchainType.Dogecoin, TokenType.Derived(TokenType.Derivation.Bip44))
         assertFalse(derivedToken.supports(account))

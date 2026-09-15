@@ -74,9 +74,9 @@ android {
         applicationId "cash.p.terminal"
         compileSdk compile_sdk_version
         minSdkVersion min_sdk_version
-        targetSdkVersion compile_sdk_version
-        versionCode 256
-        versionName "0.59.4"
+        targetSdkVersion target_sdk_version
+        versionCode 257
+        versionName "0.60.0"
         buildConfigField "String", "GIT_HASH", "\"${getGitVersionSuffix()}\""
         buildConfigField "String", "BITCOIN_KIT_VERSION", "\"${libs.versions.piratecash.bitcoin.get()}\""
         buildConfigField "String", "ETHEREUM_KIT_VERSION", "\"${libs.versions.piratecash.ethereum.get()}\""

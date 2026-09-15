@@ -1,5 +1,12 @@
 package cash.p.terminal.premium.domain.usecase
 
+import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.AccountOrigin
+import cash.p.terminal.wallet.MnemonicDerivation
+import io.mockk.mockk
+import kotlinx.coroutines.test.runTest
+import cash.p.terminal.wallet.MnemonicSeed
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -20,7 +27,7 @@ class SeedToEvmAddressUseCaseTest {
                 .split(" ")
         val address = "0x7b7ebe8044d5E9452FaE1CD33304A6D2EaC6C28d".lowercase()
 
-        val result = useCase(words).lowercase()
+        val result = useCase(MnemonicSeed.derive(words, MnemonicDerivation.Legacy)).lowercase()
 
         assertEquals(address, result)
     }
@@ -33,7 +40,7 @@ class SeedToEvmAddressUseCaseTest {
         val passphrase = "123"
         val address = "0xfAf339E255dFDA06907255c6FB43870d8D762476".lowercase()
 
-        val result = useCase(words = words, passphrase = passphrase).lowercase()
+        val result = useCase(MnemonicSeed.derive(words, MnemonicDerivation.Legacy, passphrase)).lowercase()
 
         assertEquals(address, result)
     }
@@ -48,8 +55,21 @@ class SeedToEvmAddressUseCaseTest {
         val passphrase = "123"
         val address = "0x6311B808eD0093EBA889115aFf43d823591A420D".lowercase()
 
-        val result = useCase(words = words, passphrase = passphrase).lowercase()
+        val result = useCase(MnemonicSeed.derive(words, MnemonicDerivation.Legacy, passphrase)).lowercase()
 
         assertEquals(address, result)
+    }
+    @Test
+    fun invoke_japaneseSelectedSeed_matchesIndependentDerivedAddresses() = runTest {
+        val words = List(11) { "あいこくしん" } + "あおぞら"
+        val expected = listOf("0x25e3888d3842ebdd70041f3e3effa927f29805c8",
+                "0x353924fcafc2cd9815e3cfd60f8de0194828b766")
+        val getBnb = GetBnbAddressUseCaseImpl(useCase, mockk(), mockk())
+        MnemonicDerivation.entries.forEachIndexed { index, mode ->
+            val mnemonic = AccountType.Mnemonic(words, "páss", mode)
+            val account = Account("public-fixture", "Japanese", mnemonic, AccountOrigin.Restored, 0)
+            assertEquals(expected[index], useCase(mnemonic.seed))
+            assertEquals(expected[index], getBnb.getAddress(account, false))
+        }
     }
 }

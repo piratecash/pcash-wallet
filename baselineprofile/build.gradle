@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace 'cash.p.terminal.baselineprofile'
-    compileSdk 36
+    compileSdk compile_sdk_version
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17

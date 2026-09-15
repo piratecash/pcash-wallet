@@ -1,5 +1,7 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.wallet.MnemonicDerivation
+
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.storage.OfflineBroadcastedRawMatch
 import cash.p.terminal.core.storage.OfflineSignedTransactionDao
@@ -484,7 +486,7 @@ class OfflineSignedTransactionRepositoryTest {
     private val account = Account(
         id = "account-id",
         name = "Account",
-        type = AccountType.Mnemonic(List(12) { "word$it" }, ""),
+        type = AccountType.Mnemonic(List(12) { "word$it" }, "", MnemonicDerivation.Legacy),
         origin = AccountOrigin.Created,
         level = 0,
         isBackedUp = true,

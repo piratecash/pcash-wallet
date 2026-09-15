@@ -5,6 +5,7 @@ import cash.p.terminal.core.UnsupportedException
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
 import cash.p.zcash.PreparedTransaction
 import cash.p.zcash.TransactionPlan
@@ -61,7 +62,7 @@ class ZcashAdapterSpendingKeyTest : ZcashAdapterTestFixture() {
 
     @Test
     fun signOffline_mnemonicAccount_derivesTheKeyFromThePhrase() = runTest(dispatcher) {
-        startAdapter(AccountType.Mnemonic(WORDS, "pass"))
+        startAdapter(AccountType.Mnemonic(WORDS, "pass", MnemonicDerivation.Legacy))
 
         adapter.signOffline(OfflineZcashSignRequest(AMOUNT, RECIPIENT, memo = ""))
 
@@ -72,7 +73,7 @@ class ZcashAdapterSpendingKeyTest : ZcashAdapterTestFixture() {
 
     @Test
     fun signOffline_emptyPassphrase_forwardsItVerbatim() = runTest(dispatcher) {
-        startAdapter(AccountType.Mnemonic(WORDS, ""))
+        startAdapter(AccountType.Mnemonic(WORDS, "", MnemonicDerivation.Legacy))
 
         adapter.signOffline(OfflineZcashSignRequest(AMOUNT, RECIPIENT, memo = ""))
 

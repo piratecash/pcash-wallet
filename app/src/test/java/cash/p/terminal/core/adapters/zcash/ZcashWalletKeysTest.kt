@@ -3,6 +3,7 @@ package cash.p.terminal.core.adapters.zcash
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.hdwalletkit.Curve
 import io.horizontalsystems.hdwalletkit.HDExtendedKey
@@ -26,7 +27,7 @@ class ZcashWalletKeysTest {
 
         assertEquals(
             ZcashKey.Phrase(words, "pass"),
-            walletOf(AccountType.Mnemonic(words, "pass")).zcashKey(),
+            walletOf(AccountType.Mnemonic(words, "pass", MnemonicDerivation.Legacy)).zcashKey(),
         )
     }
 
