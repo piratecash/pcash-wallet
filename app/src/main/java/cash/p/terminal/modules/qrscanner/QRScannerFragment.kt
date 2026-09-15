@@ -112,12 +112,6 @@ class QRScannerFragment : BaseComposeFragment() {
                 }
             }
 
-            deeplinkParser.isHiddenAuthLink(uri) -> {
-                // pcash://auth carries a mini-app connect JWT; that flow is hidden until SWAP6.
-                // Swallow it so the credential never reaches the caller as generic scanner text.
-                navController.popBackStack()
-            }
-
             else -> {
                 navController.setNavigationResultX(QrScannerResult(decoded))
                 navController.popBackStack()
