@@ -15,6 +15,8 @@ import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.Chain
 import io.horizontalsystems.ethereumkit.models.GasPrice
 import io.horizontalsystems.ethereumkit.models.RawTransaction
+import io.horizontalsystems.ethereumkit.spv.core.toBytes
+import io.horizontalsystems.hdwalletkit.ECKey
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.slot
@@ -279,7 +281,7 @@ class TrezorEvmSignerTest {
     @Test
     fun signPersonalMessage_validDeviceSignature_returnsRsRecId() = runBlocking {
         val privateKey = BigInteger("46".repeat(32), 16)
-        val publicKeyBytes = CryptoUtils.CURVE.g.multiply(privateKey).getEncoded(false)
+        val publicKeyBytes = ECKey.fromPrivate(privateKey.toBytes(32), compressed = false).pubKey
         val address = addressOf(publicKeyBytes)
         val message = "Sign in to near.com".toByteArray()
         val hash = EvmSignatureRecovery.personalSignHash(message)

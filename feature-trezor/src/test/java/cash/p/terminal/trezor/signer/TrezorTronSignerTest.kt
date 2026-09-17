@@ -6,6 +6,8 @@ import cash.p.terminal.trezorkit.client.ITrezorClient
 import cash.p.terminal.trezorkit.client.TrezorClientSession
 import io.horizontalsystems.ethereumkit.crypto.CryptoUtils
 import io.horizontalsystems.ethereumkit.crypto.InternalBouncyCastleProvider
+import io.horizontalsystems.ethereumkit.spv.core.toBytes
+import io.horizontalsystems.hdwalletkit.ECKey
 import io.horizontalsystems.hdwalletkit.Utils
 import io.horizontalsystems.tronkit.models.Address
 import io.horizontalsystems.tronkit.network.CreatedTransaction
@@ -139,7 +141,7 @@ class TrezorTronSignerTest {
 
     /** Derives the Tron base58 address (0x41-prefixed keccak-derived EVM bytes) for [privateKey]. */
     private fun tronAddressOf(privateKey: BigInteger): String {
-        val publicKey = CryptoUtils.CURVE.g.multiply(privateKey).getEncoded(false)
+        val publicKey = ECKey.fromPrivate(privateKey.toBytes(32), compressed = false).pubKey
         val evmAddressBytes = CryptoUtils.sha3(publicKey.copyOfRange(1, 65)).copyOfRange(12, 32)
         return Address.fromRawWithoutPrefix(evmAddressBytes).base58
     }

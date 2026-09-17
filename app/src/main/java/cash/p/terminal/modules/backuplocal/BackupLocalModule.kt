@@ -4,6 +4,7 @@ import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.managers.RestoreSettingType
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.core.usecase.MoneroWalletUseCase
+import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.AccountType
 import com.google.gson.annotations.SerializedName
 import io.horizontalsystems.hdwalletkit.Base58
@@ -78,7 +79,6 @@ object BackupLocalModule {
         }
     }
 
-    private const val MNEMONIC = "mnemonic"
     private const val MNEMONIC_MONERO = "mnemonic_monero"
     private const val PRIVATE_KEY = "private_key"
     private const val SECRET_KEY = "secret_key"
@@ -142,7 +142,7 @@ object BackupLocalModule {
     )
 
     fun getAccountTypeString(accountType: AccountType): String = when (accountType) {
-        is AccountType.Mnemonic -> MNEMONIC
+        is AccountType.Mnemonic -> accountType.derivation.typeCode
         is AccountType.MnemonicMonero -> MNEMONIC_MONERO
         is AccountType.EvmPrivateKey -> PRIVATE_KEY
         is AccountType.StellarSecretKey -> SECRET_KEY
@@ -161,14 +161,15 @@ object BackupLocalModule {
     @Throws(IllegalStateException::class)
     suspend fun getAccountTypeFromData(accountType: String, data: ByteArray): AccountType? {
         return when (accountType) {
-            MNEMONIC -> {
+            MnemonicDerivation.Legacy.typeCode,
+            MnemonicDerivation.Bip39.typeCode -> {
                 val parts = String(data, Charsets.UTF_8).split("@", limit = 2)
                 //check for nonstandard mnemonic from iOs app
                 if (parts[0].split("&").size > 1)
                     throw IllegalStateException("Non standard mnemonic")
                 val words = parts[0].split(" ")
                 val passphrase = if (parts.size > 1) parts[1] else ""
-                AccountType.Mnemonic(words, passphrase)
+                AccountType.Mnemonic(words, passphrase, requireNotNull(MnemonicDerivation.fromTypeCode(accountType)))
             }
 
             MNEMONIC_MONERO -> {
@@ -209,7 +210,7 @@ object BackupLocalModule {
 
     fun getDataForEncryption(accountType: AccountType): ByteArray? = when (accountType) {
         is AccountType.Mnemonic -> {
-            val passphrasePart = if (accountType.passphrase.isNotBlank()) {
+            val passphrasePart = if (accountType.passphrase.isNotEmpty()) {
                 "@" + accountType.passphrase
             } else {
                 ""

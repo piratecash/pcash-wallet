@@ -924,9 +924,10 @@
     <string name="Settings_Donate">Donate</string>
     <string name="settings_mini_app">Mini App</string>
     <string name="mini_app_title">Mini App verbinden</string>
-    <string name="mini_app_bonus_title">+10% Bonus met Premium</string>
-    <string name="mini_app_bonus_description">Verbind de mini-app met P.Cash Premium en ontvang +10% bonus op je spelbalans.</string>
-    <string name="mini_app_bonus_guaranteed">Krijg gegarandeerd</string>
+    <string name="mini_app_nft_banner_label">Bonus voor Swap 6</string>
+    <string name="mini_app_nft_banner_title">Koop NFT\'s</string>
+    <string name="mini_app_nft_banner_description">Elke NFT is een raadsel. Welke bonus je krijgt, wordt pas na afloop van de verkoop bekend.</string>
+    <string name="mini_app_nft_banner_button">Kopen op Getgems</string>
     <string name="mini_app_not_connected">Mini App is niet verbonden</string>
     <string name="mini_app_connected">Mini App verbonden</string>
     <string name="mini_app_connection">Verbinding</string>
@@ -1242,7 +1243,7 @@
     <string name="ManageAccount_BackupRequired_Title">Backup Required</string>
     <string name="ManageAccount_BackupRequired_Description">You need to backup %1$s before you may receive %2$s.</string>
     <string name="ManageAccount_Delete_ConfirmationRemove">This action will delete the selected wallet from this device.</string>
-    <string name="ManageAccount_Delete_ConfirmationLose">If you didn\'t backup the private key for this wallet, you will lose access to your funds.</string>
+    <string name="ManageAccount_Delete_ConfirmationLose">Zorg ervoor dat u uw herstelzin of privésleutel hebt opgeslagen. Zonder deze kunt u permanent de toegang tot uw wallet en tegoeden verliezen.</string>
     <string name="ManageAccount_MigrationRequired_Title">Migration Required</string>
     <string name="ManageAccount_BirthdayHeight">%s Birthday Height</string>
     <string name="ManageAccount_NWords">%s words</string>
@@ -1342,7 +1343,7 @@ De app stelt u in staat een back-up te maken met een eenvoudig wachtwoord voor u
     <string name="PrivateKeys_Bip32RootKeyDescription">Grants full control over the assets on the respective wallet.</string>
     <string name="PrivateKeys_AccountExtendedPrivateKey">Account Extended Private Key</string>
     <string name="PrivateKeys_AccountExtendedPrivateKeyDescription">Grants full control over Bitcoin and other UTXO based crypto i.e. Litecoin, Bitcoin Cash, Dash etc. within respective wallet.</string>
-    <string name="PrivateKeys_NeverShareWarning">Never share this key with anyone. P.CASH Wallet support team will never ask for it.</string>
+    <string name="PrivateKeys_NeverShareWarning">Deel uw privésleutel, herstelzin of andere vertrouwelijke walletgegevens nooit met iemand. Het P.CASH-team zal nooit om deze informatie vragen.</string>
     <!-- Public Keys -->
     <string name="PublicKeys_Title">Public Keys</string>
     <string name="PublicKeys_EvmAddress">EVM Address</string>
@@ -2046,38 +2047,18 @@ De app stelt u in staat een back-up te maken met een eenvoudig wachtwoord voor u
     <string name="connect_mini_app_step_1">Stap 1</string>
     <string name="connect_mini_app_step_1_description">Om verbinding te maken, moet u een wallet aanmaken of importeren.</string>
     <string name="connect_mini_app_step_1_choose_wallet">Kies alstublieft uw wallet met premium abonnement</string>
-    <string name="connect_mini_app_premium_bonus">+10% Bonus met Premium</string>
+    <string name="connect_mini_app_premium_bonus">+5% Bonus met Premium</string>
     <string name="connect_mini_app_checking_tokens">Beschikbaarheid van %s controleren</string>
     <string name="connect_mini_app_missing_tokens">U heeft geen %s</string>
     <string name="connect_mini_app_add_tokens">Toevoegen</string>
-    <!-- Step 2: Accept Terms -->
+    <string name="connect_mini_app_error_token_check">Kan de wallet-tokens niet controleren. Probeer het opnieuw.</string>
+    <string name="connect_mini_app_error_no_evm_key">Kan de EVM-sleutel voor ondertekening niet ophalen. Controleer de wallet en probeer het opnieuw.</string>
     <string name="connect_mini_app_step_2">Stap 2</string>
-    <string name="connect_mini_app_step_2_description">Accepteer alstublieft de gebruiksvoorwaarden</string>
-    <string name="connect_mini_app_terms_title">Verzameling van technische apparaatgegevens</string>
-    <string name="connect_mini_app_terms_body">De app verzamelt <b>eenmalig</b> een beperkte set <b>technische apparaatgegevens</b> bij het <b>koppelen van de wallet aan het spel</b>, waaronder:</string>
-    <string name="connect_mini_app_terms_bullet_1">gegevens van bepaalde sensoren (bijv. gyroscoop en versnellingsmeter),</string>
-    <string name="connect_mini_app_terms_bullet_2">batterijstatus en of de oplader is aangesloten,</string>
-    <string name="connect_mini_app_terms_bullet_3">model en basiskenmerken van het apparaat.</string>
-    <string name="connect_mini_app_terms_fingerprint">Deze gegevens worden <b>uitsluitend</b> gebruikt om een <b>unieke technische vingerafdruk</b> voor het apparaat te genereren als onderdeel van <b>SWAP 5</b> (bescherming tegen meerdere accounts en misbruik).</string>
-    <string name="connect_mini_app_terms_important_title">Belangrijk:</string>
-    <string name="connect_mini_app_terms_important_1">gegevensverzameling vindt <b>precies twee keer plaats en alleen op initiatief van de gebruiker</b>,</string>
-    <string name="connect_mini_app_terms_important_2">de app <b>verzamelt geen gegevens op de achtergrond</b>,</string>
-    <string name="connect_mini_app_terms_important_3">de gegevens worden <b>niet gebruikt om de gebruiker te volgen</b>,</string>
-    <string name="connect_mini_app_terms_important_4"><b>alle verzamelde gegevens worden automatisch van de server verwijderd na voltooiing van SWAP 5</b>,</string>
-    <string name="connect_mini_app_terms_important_5">gegevens worden niet overgedragen aan derden.</string>
-    <string name="connect_mini_app_terms_agreement">Ik ga akkoord met de voorwaarden en geef toestemming om een digitale vingerafdruk van het apparaat te maken.</string>
+    <string name="connect_mini_app_step_2_description">Speciale aanbieding voor premium leden</string>
     <!-- Step 4: Captcha -->
-    <string name="connect_mini_app_step_4">Stap 4</string>
-    <string name="connect_mini_app_step_4_description">Voer de code van de afbeelding in</string>
-    <string name="connect_mini_app_captcha_update">Bijwerken</string>
-    <string name="connect_mini_app_captcha_send">Verzenden</string>
-    <string name="connect_mini_app_captcha_error_wrong_code">Verkeerde code, probeer het opnieuw</string>
-    <string name="connect_mini_app_captcha_error_expired">Captcha verlopen, vernieuw alstublieft</string>
     <string name="connect_mini_app_captcha_error_qr_expired">QR-code verlopen, scan opnieuw</string>
     <string name="connect_mini_app_link_expired">Link verlopen, gebruik een nieuwe uit de mini-app om de verbinding te starten</string>
     <string name="connect_mini_app_open_mini_app">Mini-app openen</string>
-    <string name="connect_mini_app_step_5">Stap 5</string>
-    <string name="connect_mini_app_step_5_description">Speciale aanbieding voor premium leden</string>
     <string name="connect_mini_app_bonus_text_prefix">Activeer Premium in P.CASH en ontvang gegarandeerd vanaf</string>
     <string name="connect_mini_app_bonus_text_suffix">dankzij de verhoogde budgetverdelingscoëfficiënt.</string>
     <string name="connect_mini_app_tab_pirate_cash">PirateCash</string>
@@ -2244,4 +2225,9 @@ De app stelt u in staat een back-up te maken met een eenvoudig wachtwoord voor u
     <string name="balance_hide_on_flip_info_description">Om je saldo te verbergen of te tonen, draai je gewoon het scherm van het apparaat naar beneden, of schakel je het uit in de beveiligingsinstellingen.</string>
     <string name="balance_hide_on_flip_dont_show_again">Niet meer tonen</string>
     <string name="badge_new">Nieuw</string>
+    <string name="monero_keys_unavailable">Sleutels zijn niet beschikbaar voor deze wallet</string>
+    <string name="mnemonic_legacy_option">Oud P.CASH-formaat gebruiken</string>
+    <string name="mnemonic_legacy_info">Standaard wordt het Japanse BIP-39-standaardformaat gebruikt. Laat deze optie uitgeschakeld wanneer u een wallet vanuit een andere app overzet.\n\nSchakel deze alleen in om een wallet te herstellen die in P.CASH met het oude formaat is gemaakt. Deze modus behoudt de eerdere adressen.</string>
+    <string name="mnemonic_bip39_format">Japans formaat: BIP-39</string>
+    <string name="mnemonic_legacy_format">Japans formaat: P.CASH (oud)</string>
 </resources>

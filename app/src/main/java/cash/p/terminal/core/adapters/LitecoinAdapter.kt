@@ -1,7 +1,6 @@
 package cash.p.terminal.core.adapters
 
 import cash.p.terminal.R
-import cash.p.terminal.core.App
 import cash.p.terminal.core.BroadcastRawTransactionResult
 import cash.p.terminal.core.BroadcastRawTransactionStatus
 import cash.p.terminal.core.BitcoinSwapSendResult
@@ -15,9 +14,9 @@ import cash.p.terminal.core.OfflineSignRequest
 import cash.p.terminal.core.SignedOfflineBitcoinTransaction
 import cash.p.terminal.core.TransactionExplorerData
 import cash.p.terminal.core.UnsupportedAccountException
-import cash.p.terminal.core.derivation
 import cash.p.terminal.core.hexToByteArray
 import cash.p.terminal.core.managers.LITECOIN_MWEB_PEG_IN_MATCH_TIMESTAMP_TOLERANCE_SECONDS
+import cash.p.terminal.core.managers.BitcoinKitEnvironment
 import cash.p.terminal.core.managers.LitecoinMwebRestoreHeight
 import cash.p.terminal.core.managers.RestoreSettings
 import cash.p.terminal.core.purpose
@@ -114,6 +113,7 @@ class LitecoinAdapter(
         syncMode: BitcoinCore.SyncMode,
         backgroundManager: BackgroundManager,
         derivation: TokenType.Derivation,
+        environment: BitcoinKitEnvironment,
         mwebRestoreSettings: RestoreSettings? = null,
         dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider(),
         feeRateProvider: IFeeRateProvider? = null
@@ -122,8 +122,9 @@ class LitecoinAdapter(
             wallet = wallet,
             syncMode = syncMode,
             mode = Mode.Public(derivation),
+            environment = environment,
+            dispatcherProvider = dispatcherProvider,
             restoreSettings = mwebRestoreSettings,
-            dispatcherProvider = dispatcherProvider
         ),
         syncMode,
         backgroundManager,
@@ -138,6 +139,7 @@ class LitecoinAdapter(
         syncMode: BitcoinCore.SyncMode,
         backgroundManager: BackgroundManager,
         restoreSettings: RestoreSettings,
+        environment: BitcoinKitEnvironment,
         dispatcherProvider: DispatcherProvider,
         feeRateProvider: IFeeRateProvider? = null
     ) : this(
@@ -145,8 +147,9 @@ class LitecoinAdapter(
             wallet = wallet,
             syncMode = syncMode,
             mode = Mode.Mweb,
+            environment = environment,
+            dispatcherProvider = dispatcherProvider,
             restoreSettings = restoreSettings,
-            dispatcherProvider = dispatcherProvider
         ),
         syncMode,
         backgroundManager,
@@ -1468,7 +1471,8 @@ class LitecoinAdapter(
             val purpose: HDWallet.Purpose,
             val sharedPeerGroupHolder: SharedPeerGroupHolder,
             val mwebConfig: MwebConfig?,
-            val dispatcherProvider: DispatcherProvider
+            val dispatcherProvider: DispatcherProvider,
+            val environment: BitcoinKitEnvironment,
         ) {
             val account: Account
                 get() = wallet.account
@@ -1478,8 +1482,9 @@ class LitecoinAdapter(
             wallet: Wallet,
             syncMode: BitcoinCore.SyncMode,
             mode: Mode,
-            restoreSettings: RestoreSettings? = null,
+            environment: BitcoinKitEnvironment,
             dispatcherProvider: DispatcherProvider,
+            restoreSettings: RestoreSettings? = null,
         ): LitecoinKit {
             val account = wallet.account
             if (mode == Mode.Mweb && account.type !is AccountType.Mnemonic) {
@@ -1490,7 +1495,9 @@ class LitecoinAdapter(
                 Mode.Mweb -> TokenType.Derivation.Bip84.purpose
             }
             val sharedPeerGroupHolder = LitecoinKit.getOrCreateSharedPeerGroup(
-                context = App.instance,
+                dataDir = environment.dataDir,
+                databaseKey = environment.databaseKey,
+                connectionManager = environment.connectionManager,
                 walletId = account.id,
                 networkType = NetworkType.MainNet
             )
@@ -1505,7 +1512,8 @@ class LitecoinAdapter(
                 purpose = purpose,
                 sharedPeerGroupHolder = sharedPeerGroupHolder,
                 mwebConfig = mwebConfig,
-                dispatcherProvider = dispatcherProvider
+                dispatcherProvider = dispatcherProvider,
+                environment = environment,
             )
             return when (val accountType = account.type) {
                 is AccountType.HdExtendedKey -> createExtendedKeyKit(accountType, context)
@@ -1522,7 +1530,10 @@ class LitecoinAdapter(
             context: LitecoinKitCreateContext
         ): LitecoinKit {
             return LitecoinKit(
-                context = App.instance,
+                dataDir = context.environment.dataDir,
+                mwebDataDir = context.environment.mwebDataDir,
+                databaseKey = context.environment.databaseKey,
+                connectionManager = context.environment.connectionManager,
                 extendedKey = accountType.hdExtendedKey,
                 purpose = context.purpose,
                 walletId = context.account.id,
@@ -1539,9 +1550,11 @@ class LitecoinAdapter(
             context: LitecoinKitCreateContext
         ): LitecoinKit {
             return LitecoinKit(
-                context = App.instance,
-                words = accountType.words,
-                passphrase = accountType.passphrase,
+                dataDir = context.environment.dataDir,
+                mwebDataDir = context.environment.mwebDataDir,
+                databaseKey = context.environment.databaseKey,
+                connectionManager = context.environment.connectionManager,
+                seed = accountType.seed,
                 walletId = context.account.id,
                 syncMode = context.syncMode,
                 networkType = NetworkType.MainNet,
@@ -1558,7 +1571,10 @@ class LitecoinAdapter(
             context: LitecoinKitCreateContext
         ): LitecoinKit {
             return LitecoinKit(
-                context = App.instance,
+                dataDir = context.environment.dataDir,
+                mwebDataDir = context.environment.mwebDataDir,
+                databaseKey = context.environment.databaseKey,
+                connectionManager = context.environment.connectionManager,
                 watchAddress = accountType.address,
                 walletId = context.account.id,
                 syncMode = context.syncMode,
@@ -1582,7 +1598,10 @@ class LitecoinAdapter(
                 tokenType = token.type,
             )
             return LitecoinKit(
-                context = App.instance,
+                dataDir = context.environment.dataDir,
+                mwebDataDir = context.environment.mwebDataDir,
+                databaseKey = context.environment.databaseKey,
+                connectionManager = context.environment.connectionManager,
                 extendedKey = context.wallet.getHDExtendedKey()
                     ?: throw IllegalStateException(
                         Translator.getString(R.string.litecoin_hardware_extended_public_key_required)
@@ -1608,7 +1627,10 @@ class LitecoinAdapter(
                 coin = "Litecoin"
             )
             val kit = LitecoinKit(
-                context = App.instance,
+                dataDir = context.environment.dataDir,
+                mwebDataDir = context.environment.mwebDataDir,
+                databaseKey = context.environment.databaseKey,
+                connectionManager = context.environment.connectionManager,
                 extendedKey = requireNotNull(context.wallet.getHDExtendedKey()),
                 purpose = context.purpose,
                 walletId = context.account.id,
@@ -1650,28 +1672,16 @@ class LitecoinAdapter(
             return height?.let { MwebRestorePoint.BlockHeight(it) } ?: MwebRestorePoint.Activation
         }
 
-        fun clear(walletId: String) {
-            LitecoinKit.clear(App.instance, NetworkType.MainNet, walletId)
-        }
-
-        /**
-         * Clears only MWEB scan storage through LitecoinKit without touching public Litecoin DBs.
-         */
-        fun clearMweb(walletId: String) {
-            LitecoinKit.clearMweb(App.instance, NetworkType.MainNet, walletId)
-        }
-
         fun firstAddress(accountType: AccountType, tokenType: TokenType): String {
             if (tokenType == TokenType.Mweb) throw UnsupportedAccountException()
 
             when (accountType) {
                 is AccountType.Mnemonic -> {
                     val seed = accountType.seed
-                    val derivation = tokenType.derivation ?: throw IllegalArgumentException()
 
                     val address = LitecoinKit.firstAddress(
                         seed,
-                        derivation.purpose,
+                        tokenType.purpose,
                         NetworkType.MainNet
                     )
 
@@ -1680,10 +1690,9 @@ class LitecoinAdapter(
 
                 is AccountType.HdExtendedKey -> {
                     val key = accountType.hdExtendedKey
-                    val derivation = tokenType.derivation ?: throw IllegalArgumentException()
                     val address = LitecoinKit.firstAddress(
                         key,
-                        derivation.purpose,
+                        tokenType.purpose,
                         NetworkType.MainNet
                     )
 

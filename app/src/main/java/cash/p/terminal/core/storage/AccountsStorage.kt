@@ -3,6 +3,7 @@ package cash.p.terminal.core.storage
 import cash.p.terminal.entities.ActiveAccount
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
+import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountsStorage
 import cash.p.terminal.wallet.entities.AccountRecord
@@ -18,7 +19,6 @@ class AccountsStorage(appDatabase: AppDatabase) : IAccountsStorage {
 
     companion object {
         // account type codes stored in db
-        private const val MNEMONIC = "mnemonic"
         private const val MNEMONIC_MONERO = "mnemonic_monero"
         private const val PRIVATE_KEY = "private_key"
         private const val SECRET_KEY = "secret_key"
@@ -68,9 +68,11 @@ class AccountsStorage(appDatabase: AppDatabase) : IAccountsStorage {
 
         return try {
             val accountType = when (record.type) {
-                MNEMONIC -> AccountType.Mnemonic(
-                    words = record.words!!.list,
-                    passphrase = record.passphrase?.value ?: ""
+                MnemonicDerivation.Legacy.typeCode,
+                MnemonicDerivation.Bip39.typeCode -> AccountType.Mnemonic(
+                    words = requireNotNull(record.words).list,
+                    passphrase = record.passphrase?.value ?: "",
+                    derivation = requireNotNull(MnemonicDerivation.fromTypeCode(record.type))
                 )
 
                 MNEMONIC_MONERO -> {
@@ -189,7 +191,7 @@ class AccountsStorage(appDatabase: AppDatabase) : IAccountsStorage {
             is AccountType.Mnemonic -> {
                 words = SecretList((account.type as AccountType.Mnemonic).words)
                 passphrase = SecretString((account.type as AccountType.Mnemonic).passphrase)
-                accountType = MNEMONIC
+                accountType = (account.type as AccountType.Mnemonic).derivation.typeCode
             }
 
             is AccountType.MnemonicMonero -> {

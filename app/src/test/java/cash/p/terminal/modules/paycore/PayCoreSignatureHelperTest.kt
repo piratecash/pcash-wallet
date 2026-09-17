@@ -1,5 +1,7 @@
 package cash.p.terminal.modules.paycore
 
+import cash.p.terminal.wallet.MnemonicDerivation
+
 import android.util.Base64
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -59,6 +61,7 @@ class PayCoreSignatureHelperTest {
             words = ("abandon abandon abandon abandon abandon abandon " +
                 "abandon abandon abandon abandon abandon about").split(" "),
             passphrase = "",
+            derivation = MnemonicDerivation.Legacy
         ),
         origin = AccountOrigin.Created,
         level = 0,

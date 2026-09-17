@@ -96,6 +96,33 @@ class TokenNotSyncedSectionVisibilityTest {
     }
 
     @Test
+    fun shouldShowNotSyncedSection_syncingAndLoadFailed_returnsTrue() {
+        assertTrue(
+            shouldShowNotSyncedSection(
+                failedIconVisible = false,
+                loadFailed = true,
+                syncing = true,
+                transactions = cachedTransactions,
+            )
+        )
+    }
+
+    @Test
+    fun shouldShowNotSyncedRetry_syncFailed_returnsTrue() {
+        assertTrue(shouldShowNotSyncedRetry(failedIconVisible = true, loadFailed = false))
+    }
+
+    @Test
+    fun shouldShowNotSyncedRetry_loadFailed_returnsTrue() {
+        assertTrue(shouldShowNotSyncedRetry(failedIconVisible = false, loadFailed = true))
+    }
+
+    @Test
+    fun shouldShowNotSyncedRetry_noFailure_returnsFalse() {
+        assertFalse(shouldShowNotSyncedRetry(failedIconVisible = false, loadFailed = false))
+    }
+
+    @Test
     fun transactionsPlaceholder_loadFailedAndEmpty_returnsNone() {
         assertEquals(
             TransactionsPlaceholder.None,

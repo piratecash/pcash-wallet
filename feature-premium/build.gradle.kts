@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "cash.p.terminal.premium"
-    compileSdk = 36
+    compileSdk = rootProject.ext.get("compile_sdk_version") as Int
 
     defaultConfig {
         minSdk = 27
@@ -47,7 +47,7 @@ dependencies {
     implementation(project(":feature-tangem"))
 
     implementation(libs.bitcoinj)
-    implementation(libs.bitcoin.kit)
+    implementation(libs.hd.wallet.kit)
     implementation(libs.timber)
     implementation(libs.tangem.sdk)
 

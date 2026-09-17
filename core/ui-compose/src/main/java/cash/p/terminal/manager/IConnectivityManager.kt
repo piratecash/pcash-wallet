@@ -5,4 +5,5 @@ import kotlinx.coroutines.flow.StateFlow
 interface IConnectivityManager {
     val isConnected: StateFlow<Boolean>
     val torEnabled: Boolean
+    fun refresh(): Boolean
 }

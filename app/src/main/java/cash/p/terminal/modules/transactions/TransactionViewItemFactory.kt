@@ -32,6 +32,7 @@ import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.strings.helpers.shorten
 import cash.p.terminal.ui_compose.ColorName
 import cash.p.terminal.ui_compose.ColoredValue
+import cash.p.terminal.ui_compose.amountColor
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
@@ -1010,9 +1011,9 @@ class TransactionViewItemFactory(
     ): TransactionViewItem {
         val isFailed = icon is TransactionViewItem.Icon.Failed
         val primaryValue = record.valueOut?.let {
-            getColoredValue(it, if (record.recipient != null) ColorName.Grey else ColorName.Remus)
+            getColoredValue(it, amountColor(incoming = true, sentToThirdParty = record.recipient != null))
         }
-        val secondaryValue = getColoredValue(record.valueIn!!, ColorName.Lucian)
+        val secondaryValue = getColoredValue(record.valueIn!!, amountColor(incoming = false))
 
         return TransactionViewItem(
             uid = record.uid,

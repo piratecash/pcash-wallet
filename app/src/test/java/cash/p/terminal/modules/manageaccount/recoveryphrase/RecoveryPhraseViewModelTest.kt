@@ -1,5 +1,8 @@
 package cash.p.terminal.modules.manageaccount.recoveryphrase
 
+import cash.p.terminal.core.TestDispatcherProvider
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineScope
 import android.util.Base64
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.managers.RestoreSettings
@@ -8,6 +11,13 @@ import cash.p.terminal.core.managers.SeedPhraseQrCrypto
 import cash.p.terminal.core.managers.TimePasswordProvider
 import cash.p.terminal.core.utils.MoneroWalletSeedConverter
 import cash.p.terminal.wallet.Account
+import cash.p.terminal.core.managers.EvmBlockchainManager
+import cash.p.terminal.modules.manageaccount.privatekeys.PrivateKeysViewModel
+import cash.p.terminal.modules.manageaccount.publickeys.PublicKeysViewModel
+import cash.p.terminal.wallet.MnemonicDerivation
+import cash.p.terminal.core.installEthereumCryptoProviderForTest
+import io.horizontalsystems.ethereumkit.core.signer.Signer
+import io.horizontalsystems.ethereumkit.models.Chain
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import io.horizontalsystems.core.entities.BlockchainType
@@ -89,7 +99,8 @@ class RecoveryPhraseViewModelTest {
             recoveryPhraseType = RecoveryPhraseFragment.RecoveryPhraseType.Mnemonic,
             seedPhraseQrCrypto = crypto,
             localStorage = localStorage,
-            restoreSettingsManager = restoreSettingsManager
+            restoreSettingsManager = restoreSettingsManager,
+            dispatcherProvider = TestDispatcherProvider(Dispatchers.Default, CoroutineScope(Dispatchers.Default))
         )
 
         val decrypted = crypto.decrypt(awaitEncryptedContent(viewModel)).getOrNull()
@@ -113,7 +124,8 @@ class RecoveryPhraseViewModelTest {
             recoveryPhraseType = RecoveryPhraseFragment.RecoveryPhraseType.Mnemonic,
             seedPhraseQrCrypto = crypto,
             localStorage = localStorage,
-            restoreSettingsManager = restoreSettingsManager
+            restoreSettingsManager = restoreSettingsManager,
+            dispatcherProvider = TestDispatcherProvider(Dispatchers.Default, CoroutineScope(Dispatchers.Default))
         )
 
         val decrypted = crypto.decrypt(awaitEncryptedContent(viewModel)).getOrNull()
@@ -132,7 +144,8 @@ class RecoveryPhraseViewModelTest {
             recoveryPhraseType = RecoveryPhraseFragment.RecoveryPhraseType.Monero,
             seedPhraseQrCrypto = crypto,
             localStorage = localStorage,
-            restoreSettingsManager = restoreSettingsManager
+            restoreSettingsManager = restoreSettingsManager,
+            dispatcherProvider = TestDispatcherProvider(Dispatchers.Default, CoroutineScope(Dispatchers.Default))
         )
 
         val decrypted = crypto.decrypt(awaitEncryptedContent(viewModel)).getOrNull()
@@ -154,7 +167,8 @@ class RecoveryPhraseViewModelTest {
             recoveryPhraseType = RecoveryPhraseFragment.RecoveryPhraseType.Mnemonic,
             seedPhraseQrCrypto = crypto,
             localStorage = localStorage,
-            restoreSettingsManager = restoreSettingsManager
+            restoreSettingsManager = restoreSettingsManager,
+            dispatcherProvider = TestDispatcherProvider(Dispatchers.Default, CoroutineScope(Dispatchers.Default))
         )
 
         val encrypted = awaitEncryptedContent(viewModel)
@@ -181,7 +195,8 @@ class RecoveryPhraseViewModelTest {
             recoveryPhraseType = RecoveryPhraseFragment.RecoveryPhraseType.Mnemonic,
             seedPhraseQrCrypto = crypto,
             localStorage = localStorage,
-            restoreSettingsManager = restoreSettingsManager
+            restoreSettingsManager = restoreSettingsManager,
+            dispatcherProvider = TestDispatcherProvider(Dispatchers.Default, CoroutineScope(Dispatchers.Default))
         )
 
         val decrypted = crypto.decrypt(awaitEncryptedContent(viewModel)).getOrNull()
@@ -200,7 +215,8 @@ class RecoveryPhraseViewModelTest {
             recoveryPhraseType = RecoveryPhraseFragment.RecoveryPhraseType.Monero,
             seedPhraseQrCrypto = crypto,
             localStorage = localStorage,
-            restoreSettingsManager = restoreSettingsManager
+            restoreSettingsManager = restoreSettingsManager,
+            dispatcherProvider = TestDispatcherProvider(Dispatchers.Default, CoroutineScope(Dispatchers.Default))
         )
 
         val decrypted = crypto.decrypt(awaitEncryptedContent(viewModel)).getOrNull()
@@ -216,8 +232,7 @@ class RecoveryPhraseViewModelTest {
         // and pulls birthday height from RestoreSettings.
         val account = mnemonicAccount(words = bip39Words.split(" "), passphrase = "")
         val expectedMoneroWords = MoneroWalletSeedConverter.getLegacySeedFromBip39(
-            words = bip39Words.split(" "),
-            passphrase = ""
+            seed = (account.type as AccountType.Mnemonic).seed
         )
         val settings = RestoreSettings().also { it.birthdayHeight = 1_234_567L }
         every {
@@ -229,7 +244,8 @@ class RecoveryPhraseViewModelTest {
             recoveryPhraseType = RecoveryPhraseFragment.RecoveryPhraseType.Monero,
             seedPhraseQrCrypto = crypto,
             localStorage = localStorage,
-            restoreSettingsManager = restoreSettingsManager
+            restoreSettingsManager = restoreSettingsManager,
+            dispatcherProvider = TestDispatcherProvider(Dispatchers.Default, CoroutineScope(Dispatchers.Default))
         )
 
         val decrypted = crypto.decrypt(awaitEncryptedContent(viewModel)).getOrNull()
@@ -249,7 +265,8 @@ class RecoveryPhraseViewModelTest {
             recoveryPhraseType = RecoveryPhraseFragment.RecoveryPhraseType.Mnemonic,
             seedPhraseQrCrypto = crypto,
             localStorage = localStorage,
-            restoreSettingsManager = restoreSettingsManager
+            restoreSettingsManager = restoreSettingsManager,
+            dispatcherProvider = TestDispatcherProvider(Dispatchers.Default, CoroutineScope(Dispatchers.Default))
         )
         val first = awaitEncryptedContent(viewModel)
 
@@ -271,7 +288,7 @@ class RecoveryPhraseViewModelTest {
     private fun mnemonicAccount(words: List<String>, passphrase: String): Account = Account(
         id = "id-${words.size}-${passphrase.length}",
         name = "Test",
-        type = AccountType.Mnemonic(words, passphrase),
+        type = AccountType.Mnemonic(words, passphrase, MnemonicDerivation.Legacy),
         origin = AccountOrigin.Created,
         level = 0
     )
@@ -295,6 +312,62 @@ class RecoveryPhraseViewModelTest {
                 delay(10)
             }
             viewModel.encryptedSeedQrContent
+        }
+    }
+    @Test
+    fun export_japaneseAccount_usesStoredModeForQrEvmAndMonero() {
+        installEthereumCryptoProviderForTest()
+        val words = List(11) { "あいこくしん" } + "あおぞら"
+        val addresses = listOf("0x25e3888d3842ebdd70041f3e3effa927f29805c8",
+                "0x353924fcafc2cd9815e3cfd60f8de0194828b766")
+        val keys = listOf("1c9b55489b2aca84605bb1b65a499c33e082845247c3c7338762a6445cc7be34",
+                "4390f68b2c62a00a6f67d0c10d77ee36eea9ef2f7c6b028bec1c1cbda51c7775")
+        every { restoreSettingsManager.settings(any(), any()) } returns RestoreSettings().also {
+            it.birthdayHeight = 123L
+        }
+        MnemonicDerivation.entries.forEachIndexed { index, mode ->
+            val type = AccountType.Mnemonic(words, "páss", mode)
+            val account = mnemonicAccount(words, "páss").copy(type = type)
+            val vm = RecoveryPhraseViewModel(account, RecoveryPhraseFragment.RecoveryPhraseType.Mnemonic,
+                crypto, localStorage, restoreSettingsManager,
+                TestDispatcherProvider(Dispatchers.Default, CoroutineScope(Dispatchers.Default)))
+            val decoded = crypto.decrypt(awaitEncryptedContent(vm)).getOrThrow()
+            assertEquals(mode, decoded.derivation)
+            assertEquals(mode, vm.japaneseDerivation)
+            assertEquals(words, decoded.words)
+            assertEquals(addresses[index], type.evmAddress(Chain.Ethereum)?.hex?.lowercase())
+            assertEquals(keys[index], Signer.privateKey(type.seed, Chain.Ethereum).toString(16).padStart(64, '0'))
+            val monero = RecoveryPhraseViewModel(account, RecoveryPhraseFragment.RecoveryPhraseType.Monero,
+                crypto, localStorage, restoreSettingsManager,
+                TestDispatcherProvider(Dispatchers.Default, CoroutineScope(Dispatchers.Default)))
+            val expected = MoneroWalletSeedConverter.getLegacySeedFromBip39(type.seed)
+            assertEquals(expected, crypto.decrypt(awaitEncryptedContent(monero)).getOrThrow().words)
+            assertNull(monero.japaneseDerivation)
+        }
+    }
+    @Test
+    fun export_japaneseStoredMode_matchesFrozenPublicAndPrivateRootKeys() {
+        installEthereumCryptoProviderForTest()
+        val manager = mockk<EvmBlockchainManager> {
+            every { getChain(BlockchainType.Ethereum) } returns Chain.Ethereum
+        }
+        val expected = listOf(
+            "xprv9s21ZrQH143K4SNPFPnna2cMgukr7CHtVkUMny6ojNThSUhXKh9v" +
+                "v4nNZGMg93k5RFj9SXQaBsoiUcyVxvZC6k8gL4zNCeH4ReEfEhb2KxM" to
+                ("xpub661MyMwAqRbcGvSrMRKnwAZ6EwbLWf1jryPxbMWRHhzgKH2fsEUB" +
+                    "Ts6rQXg9dYoeJyW7B2AwKFLFR3M2HHQsxgq5PAk2uDo2mtKSghTgpgJ"),
+            "xprv9s21ZrQH143K4WBvhTtj1HEeXvSuAFLoJKF5aWotELzNNdKxejYY" +
+                "z45bQAQdCrsBbui3Za6gv4uA8GChSNr51g9cSqTXDR59xDhPc1wFxBB" to
+                ("xpub661MyMwAqRbcGzGPoVRjNRBP5xHPZi4efYAgNuDVngXMFRf7CGro" +
+                    "XrQ5FTRrpMy9WwYWGHPFrPj4CRsNAadKBSWqfnszXhGU59bm4fDcWgL")
+        )
+        MnemonicDerivation.entries.forEachIndexed { index, mode ->
+            val words = List(11) { "あいこくしん" } + "あおぞら"
+            val account = mnemonicAccount(words, "páss").copy(type = AccountType.Mnemonic(words, "páss", mode))
+            val privateKeys = PrivateKeysViewModel(account, manager).viewState
+            val publicKeys = PublicKeysViewModel(account, manager).viewState
+            assertEquals(expected[index].first, privateKeys.bip32RootKey?.hdKey?.serializePrivate())
+            assertEquals(expected[index].second, publicKeys.extendedPublicKey?.hdKey?.serializePublic())
         }
     }
 }

@@ -1,10 +1,10 @@
 package cash.p.terminal.core.adapters
 
 import cash.p.dogecoinkit.DogecoinKit
-import cash.p.terminal.core.App
 import cash.p.terminal.core.IFeeRateProvider
 import cash.p.terminal.core.ISendBitcoinAdapter
 import cash.p.terminal.core.UnsupportedAccountException
+import cash.p.terminal.core.managers.BitcoinKitEnvironment
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.Wallet
@@ -32,8 +32,9 @@ class DogecoinAdapter(
         wallet: Wallet,
         syncMode: BitcoinCore.SyncMode,
         backgroundManager: BackgroundManager,
+        environment: BitcoinKitEnvironment,
         feeRateProvider: IFeeRateProvider? = null
-    ) : this(createKit(wallet, syncMode), syncMode, backgroundManager, wallet, feeRateProvider)
+    ) : this(createKit(wallet, syncMode, environment), syncMode, backgroundManager, wallet, feeRateProvider)
 
     init {
         kit.listener = this
@@ -106,18 +107,21 @@ class DogecoinAdapter(
         private const val KIT_CONFIRMATIONS_THRESHOLD = 1
         private const val DISPLAY_CONFIRMATIONS_THRESHOLD = 3
 
+        @Suppress("LongMethod")
         private fun createKit(
             wallet: Wallet,
             syncMode: BitcoinCore.SyncMode,
+            environment: BitcoinKitEnvironment,
         ): DogecoinKit {
             val account = wallet.account
 
             when (val accountType = account.type) {
                 is AccountType.Mnemonic -> {
                     return DogecoinKit(
-                        context = App.instance,
-                        words = accountType.words,
-                        passphrase = accountType.passphrase,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        seed = accountType.seed,
                         walletId = account.id,
                         syncMode = syncMode,
                         networkType = DogecoinKit.NetworkType.MainNet,
@@ -137,8 +141,10 @@ class DogecoinAdapter(
                         tokenType = wallet.token.type,
                     )
                     return DogecoinKit(
-                        context = App.instance,
-                        extendedKey = wallet.getHDExtendedKey()!!,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        extendedKey = requireNotNull(wallet.getHDExtendedKey()),
                         walletId = account.id,
                         syncMode = syncMode,
                         networkType = DogecoinKit.NetworkType.MainNet,
@@ -156,7 +162,9 @@ class DogecoinAdapter(
                         coin = "Dogecoin"
                     )
                     val kit = DogecoinKit(
-                        context = App.instance,
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
                         extendedKey = requireNotNull(wallet.getHDExtendedKey()),
                         walletId = account.id,
                         syncMode = syncMode,
@@ -173,8 +181,5 @@ class DogecoinAdapter(
             }
         }
 
-        fun clear(walletId: String) {
-            DogecoinKit.clear(App.instance, DogecoinKit.NetworkType.MainNet, walletId)
-        }
     }
 }

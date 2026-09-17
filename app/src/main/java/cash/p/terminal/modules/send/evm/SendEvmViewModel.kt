@@ -12,6 +12,7 @@ import cash.p.terminal.core.ISendEthereumAdapter
 import cash.p.terminal.core.LocalizedException
 import cash.p.terminal.core.OfflineTransactionAdapter
 import cash.p.terminal.core.SignedOfflineEvmTransaction
+import cash.p.terminal.core.evmExplorerTransactionHash
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.OfflineSignedTransactionRepository
@@ -235,8 +236,15 @@ internal class SendEvmViewModel(
     private suspend fun signedOfflineTransaction(): OfflineSignResult {
         val confirmationData = getConfirmationData()
         val signingAdapter = offlineSignAdapter ?: throw LocalizedException(R.string.Error)
+        val signedTransaction = signingAdapter.signOffline(sendTransactionService.offlineSignRequest())
+        // Signed here, so it belongs to this wallet even when broadcast happens elsewhere.
+        // Transaction records carry the "0x" prefix that the adapter strips off.
+        locallyCreatedTransactionRepository.markCreated(
+            wallet,
+            signedTransaction.txHash.evmExplorerTransactionHash(),
+        )
         return OfflineSignResult(
-            signedTransaction = signingAdapter.signOffline(sendTransactionService.offlineSignRequest()),
+            signedTransaction = signedTransaction,
             confirmationData = confirmationData,
         )
     }

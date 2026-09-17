@@ -9,7 +9,7 @@ interface InstallSourceProvider {
     val installSource: InstallSource
 
     /** Where "Update now" should send the user, based on how the app was installed. */
-    fun updateDestinationUrl(release: AppRelease): String
+    fun updateDestinationUrl(release: AppRelease?): String?
 }
 
 class InstallSourceProviderImpl : InstallSourceProvider {
@@ -21,12 +21,12 @@ class InstallSourceProviderImpl : InstallSourceProvider {
             else -> InstallSource.OTHER
         }
 
-    override fun updateDestinationUrl(release: AppRelease): String {
+    override fun updateDestinationUrl(release: AppRelease?): String? {
         val packageName = "cash.p.terminal" // use always release apk package
         return when (installSource) {
             InstallSource.GOOGLE_PLAY -> "https://play.google.com/store/apps/details?id=$packageName"
             InstallSource.FDROID -> "https://f-droid.org/packages/$packageName/"
-            InstallSource.OTHER -> release.htmlUrl
+            InstallSource.OTHER -> release?.htmlUrl
         }
     }
 

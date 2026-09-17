@@ -746,8 +746,7 @@ class MoneroKitWrapper(
         val accountType = account.type as? AccountType.Mnemonic
             ?: throw UnsupportedAccountException()
         val restoredAccount = moneroWalletUseCase.restoreFromBip39(
-            accountType.words,
-            accountType.passphrase,
+            accountType.seed,
             height
         ) ?: throw IllegalStateException("Failed to restore account from 12 words")
         moneroFileDao.insert(
@@ -2424,12 +2423,13 @@ class MoneroKitWrapper(
         health: MoneroWalletHealthSnapshot,
     ) {
         try {
-            if (
+            val refreshDidNotCompleteHealthy =
                 !controlledLiveRefreshCommitted ||
-                !health.isFullyHealthy ||
-                wallet == null ||
-                wallet.hasUnknownKeyImages()
-            ) {
+                    !health.isFullyHealthy ||
+                    wallet == null ||
+                    wallet.hasUnknownKeyImages()
+
+            if (refreshDidNotCompleteHealthy) {
                 setSpendReadinessForSession(session, MoneroSpendReadiness.Syncing)
                 controlledRefreshFinalization?.completeExceptionally(
                     IllegalStateException("Monero controlled refresh did not complete with a healthy wallet"),

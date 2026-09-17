@@ -1,4 +1,4 @@
-package cash.p.terminal.ui_compose
+package cash.p.terminal.ui.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect

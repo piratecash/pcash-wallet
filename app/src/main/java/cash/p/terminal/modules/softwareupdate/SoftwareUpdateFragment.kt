@@ -37,9 +37,10 @@ class SoftwareUpdateFragment : BaseComposeFragment() {
         SoftwareUpdateNavHost(navController, onUpdateNow = ::onUpdateNow)
     }
 
-    private fun onUpdateNow(release: AppRelease) {
-        val destinationUrl = installSourceProvider.updateDestinationUrl(release)
-        openUrl(requireContext(), destinationUrl)
+    private fun onUpdateNow(release: AppRelease?) {
+        installSourceProvider.updateDestinationUrl(release)?.let { destinationUrl ->
+            openUrl(requireContext(), destinationUrl)
+        }
     }
 }
 
@@ -61,7 +62,7 @@ private sealed class SoftwareUpdateRoute {
 @Composable
 private fun SoftwareUpdateNavHost(
     fragmentNavController: NavController,
-    onUpdateNow: (AppRelease) -> Unit,
+    onUpdateNow: (AppRelease?) -> Unit,
 ) {
     val navController = rememberNavController()
     val openChangelog = { request: ChangelogRequest -> navController.navigateToChangelog(request) }
