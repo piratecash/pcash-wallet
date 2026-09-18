@@ -331,6 +331,25 @@ class RestoreMnemonicViewModelTest {
             )
         }
 
+    @Test
+    fun onEnterMnemonicPhrase_japaneseWordsJoinedWithIdeographicSpace_marksOnlyInvalidWordAtSourceRange() =
+        runTest(dispatcher) {
+            val viewModel = createViewModel()
+            viewModel.setMnemonicLanguage(Language.Japanese)
+            advanceUntilIdle()
+
+            // ざぶとん is absent from the BIP39 list and carries a dakuten, so NFKD would
+            // lengthen it — the range below only holds if the source text is tokenized.
+            val invalidWord = "ざぶとん"
+            val text = (List(11) { "あいこくしん" } + invalidWord).joinToString("　")
+
+            viewModel.onEnterMnemonicPhrase(text, cursorPosition = 0)
+            advanceUntilIdle()
+
+            val start = text.length - invalidWord.length
+            assertEquals(listOf(start..text.lastIndex), viewModel.uiState.invalidWordRanges)
+        }
+
     private fun createViewModel() = RestoreMnemonicViewModel(
         validateMoneroMnemonicUseCase = validateMoneroMnemonicUseCase,
         validateMoneroHeightUseCase = validateMoneroHeightUseCase,

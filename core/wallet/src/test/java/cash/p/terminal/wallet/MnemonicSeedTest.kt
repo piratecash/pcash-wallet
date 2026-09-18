@@ -40,12 +40,27 @@ class MnemonicSeedTest {
         assertNotEquals(precomposedSeed.toHex(), decomposedSeed.toHex())
     }
 
+    @Test
+    fun derive_japaneseBip39Vector_matchesExpectedSeed() {
+        // NFKD is the import layer's job, so the fixture arrives normalized exactly as a
+        // stored account's words do; normalizing inside derive would break non-standard wallets.
+        val words = (List(11) { "あいこくしん" } + "あおぞら").map { it.normalizeNFKD() }
+        val passphrase = "㍍ガバヴァぱばぐゞちぢ十人十色".normalizeNFKD()
+
+        val seed = MnemonicSeed.derive(words, passphrase)
+
+        assertEquals(JAPANESE_BIP39_SEED, seed.toHex())
+    }
+
     private fun ByteArray.toHex() = joinToString("") { byte -> "%02x".format(byte) }
 
     private companion object {
         const val BIP39_SEED =
             "c55257c360c07c72029aebc1b53c05ed0362ada38ead3e3e9efa3708e534955" +
                 "31f09a6987599d18264c1e1c92f2cf141630c7a3c4ab7c81b2f001698e7463b04"
+        const val JAPANESE_BIP39_SEED =
+            "a262d6fb6122ecf45be09c50492b31f92e9beb7d9a845987a02cefda57a15f9c" +
+                "467a17872029a9e92299b5cbdf306e3a0ee620245cbd508959b6cb7ca637bd55"
         const val PRECOMPOSED_SEED =
             "a95185390a5b79770af0811570a05db80bdd3d018a61768fe9c5c6feca930d04" +
                 "5b7f04273a565f3f777cb1d10d11a2595421cfca1a82ffbaa37824409b121501"

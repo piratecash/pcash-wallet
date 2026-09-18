@@ -10,6 +10,7 @@ import cash.p.terminal.core.usecase.MoneroWalletUseCase
 import cash.p.terminal.core.usecase.ValidateMoneroHeightUseCase
 import cash.p.terminal.core.usecase.ValidateMoneroMnemonicUseCase
 import cash.p.terminal.core.utils.Bip39LanguageDetector
+import cash.p.terminal.core.utils.MNEMONIC_WORD_REGEX
 import cash.p.terminal.core.utils.MoneroConfig
 import cash.p.terminal.modules.mnemonic.mnemonicLanguagesOrdered
 import cash.p.terminal.modules.restoreaccount.restoremnemonic.RestoreMnemonicModule.UiState
@@ -66,8 +67,6 @@ class RestoreMnemonicViewModel(
     private val mnemonicWordList: MnemonicWordList
         get() = if (isMoneroMnemonic) mnemonicMoneroWordList else normalMnemonicWordList
 
-
-    private val regex = Regex("\\S+")
 
     val defaultName = accountFactory.getNextAccountName()
     var accountName: String = defaultName
@@ -335,7 +334,7 @@ class RestoreMnemonicViewModel(
     }
 
     private fun wordItems(text: String): List<WordItem> {
-        return regex.findAll(text.lowercase())
+        return MNEMONIC_WORD_REGEX.findAll(text.lowercase())
             .map { WordItem(it.value, it.range) }
             .toList()
     }

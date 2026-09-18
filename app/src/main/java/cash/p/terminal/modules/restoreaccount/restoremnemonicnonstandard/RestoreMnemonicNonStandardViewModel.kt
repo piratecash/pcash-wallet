@@ -3,6 +3,7 @@ package cash.p.terminal.modules.restoreaccount.restoremnemonicnonstandard
 import cash.p.terminal.R
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.core.IAccountFactory
+import cash.p.terminal.core.utils.MNEMONIC_WORD_REGEX
 import io.horizontalsystems.core.ViewModelUiState
 import cash.p.terminal.core.managers.WordsManager
 import cash.p.terminal.modules.restoreaccount.restoremnemonic.RestoreMnemonicModule
@@ -35,8 +36,6 @@ class RestoreMnemonicNonStandardViewModel(
     private var text = ""
     private var cursorPosition = 0
     private var mnemonicWordList = WordList.wordList(language)
-
-    private val regex = Regex("\\S+")
 
     val defaultName = accountFactory.getNextAccountName()
     var accountName: String = defaultName
@@ -158,7 +157,7 @@ class RestoreMnemonicNonStandardViewModel(
     }
 
     private fun wordItems(text: String): List<RestoreMnemonicModule.WordItem> {
-        return regex.findAll(text.lowercase())
+        return MNEMONIC_WORD_REGEX.findAll(text.lowercase())
             .map { RestoreMnemonicModule.WordItem(it.value, it.range) }
             .toList()
     }

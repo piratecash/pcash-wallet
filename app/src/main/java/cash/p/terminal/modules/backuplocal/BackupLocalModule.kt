@@ -79,6 +79,9 @@ object BackupLocalModule {
     }
 
     private const val MNEMONIC = "mnemonic"
+
+    /** Written by v0.60.0 only; read as a plain mnemonic, never written again. */
+    private const val MNEMONIC_BIP39 = "mnemonic_bip39"
     private const val MNEMONIC_MONERO = "mnemonic_monero"
     private const val PRIVATE_KEY = "private_key"
     private const val SECRET_KEY = "secret_key"
@@ -161,7 +164,7 @@ object BackupLocalModule {
     @Throws(IllegalStateException::class)
     suspend fun getAccountTypeFromData(accountType: String, data: ByteArray): AccountType? {
         return when (accountType) {
-            MNEMONIC -> {
+            MNEMONIC, MNEMONIC_BIP39 -> {
                 val parts = String(data, Charsets.UTF_8).split("@", limit = 2)
                 //check for nonstandard mnemonic from iOs app
                 if (parts[0].split("&").size > 1)

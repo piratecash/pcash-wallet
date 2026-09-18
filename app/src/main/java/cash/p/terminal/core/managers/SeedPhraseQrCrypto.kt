@@ -17,8 +17,9 @@ import javax.crypto.spec.SecretKeySpec
  * Encrypts and decrypts seed phrases for QR code sharing.
  * Uses time-based AES-128-CTR encryption with a 3-hour validity window.
  *
- * Encoder always emits JSON v2 plaintext. Decoder dispatches on the first non-whitespace
- * character: '{' => JSON v2, otherwise legacy "words@passphrase|height" format.
+ * Encoder always emits JSON v2 plaintext; the decoder also accepts v3 as written by v0.60.0.
+ * Decoder dispatches on the first non-whitespace character: '{' => JSON, otherwise legacy
+ * "words@passphrase|height" format.
  *
  * Legacy parser is conservative — '|height' is only honoured for 25-word seeds, so a
  * BIP39 passphrase ending in '|<digits>' is preserved verbatim instead of being
@@ -145,7 +146,7 @@ class SeedPhraseQrCrypto(
         } catch (_: Exception) {
             return null
         }
-        if (payload.v != JSON_VERSION) return null
+        if (payload.v !in SUPPORTED_JSON_VERSIONS) return null
         val seed = DecryptedSeed(
             words = payload.words,
             passphrase = payload.passphrase.orEmpty(),
@@ -235,7 +236,7 @@ class SeedPhraseQrCrypto(
         val words: List<String>,
         val passphrase: String,
         val height: Long?,        // Non-null for 25-word Monero seeds
-        val language: Language?   // Non-null only when the producer included a hint (v2 only)
+        val language: Language?   // Non-null only when the producer included a hint
     )
 
     @Serializable
@@ -257,6 +258,9 @@ class SeedPhraseQrCrypto(
         private const val HEIGHT_DELIMITER = "|"
         private const val JSON_PREFIX = "{"
         private const val JSON_VERSION = 2
+
+        /** v3 was emitted by v0.60.0 with an extra `derivation` field; that field is ignored. */
+        private val SUPPORTED_JSON_VERSIONS = setOf(JSON_VERSION, 3)
         private const val MONERO_WORD_COUNT = 25
         private val VALID_WORD_COUNTS = setOf(12, 15, 18, 21, 24, 25)
 

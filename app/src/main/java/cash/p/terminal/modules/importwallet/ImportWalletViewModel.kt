@@ -12,6 +12,7 @@ import cash.p.terminal.core.managers.SeedPhraseQrCrypto
 import cash.p.terminal.core.managers.toSeedQrErrorStringRes
 import cash.p.terminal.core.openInputStreamSafe
 import cash.p.terminal.core.utils.Bip39LanguageDetector
+import cash.p.terminal.core.utils.MNEMONIC_WORD_REGEX
 import cash.p.terminal.core.validateAndSaveBackup
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.wallet.normalizeNFKD
@@ -90,9 +91,9 @@ class ImportWalletViewModel(
     }
 
     private fun String.toPlainBip39Mnemonic(): SeedPhraseQrCrypto.DecryptedSeed? {
-        val words = trim().lowercase().split(Regex("\\s+"))
-            .filter { it.isNotBlank() }
-            .map { it.normalizeNFKD() }
+        val words = MNEMONIC_WORD_REGEX.findAll(trim().lowercase())
+            .map { it.value.normalizeNFKD() }
+            .toList()
         if (words.size !in BIP39_WORD_COUNTS) return null
 
         val language = Bip39LanguageDetector.detectExact(words).firstOrNull() ?: return null
