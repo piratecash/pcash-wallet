@@ -139,7 +139,7 @@ class EvmKitManager(
         val signer = runBlocking { evmSignerFactory.createSigner(account, blockchainType, chain) }
 
         val eventListenerFactory =
-            NetworkErrorEventListener.Factory(blockchainType, account.id, networkErrorTracker)
+            NetworkErrorEventListener.Factory(blockchainType, account.id, networkErrorTracker, recordHttpErrors = true)
 
         val evmKit = EthereumKit.getInstance(
             application = App.instance,
