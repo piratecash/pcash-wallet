@@ -2,6 +2,7 @@ package cash.p.terminal.modules.multiswap.providers
 
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionResult
+import cash.p.terminal.network.changenow.domain.entity.NewTransactionResponse
 import cash.p.terminal.network.changenow.domain.repository.ChangeNowRepository
 import cash.p.terminal.network.pirate.domain.useCase.GetChangeNowAssociatedCoinTickerUseCase
 import cash.p.terminal.network.swaprepository.SwapProvider
@@ -10,7 +11,9 @@ import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.useCases.WalletUseCase
+import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
@@ -24,6 +27,7 @@ import org.junit.Test
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
+import java.math.BigDecimal
 
 class ChangeNowProviderTest {
 
@@ -33,6 +37,9 @@ class ChangeNowProviderTest {
     private val storage = mockk<SwapProviderTransactionsStorage>(relaxed = true)
     private val accountManager = mockk<IAccountManager>(relaxed = true)
     private val marketKit = mockk<MarketKitWrapper>(relaxed = true)
+
+    private val tokenIn = nativeTestToken(BlockchainType.Bitcoin, "BTC")
+    private val tokenOut = nativeTestToken(BlockchainType.Litecoin, "LTC")
 
     @Before
     fun setUp() {
@@ -114,6 +121,40 @@ class ChangeNowProviderTest {
 
         assertNull(provider.getWarningMessage(mockNonZcashNativeToken(), mockk(relaxed = true)))
     }
+
+    @Test
+    fun onTransactionCompleted_afterFinalQuote_nextFinalQuoteCreatesNewTransaction() = runTest {
+        coEvery { getTickerUseCase(any(), any()) } returns "btc"
+        coEvery { changeNowRepository.createTransaction(any()) } returns newTransactionResponse()
+        val provider = createProvider()
+
+        provider.fetchFinalQuote()
+        provider.fetchFinalQuote()
+        provider.onTransactionCompleted(
+            buildSwapProviderTransaction(SwapProvider.CHANGENOW, "tx-123"),
+            mockk(relaxed = true),
+        )
+        provider.fetchFinalQuote()
+
+        coVerify(exactly = 2) { changeNowRepository.createTransaction(any()) }
+    }
+
+    private suspend fun ChangeNowProvider.fetchFinalQuote() =
+        fetchFinalQuote(tokenIn, tokenOut, BigDecimal.ONE, emptyMap(), null, mockk(relaxed = true))
+
+    private fun newTransactionResponse() = NewTransactionResponse(
+        payinAddress = "deposit",
+        payoutAddress = "payout",
+        payoutExtraId = null,
+        fromCurrency = "btc",
+        toCurrency = "ltc",
+        refundAddress = null,
+        refundExtraId = null,
+        payinExtraId = null,
+        payinExtraIdName = null,
+        id = "cn-order-1",
+        amount = BigDecimal("0.5"),
+    )
 
     private fun createProvider() = ChangeNowProvider(
         walletUseCase = walletUseCase,

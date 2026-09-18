@@ -11,8 +11,10 @@ import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.useCases.WalletUseCase
+import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.every
 import io.mockk.mockk
@@ -49,6 +51,13 @@ internal fun buildSwapProviderTransaction(
 internal fun TranslatableString?.formatArgFirst(): String? =
     (this as? TranslatableString.ResString)
         ?.formatArgs?.firstOrNull() as? String
+
+internal fun nativeTestToken(blockchainType: BlockchainType, code: String) = Token(
+    coin = Coin(uid = code.lowercase(), name = code, code = code),
+    blockchain = Blockchain(blockchainType, code, null),
+    type = TokenType.Native,
+    decimals = 8,
+)
 
 internal fun mockZcashToken(addressSpec: TokenType.AddressSpecType): Token =
     mockk {

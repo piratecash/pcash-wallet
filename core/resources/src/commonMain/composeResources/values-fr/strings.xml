@@ -634,6 +634,7 @@
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">Jeton non pris en charge</string>
     <string name="zec_transparent_used">Lors de la création de l’échange, une adresse t temporaire est utilisée : %s. Elle est transmise au fournisseur d’échange et est nécessaire pour un remboursement si l’échange n’est pas terminé. L’utilisation d’une adresse t peut entraîner une désanonymisation partielle de la transaction.</string>
+    <string name="swap_yifi_memo_unsupported">Le fournisseur de swap exige un mémo de dépôt qui ne peut pas être envoyé depuis ce réseau. Choisissez un autre fournisseur.</string>
     <!-- Swap Settings -->
     <string name="SwapSettings_Title">Paramètres de swap</string>
     <string name="SwapSettings_SlippageTitle">Effet de glissement</string>

@@ -639,6 +639,7 @@
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">Niet-ondersteunde token</string>
     <string name="zec_transparent_used">Bij het aanmaken van de wissel wordt een tijdelijk t-adres gebruikt: %s. Dit wordt doorgegeven aan de wisselprovider en is nodig voor een terugbetaling als de wissel niet wordt voltooid. Het gebruik van een t-adres kan leiden tot gedeeltelijke deanonimisering van de transactie.</string>
+    <string name="swap_yifi_memo_unsupported">De swapprovider vereist een stortingsmemo die niet vanaf dit netwerk kan worden verzonden. Kies een andere provider.</string>
     <!-- Swap Settings -->
     <string name="SwapSettings_Title">Swap-instellingen</string>
     <string name="SwapSettings_SlippageTitle">Slippage Tolerance</string>

@@ -326,23 +326,19 @@ class SwapQuoteService(
         else -> NoSupportedSwapProvider()
     }
 
-    fun setAmountIn(value: BigDecimal?) {
-        setAmount(value, SwapAmountDirection.In)
+    /** Drops the user's provider choice so the next quotation picks the best quote again. */
+    fun clearPreferredProvider() {
+        preferredProvider = null
     }
 
-    fun setAmountOut(value: BigDecimal?) {
-        setAmount(value, SwapAmountDirection.Out)
-    }
-
-    private fun setAmount(value: BigDecimal?, newDirection: SwapAmountDirection) {
-        if (amount == value && direction == newDirection) {
+    fun setAmount(value: BigDecimal?, direction: SwapAmountDirection) {
+        if (amount == value && this.direction == direction) {
             runQuotationWithDebounce()
             return
         }
 
         amount = value
-        direction = newDirection
-        preferredProvider = null
+        this.direction = direction
 
         runQuotationWithDebounce()
     }

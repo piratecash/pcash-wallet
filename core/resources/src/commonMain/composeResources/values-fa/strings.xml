@@ -638,6 +638,7 @@
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">توکن پشتیبانی نمی‌شود</string>
     <string name="zec_transparent_used">در هنگام ایجاد مبادله از آدرس t موقت استفاده می‌شود: ‎%s‎. این آدرس به ارائه‌دهنده مبادله ارسال می‌شود و در صورت عدم تکمیل مبادله برای بازپرداخت وجه مورد نیاز است. استفاده از آدرس t ممکن است منجر به ناشناس‌زدایی جزئی تراکنش شود.</string>
+    <string name="swap_yifi_memo_unsupported">ارائه‌دهنده سواپ به یک یادداشت (memo) واریز نیاز دارد که نمی‌توان آن را از این شبکه ارسال کرد. ارائه‌دهنده دیگری را انتخاب کنید.</string>
     <!-- Swap Settings -->
     <string name="SwapSettings_Title">تنظیمات سواپ</string>
     <string name="SwapSettings_SlippageTitle">تحمل لغزش</string>

@@ -67,8 +67,8 @@ class SwapViewModelFiatInputTest {
         every { stateFlow } returns quoteStateFlow
         every { swapSettings } returns emptyMap()
     }
-    private val balanceService = mockk<TokenBalanceService>(relaxed = true) {
-        every { stateFlow } returns serviceStateFlow(
+    private val balanceStateFlow = MutableSharedFlow<TokenBalanceService.State>(replay = 1).also {
+        it.tryEmit(
             TokenBalanceService.State(
                 balance = null,
                 displayBalance = null,
@@ -79,6 +79,9 @@ class SwapViewModelFiatInputTest {
                 insufficientFeeBalance = false,
             )
         )
+    }
+    private val balanceService = mockk<TokenBalanceService>(relaxed = true) {
+        every { stateFlow } returns ServiceStateFlow(balanceStateFlow.asSharedFlow())
     }
     private val timerStateFlow = MutableSharedFlow<TimerService.State>(replay = 1).also {
         it.tryEmit(TimerService.State(remaining = null, timeout = false))
@@ -138,8 +141,8 @@ class SwapViewModelFiatInputTest {
         rateFlow.value = BigDecimal("0.20")
         advanceUntilIdle()
 
-        verify(exactly = 1) { quoteService.setAmountOut(BigDecimal("4")) }
-        verify(exactly = 1) { quoteService.setAmountOut(BigDecimal("5")) }
+        verify(exactly = 1) { quoteService.setAmount(BigDecimal("4"), SwapAmountDirection.Out) }
+        verify(exactly = 1) { quoteService.setAmount(BigDecimal("5"), SwapAmountDirection.Out) }
     }
 
     @Test
@@ -153,8 +156,8 @@ class SwapViewModelFiatInputTest {
         rateFlow.value = BigDecimal("0.20")
         advanceUntilIdle()
 
-        verify(exactly = 1) { quoteService.setAmountIn(BigDecimal("4")) }
-        verify(exactly = 1) { quoteService.setAmountIn(BigDecimal("5")) }
+        verify(exactly = 1) { quoteService.setAmount(BigDecimal("4"), SwapAmountDirection.In) }
+        verify(exactly = 1) { quoteService.setAmount(BigDecimal("5"), SwapAmountDirection.In) }
     }
 
     @Test
@@ -171,8 +174,8 @@ class SwapViewModelFiatInputTest {
             rateFlow.value = BigDecimal("0.50")
             advanceUntilIdle()
 
-            verify(exactly = 0) { quoteService.setAmountIn(any()) }
-            verify(exactly = 1) { quoteService.setAmountOut(BigDecimal("4")) }
+            verify(exactly = 0) { quoteService.setAmount(any(), SwapAmountDirection.In) }
+            verify(exactly = 1) { quoteService.setAmount(BigDecimal("4"), SwapAmountDirection.Out) }
         }
 
     @Test
@@ -189,7 +192,7 @@ class SwapViewModelFiatInputTest {
             rateFlow.value = BigDecimal("0.50")
             advanceUntilIdle()
 
-            verify(exactly = 0) { quoteService.setAmountOut(any()) }
+            verify(exactly = 0) { quoteService.setAmount(any(), SwapAmountDirection.Out) }
         }
 
     @Test
@@ -206,8 +209,72 @@ class SwapViewModelFiatInputTest {
             rateFlow.value = BigDecimal("0.50")
             advanceUntilIdle()
 
-            verify(exactly = 0) { quoteService.setAmountIn(any()) }
+            verify(exactly = 0) { quoteService.setAmount(any(), SwapAmountDirection.In) }
         }
+
+    @Test
+    fun onEnterFiatAmount_rateChanges_keepsPreferredProvider() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onEnterFiatAmount(BigDecimal.ONE)
+        advanceUntilIdle()
+        clearMocks(quoteService, answers = false, recordedCalls = true)
+
+        rateFlow.value = BigDecimal("0.20")
+        advanceUntilIdle()
+
+        verify(exactly = 1) { quoteService.setAmount(BigDecimal("5"), SwapAmountDirection.In) }
+        verify(exactly = 0) { quoteService.clearPreferredProvider() }
+    }
+
+    @Test
+    fun onEnterFiatAmount_userEntry_clearsPreferredProvider() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        clearMocks(quoteService, answers = false, recordedCalls = true)
+
+        viewModel.onEnterFiatAmount(BigDecimal.ONE)
+        advanceUntilIdle()
+
+        verify(exactly = 1) { quoteService.clearPreferredProvider() }
+    }
+
+    @Test
+    fun onEnterAmount_userEntry_clearsPreferredProvider() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        clearMocks(quoteService, answers = false, recordedCalls = true)
+
+        viewModel.onEnterAmount(BigDecimal.ONE)
+        advanceUntilIdle()
+
+        verify(exactly = 1) { quoteService.clearPreferredProvider() }
+    }
+
+    @Test
+    fun onEnterAmountPercentage_userEntry_clearsPreferredProvider() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        balanceStateFlow.emit(
+            TokenBalanceService.State(
+                balance = BigDecimal("10"),
+                displayBalance = BigDecimal("10"),
+                error = null,
+                fee = null,
+                feeToken = null,
+                feeCoinBalance = null,
+                insufficientFeeBalance = false,
+            )
+        )
+        advanceUntilIdle()
+        clearMocks(quoteService, answers = false, recordedCalls = true)
+
+        viewModel.onEnterAmountPercentage(50)
+        advanceUntilIdle()
+
+        verify(exactly = 1) { quoteService.clearPreferredProvider() }
+        verify(exactly = 1) { quoteService.setAmount(BigDecimal("5"), SwapAmountDirection.In) }
+    }
 
     @Test
     fun refreshExpiredMultiSwapRoute_expiredRoute_blocksAndShowsLoading() = runTest(dispatcher) {
@@ -378,12 +445,5 @@ class SwapViewModelFiatInputTest {
         )
         timerStateFlow.emit(TimerService.State(remaining = null, timeout = false))
         advanceUntilIdle()
-    }
-
-    private companion object {
-        fun <T> serviceStateFlow(value: T): ServiceStateFlow<T> {
-            val flow = MutableSharedFlow<T>(replay = 1).also { it.tryEmit(value) }
-            return ServiceStateFlow(flow.asSharedFlow())
-        }
     }
 }

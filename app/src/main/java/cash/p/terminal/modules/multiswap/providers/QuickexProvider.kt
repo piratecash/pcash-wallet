@@ -376,5 +376,9 @@ class QuickexProvider(
     override fun onTransactionCompleted(
         transaction: SwapProviderTransaction,
         result: SendTransactionResult,
-    ) = providerSupport.onTransactionCompleted(transaction, result)
+    ) {
+        // The deposit is funded now; a repeat swap must get a new order.
+        finalQuote = null
+        providerSupport.onTransactionCompleted(transaction, result)
+    }
 }
