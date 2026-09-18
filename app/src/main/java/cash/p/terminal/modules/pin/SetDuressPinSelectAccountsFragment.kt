@@ -42,7 +42,6 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
-import cash.p.terminal.wallet.MnemonicDerivation
 
 class SetDuressPinSelectAccountsFragment : BaseComposeFragment() {
     @Composable
@@ -190,7 +189,7 @@ private fun SetDuressPinSelectAccountsScreenPreview() {
     val mockAccount = Account(
         id = "1",
         name = "Main Wallet",
-        type = AccountType.Mnemonic(emptyList(), "", MnemonicDerivation.Legacy),
+        type = AccountType.Mnemonic(emptyList(),""),
         origin = AccountOrigin.Created,
         level = 0
     )

@@ -1,7 +1,6 @@
 package cash.p.terminal.core.adapters.zcash
 
 import cash.p.terminal.wallet.AccountType
-import cash.p.terminal.wallet.MnemonicDerivation
 import cash.z.ecc.android.sdk.model.ZcashNetwork
 import cash.z.ecc.android.sdk.tool.DerivationTool
 import kotlinx.coroutines.runBlocking
@@ -12,7 +11,7 @@ class ZcashAddressDerivationTest {
 
     private val deriver = ZcashAddressDeriver()
 
-    private val seed get() = AccountType.Mnemonic(PHRASE.split(" "), "", MnemonicDerivation.Legacy).seed
+    private val seed get() = AccountType.Mnemonic(PHRASE.split(" "), "").seed
 
     @Test
     fun deriveUnifiedAddressFromSeed_sdkVector_matchesCanonicalUnifiedAddress() = runBlocking {
