@@ -28,6 +28,7 @@ import cash.p.terminal.modules.transactions.isIncomingForAmlCheck
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.ui_compose.ColorName
 import cash.p.terminal.ui_compose.ColoredValue
+import cash.p.terminal.ui_compose.amountColor
 import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.entities.CurrencyValue
@@ -137,14 +138,6 @@ object TransactionViewItemFactoryHelper {
         }
     }
 
-    private fun getAmountColor(incoming: Boolean?): ColorName {
-        return when (incoming) {
-            true -> ColorName.Remus
-            false -> ColorName.Lucian
-            else -> ColorName.Leah
-        }
-    }
-
     private fun getNftAmount(
         title: String,
         value: TransactionValue.NftValue,
@@ -173,7 +166,7 @@ object TransactionViewItemFactoryHelper {
 
         return TransactionInfoViewItem.NftAmount(
             title,
-            ColoredValue(valueFormatted, getAmountColor(incoming)),
+            ColoredValue(valueFormatted, amountColor(incoming)),
             nftName,
             nftMetadata?.previewImageUrl,
             R.drawable.icon_24_nft_placeholder,
@@ -219,13 +212,7 @@ object TransactionViewItemFactoryHelper {
                 }
             } ?: "---"
 
-        val color = if (hasRecipient && incoming == true) {
-            ColorName.Lucian
-        } else {
-            getAmountColor(incoming)
-        }
-
-        val coinValueColored = ColoredValue(coinValueFormatted, color)
+        val coinValueColored = ColoredValue(coinValueFormatted, amountColor(incoming, hasRecipient))
         val coinUid = if (value is TransactionValue.CoinValue && !value.token.isCustom) {
             value.token.coin.uid
         } else {
@@ -567,7 +554,7 @@ object TransactionViewItemFactoryHelper {
             else -> coinAmountFormatted
         }
 
-        val coinAmountColoredValue = ColoredValue(coinAmountString, getAmountColor(null))
+        val coinAmountColoredValue = ColoredValue(coinAmountString, amountColor(null))
 
         val fiatAmountString = when {
             hideAmount -> "*****"

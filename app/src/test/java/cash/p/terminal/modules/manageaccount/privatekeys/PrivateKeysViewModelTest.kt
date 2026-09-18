@@ -6,6 +6,7 @@ import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.MnemonicDerivation
 import io.horizontalsystems.ethereumkit.models.Chain
 import io.mockk.every
 import io.mockk.mockk
@@ -84,7 +85,7 @@ class PrivateKeysViewModelTest {
     }
 
     private fun createViewModel(words: List<String>) =
-        createViewModel(AccountType.Mnemonic(words, ""))
+        createViewModel(AccountType.Mnemonic(words, "", MnemonicDerivation.Legacy))
 
     private fun createViewModel(type: AccountType) = PrivateKeysViewModel(
         account = Account(

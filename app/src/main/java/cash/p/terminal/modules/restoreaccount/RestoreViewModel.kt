@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import cash.p.terminal.modules.enablecoin.restoresettings.TokenConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.getAndUpdate
 import cash.p.terminal.wallet.AccountType
-import io.horizontalsystems.hdwalletkit.Language
 
 class RestoreViewModel: ViewModel() {
 
@@ -21,27 +21,27 @@ class RestoreViewModel: ViewModel() {
     var fileBackup: Boolean = false
         private set
 
-    // QR scan prefill data - shared across navigation
-    var prefillWords: List<String>? = null
-        private set
-    var prefillPassphrase: String? = null
-        private set
-    var prefillMoneroHeight: Long? = null
-        private set
-    var prefillMnemonicLanguage: Language? = null
-        private set
+    private var importDraft: MnemonicImportDraft? = null
+    val mnemonicDraft: MnemonicImportDraft
+        get() = importDraft ?: MnemonicImportDraft()
 
-    fun setPrefillData(
-        words: List<String>?,
-        passphrase: String?,
-        moneroHeight: Long?,
-        mnemonicLanguage: Language? = null
-    ) {
-        prefillWords = words
-        prefillPassphrase = passphrase
-        prefillMoneroHeight = moneroHeight
-        prefillMnemonicLanguage = mnemonicLanguage
+    fun setDraft(draft: MnemonicImportDraft) {
+        if (importDraft != draft) accountType = null
+        importDraft = draft
     }
+
+    fun initializeDraft(draft: MnemonicImportDraft?) {
+        if (importDraft == null) importDraft = draft ?: MnemonicImportDraft()
+    }
+
+    private val _scannedText = MutableStateFlow<String?>(null)
+    val scannedText = _scannedText.asStateFlow()
+
+    fun onScannedText(text: String) {
+        _scannedText.value = text
+    }
+
+    fun takeScannedText(): String? = _scannedText.getAndUpdate { null }
 
     private val _tokenConfigResult = MutableStateFlow<TokenConfigResult?>(null)
     val tokenConfigResult = _tokenConfigResult.asStateFlow()

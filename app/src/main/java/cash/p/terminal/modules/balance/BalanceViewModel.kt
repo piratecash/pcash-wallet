@@ -58,7 +58,7 @@ import com.reown.walletkit.client.WalletKit
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.ViewModelUiState
 import io.horizontalsystems.core.entities.BlockchainType
-import io.horizontalsystems.hdwalletkit.Language
+import cash.p.terminal.modules.restoreaccount.MnemonicImportDraft
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -534,12 +534,7 @@ class BalanceViewModel(
     private fun handleEncryptedSeedQr(content: String) {
         seedPhraseQrCrypto.decrypt(content)
             .onSuccess { decrypted ->
-                openRestoreFromQr = OpenRestoreFromQr(
-                    words = decrypted.words,
-                    passphrase = decrypted.passphrase,
-                    moneroHeight = decrypted.height,
-                    language = decrypted.language
-                )
+                openRestoreFromQr = OpenRestoreFromQr(MnemonicImportDraft.decoded(decrypted))
                 emitState()
             }
             .onFailure { error ->
@@ -724,12 +719,7 @@ data class OpenSendTokenSelect(
     val prefilledData: PrefilledData,
 )
 
-data class OpenRestoreFromQr(
-    val words: List<String>,
-    val passphrase: String,
-    val moneroHeight: Long?, // Non-null for 25-word Monero seeds
-    val language: Language?
-)
+data class OpenRestoreFromQr(val draft: MnemonicImportDraft)
 
 sealed class TotalUIState {
     data class Visible(

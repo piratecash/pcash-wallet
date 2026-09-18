@@ -95,7 +95,7 @@ private fun FinishStepScreenLoadingPreview() {
             onCloseClick = {},
             onRetryClick = {},
             onOpenMiniAppClick = {},
-            stepIndicatorState = rememberStepIndicatorState(initialStep = 5)
+            stepIndicatorState = rememberStepIndicatorState(initialStep = 3)
         )
     }
 }
@@ -109,7 +109,7 @@ private fun FinishStepScreenSuccessPreview() {
             onCloseClick = {},
             onRetryClick = {},
             onOpenMiniAppClick = {},
-            stepIndicatorState = rememberStepIndicatorState(initialStep = 5)
+            stepIndicatorState = rememberStepIndicatorState(initialStep = 3)
         )
     }
 }
@@ -123,7 +123,7 @@ private fun FinishStepScreenErrorPreview() {
             onCloseClick = {},
             onRetryClick = {},
             onOpenMiniAppClick = {},
-            stepIndicatorState = rememberStepIndicatorState(initialStep = 5)
+            stepIndicatorState = rememberStepIndicatorState(initialStep = 3)
         )
     }
 }
@@ -137,7 +137,7 @@ private fun FinishStepScreenJwtExpiredPreview() {
             onCloseClick = {},
             onRetryClick = {},
             onOpenMiniAppClick = {},
-            stepIndicatorState = rememberStepIndicatorState(initialStep = 5)
+            stepIndicatorState = rememberStepIndicatorState(initialStep = 3)
         )
     }
 }

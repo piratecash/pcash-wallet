@@ -97,7 +97,7 @@ private fun JwtExpiredStepContentPreview() {
     ComposeAppTheme {
         JwtExpiredStepContent(
             stepTitle = "Step 4",
-            stepIndicatorState = rememberStepIndicatorState(initialStep = 4),
+            stepIndicatorState = rememberStepIndicatorState(initialStep = 2),
             onOpenMiniAppClick = {}
         )
     }

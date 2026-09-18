@@ -1,5 +1,7 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.wallet.MnemonicDerivation
+
 import cash.p.terminal.core.installEthereumCryptoProviderForTest
 import cash.p.terminal.trezor.domain.TrezorSigningException
 import cash.p.terminal.trezor.signer.TrezorEvmSigner
@@ -24,7 +26,7 @@ class EvmMessageSigningTest {
     private fun mnemonicSigner(): Signer {
         val words =
             "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about".split(" ")
-        val seed = AccountType.Mnemonic(words, "").seed
+        val seed = AccountType.Mnemonic(words, "", MnemonicDerivation.Legacy).seed
         return Signer.getInstance(seed, Chain.Ethereum)
     }
 

@@ -24,7 +24,7 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 @Stable
 class StepIndicatorState(
     initialStep: Int = 1,
-    val totalSteps: Int = 5
+    val totalSteps: Int = 3
 ) {
     var currentStep by mutableIntStateOf(initialStep)
 }
@@ -32,7 +32,7 @@ class StepIndicatorState(
 @Composable
 fun rememberStepIndicatorState(
     initialStep: Int = 1,
-    totalSteps: Int = 5
+    totalSteps: Int = 3
 ): StepIndicatorState {
     return remember { StepIndicatorState(initialStep, totalSteps) }
 }
@@ -71,7 +71,7 @@ fun StepIndicator(
 private fun StepIndicatorPreview() {
     ComposeAppTheme {
         StepIndicator(
-            state = rememberStepIndicatorState(initialStep = 1, totalSteps = 5),
+            state = rememberStepIndicatorState(initialStep = 1, totalSteps = 3),
             modifier = Modifier.width(200.dp)
         )
     }

@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "cash.p.terminal.navigation"
-    compileSdk = 36
+    compileSdk = rootProject.ext.get("compile_sdk_version") as Int
 
     defaultConfig {
         consumerProguardFiles("consumer-rules.pro")

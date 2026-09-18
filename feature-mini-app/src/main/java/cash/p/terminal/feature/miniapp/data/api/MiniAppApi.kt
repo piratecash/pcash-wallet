@@ -13,47 +13,37 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
+import io.horizontalsystems.core.DispatcherProvider
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class MiniAppApi(
     private val httpClient: HttpClient,
-    private val appHeadersProvider: AppHeadersProvider
+    private val appHeadersProvider: AppHeadersProvider,
+    private val dispatcherProvider: DispatcherProvider
 ) {
 
     internal companion object {
         const val API_VERSION = 2
     }
 
-    suspend fun getCaptcha(
-        jwt: String,
-        endpoint: String
-    ): CaptchaResponse = withContext(Dispatchers.IO) {
-        httpClient.get {
-            url("${endpoint}miniapp/users/captcha")
-            authHeaders(jwt)
-        }.parseResponse()
-    }
-
-    suspend fun verifyCaptcha(
-        jwt: String,
-        endpoint: String,
-        code: String
-    ): VerifyCaptchaResponse = withContext(Dispatchers.IO) {
-        httpClient.post {
-            url("${endpoint}miniapp/users/captcha")
-            authHeaders(jwt)
-            setJsonBody(VerifyCaptchaRequest(code = code))
-        }.parseResponse()
-    }
-
     suspend fun getUserProfile(
         jwt: String,
         endpoint: String
-    ): ProfileResponseDto = withContext(Dispatchers.IO) {
+    ): ProfileResponseDto = withContext(dispatcherProvider.io) {
         httpClient.get {
             url("${endpoint}miniapp/users")
+            authHeaders(jwt)
+        }.parseResponse()
+    }
+
+    suspend fun getEvmNonce(
+        jwt: String,
+        endpoint: String
+    ): EvmNonceResponseDto = withContext(dispatcherProvider.io) {
+        httpClient.get {
+            url("${endpoint}miniapp/users/wallet/evm/nonce")
             authHeaders(jwt)
         }.parseResponse()
     }
@@ -62,21 +52,10 @@ class MiniAppApi(
         jwt: String,
         endpoint: String,
         request: PCashWalletRequestDto
-    ): PCashWalletResponseDto = withContext(Dispatchers.IO) {
+    ): PCashWalletResponseDto = withContext(dispatcherProvider.io) {
         httpClient.post {
             url("${endpoint}miniapp/users/wallet/pcash")
             authHeaders(jwt)
-            setJsonBody(request)
-        }.parseResponse()
-    }
-
-    suspend fun getWalletBalance(
-        endpoint: String,
-        request: BalanceRequestDto
-    ): BalanceResponseDto = withContext(Dispatchers.IO) {
-        httpClient.post {
-            url("${endpoint}miniapp/users/wallet/pcash/balance")
-            appHeaders()
             setJsonBody(request)
         }.parseResponse()
     }
@@ -115,3 +94,8 @@ class MiniAppApiException(
 ) : Exception(message) {
     val isJwtExpired: Boolean get() = statusCode == 401
 }
+
+@Serializable
+private data class ErrorResponse(
+    val message: String? = null
+)

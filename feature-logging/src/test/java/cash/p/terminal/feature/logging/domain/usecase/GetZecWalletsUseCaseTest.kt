@@ -4,6 +4,7 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IWalletManager
+import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.TokenType
@@ -97,7 +98,7 @@ class GetZecWalletsUseCaseTest {
     }
 
     private companion object {
-        val mnemonicType = AccountType.Mnemonic(List(24) { "word$it" }, passphrase = "")
+        val mnemonicType = AccountType.Mnemonic(List(24) { "word$it" }, passphrase = "", derivation = MnemonicDerivation.Legacy)
         const val saplingSpendingKey = "secret-extended-key-main1qsaplingspendingkey"
         const val saplingViewingKey = "zxviews1qsaplingviewingkey"
     }

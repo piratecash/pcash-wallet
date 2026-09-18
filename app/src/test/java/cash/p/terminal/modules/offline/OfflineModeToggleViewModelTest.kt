@@ -1,5 +1,7 @@
 package cash.p.terminal.modules.offline
 
+import cash.p.terminal.wallet.MnemonicDerivation
+
 import cash.p.terminal.R
 import cash.p.terminal.core.managers.OfflineKey
 import cash.p.terminal.core.managers.OfflineModeManager
@@ -61,7 +63,7 @@ class OfflineModeToggleViewModelTest {
     private val account = Account(
         id = "account-1",
         name = "Test Account",
-        type = AccountType.Mnemonic(List(12) { "word$it" }, ""),
+        type = AccountType.Mnemonic(List(12) { "word$it" }, "", MnemonicDerivation.Legacy),
         origin = AccountOrigin.Created,
         level = 0,
         isBackedUp = true,

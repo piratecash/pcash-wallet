@@ -175,8 +175,7 @@ class DuplicateWalletViewModel(
 
             val typeToCopy = accountToCopy.type
             val type = when (typeToCopy) {
-                is Mnemonic -> Mnemonic(
-                    words = typeToCopy.words,
+                is Mnemonic -> typeToCopy.copy(
                     passphrase = if (uiState.passphraseEnabled) passphrase else ""
                 )
 

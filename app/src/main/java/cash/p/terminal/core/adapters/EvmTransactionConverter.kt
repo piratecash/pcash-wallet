@@ -143,7 +143,7 @@ internal class EvmTransactionConverter(
                     exchangeAddress = decoration.contractAddress.eip55,
                     amountIn = convertToAmount(decoration.tokenIn, decoration.amountIn, true),
                     amountOut = convertToAmount(decoration.tokenOut, decoration.amountOut, false),
-                    recipient = decoration.recipient?.eip55,
+                    recipient = decoration.recipient.recipientUnlessSelf(),
                     transactionRecordType = TransactionRecordType.EVM_SWAP,
                     protected = isProtected,
                     syncSource = syncSource
@@ -162,7 +162,7 @@ internal class EvmTransactionConverter(
                         )
                     ),
                     amountOut = convertToAmount(decoration.tokenOut, decoration.amountOut, false),
-                    recipient = decoration.recipient?.eip55,
+                    recipient = decoration.recipient.recipientUnlessSelf(),
                     transactionRecordType = TransactionRecordType.EVM_SWAP,
                     protected = isProtected,
                     syncSource = syncSource
@@ -363,6 +363,14 @@ internal class EvmTransactionConverter(
             syncSource = syncSource
         )
     }
+
+    /**
+     * A swap output delivered to our own address is not a third-party recipient.
+     * Kit decorators already normalize this, but rows synced before the fix still
+     * hold a polluted sender, so the comparison is repeated here.
+     */
+    private fun Address?.recipientUnlessSelf(): String? =
+        this?.takeIf { it != evmTransactionRepository.receiveAddress }?.eip55
 
     private fun convertAmount(amount: BigInteger, decimal: Int, negative: Boolean): BigDecimal {
         var significandAmount = amount.toBigDecimal().movePointLeft(decimal).stripTrailingZeros()

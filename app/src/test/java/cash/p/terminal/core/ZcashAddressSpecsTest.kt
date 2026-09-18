@@ -1,6 +1,7 @@
 package cash.p.terminal.core
 
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
@@ -153,7 +154,7 @@ class ZcashAddressSpecsTest {
         every { this@mockk.type } returns tokenType
     }
 
-    private val mnemonic = AccountType.Mnemonic(List(12) { "abandon" }, passphrase = "")
+    private val mnemonic = AccountType.Mnemonic(List(12) { "abandon" }, passphrase = "", derivation = MnemonicDerivation.Legacy)
 
     private companion object {
         const val ZCASH_SDK_EXTENSIONS = "cash.p.zcash.ZcashSdkKt"
