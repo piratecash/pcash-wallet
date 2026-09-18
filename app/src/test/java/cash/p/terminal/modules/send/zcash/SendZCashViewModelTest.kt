@@ -1,5 +1,7 @@
 package cash.p.terminal.modules.send.zcash
 
+import cash.p.terminal.wallet.MnemonicDerivation
+
 import cash.p.terminal.core.ISendZcashAdapter
 import cash.p.terminal.core.OfflineZcashSignRequest
 import cash.p.terminal.core.SignedOfflineZcashTransaction
@@ -95,7 +97,7 @@ class SendZCashViewModelTest : KoinTest {
         type = TokenType.AddressSpecTyped(TokenType.AddressSpecType.Shielded),
         decimals = 8,
     )
-    private val account = account(AccountType.Mnemonic(List(12) { "word$it" }, ""))
+    private val account = account(AccountType.Mnemonic(List(12) { "word$it" }, "", MnemonicDerivation.Legacy))
     private val wallet = createWallet(zcashToken, account)
     private val amount = BigDecimal("1.2")
     private val address = Address(ZCASH_ADDRESS)

@@ -2,12 +2,12 @@ package cash.p.terminal.feature.miniapp.domain.model
 
 
 /**
- * Data for Step 5 "Special Proposal" screen.
+ * Data for Step 2 "Special Proposal" screen.
  * Contains calculated values for premium benefits comparison.
  */
 data class SpecialProposalData(
     // Guaranteed bonus (calculated from API balance)
-    val guaranteedBonus: Int,           // floor(balance * 0.1), min 1
+    val guaranteedBonus: Int,           // floor(balance * 0.05), min 1
     val guaranteedBonusFiat: String,    // Fiat equivalent
 
     // PIRATE tab data

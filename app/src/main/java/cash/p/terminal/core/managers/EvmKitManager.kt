@@ -6,6 +6,8 @@ import cash.p.terminal.core.App
 import cash.p.terminal.core.onPollingStarted
 import cash.p.terminal.core.onPollingStopped
 import cash.p.terminal.core.UnsupportedAccountException
+import cash.p.terminal.core.evmExplorerTransactionHash
+import cash.p.terminal.core.toRawHexString
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.trezor.signer.TrezorEvmSigner
 import cash.p.terminal.wallet.Account
@@ -307,24 +309,35 @@ class EvmKitWrapper(
     val merkleTransactionAdapter: MerkleTransactionAdapter?
 ) {
 
-    suspend fun sendSingle(
+    /** Signs without sending, so callers can record the final hash before the network call. */
+    suspend fun prepare(
         transactionData: TransactionData,
         gasPrice: GasPrice,
         gasLimit: Long,
         nonce: Long?,
-        mevProtectionEnabled: Boolean
-    ): FullTransaction {
+        mevProtectionEnabled: Boolean = false,
+    ): PreparedEvmTransaction {
         if (mevProtectionEnabled && merkleTransactionAdapter == null) {
             throw IllegalStateException("MEV Protection is enabled, but MerkleTransactionAdapter is not initialized")
         }
 
         val rawTransaction =
             evmKit.rawTransaction(transactionData, gasPrice, gasLimit, nonce).await()
-        val (signedRawTransaction, signature) = signReconciled(rawTransaction)
-        return if (mevProtectionEnabled && merkleTransactionAdapter != null) {
-            merkleTransactionAdapter.send(signedRawTransaction, signature).await()
+        val (reconciledRawTransaction, signature) = signReconciled(rawTransaction)
+        return PreparedEvmTransaction(
+            rawTransaction = reconciledRawTransaction,
+            signature = signature,
+            signedRaw = evmKit.signedRawTransaction(reconciledRawTransaction, signature),
+            mevProtected = mevProtectionEnabled,
+        )
+    }
+
+    suspend fun broadcast(prepared: PreparedEvmTransaction): FullTransaction {
+        val adapter = merkleTransactionAdapter
+        return if (prepared.mevProtected && adapter != null) {
+            adapter.send(prepared.rawTransaction, prepared.signature).await()
         } else {
-            evmKit.send(signedRawTransaction, signature).await()
+            evmKit.send(prepared.rawTransaction, prepared.signature).await()
         }
     }
 
@@ -333,11 +346,7 @@ class EvmKitWrapper(
         gasPrice: GasPrice,
         gasLimit: Long,
         nonce: Long?,
-    ): SignedRawTransaction {
-        val rawTransaction = evmKit.rawTransaction(transactionData, gasPrice, gasLimit, nonce).await()
-        val (reconciledRawTransaction, signature) = signReconciled(rawTransaction)
-        return evmKit.signedRawTransaction(reconciledRawTransaction, signature)
-    }
+    ): SignedRawTransaction = prepare(transactionData, gasPrice, gasLimit, nonce).signedRaw
 
     suspend fun broadcastRawTransaction(rawTransactionHex: String): RawTransactionBroadcastResult =
         evmKit.broadcastRawTransaction(rawTransactionHex).await()
@@ -359,6 +368,16 @@ class EvmKitWrapper(
         }
     }
 
+}
+
+/** Not a data class on purpose: a generated toString() would print the signature. */
+class PreparedEvmTransaction(
+    val rawTransaction: RawTransaction,
+    val signature: Signature,
+    val signedRaw: SignedRawTransaction,
+    val mevProtected: Boolean,
+) {
+    val hash: String get() = signedRaw.hash.toRawHexString().evmExplorerTransactionHash()
 }
 
 internal class EvmSignerNotInitializedException : IllegalStateException("Signer is not initialized for this EVM kit")

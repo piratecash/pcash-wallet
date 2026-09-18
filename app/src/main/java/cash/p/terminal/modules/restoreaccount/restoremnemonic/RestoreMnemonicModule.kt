@@ -1,10 +1,12 @@
 package cash.p.terminal.modules.restoreaccount.restoremnemonic
 
+import cash.p.terminal.modules.restoreaccount.MnemonicImportDraft
 import cash.p.terminal.wallet.AccountType
 import io.horizontalsystems.hdwalletkit.Language
 
 object RestoreMnemonicModule {
     data class UiState(
+        val draft: MnemonicImportDraft,
         val passphraseEnabled: Boolean,
         val passphraseError: String?,
         val invalidWordRanges: List<IntRange>,
@@ -22,12 +24,7 @@ object RestoreMnemonicModule {
     data class WordSuggestions(val wordItem: WordItem, val options: List<String>)
 
     sealed class QrScanResult {
-        data class Success(
-            val words: List<String>,
-            val passphrase: String,
-            val moneroHeight: Long?,
-            val language: Language?
-        ) : QrScanResult()
+        data class Success(val draft: MnemonicImportDraft) : QrScanResult()
 
         data class PlainText(val text: String) : QrScanResult()
         data class Error(val message: String) : QrScanResult()

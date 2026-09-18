@@ -1,5 +1,7 @@
 package cash.p.terminal.modules.send.offline
 
+import cash.p.terminal.wallet.MnemonicDerivation
+
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.ITransactionsAdapter
@@ -629,7 +631,7 @@ class OfflineSignedTransactionsViewModelTest {
     private val account = Account(
         id = "account-id",
         name = "Account",
-        type = AccountType.Mnemonic(List(12) { "word$it" }, ""),
+        type = AccountType.Mnemonic(List(12) { "word$it" }, "", MnemonicDerivation.Legacy),
         origin = AccountOrigin.Created,
         level = 0,
         isBackedUp = true,

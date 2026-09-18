@@ -2,6 +2,7 @@ package cash.p.terminal.core.adapters.zcash
 
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.zcash.ZcashNetwork
 import cash.p.zcash.ZcashSdk
 import cash.p.zcash.deriveSaplingViewingKey
@@ -44,7 +45,7 @@ class ZcashKeyExporterTest {
     fun export_transparentWithPassphrase_forwardsPassphrase() = runTest {
         coEvery { ZcashSdk.deriveTransparentAccountKey(any(), any(), any()) } returns TRANSPARENT_KEY
 
-        exporter.export(AccountType.Mnemonic(WORDS, "pass"), ZcashPrivateKeyType.Transparent)
+        exporter.export(AccountType.Mnemonic(WORDS, "pass", MnemonicDerivation.Legacy), ZcashPrivateKeyType.Transparent)
 
         coVerify {
             ZcashSdk.deriveTransparentAccountKey(WORDS.joinToString(" "), ZcashNetwork.MAIN, "pass")
@@ -55,7 +56,7 @@ class ZcashKeyExporterTest {
     fun export_transparentEmptyPassphrase_forwardsItVerbatim() = runTest {
         coEvery { ZcashSdk.deriveTransparentAccountKey(any(), any(), any()) } returns TRANSPARENT_KEY
 
-        exporter.export(AccountType.Mnemonic(WORDS, ""), ZcashPrivateKeyType.Transparent)
+        exporter.export(AccountType.Mnemonic(WORDS, "", MnemonicDerivation.Legacy), ZcashPrivateKeyType.Transparent)
 
         coVerify { ZcashSdk.deriveTransparentAccountKey(any(), ZcashNetwork.MAIN, "") }
     }
@@ -65,14 +66,14 @@ class ZcashKeyExporterTest {
         coEvery { ZcashSdk.deriveTransparentAccountKey(any(), any(), any()) } throws
                 IllegalStateException("native failure")
 
-        assertNull(exporter.export(AccountType.Mnemonic(WORDS, ""), ZcashPrivateKeyType.Transparent))
+        assertNull(exporter.export(AccountType.Mnemonic(WORDS, "", MnemonicDerivation.Legacy), ZcashPrivateKeyType.Transparent))
     }
 
     @Test
     fun export_shieldedWithPassphrase_forwardsPassphrase() = runTest {
         coEvery { ZcashSdk.deriveSpendingKey(any(), any(), any(), any()) } returns usk()
 
-        exporter.export(AccountType.Mnemonic(WORDS, "pass"), ZcashPrivateKeyType.Shielded)
+        exporter.export(AccountType.Mnemonic(WORDS, "pass", MnemonicDerivation.Legacy), ZcashPrivateKeyType.Shielded)
 
         coVerify {
             ZcashSdk.deriveSpendingKey(WORDS.joinToString(" "), ZcashNetwork.MAIN, 0, "pass")
@@ -83,7 +84,7 @@ class ZcashKeyExporterTest {
     fun export_shieldedEmptyPassphrase_forwardsItVerbatim() = runTest {
         coEvery { ZcashSdk.deriveSpendingKey(any(), any(), any(), any()) } returns usk()
 
-        exporter.export(AccountType.Mnemonic(WORDS, ""), ZcashPrivateKeyType.Shielded)
+        exporter.export(AccountType.Mnemonic(WORDS, "", MnemonicDerivation.Legacy), ZcashPrivateKeyType.Shielded)
 
         coVerify { ZcashSdk.deriveSpendingKey(any(), ZcashNetwork.MAIN, 0, "") }
     }
@@ -92,7 +93,7 @@ class ZcashKeyExporterTest {
     fun export_shieldedDerivationSucceeds_returnsSaplingKey() = runTest {
         coEvery { ZcashSdk.deriveSpendingKey(any(), any(), any(), any()) } returns usk()
 
-        val key = exporter.export(AccountType.Mnemonic(WORDS, ""), ZcashPrivateKeyType.Shielded)
+        val key = exporter.export(AccountType.Mnemonic(WORDS, "", MnemonicDerivation.Legacy), ZcashPrivateKeyType.Shielded)
 
         assertTrue(key?.startsWith("secret-extended-key-main1") == true)
     }
@@ -102,7 +103,7 @@ class ZcashKeyExporterTest {
         coEvery { ZcashSdk.deriveSpendingKey(any(), any(), any(), any()) } throws
                 IllegalStateException("native failure")
 
-        assertNull(exporter.export(AccountType.Mnemonic(WORDS, ""), ZcashPrivateKeyType.Shielded))
+        assertNull(exporter.export(AccountType.Mnemonic(WORDS, "", MnemonicDerivation.Legacy), ZcashPrivateKeyType.Shielded))
     }
 
     @Test
@@ -121,7 +122,7 @@ class ZcashKeyExporterTest {
 
     @Test
     fun privateKeyTypes_mnemonic_returnsAllEntries() {
-        assertEquals(ZcashPrivateKeyType.entries, exporter.privateKeyTypes(AccountType.Mnemonic(WORDS, "")))
+        assertEquals(ZcashPrivateKeyType.entries, exporter.privateKeyTypes(AccountType.Mnemonic(WORDS, "", MnemonicDerivation.Legacy)))
     }
 
     @Test
@@ -191,14 +192,14 @@ class ZcashKeyExporterTest {
     fun viewingKey_mnemonic_returnsDerivedUfvk() = runTest {
         coEvery { ZcashSdk.deriveUfvk(any(), any(), any()) } returns UFVK
 
-        assertEquals(UFVK, exporter.viewingKey(AccountType.Mnemonic(WORDS, "")))
+        assertEquals(UFVK, exporter.viewingKey(AccountType.Mnemonic(WORDS, "", MnemonicDerivation.Legacy)))
     }
 
     @Test
     fun viewingKey_mnemonicWithPassphrase_forwardsPhraseAndPassphraseVerbatim() = runTest {
         coEvery { ZcashSdk.deriveUfvk(any(), any(), any()) } returns UFVK
 
-        exporter.viewingKey(AccountType.Mnemonic(WORDS, "  "))
+        exporter.viewingKey(AccountType.Mnemonic(WORDS, "  ", MnemonicDerivation.Legacy))
 
         coVerify { ZcashSdk.deriveUfvk(WORDS.joinToString(" "), ZcashNetwork.MAIN, "  ") }
     }
@@ -207,12 +208,12 @@ class ZcashKeyExporterTest {
     fun viewingKey_mnemonicDerivationThrows_returnsNull() = runTest {
         coEvery { ZcashSdk.deriveUfvk(any(), any(), any()) } throws IllegalStateException("native failure")
 
-        assertNull(exporter.viewingKey(AccountType.Mnemonic(WORDS, "")))
+        assertNull(exporter.viewingKey(AccountType.Mnemonic(WORDS, "", MnemonicDerivation.Legacy)))
     }
 
     @Test
     fun viewingKey_blankWordMnemonic_returnsNullWithoutCallingTheSdk() = runTest {
-        assertNull(exporter.viewingKey(AccountType.Mnemonic(listOf(""), "")))
+        assertNull(exporter.viewingKey(AccountType.Mnemonic(listOf(""), "", MnemonicDerivation.Legacy)))
 
         coVerify(exactly = 0) { ZcashSdk.deriveUfvk(any(), any(), any()) }
     }
@@ -221,9 +222,9 @@ class ZcashKeyExporterTest {
     fun supportsViewingKey_keyBearingTypes_areTheOnlySupportedOnes() {
         assertTrue(exporter.supportsViewingKey(AccountType.ZCashUfvKey(UFVK)))
         assertTrue(exporter.supportsViewingKey(AccountType.ZCashSaplingKey(SAPLING_SPENDING_KEY)))
-        assertTrue(exporter.supportsViewingKey(AccountType.Mnemonic(WORDS, "")))
+        assertTrue(exporter.supportsViewingKey(AccountType.Mnemonic(WORDS, "", MnemonicDerivation.Legacy)))
 
-        assertFalse(exporter.supportsViewingKey(AccountType.Mnemonic(listOf(""), "")))
+        assertFalse(exporter.supportsViewingKey(AccountType.Mnemonic(listOf(""), "", MnemonicDerivation.Legacy)))
         assertFalse(exporter.supportsViewingKey(AccountType.HdExtendedKey(HD_EXTENDED_KEY)))
         assertFalse(exporter.supportsViewingKey(AccountType.EvmPrivateKey(BigInteger.ONE)))
     }

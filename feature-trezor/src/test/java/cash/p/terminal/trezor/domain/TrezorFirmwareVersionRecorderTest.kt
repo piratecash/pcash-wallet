@@ -6,6 +6,7 @@ import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IHardwarePublicKeyStorage
+import cash.p.terminal.wallet.MnemonicDerivation
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -88,7 +89,11 @@ class TrezorFirmwareVersionRecorderTest {
             Account(
                 id = ACCOUNT_ID,
                 name = "Mnemonic",
-                type = AccountType.Mnemonic(List(12) { "abandon" }, passphrase = ""),
+                type = AccountType.Mnemonic(
+                    List(12) { "abandon" },
+                    passphrase = "",
+                    derivation = MnemonicDerivation.Legacy,
+                ),
                 origin = AccountOrigin.Restored,
                 level = 0,
             )

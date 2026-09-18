@@ -955,21 +955,6 @@ class LocalStorageManager(
         default = ""
     )
 
-    override var connectedEvmAddress by preferences.delegate(
-        key = "connected_evm_address_mini_app",
-        default = ""
-    )
-
-    override var connectedEndpoint by preferences.delegate(
-        key = "connected_endpoint_mini_app",
-        default = ""
-    )
-
-    override var cachedBalance by preferences.delegate(
-        key = "cached_balance_mini_app",
-        default = ""
-    )
-
     override var pushNotificationsEnabled by preferences.delegate(
         key = "push_notifications_enabled",
         default = false

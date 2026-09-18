@@ -208,7 +208,7 @@ private fun MiniAppStepScaffoldPremiumPreview() {
             stepTitle = "Step 5",
             stepDescription = "Special proposal for premium members",
             descriptionStyle = StepDescriptionStyle.Yellow,
-            stepIndicatorState = rememberStepIndicatorState(initialStep = 5),
+            stepIndicatorState = rememberStepIndicatorState(initialStep = 3),
             content = {}
         )
     }

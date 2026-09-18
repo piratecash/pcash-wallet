@@ -6,24 +6,16 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cash.p.terminal.feature.miniapp.data.api.MiniAppApi
 import cash.p.terminal.feature.miniapp.data.api.MiniAppApiException
-import cash.p.terminal.feature.miniapp.data.api.PCashWalletRequestDto
-import cash.p.terminal.feature.miniapp.data.api.Vector3DDto
-import cash.p.terminal.feature.miniapp.data.api.toDto
 import cash.p.terminal.feature.miniapp.domain.model.CoinType
 import cash.p.terminal.feature.miniapp.domain.model.SpecialProposalData
 import cash.p.terminal.feature.miniapp.domain.storage.IUniqueCodeStorage
-import cash.p.terminal.feature.miniapp.domain.usecase.CaptchaUseCase
-import cash.p.terminal.feature.miniapp.domain.usecase.CheckIfEmulatorUseCase
 import cash.p.terminal.feature.miniapp.domain.usecase.CheckRequiredTokensUseCase
-import cash.p.terminal.feature.miniapp.domain.usecase.CollectDeviceEnvironmentUseCase
+import cash.p.terminal.feature.miniapp.domain.usecase.ConnectMiniAppWalletUseCase
 import cash.p.terminal.feature.miniapp.domain.usecase.CreateRequiredTokensUseCase
 import cash.p.terminal.feature.miniapp.domain.usecase.GetSpecialProposalDataUseCase
-import cash.p.terminal.feature.miniapp.domain.usecase.GetTonAddressUseCase
+import cash.p.terminal.feature.miniapp.domain.usecase.NoEvmSignerException
 import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
-import cash.p.terminal.premium.domain.usecase.GetBnbAddressUseCase
-import cash.p.terminal.premium.domain.usecase.PremiumType
 import cash.p.terminal.strings.R
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.wallet.Account
@@ -32,29 +24,26 @@ import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.badge
+import cash.p.terminal.wallet.title
 import cash.p.terminal.wallet.balance.BalanceService
 import cash.p.terminal.wallet.entities.TokenQuery
 import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.core.logger.AppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import io.horizontalsystems.core.logger.AppLogger
 import timber.log.Timber
 
 class ConnectMiniAppViewModel(
-    private val checkIfEmulatorUseCase: CheckIfEmulatorUseCase,
-    private val collectDeviceEnvironmentUseCase: CollectDeviceEnvironmentUseCase,
     private val checkPremiumUseCase: CheckPremiumUseCase,
-    private val captchaUseCase: CaptchaUseCase,
     private val getSpecialProposalDataUseCase: GetSpecialProposalDataUseCase,
     private val checkRequiredTokensUseCase: CheckRequiredTokensUseCase,
     private val createRequiredTokensUseCase: CreateRequiredTokensUseCase,
+    private val connectMiniAppWalletUseCase: ConnectMiniAppWalletUseCase,
     private val accountManager: IAccountManager,
     private val marketKitWrapper: MarketKitWrapper,
     private val balanceService: BalanceService,
-    private val getBnbAddressUseCase: GetBnbAddressUseCase,
     private val uniqueCodeStorage: IUniqueCodeStorage,
-    private val getTonAddressUseCase: GetTonAddressUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -62,10 +51,8 @@ class ConnectMiniAppViewModel(
 
     companion object {
         const val STEP_WALLET = 1
-        const val STEP_TERMS = 2
-        const val STEP_CAPTCHA = 3
-        const val STEP_SPECIAL_PROPOSAL = 4
-        const val STEP_FINISH = 5
+        const val STEP_SPECIAL_PROPOSAL = 2
+        const val STEP_FINISH = 3
     }
 
     private fun Token.nameWithBadge(): String {
@@ -199,7 +186,12 @@ class ConnectMiniAppViewModel(
             return
         }
 
-        uiState = uiState.copy(isCheckingTokens = true, missingTokenNames = emptyList())
+        uiState = uiState.copy(
+            isCheckingTokens = true,
+            missingTokenNames = emptyList(),
+            missingTokenQueries = emptyList(),
+            tokenCheckError = null
+        )
 
         viewModelScope.launch {
             runCatching {
@@ -210,10 +202,16 @@ class ConnectMiniAppViewModel(
                     uiState = uiState.copy(
                         isCheckingTokens = false,
                         allTokensText = allTokensText,
-                        currentStep = STEP_TERMS
+                        currentStep = STEP_SPECIAL_PROPOSAL,
+                        // The step loads its data from a resume effect, i.e. after the first
+                        // composition: without this the empty state is drawn for a frame.
+                        isSpecialProposalLoading = true
                     )
                 } else {
+                    // Catalog metadata can be absent while the requirement stands (e.g. a hardware
+                    // account missing its BSC key), so fall back to the chain title.
                     val missingNames = result.missingTokens.map { it.nameWithBadge() }
+                        .ifEmpty { result.missingTokenQueries.map { it.blockchainType.title } }
                     uiState = uiState.copy(
                         isCheckingTokens = false,
                         allTokensText = allTokensText,
@@ -225,10 +223,15 @@ class ConnectMiniAppViewModel(
                 Timber.e(error, "Failed to check token availability")
                 uiState = uiState.copy(
                     isCheckingTokens = false,
-                    currentStep = STEP_TERMS // Proceed even on error
+                    tokenCheckError = Translator.getString(R.string.connect_mini_app_error_token_check)
                 )
             }
         }
+    }
+
+    fun onRetryTokenCheck() {
+        uiState = uiState.copy(tokenCheckError = null)
+        checkTokenAvailability()
     }
 
     fun onAddTokensClick() {
@@ -253,139 +256,7 @@ class ConnectMiniAppViewModel(
         }
     }
 
-    fun onTermsAgreedChange(agreed: Boolean) {
-        uiState = uiState.copy(termsAgreed = agreed)
-    }
-
-    fun onTermsAccepted() {
-        if (uiState.termsAgreed) {
-            collectDeviceEnvironmentUseCase.startCollection()
-            uiState = uiState.copy(currentStep = STEP_CAPTCHA)
-            loadCaptcha()
-        }
-    }
-
-    // Captcha methods
-    fun loadCaptcha() {
-        val currentJwt = jwt ?: return
-
-        uiState = uiState.copy(
-            isCaptchaLoading = true,
-            captchaError = null,
-            captchaCode = ""
-        )
-
-        viewModelScope.launch {
-            captchaUseCase.getCaptcha(currentJwt, endpoint)
-                .onSuccess { response ->
-                    uiState = uiState.copy(
-                        captchaImageBase64 = response.imageBase64,
-                        captchaExpiresIn = response.expiresIn,
-                        isCaptchaLoading = false
-                    )
-                }
-                .onFailure { error ->
-                    Timber.e(error, "Failed to load captcha")
-                    if (error is MiniAppApiException && error.isJwtExpired) {
-                        uiState = uiState.copy(
-                            isCaptchaLoading = false,
-                            isJwtExpired = true
-                        )
-                    } else {
-                        val errorMessage = when (error) {
-                            is MiniAppApiException -> error.message
-                            else -> error.message ?: "Failed to load captcha"
-                        }
-                        uiState = uiState.copy(
-                            isCaptchaLoading = false,
-                            captchaError = errorMessage
-                        )
-                    }
-                }
-        }
-    }
-
-    fun onCaptchaCodeChange(code: String) {
-        uiState = uiState.copy(
-            captchaCode = code,
-            captchaError = null // Clear error when user types
-        )
-    }
-
-    fun refreshCaptcha() {
-        loadCaptcha()
-    }
-
-    fun verifyCaptcha() {
-        val currentJwt = jwt ?: return
-        val code = uiState.captchaCode
-
-        if (code.length != 5) return
-
-        uiState = uiState.copy(isCaptchaVerifying = true, captchaError = null)
-
-        viewModelScope.launch {
-            captchaUseCase.verifyCaptcha(currentJwt, endpoint, code)
-                .onSuccess { response ->
-                    if (response.valid) {
-                        uiState = uiState.copy(isCaptchaVerifying = false)
-                        checkPremiumAndProceed()
-                    } else {
-                        uiState = uiState.copy(
-                            isCaptchaVerifying = false,
-                            captchaError = Translator.getString(R.string.connect_mini_app_captcha_error_wrong_code)
-                        )
-                    }
-                }
-                .onFailure { error ->
-                    Timber.e(error, "Failed to verify captcha")
-                    if (error is MiniAppApiException && error.isJwtExpired) {
-                        uiState = uiState.copy(
-                            isCaptchaVerifying = false,
-                            isJwtExpired = true
-                        )
-                    } else {
-                        val errorMessage = when (error) {
-                            is MiniAppApiException -> when (error.statusCode) {
-                                400 -> {
-                                    refreshCaptcha() // Server changes captcha on wrong code
-                                    Translator.getString(R.string.connect_mini_app_captcha_error_wrong_code)
-                                }
-                                else -> error.message
-                            }
-
-                            else -> error.message ?: "Verification failed"
-                        }
-                        uiState = uiState.copy(
-                            isCaptchaVerifying = false,
-                            captchaError = errorMessage
-                        )
-                    }
-                }
-        }
-    }
-
-    private fun checkPremiumAndProceed() {
-        val accountId = uiState.chosenAccountId ?: return
-        val account = accountManager.account(accountId) ?: return
-
-        viewModelScope.launch {
-            val premiumType = checkPremiumUseCase.checkPremiumByBalanceForAccount(
-                account = account,
-                checkTrial = false
-            )
-            if (premiumType == PremiumType.COSA || premiumType == PremiumType.PIRATE) {
-                // Premium user - skip special proposal, connect directly
-                connectWallet()
-            } else {
-                // Non-premium user - show special proposal
-                uiState = uiState.copy(currentStep = STEP_SPECIAL_PROPOSAL)
-                loadSpecialProposalData()
-            }
-        }
-    }
-
-    // Step 5 - Special Proposal methods
+    // Special Proposal methods
     fun loadSpecialProposalData() {
         val currentJwt = jwt ?: return
         val selectedAccountId = uiState.chosenAccountId ?: return
@@ -452,79 +323,31 @@ class ConnectMiniAppViewModel(
 
         viewModelScope.launch {
             val log = logger.getScopedUnique()
-            var evmAddress: String? = null
             runCatching {
                 val account = accountManager.account(accountId)
                     ?: throw IllegalStateException("Account not found")
                 log.info("accountType: ${account.type::class.simpleName}")
-                val deviceEnv = collectDeviceEnvironmentUseCase.stopCollection()
-
-                // Get Pirate JETTON wallet address(the same like TON) (this is the wallet address to send to API)
-                val pirateJettonAddress = getTonAddressUseCase.getAddress(account)
-                log.info("pirateJettonAddress received successfully")
-
-                // Get EVM address
-                evmAddress = getBnbAddressUseCase.getAddress(account)
-                    ?: throw IllegalStateException("EVM address not found")
-
-                val emulatorResult = checkIfEmulatorUseCase()
-                val isEmulator = emulatorResult.isEmulator
-
-                val (pirateBalance, cosaBalance) = getSpecialProposalDataUseCase.getPirateCosaBalances(evmAddress)
-
-                val request = PCashWalletRequestDto(
-                    walletAddress = pirateJettonAddress,
-                    premiumAddress = evmAddress,
-                    pirate = pirateBalance.toPlainString(),
-                    cosa = cosaBalance.toPlainString(),
-                    uniqueCode = uniqueCodeStorage.uniqueCode.ifBlank { null },
-                    gyro = deviceEnv.gyroscopeAverage?.toDto() ?: Vector3DDto.ZERO,
-                    accelerometer = deviceEnv.accelerometerAverage?.toDto() ?: Vector3DDto.ZERO,
-                    gyroVariance = deviceEnv.gyroscopeVariance?.toDto() ?: Vector3DDto.ZERO,
-                    accelerometerVariance = deviceEnv.accelerometerVariance?.toDto()
-                        ?: Vector3DDto.ZERO,
-                    batteryPercent = deviceEnv.batteryLevel,
-                    isCharging = deviceEnv.isCharging,
-                    chargingType = deviceEnv.chargingType.name,
-                    isUsbConnected = deviceEnv.isUsbConnected,
-                    deviceModel = deviceEnv.deviceModel,
-                    osVersion = deviceEnv.osVersion,
-                    sdkVersion = deviceEnv.sdkVersion,
-                    hasGyroscope = deviceEnv.hasGyroscope,
-                    hasAccelerometer = deviceEnv.hasAccelerometer,
-                    emulator = isEmulator,
-                    isMoving = deviceEnv.wasDeviceMoved,
-                    isHandHeld = deviceEnv.isHandHeld,
-                    isDev = deviceEnv.isDeveloperOptionsEnabled,
-                    isAdb = deviceEnv.isAdbEnabled,
-                    isRooted = deviceEnv.isRooted,
-                    collectionDurationMs = deviceEnv.collectionDurationMs,
-                    sampleCount = deviceEnv.sampleCount,
-                    apiVersion = MiniAppApi.API_VERSION
-                )
-
-                captchaUseCase.submitPCashWallet(currentJwt, endpoint, request).getOrThrow()
-            }.onSuccess { response ->
+                connectMiniAppWalletUseCase(account, currentJwt, endpoint)
+            }.onSuccess {
                 log.info("success")
-                with(uniqueCodeStorage) {
-                    connectedAccountId = accountId
-                    uniqueCode = response.uniqueCode.orEmpty()
-                    evmAddress?.let { connectedEvmAddress = it }
-                    connectedEndpoint = endpoint
-                }
                 uiState = uiState.copy(finishState = FinishState.Success)
             }.onFailure { error ->
                 log.warning("failed", error)
                 Timber.e(error, "Failed to submit pcash wallet")
-                if (error is MiniAppApiException && error.isJwtExpired) {
-                    uiState = uiState.copy(finishState = FinishState.JwtExpired)
-                } else {
-                    val errorMessage = when (error) {
-                        is MiniAppApiException -> error.message
-                        else -> error.message ?: "Connection failed"
+                uiState = uiState.copy(
+                    finishState = when {
+                        error is MiniAppApiException && error.isJwtExpired -> FinishState.JwtExpired
+                        error is NoEvmSignerException -> FinishState.Error(
+                            Translator.getString(R.string.connect_mini_app_error_no_evm_key)
+                        )
+                        else -> FinishState.Error(
+                            when (error) {
+                                is MiniAppApiException -> error.message
+                                else -> error.message ?: "Connection failed"
+                            }
+                        )
                     }
-                    uiState = uiState.copy(finishState = FinishState.Error(errorMessage))
-                }
+                )
             }
         }
     }
@@ -535,10 +358,6 @@ class ConnectMiniAppViewModel(
 
     fun onFinishClose() {
         uiState = uiState.copy(closeEvent = true)
-    }
-
-    override fun onCleared() {
-        collectDeviceEnvironmentUseCase.stopCollection()
     }
 }
 
@@ -551,29 +370,21 @@ sealed class FinishState {
 
 data class ConnectMiniAppUiState(
     val currentStep: Int = 1,
-    val isEmulator: Boolean = false,
     val needsBackup: Boolean = false,
     val isLoading: Boolean = true,
     val walletItems: List<WalletViewItem> = emptyList(),
     val chosenAccountId: String? = null,
     // for UI selection only
     val preselectedAccountId: String? = null,
-    val termsAgreed: Boolean = false,
     // Token checking state
     val isCheckingTokens: Boolean = false,
     val allTokensText: String = "",
     val missingTokenNames: List<String> = emptyList(),
     val missingTokenQueries: List<TokenQuery> = emptyList(),
     val isAddingTokens: Boolean = false,
-    // Captcha state
-    val captchaImageBase64: String? = null,
-    val captchaExpiresIn: Long = 0,
-    val captchaCode: String = "",
-    val captchaError: String? = null,
-    val isCaptchaLoading: Boolean = false,
-    val isCaptchaVerifying: Boolean = false,
+    val tokenCheckError: String? = null,
     val isJwtExpired: Boolean = false,
-    // Step 5 - Special Proposal state
+    // Special Proposal state
     val specialProposalData: SpecialProposalData? = null,
     val selectedCoinTab: CoinType = CoinType.PIRATE,
     val isSpecialProposalLoading: Boolean = false,

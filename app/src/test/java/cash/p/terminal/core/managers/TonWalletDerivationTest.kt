@@ -1,5 +1,7 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.wallet.MnemonicDerivation
+
 import cash.p.terminal.core.storage.HardwarePublicKeyStorage
 import cash.p.terminal.core.toFixedSize
 import cash.p.terminal.wallet.Account
@@ -18,7 +20,7 @@ class TonWalletDerivationTest {
         return Account(
             id = "test",
             name = "test",
-            type = AccountType.Mnemonic(words, ""),
+            type = AccountType.Mnemonic(words, "", MnemonicDerivation.Legacy),
             origin = AccountOrigin.Restored,
             level = 0
         )

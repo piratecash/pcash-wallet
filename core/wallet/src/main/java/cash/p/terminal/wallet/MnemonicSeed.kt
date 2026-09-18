@@ -7,7 +7,12 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
 object MnemonicSeed {
-    fun derive(words: List<String>, passphrase: String = ""): ByteArray {
+    fun derive(
+        words: List<String>,
+        derivation: MnemonicDerivation,
+        passphrase: String = ""
+    ): ByteArray {
+        if (derivation == MnemonicDerivation.Bip39) return Mnemonic().toSeed(words, passphrase)
         Mnemonic().validate(words)
         val separator = if (WordList.wordList(Language.Japanese).validWords(words)) "　" else " "
         return pbkdf2(words.joinToString(separator), "mnemonic$passphrase")

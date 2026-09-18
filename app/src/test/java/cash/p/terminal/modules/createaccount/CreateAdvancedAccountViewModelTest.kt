@@ -7,6 +7,7 @@ import cash.p.terminal.core.managers.WalletActivator
 import cash.p.terminal.core.managers.WordsManager
 import cash.p.terminal.core.providers.PredefinedBlockchainSettingsProvider
 import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.PassphraseValidator
@@ -154,6 +155,19 @@ class CreateAdvancedAccountViewModelTest {
                 walletActivator.activateWalletsSuspended(any(), any())
             }
         }
+
+    @Test
+    fun createMnemonicAccount_japaneseLanguage_alwaysStoresBip39() = runTest(dispatcher) {
+        val words = List(11) { "あいこくしん" } + "あおぞら"
+        every { wordsManager.generateWords(12, Language.Japanese) } returns words
+        val vm = createViewModel()
+        vm.setMnemonicLanguage(Language.Japanese)
+        vm.createMnemonicAccount()
+        advanceUntilIdle()
+        val type = assertIs<AccountType.Mnemonic>(vm.success)
+        assertEquals(MnemonicDerivation.Bip39, type.derivation)
+        assertEquals(words, type.words)
+    }
 
     private fun createViewModel() = CreateAdvancedAccountViewModel(
         accountFactory = accountFactory,
