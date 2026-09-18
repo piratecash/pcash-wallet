@@ -1,7 +1,5 @@
 package cash.p.terminal.modules.send.offline
 
-import cash.p.terminal.wallet.MnemonicDerivation
-
 import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.policy.CompositeHardwareWalletTokenPolicy
@@ -219,7 +217,7 @@ class OfflineBroadcastTokenResolverTest {
         assertNull(resolver.resolveTokenToEnable(BlockchainType.Dash, trezorAccount(model = "T3B1")))
     }
 
-    private fun mnemonicAccount() = account(AccountType.Mnemonic(listOf("word"), "", MnemonicDerivation.Legacy))
+    private fun mnemonicAccount() = account(AccountType.Mnemonic(listOf("word"), ""))
 
     private fun hardwareCardAccount() = account(
         AccountType.HardwareCard(

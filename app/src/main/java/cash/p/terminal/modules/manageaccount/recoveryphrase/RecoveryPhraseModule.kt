@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModelProvider
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.SeedPhraseQrCrypto
-import io.horizontalsystems.core.DispatcherProvider
 import cash.p.terminal.wallet.Account
 import org.koin.java.KoinJavaComponent.inject
 
@@ -18,8 +17,6 @@ object RecoveryPhraseModule {
         private val localStorage: ILocalStorage by inject(ILocalStorage::class.java)
         private val restoreSettingsManager: RestoreSettingsManager by inject(RestoreSettingsManager::class.java)
 
-        private val dispatcherProvider: DispatcherProvider by inject(DispatcherProvider::class.java)
-
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return RecoveryPhraseViewModel(
@@ -27,8 +24,7 @@ object RecoveryPhraseModule {
                 recoveryPhraseType,
                 seedPhraseQrCrypto,
                 localStorage,
-                restoreSettingsManager,
-                dispatcherProvider
+                restoreSettingsManager
             ) as T
         }
     }

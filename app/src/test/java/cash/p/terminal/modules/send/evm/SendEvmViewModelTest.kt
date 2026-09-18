@@ -1,7 +1,5 @@
 package cash.p.terminal.modules.send.evm
 
-import cash.p.terminal.wallet.MnemonicDerivation
-
 import cash.p.terminal.core.ISendEthereumAdapter
 import cash.p.terminal.core.OfflineEvmSignRequest
 import cash.p.terminal.core.OfflineTransactionAdapter
@@ -106,7 +104,7 @@ class SendEvmViewModelTest : KoinTest {
     private val testAccount = Account(
         id = "account-id",
         name = "Account",
-        type = AccountType.Mnemonic(List(12) { "word$it" }, "", MnemonicDerivation.Legacy),
+        type = AccountType.Mnemonic(List(12) { "word$it" }, ""),
         origin = AccountOrigin.Created,
         level = 0,
         isBackedUp = true,

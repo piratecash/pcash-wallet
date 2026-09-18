@@ -1,7 +1,5 @@
 package cash.p.terminal.modules.manageaccounts
 
-import cash.p.terminal.wallet.MnemonicDerivation
-
 import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
 import cash.p.terminal.premium.domain.usecase.PremiumType
 import cash.p.terminal.wallet.Account
@@ -187,11 +185,7 @@ class ManageAccountsViewModelTest {
     private fun mnemonic(id: String, name: String) = Account(
         id = id,
         name = name,
-        type = AccountType.Mnemonic(
-            words = List(12) { "abandon" },
-            passphrase = "",
-            derivation = MnemonicDerivation.Legacy
-        ),
+        type = AccountType.Mnemonic(words = List(12) { "abandon" }, passphrase = ""),
         origin = AccountOrigin.Created,
         level = 0,
         isBackedUp = true
