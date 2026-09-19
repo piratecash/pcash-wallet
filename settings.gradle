@@ -13,6 +13,10 @@ pluginManagement {
     }
 }
 
+// Without this the name is taken from the checkout directory and leaks into
+// the Kotlin module names of KMP modules, breaking reproducible builds.
+rootProject.name = 'pcash-wallet-android'
+
 include ':app'
 include ':desktopApp'
 include ':shared'
