@@ -27,6 +27,7 @@ class EvmSyncSourceManagerTest {
     fun defaultSyncSources_robinhood_usesOfficialRpcAndBlockscout() {
         mockkObject(AppConfigProvider)
         every { AppConfigProvider.blockscoutApiKey } returns emptyList()
+        every { AppConfigProvider.etherscanApiKey } returns emptyList()
         try {
             val source = manager.defaultSyncSources(BlockchainType.RobinhoodChain).single()
             val rpcSource = source.rpcSource as RpcSource.Http
@@ -37,28 +38,42 @@ class EvmSyncSourceManagerTest {
                 "https://robinhoodchain.blockscout.com/tx/0x1234",
                 source.transactionSource.transactionUrl("0x1234")
             )
-        } finally {
-            unmockkObject(AppConfigProvider)
-        }
-    }
-
-    @Test
-    fun defaultSyncSources_zkSync_usesBlockscoutTransactionUrlAndApiBaseUrl() {
-        mockkObject(AppConfigProvider)
-        every { AppConfigProvider.blockscoutApiKey } returns emptyList()
-        try {
-            val source = manager.defaultSyncSources(BlockchainType.ZkSync).single()
-
-            assertEquals(
-                "https://zksync.blockscout.com/tx/0x1234",
-                source.transactionSource.transactionUrl("0x1234")
-            )
             val sourceType = source.transactionSource.type
             assertTrue(sourceType is TransactionSource.SourceType.Etherscan)
             assertEquals(
                 "https://api.blockscout.com/v2/",
                 (sourceType as TransactionSource.SourceType.Etherscan).apiBaseUrl
             )
+
+            val fallback = source.transactionSource.fallbacks.single()
+            assertEquals("https://api.etherscan.io/v2/", fallback.apiBaseUrl)
+            assertEquals("https://robin.etherscan.io", fallback.txBaseUrl)
+        } finally {
+            unmockkObject(AppConfigProvider)
+        }
+    }
+
+    @Test
+    fun defaultSyncSources_zkSync_usesOfficialApiPrimaryAndBlockscoutFallback() {
+        mockkObject(AppConfigProvider)
+        every { AppConfigProvider.blockscoutApiKey } returns emptyList()
+        try {
+            val source = manager.defaultSyncSources(BlockchainType.ZkSync).single()
+
+            assertEquals(
+                "https://explorer.zksync.io/tx/0x1234",
+                source.transactionSource.transactionUrl("0x1234")
+            )
+            val sourceType = source.transactionSource.type
+            assertTrue(sourceType is TransactionSource.SourceType.Etherscan)
+            assertEquals(
+                "https://block-explorer-api.mainnet.zksync.io/",
+                (sourceType as TransactionSource.SourceType.Etherscan).apiBaseUrl
+            )
+
+            val fallback = source.transactionSource.fallbacks.single()
+            assertEquals("https://api.blockscout.com/v2/", fallback.apiBaseUrl)
+            assertEquals("https://zksync.blockscout.com", fallback.txBaseUrl)
         } finally {
             unmockkObject(AppConfigProvider)
         }
