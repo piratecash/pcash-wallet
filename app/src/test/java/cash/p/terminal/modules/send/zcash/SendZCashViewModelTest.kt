@@ -183,6 +183,30 @@ class SendZCashViewModelTest : KoinTest {
     }
 
     @Test
+    fun fee_recalculatedWhileTheMaximumIsUnchanged_isPublishedToTheScreen() = runTest(dispatcher) {
+        every { adapter.maxSpendableBalance } returns BigDecimal.TEN
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        feeFlow.value = RECALCULATED_FEE
+        advanceUntilIdle()
+
+        assertEquals(RECALCULATED_FEE, viewModel.uiState.fee)
+    }
+
+    @Test
+    fun init_maximumChangedBeforeSubscription_isReReadFromTheAdapter() = runTest(dispatcher) {
+        // balanceUpdatedFlow is hot: a snapshot published between the factory's read and the
+        // collector's subscription is dropped, so the seeded value is already stale here.
+        every { adapter.maxSpendableBalance } returns FRESH_MAXIMUM
+
+        val viewModel = createViewModel(seededAvailableBalance = STALE_MAXIMUM)
+        advanceUntilIdle()
+
+        assertEquals(FRESH_MAXIMUM, viewModel.uiState.availableBalance)
+    }
+
+    @Test
     fun offlineSignSupported_mnemonicAccount_returnsTrue() {
         val viewModel = createViewModel()
 
@@ -198,13 +222,16 @@ class SendZCashViewModelTest : KoinTest {
         assertFalse(viewModel.offlineSignSupported)
     }
 
-    private fun createViewModel(wallet: Wallet = this.wallet) = SendZCashViewModel(
+    private fun createViewModel(
+        wallet: Wallet = this.wallet,
+        seededAvailableBalance: BigDecimal = BigDecimal.TEN,
+    ) = SendZCashViewModel(
         adapter = adapter,
         wallet = wallet,
         xRateService = xRateService,
-        amountService = SendAmountService(AmountValidator(), wallet.coin.code, BigDecimal.TEN),
+        amountService = SendAmountService(AmountValidator(), wallet.coin.code, seededAvailableBalance),
         addressService = SendZCashAddressService(adapter),
-        memoService = SendZCashMemoService(),
+        memoService = SendZCashMemoService(memoSupportedByAccount = true),
         contactsRepo = contactsRepository,
         address = null,
         showAddressInput = true,
@@ -245,5 +272,8 @@ class SendZCashViewModelTest : KoinTest {
         const val ZCASH_ADDRESS = "zs1recipient000000000000000000000000000000000000000000000000000000000000"
         const val ZCASH_TX_HASH = "456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123"
         val FEE: BigDecimal = BigDecimal("0.0001")
+        val RECALCULATED_FEE: BigDecimal = BigDecimal("0.0003")
+        val STALE_MAXIMUM: BigDecimal = BigDecimal("0.5")
+        val FRESH_MAXIMUM: BigDecimal = BigDecimal("7.25")
     }
 }

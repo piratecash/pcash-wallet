@@ -131,8 +131,6 @@ class CreateAdvancedAccountViewModel(
             restoreSettingsManager.save(restoreSettings, account, BlockchainType.Monero)
         }
 
-        activateDefaultWallets(account)
-
         // Prepare birthdayHeight for blockchains that require it
         if (accountType !is AccountType.HardwareCard && accountType !is AccountType.TrezorDevice) {
             when (accountType) {
@@ -146,6 +144,8 @@ class CreateAdvancedAccountViewModel(
                 }
             }
         }
+
+        activateDefaultWallets(account)
         loading = false
         success = accountType
     }

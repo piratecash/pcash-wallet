@@ -48,6 +48,7 @@ import cash.p.terminal.core.storage.AppDatabase
 import cash.p.terminal.core.storage.BlockchainSettingsStorage
 import cash.p.terminal.core.storage.EvmSyncSourceStorage
 import cash.p.terminal.core.storage.NftStorage
+import cash.p.terminal.domain.usecase.ClearLegacyZcashDataUseCase
 import cash.p.terminal.modules.backuplocal.fullbackup.BackupProvider
 import cash.p.terminal.modules.balance.BalanceViewTypeManager
 import cash.p.terminal.modules.chart.ChartIndicatorManager
@@ -546,6 +547,7 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
             contactsRepository.initialize()
             evmLabelManager.sync()
             AppLog.cleanupOldLogs()
+            get<ClearLegacyZcashDataUseCase>().invoke()
         }
     }
 

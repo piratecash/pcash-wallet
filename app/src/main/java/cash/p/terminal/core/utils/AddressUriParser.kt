@@ -9,7 +9,6 @@ import cash.p.terminal.core.supported
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.entities.AddressUri
 import cash.p.terminal.wallet.entities.TokenType
-import cash.z.ecc.android.sdk.model.MemoContent
 import io.horizontalsystems.core.entities.BlockchainType
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -161,13 +160,7 @@ class AddressUriParser(
             ZCASH_MEMO_BASE64_FLAGS,
         )
         if (canonical != encoded) return false
-        val decodedMemo = when (val memo = tryOrNull { MemoContent.fromBytes(decodedBytes) }) {
-            MemoContent.Empty -> ""
-            is MemoContent.Text -> memo.text.string.takeUnless { it.isBlank() } ?: return false
-            else -> return false
-        }
-
-        parameters[AddressUri.Field.Memo] = decodedMemo
+        parameters[AddressUri.Field.Memo] = ZcashMemo.decodeOrNull(decodedBytes) ?: return false
         return true
     }
 
@@ -356,11 +349,8 @@ class AddressUriParser(
         data object Malformed : Parameter
     }
 
-    private fun String.encodeZcashMemo(): String {
-        val memo = if (isEmpty()) MemoContent.Empty else MemoContent.fromString(this)
-        val bytes = memo.asMemoBytes().unpaddedRawBytes()
-        return Base64.encodeToString(bytes, ZCASH_MEMO_BASE64_FLAGS)
-    }
+    private fun String.encodeZcashMemo(): String =
+        Base64.encodeToString(ZcashMemo.encode(this), ZCASH_MEMO_BASE64_FLAGS)
 }
 
 sealed class AddressUriResult {

@@ -19,6 +19,12 @@ class BackgroundManager(application: Application) : Application.ActivityLifecycl
     val stateFlow: StateFlow<BackgroundManagerState>
         get() = _stateFlow
 
+    private val _foregroundEpoch = MutableStateFlow(0)
+
+    /** Raised synchronously with [foregroundActivityCount], so it never lags [inForeground]. */
+    val foregroundEpoch: StateFlow<Int>
+        get() = _foregroundEpoch
+
     var onBeforeEnterBackground: (() -> Unit)? = null
 
     init {
@@ -40,6 +46,7 @@ class BackgroundManager(application: Application) : Application.ActivityLifecycl
     @Synchronized
     override fun onActivityStarted(activity: Activity) {
         if (foregroundActivityCount == 0) {
+            _foregroundEpoch.value++
             scope.launch {
                 _stateFlow.emit(BackgroundManagerState.EnterForeground)
             }

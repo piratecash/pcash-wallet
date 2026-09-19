@@ -91,18 +91,16 @@ abstract class BaseComposeFragment(
         }
     }
 
+    // The current navigation entry can already belong to an adjacent destination during transitions.
+    protected inline fun <reified T : Parcelable> getInput(): T? =
+        this@BaseComposeFragment.arguments?.getInputX()
+
     @Composable
     protected inline fun <reified T : Parcelable> withInput(
         navController: NavController,
         content: @Composable (T) -> Unit
     ) {
-        val input = remember {
-            try {
-                navController.requireInput<T>()
-            } catch (_: Exception) {
-                null
-            }
-        }
+        val input = remember { getInput<T>() }
         if (input == null) {
             LaunchedEffect(Unit) {
                 navController.navigateUp()

@@ -90,6 +90,7 @@ object BackupLocalModule {
     private const val BITCOIN_ADDRESS = "bitcoin_address"
     private const val HD_EXTENDED_KEY = "hd_extended_key"
     private const val UFVK = "ufvk"
+    private const val ZCASH_SAPLING_KEY = "zcash_sapling_key"
     private const val HARDWARE_CARD = "hardware_card"
     private const val TREZOR_DEVICE = "trezor_device"
 
@@ -154,6 +155,7 @@ object BackupLocalModule {
         is AccountType.BitcoinAddress -> BITCOIN_ADDRESS
         is AccountType.HdExtendedKey -> HD_EXTENDED_KEY
         is AccountType.ZCashUfvKey -> UFVK
+        is AccountType.ZCashSaplingKey -> ZCASH_SAPLING_KEY
         is AccountType.HardwareCard -> HARDWARE_CARD
         is AccountType.TrezorDevice -> TREZOR_DEVICE
     }
@@ -202,6 +204,7 @@ object BackupLocalModule {
 
             HD_EXTENDED_KEY -> AccountType.HdExtendedKey(Base58.encode(data))
             UFVK -> AccountType.ZCashUfvKey(String(data, Charsets.UTF_8))
+            ZCASH_SAPLING_KEY -> AccountType.ZCashSaplingKey(String(data, Charsets.UTF_8))
             HARDWARE_CARD -> null
 
             else -> throw IllegalStateException("Unknown account type")
@@ -237,6 +240,7 @@ object BackupLocalModule {
         is AccountType.BitcoinAddress -> accountType.serialized.toByteArray(Charsets.UTF_8)
         is AccountType.HdExtendedKey -> Base58.decode(accountType.keySerialized)
         is AccountType.ZCashUfvKey -> accountType.key.toByteArray(Charsets.UTF_8)
+        is AccountType.ZCashSaplingKey -> accountType.key.toByteArray(Charsets.UTF_8)
         is AccountType.HardwareCard,
         is AccountType.TrezorDevice -> null
     }

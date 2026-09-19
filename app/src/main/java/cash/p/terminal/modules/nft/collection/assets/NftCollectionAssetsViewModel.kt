@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cash.z.ecc.android.sdk.ext.collectWith
+import io.horizontalsystems.core.collectWith
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.modules.market.overview.coinValue
 import cash.p.terminal.modules.nft.holdings.NftAssetViewItem

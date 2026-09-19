@@ -13,7 +13,6 @@ import cash.p.terminal.trezor.ui.TrezorSideEffect
 import cash.p.terminal.trezor.ui.TrezorWalletViewModel
 import cash.p.terminal.ui_compose.BaseComposeFragment
 import cash.p.terminal.ui_compose.components.HudHelper
-import cash.p.terminal.ui_compose.getInput
 import kotlinx.parcelize.Parcelize
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -22,7 +21,7 @@ class TrezorSetupFragment : BaseComposeFragment() {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val input = navController.getInput<Input>()
+        val input = getInput<Input>()
         if (input == null) {
             navController.navigateUp()
             return

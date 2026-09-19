@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.balance
 
-import cash.p.terminal.core.adapters.zcash.ZcashAdapter
 import cash.p.terminal.core.managers.OfflineKey
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
@@ -11,7 +10,6 @@ import cash.p.terminal.wallet.WalletFactory
 import cash.p.terminal.wallet.balance.BalanceItem
 import cash.p.terminal.wallet.balance.BalanceViewType
 import cash.p.terminal.wallet.entities.BalanceData
-import cash.p.terminal.wallet.zcashTransparentWallet
 import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.entities.Currency
 import io.mockk.every
@@ -133,48 +131,6 @@ class BalanceViewItemFactoryDisplaySyncStateTest {
         assertFalse(viewItem.offline)
         assertTrue(viewItem.failedIconVisible)
         assertEquals(historyError.message, viewItem.errorMessage)
-    }
-
-    @Test
-    fun viewItem_transparentZcashPendingOnly_hidesShieldFunds() {
-        val viewItem = factory.viewItem(
-            item = balanceItem(
-                wallet = zcashTransparentWallet(),
-                balanceData = BalanceData(
-                    available = BigDecimal.ZERO,
-                    pending = ZcashAdapter.MINERS_FEE + BigDecimal.ONE
-                )
-            ),
-            currency = currency,
-            hideBalance = false,
-            watchAccount = false,
-            balanceViewType = BalanceViewType.CoinThenFiat,
-            isSwappable = true,
-            displayDiffOptionType = DisplayDiffOptionType.BOTH,
-        )
-
-        assertFalse(viewItem.isShowShieldFunds)
-    }
-
-    @Test
-    fun viewItem_transparentZcashAvailableAboveFee_showsShieldFunds() {
-        val viewItem = factory.viewItem(
-            item = balanceItem(
-                wallet = zcashTransparentWallet(),
-                balanceData = BalanceData(
-                    available = ZcashAdapter.MINERS_FEE + BigDecimal.ONE,
-                    pending = BigDecimal.ZERO
-                )
-            ),
-            currency = currency,
-            hideBalance = false,
-            watchAccount = false,
-            balanceViewType = BalanceViewType.CoinThenFiat,
-            isSwappable = true,
-            displayDiffOptionType = DisplayDiffOptionType.BOTH,
-        )
-
-        assertTrue(viewItem.isShowShieldFunds)
     }
 
     private fun balanceItem(

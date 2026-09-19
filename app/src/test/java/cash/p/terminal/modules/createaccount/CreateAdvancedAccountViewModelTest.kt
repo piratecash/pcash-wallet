@@ -12,9 +12,11 @@ import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.PassphraseValidator
 import cash.p.terminal.wallet.data.MnemonicKind
+import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.hdwalletkit.Language
 import io.mockk.Runs
 import io.mockk.coEvery
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -138,6 +140,21 @@ class CreateAdvancedAccountViewModelTest {
         assertEquals(Language.English, viewModel.selectedLanguage)
         assertEquals(Language.English, viewModel.displayedLanguage)
     }
+
+    @Test
+    fun createMnemonicAccount_bip39_preparesZcashSettingsBeforeActivatingWallets() =
+        runTest(dispatcher) {
+            every { wordsManager.generateWords(12, Language.English) } returns List(12) { "word" }
+            val viewModel = createViewModel()
+
+            viewModel.createMnemonicAccount()
+            advanceUntilIdle()
+
+            coVerifyOrder {
+                predefinedBlockchainSettingsProvider.prepareNew(any(), BlockchainType.Zcash)
+                walletActivator.activateWalletsSuspended(any(), any())
+            }
+        }
 
     @Test
     fun createMnemonicAccount_japaneseLanguage_alwaysStoresBip39() = runTest(dispatcher) {

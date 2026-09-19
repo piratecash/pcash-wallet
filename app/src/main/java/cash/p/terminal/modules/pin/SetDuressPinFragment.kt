@@ -9,7 +9,6 @@ import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.ui_compose.BaseComposeFragment
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.modules.pin.ui.PinSet
 import cash.p.terminal.ui_compose.components.HudHelper
 import kotlinx.parcelize.Parcelize
@@ -19,7 +18,7 @@ class SetDuressPinFragment : BaseComposeFragment(screenshotEnabled = false) {
     @Composable
     override fun GetContent(navController: NavController) {
         val viewModel = viewModel<SetDuressPinViewModel>(
-            factory = SetDuressPinViewModel.Factory(navController.getInput())
+            factory = SetDuressPinViewModel.Factory(getInput())
         )
         val view = LocalView.current
         PinSet(

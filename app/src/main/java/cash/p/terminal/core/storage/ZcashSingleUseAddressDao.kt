@@ -29,6 +29,14 @@ interface ZcashSingleUseAddressDao {
     )
     suspend fun getAddressesWithoutBalance(accountId: String): List<ZcashSingleUseAddress>
 
+    @Query(
+        """
+        SELECT * FROM ZcashSingleUseAddress
+        WHERE accountId = :accountId
+        """
+    )
+    suspend fun getAllAddresses(accountId: String): List<ZcashSingleUseAddress>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(address: ZcashSingleUseAddress)
 

@@ -155,7 +155,7 @@ data class SwapDeeplinkInput(val tokenOut: Token?) : Parcelable
 class SwapFragment : BaseComposeFragment() {
     @Composable
     override fun GetContent(navController: NavController) {
-        val args = navController.currentBackStackEntry?.arguments
+        val args = arguments
         val tokenIn: Token? = args?.parcelable(SwapParams.TOKEN_IN)
         val tokenOut: Token? = args?.parcelable(SwapParams.TOKEN_OUT)
             ?: args?.parcelable<SwapDeeplinkInput>("input")?.tokenOut

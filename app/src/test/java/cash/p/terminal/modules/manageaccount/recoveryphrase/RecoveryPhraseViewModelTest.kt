@@ -15,6 +15,7 @@ import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.modules.manageaccount.privatekeys.PrivateKeysViewModel
 import cash.p.terminal.modules.manageaccount.publickeys.PublicKeysViewModel
 import cash.p.terminal.wallet.MnemonicDerivation
+import cash.p.terminal.core.adapters.zcash.ZcashKeyExporter
 import cash.p.terminal.core.installEthereumCryptoProviderForTest
 import io.horizontalsystems.ethereumkit.core.signer.Signer
 import io.horizontalsystems.ethereumkit.models.Chain
@@ -36,6 +37,9 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 
 /**
  * Regression tests for RecoveryPhraseViewModel — locks down the QR encrypt path before
@@ -61,10 +65,20 @@ class RecoveryPhraseViewModelTest {
         crypto = SeedPhraseQrCrypto(TimePasswordProvider())
         localStorage = mockk(relaxed = true)
         restoreSettingsManager = mockk()
+        startKoin {
+            modules(module {
+                single {
+                    ZcashKeyExporter(
+                        TestDispatcherProvider(Dispatchers.Default, CoroutineScope(Dispatchers.Default))
+                    )
+                }
+            })
+        }
     }
 
     @After
     fun tearDown() {
+        stopKoin()
         unmockkAll()
     }
 

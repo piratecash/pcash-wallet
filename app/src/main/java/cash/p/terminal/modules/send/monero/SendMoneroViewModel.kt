@@ -40,7 +40,7 @@ import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.getMaxSendableBalance
-import cash.z.ecc.android.sdk.ext.collectWith
+import io.horizontalsystems.core.collectWith
 import com.piratecash.monero.signer.HardwareWalletOperationException
 import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.CancellationException

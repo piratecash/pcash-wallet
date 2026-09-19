@@ -225,4 +225,23 @@ class BackgroundManagerTest {
 
         assertSame(activity, backgroundManager.currentActivity)
     }
+
+    @Test
+    fun onActivityStarted_firstActivity_raisesTheEpochBeforeTheEventIsPublished() {
+        val before = backgroundManager.foregroundEpoch.value
+
+        backgroundManager.onActivityStarted(mockActivity())
+
+        assertEquals(before + 1, backgroundManager.foregroundEpoch.value)
+    }
+
+    @Test
+    fun onActivityStarted_secondActivity_doesNotRaiseTheEpoch() {
+        backgroundManager.onActivityStarted(mockActivity())
+        val afterFirst = backgroundManager.foregroundEpoch.value
+
+        backgroundManager.onActivityStarted(mockActivity())
+
+        assertEquals(afterFirst, backgroundManager.foregroundEpoch.value)
+    }
 }

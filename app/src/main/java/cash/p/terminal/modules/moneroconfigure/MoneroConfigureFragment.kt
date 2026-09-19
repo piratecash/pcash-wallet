@@ -54,7 +54,6 @@ import cash.p.terminal.ui_compose.components.RestoreHeightScreen
 import cash.p.terminal.ui_compose.components.caption_lucian
 import cash.p.terminal.ui_compose.components.title3_leah
 import cash.p.terminal.ui_compose.findNavController
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.chartview.rememberAsyncImagePainterWithFallback
 import io.horizontalsystems.core.entities.BlockchainType
@@ -74,7 +73,7 @@ class MoneroConfigureFragment : BaseComposeFragment() {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val initialConfig = navController.getInput<Input>()?.initialConfig
+        val initialConfig = getInput<Input>()?.initialConfig
         val viewModel: MoneroConfigureViewModel = koinViewModel()
         LaunchedEffect(initialConfig) {
             viewModel.setInitialConfig(initialConfig)

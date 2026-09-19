@@ -33,7 +33,7 @@ import cash.p.terminal.modules.send.solana.SendSolanaAddressService
 import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenType
-import cash.z.ecc.android.sdk.ext.collectWith
+import io.horizontalsystems.core.collectWith
 import io.horizontalsystems.core.entities.CurrencyValue
 import io.horizontalsystems.solanakit.SolanaKit
 import kotlinx.coroutines.CoroutineScope

@@ -1,37 +1,41 @@
 package cash.p.terminal.core.adapters.zcash
 
 import cash.p.terminal.core.BroadcastRawTransactionStatus
-import cash.z.ecc.android.sdk.model.FirstClassByteArray
-import cash.z.ecc.android.sdk.model.TransactionSubmitResult
+import cash.p.zcash.BroadcastResult
+import cash.p.zcash.ZcashException
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class ZcashRawBroadcastResultTest {
 
     @Test
-    fun toZcashRawBroadcastResult_success_returnsSubmitted() {
-        val result = TransactionSubmitResult.Success(txId).toZcashRawBroadcastResult()
+    fun toBroadcastResult_accepted_returnsSubmittedWithAssignedTxid() {
+        val result = BroadcastResult(errorCode = 0, message = TX_HASH.uppercase())
+            .toBroadcastResult(txHash = "unused")
 
-        assertEquals(expectedTxHash, result.txHash)
+        assertEquals(TX_HASH, result.txHash)
         assertEquals(BroadcastRawTransactionStatus.Submitted, result.status)
     }
 
     @Test
-    fun toZcashRawBroadcastResult_alreadyCommittedFailure_returnsAlreadyKnown() {
-        val result = TransactionSubmitResult.Failure(
-            txId = txId,
-            grpcError = false,
-            code = -1,
-            description = "any transaction with the same effects will be rejected from the mempool " +
-                    "until a chain reset: transaction was committed to the best chain"
-        ).toZcashRawBroadcastResult()
+    fun toBroadcastResult_alreadyCommittedRejection_returnsAlreadyKnownWithRequestedTxid() {
+        val result = BroadcastResult(
+            errorCode = -1,
+            message = "any transaction with the same effects will be rejected from the mempool " +
+                "until a chain reset: transaction was committed to the best chain"
+        ).toBroadcastResult(txHash = "0x$TX_HASH")
 
-        assertEquals(expectedTxHash, result.txHash)
+        assertEquals(TX_HASH, result.txHash)
         assertEquals(BroadcastRawTransactionStatus.AlreadyKnown, result.status)
     }
 
+    @Test(expected = ZcashException::class)
+    fun toBroadcastResult_otherRejection_throws() {
+        BroadcastResult(errorCode = -1, message = "insufficient funds")
+            .toBroadcastResult(txHash = TX_HASH)
+    }
+
     private companion object {
-        val txId = FirstClassByteArray(ByteArray(32) { it.toByte() })
-        val expectedTxHash = (31 downTo 0).joinToString(separator = "") { "%02x".format(it) }
+        val TX_HASH = (0 until 32).joinToString(separator = "") { "%02x".format(it) }
     }
 }

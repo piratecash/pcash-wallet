@@ -7,7 +7,6 @@ import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.ui_compose.BaseComposeFragment
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.modules.chart.ChartIndicatorSetting
 import cash.p.terminal.ui_compose.components.HudHelper
 import kotlinx.parcelize.Parcelize
@@ -16,7 +15,7 @@ class IndicatorSettingsFragment : BaseComposeFragment() {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val indicatorSetting = navController.getInput<Input>()?.indicatorId?.let {
+        val indicatorSetting = getInput<Input>()?.indicatorId?.let {
             App.chartIndicatorManager.getChartIndicatorSetting(it)
         }
 

@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cash.z.ecc.android.sdk.ext.onFirstWith
+import io.horizontalsystems.core.onFirstWith
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.modules.xrate.XRateService
 

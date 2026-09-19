@@ -2,14 +2,11 @@ package cash.p.terminal.modules.pin
 
 import cash.p.terminal.wallet.MnemonicDerivation
 
-import android.content.Context
 import cash.p.terminal.core.ICoinManager
-import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.ISendZcashAdapter
-import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
-import cash.p.terminal.core.managers.RestoreSettingsManager
+import cash.p.terminal.core.factories.AdapterFactory
+import cash.p.terminal.core.managers.PendingTransactionRegistrar
 import cash.p.terminal.core.usecase.OfflineModeUseCase
-import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -21,11 +18,10 @@ import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
+import cash.p.terminal.wallet.entities.BalanceData
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
-import cash.z.ecc.android.sdk.model.FirstClassByteArray
-import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.ISmsNotificationSettings
 import io.horizontalsystems.core.entities.Blockchain
@@ -70,16 +66,7 @@ class SendZecOnDuressUseCaseTest {
     private lateinit var dispatcherProvider: DispatcherProvider
 
     @MockK
-    private lateinit var context: Context
-
-    @MockK
-    private lateinit var localStorage: ILocalStorage
-
-    @MockK
-    private lateinit var backgroundManager: BackgroundManager
-
-    @MockK
-    private lateinit var restoreSettingsManager: RestoreSettingsManager
+    private lateinit var adapterFactory: AdapterFactory
 
     @MockK
     private lateinit var adapterManager: IAdapterManager
@@ -91,16 +78,13 @@ class SendZecOnDuressUseCaseTest {
     private lateinit var walletFactory: WalletFactory
 
     @MockK
-    private lateinit var clearZCashWalletDataUseCase: ClearZCashWalletDataUseCase
-
-    @MockK
     private lateinit var accountManager: IAccountManager
 
     @MockK
     private lateinit var offlineModeUseCase: OfflineModeUseCase
 
     @MockK(relaxed = true)
-    private lateinit var locallyCreatedTransactionRepository: LocallyCreatedTransactionRepository
+    private lateinit var pendingTransactionRegistrar: PendingTransactionRegistrar
 
     private lateinit var testScope: TestScope
     private lateinit var useCase: SendZecOnDuressUseCase
@@ -113,10 +97,12 @@ class SendZecOnDuressUseCaseTest {
         coEvery { offlineModeUseCase.withTemporaryOnline<Any?>(any(), any(), any()) } coAnswers {
             thirdArg<suspend () -> Any?>().invoke()
         }
+        // Duress adapters are detached: the AdapterManager knows no balance adapter for them.
+        every { adapterManager.getBalanceAdapterForWallet(any()) } returns null
         startKoin {
             modules(
                 module {
-                    single { locallyCreatedTransactionRepository }
+                    single { pendingTransactionRegistrar }
                 }
             )
         }
@@ -126,14 +112,10 @@ class SendZecOnDuressUseCaseTest {
             accountsStorage = accountsStorage,
             walletManager = walletManager,
             dispatcherProvider = dispatcherProvider,
-            context = context,
-            localStorage = localStorage,
-            backgroundManager = backgroundManager,
-            restoreSettingsManager = restoreSettingsManager,
+            adapterFactory = adapterFactory,
             adapterManager = adapterManager,
             coinManager = coinManager,
             walletFactory = walletFactory,
-            clearZCashWalletDataUseCase = clearZCashWalletDataUseCase,
             accountManager = accountManager,
             offlineModeUseCase = offlineModeUseCase,
         )
@@ -200,7 +182,7 @@ class SendZecOnDuressUseCaseTest {
         useCase.sendIfEnabled(userLevel = 1)
         testScope.advanceUntilIdle()
 
-        coVerify { adapter.send(any(), "z1testaddress", "test memo", null) }
+        coVerify { adapter.send(any(), "z1testaddress", "test memo") }
     }
 
     @Test
@@ -218,7 +200,7 @@ class SendZecOnDuressUseCaseTest {
         useCase.sendIfEnabled(userLevel = 1)
         testScope.advanceUntilIdle()
 
-        coVerify { adapter.send(any(), "z1testaddress", "", null) }
+        coVerify { adapter.send(any(), "z1testaddress", "") }
     }
 
     @Test
@@ -226,7 +208,7 @@ class SendZecOnDuressUseCaseTest {
         val account = createTestAccount()
         val wallet = createTestWallet(account)
         val adapter = createMockAdapter(balance = BigDecimal("1.0"), synced = true)
-        coEvery { adapter.send(any(), any(), any(), any()) } throws RuntimeException("Send failed")
+        coEvery { adapter.send(any(), any(), any()) } throws RuntimeException("Send failed")
 
         stubSmsNotificationSettings(level = 0)
         stubWalletLookup(account, wallet)
@@ -287,7 +269,7 @@ class SendZecOnDuressUseCaseTest {
         val account = createTestAccount()
         val wallet = createTestWallet(account)
         val adapter = createMockAdapter(balance = BigDecimal("1.0"), synced = true)
-        coEvery { adapter.send(any(), any(), any(), any()) } throws RuntimeException("Network error")
+        coEvery { adapter.send(any(), any(), any()) } throws RuntimeException("Network error")
 
         stubWalletLookupForTestTransaction(account, wallet)
         stubExistingAdapter(wallet, adapter)
@@ -311,7 +293,7 @@ class SendZecOnDuressUseCaseTest {
         val result = useCase.sendTestTransaction(wallet, "z1address", "memo")
 
         assertEquals(SendZecResult.Success, result)
-        coVerify { shieldedAdapter.send(any(), any(), any(), any()) }
+        coVerify { shieldedAdapter.send(any(), any(), any()) }
     }
 
     @Test
@@ -326,7 +308,7 @@ class SendZecOnDuressUseCaseTest {
         val result = useCase.sendTestTransaction(wallet, "z1address", "memo")
 
         assertEquals(SendZecResult.Success, result)
-        coVerify { unifiedAdapter.send(any(), any(), any(), any()) }
+        coVerify { unifiedAdapter.send(any(), any(), any()) }
     }
 
     // ==================== Sync Racing Tests ====================
@@ -345,8 +327,8 @@ class SendZecOnDuressUseCaseTest {
 
         assertEquals(SendZecResult.InsufficientBalance, result)
         // Verify neither adapter was used to send
-        coVerify(exactly = 0) { shieldedAdapter.send(any(), any(), any(), any()) }
-        coVerify(exactly = 0) { unifiedAdapter.send(any(), any(), any(), any()) }
+        coVerify(exactly = 0) { shieldedAdapter.send(any(), any(), any()) }
+        coVerify(exactly = 0) { unifiedAdapter.send(any(), any(), any()) }
     }
 
     @Test
@@ -363,8 +345,8 @@ class SendZecOnDuressUseCaseTest {
 
         assertEquals(SendZecResult.Success, result)
         // Verify winner (shielded) was used
-        coVerify(exactly = 1) { shieldedAdapter.send(any(), any(), any(), any()) }
-        coVerify(exactly = 0) { unifiedAdapter.send(any(), any(), any(), any()) }
+        coVerify(exactly = 1) { shieldedAdapter.send(any(), any(), any()) }
+        coVerify(exactly = 0) { unifiedAdapter.send(any(), any(), any()) }
     }
 
     @Test
@@ -381,8 +363,8 @@ class SendZecOnDuressUseCaseTest {
 
         assertEquals(SendZecResult.Success, result)
         // Verify winner (unified) was used
-        coVerify(exactly = 0) { shieldedAdapter.send(any(), any(), any(), any()) }
-        coVerify(exactly = 1) { unifiedAdapter.send(any(), any(), any(), any()) }
+        coVerify(exactly = 0) { shieldedAdapter.send(any(), any(), any()) }
+        coVerify(exactly = 1) { unifiedAdapter.send(any(), any(), any()) }
     }
 
     @Test
@@ -400,12 +382,12 @@ class SendZecOnDuressUseCaseTest {
         assertEquals(SendZecResult.Success, result)
         // Verify exactly one adapter was used (the winner)
         val shieldedCalled = try {
-            coVerify(exactly = 1) { shieldedAdapter.send(any(), any(), any(), any()) }; true
+            coVerify(exactly = 1) { shieldedAdapter.send(any(), any(), any()) }; true
         } catch (e: AssertionError) {
             false
         }
         val unifiedCalled = try {
-            coVerify(exactly = 1) { unifiedAdapter.send(any(), any(), any(), any()) }; true
+            coVerify(exactly = 1) { unifiedAdapter.send(any(), any(), any()) }; true
         } catch (e: AssertionError) {
             false
         }
@@ -481,12 +463,13 @@ class SendZecOnDuressUseCaseTest {
         val feeFlow = MutableStateFlow(BigDecimal("0.0001"))
         return mockk<ISendZcashAdapter> {
             every { maxSpendableBalance } returns balance
+            every { balanceData } returns BalanceData(available = balance)
             every { balanceState } returns if (synced) AdapterState.Synced else AdapterState.Syncing()
             every { balanceStateUpdatedFlow } returns syncFlow
             every { fee } returns feeFlow
             every { start() } just runs
             every { stop() } just runs
-            coEvery { send(any(), any(), any(), any()) } returns FirstClassByteArray(ByteArray(32) { it.toByte() })
+            coEvery { send(any(), any(), any()) } returns "a".repeat(64)
         }.also {
             if (synced) syncFlow.tryEmit(Unit)
         }
