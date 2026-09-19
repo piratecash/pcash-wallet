@@ -47,6 +47,12 @@ sealed class BlockchainType : Parcelable {
     }
 
     @Parcelize
+    object Beam : BlockchainType() {
+        @IgnoredOnParcel
+        override val uid = "beam"
+    }
+
+    @Parcelize
     object Zcash : BlockchainType() {
         @IgnoredOnParcel
         override val uid = "zcash"
@@ -196,6 +202,7 @@ sealed class BlockchainType : Parcelable {
             "litecoin" -> Litecoin
             "dogecoin" -> Dogecoin
             "dash" -> Dash
+            "beam" -> Beam
             "zcash" -> Zcash
             "ethereum" -> Ethereum
             "binance-smart-chain" -> BinanceSmartChain

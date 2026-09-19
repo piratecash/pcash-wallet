@@ -46,6 +46,7 @@ class ManageAccountFragment : BaseComposeFragment() {
             return
         }
         val viewModel = viewModel<ManageAccountViewModel>(factory = ManageAccountModule.Factory(account))
+        AccountDeletionError(viewModel.deletionState)
 
         LaunchedEffect(Unit) {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {

@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import cash.p.terminal.R
+import cash.p.terminal.modules.manageaccount.AccountDeletionState
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.IAccountManager
@@ -17,6 +18,7 @@ class UnlinkAccountViewModel(
     private val accountManager: IAccountManager
 ) : ViewModel() {
     val accountName = account.name
+    val deletionState = AccountDeletionState()
 
     var confirmations by mutableStateOf<List<ConfirmationItem>>(listOf())
         private set
@@ -63,8 +65,7 @@ class UnlinkAccountViewModel(
      */
     @OptIn(DelicateCoroutinesApi::class)
     fun onUnlink() = GlobalScope.launch {
-        accountManager.delete(account.id)
-        closeScreen = true
+        closeScreen = deletionState.run { accountManager.delete(account.id) }
     }
 
     private fun updateUnlinkEnabledState() {

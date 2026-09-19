@@ -911,6 +911,7 @@ class MultiSwapExchangeViewModelTest {
 
     private fun createViewModel(
         timerService: TimerService = TimerService(),
+        fetchQuotesUseCase: FetchSwapQuotesUseCase = fetchSwapQuotesUseCase,
     ): MultiSwapExchangeViewModel {
         // Clear previous VM before creating a new one
         viewModelStore.clear()
@@ -922,7 +923,7 @@ class MultiSwapExchangeViewModelTest {
             onChainMonitor = onChainMonitor,
             swapQuoteService = swapQuoteService,
             swapProvidersRepository = swapProvidersRepository,
-            fetchSwapQuotesUseCase = fetchSwapQuotesUseCase,
+            fetchSwapQuotesUseCase = fetchQuotesUseCase,
             timerService = timerService,
             syncPendingMultiSwapUseCase = syncPendingMultiSwapUseCase,
             assetFiatRateService = assetFiatRateService,

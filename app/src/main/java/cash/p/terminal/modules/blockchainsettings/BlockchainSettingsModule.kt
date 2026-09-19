@@ -28,6 +28,7 @@ object BlockchainSettingsModule {
     }
 
     val statusOnlyBlockchainTypes = listOf(
+        BlockchainType.Beam,
         BlockchainType.Zcash,
         BlockchainType.Tron,
         BlockchainType.Ton,

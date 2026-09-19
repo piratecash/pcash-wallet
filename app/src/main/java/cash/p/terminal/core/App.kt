@@ -18,6 +18,7 @@ import cash.p.terminal.core.managers.BaseTokenManager
 import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.ConnectivityManager
 import cash.p.terminal.core.managers.DefaultUserManager
+import cash.p.terminal.core.managers.DeletedAccountsCleanup
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.EvmLabelManager
 import cash.p.terminal.core.managers.EvmSyncSourceManager
@@ -63,9 +64,7 @@ import cash.p.terminal.modules.walletconnect.WCDelegate
 import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.modules.walletconnect.WCSessionManager
 import cash.p.terminal.modules.walletconnect.WCWalletRequestHandler
-import cash.p.terminal.wallet.IAccountCleaner
 import cash.p.terminal.wallet.IAccountManager
-import cash.p.terminal.wallet.IAccountsStorage
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IEnabledWalletStorage
 import cash.p.terminal.wallet.IWalletManager
@@ -237,8 +236,6 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
     }
 
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val accountCleaner: IAccountCleaner by inject(IAccountCleaner::class.java)
-    private val accountsStorage: IAccountsStorage by inject(IAccountsStorage::class.java)
     private val restoreSettingsManager: RestoreSettingsManager by inject(
         RestoreSettingsManager::class.java,
     )
@@ -552,14 +549,7 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
     private fun clearDeletedAccounts() {
         coroutineScope.launch {
             delay(3000)
-            val deletedAccountIds = accountManager.getDeletedAccountIds()
-            val deletedAccounts = deletedAccountIds
-                .mapNotNull(accountsStorage::loadAccount)
-            restoreSettingsManager.backfillTrezorMoneroRestoreHeights(
-                accountManager.accounts + deletedAccounts,
-            )
-            accountCleaner.clearAccounts(deletedAccountIds)
-            accountManager.clearDeleted(deletedAccountIds)
+            getKoinInstance<DeletedAccountsCleanup>().invoke()
         }
     }
 

@@ -12,6 +12,8 @@ import cash.p.terminal.tangem.ui.HardwareWalletError
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.AccountDeletionPreflight
+import cash.p.terminal.modules.manageaccount.AccountDeletionState
 import com.tangem.common.core.TangemError
 import com.tangem.common.core.TangemSdkError
 import com.tangem.common.doOnFailure
@@ -28,6 +30,8 @@ internal class ResetToFactorySettingsViewModel(
 ) : ViewModel() {
 
     private val accountManager: IAccountManager by inject(IAccountManager::class.java)
+    private val deletionPreflight: AccountDeletionPreflight by inject(AccountDeletionPreflight::class.java)
+    val deletionState = AccountDeletionState()
 
     private val _uiState =
         mutableStateOf(ResetToFactorySettingsViewUIState())
@@ -55,6 +59,8 @@ internal class ResetToFactorySettingsViewModel(
 
     fun resetCards() {
         viewModelScope.launch {
+            val accountId = account?.id ?: return@launch
+            if (!deletionState.run { deletionPreflight.ensureCanDelete(listOf(accountId)) }) return@launch
             if (!uiState.value.primaryCardWasReset) {
                 resetToFactorySettingsUseCase.resetPrimaryCard(uiState.value.primaryCardId, false)
                     .doOnSuccess { (walletPublicKey, success) ->
@@ -102,8 +108,8 @@ internal class ResetToFactorySettingsViewModel(
     }
 
     fun deleteAccount() = viewModelScope.launch {
-        accountManager.delete(account!!.id)
-        closeScreen = true
+        val accountId = account?.id ?: return@launch
+        closeScreen = deletionState.run { accountManager.delete(accountId) }
     }
 
     private fun handleTangemError(error: TangemError) {

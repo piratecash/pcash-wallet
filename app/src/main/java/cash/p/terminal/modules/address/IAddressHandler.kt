@@ -123,6 +123,7 @@ class AddressHandlerUdn(
             BlockchainType.Litecoin -> "LTC"
             BlockchainType.Dogecoin -> "DOGE"
             BlockchainType.Dash -> "DASH"
+            BlockchainType.Beam -> "BEAM"
             BlockchainType.Zcash -> "ZEC"
             BlockchainType.Solana -> "SOL"
             BlockchainType.Tron -> "TRX"

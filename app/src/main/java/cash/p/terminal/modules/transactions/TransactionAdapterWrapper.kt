@@ -22,19 +22,20 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.koin.java.KoinJavaComponent.inject
 import kotlin.math.abs
+import kotlin.coroutines.cancellation.CancellationException
 
 class TransactionAdapterWrapper(
     private val transactionsAdapter: ITransactionsAdapter,
@@ -70,12 +71,16 @@ class TransactionAdapterWrapper(
     private val _updatedFlow = MutableSharedFlow<Unit>(replay = 0)
     val updatedFlow: SharedFlow<Unit> get() = _updatedFlow.asSharedFlow()
 
-    // Use StateFlow for transaction records
-    private val _transactionRecords = MutableStateFlow<List<TransactionRecord>>(emptyList())
-    private val coinManager: CoinManager by inject(CoinManager::class.java)
+    private data class RecordsCache(
+        val revision: Long = 0,
+        val records: List<TransactionRecord> = emptyList(),
+        val allLoaded: Boolean = false,
+    )
 
-    // Use StateFlow for allLoaded flag - this is more consistent than MutableSharedFlow
-    private val _allLoaded = MutableStateFlow(false)
+    @Volatile
+    private var cache = RecordsCache()
+    internal val cacheRevision: Long get() = cache.revision
+    private val coinManager: CoinManager by inject(CoinManager::class.java)
 
     private val coroutineScope = CoroutineScope(dispatcherProvider.io + SupervisorJob())
     private val getMutex = Mutex()
@@ -122,8 +127,7 @@ class TransactionAdapterWrapper(
     }
 
     private fun resetCacheAndResubscribe() {
-        _transactionRecords.update { emptyList() }
-        _allLoaded.value = false
+        invalidateCache()
         subscribeForUpdates()
     }
 
@@ -159,8 +163,7 @@ class TransactionAdapterWrapper(
                     return@collectLatest
                 }
 
-                _transactionRecords.update { emptyList() }
-                _allLoaded.value = false
+                invalidateCache()
                 _updatedFlow.emit(Unit)
 
             }
@@ -183,43 +186,14 @@ class TransactionAdapterWrapper(
             ?.find { it.blockchain == transactionWallet.source.blockchain }
             ?.address
 
-        return when {
-            _transactionRecords.value.size >= limit || _allLoaded.value -> {
-                _transactionRecords.value.take(limit)
-            }
-
-            requestedContact != null && requestedAddress == null -> {
-                emptyList()
-            }
-
-            else -> {
-                val currentRecords = _transactionRecords.value
-                val numberOfRecordsToRequest = limit - currentRecords.size
-
-                // Load data using requested parameters
-                val receivedRecords = transactionsAdapter.getTransactions(
-                    from = currentRecords.lastOrNull(),
-                    token = transactionWallet.token,
-                    limit = numberOfRecordsToRequest,
-                    transactionType = requestedFilterType,
-                    address = requestedAddress
-                )
-
-                // Validation: check if parameters haven't changed during the load
-                if (transactionType != requestedFilterType || contact != requestedContact) {
-                    return@withLock emptyList()
-                }
-
-                // Parameters still match - safe to save the results
-                _allLoaded.value = receivedRecords.size < numberOfRecordsToRequest
-
-                // Merge with pending transactions
-                val mergedRecords = mergePendingAndReal(currentRecords + receivedRecords)
-                _transactionRecords.value = mergedRecords
-
-                mergedRecords.take(limit)
-            }
+        val currentCache = cache
+        if (requestedContact != null && requestedAddress == null) return@withLock emptyList()
+        val loadedCache = if (currentCache.records.size >= limit || currentCache.allLoaded) {
+            currentCache
+        } else {
+            loadRecords(currentCache, limit, requestedFilterType, requestedContact, requestedAddress)
         }
+        loadedCache.records.take(limit)
     }
 
     suspend fun search(
@@ -243,40 +217,65 @@ class TransactionAdapterWrapper(
             return@withLock emptySearchPage
         }
 
-        var currentRecords = _transactionRecords.value
-        var matchedRecords = currentRecords.matchingRecords(scanLimit, query, matcher)
+        var currentCache = cache
+        var matchedRecords = currentCache.records.matchingRecords(scanLimit, query, matcher)
 
         while (
             matchedRecords.size < limit &&
-            currentRecords.size < scanLimit &&
-            !_allLoaded.value
+            currentCache.records.size < scanLimit &&
+            !currentCache.allLoaded
         ) {
-            val numberOfRecordsToRequest = scanLimit - currentRecords.size
-            val receivedRecords = transactionsAdapter.getTransactions(
-                from = currentRecords.lastOrNull(),
-                token = transactionWallet.token,
-                limit = numberOfRecordsToRequest,
-                transactionType = requestedFilterType,
-                address = requestedAddress
-            )
-
-            if (transactionType != requestedFilterType || contact != requestedContact) {
-                return@withLock emptySearchPage
-            }
-
-            _allLoaded.value = receivedRecords.size < numberOfRecordsToRequest
-            currentRecords = mergePendingAndReal(currentRecords + receivedRecords)
-            _transactionRecords.value = currentRecords
-            matchedRecords = currentRecords.matchingRecords(scanLimit, query, matcher)
+            currentCache = loadRecords(currentCache, scanLimit, requestedFilterType, requestedContact, requestedAddress)
+            matchedRecords = currentCache.records.matchingRecords(scanLimit, query, matcher)
         }
 
-        val scannedCount = minOf(currentRecords.size, scanLimit)
+        val scannedCount = minOf(currentCache.records.size, scanLimit)
         SearchPage(
             records = matchedRecords.take(limit),
-            exhausted = _allLoaded.value && currentRecords.size <= scanLimit,
+            exhausted = currentCache.allLoaded && currentCache.records.size <= scanLimit,
             scannedCount = scannedCount,
-            frontierTimestamp = currentRecords.getOrNull(scannedCount - 1)?.timestamp,
+            frontierTimestamp = currentCache.records.getOrNull(scannedCount - 1)?.timestamp,
         )
+    }
+
+    @Synchronized
+    private fun invalidateCache() {
+        cache = RecordsCache(revision = cache.revision + 1)
+    }
+
+    private suspend fun loadRecords(
+        currentCache: RecordsCache,
+        limit: Int,
+        requestedFilterType: FilterTransactionType,
+        requestedContact: Contact?,
+        requestedAddress: String?,
+    ): RecordsCache {
+        val count = limit - currentCache.records.size
+        val received = transactionsAdapter.getTransactions(
+            from = currentCache.records.lastOrNull(),
+            token = transactionWallet.token,
+            limit = count,
+            transactionType = requestedFilterType,
+            address = requestedAddress,
+        )
+        currentCoroutineContext().ensureActive()
+        checkCacheRevision(currentCache.revision, requestedFilterType, requestedContact)
+        val records = mergePendingAndReal(currentCache.records + received)
+        currentCoroutineContext().ensureActive()
+        return synchronized(this) {
+            checkCacheRevision(currentCache.revision, requestedFilterType, requestedContact)
+            currentCache.copy(records = records, allLoaded = received.size < count).also { cache = it }
+        }
+    }
+
+    private fun checkCacheRevision(
+        revision: Long,
+        requestedFilterType: FilterTransactionType,
+        requestedContact: Contact?,
+    ) {
+        if (cache.revision != revision || transactionType != requestedFilterType || contact != requestedContact) {
+            throw StaleTransactionReadException()
+        }
     }
 
     private fun List<TransactionRecord>.matchingRecords(
@@ -340,6 +339,8 @@ class TransactionAdapterWrapper(
             )
 
             (adjustedRealRecords + filteredPending).sortedByDescending { it.timestamp }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             // If something fails, return real records only
             realRecords
@@ -502,3 +503,5 @@ class TransactionAdapterWrapper(
         coroutineScope.cancel()
     }
 }
+
+internal class StaleTransactionReadException : CancellationException("Transaction cache was invalidated")

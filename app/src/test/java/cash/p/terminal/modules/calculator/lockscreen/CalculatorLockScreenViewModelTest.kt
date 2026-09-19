@@ -49,6 +49,7 @@ class CalculatorLockScreenViewModelTest {
 
     private fun createViewModel(
         divideByZeroText: String = "can't divide by 0",
+        resetBlockedText: String = "BEAM reset blocked",
         locale: Locale = Locale.US,
     ): CalculatorLockScreenViewModel = CalculatorLockScreenViewModel(
         throttle = throttle,
@@ -56,6 +57,7 @@ class CalculatorLockScreenViewModelTest {
         attemptPinUnlock = attemptPinUnlock,
         locale = locale,
         divideByZeroText = divideByZeroText,
+        resetBlockedText = resetBlockedText,
     )
 
     @Test
@@ -305,7 +307,7 @@ class CalculatorLockScreenViewModelTest {
     @Test
     fun onEqualsClick_resultMatchesPin_unlocksAndConsumesToken() = runTest(dispatcher) {
         every { throttle.tryConsume() } returns true
-        coEvery { attemptPinUnlock("000123") } returns true
+        coEvery { attemptPinUnlock("000123") } returns AttemptPinUnlockUseCase.Result.Unlocked
 
         val viewModel = createViewModel()
         typeExpression(viewModel, "100+23")
@@ -315,6 +317,26 @@ class CalculatorLockScreenViewModelTest {
         assertTrue(viewModel.uiState.unlocked)
         verify { throttle.tryConsume() }
         verify { throttle.reset() }
+    }
+
+    @Test
+    fun onEqualsClick_resetBlocked_staysLockedAndCanAttemptAgain() = runTest(dispatcher) {
+        every { throttle.tryConsume() } returns true
+        coEvery { attemptPinUnlock("000123") } returns AttemptPinUnlockUseCase.Result.ResetBlocked
+        val viewModel = createViewModel()
+        typeExpression(viewModel, "100+23")
+
+        viewModel.onEqualsClick()
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.unlocked)
+        assertEquals("BEAM reset blocked", viewModel.uiState.displayedResult)
+        verify(exactly = 1) { throttle.refundOne() }
+        verify(exactly = 0) { throttle.reset() }
+        coEvery { attemptPinUnlock("000123") } returns AttemptPinUnlockUseCase.Result.Unlocked
+        viewModel.onEqualsClick()
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.unlocked)
     }
 
     @Test
@@ -372,7 +394,7 @@ class CalculatorLockScreenViewModelTest {
     @Test
     fun onEqualsClick_shortResult_padsWithLeadingZerosForPinLookup() = runTest(dispatcher) {
         every { throttle.tryConsume() } returns true
-        coEvery { attemptPinUnlock("000010") } returns true
+        coEvery { attemptPinUnlock("000010") } returns AttemptPinUnlockUseCase.Result.Unlocked
 
         val viewModel = createViewModel()
         typeExpression(viewModel, "5+5")
@@ -386,7 +408,7 @@ class CalculatorLockScreenViewModelTest {
     @Test
     fun onEqualsClick_singleDigitResult_padsWithLeadingZerosForPinLookup() = runTest(dispatcher) {
         every { throttle.tryConsume() } returns true
-        coEvery { attemptPinUnlock("000007") } returns true
+        coEvery { attemptPinUnlock("000007") } returns AttemptPinUnlockUseCase.Result.Unlocked
 
         val viewModel = createViewModel()
         typeExpression(viewModel, "3+4")
@@ -400,7 +422,7 @@ class CalculatorLockScreenViewModelTest {
     @Test
     fun onEqualsClick_zeroResult_padsToAllZerosForPinLookup() = runTest(dispatcher) {
         every { throttle.tryConsume() } returns true
-        coEvery { attemptPinUnlock("000000") } returns true
+        coEvery { attemptPinUnlock("000000") } returns AttemptPinUnlockUseCase.Result.Unlocked
 
         val viewModel = createViewModel()
         typeExpression(viewModel, "5-5")
@@ -414,7 +436,7 @@ class CalculatorLockScreenViewModelTest {
     @Test
     fun onEqualsClick_resultDoesNotMatchPin_keepsDisplayAndStaysLocked() = runTest(dispatcher) {
         every { throttle.tryConsume() } returns true
-        coEvery { attemptPinUnlock(any()) } returns false
+        coEvery { attemptPinUnlock(any()) } returns AttemptPinUnlockUseCase.Result.InvalidPin
 
         val viewModel = createViewModel()
         typeExpression(viewModel, "100+23")
@@ -500,7 +522,7 @@ class CalculatorLockScreenViewModelTest {
         try {
             runTest(standardDispatcher) {
                 every { throttle.tryConsume() } returns true
-                val gate = CompletableDeferred<Boolean>()
+                val gate = CompletableDeferred<AttemptPinUnlockUseCase.Result>()
                 coEvery { attemptPinUnlock(any()) } coAnswers { gate.await() }
 
                 val viewModel = createViewModel()
@@ -512,7 +534,7 @@ class CalculatorLockScreenViewModelTest {
                 verify(exactly = 1) { throttle.tryConsume() }
                 coVerify(exactly = 1) { attemptPinUnlock(any()) }
 
-                gate.complete(false)
+                gate.complete(AttemptPinUnlockUseCase.Result.InvalidPin)
                 advanceUntilIdle()
             }
         } finally {

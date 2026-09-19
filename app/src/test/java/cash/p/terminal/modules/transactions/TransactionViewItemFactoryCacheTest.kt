@@ -1,6 +1,8 @@
 package cash.p.terminal.modules.transactions
 
 import cash.p.terminal.R
+import cash.p.beam.BeamTransactionDirection
+import cash.p.beam.BeamTransactionStatus
 import cash.p.terminal.core.App
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.adapters.BaseEvmAdapter
@@ -24,6 +26,8 @@ import cash.p.terminal.modules.contacts.model.Contact
 import cash.p.terminal.modules.transactions.poison_status.PoisonStatus
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.strings.helpers.Translator
+import cash.p.terminal.ui_compose.ColorName
+import cash.p.terminal.strings.helpers.shorten
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.MarketKitWrapper
@@ -412,6 +416,104 @@ class TransactionViewItemFactoryCacheTest {
         }
     }
 
+    @Test
+    fun convertToViewItemCached_pendingWithoutRecipient_showsPlaceholderSubtitle() = runTest {
+        val record = createPendingRecord(transactionHash = TX_HASH, toAddress = "")
+        every { swapProviderTransactionsStorage.getByOutgoingRecordUid(any()) } returns null
+        every { swapProviderTransactionsStorage.getByCoinUidIn(any(), any(), any(), any()) } returns null
+
+        val viewItem = factory.convertToViewItemCached(createTransactionItem(record))
+
+        assertEquals("---", viewItem.subtitle)
+    }
+
+    @Test
+    fun convertToViewItemCached_beamDirections_showsSignedAmountAndCounterparty() = runTest {
+        val titles = listOf(
+            R.string.Transactions_Receive, R.string.Transactions_Send, R.string.Transactions_Send
+        )
+        val counterparty = "6xfHF7nkBSTHkLYGCcCFHhUgbDzoBXTGevBgHzHRSXjcPbPSAJU"
+        BeamTransactionDirection.entries.zip(titles).forEach { (direction, title) ->
+            val record = beamHistoryRecord(direction = direction, counterparty = counterparty)
+            every { Translator.getString(title) } returns direction.name
+            // The stub echoes its argument: a stub returning a constant would still pass if the
+            // production code stopped calling mapped() and rendered the raw token.
+            every { Translator.getString(R.string.Transactions_From, any()) } answers
+                { "from ${arg<Array<*>>(1).single()}" }
+            every { Translator.getString(R.string.Transactions_To, any()) } answers
+                { "to ${arg<Array<*>>(1).single()}" }
+
+            val item = factory.convertToViewItemCached(createTransactionItem(record))
+
+            assertEquals(direction.name, item.title)
+            // Self takes the "to" branch, exactly as Monero's outgoing rows do.
+            val prefix = if (direction == BeamTransactionDirection.Incoming) "from" else "to"
+            assertEquals("$prefix ${counterparty.shorten()}", item.subtitle)
+            // The raw token must never reach a list row.
+            assertEquals(false, item.subtitle.contains(counterparty))
+            // The status no longer appears: the progress ring already carries it.
+            assertEquals(false, item.subtitle.contains("·"))
+            // The same pairing every other chain uses: a transfer to our own wallet leaves the
+            // balance untouched, so it is rendered unsigned and in the neutral colour.
+            val expectedAmount = when (direction) {
+                BeamTransactionDirection.Incoming -> "+BEAM:1"
+                BeamTransactionDirection.Outgoing -> "-BEAM:1"
+                BeamTransactionDirection.Self -> "BEAM:1"
+            }
+            val expectedColor = when (direction) {
+                BeamTransactionDirection.Incoming -> ColorName.Remus
+                BeamTransactionDirection.Outgoing -> ColorName.Lucian
+                BeamTransactionDirection.Self -> ColorName.Leah
+            }
+            assertEquals(expectedAmount, item.primaryValue?.value)
+            assertEquals(expectedColor, item.primaryValue?.color)
+            assertEquals(direction == BeamTransactionDirection.Self, item.sentToSelf)
+        }
+    }
+
+    @Test
+    fun convertToViewItemCached_beamWithoutCounterparty_fallsBackToPlaceholder() = runTest {
+        val record = beamHistoryRecord(direction = BeamTransactionDirection.Incoming, counterparty = null)
+        every { Translator.getString(R.string.Transactions_Receive) } returns "Received"
+
+        val item = factory.convertToViewItemCached(createTransactionItem(record))
+
+        // No counterparty to name, and nothing invented in its place.
+        assertEquals("---", item.subtitle)
+    }
+
+    @Test
+    fun convertToViewItemCached_beamReorgAndFailure_updatesProgressAndIcon() = runTest {
+        val completed = createTransactionItem(beamHistoryRecord(), LastBlockInfo(height = 1_000))
+        val original = factory.convertToViewItemCached(completed)
+        assertNull(original.progress)
+
+        val reverted = completed.withUpdatedListData(
+            record = beamHistoryRecord(status = BeamTransactionStatus.Confirming)
+        )
+        val confirming = factory.convertToViewItemCached(reverted)
+        assertEquals(0.8f, confirming.progress)
+        assertEquals(original.uid, confirming.uid)
+
+        listOf(BeamTransactionStatus.Failed, BeamTransactionStatus.Canceled).forEach { status ->
+            val failed = reverted.withUpdatedListData(record = beamHistoryRecord(status = status))
+            val item = factory.convertToViewItemCached(failed)
+            assertSame(TransactionViewItem.Icon.Failed, item.icon)
+            assertNull(item.progress)
+        }
+    }
+
+    @Test
+    fun matches_beamIdentifiersAndFailure_searchesWithoutInventedAddresses() {
+        val record = beamHistoryRecord(failureReason = "Transaction expired")
+        val matcher = TransactionRecordSearchMatcher()
+        listOf("transaction-id", "KERNEL-ID", "expired", "BEAM").forEach {
+            assertTrue(matcher.matches(record, it))
+        }
+        assertEquals(false, matcher.matches(record, "recipient-address"))
+        assertEquals(emptyList<String>(), record.getSenderAddresses())
+    }
+
     private fun createUnknownSwapRecord(
         uid: String,
         valueOut: TransactionValue?,
@@ -512,6 +614,7 @@ class TransactionViewItemFactoryCacheTest {
 
     private fun createPendingRecord(
         transactionHash: String,
+        toAddress: String = "t1Js8mMvZzCY2gUpTpKcNetJrMihqaPbSXF",
     ): PendingTransactionRecord {
         val token = createZcashToken()
 
@@ -526,7 +629,7 @@ class TransactionViewItemFactoryCacheTest {
             ),
             token = token,
             amount = ZEC_AMOUNT,
-            toAddress = "t1Js8mMvZzCY2gUpTpKcNetJrMihqaPbSXF",
+            toAddress = toAddress,
             fromAddress = "from-address",
             expiresAt = Long.MAX_VALUE,
             memo = null,

@@ -242,7 +242,9 @@ class PendingTransactionMatcher {
             TransactionRecordType.TRON_EXTERNAL_CONTRACT_CALL,
             TransactionRecordType.TRON_INCOMING,
             TransactionRecordType.MONERO_INCOMING,
-            TransactionRecordType.STELLAR_INCOMING -> false
+            TransactionRecordType.STELLAR_INCOMING,
+            TransactionRecordType.BEAM_INCOMING,
+            TransactionRecordType.BEAM_OUTGOING -> false
         }
     }
 

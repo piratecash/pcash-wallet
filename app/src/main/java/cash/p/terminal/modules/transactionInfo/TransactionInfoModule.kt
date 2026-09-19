@@ -113,6 +113,8 @@ data class TransactionInfoItem(
     val swapTransactionStatus: TransactionStatusEnum? = null,
     val poisonStatus: PoisonStatus = PoisonStatus.BLOCKCHAIN,
     val offlineStatus: ColoredValue? = null,
+    // Record equality identifies the transaction, not changes to its status or details.
+    val recordRevision: Long = 0,
 )
 
 val BlockchainType.resendable: Boolean

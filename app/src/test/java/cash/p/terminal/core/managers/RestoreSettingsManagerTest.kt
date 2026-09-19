@@ -15,6 +15,8 @@ import io.mockk.verify
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class RestoreSettingsManagerTest {
 
@@ -295,6 +297,40 @@ class RestoreSettingsManagerTest {
             )
 
             assertEquals(expected, manager.moneroSpentReconciliationState(ACCOUNT))
+        }
+    }
+
+    @Test
+    fun saveBeamRestoreIntent_restartAndGenericSettingsSave_preservesHiddenIntentAndMoneroKeys() {
+        val fixture = RestoreSettingsTestFixture()
+        val manager = fixture.manager()
+        manager.savePendingMoneroRescan(ACCOUNT, MONERO_HEIGHT)
+        manager.saveMoneroSpentReconciliationState(ACCOUNT, MoneroSpentReconciliationState.Ready)
+        val moneroRecords = fixture.storage.restoreSettings(ACCOUNT.id, BlockchainType.Monero.uid)
+
+        manager.saveBeamRestoreIntent(ACCOUNT)
+        val restarted = fixture.manager()
+        restarted.save(RestoreSettings(), ACCOUNT, BlockchainType.Beam)
+
+        assertTrue(restarted.hasBeamRestoreIntent(ACCOUNT))
+        assertFalse(restarted.hasBeamRestoreIntent(ACCOUNT.copy(id = "another-account")))
+        assertFalse(restarted.settings(ACCOUNT, BlockchainType.Beam).isNotEmpty())
+        assertTrue(restarted.accountSettingsInfo(ACCOUNT).all { it.first == BlockchainType.Monero })
+        val stored = fixture.storage.restoreSettings(ACCOUNT.id, BlockchainType.Monero.uid)
+        assertEquals(moneroRecords.toSet(), stored.toSet())
+        assertEquals(MONERO_HEIGHT, restarted.pendingMoneroRescanHeight(ACCOUNT))
+        assertEquals(MoneroSpentReconciliationState.Ready, restarted.moneroSpentReconciliationState(ACCOUNT))
+        assertEquals(MONERO_HEIGHT, restarted.trezorMoneroRestoreHeight("wallet-key"))
+    }
+
+    @Test
+    fun hasBeamRestoreIntent_unknownOrCorruptValue_failsClosed() {
+        val fixture = RestoreSettingsTestFixture()
+        listOf("", "create", "SNAPSHOT_THEN_SCAN:v2", "corrupt").forEach { value ->
+            fixture.storage.save(listOf(RestoreSettingRecord(
+                ACCOUNT.id, BlockchainType.Beam.uid, "beam_restore_intent", value,
+            )))
+            assertFailsWith<IllegalStateException> { fixture.manager().hasBeamRestoreIntent(ACCOUNT) }
         }
     }
 

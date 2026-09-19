@@ -13,7 +13,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
@@ -25,6 +28,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import cash.p.terminal.MainGraphDirections
 import cash.p.terminal.R
@@ -79,9 +83,13 @@ internal fun ManageAccountScreen(
     onNameChanged: (String) -> Unit,
     onActionClick: (KeyAction) -> Unit,
 ) {
-    if (viewState.closeScreen) {
-        navController.popBackStack()
-        onCloseClicked()
+    val currentDestinationId = navController.currentBackStackEntryAsState().value?.destination?.id
+    val currentOnCloseClicked by rememberUpdatedState(onCloseClicked)
+    if (shouldCloseManageAccount(viewState.closeScreen, currentDestinationId)) {
+        LaunchedEffect(viewState.closeScreen, currentDestinationId) {
+            navController.popBackStack(R.id.manageAccountFragment, true)
+            currentOnCloseClicked()
+        }
     }
 
     Column(modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)) {
@@ -222,6 +230,9 @@ internal fun ManageAccountScreen(
         }
     }
 }
+
+internal fun shouldCloseManageAccount(closeScreen: Boolean, currentDestinationId: Int?): Boolean =
+    closeScreen && currentDestinationId == R.id.manageAccountFragment
 
 @Composable
 private fun KeyActions(

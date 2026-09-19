@@ -15,6 +15,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.ensureActive
 
 class OfflineSigningController<T>(
     private val scope: CoroutineScope,
@@ -31,6 +32,29 @@ class OfflineSigningController<T>(
         private set
 
     private var job: Job? = null
+
+    fun exportOwned(format: OfflineTransactionFormat, producer: suspend () -> OfflineSignedTransaction) = ownedAction {
+        val transaction = producer()
+        coroutineContext.ensureActive()
+        signedTransaction = transaction
+        OfflineSignState.Signed(format)
+    }
+
+    private fun ownedAction(action: suspend CoroutineScope.() -> OfflineSignState) {
+        if (signState == OfflineSignState.Signing) return
+        signState = OfflineSignState.Signing
+        job = scope.launch {
+            try {
+                val result = withContext(dispatcherProvider.io, action)
+                coroutineContext.ensureActive()
+                signState = result
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                signState = OfflineSignState.Failed(cautionFactory(error))
+            }
+        }
+    }
 
     fun sign(
         format: OfflineTransactionFormat,

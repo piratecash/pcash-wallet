@@ -315,7 +315,10 @@ private fun ErrorResult(result: OfflineBroadcastResult.Error) {
         icon = R.drawable.ic_close_24,
         iconTint = ComposeAppTheme.colors.lucian,
         style = OfflineStatusBlockStyle.Error,
-        title = stringResource(R.string.offline_broadcast_error_title),
+        title = stringResource(
+            if (result.acceptanceUnknown) R.string.offline_signed_status_unknown
+            else R.string.offline_broadcast_error_title
+        ),
     ) {
         VSpacer(8.dp)
         ResultDescription(result.message)

@@ -67,6 +67,7 @@ secp256k1 = "0.24.0"
 
 tonKotlin = "0.5.0" # updated for ktor 3.x compatibility
 piratecash-ton = "v1.0.0-pcash.6"
+beam-sdk = "v0.2.1"
 piratecash-bitcoin = "v0.1.0-pcash.34"
 hd-wallet-kit = "1.0.1"
 stellar-kit = "v1.0.0-pcash.3"
@@ -216,6 +217,7 @@ spek-runner-junit5 = { module = "org.spekframework.spek2:spek-runner-junit5", ve
 stellar-sdk = { module = "network.lightsail:stellar-sdk", version.ref = "stellarSdk" }
 ton-kotlin-contract = { module = "org.ton.kotlin:ton-kotlin-contract", version.ref = "tonKotlin" }
 ton-kit = { group = "com.github.piratecash", name = "ton-kit-android", version.ref = "piratecash-ton" }
+beam-sdk = { module = "com.github.piratecash.beam-sdk-kmp:beam-sdk", version.ref = "beam-sdk" }
 bitcoin-core = { group = "com.github.piratecash.bitcoin-kit-android", name = "bitcoincore", version.ref = "piratecash-bitcoin" }
 bitcoin-kit = { group = "com.github.piratecash.bitcoin-kit-android", name = "bitcoinkit", version.ref = "piratecash-bitcoin" }
 bitcoin-cash-kit = { group = "com.github.piratecash.bitcoin-kit-android", name = "bitcoincashkit", version.ref = "piratecash-bitcoin" }

@@ -326,6 +326,54 @@ class WalletStorageTest {
         )
     }
 
+    @Test
+    fun wallets_persistedNativeBeam_allowsOnlyMnemonicWithAndWithoutCatalog() = runTest {
+        val accountTypes = listOf(
+            account.type,
+            mockk<AccountType.MnemonicMonero>(), mockk<AccountType.HardwareCard>(),
+            mockk<AccountType.TrezorDevice>(), mockk<AccountType.HdExtendedKey>(),
+            AccountType.BitcoinAddress("address", BlockchainType.Beam, TokenType.Native),
+            mockk<AccountType.EvmAddress>(), mockk<AccountType.EvmPrivateKey>(),
+            mockk<AccountType.SolanaAddress>(), mockk<AccountType.TronAddress>(),
+            mockk<AccountType.TonAddress>(), mockk<AccountType.StellarAddress>(),
+            mockk<AccountType.StellarSecretKey>(), mockk<AccountType.ZCashUfvKey>()
+        )
+
+        listOf(true, false).forEach { catalogAvailable ->
+            val storage = storedBeamWallets(catalogAvailable)
+            accountTypes.forEach { type ->
+                val wallets = storage.wallets(account.copy(type = type))
+                assertEquals(if (type is AccountType.Mnemonic) 1 else 0, wallets.size)
+                wallets.firstOrNull()?.let {
+                    assertEquals(TokenQuery(BlockchainType.Beam, TokenType.Native), it.token.tokenQuery)
+                    assertEquals(8, it.decimal)
+                }
+            }
+        }
+    }
+
+    private fun storedBeamWallets(catalogAvailable: Boolean): WalletStorage {
+        val beam = token.copy(
+            coin = Coin(uid = "beam", name = "BEAM", code = "BEAM"),
+            blockchain = Blockchain(BlockchainType.Beam, "BEAM", null),
+            decimals = 8
+        )
+        val storage = InMemoryEnabledWalletStorage()
+        storage.save(listOf(EnabledWallet(
+            tokenQueryId = "beam|native",
+            accountId = account.id,
+            coinName = "BEAM",
+            coinCode = "BEAM",
+            coinDecimals = 8,
+            coinImage = null
+        )))
+        val marketKit = mockk<MarketKitWrapper> {
+            every { tokens(any<List<TokenQuery>>()) } returns if (catalogAvailable) listOf(beam) else emptyList()
+            every { blockchains(any<List<String>>()) } returns listOf(beam.blockchain)
+        }
+        return walletStorage(storage, marketKit)
+    }
+
     private fun zcashMarketKit(zcashTokens: List<Token>) = mockk<MarketKitWrapper> {
         every { tokens(any<List<TokenQuery>>()) } answers {
             zcashTokens.filter { it.tokenQuery in firstArg<List<TokenQuery>>() }

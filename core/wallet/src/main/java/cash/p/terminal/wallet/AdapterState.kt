@@ -17,6 +17,22 @@ sealed class AdapterState {
 
     sealed class Substatus {
         data class WaitingForPeers(val connected: Int, val required: Int) : Substatus()
+
+        data class SnapshotRestore(
+            val stage: SnapshotRestoreStage,
+            val downloadedBytes: Long? = null,
+            val totalBytes: Long? = null,
+        ) : Substatus()
+    }
+
+    enum class SnapshotRestoreStage {
+        ResolvingBirthday,
+        DownloadingSnapshot,
+        ValidatingSnapshot,
+        CountingShieldedOutputs,
+        ScanningWalletOutputs,
+        ImportingSnapshot,
+        CatchingUp,
     }
 
     override fun toString(): String {

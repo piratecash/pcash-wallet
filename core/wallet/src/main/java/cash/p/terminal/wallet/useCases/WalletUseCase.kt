@@ -16,6 +16,7 @@ import cash.p.terminal.wallet.latestAccountOr
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.expandedZcashAddressSpecTokens
 import cash.p.terminal.wallet.tokenQueryId
+import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 
@@ -32,6 +33,9 @@ class WalletUseCase(
     fun getWallet(token: Token): Wallet? = walletManager.activeWallets.find {
         it.token == token
     }
+
+    fun getWallets(blockchainType: BlockchainType): List<Wallet> =
+        walletManager.activeWallets.filter { it.token.blockchainType == blockchainType }
 
     fun getWallet(coinUid: String, blockchainType: String): Wallet? =
         walletManager.activeWallets.find {

@@ -1,6 +1,8 @@
 package cash.p.terminal.modules.transactionInfo
 
 import cash.p.terminal.R
+import cash.p.beam.BeamTransactionDirection
+import cash.p.terminal.entities.transactionrecords.beam.BeamTransactionRecord
 import cash.p.terminal.core.managers.TonHelper
 import cash.p.terminal.ui_compose.ColoredValue
 import cash.p.terminal.core.providers.AppConfigProvider
@@ -71,6 +73,45 @@ class TransactionInfoViewItemFactory(
         }
 
         when (transaction) {
+            is BeamTransactionRecord -> {
+                val beamSection = if (transaction.direction == BeamTransactionDirection.Incoming) {
+                    TransactionViewItemFactoryHelper.getReceiveSectionItems(
+                        value = transaction.mainValue,
+                        fromAddress = transaction.counterparty,
+                        toAddress = null,
+                        coinPrice = rates[transaction.mainValue.coinUid],
+                        hideAmount = transactionItem.hideAmount,
+                        blockchainType = blockchainType,
+                        showCopyWarning = isSuspicious,
+                    )
+                } else {
+                    sentToSelf = transaction.sentToSelf
+                    TransactionViewItemFactoryHelper.getSendSectionItems(
+                        value = transaction.mainValue,
+                        toAddress = transaction.counterparty?.let(::listOf),
+                        coinPrice = rates[transaction.mainValue.coinUid],
+                        hideAmount = transactionItem.hideAmount,
+                        sentToSelf = transaction.sentToSelf,
+                        blockchainType = blockchainType,
+                    )
+                }
+                // A BEAM Offline token runs to ~3200 characters; the shared builder collapses only
+                // labelled addresses, so collapse ours explicitly.
+                itemSections.add(
+                    beamSection.map {
+                        if (it is TransactionInfoViewItem.Address) {
+                            TransactionInfoViewItem.Address(
+                                it.title, it.value, it.showAdd, it.blockchainType, it.showCopyWarning,
+                                collapseAddress = true,
+                            )
+                        } else {
+                            it
+                        }
+                    }
+                )
+            }
+
+
             is StellarTransactionRecord -> {
                 when (val transactionType = transaction.type) {
                     is StellarTransactionRecord.Type.Receive -> {
@@ -652,20 +693,24 @@ class TransactionInfoViewItemFactory(
             }
 
             is PendingTransactionRecord -> {
+                val unknownRecipient = transactionItem.hasUnknownOfflineRecipient
                 itemSections.add(
-                    if (transactionItem.hasUnknownOfflineMetadata) {
+                    if (unknownRecipient && transaction.amount.signum() == 0) {
                         getUnknownOfflineSendSectionItems(transaction.mainValue)
                     } else {
                         TransactionViewItemFactoryHelper.getSendSectionItems(
                             value = transaction.mainValue,
-                            toAddress = transaction.to,
+                            toAddress = transaction.to.takeUnless { unknownRecipient },
                             coinPrice = rates[transaction.mainValue.coinUid],
                             hideAmount = transactionItem.hideAmount,
                             sentToSelf = transaction.sentToSelf,
                             nftMetadata = nftMetadata,
                             blockchainType = blockchainType,
                             showCopyWarning = isSuspicious,
-                        )
+                        ).toMutableList().apply {
+                            // The amount comes first; the unknown recipient takes the address row's place after it.
+                            if (unknownRecipient) add(1, unknownRecipientItem())
+                        }
                     }
                 )
             }
@@ -808,7 +853,7 @@ class TransactionInfoViewItemFactory(
     }
 }
 
-private val TransactionInfoItem.hasUnknownOfflineMetadata: Boolean
+private val TransactionInfoItem.hasUnknownOfflineRecipient: Boolean
     get() {
         val pendingRecord = record as? PendingTransactionRecord ?: return false
         return offlineStatus != null && pendingRecord.to.orEmpty().all { it.isBlank() }
@@ -828,11 +873,11 @@ private fun getUnknownOfflineSendSectionItems(
             badge = value.badge,
             amountType = AmountType.Sent,
         ),
-        TransactionInfoViewItem.Value(
-            Translator.getString(R.string.TransactionInfo_To),
-            UNKNOWN_VALUE,
-        )
+        unknownRecipientItem(),
     )
+
+private fun unknownRecipientItem() =
+    TransactionInfoViewItem.Value(Translator.getString(R.string.TransactionInfo_To), UNKNOWN_VALUE)
 
 // Offline-signed transactions replace the regular status row with a dedicated offline status. When no
 // offline status is present the list is returned unchanged.
