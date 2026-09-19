@@ -1,6 +1,8 @@
 package cash.p.terminal.modules.transactions
 
 import cash.p.terminal.R
+import cash.p.beam.BeamTransactionDirection
+import cash.p.terminal.entities.transactionrecords.beam.BeamTransactionRecord
 import cash.p.terminal.core.App
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.managers.BalanceHiddenManager
@@ -523,6 +525,10 @@ class TransactionViewItemFactory(
                 )
             }
 
+            is BeamTransactionRecord -> createViewItemFromBeamTransactionRecord(
+                record, transactionItem.currencyValue, progress, icon
+            )
+
             is MoneroTransactionRecord -> {
                 tryConvertToUserSwapProviderViewItemSwap(
                     transactionItem = transactionItem,
@@ -554,6 +560,50 @@ class TransactionViewItemFactory(
 
             else -> throw IllegalArgumentException("Undefined record type ${record.javaClass.name}")
         }
+    }
+
+    private fun createViewItemFromBeamTransactionRecord(
+        record: BeamTransactionRecord,
+        currencyValue: CurrencyValue?,
+        progress: Float?,
+        icon: TransactionViewItem.Icon?,
+    ): TransactionViewItem {
+        val color = when (record.direction) {
+            BeamTransactionDirection.Incoming -> ColorName.Remus
+            BeamTransactionDirection.Outgoing -> ColorName.Lucian
+            BeamTransactionDirection.Self -> ColorName.Leah
+        }
+        return TransactionViewItem(
+            uid = record.uid,
+            progress = progress,
+            title = Translator.getString(record.directionTitle),
+            // The status is already carried by the progress ring, so the subtitle names the other
+            // party instead; mapped() resolves a contact or label and otherwise shortens the token.
+            subtitle = record.counterparty?.let {
+                Translator.getString(
+                    if (record.direction == BeamTransactionDirection.Incoming) {
+                        R.string.Transactions_From
+                    } else {
+                        R.string.Transactions_To
+                    },
+                    mapped(it, record.blockchainType),
+                )
+            } ?: "---",
+            // Every other chain hides the sign when a transfer goes to the user's own wallet:
+            // the balance does not move, so a minus would be a lie.
+            primaryValue = getColoredValue(
+                record.mainValue,
+                color,
+                hideSign = record.sentToSelf,
+            ),
+            secondaryValue = currencyValue?.let { getColoredValue(it, ColorName.Grey) },
+            showAmount = showAmount,
+            date = Date(record.timestamp * 1000),
+            formattedTime = formatTime(record.timestamp),
+            sentToSelf = record.sentToSelf,
+            spam = record.spam,
+            icon = icon ?: singleValueIconType(record.mainValue),
+        )
     }
 
     private fun createViewItemFromMoneroTransactionRecord(
@@ -1966,11 +2016,9 @@ class TransactionViewItemFactory(
         currencyValue: CurrencyValue?,
     ): TransactionViewItem {
         val isExpired = record.isExpired
-        val toAddress = record.to?.firstOrNull() ?: ""
-        val subtitle = Translator.getString(
-            R.string.Transactions_To,
-            mapped(toAddress, record.blockchainType)
-        )
+        val subtitle = record.to?.firstOrNull()?.takeIf { it.isNotBlank() }?.let {
+            Translator.getString(R.string.Transactions_To, mapped(it, record.blockchainType))
+        } ?: "---"
 
         val secondaryValue = currencyValue?.let {
             getColoredValue(it, ColorName.Grey)

@@ -17,9 +17,11 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
+import java.io.File
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 
 class LogLoginAttemptUseCaseTest {
@@ -49,6 +51,17 @@ class LogLoginAttemptUseCaseTest {
     private lateinit var dispatcherProvider: DispatcherProvider
 
     private lateinit var useCase: LogLoginAttemptUseCase
+
+    @Test
+    fun discardCapturedPhoto_removesOrphanedFile() = runTest {
+        val photo = File.createTempFile("beam-blocked-login-", ".jpg")
+        try {
+            useCase.discardCapturedPhoto(photo.absolutePath)
+            assertFalse(photo.exists())
+        } finally {
+            photo.delete()
+        }
+    }
 
     @Before
     fun setup() {

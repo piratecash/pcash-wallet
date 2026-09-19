@@ -1,6 +1,13 @@
 package cash.p.terminal.core.usecase
 
+import cash.p.beam.BeamAddress
+import cash.p.beam.BeamAddressType
+import cash.p.beam.BeamBalance
+import cash.p.beam.BeamNetwork
+import cash.p.beam.BeamWalletState
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.adapters.BeamAdapter
+import cash.p.terminal.core.managers.BeamSessionOwner
 import cash.p.terminal.core.managers.OfflineKey
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.OfflineNetworkController
@@ -25,10 +32,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -149,6 +158,45 @@ class OfflineModeUseCaseTest {
 
         assertTrue(result is TransitionResult.Failed)
         coVerify(exactly = 0) { offlineModeManager.persistAndPublish(any(), any(), any()) }
+    }
+
+    @Test
+    fun setChainOffline_beamStopFails_nextChainCommandStillRuns() = runTest(dispatcher) {
+        val session = mockk<BeamSessionOwner.Session>(relaxed = true) {
+            every { wallet.state } returns MutableStateFlow<BeamWalletState>(BeamWalletState.Connecting)
+            every { wallet.balance } returns MutableStateFlow(BeamBalance())
+            every { wallet.transactions } returns MutableStateFlow(emptyList())
+            every { receiveAddress } returns
+                BeamAddress("public-offline-test", BeamAddressType.PublicOffline, BeamNetwork.Mainnet)
+        }
+        val owner = mockk<BeamSessionOwner>(relaxed = true) {
+            every { current } returns session
+            coEvery { stop(session) } throws IOException("SDK stop failed")
+        }
+        val adapter = BeamAdapter(owner, session, mockk { every { io } returns dispatcher }, wallet)
+        try {
+            assertBeamFailureDoesNotStopCommands(adapter)
+        } finally {
+            adapter.close()
+        }
+    }
+
+    private suspend fun assertBeamFailureDoesNotStopCommands(adapter: BeamAdapter) {
+        val other = ethereumWallet(TokenType.Native, "ethereum", "ETH")
+        every { networkController.isOffline(wallet) } answers { adapter.isNetworkPaused }
+        coEvery { networkController.pause(wallet) } coAnswers { adapter.pauseNetworkAndAwait() }
+        every { networkController.isOffline(other) } returns false
+        val useCase = createUseCase(listOf(wallet, other))
+
+        val first = withTimeout(1_000) { useCase.setChainOffline(account, BlockchainType.Zcash, true) }
+        assertTrue(first is TransitionResult.Failed)
+        assertFalse(adapter.isNetworkPaused)
+        coVerify(exactly = 0) { offlineModeManager.persistAndPublish(any(), any(), any()) }
+
+        val second = withTimeout(1_000) { useCase.setChainOffline(account, BlockchainType.Ethereum, true) }
+        assertEquals(TransitionResult.Success, second)
+        coVerify(exactly = 1) { networkController.pause(other) }
+        coVerify(exactly = 1) { offlineModeManager.persistAndPublish(ACCOUNT_ID, BlockchainType.Ethereum, true) }
     }
 
     @Test

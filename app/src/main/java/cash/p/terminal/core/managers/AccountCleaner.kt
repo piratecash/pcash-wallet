@@ -8,6 +8,7 @@ import cash.p.terminal.core.storage.MoneroFileDao
 import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
 import cash.p.terminal.modules.pin.core.PinDbStorage
 import cash.p.terminal.wallet.IAccountCleaner
+import cash.p.terminal.wallet.AccountDeletionPreflight
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IWalletManager
@@ -30,10 +31,12 @@ class AccountCleaner(
     private val pinDbStorage: PinDbStorage,
     private val accountStorageCleaner: AccountStorageCleaner,
     private val bitcoinKitDatabaseManager: BitcoinKitDatabaseManager,
+    private val deletionPreflight: AccountDeletionPreflight,
 ) : IAccountCleaner {
 
     /** Storage rows go last: their failure must reach the caller without skipping the wipes above. */
     override suspend fun clearAccounts(accountIds: List<String>) {
+        deletionPreflight.cleanupDeleted(accountIds)
         adapterManager.stopAdapters(accountIds)
         accountIds.forEach { clearAccount(it) }
         accountStorageCleaner.clearAccounts(accountIds)

@@ -6,9 +6,11 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +24,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
@@ -38,12 +41,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
@@ -54,16 +59,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import cash.p.terminal.R
+import cash.p.beam.BeamAddressType
 import cash.p.terminal.modules.coin.overview.ui.Loading
 import cash.p.terminal.modules.receive.ReceiveModule
 import cash.p.terminal.modules.receive.ReceiveModule.UiState
 import cash.p.terminal.modules.receive.UsedAddressesRow
 import cash.p.terminal.modules.receive.viewmodels.AddressBadge
 import cash.p.terminal.strings.helpers.TranslatableString
+import cash.p.terminal.strings.helpers.shorten
 import cash.p.terminal.ui.compose.components.HsTextButton
 import cash.p.terminal.ui.compose.components.ListErrorView
 import cash.p.terminal.ui.compose.components.PcashQrCodeDefaults
 import cash.p.terminal.ui.compose.components.PcashQrCodeImage
+import cash.p.terminal.ui.compose.components.canEncodeAsPcashQrCode
 import cash.p.terminal.ui.helpers.TextHelper
 import cash.p.terminal.ui_compose.BottomSheetHeader
 import cash.p.terminal.ui_compose.TransparentModalBottomSheet
@@ -106,14 +114,15 @@ fun ReceiveAddressScreen(
     title: String,
     uiState: ReceiveModule.AbstractUiState,
     setAmount: (BigDecimal?) -> Unit,
+    onBackPress: () -> Unit,
+    closeModule: () -> Unit,
+    allowSetAmount: Boolean = true,
     onErrorClick: () -> Unit = {},
     topContent: @Composable () -> Unit = {},
     addressBadge: @Composable () -> Unit = {},
     bottomContent: @Composable () -> Unit = {},
-    onBackPress: () -> Unit,
-    closeModule: () -> Unit,
+    statusContent: @Composable () -> Unit = {},
 ) {
-    val localView = LocalView.current
     val openAmountDialog = remember { mutableStateOf(false) }
     val tronAlertSheetState =
         rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -158,136 +167,51 @@ fun ReceiveAddressScreen(
                 .fillMaxSize()
                 .padding(it)
         ) {
-            Crossfade(uiState.viewState, label = "") { viewState ->
+            // BEAM keeps one card while a new token is generated, so the screen does not jump. Its
+            // token is cleared meanwhile, so a card fading out must not draw a QR of it.
+            val beamType = (uiState as? UiState)?.beamAddressType
+            val beamPending = beamType != null && uiState.viewState != ViewState.Success
+            val cardKey = uiState.viewState.takeUnless { beamType != null && it == ViewState.Loading }
+                ?: ViewState.Success
+            Crossfade(cardKey, label = "") { viewState ->
                 Column {
                     when (viewState) {
-                        is ViewState.Error -> {
-                            ListErrorView(stringResource(R.string.SyncError), onErrorClick)
-                        }
-
-                        ViewState.Loading -> {
-                            Loading()
+                        is ViewState.Error, ViewState.Loading -> {
+                            statusContent()
+                            if (viewState is ViewState.Error) {
+                                ListErrorView(stringResource(R.string.SyncError), onErrorClick)
+                            } else {
+                                Loading()
+                            }
                         }
 
                         ViewState.Success -> {
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxWidth()
-                                    .verticalScroll(rememberScrollState()),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                            ) {
-                                VSpacer(12.dp)
-                                uiState.alertText?.let {
-                                    WarningTextView(it)
-                                }
-
-                                if (uiState.watchAccount) {
-                                    TextImportantWarning(
-                                        modifier = Modifier.padding(horizontal = 16.dp),
-                                        text = stringResource(R.string.Balance_Receive_WatchAddressAlert),
-                                    )
-                                }
-
-                                VSpacer(16.dp)
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 16.dp)
-                                        .clip(RoundedCornerShape(24.dp))
-                                        .background(ComposeAppTheme.colors.lawrence),
-                                ) {
-                                    topContent()
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable {
-                                                TextHelper.copyText(uiState.uri)
-                                                HudHelper.showSuccessMessage(
-                                                    localView,
-                                                    R.string.Hud_Text_Copied
-                                                )
-                                            },
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                    ) {
-                                        VSpacer(16.dp)
-                                        Box(
-                                            modifier = Modifier
-                                                .clip(RoundedCornerShape(8.dp))
-                                                .background(ComposeAppTheme.colors.white)
-                                                .size(PcashQrCodeDefaults.Size),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            QrCodeImage(uiState.uri)
-                                        }
-                                        VSpacer(12.dp)
-                                        addressBadge()
-                                        subhead2_leah(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(horizontal = 32.dp),
-                                            text = uiState.address,
-                                            textAlign = TextAlign.Start,
-                                        )
-
-                                        val testNetBadge =
-                                            if (!uiState.mainNet) " (TestNet)" else ""
-                                        uiState.blockchainName?.let { blockchainName ->
-                                            VSpacer(12.dp)
-                                            subhead2_grey(
-                                                modifier = Modifier.padding(horizontal = 32.dp),
-                                                text = stringResource(
-                                                    R.string.Balance_Network
-                                                ) + ": " + blockchainName + testNetBadge,
-                                                textAlign = TextAlign.Center,
-                                            )
-                                        }
-                                        uiState.addressFormat?.let { addressFormat ->
-                                            VSpacer(12.dp)
-                                            subhead2_grey(
-                                                modifier = Modifier.padding(horizontal = 32.dp),
-                                                text = stringResource(
-                                                    R.string.Balance_Format
-                                                ) + ": " + addressFormat + testNetBadge,
-                                                textAlign = TextAlign.Center,
-                                            )
-                                        }
-                                        VSpacer(16.dp)
-                                    }
-                                    val additionalItems = buildList {
-                                        addAll(uiState.additionalItems)
-                                        uiState.amount?.let {
-                                            add(ReceiveModule.AdditionalData.Amount(it.toString()))
-                                        }
-                                    }
-
-                                    if (additionalItems.isNotEmpty()) {
-                                        AdditionalDataSection(
-                                            items = additionalItems,
-                                            onClearAmount = {
-                                                setAmount(null)
-                                            },
-                                            showAccountNotActiveWarningDialog = {
-                                                isTronInfoVisible = true
-                                            }
-                                        )
-                                    }
-
-                                    ActionButtonsRow(
-                                        uri = uiState.uri,
-                                        watchAccount = uiState.watchAccount,
-                                        openAmountDialog = openAmountDialog,
-                                    )
-                                    VSpacer(16.dp)
-
-                                    bottomContent()
+                            // PcashQrCodeImage draws nothing for a refused payload. A pending
+                            // BEAM card sizes the panel for the type's token instead.
+                            val qrEncodable = remember(uiState.uri, beamPending, beamType) {
+                                if (beamPending) {
+                                    beamType != BeamAddressType.Offline
+                                } else {
+                                    canEncodeAsPcashQrCode(uiState.uri)
                                 }
                             }
+                            ReceiveAddressCard(
+                                uiState = uiState,
+                                loading = beamPending,
+                                qrEncodable = qrEncodable,
+                                setAmount = setAmount,
+                                allowSetAmount = allowSetAmount,
+                                openAmountDialog = openAmountDialog,
+                                showTronInfo = { isTronInfoVisible = true },
+                                topContent = topContent,
+                                addressBadge = addressBadge,
+                                bottomContent = bottomContent,
+                            )
                         }
                     }
                 }
             }
-            if (openAmountDialog.value) {
+            if (openAmountDialog.value && allowSetAmount) {
                 AmountInputDialog(
                     initialAmount = uiState.amount,
                     onDismissRequest = { openAmountDialog.value = false },
@@ -323,9 +247,219 @@ fun ReceiveAddressScreen(
     }
 }
 
+/**
+ * The receive card itself. [loading] renders the same card with the QR panel replaced by a
+ * spinner, so the screen keeps its shape while a new token is generated; [qrEncodable] then
+ * describes the token that is coming rather than the one on screen.
+ */
+@Composable
+private fun ColumnScope.ReceiveAddressCard(
+    uiState: ReceiveModule.AbstractUiState,
+    loading: Boolean,
+    qrEncodable: Boolean,
+    setAmount: (BigDecimal?) -> Unit,
+    allowSetAmount: Boolean,
+    openAmountDialog: MutableState<Boolean>,
+    showTronInfo: () -> Unit,
+    topContent: @Composable () -> Unit,
+    addressBadge: @Composable () -> Unit,
+    bottomContent: @Composable () -> Unit,
+) {
+    val localView = LocalView.current
+    Column(
+        modifier = Modifier
+            .weight(1f)
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        VSpacer(12.dp)
+        uiState.alertText?.let {
+            WarningTextView(it)
+        }
+
+        if (uiState.watchAccount) {
+            TextImportantWarning(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                text = stringResource(R.string.Balance_Receive_WatchAddressAlert),
+            )
+        }
+
+        VSpacer(16.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(ComposeAppTheme.colors.lawrence),
+        ) {
+            topContent()
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    // While the token is being generated the card holds no address, so a tap
+                    // here would report "Copied!" over an empty clipboard.
+                    .then(
+                        if (loading) {
+                            Modifier
+                        } else {
+                            Modifier.clickable {
+                                TextHelper.copyText(uiState.uri)
+                                HudHelper.showSuccessMessage(
+                                    localView,
+                                    R.string.Hud_Text_Copied
+                                )
+                            }
+                        }
+                    ),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                VSpacer(16.dp)
+                if (qrEncodable) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(ComposeAppTheme.colors.white)
+                            .size(PcashQrCodeDefaults.Size)
+                            .testTag(QrPanelTestTag),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (loading) QrCodePlaceholder() else QrCodeImage(uiState.uri)
+                    }
+                } else if (loading) {
+                    // The settled card of a type whose token cannot be encoded shows a message
+                    // where the QR would be, so the invisible message reserves exactly the
+                    // height this panel is about to take.
+                    Box(
+                        modifier = Modifier.testTag(QrPanelTestTag),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        QrCodeUnavailableMessage(modifier = Modifier.alpha(0f))
+                        QrCodePlaceholder()
+                    }
+                } else {
+                    QrCodeUnavailableMessage(modifier = Modifier.testTag(QrPanelTestTag))
+                }
+                VSpacer(12.dp)
+                addressBadge()
+                ReceiveAddressValue(
+                    address = uiState.address,
+                    collapsible = !qrEncodable,
+                )
+
+                val testNetBadge =
+                    if (!uiState.mainNet) " (TestNet)" else ""
+                uiState.blockchainName?.let { blockchainName ->
+                    VSpacer(12.dp)
+                    subhead2_grey(
+                        modifier = Modifier.padding(horizontal = 32.dp),
+                        text = stringResource(
+                            R.string.Balance_Network
+                        ) + ": " + blockchainName + testNetBadge,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+                uiState.addressFormat?.let { addressFormat ->
+                    VSpacer(12.dp)
+                    subhead2_grey(
+                        modifier = Modifier.padding(horizontal = 32.dp),
+                        text = stringResource(
+                            R.string.Balance_Format
+                        ) + ": " + addressFormat + testNetBadge,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+                VSpacer(16.dp)
+            }
+            val additionalItems = buildList {
+                addAll(uiState.additionalItems)
+                uiState.amount?.let {
+                    add(ReceiveModule.AdditionalData.Amount(it.toString()))
+                }
+            }
+
+            if (additionalItems.isNotEmpty()) {
+                AdditionalDataSection(
+                    items = additionalItems,
+                    onClearAmount = {
+                        setAmount(null)
+                    },
+                    showAccountNotActiveWarningDialog = showTronInfo
+                )
+            }
+
+            ActionButtonsRow(
+                uri = uiState.uri,
+                watchAccount = uiState.watchAccount,
+                openAmountDialog = openAmountDialog,
+                allowSetAmount = allowSetAmount,
+                enabled = !loading,
+            )
+            VSpacer(16.dp)
+
+            bottomContent()
+        }
+    }
+}
+
+/** Matches the indicator of the full-screen [Loading] it replaces. */
+@Composable
+private fun QrCodePlaceholder() {
+    CircularProgressIndicator(
+        modifier = Modifier.size(24.dp),
+        color = ComposeAppTheme.colors.grey,
+        strokeWidth = 2.dp,
+    )
+}
+
+internal const val QrPanelTestTag = "receive-qr-panel"
+
 @Composable
 private fun QrCodeImage(address: String) {
     PcashQrCodeImage(content = address)
+}
+
+@Composable
+private fun QrCodeUnavailableMessage(modifier: Modifier = Modifier) {
+    subhead2_grey(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 32.dp, vertical = 24.dp),
+        text = stringResource(R.string.receive_address_qr_too_large),
+        textAlign = TextAlign.Center,
+    )
+}
+
+@Composable
+private fun ReceiveAddressValue(
+    address: String,
+    collapsible: Boolean,
+) {
+    val textModifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 32.dp)
+
+    if (!collapsible) {
+        subhead2_leah(
+            modifier = textModifier,
+            text = address,
+            textAlign = TextAlign.Start,
+        )
+        return
+    }
+
+    var expanded by remember(address) { mutableStateOf(false) }
+    subhead2_leah(
+        // The card around this text copies on tap and a nested clickable swallows that gesture,
+        // so this one exists only in the shortened branch.
+        modifier = textModifier.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null,
+            onClick = { expanded = !expanded },
+        ),
+        text = if (expanded) address else address.shorten(),
+        textAlign = if (expanded) TextAlign.Start else TextAlign.Center,
+    )
 }
 
 @Composable
@@ -349,6 +483,8 @@ private fun ActionButtonsRow(
     uri: String,
     watchAccount: Boolean,
     openAmountDialog: MutableState<Boolean>,
+    allowSetAmount: Boolean,
+    enabled: Boolean = true,
 ) {
     val localView = LocalView.current
     val context = LocalContext.current
@@ -358,7 +494,7 @@ private fun ActionButtonsRow(
         horizontalArrangement = if (watchAccount) Arrangement.Center else Arrangement.SpaceBetween,
     ) {
         val itemModifier = if (watchAccount) Modifier else Modifier.weight(1f)
-        if (!watchAccount) {
+        if (!watchAccount && allowSetAmount) {
             ReceiveActionButton(
                 modifier = itemModifier,
                 icon = R.drawable.ic_edit_24px,
@@ -373,6 +509,7 @@ private fun ActionButtonsRow(
             modifier = itemModifier,
             icon = R.drawable.ic_copy_24px,
             buttonText = stringResource(R.string.Button_Copy),
+            enabled = enabled,
             onClick = {
                 TextHelper.copyText(uri)
                 HudHelper.showSuccessMessage(localView, R.string.Hud_Text_Copied)
@@ -387,6 +524,7 @@ private fun ActionButtonsRow(
             modifier = itemModifier,
             icon = R.drawable.ic_share_24px,
             buttonText = stringResource(R.string.Button_Share),
+            enabled = enabled,
             onClick = {
                 context.startActivity(Intent().apply {
                     action = Intent.ACTION_SEND
@@ -488,6 +626,7 @@ private fun ReceiveActionButton(
     icon: Int,
     buttonText: String,
     onClick: () -> Unit,
+    enabled: Boolean = true,
 ) {
     Column(
         modifier = modifier,
@@ -496,6 +635,7 @@ private fun ReceiveActionButton(
         ButtonPrimaryCircle(
             icon = icon,
             onClick = onClick,
+            enabled = enabled,
         )
         caption_grey(
             modifier = Modifier.padding(top = 8.dp),
@@ -673,6 +813,7 @@ private fun ReceiveAddressScreenPreview() {
                 ),
                 isAddressHistorySupported = true,
                 showTronAlert = false,
+                beamAddressType = null,
                 uri = "bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
                 blockchainName = "Bitcoin",
                 addressFormat = null,

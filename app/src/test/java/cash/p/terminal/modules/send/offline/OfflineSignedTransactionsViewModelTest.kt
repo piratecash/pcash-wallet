@@ -1,30 +1,14 @@
 package cash.p.terminal.modules.send.offline
 
-import cash.p.terminal.wallet.MnemonicDerivation
-
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.OfflineTransactionStatusAdapter
-import cash.p.terminal.core.managers.OfflineSignedTransactionRepository
-import cash.p.terminal.core.managers.TransactionAdapterManager
 import cash.p.terminal.entities.OfflineSignedTransactionEntity
 import cash.p.terminal.entities.OfflineSignedTransactionStatus
 import cash.p.terminal.entities.transactionrecords.PendingTransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
-import cash.p.terminal.modules.transactions.TransactionsRateRepository
 import cash.p.terminal.ui_compose.ColorName
-import cash.p.terminal.wallet.Account
-import cash.p.terminal.wallet.AccountOrigin
-import cash.p.terminal.wallet.AccountType
-import cash.p.terminal.wallet.ActiveAccountState
 import cash.p.terminal.wallet.IAdapter
-import cash.p.terminal.wallet.IAccountManager
-import cash.p.terminal.wallet.IAdapterManager
-import cash.p.terminal.wallet.IWalletManager
-import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
-import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
@@ -37,55 +21,19 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.unmockkAll
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import java.math.BigDecimal
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class OfflineSignedTransactionsViewModelTest {
+class OfflineSignedTransactionsViewModelTest : OfflineSignedTransactionsTestBase() {
 
     private interface TestStatusAdapter : IAdapter, OfflineTransactionStatusAdapter
-
-    private val dispatcher = UnconfinedTestDispatcher()
-    private val repository = mockk<OfflineSignedTransactionRepository>(relaxed = true)
-    private val accountManager = mockk<IAccountManager>(relaxed = true)
-    private val walletManager = mockk<IWalletManager>(relaxed = true)
-    private val adapterManager = mockk<IAdapterManager>(relaxed = true)
-    private val transactionAdapterManager = mockk<TransactionAdapterManager>(relaxed = true)
-    private val marketKit = mockk<MarketKitWrapper>(relaxed = true)
-    private val rateRepository = mockk<TransactionsRateRepository>(relaxed = true)
-
-    @get:Rule
-    val instantTaskRule = InstantTaskExecutorRule()
-
-    @Before
-    fun setup() {
-        Dispatchers.setMain(dispatcher)
-        every { marketKit.token(any()) } returns null
-        every { marketKit.tokens(any<List<TokenQuery>>()) } returns emptyList()
-        every { transactionAdapterManager.adaptersReadyFlow } returns MutableStateFlow(emptyMap())
-        every { rateRepository.getHistoricalRate(any()) } returns null
-    }
-
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
-        unmockkAll()
-    }
 
     @Test
     fun init_tokenQueryNotResolved_rendersStoredTokenMetadata() = runTest(dispatcher) {
@@ -355,33 +303,6 @@ class OfflineSignedTransactionsViewModelTest {
         assertEquals(true, item.metadataUnknown)
     }
 
-    private fun viewModel(scope: CoroutineScope) = OfflineSignedTransactionsViewModel(
-        repository = repository,
-        accountManager = accountManager,
-        walletManager = walletManager,
-        adapterManager = adapterManager,
-        transactionAdapterManager = transactionAdapterManager,
-        marketKit = marketKit,
-        rateRepository = rateRepository,
-        dispatcherProvider = TestDispatcherProvider(dispatcher, scope),
-    )
-
-    private fun setupState(
-        entities: List<OfflineSignedTransactionEntity>,
-        wallets: List<Wallet>,
-    ) {
-        every { accountManager.activeAccountStateFlow } returns MutableStateFlow(
-            ActiveAccountState.ActiveAccount(account)
-        )
-        every { walletManager.activeWalletsFlow } returns MutableStateFlow(wallets)
-        every { repository.observe(account.id) } returns flowOf(entities)
-    }
-
-    private fun assertStatusColor(item: OfflineSignedTransactionViewItem, color: ColorName) {
-        assertEquals(color, item.statusValue.color)
-        assertEquals(color, item.transactionItem.offlineStatus?.color)
-    }
-
     private fun usdcEntity() = OfflineSignedTransactionEntity(
         accountId = account.id,
         txHash = TX_HASH,
@@ -560,15 +481,6 @@ class OfflineSignedTransactionsViewModelTest {
             memo = null,
         )
 
-    private fun wallet(token: Token): Wallet {
-        val testAccount = account
-        return mockk(relaxed = true) {
-            every { this@mockk.token } returns token
-            every { this@mockk.account } returns testAccount
-            every { this@mockk.hardwarePublicKey } returns null
-        }
-    }
-
     private val bsc = Blockchain(BlockchainType.BinanceSmartChain, "BNB Smart Chain", null)
 
     private val bnbToken = Token(
@@ -627,16 +539,6 @@ class OfflineSignedTransactionsViewModelTest {
         type = TokenType.Mweb,
         decimals = 8,
     )
-
-    private val account = Account(
-        id = "account-id",
-        name = "Account",
-        type = AccountType.Mnemonic(List(12) { "word$it" }, "", MnemonicDerivation.Legacy),
-        origin = AccountOrigin.Created,
-        level = 0,
-        isBackedUp = true,
-    )
-
     private companion object {
         const val TX_HASH = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
         const val USDC_CONTRACT = "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d"

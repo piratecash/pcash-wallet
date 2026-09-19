@@ -1,7 +1,9 @@
 package cash.p.terminal.modules.send.offline
 
-import cash.p.terminal.wallet.MnemonicDerivation
-
+import androidx.lifecycle.ViewModelStore
+import cash.p.beam.BeamNetwork
+import cash.p.beam.BeamRelayOutcome
+import cash.p.beam.BeamRelayResult
 import cash.p.terminal.R
 import cash.p.terminal.core.BroadcastRawTransactionResult
 import cash.p.terminal.core.BroadcastRawTransactionStatus
@@ -11,6 +13,7 @@ import cash.p.terminal.core.OfflineTransactionAdapter
 import cash.p.terminal.core.managers.OfflineSignedTransactionRepository
 import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
 import cash.p.terminal.entities.DecodedOfflineTransaction
+import cash.p.terminal.entities.OfflineBeamMetadata
 import cash.p.terminal.entities.OfflineStellarRetryMetadata
 import cash.p.terminal.entities.OfflineSolanaRetryMetadata
 import cash.p.terminal.entities.OfflineTonRetryMetadata
@@ -24,8 +27,8 @@ import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAdapter
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapterManager
-import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.MarketKitWrapper
+import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.Coin
@@ -35,6 +38,7 @@ import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
+import io.mockk.Called
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
@@ -49,7 +53,9 @@ import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -70,13 +76,13 @@ class OfflineBroadcastViewModelTest {
 
     private val payloadEncoder = mockk<OfflineTransactionPayloadEncoder>(relaxed = true)
     private val repository = mockk<OfflineSignedTransactionRepository>(relaxed = true)
-    private val walletManager = mockk<IWalletManager>(relaxed = true)
     private val accountManager = mockk<IAccountManager>(relaxed = true)
     private val adapterManager = mockk<IAdapterManager>(relaxed = true)
     private val walletUseCase = mockk<WalletUseCase>(relaxed = true)
     private val marketKit = mockk<MarketKitWrapper>(relaxed = true)
     private val tokenResolver = mockk<OfflineBroadcastTokenResolver>(relaxed = true)
     private val dispatcherProvider = mockk<DispatcherProvider>(relaxed = true)
+    private val beamRelay = mockk<BeamOfflineTransactionRelay>()
 
     private val bitcoin = Blockchain(BlockchainType.Bitcoin, "Bitcoin", null)
     private val bitcoinToken = token(bitcoin)
@@ -150,10 +156,17 @@ class OfflineBroadcastViewModelTest {
         setActiveWallets(emptyList())
         every { accountManager.activeAccount } returns account
         every { marketKit.tokens(any<List<TokenQuery>>()) } returns listOf(bitcoinToken)
+        every { marketKit.blockchain(BlockchainType.Beam.uid) } returns null
+        every { payloadEncoder.decodeResult(any()) } answers {
+            payloadEncoder.decode(firstArg())?.let { OfflineTransactionPayloadEncoder.DecodeResult.Decoded(it) }
+                ?: OfflineTransactionPayloadEncoder.DecodeResult.NotEnvelope
+        }
     }
 
     private fun setActiveWallets(wallets: List<Wallet>) {
-        every { walletManager.activeWallets } returns wallets
+        every { walletUseCase.getWallets(any()) } answers {
+            wallets.filter { it.token.blockchainType == firstArg<BlockchainType>() }
+        }
     }
 
     @After
@@ -1054,16 +1067,295 @@ class OfflineBroadcastViewModelTest {
         assertNotNull(result?.message)
     }
 
+    @Test
+    fun prefill_malformedBeamEnvelope_rejectsWithoutWalletSideEffects() = runTest(dispatcher) {
+        val encoder = OfflineTransactionPayloadEncoder()
+        every { payloadEncoder.decodeResult(any()) } answers { encoder.decodeResult(firstArg()) }
+        val viewModel = createViewModel()
+
+        viewModel.prefillAndAdvance("pcash:tx:v1:beam:not-a-valid-envelope")
+
+        assertNotNull(viewModel.uiState.dismissError)
+        assertNull(viewModel.uiState.confirm)
+        verify { listOf(walletUseCase, adapterManager, repository, beamRelay) wasNot Called }
+    }
+
+    @Test
+    fun prefill_beamWithoutWallet_relaysForAbsentMnemonicWatchAndHardwareAccounts() = runTest(dispatcher) {
+        val beam = Blockchain(BlockchainType.Beam, "BEAM", null)
+        val envelope = beamEnvelope()
+        val prepared = mockk<BeamOfflineTransactionRelay.Prepared>()
+        every { marketKit.blockchain("beam") } returns beam
+        every { payloadEncoder.decodeResult(any()) } returns
+            OfflineTransactionPayloadEncoder.DecodeResult.Decoded(envelope)
+        coEvery { beamRelay.prepare(envelope.rawHex, BeamNetwork.Mainnet, envelope) } returns prepared
+        coEvery { beamRelay.relay(prepared) } returns BeamRelayResult(
+            mockk { every { mainKernelId } returns envelope.txHash }, BeamRelayOutcome.Accepted,
+        )
+
+        for (active in listOf(null, account, watchAccount(), hardwareAccount())) {
+            every { accountManager.activeAccount } returns active
+            val viewModel = createViewModel()
+            viewModel.prefillAndAdvance("pcash:tx:v1:beam:payload")
+            advanceUntilIdle()
+            assertTrue(viewModel.uiState.confirm?.canBroadcast == true)
+            assertEquals(OfflineBroadcastConfirmAction.Send, viewModel.uiState.confirm?.action)
+            viewModel.onPrimaryAction()
+            advanceUntilIdle()
+            assertTrue(viewModel.uiState.result is OfflineBroadcastResult.Success)
+        }
+
+        verify { listOf(adapterManager, repository, tokenResolver) wasNot Called }
+        coVerify(exactly = 0) { walletUseCase.createWallets(any()) }
+    }
+
+    @Test
+    fun selectBeam_noAccount_inspectsExplicitMainnetBeforeArmingSend() = runTest(dispatcher) {
+        val beam = Blockchain(BlockchainType.Beam, "BEAM", null)
+        every { accountManager.activeAccount } returns null
+        every { marketKit.blockchain("beam") } returns beam
+        every { payloadEncoder.decode(any()) } returns null
+        val inspection = CompletableDeferred<BeamOfflineTransactionRelay.Prepared>()
+        coEvery { beamRelay.prepare(any(), BeamNetwork.Mainnet, null) } coAnswers { inspection.await() }
+        val viewModel = createViewModel()
+        viewModel.prefillAndAdvance("deadbeefdeadbeefdead")
+        assertEquals(listOf(beam), viewModel.uiState.selectableBlockchains)
+        viewModel.onSelectBlockchain(beam)
+        assertTrue(viewModel.uiState.confirm?.canBroadcast == false)
+        viewModel.onPrimaryAction()
+        coVerify(exactly = 0) { beamRelay.relay(any()) }
+
+        inspection.complete(mockk())
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.confirm?.canBroadcast == true)
+        verify { listOf(adapterManager, repository, tokenResolver) wasNot Called }
+        coVerify(exactly = 0) { walletUseCase.createWallets(any()) }
+    }
+
+    @Test
+    fun selectNetwork_cancelledBeamInspection_cannotReplaceNewSelection() = runTest(dispatcher) {
+        val beam = Blockchain(BlockchainType.Beam, "BEAM", null)
+        every { marketKit.blockchain("beam") } returns beam
+        every { payloadEncoder.decode(any()) } returns null
+        val inspection = CompletableDeferred<BeamOfflineTransactionRelay.Prepared>()
+        coEvery { beamRelay.prepare(any(), any(), null) } coAnswers {
+            withContext(NonCancellable) { inspection.await() }
+        }
+        val viewModel = createViewModel()
+        viewModel.prefillAndAdvance("deadbeefdeadbeefdead")
+        viewModel.onSelectBlockchain(beam)
+        viewModel.onSelectBlockchain(bitcoin)
+        inspection.complete(mockk())
+        advanceUntilIdle()
+
+        assertEquals(bitcoin, viewModel.uiState.selectedBlockchain)
+        assertNull(viewModel.uiState.dismissError)
+        coVerify(exactly = 0) { beamRelay.relay(any()) }
+    }
+
+    @Test
+    fun onRetry_unknownBeamAcceptance_reusesPreparedBytesAndRejectsDoubleTap() = runTest(dispatcher) {
+        val beam = Blockchain(BlockchainType.Beam, "BEAM", null)
+        val prepared = mockk<BeamOfflineTransactionRelay.Prepared>()
+        every { marketKit.blockchain("beam") } returns beam
+        every { payloadEncoder.decodeResult(any()) } returns
+            OfflineTransactionPayloadEncoder.DecodeResult.Decoded(beamEnvelope())
+        coEvery { beamRelay.prepare(any(), any(), any()) } returns prepared
+        val attempt = CompletableDeferred<BeamRelayResult>()
+        coEvery { beamRelay.relay(prepared) } coAnswers { attempt.await() }
+        val viewModel = createViewModel()
+        viewModel.prefillAndAdvance("pcash:tx:v1:beam:payload")
+        viewModel.onPrimaryAction()
+        viewModel.onPrimaryAction()
+        viewModel.onRetry()
+        coVerify(exactly = 1) { beamRelay.relay(prepared) }
+        attempt.complete(BeamRelayResult(mockk(), BeamRelayOutcome.UnknownAcceptance))
+        advanceUntilIdle()
+        assertTrue((viewModel.uiState.result as OfflineBroadcastResult.Error).acceptanceUnknown)
+
+        viewModel.onRetry()
+        advanceUntilIdle()
+        coVerify(exactly = 2) { beamRelay.relay(prepared) }
+        coVerify(exactly = 1) { beamRelay.prepare(any(), any(), any()) }
+        verify { listOf(adapterManager, repository) wasNot Called }
+        coVerify(exactly = 0) { walletUseCase.createWallets(any()) }
+    }
+
+    @Test
+    fun onBroadcast_beamEnvelopeWithWallet_listsImportAndMarksItSent() = runTest(dispatcher) {
+        val envelope = beamEnvelope()
+        stubBeamRelay(envelope, BeamRelayOutcome.Accepted)
+        setActiveWallets(listOf(beamWallet))
+        val viewModel = createViewModel()
+
+        viewModel.prefillAndAdvance("pcash:tx:v1:beam:payload")
+        advanceUntilIdle()
+        viewModel.onPrimaryAction()
+        advanceUntilIdle()
+
+        coVerifyOrder {
+            repository.saveImported(beamWallet, envelope, "pcash:tx:v1:beam:payload")
+            repository.markBroadcastAttempt("account-id", BEAM_KERNEL_ID)
+            repository.markBroadcasted("account-id", BEAM_KERNEL_ID, BEAM_KERNEL_ID)
+            repository.markBroadcastedByRawHex(envelope.rawHex, BEAM_KERNEL_ID)
+        }
+        assertEquals(
+            "https://explorer.beam.mw/block?kernel_id=$BEAM_KERNEL_ID",
+            (viewModel.uiState.result as OfflineBroadcastResult.Success).explorerUrl,
+        )
+        coVerify(exactly = 0) { walletUseCase.createWallets(any()) }
+    }
+
+    @Test
+    fun onBroadcast_beamEnvelopeRejected_marksImportFailed() = runTest(dispatcher) {
+        val envelope = beamEnvelope()
+        stubBeamRelay(envelope, BeamRelayOutcome.Rejected(nodeStatus = 1))
+        setActiveWallets(listOf(beamWallet))
+        val viewModel = createViewModel()
+
+        viewModel.prefillAndAdvance("pcash:tx:v1:beam:payload")
+        advanceUntilIdle()
+        viewModel.onPrimaryAction()
+        advanceUntilIdle()
+
+        coVerifyOrder {
+            repository.saveImported(beamWallet, envelope, "pcash:tx:v1:beam:payload")
+            repository.markBroadcastAttempt("account-id", BEAM_KERNEL_ID)
+            repository.markBroadcastFailed("account-id", BEAM_KERNEL_ID, any())
+        }
+        coVerify(exactly = 0) { repository.markBroadcasted(any(), any(), any()) }
+        coVerify(exactly = 0) { repository.markBroadcastedByRawHex(any(), any()) }
+    }
+
+    @Test
+    fun onBroadcast_beamPlainRawHexAccepted_persistsBroadcastedRawTransaction() = runTest(dispatcher) {
+        stubBeamRelay(null, BeamRelayOutcome.Accepted)
+        setActiveWallets(listOf(beamWallet))
+        every { payloadEncoder.decode(any()) } returns null
+        val viewModel = createViewModel()
+
+        viewModel.prefillAndAdvance("deadbeefdeadbeefdead")
+        viewModel.onSelectBlockchain(beamBlockchain)
+        advanceUntilIdle()
+        viewModel.onPrimaryAction()
+        advanceUntilIdle()
+
+        coVerifyOrder {
+            repository.saveRawImported(beamWallet, "deadbeefdeadbeefdead", BEAM_KERNEL_ID)
+            repository.markBroadcastAttempt("account-id", BEAM_KERNEL_ID)
+            repository.markBroadcasted("account-id", BEAM_KERNEL_ID, BEAM_KERNEL_ID)
+            repository.markBroadcastedByRawHex("deadbeefdeadbeefdead", BEAM_KERNEL_ID)
+        }
+    }
+
+    @Test
+    fun onBroadcast_beamEnvelopeTimedOut_marksImportFailedWithUnknownAcceptance() = runTest(dispatcher) {
+        val envelope = beamEnvelope()
+        stubBeamRelay(envelope, BeamRelayOutcome.Timeout(acceptanceUnknown = true))
+        setActiveWallets(listOf(beamWallet))
+        val viewModel = createViewModel()
+
+        viewModel.prefillAndAdvance("pcash:tx:v1:beam:payload")
+        advanceUntilIdle()
+        viewModel.onPrimaryAction()
+        advanceUntilIdle()
+
+        assertTrue((viewModel.uiState.result as OfflineBroadcastResult.Error).acceptanceUnknown)
+        coVerify { repository.markBroadcastFailed("account-id", BEAM_KERNEL_ID, any()) }
+        coVerify(exactly = 0) { repository.markBroadcasted(any(), any(), any()) }
+    }
+
+    @Test
+    fun onBroadcast_beamPlainRawHexRejected_persistsNothing() = runTest(dispatcher) {
+        stubBeamRelay(null, BeamRelayOutcome.Rejected(nodeStatus = 1))
+        setActiveWallets(listOf(beamWallet))
+        every { payloadEncoder.decode(any()) } returns null
+        val viewModel = createViewModel()
+
+        viewModel.prefillAndAdvance("deadbeefdeadbeefdead")
+        viewModel.onSelectBlockchain(beamBlockchain)
+        advanceUntilIdle()
+        viewModel.onPrimaryAction()
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.result is OfflineBroadcastResult.Error)
+        verify { repository wasNot Called }
+    }
+
+    @Test
+    fun prefill_beamEnvelopeFailsInspection_isNotListed() = runTest(dispatcher) {
+        val envelope = beamEnvelope()
+        every { marketKit.blockchain("beam") } returns beamBlockchain
+        every { payloadEncoder.decodeResult(any()) } returns
+            OfflineTransactionPayloadEncoder.DecodeResult.Decoded(envelope)
+        coEvery { beamRelay.prepare(any(), any(), any()) } throws IllegalArgumentException("invalid")
+        setActiveWallets(listOf(beamWallet))
+        val viewModel = createViewModel()
+
+        viewModel.prefillAndAdvance("pcash:tx:v1:beam:payload")
+        advanceUntilIdle()
+
+        assertNotNull(viewModel.uiState.dismissError)
+        verify { repository wasNot Called }
+    }
+
+    private fun stubBeamRelay(envelope: DecodedOfflineTransaction?, outcome: BeamRelayOutcome) {
+        every { marketKit.blockchain("beam") } returns beamBlockchain
+        envelope?.let {
+            every { payloadEncoder.decodeResult(any()) } returns
+                OfflineTransactionPayloadEncoder.DecodeResult.Decoded(it)
+        }
+        val prepared = mockk<BeamOfflineTransactionRelay.Prepared>()
+        coEvery { beamRelay.prepare(any(), BeamNetwork.Mainnet, envelope) } returns prepared
+        coEvery { beamRelay.relay(prepared) } returns
+            BeamRelayResult(mockk { every { mainKernelId } returns BEAM_KERNEL_ID }, outcome)
+    }
+
+    private val beamBlockchain = Blockchain(BlockchainType.Beam, "BEAM", null)
+    private val beamWallet = wallet(
+        token(beamBlockchain, Coin(uid = "beam", name = "Beam", code = "BEAM")),
+        account,
+    )
+
+    private fun beamEnvelope() = decoded("beam", BEAM_KERNEL_ID).copy(
+        toAddress = "",
+        beamMetadata = OfflineBeamMetadata(1, "mainnet", "sdk-rules", BEAM_KERNEL_ID),
+    )
+
+    @Test
+    fun onCleared_beamRelayDraining_dropsLateAcceptance() = runTest(dispatcher) {
+        val beam = Blockchain(BlockchainType.Beam, "BEAM", null)
+        every { marketKit.blockchain("beam") } returns beam
+        every { payloadEncoder.decodeResult(any()) } returns
+            OfflineTransactionPayloadEncoder.DecodeResult.Decoded(beamEnvelope())
+        coEvery { beamRelay.prepare(any(), any(), any()) } returns mockk()
+        val drain = CompletableDeferred<Unit>()
+        coEvery { beamRelay.relay(any()) } coAnswers {
+            withContext(NonCancellable) { drain.await() }
+            BeamRelayResult(mockk { every { mainKernelId } returns "ab".repeat(32) }, BeamRelayOutcome.Accepted)
+        }
+        val viewModel = createViewModel()
+        val store = ViewModelStore().apply { put("relay", viewModel) }
+        viewModel.prefillAndAdvance("pcash:tx:v1:beam:payload")
+        viewModel.onPrimaryAction()
+        store.clear()
+        drain.complete(Unit)
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.result)
+        verify { repository wasNot Called }
+    }
+
     private fun createViewModel() = OfflineBroadcastViewModel(
         payloadEncoder = payloadEncoder,
         offlineSignedTransactionRepository = repository,
-        walletManager = walletManager,
         accountManager = accountManager,
         adapterManager = adapterManager,
         walletUseCase = walletUseCase,
         marketKit = marketKit,
         offlineBroadcastTokenResolver = tokenResolver,
         dispatcherProvider = dispatcherProvider,
+        beamRelay = beamRelay,
     )
 
     private fun decoded(
@@ -1146,6 +1438,7 @@ class OfflineBroadcastViewModelTest {
     )
 
     private companion object {
+        const val BEAM_KERNEL_ID = "8a2b7c1d9e0f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b"
         const val WATCH_XPUB =
             "xpub6CudKadFxkN6jXWcJDJSWzt4tNt86ThhYEjtcTywfD5nsYcySEEhfGugKDLnv14ZDNnYBV" +
                     "bfYXbNvRp8cNNw9JAfoMTeph1BqGWYZA4DBDi"

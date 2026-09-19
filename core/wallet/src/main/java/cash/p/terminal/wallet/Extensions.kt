@@ -120,6 +120,7 @@ val BlockchainType.title: String
         BlockchainType.Litecoin -> "Litecoin"
         BlockchainType.Dogecoin -> "Doge"
         BlockchainType.Dash -> "Dash"
+        BlockchainType.Beam -> "BEAM"
         BlockchainType.Zcash -> "Zcash"
         BlockchainType.Ethereum -> "Ethereum"
         BlockchainType.BinanceSmartChain -> "BNB Smart Chain"

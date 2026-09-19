@@ -10,6 +10,8 @@ import cash.p.terminal.modules.multiswap.providers.AllBridgeProvider
 import cash.p.terminal.modules.multiswap.providers.IExactOutSwapProvider
 import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
 import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.entities.TokenType
+import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -29,7 +31,7 @@ import java.math.BigDecimal
 class FetchSwapQuotesUseCaseTest {
 
     private val useCase = FetchSwapQuotesUseCase(mockk(relaxed = true))
-    private val tokenIn = mockk<Token>()
+    private val tokenIn = mockToken(BlockchainType.Ethereum, TokenType.Native)
     private val tokenOut = mockk<Token>()
     private val amountIn = BigDecimal("1.0")
 
@@ -97,6 +99,71 @@ class FetchSwapQuotesUseCaseTest {
         )
 
         assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun invoke_nativeBeamSource_isQuotedLikeAnyOtherChain() = runTest {
+        val nativeBeam = mockToken(BlockchainType.Beam, TokenType.Native)
+        val provider = mockk<IMultiSwapProvider>(relaxed = true) {
+            every { id } returns "remote-beam"
+            coEvery { supports(nativeBeam, tokenOut) } returns true
+            coEvery { fetchQuote(nativeBeam, tokenOut, amountIn, any()) } returns mockk {
+                every { amountOut } returns BigDecimal.ONE
+            }
+        }
+
+        val result = useCase(listOf(provider), nativeBeam, tokenOut, amountIn, SwapAmountDirection.In)
+
+        assertEquals(1, result.size)
+    }
+
+    @Test
+    fun invoke_nativeBeamDestination_allowsSupportedReceiveRoute() = runTest {
+        val nativeBeam = mockToken(BlockchainType.Beam, TokenType.Native)
+        val provider = mockk<IMultiSwapProvider>(relaxed = true) {
+            every { id } returns "remote-beam"
+            coEvery { supports(tokenIn, nativeBeam) } returns true
+            coEvery { fetchQuote(tokenIn, nativeBeam, amountIn, any()) } returns mockk {
+                every { amountOut } returns BigDecimal.ONE
+            }
+        }
+
+        val result = useCase(
+            listOf(provider),
+            tokenIn,
+            nativeBeam,
+            amountIn,
+            SwapAmountDirection.In,
+        )
+
+        assertEquals(1, result.size)
+        coVerify(exactly = 1) { provider.fetchQuote(tokenIn, nativeBeam, amountIn, any()) }
+    }
+
+    @Test
+    fun invoke_beamGamingContractSource_remainsSupported() = runTest {
+        val gamingBeam = mockToken(
+            BlockchainType.Ethereum,
+            TokenType.Eip20("0x62d0a8458ed7719fdaf978fe5929c6d342b0bfce"),
+        )
+        val provider = mockk<IMultiSwapProvider>(relaxed = true) {
+            every { id } returns "gaming-beam"
+            coEvery { supports(gamingBeam, tokenOut) } returns true
+            coEvery { fetchQuote(gamingBeam, tokenOut, amountIn, any()) } returns mockk {
+                every { amountOut } returns BigDecimal.ONE
+            }
+        }
+
+        val result = useCase(
+            listOf(provider),
+            gamingBeam,
+            tokenOut,
+            amountIn,
+            SwapAmountDirection.In,
+        )
+
+        assertEquals(1, result.size)
+        coVerify(exactly = 1) { provider.fetchQuote(gamingBeam, tokenOut, amountIn, any()) }
     }
 
     @Test
@@ -345,6 +412,11 @@ class FetchSwapQuotesUseCaseTest {
         coEvery {
             search(provider, tokenIn, tokenOut, amountIn, any(), any())
         } returns result
+    }
+
+    private fun mockToken(blockchainType: BlockchainType, tokenType: TokenType): Token = mockk {
+        every { this@mockk.blockchainType } returns blockchainType
+        every { type } returns tokenType
     }
 
     private interface ExactOutProvider : IMultiSwapProvider, IExactOutSwapProvider

@@ -20,7 +20,8 @@ class AccountManager(
     private val storage: IAccountsStorage,
     private val getMoneroWalletFilesNameUseCase: IGetMoneroWalletFilesNameUseCase,
     private val removeMoneroWalletFilesUseCase: RemoveMoneroWalletFilesUseCase,
-    private val balanceHiddenManager: IBalanceHiddenManager
+    private val balanceHiddenManager: IBalanceHiddenManager,
+    private val deletionPreflight: AccountDeletionPreflight,
 ) : IAccountManager {
     private val logger: AppLogger = AppLogger("AccountManager")
 
@@ -177,7 +178,14 @@ class AccountManager(
     }
 
     override suspend fun delete(id: String) = withContext(Dispatchers.IO) {
+        deletionPreflight.ensureCanDelete(listOf(id))
         val accountToDelete = storage.loadAccount(id)
+        try {
+            storage.delete(id)
+        } catch (error: Exception) {
+            throw AccountDeletionBlockedException(error)
+        }
+        deletionPreflight.cleanupDeleted(listOf(id))
         accountToDelete?.let { account ->
             getMoneroWalletFilesNameUseCase(account)
         }?.also { walletFiles ->
@@ -185,7 +193,6 @@ class AccountManager(
         }
 
         accountsCache.remove(id)
-        storage.delete(id)
         _newAccountBackupRequiredFlow.update { account ->
             account?.takeUnless { it.id == id }
         }

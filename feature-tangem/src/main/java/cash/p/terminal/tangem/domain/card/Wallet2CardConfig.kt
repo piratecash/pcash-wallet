@@ -63,6 +63,7 @@ data object Wallet2CardConfig : CardConfig {
             BlockchainType.Zcash,
             BlockchainType.Monero,
             BlockchainType.Stellar,
+            BlockchainType.Beam,
             is BlockchainType.Unsupported -> null
         }
     }

@@ -24,11 +24,18 @@ import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactio
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.MarketKitWrapper
+import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
+import cash.p.terminal.wallet.entities.Coin
+import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.DispatcherProvider
+import io.horizontalsystems.core.entities.Blockchain
+import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.entities.Currency
 import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.FullTransaction
@@ -66,6 +73,7 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.coroutines.cancellation.CancellationException
 import cash.p.terminal.manager.IConnectivityManager
+import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.mockConnectivityManager
 
 /**
@@ -215,6 +223,8 @@ class SwapConfirmViewModelSaveTest {
         direction: SwapAmountDirection = SwapAmountDirection.In,
         requestedAmountOut: BigDecimal? = null,
         serviceOverride: ISendTransactionService<*>? = null,
+        quote: ISwapQuote = swapQuote,
+        wallet: Wallet = previewWallet,
     ): SwapConfirmViewModel {
         val sendTransactionService = serviceOverride ?: mockk<ISendTransactionService<Nothing>>(relaxed = true) {
             every { hasSettings() } returns false
@@ -235,7 +245,7 @@ class SwapConfirmViewModelSaveTest {
         val vm = SwapConfirmViewModel(
             request = SwapConfirmRequest(
                 provider = provider,
-                quote = swapQuote,
+                quote = quote,
                 settings = emptyMap(),
                 executionMode = executionMode,
                 direction = direction,
@@ -250,12 +260,63 @@ class SwapConfirmViewModelSaveTest {
             sendTransactionService = sendTransactionService,
             timerService = TimerService(),
             priceImpactService = PriceImpactService(),
-            wallet = previewWallet,
+            wallet = wallet,
             adapterManager = adapterManager,
             dispatcherProvider = TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)),
         )
         viewModelStore.put("test-vm", vm)
         return vm
+    }
+
+    @Test
+    fun nativeBeamSource_fetchesFinalQuoteAndSends() = runTest(dispatcher) {
+        val nativeBeam = Token(
+            coin = Coin(uid = "beam", name = "Beam", code = "BEAM"),
+            blockchain = Blockchain(BlockchainType.Beam, "Beam", null),
+            type = TokenType.Native,
+            decimals = 8,
+        )
+        val provider = mockk<IMultiSwapProvider>(relaxed = true).stubFetchFinalQuote(testTransaction)
+        val quote = mockk<ISwapQuote>(relaxed = true) {
+            every { tokenIn } returns nativeBeam
+            every { tokenOut } returns token
+            every { amountIn } returns BigDecimal.ONE
+        }
+        val sendTransactionService = createSuccessfulSendService()
+        val mnemonicAccount = previewWallet.account.copy(
+            type = AccountType.Mnemonic(List(12) { "synthetic-word-$it" }, "", MnemonicDerivation.Legacy),
+        )
+
+        val viewModel = createViewModel(
+            provider = provider,
+            serviceOverride = sendTransactionService,
+            quote = quote,
+            wallet = checkNotNull(WalletFactory(mockk()).create(nativeBeam, mnemonicAccount, null)),
+        )
+        advanceUntilIdle()
+        viewModel.onClickSendWithWarningCheck()
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) {
+            provider.fetchFinalQuote(nativeBeam, any(), any(), any(), any(), any())
+            sendTransactionService.send(any())
+        }
+        assertTrue(viewModel.sendResult is SendResult.Sent)
+    }
+
+    @Test
+    fun beamQueuedResult_surfacesAsSentButQueued() = runTest(dispatcher) {
+        val provider = mockk<IMultiSwapProvider>(relaxed = true).stubFetchFinalQuote(testTransaction)
+        val service = createSuccessfulSendService().also {
+            coEvery { it.send(any()) } returns SendTransactionResult.Beam(SendResult.SentButQueued("uid"), "tx")
+        }
+
+        val viewModel = createViewModel(provider, serviceOverride = service)
+        advanceUntilIdle()
+        viewModel.onClickSendWithWarningCheck()
+        advanceUntilIdle()
+
+        assertTrue(viewModel.sendResult is SendResult.SentButQueued)
     }
 
     @Test

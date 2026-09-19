@@ -7,6 +7,7 @@ import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.send.address.AddressCheckResult
 import cash.p.terminal.wallet.Token
+import io.horizontalsystems.core.entities.BlockchainType
 import java.util.concurrent.ConcurrentHashMap
 
 class AddressCheckManager(
@@ -39,10 +40,12 @@ class AddressCheckManager(
     private val cache = ConcurrentHashMap<CacheKey, AddressCheckResult>()
 
     fun availableCheckTypes(token: Token): List<AddressCheckType> {
+        if (!supportsAddressChecks(token)) return emptyList()
         return checkers.mapNotNull { (type, checker) -> if (checker.supports(token)) type else null }
     }
 
     suspend fun isClear(type: AddressCheckType, address: Address, token: Token): AddressCheckResult {
+        if (!supportsAddressChecks(token)) return AddressCheckResult.NotAvailable
         val key = CacheKey(type, address.hex, token)
 
         return cache[key] ?: run {
@@ -51,6 +54,9 @@ class AddressCheckManager(
             } ?: AddressCheckResult.Clear
         }
     }
+
+    // BEAM receiver tokens are opaque payment data and must not reach address screening providers.
+    private fun supportsAddressChecks(token: Token) = token.blockchainType != BlockchainType.Beam
 
     private data class CacheKey(
         val type: AddressCheckType,

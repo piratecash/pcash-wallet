@@ -3,6 +3,7 @@ package cash.p.terminal.core.managers
 import android.util.Base64
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.entities.DecodedOfflineTransaction
+import cash.p.terminal.entities.OfflineBeamMetadata
 import cash.p.terminal.entities.OfflineFeeMetadata
 import cash.p.terminal.entities.OfflineSignedTransactionDraft
 import cash.p.terminal.entities.OfflineSolanaRetryMetadata
@@ -19,6 +20,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.security.MessageDigest
 import java.io.ByteArrayOutputStream
+import java.math.BigDecimal
 import java.util.zip.Deflater
 import java.util.zip.Inflater
 
@@ -30,6 +32,7 @@ class OfflineTransactionPayloadEncoder {
     }
 
     fun encode(draft: OfflineSignedTransactionDraft): String {
+        require(draft.rawHex.length <= MAX_INPUT_CHARACTERS) { "Offline transaction is too large" }
         val blockchainUid = draft.wallet.token.blockchainType.uid
         val feeToken = draft.feeToken ?: draft.wallet.token
         val payload = Payload(
@@ -37,14 +40,8 @@ class OfflineTransactionPayloadEncoder {
             rawHex = draft.rawHex.lowercase(),
             txHash = draft.txHash,
             token = draft.wallet.token.toPayloadToken(),
-            amountAtomic = draft.amount.movePointRight(draft.wallet.token.decimals).toBigInteger().toString(),
-            fee = draft.fee?.let {
-                PayloadFee(
-                    tokenQueryId = feeToken.tokenQuery.id,
-                    atomic = it.movePointRight(feeToken.decimals).toBigInteger().toString(),
-                    decimals = feeToken.decimals,
-                )
-            },
+            amountAtomic = draft.amount.toAtomic(draft.wallet.token),
+            fee = draft.fee?.toPayloadFee(feeToken),
             toAddress = draft.toAddress,
             createdAt = draft.createdAt,
             inputOutpoints = draft.inputOutpoints,
@@ -52,50 +49,68 @@ class OfflineTransactionPayloadEncoder {
             tonRetry = draft.tonRetryMetadata?.toPayload(),
             tronRetry = draft.tronRetryMetadata?.toPayload(),
             stellarRetry = draft.stellarRetryMetadata?.toPayload(),
+            beam = draft.beamMetadata,
             checksum = checksum(draft.rawHex),
         )
+        require(isStructurallyValidBeam(payload)) { "Invalid BEAM transport metadata" }
         return listOf(SCHEME, TYPE, VERSION, blockchainUid, compressedBase64(payload))
             .joinToString(separator = ":")
     }
 
-    // Inverse of [encode]: parses a pcash:tx:v1:<blockchainUid>:<compressedBase64> payload.
-    // Returns null for any malformed input or checksum mismatch so callers can fall back to
-    // treating the input as a plain raw-hex transaction.
-    fun decode(payload: String): DecodedOfflineTransaction? {
+    /** Compatibility API; import callers must use decodeResult to forbid malformed-envelope fallback. */
+    fun decode(payload: String): DecodedOfflineTransaction? =
+        (decodeResult(payload) as? DecodeResult.Decoded)?.transaction
+
+    sealed interface DecodeResult {
+        data object NotEnvelope : DecodeResult
+        data object Invalid : DecodeResult
+        /** Structural checks only; this does not authorize BEAM relay. */
+        data class Decoded(val transaction: DecodedOfflineTransaction) : DecodeResult
+    }
+
+    fun decodeResult(payload: String): DecodeResult {
+        if (payload.length > MAX_INPUT_CHARACTERS) return DecodeResult.Invalid
+        if (!isOfflineTransactionPayload(payload)) return DecodeResult.NotEnvelope
+        return tryOrNull { decodeEnvelope(payload)?.let { DecodeResult.Decoded(it) } } ?: DecodeResult.Invalid
+    }
+
+    private fun decodeEnvelope(payload: String): DecodedOfflineTransaction? {
         val parts = payload.trim().split(":", limit = 5)
         if (parts.size != 5) return null
         if (parts[0] != SCHEME || parts[1] != TYPE || parts[2] != VERSION) return null
         val blockchainUid = parts[3]
         val body = parts[4]
+        if (!body.all { (it.isLetterOrDigit() && it.code < 128) || it in "-_=\r\n\t " }) return null
 
-        val decoded = tryOrNull {
-            val compressed = Base64.decode(body, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
-            json.decodeFromString<Payload>(decompress(compressed).decodeToString())
-        } ?: return null
+        val compressed = Base64.decode(body, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
+        val bodyJson = decompress(compressed).decodeToString(throwOnInvalidSequence = true)
+        val decoded = json.decodeFromString<Payload>(bodyJson)
 
         if (!isValidPayload(decoded, blockchainUid)) return null
 
-        return DecodedOfflineTransaction(
-            // The path segment is authoritative: isValidPayload already rejected a body whose
-            // blockchainUid disagrees, so the network shown/used cannot be spoofed by the body.
-            blockchainUid = blockchainUid,
-            rawHex = decoded.rawHex,
-            txHash = decoded.txHash,
-            token = decoded.token.toMetadata(),
-            amountAtomic = decoded.amountAtomic,
-            fee = decoded.fee?.toMetadata(),
-            toAddress = decoded.toAddress,
-            createdAt = decoded.createdAt,
-            inputOutpoints = decoded.inputOutpoints,
-            solanaRetryMetadata = decoded.solanaRetry?.toMetadata(),
-            tonRetryMetadata = decoded.tonRetry?.toMetadata(),
-            tronRetryMetadata = decoded.tronRetry?.toMetadata(),
-            stellarRetryMetadata = decoded.stellarRetry?.toMetadata(),
-        )
+        return decoded.toDecodedTransaction()
     }
+
+    private fun Payload.toDecodedTransaction() = DecodedOfflineTransaction(
+        blockchainUid = blockchainUid,
+        rawHex = rawHex,
+        txHash = txHash,
+        token = token.toMetadata(),
+        amountAtomic = amountAtomic,
+        fee = fee?.toMetadata(),
+        toAddress = toAddress,
+        createdAt = createdAt,
+        inputOutpoints = inputOutpoints,
+        solanaRetryMetadata = solanaRetry?.toMetadata(),
+        tonRetryMetadata = tonRetry?.toMetadata(),
+        tronRetryMetadata = tronRetry?.toMetadata(),
+        stellarRetryMetadata = stellarRetry?.toMetadata(),
+        beamMetadata = beam,
+    )
 
     private fun compressedBase64(payload: Payload): String {
         val bytes = json.encodeToString(payload).encodeToByteArray()
+        require(bytes.size <= MAX_DECOMPRESSED_SIZE) { "Offline payload is too large" }
         val compressed = compress(bytes)
         return Base64.encodeToString(compressed, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
     }
@@ -127,36 +142,92 @@ class OfflineTransactionPayloadEncoder {
                 val count = inflater.inflate(buffer)
                 // The whole input is fed at once, so a complete stream only stops by finishing. Any zero
                 // read means truncation or a required preset dictionary: stop instead of looping forever.
-                if (count == 0) break
+                require(count > 0 || inflater.finished()) { "Incomplete compressed offline payload" }
                 require(output.size() + count <= MAX_DECOMPRESSED_SIZE) {
                     "Decompressed offline payload exceeds the allowed size"
                 }
                 output.write(buffer, 0, count)
             }
+            require(inflater.remaining == 0) { "Trailing compressed offline payload data" }
             output.toByteArray()
         } finally {
             inflater.end()
         }
     }
 
-    // The checksum only authenticates rawHex — the bytes that are actually broadcast. Every other
-    // field is untrusted display metadata, so reject anything we cannot interpret and keep rawHex as
-    // the single source of truth for broadcast.
+    // The checksum detects rawHex corruption only; it authenticates neither bytes nor display metadata.
     private fun isValidPayload(payload: Payload, blockchainUid: String): Boolean =
         payload.version == VERSION_INT &&
                 payload.encoding == RAW_HEX_ENCODING &&
                 payload.blockchainUid == blockchainUid &&
+                isStructurallyValidBeam(payload) &&
                 isHex(payload.rawHex) &&
                 payload.checksum == checksum(payload.rawHex) &&
                 isTxHash(payload.txHash, blockchainUid) &&
                 isValidToken(payload.token, blockchainUid) &&
                 isValidFee(payload.fee, blockchainUid) &&
-                isValidSolanaRetry(payload.solanaRetry, blockchainUid) &&
+                isValidRetries(payload, blockchainUid) &&
+                hasReceiver(payload, blockchainUid) &&
+                isNonNegativeAtomic(payload.amountAtomic)
+
+    // A BEAM receiver is confidential and absent from the signed bytes, so its export carries none.
+    private fun hasReceiver(payload: Payload, blockchainUid: String): Boolean =
+        blockchainUid == BlockchainType.Beam.uid || payload.toAddress.isNotBlank()
+
+    private fun isValidRetries(payload: Payload, blockchainUid: String): Boolean =
+        isValidSolanaRetry(payload.solanaRetry, blockchainUid) &&
                 isValidTonRetry(payload.tonRetry, blockchainUid) &&
                 isValidTronRetry(payload.tronRetry, blockchainUid) &&
-                isValidStellarRetry(payload.stellarRetry, blockchainUid) &&
-                payload.toAddress.isNotBlank() &&
-                isNonNegativeAtomic(payload.amountAtomic)
+                isValidStellarRetry(payload.stellarRetry, blockchainUid)
+
+    private fun isStructurallyValidBeam(payload: Payload): Boolean {
+        if (payload.blockchainUid != BlockchainType.Beam.uid) return payload.beam == null
+        val beam = payload.beam ?: return false
+        return beam.version == 1 &&
+                beam.network in setOf("mainnet", "testnet") &&
+                isValidBeamRules(beam.rulesSignature) &&
+                isCanonicalHex(beam.mainKernelId, TX_HASH_HEX_LENGTH) &&
+                beam.mainKernelId == payload.txHash &&
+                (beam.coreTxId == null || isCanonicalHex(beam.coreTxId, CORE_TX_ID_HEX_LENGTH)) &&
+                isCanonicalHex(payload.rawHex, payload.rawHex.length) &&
+                isValidBeamAmounts(payload)
+    }
+
+    private fun isValidBeamRules(rules: String): Boolean =
+        rules.length in 1..MAX_BEAM_RULES_CHARACTERS &&
+                rules.isNotBlank() &&
+                rules.all { it.code in 32..126 || it == '\n' || it == '\t' }
+
+    private fun isValidBeamAmounts(payload: Payload): Boolean {
+        val fee = payload.fee
+        return isBeamNativeToken(payload.token.tokenQueryId, payload.token.decimals) &&
+                isBeamAtomic(payload.amountAtomic) &&
+                (fee == null || isBeamNativeToken(fee.tokenQueryId, fee.decimals) && isBeamAtomic(fee.atomic))
+    }
+
+    private fun isBeamNativeToken(queryId: String, decimals: Int): Boolean =
+        queryId == "beam|native" && decimals == BEAM_DECIMALS
+
+    private fun isBeamAtomic(value: String): Boolean =
+        value.isNotEmpty() && value.length <= MAX_BEAM_ATOMIC_CHARACTERS &&
+                value.all { it in '0'..'9' } && value.toLongOrNull() != null
+
+    private fun isCanonicalHex(value: String, length: Int): Boolean =
+        value.length == length && isHex(value) && value.none { it in 'A'..'F' }
+
+    private fun BigDecimal.toAtomic(token: Token): String =
+        if (token.blockchainType == BlockchainType.Beam) {
+            require(isBeamNativeToken(token.tokenQuery.id, token.decimals)) { "Invalid native BEAM token" }
+            movePointRight(BEAM_DECIMALS).longValueExact().also { require(it >= 0) }.toString()
+        } else {
+            movePointRight(token.decimals).toBigInteger().toString()
+        }
+
+    private fun BigDecimal.toPayloadFee(token: Token) = PayloadFee(
+        tokenQueryId = token.tokenQuery.id,
+        atomic = toAtomic(token),
+        decimals = token.decimals,
+    )
 
     private fun isValidToken(token: PayloadToken, blockchainUid: String): Boolean {
         val query = TokenQuery.fromId(token.tokenQueryId) ?: return false
@@ -327,6 +398,7 @@ class OfflineTransactionPayloadEncoder {
         val tonRetry: PayloadTonRetry? = null,
         val tronRetry: PayloadTronRetry? = null,
         val stellarRetry: PayloadStellarRetry? = null,
+        val beam: OfflineBeamMetadata? = null,
     )
 
     @Serializable
@@ -380,10 +452,12 @@ class OfflineTransactionPayloadEncoder {
         const val PAYLOAD_PREFIX = "$SCHEME:$TYPE:"
 
         fun isOfflineTransactionPayload(text: String): Boolean =
-            text.trim().startsWith(PAYLOAD_PREFIX)
+            text.indexOfFirst { !it.isWhitespace() }.let { start ->
+                start >= 0 && text.startsWith(PAYLOAD_PREFIX, start)
+            }
 
         fun isRawTransactionHex(text: String): Boolean =
-            text.trim().let { value ->
+            text.length <= MAX_INPUT_CHARACTERS && text.trim().let { value ->
                 value.length >= MIN_RAW_HEX_LENGTH && isHex(value)
             }
 
@@ -399,9 +473,15 @@ class OfflineTransactionPayloadEncoder {
         private const val MIN_RAW_HEX_LENGTH = 20
         private const val COMPRESSION_BUFFER_SIZE = 512
         private const val INFLATE_SIZE_HINT = 4
+        private const val BEAM_DECIMALS = 8
+        private const val MAX_BEAM_ATOMIC_CHARACTERS = 19
+        private const val MAX_BEAM_RULES_CHARACTERS = 2048
+        private const val CORE_TX_ID_HEX_LENGTH = 32
 
-        // Upper bound for the inflated payload. A signed wallet transaction is a few KB, so 1 MB is far
-        // beyond any legitimate payload while still capping a crafted "zip bomb" from exhausting memory.
+        // Covers Base64 of a 1 MiB zlib stream (including overhead), and raw hex of 1 MiB bytes.
+        const val MAX_INPUT_CHARACTERS = 2 * 1024 * 1024
+
+        // Keep the existing admission limit until legitimate BEAM envelope sizes have been measured.
         private const val MAX_DECOMPRESSED_SIZE = 1 * 1024 * 1024
     }
 }

@@ -32,6 +32,14 @@ class CalculatorPinAttemptThrottle(
         persistState(capacity, uptimeProvider.uptime, wallClock())
     }
 
+    /** Return only the token consumed by an authorized PIN whose reset was blocked. */
+    fun refundOne() {
+        val nowUptime = uptimeProvider.uptime
+        val nowWall = wallClock()
+        rebaselineIfRebooted(nowUptime, nowWall)
+        persistState((currentTokens(nowUptime, nowWall) + 1).coerceAtMost(capacity), nowUptime, nowWall)
+    }
+
     private fun rebaselineIfRebooted(nowUptime: Long, nowWall: Long) {
         if (storage.calculatorThrottleLastUptime > nowUptime) {
             storage.calculatorThrottleLastUptime = nowUptime

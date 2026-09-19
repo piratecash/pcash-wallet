@@ -28,6 +28,7 @@ import cash.p.terminal.modules.pin.unlock.PinUnlockModule
 import cash.p.terminal.modules.pin.unlock.PinUnlockViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import cash.p.terminal.ui_compose.components.title3_leah
+import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -102,6 +103,13 @@ fun PinUnlock(
                 .padding(it)
                 .fillMaxSize()
         ) {
+            if (uiState.resetBlocked) {
+                TextImportantWarning(
+                    modifier = Modifier.padding(16.dp),
+                    text = stringResource(R.string.unexpected_error)
+                )
+            }
+
             PinTopBlock(
                 modifier = Modifier.weight(1f),
                 title = stringResource(R.string.Unlock_EnterPasscode),

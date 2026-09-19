@@ -52,6 +52,21 @@ class RestoreSettingsManager(
         )
     }
 
+    internal fun saveBeamRestoreIntent(account: Account) {
+        storage.save(
+            listOf(
+                RestoreSettingRecord(account.id, BlockchainType.Beam.uid, BEAM_RESTORE_INTENT, SNAPSHOT_THEN_SCAN),
+            ),
+        )
+    }
+
+    internal fun hasBeamRestoreIntent(account: Account): Boolean {
+        val record = storage.restoreSettings(account.id, BlockchainType.Beam.uid)
+            .firstOrNull { it.key == BEAM_RESTORE_INTENT } ?: return false
+        check(record.value == SNAPSHOT_THEN_SCAN) { "Invalid BEAM restore intent" }
+        return true
+    }
+
     internal fun trezorMoneroRestoreHeight(walletPublicKey: String): Long? {
         if (walletPublicKey.isBlank()) return null
 
@@ -183,6 +198,8 @@ class RestoreSettingsManager(
     }
 
     private companion object {
+        const val BEAM_RESTORE_INTENT = "beam_restore_intent"
+        const val SNAPSHOT_THEN_SCAN = "SNAPSHOT_THEN_SCAN:v1"
         const val TREZOR_MONERO_ACCOUNT_PREFIX = "trezor-monero:"
         const val PENDING_MONERO_RESCAN_HEIGHT = "monero_hardware_rescan_pending_height"
         const val MONERO_SPENT_RECONCILIATION_STATE = "monero_spent_reconciliation_state"

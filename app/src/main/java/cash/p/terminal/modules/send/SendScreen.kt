@@ -26,6 +26,7 @@ fun SendScreen(
     proceedEnabled: Boolean,
     onCloseClick: () -> Unit,
     onSendClick: () -> Unit,
+    proceedTitle: TranslatableString = TranslatableString.ResString(R.string.Send_DialogProceed),
     bottomOverlay: @Composable (BoxScope.() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -37,7 +38,7 @@ fun SendScreen(
             },
             menuItems = listOf(
                 MenuItem(
-                    title = TranslatableString.ResString(R.string.Send_DialogProceed),
+                    title = proceedTitle,
                     tint = ComposeAppTheme.colors.jacob,
                     enabled = proceedEnabled,
                     onClick = onSendClick

@@ -8031,7 +8031,7 @@ INSERT OR REPLACE INTO TokenEntity VALUES('bazaars','ethereum','eip20',18,'0x8d9
 INSERT OR REPLACE INTO TokenEntity VALUES('bc-token','solana','spl',6,'BCNT4t3rv5Hva8RnUtJUJLnxzeFAabcYp8CghC1SmWin');
 INSERT OR REPLACE INTO TokenEntity VALUES('be-for-fwx','base','eip20',18,'0xbe35071605277d8be5a52c84a66ab1bc855a758d');
 INSERT OR REPLACE INTO TokenEntity VALUES('be-for-fwx','avalanche','eip20',18,'0x13b1f0579bc895b2ffb835f295fd9b63fef36da0');
-INSERT OR REPLACE INTO TokenEntity VALUES('beam','beam','native',null,'');
+INSERT OR REPLACE INTO TokenEntity VALUES('beam','beam','native',8,'');
 INSERT OR REPLACE INTO TokenEntity VALUES('beam-2','ethereum','eip20',18,'0x62d0a8458ed7719fdaf978fe5929c6d342b0bfce');
 INSERT OR REPLACE INTO TokenEntity VALUES('beam-2','binance-smart-chain','eip20',18,'0x62d0a8458ed7719fdaf978fe5929c6d342b0bfce');
 INSERT OR REPLACE INTO TokenEntity VALUES('beam-bridged-usdc-beam','beam','beam',6,'0x76bf5e7d2bcb06b1444c0a2742780051d8d0e304');

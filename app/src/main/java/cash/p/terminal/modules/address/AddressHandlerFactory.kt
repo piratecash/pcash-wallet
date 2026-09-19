@@ -2,6 +2,7 @@ package cash.p.terminal.modules.address
 
 import cash.p.dogecoinkit.MainNetDogecoin
 import cash.p.terminal.core.supported
+import cash.p.terminal.modules.send.beam.BeamRecipient
 import io.horizontalsystems.bitcoincash.MainNetBitcoinCash
 import io.horizontalsystems.bitcoinkit.MainNet
 import io.horizontalsystems.dashkit.MainNetDash
@@ -17,60 +18,21 @@ class AddressHandlerFactory(
     private val udnApiKey: String,
 ) {
 
-    private fun parserChainHandlers(blockchainType: BlockchainType): List<IAddressHandler> {
-        val addressHandlers = mutableListOf<IAddressHandler>()
+    // Widened for the registration test: it asserts the per-chain handler types without
+    // invoking a handler, several of which reach native code no JVM unit test can load.
+    internal fun parserChainHandlers(blockchainType: BlockchainType): List<IAddressHandler> =
         when (blockchainType) {
-            BlockchainType.Bitcoin -> {
-                val network = MainNet()
-                addressHandlers.add(AddressHandlerBase58(network, blockchainType))
-                addressHandlers.add(AddressHandlerBech32(network, blockchainType))
-            }
+            BlockchainType.Bitcoin,
+            BlockchainType.BitcoinCash,
+            BlockchainType.ECash,
+            BlockchainType.Litecoin,
+            BlockchainType.Dogecoin,
+            BlockchainType.Cosanta,
+            BlockchainType.PirateCash,
+            BlockchainType.Dash -> utxoChainHandlers(blockchainType)
 
-            BlockchainType.BitcoinCash -> {
-                val network = MainNetBitcoinCash()
-                addressHandlers.add(AddressHandlerBase58(network, blockchainType))
-                addressHandlers.add(AddressHandlerBitcoinCash(network, blockchainType))
-            }
-
-            BlockchainType.ECash -> {
-                val network = MainNetECash()
-                addressHandlers.add(AddressHandlerBase58(network, blockchainType))
-                addressHandlers.add(AddressHandlerBitcoinCash(network, blockchainType))
-            }
-
-            BlockchainType.Litecoin -> {
-                val network = MainNetLitecoin()
-                addressHandlers.add(AddressHandlerBase58(network, blockchainType))
-                addressHandlers.add(AddressHandlerBech32(network, blockchainType))
-            }
-
-            BlockchainType.Dogecoin -> {
-                val network = MainNetDogecoin()
-                addressHandlers.add(AddressHandlerBase58(network, blockchainType))
-            }
-
-            BlockchainType.Monero -> {
-                addressHandlers.add(AddressHandlerMonero())
-            }
-
-            BlockchainType.Cosanta -> {
-                val network = MainNetCosanta()
-                addressHandlers.add(AddressHandlerBase58(network, blockchainType))
-            }
-
-            BlockchainType.PirateCash -> {
-                val network = MainNetPirateCash()
-                addressHandlers.add(AddressHandlerBase58(network, blockchainType))
-            }
-
-            BlockchainType.Dash -> {
-                val network = MainNetDash()
-                addressHandlers.add(AddressHandlerBase58(network, blockchainType))
-            }
-
-            BlockchainType.Zcash -> {
-                addressHandlers.add(AddressHandlerZcash())
-            }
+            BlockchainType.Monero -> listOf(AddressHandlerMonero())
+            BlockchainType.Zcash -> listOf(AddressHandlerZcash())
 
             BlockchainType.Ethereum,
             BlockchainType.BinanceSmartChain,
@@ -82,31 +44,36 @@ class AddressHandlerFactory(
             BlockchainType.RobinhoodChain,
             BlockchainType.Gnosis,
             BlockchainType.Fantom,
-            BlockchainType.ArbitrumOne -> {
-                addressHandlers.add(AddressHandlerEvm(blockchainType))
-            }
+            BlockchainType.ArbitrumOne -> listOf(AddressHandlerEvm(blockchainType))
 
-            BlockchainType.Solana -> {
-                addressHandlers.add(AddressHandlerSolana())
-            }
-
-            BlockchainType.Tron -> {
-                addressHandlers.add(AddressHandlerTron())
-            }
-
-            BlockchainType.Ton -> {
-                addressHandlers.add(AddressHandlerTon())
-            }
-
-            BlockchainType.Stellar -> {
-                addressHandlers.add(AddressHandlerStellar())
-            }
-
-            is BlockchainType.Unsupported -> {
-            }
+            BlockchainType.Solana -> listOf(AddressHandlerSolana())
+            BlockchainType.Tron -> listOf(AddressHandlerTron())
+            BlockchainType.Ton -> listOf(AddressHandlerTon())
+            BlockchainType.Stellar -> listOf(AddressHandlerStellar())
+            BlockchainType.Beam -> listOf(BeamRecipient)
+            is BlockchainType.Unsupported -> emptyList()
         }
-        return addressHandlers
-    }
+
+    private fun utxoChainHandlers(blockchainType: BlockchainType): List<IAddressHandler> =
+        when (blockchainType) {
+            BlockchainType.Bitcoin -> MainNet().let {
+                listOf(AddressHandlerBase58(it, blockchainType), AddressHandlerBech32(it, blockchainType))
+            }
+            BlockchainType.BitcoinCash -> MainNetBitcoinCash().let {
+                listOf(AddressHandlerBase58(it, blockchainType), AddressHandlerBitcoinCash(it, blockchainType))
+            }
+            BlockchainType.ECash -> MainNetECash().let {
+                listOf(AddressHandlerBase58(it, blockchainType), AddressHandlerBitcoinCash(it, blockchainType))
+            }
+            BlockchainType.Litecoin -> MainNetLitecoin().let {
+                listOf(AddressHandlerBase58(it, blockchainType), AddressHandlerBech32(it, blockchainType))
+            }
+            BlockchainType.Dogecoin -> listOf(AddressHandlerBase58(MainNetDogecoin(), blockchainType))
+            BlockchainType.Cosanta -> listOf(AddressHandlerBase58(MainNetCosanta(), blockchainType))
+            BlockchainType.PirateCash -> listOf(AddressHandlerBase58(MainNetPirateCash(), blockchainType))
+            BlockchainType.Dash -> listOf(AddressHandlerBase58(MainNetDash(), blockchainType))
+            else -> emptyList()
+        }
 
     private fun domainHandlers(blockchainType: BlockchainType): List<IAddressHandler> {
         val udnHandler = AddressHandlerUdn(TokenQuery(blockchainType, TokenType.Native), null, udnApiKey)

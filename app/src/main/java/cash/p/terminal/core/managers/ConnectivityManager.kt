@@ -10,6 +10,7 @@ import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
 import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
@@ -23,6 +24,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 // While foreground, re-derive connectivity from the system on this cadence so a missed
 // callback event (or a failed registration) can't leave isConnected stale indefinitely.
@@ -55,7 +57,34 @@ class ConnectivityManager(
     override fun refresh() = refreshFromSystem(forceEmit = false)
 
     private var callback: ConnectionStatusCallback? = null
+    private val monitoringLock = Any()
     private val isCallbackRegistered = AtomicBoolean(false)
+    private val monitoringLeases = AtomicInteger()
+
+    /** Keeps validated connectivity current while a one-shot background worker is active. */
+    fun acquireMonitoringLease(): AutoCloseable {
+        synchronized(monitoringLock) {
+            monitoringLeases.incrementAndGet()
+            startBackgroundMonitoring()
+            startRevalidateTimer()
+        }
+        val released = AtomicBoolean(false)
+        return AutoCloseable {
+            if (released.compareAndSet(false, true)) {
+                synchronized(monitoringLock) {
+                    monitoringLeases.decrementAndGet()
+                    stopBackgroundMonitoringIfIdle()
+                }
+            }
+        }
+    }
+
+    /** Waits for the actor to publish the system's current validated state. */
+    suspend fun refreshAndAwaitValidation(): Boolean {
+        val completion = CompletableDeferred<Boolean>()
+        refreshFromSystem(forceEmit = false, completion = completion)
+        return completion.await()
+    }
 
     // Actor pattern: single channel ensures FIFO processing of network events
     private val eventChannel = Channel<NetworkEvent>(Channel.UNLIMITED)
@@ -78,7 +107,8 @@ class ConnectivityManager(
         data class Initialize(
             val network: Network?,
             val hasValidInternet: Boolean,
-            val forceEmit: Boolean
+            val forceEmit: Boolean,
+            val completion: CompletableDeferred<Boolean>? = null,
         ) : NetworkEvent()
     }
 
@@ -111,10 +141,13 @@ class ConnectivityManager(
 
         scope.launch {
             backgroundKeepAliveManager.keepAliveBlockchains.collect { blockchains ->
-                if (blockchains.isNotEmpty()) {
-                    startBackgroundMonitoring()
-                } else if (!backgroundManager.inForeground) {
-                    unregisterCallbackSafely()
+                synchronized(monitoringLock) {
+                    if (blockchains.isNotEmpty()) {
+                        startBackgroundMonitoring()
+                        startRevalidateTimer()
+                    } else {
+                        stopBackgroundMonitoringIfIdle()
+                    }
                 }
             }
         }
@@ -156,6 +189,7 @@ class ConnectivityManager(
             }
         }
         updateConnectionState(forceEmit = (event as? NetworkEvent.Initialize)?.forceEmit == true)
+        (event as? NetworkEvent.Initialize)?.completion?.complete(_isConnected.value)
     }
 
     private fun updateConnectionState(forceEmit: Boolean = false) {
@@ -170,7 +204,7 @@ class ConnectivityManager(
         }
     }
 
-    private fun willEnterForeground() {
+    private fun willEnterForeground() = synchronized(monitoringLock) {
         if (callback == null) {
             callback = ConnectionStatusCallback()
         }
@@ -181,18 +215,24 @@ class ConnectivityManager(
         startRevalidateTimer()
     }
 
-    private fun didEnterBackground() {
-        stopRevalidateTimer()
-        if (backgroundKeepAliveManager.keepAliveBlockchains.value.isEmpty()) {
-            unregisterCallbackSafely()
+    private fun didEnterBackground() = synchronized(monitoringLock) {
+        if (hasBackgroundDemand()) startBackgroundMonitoring() else stopBackgroundMonitoringIfIdle()
+    }
+
+    private fun cleanup() = synchronized(monitoringLock) {
+        if (hasBackgroundDemand()) startBackgroundMonitoring() else {
+            stopBackgroundMonitoringIfIdle()
+            callback = null
         }
     }
 
-    private fun cleanup() {
-        stopRevalidateTimer()
-        if (backgroundKeepAliveManager.keepAliveBlockchains.value.isEmpty()) {
+    private fun hasBackgroundDemand() =
+        backgroundKeepAliveManager.keepAliveBlockchains.value.isNotEmpty() || monitoringLeases.get() > 0
+
+    private fun stopBackgroundMonitoringIfIdle() {
+        if (!backgroundManager.inForeground && !hasBackgroundDemand()) {
+            stopRevalidateTimer()
             unregisterCallbackSafely()
-            callback = null
         }
     }
 
@@ -204,7 +244,8 @@ class ConnectivityManager(
         registerCallback()
     }
 
-    private fun registerCallback(isRetry: Boolean = false) {
+    private fun registerCallback(isRetry: Boolean = false): Unit = synchronized(monitoringLock) {
+        if (!backgroundManager.inForeground && !hasBackgroundDemand()) return@synchronized
         callback?.let { cb ->
             // Set flag first to prevent repeated attempts
             if (isCallbackRegistered.compareAndSet(false, true)) {
@@ -228,6 +269,7 @@ class ConnectivityManager(
                 }
             }
         }
+        Unit
     }
 
     private fun unregisterCallbackSafely() {
@@ -255,7 +297,10 @@ class ConnectivityManager(
         revalidateJob = null
     }
 
-    private fun refreshFromSystem(forceEmit: Boolean): Boolean {
+    private fun refreshFromSystem(
+        forceEmit: Boolean,
+        completion: CompletableDeferred<Boolean>? = null,
+    ): Boolean {
         val network = systemConnectivityManager.activeNetwork
         val hasValidInternet = network?.let { activeNetwork ->
             systemConnectivityManager.getNetworkCapabilities(activeNetwork)?.let { caps ->
@@ -264,13 +309,15 @@ class ConnectivityManager(
             } ?: false
         } ?: false
 
-        eventChannel.trySend(
+        val queued = eventChannel.trySend(
             NetworkEvent.Initialize(
                 network = network,
                 hasValidInternet = hasValidInternet,
-                forceEmit = forceEmit
+                forceEmit = forceEmit,
+                completion = completion,
             )
         )
+        if (queued.isFailure) completion?.complete(false)
         return network != null && hasValidInternet
     }
 
