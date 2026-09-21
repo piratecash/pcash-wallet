@@ -8,6 +8,12 @@
 -keep class cash.p.terminal.modules.contacts.ContactsRepository$ContactJson** { <fields>; <init>(...); }
 -keep class cash.p.terminal.entities.** { <fields>; <init>(...); }
 -keep class cash.p.terminal.wallet.models.** { <fields>; <init>(...); }
+-keep class cash.p.terminal.wallet.providers.HistoricalCoinPriceResponse { <fields>; <init>(...); }
+-keep class cash.p.terminal.wallet.providers.ChartStart { <fields>; <init>(...); }
+-keep class cash.p.terminal.wallet.providers.SignalResponse { <fields>; <init>(...); }
+-keep class cash.p.terminal.wallet.providers.CryptoCompareProvider$PostsResponse { <fields>; <init>(...); }
+-keep class cash.p.terminal.wallet.providers.CryptoCompareProvider$PostItem { <fields>; <init>(...); }
+-keep class cash.p.terminal.wallet.providers.TopCollectionRaw { <fields>; <init>(...); }
 -keep class cash.p.terminal.core.address.ChainalysisAddressValidator$* { <fields>; <init>(...); }
 -keep class cash.p.terminal.core.address.HashDitAddressValidator$* { <fields>; <init>(...); }
 -keep class cash.p.terminal.core.providers.EvmLabelProvider$* { <fields>; <init>(...); }
