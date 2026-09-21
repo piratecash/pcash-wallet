@@ -25,7 +25,7 @@ jobs:
             | base64 --decode \
             > "$RUNNER_TEMP/firebase-dev.jks"
       - name: Run Unit tests
-        run: ./gradlew :app:testDebugUnitTest :core:core:testDebugUnitTest :core:wallet:testDebugUnitTest :feature-premium:testDebugUnitTest :feature-logging:testDebugUnitTest :feature-trezor:testDebugUnitTest :feature-tangem:testDebugUnitTest
+        run: ./gradlew :app:testDebugUnitTest :core:core:testDebugUnitTest :core:wallet:testDebugUnitTest :feature-premium:testDebugUnitTest :feature-logging:testDebugUnitTest :feature-trezor:testDebugUnitTest :feature-tangem:testDebugUnitTest --no-daemon
       - name: Build QA
         run: ./gradlew :app:assembleQa --stacktrace --no-daemon
         env: &qa-build-env
