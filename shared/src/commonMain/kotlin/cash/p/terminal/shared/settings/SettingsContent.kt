@@ -90,7 +90,7 @@ fun SettingsContent(
     uiState: MainSettingUiState,
     appVersion: String,
     onAction: (SettingsAction) -> Unit,
-    alertPainter: Painter,
+    alertPainter: Painter?,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
@@ -129,7 +129,7 @@ private fun DonateAndMiniAppSections(onAction: (SettingsAction) -> Unit) {
 @Composable
 private fun WalletConnectionsSection(
     uiState: MainSettingUiState,
-    alertPainter: Painter,
+    alertPainter: Painter?,
     onAction: (SettingsAction) -> Unit,
 ) {
     CellUniversalLawrenceSection(
@@ -182,7 +182,7 @@ private fun WalletConnectionsSection(
 @Composable
 private fun GeneralSettingsSection(
     uiState: MainSettingUiState,
-    alertPainter: Painter,
+    alertPainter: Painter?,
     onAction: (SettingsAction) -> Unit,
 ) {
     CellUniversalLawrenceSection(
@@ -269,7 +269,7 @@ private fun ToolsSettingsSections(onAction: (SettingsAction) -> Unit) {
 @Composable
 private fun PremiumSettingsSection(
     uiState: MainSettingUiState,
-    alertPainter: Painter,
+    alertPainter: Painter?,
     onAction: (SettingsAction) -> Unit,
 ) {
     PremiumHeader(starPainter = painterResource(Res.drawable.star_filled_yellow_16))
@@ -300,7 +300,7 @@ private fun PremiumSettingsSection(
 @Composable
 private fun ApplicationSettingsSection(
     uiState: MainSettingUiState,
-    alertPainter: Painter,
+    alertPainter: Painter?,
     onAction: (SettingsAction) -> Unit,
 ) {
     CellUniversalLawrenceSection(

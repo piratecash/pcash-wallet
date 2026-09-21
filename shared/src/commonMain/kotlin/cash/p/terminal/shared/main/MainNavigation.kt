@@ -77,7 +77,9 @@ fun MainNavigation(
                 item(
                     selected = destination == selectedDestination,
                     onClick = { onDestinationSelect(destination) },
-                    icon = { MainDestinationIcon(destination, null) }
+                    icon = {
+                        MainDestinationIcon(destination, MainDestinationTitle(destination))
+                    },
                 )
             }
         },

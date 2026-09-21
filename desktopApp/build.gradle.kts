@@ -21,6 +21,7 @@ kotlin {
 
 dependencies {
     implementation(project(":shared"))
+    implementation(project(":core:ui-compose"))
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.core)
     implementation(compose.desktop.currentOs)
