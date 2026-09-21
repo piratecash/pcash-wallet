@@ -1160,7 +1160,7 @@ Proceed only if you\'re sure.</string>
     <string name="Settings_Terms">Terms</string>
     <string name="Settings_Privacy">Privacy</string>
     <string name="Settings_ShareThisWallet">Tell Friends</string>
-    <string name="Settings_InfoTitleWithVersion" translatable="false">P.CASH %s</string>
+    <string name="Settings_InfoTitleWithVersion" translatable="false">P.CASH %1$s</string>
     <string name="Settings_InfoSubtitle" translatable="false">decentralized app</string>
     <string name="Settings_CompanyName" translatable="false">PirateCash and Cosanta Foundation</string>
     <string name="Settings_Faq" translatable="false">FAQ</string>

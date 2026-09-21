@@ -6,8 +6,14 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.test.core.app.ApplicationProvider
 import cash.p.terminal.R
+import cash.p.terminal.shared.settings.CounterType
+import cash.p.terminal.shared.settings.MainSettingUiState
+import cash.p.terminal.shared.settings.SettingsAction
+import cash.p.terminal.shared.settings.SettingsContent
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -29,7 +35,7 @@ internal val settingsContentTestState = MainSettingUiState(
     securityCenterShowAlert = true,
     securityCenterShowNewBadge = true,
     aboutAppShowAlert = true,
-    wcCounterType = MainSettingsModule.CounterType.PendingRequestCounter(7),
+    wcCounterType = CounterType.PendingRequestCounter(7),
     premiumSettingsShowAlert = true,
     isPayCoreEnabled = true,
 )
@@ -98,6 +104,41 @@ class SettingsContentTest {
     }
 
     @Test
+    fun settingsContent_sessionCounter_showsSessionCount() {
+        setContent({}, settingsContentTestState.copy(
+            wcCounterType = CounterType.SessionCounter(3),
+        ))
+
+        compose.onNodeWithText("3").assertExists()
+        compose.onNodeWithText("7").assertDoesNotExist()
+    }
+
+    @Test
+    fun settingsContent_withoutCounter_showsNoWalletConnectCount() {
+        setContent({}, settingsContentTestState.copy(wcCounterType = null))
+
+        compose.onNodeWithText("3").assertDoesNotExist()
+        compose.onNodeWithText("7").assertDoesNotExist()
+    }
+
+    @Test
+    fun settingsContent_allAlertStatesOff_rendersWithoutNewBadge() {
+        setContent({}, settingsContentTestState.copy(
+            isUpdateAvailable = false,
+            manageWalletShowAlert = false,
+            securityCenterShowAlert = false,
+            securityCenterShowNewBadge = false,
+            aboutAppShowAlert = false,
+            premiumSettingsShowAlert = false,
+        ))
+
+        compose.onNodeWithText(application.getString(R.string.badge_new)).assertDoesNotExist()
+        compose.onNodeWithText(application.getString(R.string.SettingsAboutApp_Title))
+            .performScrollTo()
+            .assertExists()
+    }
+
+    @Test
     fun settingCell_counterValueAndNewBadge_showsCounterAndNewBadgeInsteadOfValue() {
         compose.setContent {
             ComposeAppTheme {
@@ -123,7 +164,12 @@ class SettingsContentTest {
     ) {
         compose.setContent {
             ComposeAppTheme {
-                SettingsContent(uiState, "1.2.3", onAction)
+                SettingsContent(
+                    uiState = uiState,
+                    appVersion = "1.2.3",
+                    onAction = onAction,
+                    alertPainter = ColorPainter(Color.Red),
+                )
             }
         }
     }

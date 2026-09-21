@@ -9,7 +9,8 @@ import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.modules.softwareupdate.AppUpdateChecker
 import cash.p.terminal.feature.logging.domain.usecase.LogLoginAttemptUseCase
 import cash.p.terminal.modules.paycore.PayCoreFeatureToggle
-import cash.p.terminal.modules.settings.main.MainSettingsModule.CounterType
+import cash.p.terminal.shared.settings.CounterType
+import cash.p.terminal.shared.settings.MainSettingUiState
 import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.modules.walletconnect.WCSessionManager
 import cash.p.terminal.wallet.IAccountManager

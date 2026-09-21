@@ -35,6 +35,8 @@ import cash.p.terminal.navigation.openQrScanner
 import cash.p.terminal.navigation.slideFromBottom
 import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.strings.helpers.Translator
+import cash.p.terminal.shared.settings.SettingsAction
+import cash.p.terminal.shared.settings.SettingsContent
 import cash.p.terminal.ui.helpers.LinkHelper
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellSingleLineLawrenceSection
@@ -90,6 +92,7 @@ fun SettingsScreen(
                         tonConnectTitle = tonConnectTitle,
                     )
                 },
+                alertPainter = painterResource(R.drawable.ic_attention_red_20),
                 modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding()),
             )
         }

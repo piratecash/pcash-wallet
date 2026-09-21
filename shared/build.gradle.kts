@@ -37,6 +37,7 @@ kotlin {
             dependencies {
                 api(project(":core:network"))
                 api(project(":core:resources"))
+                implementation(project(":core:ui-compose"))
                 implementation(libs.compose.multiplatform.runtime)
                 implementation(libs.compose.multiplatform.ui)
                 implementation(libs.compose.multiplatform.foundation)
@@ -49,5 +50,16 @@ kotlin {
                 implementation(kotlin("test"))
             }
         }
+
+        val desktopTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
     }
+}
+
+dependencies {
+    add("desktopTestImplementation", compose.desktop.uiTestJUnit4)
+    add("desktopTestRuntimeOnly", compose.desktop.currentOs)
 }

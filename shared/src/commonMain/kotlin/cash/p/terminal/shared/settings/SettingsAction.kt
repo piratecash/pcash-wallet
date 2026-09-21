@@ -1,4 +1,4 @@
-package cash.p.terminal.modules.settings.main
+package cash.p.terminal.shared.settings
 
 sealed interface SettingsAction {
     data object Donate : SettingsAction

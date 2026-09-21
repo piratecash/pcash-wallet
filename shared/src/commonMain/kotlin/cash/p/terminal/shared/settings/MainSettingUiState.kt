@@ -1,6 +1,4 @@
-package cash.p.terminal.modules.settings.main
-
-import cash.p.terminal.modules.settings.main.MainSettingsModule.CounterType
+package cash.p.terminal.shared.settings
 
 data class MainSettingUiState(
     val isUpdateAvailable: Boolean,
@@ -17,5 +15,10 @@ data class MainSettingUiState(
     val aboutAppShowAlert: Boolean,
     val wcCounterType: CounterType?,
     val premiumSettingsShowAlert: Boolean,
-    val isPayCoreEnabled: Boolean
+    val isPayCoreEnabled: Boolean,
 )
+
+sealed class CounterType {
+    class SessionCounter(val number: Int) : CounterType()
+    class PendingRequestCounter(val number: Int) : CounterType()
+}

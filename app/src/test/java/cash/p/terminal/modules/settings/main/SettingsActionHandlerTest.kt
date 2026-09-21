@@ -16,6 +16,7 @@ import cash.p.terminal.R
 import cash.p.terminal.modules.manageaccount.dialogs.BackupRequiredDialog
 import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.navigation.QrScannerInput
+import cash.p.terminal.shared.settings.SettingsAction
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
