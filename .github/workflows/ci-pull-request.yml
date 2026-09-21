@@ -26,30 +26,17 @@ jobs:
             > "$RUNNER_TEMP/firebase-dev.jks"
       - name: Run Unit tests
         run: ./gradlew :app:testDebugUnitTest :core:core:testDebugUnitTest :core:wallet:testDebugUnitTest :feature-premium:testDebugUnitTest :feature-logging:testDebugUnitTest :feature-trezor:testDebugUnitTest :feature-tangem:testDebugUnitTest
-      - name: Stop Gradle daemon after tests
-        run: ./gradlew --stop
-      - name: Build QA and upload Crashlytics symbols
-        run: |
-          memory_monitor() {
-            while true; do
-              date -u '+%Y-%m-%dT%H:%M:%SZ' || true
-              free -m || true
-              ps -eo pid,ppid,rss,comm --sort=-rss | head -n 21 || true
-              sleep 15 || return
-            done
-          }
-
-          memory_monitor &
-          monitor_pid=$!
-          trap 'status=$?; kill "$monitor_pid" 2>/dev/null || true; wait "$monitor_pid" 2>/dev/null || true; exit "$status"' EXIT
-
-          ./gradlew :app:assembleQa :app:uploadCrashlyticsSymbolFileQa --stacktrace --no-daemon
-        env:
+      - name: Build QA
+        run: ./gradlew :app:assembleQa --stacktrace --no-daemon
+        env: &qa-build-env
           BUILD_NUMBER: ${{ github.run_number }}
           FIREBASE_DEV_KEYSTORE_PATH: ${{ runner.temp }}/firebase-dev.jks
           FIREBASE_DEV_STORE_PASSWORD: ${{ secrets.FIREBASE_DEV_STORE_PASSWORD }}
           FIREBASE_DEV_KEY_ALIAS: ${{ secrets.FIREBASE_DEV_KEY_ALIAS }}
           FIREBASE_DEV_KEY_PASSWORD: ${{ secrets.FIREBASE_DEV_KEY_PASSWORD }}
+      - name: Upload Crashlytics native symbols
+        run: ./gradlew :app:uploadCrashlyticsSymbolFileQa --stacktrace --no-daemon
+        env: *qa-build-env
       - name: Verify Firebase DEV signing certificate
         run: |
           APKSIGNER="$(ls -1 "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)"
