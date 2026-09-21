@@ -362,6 +362,7 @@ class DuplicateWalletViewModelTest {
         val savedWallets = awaitSaved(saved)
         assertEquals(setOf(usdtQuery.id, scamQuery.id), savedWallets.map { it.tokenQueryId }.toSet())
         verify(exactly = 1) { accountManager.save(any(), any()) }
+        awaitUiState(viewModel) { it.closeScreen }
         assertTrue(viewModel.uiState.closeScreen)
     }
 
