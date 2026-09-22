@@ -6,6 +6,7 @@ import cash.p.terminal.feature.miniapp.domain.model.CoinType
 import cash.p.terminal.feature.miniapp.domain.model.SpecialProposalData
 import cash.p.terminal.network.binance.api.BinanceApi
 import cash.p.terminal.network.pirate.domain.enity.PeriodType
+import cash.p.terminal.network.pirate.domain.enity.annualRoiPercent
 import cash.p.terminal.network.pirate.domain.repository.PiratePlaceRepository
 import cash.p.terminal.premium.data.config.PremiumConfig
 import cash.p.terminal.premium.domain.usecase.GetBnbAddressUseCase
@@ -56,27 +57,18 @@ class GetSpecialProposalDataUseCase(
             ?: BigDecimal.ZERO
 
         // Calculate income projections
+        val pirateStake = stakeFor(pirateBalance, PremiumConfig.MIN_PREMIUM_AMOUNT_PIRATE)
+        val cosaStake = stakeFor(cosaBalance, PremiumConfig.MIN_PREMIUM_AMOUNT_COSANTA)
+
         val pirateCalcDeferred = async {
             runCatching {
-                val amount =
-                    if (pirateBalance >= BigDecimal(PremiumConfig.MIN_PREMIUM_AMOUNT_PIRATE)) {
-                        pirateBalance.toDouble()
-                    } else {
-                        PremiumConfig.MIN_PREMIUM_AMOUNT_PIRATE.toDouble()
-                    }
-                piratePlaceRepository.getCalculatorData("pirate", amount)
+                piratePlaceRepository.getCalculatorData("pirate", pirateStake)
             }.getOrNull()
         }
 
         val cosaCalcDeferred = async {
             runCatching {
-                val amount =
-                    if (cosaBalance >= BigDecimal(PremiumConfig.MIN_PREMIUM_AMOUNT_COSANTA)) {
-                        cosaBalance.toDouble()
-                    } else {
-                        PremiumConfig.MIN_PREMIUM_AMOUNT_COSANTA.toDouble()
-                    }
-                piratePlaceRepository.getCalculatorData("cosa", amount)
+                piratePlaceRepository.getCalculatorData("cosa", cosaStake)
             }.getOrNull()
         }
 
@@ -120,16 +112,8 @@ class GetSpecialProposalDataUseCase(
         )
 
         // Get ROI (from yearly data)
-        val pirateYearlyData = pirateCalcData?.items?.find { it.periodType == PeriodType.YEAR }
-        val cosaYearlyData = cosaCalcData?.items?.find { it.periodType == PeriodType.YEAR }
-        val pirateRoi = calculateRoi(
-            pirateYearlyData?.amount,
-            PremiumConfig.MIN_PREMIUM_AMOUNT_PIRATE.toDouble()
-        )
-        val cosaRoi = calculateRoi(
-            cosaYearlyData?.amount,
-            PremiumConfig.MIN_PREMIUM_AMOUNT_COSANTA.toDouble()
-        )
+        val pirateRoi = formatRoi(pirateCalcData?.annualRoiPercent(pirateStake))
+        val cosaRoi = formatRoi(cosaCalcData?.annualRoiPercent(cosaStake))
 
         // Determine cheaper option
         val pirateNeededUsd = pirateNotEnoughAmount * piratePrice
@@ -205,9 +189,10 @@ class GetSpecialProposalDataUseCase(
         return "+$formatted $symbol"
     }
 
-    private fun calculateRoi(yearlyIncome: Double?, principal: Double): String {
-        if (yearlyIncome == null || principal <= 0) return "-"
-        val roi = (yearlyIncome / principal) * 100
-        return "${BigDecimal(roi).setScale(1, RoundingMode.FLOOR)}%"
-    }
+    private fun stakeFor(balance: BigDecimal, minPremiumAmount: Int): Double =
+        balance.max(BigDecimal(minPremiumAmount)).toDouble()
+
+    private fun formatRoi(roiPercent: Double?): String = roiPercent
+        ?.let { "${BigDecimal(it).setScale(1, RoundingMode.FLOOR)}%" }
+        ?: "-"
 }
