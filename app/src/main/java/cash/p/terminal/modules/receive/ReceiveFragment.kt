@@ -25,7 +25,7 @@ import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.ui_compose.BaseComposeFragment
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.body_grey
-import cash.p.terminal.ui_compose.components.body_grey50
+import cash.p.terminal.ui_compose.components.body_disabled
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.TokenType
@@ -157,7 +157,7 @@ fun UsedAddressesRow(
                 text = stringResource(R.string.Balance_Receive_UsedAddresses),
             )
         } else {
-            body_grey50(
+            body_disabled(
                 modifier = Modifier
                     .weight(1f),
                 text = stringResource(R.string.Balance_Receive_UsedAddresses),
@@ -167,7 +167,7 @@ fun UsedAddressesRow(
         Icon(
             painter = painterResource(id = R.drawable.ic_arrow_right),
             contentDescription = null,
-            tint = if (enabled) ComposeAppTheme.colors.grey else ComposeAppTheme.colors.grey50,
+            tint = if (enabled) ComposeAppTheme.colors.iconSecondary else ComposeAppTheme.colors.iconDisabled,
         )
     }
 }

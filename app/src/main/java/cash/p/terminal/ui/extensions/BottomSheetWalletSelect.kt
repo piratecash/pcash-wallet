@@ -95,7 +95,7 @@ private fun WalletSwitchContent(
 ) {
     BottomSheetHeader(
         iconPainter = painterResource(R.drawable.icon_24_lock),
-        iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+        iconTint = ColorFilter.tint(ComposeAppTheme.colors.brand),
         title = title,
         onCloseClick = onCloseClick,
         // Keep the sheet header below the system status bar when fully expanded.
@@ -133,7 +133,7 @@ private fun ColumnScope.PremiumWalletSwitchBody(
         selectedAccount = selectedAccount,
         premiumTypes = premiumTypes,
         onSelectListener = onSelectListener,
-        frameColor = ComposeAppTheme.colors.jacob,
+        frameColor = ComposeAppTheme.colors.brand,
     )
     WalletSwitchSection(
         header = {
@@ -268,7 +268,7 @@ private fun Section(
                     modifier = Modifier.padding(start = 16.dp),
                     painter = painterResource(id = R.drawable.ic_eye_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
             }
         }

@@ -15,7 +15,7 @@ import cash.p.terminal.ui.compose.components.SelectorItem
 import cash.p.terminal.ui_compose.components.B2
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.subhead1_grey
-import cash.p.terminal.ui_compose.components.subhead1_grey50
+import cash.p.terminal.ui_compose.components.subhead1_disabled
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.hdwalletkit.Language
 
@@ -64,7 +64,7 @@ internal fun MnemonicLanguageCell(
         modifier = modifier.padding(horizontal = 16.dp),
         onClick = if (enabled) showLanguageSelectorDialog else null
     ) {
-        val iconTint = if (enabled) ComposeAppTheme.colors.grey else ComposeAppTheme.colors.grey50
+        val iconTint = if (enabled) ComposeAppTheme.colors.iconSecondary else ComposeAppTheme.colors.iconDisabled
         Icon(
             painter = painterResource(id = R.drawable.ic_globe_20),
             contentDescription = null,
@@ -80,7 +80,7 @@ internal fun MnemonicLanguageCell(
                 text = stringResource(language.displayNameStringRes),
             )
         } else {
-            subhead1_grey50(
+            subhead1_disabled(
                 text = stringResource(language.displayNameStringRes),
             )
         }

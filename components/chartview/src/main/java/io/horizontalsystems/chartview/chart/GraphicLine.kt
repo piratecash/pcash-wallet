@@ -26,7 +26,7 @@ fun GraphicLine(
     color: Color,
     selectedItemKey: Long? = null
 ) {
-    val dotColor = ComposeAppTheme.colors.leah
+    val dotColor = ComposeAppTheme.colors.textPrimary
     Canvas(
         modifier = modifier,
         onDraw = {
@@ -81,7 +81,7 @@ fun GraphicLineWithGradient(
     gradientColors: Pair<Color, Color>,
     selectedItemKey: Long?
 ) {
-    val dotColor = ComposeAppTheme.colors.leah
+    val dotColor = ComposeAppTheme.colors.textPrimary
     Canvas(
         modifier = Modifier
             .height(120.dp)

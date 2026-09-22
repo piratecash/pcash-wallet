@@ -60,7 +60,7 @@ fun NftAssetPreview(
                         .align(Alignment.Center),
                     text = name,
                     style = ComposeAppTheme.typography.microSB,
-                    color = ComposeAppTheme.colors.grey
+                    color = ComposeAppTheme.colors.textSecondary
                 )
             }
             Image(
@@ -82,7 +82,7 @@ fun NftAssetPreview(
             modifier = Modifier.padding(start = 12.dp, top = 12.dp, end = 12.dp),
             text = name,
             style = ComposeAppTheme.typography.microSB,
-            color = ComposeAppTheme.colors.grey,
+            color = ComposeAppTheme.colors.textSecondary,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -98,7 +98,7 @@ fun NftAssetPreview(
                 Text(
                     text = currencyPrice.getFormattedFull(),
                     style = ComposeAppTheme.typography.micro,
-                    color = ComposeAppTheme.colors.grey
+                    color = ComposeAppTheme.colors.textSecondary
                 )
             }
         }

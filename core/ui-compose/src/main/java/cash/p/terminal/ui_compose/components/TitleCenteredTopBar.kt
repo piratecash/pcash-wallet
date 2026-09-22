@@ -39,7 +39,7 @@ fun TitleCenteredTopBar(
             Icon(
                 painter = painterResource(id = R.drawable.ic_close_24),
                 contentDescription = "close button",
-                tint = ComposeAppTheme.colors.grey,
+                tint = ComposeAppTheme.colors.iconSecondary,
             )
         }
     }

@@ -123,7 +123,7 @@ private fun SupportEnabled(
                     modifier = Modifier.size(48.dp),
                     painter = painterResource(R.drawable.ic_support_24),
                     contentDescription = "",
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
             }
             Spacer(Modifier.height(32.dp))

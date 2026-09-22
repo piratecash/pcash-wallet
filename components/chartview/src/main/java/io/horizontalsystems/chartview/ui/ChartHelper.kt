@@ -37,11 +37,11 @@ class ChartHelper(
 
     var mainCurveColor = colors.greenD
     var mainCurveGradientColors = Pair(Color(0x00416BFF), Color(0x8013D670))
-    var mainCurvePressedColor = colors.leah
+    var mainCurvePressedColor = colors.iconPrimary
     var mainCurveGradientPressedColors =
-        Pair(colors.leah.copy(alpha = 0f), colors.leah.copy(alpha = 0.5f))
-    var mainBarsColor = colors.jacob
-    var mainBarsPressedColor = colors.grey50
+        Pair(colors.transparent, colors.textSecondaryDimmed)
+    var mainBarsColor = colors.brand
+    var mainBarsPressedColor = colors.textSecondaryDimmed
 
     init {
         setExtremum()
@@ -97,13 +97,13 @@ class ChartHelper(
 
         when {
             chartData.disabled -> {
-                mainCurveColor = colors.grey
+                mainCurveColor = colors.iconDisabled
                 mainCurveGradientColors =
-                    Pair(colors.grey50.copy(alpha = 0f), colors.grey50.copy(alpha = 0.5f))
+                    Pair(colors.transparent, colors.textSecondaryDimmed)
             }
 
             !chartData.isMovementChart -> {
-                mainCurveColor = colors.jacob
+                mainCurveColor = colors.brand
                 mainCurveGradientColors = Pair(Color(0x00FFA800), Color(0x80FFA800))
             }
 

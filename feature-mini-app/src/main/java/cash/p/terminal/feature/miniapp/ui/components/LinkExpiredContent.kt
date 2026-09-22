@@ -40,7 +40,7 @@ fun LinkExpiredContent(modifier: Modifier = Modifier) {
                 modifier = Modifier.size(48.dp),
                 painter = painterResource(R.drawable.ic_not_found_48),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
         }
         Spacer(Modifier.height(32.dp))

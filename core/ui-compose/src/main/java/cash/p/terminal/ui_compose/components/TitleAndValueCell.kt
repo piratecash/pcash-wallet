@@ -91,19 +91,19 @@ fun TitleAndValueColoredCell(
                 overflow = TextOverflow.Ellipsis
             )
 
-            ColorName.Grey -> subhead1_grey(
+            ColorName.Secondary -> subhead1_grey(
                 text = value,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
 
-            ColorName.Leah -> subhead1_leah(
+            ColorName.Primary -> subhead1_leah(
                 text = value,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
 
-            ColorName.Jacob -> subhead1_jacob(
+            ColorName.Brand -> subhead1_brand(
                 text = value,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis

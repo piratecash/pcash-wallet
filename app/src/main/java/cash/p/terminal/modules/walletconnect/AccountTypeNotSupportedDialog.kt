@@ -98,7 +98,7 @@ private fun AccountTypeNotSupportedScreen(
     ) { innerPadding ->
         BottomSheetHeader(
             iconPainter = painterResource(uiState.iconResId),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.brand),
             title = stringResource(uiState.titleResId),
             modifier = Modifier
                 .padding(innerPadding)

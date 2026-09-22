@@ -93,7 +93,7 @@ private fun AccessCodeRecoveryScreen(
     ComposeAppTheme {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.icon_unlocked_48),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.brand),
             title = stringResource(R.string.card_settings_access_code_recovery_title),
             onCloseClick = onCloseClick
         ) {

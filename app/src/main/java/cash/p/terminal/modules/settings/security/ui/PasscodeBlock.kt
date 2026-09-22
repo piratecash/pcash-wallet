@@ -76,7 +76,7 @@ fun PasscodeBlock(
                 start = {
                     Icon(
                         painter = painterResource(R.drawable.icon_touch_id_24),
-                        tint = ComposeAppTheme.colors.grey,
+                        tint = ComposeAppTheme.colors.iconSecondary,
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
                     )

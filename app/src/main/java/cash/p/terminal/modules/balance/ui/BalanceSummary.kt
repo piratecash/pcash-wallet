@@ -41,8 +41,8 @@ import cash.p.terminal.modules.balance.TotalUIState
 import cash.p.terminal.ui_compose.components.BalanceActionButton
 import cash.p.terminal.ui_compose.components.BalanceActionsRow
 import cash.p.terminal.ui_compose.components.body_grey
-import cash.p.terminal.ui_compose.components.MicroSBGrey
-import cash.p.terminal.ui_compose.components.Title1Leah
+import cash.p.terminal.ui_compose.components.MicroSBSecondary
+import cash.p.terminal.ui_compose.components.Title1Primary
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import java.util.Locale
 
@@ -107,7 +107,7 @@ private fun BalanceSummaryTitle(
         modifier = Modifier.toggleBalanceVisibility(interactionSource, onToggleVisibility),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        MicroSBGrey(
+        MicroSBSecondary(
             text = stringResource(R.string.total_balance).uppercase(locale),
             maxLines = 1,
         )
@@ -120,7 +120,7 @@ private fun BalanceSummaryTitle(
             contentDescription = stringResource(
                 if (visible) R.string.Button_Hide else R.string.Button_Show
             ),
-            tint = ComposeAppTheme.colors.textSecondary,
+            tint = ComposeAppTheme.colors.iconSecondary,
         )
     }
 }
@@ -135,7 +135,7 @@ private fun BalanceSummaryAmounts(
     onToggleTotalType: () -> Unit,
 ) {
     Column(modifier = Modifier.padding(vertical = 16.dp)) {
-        Title1Leah(
+        Title1Primary(
             modifier = Modifier
                 .fillMaxWidth()
                 .toggleBalanceVisibility(visibilityInteractionSource, onToggleVisibility),
@@ -166,7 +166,7 @@ private fun BalanceSummaryAmounts(
                 modifier = Modifier.size(12.dp),
                 painter = painterResource(R.drawable.ic_balance_triangle_down_12),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.jacob,
+                tint = ComposeAppTheme.colors.brand,
             )
         }
     }

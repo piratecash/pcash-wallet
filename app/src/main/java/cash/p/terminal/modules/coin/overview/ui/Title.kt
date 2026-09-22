@@ -17,7 +17,7 @@ fun Title(rate: String?, rateDiff: BigDecimal?) {
             modifier = Modifier.padding(end = 8.dp),
             text = rate ?: "",
             style = ComposeAppTheme.typography.headline1,
-            color = ComposeAppTheme.colors.leah
+            color = ComposeAppTheme.colors.textPrimary
         )
 
         rateDiff?.let { value ->

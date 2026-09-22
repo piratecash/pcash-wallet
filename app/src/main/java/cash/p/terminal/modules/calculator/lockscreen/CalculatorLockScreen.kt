@@ -117,12 +117,12 @@ private fun DisplayBlock(
     ) {
         AutoSizingDisplayLine(
             text = expression,
-            color = ComposeAppTheme.colors.grey,
+            color = ComposeAppTheme.colors.textSecondary,
             maxFontSize = 32.sp,
         )
         AutoSizingDisplayLine(
             text = result,
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             maxFontSize = 90.sp,
             fontWeight = FontWeight.Light,
             modifier = Modifier.padding(top = 16.dp),
@@ -335,17 +335,17 @@ private enum class ButtonStyle {
     @Composable
     fun backgroundColor(): Color = when (this) {
         Digit -> ComposeAppTheme.colors.lawrence
-        Operator -> ComposeAppTheme.colors.grey
-        Equals -> ComposeAppTheme.colors.jacob
+        Operator -> ComposeAppTheme.colors.textSecondary
+        Equals -> ComposeAppTheme.colors.brand
         Transparent -> Color.Transparent
     }
 
     @Composable
     fun contentColor(): Color = when (this) {
-        Digit -> ComposeAppTheme.colors.leah
-        Operator -> ComposeAppTheme.colors.leah
-        Equals -> ComposeAppTheme.colors.leah
-        Transparent -> ComposeAppTheme.colors.jacob
+        Digit -> ComposeAppTheme.colors.textPrimary
+        Operator -> ComposeAppTheme.colors.textPrimary
+        Equals -> ComposeAppTheme.colors.textPrimary
+        Transparent -> ComposeAppTheme.colors.brand
     }
 }
 

@@ -182,7 +182,7 @@ fun MarketSearchResults(
                                     if (item.favourited) {
                                         ComposeAppTheme.colors.lucian
                                     } else {
-                                        ComposeAppTheme.colors.jacob
+                                        ComposeAppTheme.colors.brand
                                     }
                                 )
                                 .align(Alignment.CenterEnd)

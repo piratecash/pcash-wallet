@@ -104,7 +104,7 @@ internal fun OfflineSignScreen(
                 text = annotatedHtmlStringResource(
                     id = format.infoDescriptionRes,
                     linkStyle = SpanStyle(
-                        color = ComposeAppTheme.colors.jacob,
+                        color = ComposeAppTheme.colors.brand,
                         textDecoration = TextDecoration.Underline,
                     ),
                 ),

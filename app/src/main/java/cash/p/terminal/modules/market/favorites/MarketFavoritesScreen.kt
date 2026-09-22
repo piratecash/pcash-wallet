@@ -113,8 +113,8 @@ fun MarketFavoritesScreen(
                                             ButtonSecondaryCircle(
                                                 icon = R.drawable.ic_edit_20,
                                                 tint = if (manualOrderEnabled) ComposeAppTheme.colors.dark else
-                                                    ComposeAppTheme.colors.leah,
-                                                background = if (manualOrderEnabled) ComposeAppTheme.colors.jacob
+                                                    ComposeAppTheme.colors.iconPrimary,
+                                                background = if (manualOrderEnabled) ComposeAppTheme.colors.brand
                                                 else ComposeAppTheme.colors.steel20,
                                             ) {
                                                 manualOrderEnabled = !manualOrderEnabled

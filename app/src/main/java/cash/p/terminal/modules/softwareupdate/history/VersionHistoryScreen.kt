@@ -28,7 +28,7 @@ import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.caption_grey
 import cash.p.terminal.ui_compose.components.subhead2_grey
-import cash.p.terminal.ui_compose.components.subhead2_jacob
+import cash.p.terminal.ui_compose.components.subhead2_brand
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @Composable
@@ -115,7 +115,7 @@ private fun CurrentVersionRow(release: AppRelease, onClick: () -> Unit) {
         onClick = onClick,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            subhead2_jacob(text = stringResource(R.string.update_current_version_section))
+            subhead2_brand(text = stringResource(R.string.update_current_version_section))
             VSpacer(4.dp)
             body_leah(text = stringResource(R.string.update_version_label, release.version))
             VSpacer(2.dp)
@@ -147,7 +147,7 @@ private fun ArrowIcon() {
         modifier = Modifier.size(20.dp),
         painter = painterResource(R.drawable.ic_arrow_right),
         contentDescription = null,
-        tint = ComposeAppTheme.colors.grey,
+        tint = ComposeAppTheme.colors.iconSecondary,
     )
 }
 
@@ -161,7 +161,7 @@ private fun LoadingBlock() {
     ) {
         CircularProgressIndicator(
             modifier = Modifier.size(32.dp),
-            color = ComposeAppTheme.colors.grey,
+            color = ComposeAppTheme.colors.textSecondary,
         )
     }
 }

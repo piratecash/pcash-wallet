@@ -174,7 +174,7 @@ internal fun MultiSwapExchangeScreen(
                         )
                         LegCard(
                             leg = uiState.leg1,
-                            borderColor = ComposeAppTheme.colors.grey,
+                            borderColor = ComposeAppTheme.colors.divider,
                             modifier = Modifier.onSizeChanged { leg1CardHeight = it.height },
                             content = {
 
@@ -346,7 +346,7 @@ private fun StatusDot(status: LegStatus, modifier: Modifier = Modifier) {
 
 @Composable
 private fun VerticalLine(isDotted: Boolean, modifier: Modifier = Modifier) {
-    val color = ComposeAppTheme.colors.grey
+    val color = ComposeAppTheme.colors.textSecondary
     if (isDotted) {
         Canvas(modifier = modifier.width(1.dp)) {
             val pathEffect = PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 4.dp.toPx()))
@@ -398,7 +398,7 @@ private fun LegContent(
         amountFormatted = leg.amountInFormatted?.let { "$it ${leg.coinIn}" },
         fiatAmount = leg.fiatAmountIn,
         currency = leg.currency,
-        amountColor = ComposeAppTheme.colors.leah,
+        amountColor = ComposeAppTheme.colors.textPrimary,
     )
     // You Get
     AmountRow(
@@ -580,7 +580,7 @@ private fun Leg2Header(
                 Icon(
                     painter = painterResource(R.drawable.ic_arrow_right),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                 )
             }
         }
@@ -784,8 +784,8 @@ internal fun PayCoreDeleteRestrictedBottomSheet(
 
 @Composable
 private fun statusDotColor(status: LegStatus) = when (status) {
-    LegStatus.Pending -> ComposeAppTheme.colors.grey
-    LegStatus.Executing -> ComposeAppTheme.colors.jacob
+    LegStatus.Pending -> ComposeAppTheme.colors.textSecondary
+    LegStatus.Executing -> ComposeAppTheme.colors.brand
     LegStatus.Completed -> ComposeAppTheme.colors.remus
     LegStatus.Failed -> ComposeAppTheme.colors.lucian
 }

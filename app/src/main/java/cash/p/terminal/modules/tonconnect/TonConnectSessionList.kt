@@ -110,7 +110,7 @@ private fun LazyListScope.TCSection(
                         content = {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_circle_minus_24),
-                                tint = ComposeAppTheme.colors.grey,
+                                tint = ComposeAppTheme.colors.iconSecondary,
                                 contentDescription = "delete",
                             )
                         }

@@ -16,8 +16,6 @@ import cash.p.terminal.ui_compose.theme.Dark
 import cash.p.terminal.ui_compose.theme.Green50
 import cash.p.terminal.ui_compose.theme.GreenD
 import cash.p.terminal.ui_compose.theme.GreenL
-import cash.p.terminal.ui_compose.theme.Grey
-import cash.p.terminal.ui_compose.theme.Grey50
 import cash.p.terminal.ui_compose.theme.Light
 import cash.p.terminal.ui_compose.theme.LightGrey
 import cash.p.terminal.ui_compose.theme.Red20
@@ -48,7 +46,7 @@ class TextStyles {
     @Composable
     fun c3(textAlign: TextAlign = TextAlign.Start) =
         TextStyle(
-            color = AppWidgetTheme.colors.jacob,
+            color = AppWidgetTheme.colors.brand,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             textAlign = textAlign
@@ -57,7 +55,7 @@ class TextStyles {
     @Composable
     fun d1(textAlign: TextAlign = TextAlign.Start) =
         TextStyle(
-            color = AppWidgetTheme.colors.grey,
+            color = AppWidgetTheme.colors.textSecondary,
             fontSize = 14.sp,
             fontWeight = FontWeight.Normal,
             textAlign = textAlign
@@ -66,7 +64,7 @@ class TextStyles {
     @Composable
     fun d3(textAlign: TextAlign = TextAlign.Start) =
         TextStyle(
-            color = AppWidgetTheme.colors.jacob,
+            color = AppWidgetTheme.colors.brand,
             fontSize = 14.sp,
             fontWeight = FontWeight.Normal,
             textAlign = textAlign
@@ -75,7 +73,7 @@ class TextStyles {
     @Composable
     fun micro(textAlign: TextAlign = TextAlign.Start) =
         TextStyle(
-            color = AppWidgetTheme.colors.grey,
+            color = AppWidgetTheme.colors.textSecondary,
             fontSize = 10.sp,
             fontWeight = FontWeight.Normal,
             textAlign = textAlign
@@ -91,35 +89,32 @@ fun AppWidgetTheme(colors: ColorProviders = AppWidgetTheme.colors, content: @Com
 
 internal val LocalColorProviders = staticCompositionLocalOf {
     ColorProviders(
-        jacob = ColorProvider(lightPalette.jacob, darkPalette.jacob),
+        brand = ColorProvider(lightPalette.brand, darkPalette.brand),
         remus = ColorProvider(lightPalette.remus, darkPalette.remus),
         lucian = ColorProvider(lightPalette.lucian, darkPalette.lucian),
         tyler = ColorProvider(lightPalette.tyler, darkPalette.tyler),
         bran = ColorProvider(lightPalette.bran, darkPalette.bran),
-        leah = ColorProvider(lightPalette.leah, darkPalette.leah),
+        textPrimary = ColorProvider(lightPalette.textPrimary, darkPalette.textPrimary),
         claude = ColorProvider(lightPalette.claude, darkPalette.claude),
         lawrence = ColorProvider(lightPalette.lawrence, darkPalette.lawrence),
         jeremy = ColorProvider(lightPalette.jeremy, darkPalette.jeremy),
-        laguna = ColorProvider(lightPalette.laguna, darkPalette.laguna),
         raina = ColorProvider(lightPalette.raina, darkPalette.raina),
+        textSecondary = ColorProvider(lightPalette.textSecondary, darkPalette.textSecondary),
     )
 }
 
 data class ColorProviders(
-    val jacob: ColorProvider,
+    val brand: ColorProvider,
     val remus: ColorProvider,
     val lucian: ColorProvider,
     val tyler: ColorProvider,
     val bran: ColorProvider,
-    val leah: ColorProvider,
+    val textPrimary: ColorProvider,
     val claude: ColorProvider,
     val lawrence: ColorProvider,
     val jeremy: ColorProvider,
-    val laguna: ColorProvider,
     val raina: ColorProvider,
-
-    //base colors
-    val grey: ColorProvider = ColorProvider(Grey)
+    val textSecondary: ColorProvider,
 )
 
 //base colors
@@ -134,8 +129,6 @@ val steelLight = SteelLight
 val steelDark = SteelDark
 val steel10 = Steel10
 val steel20 = Steel20
-val grey = Grey
-val grey50 = Grey50
 val yellow50 = Yellow50
 val yellow20 = Yellow20
 

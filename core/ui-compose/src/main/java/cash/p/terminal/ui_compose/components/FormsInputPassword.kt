@@ -49,9 +49,9 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 fun FormsInputPassword(
     modifier: Modifier = Modifier,
     hint: String,
-    textColor: Color = ComposeAppTheme.colors.leah,
+    textColor: Color = ComposeAppTheme.colors.textPrimary,
     textStyle: TextStyle = ComposeAppTheme.typography.body,
-    hintColor: Color = ComposeAppTheme.colors.grey50,
+    hintColor: Color = ComposeAppTheme.colors.textDisabled,
     hintStyle: TextStyle = ComposeAppTheme.typography.body,
     singleLine: Boolean = true,
     state: DataState<Any>? = null,
@@ -120,7 +120,7 @@ fun FormsInputPassword(
                     textStyle = textStyle
                 ),
                 singleLine = singleLine,
-                cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+                cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
                 decorationBox = { innerTextField ->
                     if (textState.value.text.isEmpty()) {
                         Text(
@@ -164,7 +164,7 @@ fun FormsInputPassword(
                     ),
                 painter = painterResource(id = if (hide) R.drawable.ic_eye_off_20 else R.drawable.ic_eye_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
             Spacer(Modifier.width(16.dp))
         }

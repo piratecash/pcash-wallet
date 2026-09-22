@@ -25,7 +25,7 @@ import cash.p.terminal.ui_compose.components.HsSwitch
 import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.SectionUniversalLawrence
-import cash.p.terminal.ui_compose.components.body_grey50
+import cash.p.terminal.ui_compose.components.body_disabled
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
@@ -104,7 +104,7 @@ private fun ProviderRow(
                 modifier = Modifier.weight(1f),
             )
         } else {
-            body_grey50(
+            body_disabled(
                 text = item.title,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

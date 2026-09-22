@@ -58,7 +58,7 @@ fun <T> Tabs(tabs: List<TabItem<T>>, modifier: Modifier = Modifier, onClick: (T)
                     modifier = Modifier
                         .tabIndicatorOffset(tabPositions[selectedIndex])
                         .clip(RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp)),
-                    color = ComposeAppTheme.colors.jacob
+                    color = ComposeAppTheme.colors.brand
                 )
             }
         ) {
@@ -78,9 +78,9 @@ fun <T> Tabs(tabs: List<TabItem<T>>, modifier: Modifier = Modifier, onClick: (T)
                             Text(
                                 text = tab.title,
                                 color = if (selectedIndex == index) {
-                                    ComposeAppTheme.colors.leah
+                                    ComposeAppTheme.colors.textPrimary
                                 } else {
-                                    ComposeAppTheme.colors.grey
+                                    ComposeAppTheme.colors.textSecondary
                                 },
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -117,7 +117,7 @@ fun <T> ScrollableTabs(tabs: List<TabItem<T>>, onClick: (T) -> Unit) {
                     modifier = Modifier
                         .tabIndicatorOffset(tabPositions[selectedIndex])
                         .clip(RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp)),
-                    color = ComposeAppTheme.colors.jacob
+                    color = ComposeAppTheme.colors.brand
                 )
             }
         ) {
@@ -136,7 +136,11 @@ fun <T> ScrollableTabs(tabs: List<TabItem<T>>, onClick: (T) -> Unit) {
                         ) {
                             Text(
                                 text = tab.title,
-                                color = if (tab.selected) ComposeAppTheme.colors.leah else ComposeAppTheme.colors.grey
+                                color = if (tab.selected) {
+                                    ComposeAppTheme.colors.textPrimary
+                                } else {
+                                    ComposeAppTheme.colors.textSecondary
+                                }
                             )
                         }
                     }

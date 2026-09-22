@@ -50,7 +50,7 @@ import cash.p.terminal.ui_compose.components.SwitchWithTextWarning
 import cash.p.terminal.ui_compose.components.TextImportantError
 import cash.p.terminal.ui_compose.components.VFillSpacer
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.body_grey
+import cash.p.terminal.ui_compose.components.body_disabled
 import cash.p.terminal.ui_compose.components.body_lucian
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -111,7 +111,7 @@ fun LoggingSettingsScreen(
                     MenuItem(
                         title = TranslatableString.ResString(R.string.button_info),
                         icon = R.drawable.ic_info_20,
-                        tint = ComposeAppTheme.colors.grey,
+                        tint = ComposeAppTheme.colors.iconSecondary,
                         onClick = { showInfoSheet = true }
                     )
                 )
@@ -340,7 +340,7 @@ fun LoggingSettingsScreen(
                         val tintColor = if (uiState.deleteButtonEnabled) {
                             ComposeAppTheme.colors.lucian
                         } else {
-                            ComposeAppTheme.colors.grey
+                            ComposeAppTheme.colors.iconDisabled
                         }
                         Icon(
                             painter = painterResource(id = R.drawable.ic_delete_20),
@@ -351,7 +351,7 @@ fun LoggingSettingsScreen(
                         if (uiState.deleteButtonEnabled) {
                             body_lucian(text = stringResource(id = R.string.login_logging_delete_all))
                         } else {
-                            body_grey(text = stringResource(id = R.string.login_logging_delete_all))
+                            body_disabled(text = stringResource(id = R.string.login_logging_delete_all))
                         }
                     }
                 }

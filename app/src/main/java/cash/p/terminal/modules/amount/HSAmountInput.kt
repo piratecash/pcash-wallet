@@ -50,7 +50,7 @@ import cash.p.terminal.modules.address.AmountUnique
 import cash.p.terminal.ui.compose.animations.shake
 import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
 import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
-import cash.p.terminal.ui_compose.components.body_grey50
+import cash.p.terminal.ui_compose.components.body_disabled
 import cash.p.terminal.ui_compose.withLeadingZeroIfDecimal
 import cash.p.terminal.ui_compose.theme.ColoredTextStyle
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
@@ -152,13 +152,13 @@ fun HSAmountInput(
 
     when (inputType) {
         AmountInputType.COIN -> {
-            inputTextColor = ComposeAppTheme.colors.leah
-            hintTextColor = ComposeAppTheme.colors.jacob
+            inputTextColor = ComposeAppTheme.colors.textPrimary
+            hintTextColor = ComposeAppTheme.colors.brand
         }
 
         AmountInputType.CURRENCY -> {
-            inputTextColor = ComposeAppTheme.colors.jacob
-            hintTextColor = ComposeAppTheme.colors.leah
+            inputTextColor = ComposeAppTheme.colors.brand
+            hintTextColor = ComposeAppTheme.colors.textPrimary
         }
     }
 
@@ -208,7 +208,7 @@ fun HSAmountInput(
                         textStyle = ComposeAppTheme.typography.headline2
                     ),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+                    cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
                     decorationBox = { innerTextField ->
                         Row {
                             viewModel.inputPrefix?.let {
@@ -221,7 +221,7 @@ fun HSAmountInput(
                             }
                             Box {
                                 if (textState.text.isEmpty()) {
-                                    body_grey50(
+                                    body_disabled(
                                         "0",
                                         overflow = TextOverflow.Ellipsis,
                                         maxLines = 1
@@ -312,7 +312,7 @@ fun HSAmountInput(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     text = hint ?: stringResource(R.string.NotAvailable),
                     style = ComposeAppTheme.typography.subhead2,
-                    color = if (hint == null) ComposeAppTheme.colors.grey50 else hintTextColor,
+                    color = if (hint == null) ComposeAppTheme.colors.textDisabled else hintTextColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )

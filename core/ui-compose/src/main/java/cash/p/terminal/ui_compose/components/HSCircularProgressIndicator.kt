@@ -22,7 +22,7 @@ fun HSCircularProgressIndicator(modifier: Modifier = Modifier) {
         modifier = modifier
             .size(28.dp)
             .padding(top = 4.dp, end = 8.dp),
-        color = ComposeAppTheme.colors.grey,
+        color = ComposeAppTheme.colors.textSecondary,
         strokeWidth = 2.dp
     )
 }
@@ -43,7 +43,7 @@ fun HSCircularProgressIndicator(progress: Float) {
     CircularProgressIndicator(
         progress = progress,
         modifier = Modifier.rotate(rotate),
-        color = ComposeAppTheme.colors.grey50,
+        color = ComposeAppTheme.colors.textSecondaryDimmed,
         strokeWidth = 2.dp
     )
 }
@@ -66,7 +66,7 @@ fun HSCircularProgressIndicator(progress: Float, size: Dp) {
         modifier = Modifier
             .size(size)
             .rotate(rotate),
-        color = ComposeAppTheme.colors.grey50,
+        color = ComposeAppTheme.colors.textSecondaryDimmed,
         strokeWidth = 2.dp
     )
 }

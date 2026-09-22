@@ -218,7 +218,7 @@ private fun FilterIconButton(
             modifier = Modifier
                 .size(28.dp)
                 .clip(RoundedCornerShape(9.dp))
-                .background(ComposeAppTheme.colors.filterSettingsBackground)
+                .background(ComposeAppTheme.colors.filterBackground)
                 .border(1.dp, ComposeAppTheme.colors.filterBorder, RoundedCornerShape(9.dp))
                 .balanceSurfaceIndication(interactionSource),
             contentAlignment = Alignment.Center,

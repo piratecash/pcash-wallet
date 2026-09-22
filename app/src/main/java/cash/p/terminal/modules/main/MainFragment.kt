@@ -232,9 +232,9 @@ private fun MainScreen(
                             },
                             selected = item.selected,
                             enabled = item.enabled,
-                            selectedContentColor = ComposeAppTheme.colors.jacob,
-                            unselectedContentColor = if (item.enabled) ComposeAppTheme.colors.grey else
-                                ComposeAppTheme.colors.grey50,
+                            selectedContentColor = ComposeAppTheme.colors.brand,
+                            unselectedContentColor = if (item.enabled) ComposeAppTheme.colors.iconSecondary else
+                                ComposeAppTheme.colors.iconDisabled,
                             onClick = {
                                 viewModel.onSelect(item.mainNavItem)
                             },

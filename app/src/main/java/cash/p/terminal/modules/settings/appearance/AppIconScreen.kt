@@ -207,7 +207,7 @@ private fun IconBox(
                     if (selected) {
                         Modifier
                             .clip(iconCornerShape)
-                            .border(2.dp, ComposeAppTheme.colors.jacob, iconCornerShape)
+                            .border(2.dp, ComposeAppTheme.colors.brand, iconCornerShape)
                     } else {
                         Modifier
                     }
@@ -231,7 +231,7 @@ private fun IconBox(
         if (selected || premium) {
             Text(
                 text = name,
-                color = if (premium) ComposeAppTheme.colors.yellow else ComposeAppTheme.colors.jacob,
+                color = if (premium) ComposeAppTheme.colors.yellow else ComposeAppTheme.colors.brand,
                 style = ComposeAppTheme.typography.subhead1,
             )
         } else {

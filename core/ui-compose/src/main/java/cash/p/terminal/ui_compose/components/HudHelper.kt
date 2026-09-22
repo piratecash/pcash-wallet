@@ -21,7 +21,7 @@ object HudHelper {
         return showHudNotification(
             contentView = contenView,
             text = contenView.context.getString(resId),
-            backgroundColor = R.color.grey,
+            backgroundColor = R.color.text_secondary,
             duration = duration,
             gravity = gravity,
             showProgressBar = showProgressBar
@@ -73,7 +73,7 @@ object HudHelper {
         return showHudNotification(
             contentView = contentView,
             text = text,
-            backgroundColor = R.color.grey,
+            backgroundColor = R.color.text_secondary,
             duration = duration,
             gravity = gravity,
             icon = icon,
@@ -131,7 +131,7 @@ object HudHelper {
         return showHudNotification(
             contentView = contentView,
             text = contentView.context.getString(resId),
-            backgroundColor = R.color.grey,
+            backgroundColor = R.color.text_secondary,
             duration = duration,
             gravity = gravity,
             icon = R.drawable.ic_attention_24,
@@ -148,7 +148,7 @@ object HudHelper {
         return showHudNotification(
             contentView = contentView,
             text = contentView.context.getString(resId),
-            backgroundColor = R.color.jacob_d,
+            backgroundColor = R.color.yellow,
             duration = duration,
             gravity = gravity,
         )

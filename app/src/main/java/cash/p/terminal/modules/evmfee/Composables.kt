@@ -283,11 +283,11 @@ private fun NumberInputWithButtons(
                 }
             },
             textStyle = ColoredTextStyle(
-                color = ComposeAppTheme.colors.leah,
+                color = ComposeAppTheme.colors.textPrimary,
                 textStyle = ComposeAppTheme.typography.body
             ),
             singleLine = true,
-            cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+            cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         )
 

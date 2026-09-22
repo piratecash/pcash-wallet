@@ -331,14 +331,14 @@ fun ChartEtf(loading: Boolean, etfPoints: List<EtfPoint>, currency: Currency) {
                             .padding(horizontal = 8.dp)
                     ) {
                         val color = if (isSelected) {
-                            cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.grey50
+                            ComposeAppTheme.colors.textSecondaryDimmed
                         } else {
-                            cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.remus
+                            ComposeAppTheme.colors.remus
                         }
                         val colorNegative = if (isSelected) {
-                            cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.grey50
+                            ComposeAppTheme.colors.textSecondaryDimmed
                         } else {
-                            cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.lucian
+                            ComposeAppTheme.colors.lucian
                         }
 
                         GraphicBarsWithNegative(
@@ -350,7 +350,7 @@ fun ChartEtf(loading: Boolean, etfPoints: List<EtfPoint>, currency: Currency) {
                         GraphicLine(
                             modifier = Modifier.matchParentSize(),
                             data = dataTotalInflow,
-                            color = ComposeAppTheme.colors.grey50,
+                            color = ComposeAppTheme.colors.textSecondaryDimmed,
                             selectedItemKey = selectedKey
                         )
                         GraphicPointer(
@@ -371,7 +371,7 @@ fun ChartEtf(loading: Boolean, etfPoints: List<EtfPoint>, currency: Currency) {
                     modifier = Modifier
                         .size(24.dp)
                         .align(Alignment.Center),
-                    color = ComposeAppTheme.colors.grey,
+                    color = ComposeAppTheme.colors.textSecondary,
                     strokeWidth = 2.dp
                 )
             }
@@ -388,7 +388,7 @@ private fun GraphicPointer(
     var selectedX by remember {
         mutableStateOf<Float?>(null)
     }
-    val lineColor = cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.leah
+    val lineColor = ComposeAppTheme.colors.textPrimary
     Canvas(
         modifier = modifier
             .pointerInput(Unit) {

@@ -34,7 +34,7 @@ import cash.p.terminal.ui_compose.components.HsIconButton
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.subhead1_jacob
+import cash.p.terminal.ui_compose.components.subhead1_brand
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.navigation.slideFromBottomForResult
@@ -77,7 +77,7 @@ fun ReceiveStellarAssetScreen(
         sheetContent = {
             BottomSheetHeader(
                 iconPainter = painterResource(R.drawable.ic_attention_24),
-                iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+                iconTint = ColorFilter.tint(ComposeAppTheme.colors.yellow),
                 title = stringResource(R.string.ActivationRequired_DialogTitle),
                 onCloseClick = {
                     scope.launch {
@@ -146,7 +146,7 @@ fun ReceiveStellarAssetScreen(
                                 contentDescription = null
                             )
                         }
-                        subhead1_jacob(
+                        subhead1_brand(
                             text = stringResource(R.string.Hud_Text_Activate),
                             textAlign = TextAlign.End,
                             modifier = Modifier

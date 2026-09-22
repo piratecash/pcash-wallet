@@ -29,6 +29,7 @@ import cash.p.terminal.R
 import cash.p.terminal.ui_compose.components.HsIconButton
 import cash.p.terminal.ui_compose.components.HsSwitch
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.ui_compose.components.Subhead1
 
 @Composable
 fun AmlCheckPromoBanner(
@@ -57,11 +58,10 @@ fun AmlCheckPromoBanner(
                 tint = ComposeAppTheme.colors.yellow,
                 modifier = Modifier.size(20.dp)
             )
-            Text(
-                modifier = Modifier.weight(1f),
+            Subhead1(
                 text = stringResource(R.string.premium_title),
                 color = ComposeAppTheme.colors.yellow,
-                style = ComposeAppTheme.typography.subhead1
+                modifier = Modifier.weight(1f),
             )
             HsIconButton(
                 modifier = Modifier.size(20.dp),
@@ -86,13 +86,13 @@ fun AmlCheckPromoBanner(
         ) {
             Text(
                 text = stringResource(R.string.alpha_aml_title),
-                color = ComposeAppTheme.colors.leah,
+                color = ComposeAppTheme.colors.textPrimary,
                 style = ComposeAppTheme.typography.body
             )
             Icon(
                 painter = painterResource(id = R.drawable.ic_info_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey,
+                tint = ComposeAppTheme.colors.iconSecondary,
                 modifier = Modifier
                     .size(20.dp)
                     .clickable(

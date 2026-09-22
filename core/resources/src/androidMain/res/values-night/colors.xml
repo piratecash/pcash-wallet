@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--Semantic text / icon tokens-->
+    <color name="text_primary">#F5F5F6</color>
+    <color name="text_secondary">#94949A</color>
+    <color name="text_secondary_dimmed">#8094949A</color>
+    <color name="text_disabled">#66666C</color>
+    <color name="icon_primary">#F5F5F6</color>
+    <color name="icon_secondary">#94949A</color>
+    <color name="icon_disabled">#66666C</color>
+    <color name="brand">#4A98E9</color>
+    <color name="divider">#242426</color>
+
     <!--Paired Colors-->
-    <color name="jacob">#4A98E9</color>
     <color name="yellow">@color/yellow_d</color>
     <color name="remus">@color/green_d</color>
     <color name="lucian">@color/red_d</color>
@@ -13,13 +23,11 @@
     <color name="bran">@color/light_grey</color>
 
     <color name="claude">@color/dark</color>
-    <color name="leah">@color/steel_light</color>
     <color name="lawrence">#18181A</color>
     <color name="lawrence_pressed">#353842</color>
     <color name="elena">@color/steel_dark</color>
     <color name="jeremy">@color/steel_20</color>
 
-    <color name="andy">@color/black_50</color>
     <color name="nina">@color/white_50</color>
     <color name="raina">@color/steel_10</color>
 

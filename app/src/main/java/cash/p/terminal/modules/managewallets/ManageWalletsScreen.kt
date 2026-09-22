@@ -306,7 +306,7 @@ private fun LoadingComponent() {
                 .align(Alignment.Center)
                 .size(56.dp)
                 .padding(top = 4.dp, end = 8.dp),
-            color = ComposeAppTheme.colors.grey,
+            color = ComposeAppTheme.colors.textSecondary,
             strokeWidth = 4.dp
         )
     }
@@ -414,7 +414,7 @@ private fun GroupHeader(
         Icon(
             painter = painterResource(R.drawable.ic_arrow_big_down_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey,
+            tint = ComposeAppTheme.colors.iconSecondary,
             modifier = Modifier
                 .padding(end = 2.dp)
                 .rotate(rotation)
@@ -512,7 +512,7 @@ private fun TokenRow(
                 Icon(
                     painter = painterResource(R.drawable.ic_info_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
             }
         }

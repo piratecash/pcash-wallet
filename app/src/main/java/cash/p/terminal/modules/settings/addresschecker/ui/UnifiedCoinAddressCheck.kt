@@ -301,7 +301,7 @@ fun SecurityCheckCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         backgroundColor = ComposeAppTheme.colors.tyler,
-        border = BorderStroke(0.5.dp, ComposeAppTheme.colors.andy),
+        border = BorderStroke(0.5.dp, ComposeAppTheme.colors.divider),
         shape = RoundedCornerShape(12.dp),
         elevation = 0.dp
     ) {
@@ -329,7 +329,7 @@ fun SecurityCheckCard(
                     Column {
                         Text(
                             text = title,
-                            color = ComposeAppTheme.colors.leah,
+                            color = ComposeAppTheme.colors.textPrimary,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -351,7 +351,7 @@ fun SecurityCheckCard(
             }
 
             HsDivider(
-                color = ComposeAppTheme.colors.andy,
+                color = ComposeAppTheme.colors.divider,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -389,7 +389,7 @@ fun NetworkItem(
                     CircularProgressIndicator(
                         modifier = Modifier.size(16.dp),
                         strokeWidth = 2.dp,
-                        color = ComposeAppTheme.colors.grey
+                        color = ComposeAppTheme.colors.textSecondary
                     )
                 }
 
@@ -397,7 +397,7 @@ fun NetworkItem(
                     Icon(
                         painter = painterResource(R.drawable.ic_lock_20),
                         contentDescription = null,
-                        tint = ComposeAppTheme.colors.andy,
+                        tint = ComposeAppTheme.colors.iconSecondary,
                         modifier = Modifier.size(16.dp),
                     )
                 }
@@ -410,7 +410,7 @@ fun NetworkItem(
                         CheckState.AlphaAmlLow -> ComposeAppTheme.colors.yellowD
                         CheckState.AlphaAmlHigh -> YellowL
                         CheckState.AlphaAmlVeryHigh -> ComposeAppTheme.colors.lucian
-                        else -> ComposeAppTheme.colors.grey
+                        else -> ComposeAppTheme.colors.textSecondary
                     }
                     Text(
                         text = stringResource(status.title),
@@ -438,9 +438,9 @@ fun CheckInfoBottomSheet(
     ) {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_info_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.grey),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.iconSecondary),
             title = title,
-            titleColor = ComposeAppTheme.colors.leah,
+            titleColor = ComposeAppTheme.colors.textPrimary,
             onCloseClick = hideBottomSheet
         ) {
             Column(

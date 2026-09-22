@@ -206,7 +206,7 @@ private fun NetworkFeeWarningContent(
                     .weight(1f),
                 maxLines = 1,
                 style = ComposeAppTheme.typography.headline2,
-                color = ComposeAppTheme.colors.leah,
+                color = ComposeAppTheme.colors.textPrimary,
             )
             HsIconButton(
                 modifier = Modifier.size(24.dp),

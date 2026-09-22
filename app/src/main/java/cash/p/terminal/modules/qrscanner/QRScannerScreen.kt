@@ -255,7 +255,7 @@ private fun LoadingOverlay() {
     ) {
         CircularProgressIndicator(
             modifier = Modifier.size(48.dp),
-            color = ComposeAppTheme.colors.leah
+            color = ComposeAppTheme.colors.textPrimary
         )
     }
 }
@@ -417,7 +417,7 @@ private fun ScannerOverlay() {
     val scanWindowSize = with(density) { 250.dp.toPx() }
     val cornerLength = with(density) { 30.dp.toPx() }
     val strokeWidth = with(density) { 4.dp.toPx() }
-    val cornerColor = ComposeAppTheme.colors.jacob
+    val cornerColor = ComposeAppTheme.colors.brand
 
     // Animated scan line
     val infiniteTransition = rememberInfiniteTransition(label = "scanLine")

@@ -314,7 +314,7 @@ fun SendBtcFeeSettingsScreen(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_back),
                         contentDescription = "back button",
-                        tint = ComposeAppTheme.colors.jacob
+                        tint = ComposeAppTheme.colors.brand
                     )
                 }
             },
@@ -322,7 +322,7 @@ fun SendBtcFeeSettingsScreen(
                 MenuItem(
                     title = TranslatableString.ResString(R.string.Button_Reset),
                     enabled = uiState.resetEnabled,
-                    tint = ComposeAppTheme.colors.jacob,
+                    tint = ComposeAppTheme.colors.brand,
                     onClick = {
                         viewModel.reset()
                     }

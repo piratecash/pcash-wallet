@@ -228,7 +228,7 @@ fun LazyListScope.nftsCollectionSection(
                 modifier = Modifier.padding(start = 8.dp),
                 painter = painter,
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
         }
     }

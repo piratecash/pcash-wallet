@@ -244,7 +244,7 @@ private fun ImportOption(
             Icon(
                 painterResource(icon),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
             HSpacer(16.dp)
             Column {

@@ -2,7 +2,6 @@ package cash.p.terminal.ui.compose.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.ui_compose.components.subhead1_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.ui_compose.components.Title3
 
 @Composable
 fun SemiCircleChart(
@@ -59,16 +59,15 @@ fun SemiCircleChart(
             }
         }
 
-        Text(
+        Title3(
+            text = title,
+            color = ComposeAppTheme.colors.yellow,
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 12.dp),
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
-            text = title,
-            color = ComposeAppTheme.colors.yellow,
-            style = ComposeAppTheme.typography.title3,
         )
     }
 }

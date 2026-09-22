@@ -25,14 +25,14 @@ fun ButtonPrimaryCircle(
 ) {
     val shape = CircleShape
     val resolvedBackground = if (enabled) {
-        background ?: ComposeAppTheme.colors.leah
+        background ?: ComposeAppTheme.colors.textPrimary
     } else {
         ComposeAppTheme.colors.steel20
     }
     val resolvedTint = if (enabled) {
         iconTint ?: ComposeAppTheme.colors.claude
     } else {
-        ComposeAppTheme.colors.grey50
+        ComposeAppTheme.colors.iconDisabled
     }
 
     HsIconButton(
@@ -58,7 +58,7 @@ fun ButtonSecondaryCircle(
     enabled: Boolean = true,
     @DrawableRes icon: Int = R.drawable.ic_arrow_down_20,
     contentDescription: String? = null,
-    tint: Color = ComposeAppTheme.colors.leah,
+    tint: Color = ComposeAppTheme.colors.iconPrimary,
     background: Color = ComposeAppTheme.colors.steel20,
     onClick: () -> Unit,
 ) {

@@ -257,7 +257,7 @@ private fun TextImportantContainer(
                         Icon(
                             painter = painterResource(id = R.drawable.ic_info_20),
                             contentDescription = null,
-                            tint = ComposeAppTheme.colors.grey
+                            tint = ComposeAppTheme.colors.iconSecondary
                         )
                     }
                 }
@@ -266,7 +266,7 @@ private fun TextImportantContainer(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_close_24),
                         contentDescription = null,
-                        tint = ComposeAppTheme.colors.grey,
+                        tint = ComposeAppTheme.colors.iconSecondary,
                         modifier = Modifier
                             .size(20.dp)
                             .clickable(

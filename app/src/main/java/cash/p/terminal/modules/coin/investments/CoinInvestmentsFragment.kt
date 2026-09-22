@@ -37,7 +37,7 @@ import cash.p.terminal.ui_compose.components.CellSingleLineLawrenceSection
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.HsImage
 import cash.p.terminal.ui.compose.components.ListErrorView
-import cash.p.terminal.ui_compose.components.body_jacob
+import cash.p.terminal.ui_compose.components.body_brand
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead1_grey
 import cash.p.terminal.ui_compose.components.subhead2_remus
@@ -142,7 +142,7 @@ private fun CoinInvestmentsScreen(
 @Composable
 fun CoinInvestmentHeader(amount: String, info: String) {
     CellSingleLineClear(borderTop = true) {
-        body_jacob(
+        body_brand(
             modifier = Modifier.weight(1f),
             text = amount,
         )

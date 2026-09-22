@@ -95,7 +95,7 @@ fun TokenVariants(
                         ButtonSecondaryCircle(
                             icon = R.drawable.ic_wallet_filled_20,
                             contentDescription = stringResource(R.string.CoinPage_InWallet),
-                            tint = ComposeAppTheme.colors.jacob,
+                            tint = ComposeAppTheme.colors.brand,
                             onClick = {
                                 onClickRemoveWallet.invoke(tokenVariant.token)
                             }

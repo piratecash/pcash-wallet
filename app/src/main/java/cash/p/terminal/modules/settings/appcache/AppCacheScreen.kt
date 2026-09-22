@@ -130,7 +130,7 @@ private fun CacheItemRow(
         if (isClearing) {
             CircularProgressIndicator(
                 modifier = Modifier.size(20.dp),
-                color = ComposeAppTheme.colors.grey,
+                color = ComposeAppTheme.colors.textSecondary,
                 strokeWidth = 2.dp
             )
         } else {

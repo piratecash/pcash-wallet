@@ -135,7 +135,7 @@ enum class AmountColor {
     @Composable
     fun color() = when (this) {
         Positive -> ComposeAppTheme.colors.remus
-        Negative -> ComposeAppTheme.colors.leah
-        Neutral -> ComposeAppTheme.colors.leah
+        Negative -> ComposeAppTheme.colors.textPrimary
+        Neutral -> ComposeAppTheme.colors.textPrimary
     }
 }

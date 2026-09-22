@@ -43,9 +43,9 @@ fun SuggestionsBar(
                             modifier = modifier,
                             style = ComposeAppTheme.typography.captionSB,
                             color = if (selectEnabled) {
-                                ComposeAppTheme.colors.leah
+                                ComposeAppTheme.colors.textPrimary
                             } else {
-                                ComposeAppTheme.colors.grey50
+                                ComposeAppTheme.colors.textDisabled
                             },
                         )
                     }
@@ -54,9 +54,9 @@ fun SuggestionsBar(
                     icon = R.drawable.ic_delete_20,
                     enabled = deleteEnabled,
                     tint = if (deleteEnabled) {
-                        ComposeAppTheme.colors.leah
+                        ComposeAppTheme.colors.iconPrimary
                     } else {
-                        ComposeAppTheme.colors.grey50
+                        ComposeAppTheme.colors.iconDisabled
                     },
                     onClick = onDelete
                 )

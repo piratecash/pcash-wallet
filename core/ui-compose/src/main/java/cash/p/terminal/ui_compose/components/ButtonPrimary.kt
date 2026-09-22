@@ -51,16 +51,16 @@ fun ButtonPrimaryDefaultWithIcon(
         modifier = modifier,
         onClick = onClick,
         buttonColors = ButtonPrimaryDefaults.textButtonColors(
-            backgroundColor = ComposeAppTheme.colors.leah,
+            backgroundColor = ComposeAppTheme.colors.textPrimary,
             contentColor = ComposeAppTheme.colors.claude,
             disabledBackgroundColor = ComposeAppTheme.colors.steel20,
-            disabledContentColor = ComposeAppTheme.colors.grey50,
+            disabledContentColor = ComposeAppTheme.colors.textDisabled,
         ),
         content = {
             Icon(
                 painter = painterResource(icon),
                 contentDescription = null,
-                tint = iconTint ?: LocalContentColor.current
+                tint = if (enabled) iconTint ?: LocalContentColor.current else ComposeAppTheme.colors.iconDisabled
             )
             HSpacer(width = 8.dp)
             Text(
@@ -84,10 +84,10 @@ fun ButtonPrimaryDefault(
         modifier = modifier,
         onClick = onClick,
         buttonColors = ButtonPrimaryDefaults.textButtonColors(
-            backgroundColor = ComposeAppTheme.colors.leah,
+            backgroundColor = ComposeAppTheme.colors.textPrimary,
             contentColor = ComposeAppTheme.colors.claude,
             disabledBackgroundColor = ComposeAppTheme.colors.steel20,
-            disabledContentColor = ComposeAppTheme.colors.grey50,
+            disabledContentColor = ComposeAppTheme.colors.textDisabled,
         ),
         content = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         enabled = enabled
@@ -106,9 +106,9 @@ fun ButtonPrimaryTransparent(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val contentColor = when {
-        !enabled -> ComposeAppTheme.colors.grey50
-        isPressed -> ComposeAppTheme.colors.grey
-        else -> ComposeAppTheme.colors.leah
+        !enabled -> ComposeAppTheme.colors.textDisabled
+        isPressed -> ComposeAppTheme.colors.textSecondary
+        else -> ComposeAppTheme.colors.textPrimary
     }
 
     Surface(
@@ -161,16 +161,16 @@ fun ButtonPrimaryYellow(
         modifier = modifier,
         onClick = onClick,
         buttonColors = ButtonPrimaryDefaults.textButtonColors(
-            backgroundColor = ComposeAppTheme.colors.jacob,
+            backgroundColor = ComposeAppTheme.colors.brand,
             contentColor = ComposeAppTheme.colors.dark,
             disabledBackgroundColor = ComposeAppTheme.colors.steel20,
-            disabledContentColor = ComposeAppTheme.colors.grey50,
+            disabledContentColor = ComposeAppTheme.colors.textDisabled,
         ),
         content = {
             if (loadingIndicator) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(16.dp),
-                    color = ComposeAppTheme.colors.grey,
+                    color = ComposeAppTheme.colors.textSecondary,
                     strokeWidth = 2.dp
                 )
                 HSpacer(width = 8.dp)
@@ -199,16 +199,16 @@ fun ButtonPrimaryYellowWithIcon(
         modifier = modifier,
         onClick = onClick,
         buttonColors = ButtonPrimaryDefaults.textButtonColors(
-            backgroundColor = ComposeAppTheme.colors.jacob,
+            backgroundColor = ComposeAppTheme.colors.brand,
             contentColor = ComposeAppTheme.colors.dark,
             disabledBackgroundColor = ComposeAppTheme.colors.steel20,
-            disabledContentColor = ComposeAppTheme.colors.grey50,
+            disabledContentColor = ComposeAppTheme.colors.textDisabled,
         ),
         content = {
             Icon(
                 painter = painterResource(icon),
                 contentDescription = null,
-                tint = iconTint ?: LocalContentColor.current
+                tint = if (enabled) iconTint ?: LocalContentColor.current else ComposeAppTheme.colors.iconDisabled
             )
             HSpacer(width = 8.dp)
             Text(
@@ -235,7 +235,7 @@ fun ButtonPrimaryRed(
             backgroundColor = ComposeAppTheme.colors.lucian,
             contentColor = ComposeAppTheme.colors.claude,
             disabledBackgroundColor = ComposeAppTheme.colors.steel20,
-            disabledContentColor = ComposeAppTheme.colors.grey50,
+            disabledContentColor = ComposeAppTheme.colors.textDisabled,
         ),
         content = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         enabled = enabled
@@ -256,7 +256,7 @@ fun ButtonPrimaryNeutral(
             backgroundColor = ComposeAppTheme.colors.steelLight,
             contentColor = ComposeAppTheme.colors.dark,
             disabledBackgroundColor = ComposeAppTheme.colors.steel20,
-            disabledContentColor = ComposeAppTheme.colors.grey50,
+            disabledContentColor = ComposeAppTheme.colors.textDisabled,
         ),
         content = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         enabled = enabled
@@ -277,7 +277,7 @@ fun ButtonPrimaryLight(
             backgroundColor = ComposeAppTheme.colors.bran,
             contentColor = ComposeAppTheme.colors.claude,
             disabledBackgroundColor = ComposeAppTheme.colors.steel20,
-            disabledContentColor = ComposeAppTheme.colors.grey50,
+            disabledContentColor = ComposeAppTheme.colors.textDisabled,
         ),
         content = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         enabled = enabled
@@ -297,16 +297,16 @@ fun ButtonPrimaryYellowWithSpinner(
         modifier = modifier,
         onClick = onClick,
         buttonColors = ButtonPrimaryDefaults.textButtonColors(
-            backgroundColor = ComposeAppTheme.colors.jacob,
+            backgroundColor = ComposeAppTheme.colors.brand,
             contentColor = ComposeAppTheme.colors.dark,
             disabledBackgroundColor = ComposeAppTheme.colors.steel20,
-            disabledContentColor = ComposeAppTheme.colors.grey50,
+            disabledContentColor = ComposeAppTheme.colors.textDisabled,
         ),
         content = {
             if (showSpinner) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(16.dp),
-                    color = ComposeAppTheme.colors.grey,
+                    color = ComposeAppTheme.colors.textSecondary,
                     strokeWidth = 2.dp
                 )
             } else {
@@ -461,7 +461,7 @@ private fun ButtonPrimaryDefaultWithIconPreview() {
             ButtonPrimaryDefaultWithIcon(
                 icon = R.drawable.ic_back,
                 title = "With Tinted Icon",
-                iconTint = ComposeAppTheme.colors.jacob,
+                iconTint = ComposeAppTheme.colors.brand,
                 onClick = {}
             )
             ButtonPrimaryDefaultWithIcon(

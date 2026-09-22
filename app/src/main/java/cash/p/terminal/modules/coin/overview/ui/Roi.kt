@@ -78,7 +78,7 @@ fun Roi(roi: List<RoiViewItem>) {
 
                         } else {
                             text = "---"
-                            color = ComposeAppTheme.colors.grey
+                            color = ComposeAppTheme.colors.textSecondary
                         }
 
                         Text(

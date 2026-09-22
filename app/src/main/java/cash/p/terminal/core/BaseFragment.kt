@@ -37,7 +37,7 @@ abstract class BaseFragment(
     protected fun setMenuItemEnabled(menuItem: MenuItem, enabled: Boolean) {
         menuItem.isEnabled = enabled
         context?.let { ctx ->
-            val color = ctx.getColor(if (enabled) R.color.jacob else R.color.grey)
+            val color = ctx.getColor(if (enabled) R.color.brand else R.color.icon_secondary)
             val spannable = SpannableString(menuItem.title)
             spannable.setSpan(ForegroundColorSpan(color), 0, spannable.length, 0)
             menuItem.title = spannable

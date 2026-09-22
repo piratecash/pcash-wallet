@@ -91,9 +91,9 @@ private fun AmlAddressSelectionContent(
 ) {
     BottomSheetHeader(
         iconPainter = painterResource(R.drawable.ic_radar_24),
-        iconTint = ColorFilter.tint(ComposeAppTheme.colors.grey),
+        iconTint = ColorFilter.tint(ComposeAppTheme.colors.iconSecondary),
         title = stringResource(R.string.address_checker_title),
-        titleColor = ComposeAppTheme.colors.leah,
+        titleColor = ComposeAppTheme.colors.textPrimary,
         onCloseClick = onCloseClick
     ) {
         Column {

@@ -46,7 +46,7 @@ internal fun ProviderRiskInfoBottomSheet(onDismiss: () -> Unit) {
 private fun ProviderRiskInfoContent(onClose: () -> Unit) {
     BottomSheetHeader(
         iconPainter = painterResource(R.drawable.ic_info_24),
-        iconTint = ColorFilter.tint(ComposeAppTheme.colors.grey),
+        iconTint = ColorFilter.tint(ComposeAppTheme.colors.iconSecondary),
         title = stringResource(R.string.swap_provider_type_info_title),
         onCloseClick = onClose,
     ) {

@@ -504,7 +504,7 @@ private fun NoCoinsBlock() {
                 modifier = Modifier.size(48.dp),
                 painter = painterResource(R.drawable.ic_empty_wallet),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
         }
         VSpacer(32.dp)
@@ -530,7 +530,7 @@ private fun PendingSwapBanner(
         modifier = modifier
             .fillMaxWidth()
             .clip(shape)
-            .border(1.dp, ComposeAppTheme.colors.grey, shape)
+            .border(1.dp, ComposeAppTheme.colors.textSecondary, shape)
     ) {
         RowWithArrow(
             text = if (count == 1) {

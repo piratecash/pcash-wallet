@@ -309,7 +309,7 @@ private fun MenuItem(
                 Icon(
                     painter = painterResource(id = R.drawable.ic_info_20),
                     contentDescription = "info button",
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
             }
         }
@@ -331,7 +331,7 @@ private fun MenuItem(
                     modifier = Modifier.padding(start = 4.dp),
                     painter = painterResource(id = R.drawable.ic_down_arrow_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
             }
         }

@@ -177,7 +177,7 @@ private fun SliderCell(highlighted: Boolean) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(2.dp))
-            .background(if (highlighted) ComposeAppTheme.colors.jacob else ComposeAppTheme.colors.steel20)
+            .background(if (highlighted) ComposeAppTheme.colors.brand else ComposeAppTheme.colors.steel20)
             .size(width = 20.dp, height = 4.dp),
     )
 }

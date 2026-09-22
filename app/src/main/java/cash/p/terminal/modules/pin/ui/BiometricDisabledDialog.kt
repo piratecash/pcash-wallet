@@ -17,7 +17,7 @@ import androidx.compose.ui.window.Dialog
 import cash.p.terminal.R
 import cash.p.terminal.ui_compose.components.body_grey
 import cash.p.terminal.ui_compose.components.body_lucian
-import cash.p.terminal.ui_compose.components.headline2_jacob
+import cash.p.terminal.ui_compose.components.headline2_brand
 import cash.p.terminal.ui_compose.components.title3_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
@@ -59,7 +59,7 @@ fun BiometricDisabledDialog(onClick: () -> Unit) {
                     .clickable { onClick.invoke() },
                 contentAlignment = Alignment.Center
             ) {
-                headline2_jacob(
+                headline2_brand(
                     modifier = Modifier.padding(horizontal = 8.dp),
                     text = stringResource(R.string.Unlock_Passcode)
                 )

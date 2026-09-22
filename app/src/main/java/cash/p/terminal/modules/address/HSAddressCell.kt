@@ -62,7 +62,7 @@ fun HSAddressCell(
                 Icon(
                     painter = painterResource(id = R.drawable.ic_down_arrow_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
             }
         }

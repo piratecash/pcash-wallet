@@ -55,7 +55,7 @@ fun SafetyRulesScreen(
                         Icon(
                             painter = painterResource(R.drawable.icon_lock_48),
                             contentDescription = null,
-                            tint = ComposeAppTheme.colors.jacob,
+                            tint = ComposeAppTheme.colors.brand,
                             modifier = Modifier.size(24.dp)
                         )
                         HSpacer(8.dp)

@@ -42,6 +42,7 @@ import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import cash.p.terminal.ui_compose.components.Subhead1
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -185,9 +186,8 @@ fun AboutPremiumScreen(
 
 @Composable
 private fun DemoDaysDisplay(daysLeft: Int) {
-    Text(
+    Subhead1(
         text = pluralStringResource(R.plurals.premium_demo_days_left, daysLeft, daysLeft),
-        style = ComposeAppTheme.typography.subhead1,
         color = ComposeAppTheme.colors.yellow,
         textAlign = TextAlign.Center,
         modifier = Modifier
@@ -200,14 +200,14 @@ private fun DemoDaysDisplay(daysLeft: Int) {
 private fun ActionText() {
     val text = highlightText(
         text = stringResource(R.string.premium_upgrade_text),
-        textColor = ComposeAppTheme.colors.leah,
+        textColor = ComposeAppTheme.colors.textPrimary,
         highlightPart = stringResource(R.string.premium_title),
         highlightColor = ComposeAppTheme.colors.yellow
     )
     Text(
         text = text,
         style = ComposeAppTheme.typography.headline1,
-        color = ComposeAppTheme.colors.leah,
+        color = ComposeAppTheme.colors.textPrimary,
         textAlign = TextAlign.Center,
         modifier = Modifier
             .fillMaxWidth()

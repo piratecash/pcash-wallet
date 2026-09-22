@@ -369,7 +369,7 @@ private fun OfflineSignedTransactionsTabContent(
                 title = signedTitle,
                 subtitle = if (item.metadataUnknown) UNKNOWN_VALUE else viewItem.subtitle,
                 primaryValue = if (item.metadataUnknown) {
-                    ColoredValue(UNKNOWN_VALUE, ColorName.Grey)
+                    ColoredValue(UNKNOWN_VALUE, ColorName.Secondary)
                 } else {
                     viewItem.primaryValue
                 },
@@ -480,7 +480,7 @@ fun LazyListScope.transactionsHiddenBlock(
                         modifier = Modifier.size(48.dp),
                         painter = painterResource(R.drawable.ic_eye_off),
                         contentDescription = "transactions hidden",
-                        tint = ComposeAppTheme.colors.grey
+                        tint = ComposeAppTheme.colors.iconSecondary
                     )
                 }
                 Spacer(Modifier.height(32.dp))
@@ -620,7 +620,7 @@ private fun HideBalanceOverlay(
                         else R.drawable.ic_eye_20
                     ),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -816,7 +816,7 @@ private fun TransactionIconBox(item: TransactionViewItem) {
                 Icon(
                     modifier = Modifier.size(32.dp),
                     painter = painterResource(icon.iconRes ?: R.drawable.coin_placeholder),
-                    tint = ComposeAppTheme.colors.leah,
+                    tint = ComposeAppTheme.colors.iconPrimary,
                     contentDescription = null
                 )
             }
@@ -875,7 +875,7 @@ private fun TransactionIconBox(item: TransactionViewItem) {
                 Icon(
                     modifier = Modifier.size(32.dp),
                     painter = painterResource(icon.resourceId),
-                    tint = ComposeAppTheme.colors.leah,
+                    tint = ComposeAppTheme.colors.iconPrimary,
                     contentDescription = null
                 )
             }
@@ -910,7 +910,7 @@ private fun TransactionContentRow(
             Text(
                 text = if (showAmount) item.formattedTime else "*****",
                 style = ComposeAppTheme.typography.subhead2,
-                color = ComposeAppTheme.colors.grey50,
+                color = ComposeAppTheme.colors.textSecondaryDimmed,
                 maxLines = 1,
                 modifier = Modifier.clickable(
                     interactionSource = remember { MutableInteractionSource() },
@@ -1006,7 +1006,7 @@ private fun AmlLoadingIndicator() {
         CircularProgressIndicator(
             modifier = Modifier
                 .size(12.dp),
-            color = ComposeAppTheme.colors.grey,
+            color = ComposeAppTheme.colors.textSecondary,
             strokeWidth = 1.5.dp
         )
     }
@@ -1044,8 +1044,8 @@ private fun TransactionCellPreview() {
             doubleSpend = true,
             locked = true,
             sentToSelf = true,
-            primaryValue = ColoredValue("0.00123 BTC", ColorName.Leah),
-            secondaryValue = ColoredValue("$45.67", ColorName.Leah),
+            primaryValue = ColoredValue("0.00123 BTC", ColorName.Primary),
+            secondaryValue = ColoredValue("$45.67", ColorName.Primary),
             date = Date(),
             formattedTime = "12:00",
             amlStatus = AmlStatus.Low

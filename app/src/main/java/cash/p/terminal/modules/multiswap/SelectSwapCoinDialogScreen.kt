@@ -71,7 +71,7 @@ fun SelectSwapCoinDialogScreen(
                         .align(Alignment.Center)
                         .size(56.dp)
                         .padding(top = 4.dp, end = 8.dp),
-                    color = ComposeAppTheme.colors.grey,
+                    color = ComposeAppTheme.colors.textSecondary,
                     strokeWidth = 4.dp
                 )
             }

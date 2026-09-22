@@ -94,10 +94,10 @@ import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.TabItem
 import cash.p.terminal.ui_compose.components.Tabs
 import cash.p.terminal.strings.helpers.TranslatableString
-import cash.p.terminal.ui_compose.components.body_jacob
+import cash.p.terminal.ui_compose.components.body_brand
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead1_grey
-import cash.p.terminal.ui_compose.components.subhead1_jacob
+import cash.p.terminal.ui_compose.components.subhead1_brand
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import coil3.compose.AsyncImagePainter
@@ -285,7 +285,7 @@ private fun AssetContent(
 
                 Text(
                     text = asset.name,
-                    color = ComposeAppTheme.colors.leah,
+                    color = ComposeAppTheme.colors.textPrimary,
                     style = ComposeAppTheme.typography.headline1
                 )
 
@@ -303,12 +303,12 @@ private fun AssetContent(
                             },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        subhead1_jacob(text = asset.collectionName)
+                        subhead1_brand(text = asset.collectionName)
                         Spacer(modifier = Modifier.weight(1f))
                         Icon(
                             painter = painterResource(id = R.drawable.ic_arrow_right),
                             contentDescription = null,
-                            tint = ComposeAppTheme.colors.grey
+                            tint = ComposeAppTheme.colors.iconSecondary
                         )
                     }
                 }
@@ -794,7 +794,7 @@ private fun NftAssetPriceCell(
         body_leah(text = title)
         Spacer(modifier = Modifier.weight(1f))
         Column {
-            body_jacob(
+            body_brand(
                 modifier = Modifier.fillMaxWidth(),
                 text = price.coinValue,
                 textAlign = TextAlign.End,

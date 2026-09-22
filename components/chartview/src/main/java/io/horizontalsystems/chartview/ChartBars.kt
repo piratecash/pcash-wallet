@@ -15,7 +15,7 @@ fun ChartBars(
     chartData: ChartData,
 ) {
     val color =
-        if (chartData.disabled) ComposeAppTheme.colors.grey else ComposeAppTheme.colors.jacob
+        if (chartData.disabled) ComposeAppTheme.colors.textSecondary else ComposeAppTheme.colors.brand
     var valueMin = chartData.minValue
     val valueMax = chartData.maxValue
     if (valueMin == valueMax) {
@@ -51,7 +51,7 @@ fun GraphicBars(
     color: Color,
     selectedItemKey: Long?
 ) {
-    val dotColor = ComposeAppTheme.colors.leah
+    val dotColor = ComposeAppTheme.colors.textPrimary
 
     Canvas(
         modifier = modifier,

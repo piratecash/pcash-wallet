@@ -146,8 +146,8 @@ class SwapAmountColorInvariantTest {
     fun swapOutputColor_recipientIsThirdParty_listAndDetailsAgreeOnGrey() = runTest {
         val record = swapRecord(recipient = THIRD_PARTY)
 
-        assertEquals(ColorName.Grey, listColor(record))
-        assertEquals(ColorName.Grey, detailsColor(record))
+        assertEquals(ColorName.Secondary, listColor(record))
+        assertEquals(ColorName.Secondary, detailsColor(record))
     }
 
     private suspend fun listColor(record: EvmTransactionRecord): ColorName {

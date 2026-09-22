@@ -69,7 +69,7 @@ fun CoinListOrderable(
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_arrow_big_up_20),
-                            tint = ComposeAppTheme.colors.grey,
+                            tint = ComposeAppTheme.colors.iconSecondary,
                             contentDescription = null
                         )
                     }
@@ -78,7 +78,7 @@ fun CoinListOrderable(
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_arrow_big_down_20),
-                            tint = ComposeAppTheme.colors.grey,
+                            tint = ComposeAppTheme.colors.iconSecondary,
                             contentDescription = null
                         )
                     }
@@ -105,8 +105,8 @@ fun CoinListOrderable(
                         modifier = Modifier
                             .fillMaxHeight()
                             .background(
-                                if (item.favorited) cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.lucian
-                                else cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.jacob
+                                if (item.favorited) ComposeAppTheme.colors.lucian
+                                else ComposeAppTheme.colors.brand
                             )
                             .align(Alignment.CenterEnd)
                             .width(100.dp)

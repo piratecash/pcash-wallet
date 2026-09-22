@@ -191,7 +191,7 @@ object TransactionViewItemFactoryHelper {
                 )
             }
         } ?: "---"
-        val fiatValueColored = ColoredValue(valueInFiat, ColorName.Grey)
+        val fiatValueColored = ColoredValue(valueInFiat, ColorName.Secondary)
         val coinValueFormatted =
             if (hideAmount) "*****" else value.decimalValue?.let { decimalValue ->
                 val sign = when (incoming) {
@@ -562,7 +562,7 @@ object TransactionViewItemFactoryHelper {
             else -> fiatAmountFormatted
         }
 
-        val fiatAmountColoredValue = ColoredValue(fiatAmountString, ColorName.Grey)
+        val fiatAmountColoredValue = ColoredValue(fiatAmountString, ColorName.Secondary)
 
         val items: MutableList<TransactionInfoViewItem> = mutableListOf(
             TransactionInfoViewItem.Amount(

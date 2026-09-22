@@ -100,7 +100,7 @@ fun CoinList(
                 Box(
                     modifier = Modifier
                         .fillMaxHeight()
-                        .background(if (item.favorited) ComposeAppTheme.colors.lucian else ComposeAppTheme.colors.jacob)
+                        .background(if (item.favorited) ComposeAppTheme.colors.lucian else ComposeAppTheme.colors.brand)
                         .align(Alignment.CenterEnd)
                         .width(100.dp)
                         .clickable {
@@ -247,7 +247,7 @@ fun ScreenMessageWithAction(
                 modifier = Modifier.size(48.dp),
                 painter = painterResource(icon),
                 contentDescription = text,
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
         }
         Spacer(Modifier.height(32.dp))
@@ -305,7 +305,7 @@ fun TopCloseButton(
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
                     .size(24.dp),
-                tint = ComposeAppTheme.colors.jacob
+                tint = ComposeAppTheme.colors.brand
             )
         }
     }
@@ -327,7 +327,7 @@ fun DescriptionCard(title: String, description: String, image: ImageSource) {
                 Text(
                     text = title,
                     style = ComposeAppTheme.typography.headline1,
-                    color = ComposeAppTheme.colors.leah,
+                    color = ComposeAppTheme.colors.textPrimary,
                 )
                 subhead2_grey(
                     text = description,

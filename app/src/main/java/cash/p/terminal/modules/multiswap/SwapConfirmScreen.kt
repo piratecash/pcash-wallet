@@ -415,7 +415,7 @@ private fun SwapAmountsSection(uiState: SwapConfirmUiState) {
             currency = uiState.currency,
             borderTop = false,
             title = stringResource(R.string.Send_Confirmation_YouSend),
-            amountColor = ComposeAppTheme.colors.leah,
+            amountColor = ComposeAppTheme.colors.textPrimary,
         )
         TokenRow(
             token = uiState.tokenOut,
@@ -502,7 +502,7 @@ private fun MevProtectionSection(
                 modifier = Modifier.size(24.dp),
                 painter = painterResource(R.drawable.ic_shield_24),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.jacob,
+                tint = ComposeAppTheme.colors.brand,
             )
             HSpacer(width = 16.dp)
             body_leah(text = stringResource(R.string.mev_protection))

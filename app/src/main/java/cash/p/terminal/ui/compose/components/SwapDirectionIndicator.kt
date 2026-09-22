@@ -72,7 +72,7 @@ private fun SwapDirectionIndicatorContent(
                 indication = ripple(
                     bounded = false,
                     radius = 24.dp,
-                    color = ComposeAppTheme.colors.leah
+                    color = ComposeAppTheme.colors.textPrimary
                 )
             )
             .animateContentSize(animationSpec = tween(300)),
@@ -85,7 +85,7 @@ private fun SwapDirectionIndicatorContent(
         Icon(
             painter = painterResource(R.drawable.ic_arrow_down_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.leah,
+            tint = ComposeAppTheme.colors.iconPrimary,
             modifier = Modifier.size(20.dp)
         )
         if (expanded) {

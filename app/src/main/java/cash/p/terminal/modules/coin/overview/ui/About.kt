@@ -19,7 +19,7 @@ import cash.p.terminal.ui.compose.components.DescriptionMarkdown
 import cash.p.terminal.ui_compose.components.CellSingleLineClear
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
-import cash.p.terminal.ui_compose.components.subhead2_jacob
+import cash.p.terminal.ui_compose.components.subhead2_brand
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @Preview
@@ -51,7 +51,7 @@ fun About(text: String) {
                 modifier = Modifier.fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                subhead2_jacob(
+                subhead2_brand(
                     modifier = Modifier
                         .padding(horizontal = 16.dp),
                     text = stringResource(id = R.string.CoinPage_AiGeneratedText),

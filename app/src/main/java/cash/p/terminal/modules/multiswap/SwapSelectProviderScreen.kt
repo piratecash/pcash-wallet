@@ -184,7 +184,7 @@ private fun SwipableProviderItem(
             content = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_circle_minus_24),
-                    tint = ComposeAppTheme.colors.grey,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                     contentDescription = "toggle provider",
                 )
             },
@@ -327,7 +327,7 @@ private fun ExchangeBlock(
         Icon(
             painter = painterResource(id = R.drawable.ic_arrow_swap3_20),
             contentDescription = "invert price",
-            tint = ComposeAppTheme.colors.jacob
+            tint = ComposeAppTheme.colors.brand
         )
         subhead2_grey(
             text = to

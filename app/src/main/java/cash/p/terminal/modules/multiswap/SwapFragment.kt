@@ -91,7 +91,7 @@ import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_grey
 import cash.p.terminal.ui_compose.components.headline1_grey
 import cash.p.terminal.ui_compose.components.micro_grey
-import cash.p.terminal.ui_compose.components.subhead1_jacob
+import cash.p.terminal.ui_compose.components.subhead1_brand
 import cash.p.terminal.ui_compose.components.subhead1_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.subhead2_leah
@@ -1088,7 +1088,7 @@ private fun ProviderField(
         Icon(
             painter = painterResource(R.drawable.ic_arrow_right),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey
+            tint = ComposeAppTheme.colors.iconSecondary
         )
     }
 }
@@ -1134,7 +1134,7 @@ fun PriceField(
                 Icon(
                     painter = painterResource(id = R.drawable.ic_arrow_swap3_20),
                     contentDescription = "invert price",
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
             }
         }
@@ -1364,7 +1364,7 @@ private fun CoinSelector(
                     )
                 }
             } else {
-                subhead1_jacob(text = stringResource(R.string.Swap_TokenSelectorTitle))
+                subhead1_brand(text = stringResource(R.string.Swap_TokenSelectorTitle))
             }
         },
         onClickSelect = onClickCoin
@@ -1385,7 +1385,7 @@ private fun FiatAmountInput(
         mutableStateOf(value?.toPlainString() ?: "")
     }
     val textStyle = ColoredTextStyle(
-        color = ComposeAppTheme.colors.grey,
+        color = ComposeAppTheme.colors.textSecondary,
         textStyle = ComposeAppTheme.typography.body
     )
     val inputModifier = if (fillWidth) {
@@ -1419,7 +1419,7 @@ private fun FiatAmountInput(
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Decimal
             ),
-            cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+            cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
             decorationBox = { innerTextField ->
                 if (text.isEmpty()) {
                     body_grey(text = "0")
@@ -1451,7 +1451,7 @@ private fun Selector(
         Icon(
             painter = painterResource(R.drawable.ic_arrow_big_down_20),
             contentDescription = "",
-            tint = ComposeAppTheme.colors.grey
+            tint = ComposeAppTheme.colors.iconSecondary
         )
     }
 }
@@ -1504,14 +1504,14 @@ private fun AmountInput(
             onValueChange(amount)
         },
         textStyle = ColoredTextStyle(
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             textStyle = ComposeAppTheme.typography.headline1
         ),
         singleLine = true,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Decimal
         ),
-        cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+        cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
         decorationBox = { innerTextField ->
             if (textFieldValue.text.isEmpty()) {
                 headline1_grey(text = "0")
@@ -1529,6 +1529,6 @@ fun getPriceImpactColor(priceImpactLevel: PriceImpactLevel?): Color {
     return when (priceImpactLevel) {
         PriceImpactLevel.Warning -> ComposeAppTheme.colors.lucian
         PriceImpactLevel.Good -> ComposeAppTheme.colors.remus
-        else -> ComposeAppTheme.colors.grey
+        else -> ComposeAppTheme.colors.textSecondary
     }
 }

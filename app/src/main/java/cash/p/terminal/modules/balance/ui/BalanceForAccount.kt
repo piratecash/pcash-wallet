@@ -272,7 +272,7 @@ fun BalanceTitleRow(
         Icon(
             painter = painterResource(id = R.drawable.ic_down_24),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.jacob,
+            tint = ComposeAppTheme.colors.brand,
             modifier = Modifier
                 .testTag("wallet_switcher")
                 .clickable(

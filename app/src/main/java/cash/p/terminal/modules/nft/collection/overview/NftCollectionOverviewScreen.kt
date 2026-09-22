@@ -195,7 +195,7 @@ private fun Header(name: String, imageUrl: String?) {
                 .align(Alignment.CenterVertically),
             text = name,
             style = ComposeAppTheme.typography.headline1,
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
@@ -228,7 +228,7 @@ private fun Stats(collection: NftCollectionOverviewViewItem) {
                     Text(
                         text = collection.ownersCount + " " + stringResource(id = R.string.NftCollection_Owners),
                         style = ComposeAppTheme.typography.subhead1,
-                        color = ComposeAppTheme.colors.grey,
+                        color = ComposeAppTheme.colors.textSecondary,
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                 }
@@ -256,7 +256,7 @@ private fun Stats(collection: NftCollectionOverviewViewItem) {
                     Text(
                         text = collection.floorPrice?.fiatValue ?: stringResource(id = R.string.NotAvailable),
                         style = ComposeAppTheme.typography.subhead1,
-                        color = ComposeAppTheme.colors.grey,
+                        color = ComposeAppTheme.colors.textSecondary,
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                 }
@@ -319,7 +319,7 @@ private fun Stats(collection: NftCollectionOverviewViewItem) {
                     Text(
                         text = collection.oneDaySellersAveragePrice ?: "",
                         style = ComposeAppTheme.typography.subhead1,
-                        color = ComposeAppTheme.colors.grey,
+                        color = ComposeAppTheme.colors.textSecondary,
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                 }

@@ -88,10 +88,10 @@ private fun MoneroAddressRow(item: MoneroSubaddressParcelable) {
 
     if (item.receivedAmount > 0) {
         badgeText = stringResource(R.string.receive_address_badge_used)
-        badgeColor = ComposeAppTheme.colors.jacob
+        badgeColor = ComposeAppTheme.colors.brand
     } else {
         badgeText = stringResource(R.string.receive_address_badge_unused)
-        badgeColor = ComposeAppTheme.colors.grey
+        badgeColor = ComposeAppTheme.colors.iconSecondary
     }
 
     RowUniversal(

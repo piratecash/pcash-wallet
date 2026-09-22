@@ -75,7 +75,7 @@ internal fun BlockchainStatusScreen(
             ) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(32.dp),
-                    color = ComposeAppTheme.colors.grey,
+                    color = ComposeAppTheme.colors.textSecondary,
                     strokeWidth = 4.dp
                 )
             }
@@ -158,7 +158,7 @@ internal fun BlockchainStatusScreen(
                         ) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(24.dp),
-                                color = ComposeAppTheme.colors.grey,
+                                color = ComposeAppTheme.colors.textSecondary,
                                 strokeWidth = 3.dp
                             )
                         }
@@ -249,7 +249,7 @@ internal fun BlockchainStatusButton(onClick: () -> Unit) {
             )
             Icon(
                 painter = painterResource(R.drawable.ic_arrow_right),
-                tint = ComposeAppTheme.colors.grey,
+                tint = ComposeAppTheme.colors.iconSecondary,
                 contentDescription = null,
             )
         }

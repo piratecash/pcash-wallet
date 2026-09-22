@@ -9,12 +9,12 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import cash.p.terminal.ui_compose.components.headline2_jacob
+import cash.p.terminal.ui_compose.components.headline2_brand
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @Composable
 fun InfoH3(text: String) {
-    headline2_jacob(
+    headline2_brand(
         modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
         text = text
     )
@@ -28,12 +28,12 @@ fun InfoH1(text: String) {
         Text(
             text = text,
             style = ComposeAppTheme.typography.title2,
-            color = ComposeAppTheme.colors.leah
+            color = ComposeAppTheme.colors.textPrimary
         )
         Spacer(Modifier.height(8.dp))
         Divider(
             thickness = 1.dp,
-            color = ComposeAppTheme.colors.grey50
+            color = ComposeAppTheme.colors.divider
         )
     }
 }

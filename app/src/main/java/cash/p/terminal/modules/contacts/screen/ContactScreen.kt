@@ -53,7 +53,7 @@ import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.body_jacob
+import cash.p.terminal.ui_compose.components.body_brand
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.body_lucian
 import cash.p.terminal.ui_compose.components.subhead2_grey
@@ -329,9 +329,9 @@ private fun AddAddressButton(onClick: () -> Unit) {
             modifier = Modifier.padding(horizontal = 16.dp),
             painter = painterResource(R.drawable.ic_plus),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.jacob
+            tint = ComposeAppTheme.colors.brand
         )
-        body_jacob(text = stringResource(R.string.Contacts_AddAddress))
+        body_brand(text = stringResource(R.string.Contacts_AddAddress))
     }
 }
 
@@ -377,7 +377,7 @@ private fun ContactAddress(
         Icon(
             painter = painterResource(id = R.drawable.ic_edit_20),
             contentDescription = null,
-            tint = if (addressViewItem.edited) ComposeAppTheme.colors.jacob else ComposeAppTheme.colors.grey
+            tint = if (addressViewItem.edited) ComposeAppTheme.colors.brand else ComposeAppTheme.colors.iconSecondary
         )
     }
 }

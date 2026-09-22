@@ -56,7 +56,7 @@ fun ButtonSecondaryDefault(
             if (enabled) {
                 captionSB_leah(text = title, maxLines = 1, overflow = overflow)
             } else {
-                captionSB_grey50(text = title, maxLines = 1, overflow = overflow)
+                captionSB_disabled(text = title, maxLines = 1, overflow = overflow)
             }
         },
         enabled = enabled
@@ -82,7 +82,7 @@ fun ButtonSecondaryCustom(
                     color = textColor
                 )
             } else {
-                captionSB_grey50(text = title, maxLines = 1)
+                captionSB_disabled(text = title, maxLines = 1)
             }
         },
         enabled = enabled
@@ -100,10 +100,10 @@ fun ButtonSecondaryYellow(
         modifier = modifier,
         onClick = onClick,
         buttonColors = ButtonPrimaryDefaults.textButtonColors(
-            backgroundColor = ComposeAppTheme.colors.jacob,
+            backgroundColor = ComposeAppTheme.colors.brand,
             contentColor = ComposeAppTheme.colors.dark,
             disabledBackgroundColor = ComposeAppTheme.colors.steel20,
-            disabledContentColor = ComposeAppTheme.colors.grey50,
+            disabledContentColor = ComposeAppTheme.colors.textDisabled,
         ),
         content = {
             Text(
@@ -145,7 +145,7 @@ fun ButtonSecondaryWithIcon(
                     modifier = Modifier.padding(start = 2.dp),
                     painter = iconRight,
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
             }
         },
@@ -167,9 +167,9 @@ fun ButtonSecondaryTransparent(
         onClick = onClick,
         buttonColors = buttonColors(
             backgroundColor = ComposeAppTheme.colors.transparent,
-            contentColor = ComposeAppTheme.colors.leah,
+            contentColor = ComposeAppTheme.colors.textPrimary,
             disabledBackgroundColor = ComposeAppTheme.colors.transparent,
-            disabledContentColor = ComposeAppTheme.colors.grey50,
+            disabledContentColor = ComposeAppTheme.colors.textDisabled,
         ),
         content = {
             if (iconRight != null) {
@@ -186,7 +186,7 @@ fun ButtonSecondaryTransparent(
                         modifier = Modifier.padding(start = 4.dp),
                         painter = painterResource(id = iconRight),
                         contentDescription = null,
-                        tint = ComposeAppTheme.colors.grey
+                        tint = ComposeAppTheme.colors.iconSecondary
                     )
                 }
             } else {
@@ -243,9 +243,9 @@ fun <T : WithTranslatableTitle> ButtonSecondaryToggle(
                                 .clip(CircleShape)
                                 .background(
                                     if (select.selected == it) {
-                                        ComposeAppTheme.colors.jacob
+                                        ComposeAppTheme.colors.brand
                                     } else {
-                                        ComposeAppTheme.colors.grey
+                                        ComposeAppTheme.colors.textSecondary
                                     }
                                 )
                         )
@@ -321,9 +321,9 @@ object SecondaryButtonDefaults {
     @Composable
     fun buttonColors(
         backgroundColor: Color = ComposeAppTheme.colors.steel20,
-        contentColor: Color = ComposeAppTheme.colors.leah,
+        contentColor: Color = ComposeAppTheme.colors.textPrimary,
         disabledBackgroundColor: Color = ComposeAppTheme.colors.steel20,
-        disabledContentColor: Color = ComposeAppTheme.colors.grey50,
+        disabledContentColor: Color = ComposeAppTheme.colors.textDisabled,
     ): ButtonColors = HsButtonColors(
         backgroundColor = backgroundColor,
         contentColor = contentColor,
@@ -365,7 +365,7 @@ private fun ButtonSecondaryCustomPreview() {
         ) {
             ButtonSecondaryCustom(
                 title = "Custom Color",
-                textColor = ComposeAppTheme.colors.jacob,
+                textColor = ComposeAppTheme.colors.brand,
                 onClick = {}
             )
             ButtonSecondaryCustom(
@@ -375,7 +375,7 @@ private fun ButtonSecondaryCustomPreview() {
             )
             ButtonSecondaryCustom(
                 title = "Custom Disabled",
-                textColor = ComposeAppTheme.colors.jacob,
+                textColor = ComposeAppTheme.colors.brand,
                 onClick = {},
                 enabled = false
             )

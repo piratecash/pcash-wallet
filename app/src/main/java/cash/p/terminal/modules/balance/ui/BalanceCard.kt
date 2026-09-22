@@ -79,7 +79,7 @@ fun BalanceCardSwipable(
             content = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_circle_minus_24),
-                    tint = ComposeAppTheme.colors.grey,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                     contentDescription = "delete",
                 )
             }
@@ -342,7 +342,7 @@ private fun StakingUnpaidRow(stackingUnpaid: DeemedValue<String>, fullWidth: Boo
                     modifier = Modifier.size(15.dp),
                     painter = painterResource(R.drawable.ic_info_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.textSecondary,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                 )
             }
         } else {

@@ -94,7 +94,7 @@ private fun ContractBottomSheet(
         iconPainter = painterResource(R.drawable.icon_paper_contract_20),
         title = stringResource(R.string.CoinPage_Contracts),
         onCloseClick = onClose,
-        iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob)
+        iconTint = ColorFilter.tint(ComposeAppTheme.colors.brand)
     ) {
         Spacer(Modifier.height(12.dp))
 
@@ -166,7 +166,7 @@ private fun ContractBottomSheet(
                     Image(
                         modifier = Modifier.padding(start = 5.dp),
                         painter = painterResource(id = R.drawable.ic_checkmark_20),
-                        colorFilter = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+                        colorFilter = ColorFilter.tint(ComposeAppTheme.colors.brand),
                         contentDescription = null
                     )
                 }

@@ -29,7 +29,7 @@ fun ColumnScope.MarkdownFooter() {
     Text(
         text = stringResource(R.string.footer_text, currentYear()),
         style = ComposeAppTheme.typography.caption,
-        color = ComposeAppTheme.colors.grey,
+        color = ComposeAppTheme.colors.textSecondary,
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .align(Alignment.CenterHorizontally)

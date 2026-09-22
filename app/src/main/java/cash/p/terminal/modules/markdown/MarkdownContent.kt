@@ -25,7 +25,6 @@ import cash.p.terminal.modules.coin.overview.ui.Loading
 import cash.p.terminal.ui.compose.components.ListErrorView
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
-import cash.p.terminal.ui_compose.theme.Grey50
 import com.halilibo.richtext.commonmark.CommonMarkdownParseOptions
 import com.halilibo.richtext.commonmark.CommonmarkAstNodeParser
 import com.halilibo.richtext.markdown.AstBlockNodeComposer
@@ -132,7 +131,7 @@ val CustomAstBlockNodeComposer = object : AstBlockNodeComposer {
                                     .fillMaxWidth()
                                     .padding(vertical = 12.dp)
                                     .height(1.dp)
-                                    .background(Grey50)
+                                    .background(ComposeAppTheme.colors.divider)
                             )
                         }
                     }
@@ -147,7 +146,7 @@ val CustomAstBlockNodeComposer = object : AstBlockNodeComposer {
                                     .fillMaxWidth()
                                     .padding(vertical = 12.dp)
                                     .height(1.dp)
-                                    .background(Grey50)
+                                    .background(ComposeAppTheme.colors.divider)
                             )
                         }
                     }

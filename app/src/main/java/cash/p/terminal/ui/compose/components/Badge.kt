@@ -91,7 +91,7 @@ fun BadgeText(
 /**
  * Item-level "new" indicator: a small accent dot placed next to an individual row's title.
  * The category-level counterpart is [BadgeText] with a "New" label. Matches the design spec —
- * a 6dp circle in the [ComposeAppTheme.colors.laguna] accent (#4A98E9 in dark theme).
+ * a 6dp circle in the [ComposeAppTheme.colors.brand] accent (#4A98E9 in dark theme).
  */
 @Composable
 fun NewDot(modifier: Modifier = Modifier) {
@@ -99,7 +99,7 @@ fun NewDot(modifier: Modifier = Modifier) {
         modifier = modifier
             .size(6.dp)
             .clip(CircleShape)
-            .background(ComposeAppTheme.colors.laguna)
+            .background(ComposeAppTheme.colors.brand)
     )
 }
 

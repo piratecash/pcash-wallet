@@ -3,7 +3,6 @@ package cash.p.terminal.modules.fee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -22,6 +21,7 @@ import cash.p.terminal.ui_compose.components.subhead2_lucian
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Token
 import java.math.BigDecimal
+import cash.p.terminal.ui_compose.components.Caption
 
 @Composable
 fun FeeInfoSection(
@@ -88,11 +88,10 @@ fun FeeInfoSection(
         )
     } else if (feeWarningText != null) {
         VSpacer(height = 8.dp)
-        Text(
+        Caption(
             text = feeWarningText,
-            modifier = Modifier.padding(horizontal = 32.dp),
             color = ComposeAppTheme.colors.yellow,
-            style = ComposeAppTheme.typography.caption,
+            modifier = Modifier.padding(horizontal = 32.dp),
         )
     }
 }

@@ -199,7 +199,7 @@ private fun FilterScreen(
                             value = uiState.selectedBlockchainName
                                 ?: stringResource(R.string.Transactions_Filter_AllBlockchains),
                             valueColor = if (uiState.selectedBlockchainName != null)
-                                ComposeAppTheme.colors.leah else ComposeAppTheme.colors.grey,
+                                ComposeAppTheme.colors.textPrimary else ComposeAppTheme.colors.textSecondary,
                             onClick = onBlockchainClick
                         )
                     }
@@ -212,7 +212,7 @@ private fun FilterScreen(
                             value = uiState.selectedCoinTitle
                                 ?: stringResource(R.string.Transactions_Filter_AllCoins),
                             valueColor = if (uiState.selectedCoinTitle != null)
-                                ComposeAppTheme.colors.leah else ComposeAppTheme.colors.grey,
+                                ComposeAppTheme.colors.textPrimary else ComposeAppTheme.colors.textSecondary,
                             onClick = onCoinClick
                         )
                     }
@@ -225,7 +225,7 @@ private fun FilterScreen(
                             value = uiState.selectedContactName
                                 ?: stringResource(R.string.Transactions_Filter_AllContacts),
                             valueColor = if (uiState.selectedContactName != null)
-                                ComposeAppTheme.colors.leah else ComposeAppTheme.colors.grey,
+                                ComposeAppTheme.colors.textPrimary else ComposeAppTheme.colors.textSecondary,
                             onClick = onContactClick
                         )
                     }
@@ -327,7 +327,7 @@ private fun FilterDropdownCell(
                 modifier = Modifier.padding(start = 4.dp),
                 painter = painterResource(id = R.drawable.ic_down_arrow_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
         }
     }

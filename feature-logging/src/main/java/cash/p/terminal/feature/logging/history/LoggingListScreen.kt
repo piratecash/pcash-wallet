@@ -172,7 +172,7 @@ private fun EmptyState() {
                 modifier = Modifier.size(48.dp),
                 painter = painterResource(R.drawable.ic_user_24),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
         }
         VSpacer(32.dp)
@@ -271,7 +271,7 @@ private fun LoginRecordItemContent(
                         append(statusText)
                     }
                     if (item.isDuressMode) {
-                        withStyle(SpanStyle(color = ComposeAppTheme.colors.grey)) {
+                        withStyle(SpanStyle(color = ComposeAppTheme.colors.textSecondary)) {
                             append(" ")
                             append(duressText)
                         }

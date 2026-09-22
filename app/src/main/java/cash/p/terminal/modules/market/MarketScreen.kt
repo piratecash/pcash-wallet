@@ -72,7 +72,7 @@ fun MarketScreen(navController: NavController, paddingValuesParent: PaddingValue
                     MenuItem(
                         title = TranslatableString.ResString(R.string.Market_Search),
                         icon = R.drawable.icon_search,
-                        tint = ComposeAppTheme.colors.jacob,
+                        tint = ComposeAppTheme.colors.brand,
                         onClick = {
                             navController.slideFromRight(R.id.marketSearchFragment)
                         },

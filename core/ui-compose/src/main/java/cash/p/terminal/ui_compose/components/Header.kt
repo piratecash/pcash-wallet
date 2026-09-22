@@ -17,7 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.annotation.DrawableRes
 import androidx.compose.material.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -90,7 +89,7 @@ fun HeaderText(
                         indication = null,
                     ),
                 painter = painterResource(R.drawable.ic_info_20),
-                tint = ComposeAppTheme.colors.grey,
+                tint = ComposeAppTheme.colors.iconSecondary,
                 contentDescription = stringResource(R.string.Info_Title),
             )
         }
@@ -155,11 +154,10 @@ fun PremiumHeader(
             tint = ComposeAppTheme.colors.yellow,
             contentDescription = null,
         )
-        Text(
+        Subhead1(
             text = text,
             color = ComposeAppTheme.colors.yellow,
             maxLines = 1,
-            style = ComposeAppTheme.typography.subhead1,
         )
     }
 }
@@ -181,7 +179,7 @@ fun SectionHeaderWithIcon(
                 .padding(end = 10.dp)
                 .size(16.dp),
             painter = painterResource(iconRes),
-            tint = ComposeAppTheme.colors.grey,
+            tint = ComposeAppTheme.colors.iconSecondary,
             contentDescription = null,
         )
         subhead1_grey(

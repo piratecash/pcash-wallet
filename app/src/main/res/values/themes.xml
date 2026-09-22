@@ -6,11 +6,11 @@
     <style name="Theme.AppTheme.DayNight" parent="Theme.AppTheme"/>
 
     <style name="Theme.AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorAccent">@color/jacob</item>
+        <item name="colorAccent">@color/brand</item>
         <item name="android:windowBackground">@color/tyler</item>
         <item name="android:actionMenuTextAppearance">@style/Headline2</item>
-        <item name="colorControlNormal">@color/grey</item>
-        <item name="colorControlActivated">@color/jacob</item>
+        <item name="colorControlNormal">@color/icon_secondary</item>
+        <item name="colorControlActivated">@color/brand</item>
         <item name="colorControlHighlight">#6E7899</item>
         <item name="android:homeAsUpIndicator">@drawable/ic_back</item>
         <item name="android:forceDarkAllowed" tools:targetApi="29">false</item>

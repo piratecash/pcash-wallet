@@ -819,8 +819,8 @@ private fun getUnknownOfflineSendSectionItems(
 ): List<TransactionInfoViewItem> =
     listOf(
         TransactionInfoViewItem.Amount(
-            coinValue = ColoredValue(UNKNOWN_VALUE, ColorName.Grey),
-            fiatValue = ColoredValue(UNKNOWN_VALUE, ColorName.Grey),
+            coinValue = ColoredValue(UNKNOWN_VALUE, ColorName.Secondary),
+            fiatValue = ColoredValue(UNKNOWN_VALUE, ColorName.Secondary),
             coinIconUrl = value.coinIconUrl,
             alternativeCoinIconUrl = value.alternativeCoinIconUrl,
             coinIconPlaceholder = value.coinIconPlaceholder,

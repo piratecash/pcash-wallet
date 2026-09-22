@@ -29,7 +29,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
@@ -50,7 +49,7 @@ fun HsIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    rippleColor: Color = ComposeAppTheme.colors.leah,
+    rippleColor: Color = ComposeAppTheme.colors.iconPrimary,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     minWidth: Dp = 48.dp,
     content: @Composable () -> Unit
@@ -67,7 +66,7 @@ fun HsIconButton(
             ),
         contentAlignment = Alignment.Center
     ) {
-        val contentColor = if (enabled) LocalContentColor.current else LocalContentColor.current.copy(alpha = 0.38f)
+        val contentColor = if (enabled) LocalContentColor.current else ComposeAppTheme.colors.iconDisabled
         CompositionLocalProvider(LocalContentColor provides contentColor, content = content)
     }
 }
@@ -78,7 +77,7 @@ fun HsBackButton(onClick: () -> Unit) {
         Icon(
             painter = painterResource(id = R.drawable.ic_back),
             contentDescription = stringResource(R.string.Button_Back),
-            tint = ComposeAppTheme.colors.jacob
+            tint = ComposeAppTheme.colors.brand
         )
     }
 }
@@ -110,7 +109,6 @@ fun BalanceActionButton(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val shape = RoundedCornerShape(12.dp)
-    val contentAlpha = if (enabled) 1f else 0.5f
     Column(
         modifier = modifier
             .width(46.dp)
@@ -126,7 +124,6 @@ fun BalanceActionButton(
         Box(
             modifier = Modifier
                 .size(46.dp)
-                .alpha(contentAlpha)
                 .clip(shape)
                 .background(ComposeAppTheme.colors.actionBackground)
                 .border(1.dp, ComposeAppTheme.colors.actionBorder, shape)
@@ -139,15 +136,14 @@ fun BalanceActionButton(
                     .rotate(iconRotation),
                 painter = painterResource(icon),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.jacob,
+                tint = if (enabled) ComposeAppTheme.colors.brand else ComposeAppTheme.colors.iconDisabled,
             )
         }
         Spacer(Modifier.height(7.dp))
-        caption_grey(
-            modifier = Modifier
-                .wrapContentWidth(unbounded = true)
-                .alpha(contentAlpha),
+        Caption(
             text = label,
+            color = if (enabled) ComposeAppTheme.colors.textSecondary else ComposeAppTheme.colors.textDisabled,
+            modifier = Modifier.wrapContentWidth(unbounded = true),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,

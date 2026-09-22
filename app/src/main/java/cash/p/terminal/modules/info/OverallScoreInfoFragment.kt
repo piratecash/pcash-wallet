@@ -35,6 +35,7 @@ import cash.p.terminal.ui.compose.components.ScreenMessageWithAction
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import java.math.BigDecimal
+import cash.p.terminal.ui_compose.components.Headline2
 
 class OverallScoreInfoFragment : BaseComposeFragment() {
 
@@ -131,11 +132,10 @@ private fun ScoreCategoryHeader(categoryTitle: Int, description: Int) {
     Column {
         InfoHeader(R.string.Coin_Analytics_OverallScore)
         VSpacer(12.dp)
-        Text(
-            modifier = Modifier.padding(horizontal = 32.dp),
+        Headline2(
             text = stringResource(categoryTitle),
             color = ComposeAppTheme.colors.yellow,
-            style = ComposeAppTheme.typography.headline2,
+            modifier = Modifier.padding(horizontal = 32.dp),
         )
         InfoTextBody(stringResource(description))
         VSpacer(12.dp)

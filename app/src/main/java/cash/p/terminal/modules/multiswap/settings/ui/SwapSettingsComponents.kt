@@ -32,7 +32,7 @@ import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
 import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
 import cash.p.terminal.ui_compose.components.HeaderText
 import cash.p.terminal.ui_compose.components.InfoText
-import cash.p.terminal.ui_compose.components.body_grey50
+import cash.p.terminal.ui_compose.components.body_disabled
 import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.ui_compose.entities.FormsInputStateWarning
 import cash.p.terminal.ui_compose.theme.ColoredTextStyle
@@ -170,13 +170,13 @@ fun InputWithButtons(
                     onValueChange.invoke(textValue.text)
                 },
                 textStyle = ColoredTextStyle(
-                    color = ComposeAppTheme.colors.leah,
+                    color = ComposeAppTheme.colors.textPrimary,
                     textStyle = ComposeAppTheme.typography.body
                 ),
                 maxLines = 1,
                 decorationBox = { innerTextField ->
                     if (textState.text.isEmpty()) {
-                        body_grey50(
+                        body_disabled(
                             hint ?: "",
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 1,

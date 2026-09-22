@@ -66,7 +66,7 @@ import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.body_jacob
+import cash.p.terminal.ui_compose.components.body_brand
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.getShape
 import cash.p.terminal.ui_compose.components.showDivider
@@ -302,11 +302,11 @@ private fun AddButton(
                 Icon(
                     painter = painterResource(R.drawable.ic_plus),
                     modifier = Modifier.size(24.dp),
-                    tint = ComposeAppTheme.colors.jacob,
+                    tint = ComposeAppTheme.colors.brand,
                     contentDescription = null
                 )
                 Spacer(Modifier.width(16.dp))
-                body_jacob(
+                body_brand(
                     text = stringResource(R.string.EvmNetwork_AddNew)
                 )
             }
@@ -359,7 +359,7 @@ fun RpcCell(
             if (item.selected) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_checkmark_20),
-                    tint = ComposeAppTheme.colors.jacob,
+                    tint = ComposeAppTheme.colors.brand,
                     contentDescription = null
                 )
             }

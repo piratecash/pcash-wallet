@@ -42,7 +42,7 @@ fun CheckboxWithInfo(
                 painter = painterResource(R.drawable.ic_info_20),
                 contentDescription = stringResource(R.string.Info_Title),
                 modifier = Modifier.size(20.dp),
-                tint = ComposeAppTheme.colors.grey,
+                tint = ComposeAppTheme.colors.iconSecondary,
             )
         }
     }

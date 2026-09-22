@@ -273,11 +273,11 @@ fun A3(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.headline2,
-        color = ComposeAppTheme.colors.jacob,
+        color = ComposeAppTheme.colors.brand,
     )
 }
 @Composable
-fun headline2_jacob(
+fun headline2_brand(
     text: String,
     modifier: Modifier = Modifier,
     textAlign: TextAlign? = null,
@@ -429,11 +429,11 @@ fun A7(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.headline2,
-        color = ComposeAppTheme.colors.textSecondaryDimmed,
+        color = ComposeAppTheme.colors.textDisabled,
     )
 }
 @Composable
-fun headline2_grey50(
+fun headline2_disabled(
     text: String,
     modifier: Modifier = Modifier,
     textAlign: TextAlign? = null,
@@ -667,11 +667,11 @@ fun B3(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.body,
-        color = ComposeAppTheme.colors.jacob,
+        color = ComposeAppTheme.colors.brand,
     )
 }
 @Composable
-fun body_jacob(
+fun body_brand(
     text: String,
     modifier: Modifier = Modifier,
     textAlign: TextAlign? = null,
@@ -823,11 +823,11 @@ fun B7(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.body,
-        color = ComposeAppTheme.colors.textSecondaryDimmed,
+        color = ComposeAppTheme.colors.textDisabled,
     )
 }
 @Composable
-fun body_grey50(
+fun body_disabled(
     text: String,
     modifier: Modifier = Modifier,
     textAlign: TextAlign? = null,
@@ -1098,11 +1098,11 @@ fun C3(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead1,
-        color = ComposeAppTheme.colors.jacob,
+        color = ComposeAppTheme.colors.brand,
     )
 }
 @Composable
-fun subhead1_jacob(
+fun subhead1_brand(
     text: String,
     modifier: Modifier = Modifier,
     textAlign: TextAlign? = null,
@@ -1254,11 +1254,11 @@ fun C7(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead1,
-        color = ComposeAppTheme.colors.textSecondaryDimmed,
+        color = ComposeAppTheme.colors.textDisabled,
     )
 }
 @Composable
-fun subhead1_grey50(
+fun subhead1_disabled(
     text: String,
     modifier: Modifier = Modifier,
     textAlign: TextAlign? = null,
@@ -1553,11 +1553,11 @@ fun D3(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead2,
-        color = ComposeAppTheme.colors.jacob,
+        color = ComposeAppTheme.colors.brand,
     )
 }
 @Composable
-fun subhead2_jacob(
+fun subhead2_brand(
     text: String,
     modifier: Modifier = Modifier,
     textAlign: TextAlign? = null,
@@ -1731,11 +1731,11 @@ fun D7(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead2,
-        color = ComposeAppTheme.colors.textSecondaryDimmed,
+        color = ComposeAppTheme.colors.textDisabled,
     )
 }
 @Composable
-fun subhead2_grey50(
+fun subhead2_disabled(
     text: String,
     modifier: Modifier = Modifier,
     textAlign: TextAlign? = null,
@@ -1913,7 +1913,7 @@ fun micro_grey(
 }
 
 @Composable
-fun micro_grey50(
+fun micro_disabled(
     text: String,
     modifier: Modifier = Modifier,
     textAlign: TextAlign? = null,
@@ -1929,12 +1929,12 @@ fun micro_grey50(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.micro,
-        color = ComposeAppTheme.colors.textSecondaryDimmed,
+        color = ComposeAppTheme.colors.textDisabled,
     )
 }
 
 @Composable
-fun MicroSBGrey(
+fun MicroSBSecondary(
     text: String,
     modifier: Modifier = Modifier,
     textAlign: TextAlign? = null,
@@ -2050,11 +2050,11 @@ fun E3(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.captionSB,
-        color = ComposeAppTheme.colors.jacob,
+        color = ComposeAppTheme.colors.brand,
     )
 }
 @Composable
-fun captionSB_jacob(
+fun captionSB_brand(
     text: String,
     modifier: Modifier = Modifier,
     textAlign: TextAlign? = null,
@@ -2206,11 +2206,11 @@ fun E7(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.captionSB,
-        color = ComposeAppTheme.colors.textSecondaryDimmed,
+        color = ComposeAppTheme.colors.textDisabled,
     )
 }
 @Composable
-fun captionSB_grey50(
+fun captionSB_disabled(
     text: String,
     modifier: Modifier = Modifier,
     textAlign: TextAlign? = null,
@@ -2440,11 +2440,11 @@ fun F3(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.caption,
-        color = ComposeAppTheme.colors.jacob,
+        color = ComposeAppTheme.colors.brand,
     )
 }
 @Composable
-fun caption_jacob(
+fun caption_brand(
     text: String,
     modifier: Modifier = Modifier,
     textAlign: TextAlign? = null,
@@ -2596,11 +2596,11 @@ fun F7(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.caption,
-        color = ComposeAppTheme.colors.textSecondaryDimmed,
+        color = ComposeAppTheme.colors.textDisabled,
     )
 }
 @Composable
-fun caption_grey50(
+fun caption_disabled(
     text: String,
     modifier: Modifier = Modifier,
     textAlign: TextAlign? = null,
@@ -2870,11 +2870,11 @@ fun G3(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead1Italic,
-        color = ComposeAppTheme.colors.jacob,
+        color = ComposeAppTheme.colors.brand,
     )
 }
 @Composable
-fun subhead1Italic_jacob(
+fun subhead1Italic_brand(
     text: String,
     modifier: Modifier = Modifier,
     textAlign: TextAlign? = null,
@@ -3026,11 +3026,11 @@ fun G7(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead1Italic,
-        color = ComposeAppTheme.colors.textSecondaryDimmed,
+        color = ComposeAppTheme.colors.textDisabled,
     )
 }
 @Composable
-fun subhead1Italic_grey50(
+fun subhead1Italic_disabled(
     text: String,
     modifier: Modifier = Modifier,
     textAlign: TextAlign? = null,
@@ -3166,7 +3166,7 @@ fun subhead1Italic_red50(
 }
 
 @Composable
-fun Title1Leah(
+fun Title1Primary(
     text: String,
     modifier: Modifier = Modifier,
     textAlign: TextAlign? = null,
@@ -3325,11 +3325,11 @@ fun H3(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.title3,
-        color = ComposeAppTheme.colors.jacob,
+        color = ComposeAppTheme.colors.brand,
     )
 }
 @Composable
-fun title3_jacob(
+fun title3_brand(
     text: String,
     modifier: Modifier = Modifier,
     textAlign: TextAlign? = null,
@@ -3481,11 +3481,11 @@ fun H7(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.title3,
-        color = ComposeAppTheme.colors.textSecondaryDimmed,
+        color = ComposeAppTheme.colors.textDisabled,
     )
 }
 @Composable
-fun title3_grey50(
+fun title3_disabled(
     text: String,
     modifier: Modifier = Modifier,
     textAlign: TextAlign? = null,
@@ -3658,6 +3658,94 @@ fun highlightText(
     }
 }
 
+@Composable
+fun Headline2(
+    text: String,
+    color: Color,
+    modifier: Modifier = Modifier,
+    textAlign: TextAlign? = null,
+    overflow: TextOverflow = TextOverflow.Clip,
+    maxLines: Int = Int.MAX_VALUE,
+    onTextLayout: (TextLayoutResult) -> Unit = {}
+) {
+    Text(
+        text = text,
+        modifier = modifier,
+        textAlign = textAlign,
+        overflow = overflow,
+        maxLines = maxLines,
+        onTextLayout = onTextLayout,
+        style = ComposeAppTheme.typography.headline2,
+        color = color,
+    )
+}
+
+@Composable
+fun Body(
+    text: String,
+    color: Color,
+    modifier: Modifier = Modifier,
+    textAlign: TextAlign? = null,
+    overflow: TextOverflow = TextOverflow.Clip,
+    maxLines: Int = Int.MAX_VALUE,
+    onTextLayout: (TextLayoutResult) -> Unit = {}
+) {
+    Text(
+        text = text,
+        modifier = modifier,
+        textAlign = textAlign,
+        overflow = overflow,
+        maxLines = maxLines,
+        onTextLayout = onTextLayout,
+        style = ComposeAppTheme.typography.body,
+        color = color,
+    )
+}
+
+@Composable
+fun Caption(
+    text: String,
+    color: Color,
+    modifier: Modifier = Modifier,
+    textAlign: TextAlign? = null,
+    overflow: TextOverflow = TextOverflow.Clip,
+    maxLines: Int = Int.MAX_VALUE,
+    onTextLayout: (TextLayoutResult) -> Unit = {}
+) {
+    Text(
+        text = text,
+        modifier = modifier,
+        textAlign = textAlign,
+        overflow = overflow,
+        maxLines = maxLines,
+        onTextLayout = onTextLayout,
+        style = ComposeAppTheme.typography.caption,
+        color = color,
+    )
+}
+
+@Composable
+fun Title3(
+    text: String,
+    color: Color,
+    modifier: Modifier = Modifier,
+    textAlign: TextAlign? = null,
+    overflow: TextOverflow = TextOverflow.Clip,
+    maxLines: Int = Int.MAX_VALUE,
+    onTextLayout: (TextLayoutResult) -> Unit = {}
+) {
+    Text(
+        text = text,
+        modifier = modifier,
+        textAlign = textAlign,
+        overflow = overflow,
+        maxLines = maxLines,
+        onTextLayout = onTextLayout,
+        style = ComposeAppTheme.typography.title3,
+        color = color,
+    )
+}
+
 @Preview(name = "Light", uiMode = Configuration.UI_MODE_NIGHT_NO, widthDp = 360)
 @Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, widthDp = 360)
 @Composable
@@ -3671,9 +3759,9 @@ private fun BalanceTypographyPreview() {
         ) {
             Subhead1("Balance", color = ComposeAppTheme.colors.textPrimary)
             Subhead1Filter("Balance")
-            MicroSBGrey("TOTAL BALANCE")
-            Title1Leah("\$1,700.00")
-            Title1Leah("\$1,700.00", dimmed = true)
+            MicroSBSecondary("TOTAL BALANCE")
+            Title1Primary("\$1,700.00")
+            Title1Primary("\$1,700.00", dimmed = true)
         }
     }
 }

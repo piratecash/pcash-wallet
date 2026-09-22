@@ -169,7 +169,7 @@ private fun SettingsSection(
                         modifier = Modifier.size(24.dp),
                         painter = painterResource(R.drawable.ic_calculator),
                         contentDescription = null,
-                        tint = ComposeAppTheme.colors.grey,
+                        tint = ComposeAppTheme.colors.iconSecondary,
                     )
                     body_leah(
                         modifier = Modifier.padding(start = 16.dp, end = 16.dp),

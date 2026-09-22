@@ -137,7 +137,7 @@ private fun NotesCell(icon: Painter, title: String, description: String, borderT
             Icon(
                 modifier = Modifier.size(24.dp),
                 painter = icon,
-                tint = ComposeAppTheme.colors.jacob,
+                tint = ComposeAppTheme.colors.brand,
                 contentDescription = null,
             )
             HSpacer(width = 16.dp)

@@ -174,7 +174,7 @@ internal fun AppearanceScreen(
                         Icon(
                             painter = painterResource(R.drawable.ic_arrow_right),
                             contentDescription = null,
-                            tint = ComposeAppTheme.colors.grey
+                            tint = ComposeAppTheme.colors.iconSecondary
                         )
                     }
                 }

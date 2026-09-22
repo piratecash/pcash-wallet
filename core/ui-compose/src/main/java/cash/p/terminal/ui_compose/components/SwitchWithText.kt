@@ -37,7 +37,7 @@ fun SwitchWithText(
                     .padding(end = 8.dp)
             )
         } else {
-            body_grey50(
+            body_disabled(
                 text = text,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

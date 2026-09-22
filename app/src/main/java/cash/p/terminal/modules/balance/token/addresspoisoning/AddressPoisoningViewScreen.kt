@@ -103,7 +103,7 @@ private fun ModeOptionCard(
     preview: @Composable () -> Unit,
 ) {
     val borderColor = if (selected) {
-        ComposeAppTheme.colors.jacob
+        ComposeAppTheme.colors.brand
     } else {
         ComposeAppTheme.colors.steel20
     }
@@ -143,7 +143,7 @@ private fun AddressPoisoningViewScreenPreview() {
         title = "Sent",
         subtitle = "to xxxxxxxxxxxx...xxxx...xxxxxxxxxx",
         primaryValue = ColoredValue("-1 ETH", ColorName.Lucian),
-        secondaryValue = ColoredValue("$3,198", ColorName.Grey),
+        secondaryValue = ColoredValue("$3,198", ColorName.Secondary),
         date = Date(),
         formattedTime = "14:30",
         icon = TransactionViewItem.Icon.Failed,

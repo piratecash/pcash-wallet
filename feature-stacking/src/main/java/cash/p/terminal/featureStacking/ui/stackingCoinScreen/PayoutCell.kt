@@ -80,7 +80,7 @@ internal fun PayoutCell(item: PayoutViewItem, position: SectionItemPosition) {
                 Icon(
                     modifier = Modifier.size(32.dp),
                     painter = painterResource(icon),
-                    tint = ComposeAppTheme.colors.leah,
+                    tint = ComposeAppTheme.colors.iconPrimary,
                     contentDescription = null
                 )
             }
@@ -94,7 +94,7 @@ internal fun PayoutCell(item: PayoutViewItem, position: SectionItemPosition) {
                     R.string.payouts
                 }
                 val color = if (item.payoutType == PayoutType.INCOME) {
-                    ComposeAppTheme.colors.leah
+                    ComposeAppTheme.colors.textPrimary
                 } else {
                     ComposeAppTheme.colors.remus
                 }

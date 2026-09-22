@@ -158,7 +158,7 @@ private fun PriceRow(
                 Icon(
                     painter = painterResource(R.drawable.ic_arrow_swap3_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                 )
             }
         }
@@ -245,7 +245,7 @@ private fun SupportRow(url: String) {
         Icon(
             painter = painterResource(R.drawable.ic_support_24),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.jacob,
+            tint = ComposeAppTheme.colors.brand,
         )
         HSpacer(width = 16.dp)
         body_leah(
@@ -256,7 +256,7 @@ private fun SupportRow(url: String) {
         Icon(
             painter = painterResource(R.drawable.ic_arrow_right),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey,
+            tint = ComposeAppTheme.colors.iconSecondary,
         )
     }
 }

@@ -280,11 +280,11 @@ private fun SupportLine() {
         text = AnnotatedString.fromHtml(
             htmlString = stringResource(R.string.paycore_verification_support_line),
             linkStyles = TextLinkStyles(
-                style = SpanStyle(color = ComposeAppTheme.colors.jacob)
+                style = SpanStyle(color = ComposeAppTheme.colors.brand)
             )
         ),
         style = ComposeAppTheme.typography.subhead2,
-        color = ComposeAppTheme.colors.grey,
+        color = ComposeAppTheme.colors.textSecondary,
         textAlign = TextAlign.Center,
         modifier = Modifier
             .fillMaxWidth()
@@ -356,10 +356,10 @@ private fun PhoneInputField(
             modifier = Modifier.weight(1f),
             enabled = enabled,
             textStyle = ComposeAppTheme.typography.body.copy(
-                color = ComposeAppTheme.colors.leah
+                color = ComposeAppTheme.colors.textPrimary
             ),
             singleLine = true,
-            cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+            cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
             visualTransformation = RussianPhoneVisualTransformation,
             decorationBox = { inner ->
@@ -486,7 +486,7 @@ private fun LargeCircleWithExclamation() {
         Icon(
             painter = painterResource(R.drawable.ic_sync_error),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey,
+            tint = ComposeAppTheme.colors.iconSecondary,
             modifier = Modifier.size(48.dp)
         )
     }

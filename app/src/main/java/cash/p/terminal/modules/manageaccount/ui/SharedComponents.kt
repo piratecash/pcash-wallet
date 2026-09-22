@@ -125,7 +125,7 @@ fun KeyActionItem(
                 Icon(
                     painter = painterResource(id = R.drawable.ic_arrow_right),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
                 Spacer(modifier = Modifier.width(16.dp))
             }
@@ -186,7 +186,7 @@ fun PassphraseCell(passphrase: String, hidden: Boolean) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_key_phrase_20),
                         contentDescription = null,
-                        tint = ComposeAppTheme.colors.grey
+                        tint = ComposeAppTheme.colors.iconSecondary
                     )
                     D1(
                         text = stringResource(R.string.ShowKey_Passphrase),

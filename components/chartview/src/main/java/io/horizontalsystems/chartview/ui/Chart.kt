@@ -64,7 +64,7 @@ import cash.p.terminal.ui_compose.components.diffColor
 import cash.p.terminal.ui_compose.components.micro_grey
 import cash.p.terminal.ui_compose.components.subhead1_grey
 import cash.p.terminal.ui_compose.components.subhead2_grey
-import cash.p.terminal.ui_compose.components.subhead2_jacob
+import cash.p.terminal.ui_compose.components.subhead2_brand
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.chartview.ChartViewType
 import io.horizontalsystems.chartview.GraphicBars
@@ -122,7 +122,7 @@ fun HsChartLineHeader(
                     modifier = Modifier.alignByBaseline(),
                     text = mainValue,
                     style = style,
-                    color = ComposeAppTheme.colors.leah,
+                    color = ComposeAppTheme.colors.textPrimary,
                 )
                 mainValueHint?.let {
                     HSpacer(width = 4.dp)
@@ -177,7 +177,7 @@ fun HsChartLineHeader(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
-                            subhead2_jacob(
+                            subhead2_brand(
                                 text = extraData.dominance
                             )
                             extraData.diff?.let { diff ->
@@ -232,7 +232,7 @@ fun HsChartLineHeader(
                         }
 
                         if (extraData.rsi != null && extraData.rsi.isFinite()) {
-                            subhead2_jacob(
+                            subhead2_brand(
                                 text = numberFormatter.formatFiatShort(
                                     extraData.rsi.toBigDecimal(),
                                     "",
@@ -264,7 +264,7 @@ fun HsChartLineHeader(
                                                 append(" ")
                                             }
                                         }
-                                        withStyle(style = SpanStyle(color = ComposeAppTheme.colors.jacob)) {
+                                        withStyle(style = SpanStyle(color = ComposeAppTheme.colors.brand)) {
                                             append(numberFormatter.format(macd.macdValue, 0, 8))
                                         }
                                     },
@@ -326,7 +326,7 @@ fun Chart(
                                 modifier = Modifier.size(48.dp),
                                 painter = painterResource(R.drawable.ic_sync_error),
                                 contentDescription = null,
-                                tint = ComposeAppTheme.colors.grey
+                                tint = ComposeAppTheme.colors.iconSecondary
                             )
                         }
                         VSpacer(height = 32.dp)
@@ -363,7 +363,7 @@ fun Chart(
                                     modifier = Modifier
                                         .size(24.dp)
                                         .align(Alignment.Center),
-                                    color = ComposeAppTheme.colors.grey,
+                                    color = ComposeAppTheme.colors.textSecondary,
                                     strokeWidth = 2.dp
                                 )
                             }
@@ -688,7 +688,7 @@ fun PriceVolChart(
                 mutableStateOf<Float?>(null)
             }
 
-            val dotColor = ComposeAppTheme.colors.leah
+            val dotColor = ComposeAppTheme.colors.textPrimary
 
             Canvas(
                 modifier = Modifier

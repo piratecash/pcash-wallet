@@ -311,7 +311,7 @@ fun CheckValue(
     if (inProgress) {
         CircularProgressIndicator(
             modifier = Modifier.size(20.dp),
-            color = ComposeAppTheme.colors.grey,
+            color = ComposeAppTheme.colors.textSecondary,
             strokeWidth = 2.dp
         )
     } else {
@@ -352,7 +352,7 @@ fun CheckLocked() {
     Icon(
         painter = painterResource(R.drawable.ic_lock_20),
         contentDescription = null,
-        tint = ComposeAppTheme.colors.andy,
+        tint = ComposeAppTheme.colors.iconSecondary,
     )
 }
 
@@ -366,7 +366,7 @@ private fun AddressCheckInProgress(modifier: Modifier) {
     ) {
         CircularProgressIndicator(
             modifier = Modifier.size(20.dp),
-            color = ComposeAppTheme.colors.grey,
+            color = ComposeAppTheme.colors.textSecondary,
             strokeWidth = 2.dp
         )
         HSpacer(8.dp)

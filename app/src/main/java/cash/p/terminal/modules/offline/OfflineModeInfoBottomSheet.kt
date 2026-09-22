@@ -50,7 +50,7 @@ internal fun OfflineModeInfoBottomSheet(onDismiss: () -> Unit) {
     ) {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_info_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.grey),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.iconSecondary),
             title = stringResource(R.string.offline_mode_info_title),
             onCloseClick = close,
         ) {

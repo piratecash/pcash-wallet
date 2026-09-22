@@ -28,7 +28,7 @@ fun CellLink(icon: Painter, title: String, onClick: () -> Unit) {
             modifier = Modifier.padding(horizontal = 16.dp),
             painter = icon,
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey
+            tint = ComposeAppTheme.colors.iconSecondary
         )
         body_leah(
             modifier = Modifier.weight(1f),
@@ -38,7 +38,7 @@ fun CellLink(icon: Painter, title: String, onClick: () -> Unit) {
             modifier = Modifier.padding(horizontal = 16.dp),
             painter = painterResource(id = R.drawable.ic_arrow_right),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey
+            tint = ComposeAppTheme.colors.iconSecondary
         )
     }
 }

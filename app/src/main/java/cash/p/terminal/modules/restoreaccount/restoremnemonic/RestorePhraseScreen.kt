@@ -103,7 +103,7 @@ import cash.p.terminal.ui_compose.components.InfoText
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.TextImportantWarning
-import cash.p.terminal.ui_compose.components.body_grey50
+import cash.p.terminal.ui_compose.components.body_disabled
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.captionSB_leah
 import cash.p.terminal.ui_compose.components.caption_lucian
@@ -358,16 +358,16 @@ private fun MnemonicTextInput(
             editor.showKeyboardWarning = actions.shouldWarnAboutKeyboard()
         },
         textStyle = ColoredTextStyle(
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             textStyle = ComposeAppTheme.typography.body
         ),
         maxLines = 6,
-        cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+        cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
         visualTransformation = { highlightInvalidWords(it, uiState.invalidWordRanges, style) },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         decorationBox = { innerTextField ->
             if (editor.text.text.isEmpty()) {
-                body_grey50(
+                body_disabled(
                     stringResource(R.string.Restore_PhraseHint),
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -609,7 +609,7 @@ fun SuggestionsBar(
                 Icon(
                     modifier = Modifier.align(Alignment.Center),
                     painter = painterResource(R.drawable.ic_more_24),
-                    tint = ComposeAppTheme.colors.grey,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                     contentDescription = null
                 )
             }

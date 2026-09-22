@@ -118,7 +118,7 @@ private fun NftBannerCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, ComposeAppTheme.colors.jacob, RoundedCornerShape(12.dp))
+            .border(1.dp, ComposeAppTheme.colors.brand, RoundedCornerShape(12.dp))
             .background(ComposeAppTheme.colors.lawrence)
             .padding(12.dp)
     ) {
@@ -173,7 +173,7 @@ private fun GamepadIcon(
         Icon(
             painter = painterResource(R.drawable.ic_gamepad_48),
             contentDescription = null,
-            tint = if (connected) ComposeAppTheme.colors.jacob else ComposeAppTheme.colors.grey,
+            tint = if (connected) ComposeAppTheme.colors.brand else ComposeAppTheme.colors.iconSecondary,
             modifier = Modifier.size(48.dp)
         )
     }

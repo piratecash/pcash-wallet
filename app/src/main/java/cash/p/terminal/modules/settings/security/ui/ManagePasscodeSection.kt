@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
 import cash.p.terminal.modules.settings.security.SecurityCenterCell
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
-import cash.p.terminal.ui_compose.components.body_jacob
+import cash.p.terminal.ui_compose.components.body_brand
 import cash.p.terminal.ui_compose.components.body_lucian
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
@@ -35,13 +35,13 @@ fun ManagePasscodeSection(
                 start = {
                     Icon(
                         painter = painterResource(iconRes),
-                        tint = ComposeAppTheme.colors.jacob,
+                        tint = ComposeAppTheme.colors.brand,
                         modifier = Modifier.size(24.dp),
                         contentDescription = null,
                     )
                 },
                 center = {
-                    body_jacob(
+                    body_brand(
                         text = stringResource(if (enabled) editTextRes else enableTextRes),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,

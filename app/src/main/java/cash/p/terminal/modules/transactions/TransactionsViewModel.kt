@@ -839,5 +839,5 @@ fun AmlStatus.riskColor(): Color = when (this) {
     AmlStatus.Medium -> ComposeAppTheme.colors.yellow
     AmlStatus.High -> ComposeAppTheme.colors.lucian
     AmlStatus.Loading,
-    AmlStatus.Unknown -> ComposeAppTheme.colors.grey50
+    AmlStatus.Unknown -> ComposeAppTheme.colors.textDisabled
 }

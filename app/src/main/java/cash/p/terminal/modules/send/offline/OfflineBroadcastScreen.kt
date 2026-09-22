@@ -163,7 +163,7 @@ private fun NetworkRow(confirm: OfflineBroadcastConfirm, onPickNetwork: () -> Un
                 Icon(
                     painter = painterResource(R.drawable.ic_blocks_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                 )
                 HSpacer(16.dp)
                 body_leah(text = stringResource(R.string.offline_broadcast_blockchain))
@@ -174,7 +174,7 @@ private fun NetworkRow(confirm: OfflineBroadcastConfirm, onPickNetwork: () -> Un
                 Icon(
                     painter = painterResource(R.drawable.ic_arrow_big_down_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                 )
             }
         } else {
@@ -252,7 +252,7 @@ private fun BlockchainCell(
             Icon(
                 painter = painterResource(R.drawable.ic_checkmark_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.jacob,
+                tint = ComposeAppTheme.colors.brand,
             )
         }
     }
@@ -282,7 +282,7 @@ private fun SuccessResult(result: OfflineBroadcastResult.Success) {
     VSpacer(44.dp)
     OfflineStatusBlock(
         icon = if (result.queued) R.drawable.ic_info_20 else R.drawable.ic_checkmark_20,
-        iconTint = if (result.queued) ComposeAppTheme.colors.jacob else ComposeAppTheme.colors.remus,
+        iconTint = if (result.queued) ComposeAppTheme.colors.brand else ComposeAppTheme.colors.remus,
         style = if (result.queued) OfflineStatusBlockStyle.Neutral else OfflineStatusBlockStyle.Success,
         title = stringResource(titleRes),
     ) {
@@ -389,7 +389,7 @@ private fun ExplorerCell(url: String) {
         Icon(
             painter = painterResource(R.drawable.ic_globe_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey,
+            tint = ComposeAppTheme.colors.iconSecondary,
         )
         HSpacer(16.dp)
         body_leah(
@@ -401,7 +401,7 @@ private fun ExplorerCell(url: String) {
         Icon(
             painter = painterResource(R.drawable.ic_big_forward_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey,
+            tint = ComposeAppTheme.colors.iconSecondary,
         )
     }
 }

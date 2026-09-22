@@ -78,7 +78,7 @@ fun AppStatusScreen(
             ) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(32.dp),
-                    color = ComposeAppTheme.colors.grey,
+                    color = ComposeAppTheme.colors.textSecondary,
                     strokeWidth = 4.dp
                 )
             }

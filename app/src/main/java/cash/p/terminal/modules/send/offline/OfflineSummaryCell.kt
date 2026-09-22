@@ -113,7 +113,7 @@ internal fun RawTransactionSection(rawHex: String) {
                 modifier = Modifier.rotate(if (expanded) 0f else 180f),
                 painter = painterResource(R.drawable.ic_arrow_big_up_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey,
+                tint = ComposeAppTheme.colors.iconSecondary,
             )
         }
         if (expanded) {

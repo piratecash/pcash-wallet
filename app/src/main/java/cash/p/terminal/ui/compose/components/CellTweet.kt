@@ -96,7 +96,7 @@ fun CellTweet(tweet: TweetViewItem, onClick: (TweetViewItem) -> Unit) {
 private fun TweetDate(tweet: TweetViewItem) {
     Text(
         text = tweet.date,
-        color = ComposeAppTheme.colors.grey,
+        color = ComposeAppTheme.colors.textSecondary,
         style = ComposeAppTheme.typography.micro
     )
 }
@@ -111,7 +111,7 @@ private fun TweetReferencedTweet(referencedTweet: ReferencedTweetViewItem) {
     ) {
         Text(
             text = referencedTweet.title.getString(),
-            color = ComposeAppTheme.colors.grey,
+            color = ComposeAppTheme.colors.textSecondary,
             style = ComposeAppTheme.typography.micro
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -123,7 +123,7 @@ private fun TweetReferencedTweet(referencedTweet: ReferencedTweetViewItem) {
 private fun TweetText(text: String, entities: List<Extractor.Entity>) {
     val spanStyles = entities.map {
         AnnotatedString.Range(
-            SpanStyle(color = ComposeAppTheme.colors.laguna), it.start, it.end
+            SpanStyle(color = ComposeAppTheme.colors.brand), it.start, it.end
         )
     }
     Text(
@@ -131,7 +131,7 @@ private fun TweetText(text: String, entities: List<Extractor.Entity>) {
             text = text,
             spanStyles = spanStyles,
         ),
-        color = ComposeAppTheme.colors.leah,
+        color = ComposeAppTheme.colors.textPrimary,
         style = ComposeAppTheme.typography.subhead2
     )
 }
@@ -209,14 +209,14 @@ private fun AttachmentPoll(attachment: Tweet.Attachment.Poll) {
         attachment.options.forEach { option ->
             val proportion = option.votes / totalVotes.toFloat()
             val color = if (option.votes == maxVotes) {
-                cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.laguna
+                ComposeAppTheme.colors.brand
             } else {
-                cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.steel20
+                ComposeAppTheme.colors.steel20
             }
             val textColor = if (option.votes == maxVotes) {
-                cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.claude
+                ComposeAppTheme.colors.claude
             } else {
-                cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.leah
+                ComposeAppTheme.colors.textPrimary
             }
             Box(
                 modifier = Modifier

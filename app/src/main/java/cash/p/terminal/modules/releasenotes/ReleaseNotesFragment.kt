@@ -36,7 +36,7 @@ import cash.p.terminal.ui_compose.components.HsIconButton
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.body_leah
-import cash.p.terminal.ui_compose.components.caption_jacob
+import cash.p.terminal.ui_compose.components.caption_brand
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
@@ -170,7 +170,7 @@ fun ReleaseNotesScreen(
 
                 Spacer(Modifier.weight(1f))
 
-                caption_jacob(
+                caption_brand(
                     modifier = Modifier.padding(end = 24.dp),
                     text = stringResource(R.string.ReleaseNotes_JoinUnstoppables)
                 )
@@ -186,7 +186,7 @@ private fun IconButton(icon: Int, url: String, description: String) {
         Icon(
             painter = painterResource(id = icon),
             contentDescription = description,
-            tint = ComposeAppTheme.colors.jacob
+            tint = ComposeAppTheme.colors.brand
         )
     }
 }

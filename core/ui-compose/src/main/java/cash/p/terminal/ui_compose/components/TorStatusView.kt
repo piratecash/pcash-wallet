@@ -79,7 +79,7 @@ internal fun TorStatusView(
             val endColor = ComposeAppTheme.colors.lawrence
             val color = remember { Animatable(startColor) }
             val startTextColor = ComposeAppTheme.colors.white
-            val endTextColor = ComposeAppTheme.colors.leah
+            val endTextColor = ComposeAppTheme.colors.textPrimary
             val textColor = remember { Animatable(startTextColor) }
 
             LaunchedEffect(Unit) {
@@ -117,7 +117,7 @@ internal fun TorStatusView(
                     color = if (torViewState.showRetryButton) {
                         ComposeAppTheme.colors.lucian
                     } else {
-                        ComposeAppTheme.colors.leah
+                        ComposeAppTheme.colors.textPrimary
                     },
                 )
 

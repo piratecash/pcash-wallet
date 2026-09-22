@@ -197,7 +197,7 @@ private fun NoCoins(
             style = ComposeAppTheme.typography.body.copy(
                 fontWeight = FontWeight.Medium
             ),
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             text = stringResource(id = R.string.no_active_stacking),
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 12.dp)
@@ -313,7 +313,7 @@ private fun PirateCoinScreenWithGraph(
             )
             Text(
                 style = ComposeAppTheme.typography.body,
-                color = ComposeAppTheme.colors.leah,
+                color = ComposeAppTheme.colors.textPrimary,
                 text = stringResource(id = R.string.how_my_income_grows),
                 modifier = Modifier.padding(vertical = 14.dp, horizontal = 16.dp)
             )
@@ -506,7 +506,7 @@ private fun StackingInfoActionButton(
         Icon(
             painter = painterResource(id = R.drawable.ic_info_20),
             contentDescription = contentDescription,
-            tint = ComposeAppTheme.colors.grey,
+            tint = ComposeAppTheme.colors.iconSecondary,
         )
     }
 }
@@ -567,7 +567,7 @@ private fun CoinBalanceBlock(
         VSpacer(height = 26.dp)
         Text(
             text = stringResource(R.string.total_balance),
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             style = ComposeAppTheme.typography.body,
             textAlign = TextAlign.Center,
         )
@@ -592,14 +592,14 @@ private fun CoinBalanceBlock(
                     }
                 ),
             text = if (visible) balanceWithCoinCode else "*****",
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             style = ComposeAppTheme.typography.title2R,
             textAlign = TextAlign.Center,
         )
         VSpacer(height = 6.dp)
         Text(
             text = if (visible) secondaryAmount else "*****",
-            color = ComposeAppTheme.colors.grey,
+            color = ComposeAppTheme.colors.textSecondary,
             style = ComposeAppTheme.typography.body,
             maxLines = 1,
         )

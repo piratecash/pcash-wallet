@@ -145,7 +145,7 @@ import cash.p.terminal.ui_compose.components.diffColor
 import cash.p.terminal.ui_compose.components.subhead1_leah
 import cash.p.terminal.ui_compose.components.subhead2
 import cash.p.terminal.ui_compose.components.subhead2_grey
-import cash.p.terminal.ui_compose.components.subhead2_jacob
+import cash.p.terminal.ui_compose.components.subhead2_brand
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
@@ -339,9 +339,9 @@ private fun TokenBalanceScreenContent(
                             ),
                             icon = if (uiState.isFavorite) R.drawable.ic_star_filled_20 else R.drawable.ic_star_20,
                             tint = if (uiState.isFavorite) {
-                                ComposeAppTheme.colors.jacob
+                                ComposeAppTheme.colors.brand
                             } else {
-                                ComposeAppTheme.colors.grey
+                                ComposeAppTheme.colors.iconSecondary
                             },
                             onClick = onToggleFavorite
                         )
@@ -778,7 +778,7 @@ private fun HideBalanceSearchRow(
                     if (hideBalance) R.drawable.ic_eye_off else R.drawable.ic_eye_20
                 ),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey,
+                tint = ComposeAppTheme.colors.iconSecondary,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -787,7 +787,7 @@ private fun HideBalanceSearchRow(
             Icon(
                 painter = painterResource(R.drawable.ic_search),
                 contentDescription = stringResource(R.string.Button_Search),
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
         }
     }
@@ -871,7 +871,7 @@ private fun TokenBalanceHeader(
             ) {
                 Text(
                     text = uiState.coinCode,
-                    color = ComposeAppTheme.colors.grey,
+                    color = ComposeAppTheme.colors.textSecondary,
                     style = ComposeAppTheme.typography.subhead1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -902,9 +902,9 @@ private fun TokenBalanceHeader(
             ),
             text = if (balanceViewItem.primaryValue.visible) balanceViewItem.primaryValue.value else "*****",
             color = if (balanceViewItem.primaryValue.dimmed) {
-                ComposeAppTheme.colors.grey
+                ComposeAppTheme.colors.textSecondary
             } else {
-                ComposeAppTheme.colors.leah
+                ComposeAppTheme.colors.textPrimary
             },
             style = ComposeAppTheme.typography.title2R,
             textAlign = TextAlign.Start,
@@ -922,9 +922,9 @@ private fun TokenBalanceHeader(
             Text(
                 text = if (balanceViewItem.secondaryValue.visible) secondaryValue.value else "*****",
                 color = if (balanceViewItem.secondaryValue.dimmed) {
-                    ComposeAppTheme.colors.grey50
+                    ComposeAppTheme.colors.textSecondaryDimmed
                 } else {
-                    ComposeAppTheme.colors.grey
+                    ComposeAppTheme.colors.textSecondary
                 },
                 style = ComposeAppTheme.typography.body,
                 maxLines = 1,
@@ -946,7 +946,7 @@ private fun TokenBalanceHeader(
             Row {
                 Text(
                     text = "1${uiState.coinCode} = ${balanceViewItem.exchangeValue.value}",
-                    color = ComposeAppTheme.colors.grey,
+                    color = ComposeAppTheme.colors.textSecondary,
                     style = ComposeAppTheme.typography.subhead2,
                 )
                 if (balanceViewItem.displayDiffOptionType != DisplayDiffOptionType.NONE) {
@@ -984,21 +984,21 @@ private fun TokenBalanceHeader(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_info_20),
                         contentDescription = stringResource(R.string.staking_unpaid_info_title),
-                        tint = ComposeAppTheme.colors.grey
+                        tint = ComposeAppTheme.colors.iconSecondary
                     )
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 uiState.stakingUnpaid?.let { unpaid ->
                     Text(
                         text = if (balanceViewItem.primaryValue.visible) unpaid else "*****",
-                        color = if (balanceViewItem.primaryValue.dimmed) ComposeAppTheme.colors.grey50 else
-                            ComposeAppTheme.colors.leah,
+                        color = if (balanceViewItem.primaryValue.dimmed) ComposeAppTheme.colors.textSecondary else
+                            ComposeAppTheme.colors.textPrimary,
                         style = ComposeAppTheme.typography.subhead2,
                         maxLines = 1,
                     )
                 } ?: Text(
                     text = "—",
-                    color = ComposeAppTheme.colors.grey50,
+                    color = ComposeAppTheme.colors.textDisabled,
                     style = ComposeAppTheme.typography.subhead2,
                 )
             }
@@ -1010,7 +1010,7 @@ private fun TokenBalanceHeader(
                 exit = shrinkVertically() + fadeOut(),
             ) {
                 val hours = nextAccrualHours ?: return@AnimatedVisibility
-                subhead2_jacob(
+                subhead2_brand(
                     text = pluralStringResource(
                         R.plurals.staking_next_accrual_in_hours,
                         hours,
@@ -1172,14 +1172,18 @@ private fun LockedBalanceCell(
             Icon(
                 painter = painterResource(id = R.drawable.ic_info_20),
                 contentDescription = "info button",
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
         }
         Spacer(Modifier.weight(1f))
         Text(
             modifier = Modifier.padding(start = 6.dp),
             text = if (lockedAmount.visible) lockedAmount.value else "*****",
-            color = if (lockedAmount.dimmed) ComposeAppTheme.colors.grey50 else ComposeAppTheme.colors.leah,
+            color = if (lockedAmount.dimmed) {
+                ComposeAppTheme.colors.textSecondary
+            } else {
+                ComposeAppTheme.colors.textPrimary
+            },
             style = ComposeAppTheme.typography.subhead2,
             maxLines = 1,
         )
@@ -1209,8 +1213,8 @@ internal fun TokenNotSyncedSection(
             icon = R.drawable.ic_attention_24,
             borderColor = ComposeAppTheme.colors.steel20,
             backgroundColor = ComposeAppTheme.colors.lawrence,
-            textColor = ComposeAppTheme.colors.leah,
-            iconColor = ComposeAppTheme.colors.grey,
+            textColor = ComposeAppTheme.colors.textPrimary,
+            iconColor = ComposeAppTheme.colors.iconSecondary,
         ) {
             subhead2_grey(text = stringResource(R.string.token_not_synced_description))
             if (showRetry) {
@@ -1239,7 +1243,7 @@ private fun TokenNotSyncedRetryButton(onRetry: () -> Unit) {
                     modifier = Modifier.size(20.dp),
                     painter = painterResource(R.drawable.ic_refresh_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
                 HSpacer(8.dp)
                 subhead1_leah(text = stringResource(R.string.token_not_synced_retry))
@@ -1283,8 +1287,8 @@ private fun TokenOfflineSection(
         icon = R.drawable.ic_attention_24,
         borderColor = ComposeAppTheme.colors.steel20,
         backgroundColor = ComposeAppTheme.colors.lawrence,
-        textColor = ComposeAppTheme.colors.leah,
-        iconColor = ComposeAppTheme.colors.grey,
+        textColor = ComposeAppTheme.colors.textPrimary,
+        iconColor = ComposeAppTheme.colors.iconSecondary,
     ) {
         subhead2_grey(
             text = stringResource(

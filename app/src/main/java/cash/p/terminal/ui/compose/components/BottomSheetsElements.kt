@@ -118,7 +118,7 @@ fun BottomSheetsElementsHeader(
                 .clickable(onClick = onClickClose),
             painter = painterResource(R.drawable.icon_24_close_3),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey
+            tint = ComposeAppTheme.colors.iconSecondary
         )
     }
 }

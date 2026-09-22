@@ -6,11 +6,11 @@
     <style name="Theme.AppTheme.DayNight" parent="Theme.AppTheme.DarkModeAppTheme"/>
 
     <style name="Theme.AppTheme.DarkModeAppTheme" parent="Theme.AppTheme">
-        <item name="colorAccent">@color/jacob</item>
+        <item name="colorAccent">@color/brand</item>
         <item name="android:windowBackground">@color/tyler</item>
         <item name="actionMenuTextAppearance">@style/Headline2</item>
-        <item name="colorControlNormal">@color/grey</item>
-        <item name="colorControlActivated">@color/jacob</item>
+        <item name="colorControlNormal">@color/icon_secondary</item>
+        <item name="colorControlActivated">@color/brand</item>
         <item name="colorControlHighlight">#6E7899</item>
         <item name="android:homeAsUpIndicator">@drawable/ic_back</item>
         <item name="android:forceDarkAllowed" tools:targetApi="29">false</item>
@@ -31,7 +31,7 @@
         <item name="TransactionDetailBottomBarBackground">@color/dark</item>
         <item name="LightBackground">@color/steel_20</item>
         <item name="BottomSendButtonColor">@color/steel_20</item>
-        <item name="BottomSendButtonHighlightedColor">@color/grey_50</item>
+        <item name="BottomSendButtonHighlightedColor">@color/icon_disabled</item>
         <item name="BottomSendImageButtonTint">@color/white</item>
         <item name="BottomDialogTextColor">@color/white</item>
         <item name="ConfirmationDialogBackground">@color/steel_dark</item>

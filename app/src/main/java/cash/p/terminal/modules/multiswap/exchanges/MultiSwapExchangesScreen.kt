@@ -132,7 +132,7 @@ private fun ExchangeCardSwipable(
             content = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_circle_minus_24),
-                    tint = ComposeAppTheme.colors.grey,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                     contentDescription = "delete",
                 )
             }
@@ -160,7 +160,7 @@ private fun ExchangeCardContent(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .border(1.dp, ComposeAppTheme.colors.grey, cardShape)
+            .border(1.dp, ComposeAppTheme.colors.textSecondary, cardShape)
             .clip(cardShape)
             .background(ComposeAppTheme.colors.lawrence)
             .clickable(

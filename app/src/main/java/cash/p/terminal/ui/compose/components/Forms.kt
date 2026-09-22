@@ -64,9 +64,9 @@ fun FormsInput(
     initial: String? = null,
     hint: String,
     prefix: String? = null,
-    textColor: Color = ComposeAppTheme.colors.leah,
+    textColor: Color = ComposeAppTheme.colors.textPrimary,
     textStyle: TextStyle = ComposeAppTheme.typography.body,
-    hintColor: Color = ComposeAppTheme.colors.grey50,
+    hintColor: Color = ComposeAppTheme.colors.textDisabled,
     hintStyle: TextStyle = ComposeAppTheme.typography.body,
     singleLine: Boolean = false,
     state: DataState<Any>? = null,
@@ -164,7 +164,7 @@ fun FormsInput(
                     textStyle = textStyle
                 ),
                 singleLine = singleLine,
-                cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+                cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
                 decorationBox = { innerTextField ->
                     if (textState.text.isEmpty()) {
                         Text(
@@ -299,9 +299,9 @@ fun FormsInputMultiline(
     initial: String? = null,
     enabled: Boolean = true,
     hint: String,
-    textColor: Color = ComposeAppTheme.colors.leah,
+    textColor: Color = ComposeAppTheme.colors.textPrimary,
     textStyle: TextStyle = ComposeAppTheme.typography.body,
-    hintColor: Color = ComposeAppTheme.colors.grey50,
+    hintColor: Color = ComposeAppTheme.colors.textDisabled,
     hintStyle: TextStyle = ComposeAppTheme.typography.body,
     state: DataState<Any>? = null,
     pasteEnabled: Boolean = true,
@@ -389,7 +389,7 @@ fun FormsInputMultiline(
                     color = textColor,
                     textStyle = textStyle
                 ),
-                cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+                cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
                 decorationBox = { innerTextField ->
                     if (textState.text.isEmpty()) {
                         Text(

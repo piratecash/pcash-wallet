@@ -61,7 +61,7 @@ class AddressPoisoningViewModel(
         title = Translator.getString(R.string.TransactionInfo_Sent),
         subtitle = subtitle,
         primaryValue = ColoredValue(amount, ColorName.Lucian),
-        secondaryValue = ColoredValue(fiatValue, ColorName.Grey),
+        secondaryValue = ColoredValue(fiatValue, ColorName.Secondary),
         date = Date(),
         formattedTime = "14:30",
         icon = TransactionViewItem.Icon.Regular(

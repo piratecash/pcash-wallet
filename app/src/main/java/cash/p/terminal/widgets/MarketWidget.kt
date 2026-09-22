@@ -235,13 +235,13 @@ class MarketWidget : GlanceAppWidget() {
             Text(
                 text = if (title.length > 20) title.take(17) + "..." else title,
                 maxLines = 1,
-                style = TextStyle(AppWidgetTheme.colors.leah, fontSize = 16.sp)
+                style = TextStyle(AppWidgetTheme.colors.textPrimary, fontSize = 16.sp)
             )
             Spacer(modifier = GlanceModifier.defaultWeight())
             Text(
                 text = value ?: "",
                 maxLines = 1,
-                style = TextStyle(color = AppWidgetTheme.colors.leah, fontSize = 16.sp)
+                style = TextStyle(color = AppWidgetTheme.colors.textPrimary, fontSize = 16.sp)
             )
         }
     }

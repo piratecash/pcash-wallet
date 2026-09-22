@@ -40,9 +40,9 @@ fun <T : WithTranslatableTitle> AlertGroup(
                     Text(
                         option.title.getString(),
                         color = if (option == select.selected) {
-                            ComposeAppTheme.colors.jacob
+                            ComposeAppTheme.colors.brand
                         } else {
-                            ComposeAppTheme.colors.leah
+                            ComposeAppTheme.colors.textPrimary
                         },
                         style = ComposeAppTheme.typography.body,
                     )

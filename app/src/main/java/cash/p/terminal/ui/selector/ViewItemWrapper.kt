@@ -18,7 +18,7 @@ class ViewItemWrapper<T>(val title: String, val item: T, val color: Int? = null,
     companion object {
         fun <T> getAny(): ViewItemWrapper<T?> {
             return ViewItemWrapper(
-                cash.p.terminal.strings.helpers.Translator.getString(R.string.Any), null, R.color.grey
+                cash.p.terminal.strings.helpers.Translator.getString(R.string.Any), null, R.color.text_secondary
             )
         }
     }

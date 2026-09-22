@@ -125,7 +125,7 @@ fun GuidesScreen(navController: NavController) {
                                             Icon(
                                                 painter = painterResource(iconId),
                                                 contentDescription = null,
-                                                tint = ComposeAppTheme.colors.grey
+                                                tint = ComposeAppTheme.colors.iconSecondary
                                             )
                                         }
                                     }

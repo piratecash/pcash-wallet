@@ -141,7 +141,7 @@ private fun AnyCell(
         )
         Icon(
             painter = painterResource(R.drawable.ic_checkmark_20),
-            tint = ComposeAppTheme.colors.jacob,
+            tint = ComposeAppTheme.colors.brand,
             contentDescription = null,
             modifier = Modifier.alpha(if (checked) 1f else 0f)
         )

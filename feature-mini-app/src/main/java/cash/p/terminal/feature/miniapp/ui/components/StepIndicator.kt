@@ -50,7 +50,7 @@ fun StepIndicator(
             val stepNumber = index + 1
             val isActive = stepNumber <= state.currentStep
             val backgroundColor by animateColorAsState(
-                targetValue = if (isActive) ComposeAppTheme.colors.jacob
+                targetValue = if (isActive) ComposeAppTheme.colors.brand
                 else ComposeAppTheme.colors.steel20,
                 animationSpec = tween(durationMillis = 300),
                 label = "stepColor$stepNumber"

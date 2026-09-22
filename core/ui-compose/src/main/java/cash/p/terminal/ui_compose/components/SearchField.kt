@@ -59,7 +59,7 @@ fun SearchField(
                 .size(24.dp),
             painter = painterResource(id = R.drawable.ic_search),
             contentDescription = "search",
-            tint = ComposeAppTheme.colors.jacob
+            tint = ComposeAppTheme.colors.brand
         )
         BasicTextField(
             value = searchText,
@@ -69,7 +69,7 @@ fun SearchField(
                 showClearButton = it.isNotEmpty()
             },
             textStyle = ComposeAppTheme.typography.body.copy(
-                color = ComposeAppTheme.colors.leah,
+                color = ComposeAppTheme.colors.textPrimary,
             ),
             maxLines = 1,
             singleLine = true,
@@ -77,7 +77,7 @@ fun SearchField(
             keyboardActions = KeyboardActions(onDone = {
                 keyboardController?.hide()
             }),
-            cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+            cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
             modifier = Modifier
                 .padding(end = 16.dp)
                 .focusRequester(focusRequester)
@@ -96,7 +96,7 @@ fun SearchField(
                 Icon(
                     painter = painterResource(R.drawable.ic_close_24),
                     contentDescription = stringResource(R.string.Button_Cancel),
-                    tint = ComposeAppTheme.colors.leah.copy(alpha = 0.7f),
+                    tint = ComposeAppTheme.colors.iconSecondary,
                     modifier = Modifier.size(20.dp)
                 )
             }

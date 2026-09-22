@@ -70,7 +70,7 @@ fun TokenMissingScreen(
                     Icon(
                         painter = painterResource(ResourcesR.drawable.ic_sync_error),
                         contentDescription = null,
-                        tint = ComposeAppTheme.colors.grey,
+                        tint = ComposeAppTheme.colors.iconSecondary,
                         modifier = Modifier.size(48.dp)
                     )
                 }

@@ -150,7 +150,7 @@ private fun NumberKey(
         Text(
             text = number.toString(),
             style = ComposeAppTheme.typography.title2R,
-            color = if (enabled) ComposeAppTheme.colors.leah else ComposeAppTheme.colors.steel20,
+            color = if (enabled) ComposeAppTheme.colors.textPrimary else ComposeAppTheme.colors.steel20,
         )
     }
 }
@@ -181,7 +181,7 @@ private fun ImageKey(
             Icon(
                 modifier = Modifier.align(Alignment.Center),
                 painter = painterResource(image),
-                tint = if (enabled) ComposeAppTheme.colors.grey else ComposeAppTheme.colors.steel20,
+                tint = if (enabled) ComposeAppTheme.colors.iconSecondary else ComposeAppTheme.colors.steel20,
                 contentDescription = contentDescription,
             )
         }

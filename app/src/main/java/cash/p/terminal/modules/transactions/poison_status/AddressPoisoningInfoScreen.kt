@@ -69,7 +69,7 @@ fun AddressPoisoningInfoScreen(
             Text(
                 text = annotatedStringResource(R.string.address_poisoning_info_description),
                 style = ComposeAppTheme.typography.body,
-                color = ComposeAppTheme.colors.leah,
+                color = ComposeAppTheme.colors.textPrimary,
             )
             VSpacer(16.dp)
             body_leah(text = stringResource(R.string.address_poisoning_info_goal))

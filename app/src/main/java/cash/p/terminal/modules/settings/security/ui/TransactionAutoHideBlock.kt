@@ -23,7 +23,7 @@ import cash.p.terminal.modules.settings.security.SecurityCenterCell
 import cash.p.terminal.ui_compose.components.HsSwitch
 import cash.p.terminal.ui_compose.components.InfoText
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceMutableSection
-import cash.p.terminal.ui_compose.components.body_jacob
+import cash.p.terminal.ui_compose.components.body_brand
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.body_lucian
 import cash.p.terminal.ui_compose.components.subhead1_grey
@@ -47,7 +47,7 @@ internal fun TransactionAutoHideBlock(
                     start = {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_off_24),
-                            tint = ComposeAppTheme.colors.grey,
+                            tint = ComposeAppTheme.colors.iconSecondary,
                             modifier = Modifier.size(24.dp),
                             contentDescription = null
                         )
@@ -73,7 +73,7 @@ internal fun TransactionAutoHideBlock(
                         start = {
                             Icon(
                                 painter = painterResource(R.drawable.icon_paper_contract_24),
-                                tint = ComposeAppTheme.colors.grey,
+                                tint = ComposeAppTheme.colors.iconSecondary,
                                 modifier = Modifier.size(24.dp),
                                 contentDescription = null,
                             )
@@ -99,7 +99,7 @@ internal fun TransactionAutoHideBlock(
                                 )
                                 Icon(
                                     painter = painterResource(R.drawable.ic_big_forward_20),
-                                    tint = ComposeAppTheme.colors.grey,
+                                    tint = ComposeAppTheme.colors.iconSecondary,
                                     modifier = Modifier.size(24.dp),
                                     contentDescription = null,
                                 )
@@ -113,7 +113,7 @@ internal fun TransactionAutoHideBlock(
                         start = {
                             Icon(
                                 painter = painterResource(R.drawable.ic_passcode),
-                                tint = ComposeAppTheme.colors.jacob,
+                                tint = ComposeAppTheme.colors.brand,
                                 modifier = Modifier.size(24.dp),
                                 contentDescription = null,
                             )
@@ -124,7 +124,7 @@ internal fun TransactionAutoHideBlock(
                             } else {
                                 R.string.set_separate_passcode
                             }
-                            body_jacob(
+                            body_brand(
                                 text = stringResource(text),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,

@@ -56,10 +56,10 @@ import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.headline2_leah
-import cash.p.terminal.ui_compose.components.micro_grey50
+import cash.p.terminal.ui_compose.components.micro_disabled
 import cash.p.terminal.ui_compose.components.subhead1_grey
 import cash.p.terminal.ui_compose.components.subhead2_grey
-import cash.p.terminal.ui_compose.components.subhead2_jacob
+import cash.p.terminal.ui_compose.components.subhead2_brand
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import java.text.DateFormat
 import java.time.Instant
@@ -187,7 +187,7 @@ private fun IntervalCell(
                         .size(20.dp),
                     painter = painterResource(R.drawable.ic_down_24),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                 )
             }
         },
@@ -202,7 +202,7 @@ private fun CheckingBlock() {
     ) {
         CircularProgressIndicator(
             modifier = Modifier.size(40.dp),
-            color = ComposeAppTheme.colors.grey,
+            color = ComposeAppTheme.colors.textSecondary,
         )
         VSpacer(16.dp)
         subhead2_grey(text = stringResource(R.string.update_checking))
@@ -226,7 +226,7 @@ private fun UpToDateBlock(version: String, onDetailsClick: (() -> Unit)?) {
                 modifier = Modifier.size(72.dp),
                 painter = painterResource(R.drawable.ic_checkmark_24),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey,
+                tint = ComposeAppTheme.colors.iconSecondary,
             )
         }
         VSpacer(24.dp)
@@ -235,7 +235,7 @@ private fun UpToDateBlock(version: String, onDetailsClick: (() -> Unit)?) {
         subhead2_grey(text = stringResource(R.string.update_version_label, version))
         onDetailsClick?.let {
             VSpacer(12.dp)
-            subhead2_jacob(
+            subhead2_brand(
                 modifier = Modifier
                     .clickable(onClick = it)
                     .padding(8.dp),
@@ -281,7 +281,7 @@ private fun AvailableSection(
                         },
                     )
                     VSpacer(4.dp)
-                    subhead2_jacob(
+                    subhead2_brand(
                         modifier = Modifier
                             .clickable(onClick = it)
                             .padding(vertical = 8.dp),
@@ -297,7 +297,7 @@ private fun AvailableSection(
                     onClick = onUpdateNowClick,
                 )
                 VSpacer(8.dp)
-                micro_grey50(
+                micro_disabled(
                     modifier = Modifier.fillMaxWidth(),
                     text = stringResource(R.string.update_source, stringResource(installSource.labelRes())),
                     textAlign = TextAlign.Center,

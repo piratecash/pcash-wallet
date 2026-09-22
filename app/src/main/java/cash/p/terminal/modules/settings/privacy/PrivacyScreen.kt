@@ -75,7 +75,7 @@ fun PrivacyScreen(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_share_24px),
                         contentDescription = "Share",
-                        tint = ComposeAppTheme.colors.grey
+                        tint = ComposeAppTheme.colors.iconSecondary
                     )
                     HSpacer(width = 16.dp)
                     body_leah(text = stringResource(R.string.ShareCrashData))
@@ -99,7 +99,7 @@ fun PrivacyScreen(
         Text(
             text = stringResource(R.string.footer_text, currentYear()),
             style = ComposeAppTheme.typography.caption,
-            color = ComposeAppTheme.colors.grey,
+            color = ComposeAppTheme.colors.textSecondary,
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .align(Alignment.CenterHorizontally)

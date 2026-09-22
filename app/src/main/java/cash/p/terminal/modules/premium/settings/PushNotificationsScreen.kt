@@ -46,7 +46,7 @@ import cash.p.terminal.ui_compose.components.SwitchWithTextWarning
 import cash.p.terminal.ui_compose.components.TextImportantError
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.body_grey50
+import cash.p.terminal.ui_compose.components.body_disabled
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.getShape
 import cash.p.terminal.ui_compose.components.showDivider
@@ -342,7 +342,7 @@ private fun PushNotificationBlockchainCell(
                     .padding(horizontal = 16.dp)
             )
         } else {
-            body_grey50(
+            body_disabled(
                 text = item.name,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

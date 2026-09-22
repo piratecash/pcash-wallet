@@ -209,12 +209,12 @@ private fun SendBitcoinScreen(
                         MenuItem(
                             title = TranslatableString.ResString(R.string.SendEvmSettings_Title),
                             icon = R.drawable.ic_manage_2,
-                            tint = ComposeAppTheme.colors.jacob,
+                            tint = ComposeAppTheme.colors.brand,
                             onClick = { composeNavController.navigate(SendBtcAdvancedSettingsPage) }
                         ),
                         MenuItem(
                             title = TranslatableString.ResString(R.string.Send_DialogProceed),
-                            tint = ComposeAppTheme.colors.jacob,
+                            tint = ComposeAppTheme.colors.brand,
                             enabled = proceedEnabled,
                             onClick = {
                                 onNextClick(
@@ -402,7 +402,7 @@ fun UtxoCell(
                 Icon(
                     painter = painterResource(R.drawable.ic_edit_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
             }
 
@@ -410,7 +410,7 @@ fun UtxoCell(
                 Icon(
                     painter = painterResource(R.drawable.ic_edit_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.jacob
+                    tint = ComposeAppTheme.colors.brand
                 )
             }
 
@@ -418,7 +418,7 @@ fun UtxoCell(
                 Icon(
                     painter = painterResource(R.drawable.ic_arrow_right),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
             }
         }

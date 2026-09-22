@@ -40,7 +40,7 @@ import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.RowUniversal
-import cash.p.terminal.ui_compose.components.body_jacob
+import cash.p.terminal.ui_compose.components.body_brand
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.core.IPinComponent
 import io.horizontalsystems.core.launchExternalActivity
@@ -162,9 +162,9 @@ private fun BackupManagerScreen(
                                     modifier = Modifier.padding(horizontal = 16.dp),
                                     painter = painterResource(R.drawable.ic_download_20),
                                     contentDescription = null,
-                                    tint = ComposeAppTheme.colors.jacob
+                                    tint = ComposeAppTheme.colors.brand
                                 )
-                                body_jacob(text = stringResource(R.string.BackupManager_RestoreBackup))
+                                body_brand(text = stringResource(R.string.BackupManager_RestoreBackup))
                             }
                         }
 
@@ -174,9 +174,9 @@ private fun BackupManagerScreen(
                                     modifier = Modifier.padding(horizontal = 16.dp),
                                     painter = painterResource(R.drawable.ic_plus),
                                     contentDescription = null,
-                                    tint = ComposeAppTheme.colors.jacob
+                                    tint = ComposeAppTheme.colors.brand
                                 )
-                                body_jacob(text = stringResource(R.string.BackupManager_CreateBackup))
+                                body_brand(text = stringResource(R.string.BackupManager_CreateBackup))
                             }
                         }
                     }

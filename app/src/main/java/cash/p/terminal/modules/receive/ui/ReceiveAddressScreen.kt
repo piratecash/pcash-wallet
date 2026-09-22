@@ -83,10 +83,10 @@ import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.TextImportantError
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.body_grey50
-import cash.p.terminal.ui_compose.components.body_jacob
+import cash.p.terminal.ui_compose.components.body_disabled
+import cash.p.terminal.ui_compose.components.body_brand
 import cash.p.terminal.ui_compose.components.caption_grey
-import cash.p.terminal.ui_compose.components.subhead1_jacob
+import cash.p.terminal.ui_compose.components.Subhead1
 import cash.p.terminal.ui_compose.components.subhead1_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.subhead2_leah
@@ -147,7 +147,7 @@ fun ReceiveAddressScreen(
                     MenuItem(
                         title = TranslatableString.ResString(R.string.Button_Done),
                         onClick = closeModule,
-                        tint = ComposeAppTheme.colors.jacob
+                        tint = ComposeAppTheme.colors.brand
                     )
                 )
             )
@@ -468,8 +468,9 @@ private fun AdditionalDataSection(
                             contentDescription = null
                         )
                     }
-                    subhead1_jacob(
+                    Subhead1(
                         text = stringResource(R.string.Balance_Receive_NotActive),
+                        color = ComposeAppTheme.colors.yellow,
                         textAlign = TextAlign.End,
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
@@ -541,17 +542,17 @@ fun AmountInputDialog(
                 },
                 singleLine = true,
                 textStyle = ColoredTextStyle(
-                    color = ComposeAppTheme.colors.leah,
+                    color = ComposeAppTheme.colors.textPrimary,
                     textStyle = ComposeAppTheme.typography.body
                 ),
                 decorationBox = { innerTextField ->
                     if (textState.value.text.isEmpty()) {
-                        body_grey50("0")
+                        body_disabled("0")
                     }
                     innerTextField()
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+                cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
             )
             SideEffect {
                 focusRequester.requestFocus()
@@ -571,13 +572,13 @@ fun AmountInputDialog(
                 HsTextButton(
                     onClick = onDismissRequest
                 ) {
-                    body_jacob(stringResource(R.string.Button_Cancel).uppercase())
+                    body_brand(stringResource(R.string.Button_Cancel).uppercase())
                 }
                 HSpacer(8.dp)
                 HsTextButton(
                     onClick = { onAmountConfirm.invoke(textState.value.text.toBigDecimalOrNull()) }
                 ) {
-                    body_jacob(stringResource(R.string.Button_Confirm).uppercase())
+                    body_brand(stringResource(R.string.Button_Confirm).uppercase())
                 }
             }
         }
@@ -634,7 +635,7 @@ private fun TronInfoBottomSheet(
     ) {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_info_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.grey),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.iconSecondary),
             title = title,
             onCloseClick = hideBottomSheet
         ) {
@@ -701,7 +702,7 @@ private fun ReceiveAddressScreenPreview() {
                 val badgeColor = when (addressBadge) {
                     AddressBadge.NEW -> ComposeAppTheme.colors.remus
                     AddressBadge.USED -> ComposeAppTheme.colors.yellow
-                    AddressBadge.UNUSED -> ComposeAppTheme.colors.grey
+                    AddressBadge.UNUSED -> ComposeAppTheme.colors.textSecondary
                 }
                 VSpacer(12.dp)
                 Row(

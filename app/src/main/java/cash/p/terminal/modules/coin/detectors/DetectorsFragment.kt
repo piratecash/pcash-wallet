@@ -163,7 +163,7 @@ fun DetectorCell(
     val issue = issueViewItem.issue
     val issues = issue.issues ?: emptyList()
     var iconResource = R.drawable.ic_check_24
-    var iconTint = ComposeAppTheme.colors.leah
+    var iconTint = ComposeAppTheme.colors.iconPrimary
 
     issues.firstOrNull()?.let {
         when (it.impact) {
@@ -186,7 +186,7 @@ fun DetectorCell(
             "Optimization" -> {
                 if (issues.isNotEmpty()) {
                     iconResource = R.drawable.ic_warning_24
-                    iconTint = ComposeAppTheme.colors.laguna
+                    iconTint = ComposeAppTheme.colors.brand
                 }
             }
 
@@ -250,7 +250,7 @@ fun DetectorCell(
                     modifier = Modifier.padding(start = 8.dp),
                     painter = painter,
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
             }
         }

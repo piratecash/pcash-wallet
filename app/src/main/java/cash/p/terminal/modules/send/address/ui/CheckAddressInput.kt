@@ -89,18 +89,18 @@ fun CheckAddressInput(
                     onValueChange.invoke(value.trim())
                 },
                 textStyle = ColoredTextStyle(
-                    color = ComposeAppTheme.colors.leah,
+                    color = ComposeAppTheme.colors.textPrimary,
                     textStyle = ComposeAppTheme.typography.body
                 ),
                 singleLine = false,
-                cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+                cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
                 decorationBox = { innerTextField ->
                     if (value.isEmpty()) {
                         Text(
                             hint,
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 1,
-                            color = ComposeAppTheme.colors.andy,
+                            color = ComposeAppTheme.colors.textSecondary,
                             style = ComposeAppTheme.typography.body
                         )
                     }

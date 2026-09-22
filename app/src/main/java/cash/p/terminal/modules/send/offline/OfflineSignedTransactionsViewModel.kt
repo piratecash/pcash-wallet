@@ -385,12 +385,12 @@ class OfflineSignedTransactionsViewModel(
         when (this) {
             OfflineSignedTransactionDisplayStatus.Pending -> ColoredValue(
                 Translator.getString(R.string.offline_signed_status_pending),
-                ColorName.Jacob,
+                ColorName.Brand,
             )
 
             OfflineSignedTransactionDisplayStatus.Unknown -> ColoredValue(
                 Translator.getString(R.string.offline_signed_status_unknown),
-                ColorName.Grey,
+                ColorName.Secondary,
             )
 
             OfflineSignedTransactionDisplayStatus.Broadcasted -> ColoredValue(
@@ -403,12 +403,12 @@ class OfflineSignedTransactionsViewModel(
         when (this) {
             OfflineSignedTransactionDisplayStatus.Pending -> ColoredValue(
                 Translator.getString(R.string.offline_signed_status_pending),
-                ColorName.Jacob,
+                ColorName.Brand,
             )
 
             OfflineSignedTransactionDisplayStatus.Unknown -> ColoredValue(
                 Translator.getString(R.string.offline_signed_status_unknown),
-                ColorName.Grey,
+                ColorName.Secondary,
             )
 
             OfflineSignedTransactionDisplayStatus.Broadcasted -> ColoredValue(

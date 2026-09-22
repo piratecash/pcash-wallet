@@ -129,8 +129,8 @@ private fun MoneroAddressBadge(badge: AddressBadge) {
     }
     val badgeColor = when (badge) {
         AddressBadge.NEW -> ComposeAppTheme.colors.remus
-        AddressBadge.USED -> ComposeAppTheme.colors.jacob
-        AddressBadge.UNUSED -> ComposeAppTheme.colors.grey
+        AddressBadge.USED -> ComposeAppTheme.colors.brand
+        AddressBadge.UNUSED -> ComposeAppTheme.colors.textSecondary
     }
     VSpacer(12.dp)
     Row(

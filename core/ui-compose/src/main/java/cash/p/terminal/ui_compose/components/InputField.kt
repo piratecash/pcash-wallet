@@ -60,15 +60,15 @@ fun InputField(
                     singleLine = true,
                     onValueChange = onValueChange,
                     textStyle = ColoredTextStyle(
-                        color = ComposeAppTheme.colors.leah,
+                        color = ComposeAppTheme.colors.textPrimary,
                         textStyle = ComposeAppTheme.typography.headline2
                     ),
                     keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-                    cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+                    cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
                     decorationBox = { innerTextField ->
                         Box {
                             if (value.isEmpty()) {
-                                body_grey50(
+                                body_disabled(
                                     text = placeholderText,
                                     overflow = TextOverflow.Ellipsis,
                                     maxLines = 1

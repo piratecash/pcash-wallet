@@ -118,7 +118,7 @@ fun MiniAppStepScaffold(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = ComposeAppTheme.colors.jacob)
+                CircularProgressIndicator(color = ComposeAppTheme.colors.brand)
             }
         } else {
             Column(

@@ -14,10 +14,10 @@ class ChartConfig(private val context: Context, attrs: AttributeSet?) {
     val textFont: Typeface = Typeface.DEFAULT
     var timelineTextColor = context.getColor(R.color.nina)
 
-    var gridTextColor = context.getColor(R.color.grey)
+    var gridTextColor = context.getColor(R.color.text_secondary)
     var gridLineColor = context.getColor(R.color.steel_20)
     var gridDashColor = context.getColor(R.color.steel_10)
-    var gridLabelColor = context.getColor(R.color.grey_50)
+    var gridLabelColor = context.getColor(R.color.text_disabled)
 
     var gridTextSize = dp2px(12f)
     var gridTextPadding = dp2px(4f)
@@ -26,28 +26,31 @@ class ChartConfig(private val context: Context, attrs: AttributeSet?) {
 
     var trendUpColor = context.getColor(R.color.green_d)
     var trendDownColor = context.getColor(R.color.red_d)
-    var neutralColor = context.getColor(R.color.jacob)
-    var barColor = context.getColor(R.color.jacob)
+    var neutralColor = context.getColor(R.color.brand)
+    var barColor = context.getColor(R.color.brand)
     var barPressedColor = context.getColor(R.color.nina)
     var neutralGradientColor = GradientColor(Color.parseColor("#FFA800"), Color.parseColor("#FFA800"))
     var trendUpGradient = GradientColor(Color.parseColor("#416BFF"), Color.parseColor("#13D670"))
     var trendDownGradient = GradientColor(Color.parseColor("#7413D6"), Color.parseColor("#FF0303"))
-    var pressedGradient = GradientColor(context.getColor(R.color.leah), context.getColor(R.color.leah))
-    var outdatedGradient = GradientColor(context.getColor(R.color.grey_50), context.getColor(R.color.grey_50))
+    var pressedGradient = GradientColor(context.getColor(R.color.icon_primary), context.getColor(R.color.icon_primary))
+    var outdatedGradient = GradientColor(
+        context.getColor(R.color.text_secondary_dimmed),
+        context.getColor(R.color.text_secondary_dimmed)
+    )
 
     var curveColor = trendUpColor
     var curveGradient = trendUpGradient
-    var curvePressedColor = context.getColor(R.color.leah)
-    var curveOutdatedColor = context.getColor(R.color.grey_50)
-    var curveDisabledColor = context.getColor(R.color.grey)
+    var curvePressedColor = context.getColor(R.color.icon_primary)
+    var curveOutdatedColor = context.getColor(R.color.text_secondary_dimmed)
+    var curveDisabledColor = context.getColor(R.color.icon_disabled)
     var curveVerticalOffset = dp2px(20f)
     var curveMinimalVerticalOffset = dp2px(10f)
     var curveFastColor = Color.parseColor("#801A60FF")
     var curveSlowColor = Color.parseColor("#80ffa800")
 
-    var curveDominanceLabelColor = context.getColor(R.color.jacob)
+    var curveDominanceLabelColor = context.getColor(R.color.brand)
 
-    var cursorColor = context.getColor(R.color.leah)
+    var cursorColor = context.getColor(R.color.icon_primary)
 
     var volumeColor = context.getColor(R.color.steel_20)
     var volumeWidth = dp2px(2f)

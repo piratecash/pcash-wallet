@@ -204,7 +204,7 @@ private fun ItemCountInput(
                 onValueChange.invoke(filtered.toIntOrNull() ?: 0)
             },
             singleLine = true,
-            cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+            cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         )
 

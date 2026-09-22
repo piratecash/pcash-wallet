@@ -82,16 +82,16 @@ import cash.p.terminal.modules.transactions.poison_status.SuspiciousAddressActio
 import cash.p.terminal.ui_compose.components.TextImportantError
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.body_jacob
+import cash.p.terminal.ui_compose.components.body_brand
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.caption_grey
 import cash.p.terminal.ui_compose.components.subhead1_grey
-import cash.p.terminal.ui_compose.components.subhead1_jacob
+import cash.p.terminal.ui_compose.components.subhead1_brand
 import cash.p.terminal.ui_compose.components.subhead1_leah
 import cash.p.terminal.ui_compose.components.subhead1_lucian
 import cash.p.terminal.ui_compose.components.subhead1_remus
 import cash.p.terminal.ui_compose.components.subhead2_grey
-import cash.p.terminal.ui_compose.components.subhead2_jacob
+import cash.p.terminal.ui_compose.components.subhead2_brand
 import cash.p.terminal.ui_compose.components.subhead2_leah
 import cash.p.terminal.ui_compose.components.subhead2_lucian
 import cash.p.terminal.ui_compose.components.subhead2_remus
@@ -113,7 +113,7 @@ fun SectionTitleCell(
             Icon(
                 modifier = Modifier.padding(end = 16.dp),
                 painter = painterResource(iconResId),
-                tint = ComposeAppTheme.colors.grey,
+                tint = ComposeAppTheme.colors.iconSecondary,
                 contentDescription = null,
             )
         }
@@ -325,7 +325,7 @@ fun PriceWithToggleCell(
             Icon(
                 painter = painterResource(R.drawable.ic_arrow_swap3_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey,
+                tint = ComposeAppTheme.colors.iconSecondary,
             )
         }
     }
@@ -697,10 +697,10 @@ fun TransactionInfoSpeedUpCell(
         Icon(
             painter = painterResource(R.drawable.ic_arrow_medium2_up_24),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.jacob
+            tint = ComposeAppTheme.colors.brand
         )
         Spacer(Modifier.width(16.dp))
-        body_jacob(text = stringResource(R.string.TransactionInfo_SpeedUp))
+        body_brand(text = stringResource(R.string.TransactionInfo_SpeedUp))
     }
 
     offlineGatedAction.Sheet()
@@ -864,7 +864,7 @@ fun TransactionInfoBtcLockCell(
         Icon(
             modifier = Modifier.padding(end = 16.dp),
             painter = painterResource(lockState.leftIcon),
-            tint = ComposeAppTheme.colors.grey,
+            tint = ComposeAppTheme.colors.iconSecondary,
             contentDescription = null,
         )
         subhead2_grey(text = lockState.title, modifier = Modifier.padding(end = 16.dp))
@@ -883,7 +883,7 @@ fun TransactionInfoBtcLockCell(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_info_20),
-                    tint = ComposeAppTheme.colors.grey,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                     contentDescription = null,
                 )
             }
@@ -903,7 +903,7 @@ fun TransactionInfoDoubleSpendCell(
         Icon(
             modifier = Modifier.padding(end = 16.dp),
             painter = painterResource(R.drawable.ic_double_spend_20),
-            tint = ComposeAppTheme.colors.grey,
+            tint = ComposeAppTheme.colors.iconSecondary,
             contentDescription = null,
         )
         subhead2_grey(
@@ -925,7 +925,7 @@ fun TransactionInfoDoubleSpendCell(
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_info_20),
-                tint = ComposeAppTheme.colors.grey,
+                tint = ComposeAppTheme.colors.iconSecondary,
                 contentDescription = null,
             )
         }
@@ -943,7 +943,7 @@ fun TransactionInfoSentToSelfCell() {
         Icon(
             modifier = Modifier.padding(end = 16.dp),
             painter = painterResource(R.drawable.ic_arrow_return_20),
-            tint = ComposeAppTheme.colors.grey,
+            tint = ComposeAppTheme.colors.iconSecondary,
             contentDescription = null,
         )
         subhead2_grey(text = stringResource(R.string.TransactionInfo_SentToSelfNote))
@@ -990,7 +990,7 @@ fun TransactionInfoAmlCheckCell(
             Icon(
                 painter = painterResource(R.drawable.ic_info_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
         }
         Spacer(Modifier.weight(1f))
@@ -999,7 +999,7 @@ fun TransactionInfoAmlCheckCell(
                 CircularProgressIndicator(
                     modifier = Modifier.size(16.dp),
                     strokeWidth = 2.dp,
-                    color = ComposeAppTheme.colors.grey
+                    color = ComposeAppTheme.colors.textSecondary
                 )
             }
 
@@ -1081,16 +1081,16 @@ private fun SubHead2ColoredValue(value: ColoredValue, modifier: Modifier = Modif
             subhead2_lucian(text = value.value, modifier = modifier)
         }
 
-        ColorName.Grey -> {
+        ColorName.Secondary -> {
             subhead2_grey(text = value.value, modifier = modifier)
         }
 
-        ColorName.Leah -> {
+        ColorName.Primary -> {
             subhead2_leah(text = value.value, modifier = modifier)
         }
 
-        ColorName.Jacob -> {
-            subhead2_jacob(text = value.value, modifier = modifier)
+        ColorName.Brand -> {
+            subhead2_brand(text = value.value, modifier = modifier)
         }
     }
 }
@@ -1107,16 +1107,16 @@ private fun SubHead1ColoredValue(value: ColoredValue, modifier: Modifier = Modif
             subhead1_lucian(text = value.value, modifier = modifier)
         }
 
-        ColorName.Grey -> {
+        ColorName.Secondary -> {
             subhead1_grey(text = value.value, modifier = modifier)
         }
 
-        ColorName.Leah -> {
+        ColorName.Primary -> {
             subhead2_leah(text = value.value, modifier = modifier)
         }
 
-        ColorName.Jacob -> {
-            subhead1_jacob(text = value.value, modifier = modifier)
+        ColorName.Brand -> {
+            subhead1_brand(text = value.value, modifier = modifier)
         }
     }
 }

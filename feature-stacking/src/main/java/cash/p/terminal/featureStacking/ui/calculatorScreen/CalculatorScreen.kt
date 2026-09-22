@@ -55,7 +55,7 @@ internal fun CalculatorScreen(
             Text(
                 text = stringResource(R.string.pos_calculator),
                 style = ComposeAppTheme.typography.body,
-                color = ComposeAppTheme.colors.leah,
+                color = ComposeAppTheme.colors.textPrimary,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
                 modifier = Modifier.weight(1f)
@@ -71,7 +71,7 @@ internal fun CalculatorScreen(
                         indication = null,
                         onClick = onDoneClicked
                     ),
-                tint = colorResource(R.color.grey)
+                tint = colorResource(R.color.icon_secondary)
             )
         }
         val descriptionRes = if (uiState.stackingType == StackingType.PCASH) {
@@ -82,7 +82,7 @@ internal fun CalculatorScreen(
         Text(
             text = stringResource(descriptionRes),
             style = ComposeAppTheme.typography.body,
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
         )
         InputField(
@@ -97,7 +97,7 @@ internal fun CalculatorScreen(
         Text(
             text = uiState.coinExchange,
             style = ComposeAppTheme.typography.body,
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
@@ -158,7 +158,7 @@ internal fun CalculatorItemHeader(period: String, coin: String, coinSecondary: S
         Text(
             text = period,
             style = ComposeAppTheme.typography.subhead1,
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
@@ -173,7 +173,7 @@ internal fun CalculatorItemHeader(period: String, coin: String, coinSecondary: S
         Text(
             text = coin,
             style = ComposeAppTheme.typography.subhead1,
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
@@ -188,7 +188,7 @@ internal fun CalculatorItemHeader(period: String, coin: String, coinSecondary: S
         Text(
             text = coinSecondary,
             style = ComposeAppTheme.typography.subhead1,
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
@@ -214,7 +214,7 @@ internal fun CalculatorItemRow(
             style = ComposeAppTheme.typography.captionSB.copy(
                 fontWeight = FontWeight.Medium,
             ),
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
@@ -244,7 +244,7 @@ internal fun CalculatorItemRow(
         Text(
             text = coinSecondary,
             style = ComposeAppTheme.typography.caption,
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,

@@ -116,7 +116,7 @@ fun TonConnectNewScreen(
                     modifier = Modifier.padding(start = 16.dp),
                     text = uiState.manifest?.name ?: "",
                     style = ComposeAppTheme.typography.headline1,
-                    color = ComposeAppTheme.colors.leah
+                    color = ComposeAppTheme.colors.textPrimary
                 )
             }
 

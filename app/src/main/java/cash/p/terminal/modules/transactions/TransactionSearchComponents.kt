@@ -103,7 +103,7 @@ internal fun TransactionSearchField(
                 Text(
                     text = stringResource(R.string.Market_Search_Hint),
                     style = ComposeAppTheme.typography.body,
-                    color = ComposeAppTheme.colors.grey50,
+                    color = ComposeAppTheme.colors.textDisabled,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -118,7 +118,7 @@ internal fun TransactionSearchField(
                     }
                 },
                 textStyle = ComposeAppTheme.typography.body.copy(
-                    color = ComposeAppTheme.colors.leah,
+                    color = ComposeAppTheme.colors.textPrimary,
                 ),
                 maxLines = 1,
                 singleLine = true,
@@ -128,7 +128,7 @@ internal fun TransactionSearchField(
                         keyboardController?.hide()
                     }
                 ),
-                cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+                cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
@@ -153,7 +153,7 @@ private fun SearchCloseButton(onClick: () -> Unit) {
         Icon(
             painter = painterResource(R.drawable.ic_close_24),
             contentDescription = stringResource(R.string.Button_Cancel),
-            tint = ComposeAppTheme.colors.jacob,
+            tint = ComposeAppTheme.colors.brand,
             modifier = Modifier.size(24.dp),
         )
     }

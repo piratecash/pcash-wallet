@@ -106,7 +106,7 @@ private fun SettingSections(
             HsSettingCell(
                 title = R.string.Settings_Donate,
                 icon = R.drawable.ic_heart_filled_24,
-                iconTint = ComposeAppTheme.colors.jacob,
+                iconTint = ComposeAppTheme.colors.brand,
                 onClick = {
                     navController.slideFromRight(R.id.donateTokenSelectFragment)
                 }
@@ -339,7 +339,7 @@ private fun SettingSections(
         HsSettingCell(
             title = R.string.about_premium,
             icon = R.drawable.ic_info_20,
-            iconTint = ComposeAppTheme.colors.jacob,
+            iconTint = ComposeAppTheme.colors.brand,
             onClick = {
                 navController.slideFromBottom(R.id.aboutPremiumFragment)
             }
@@ -347,7 +347,7 @@ private fun SettingSections(
         HsSettingCell(
             title = R.string.premium_settings,
             icon = R.drawable.ic_settings,
-            iconTint = ComposeAppTheme.colors.jacob,
+            iconTint = ComposeAppTheme.colors.brand,
             showAlert = uiState.premiumSettingsShowAlert,
             onClick = {
                 navController.slideFromRight(R.id.premiumSettingsFragment)
@@ -356,7 +356,7 @@ private fun SettingSections(
         HsSettingCell(
             title = R.string.advanced_security,
             icon = R.drawable.ic_shield_24,
-            iconTint = ComposeAppTheme.colors.jacob,
+            iconTint = ComposeAppTheme.colors.brand,
             onClick = {
                 navController.slideFromRight(R.id.advancedSecurityFragment)
             }
@@ -465,7 +465,7 @@ fun HsSettingCell(
                 modifier = Modifier.size(24.dp),
                 painter = painterResource(id = icon),
                 contentDescription = null,
-                tint = iconTint ?: ComposeAppTheme.colors.grey
+                tint = iconTint ?: ComposeAppTheme.colors.iconSecondary
             )
         }
         body_leah(
@@ -541,7 +541,7 @@ private fun SettingsFooter(appVersion: String, companyWebPage: String) {
         Text(
             text = stringResource(R.string.Settings_InfoSubtitle),
             style = ComposeAppTheme.typography.micro,
-            color = ComposeAppTheme.colors.grey,
+            color = ComposeAppTheme.colors.textSecondary,
         )
         Image(
             modifier = Modifier

@@ -139,7 +139,7 @@ class OfflineSignedTransactionsViewModelTest {
         val viewModel = viewModel(this)
         advanceUntilIdle()
 
-        assertStatusColor(viewModel.uiState.items.single(), ColorName.Grey)
+        assertStatusColor(viewModel.uiState.items.single(), ColorName.Secondary)
     }
 
     @Test
@@ -154,7 +154,7 @@ class OfflineSignedTransactionsViewModelTest {
         advanceUntilIdle()
 
         val item = viewModel.uiState.items.single()
-        assertStatusColor(item, ColorName.Grey)
+        assertStatusColor(item, ColorName.Secondary)
         assertEquals(true, item.metadataUnknown)
         assertEquals(BigDecimal.ZERO, item.transactionItem.record.mainValue?.decimalValue?.abs())
     }
@@ -167,7 +167,7 @@ class OfflineSignedTransactionsViewModelTest {
         val viewModel = viewModel(this)
         advanceUntilIdle()
 
-        assertStatusColor(viewModel.uiState.items.single(), ColorName.Jacob)
+        assertStatusColor(viewModel.uiState.items.single(), ColorName.Brand)
     }
 
     @Test
@@ -192,7 +192,7 @@ class OfflineSignedTransactionsViewModelTest {
         val viewModel = viewModel(this)
         advanceUntilIdle()
 
-        assertStatusColor(viewModel.uiState.items.single(), ColorName.Jacob)
+        assertStatusColor(viewModel.uiState.items.single(), ColorName.Brand)
     }
 
     @Test

@@ -154,7 +154,7 @@ fun AssetSettingsScreen(
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_info_20),
                                 contentDescription = null,
-                                tint = ComposeAppTheme.colors.grey,
+                                tint = ComposeAppTheme.colors.iconSecondary,
                                 modifier = Modifier
                                     .padding(end = 8.dp)
                                     .size(20.dp)

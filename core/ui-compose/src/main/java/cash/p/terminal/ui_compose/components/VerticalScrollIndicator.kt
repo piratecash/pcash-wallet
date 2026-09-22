@@ -21,7 +21,7 @@ fun VerticalScrollIndicator(
     modifier: Modifier = Modifier,
 ) {
     val trackColor = ComposeAppTheme.colors.steel20
-    val barColor = ComposeAppTheme.colors.grey
+    val barColor = ComposeAppTheme.colors.iconSecondary
 
     Canvas(modifier = modifier.padding(end = INDICATOR_END_PADDING)) {
         val scrollState = state ?: return@Canvas

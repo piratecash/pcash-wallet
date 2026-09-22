@@ -38,7 +38,7 @@ fun DoubleText(
                 ),
             text = title,
             style = ComposeAppTheme.typography.title2R,
-            color = if (dimmed) ComposeAppTheme.colors.grey else ComposeAppTheme.colors.leah,
+            color = if (dimmed) ComposeAppTheme.colors.textSecondary else ComposeAppTheme.colors.textPrimary,
             maxLines = 1
         )
         Spacer(modifier = Modifier.height(6.dp))
@@ -51,7 +51,7 @@ fun DoubleText(
                 ),
             text = body,
             style = ComposeAppTheme.typography.body,
-            color = if (dimmed) ComposeAppTheme.colors.grey50 else ComposeAppTheme.colors.grey,
+            color = if (dimmed) ComposeAppTheme.colors.textSecondaryDimmed else ComposeAppTheme.colors.textSecondary,
             maxLines = 1
         )
     }

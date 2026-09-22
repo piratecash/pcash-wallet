@@ -96,7 +96,7 @@ fun BottomSheetHeader(
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
     iconPainter: Painter? = null,
-    titleColor: Color = ComposeAppTheme.colors.leah,
+    titleColor: Color = ComposeAppTheme.colors.textPrimary,
     iconTint: ColorFilter? = null,
     content: @Composable() (ColumnScope.() -> Unit),
 ) {
@@ -196,7 +196,7 @@ private fun BottomSheetHeader(
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_close_24),
-                    tint = ComposeAppTheme.colors.grey,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                     contentDescription = null,
                 )
             }
@@ -214,7 +214,7 @@ private fun BottomSheetHeader_Preview() {
     ComposeAppTheme {
         BottomSheetHeader(
             iconPainter = iconPainter,
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.brand),
             title = stringResource(R.string.ManageAccount_SwitchWallet_Title),
             onCloseClick = { },
         ) {

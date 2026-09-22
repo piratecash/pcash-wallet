@@ -173,21 +173,21 @@ fun MarketCoinFirstRow(
 @Composable
 fun SignalBadge(advice: Advice) {
     val textColor = when (advice) {
-        Advice.Buy -> cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.remus
-        Advice.Sell -> cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.lucian
-        Advice.StrongBuy -> cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.tyler
-        Advice.StrongSell -> cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.tyler
-        Advice.Neutral -> cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.bran
-        else -> cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.jacob
+        Advice.Buy -> ComposeAppTheme.colors.remus
+        Advice.Sell -> ComposeAppTheme.colors.lucian
+        Advice.StrongBuy -> ComposeAppTheme.colors.tyler
+        Advice.StrongSell -> ComposeAppTheme.colors.tyler
+        Advice.Neutral -> ComposeAppTheme.colors.bran
+        else -> ComposeAppTheme.colors.brand
     }
 
     val backgroundColor = when (advice) {
-        Advice.Buy -> cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.green20
-        Advice.Sell -> cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.red20
-        Advice.StrongBuy -> cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.remus
-        Advice.StrongSell -> cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.lucian
-        Advice.Neutral -> cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.jeremy
-        else -> cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.yellow20
+        Advice.Buy -> ComposeAppTheme.colors.green20
+        Advice.Sell -> ComposeAppTheme.colors.red20
+        Advice.StrongBuy -> ComposeAppTheme.colors.remus
+        Advice.StrongSell -> ComposeAppTheme.colors.lucian
+        Advice.Neutral -> ComposeAppTheme.colors.jeremy
+        else -> ComposeAppTheme.colors.yellow20
     }
 
     val text = when (advice) {

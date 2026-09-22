@@ -33,7 +33,7 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 @Composable
 internal fun ProviderRiskType.color(): Color = when (this) {
     ProviderRiskType.Auto -> ComposeAppTheme.colors.remus
-    ProviderRiskType.Flexible -> ComposeAppTheme.colors.laguna
+    ProviderRiskType.Flexible -> ComposeAppTheme.colors.brand
     ProviderRiskType.Controlled -> ComposeAppTheme.colors.yellow
     ProviderRiskType.PreCheck -> ComposeAppTheme.colors.bran
 }
@@ -106,7 +106,7 @@ fun EstimationTimeBadge(
     BadgePill(
         iconRes = R.drawable.clock_filled_24,
         text = formatDurationShort(seconds),
-        contentColor = ComposeAppTheme.colors.grey,
+        contentColor = ComposeAppTheme.colors.textSecondary,
         modifier = modifier,
         backgroundColor = ComposeAppTheme.colors.steel10,
     )

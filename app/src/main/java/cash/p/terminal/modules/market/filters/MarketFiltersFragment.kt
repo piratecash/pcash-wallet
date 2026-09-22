@@ -495,7 +495,7 @@ private fun FilterMenu(title: String?, valueColor: TextColor, onClick: () -> Uni
             modifier = Modifier.padding(start = 4.dp),
             painter = painterResource(id = R.drawable.ic_down_arrow_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey
+            tint = ComposeAppTheme.colors.iconSecondary
         )
     }
 }
@@ -513,7 +513,7 @@ private fun <ItemClass> SingleSelectBottomSheetContent(
         iconPainter = painterResource(headerIcon),
         title = stringResource(title),
         onCloseClick = onClose,
-        iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob)
+        iconTint = ColorFilter.tint(ComposeAppTheme.colors.brand)
     ) {
         Spacer(Modifier.height(12.dp))
         CellUniversalLawrenceSection(
@@ -548,7 +548,7 @@ private fun <ItemClass> SingleSelectBottomSheetContent(
                     Image(
                         modifier = Modifier.padding(start = 5.dp),
                         painter = painterResource(id = R.drawable.ic_checkmark_20),
-                        colorFilter = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+                        colorFilter = ColorFilter.tint(ComposeAppTheme.colors.brand),
                         contentDescription = null
                     )
                 }

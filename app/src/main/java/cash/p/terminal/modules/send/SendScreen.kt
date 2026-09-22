@@ -38,7 +38,7 @@ fun SendScreen(
             menuItems = listOf(
                 MenuItem(
                     title = TranslatableString.ResString(R.string.Send_DialogProceed),
-                    tint = ComposeAppTheme.colors.jacob,
+                    tint = ComposeAppTheme.colors.brand,
                     enabled = proceedEnabled,
                     onClick = onSendClick
                 )

@@ -66,7 +66,7 @@ private fun ChartView(metricsData: MetricData, navController: NavController) {
                 Text(
                     text = stringResource(R.string.NotAvailable),
                     style = ComposeAppTheme.typography.headline1,
-                    color = ComposeAppTheme.colors.grey50,
+                    color = ComposeAppTheme.colors.textDisabled,
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
@@ -82,7 +82,7 @@ private fun ChartView(metricsData: MetricData, navController: NavController) {
                     Text(
                         text = "----",
                         style = ComposeAppTheme.typography.subhead1,
-                        color = ComposeAppTheme.colors.grey50,
+                        color = ComposeAppTheme.colors.textDisabled,
                     )
                 }
                 Spacer(modifier = Modifier.width(12.dp))

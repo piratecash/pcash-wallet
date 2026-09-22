@@ -228,7 +228,7 @@ private fun AuthorizationDetailContent(
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
                                 .padding(16.dp),
-                            containerColor = ComposeAppTheme.colors.leah,
+                            containerColor = ComposeAppTheme.colors.textPrimary,
                             shape = CircleShape
                         ) {
                             Icon(
@@ -393,7 +393,7 @@ private fun ThumbnailItem(
                     .size(10.dp)
                     .background(ComposeAppTheme.colors.lawrence, shape = CircleShape)
                     .align(Alignment.TopEnd),
-                tint = ComposeAppTheme.colors.jacob
+                tint = ComposeAppTheme.colors.brand
             )
         }
     }

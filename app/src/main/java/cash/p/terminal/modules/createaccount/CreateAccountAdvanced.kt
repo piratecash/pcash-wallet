@@ -271,7 +271,7 @@ private fun MnemonicNumberCell(
             modifier = Modifier.padding(vertical = 12.dp),
             painter = painterResource(id = R.drawable.ic_key_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey
+            tint = ComposeAppTheme.colors.iconSecondary
         )
         B2(
             text = stringResource(R.string.CreateWallet_Mnemonic),
@@ -285,7 +285,7 @@ private fun MnemonicNumberCell(
             modifier = Modifier.padding(start = 4.dp),
             painter = painterResource(id = R.drawable.ic_down_arrow_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey
+            tint = ComposeAppTheme.colors.iconSecondary
         )
     }
 }
@@ -299,7 +299,7 @@ fun PassphraseCell(enabled: Boolean, onCheckedChange: (Boolean) -> Unit) {
         Icon(
             painter = painterResource(id = R.drawable.ic_key_phrase_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey
+            tint = ComposeAppTheme.colors.iconSecondary
         )
         body_leah(
             text = stringResource(R.string.Passphrase),

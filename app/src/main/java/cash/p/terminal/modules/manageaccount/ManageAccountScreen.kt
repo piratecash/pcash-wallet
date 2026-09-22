@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -68,6 +67,7 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.ui_compose.components.Body
 
 @Composable
 internal fun ManageAccountScreen(
@@ -492,7 +492,7 @@ private fun AccountActionItem(
                     .size(24.dp),
                 painter = icon,
                 contentDescription = null,
-                tint = iconTint ?: ComposeAppTheme.colors.grey
+                tint = iconTint ?: ComposeAppTheme.colors.iconSecondary
             )
         }
 
@@ -539,7 +539,7 @@ private fun AccountActionItem(
             Icon(
                 painter = painterResource(id = R.drawable.ic_arrow_right),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
             HSpacer(16.dp)
         }
@@ -564,7 +564,7 @@ private fun AccountActionWithInfoItem(
                     .size(24.dp),
                 painter = icon,
                 contentDescription = null,
-                tint = iconTint ?: ComposeAppTheme.colors.grey
+                tint = iconTint ?: ComposeAppTheme.colors.iconSecondary
             )
         }
 
@@ -583,14 +583,14 @@ private fun AccountActionWithInfoItem(
                 ),
             painter = painterResource(id = R.drawable.ic_info_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey,
+            tint = ComposeAppTheme.colors.iconSecondary,
         )
 
         onClick?.let {
             Icon(
                 painter = painterResource(id = R.drawable.ic_arrow_right),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
             HSpacer(16.dp)
         }
@@ -620,11 +620,10 @@ private fun YellowActionItem(
             )
         }
 
-        Text(
-            modifier = Modifier.weight(1f),
+        Body(
             text = title,
             color = ComposeAppTheme.colors.yellow,
-            style = ComposeAppTheme.typography.body,
+            modifier = Modifier.weight(1f),
         )
 
         if (attention) {
