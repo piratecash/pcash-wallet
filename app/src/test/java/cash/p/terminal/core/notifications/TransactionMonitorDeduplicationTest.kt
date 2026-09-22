@@ -38,15 +38,19 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.test.assertTrue
 
 /**
  * Integration-level tests for TransactionMonitor + NotificationDeduplicator,
@@ -334,9 +338,12 @@ class TransactionMonitorDeduplicationTest {
             every { transactionAdapterManager.adaptersReadyFlow } returns adaptersFlow
 
             val enteredIsNew = CountDownLatch(2)
+            val batchesCompleted = CountDownLatch(2)
             val marked = AtomicBoolean(false)
             val racingDeduplicator = mockk<NotificationDeduplicator>()
-            every { racingDeduplicator.updateLastCheckTime(any(), any(), any()) } just Runs
+            every { racingDeduplicator.updateLastCheckTime(any(), any(), any()) } answers {
+                if ("shared-tx-1" in thirdArg<Set<String>>()) batchesCompleted.countDown()
+            }
             every { racingDeduplicator.reset() } just Runs
             every { racingDeduplicator.markNotified(any()) } answers {
                 marked.set(true)
@@ -350,17 +357,20 @@ class TransactionMonitorDeduplicationTest {
             val monitor = createMonitor(racingDeduplicator)
             val monitorScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
             monitor.start(monitorScope)
-            runCurrent()
-
-            val futureTime = System.currentTimeMillis() / 1000 + 500
-            val duplicateRecord = mockRecord("shared-tx-1", futureTime, bitcoinSource)
-
-            launch(Dispatchers.Default) { btcFlow.emit(listOf(duplicateRecord)) }
-            launch(Dispatchers.Default) { ethFlow.emit(listOf(duplicateRecord)) }
-
             try {
-                enteredIsNew.await(1, TimeUnit.SECONDS)
-                kotlinx.coroutines.delay(300)
+                withContext(Dispatchers.Default) {
+                    withTimeout(5_000) {
+                        btcFlow.subscriptionCount.first { it > 0 }
+                        ethFlow.subscriptionCount.first { it > 0 }
+                    }
+                }
+
+                val futureTime = System.currentTimeMillis() / 1000 + 500
+                val duplicateRecord = mockRecord("shared-tx-1", futureTime, bitcoinSource)
+                launch(Dispatchers.Default) { btcFlow.emit(listOf(duplicateRecord)) }
+                launch(Dispatchers.Default) { ethFlow.emit(listOf(duplicateRecord)) }
+
+                assertTrue(batchesCompleted.await(5, TimeUnit.SECONDS))
 
                 verify(exactly = 1) {
                     notificationManager.showTransactionNotification(
