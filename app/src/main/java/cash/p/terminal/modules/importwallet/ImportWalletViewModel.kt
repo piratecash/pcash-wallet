@@ -12,11 +12,12 @@ import cash.p.terminal.core.managers.SeedPhraseQrCrypto
 import cash.p.terminal.core.managers.toSeedQrErrorStringRes
 import cash.p.terminal.core.openInputStreamSafe
 import cash.p.terminal.core.utils.Bip39LanguageDetector
+import cash.p.terminal.core.utils.MNEMONIC_WORD_REGEX
 import cash.p.terminal.core.validateAndSaveBackup
-import cash.p.terminal.modules.restoreaccount.MnemonicImportDraft
-import cash.p.terminal.modules.restoreaccount.MnemonicInput
 import cash.p.terminal.strings.helpers.Translator
+import cash.p.terminal.wallet.normalizeNFKD
 import io.horizontalsystems.core.DispatcherProvider
+import io.horizontalsystems.hdwalletkit.Language
 import io.horizontalsystems.hdwalletkit.Mnemonic
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -58,11 +59,10 @@ class ImportWalletViewModel(
 
     fun handleScannedData(scannedText: String) {
         if (scannedText.startsWith(SeedPhraseQrCrypto.QR_PREFIX)) {
-            seedPhraseQrCrypto.decrypt(scannedText).onSuccess {
-                openRestoreFromQr(MnemonicImportDraft.decoded(it))
-            }.onFailure { error ->
-                errorMessage = Translator.getString(error.toSeedQrErrorStringRes())
-            }
+            seedPhraseQrCrypto.decrypt(scannedText).onSuccess(::openRestoreFromQr)
+                .onFailure { error ->
+                    errorMessage = Translator.getString(error.toSeedQrErrorStringRes())
+                }
         } else {
             val mnemonic = scannedText.toPlainBip39Mnemonic()
             if (mnemonic != null) {
@@ -77,26 +77,41 @@ class ImportWalletViewModel(
         errorMessage = null
     }
 
-    private fun openRestoreFromQr(draft: MnemonicImportDraft) {
+    private fun openRestoreFromQr(seed: SeedPhraseQrCrypto.DecryptedSeed) {
         viewModelScope.launch {
             _navigationEvents.send(
-                NavigationEvent.OpenRestoreFromQr(draft)
+                NavigationEvent.OpenRestoreFromQr(
+                    words = seed.words,
+                    passphrase = seed.passphrase,
+                    moneroHeight = seed.height,
+                    language = seed.language
+                )
             )
         }
     }
 
-    private fun String.toPlainBip39Mnemonic(): MnemonicImportDraft? {
-        val draft = MnemonicImportDraft.manual(this)
-        val words = if (draft.isJapanese) MnemonicInput.canonicalWords(this) else
-            draft.wordItems().map { it.word }
+    private fun String.toPlainBip39Mnemonic(): SeedPhraseQrCrypto.DecryptedSeed? {
+        val words = MNEMONIC_WORD_REGEX.findAll(trim().lowercase())
+            .map { it.value.normalizeNFKD() }
+            .toList()
         if (words.size !in BIP39_WORD_COUNTS) return null
 
         val language = Bip39LanguageDetector.detectExact(words).firstOrNull() ?: return null
-        return draft.copy(language = language)
+        return SeedPhraseQrCrypto.DecryptedSeed(
+            words = words,
+            passphrase = "",
+            height = null,
+            language = language
+        )
     }
 
     sealed class NavigationEvent {
-        data class OpenRestoreFromQr(val draft: MnemonicImportDraft) : NavigationEvent()
+        data class OpenRestoreFromQr(
+            val words: List<String>,
+            val passphrase: String,
+            val moneroHeight: Long?,
+            val language: Language?
+        ) : NavigationEvent()
 
         data class OpenRestoreLocal(
             val backupFilePath: String,
