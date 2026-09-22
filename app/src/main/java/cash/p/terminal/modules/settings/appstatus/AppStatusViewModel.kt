@@ -18,6 +18,7 @@ import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TronKitManager
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.core.tryOrNull
+import cash.p.terminal.feature.miniapp.domain.storage.IUniqueCodeStorage
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.BtcBlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.EvmBlockchainStatusProvider
@@ -52,6 +53,7 @@ class AppStatusViewModel(
     private val context: Context,
     private val systemInfoManager: ISystemInfoManager,
     private val localStorage: ILocalStorage,
+    private val uniqueCodeStorage: IUniqueCodeStorage,
     private val accountManager: IAccountManager,
     private val walletManager: IWalletManager,
     private val adapterManager: IAdapterManager,
@@ -366,6 +368,7 @@ class AppStatusViewModel(
         getDeviceClass(context).forEach { appInfo[it.title] = it.value }
         appInfo["System pin required"] = if (localStorage.isSystemPinRequired) "Yes" else "No"
         appInfo["Premium Status"] = checkPremiumUseCase.getPremiumType().name
+        appInfo["Unique Code"] = getShortUniqueCode()
 
         return appInfo
     }
@@ -403,6 +406,7 @@ class AppStatusViewModel(
                         checkPremiumUseCase.getPremiumType().name
                     )
                 )
+                add(BlockContent.TitleValue("Unique Code", getShortUniqueCode()))
             }
         )
     }
@@ -411,6 +415,17 @@ class AppStatusViewModel(
         systemInfoManager.appVersionFull,
         AppConfigProvider.appGitBranch,
     )
+    private fun getShortUniqueCode(): String {
+        val code = uniqueCodeStorage.uniqueCode
+        if (code.isBlank()) return "None"
+
+        val edge = if (code.length > UNIQUE_CODE_EDGE_CHARS * 2) {
+            UNIQUE_CODE_EDGE_CHARS
+        } else {
+            UNIQUE_CODE_SHORT_EDGE_CHARS
+        }
+        return if (code.length <= edge * 2) code else "${code.take(edge)}...${code.takeLast(edge)}"
+    }
 
     private fun getEnabledBlockchainsString(): String {
         val names = walletManager.activeWallets
@@ -508,4 +523,8 @@ class AppStatusViewModel(
         return resultList
     }
 
+    private companion object {
+        const val UNIQUE_CODE_EDGE_CHARS = 10
+        const val UNIQUE_CODE_SHORT_EDGE_CHARS = 3
+    }
 }

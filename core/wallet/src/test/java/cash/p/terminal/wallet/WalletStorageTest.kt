@@ -24,8 +24,7 @@ class WalletStorageTest {
         name = "Account",
         type = AccountType.Mnemonic(
             words = List(12) { "abandon" },
-            passphrase = "",
-            derivation = MnemonicDerivation.Legacy
+            passphrase = ""
         ),
         origin = AccountOrigin.Created,
         level = 0
