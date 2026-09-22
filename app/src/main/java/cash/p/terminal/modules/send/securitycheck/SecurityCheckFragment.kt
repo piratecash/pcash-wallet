@@ -287,7 +287,7 @@ private fun CheckCell(
             Icon(
                 painter = painterResource(R.drawable.ic_star_filled_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.jacob,
+                tint = ComposeAppTheme.colors.yellow,
                 modifier = Modifier
                     .padding(end = 8.dp)
                     .size(20.dp)

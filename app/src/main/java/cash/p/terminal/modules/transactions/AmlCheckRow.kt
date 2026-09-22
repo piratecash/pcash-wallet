@@ -39,13 +39,13 @@ fun AmlCheckRow(
             .padding(horizontal = 16.dp)
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, ComposeAppTheme.colors.jacob, RoundedCornerShape(12.dp))
+            .border(1.dp, ComposeAppTheme.colors.yellow, RoundedCornerShape(12.dp))
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Icon(
             painter = painterResource(id = R.drawable.ic_star_filled_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.jacob,
+            tint = ComposeAppTheme.colors.yellow,
             modifier = Modifier.size(20.dp)
         )
         Text(

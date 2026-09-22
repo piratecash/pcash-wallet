@@ -33,7 +33,6 @@ import cash.p.terminal.ui_compose.components.InfoTextBody
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui.compose.components.ScreenMessageWithAction
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.headline2_jacob
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import java.math.BigDecimal
 
@@ -87,14 +86,7 @@ private fun InfoScreen(
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
             ) {
-                InfoHeader(R.string.Coin_Analytics_OverallScore)
-                VSpacer(12.dp)
-                headline2_jacob(
-                    modifier = Modifier.padding(horizontal = 32.dp),
-                    text = stringResource(categoryTitle)
-                )
-                InfoTextBody(stringResource(description))
-                VSpacer(12.dp)
+                ScoreCategoryHeader(categoryTitle, description)
                 val items = buildList<@Composable () -> Unit> {
                     categoryScores.forEach { (score, value) ->
                         val color = when (score) {
@@ -131,6 +123,22 @@ private fun InfoScreen(
                 VSpacer(24.dp)
             }
         }
+    }
+}
+
+@Composable
+private fun ScoreCategoryHeader(categoryTitle: Int, description: Int) {
+    Column {
+        InfoHeader(R.string.Coin_Analytics_OverallScore)
+        VSpacer(12.dp)
+        Text(
+            modifier = Modifier.padding(horizontal = 32.dp),
+            text = stringResource(categoryTitle),
+            color = ComposeAppTheme.colors.yellow,
+            style = ComposeAppTheme.typography.headline2,
+        )
+        InfoTextBody(stringResource(description))
+        VSpacer(12.dp)
     }
 }
 

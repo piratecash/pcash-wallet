@@ -135,7 +135,7 @@ object HudHelper {
             duration = duration,
             gravity = gravity,
             icon = R.drawable.ic_attention_24,
-            iconTint = R.color.jacob
+            iconTint = R.color.yellow
         )
     }
 

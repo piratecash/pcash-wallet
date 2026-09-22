@@ -58,7 +58,7 @@ class Typography internal constructor(
             letterSpacing = 0.sp,
         ),
         headline2: TextStyle = TextStyle(
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.Medium,
             fontSize = 16.sp,
             letterSpacing = 0.sp,
         ),
@@ -111,7 +111,7 @@ class Typography internal constructor(
             letterSpacing = 0.sp,
         ),
         microSB: TextStyle = TextStyle(
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.Medium,
             fontSize = 10.sp,
             letterSpacing = 0.sp,
         ),
@@ -124,7 +124,7 @@ class Typography internal constructor(
         headline2 = headline2.withFontFamily(defaultFontFamily),
         body = body.withFontFamily(defaultFontFamily),
         bodyItalic = bodyItalic.withFontFamily(defaultFontFamily),
-        subhead1 = subhead1.withFontFamily(defaultFontFamily),
+        subhead1 = subhead1.withFontFamily(defaultFontFamily).copy(lineHeight = 16.sp),
         subhead2 = subhead2.withFontFamily(defaultFontFamily).copy(lineHeight = 20.sp),
         subheadItalic = subheadItalic.withFontFamily(defaultFontFamily),
         subhead1Italic = subhead1Italic.withFontFamily(defaultFontFamily),

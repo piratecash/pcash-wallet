@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Color
 @Stable
 class Colors(
     jacob: Color,
+    yellow: Color,
     remus: Color,
     lucian: Color,
     tyler: Color,
@@ -16,6 +17,18 @@ class Colors(
     leah: Color,
     claude: Color,
     lawrence: Color,
+    navigation: Color,
+    actionBackground: Color,
+    actionBorder: Color,
+    divider: Color,
+    filterBackground: Color,
+    filterSettingsBackground: Color,
+    filterBorder: Color,
+    textPrimary: Color,
+    textSecondary: Color,
+    textSecondaryDimmed: Color,
+    borderAccentSubtle: Color,
+    filterText: Color,
     jeremy: Color,
     laguna: Color,
     purple: Color,
@@ -58,6 +71,8 @@ class Colors(
     //themed colors
     var jacob by mutableStateOf(jacob)
         private set
+    var yellow by mutableStateOf(yellow)
+        private set
     var remus by mutableStateOf(remus)
         private set
     var lucian by mutableStateOf(lucian)
@@ -71,6 +86,30 @@ class Colors(
     var claude by mutableStateOf(claude)
         private set
     var lawrence by mutableStateOf(lawrence)
+        private set
+    var navigation by mutableStateOf(navigation)
+        private set
+    var actionBackground by mutableStateOf(actionBackground)
+        private set
+    var actionBorder by mutableStateOf(actionBorder)
+        private set
+    var divider by mutableStateOf(divider)
+        private set
+    var filterBackground by mutableStateOf(filterBackground)
+        private set
+    var filterSettingsBackground by mutableStateOf(filterSettingsBackground)
+        private set
+    var filterBorder by mutableStateOf(filterBorder)
+        private set
+    var textPrimary by mutableStateOf(textPrimary)
+        private set
+    var textSecondary by mutableStateOf(textSecondary)
+        private set
+    var textSecondaryDimmed by mutableStateOf(textSecondaryDimmed)
+        private set
+    var borderAccentSubtle by mutableStateOf(borderAccentSubtle)
+        private set
+    var filterText by mutableStateOf(filterText)
         private set
     var jeremy by mutableStateOf(jeremy)
         private set
@@ -91,6 +130,7 @@ class Colors(
 
     fun update(other: Colors) {
         jacob = other.jacob
+        yellow = other.yellow
         remus = other.remus
         lucian = other.lucian
         tyler = other.tyler
@@ -98,6 +138,18 @@ class Colors(
         leah = other.leah
         claude = other.claude
         lawrence = other.lawrence
+        navigation = other.navigation
+        actionBackground = other.actionBackground
+        actionBorder = other.actionBorder
+        divider = other.divider
+        filterBackground = other.filterBackground
+        filterSettingsBackground = other.filterSettingsBackground
+        filterBorder = other.filterBorder
+        textPrimary = other.textPrimary
+        textSecondary = other.textSecondary
+        textSecondaryDimmed = other.textSecondaryDimmed
+        borderAccentSubtle = other.borderAccentSubtle
+        filterText = other.filterText
         jeremy = other.jeremy
         laguna = other.laguna
         purple = other.purple
@@ -110,6 +162,7 @@ class Colors(
 
     fun copy(): Colors = Colors(
         jacob = jacob,
+        yellow = yellow,
         remus = remus,
         lucian = lucian,
         tyler = tyler,
@@ -117,6 +170,18 @@ class Colors(
         leah = leah,
         claude = claude,
         lawrence = lawrence,
+        navigation = navigation,
+        actionBackground = actionBackground,
+        actionBorder = actionBorder,
+        divider = divider,
+        filterBackground = filterBackground,
+        filterSettingsBackground = filterSettingsBackground,
+        filterBorder = filterBorder,
+        textPrimary = textPrimary,
+        textSecondary = textSecondary,
+        textSecondaryDimmed = textSecondaryDimmed,
+        borderAccentSubtle = borderAccentSubtle,
+        filterText = filterText,
         jeremy = jeremy,
         laguna = laguna,
         purple = purple,

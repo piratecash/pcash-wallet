@@ -28,7 +28,7 @@ fun Badge(modifier: Modifier = Modifier, text: String) {
         modifier = modifier,
         text = text,
         background = ComposeAppTheme.colors.jeremy,
-        textColor = ComposeAppTheme.colors.bran,
+        textColor = ComposeAppTheme.colors.textSecondary,
     )
 }
 

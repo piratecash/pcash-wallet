@@ -134,7 +134,7 @@ internal fun OnboardingScreen(
         ) {
             LinearProgressIndicator(
                 progress = { uiState.currentStep.progress },
-                color = ComposeAppTheme.colors.yellowD,
+                color = ComposeAppTheme.colors.jacob,
                 trackColor = ComposeAppTheme.colors.steel20,
                 drawStopIndicator = {},
                 gapSize = 0.dp,

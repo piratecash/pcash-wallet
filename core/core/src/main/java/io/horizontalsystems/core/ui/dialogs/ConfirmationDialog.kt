@@ -82,7 +82,7 @@ fun ConfirmationDialog(
 ) {
     BottomSheetHeader(
         iconPainter = painterResource(icon ?: R.drawable.ic_attention_24),
-        iconTint = ColorFilter.Companion.tint(ComposeAppTheme.colors.jacob),
+        iconTint = ColorFilter.Companion.tint(ComposeAppTheme.colors.yellow),
         title = title,
         onCloseClick = onCloseClick
     ) {

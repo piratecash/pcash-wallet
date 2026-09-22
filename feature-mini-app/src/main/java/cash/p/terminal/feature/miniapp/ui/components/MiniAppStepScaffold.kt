@@ -31,7 +31,7 @@ import cash.p.terminal.feature.miniapp.R
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.headline1_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
-import cash.p.terminal.ui_compose.components.subhead2_jacob
+import cash.p.terminal.ui_compose.components.subhead2
 import cash.p.terminal.ui_compose.components.subhead2_lucian
 import cash.p.terminal.ui_compose.components.subhead2_remus
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
@@ -88,7 +88,10 @@ fun MiniAppStepScaffold(
                         StepDescriptionStyle.Grey -> subhead2_grey(text = stepDescription)
                         StepDescriptionStyle.Red -> subhead2_lucian(text = stepDescription)
                         StepDescriptionStyle.Green -> subhead2_remus(text = stepDescription)
-                        StepDescriptionStyle.Yellow -> subhead2_jacob(text = stepDescription)
+                        StepDescriptionStyle.Yellow -> subhead2(
+                            text = stepDescription,
+                            color = ComposeAppTheme.colors.yellow,
+                        )
                     }
                 }
 

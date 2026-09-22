@@ -188,7 +188,7 @@ private fun DemoDaysDisplay(daysLeft: Int) {
     Text(
         text = pluralStringResource(R.plurals.premium_demo_days_left, daysLeft, daysLeft),
         style = ComposeAppTheme.typography.subhead1,
-        color = ComposeAppTheme.colors.jacob,
+        color = ComposeAppTheme.colors.yellow,
         textAlign = TextAlign.Center,
         modifier = Modifier
             .fillMaxWidth()
@@ -202,7 +202,7 @@ private fun ActionText() {
         text = stringResource(R.string.premium_upgrade_text),
         textColor = ComposeAppTheme.colors.leah,
         highlightPart = stringResource(R.string.premium_title),
-        highlightColor = ComposeAppTheme.colors.jacob
+        highlightColor = ComposeAppTheme.colors.yellow
     )
     Text(
         text = text,

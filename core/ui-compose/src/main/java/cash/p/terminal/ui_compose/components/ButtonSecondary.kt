@@ -100,7 +100,7 @@ fun ButtonSecondaryYellow(
         modifier = modifier,
         onClick = onClick,
         buttonColors = ButtonPrimaryDefaults.textButtonColors(
-            backgroundColor = ComposeAppTheme.colors.yellowD,
+            backgroundColor = ComposeAppTheme.colors.jacob,
             contentColor = ComposeAppTheme.colors.dark,
             disabledBackgroundColor = ComposeAppTheme.colors.steel20,
             disabledContentColor = ComposeAppTheme.colors.grey50,

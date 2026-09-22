@@ -238,7 +238,7 @@ private fun ConfirmNewAddressSheetContent(
 ) {
     BottomSheetHeader(
         iconPainter = painterResource(R.drawable.ic_attention_24),
-        iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+        iconTint = ColorFilter.tint(ComposeAppTheme.colors.yellow),
         title = stringResource(R.string.receive_create_another_address_title),
         onCloseClick = onDismiss,
     ) {

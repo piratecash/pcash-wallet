@@ -19,7 +19,7 @@ fun CardsSwapInfo(
 ) {
     val borderColor = when {
         isError -> ComposeAppTheme.colors.lucian
-        isWarning -> ComposeAppTheme.colors.jacob
+        isWarning -> ComposeAppTheme.colors.yellow
         else -> ComposeAppTheme.colors.steel20
     }
     Column(

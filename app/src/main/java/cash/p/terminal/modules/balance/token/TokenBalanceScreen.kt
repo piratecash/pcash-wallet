@@ -50,7 +50,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
@@ -120,8 +119,8 @@ import cash.p.terminal.ui_compose.BottomSheetHeader
 import cash.p.terminal.ui_compose.ScreenSecurityState
 import cash.p.terminal.ui_compose.TransparentModalBottomSheet
 import cash.p.terminal.ui_compose.components.AppBar
-import cash.p.terminal.ui_compose.components.ButtonPrimaryCircle
-import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
+import cash.p.terminal.ui_compose.components.BalanceActionButton
+import cash.p.terminal.ui_compose.components.BalanceActionsRow
 import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.ButtonSecondary
@@ -144,6 +143,7 @@ import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.body_grey
 import cash.p.terminal.ui_compose.components.diffColor
 import cash.p.terminal.ui_compose.components.subhead1_leah
+import cash.p.terminal.ui_compose.components.subhead2
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.subhead2_jacob
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
@@ -1065,7 +1065,7 @@ private fun TokenBalanceHeader(
                 val balanceStart = warningData.body.indexOf(warningData.formattedBalance)
                 if (balanceStart >= 0) {
                     append(warningData.body.substring(0, balanceStart))
-                    withStyle(SpanStyle(color = ComposeAppTheme.colors.jacob)) {
+                    withStyle(SpanStyle(color = ComposeAppTheme.colors.yellow)) {
                         append(warningData.formattedBalance)
                     }
                     append(warningData.body.substring(balanceStart + warningData.formattedBalance.length))
@@ -1096,25 +1096,27 @@ private fun ZcashMigrationRequiredSection(
     RowUniversal(
         modifier = Modifier
             .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, ComposeAppTheme.colors.jacob, RoundedCornerShape(12.dp))
+            .border(1.dp, ComposeAppTheme.colors.yellow, RoundedCornerShape(12.dp))
             .padding(horizontal = 16.dp),
         onClick = { migrating = true }
     ) {
         Icon(
             painter = painterResource(R.drawable.ic_attention_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.jacob
+            tint = ComposeAppTheme.colors.yellow
         )
         HSpacer(8.dp)
-        subhead2_jacob(
+        subhead2(
             text = stringResource(R.string.balance_zcash_migration_required),
+            color = ComposeAppTheme.colors.yellow,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
         Spacer(Modifier.weight(1f))
-        subhead2_jacob(
+        subhead2(
             modifier = Modifier.padding(start = 6.dp),
             text = if (amountVisible) amount else "*****",
+            color = ComposeAppTheme.colors.yellow,
             maxLines = 1
         )
     }
@@ -1408,7 +1410,7 @@ internal fun MoneroSendPreparationBottomSheet(
     ) {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_attention_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.yellow),
             title = stringResource(R.string.monero_prepare_trezor_title),
             onCloseClick = onDismiss,
         ) {
@@ -1543,85 +1545,62 @@ private fun ButtonsRow(
         if (availability == OperationAvailability.BlockedOffline) pendingAction = action else action()
     }
 
-    Row(
-        modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
-    ) {
-        if (viewItem.isWatchAccount) {
-            ButtonPrimaryDefault(
-                modifier = Modifier.weight(1f),
-                title = stringResource(R.string.Balance_Address),
-                onClick = onReceiveClick,
-            )
-            if (viewItem.wallet.isStakingWallet()) {
-                HSpacer(8.dp)
-                ButtonPrimaryCircle(
-                    icon = R.drawable.ic_coins_stacking,
-                    contentDescription = stringResource(R.string.stacking),
-                    onClick = {
-                        onStackingClicked()
-                    },
-                    iconTint = Color.Black,
-                    background = Color.White,
-                )
-            }
-        } else {
-            if (!viewItem.isSendDisabled) {
-                ButtonPrimaryYellow(
-                    modifier = Modifier.weight(1f),
-                    title = stringResource(R.string.Balance_Send),
-                    onClick = {
-                        onOperationClick(sendClickAvailability(viewItem, sendEnabled)) {
-                            onSendClick()
-                        }
-                    },
-                    enabled = sendEnabled,
-                )
-                HSpacer(8.dp)
-            }
-            if (!viewItem.swapVisible) {
-                ButtonPrimaryDefault(
-                    modifier = Modifier.weight(1f),
-                    title = stringResource(R.string.Balance_Receive),
-                    onClick = onReceiveClick,
-                )
-            } else {
-                ButtonPrimaryCircle(
+    Box(modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)) {
+        BalanceActionsRow {
+            if (viewItem.isWatchAccount) {
+                BalanceActionButton(
                     icon = R.drawable.ic_arrow_down_left_24,
-                    contentDescription = stringResource(R.string.Balance_Receive),
+                    label = stringResource(R.string.Balance_Address),
                     onClick = onReceiveClick,
-                    iconTint = Color.Black,
-                    background = Color.White,
                 )
-            }
-            if (viewItem.swapVisible) {
-                HSpacer(8.dp)
-                ButtonPrimaryCircle(
-                    icon = R.drawable.ic_swap_24,
-                    contentDescription = stringResource(R.string.Swap),
-                    onClick = {
-                        onOperationClick(viewItem.swapAvailability) {
-                            navController.slideFromRight(
-                                R.id.multiswap,
-                                SwapParams.TOKEN_IN to viewItem.wallet.token
-                            )
-                        }
-                    },
-                    enabled = viewItem.swapAvailability.clickable,
-                    iconTint = Color.Black,
-                    background = Color.White,
+                if (viewItem.wallet.isStakingWallet()) {
+                    BalanceActionButton(
+                        icon = R.drawable.ic_coins_stacking,
+                        label = stringResource(R.string.stacking),
+                        onClick = onStackingClicked,
+                    )
+                }
+            } else {
+                if (!viewItem.isSendDisabled) {
+                    BalanceActionButton(
+                        icon = R.drawable.ic_arrow_up_right_24,
+                        label = stringResource(R.string.Balance_Send),
+                        iconRotation = -90f,
+                        onClick = {
+                            onOperationClick(sendClickAvailability(viewItem, sendEnabled)) {
+                                onSendClick()
+                            }
+                        },
+                        enabled = sendEnabled,
+                    )
+                }
+                BalanceActionButton(
+                    icon = R.drawable.ic_arrow_down_left_24,
+                    label = stringResource(R.string.Balance_Receive),
+                    onClick = onReceiveClick,
                 )
-            }
-            if (viewItem.wallet.isStakingWallet()) {
-                HSpacer(8.dp)
-                ButtonPrimaryCircle(
-                    icon = R.drawable.ic_coins_stacking,
-                    contentDescription = stringResource(R.string.stacking),
-                    onClick = {
-                        onStackingClicked()
-                    },
-                    iconTint = Color.Black,
-                    background = Color.White,
-                )
+                if (viewItem.swapVisible) {
+                    BalanceActionButton(
+                        icon = R.drawable.ic_swap_24,
+                        label = stringResource(R.string.Swap),
+                        onClick = {
+                            onOperationClick(viewItem.swapAvailability) {
+                                navController.slideFromRight(
+                                    R.id.multiswap,
+                                    SwapParams.TOKEN_IN to viewItem.wallet.token
+                                )
+                            }
+                        },
+                        enabled = viewItem.swapAvailability.clickable,
+                    )
+                }
+                if (viewItem.wallet.isStakingWallet()) {
+                    BalanceActionButton(
+                        icon = R.drawable.ic_coins_stacking,
+                        label = stringResource(R.string.stacking),
+                        onClick = onStackingClicked,
+                    )
+                }
             }
         }
     }

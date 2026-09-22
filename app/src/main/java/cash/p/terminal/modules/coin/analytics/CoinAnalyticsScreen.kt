@@ -37,16 +37,17 @@ import cash.p.terminal.modules.coin.reports.CoinReportsFragment
 import cash.p.terminal.modules.metricchart.ProChartFragment
 import cash.p.terminal.ui_compose.components.HSSwipeRefresh
 import cash.p.terminal.ui_compose.components.InfoText
+import cash.p.terminal.ui_compose.components.Subhead1
 import cash.p.terminal.ui.compose.components.ListEmptyView
 import cash.p.terminal.ui.compose.components.ListErrorView
 import cash.p.terminal.ui.compose.components.StackBarSlice
 import cash.p.terminal.ui.compose.components.StackedBarChart
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
-import cash.p.terminal.ui_compose.components.subhead1_jacob
 import cash.p.terminal.ui_compose.components.subhead1_lucian
 import cash.p.terminal.ui_compose.components.subhead1_remus
 import cash.p.terminal.ui_compose.components.subhead2_grey
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.entities.FullCoin
 
 @Composable
@@ -259,7 +260,10 @@ private fun FooterCell(
                                 }
 
                                 CoinAnalyticsModule.IssueType.Medium -> {
-                                    subhead1_jacob(text = snippet.count)
+                                    Subhead1(
+                                        text = snippet.count,
+                                        color = ComposeAppTheme.colors.yellow,
+                                    )
                                 }
 
                                 CoinAnalyticsModule.IssueType.Attention -> {

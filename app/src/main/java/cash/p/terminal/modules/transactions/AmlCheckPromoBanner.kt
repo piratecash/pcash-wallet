@@ -43,7 +43,7 @@ fun AmlCheckPromoBanner(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, ComposeAppTheme.colors.jacob, RoundedCornerShape(12.dp))
+            .border(1.dp, ComposeAppTheme.colors.yellow, RoundedCornerShape(12.dp))
             .background(ComposeAppTheme.colors.lawrence)
     ) {
         Row(
@@ -54,13 +54,13 @@ fun AmlCheckPromoBanner(
             Icon(
                 painter = painterResource(id = R.drawable.ic_star_filled_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.jacob,
+                tint = ComposeAppTheme.colors.yellow,
                 modifier = Modifier.size(20.dp)
             )
             Text(
                 modifier = Modifier.weight(1f),
                 text = stringResource(R.string.premium_title),
-                color = ComposeAppTheme.colors.jacob,
+                color = ComposeAppTheme.colors.yellow,
                 style = ComposeAppTheme.typography.subhead1
             )
             HsIconButton(
@@ -69,7 +69,7 @@ fun AmlCheckPromoBanner(
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_close_24),
-                    tint = ComposeAppTheme.colors.jacob,
+                    tint = ComposeAppTheme.colors.yellow,
                     contentDescription = null,
                 )
             }

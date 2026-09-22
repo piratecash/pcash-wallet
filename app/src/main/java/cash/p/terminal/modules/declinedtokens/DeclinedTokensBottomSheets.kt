@@ -98,7 +98,7 @@ private fun DeclinedTokensInfoBottomSheet(
             iconPainter = painterResource(R.drawable.ic_attention_24),
             title = stringResource(R.string.declined_tokens_title),
             onCloseClick = onClose,
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.yellow),
         ) {
             InfoText(text = stringResource(R.string.declined_tokens_description, enumerationText(wallets)))
             TextImportantWarning(

@@ -211,7 +211,7 @@ private fun SlowSyncWarningBottomSheet(
     BottomSheetHeader(
         iconPainter = painterResource(R.drawable.ic_attention_24),
         title = stringResource(R.string.Alert_TitleWarning),
-        iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+        iconTint = ColorFilter.tint(ComposeAppTheme.colors.yellow),
         onCloseClick = onCloseClick
     ) {
         TextImportantWarning(

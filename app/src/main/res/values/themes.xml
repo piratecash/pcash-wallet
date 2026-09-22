@@ -6,11 +6,11 @@
     <style name="Theme.AppTheme.DayNight" parent="Theme.AppTheme"/>
 
     <style name="Theme.AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorAccent">@color/yellow_l</item>
-        <item name="android:windowBackground">@color/light</item>
+        <item name="colorAccent">@color/jacob</item>
+        <item name="android:windowBackground">@color/tyler</item>
         <item name="android:actionMenuTextAppearance">@style/Headline2</item>
         <item name="colorControlNormal">@color/grey</item>
-        <item name="colorControlActivated">@color/yellow_l</item>
+        <item name="colorControlActivated">@color/jacob</item>
         <item name="colorControlHighlight">#6E7899</item>
         <item name="android:homeAsUpIndicator">@drawable/ic_back</item>
         <item name="android:forceDarkAllowed" tools:targetApi="29">false</item>
@@ -21,7 +21,7 @@
         <item name="TextColorGreyLightToDark">@color/dark</item>
         <item name="TextColorBarsToDark">@color/dark</item>
         <item name="AboutBackgroundColor">@color/white</item>
-        <item name="BottomNavigationBackgroundColor">@color/light</item>
+        <item name="BottomNavigationBackgroundColor">@color/navigation</item>
         <item name="RippleColor">@color/ripple_black</item>
         <item name="RoundRippleColor">@color/light_grey</item>
         <item name="BottomNavBackground">@drawable/shadow_bottom_navigation_light</item>
@@ -45,7 +45,7 @@
 
         <!--  Gradient colors-->
         <item name="ColorGradientWhite">@color/white</item>
-        <item name="ColorWindowBackground">@color/light</item>
+        <item name="ColorWindowBackground">@color/tyler</item>
     </style>
 
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">

@@ -386,7 +386,7 @@ private fun setColorByType(type: ValueType) =
         ValueType.Disabled -> ComposeAppTheme.colors.grey
         ValueType.Outgoing -> ComposeAppTheme.colors.leah
         ValueType.Incoming -> ComposeAppTheme.colors.remus
-        ValueType.Warning -> ComposeAppTheme.colors.jacob
+        ValueType.Warning -> ComposeAppTheme.colors.yellow
         ValueType.Forbidden -> ComposeAppTheme.colors.lucian
     }
 

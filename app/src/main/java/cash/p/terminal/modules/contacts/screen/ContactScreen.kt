@@ -122,7 +122,7 @@ fun ContactScreen(
                         title = stringResource(R.string.Alert_TitleWarning),
                         text = stringResource(R.string.Contacts_DiscardChanges_Warning),
                         iconPainter = painterResource(R.drawable.icon_warning_2_20),
-                        iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+                        iconTint = ColorFilter.tint(ComposeAppTheme.colors.yellow),
                         confirmText = stringResource(R.string.Contacts_DiscardChanges),
                         cautionType = Caution.Type.Error,
                         cancelText = stringResource(R.string.Contacts_KeepEditing),

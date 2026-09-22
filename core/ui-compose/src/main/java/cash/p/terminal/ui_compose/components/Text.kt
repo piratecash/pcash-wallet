@@ -1,6 +1,11 @@
 package cash.p.terminal.ui_compose.components
 
-import androidx.compose.material.Text
+import android.content.res.Configuration
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -11,7 +16,23 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+
+@Composable
+private fun primaryTextColor(dimmed: Boolean): Color = if (dimmed) {
+    ComposeAppTheme.colors.textSecondary
+} else {
+    ComposeAppTheme.colors.textPrimary
+}
+
+@Composable
+private fun secondaryTextColor(dimmed: Boolean): Color = if (dimmed) {
+    ComposeAppTheme.colors.textSecondaryDimmed
+} else {
+    ComposeAppTheme.colors.textSecondary
+}
 
 @Composable
 fun headline1_grey(
@@ -30,7 +51,7 @@ fun headline1_grey(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.headline1,
-        color = ComposeAppTheme.colors.grey,
+        color = ComposeAppTheme.colors.textSecondary,
     )
 }
 
@@ -93,7 +114,7 @@ fun L2(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.headline1,
-        color = ComposeAppTheme.colors.leah,
+        color = ComposeAppTheme.colors.textPrimary,
     )
 }
 @Composable
@@ -171,7 +192,7 @@ fun A1(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.headline2,
-        color = ComposeAppTheme.colors.grey,
+        color = ComposeAppTheme.colors.textSecondary,
     )
 }
 @Composable
@@ -200,6 +221,7 @@ fun A2(
     textAlign: TextAlign? = null,
     overflow: TextOverflow = TextOverflow.Clip,
     maxLines: Int = Int.MAX_VALUE,
+    dimmed: Boolean = false,
     onTextLayout: (TextLayoutResult) -> Unit = {}
 ) {
     Text(
@@ -210,7 +232,7 @@ fun A2(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.headline2,
-        color = ComposeAppTheme.colors.leah,
+        color = primaryTextColor(dimmed),
     )
 }
 @Composable
@@ -220,6 +242,7 @@ fun headline2_leah(
     textAlign: TextAlign? = null,
     overflow: TextOverflow = TextOverflow.Clip,
     maxLines: Int = Int.MAX_VALUE,
+    dimmed: Boolean = false,
     onTextLayout: (TextLayoutResult) -> Unit = {}
 ) {
     A2(
@@ -228,6 +251,7 @@ fun headline2_leah(
         textAlign = textAlign,
         overflow = overflow,
         maxLines = maxLines,
+        dimmed = dimmed,
         onTextLayout = onTextLayout,
     )
 }
@@ -405,7 +429,7 @@ fun A7(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.headline2,
-        color = ComposeAppTheme.colors.grey50,
+        color = ComposeAppTheme.colors.textSecondaryDimmed,
     )
 }
 @Composable
@@ -551,6 +575,7 @@ fun B1(
     textAlign: TextAlign? = null,
     overflow: TextOverflow = TextOverflow.Clip,
     maxLines: Int = Int.MAX_VALUE,
+    dimmed: Boolean = false,
     onTextLayout: (TextLayoutResult) -> Unit = {}
 ) {
     Text(
@@ -561,7 +586,7 @@ fun B1(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.body,
-        color = ComposeAppTheme.colors.grey,
+        color = secondaryTextColor(dimmed),
     )
 }
 @Composable
@@ -571,6 +596,7 @@ fun body_grey(
     textAlign: TextAlign? = null,
     overflow: TextOverflow = TextOverflow.Clip,
     maxLines: Int = Int.MAX_VALUE,
+    dimmed: Boolean = false,
     onTextLayout: (TextLayoutResult) -> Unit = {}
 ) {
     B1(
@@ -579,6 +605,7 @@ fun body_grey(
         textAlign = textAlign,
         overflow = overflow,
         maxLines = maxLines,
+        dimmed = dimmed,
         onTextLayout = onTextLayout,
     )
 }
@@ -600,7 +627,7 @@ fun B2(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.body,
-        color = ComposeAppTheme.colors.leah,
+        color = ComposeAppTheme.colors.textPrimary,
     )
 }
 
@@ -796,7 +823,7 @@ fun B7(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.body,
-        color = ComposeAppTheme.colors.grey50,
+        color = ComposeAppTheme.colors.textSecondaryDimmed,
     )
 }
 @Composable
@@ -944,15 +971,14 @@ fun C1(
     maxLines: Int = Int.MAX_VALUE,
     onTextLayout: (TextLayoutResult) -> Unit = {}
 ) {
-    Text(
+    Subhead1(
         text = text,
         modifier = modifier,
         textAlign = textAlign,
         overflow = overflow,
         maxLines = maxLines,
         onTextLayout = onTextLayout,
-        style = ComposeAppTheme.typography.subhead1,
-        color = ComposeAppTheme.colors.grey,
+        color = ComposeAppTheme.colors.textSecondary,
     )
 }
 @Composable
@@ -966,6 +992,48 @@ fun subhead1_grey(
 ) {
     C1(
         text = text,
+        modifier = modifier,
+        textAlign = textAlign,
+        overflow = overflow,
+        maxLines = maxLines,
+        onTextLayout = onTextLayout,
+    )
+}
+
+@Composable
+fun Subhead1(
+    text: String,
+    color: Color,
+    modifier: Modifier = Modifier,
+    textAlign: TextAlign? = null,
+    overflow: TextOverflow = TextOverflow.Clip,
+    maxLines: Int = Int.MAX_VALUE,
+    onTextLayout: (TextLayoutResult) -> Unit = {}
+) {
+    Text(
+        text = text,
+        modifier = modifier,
+        textAlign = textAlign,
+        overflow = overflow,
+        maxLines = maxLines,
+        onTextLayout = onTextLayout,
+        style = ComposeAppTheme.typography.subhead1,
+        color = color,
+    )
+}
+
+@Composable
+fun Subhead1Filter(
+    text: String,
+    modifier: Modifier = Modifier,
+    textAlign: TextAlign? = null,
+    overflow: TextOverflow = TextOverflow.Clip,
+    maxLines: Int = Int.MAX_VALUE,
+    onTextLayout: (TextLayoutResult) -> Unit = {}
+) {
+    Subhead1(
+        text = text,
+        color = ComposeAppTheme.colors.filterText,
         modifier = modifier,
         textAlign = textAlign,
         overflow = overflow,
@@ -991,7 +1059,7 @@ fun C2(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead1,
-        color = ComposeAppTheme.colors.leah,
+        color = ComposeAppTheme.colors.textPrimary,
     )
 }
 @Composable
@@ -1186,7 +1254,7 @@ fun C7(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead1,
-        color = ComposeAppTheme.colors.grey50,
+        color = ComposeAppTheme.colors.textSecondaryDimmed,
     )
 }
 @Composable
@@ -1332,7 +1400,7 @@ fun D1(
     textAlign: TextAlign? = null,
     overflow: TextOverflow = TextOverflow.Clip,
     maxLines: Int = Int.MAX_VALUE,
-    textColor: Color = ComposeAppTheme.colors.grey,
+    textColor: Color = ComposeAppTheme.colors.textSecondary,
     onTextLayout: (TextLayoutResult) -> Unit = {}
 ) {
     Text(
@@ -1353,6 +1421,7 @@ fun subhead2_grey(
     textAlign: TextAlign? = null,
     overflow: TextOverflow = TextOverflow.Clip,
     maxLines: Int = Int.MAX_VALUE,
+    dimmed: Boolean = false,
     onTextLayout: (TextLayoutResult) -> Unit = {}
 ) {
     D1(
@@ -1361,6 +1430,7 @@ fun subhead2_grey(
         textAlign = textAlign,
         overflow = overflow,
         maxLines = maxLines,
+        textColor = secondaryTextColor(dimmed),
         onTextLayout = onTextLayout,
     )
 }
@@ -1382,7 +1452,7 @@ fun subhead2_grey(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead2,
-        color = ComposeAppTheme.colors.grey,
+        color = ComposeAppTheme.colors.textSecondary,
     )
 }
 
@@ -1403,7 +1473,7 @@ fun D2(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead2,
-        color = ComposeAppTheme.colors.leah,
+        color = ComposeAppTheme.colors.textPrimary,
     )
 }
 
@@ -1424,7 +1494,7 @@ fun D2(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead2,
-        color = ComposeAppTheme.colors.leah,
+        color = ComposeAppTheme.colors.textPrimary,
     )
 }
 
@@ -1661,7 +1731,7 @@ fun D7(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead2,
-        color = ComposeAppTheme.colors.grey50,
+        color = ComposeAppTheme.colors.textSecondaryDimmed,
     )
 }
 @Composable
@@ -1817,7 +1887,7 @@ fun micro_leah(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.micro,
-        color = ComposeAppTheme.colors.leah,
+        color = ComposeAppTheme.colors.textPrimary,
     )
 }
 
@@ -1838,7 +1908,7 @@ fun micro_grey(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.micro,
-        color = ComposeAppTheme.colors.grey,
+        color = ComposeAppTheme.colors.textSecondary,
     )
 }
 
@@ -1859,7 +1929,28 @@ fun micro_grey50(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.micro,
-        color = ComposeAppTheme.colors.grey50,
+        color = ComposeAppTheme.colors.textSecondaryDimmed,
+    )
+}
+
+@Composable
+fun MicroSBGrey(
+    text: String,
+    modifier: Modifier = Modifier,
+    textAlign: TextAlign? = null,
+    overflow: TextOverflow = TextOverflow.Clip,
+    maxLines: Int = Int.MAX_VALUE,
+    onTextLayout: (TextLayoutResult) -> Unit = {}
+) {
+    Text(
+        text = text,
+        modifier = modifier,
+        textAlign = textAlign,
+        overflow = overflow,
+        maxLines = maxLines,
+        onTextLayout = onTextLayout,
+        style = ComposeAppTheme.typography.microSB,
+        color = ComposeAppTheme.colors.textSecondary,
     )
 }
 
@@ -1880,7 +1971,7 @@ fun E1(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.captionSB,
-        color = ComposeAppTheme.colors.grey,
+        color = ComposeAppTheme.colors.textSecondary,
     )
 }
 @Composable
@@ -1909,7 +2000,7 @@ fun E2(
     textAlign: TextAlign? = null,
     overflow: TextOverflow = TextOverflow.Clip,
     maxLines: Int = Int.MAX_VALUE,
-    color: Color = ComposeAppTheme.colors.leah,
+    color: Color = ComposeAppTheme.colors.textPrimary,
     onTextLayout: (TextLayoutResult) -> Unit = {}
 ) {
     Text(
@@ -2115,7 +2206,7 @@ fun E7(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.captionSB,
-        color = ComposeAppTheme.colors.grey50,
+        color = ComposeAppTheme.colors.textSecondaryDimmed,
     )
 }
 @Composable
@@ -2271,7 +2362,7 @@ fun F1(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.caption,
-        color = ComposeAppTheme.colors.grey,
+        color = ComposeAppTheme.colors.textSecondary,
     )
 }
 @Composable
@@ -2310,7 +2401,7 @@ fun F2(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.caption,
-        color = ComposeAppTheme.colors.leah,
+        color = ComposeAppTheme.colors.textPrimary,
     )
 }
 @Composable
@@ -2505,7 +2596,7 @@ fun F7(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.caption,
-        color = ComposeAppTheme.colors.grey50,
+        color = ComposeAppTheme.colors.textSecondaryDimmed,
     )
 }
 @Composable
@@ -2701,7 +2792,7 @@ fun G1(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead1Italic,
-        color = ComposeAppTheme.colors.grey,
+        color = ComposeAppTheme.colors.textSecondary,
     )
 }
 @Composable
@@ -2740,7 +2831,7 @@ fun G2(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead1Italic,
-        color = ComposeAppTheme.colors.leah,
+        color = ComposeAppTheme.colors.textPrimary,
     )
 }
 @Composable
@@ -2935,7 +3026,7 @@ fun G7(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead1Italic,
-        color = ComposeAppTheme.colors.grey50,
+        color = ComposeAppTheme.colors.textSecondaryDimmed,
     )
 }
 @Composable
@@ -3075,6 +3166,28 @@ fun subhead1Italic_red50(
 }
 
 @Composable
+fun Title1Leah(
+    text: String,
+    modifier: Modifier = Modifier,
+    textAlign: TextAlign? = null,
+    overflow: TextOverflow = TextOverflow.Clip,
+    maxLines: Int = Int.MAX_VALUE,
+    dimmed: Boolean = false,
+    onTextLayout: (TextLayoutResult) -> Unit = {}
+) {
+    Text(
+        text = text,
+        modifier = modifier,
+        textAlign = textAlign,
+        overflow = overflow,
+        maxLines = maxLines,
+        onTextLayout = onTextLayout,
+        style = ComposeAppTheme.typography.title1,
+        color = primaryTextColor(dimmed),
+    )
+}
+
+@Composable
 fun H1(
     text: String,
     modifier: Modifier = Modifier,
@@ -3091,7 +3204,7 @@ fun H1(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.title3,
-        color = ComposeAppTheme.colors.grey,
+        color = ComposeAppTheme.colors.textSecondary,
     )
 }
 
@@ -3112,7 +3225,7 @@ fun title2_leah(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.title2,
-        color = ComposeAppTheme.colors.leah,
+        color = ComposeAppTheme.colors.textPrimary,
     )
 }
 
@@ -3133,7 +3246,7 @@ fun title2R_grey(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.title2R,
-        color = ComposeAppTheme.colors.grey,
+        color = ComposeAppTheme.colors.textSecondary,
     )
 }
 
@@ -3173,7 +3286,7 @@ fun H2(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.title3,
-        color = ComposeAppTheme.colors.leah,
+        color = ComposeAppTheme.colors.textPrimary,
     )
 }
 @Composable
@@ -3368,7 +3481,7 @@ fun H7(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.title3,
-        color = ComposeAppTheme.colors.grey50,
+        color = ComposeAppTheme.colors.textSecondaryDimmed,
     )
 }
 @Composable
@@ -3541,6 +3654,26 @@ fun highlightText(
             } else {
                 append(text)
             }
+        }
+    }
+}
+
+@Preview(name = "Light", uiMode = Configuration.UI_MODE_NIGHT_NO, widthDp = 360)
+@Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, widthDp = 360)
+@Composable
+private fun BalanceTypographyPreview() {
+    ComposeAppTheme {
+        Column(
+            modifier = Modifier
+                .background(ComposeAppTheme.colors.tyler)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Subhead1("Balance", color = ComposeAppTheme.colors.textPrimary)
+            Subhead1Filter("Balance")
+            MicroSBGrey("TOTAL BALANCE")
+            Title1Leah("\$1,700.00")
+            Title1Leah("\$1,700.00", dimmed = true)
         }
     }
 }

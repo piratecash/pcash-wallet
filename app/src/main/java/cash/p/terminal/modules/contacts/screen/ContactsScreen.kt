@@ -80,7 +80,7 @@ fun ContactsScreen(
                         title = stringResource(R.string.Alert_TitleWarning),
                         text = warningMessage ?: "",
                         iconPainter = painterResource(R.drawable.icon_warning_2_20),
-                        iconTint = ColorFilter.tint(cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.jacob),
+                        iconTint = ColorFilter.tint(ComposeAppTheme.colors.yellow),
                         confirmText = stringResource(R.string.Contacts_AddAddress_Replace),
                         cautionType = Caution.Type.Warning,
                         cancelText = stringResource(R.string.Button_Cancel),

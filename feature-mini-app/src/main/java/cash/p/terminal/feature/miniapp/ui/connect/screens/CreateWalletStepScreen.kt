@@ -27,7 +27,7 @@ import cash.p.terminal.ui_compose.components.HsRadioButton
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
-import cash.p.terminal.ui_compose.components.subhead2_jacob
+import cash.p.terminal.ui_compose.components.subhead2
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @Composable
@@ -120,13 +120,16 @@ fun WalletSelectionScreen(
                     Column(modifier = Modifier.weight(1f)) {
                         body_leah(text = item.name)
                         if (item.isPremium) {
-                            subhead2_jacob(text = stringResource(R.string.connect_mini_app_premium_bonus))
+                            subhead2(
+                                text = stringResource(R.string.connect_mini_app_premium_bonus),
+                                color = ComposeAppTheme.colors.yellow,
+                            )
                         }
                     }
                     if (item.isPremium) {
                         Icon(
                             painter = painterResource(R.drawable.star_filled_yellow_16),
-                            tint = ComposeAppTheme.colors.jacob,
+                            tint = ComposeAppTheme.colors.yellow,
                             contentDescription = null,
                             modifier = Modifier.padding(end = 16.dp)
                         )

@@ -456,7 +456,7 @@ object TabDefaults {
     fun textButtonColors(
         backgroundColor: Color = ComposeAppTheme.colors.transparent,
         contentColor: Color = ComposeAppTheme.colors.leah,
-        selectedBackgroundColor: Color = ComposeAppTheme.colors.yellowD,
+        selectedBackgroundColor: Color = ComposeAppTheme.colors.jacob,
         selectedContentColor: Color = ComposeAppTheme.colors.dark,
         disabledContentColor: Color = ComposeAppTheme.colors.grey50,
     ): DefaultTabColors = DefaultTabColors(

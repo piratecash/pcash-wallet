@@ -196,7 +196,7 @@ private fun NetworkFeeWarningContent(
             Image(
                 modifier = Modifier.size(24.dp),
                 painter = painterResource(R.drawable.ic_attention_24),
-                colorFilter = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+                colorFilter = ColorFilter.tint(ComposeAppTheme.colors.yellow),
                 contentDescription = null
             )
             Text(
@@ -214,7 +214,7 @@ private fun NetworkFeeWarningContent(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_close_24),
-                    tint = ComposeAppTheme.colors.jacob,
+                    tint = ComposeAppTheme.colors.yellow,
                     contentDescription = null,
                 )
             }

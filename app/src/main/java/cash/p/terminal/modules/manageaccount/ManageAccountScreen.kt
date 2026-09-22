@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -61,7 +62,6 @@ import cash.p.terminal.ui_compose.components.InfoText
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.body_jacob
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.body_lucian
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
@@ -259,7 +259,7 @@ private fun KeyActions(
                     AccountActionItem(
                         title = stringResource(id = R.string.RecoveryPhrase_monero_Title),
                         icon = painterResource(id = R.drawable.icon_paper_contract_20),
-                        iconTint = ComposeAppTheme.colors.jacob
+                        iconTint = ComposeAppTheme.colors.yellow
                     ) {
                         navController.authorizedAction {
                             navController.premiumAction {
@@ -616,13 +616,15 @@ private fun YellowActionItem(
                     .size(24.dp),
                 painter = icon,
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.jacob
+                tint = ComposeAppTheme.colors.yellow
             )
         }
 
-        body_jacob(
+        Text(
             modifier = Modifier.weight(1f),
             text = title,
+            color = ComposeAppTheme.colors.yellow,
+            style = ComposeAppTheme.typography.body,
         )
 
         if (attention) {

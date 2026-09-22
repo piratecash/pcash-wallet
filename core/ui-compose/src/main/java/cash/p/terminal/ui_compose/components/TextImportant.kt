@@ -42,10 +42,10 @@ fun TextImportantWarning(
         text = text,
         title = title,
         icon = icon,
-        borderColor = ComposeAppTheme.colors.jacob,
+        borderColor = ComposeAppTheme.colors.yellow,
         backgroundColor = ComposeAppTheme.colors.yellow20,
-        textColor = ComposeAppTheme.colors.jacob,
-        iconColor = ComposeAppTheme.colors.jacob,
+        textColor = ComposeAppTheme.colors.yellow,
+        iconColor = ComposeAppTheme.colors.yellow,
         onClose = onClose
     )
 }
@@ -63,10 +63,10 @@ fun TextImportantWarning(
         text = text,
         title = title,
         icon = icon,
-        borderColor = ComposeAppTheme.colors.jacob,
+        borderColor = ComposeAppTheme.colors.yellow,
         backgroundColor = ComposeAppTheme.colors.yellow20,
-        textColor = ComposeAppTheme.colors.jacob,
-        iconColor = ComposeAppTheme.colors.jacob,
+        textColor = ComposeAppTheme.colors.yellow,
+        iconColor = ComposeAppTheme.colors.yellow,
         onClose = onClose
     )
 }
@@ -83,10 +83,10 @@ fun TextImportantWarning(
         modifier = modifier,
         title = title,
         icon = icon,
-        borderColor = ComposeAppTheme.colors.jacob,
+        borderColor = ComposeAppTheme.colors.yellow,
         backgroundColor = ComposeAppTheme.colors.yellow20,
-        textColor = ComposeAppTheme.colors.jacob,
-        iconColor = ComposeAppTheme.colors.jacob,
+        textColor = ComposeAppTheme.colors.yellow,
+        iconColor = ComposeAppTheme.colors.yellow,
         onClose = onClose,
         alignTrailingToEndWhenNoTitle = true,
         content = content

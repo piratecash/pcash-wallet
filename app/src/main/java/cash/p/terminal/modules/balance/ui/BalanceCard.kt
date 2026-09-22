@@ -12,23 +12,22 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import cash.p.terminal.R
@@ -46,6 +45,8 @@ import cash.p.terminal.ui_compose.components.HsIconButton
 import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.diffColor
+import cash.p.terminal.ui_compose.components.headline2_leah
+import cash.p.terminal.ui_compose.components.subhead2
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.oneLineHeight
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
@@ -78,7 +79,7 @@ fun BalanceCardSwipable(
             content = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_circle_minus_24),
-                    tint = Color.Gray,
+                    tint = ComposeAppTheme.colors.grey,
                     contentDescription = "delete",
                 )
             }
@@ -112,8 +113,6 @@ fun BalanceCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .clip(RoundedCornerShape(12.dp))
             .background(ComposeAppTheme.colors.lawrence)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
@@ -125,7 +124,8 @@ fun BalanceCard(
             viewItem = viewItem,
             type = BalanceCardSubtitleType.Rate,
             onClickSyncError = onClickSyncError,
-            onBalanceClick = onBalanceClick
+            onBalanceClick = onBalanceClick,
+            fullWidth = true,
         )
     }
 }
@@ -140,194 +140,271 @@ fun BalanceCardInner(
     type: BalanceCardSubtitleType,
     onClickSyncError: (() -> Unit)? = null,
     onBalanceClick: (() -> Unit)? = null,
+    fullWidth: Boolean = false,
 ) {
-    val verticalPadding = if (viewItem.displayDiffOptionType != DisplayDiffOptionType.NONE) {
-        12.dp
-    } else {
-        16.dp
-    }
-    val mainBlockHeight = if (viewItem.displayDiffOptionType != DisplayDiffOptionType.NONE) {
-        61.dp
-    } else {
-        40.dp
-    }
-    val stackingBlockHeight = if (viewItem.stackingUnpaid == null) 0.dp else 46.dp
-    val cardHeight = mainBlockHeight + stackingBlockHeight + verticalPadding + verticalPadding
-    CellMultilineClear(height = cardHeight, onBalanceClick = onBalanceClick) {
-        Column {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.height(cardHeight - stackingBlockHeight)
+    val layout = viewItem.cardLayout(fullWidth)
+    Box(modifier = if (fullWidth) Modifier else Modifier.height(layout.cardHeight)) {
+        CellMultilineClear(
+            height = if (fullWidth) null else layout.cardHeight,
+            onBalanceClick = onBalanceClick,
+        ) {
+            Column(
+                modifier = if (layout.fullWidth) {
+                    Modifier.padding(horizontal = 16.dp, vertical = layout.verticalPadding)
+                } else {
+                    Modifier
+                }
             ) {
-                WalletIcon(viewItem, onClickSyncError)
-                Column(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .weight(1f),
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            body_leah(
-                                text = viewItem.wallet.coin.code,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            if (!viewItem.badge.isNullOrBlank()) {
-                                Badge(
-                                    modifier = Modifier.padding(start = 6.dp),
-                                    text = viewItem.badge,
-                                )
-                            }
-                            if (viewItem.offline) {
-                                Badge(
-                                    modifier = Modifier.padding(start = 6.dp),
-                                    text = stringResource(R.string.offline_mode_badge),
-                                )
-                            }
-                        }
-                        Spacer(Modifier.width(24.dp))
-                        Text(
-                            text = if (viewItem.primaryValue.visible) viewItem.primaryValue.value else "*****",
-                            color = if (viewItem.primaryValue.dimmed) ComposeAppTheme.colors.grey else
-                                ComposeAppTheme.colors.leah,
-                            style = ComposeAppTheme.typography.headline2,
-                            maxLines = 1,
-                            textAlign = TextAlign.End,
-                            overflow = TextOverflow.MiddleEllipsis,
-                            modifier = Modifier.weight(1f)
+                BalanceCardMainRow(viewItem, type, onClickSyncError, layout)
+                viewItem.stackingUnpaid?.let { stackingUnpaid ->
+                    if (layout.fullWidth) {
+                        Spacer(Modifier.height(17.dp))
+                        HorizontalDivider(thickness = 1.dp, color = ComposeAppTheme.colors.divider)
+                        Spacer(Modifier.height(5.dp))
+                    } else {
+                        HorizontalDivider(
+                            thickness = 1.dp,
+                            color = ComposeAppTheme.colors.steel10,
+                            modifier = Modifier.padding(horizontal = 12.dp)
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(3.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Box(
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            if (viewItem.syncingTextValue != null) {
-                                subhead2_grey(
-                                    text = viewItem.syncingTextValue,
-                                    maxLines = 1,
-                                )
-                            } else {
-                                when (type) {
-                                    BalanceCardSubtitleType.Rate -> {
-                                        if (viewItem.exchangeValue.visible) {
-                                            Column {
-                                                Text(
-                                                    text = viewItem.exchangeValue.value,
-                                                    color = if (viewItem.exchangeValue.dimmed) {
-                                                        ComposeAppTheme.colors.grey50
-                                                    } else {
-                                                        ComposeAppTheme.colors.grey
-                                                    },
-                                                    style = ComposeAppTheme.typography.subhead2,
-                                                    modifier = Modifier.oneLineHeight(
-                                                        ComposeAppTheme.typography.subhead2
-                                                    ),
-                                                    overflow = TextOverflow.Ellipsis,
-                                                    maxLines = 1,
-                                                )
-                                                if (viewItem.displayDiffOptionType != DisplayDiffOptionType.NONE) {
-                                                    Text(
-                                                        text = viewItem.fullDiff,
-                                                        color = diffColor(viewItem.diff),
-                                                        style = ComposeAppTheme.typography.subhead2,
-                                                        modifier = Modifier.oneLineHeight(
-                                                            ComposeAppTheme.typography.subhead2
-                                                        ),
-                                                        overflow = TextOverflow.Ellipsis,
-                                                        maxLines = 1,
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    BalanceCardSubtitleType.CoinName -> {
-                                        subhead2_grey(text = viewItem.wallet.coin.name)
-                                    }
-                                }
-                            }
-                        }
-                        Box(
-                            modifier = Modifier.padding(start = 16.dp),
-                        ) {
-                            if (viewItem.syncedUntilTextValue != null) {
-                                subhead2_grey(
-                                    text = viewItem.syncedUntilTextValue,
-                                    maxLines = 1,
-                                )
-                            } else {
-                                Text(
-                                    text = if (viewItem.secondaryValue.visible) viewItem.secondaryValue.value else
-                                        "*****",
-                                    color = if (viewItem.secondaryValue.dimmed) ComposeAppTheme.colors.grey50 else
-                                        ComposeAppTheme.colors.grey,
-                                    style = ComposeAppTheme.typography.subhead2,
-                                    maxLines = 1,
-                                )
-                            }
-                        }
-                    }
+                    StakingUnpaidRow(stackingUnpaid, layout.fullWidth)
                 }
-
-                Spacer(modifier = Modifier.width(16.dp))
             }
-            if (viewItem.stackingUnpaid != null) {
-                Divider(
-                    thickness = 1.dp,
-                    color = ComposeAppTheme.colors.steel10,
-                    modifier = Modifier.padding(horizontal = 12.dp)
+        }
+        if (fullWidth) {
+            HorizontalDivider(
+                modifier = Modifier.align(Alignment.TopCenter),
+                thickness = 1.dp,
+                color = ComposeAppTheme.colors.divider,
+            )
+        }
+    }
+}
+
+@Composable
+private fun BalanceCardMainRow(
+    viewItem: BalanceViewItem2,
+    type: BalanceCardSubtitleType,
+    onClickSyncError: (() -> Unit)?,
+    layout: BalanceCardLayout,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = if (layout.fullWidth) {
+            Modifier.heightIn(min = layout.mainBlockHeight)
+        } else {
+            Modifier.height(layout.cardHeight - layout.stackingBlockHeight)
+        }
+    ) {
+        WalletIcon(viewItem, onClickSyncError, compact = layout.fullWidth)
+        if (layout.fullWidth) Spacer(Modifier.width(16.dp))
+        Column(
+            modifier = if (layout.fullWidth) {
+                Modifier.weight(1f)
+            } else {
+                Modifier
+                    .fillMaxHeight()
+                    .weight(1f)
+            },
+            verticalArrangement = Arrangement.Center
+        ) {
+            BalanceCardPrimaryRow(viewItem, layout.fullWidth)
+            Spacer(modifier = Modifier.height(if (layout.fullWidth) 1.dp else 3.dp))
+            BalanceCardSecondaryRow(viewItem, type)
+        }
+        if (!layout.fullWidth) Spacer(modifier = Modifier.width(16.dp))
+    }
+}
+
+@Composable
+private fun BalanceCardPrimaryRow(viewItem: BalanceViewItem2, fullWidth: Boolean) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            body_leah(
+                text = viewItem.wallet.coin.code,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            if (!viewItem.badge.isNullOrBlank()) {
+                Badge(
+                    modifier = Modifier.padding(start = if (fullWidth) 8.dp else 6.dp),
+                    text = viewItem.badge,
                 )
-                Row(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    subhead2_grey(
-                        text = stringResource(R.string.staking_unpaid),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
-                    )
-                    subhead2_grey(
-                        text = if (viewItem.stackingUnpaid.visible) viewItem.stackingUnpaid.value else "*****",
-                        maxLines = 1,
-                    )
-                }
+            }
+            if (viewItem.offline) {
+                Badge(
+                    modifier = Modifier.padding(start = if (fullWidth) 8.dp else 6.dp),
+                    text = stringResource(R.string.offline_mode_badge),
+                )
+            }
+        }
+        Spacer(Modifier.width(24.dp))
+        headline2_leah(
+            text = viewItem.primaryValue.visibleValue(),
+            dimmed = viewItem.primaryValue.dimmed,
+            maxLines = 1,
+            textAlign = TextAlign.End,
+            overflow = TextOverflow.MiddleEllipsis,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+private fun BalanceCardSecondaryRow(
+    viewItem: BalanceViewItem2,
+    type: BalanceCardSubtitleType,
+) {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        Box(modifier = Modifier.weight(1f)) {
+            BalanceCardSubtitle(viewItem, type)
+        }
+        Box(modifier = Modifier.padding(start = 16.dp)) {
+            if (viewItem.syncedUntilTextValue != null) {
+                subhead2_grey(text = viewItem.syncedUntilTextValue, maxLines = 1)
+            } else {
+                subhead2_grey(
+                    text = viewItem.secondaryValue.visibleValue(),
+                    dimmed = viewItem.secondaryValue.dimmed,
+                    maxLines = 1,
+                )
             }
         }
     }
 }
 
 @Composable
+private fun BalanceCardSubtitle(
+    viewItem: BalanceViewItem2,
+    type: BalanceCardSubtitleType,
+) {
+    viewItem.syncingTextValue?.let {
+        subhead2_grey(text = it, maxLines = 1)
+        return
+    }
+    when (type) {
+        BalanceCardSubtitleType.Rate -> if (viewItem.exchangeValue.visible) {
+            Column {
+                subhead2_grey(
+                    text = viewItem.exchangeValue.value,
+                    dimmed = viewItem.exchangeValue.dimmed,
+                    modifier = Modifier.oneLineHeight(ComposeAppTheme.typography.subhead2),
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                )
+                if (viewItem.displayDiffOptionType != DisplayDiffOptionType.NONE) {
+                    subhead2(
+                        text = viewItem.fullDiff,
+                        color = diffColor(viewItem.diff),
+                        modifier = Modifier.oneLineHeight(ComposeAppTheme.typography.subhead2),
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1,
+                    )
+                }
+            }
+        }
+
+        BalanceCardSubtitleType.CoinName -> subhead2_grey(text = viewItem.wallet.coin.name)
+    }
+}
+
+@Composable
+private fun StakingUnpaidRow(stackingUnpaid: DeemedValue<String>, fullWidth: Boolean) {
+    Row(
+        modifier = if (fullWidth) {
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 2.dp)
+        } else {
+            Modifier
+                .fillMaxHeight()
+                .padding(horizontal = 16.dp)
+        },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (fullWidth) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                subhead2_grey(
+                    text = stringResource(R.string.staking_unpaid),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+                Spacer(Modifier.width(4.dp))
+                Icon(
+                    modifier = Modifier.size(15.dp),
+                    painter = painterResource(R.drawable.ic_info_20),
+                    contentDescription = null,
+                    tint = ComposeAppTheme.colors.textSecondary,
+                )
+            }
+        } else {
+            subhead2_grey(
+                text = stringResource(R.string.staking_unpaid),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+        }
+        subhead2_grey(
+            text = stackingUnpaid.visibleValue(),
+            maxLines = 1,
+        )
+    }
+}
+
+private data class BalanceCardLayout(
+    val fullWidth: Boolean,
+    val verticalPadding: Dp,
+    val mainBlockHeight: Dp,
+    val stackingBlockHeight: Dp,
+    val cardHeight: Dp,
+)
+
+private fun BalanceViewItem2.cardLayout(fullWidth: Boolean): BalanceCardLayout {
+    val hasDiff = displayDiffOptionType != DisplayDiffOptionType.NONE
+    val verticalPadding = if (hasDiff) 12.dp else 16.dp
+    val mainBlockHeight = if (hasDiff) 61.dp else 40.dp
+    val stackingBlockHeight = if (stackingUnpaid == null) 0.dp else 46.dp
+    return BalanceCardLayout(
+        fullWidth = fullWidth,
+        verticalPadding = verticalPadding,
+        mainBlockHeight = mainBlockHeight,
+        stackingBlockHeight = stackingBlockHeight,
+        cardHeight = mainBlockHeight + stackingBlockHeight + verticalPadding + verticalPadding,
+    )
+}
+
+private fun DeemedValue<String>.visibleValue(): String = if (visible) value else "*****"
+
+@Composable
 private fun WalletIcon(
     viewItem: BalanceViewItem2,
-    onClickSyncError: (() -> Unit)?
+    onClickSyncError: (() -> Unit)?,
+    compact: Boolean,
 ) {
     val syncingProgress = viewItem.syncingProgress
 
     Box(
         modifier = Modifier
-            .width(64.dp)
-            .fillMaxHeight(),
+            .width(if (compact) 32.dp else 64.dp)
+            .then(if (compact) Modifier else Modifier.fillMaxHeight()),
         contentAlignment = Alignment.Center
     ) {
         CoinIconWithSyncProgress(
             token = viewItem.wallet.token,
             syncingProgress = syncingProgress,
             failedIconVisible = viewItem.failedIconVisible,
-            onClickSyncError = onClickSyncError
+            onClickSyncError = onClickSyncError,
+            boxSize = if (compact) 32.dp else 40.dp,
+            iconSize = 32.dp,
         )
     }
 }

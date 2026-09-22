@@ -3,6 +3,7 @@ package cash.p.terminal.modules.fee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -14,11 +15,11 @@ import cash.p.terminal.entities.CoinValue
 import cash.p.terminal.modules.send.fee.NetworkFeeWarningData
 import cash.p.terminal.ui.compose.components.CardsSwapInfo
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.caption_jacob
 import cash.p.terminal.ui_compose.components.caption_lucian
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.subhead2_leah
 import cash.p.terminal.ui_compose.components.subhead2_lucian
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Token
 import java.math.BigDecimal
 
@@ -87,9 +88,11 @@ fun FeeInfoSection(
         )
     } else if (feeWarningText != null) {
         VSpacer(height = 8.dp)
-        caption_jacob(
+        Text(
             text = feeWarningText,
-            modifier = Modifier.padding(horizontal = 32.dp)
+            modifier = Modifier.padding(horizontal = 32.dp),
+            color = ComposeAppTheme.colors.yellow,
+            style = ComposeAppTheme.typography.caption,
         )
     }
 }

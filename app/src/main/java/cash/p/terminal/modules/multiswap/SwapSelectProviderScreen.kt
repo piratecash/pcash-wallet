@@ -327,7 +327,7 @@ private fun ExchangeBlock(
         Icon(
             painter = painterResource(id = R.drawable.ic_arrow_swap3_20),
             contentDescription = "invert price",
-            tint = ComposeAppTheme.colors.yellowD
+            tint = ComposeAppTheme.colors.jacob
         )
         subhead2_grey(
             text = to

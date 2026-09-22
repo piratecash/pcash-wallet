@@ -598,7 +598,7 @@ private fun TronAlertBottomSheet(
     ) {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_attention_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.yellow),
             title = title,
             onCloseClick = hideBottomSheet
         ) {
@@ -700,7 +700,7 @@ private fun ReceiveAddressScreenPreview() {
                 }
                 val badgeColor = when (addressBadge) {
                     AddressBadge.NEW -> ComposeAppTheme.colors.remus
-                    AddressBadge.USED -> ComposeAppTheme.colors.jacob
+                    AddressBadge.USED -> ComposeAppTheme.colors.yellow
                     AddressBadge.UNUSED -> ComposeAppTheme.colors.grey
                 }
                 VSpacer(12.dp)

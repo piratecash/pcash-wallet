@@ -63,7 +63,7 @@ internal fun OfflineModeConfirmationBottomSheet(
     ) {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.icon_warning_2_20),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.yellow),
             title = stringResource(R.string.offline_mode_confirm_title),
             onCloseClick = close,
         ) {

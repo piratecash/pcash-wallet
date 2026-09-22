@@ -217,7 +217,7 @@ private fun MainScreen(
             Column {
                 ConnectionStatusView()
                 HsBottomNavigation(
-                    backgroundColor = ComposeAppTheme.colors.tyler,
+                    backgroundColor = ComposeAppTheme.colors.navigation,
                     elevation = 10.dp
                 ) {
                     uiState.mainNavItems.forEach { item ->

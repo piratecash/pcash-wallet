@@ -93,7 +93,7 @@ fun WCSessionsScreen(
                 title = stringResource(R.string.WalletConnect_Title),
                 text = stringResource(R.string.WalletConnect_Error_InvalidUrl),
                 iconPainter = painterResource(R.drawable.ic_wallet_connect_24),
-                iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+                iconTint = ColorFilter.tint(ComposeAppTheme.colors.yellow),
                 confirmText = stringResource(R.string.Button_TryAgain),
                 cautionType = Caution.Type.Warning,
                 cancelText = stringResource(R.string.Button_Cancel),

@@ -44,7 +44,7 @@ fun AmlCheckInfoBottomSheet(
     ) {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_star_filled_20),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.yellow),
             title = stringResource(R.string.alpha_aml_title),
             titleColor = ComposeAppTheme.colors.leah,
             onCloseClick = {

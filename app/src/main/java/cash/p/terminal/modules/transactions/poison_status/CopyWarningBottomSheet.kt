@@ -54,7 +54,7 @@ fun CopyWarningBottomSheet(
     ) {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_attention_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.yellow),
             title = stringResource(R.string.copy_warning_title),
             onCloseClick = {
                 scope.launch { sheetState.hide() }.invokeOnCompletion {
@@ -67,7 +67,7 @@ fun CopyWarningBottomSheet(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .border(1.dp, ComposeAppTheme.colors.jacob, RoundedCornerShape(12.dp))
+                    .border(1.dp, ComposeAppTheme.colors.yellow, RoundedCornerShape(12.dp))
                     .padding(16.dp),
             ) {
                 subhead2_leah(stringResource(R.string.copy_warning_body_1))

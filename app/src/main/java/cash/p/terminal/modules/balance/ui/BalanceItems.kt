@@ -2,7 +2,6 @@ package cash.p.terminal.modules.balance.ui
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -22,7 +20,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Text
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -56,8 +53,6 @@ import cash.p.terminal.modules.balance.BalanceViewModel
 import cash.p.terminal.modules.balance.HeaderNote
 import cash.p.terminal.modules.balance.ReceiveAllowedState
 import cash.p.terminal.modules.balance.TotalUIState
-import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
-import cash.p.terminal.modules.displayoptions.DisplayPricePeriod
 import cash.p.terminal.modules.manageaccount.dialogs.BackupRequiredDialog
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.multiswap.exchanges.MultiSwapExchangesFragment
@@ -67,28 +62,17 @@ import cash.p.terminal.modules.sendtokenselect.SendTokenSelectFragment
 import cash.p.terminal.modules.transactions.TransactionItem
 import cash.p.terminal.navigation.slideFromBottom
 import cash.p.terminal.navigation.slideFromRight
-import cash.p.terminal.ui.compose.components.AlertGroup
-import cash.p.terminal.ui.compose.components.DoubleText
-import cash.p.terminal.ui.compose.components.SelectorDialogCompose
-import cash.p.terminal.ui.compose.components.SelectorItem
-import cash.p.terminal.ui_compose.Select
-import cash.p.terminal.ui_compose.components.ButtonPrimaryCircle
-import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
-import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
-import cash.p.terminal.ui_compose.components.ButtonPrimaryYellowWithIcon
-import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
-import cash.p.terminal.ui_compose.components.ButtonSecondaryWithIcon
+import cash.p.terminal.ui_compose.components.BalanceActionButton
 import cash.p.terminal.ui_compose.components.HSSwipeRefresh
-import cash.p.terminal.ui_compose.components.HSpacer
-import cash.p.terminal.ui_compose.components.HeaderSorting
 import cash.p.terminal.ui_compose.components.HsIconButton
 import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.components.RowWithArrow
 import cash.p.terminal.ui_compose.components.VSpacer
+import cash.p.terminal.ui_compose.components.Subhead1
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.subhead2_leah
+import cash.p.terminal.ui_compose.Select
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
-import cash.p.terminal.wallet.BalanceSortType
 
 @Composable
 fun NoteWarning(
@@ -102,10 +86,10 @@ fun NoteWarning(
         text = text,
         title = stringResource(id = R.string.AccountRecovery_Note),
         icon = R.drawable.ic_attention_20,
-        borderColor = ComposeAppTheme.colors.jacob,
+        borderColor = ComposeAppTheme.colors.yellow,
         backgroundColor = ComposeAppTheme.colors.yellow20,
-        textColor = ComposeAppTheme.colors.jacob,
-        iconColor = ComposeAppTheme.colors.jacob,
+        textColor = ComposeAppTheme.colors.yellow,
+        iconColor = ComposeAppTheme.colors.yellow,
         onClose = onClose
     )
 }
@@ -157,11 +141,10 @@ fun Note(
                 contentDescription = null,
                 tint = iconColor
             )
-            Text(
+            Subhead1(
                 modifier = Modifier.weight(1f),
                 text = title,
                 color = textColor,
-                style = ComposeAppTheme.typography.subhead1
             )
             onClose?.let {
                 HsIconButton(
@@ -253,146 +236,116 @@ fun BalanceItems(
             }
         ) {
             item {
-                TotalBalanceRow(
+                val standardActionsVisible =
+                    uiState.balanceTabButtonsEnabled && !accountViewItem.isWatchAccount
+                val watchStakingVisible =
+                    uiState.showStackingForWatchAccount && accountViewItem.isWatchAccount
+                BalanceSummary(
+                    modifier = Modifier.padding(vertical = 12.dp),
                     totalState = totalState,
-                    onClickTitle = remember {
+                    onToggleVisibility = remember {
                         {
                             viewModel.toggleBalanceVisibility()
                             HudHelper.vibrate(context)
                         }
                     },
-                    onClickSubtitle = remember {
+                    onToggleTotalType = remember {
                         {
                             viewModel.toggleTotalType()
                             HudHelper.vibrate(context)
                         }
-                    }
+                    },
+                    actions = when {
+                        standardActionsVisible -> {
+                            {
+                                BalanceActionButton(
+                                    icon = R.drawable.ic_arrow_up_right_24,
+                                    label = stringResource(R.string.Balance_Send),
+                                    iconRotation = -90f,
+                                    onClick = {
+                                        navController.slideFromRight(R.id.sendTokenSelectFragment)
+                                    },
+                                )
+                                BalanceActionButton(
+                                    icon = R.drawable.ic_arrow_down_left_24,
+                                    label = stringResource(R.string.Balance_Receive),
+                                    onClick = {
+                                        when (val receiveAllowedState =
+                                            viewModel.getReceiveAllowedState()) {
+                                            ReceiveAllowedState.Allowed -> {
+                                                viewModel.getSingleWalletForReceive()
+                                                navController.slideFromRight(
+                                                    R.id.receiveChooseCoinFragment
+                                                )
+                                            }
+
+                                            is ReceiveAllowedState.BackupRequired -> {
+                                                val account = receiveAllowedState.account
+                                                val text =
+                                                    cash.p.terminal.strings.helpers.Translator.getString(
+                                                        R.string.Balance_Receive_BackupRequired_Description,
+                                                        account.name
+                                                    )
+                                                navController.slideFromBottom(
+                                                    R.id.backupRequiredDialog,
+                                                    BackupRequiredDialog.Input(account, text)
+                                                )
+                                            }
+
+                                            null -> Unit
+                                        }
+                                    },
+                                )
+                                if (viewModel.isSwapEnabled) {
+                                    BalanceActionButton(
+                                        icon = R.drawable.ic_swap_24,
+                                        label = stringResource(R.string.Swap),
+                                        onClick = {
+                                            navController.slideFromRight(R.id.multiswap)
+                                        },
+                                    )
+                                }
+                                if (viewModel.isStackingEnabled) {
+                                    BalanceActionButton(
+                                        icon = R.drawable.ic_coins_stacking,
+                                        label = stringResource(R.string.stacking),
+                                        onClick = {
+                                            navController.slideFromRight(R.id.stacking)
+                                        },
+                                    )
+                                }
+                            }
+                        }
+
+                        watchStakingVisible -> {
+                            {
+                                BalanceActionButton(
+                                    icon = R.drawable.ic_coins_stacking,
+                                    label = stringResource(R.string.staking_details),
+                                    onClick = {
+                                        navController.slideFromRight(R.id.stacking)
+                                    },
+                                )
+                            }
+                        }
+
+                        else -> null
+                    },
                 )
             }
 
-            if (uiState.balanceTabButtonsEnabled && !accountViewItem.isWatchAccount) {
-                item {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        ButtonPrimaryYellow(
-                            modifier = Modifier.weight(1f),
-                            title = stringResource(R.string.Balance_Send),
-                            onClick = {
-                                navController.slideFromRight(R.id.sendTokenSelectFragment)
-                            }
-                        )
-                        ButtonPrimaryDefault(
-                            modifier = Modifier.weight(1f),
-                            title = stringResource(R.string.Balance_Receive),
-                            onClick = {
-                                when (val receiveAllowedState =
-                                    viewModel.getReceiveAllowedState()) {
-                                    ReceiveAllowedState.Allowed -> {
-                                        val wallet = viewModel.getSingleWalletForReceive()
-                                        navController.slideFromRight(R.id.receiveChooseCoinFragment)
-                                    }
-
-                                    is ReceiveAllowedState.BackupRequired -> {
-                                        val account = receiveAllowedState.account
-                                        val text =
-                                            cash.p.terminal.strings.helpers.Translator.getString(
-                                                R.string.Balance_Receive_BackupRequired_Description,
-                                                account.name
-                                            )
-                                        navController.slideFromBottom(
-                                            R.id.backupRequiredDialog,
-                                            BackupRequiredDialog.Input(account, text)
-                                        )
-                                    }
-
-                                    null -> Unit
-                                }
-                            }
-                        )
-                        if (viewModel.isSwapEnabled) {
-                            ButtonPrimaryCircle(
-                                icon = R.drawable.ic_swap_24,
-                                contentDescription = stringResource(R.string.Swap),
-                                onClick = {
-                                    navController.slideFromRight(R.id.multiswap)
-                                }
-                            )
-                        }
-                        if (viewModel.isStackingEnabled) {
-                            ButtonPrimaryCircle(
-                                icon = R.drawable.ic_coins_stacking,
-                                contentDescription = stringResource(R.string.stacking),
-                                onClick = {
-                                    navController.slideFromRight(R.id.stacking)
-                                }
-                            )
-                        }
-                    }
-                    VSpacer(12.dp)
-                }
-            } else if (uiState.showStackingForWatchAccount && accountViewItem.isWatchAccount) {
-                item {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        ButtonPrimaryYellowWithIcon(
-                            title = stringResource(R.string.staking_details),
-                            onClick = {
-                                navController.slideFromRight(R.id.stacking)
-                            },
-                            icon = R.drawable.ic_coins_stacking,
-                            modifier = Modifier
-                                .weight(1f)
-                        )
-                    }
-                    VSpacer(12.dp)
-                }
-            }
-
             stickyHeader {
-                HeaderSorting {
-                    HSpacer(16.dp)
-                    BalanceSortingSelector(
-                        sortType = uiState.sortType,
-                        sortTypes = uiState.sortTypes
-                    ) {
-                        viewModel.setSortType(it)
-                    }
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    if (accountViewItem.isWatchAccount) {
-                        Image(
-                            painter = painterResource(R.drawable.icon_binocule_24),
-                            contentDescription = "binoculars icon"
-                        )
-                        HSpacer(8.dp)
-                    }
-
-                    if (uiState.displayDiffOptionType != DisplayDiffOptionType.NONE) {
-                        PricePeriodSelector(
-                            displayPricePeriod = uiState.displayPricePeriod,
-                        ) {
-                            viewModel.setDisplayPricePeriod(it)
-                        }
-                        HSpacer(8.dp)
-                    }
-
-                    ButtonSecondaryCircle(
-                        icon = R.drawable.ic_manage_2,
-                        contentDescription = stringResource(R.string.ManageCoins_title),
-                        onClick = {
-                            navController.slideFromBottom(R.id.displayOptionsFragment)
-                        }
-                    )
-
-                    HSpacer(16.dp)
-                }
+                BalanceFilters(
+                    sort = Select(uiState.sortType, uiState.sortTypes),
+                    displayDiffOptionType = uiState.displayDiffOptionType,
+                    displayPricePeriod = uiState.displayPricePeriod,
+                    isWatchAccount = accountViewItem.isWatchAccount,
+                    onSelectSortType = viewModel::setSortType,
+                    onDisplayPricePeriod = viewModel::setDisplayPricePeriod,
+                    onSettingsClick = {
+                        navController.slideFromBottom(R.id.displayOptionsFragment)
+                    },
+                )
             }
 
             item {
@@ -566,94 +519,6 @@ private fun NoCoinsBlock() {
 }
 
 @Composable
-fun BalanceSortingSelector(
-    sortType: BalanceSortType,
-    sortTypes: List<BalanceSortType>,
-    onSelectSortType: (BalanceSortType) -> Unit
-) {
-    var showSortTypeSelectorDialog by remember { mutableStateOf(false) }
-
-    ButtonSecondaryWithIcon(
-        title = stringResource(sortType.getTitleRes()),
-        iconRight = painterResource(R.drawable.ic_down_arrow_20),
-        onClick = {
-            showSortTypeSelectorDialog = true
-        }
-    )
-
-    if (showSortTypeSelectorDialog) {
-        SelectorDialogCompose(
-            title = stringResource(R.string.Balance_Sort_PopupTitle),
-            items = sortTypes.map {
-                SelectorItem(stringResource(it.getTitleRes()), it == sortType, it)
-            },
-            onDismissRequest = {
-                showSortTypeSelectorDialog = false
-            },
-            onSelectItem = onSelectSortType
-        )
-    }
-}
-
-@Composable
-fun PricePeriodSelector(
-    displayPricePeriod: DisplayPricePeriod,
-    onDisplayPricePeriod: (DisplayPricePeriod) -> Unit
-) {
-    var showDisplayPricePeriodDialog by remember { mutableStateOf(false) }
-
-    ButtonSecondaryWithIcon(
-        title = displayPricePeriod.shortForm.getString(),
-        iconRight = painterResource(R.drawable.ic_down_arrow_20),
-        onClick = {
-            showDisplayPricePeriodDialog = true
-        }
-    )
-
-    if (showDisplayPricePeriodDialog) {
-        AlertGroup(
-            title = R.string.display_options_price_period,
-            select = Select(displayPricePeriod, DisplayPricePeriod.entries),
-            onSelect = { selected ->
-                onDisplayPricePeriod(selected)
-                showDisplayPricePeriodDialog = false
-            },
-            onDismiss = { showDisplayPricePeriodDialog = false }
-        )
-    }
-}
-
-
-@Composable
-fun TotalBalanceRow(
-    totalState: TotalUIState,
-    onClickTitle: () -> Unit,
-    onClickSubtitle: () -> Unit
-) {
-    when (totalState) {
-        TotalUIState.Hidden -> {
-            DoubleText(
-                title = "*****",
-                body = "*****",
-                dimmed = false,
-                onClickTitle = onClickTitle,
-                onClickSubtitle = onClickSubtitle
-            )
-        }
-
-        is TotalUIState.Visible -> {
-            DoubleText(
-                title = totalState.primaryAmountStr,
-                body = totalState.secondaryAmountStr,
-                dimmed = totalState.dimmed,
-                onClickTitle = onClickTitle,
-                onClickSubtitle = onClickSubtitle,
-            )
-        }
-    }
-}
-
-@Composable
 private fun PendingSwapBanner(
     count: Int,
     modifier: Modifier,
@@ -684,15 +549,5 @@ fun <T> LazyListScope.wallets(
     key: ((item: T) -> Any)? = null,
     itemContent: @Composable (LazyItemScope.(item: T) -> Unit),
 ) {
-    item {
-        VSpacer(height = 8.dp)
-    }
-    items(items = items, key = key, itemContent = {
-        Row(modifier = Modifier.padding(bottom = 8.dp)) {
-            itemContent(it)
-        }
-    })
-    item {
-        VSpacer(height = 10.dp)
-    }
+    items(items = items, key = key, itemContent = itemContent)
 }

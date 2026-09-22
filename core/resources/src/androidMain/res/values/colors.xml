@@ -39,11 +39,15 @@
     <color name="red_50">#80ff4820</color>
 
     <!--Paired Colors-->
-    <color name="jacob">@color/yellow_l</color>
+    <color name="jacob">#4692DA</color>
     <color name="jacob_d">#FFA800</color>
+    <color name="yellow">@color/yellow_l</color>
     <color name="remus">@color/green_l</color>
     <color name="lucian">@color/red_l</color>
-    <color name="tyler">@color/light</color>
+    <color name="tyler">#F0EFEB</color>
+    <color name="navigation">#FBFAF7</color>
+    <color name="action_background">#EBEAE6</color>
+    <color name="action_border">#D8D7D2</color>
     <color name="cassandra">@color/light_grey</color>
     <color name="bran">@color/dark</color>
 
@@ -58,6 +62,6 @@
     <color name="nina">@color/black_50</color>
     <color name="raina">@color/white_50</color>
 
-    <color name="tylerGradientStart">#fff0f0f0</color>
-    <color name="tylerGradientEnd">#00f0f0f0</color>
+    <color name="tylerGradientStart">#fff0efeb</color>
+    <color name="tylerGradientEnd">#00f0efeb</color>
 </resources>

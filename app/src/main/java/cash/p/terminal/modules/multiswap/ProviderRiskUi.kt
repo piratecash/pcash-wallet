@@ -34,7 +34,7 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 internal fun ProviderRiskType.color(): Color = when (this) {
     ProviderRiskType.Auto -> ComposeAppTheme.colors.remus
     ProviderRiskType.Flexible -> ComposeAppTheme.colors.laguna
-    ProviderRiskType.Controlled -> ComposeAppTheme.colors.jacob
+    ProviderRiskType.Controlled -> ComposeAppTheme.colors.yellow
     ProviderRiskType.PreCheck -> ComposeAppTheme.colors.bran
 }
 

@@ -93,7 +93,7 @@ private fun ZcashMigrationOfferSheet(
             title = stringResource(R.string.balance_zcash_migration_title),
             text = stringResource(R.string.balance_zcash_migration_description),
             iconPainter = painterResource(R.drawable.ic_migrate_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.yellow),
             confirmText = stringResource(R.string.balance_zcash_migration_migrate),
             cautionType = Caution.Type.Warning,
             cancelText = stringResource(R.string.Button_Cancel),

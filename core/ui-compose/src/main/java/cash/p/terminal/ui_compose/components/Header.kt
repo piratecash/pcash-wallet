@@ -17,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.annotation.DrawableRes
 import androidx.compose.material.Divider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -151,12 +152,14 @@ fun PremiumHeader(
                 .padding(end = 10.dp)
                 .size(16.dp),
             painter = painterResource(R.drawable.star_filled_yellow_16),
-            tint = ComposeAppTheme.colors.jacob,
+            tint = ComposeAppTheme.colors.yellow,
             contentDescription = null,
         )
-        subhead1_jacob(
+        Text(
             text = text,
-            maxLines = 1
+            color = ComposeAppTheme.colors.yellow,
+            maxLines = 1,
+            style = ComposeAppTheme.typography.subhead1,
         )
     }
 }
