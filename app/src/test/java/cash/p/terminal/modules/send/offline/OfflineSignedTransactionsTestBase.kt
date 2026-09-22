@@ -16,7 +16,6 @@ import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.MarketKitWrapper
-import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.TokenQuery
@@ -52,7 +51,7 @@ abstract class OfflineSignedTransactionsTestBase {
     protected val account = Account(
         id = "account-id",
         name = "Account",
-        type = AccountType.Mnemonic(List(12) { "word$it" }, "", MnemonicDerivation.Legacy),
+        type = AccountType.Mnemonic(List(12) { "word$it" }, ""),
         origin = AccountOrigin.Created,
         level = 0,
         isBackedUp = true,

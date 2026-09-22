@@ -27,6 +27,7 @@ import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
 import cash.p.terminal.modules.multiswap.providers.IExactOutSwapProvider
 import cash.p.terminal.modules.multiswap.providers.InsufficientAllowanceCaution
 import cash.p.terminal.modules.multiswap.providers.OffChainSwapProvider
+import cash.p.terminal.modules.multiswap.providers.YiFiDepositMemoUnsupported
 import cash.p.terminal.modules.multiswap.providers.isOffChain
 import cash.p.terminal.modules.multiswap.providers.requiredInput
 import cash.p.terminal.modules.multiswap.sendtransaction.ISendTransactionService
@@ -45,6 +46,7 @@ import cash.p.terminal.modules.send.isHardwareWalletCancelled
 import cash.p.terminal.modules.send.userMessageRes
 import cash.p.terminal.network.changenow.data.entity.BackendChangeNowResponseError
 import cash.p.terminal.network.exolix.data.entity.BackendExolixResponseError
+import cash.p.terminal.network.yifi.data.entity.BackendYiFiResponseError
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.trezor.domain.TrezorCancelledException
@@ -390,6 +392,10 @@ class SwapConfirmViewModel(
                 setCriticalError(e.changeNowCriticalError)
             } catch (e: BackendExolixResponseError) {
                 setCriticalError(e.exolixCriticalError)
+            } catch (e: BackendYiFiResponseError) {
+                setCriticalError(e.yiFiCriticalError)
+            } catch (_: YiFiDepositMemoUnsupported) {
+                setCriticalError(Translator.getString(R.string.swap_yifi_memo_unsupported))
             } catch (_: CancellationException) {
                 Timber.w("fetchFinalQuote was cancelled")
             } catch (t: Throwable) {
@@ -441,6 +447,11 @@ class SwapConfirmViewModel(
     private val BackendExolixResponseError.exolixCriticalError: String
         get() = message.notBlank()
             ?: error.notBlank()
+            ?: Translator.getString(R.string.unexpected_error)
+
+    private val BackendYiFiResponseError.yiFiCriticalError: String
+        get() = message.notBlank()
+            ?: code.notBlank()
             ?: Translator.getString(R.string.unexpected_error)
 
     private fun String?.notBlank(): String? =

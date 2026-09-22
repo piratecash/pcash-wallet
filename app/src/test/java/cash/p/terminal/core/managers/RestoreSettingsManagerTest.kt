@@ -1,7 +1,5 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.wallet.MnemonicDerivation
-
 import cash.p.terminal.core.IRestoreSettingsStorage
 import cash.p.terminal.core.usecase.ValidateMoneroHeightUseCase
 import cash.p.terminal.entities.RestoreSettingRecord
@@ -134,13 +132,7 @@ class RestoreSettingsManagerTest {
         val settings = RestoreSettings().apply {
             birthdayHeight = MONERO_HEIGHT
         }
-        val account = ACCOUNT.copy(
-            type = AccountType.Mnemonic(
-                words = listOf("word"),
-                passphrase = "",
-                derivation = MnemonicDerivation.Legacy
-            )
-        )
+        val account = ACCOUNT.copy(type = AccountType.Mnemonic(words = listOf("word"), passphrase = ""))
 
         manager.save(settings, account, BlockchainType.Monero)
 

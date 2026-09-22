@@ -11,7 +11,6 @@ import cash.p.terminal.entities.RestoreSettingRecord
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
-import cash.p.terminal.wallet.MnemonicDerivation
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.IEncryptionManager
 import io.horizontalsystems.core.entities.BlockchainType
@@ -210,7 +209,7 @@ class BeamSessionFactoryTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val locator = BeamStorageLocator(context)
         val mnemonic = AccountType.Mnemonic(
-            List(11) { "abandon" } + "about", "synthetic-passphrase", MnemonicDerivation.Legacy,
+            List(11) { "abandon" } + "about", "synthetic-passphrase",
         )
         val source = account(AccountOrigin.Created).copy(type = mnemonic)
         val duplicate = source.copy(id = "$ACCOUNT-copy")

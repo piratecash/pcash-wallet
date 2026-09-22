@@ -348,11 +348,14 @@ class UnstoppableSwapProvider(
         }
     }
 
-    override fun onTransactionCompleted(transaction: SwapProviderTransaction, result: SendTransactionResult) =
+    override fun onTransactionCompleted(transaction: SwapProviderTransaction, result: SendTransactionResult) {
+        // The deposit is funded now; a repeat swap must get a new order.
+        cachedRoute = null
         providerSupport.onTransactionCompleted(
             transaction, result,
             depositTransactionHash = result.getCanonicalTxHash(),
         )
+    }
 
     private suspend fun commitSwap(tokenIn: Token, request: RouteRequest, chainId: String?): UnstoppableRoute {
         val cached = cachedRoute

@@ -5,7 +5,6 @@ import cash.p.terminal.wallet.AccountDeletionBlockedException
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
-import cash.p.terminal.wallet.MnemonicDerivation
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -25,7 +24,7 @@ class UnlinkAccountViewModelTest {
     @Test
     fun mnemonicAccount_requiresBothConfirmationsBeforeUnlinkIsEnabled() {
         val viewModel = UnlinkAccountViewModel(
-            account.copy(type = AccountType.Mnemonic(emptyList(), "", MnemonicDerivation.Legacy)),
+            account.copy(type = AccountType.Mnemonic(emptyList(), "")),
             manager,
         )
 

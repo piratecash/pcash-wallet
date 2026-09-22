@@ -157,13 +157,9 @@ sealed class AccountType : Parcelable {
     }
 
     @Parcelize
-    data class Mnemonic(
-        val words: List<String>,
-        val passphrase: String,
-        val derivation: MnemonicDerivation
-    ) : AccountType() {
+    data class Mnemonic(val words: List<String>, val passphrase: String) : AccountType() {
         @IgnoredOnParcel
-        val seed by lazy { MnemonicSeed.derive(words, derivation, passphrase) }
+        val seed by lazy { MnemonicSeed.derive(words, passphrase) }
 
         @IgnoredOnParcel
         val kind by lazy { MnemonicKind.getKind(words) }
@@ -172,11 +168,10 @@ sealed class AccountType : Parcelable {
             return other is Mnemonic
                     && words.toTypedArray().contentEquals(other.words.toTypedArray())
                     && passphrase == other.passphrase
-                    && derivation == other.derivation
         }
 
         override fun hashCode(): Int {
-            return 31 * (words.hashCode() + passphrase.hashCode()) + derivation.hashCode()
+            return words.toTypedArray().contentHashCode() + passphrase.hashCode()
         }
 
         override fun toString(): String {

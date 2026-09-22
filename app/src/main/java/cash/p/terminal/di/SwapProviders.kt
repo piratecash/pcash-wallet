@@ -15,6 +15,8 @@ import cash.p.terminal.modules.multiswap.providers.SwapProvidersRepository
 import cash.p.terminal.modules.multiswap.providers.ThorChainProvider
 import cash.p.terminal.modules.multiswap.providers.ThorChainSwapStatusRepository
 import cash.p.terminal.modules.multiswap.providers.UnstoppableProvidersFactory
+import cash.p.terminal.modules.multiswap.providers.YiFiProvider
+import cash.p.terminal.modules.multiswap.providers.YiFiTokenResolver
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.network.swaprepository.SwapProviderTransactionStatusRepository
 import org.koin.core.module.dsl.factoryOf
@@ -30,6 +32,8 @@ val swapProvidersModule = module {
     singleOf(::ChangeNowProvider)
     singleOf(::QuickexProvider)
     singleOf(::ExolixProvider)
+    singleOf(::YiFiTokenResolver)
+    singleOf(::YiFiProvider)
     singleOf(::StonFiProvider)
 
     singleOf(::UnstoppableProvidersFactory)

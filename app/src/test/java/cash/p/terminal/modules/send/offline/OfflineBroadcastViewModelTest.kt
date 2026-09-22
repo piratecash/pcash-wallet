@@ -28,7 +28,6 @@ import cash.p.terminal.wallet.IAdapter
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.MarketKitWrapper
-import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.Coin
@@ -1411,7 +1410,7 @@ class OfflineBroadcastViewModelTest {
 
     private fun mnemonicAccount() = mockk<Account>(relaxed = true) {
         every { isWatchAccount } returns false
-        every { type } returns AccountType.Mnemonic(listOf("word"), "", MnemonicDerivation.Legacy)
+        every { type } returns AccountType.Mnemonic(listOf("word"), "")
         every { id } returns "account-id"
     }
 

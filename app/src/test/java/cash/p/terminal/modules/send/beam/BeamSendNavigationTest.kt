@@ -7,7 +7,6 @@ import cash.p.terminal.core.managers.BeamNetwork
 import cash.p.terminal.core.managers.BeamSessionOwner
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
-import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.Coin
@@ -43,7 +42,7 @@ class BeamSendNavigationTest {
     fun nativeAdmission_rejectsGamingNonNativeAndWrongSession() {
         val account = mockk<Account> {
             every { id } returns "account"
-            every { type } returns AccountType.Mnemonic(emptyList(), "", MnemonicDerivation.Legacy)
+            every { type } returns AccountType.Mnemonic(emptyList(), "")
         }
         val token = mockk<Token> {
             every { blockchainType } returns BlockchainType.Beam

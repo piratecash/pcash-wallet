@@ -11,7 +11,6 @@ import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IReceiveAdapter
-import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.Coin
@@ -286,7 +285,7 @@ class ReceiveAddressViewModelTest {
     @Test
     fun init_sameMnemonicDifferentAccounts_keepsAddressRequestsIsolated() = runTest(dispatcher) {
         every { token.blockchainType } returns BlockchainType.Beam
-        val mnemonic = AccountType.Mnemonic(List(12) { "word$it" }, "", MnemonicDerivation.Legacy)
+        val mnemonic = AccountType.Mnemonic(List(12) { "word$it" }, "")
         val firstAccount = account("first-account", mnemonic)
         val secondAccount = account("second-account", mnemonic)
         val provider = beamProvider()

@@ -25,7 +25,6 @@ import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.AccountType
-import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
@@ -284,7 +283,7 @@ class SwapConfirmViewModelSaveTest {
         }
         val sendTransactionService = createSuccessfulSendService()
         val mnemonicAccount = previewWallet.account.copy(
-            type = AccountType.Mnemonic(List(12) { "synthetic-word-$it" }, "", MnemonicDerivation.Legacy),
+            type = AccountType.Mnemonic(List(12) { "synthetic-word-$it" }, ""),
         )
 
         val viewModel = createViewModel(

@@ -16,7 +16,6 @@ import cash.p.terminal.core.managers.RestoreSettingsTestFixture
 import cash.p.terminal.core.usecase.MoneroWalletUseCase
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
-import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IEnabledWalletStorage
@@ -93,7 +92,7 @@ class DuplicateWalletViewModelTest {
     private val accountToCopy = Account(
         id = "source-account-id",
         name = "Main",
-        type = AccountType.Mnemonic(sourceWords, "", MnemonicDerivation.Legacy),
+        type = AccountType.Mnemonic(sourceWords, ""),
         origin = AccountOrigin.Restored,
         level = 0
     )
@@ -453,6 +452,7 @@ class DuplicateWalletViewModelTest {
         val savedWallets = awaitSaved(saved)
         assertEquals(setOf(usdtQuery.id, scamQuery.id), savedWallets.map { it.tokenQueryId }.toSet())
         verify(exactly = 1) { accountManager.save(any(), any()) }
+        awaitUiState(viewModel) { it.closeScreen }
         assertTrue(viewModel.uiState.closeScreen)
     }
 
@@ -497,7 +497,6 @@ class DuplicateWalletViewModelTest {
         val created = slot<Account>()
         verify { accountManager.save(capture(created), any()) }
         assertEquals(expectedPassphrase, (created.captured.type as AccountType.Mnemonic).passphrase)
-        assertEquals(MnemonicDerivation.Bip39, (created.captured.type as AccountType.Mnemonic).derivation)
         verifyOrder {
             restoreSettingsManager.saveBeamRestoreIntent(created.captured)
             accountManager.save(created.captured, any())
@@ -538,7 +537,7 @@ class DuplicateWalletViewModelTest {
         settingsManager: RestoreSettingsManager = restoreSettingsManager,
     ) = DuplicateWalletViewModel(
         accountToCopy = accountToCopy.copy(
-            type = AccountType.Mnemonic(sourceWords, sourcePassphrase, MnemonicDerivation.Bip39),
+            type = AccountType.Mnemonic(sourceWords, sourcePassphrase),
             origin = sourceOrigin,
         ),
         accountManager = accountManager,

@@ -21,6 +21,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestCoroutineScheduler
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -53,7 +54,7 @@ class SwapQuoteServiceTest : SwapQuoteServiceTestFixture() {
         val service = createService(listOf(slowProvider), testScheduler)
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         val state = service.stateFlow.value
@@ -109,7 +110,7 @@ class SwapQuoteServiceTest : SwapQuoteServiceTestFixture() {
         val service = createService(listOf(failingProvider), testScheduler)
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         val state = service.stateFlow.value
@@ -126,7 +127,7 @@ class SwapQuoteServiceTest : SwapQuoteServiceTestFixture() {
         val service = createService(listOf(unsupported), testScheduler)
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         val state = service.stateFlow.value
@@ -176,7 +177,7 @@ class SwapQuoteServiceTest : SwapQuoteServiceTestFixture() {
         val service = createService(listOf(lowerQuoteProvider, higherQuoteProvider), testScheduler)
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         val state = service.stateFlow.value
@@ -196,7 +197,7 @@ class SwapQuoteServiceTest : SwapQuoteServiceTestFixture() {
         )
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         val state = service.stateFlow.value
@@ -230,7 +231,7 @@ class SwapQuoteServiceTest : SwapQuoteServiceTestFixture() {
         )
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         assertEquals("higher", service.stateFlow.value.quote?.provider?.id)
@@ -256,7 +257,7 @@ class SwapQuoteServiceTest : SwapQuoteServiceTestFixture() {
         val service = createService(listOf(provider), testScheduler)
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         val state = service.stateFlow.value
@@ -279,7 +280,7 @@ class SwapQuoteServiceTest : SwapQuoteServiceTestFixture() {
         val service = createService(listOf(succeeding, failing), testScheduler)
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         val state = service.stateFlow.value
@@ -303,7 +304,7 @@ class SwapQuoteServiceTest : SwapQuoteServiceTestFixture() {
         val service = createService(listOf(networkFailing, amountFailing), testScheduler)
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         val state = service.stateFlow.value
@@ -329,7 +330,7 @@ class SwapQuoteServiceTest : SwapQuoteServiceTestFixture() {
         val service = createService(listOf(amountOutOfRange, depositTooSmall), testScheduler)
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         val state = service.stateFlow.value
@@ -352,7 +353,7 @@ class SwapQuoteServiceTest : SwapQuoteServiceTestFixture() {
         )
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         disabledIdsFlow.value = setOf("higher")
@@ -381,7 +382,7 @@ class SwapQuoteServiceTest : SwapQuoteServiceTestFixture() {
         // Both tokens chosen but no amount yet -> not quoting.
         assertFalse(service.stateFlow.value.quoting)
 
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
 
         // Changing the amount flips quoting=true immediately, before the debounced fetch
         // runs, so the swap button shows the spinner and cannot act on a stale quote.
@@ -394,7 +395,7 @@ class SwapQuoteServiceTest : SwapQuoteServiceTestFixture() {
         val service = createService(listOf(provider), testScheduler)
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         service.switchPairs()
@@ -435,7 +436,7 @@ class SwapQuoteServiceTest : SwapQuoteServiceTestFixture() {
         )
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         service.switchPairs()
@@ -463,7 +464,7 @@ class SwapQuoteServiceTest : SwapQuoteServiceTestFixture() {
         )
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountOut(BigDecimal("7"))
+        service.setAmount(BigDecimal("7"), SwapAmountDirection.Out)
         advanceUntilIdle()
 
         assertEquals(BigDecimal("7"), service.stateFlow.value.requestedAmountOut)
@@ -478,6 +479,59 @@ class SwapQuoteServiceTest : SwapQuoteServiceTestFixture() {
         assertNull(state.amountInMax)
     }
 
+    @Test
+    fun setAmount_afterSelectingWorseQuote_keepsPreferredProvider() = runTest {
+        val service = createServiceWithRankedQuotes(testScheduler)
+        selectLowerQuote(service)
+
+        service.setAmount(BigDecimal("2"), SwapAmountDirection.In)
+        advanceUntilIdle()
+
+        val state = service.stateFlow.value
+        assertEquals("lower", state.preferredProvider?.id)
+        assertEquals("lower", state.quote?.provider?.id)
+    }
+
+    @Test
+    fun clearPreferredProvider_setAmount_selectsBestQuoteAgain() = runTest {
+        val service = createServiceWithRankedQuotes(testScheduler)
+        selectLowerQuote(service)
+
+        service.clearPreferredProvider()
+        service.setAmount(BigDecimal("2"), SwapAmountDirection.In)
+        advanceUntilIdle()
+
+        val state = service.stateFlow.value
+        assertNull(state.preferredProvider)
+        assertEquals("higher", state.quote?.provider?.id)
+    }
+
+    private fun createServiceWithRankedQuotes(scheduler: TestCoroutineScheduler): SwapQuoteService {
+        val higher = mockProvider("higher")
+        val lower = mockProvider("lower")
+        val quotes = listOf(
+            providerQuote(higher, BigDecimal.ONE, BigDecimal("10")),
+            providerQuote(lower, BigDecimal.ONE, BigDecimal("5")),
+        )
+        val fetch = mockk<FetchSwapQuotesUseCase> {
+            coEvery { this@mockk(any(), any(), any(), any(), any(), any(), any()) } returns quotes
+        }
+        return createService(
+            providers = listOf(higher, lower),
+            scheduler = scheduler,
+            fetchSwapQuotesUseCase = fetch,
+        )
+    }
+
+    private fun TestScope.selectLowerQuote(service: SwapQuoteService) {
+        service.setTokenIn(tokenIn)
+        service.setTokenOut(tokenOut)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
+        advanceUntilIdle()
+
+        val lowerQuote = service.stateFlow.value.quotes.first { it.provider.id == "lower" }
+        service.selectQuote(lowerQuote, SwapQuoteSelectionTarget.Primary)
+    }
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -500,7 +554,7 @@ class SwapQuoteServiceRouteSelectionTest : SwapQuoteServiceTestFixture() {
         )
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         val state = service.stateFlow.value
@@ -520,7 +574,7 @@ class SwapQuoteServiceRouteSelectionTest : SwapQuoteServiceTestFixture() {
         )
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         service.selectQuote(leg1QuoteB, SwapQuoteSelectionTarget.Primary)
@@ -541,7 +595,7 @@ class SwapQuoteServiceRouteSelectionTest : SwapQuoteServiceTestFixture() {
         )
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         disabledIdsFlow.value = setOf("leg1a")
@@ -560,7 +614,7 @@ class SwapQuoteServiceRouteSelectionTest : SwapQuoteServiceTestFixture() {
         val service = createService(listOf(higher, lower), testScheduler)
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         val worseQuote = service.stateFlow.value.quotes.first { it.provider.id == "lower" }
@@ -582,7 +636,7 @@ class SwapQuoteServiceRouteSelectionTest : SwapQuoteServiceTestFixture() {
         )
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         service.selectQuote(leg1QuoteB, SwapQuoteSelectionTarget.Primary)
@@ -598,7 +652,7 @@ class SwapQuoteServiceRouteSelectionTest : SwapQuoteServiceTestFixture() {
         val service = createService(listOf(direct), testScheduler)
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         // The picker may hold a snapshot taken while a 2-step route was active. Publishing such a
@@ -618,7 +672,7 @@ class SwapQuoteServiceRouteSelectionTest : SwapQuoteServiceTestFixture() {
 
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         assertTrue(service.selectQuote(leg2Quote, SwapQuoteSelectionTarget.RouteLeg2))
@@ -633,7 +687,7 @@ class SwapQuoteServiceRouteSelectionTest : SwapQuoteServiceTestFixture() {
 
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountIn(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
         advanceUntilIdle()
 
         assertFalse(service.selectQuote(routeQuote(mockProvider("stale")), SwapQuoteSelectionTarget.RouteLeg2))
@@ -654,7 +708,7 @@ class SwapQuoteServiceRouteSelectionTest : SwapQuoteServiceTestFixture() {
 @OptIn(ExperimentalCoroutinesApi::class)
 class SwapQuoteServiceExactOutTest : SwapQuoteServiceTestFixture() {
     @Test
-    fun setAmountOut_disabledProvider_isNotRequested() = runTest {
+    fun setAmount_exactOutDisabledProvider_isNotRequested() = runTest {
         val enabled = mockProvider("enabled")
         val disabled = mockProvider("disabled")
         val fetch = mockk<FetchSwapQuotesUseCase>(relaxed = true)
@@ -666,7 +720,7 @@ class SwapQuoteServiceExactOutTest : SwapQuoteServiceTestFixture() {
         )
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountOut(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.Out)
         advanceUntilIdle()
 
         coVerify(exactly = 1) {
@@ -708,7 +762,7 @@ class SwapQuoteServiceExactOutTest : SwapQuoteServiceTestFixture() {
         )
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountOut(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.Out)
         advanceUntilIdle()
 
         disabledIdsFlow.value = emptySet()
@@ -734,7 +788,7 @@ class SwapQuoteServiceExactOutTest : SwapQuoteServiceTestFixture() {
         )
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountOut(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.Out)
         advanceUntilIdle()
 
         disabledIdsFlow.value = setOf(provider.id)
@@ -774,10 +828,10 @@ class SwapQuoteServiceExactOutTest : SwapQuoteServiceTestFixture() {
         )
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountOut(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.Out)
         advanceUntilIdle()
 
-        service.setAmountOut(BigDecimal("2"))
+        service.setAmount(BigDecimal("2"), SwapAmountDirection.Out)
         advanceTimeBy(601)
         runCurrent()
         assertTrue(fetchStarted.isCompleted)
@@ -814,7 +868,7 @@ class SwapQuoteServiceExactOutTest : SwapQuoteServiceTestFixture() {
         advanceUntilIdle()
         service.setTokenIn(tokenIn)
         service.setTokenOut(tokenOut)
-        service.setAmountOut(BigDecimal.ONE)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.Out)
 
         disabledIdsFlow.value = emptySet()
         advanceUntilIdle()

@@ -2,6 +2,11 @@ package cash.p.terminal.modules.multiswap.providers
 
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionResult
+import cash.p.terminal.network.quickex.domain.entity.ClaimedPublicRate
+import cash.p.terminal.network.quickex.domain.entity.DepositAddress
+import cash.p.terminal.network.quickex.domain.entity.InstrumentInfo
+import cash.p.terminal.network.quickex.domain.entity.NewTransactionQuickexResponse
+import cash.p.terminal.network.quickex.domain.entity.Pair
 import cash.p.terminal.network.quickex.domain.repository.QuickexRepository
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.wallet.IAccountManager
@@ -9,7 +14,9 @@ import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.useCases.WalletUseCase
+import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
@@ -23,6 +30,7 @@ import org.junit.Test
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
+import java.math.BigDecimal
 
 class QuickexProviderTest {
 
@@ -31,6 +39,9 @@ class QuickexProviderTest {
     private val storage = mockk<SwapProviderTransactionsStorage>(relaxed = true)
     private val accountManager = mockk<IAccountManager>(relaxed = true)
     private val marketKit = mockk<MarketKitWrapper>(relaxed = true)
+
+    private val tokenIn = nativeTestToken(BlockchainType.Bitcoin, "BTC")
+    private val tokenOut = nativeTestToken(BlockchainType.Litecoin, "LTC")
 
     @Before
     fun setUp() {
@@ -111,6 +122,37 @@ class QuickexProviderTest {
         val provider = createProvider()
 
         assertNull(provider.getWarningMessage(mockNonZcashNativeToken(), mockk(relaxed = true)))
+    }
+
+    @Test
+    fun onTransactionCompleted_afterFinalQuote_nextFinalQuoteCreatesNewTransaction() = runTest {
+        coEvery { quickexRepository.createTransaction(any()) } returns newTransactionResponse()
+        val provider = createProvider()
+
+        provider.fetchFinalQuote()
+        provider.fetchFinalQuote()
+        provider.onTransactionCompleted(
+            buildSwapProviderTransaction(SwapProvider.QUICKEX, "qx-tx-555"),
+            mockk(relaxed = true),
+        )
+        provider.fetchFinalQuote()
+
+        coVerify(exactly = 2) { quickexRepository.createTransaction(any()) }
+    }
+
+    private suspend fun QuickexProvider.fetchFinalQuote() =
+        fetchFinalQuote(tokenIn, tokenOut, BigDecimal.ONE, emptyMap(), null, mockk(relaxed = true))
+
+    private fun newTransactionResponse(): NewTransactionQuickexResponse {
+        val instrument = InstrumentInfo(currencyTitle = "BTC", networkTitle = "BTC")
+        return NewTransactionQuickexResponse(
+            depositAddress = DepositAddress(instrument, depositAddress = "deposit", depositAddressMemo = null),
+            orderId = "qx-order-1",
+            pair = Pair(instrument, instrument),
+            claimedDepositAmount = BigDecimal.ONE,
+            amountToGet = BigDecimal("0.5"),
+            claimedPublicRate = ClaimedPublicRate(BigDecimal.ONE, BigDecimal("0.5"), null),
+        )
     }
 
     private fun createProvider() = QuickexProvider(
