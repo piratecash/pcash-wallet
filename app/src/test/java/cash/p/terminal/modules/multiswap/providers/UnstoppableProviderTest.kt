@@ -9,17 +9,20 @@ import org.junit.Test
 class UnstoppableProviderTest {
 
     @Test
-    fun excluded_containsQuickExAndExolix() {
-        assertEquals(setOf(UnstoppableProvider.QuickEx, UnstoppableProvider.Exolix), UnstoppableProvider.EXCLUDED)
+    fun excluded_containsQuickExExolixAndLetsExchange() {
+        assertEquals(
+            setOf(UnstoppableProvider.QuickEx, UnstoppableProvider.Exolix, UnstoppableProvider.LetsExchange),
+            UnstoppableProvider.EXCLUDED
+        )
     }
 
     @Test
-    fun registrable_neverYieldsAnExcludedEntry_andYieldsTheOtherEight() {
+    fun registrable_neverYieldsAnExcludedEntry_andYieldsTheOtherSeven() {
         val registrable = UnstoppableProvider.registrable()
 
         assertTrue(registrable.none { it in UnstoppableProvider.EXCLUDED })
         assertEquals(UnstoppableProvider.entries.size - UnstoppableProvider.EXCLUDED.size, registrable.size)
-        assertEquals(8, registrable.size)
+        assertEquals(7, registrable.size)
     }
 
     @Test
@@ -27,7 +30,7 @@ class UnstoppableProviderTest {
         // Mirrors the directly-registered ids in SwapProvidersRegistry.providers (everything in
         // that list outside the `+ unstoppableProviders` tail). Guards against a future Unstoppable
         // sub-provider silently duplicating an already-integrated provider's quotes.
-        // ChangeNowProvider/QuickexProvider/ExolixProvider/StonFiProvider take constructor
+        // ChangeNowProvider/QuickexProvider/ExolixProvider/YiFiProvider/StonFiProvider take constructor
         // dependencies, so their ids are hardcoded here rather than constructed.
         val directlyRegisteredIds = setOf(
             OneInchProvider.id,
@@ -39,6 +42,7 @@ class UnstoppableProviderTest {
             "changenow",
             "quickex",
             "exolix",
+            "yifi",
             ThorChainProvider.id,
             MayaProvider.id,
             AllBridgeProvider.id,

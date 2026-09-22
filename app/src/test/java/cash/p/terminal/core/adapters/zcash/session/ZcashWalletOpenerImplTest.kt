@@ -8,7 +8,6 @@ import cash.p.terminal.core.managers.ZcashBirthdayProvider
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
-import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.Wallet
 import cash.p.zcash.AccountInfo
 import cash.p.zcash.ZcashSdk
@@ -170,7 +169,7 @@ class ZcashWalletOpenerImplTest {
         every { account } returns Account(
             id = ACCOUNT_ID,
             name = "Zcash",
-            type = AccountType.Mnemonic(listOf("one", "two", "three"), passphrase, MnemonicDerivation.Legacy),
+            type = AccountType.Mnemonic(listOf("one", "two", "three"), passphrase),
             origin = AccountOrigin.Restored,
             level = 0,
         )

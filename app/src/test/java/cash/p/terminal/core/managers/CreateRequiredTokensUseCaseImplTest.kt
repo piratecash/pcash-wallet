@@ -5,7 +5,6 @@ import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IHardwarePublicKeyStorage
-import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.entities.HardwarePublicKey
 import cash.p.terminal.wallet.entities.HardwarePublicKeyType
 import cash.p.terminal.wallet.entities.SecretString
@@ -77,7 +76,7 @@ class CreateRequiredTokensUseCaseImplTest {
 
     @Test
     fun invoke_mnemonicAccount_activatesEveryQueryWithoutScan() = runTest {
-        val account = account(AccountType.Mnemonic(listOf("word"), "", MnemonicDerivation.Legacy))
+        val account = account(AccountType.Mnemonic(listOf("word"), ""))
 
         useCase.invoke(account, listOf(bitcoinQuery, moneroQuery))
 

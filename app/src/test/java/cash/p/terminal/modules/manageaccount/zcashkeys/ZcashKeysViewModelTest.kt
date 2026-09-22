@@ -7,7 +7,6 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
-import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.zcash.ZcashSdk
 import cash.p.zcash.deriveSaplingViewingKey
 import cash.p.zcash.deriveSpendingKey
@@ -288,7 +287,7 @@ class ZcashKeysViewModelTest {
         assertEquals(ZcashPrivateKeyType.Shielded, viewModel.uiState.showError)
     }
 
-    private fun createViewModel(type: AccountType = AccountType.Mnemonic(WORDS, "", MnemonicDerivation.Legacy)): ZcashKeysViewModel {
+    private fun createViewModel(type: AccountType = AccountType.Mnemonic(WORDS, "")): ZcashKeysViewModel {
         every { accountManager.account(ACCOUNT_ID) } returns Account(
             id = ACCOUNT_ID,
             name = "name",

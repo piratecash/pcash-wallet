@@ -1,7 +1,5 @@
 package cash.p.terminal.modules.send.offline
 
-import cash.p.terminal.wallet.MnemonicDerivation
-
 import cash.p.terminal.R
 import cash.p.terminal.core.BroadcastRawTransactionResult
 import cash.p.terminal.core.BroadcastRawTransactionStatus
@@ -1115,7 +1113,7 @@ class OfflineBroadcastViewModelTest {
 
     private fun mnemonicAccount() = mockk<Account>(relaxed = true) {
         every { isWatchAccount } returns false
-        every { type } returns AccountType.Mnemonic(listOf("word"), "", MnemonicDerivation.Legacy)
+        every { type } returns AccountType.Mnemonic(listOf("word"), "")
         every { id } returns "account-id"
     }
 

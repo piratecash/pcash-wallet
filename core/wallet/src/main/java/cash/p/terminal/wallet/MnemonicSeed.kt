@@ -1,21 +1,13 @@
 package cash.p.terminal.wallet
 
-import io.horizontalsystems.hdwalletkit.Language
 import io.horizontalsystems.hdwalletkit.Mnemonic
-import io.horizontalsystems.hdwalletkit.WordList
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
 object MnemonicSeed {
-    fun derive(
-        words: List<String>,
-        derivation: MnemonicDerivation,
-        passphrase: String = ""
-    ): ByteArray {
-        if (derivation == MnemonicDerivation.Bip39) return Mnemonic().toSeed(words, passphrase)
+    fun derive(words: List<String>, passphrase: String = ""): ByteArray {
         Mnemonic().validate(words)
-        val separator = if (WordList.wordList(Language.Japanese).validWords(words)) "　" else " "
-        return pbkdf2(words.joinToString(separator), "mnemonic$passphrase")
+        return pbkdf2(words.joinToString(" "), "mnemonic$passphrase")
     }
 
     // Stored non-standard accounts intentionally derive from their original UTF-8 bytes.

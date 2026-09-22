@@ -270,7 +270,7 @@ class SwapViewModel(
         if (state.inputSource == FiatService.InputSource.Fiat &&
             fiatInputDirection == direction
         ) {
-            setQuoteAmount(state.amount, direction)
+            quoteService.setAmount(state.amount, direction)
         }
         emitState()
     }
@@ -421,13 +421,15 @@ class SwapViewModel(
     fun getSettings() = quoteService.swapSettings
 
     private fun setTokenAmount(value: BigDecimal?, direction: SwapAmountDirection) {
+        quoteService.clearPreferredProvider()
         fiatInputDirection = null
         deactivateOtherFiatInput(direction)
         fiatService(direction).setInputAmount(value)
-        setQuoteAmount(value, direction)
+        quoteService.setAmount(value, direction)
     }
 
     private fun setFiatAmount(value: BigDecimal?, direction: SwapAmountDirection) {
+        quoteService.clearPreferredProvider()
         fiatInputDirection = direction
         deactivateOtherFiatInput(direction)
         fiatService(direction).setFiatAmount(value)
@@ -445,13 +447,6 @@ class SwapViewModel(
     private fun fiatService(direction: SwapAmountDirection) = when (direction) {
         SwapAmountDirection.In -> fiatServiceIn
         SwapAmountDirection.Out -> fiatServiceOut
-    }
-
-    private fun setQuoteAmount(value: BigDecimal?, direction: SwapAmountDirection) {
-        when (direction) {
-            SwapAmountDirection.In -> quoteService.setAmountIn(value)
-            SwapAmountDirection.Out -> quoteService.setAmountOut(value)
-        }
     }
 
     private val displayAmountOut: BigDecimal?

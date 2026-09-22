@@ -7,7 +7,6 @@ import cash.p.terminal.modules.manageaccount.publickeys.PublicKeysModule.ZcashVi
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
-import cash.p.terminal.wallet.MnemonicDerivation
 import io.horizontalsystems.ethereumkit.models.Chain
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -55,7 +54,7 @@ class PublicKeysViewModelTest {
 
     @Test
     fun init_mnemonicAccount_showsTheKeyDerivedFromItsOwnPhrase() {
-        val accountType = AccountType.Mnemonic(ENGLISH_WORDS, "", MnemonicDerivation.Legacy)
+        val accountType = AccountType.Mnemonic(ENGLISH_WORDS, "")
         coEvery { zcashKeyExporter.viewingKey(accountType) } returns OWN_UFVK
 
         val viewModel = createViewModel(accountType)

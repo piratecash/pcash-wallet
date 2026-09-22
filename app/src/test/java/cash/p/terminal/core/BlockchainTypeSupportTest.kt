@@ -3,7 +3,6 @@ package cash.p.terminal.core
 import cash.p.terminal.core.managers.RestoreSettingType
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.AccountType.MnemonicMonero
-import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenQuery
@@ -45,8 +44,7 @@ class BlockchainTypeSupportTest {
 
     private fun mnemonicAccount() = AccountType.Mnemonic(
         words = List(12) { "abandon" },
-        passphrase = "",
-        derivation = MnemonicDerivation.Legacy
+        passphrase = ""
     )
 
     private fun hardwareCardAccount() = AccountType.HardwareCard(

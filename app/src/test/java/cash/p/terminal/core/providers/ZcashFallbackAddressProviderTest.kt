@@ -4,7 +4,6 @@ import cash.p.terminal.core.adapters.zcash.ZcashAddressDeriver
 import cash.p.terminal.core.adapters.zcash.ZcashKey
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
-import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.HardwarePublicKey
@@ -28,7 +27,7 @@ class ZcashFallbackAddressProviderTest {
     private val deriver = mockk<ZcashAddressDeriver>()
     private val provider = ZcashFallbackAddressProvider(deriver)
 
-    private val mnemonicAccountType = AccountType.Mnemonic(WORDS, PASSPHRASE, MnemonicDerivation.Legacy)
+    private val mnemonicAccountType = AccountType.Mnemonic(WORDS, PASSPHRASE)
 
     @Before
     fun setup() {

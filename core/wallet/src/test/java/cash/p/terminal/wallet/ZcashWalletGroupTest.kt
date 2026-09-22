@@ -1,6 +1,5 @@
 package cash.p.terminal.wallet
 
-import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
@@ -87,7 +86,7 @@ class ZcashWalletGroupTest {
     }
 
     private companion object {
-        val mnemonic = AccountType.Mnemonic(List(12) { "abandon" }, "", MnemonicDerivation.Legacy)
+        val mnemonic = AccountType.Mnemonic(List(12) { "abandon" }, "")
         val saplingKey = AccountType.ZCashSaplingKey("secret-extended-key-main1q")
         val ufvKey = AccountType.ZCashUfvKey("uview1q")
 
