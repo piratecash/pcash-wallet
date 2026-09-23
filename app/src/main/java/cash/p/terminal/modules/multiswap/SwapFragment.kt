@@ -143,6 +143,7 @@ import cash.p.terminal.modules.paycore.payment.PayCorePaymentScreen
 import cash.p.terminal.modules.paycore.payment.PayCorePaymentViewModel
 import cash.p.terminal.modules.paycore.verification.PayCoreVerificationScreen
 import android.os.Parcelable
+import androidx.annotation.Keep
 import cash.p.terminal.modules.paycore.PayCoreNetworkMapper.toTicker
 import cash.p.terminal.modules.paycore.PayCoreTicker
 import kotlinx.parcelize.Parcelize
@@ -210,6 +211,8 @@ internal data class PayCorePaymentPage(
     val requestedAmountOut: String?,
 )
 
+/** Used as a navigation route argument: androidx.navigation resolves the enum by its original name. */
+@Keep
 @Serializable
 private enum class SwapCoinDirection { From, To }
 
