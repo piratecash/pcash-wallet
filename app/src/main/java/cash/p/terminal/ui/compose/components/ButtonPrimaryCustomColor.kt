@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ProvideTextStyle
@@ -39,9 +38,9 @@ fun ButtonPrimaryCustomColor(
 ) {
     Surface(
         modifier = modifier
-            .clip(RoundedCornerShape(25.dp))
+            .clip(ButtonPrimaryDefaults.Shape)
             .background(brush),
-        shape = RoundedCornerShape(25.dp),
+        shape = ButtonPrimaryDefaults.Shape,
         color = Color.Transparent,
         contentColor = ComposeAppTheme.colors.dark,
         onClick = onClick,

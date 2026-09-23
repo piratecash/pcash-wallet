@@ -38,7 +38,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.ui_compose.R
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
@@ -92,11 +94,31 @@ fun BalanceActionsRow(
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = BalanceActionsArrangement,
         verticalAlignment = Alignment.Top,
         content = content,
     )
 }
+
+/** A partial row keeps the "auto" gaps of a full one but is inset from the edges. */
+private object BalanceActionsArrangement : Arrangement.Horizontal {
+    override fun Density.arrange(
+        totalSize: Int,
+        sizes: IntArray,
+        layoutDirection: LayoutDirection,
+        outPositions: IntArray,
+    ) {
+        val inset = if (sizes.size < BalanceActionSlots) BalanceActionsPartialRowInset.roundToPx() else 0
+        val arrangement = if (sizes.size == 1) Arrangement.Center else Arrangement.SpaceBetween
+        with(arrangement) {
+            arrange(totalSize - 2 * inset, sizes, layoutDirection, outPositions)
+        }
+        outPositions.indices.forEach { outPositions[it] += inset }
+    }
+}
+
+private const val BalanceActionSlots = 4
+private val BalanceActionsPartialRowInset = 16.dp
 
 @Composable
 fun BalanceActionButton(
@@ -185,6 +207,27 @@ private fun BalanceActionsPreview() {
                     iconRotation = if (index == 0) 90f else 0f,
                     onClick = {},
                 )
+            }
+        }
+    }
+}
+
+@Preview(name = "Light", uiMode = Configuration.UI_MODE_NIGHT_NO, widthDp = 360)
+@Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, widthDp = 360)
+@Composable
+private fun BalanceActionsThreeButtonsPreview() {
+    ComposeAppTheme {
+        BalanceActionsRow(
+            modifier = Modifier
+                .background(ComposeAppTheme.colors.tyler)
+                .padding(16.dp),
+        ) {
+            listOf(
+                R.drawable.ic_arrow_down_left_24 to "Send",
+                R.drawable.ic_arrow_down_left_24 to "Receive",
+                R.drawable.ic_swap_24 to "Swap",
+            ).forEach { (icon, label) ->
+                BalanceActionButton(icon = icon, label = label, onClick = {})
             }
         }
     }

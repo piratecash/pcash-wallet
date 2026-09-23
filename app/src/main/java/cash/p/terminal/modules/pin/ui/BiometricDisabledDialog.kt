@@ -15,6 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import cash.p.terminal.R
+import cash.p.terminal.ui_compose.components.ButtonPrimaryDefaults
 import cash.p.terminal.ui_compose.components.body_grey
 import cash.p.terminal.ui_compose.components.body_lucian
 import cash.p.terminal.ui_compose.components.headline2_brand
@@ -55,7 +56,7 @@ fun BiometricDisabledDialog(onClick: () -> Unit) {
                     .align(Alignment.End)
                     .padding(end = 8.dp, bottom = 8.dp)
                     .height(36.dp)
-                    .clip(RoundedCornerShape(25.dp))
+                    .clip(ButtonPrimaryDefaults.Shape)
                     .clickable { onClick.invoke() },
                 contentAlignment = Alignment.Center
             ) {

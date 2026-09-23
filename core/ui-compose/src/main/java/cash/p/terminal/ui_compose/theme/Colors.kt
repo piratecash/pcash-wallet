@@ -31,6 +31,14 @@ class Colors(
     brand: Color,
     borderAccentSubtle: Color,
     filterText: Color,
+    buttonPrimaryBrandContent: Color,
+    buttonPrimaryNeutralBackground: Color,
+    buttonPrimaryNeutralContent: Color,
+    buttonPrimaryDestructiveBackground: Color,
+    buttonPrimaryDestructiveContent: Color,
+    buttonPrimaryDisabledBackground: Color,
+    buttonPrimaryOutlineContent: Color,
+    buttonPrimaryOutlineBorder: Color,
     jeremy: Color,
     purple: Color,
     raina: Color,
@@ -113,6 +121,22 @@ class Colors(
         private set
     var filterText by mutableStateOf(filterText)
         private set
+    var buttonPrimaryBrandContent by mutableStateOf(buttonPrimaryBrandContent)
+        private set
+    var buttonPrimaryNeutralBackground by mutableStateOf(buttonPrimaryNeutralBackground)
+        private set
+    var buttonPrimaryNeutralContent by mutableStateOf(buttonPrimaryNeutralContent)
+        private set
+    var buttonPrimaryDestructiveBackground by mutableStateOf(buttonPrimaryDestructiveBackground)
+        private set
+    var buttonPrimaryDestructiveContent by mutableStateOf(buttonPrimaryDestructiveContent)
+        private set
+    var buttonPrimaryDisabledBackground by mutableStateOf(buttonPrimaryDisabledBackground)
+        private set
+    var buttonPrimaryOutlineContent by mutableStateOf(buttonPrimaryOutlineContent)
+        private set
+    var buttonPrimaryOutlineBorder by mutableStateOf(buttonPrimaryOutlineBorder)
+        private set
     var jeremy by mutableStateOf(jeremy)
         private set
     var purple by mutableStateOf(purple)
@@ -150,6 +174,14 @@ class Colors(
         brand = other.brand
         borderAccentSubtle = other.borderAccentSubtle
         filterText = other.filterText
+        buttonPrimaryBrandContent = other.buttonPrimaryBrandContent
+        buttonPrimaryNeutralBackground = other.buttonPrimaryNeutralBackground
+        buttonPrimaryNeutralContent = other.buttonPrimaryNeutralContent
+        buttonPrimaryDestructiveBackground = other.buttonPrimaryDestructiveBackground
+        buttonPrimaryDestructiveContent = other.buttonPrimaryDestructiveContent
+        buttonPrimaryDisabledBackground = other.buttonPrimaryDisabledBackground
+        buttonPrimaryOutlineContent = other.buttonPrimaryOutlineContent
+        buttonPrimaryOutlineBorder = other.buttonPrimaryOutlineBorder
         jeremy = other.jeremy
         purple = other.purple
         raina = other.raina
@@ -182,6 +214,14 @@ class Colors(
         brand = brand,
         borderAccentSubtle = borderAccentSubtle,
         filterText = filterText,
+        buttonPrimaryBrandContent = buttonPrimaryBrandContent,
+        buttonPrimaryNeutralBackground = buttonPrimaryNeutralBackground,
+        buttonPrimaryNeutralContent = buttonPrimaryNeutralContent,
+        buttonPrimaryDestructiveBackground = buttonPrimaryDestructiveBackground,
+        buttonPrimaryDestructiveContent = buttonPrimaryDestructiveContent,
+        buttonPrimaryDisabledBackground = buttonPrimaryDisabledBackground,
+        buttonPrimaryOutlineContent = buttonPrimaryOutlineContent,
+        buttonPrimaryOutlineBorder = buttonPrimaryOutlineBorder,
         jeremy = jeremy,
         purple = purple,
         raina = raina,
