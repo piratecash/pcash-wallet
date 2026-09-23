@@ -24,6 +24,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
+import androidx.navigationevent.setViewTreeNavigationEventDispatcherOwner
 import cash.p.terminal.ui_compose.components.ConnectionStatusView
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
@@ -48,6 +49,9 @@ abstract class BaseComposeFragment(
             setViewCompositionStrategy(
                 ViewCompositionStrategy.DisposeOnLifecycleDestroyed(viewLifecycleOwner)
             )
+            // Compose looks the owner up through the view parents only; a nested NavHost
+            // recomposing while this view is detached would otherwise crash.
+            setViewTreeNavigationEventDispatcherOwner(requireActivity())
 
             setContent {
                 ComposeAppTheme {
