@@ -1,11 +1,11 @@
 package cash.p.terminal.core
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import cash.p.terminal.strings.helpers.LocaleHelper
 import io.horizontalsystems.core.CoreApp
 
 abstract class BaseActivity : AppCompatActivity() {
@@ -23,16 +23,8 @@ abstract class BaseActivity : AppCompatActivity() {
             return
         }
 
+        LocaleHelper.syncDefaultLocales(this)
         window.decorView.layoutDirection =
             if (CoreApp.instance.isLocaleRTL()) View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR
-    }
-
-    override fun attachBaseContext(newBase: Context) {
-        // Skip locale-aware context if SQLCipher failed (CoreApp not fully initialized)
-        if (App.sqlCipherLoadFailed) {
-            super.attachBaseContext(newBase)
-            return
-        }
-        super.attachBaseContext(CoreApp.instance.localeAwareContext(newBase))
     }
 }

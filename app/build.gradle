@@ -4,6 +4,7 @@
 import com.android.tools.profgen.ArtProfileKt
 import com.android.tools.profgen.ArtProfileSerializer
 import com.android.tools.profgen.DexFile
+import groovy.xml.XmlSlurper
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -70,12 +71,19 @@ def firebaseDevSigningEnabled = configuredFirebaseDevSigningValues.size() == fir
 
 android {
 
+    // Library translations of unsupported languages make Android pick them over a supported secondary language.
+    androidResources {
+        localeFilters += new XmlSlurper(false, false)
+                .parse(file('src/main/res/xml/locales_config.xml'))
+                .locale.collect { it.@'android:name'.text().replace('-', '-r') }
+    }
+
     defaultConfig {
         applicationId "cash.p.terminal"
         compileSdk compile_sdk_version
         minSdkVersion min_sdk_version
         targetSdkVersion target_sdk_version
-        versionCode 257
+        versionCode 258
         versionName "0.60.0"
         buildConfigField "String", "GIT_HASH", "\"${getGitVersionSuffix()}\""
         buildConfigField "String", "BITCOIN_KIT_VERSION", "\"${libs.versions.piratecash.bitcoin.get()}\""

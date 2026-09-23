@@ -63,6 +63,7 @@ import cash.p.terminal.modules.walletconnect.WCDelegate
 import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.modules.walletconnect.WCSessionManager
 import cash.p.terminal.modules.walletconnect.WCWalletRequestHandler
+import cash.p.terminal.strings.helpers.LocaleHelper
 import cash.p.terminal.wallet.IAccountCleaner
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAccountsStorage
@@ -477,6 +478,7 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
     }
 
     override fun attachBaseContext(base: Context) {
+        LocaleHelper.restoreLocale(base)
         super.attachBaseContext(localeAwareContext(base))
     }
 

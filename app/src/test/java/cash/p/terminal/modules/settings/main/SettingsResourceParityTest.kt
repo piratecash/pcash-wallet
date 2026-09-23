@@ -2,6 +2,7 @@ package cash.p.terminal.modules.settings.main
 
 import android.app.Application
 import android.content.Context
+import android.content.res.Configuration
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
@@ -12,7 +13,6 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.test.core.app.ApplicationProvider
 import cash.p.terminal.R
 import cash.p.terminal.shared.settings.SettingsContent
-import cash.p.terminal.strings.helpers.LocaleHelper
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import org.junit.After
 import org.junit.Assert.assertFalse
@@ -36,7 +36,7 @@ class SettingsResourceParityTest {
 
     @After
     fun restoreLocale() {
-        LocaleHelper.setLocale(application, originalLocale)
+        Locale.setDefault(originalLocale)
     }
 
     @Test
@@ -105,15 +105,18 @@ class SettingsResourceParityTest {
         }
     }
 
+    // Mirrors what the platform does for a per-app locale: default locale + localized configuration.
     private fun setLocale(tag: String): Context {
-        LocaleHelper.setLocale(application, Locale.forLanguageTag(tag))
-        return LocaleHelper.onAttach(application)
+        val locale = Locale.forLanguageTag(tag)
+        Locale.setDefault(locale)
+        val configuration = Configuration(application.resources.configuration)
+        configuration.setLocale(locale)
+        return application.createConfigurationContext(configuration)
     }
 
     private companion object {
         val localeTags = listOf(
-            "en", "ar", "de", "es", "fa", "fr", "ko", "nl", "pt", "pt-BR", "ru", "tr",
-            "uk", "zh",
+            "en", "de", "es", "fa", "fr", "ko", "pt", "pt-BR", "ru", "tr", "uk", "zh",
         )
         val parityResourceIds = listOf(
             R.string.SettingsAboutApp_Title,

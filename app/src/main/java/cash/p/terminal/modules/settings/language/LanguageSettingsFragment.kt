@@ -23,9 +23,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import cash.p.terminal.R
+import cash.p.terminal.core.fullRestart
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.ui_compose.BaseComposeFragment
-import cash.p.terminal.modules.main.MainModule
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HsBackButton
@@ -40,7 +40,7 @@ class LanguageSettingsFragment : BaseComposeFragment() {
     override fun GetContent(navController: NavController) {
         LanguageScreen(
             navController,
-            { activity?.let { MainModule.startAsNewTask(it) } }
+            { activity?.fullRestart() }
         )
     }
 
