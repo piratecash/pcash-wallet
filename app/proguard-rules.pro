@@ -1,3 +1,12 @@
+# Adding a class of ours whose name is data (Gson/Moshi field binding, a resource or file name built
+# from the class name, a navigation enum resolved by serial name)? Annotate it with @Keep instead of
+# adding a rule here: the annotation survives a Move/Rename, a package path does not. Rules here are
+# for code we cannot annotate — kits and third-party libraries — and those classes also belong in
+# app/r8-critical-classes.txt.
+#
+# minify{Qa,Release}WithR8 verifies this file (app/r8-verification.gradle): a rule matching no class
+# fails the build. Fix the rule; never delete it to get a green build.
+
 # Crashlytics needs source locations from the same build as mapping.txt.
 -keepattributes SourceFile,LineNumberTable
 -keepattributes Signature,InnerClasses,EnclosingMethod,*Annotation*
