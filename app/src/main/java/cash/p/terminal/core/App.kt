@@ -251,7 +251,7 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
     override fun onCreate() {
         super.onCreate()
 
-        if (BuildConfig.DEBUG) {
+        if (BuildConfig.DIAGNOSTIC_LOGGING) {
             Timber.plant(Timber.DebugTree())
             KermitLogger.setLogWriters(platformLogWriter())
             KermitLogger.setMinSeverity(Severity.Debug)
@@ -274,7 +274,7 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
             modules(appModule)
         }
 
-        if (!BuildConfig.DEBUG) {
+        if (!BuildConfig.DIAGNOSTIC_LOGGING) {
             //Disable logging for lower levels in Release build
             Logger.getLogger("").level = Level.SEVERE
         }
@@ -463,7 +463,7 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
     }
 
     override val workManagerConfiguration: WorkConfiguration
-        get() = if (BuildConfig.DEBUG) {
+        get() = if (BuildConfig.DIAGNOSTIC_LOGGING) {
             WorkConfiguration.Builder()
                 .setMinimumLoggingLevel(Log.DEBUG)
                 .build()

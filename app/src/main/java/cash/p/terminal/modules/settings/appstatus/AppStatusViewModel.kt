@@ -18,6 +18,7 @@ import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TronKitManager
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.core.tryOrNull
+import cash.p.terminal.feature.miniapp.domain.storage.IUniqueCodeStorage
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.BtcBlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.EvmBlockchainStatusProvider
@@ -30,6 +31,7 @@ import cash.p.terminal.modules.blockchainstatus.TonBlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.TronBlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.ZcashBlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.appendStatusSection
+import cash.p.terminal.modules.blockchainstatus.reportBuildInfo
 import cash.p.terminal.modules.settings.appstatus.AppStatusModule.BlockContent
 import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
 import cash.p.terminal.wallet.IAccountManager
@@ -51,6 +53,7 @@ class AppStatusViewModel(
     private val context: Context,
     private val systemInfoManager: ISystemInfoManager,
     private val localStorage: ILocalStorage,
+    private val uniqueCodeStorage: IUniqueCodeStorage,
     private val accountManager: IAccountManager,
     private val walletManager: IWalletManager,
     private val adapterManager: IAdapterManager,
@@ -356,8 +359,7 @@ class AppStatusViewModel(
     private fun getAppInfo(): Map<String, Any> {
         val appInfo = LinkedHashMap<String, Any>()
         appInfo["Current Time"] = Date()
-        appInfo["App Version"] = systemInfoManager.appVersionFull
-        appInfo["Git Branch"] = AppConfigProvider.appGitBranch
+        getBuildInfo().forEach { (title, value) -> appInfo[title] = value }
         systemInfoManager.getSigningCertFingerprint()?.let {
             appInfo["App Signature"] = it
         }
@@ -366,6 +368,7 @@ class AppStatusViewModel(
         getDeviceClass(context).forEach { appInfo[it.title] = it.value }
         appInfo["System pin required"] = if (localStorage.isSystemPinRequired) "Yes" else "No"
         appInfo["Premium Status"] = checkPremiumUseCase.getPremiumType().name
+        appInfo["Unique Code"] = getShortUniqueCode()
 
         return appInfo
     }
@@ -380,8 +383,11 @@ class AppStatusViewModel(
                         DateHelper.formatDate(Date(), "MMM d, yyyy, HH:mm")
                     )
                 )
-                add(BlockContent.TitleValue("App Version", systemInfoManager.appVersionFull))
-                add(BlockContent.TitleValue("Git Branch", AppConfigProvider.appGitBranch))
+                addAll(
+                    getBuildInfo().map { (title, value) ->
+                        BlockContent.TitleValue(title, value)
+                    }
+                )
                 systemInfoManager.getSigningCertFingerprint()?.let {
                     add(BlockContent.TitleValue("App Signature", it))
                 }
@@ -400,8 +406,25 @@ class AppStatusViewModel(
                         checkPremiumUseCase.getPremiumType().name
                     )
                 )
+                add(BlockContent.TitleValue("Unique Code", getShortUniqueCode()))
             }
         )
+    }
+
+    private fun getBuildInfo(): Map<String, String> = reportBuildInfo(
+        systemInfoManager.appVersionFull,
+        AppConfigProvider.appGitBranch,
+    )
+    private fun getShortUniqueCode(): String {
+        val code = uniqueCodeStorage.uniqueCode
+        if (code.isBlank()) return "None"
+
+        val edge = if (code.length > UNIQUE_CODE_EDGE_CHARS * 2) {
+            UNIQUE_CODE_EDGE_CHARS
+        } else {
+            UNIQUE_CODE_SHORT_EDGE_CHARS
+        }
+        return if (code.length <= edge * 2) code else "${code.take(edge)}...${code.takeLast(edge)}"
     }
 
     private fun getEnabledBlockchainsString(): String {
@@ -500,4 +523,8 @@ class AppStatusViewModel(
         return resultList
     }
 
+    private companion object {
+        const val UNIQUE_CODE_EDGE_CHARS = 10
+        const val UNIQUE_CODE_SHORT_EDGE_CHARS = 3
+    }
 }

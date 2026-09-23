@@ -1,3 +1,22 @@
+## 🚀 Version 0.60.1 Update
+_Release date: September 22, 2026_
+
+### ✨ New Features
+
+- **Added YiFi as a new swap provider**
+
+- **Added loyalty program diagnostics for SWAP 6 in the @piratecash_bot game**
+
+### ⚙️ Improvements
+
+- **Reduced app size through R8 optimization**
+
+### 🐛 Fixes
+
+- **Fixed a recurring crash on Android 16 when the app is backgrounded from the token screen**
+
+- **Fixed ROI display on the @piratecash_bot game connection screen**
+
 ## 🚀 Version 0.60.0 Update
 _Release date: September 15, 2026_
 
