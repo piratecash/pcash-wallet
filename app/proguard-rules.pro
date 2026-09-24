@@ -7,7 +7,7 @@
 # minify{Qa,Release}WithR8 verifies this file (app/r8-verification.gradle): a rule matching no class
 # fails the build. Fix the rule; never delete it to get a green build.
 
-# Crashlytics needs source locations from the same build as mapping.txt.
+# Keep source locations so local diagnostic stack traces remain readable.
 -keepattributes SourceFile,LineNumberTable
 -keepattributes Signature,InnerClasses,EnclosingMethod,*Annotation*
 
@@ -123,3 +123,4 @@
 -dontwarn java.awt.Window
 -dontwarn reactor.blockhound.integration.BlockHoundIntegration
 -dontwarn sun.security.x509.X509Key
+-whyareyoukeeping class com.reown.android.push.notifications.PushMessagingService
