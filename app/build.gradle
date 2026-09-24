@@ -662,6 +662,8 @@ tasks.register('bakeBaselineProfile') {
     }
 }
 
+apply from: 'r8-verification.gradle'
+
 // F-Droid reproducible builds: when invoked with -Pfdroid=true (F-Droid's build recipe
 // passes it), disable ART profile packaging so the APK omits assets/dexopt/baseline.prof
 // and baseline.profm, keeping the build byte-reproducible. Non-F-Droid channels (Google

@@ -1,3 +1,12 @@
+# Adding a class of ours whose name is data (Gson/Moshi field binding, a resource or file name built
+# from the class name, a navigation enum resolved by serial name)? Annotate it with @Keep instead of
+# adding a rule here: the annotation survives a Move/Rename, a package path does not. Rules here are
+# for code we cannot annotate — kits and third-party libraries — and those classes also belong in
+# app/r8-critical-classes.txt.
+#
+# minify{Qa,Release}WithR8 verifies this file (app/r8-verification.gradle): a rule matching no class
+# fails the build. Fix the rule; never delete it to get a green build.
+
 # Crashlytics needs source locations from the same build as mapping.txt.
 -keepattributes SourceFile,LineNumberTable
 -keepattributes Signature,InnerClasses,EnclosingMethod,*Annotation*
@@ -39,8 +48,16 @@
 # Navigation XML resolves Parcelable argument classes by their original names.
 -keep,allowoptimization class cash.p.terminal.** implements android.os.Parcelable
 
+# Typed navigation routes resolve enum arguments through Class.forName on the serial name,
+# and Gson/Room persist enum constants by name. Keeping every enum name costs a few dozen
+# kilobytes and removes the need to remember @Keep on each new route argument.
+-keepnames class ** extends java.lang.Enum
+
 # These SDKs lack complete consumer rules for their reflective JSON/RPC models.
-# Keep their boundaries intact for the initial rollout, as upstream does.
+# Keep their boundaries intact for the initial rollout. The bitcoin-family kits also
+# load their checkpoint resource by the network class simple name, so renaming them
+# breaks the kit at construction — the package here must match the kit's real package,
+# which is not always its module name.
 -keep class io.horizontalsystems.ethereumkit.** { *; }
 -keep class io.horizontalsystems.erc20kit.** { *; }
 -keep class io.horizontalsystems.nftkit.** { *; }
@@ -49,14 +66,17 @@
 -keep class io.horizontalsystems.tronkit.** { *; }
 -keep class io.horizontalsystems.stellarkit.** { *; }
 -keep class io.horizontalsystems.tonkit.** { *; }
+# TonAPI models ship inside the TON kit and are bound by Moshi's reflective Kotlin adapter.
+-keep class io.tonapi.** { *; }
 -keep class io.horizontalsystems.solanakit.** { *; }
 -keep class io.horizontalsystems.bitcoincore.** { *; }
 -keep class io.horizontalsystems.bitcoinkit.** { *; }
 -keep class io.horizontalsystems.dashkit.** { *; }
 -keep class io.horizontalsystems.litecoinkit.** { *; }
--keep class io.horizontalsystems.bitcoincashkit.** { *; }
--keep class io.horizontalsystems.ecashkit.** { *; }
--keep class io.horizontalsystems.dogecoinkit.** { *; }
+-keep class io.horizontalsystems.bitcoincash.** { *; }
+-keep class io.horizontalsystems.ecash.** { *; }
+-keep class chronik.** { *; }
+-keep class cash.p.dogecoinkit.** { *; }
 -keep class io.horizontalsystems.cosantakit.** { *; }
 -keep class io.horizontalsystems.piratecashkit.** { *; }
 -keep class io.horizontalsystems.hodler.** { *; }
@@ -84,11 +104,6 @@
 -keep class org.torproject.** { *; }
 -keep class org.dashj.** { *; }
 -keep class fr.acinq.secp256k1.** { *; }
--keep class org.bitcoin.NativeSecp256k1 { *; }
--keep class org.bitcoin.NativeSecp256k1Util { *; }
--keep class org.bitcoin.Secp256k1Context { *; }
--keep class com.goterl.** { *; }
--keep class org.libsodium.** { *; }
 -keep class uniffi.** { *; }
 
 # Tangem uses Moshi's Kotlin reflection and looks up R.string fields by name.

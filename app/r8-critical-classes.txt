@@ -1,0 +1,44 @@
+# Classes that something resolves by their original name at runtime. R8 must leave the
+# name alone, so renaming or moving one here is a silent, release-only breakage: the
+# build stays green and the failure surfaces as "class not found" or "field is null".
+#
+# verifyR8RulesQa / verifyR8RulesRelease fails when an entry is renamed or has vanished
+# from mapping.txt. A vanished entry usually means the class moved — move it here too,
+# and fix the keep rule that no longer covers it.
+
+# The bitcoin-family kits build their checkpoint resource filename from the network
+# class simple name, so a rename breaks the kit while it is being constructed.
+io.horizontalsystems.bitcoinkit.MainNet
+io.horizontalsystems.bitcoinkit.TestNet
+io.horizontalsystems.bitcoinkit.RegTest
+io.horizontalsystems.litecoinkit.MainNetLitecoin
+io.horizontalsystems.litecoinkit.TestNetLitecoin
+io.horizontalsystems.dashkit.MainNetDash
+io.horizontalsystems.dashkit.TestNetDash
+io.horizontalsystems.bitcoincash.MainNetBitcoinCash
+io.horizontalsystems.bitcoincash.TestNetBitcoinCash
+io.horizontalsystems.ecash.MainNetECash
+cash.p.dogecoinkit.MainNetDogecoin
+cash.p.dogecoinkit.TestNetDogecoin
+io.horizontalsystems.cosantakit.MainNetCosanta
+io.horizontalsystems.cosantakit.TestNetCosanta
+io.horizontalsystems.piratecashkit.MainNetPirateCash
+io.horizontalsystems.piratecashkit.TestNetPirateCash
+
+# Enum arguments of typed navigation routes, resolved by serial name.
+cash.p.terminal.modules.multiswap.SwapAmountDirection
+cash.p.terminal.modules.multiswap.SwapCoinDirection
+cash.p.terminal.modules.paycore.PayCoreTicker
+
+# The class name is the SharedPreferences filename holding the selected language.
+cash.p.terminal.strings.helpers.LocaleHelper
+
+# Bound by Moshi's reflective Kotlin adapter, which matches JSON keys to property names.
+io.tonapi.models.Account
+
+# Read by Gson, which maps JSON keys to field names.
+cash.p.terminal.widgets.MarketWidgetState
+cash.p.terminal.modules.backuplocal.fullbackup.FullBackup
+cash.p.terminal.wallet.models.GlobalMarketPoint
+io.horizontalsystems.tronkit.network.CreatedTransaction
+cash.p.terminal.core.managers.RestoreSettingType
