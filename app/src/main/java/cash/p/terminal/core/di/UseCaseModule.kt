@@ -3,7 +3,6 @@ package cash.p.terminal.core.di
 import cash.p.terminal.core.policy.CompositeHardwareWalletTokenPolicy
 import cash.p.terminal.core.policy.CompositeScanToAddUseCase
 import cash.p.terminal.core.usecase.AddMoneroToTrezorAccountUseCase
-import cash.p.terminal.core.usecase.CheckGooglePlayUpdateUseCase
 import cash.p.terminal.core.usecase.CreateHardwareWalletUseCase
 import cash.p.terminal.core.usecase.CreateTrezorWalletUseCase
 import cash.p.terminal.core.usecase.GenerateMoneroWalletUseCase
@@ -27,6 +26,7 @@ import cash.p.terminal.domain.usecase.DeleteAllContactsUseCase
 import cash.p.terminal.domain.usecase.ResetUseCase
 import cash.p.terminal.manager.ITorConnectionStatusUseCase
 import cash.p.terminal.modules.pin.SendZecOnDuressUseCase
+import cash.p.terminal.modules.softwareupdate.domain.GooglePlayUpdateAvailability
 import cash.p.terminal.modules.softwareupdate.domain.GooglePlayUpdateAvailabilityProvider
 import cash.p.terminal.modules.tor.TorConnectionStatusUseCase
 import cash.p.terminal.tangem.domain.usecase.ICreateHardwareWalletUseCase
@@ -52,7 +52,9 @@ val useCaseModule = module {
     factoryOf(::ValidateMoneroHeightUseCase) bind TrezorMoneroRestoreHeightResolver::class
     singleOf(::AddMoneroToTrezorAccountUseCase)
     factoryOf(::GetLocalizedAssetUseCase)
-    factoryOf(::CheckGooglePlayUpdateUseCase) bind GooglePlayUpdateAvailabilityProvider::class
+    factory<GooglePlayUpdateAvailabilityProvider> {
+        GooglePlayUpdateAvailabilityProvider { GooglePlayUpdateAvailability.NotAvailable }
+    }
     factoryOf(::MoneroWalletUseCase)
     factoryOf(::GenerateMoneroWalletUseCase)
     factoryOf(::GetRestoreHeightForWalletUseCase)

@@ -7,7 +7,6 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.BuildConfig
-import cash.p.terminal.R
 import cash.p.terminal.core.App
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.helpers.DateHelper
@@ -27,10 +26,7 @@ internal fun reportBuildInfo(appVersion: String, gitBranch: String): Map<String,
         "Build Type" to BuildConfig.BUILD_TYPE,
         "Git Branch" to gitBranch,
         "Git Hash" to BuildConfig.GIT_HASH,
-        "Mapping ID" to (
-            App.instance.getString(R.string.com_google_firebase_crashlytics_mapping_file_id)
-                .takeUnless { id -> id.all { it == '0' } } ?: "None"
-        ),
+        "Mapping ID" to "None",
     )
 
 class BlockchainStatusViewModel(
