@@ -1,8 +1,11 @@
 package cash.p.terminal.modules.paycore
 
+import androidx.annotation.Keep
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/** Used as a navigation route argument: androidx.navigation resolves the enum by its original name. */
+@Keep
 @Serializable
 enum class PayCoreTicker {
     @SerialName("RUB")

@@ -1,0 +1,152 @@
+// A wrong keep rule fails silently: the build succeeds, R8 renames a class that something
+// looks up by name, and the breakage only shows up in the shipped binary. These checks read
+// the mapping R8 actually produced and turn both known silent failures into a red build.
+//
+//   1. Every class pattern in our own rules must match at least one class. A pattern written
+//      against a gradle module name instead of the real package matches nothing and protects
+//      nothing — which is exactly how the bitcoin-family kits broke.
+//   2. Every class in r8-critical-classes.txt must still be present under its original name.
+//      That catches a rename or a package move that rule 1 cannot see, because the rule keeps
+//      matching its other neighbours.
+
+def minifiedVariants = ['Qa', 'Release']
+
+def ruleFilesFor = { String variant ->
+    def files = [file('proguard-rules.pro')]
+    if (variant == 'Qa') {
+        files << file('proguard-qa.pro')
+    }
+    return files
+}
+
+// ProGuard class patterns: ** spans package separators, * and ? stop at them.
+def classPatternToRegex = { String pattern ->
+    def regex = new StringBuilder()
+    for (int i = 0; i < pattern.length(); i++) {
+        def character = pattern.substring(i, i + 1)
+        if (character == '*') {
+            if (i + 1 < pattern.length() && pattern.substring(i + 1, i + 2) == '*') {
+                regex.append('.*')
+                i++
+            } else {
+                regex.append('[^.]*')
+            }
+        } else if (character == '?') {
+            regex.append('[^.]')
+        } else if ('.$[]{}()+-^|\\'.contains(character)) {
+            regex.append('\\').append(character)
+        } else {
+            regex.append(character)
+        }
+    }
+    return regex.toString()
+}
+
+// Patterns selected by supertype or annotation cannot be resolved to names here, so they
+// are left to R8. Everything else is a plain name pattern we can hold to account.
+def classPatternsIn = { File ruleFile ->
+    def patterns = [:]
+    def lineNumber = 0
+    ruleFile.eachLine('UTF-8') { line ->
+        lineNumber++
+        def rule = line.trim()
+        if (!rule.startsWith('-keep')) return
+        if (rule.contains(' extends ') || rule.contains(' implements ') || rule.contains('@')) return
+        def matcher = rule =~ /^-keep\w*(?:\s*,\s*\w+)*\s+(?:enum|class|interface)\s+(\S+)/
+        if (!matcher) return
+        def pattern = matcher[0][1]
+        if (pattern.replace('*', '').replace('?', '').replace('.', '').isEmpty()) return
+        patterns.put(pattern, "${ruleFile.name}:${lineNumber}")
+    }
+    return patterns
+}
+
+minifiedVariants.each { variant ->
+    def variantName = variant.uncapitalize()
+
+    def verifyTask = tasks.register("verifyR8Rules${variant}") {
+        description = "Verify the R8 keep rules against the ${variantName} mapping"
+        group = 'verification'
+
+        doLast {
+            // The copy under outputs/ lands after this task, so read R8's own output. The
+            // compose mapping merge rewrites it in place under a sibling directory, hence
+            // "the newest mapping.txt of this variant" rather than a fixed path.
+            def mappingFile = fileTree(layout.buildDirectory.dir("intermediates/mapping/${variantName}"))
+                    .matching { include '**/mapping.txt' }
+                    .files
+                    .max { it.lastModified() }
+            if (mappingFile == null) {
+                throw new GradleException(
+                        "R8 mapping not found under build/intermediates/mapping/${variantName}")
+            }
+
+            def originalNames = new HashSet<String>()
+            def renamedClasses = new HashMap<String, String>()
+            mappingFile.eachLine('UTF-8') { line ->
+                if (line.isEmpty() || line.startsWith(' ') || line.startsWith('\t') || line.startsWith('#')) return
+                def arrow = line.indexOf(' -> ')
+                if (arrow < 0) return
+                def original = line.substring(0, arrow)
+                def obfuscated = line.substring(arrow + 4)
+                if (obfuscated.endsWith(':')) {
+                    obfuscated = obfuscated.substring(0, obfuscated.length() - 1)
+                }
+                originalNames.add(original)
+                if (original != obfuscated) {
+                    renamedClasses.put(original, obfuscated)
+                }
+            }
+
+            def checkedPatterns = 0
+            def unmatchedRules = []
+            ruleFilesFor(variant).each { ruleFile ->
+                classPatternsIn(ruleFile).each { pattern, origin ->
+                    checkedPatterns++
+                    def literalPrefix = pattern.split('[*?]')[0]
+                    def regex = java.util.regex.Pattern.compile(classPatternToRegex(pattern))
+                    def matched = originalNames.any {
+                        it.startsWith(literalPrefix) && regex.matcher(it).matches()
+                    }
+                    if (!matched) {
+                        unmatchedRules << "  ${origin}: '${pattern}' matches no class in the build"
+                    }
+                }
+            }
+
+            def brokenClasses = []
+            def checkedClasses = 0
+            file('r8-critical-classes.txt').eachLine('UTF-8') { line ->
+                def className = line.trim()
+                if (className.isEmpty() || className.startsWith('#')) return
+                checkedClasses++
+                if (!originalNames.contains(className)) {
+                    brokenClasses << "  ${className}: gone from the mapping — renamed, moved or stripped"
+                } else if (renamedClasses.containsKey(className)) {
+                    brokenClasses << "  ${className}: renamed to '${renamedClasses.get(className)}'"
+                }
+            }
+
+            if (!unmatchedRules.isEmpty() || !brokenClasses.isEmpty()) {
+                def report = new StringBuilder("R8 keep rules are not doing what they claim.\n")
+                if (!unmatchedRules.isEmpty()) {
+                    report.append("\nRules that protect nothing (wrong package, or the class is gone):\n")
+                    report.append(unmatchedRules.join('\n')).append('\n')
+                }
+                if (!brokenClasses.isEmpty()) {
+                    report.append("\nClasses that must keep their original name but did not")
+                    report.append(" (see app/r8-critical-classes.txt):\n")
+                    report.append(brokenClasses.join('\n')).append('\n')
+                }
+                throw new GradleException(report.toString())
+            }
+
+            logger.lifecycle("R8 verification (${variantName}): ${checkedPatterns} keep patterns match, " +
+                    "${checkedClasses} critical classes keep their names")
+        }
+    }
+
+    tasks.matching { it.name == "minify${variant}WithR8" }.configureEach {
+        it.finalizedBy(verifyTask)
+    }
+}

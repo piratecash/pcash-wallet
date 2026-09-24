@@ -75,8 +75,8 @@ android {
         compileSdk compile_sdk_version
         minSdkVersion min_sdk_version
         targetSdkVersion target_sdk_version
-        versionCode 257
-        versionName "0.60.0"
+        versionCode 258
+        versionName "0.60.1"
         buildConfigField "String", "GIT_HASH", "\"${getGitVersionSuffix()}\""
         buildConfigField "String", "BITCOIN_KIT_VERSION", "\"${libs.versions.piratecash.bitcoin.get()}\""
         buildConfigField "String", "ETHEREUM_KIT_VERSION", "\"${libs.versions.piratecash.ethereum.get()}\""
@@ -90,6 +90,7 @@ android {
         buildConfigField "String", "GIT_BRANCH", "\"${gitBranchProvider.getOrElse("unknown")}\""
         // True only for the disposable baseline-profile generation build type (see baselinegen).
         buildConfigField "boolean", "BASELINE_PROFILE_MODE", "false"
+        buildConfigField "boolean", "DIAGNOSTIC_LOGGING", "false"
         buildConfigField "boolean", "PAYCORE_ENABLED", "true"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -158,6 +159,20 @@ android {
         }
     }
     
+    def configureTestServices = { buildType ->
+        buildType.buildConfigField "String", "PREMIUM_API_BASE_URL", "\"https://cash.p.cash/api/\""
+        buildType.resValue "string", "uniswapGraphUrl", "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2"
+        buildType.resValue "string", "is_release", "false"
+        buildType.resValue "string", "guidesUrl", "https://raw.githubusercontent.com/horizontalsystems/Unstoppable-Wallet-Website/refs/tags/v1.4/src/edu.json"
+        buildType.resValue "string", "faqUrl", "https://raw.githubusercontent.com/horizontalsystems/Unstoppable-Wallet-Website/master/src/faq.json"
+        buildType.resValue "string", "coinsJsonUrl", "https://raw.githubusercontent.com/horizontalsystems/cryptocurrencies/master/coins.json"
+        buildType.resValue "string", "providerCoinsJsonUrl", "https://raw.githubusercontent.com/horizontalsystems/cryptocurrencies/master/provider.coins.json"
+        buildType.resValue "string", "blocksDecodedEthereumRpc", "https://api-dev.blocksdecoded.com/v1/ethereum-rpc/mainnet"
+        buildType.resValue "string", "chainalysisBaseUrl", "https://public.chainalysis.com/api/v1/"
+        buildType.resValue "string", "hashDitBaseUrl", "https://service.hashdit.io/v2/hashdit/"
+        buildType.resValue "string", "alphaAmlBaseUrl", "https://api.alpha-aml.com"
+    }
+
     buildTypes {
         debug {
             if (firebaseDevSigningEnabled) {
@@ -167,27 +182,19 @@ android {
             debuggable true
             minifyEnabled false
             applicationIdSuffix ".dev"
-            buildConfigField "String", "PREMIUM_API_BASE_URL", "\"https://cash.p.cash/api/\""
-            resValue "string", "uniswapGraphUrl", "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2"
-            resValue "string", "is_release", "false"
-            resValue "string", "guidesUrl", "https://raw.githubusercontent.com/horizontalsystems/Unstoppable-Wallet-Website/refs/tags/v1.4/src/edu.json"
-            resValue "string", "faqUrl", "https://raw.githubusercontent.com/horizontalsystems/Unstoppable-Wallet-Website/master/src/faq.json"
-            resValue "string", "coinsJsonUrl", "https://raw.githubusercontent.com/horizontalsystems/cryptocurrencies/master/coins.json"
-            resValue "string", "providerCoinsJsonUrl", "https://raw.githubusercontent.com/horizontalsystems/cryptocurrencies/master/provider.coins.json"
+            buildConfigField "boolean", "DIAGNOSTIC_LOGGING", "true"
+            configureTestServices(delegate)
 //            resValue "string", "marketApiBaseUrl", "https://api-dev.blocksdecoded.com"
 //            resValue "string", "marketApiKey", "IQf1uAjkthZp1i2pYzkXFDom"
-            resValue "string", "blocksDecodedEthereumRpc", "https://api-dev.blocksdecoded.com/v1/ethereum-rpc/mainnet"
-            resValue "string", "chainalysisBaseUrl", "https://public.chainalysis.com/api/v1/"
-            resValue "string", "hashDitBaseUrl", "https://service.hashdit.io/v2/hashdit/"
-            resValue "string", "alphaAmlBaseUrl", "https://api.alpha-aml.com"
         }
 
         release {
             debuggable false
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             buildConfigField "String", "PREMIUM_API_BASE_URL", "\"https://p.cash/api/\""
             firebaseCrashlytics {
+                mappingFileUploadEnabled true
                 nativeSymbolUploadEnabled true
             }
             resValue "string", "uniswapGraphUrl", "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2"
@@ -202,6 +209,25 @@ android {
             resValue "string", "chainalysisBaseUrl", "https://public.chainalysis.com/api/v1/"
             resValue "string", "hashDitBaseUrl", "https://service.hashdit.io/v2/hashdit/"
             resValue "string", "alphaAmlBaseUrl", "https://api.alpha-aml.com"
+        }
+
+        qa {
+            initWith release
+            debuggable false
+            minifyEnabled true
+            applicationIdSuffix ".dev"
+            matchingFallbacks = ['release']
+            signingConfig firebaseDevSigningEnabled ? signingConfigs.firebaseDev : signingConfigs.debug
+            buildConfigField "boolean", "DIAGNOSTIC_LOGGING", "true"
+            configureTestServices(delegate)
+            proguardFile 'proguard-qa.pro'
+            firebaseCrashlytics {
+                mappingFileUploadEnabled true
+                nativeSymbolUploadEnabled true
+            }
+            optimization.keepRules {
+                ignoreFrom("com.github.piratecash.zcash-android-wallet-sdk:lightwallet-client")
+            }
         }
 
         // Local-only, DISPOSABLE sandbox for baseline-profile generation.
@@ -637,6 +663,8 @@ tasks.register('bakeBaselineProfile') {
         println "Baked ${rules.size()} rules -> ${out}"
     }
 }
+
+apply from: 'r8-verification.gradle'
 
 // F-Droid reproducible builds: when invoked with -Pfdroid=true (F-Droid's build recipe
 // passes it), disable ART profile packaging so the APK omits assets/dexopt/baseline.prof
