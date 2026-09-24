@@ -1,5 +1,6 @@
 package cash.p.terminal.trezor.signer
 
+import cash.p.terminal.trezor.client.TrezorDerivationPath
 import cash.p.terminal.trezor.domain.TrezorSigningException
 import cash.p.terminal.trezorkit.client.ITrezorClient
 import cash.p.terminal.trezorkit.client.TrezorBtcInput
@@ -167,16 +168,8 @@ class TrezorBtcSigner(
 
     private fun addressPath(publicKey: PublicKey): List<Int> {
         val changeSegment = if (publicKey.external) 0 else 1
-        return parseDerivationPath(derivationPath) + changeSegment + publicKey.index
+        return TrezorDerivationPath.parse(derivationPath) + changeSegment + publicKey.index
     }
-
-    private fun parseDerivationPath(path: String): List<Int> =
-        path.split("/")
-            .filter { it.isNotEmpty() && it != "m" }
-            .map { segment ->
-                val value = segment.trimEnd('\'').toInt()
-                if (segment.endsWith("'")) value or HARDENED_BIT else value
-            }
 
     private fun inputScriptType(scriptType: ScriptType): TrezorInputScriptType = when (scriptType) {
         ScriptType.P2PKH -> TrezorInputScriptType.SPENDADDRESS
@@ -210,7 +203,4 @@ class TrezorBtcSigner(
         index: Int
     ): List<ByteArray> = throw UnsupportedOperationException("Use signFullTransaction")
 
-    companion object {
-        private val HARDENED_BIT = 0x80000000.toInt()
-    }
 }

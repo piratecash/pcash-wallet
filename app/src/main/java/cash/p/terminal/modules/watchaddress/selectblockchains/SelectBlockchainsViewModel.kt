@@ -30,6 +30,7 @@ class SelectBlockchainsViewModel(
 
         when (accountType) {
             is AccountType.ZCashUfvKey,
+            is AccountType.ZCashSaplingKey,
             is AccountType.SolanaAddress,
             is AccountType.TronAddress,
             is AccountType.BitcoinAddress,

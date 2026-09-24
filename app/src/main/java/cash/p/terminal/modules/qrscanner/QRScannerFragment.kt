@@ -23,7 +23,6 @@ import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.R
 import cash.p.terminal.tangem.domain.sdk.CardSdkConfigRepository
 import cash.p.terminal.ui_compose.BaseComposeFragment
-import cash.p.terminal.ui_compose.getInput
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
@@ -48,7 +47,7 @@ class QRScannerFragment : BaseComposeFragment() {
     override fun GetContent(navController: NavController) {
         // Cache input to survive configuration changes and returning from gallery picker
         val input: QrScannerInput = rememberSaveable {
-            navController.getInput<QrScannerInput>() ?: QrScannerInput("")
+            getInput<QrScannerInput>() ?: QrScannerInput("")
         }
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 

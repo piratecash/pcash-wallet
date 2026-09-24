@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cash.z.ecc.android.sdk.ext.collectWith
+import io.horizontalsystems.core.collectWith
 import cash.p.terminal.R
 import io.horizontalsystems.core.IAppNumberFormatter
 import cash.p.terminal.core.eip20TokenUrl

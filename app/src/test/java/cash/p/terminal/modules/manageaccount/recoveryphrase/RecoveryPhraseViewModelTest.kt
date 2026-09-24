@@ -1,6 +1,9 @@
 package cash.p.terminal.modules.manageaccount.recoveryphrase
 
 import android.util.Base64
+import cash.p.terminal.core.TestDispatcherProvider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.managers.RestoreSettings
 import cash.p.terminal.core.managers.RestoreSettingsManager
@@ -8,6 +11,13 @@ import cash.p.terminal.core.managers.SeedPhraseQrCrypto
 import cash.p.terminal.core.managers.TimePasswordProvider
 import cash.p.terminal.core.utils.MoneroWalletSeedConverter
 import cash.p.terminal.wallet.Account
+import cash.p.terminal.core.managers.EvmBlockchainManager
+import cash.p.terminal.modules.manageaccount.privatekeys.PrivateKeysViewModel
+import cash.p.terminal.modules.manageaccount.publickeys.PublicKeysViewModel
+import cash.p.terminal.core.adapters.zcash.ZcashKeyExporter
+import cash.p.terminal.core.installEthereumCryptoProviderForTest
+import io.horizontalsystems.ethereumkit.core.signer.Signer
+import io.horizontalsystems.ethereumkit.models.Chain
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import io.horizontalsystems.core.entities.BlockchainType
@@ -26,6 +36,9 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 
 /**
  * Regression tests for RecoveryPhraseViewModel — locks down the QR encrypt path before
@@ -51,10 +64,20 @@ class RecoveryPhraseViewModelTest {
         crypto = SeedPhraseQrCrypto(TimePasswordProvider())
         localStorage = mockk(relaxed = true)
         restoreSettingsManager = mockk()
+        startKoin {
+            modules(module {
+                single {
+                    ZcashKeyExporter(
+                        TestDispatcherProvider(Dispatchers.Default, CoroutineScope(Dispatchers.Default))
+                    )
+                }
+            })
+        }
     }
 
     @After
     fun tearDown() {
+        stopKoin()
         unmockkAll()
     }
 

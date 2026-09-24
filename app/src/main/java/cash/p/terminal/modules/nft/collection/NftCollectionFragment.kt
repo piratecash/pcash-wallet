@@ -17,7 +17,6 @@ import androidx.navigation.navGraphViewModels
 import cash.p.terminal.R
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.ui_compose.BaseComposeFragment
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.modules.nft.collection.assets.NftCollectionAssetsScreen
 import cash.p.terminal.modules.nft.collection.events.NftCollectionEventsScreen
 import cash.p.terminal.modules.nft.collection.overview.NftCollectionOverviewScreen
@@ -39,7 +38,7 @@ class NftCollectionFragment : BaseComposeFragment() {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val input = navController.getInput<Input>()
+        val input = getInput<Input>()
         val nftCollectionUid = input?.collectionUid ?: ""
         val blockchainTypeString = input?.blockchainTypeUid ?: ""
         val blockchainType = BlockchainType.fromUid(blockchainTypeString)

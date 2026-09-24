@@ -25,7 +25,6 @@ import cash.p.terminal.ui_compose.BaseComposeFragment
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.components.SnackbarDuration
-import cash.p.terminal.ui_compose.getInput
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.logger.AppLogger
 import kotlinx.coroutines.delay
@@ -36,7 +35,7 @@ class TransactionSpeedUpCancelFragment : BaseComposeFragment() {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val input = navController.getInput<Input>() ?: run {
+        val input = getInput<Input>() ?: run {
             navController.navigateUpSafely()
             return
         }

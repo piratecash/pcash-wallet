@@ -3,17 +3,20 @@ package cash.p.terminal.modules.zcashmigration
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
-import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
+import cash.p.terminal.core.adapters.zcash.zcashErrorName
+import cash.p.terminal.core.adapters.zcash.zcashLogger
+import cash.p.terminal.core.managers.PendingTransactionRegistrar
+import cash.p.terminal.core.managers.broadcasting
 import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.zcash.SendZCashViewModel
+import cash.p.terminal.modules.send.zcash.zcashPendingDraft
 import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Wallet
-import cash.z.ecc.android.sdk.ext.collectWith
+import io.horizontalsystems.core.collectWith
 import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.ViewModelUiState
 import io.horizontalsystems.core.entities.CurrencyValue
-import io.horizontalsystems.core.logger.AppLogger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -21,17 +24,15 @@ import java.math.BigDecimal
 
 class ZcashMigrationViewModel(
     private val wallet: Wallet,
-    private val locallyCreatedTransactionRepository: LocallyCreatedTransactionRepository,
+    private val pendingRegistrar: PendingTransactionRegistrar,
     private val numberFormatter: IAppNumberFormatter,
     private val adapterManager: IAdapterManager,
     xRateService: XRateService,
 ) : ViewModelUiState<ZcashMigrationUiState>() {
 
-    private val logger = AppLogger("zcash-ironwood-migration")
-
     /**
      * Resolved on every use: adapters are stopped and replaced when the active account changes,
-     * so a cached one would keep signing against a closed Synchronizer.
+     * so a cached reference would point at a stopped adapter.
      */
     private val adapter: ZcashAdapter?
         get() = adapterManager.getAdapterForWallet(wallet)
@@ -80,7 +81,7 @@ class ZcashMigrationViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
-                logger.warning("propose failed", e)
+                zcashLogger.w { "Ironwood proposal failed error=${e.zcashErrorName}" }
                 error = SendZCashViewModel.createCaution(e)
             }
             emitState()
@@ -106,17 +107,24 @@ class ZcashMigrationViewModel(
     fun onClickMigrate() {
         if (sendResult != null) return
 
-        val scopedLogger = logger.getScopedUnique()
         viewModelScope.launch {
             sendResult = SendResult.Sending
             emitState()
             try {
-                val transactionHash = requireAdapter().executeIronwoodMigration()
-                locallyCreatedTransactionRepository.markCreated(wallet, transactionHash)
-                scopedLogger.info("success")
+                val adapter = requireAdapter()
+                val draft = adapterManager.zcashPendingDraft(
+                    wallet = wallet,
+                    amount = amount,
+                    fee = fee,
+                    toAddress = adapter.receiveAddress,
+                )
+                val transactionHash = pendingRegistrar.broadcasting(draft) {
+                    adapter.executeIronwoodMigration()
+                }
+                zcashLogger.i { "Ironwood migration completed" }
                 sendResult = SendResult.Sent(transactionHash)
             } catch (e: Throwable) {
-                scopedLogger.warning("failed", e)
+                zcashLogger.e { "Ironwood migration failed error=${e.zcashErrorName}" }
                 sendResult = SendResult.Failed(SendZCashViewModel.createCaution(e))
             }
             emitState()

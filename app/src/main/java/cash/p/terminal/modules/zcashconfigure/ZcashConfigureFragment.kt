@@ -38,7 +38,6 @@ import cash.p.terminal.ui.compose.components.SelectDateBottomSheet
 import cash.p.terminal.ui.compose.components.restoreGenesisDateMillis
 import cash.p.terminal.ui.compose.components.restoreMaxDateMillis
 import cash.p.terminal.ui_compose.BaseComposeFragment
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.ui_compose.BottomSheetHeader
 import cash.p.terminal.ui_compose.TransparentModalBottomSheet
 import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
@@ -65,7 +64,7 @@ class ZcashConfigureFragment : BaseComposeFragment() {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val initialConfig = navController.getInput<Input>()?.initialConfig
+        val initialConfig = getInput<Input>()?.initialConfig
         ZcashConfigureScreen(
             initialConfig = initialConfig,
             onCloseWithResult = { closeWithConfig(it, navController) },

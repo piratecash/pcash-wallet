@@ -20,7 +20,7 @@ class WalletActivator(
 ) {
     @Deprecated("Use activateWalletsSuspended instead")
     fun activateWallets(account: Account, tokenQueries: List<TokenQuery>) {
-        val wallets = tokenQueries.expandedZcashAddressSpecQueries().mapNotNull { tokenQuery ->
+        val wallets = tokenQueries.expandedZcashAddressSpecQueries(account.type).mapNotNull { tokenQuery ->
             marketKit.token(tokenQuery)?.let { token ->
                 val hardwarePublicKey =
                     runBlocking { getHardwarePublicKeyForWalletUseCase(account, tokenQuery) }
@@ -32,7 +32,7 @@ class WalletActivator(
     }
 
     suspend fun activateWalletsSuspended(account: Account, tokenQueries: List<TokenQuery>) {
-        val wallets = tokenQueries.expandedZcashAddressSpecQueries().mapNotNull { tokenQuery ->
+        val wallets = tokenQueries.expandedZcashAddressSpecQueries(account.type).mapNotNull { tokenQuery ->
             marketKit.token(tokenQuery)?.let { token ->
                 walletFactory.create(
                     token,
@@ -48,7 +48,7 @@ class WalletActivator(
     fun activateTokens(account: Account, tokens: List<Token>) {
         val wallets = mutableListOf<Wallet>()
 
-        for (token in tokens.expandedZcashAddressSpecTokens(marketKit)) {
+        for (token in tokens.expandedZcashAddressSpecTokens(marketKit, account.type)) {
             val hardwarePublicKey =
                 runBlocking { getHardwarePublicKeyForWalletUseCase(account, token) }
             walletFactory.create(token, account, hardwarePublicKey)?.let(wallets::add)

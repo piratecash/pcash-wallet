@@ -79,7 +79,7 @@ class TrezorBtcSignerTest {
         )
     }
 
-    private fun signer() = TrezorBtcSigner(coin, derivationPath, trezorClient).apply {
+    private fun signer(path: String = derivationPath) = TrezorBtcSigner(coin, path, trezorClient).apply {
         setTransactionSerializer(serializer)
         setPreviousTransactionProvider(provider)
     }
@@ -138,6 +138,39 @@ class TrezorBtcSignerTest {
 
         val opReturn = signTx.outputs[2] as TrezorBtcOutput.OpReturn
         assertArrayEquals("memo".toByteArray(), opReturn.opReturnData)
+    }
+
+    @Test
+    fun signFullTransaction_derivationPathWithNonHardenedSegment_keepsThatSegmentUnhardened() {
+        val input = inputToSign(
+            prevTxHash,
+            prevIndex = 1L,
+            value = 60_000L,
+            ScriptType.P2WPKH,
+            external = true,
+            index = 5
+        )
+        val mutableTransaction = mutableTransaction(
+            inputs = listOf(input),
+            outputs = listOf(
+                addressOutput("bc1recipient", 40_000L),
+                changeOutput("bc1change", 15_000L, ScriptType.P2WPKH)
+            ),
+            changeAddress = "bc1change",
+            changePublicKey = publicKey(external = false, index = 2)
+        )
+
+        runBlocking { signer("m/48'/0'/0'/2").signFullTransaction(mutableTransaction) }
+
+        val signTx = signTxSlot.captured
+        assertEquals(
+            listOf(hardened(48), hardened(0), hardened(0), 2, 0, 5),
+            signTx.inputs.single().addressN
+        )
+        assertEquals(
+            listOf(hardened(48), hardened(0), hardened(0), 2, 1, 2),
+            (signTx.outputs[1] as TrezorBtcOutput.Change).addressN
+        )
     }
 
     @Test

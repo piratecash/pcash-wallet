@@ -38,7 +38,7 @@ class WalletStorage(
 
         val queries = enabledWalletsByQuery
             .map { (tokenQuery, _) -> tokenQuery }
-            .normalizedZcashWalletQueriesForLoad()
+            .normalizedZcashWalletQueriesForLoad(account.type)
 
         val enabledWalletsByQueryId =
             enabledWalletsByQuery.associate { (tokenQuery, enabledWallet) ->

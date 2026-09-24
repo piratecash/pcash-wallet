@@ -30,7 +30,6 @@ import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.modules.contacts.viewmodel.AddressViewModel
 import cash.p.terminal.modules.contacts.viewmodel.ContactViewModel
 import cash.p.terminal.modules.contacts.viewmodel.ContactsViewModel
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.ui_compose.parcelable
 import io.horizontalsystems.core.getNavigationResult
 import io.horizontalsystems.core.setNavigationResult
@@ -43,7 +42,7 @@ class ContactsFragment : BaseComposeFragment() {
     override fun GetContent(navController: NavController) {
         ContactsNavHost(
             navController = navController,
-            mode = navController.getInput<Input>()?.mode ?: Mode.Full
+            mode = getInput<Input>()?.mode ?: Mode.Full
         )
     }
 

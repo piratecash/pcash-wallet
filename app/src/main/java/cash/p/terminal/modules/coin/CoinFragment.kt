@@ -16,7 +16,6 @@ import androidx.navigation.NavController
 import androidx.navigation.navGraphViewModels
 import cash.p.terminal.R
 import cash.p.terminal.navigation.popBackStackSafely
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.navigation.slideFromBottom
 import cash.p.terminal.modules.coin.analytics.CoinAnalyticsScreen
 import cash.p.terminal.modules.coin.coinmarkets.CoinMarketsScreen
@@ -39,7 +38,7 @@ class CoinFragment : BaseComposeFragment() {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val input = navController.getInput<CoinFragmentInput>()
+        val input = getInput<CoinFragmentInput>()
         val coinUid = input?.coinUid ?: ""
 
         CoinScreen(

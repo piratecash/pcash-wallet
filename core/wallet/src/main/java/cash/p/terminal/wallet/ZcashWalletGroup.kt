@@ -28,12 +28,22 @@ val TokenQuery.isLegacyZcash: Boolean
 val Token.isZcashAddressSpec: Boolean
     get() = tokenQuery.isZcashAddressSpec
 
-fun Collection<TokenQuery>.expandedZcashAddressSpecQueries(): List<TokenQuery> {
-    return replacingZcashQueries { it.isZcashAddressSpec }
+/** Only a seed owns the whole t/z/u group; an imported key owns just the pools it carries. */
+val AccountType.ownsFullZcashGroup: Boolean
+    get() = this is AccountType.Mnemonic
+
+fun Collection<TokenQuery>.expandedZcashAddressSpecQueries(
+    accountType: AccountType
+): List<TokenQuery> {
+    return replacingZcashQueries { accountType.ownsFullZcashGroup && it.isZcashAddressSpec }
 }
 
-fun Collection<TokenQuery>.normalizedZcashWalletQueriesForLoad(): List<TokenQuery> {
-    return replacingZcashQueries { it.isZcashAddressSpec || it.isLegacyZcash }
+fun Collection<TokenQuery>.normalizedZcashWalletQueriesForLoad(
+    accountType: AccountType
+): List<TokenQuery> {
+    return replacingZcashQueries {
+        it.isLegacyZcash || (accountType.ownsFullZcashGroup && it.isZcashAddressSpec)
+    }
 }
 
 private fun Collection<TokenQuery>.replacingZcashQueries(
@@ -55,10 +65,13 @@ private fun Collection<TokenQuery>.replacingZcashQueries(
     }.distinct()
 }
 
-fun Collection<Token>.expandedZcashAddressSpecTokens(marketKit: MarketKitWrapper): List<Token> {
+fun Collection<Token>.expandedZcashAddressSpecTokens(
+    marketKit: MarketKitWrapper,
+    accountType: AccountType
+): List<Token> {
     val requestedZcashTokens = filter { it.isZcashAddressSpec }
 
-    if (requestedZcashTokens.isEmpty()) {
+    if (requestedZcashTokens.isEmpty() || !accountType.ownsFullZcashGroup) {
         return distinctBy { it.tokenQuery.id }
     }
 
