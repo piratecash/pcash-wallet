@@ -1063,6 +1063,7 @@
     <string name="offline_broadcast_error_timeout">İstek zaman aşımına uğradı. Daha sonra tekrar deneyin.</string>
     <string name="offline_broadcast_error_already_sent">Bu işlem ağ tarafından zaten biliniyor.</string>
     <string name="offline_broadcast_error_seqno_consumed">İşlem numarası (seqno) zaten kullanılmış. Bu işlem zaten gönderilmiş olabilir — yeniden imzalamadan önce işlem geçmişini kontrol edin.</string>
+    <string name="offline_broadcast_error_outcome_unknown">Ağ, işlemin alındığını onaylamadı. İşlem zaten gönderilmiş olabilir — yeniden iletmeden önce işlem geçmişini kontrol edin.</string>
     <string name="offline_broadcast_error_nonce_used">Bu işlemin nonce değeri zaten kullanılmış. Gönderilmiş veya değiştirilmiş olabilir.</string>
     <string name="offline_broadcast_error_low_fee">Ağ ücreti çok düşük. Daha yüksek ücretli bir işlem oluşturun.</string>
     <string name="offline_broadcast_error_rejected">Ağ bu imzalı işlemi reddetti.</string>

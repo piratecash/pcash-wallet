@@ -75,6 +75,13 @@ class AddressParserChain(
                     addressParserChain.addHandler(AddressHandlerStellar())
                 }
 
+                BlockchainType.Thorchain,
+                BlockchainType.Mayachain -> {
+                    addressParserChain.addHandler(
+                        AddressHandlerThorchain.forBlockchainType(tokenQuery.blockchainType)
+                    )
+                }
+
                 is BlockchainType.Unsupported -> Unit
             }
 

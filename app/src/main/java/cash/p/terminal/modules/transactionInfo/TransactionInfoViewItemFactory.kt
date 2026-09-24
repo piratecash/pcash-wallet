@@ -16,6 +16,7 @@ import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
 import cash.p.terminal.entities.transactionrecords.monero.MoneroTransactionRecord
 import cash.p.terminal.entities.transactionrecords.solana.SolanaTransactionRecord
 import cash.p.terminal.entities.transactionrecords.stellar.StellarTransactionRecord
+import cash.p.terminal.entities.transactionrecords.thorchain.ThorchainTransactionRecord
 import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
 import cash.p.terminal.entities.transactionrecords.tron.TronTransactionRecord
 import cash.p.terminal.modules.transactionInfo.TransactionInfoViewItem.SentToSelf
@@ -144,6 +145,40 @@ class TransactionInfoViewItemFactory(
                                     Translator.getString(R.string.Transactions_OperationType),
                                     transactionType.type
                                 )
+                            )
+                        )
+                    }
+                }
+
+                addMemoItem(transaction.memo, miscItemsSection)
+            }
+
+            is ThorchainTransactionRecord -> {
+                when (val transactionType = transaction.type) {
+                    is ThorchainTransactionRecord.Type.Incoming -> itemSections.add(
+                        TransactionViewItemFactoryHelper.getReceiveSectionItems(
+                            value = transactionType.value,
+                            fromAddress = transactionType.from,
+                            toAddress = null,
+                            coinPrice = rates[transactionType.value.coinUid],
+                            hideAmount = transactionItem.hideAmount,
+                            blockchainType = blockchainType,
+                            amlItem = amlItem.also { amlItem = null },
+                            showCopyWarning = isSuspicious,
+                        )
+                    )
+
+                    is ThorchainTransactionRecord.Type.Outgoing -> {
+                        sentToSelf = transactionType.sentToSelf
+                        itemSections.add(
+                            TransactionViewItemFactoryHelper.getSendSectionItems(
+                                value = transactionType.value,
+                                toAddress = transaction.to,
+                                coinPrice = rates[transactionType.value.coinUid],
+                                hideAmount = transactionItem.hideAmount,
+                                sentToSelf = transactionType.sentToSelf,
+                                blockchainType = blockchainType,
+                                showCopyWarning = isSuspicious,
                             )
                         )
                     }

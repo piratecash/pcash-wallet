@@ -51,6 +51,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
@@ -146,11 +147,12 @@ class OfflineSignedTransactionsViewModel(
     ): List<Flow<OfflineSignedAdapterRecords>> =
         mapNotNull { (source, pendingEntities) ->
             val adapter = adapters[source] ?: return@mapNotNull null
+            // History flows may never emit (e.g. an empty account), so status adapters still get one pass.
             adapter.getTransactionRecordsFlow(
                 token = null,
                 transactionType = FilterTransactionType.All,
                 address = null,
-            ).map { records ->
+            ).onStart { emit(emptyList()) }.map { records ->
                 OfflineSignedAdapterRecords(
                     adapter = adapter,
                     pendingEntities = pendingEntities,
@@ -469,4 +471,6 @@ private const val MILLISECONDS_IN_SECOND = 1000L
 private val statusAdapterBlockchainUids = setOf(
     BlockchainType.Ton.uid,
     BlockchainType.Stellar.uid,
+    BlockchainType.Thorchain.uid,
+    BlockchainType.Mayachain.uid,
 )

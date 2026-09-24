@@ -173,7 +173,8 @@ class PoisonAddressManager(
             TransactionRecordType.BITCOIN_OUTGOING,
             TransactionRecordType.SOLANA_OUTGOING,
             TransactionRecordType.MONERO_OUTGOING,
-            TransactionRecordType.STELLAR_OUTGOING -> true
+            TransactionRecordType.STELLAR_OUTGOING,
+            TransactionRecordType.THORCHAIN_OUTGOING -> true
 
             TransactionRecordType.TON -> record.to != null && record.from == null
 
@@ -199,7 +200,8 @@ class PoisonAddressManager(
             TransactionRecordType.TRON_EXTERNAL_CONTRACT_CALL,
             TransactionRecordType.TRON_INCOMING,
             TransactionRecordType.MONERO_INCOMING,
-            TransactionRecordType.STELLAR_INCOMING -> false
+            TransactionRecordType.STELLAR_INCOMING,
+            TransactionRecordType.THORCHAIN_INCOMING -> false
         }
     }
 
@@ -245,6 +247,8 @@ class PoisonAddressManager(
         blockchainType == BlockchainType.Stellar -> 1   // "G" (and muxed "M")
         blockchainType == BlockchainType.Ton -> 2       // "EQ" / "UQ" and other 2-char forms
         blockchainType == BlockchainType.Monero -> 1    // "4" / "8"
+        blockchainType == BlockchainType.Thorchain -> 5 // "thor1"
+        blockchainType == BlockchainType.Mayachain -> 5 // "maya1"
         else -> 0
     }
 

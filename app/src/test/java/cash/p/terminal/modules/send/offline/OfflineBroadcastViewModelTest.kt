@@ -843,6 +843,58 @@ class OfflineBroadcastViewModelTest {
     }
 
     @Test
+    fun onBroadcast_adapterReturnsOutcomeUnknown_keepsRecordPendingAndShowsOutcomeUnknown() = runTest(dispatcher) {
+        setActiveWallets(listOf(bitcoinWallet))
+        every { payloadEncoder.decode(any()) } returns decoded()
+        every { marketKit.blockchain("bitcoin") } returns bitcoin
+        val adapter = mockk<TestOfflineTransactionAdapter>()
+        coEvery { adapter.broadcastRawTransaction(any(), null) } returns
+                BroadcastRawTransactionResult("hash", BroadcastRawTransactionStatus.OutcomeUnknown)
+        coEvery { adapterManager.awaitAdapterForWallet<IAdapter>(any(), any()) } returns adapter
+
+        val viewModel = createViewModel()
+        viewModel.prefillAndAdvance("pcash:tx:v1:payload")
+        advanceUntilIdle()
+        viewModel.onPrimaryAction()
+        advanceUntilIdle()
+
+        val result = viewModel.uiState.result as? OfflineBroadcastResult.Error
+        assertNotNull(result)
+        assertEquals(Translator.getString(R.string.offline_broadcast_error_outcome_unknown), result?.message)
+        coVerify { repository.markBroadcastAttempt("account-id", "hash") }
+        coVerify(exactly = 0) { repository.markBroadcasted(any(), any(), any()) }
+        coVerify(exactly = 0) { repository.markBroadcastedByRawHex(any(), any()) }
+        coVerify(exactly = 0) { repository.markBroadcastFailed(any(), any(), any()) }
+    }
+
+    @Test
+    fun onBroadcast_plainRawHexOutcomeUnknown_persistsPendingRawTransaction() = runTest(dispatcher) {
+        setActiveWallets(listOf(bitcoinWallet))
+        every { payloadEncoder.decode(any()) } returns null
+        val adapter = mockk<TestOfflineTransactionAdapter>()
+        coEvery { adapter.broadcastRawTransaction(any(), null) } returns
+                BroadcastRawTransactionResult("unknown-hash", BroadcastRawTransactionStatus.OutcomeUnknown)
+        coEvery { adapterManager.awaitAdapterForWallet<IAdapter>(any(), any()) } returns adapter
+
+        val viewModel = createViewModel()
+        viewModel.prefillAndAdvance("deadbeefdeadbeefdead")
+        advanceUntilIdle()
+        viewModel.onSelectBlockchain(bitcoin)
+        advanceUntilIdle()
+        viewModel.onPrimaryAction()
+        advanceUntilIdle()
+
+        val result = viewModel.uiState.result as? OfflineBroadcastResult.Error
+        assertEquals(Translator.getString(R.string.offline_broadcast_error_outcome_unknown), result?.message)
+        coVerifyOrder {
+            repository.saveRawImported(bitcoinWallet, "deadbeefdeadbeefdead", "unknown-hash")
+            repository.markBroadcastAttempt("account-id", "unknown-hash")
+        }
+        coVerify(exactly = 0) { repository.markBroadcasted(any(), any(), any()) }
+        coVerify(exactly = 0) { repository.markBroadcastedByRawHex(any(), any()) }
+    }
+
+    @Test
     fun onBroadcast_plainRawHexAlreadyKnown_showsAlreadyInNetworkWithoutPersistingRecord() = runTest(dispatcher) {
         setActiveWallets(listOf(bitcoinWallet))
         every { payloadEncoder.decode(any()) } returns null

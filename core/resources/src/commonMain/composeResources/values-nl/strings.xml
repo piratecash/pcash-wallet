@@ -1064,6 +1064,7 @@
     <string name="offline_broadcast_error_timeout">Time-out van aanvraag. Probeer het later opnieuw.</string>
     <string name="offline_broadcast_error_already_sent">Deze transactie is al bekend bij het netwerk.</string>
     <string name="offline_broadcast_error_seqno_consumed">Het transactienummer (seqno) is al gebruikt. Deze transactie is mogelijk al verzonden — controleer de transactiegeschiedenis voordat u opnieuw ondertekent.</string>
+    <string name="offline_broadcast_error_outcome_unknown">Het netwerk heeft de ontvangst niet bevestigd. De transactie is mogelijk al verzonden — controleer de transactiegeschiedenis voordat u deze opnieuw doorstuurt.</string>
     <string name="offline_broadcast_error_nonce_used">De nonce van deze transactie is al gebruikt. Mogelijk is deze al verzonden of vervangen.</string>
     <string name="offline_broadcast_error_low_fee">De netwerkkosten zijn te laag. Maak een transactie met hogere kosten.</string>
     <string name="offline_broadcast_error_rejected">Het netwerk heeft deze ondertekende transactie geweigerd.</string>

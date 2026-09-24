@@ -26,7 +26,7 @@ import cash.p.terminal.core.ISendTonAdapter
 import cash.p.terminal.core.ISendZcashAdapter
 import cash.p.terminal.core.ISendSolanaAdapter
 import cash.p.terminal.core.ISendMoneroAdapter
-import cash.p.terminal.core.ISendStellarAdapter
+import cash.p.terminal.core.ISendMemoAdapter
 import cash.p.terminal.core.ISendTronAdapter
 import cash.p.terminal.core.authorizedAction
 import cash.p.terminal.entities.Address
@@ -43,6 +43,9 @@ import cash.p.terminal.modules.send.bitcoin.SendBitcoinViewModel
 import cash.p.terminal.modules.send.evm.SendEvmModule
 import cash.p.terminal.modules.send.evm.SendEvmNavHost
 import cash.p.terminal.modules.send.evm.SendEvmViewModel
+import cash.p.terminal.modules.send.memo.SendMemoModule
+import cash.p.terminal.modules.send.memo.SendMemoNavHost
+import cash.p.terminal.modules.send.memo.SendMemoViewModel
 import cash.p.terminal.modules.send.monero.SendMoneroModule
 import cash.p.terminal.modules.send.monero.SendMoneroNavHost
 import cash.p.terminal.modules.send.monero.SendMoneroViewModel
@@ -50,9 +53,6 @@ import cash.p.terminal.modules.send.securitycheck.SecurityCheckFragment
 import cash.p.terminal.modules.send.solana.SendSolanaModule
 import cash.p.terminal.modules.send.solana.SendSolanaNavHost
 import cash.p.terminal.modules.send.solana.SendSolanaViewModel
-import cash.p.terminal.modules.send.stellar.SendStellarModule
-import cash.p.terminal.modules.send.stellar.SendStellarNavHost
-import cash.p.terminal.modules.send.stellar.SendStellarViewModel
 import cash.p.terminal.modules.send.ton.SendTonModule
 import cash.p.terminal.modules.send.ton.SendTonNavHost
 import cash.p.terminal.modules.send.ton.SendTonViewModel
@@ -354,8 +354,10 @@ class SendFragment : BaseComposeFragment() {
                 }
             }
 
-            BlockchainType.Stellar -> {
-                val adapter: ISendStellarAdapter? = App.adapterManager.getAdapterForWallet(wallet)
+            BlockchainType.Stellar,
+            BlockchainType.Thorchain,
+            BlockchainType.Mayachain -> {
+                val adapter: ISendMemoAdapter? = App.adapterManager.getAdapterForWallet(wallet)
                 if (adapter == null) {
                     MissingWalletAdapterEffect(
                         navController = navController,
@@ -363,17 +365,17 @@ class SendFragment : BaseComposeFragment() {
                         coinCode = wallet.coin.code,
                     )
                 } else {
-                    val factory = SendStellarModule.Factory(wallet, address, hideAddress, adapter)
-                    val sendStellarViewModel by navGraphViewModels<SendStellarViewModel>(R.id.sendXFragment) { factory }
+                    val factory = SendMemoModule.Factory(wallet, address, hideAddress, adapter)
+                    val sendMemoViewModel by navGraphViewModels<SendMemoViewModel>(R.id.sendXFragment) { factory }
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .systemBarsPadding()
                     ) {
-                        SendStellarNavHost(
+                        SendMemoNavHost(
                             title = title,
                             fragmentNavController = findNavController(),
-                            viewModel = sendStellarViewModel,
+                            viewModel = sendMemoViewModel,
                             amountInputModeViewModel = amountInputModeViewModel,
                             prefilledData = prefilledData,
                             addressCheckerControl = addressCheckerControl,

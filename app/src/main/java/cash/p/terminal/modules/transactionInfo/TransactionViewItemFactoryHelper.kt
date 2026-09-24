@@ -18,6 +18,7 @@ import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
 import cash.p.terminal.entities.transactionrecords.monero.MoneroTransactionRecord
 import cash.p.terminal.entities.transactionrecords.solana.SolanaTransactionRecord
 import cash.p.terminal.entities.transactionrecords.stellar.StellarTransactionRecord
+import cash.p.terminal.entities.transactionrecords.thorchain.ThorchainTransactionRecord
 import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
 import cash.p.terminal.entities.transactionrecords.tron.TronTransactionRecord
 import cash.p.terminal.modules.transactions.AmlStatus
@@ -692,6 +693,12 @@ object TransactionViewItemFactoryHelper {
 
             is TonTransactionRecord -> {
                 items.add(getFeeItem(transaction.fee, rates[transaction.fee.coinUid], status))
+            }
+
+            is ThorchainTransactionRecord -> {
+                transaction.fee?.let { fee ->
+                    items.add(getFeeItem(fee, rates[fee.coinUid], status))
+                }
             }
 
             is BitcoinTransactionRecord -> {

@@ -4,9 +4,11 @@ import cash.p.terminal.core.managers.AddressLabelManager
 import cash.p.terminal.core.managers.AddressMetadataManager
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.PendingTransactionRecord
+import cash.p.terminal.entities.transactionrecords.thorchain.ThorchainTransactionRecord
 import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.contacts.model.Contact
 import cash.p.terminal.modules.offline.OfflineOperationGate
+import cash.p.terminal.modules.transactions.TransactionStatus
 import cash.p.terminal.ui_compose.ColorName
 import cash.p.terminal.ui_compose.ColoredValue
 import cash.p.terminal.wallet.Account
@@ -18,6 +20,7 @@ import io.horizontalsystems.core.CoreApp
 import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.thorchainkit.models.Transaction
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
@@ -202,6 +205,44 @@ class TransactionInfoViewItemFactoryTest {
         assertEquals("IN = 0.5 OUT", prices.valueTwo)
     }
 
+    @Test
+    fun getStatusSectionItems_thorchainOutgoingWithFee_showsFeeRow() {
+        val values = thorchainStatusItems(TransactionValue.CoinValue(runeToken, BigDecimal("0.02")))
+            .filterIsInstance<TransactionInfoViewItem.Value>()
+
+        assertEquals(2, values.size)
+        assertEquals("0.02 RUNE", values.last().value)
+    }
+
+    @Test
+    fun getStatusSectionItems_thorchainWithoutFee_hasNoFeeRow() {
+        val values = thorchainStatusItems(fee = null).filterIsInstance<TransactionInfoViewItem.Value>()
+
+        // only the date row
+        assertEquals(1, values.size)
+    }
+
+    private fun thorchainStatusItems(fee: TransactionValue?) =
+        TransactionViewItemFactoryHelper.getStatusSectionItems(
+            transaction = ThorchainTransactionRecord(
+                uid = "HASH-rune",
+                transaction = Transaction("HASH", 1, 1_000L, "send", "success", null, emptyList(), emptyList()),
+                spam = false,
+                source = TransactionSource(runeToken.blockchain, mockk<Account>(relaxed = true), null),
+                token = runeToken,
+                type = ThorchainTransactionRecord.Type.Outgoing(
+                    TransactionValue.CoinValue(runeToken, BigDecimal.ONE.negate()),
+                    to = null,
+                    sentToSelf = false,
+                ),
+                fee = fee,
+            ),
+            status = TransactionStatus.Completed,
+            rates = emptyMap(),
+            blockchainType = BlockchainType.Thorchain,
+            hideSensitiveInfo = false,
+        )
+
     private fun transactionInfoItem(
         record: PendingTransactionRecord,
         offlineStatus: ColoredValue?,
@@ -250,6 +291,13 @@ class TransactionInfoViewItemFactoryTest {
             memo = null,
         )
     }
+
+    private val runeToken = Token(
+        coin = Coin(uid = "thorchain", name = "THORChain", code = "RUNE"),
+        blockchain = Blockchain(BlockchainType.Thorchain, "THORChain", null),
+        type = TokenType.Native,
+        decimals = 8,
+    )
 
     private companion object {
         const val BRIDGE_ADDRESS = "0x579fedB9253ccA1b3114d5e2fA44F8158d61e436"

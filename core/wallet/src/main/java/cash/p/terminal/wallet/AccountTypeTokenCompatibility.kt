@@ -4,6 +4,10 @@ import cash.p.terminal.wallet.entities.TokenType
 import io.horizontalsystems.core.entities.BlockchainType
 
 fun AccountType.isCompatibleWith(blockchainType: BlockchainType, tokenType: TokenType): Boolean {
+    if (blockchainType == BlockchainType.Thorchain || blockchainType == BlockchainType.Mayachain) {
+        return this is AccountType.Mnemonic
+    }
+
     return when (this) {
         is AccountType.MnemonicMonero -> {
             blockchainType == BlockchainType.Monero && tokenType == TokenType.Native

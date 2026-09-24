@@ -38,8 +38,10 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.unmockkAll
 import io.mockk.verify
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -215,6 +217,7 @@ class SwapConfirmViewModelSaveTest {
         direction: SwapAmountDirection = SwapAmountDirection.In,
         requestedAmountOut: BigDecimal? = null,
         serviceOverride: ISendTransactionService<*>? = null,
+        timerService: TimerService = TimerService(),
     ): SwapConfirmViewModel {
         val sendTransactionService = serviceOverride ?: mockk<ISendTransactionService<Nothing>>(relaxed = true) {
             every { hasSettings() } returns false
@@ -248,7 +251,7 @@ class SwapConfirmViewModelSaveTest {
                 outputMinimum = FiatService(assetFiatRateService),
             ),
             sendTransactionService = sendTransactionService,
-            timerService = TimerService(),
+            timerService = timerService,
             priceImpactService = PriceImpactService(),
             wallet = previewWallet,
             adapterManager = adapterManager,
@@ -529,6 +532,24 @@ class SwapConfirmViewModelSaveTest {
     }
 
     @Test
+    fun executeSwap_scopeCancelledWhileSending_stillPersistsTracking() = runTest(dispatcher) {
+        val provider = mockk<IMultiSwapProvider>(relaxed = true).stubFetchFinalQuote(testTransaction)
+        val sendResult = CompletableDeferred<SendTransactionResult>()
+        val sendService = createSuccessfulSendService().also {
+            coEvery { it.send(any()) } coAnswers { sendResult.await() }
+        }
+        executeSwap(provider, sendService)
+
+        viewModelStore.clear()
+        sendResult.complete(SendTransactionResult.Btc(uid = "btc-uid", canonicalHashReversedHex = "btc-hash"))
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) {
+            swapProviderTransactionsStorage.save(match { it.transactionId == "btc-hash" })
+        }
+    }
+
+    @Test
     fun onTransactionCompleted_btcResultOnChainProvider_savesUidAndCanonicalHashSeparately() = runTest(dispatcher) {
         val provider = mockk<IMultiSwapProvider>(relaxed = true).stubFetchFinalQuote(testTransaction)
         val vm = createViewModel(provider)
@@ -593,5 +614,57 @@ class SwapConfirmViewModelSaveTest {
 
         viewModelStore.clear()
         advanceUntilIdle()
+    }
+
+    @Test
+    fun stateFlow_sendableReemissionWithSameQuote_doesNotRestartTimer() = runTest(dispatcher) {
+        val (state, timerService) = createTimedViewModel(sendTransactionServiceState)
+
+        state.emit(sendTransactionServiceState.copy(availableBalance = BigDecimal.TEN))
+        advanceUntilIdle()
+
+        verify(exactly = 1) { timerService.start(any()) }
+    }
+
+    @Test
+    fun refresh_newQuoteBecomesSendable_restartsTimer() = runTest(dispatcher) {
+        val (_, timerService, viewModel) = createTimedViewModel(sendTransactionServiceState)
+
+        viewModel.refresh()
+        advanceUntilIdle()
+
+        verify(exactly = 2) { timerService.start(any()) }
+    }
+
+    @Test
+    fun stateFlow_quoteSendableOnlyAfterDelayedEmission_startsTimerOnce() = runTest(dispatcher) {
+        val (state, timerService) = createTimedViewModel(sendTransactionServiceState.copy(sendable = false))
+        verify(exactly = 0) { timerService.start(any()) }
+
+        state.emit(sendTransactionServiceState)
+        advanceUntilIdle()
+
+        verify(exactly = 1) { timerService.start(any()) }
+    }
+
+    private data class TimedViewModel(
+        val state: MutableSharedFlow<SendTransactionServiceState>,
+        val timerService: TimerService,
+        val viewModel: SwapConfirmViewModel,
+    )
+
+    /** The service re-emits its state whenever quote data is handed to it, as the real services do. */
+    private fun createTimedViewModel(stateAfterQuote: SendTransactionServiceState): TimedViewModel {
+        val state = MutableSharedFlow<SendTransactionServiceState>(replay = 1)
+        state.tryEmit(sendTransactionServiceState.copy(sendable = false))
+        val service = createSuccessfulSendService().also {
+            every { it.stateFlow } returns ServiceStateFlow(state.asSharedFlow())
+            coEvery { it.setSendTransactionData(any()) } answers { state.tryEmit(stateAfterQuote) }
+        }
+        val timerService = spyk(TimerService())
+        val provider = mockk<IMultiSwapProvider>(relaxed = true).stubFetchFinalQuote(testTransaction)
+        val viewModel = createViewModel(provider, serviceOverride = service, timerService = timerService)
+        dispatcher.scheduler.advanceUntilIdle()
+        return TimedViewModel(state, timerService, viewModel)
     }
 }

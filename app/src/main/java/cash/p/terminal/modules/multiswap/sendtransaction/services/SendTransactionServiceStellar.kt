@@ -2,7 +2,7 @@ package cash.p.terminal.modules.multiswap.sendtransaction.services
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
-import cash.p.terminal.core.ISendStellarAdapter
+import cash.p.terminal.core.ISendMemoAdapter
 import cash.p.terminal.core.managers.StellarKitManager
 import cash.p.terminal.entities.CoinValue
 import cash.p.terminal.modules.multiswap.sendtransaction.ISendTransactionService
@@ -22,7 +22,7 @@ import org.koin.java.KoinJavaComponent.inject
 import java.math.BigDecimal
 
 class SendTransactionServiceStellar(account: Account, token: Token) :
-    ISendTransactionService<ISendStellarAdapter>(token) {
+    ISendTransactionService<ISendMemoAdapter>(token) {
     private val stellarKitManager: StellarKitManager by inject(StellarKitManager::class.java)
     private val stellarKit: StellarKit = runBlocking { stellarKitManager.getStellarKitWrapper(account) }.stellarKit
 

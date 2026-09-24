@@ -1401,6 +1401,7 @@ Proceed only if you\'re sure.</string>
     <string name="offline_broadcast_error_timeout">Request timed out. Try again later.</string>
     <string name="offline_broadcast_error_already_sent">This transaction is already known to the network.</string>
     <string name="offline_broadcast_error_seqno_consumed">The transaction number (seqno) has already been used. This transaction may have already been sent — check the transaction history before signing again.</string>
+    <string name="offline_broadcast_error_outcome_unknown">The network did not confirm receipt. The transaction may already have been sent — check the transaction history before relaying it again.</string>
     <string name="offline_broadcast_error_nonce_used">This transaction nonce has already been used. It may have been sent or replaced.</string>
     <string name="offline_broadcast_error_low_fee">The network fee is too low. Create a transaction with a higher fee.</string>
     <string name="offline_broadcast_error_rejected">The network rejected this signed transaction.</string>

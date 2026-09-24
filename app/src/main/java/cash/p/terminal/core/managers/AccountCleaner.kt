@@ -30,6 +30,7 @@ class AccountCleaner(
     private val pinDbStorage: PinDbStorage,
     private val accountStorageCleaner: AccountStorageCleaner,
     private val bitcoinKitDatabaseManager: BitcoinKitDatabaseManager,
+    private val thorchainKitManagers: ThorchainKitManagers,
 ) : IAccountCleaner {
 
     /** Storage rows go last: their failure must reach the caller without skipping the wipes above. */
@@ -40,6 +41,8 @@ class AccountCleaner(
     }
 
     private suspend fun clearAccount(accountId: String) {
+        // Before the shared database key is removed with the bitcoin-kit data.
+        thorchainKitManagers.clear(accountId)
         bitcoinKitDatabaseManager.clear(accountId)
         EvmAdapter.clear(accountId)
         Eip20Adapter.clear(accountId)

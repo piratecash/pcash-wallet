@@ -1077,6 +1077,7 @@
     <string name="offline_broadcast_error_timeout">Время ожидания запроса истекло. Попробуйте позже.</string>
     <string name="offline_broadcast_error_already_sent">Эта транзакция уже известна сети.</string>
     <string name="offline_broadcast_error_seqno_consumed">Номер транзакции (seqno) уже использован. Возможно, эта транзакция уже отправлена — проверьте историю транзакций, прежде чем подписывать заново.</string>
+    <string name="offline_broadcast_error_outcome_unknown">Сеть не подтвердила получение. Возможно, транзакция уже отправлена — проверьте историю транзакций, прежде чем отправлять её повторно.</string>
     <string name="offline_broadcast_error_nonce_used">Nonce этой транзакции уже использован. Возможно, она уже отправлена или заменена.</string>
     <string name="offline_broadcast_error_low_fee">Комиссия сети слишком низкая. Создайте транзакцию с более высокой комиссией.</string>
     <string name="offline_broadcast_error_rejected">Сеть отклонила эту подписанную транзакцию.</string>

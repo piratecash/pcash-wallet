@@ -24,6 +24,7 @@ import io.horizontalsystems.core.entities.BlockchainType
  *  - TON relay uses the native TON token because raw BOC broadcast is chain-level.
  *  - TRON relay uses the native TRX token because signed JSON broadcast is chain-level.
  *  - Stellar relay uses the native XLM token because signed XDR broadcast is chain-level.
+ *  - THORChain/Maya relay uses the native RUNE/CACAO token because signed tx broadcast is chain-level.
  *  - Monero relay uses the native XMR token because signed transaction envelope broadcast is
  *    chain-level and the current Monero wallet service still requires an initialized wallet.
  *  - Zcash relay uses one of the AddressSpecTyped native ZEC tokens because raw transaction
@@ -58,6 +59,8 @@ class OfflineBroadcastTokenResolver(
             BlockchainType.Ton,
             BlockchainType.Tron,
             BlockchainType.Stellar,
+            BlockchainType.Thorchain,
+            BlockchainType.Mayachain,
             BlockchainType.Monero -> resolveDefaultToken(blockchainType, account)
             BlockchainType.Zcash -> resolveNativeToken(blockchainType, account)
             else -> null

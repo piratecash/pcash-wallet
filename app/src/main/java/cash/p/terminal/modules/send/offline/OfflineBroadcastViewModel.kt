@@ -280,28 +280,14 @@ class OfflineBroadcastViewModel(
         recordBroadcastAttempt()
 
         val queued = broadcastResult.status == BroadcastRawTransactionStatus.Queued
-        val recordKey = offlineRecordKey
-        // Only an actually submitted transaction is "broadcasted". A queued result means the P2P
-        // send did not go through and the kit only accepted it for later retry, so the record stays
-        // Pending ("awaiting send") instead of falsely reporting "Sent". Once the queued transaction
-        // reaches the network it surfaces in wallet history and the reconciliation in
-        // OfflineSignedTransactionsViewModel promotes it to Broadcasted.
-        if (recordKey == null) {
-            persistRawBroadcast(wallet, broadcastResult.txHash, queued)
-        } else if (!queued) {
-            // The adapter derives the real txid from the raw bytes, so reconcile the record to
-            // it and drop the imported payload's claimed hash.
-            offlineSignedTransactionRepository.markBroadcasted(
-                recordKey.accountId,
-                recordKey.txHash,
-                broadcastResult.txHash.ifBlank { recordKey.txHash },
+        val outcomeUnknown = broadcastResult.status == BroadcastRawTransactionStatus.OutcomeUnknown
+        persistSendOutcome(wallet, broadcastResult.txHash, staysPending = queued || outcomeUnknown)
+        if (outcomeUnknown) {
+            return OfflineBroadcastResult.Error(
+                networkName = networkName,
+                rawHex = rawHex,
+                message = Translator.getString(R.string.offline_broadcast_error_outcome_unknown),
             )
-        }
-        if (!queued) {
-            val confirmedTxHash = broadcastResult.txHash.ifBlank { recordKey?.txHash.orEmpty() }
-            if (confirmedTxHash.isNotBlank()) {
-                offlineSignedTransactionRepository.markBroadcastedByRawHex(rawHex, confirmedTxHash)
-            }
         }
         return OfflineBroadcastResult.Success(
             networkName = networkName,
@@ -311,16 +297,43 @@ class OfflineBroadcastViewModel(
         )
     }
 
+    // Only an actually submitted transaction is "broadcasted". A queued result means the P2P
+    // send did not go through and the kit only accepted it for later retry, and an unknown
+    // outcome means the node may have received nothing, so the record stays Pending ("awaiting
+    // send") instead of falsely reporting "Sent". Once the transaction reaches the network it
+    // surfaces in wallet history and the reconciliation in OfflineSignedTransactionsViewModel
+    // promotes it to Broadcasted.
+    private suspend fun persistSendOutcome(wallet: Wallet, txHash: String, staysPending: Boolean) {
+        val recordKey = offlineRecordKey
+        if (recordKey == null) {
+            persistRawBroadcast(wallet, txHash, staysPending)
+        } else if (!staysPending) {
+            // The adapter derives the real txid from the raw bytes, so reconcile the record to
+            // it and drop the imported payload's claimed hash.
+            offlineSignedTransactionRepository.markBroadcasted(
+                recordKey.accountId,
+                recordKey.txHash,
+                txHash.ifBlank { recordKey.txHash },
+            )
+        }
+        if (!staysPending) {
+            val confirmedTxHash = txHash.ifBlank { recordKey?.txHash.orEmpty() }
+            if (confirmedTxHash.isNotBlank()) {
+                offlineSignedTransactionRepository.markBroadcastedByRawHex(rawHex, confirmedTxHash)
+            }
+        }
+    }
+
     // Records a broadcast attempt on the local record when one exists. Called only for real send
-    // outcomes (Submitted/Queued and failures) and never for AlreadyKnown, so an already-in-network
-    // transaction leaves the local record untouched.
+    // outcomes (Submitted/Queued/OutcomeUnknown and failures) and never for AlreadyKnown, so an
+    // already-in-network transaction leaves the local record untouched.
     private suspend fun recordBroadcastAttempt() {
         offlineRecordKey?.let {
             offlineSignedTransactionRepository.markBroadcastAttempt(it.accountId, it.txHash)
         }
     }
 
-    private suspend fun persistRawBroadcast(wallet: Wallet, txHash: String, queued: Boolean) {
+    private suspend fun persistRawBroadcast(wallet: Wallet, txHash: String, staysPending: Boolean) {
         if (txHash.isBlank()) return
         val recordKey = OfflineRecordKey(wallet.account.id, txHash)
         offlineRecordKey = recordKey
@@ -330,7 +343,7 @@ class OfflineBroadcastViewModel(
             txHash = txHash,
         )
         offlineSignedTransactionRepository.markBroadcastAttempt(recordKey.accountId, recordKey.txHash)
-        if (!queued) {
+        if (!staysPending) {
             offlineSignedTransactionRepository.markBroadcasted(
                 recordKey.accountId,
                 recordKey.txHash,

@@ -1055,6 +1055,7 @@
     <string name="offline_broadcast_error_timeout">Zeitüberschreitung der Anfrage. Versuche es später erneut.</string>
     <string name="offline_broadcast_error_already_sent">Diese Transaktion ist dem Netzwerk bereits bekannt.</string>
     <string name="offline_broadcast_error_seqno_consumed">Die Transaktionsnummer (seqno) wurde bereits verwendet. Diese Transaktion wurde möglicherweise bereits gesendet – prüfen Sie den Transaktionsverlauf, bevor Sie erneut signieren.</string>
+    <string name="offline_broadcast_error_outcome_unknown">Das Netzwerk hat den Empfang nicht bestätigt. Die Transaktion wurde möglicherweise bereits gesendet – prüfen Sie den Transaktionsverlauf, bevor Sie sie erneut weiterleiten.</string>
     <string name="offline_broadcast_error_nonce_used">Die Nonce dieser Transaktion wurde bereits verwendet. Sie wurde möglicherweise gesendet oder ersetzt.</string>
     <string name="offline_broadcast_error_low_fee">Die Netzwerkgebühr ist zu niedrig. Erstelle eine Transaktion mit einer höheren Gebühr.</string>
     <string name="offline_broadcast_error_rejected">Das Netzwerk hat diese signierte Transaktion abgelehnt.</string>

@@ -162,6 +162,15 @@ class OfflineBroadcastTokenResolverTest {
     }
 
     @Test
+    fun resolveTokenToEnable_mnemonicOnThorchainFamily_returnsNativeToken() {
+        listOf(BlockchainType.Thorchain, BlockchainType.Mayachain).forEach { blockchainType ->
+            val token = resolver.resolveTokenToEnable(blockchainType, mnemonicAccount())
+
+            assertEquals(TokenQuery(blockchainType, TokenType.Native), token?.tokenQuery)
+        }
+    }
+
+    @Test
     fun resolveTokenToEnable_watchPublicXpub_returnsNull() {
         val watch = account(AccountType.HdExtendedKey(PUBLIC_XPUB))
 

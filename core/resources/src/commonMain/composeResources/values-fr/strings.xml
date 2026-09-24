@@ -1059,6 +1059,7 @@
     <string name="offline_broadcast_error_timeout">La requête a expiré. Réessayez plus tard.</string>
     <string name="offline_broadcast_error_already_sent">Cette transaction est déjà connue du réseau.</string>
     <string name="offline_broadcast_error_seqno_consumed">Le numéro de transaction (seqno) a déjà été utilisé. Cette transaction a peut-être déjà été envoyée — vérifiez l\'historique des transactions avant de signer à nouveau.</string>
+    <string name="offline_broadcast_error_outcome_unknown">Le réseau n\'a pas confirmé la réception. La transaction a peut-être déjà été envoyée — vérifiez l\'historique des transactions avant de la relayer à nouveau.</string>
     <string name="offline_broadcast_error_nonce_used">Le nonce de cette transaction a déjà été utilisé. Elle a peut-être été envoyée ou remplacée.</string>
     <string name="offline_broadcast_error_low_fee">Les frais réseau sont trop faibles. Créez une transaction avec des frais plus élevés.</string>
     <string name="offline_broadcast_error_rejected">Le réseau a rejeté cette transaction signée.</string>

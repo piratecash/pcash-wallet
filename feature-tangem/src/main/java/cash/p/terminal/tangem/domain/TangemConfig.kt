@@ -27,7 +27,9 @@ object TangemConfig {
         setOf(
             BlockchainType.Zcash,
             BlockchainType.ECash,
-            BlockchainType.Monero
+            BlockchainType.Monero,
+            BlockchainType.Thorchain,
+            BlockchainType.Mayachain
         )
     }
 
