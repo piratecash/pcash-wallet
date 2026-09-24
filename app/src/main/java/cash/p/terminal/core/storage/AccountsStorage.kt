@@ -32,6 +32,8 @@ class AccountsStorage(appDatabase: AppDatabase) : IAccountsStorage {
         private const val HARDWARE_CARD = "hardware_card"
         private const val TREZOR_DEVICE = "trezor_device"
         private const val STELLAR_ADDRESS = "stellar_address"
+        private const val THORCHAIN_ADDRESS = "thorchain_address"
+        private const val MAYACHAIN_ADDRESS = "mayachain_address"
     }
 
     override fun getActiveAccountId(level: Int): String? {
@@ -90,6 +92,8 @@ class AccountsStorage(appDatabase: AppDatabase) : IAccountsStorage {
                 TRON_ADDRESS -> AccountType.TronAddress(record.key!!.value)
                 TON_ADDRESS -> AccountType.TonAddress(record.key!!.value)
                 STELLAR_ADDRESS -> AccountType.StellarAddress(record.key!!.value)
+                THORCHAIN_ADDRESS -> AccountType.ThorchainAddress(requireNotNull(record.key).value)
+                MAYACHAIN_ADDRESS -> AccountType.MayachainAddress(requireNotNull(record.key).value)
                 BITCOIN_ADDRESS -> AccountType.BitcoinAddress.fromSerialized(record.key!!.value)
                 HD_EXTENDED_KEY -> AccountType.HdExtendedKey(record.key!!.value)
                 UFVK -> AccountType.ZCashUfvKey(record.key!!.value)
@@ -233,6 +237,16 @@ class AccountsStorage(appDatabase: AppDatabase) : IAccountsStorage {
             is AccountType.StellarAddress -> {
                 key = SecretString((account.type as AccountType.StellarAddress).address)
                 accountType = STELLAR_ADDRESS
+            }
+
+            is AccountType.ThorchainAddress -> {
+                key = SecretString((account.type as AccountType.ThorchainAddress).address)
+                accountType = THORCHAIN_ADDRESS
+            }
+
+            is AccountType.MayachainAddress -> {
+                key = SecretString((account.type as AccountType.MayachainAddress).address)
+                accountType = MAYACHAIN_ADDRESS
             }
 
             is AccountType.BitcoinAddress -> {

@@ -47,4 +47,41 @@ class AccountTypeTokenCompatibilityTest {
             assertTrue(mnemonic.isCompatibleWith(blockchainType, TokenType.Native))
         }
     }
+
+    private val thorchainAddress = AccountType.ThorchainAddress("thor-address")
+    private val mayachainAddress = AccountType.MayachainAddress("maya-address")
+
+    private val foreignNetworks = listOf(
+        BlockchainType.Stellar,
+        BlockchainType.Bitcoin,
+        BlockchainType.Ethereum,
+        BlockchainType.Solana,
+        BlockchainType.Ton,
+    )
+
+    @Test
+    fun isCompatibleWith_thorchainAddress_returnsTrueForThorchainTokensOnly() {
+        assertTrue(thorchainAddress.isCompatibleWith(BlockchainType.Thorchain, TokenType.Native))
+        assertTrue(thorchainAddress.isCompatibleWith(BlockchainType.Thorchain, TokenType.ThorchainAsset("tcy")))
+        assertFalse(thorchainAddress.isCompatibleWith(BlockchainType.Mayachain, TokenType.Native))
+    }
+
+    @Test
+    fun isCompatibleWith_mayachainAddress_returnsTrueForMayachainTokensOnly() {
+        assertTrue(mayachainAddress.isCompatibleWith(BlockchainType.Mayachain, TokenType.Native))
+        assertTrue(mayachainAddress.isCompatibleWith(BlockchainType.Mayachain, TokenType.ThorchainAsset("maya")))
+        assertFalse(mayachainAddress.isCompatibleWith(BlockchainType.Thorchain, TokenType.Native))
+    }
+
+    @Test
+    fun isCompatibleWith_thorchainAndMayachainAddressOnForeignNetwork_returnsFalse() {
+        for (accountType in listOf(thorchainAddress, mayachainAddress)) {
+            for (blockchainType in foreignNetworks) {
+                assertFalse(
+                    accountType.isCompatibleWith(blockchainType, TokenType.Native),
+                    "$accountType should not be compatible with $blockchainType",
+                )
+            }
+        }
+    }
 }

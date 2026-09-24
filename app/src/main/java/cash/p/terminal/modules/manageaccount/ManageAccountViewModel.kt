@@ -215,6 +215,8 @@ class ManageAccountViewModel(
             is AccountType.TronAddress,
             is AccountType.TonAddress,
             is AccountType.StellarAddress,
+            is AccountType.ThorchainAddress,
+            is AccountType.MayachainAddress,
             is AccountType.BitcoinAddress -> listOf()
 
             is AccountType.HdExtendedKey -> {

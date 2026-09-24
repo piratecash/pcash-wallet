@@ -54,6 +54,24 @@ class MarketKitExtensionsTest {
     }
 
     @Test
+    fun supports_thorchainAddress_returnsTrueOnlyForThorchain() {
+        val thorchainAddress = AccountType.ThorchainAddress("thor1watched")
+
+        assertTrue(BlockchainType.Thorchain.supports(thorchainAddress))
+        assertFalse(BlockchainType.Mayachain.supports(thorchainAddress))
+        assertFalse(BlockchainType.Stellar.supports(thorchainAddress))
+    }
+
+    @Test
+    fun supports_mayachainAddress_returnsTrueOnlyForMayachain() {
+        val mayachainAddress = AccountType.MayachainAddress("maya1watched")
+
+        assertTrue(BlockchainType.Mayachain.supports(mayachainAddress))
+        assertFalse(BlockchainType.Thorchain.supports(mayachainAddress))
+        assertFalse(BlockchainType.Stellar.supports(mayachainAddress))
+    }
+
+    @Test
     fun eligibleTokens_hardwareCardAccountOnThorchain_returnsEmpty() {
         val fullCoin = FullCoin(
             coin = Coin(uid = "rune", name = "THORChain", code = "RUNE"),

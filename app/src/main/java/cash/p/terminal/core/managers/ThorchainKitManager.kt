@@ -12,6 +12,7 @@ import io.horizontalsystems.core.BackgroundManagerState
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.thorchainkit.DatabaseKeyMismatchException
 import io.horizontalsystems.thorchainkit.ThorchainKit
+import io.horizontalsystems.thorchainkit.models.Address
 import io.horizontalsystems.thorchainkit.network.Network
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -217,30 +218,41 @@ class ThorchainKitManager(
     }
 
     internal suspend fun createKit(account: Account): ThorchainKit {
-        val seed = account.type.thorchainSeed()
+        val address = kitAddress(account.type)
         val databaseKey = kitDatabaseKeys.awaitKey(account.id)
         try {
             return try {
-                getInstance(seed, account, databaseKey)
+                getInstance(address, account, databaseKey)
             } catch (_: DatabaseKeyMismatchException) {
                 // Only a network cache lives there, so it is dropped and resynced under the current key.
                 clear(account.id)
-                getInstance(seed, account, databaseKey)
+                getInstance(address, account, databaseKey)
             }
         } finally {
             databaseKey.fill(0)
         }
     }
 
-    fun getAddress(account: Account): String =
-        ThorchainKit.getAddress(account.type.thorchainSeed(), network).toString()
+    fun getAddress(account: Account): String = kitAddress(account.type).toString()
 
     fun clear(accountId: String) = ThorchainKit.clear(context, network, accountId)
 
-    private fun getInstance(seed: ByteArray, account: Account, databaseKey: ByteArray) =
+    private fun kitAddress(accountType: AccountType): Address = when (accountType) {
+        is AccountType.Mnemonic -> ThorchainKit.getAddress(accountType.seed, network)
+        is AccountType.ThorchainAddress -> watchedAddress(accountType.address, BlockchainType.Thorchain)
+        is AccountType.MayachainAddress -> watchedAddress(accountType.address, BlockchainType.Mayachain)
+        else -> throw UnsupportedAccountException()
+    }
+
+    private fun watchedAddress(address: String, addressBlockchainType: BlockchainType): Address {
+        if (addressBlockchainType != blockchainType) throw UnsupportedAccountException()
+        return Address.fromString(address, network)
+    }
+
+    private fun getInstance(address: Address, account: Account, databaseKey: ByteArray) =
         ThorchainKit.getInstance(
             context,
-            seed,
+            address,
             network,
             account.id,
             databaseKey,
@@ -263,10 +275,12 @@ internal fun AccountType.thorchainSeed(): ByteArray = when (this) {
     is AccountType.EvmPrivateKey,
     is AccountType.HardwareCard,
     is AccountType.HdExtendedKey,
+    is AccountType.MayachainAddress,
     is AccountType.MnemonicMonero,
     is AccountType.SolanaAddress,
     is AccountType.StellarAddress,
     is AccountType.StellarSecretKey,
+    is AccountType.ThorchainAddress,
     is AccountType.TonAddress,
     is AccountType.TrezorDevice,
     is AccountType.TronAddress,

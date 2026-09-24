@@ -2,6 +2,8 @@ package cash.p.terminal.modules.backuplocal
 
 import cash.p.terminal.wallet.AccountType
 import com.google.gson.GsonBuilder
+import io.horizontalsystems.thorchainkit.ThorchainKit
+import io.horizontalsystems.thorchainkit.network.Network
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -272,6 +274,54 @@ class BackupLocalModuleTest {
 
         assertTrue(decoded is AccountType.EvmAddress)
         assertEquals(original.address, (decoded as AccountType.EvmAddress).address)
+    }
+
+    // endregion
+
+    // region THORChain/Maya watch addresses
+
+    private val bip39TestVectorSeed = AccountType.Mnemonic(validMnemonicWords, "").seed
+    private val thorAddress = ThorchainKit.getAddress(bip39TestVectorSeed, Network.Mainnet).toString()
+    private val mayaAddress = ThorchainKit.getAddress(bip39TestVectorSeed, Network.MayaMainnet).toString()
+
+    @Test
+    fun getAccountTypeFromData_thorchainAddressRoundTrip_restoresSameAccountType() = runBlockingSuspend {
+        assertRoundTrip(AccountType.ThorchainAddress(thorAddress), "thorchain_address")
+    }
+
+    @Test
+    fun getAccountTypeFromData_mayachainAddressRoundTrip_restoresSameAccountType() = runBlockingSuspend {
+        assertRoundTrip(AccountType.MayachainAddress(mayaAddress), "mayachain_address")
+    }
+
+    @Test
+    fun getAccountTypeFromData_malformedAddress_returnsNull() = runBlockingSuspend {
+        for (type in listOf("thorchain_address", "mayachain_address")) {
+            for (malformed in listOf("not-an-address", thorAddress.dropLast(1), mayaAddress.dropLast(1))) {
+                assertNull(decodeAddress(type, malformed))
+            }
+        }
+    }
+
+    @Test
+    fun getAccountTypeFromData_mayaAddressUnderThorchainType_returnsNull() = runBlockingSuspend {
+        assertNull(decodeAddress("thorchain_address", mayaAddress))
+    }
+
+    @Test
+    fun getAccountTypeFromData_thorAddressUnderMayachainType_returnsNull() = runBlockingSuspend {
+        assertNull(decodeAddress("mayachain_address", thorAddress))
+    }
+
+    private suspend fun decodeAddress(type: String, address: String) =
+        BackupLocalModule.getAccountTypeFromData(type, address.toByteArray(Charsets.UTF_8))
+
+    private suspend fun assertRoundTrip(original: AccountType, expectedTypeString: String) {
+        val typeString = BackupLocalModule.getAccountTypeString(original)
+        val data = requireNotNull(BackupLocalModule.getDataForEncryption(original))
+
+        assertEquals(expectedTypeString, typeString)
+        assertEquals(original, BackupLocalModule.getAccountTypeFromData(typeString, data))
     }
 
     // endregion

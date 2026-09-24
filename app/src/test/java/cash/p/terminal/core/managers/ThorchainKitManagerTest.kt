@@ -10,6 +10,7 @@ import io.horizontalsystems.core.BackgroundManagerState
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.thorchainkit.DatabaseKeyMismatchException
 import io.horizontalsystems.thorchainkit.ThorchainKit
+import io.horizontalsystems.thorchainkit.models.Address
 import io.horizontalsystems.thorchainkit.network.Network
 import io.mockk.MockKMatcherScope
 import io.mockk.coEvery
@@ -69,6 +70,14 @@ class ThorchainKitManagerTest {
     private val backgroundStateFlow =
         MutableStateFlow<BackgroundManagerState>(BackgroundManagerState.EnterForeground)
     private val testScope = TestScope(UnconfinedTestDispatcher())
+
+    // Public BIP39 test vector, not a real user mnemonic.
+    private val bip39TestVector = AccountType.Mnemonic(
+        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about".split(" "),
+        "",
+    )
+    private val thorAddress = ThorchainKit.getAddress(bip39TestVector.seed, Network.Mainnet).toString()
+    private val mayaAddress = ThorchainKit.getAddress(bip39TestVector.seed, Network.MayaMainnet).toString()
     private var createdManager: ThorchainKitManager? = null
 
     @Before
@@ -137,6 +146,65 @@ class ThorchainKitManagerTest {
 
         coVerify(exactly = 0) { kitDatabaseKeys.awaitKey(any()) }
         verify(exactly = 0) { getInstance() }
+    }
+
+    @Test
+    fun createKit_thorchainWatchAccountOnThorchainManager_createsKitFromWatchedAddress() = runTest {
+        every { getInstance() } returns kit
+        val manager = createManager(Network.Mainnet, BlockchainType.Thorchain)
+
+        manager.createKit(account(AccountType.ThorchainAddress(thorAddress)))
+
+        verify(exactly = 1) {
+            ThorchainKit.getInstance(
+                context, Address.fromString(thorAddress, Network.Mainnet), Network.Mainnet, ACCOUNT_ID,
+                any(), any(), any(), any(), any(),
+            )
+        }
+        verify(exactly = 0) { getSeedInstance() }
+    }
+
+    @Test
+    fun createKit_mayachainWatchAccountOnThorchainManager_throwsUnsupportedBeforeTouchingKey() = runTest {
+        val manager = createManager(Network.Mainnet, BlockchainType.Thorchain)
+
+        assertFailsWith<UnsupportedAccountException> {
+            manager.createKit(account(AccountType.MayachainAddress(mayaAddress)))
+        }
+
+        coVerify(exactly = 0) { kitDatabaseKeys.awaitKey(any()) }
+        verify(exactly = 0) { getInstance() }
+    }
+
+    @Test
+    fun createKit_thorchainWatchAccountOnMayachainManager_throwsUnsupportedBeforeTouchingKey() = runTest {
+        assertFailsWith<UnsupportedAccountException> {
+            createManager().createKit(account(AccountType.ThorchainAddress(thorAddress)))
+        }
+
+        coVerify(exactly = 0) { kitDatabaseKeys.awaitKey(any()) }
+        verify(exactly = 0) { getInstance() }
+    }
+
+    @Test
+    fun getAddress_watchAccount_returnsWatchedAddress() {
+        val address = createManager().getAddress(account(AccountType.MayachainAddress(mayaAddress)))
+
+        assertEquals(mayaAddress, address)
+    }
+
+    @Test
+    fun createKit_mnemonicAccount_createsKitFromSeedDerivedAddress() = runTest {
+        every { getInstance() } returns kit
+
+        createManager().createKit(account(bip39TestVector))
+
+        verify(exactly = 1) {
+            ThorchainKit.getInstance(
+                context, Address.fromString(mayaAddress, Network.MayaMainnet), Network.MayaMainnet, ACCOUNT_ID,
+                any(), any(), any(), any(), any(),
+            )
+        }
     }
 
     @Test
@@ -397,14 +465,21 @@ class ThorchainKitManagerTest {
         withContext(Dispatchers.Default) { withTimeout(REAL_TIMEOUT_MS) { block() } }
 
     private fun MockKMatcherScope.getInstance() = ThorchainKit.getInstance(
+        any<Context>(), any<Address>(), any(), any(), any(), any(), any(), any(), any(),
+    )
+
+    private fun MockKMatcherScope.getSeedInstance() = ThorchainKit.getInstance(
         any<Context>(), any<ByteArray>(), any(), any(), any(), any(), any(), any(), any(),
     )
 
     private fun mismatch() = DatabaseKeyMismatchException("maya.db", IllegalStateException())
 
-    private fun createManager() = ThorchainKitManager(
-        Network.MayaMainnet,
-        BlockchainType.Mayachain,
+    private fun createManager(
+        network: Network = Network.MayaMainnet,
+        blockchainType: BlockchainType = BlockchainType.Mayachain,
+    ) = ThorchainKitManager(
+        network,
+        blockchainType,
         listOf(URL("https://node.example/")),
         context,
         kitDatabaseKeys,

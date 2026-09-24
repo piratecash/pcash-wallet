@@ -231,11 +231,11 @@ class WatchAddressViewModel(
         BlockchainType.Tron -> Type.TronAddress
         BlockchainType.Ton -> Type.TonAddress
         BlockchainType.Stellar -> Type.StellarAddress
+        BlockchainType.Thorchain -> Type.ThorchainAddress
+        BlockchainType.Mayachain -> Type.MayachainAddress
 
         BlockchainType.Zcash,
         BlockchainType.Monero,
-        BlockchainType.Thorchain,
-        BlockchainType.Mayachain,
         is BlockchainType.Unsupported,
         null -> Type.Unsupported
     }
@@ -274,6 +274,8 @@ class WatchAddressViewModel(
             Type.BitcoinAddress -> SubmitButtonType.Watch(address != null)
             Type.TonAddress -> SubmitButtonType.Watch(address != null)
             Type.StellarAddress -> SubmitButtonType.Watch(address != null)
+            Type.ThorchainAddress -> SubmitButtonType.Watch(address != null)
+            Type.MayachainAddress -> SubmitButtonType.Watch(address != null)
             Type.ZcashUfvk -> SubmitButtonType.Watch(ufvkKey != null)
             Type.Unsupported -> SubmitButtonType.Watch(false)
         }
@@ -305,6 +307,9 @@ class WatchAddressViewModel(
             AccountType.StellarAddress(it.hex)
         }
 
+        Type.ThorchainAddress -> address?.let { AccountType.ThorchainAddress(it.hex) }
+        Type.MayachainAddress -> address?.let { AccountType.MayachainAddress(it.hex) }
+
         Type.Unsupported -> throw IllegalStateException("Unsupported address type")
     }
 
@@ -316,6 +321,8 @@ class WatchAddressViewModel(
         BitcoinAddress,
         TonAddress,
         StellarAddress,
+        ThorchainAddress,
+        MayachainAddress,
         Unsupported,
         ZcashUfvk
     }

@@ -391,6 +391,12 @@ fun BlockchainType.supports(accountType: AccountType): Boolean {
 
         is AccountType.StellarSecretKey ->
             this == BlockchainType.Stellar
+
+        is AccountType.ThorchainAddress ->
+            this == BlockchainType.Thorchain
+
+        is AccountType.MayachainAddress ->
+            this == BlockchainType.Mayachain
     }
 }
 
