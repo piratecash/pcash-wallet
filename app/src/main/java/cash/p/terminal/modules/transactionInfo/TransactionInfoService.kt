@@ -21,6 +21,7 @@ import cash.p.terminal.entities.transactionrecords.monero.MoneroTransactionRecor
 import cash.p.terminal.entities.transactionrecords.nftUids
 import cash.p.terminal.entities.transactionrecords.solana.SolanaTransactionRecord
 import cash.p.terminal.entities.transactionrecords.stellar.StellarTransactionRecord
+import cash.p.terminal.entities.transactionrecords.thorchain.ThorchainTransactionRecord
 import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
 import cash.p.terminal.entities.transactionrecords.tron.TronTransactionRecord
 import cash.p.terminal.modules.paycore.PayCoreAssetResolver
@@ -35,10 +36,10 @@ import cash.p.terminal.wallet.transaction.TransactionSource
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.entities.CurrencyValue
 import io.horizontalsystems.core.DispatcherProvider
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.sync.Mutex
@@ -80,8 +81,12 @@ class TransactionInfoService(
     val transactionHash: String get() = transactionRecord.transactionHash
     val source: TransactionSource get() = transactionRecord.source
 
-    private val _transactionInfoItemFlow = MutableStateFlow<TransactionInfoItem?>(null)
-    val transactionInfoItemFlow = _transactionInfoItemFlow.filterNotNull()
+    // Not a StateFlow: record equality is uid-only, so a re-emitted record with new fields would be dropped.
+    private val _transactionInfoItemFlow = MutableSharedFlow<TransactionInfoItem>(
+        replay = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
+    val transactionInfoItemFlow: Flow<TransactionInfoItem> = _transactionInfoItemFlow
 
     private fun getCoinCode(coinUid: String): String? {
         return PayCoreAssetResolver.coinCode(coinUid)
@@ -108,7 +113,7 @@ class TransactionInfoService(
     )
         private set(value) {
             field = value
-            _transactionInfoItemFlow.update { value }
+            _transactionInfoItemFlow.tryEmit(value)
         }
 
     private fun TransactionExplorerData.toExplorerData() =
@@ -271,6 +276,8 @@ class TransactionInfoService(
                     listOf(tx.mainValue.coinUid)
                 }
 
+                is ThorchainTransactionRecord -> listOf(tx.mainValue.coinUid, tx.fee?.coinUid)
+
                 else -> emptyList()
             }
 
@@ -313,7 +320,7 @@ class TransactionInfoService(
         }
 
         handleLastBlockUpdate(getUserSwapTransactionStatus())
-        _transactionInfoItemFlow.update { transactionInfoItem }
+        _transactionInfoItemFlow.tryEmit(transactionInfoItem)
 
         userSwapDate?.let { date ->
             launch {

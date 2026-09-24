@@ -255,7 +255,7 @@ class ZcashBlockchainStatusProvider(
     }
 }
 
-private fun statusFromMap(title: String, statusInfo: Map<String, Any>?): BlockchainStatus {
+internal fun statusFromMap(title: String, statusInfo: Map<String, Any>?): BlockchainStatus {
     val items = statusInfo
         ?.filter { (_, value) -> value !is Map<*, *> }
         ?.map { (key, value) -> StatusItem.KeyValue(key, value.toString()) }

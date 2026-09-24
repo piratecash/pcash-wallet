@@ -34,7 +34,8 @@ class TransferEventFactory {
                 }
             }
 
-            TransactionRecordType.TRON_INCOMING -> {
+            TransactionRecordType.TRON_INCOMING,
+            TransactionRecordType.THORCHAIN_INCOMING -> {
                 transactionRecord.mainValue?.let {
                     listOf(TransferEvent(transactionRecord.from, null, it))
                 }

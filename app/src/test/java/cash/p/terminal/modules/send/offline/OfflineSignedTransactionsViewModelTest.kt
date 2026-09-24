@@ -39,8 +39,11 @@ import io.mockk.unmockkAll
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -326,6 +329,21 @@ class OfflineSignedTransactionsViewModelTest {
     }
 
     @Test
+    fun init_pendingThorchainRecordConfirmedByStatusAdapter_marksBroadcasted() = runTest(dispatcher) {
+        assertPendingRecordConfirmedByStatusAdapter(thorchainToken)
+    }
+
+    @Test
+    fun init_pendingMayaRecordConfirmedByStatusAdapter_marksBroadcasted() = runTest(dispatcher) {
+        assertPendingRecordConfirmedByStatusAdapter(mayaToken)
+    }
+
+    @Test
+    fun init_pendingThorchainRecordHistoryNeverEmits_marksBroadcastedByStatusAdapter() = runTest(dispatcher) {
+        assertPendingRecordConfirmedByStatusAdapter(thorchainToken, recordsFlow = MutableSharedFlow())
+    }
+
+    @Test
     fun init_legacyEntity_resolvesNativeTokenByStoredCoinFields() = runTest(dispatcher) {
         every { marketKit.tokens(any<List<TokenQuery>>()) } returns listOf(bnbToken)
         setupState(entities = listOf(legacyBnbEntity()), wallets = emptyList())
@@ -374,6 +392,52 @@ class OfflineSignedTransactionsViewModelTest {
         every { walletManager.activeWalletsFlow } returns MutableStateFlow(wallets)
         every { repository.observe(account.id) } returns flowOf(entities)
     }
+
+    // THORChain/Maya hashes are uppercase hex; the stored confirmation uses the canonical lowercase form.
+    private fun TestScope.assertPendingRecordConfirmedByStatusAdapter(
+        token: Token,
+        recordsFlow: Flow<List<TransactionRecord>> = flowOf(emptyList()),
+    ) {
+        val wallet = wallet(token)
+        val transactionsAdapter = mockk<ITransactionsAdapter>(relaxed = true) {
+            every { getTransactionRecordsFlow(null, any(), null) } returns recordsFlow
+        }
+        val statusAdapter = mockk<TestStatusAdapter>(relaxed = true)
+        coEvery { statusAdapter.transactionExists(THORCHAIN_TX_HASH) } returns true
+        every { adapterManager.getAdapterForWalletOld(wallet) } returns statusAdapter
+        every { transactionAdapterManager.adaptersReadyFlow } returns MutableStateFlow(
+            mapOf(wallet.transactionSource to transactionsAdapter)
+        )
+        every { marketKit.token(token.tokenQuery) } returns token
+        setupState(entities = listOf(nativeEntity(token)), wallets = listOf(wallet))
+
+        viewModel(this)
+        advanceUntilIdle()
+
+        coVerify {
+            repository.markBroadcasted(
+                accountId = account.id,
+                txHash = THORCHAIN_TX_HASH,
+                confirmedTxHash = THORCHAIN_TX_HASH.lowercase(),
+            )
+        }
+    }
+
+    private fun nativeEntity(token: Token) = usdcEntity().copy(
+        txHash = THORCHAIN_TX_HASH,
+        blockchainTypeUid = token.blockchainType.uid,
+        tokenQueryId = token.tokenQuery.id,
+        sourceTokenQueryId = token.tokenQuery.id,
+        coinUid = token.coin.uid,
+        coinCode = token.coin.code,
+        coinName = token.coin.name,
+        tokenDecimals = token.decimals,
+        amount = "1.2",
+        feeTokenQueryId = token.tokenQuery.id,
+        feeAtomic = "2000000",
+        toAddress = "receiver",
+        pcashPayload = "pcash:tx:v1:${token.blockchainType.uid}:body",
+    )
 
     private fun assertStatusColor(item: OfflineSignedTransactionViewItem, color: ColorName) {
         assertEquals(color, item.statusValue.color)
@@ -605,6 +669,18 @@ class OfflineSignedTransactionsViewModelTest {
         type = TokenType.Native,
         decimals = 7,
     )
+    private val thorchainToken = Token(
+        coin = Coin(uid = "thorchain", name = "THORChain", code = "RUNE"),
+        blockchain = Blockchain(BlockchainType.Thorchain, "THORChain", null),
+        type = TokenType.Native,
+        decimals = 8,
+    )
+    private val mayaToken = Token(
+        coin = Coin(uid = "cacao", name = "Maya Protocol", code = "CACAO"),
+        blockchain = Blockchain(BlockchainType.Mayachain, "Maya", null),
+        type = TokenType.Native,
+        decimals = 10,
+    )
     private val zcash = Blockchain(BlockchainType.Zcash, "Zcash", null)
     private val zcashToken = Token(
         coin = Coin(uid = "zcash", name = "Zcash", code = "ZEC"),
@@ -648,6 +724,7 @@ class OfflineSignedTransactionsViewModelTest {
         const val LITECOIN_MWEB_QUERY_ID = "litecoin|mweb"
         const val TON_MESSAGE_HASH = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
         const val STELLAR_TX_HASH = "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
+        const val THORCHAIN_TX_HASH = "ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789"
         const val ZCASH_TX_HASH = "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
         const val LITECOIN_MWEB_TX_HASH = "d2a822a43ba8b8309bfd7ca10aa28228f5d7a881df0e253d1c406ee4cbb08248"
         const val SOLANA_SIGNATURE =

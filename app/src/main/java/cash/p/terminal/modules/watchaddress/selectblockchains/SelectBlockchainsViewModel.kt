@@ -35,6 +35,8 @@ class SelectBlockchainsViewModel(
             is AccountType.BitcoinAddress,
             is AccountType.TonAddress,
             is AccountType.StellarAddress,
+            is AccountType.ThorchainAddress,
+            is AccountType.MayachainAddress,
             is AccountType.Mnemonic,
             is AccountType.HardwareCard,
             is AccountType.TrezorDevice,

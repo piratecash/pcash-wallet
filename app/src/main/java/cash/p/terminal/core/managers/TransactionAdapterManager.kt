@@ -157,6 +157,11 @@ class TransactionAdapterManager(
                 adapterFactory.stellarTransactionsAdapter(source)
             }
 
+            BlockchainType.Thorchain,
+            BlockchainType.Mayachain -> {
+                adapterFactory.thorchainTransactionsAdapter(source)
+            }
+
             else -> adapter as? ITransactionsAdapter
         }
     }

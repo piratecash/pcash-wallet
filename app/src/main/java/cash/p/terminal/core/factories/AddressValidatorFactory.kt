@@ -4,9 +4,9 @@ import cash.p.terminal.core.App
 import cash.p.terminal.modules.send.address.BitcoinAddressValidator
 import cash.p.terminal.modules.send.address.EnterAddressValidator
 import cash.p.terminal.modules.send.address.EvmAddressValidator
+import cash.p.terminal.modules.send.address.MemoAddressValidator
 import cash.p.terminal.modules.send.address.MoneroAddressValidator
 import cash.p.terminal.modules.send.address.SolanaAddressValidator
-import cash.p.terminal.modules.send.address.StellarAddressValidator
 import cash.p.terminal.modules.send.address.TonAddressValidator
 import cash.p.terminal.modules.send.address.TronAddressValidator
 import cash.p.terminal.modules.send.address.ZcashAddressValidator
@@ -58,8 +58,10 @@ object AddressValidatorFactory {
                 TonAddressValidator()
             }
 
-            is BlockchainType.Stellar -> {
-                StellarAddressValidator(token)
+            is BlockchainType.Stellar,
+            BlockchainType.Thorchain,
+            BlockchainType.Mayachain -> {
+                MemoAddressValidator(token)
             }
 
             BlockchainType.Monero -> MoneroAddressValidator()

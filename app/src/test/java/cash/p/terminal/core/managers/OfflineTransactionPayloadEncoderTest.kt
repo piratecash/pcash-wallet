@@ -486,6 +486,27 @@ class OfflineTransactionPayloadEncoderTest {
     }
 
     @Test
+    fun decode_thorchainFamilyRoundTrip_acceptsUppercaseHashWithoutRetryMetadata() {
+        listOf(BlockchainType.Thorchain, BlockchainType.Mayachain).forEach { blockchainType ->
+            val nativeToken = token(
+                blockchainType = blockchainType,
+                blockchainName = blockchainType.uid,
+                coin = Coin(uid = blockchainType.uid, name = blockchainType.uid, code = blockchainType.uid),
+                decimals = 8,
+            )
+            val txHash = TX_HASH.uppercase()
+
+            val decoded = requireNotNull(
+                encoder.decode(encoder.encode(draft(txHash = txHash, token = nativeToken, feeToken = nativeToken)))
+            )
+
+            assertEquals(blockchainType.uid, decoded.blockchainUid)
+            assertEquals(txHash, decoded.txHash)
+            assertEquals("${blockchainType.uid}|native", decoded.token.tokenQueryId)
+        }
+    }
+
+    @Test
     fun decode_moneroPayloadWithForeignRetryMetadata_returnsNull() {
         val payload = encoder.encode(
             draft(

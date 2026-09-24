@@ -148,6 +148,35 @@ class YiFiTokenResolverTest {
     }
 
     @Test
+    fun resolveAsset_runeWithPlaceholderContract_resolvesNative() = runTest(dispatcher) {
+        val token = yiFiTestToken(BlockchainType.Thorchain, TokenType.Native, "RUNE")
+
+        assertEquals(YiFiAsset("RUNE", "RUNE"), resolver.resolveAsset(token))
+    }
+
+    @Test
+    fun resolveAsset_nonEvmTickerAsContractOutsideThorchain_returnsNull() = runTest(dispatcher) {
+        val token = yiFiTestToken(BlockchainType.Dogecoin, TokenType.Native, "DOGE")
+
+        assertNull(resolver.resolveAsset(token))
+    }
+
+    @Test
+    fun resolveAsset_evmNativeTickerAsContract_returnsNull() = runTest(dispatcher) {
+        val token = yiFiTestToken(BlockchainType.BinanceSmartChain, TokenType.Native, "BNB")
+
+        assertNull(resolver.resolveAsset(token))
+    }
+
+    @Test
+    fun resolveAsset_thorchainAsset_returnsNullWithoutNetworkCalls() = runTest(dispatcher) {
+        val token = yiFiTestToken(BlockchainType.Thorchain, TokenType.ThorchainAsset("tcy"), "TCY")
+
+        assertNull(resolver.resolveAsset(token))
+        coVerify(exactly = 0) { repository.searchTokens(any(), any()) }
+    }
+
+    @Test
     fun resolveAsset_tonWithUnrelatedCoinGeckoId_resolvesByCoinCode() = runTest(dispatcher) {
         val token = yiFiTestToken(
             BlockchainType.Ton, TokenType.Native, "TON",
@@ -220,6 +249,8 @@ class YiFiTokenResolverTest {
             chain("LTC", null, "", "LTC"),
             chain("TRON", null, "TRX", "TRX", "TRON", "TRC20"),
             chain("TON", 5545, "TON", "TON"),
+            chain("RUNE", null, "RUNE", "RUNE", "THORCHAIN"),
+            chain("DOGE", null, "DOGE", "DOGE"),
         )
 
         val CATALOG = mapOf(
@@ -237,6 +268,9 @@ class YiFiTokenResolverTest {
             ("BSC" to BSC_ETH_CONTRACT) to listOf(row("BSC", "ETH", BSC_ETH_CONTRACT.lowercase())),
             ("BSC" to "ETH") to listOf(row("BSC", "ETH", BSC_ETH_CONTRACT.lowercase()), row("BSC", "ETH")),
             ("TON" to "TON") to listOf(row("TON", "TON")),
+            ("RUNE" to "RUNE") to listOf(row("RUNE", "RUNE", "rune")),
+            ("DOGE" to "DOGE") to listOf(row("DOGE", "DOGE", "doge")),
+            ("BSC" to "BNB") to listOf(row("BSC", "BNB", "bnb")),
         )
     }
 }

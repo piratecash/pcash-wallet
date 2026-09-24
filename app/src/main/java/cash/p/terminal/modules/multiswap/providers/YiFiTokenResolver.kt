@@ -65,7 +65,7 @@ class YiFiTokenResolver(
         val chain = resolveNetwork(token.blockchainType, token.coin.code) ?: return null
         val ticker = chain.nativeToken.ifBlank { token.coin.code }
         val row = exactTickerRows(chain.id, ticker).singleOrNull() ?: return null
-        return row.takeIf { it.isContractless }?.let { YiFiAsset(it.ticker, chain.id) }
+        return row.takeIf { it.isNativeCoin(token.blockchainType) }?.let { YiFiAsset(it.ticker, chain.id) }
     }
 
     private suspend fun resolveContract(blockchainType: BlockchainType, contract: String): YiFiAsset? {
@@ -84,22 +84,25 @@ class YiFiTokenResolver(
                 val chainId = evmBlockchainManager.getChain(blockchainType).id.toLong()
                 getChains().singleOrNull { it.chainId == chainId }
             } else {
-                nativeCode?.let { findNonEvmNetwork(it) }
+                nativeCode?.let { findNonEvmNetwork(blockchainType, it) }
             }
         }
 
     // A ticker appears in the aliases of several chains (BTC on MERLIN, MEZO), but only its home
     // chain lists it as a contractless token.
-    private suspend fun findNonEvmNetwork(nativeCode: String): YiFiChain? = coroutineScope {
-        getChains()
-            .filter { it.mentions(nativeCode) }
-            .map { chain ->
-                async { chain.takeIf { exactTickerRows(chain.id, nativeCode).any { it.isContractless } } }
-            }
-            .awaitAll()
-            .filterNotNull()
-            .singleOrNull()
-    }
+    private suspend fun findNonEvmNetwork(blockchainType: BlockchainType, nativeCode: String): YiFiChain? =
+        coroutineScope {
+            getChains()
+                .filter { it.mentions(nativeCode) }
+                .map { chain ->
+                    async {
+                        chain.takeIf { exactTickerRows(chain.id, nativeCode).any { it.isNativeCoin(blockchainType) } }
+                    }
+                }
+                .awaitAll()
+                .filterNotNull()
+                .singleOrNull()
+        }
 
     private suspend fun exactTickerRows(network: String, ticker: String): List<YiFiToken> =
         searchTokens(network, ticker).filter { it.ticker.equals(ticker, ignoreCase = true) }
@@ -136,11 +139,17 @@ class YiFiTokenResolver(
             TokenType.Mweb,
             is TokenType.Trc10,
             is TokenType.Asset,
+            is TokenType.ThorchainAsset,
             is TokenType.Unsupported -> null
         }
 
-    private val YiFiToken.isContractless: Boolean
-        get() = contractAddress.isNullOrBlank()
+    // THORChain/Maya natives carry the ticker as a placeholder contract (RUNE: "rune").
+    private fun YiFiToken.isNativeCoin(blockchainType: BlockchainType): Boolean =
+        contractAddress.isNullOrBlank() ||
+            (blockchainType.hasTickerPlaceholderContract && contractAddress.equals(ticker, ignoreCase = true))
+
+    private val BlockchainType.hasTickerPlaceholderContract: Boolean
+        get() = this == BlockchainType.Thorchain || this == BlockchainType.Mayachain
 
     private fun YiFiChain.mentions(code: String): Boolean =
         id.equals(code, ignoreCase = true) ||

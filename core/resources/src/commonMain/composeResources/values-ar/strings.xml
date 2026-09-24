@@ -1062,6 +1062,7 @@
     <string name="offline_broadcast_error_timeout">انتهت مهلة الطلب. حاول مرة أخرى لاحقًا.</string>
     <string name="offline_broadcast_error_already_sent">هذه المعاملة معروفة بالفعل لدى الشبكة.</string>
     <string name="offline_broadcast_error_seqno_consumed">رقم المعاملة (seqno) مستخدم بالفعل. ربما تم إرسال هذه المعاملة من قبل — تحقق من سجل المعاملات قبل التوقيع مرة أخرى.</string>
+    <string name="offline_broadcast_error_outcome_unknown">لم تؤكد الشبكة استلام المعاملة. ربما تم إرسال هذه المعاملة من قبل — تحقق من سجل المعاملات قبل إعادة إرسالها.</string>
     <string name="offline_broadcast_error_nonce_used">تم استخدام قيمة nonce لهذه المعاملة بالفعل. ربما تم إرسالها أو استبدالها.</string>
     <string name="offline_broadcast_error_low_fee">رسوم الشبكة منخفضة جدًا. أنشئ معاملة برسوم أعلى.</string>
     <string name="offline_broadcast_error_rejected">رفضت الشبكة هذه المعاملة الموقعة.</string>

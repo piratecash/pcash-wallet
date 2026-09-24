@@ -22,6 +22,7 @@ import cash.p.terminal.entities.transactionrecords.evm.TransferEvent
 import cash.p.terminal.entities.transactionrecords.monero.MoneroTransactionRecord
 import cash.p.terminal.entities.transactionrecords.solana.SolanaTransactionRecord
 import cash.p.terminal.entities.transactionrecords.stellar.StellarTransactionRecord
+import cash.p.terminal.entities.transactionrecords.thorchain.ThorchainTransactionRecord
 import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
 import cash.p.terminal.entities.transactionrecords.tron.TronTransactionRecord
 import cash.p.terminal.entities.swapProviderDisplayTitle
@@ -523,6 +524,21 @@ class TransactionViewItemFactory(
                 )
             }
 
+            is ThorchainTransactionRecord -> {
+                tryConvertToUserSwapProviderViewItemSwap(
+                    transactionItem = transactionItem,
+                    token = record.token,
+                    isIncoming = record.type is ThorchainTransactionRecord.Type.Incoming,
+                    matchedSwap = matchedSwap,
+                    onChainProgress = progress,
+                ) ?: createViewItemFromThorchainTransactionRecord(
+                    record = record,
+                    currencyValue = transactionItem.currencyValue,
+                    progress = progress,
+                    icon = icon
+                )
+            }
+
             is MoneroTransactionRecord -> {
                 tryConvertToUserSwapProviderViewItemSwap(
                     transactionItem = transactionItem,
@@ -842,6 +858,53 @@ class TransactionViewItemFactory(
             date = Date(record.timestamp * 1000),
             formattedTime = formatTime(record.timestamp),
             icon = icon ?: iconX
+        )
+    }
+
+    private fun createViewItemFromThorchainTransactionRecord(
+        record: ThorchainTransactionRecord,
+        currencyValue: CurrencyValue?,
+        progress: Float?,
+        icon: TransactionViewItem.Icon?
+    ): TransactionViewItem {
+        val title: String
+        val subtitle: String
+        val primaryValue: ColoredValue
+        when (val type = record.type) {
+            is ThorchainTransactionRecord.Type.Incoming -> {
+                title = Translator.getString(R.string.Transactions_Receive)
+                subtitle = type.from?.let {
+                    Translator.getString(R.string.Transactions_From, mapped(it, record.blockchainType))
+                } ?: "---"
+                primaryValue = getColoredValue(type.value, ColorName.Remus)
+            }
+
+            is ThorchainTransactionRecord.Type.Outgoing -> {
+                title = Translator.getString(R.string.Transactions_Send)
+                subtitle = type.to?.let {
+                    Translator.getString(R.string.Transactions_To, mapped(it, record.blockchainType))
+                } ?: "---"
+                primaryValue = if (type.sentToSelf) {
+                    ColoredValue(getCoinString(type.value, true), ColorName.Grey)
+                } else {
+                    getColoredValue(type.value, getAmountColorForSend(icon))
+                }
+            }
+        }
+
+        return TransactionViewItem(
+            uid = record.uid,
+            progress = progress,
+            title = title,
+            subtitle = subtitle,
+            primaryValue = primaryValue,
+            secondaryValue = currencyValue?.let { getColoredValue(it, ColorName.Grey) },
+            showAmount = showAmount,
+            sentToSelf = record.sentToSelf,
+            date = Date(record.timestamp * 1000),
+            formattedTime = formatTime(record.timestamp),
+            spam = record.spam,
+            icon = icon ?: singleValueIconType(record.mainValue)
         )
     }
 

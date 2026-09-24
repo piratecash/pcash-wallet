@@ -131,6 +131,8 @@ class AddressHandlerUdn(
             BlockchainType.PirateCash -> "PIRATECASH"
             BlockchainType.Monero -> "XMR"
             BlockchainType.Stellar -> "XLM"
+            BlockchainType.Thorchain,
+            BlockchainType.Mayachain,
             is BlockchainType.Unsupported -> blockchainType.uid
         }
 

@@ -1059,6 +1059,7 @@
     <string name="offline_broadcast_error_timeout">请求超时。请稍后重试。</string>
     <string name="offline_broadcast_error_already_sent">这笔交易已被网络知晓。</string>
     <string name="offline_broadcast_error_seqno_consumed">交易序号（seqno）已被使用。此交易可能已发送——请在重新签名前查看交易记录。</string>
+    <string name="offline_broadcast_error_outcome_unknown">网络未确认收到该交易。该交易可能已发送——请在再次转发前查看交易记录。</string>
     <string name="offline_broadcast_error_nonce_used">这笔交易的 nonce 已被使用。它可能已发送或被替换。</string>
     <string name="offline_broadcast_error_low_fee">网络手续费太低。请创建一笔手续费更高的交易。</string>
     <string name="offline_broadcast_error_rejected">网络拒绝了这笔已签名交易。</string>

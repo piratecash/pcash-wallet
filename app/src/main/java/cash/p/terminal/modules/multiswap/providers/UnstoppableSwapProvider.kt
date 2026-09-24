@@ -61,10 +61,7 @@ internal class UnstoppableTokenResolver(
     private var data: ProviderData? = null
     private var fetchedAt: Long = 0L
 
-    suspend fun supports(token: Token): Boolean = when (val d = getData()) {
-        is ProviderData.TokenMap -> d.map.containsKey(token)
-        is ProviderData.ChainIds -> token.blockchainType in d.ids
-    }
+    suspend fun supports(token: Token): Boolean = resolve(token) != null
 
     /** Chain-id string for [blockchainType] in the same space as `/v2/tokens`' `chainId` field. */
     fun chainId(blockchainType: BlockchainType): String? = chainIdByBlockchainType[blockchainType]
@@ -126,8 +123,10 @@ internal class UnstoppableTokenResolver(
                 addSingle(map, blockchainType, contractOrNative(address, TokenType::Jetton), identifier)
 
             // Non-native Stellar assets aren't exposed here in a decomposable (code, issuer) shape by
-            // this endpoint, so only native XLM is resolved.
-            blockchainType == BlockchainType.Stellar ->
+            // this endpoint, so only native XLM is resolved; THORChain/Maya list natives only.
+            blockchainType == BlockchainType.Stellar ||
+                blockchainType == BlockchainType.Thorchain ||
+                blockchainType == BlockchainType.Mayachain ->
                 if (address.isNullOrBlank()) addSingle(map, blockchainType, TokenType.Native, identifier)
 
             blockchainType == BlockchainType.Monero -> addSingle(map, blockchainType, TokenType.Native, identifier)
@@ -196,6 +195,8 @@ internal class UnstoppableTokenResolver(
             "stellar" to BlockchainType.Stellar,
             "ton" to BlockchainType.Ton,
             "monero" to BlockchainType.Monero,
+            "thorchain-1" to BlockchainType.Thorchain,
+            "mayachain-mainnet-v1" to BlockchainType.Mayachain,
         )
         val chainIdByBlockchainType = blockchainTypeByChainId.entries.associate { (k, v) -> v to k }
     }

@@ -14,6 +14,7 @@ import cash.p.terminal.entities.transactionrecords.PendingTransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
+import cash.p.terminal.entities.transactionrecords.thorchain.ThorchainTransactionRecord
 import cash.p.terminal.modules.transactions.NftMetadataService
 import cash.p.terminal.modules.transactions.TransactionStatus
 import cash.p.terminal.modules.transactions.poison_status.PoisonStatus
@@ -31,6 +32,7 @@ import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.CurrencyManager
+import io.horizontalsystems.thorchainkit.models.Transaction
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -513,6 +515,49 @@ class TransactionInfoServiceTest : KoinTest {
 
         assertEquals(realRecord.uid, service.transactionRecord.uid)
     }
+
+    @Test
+    fun start_sameRecordReemittedWithFee_publishesRecordWithFee() = runTest(dispatcher) {
+        val token = createEvmToken(
+            coinUid = "thorchain",
+            coinName = "THORChain",
+            coinCode = "RUNE",
+            blockchain = Blockchain(BlockchainType.Thorchain, "THORChain", null),
+            type = TokenType.Native,
+            decimals = 8,
+        )
+        val fee = TransactionValue.CoinValue(token, BigDecimal("0.02"))
+        val recordWithoutFee = createThorchainRecord(token, fee = null)
+        // Replay flow instead of StateFlow: uid-equal lists would be dropped by the fixture itself.
+        val recordsFlow = MutableSharedFlow<List<TransactionRecord>>(replay = 1)
+        recordsFlow.tryEmit(listOf(recordWithoutFee))
+        every { adapter.getTransactionRecordsFlow(any(), any(), any()) } returns recordsFlow
+
+        val service = createService(initialTransactionRecord = recordWithoutFee)
+        var latest: TransactionInfoItem? = null
+        backgroundScope.launch { service.transactionInfoItemFlow.collect { latest = it } }
+        backgroundScope.launch { service.start() }
+        advanceUntilIdle()
+
+        recordsFlow.tryEmit(listOf(createThorchainRecord(token, fee)))
+        advanceUntilIdle()
+
+        assertEquals(fee, (latest?.record as? ThorchainTransactionRecord)?.fee)
+    }
+
+    private fun createThorchainRecord(token: Token, fee: TransactionValue?) = ThorchainTransactionRecord(
+        uid = "HASH-rune",
+        transaction = Transaction("HASH", 1, 1_000L, "send", "success", null, emptyList(), emptyList()),
+        spam = false,
+        source = createSource(blockchain = token.blockchain),
+        token = token,
+        type = ThorchainTransactionRecord.Type.Outgoing(
+            TransactionValue.CoinValue(token, BigDecimal.ONE.negate()),
+            to = null,
+            sentToSelf = false,
+        ),
+        fee = fee,
+    )
 
     private fun createPendingRecord(
         token: Token,

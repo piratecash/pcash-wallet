@@ -17,6 +17,7 @@ sealed class SendTransactionResult {
     data class Solana(val result: SendResult) : SendTransactionResult()
     data class ZCash(val result: SendResult) : SendTransactionResult()
     data class Monero(val result: SendResult) : SendTransactionResult()
+    data class Thorchain(val txHash: String, val uid: String) : SendTransactionResult()
 
     fun getRecordUid(): String? {
         return when (this) {
@@ -54,14 +55,17 @@ sealed class SendTransactionResult {
                 is SendResult.Failed,
                 SendResult.Sending -> null
             }
+
+            is Thorchain -> uid
         }
     }
 
-    // For Stellar the record uid already IS the canonical hash; UTXO carries its own field.
+    // For Stellar the record uid already IS the canonical hash; UTXO and THORChain carry their own field.
     // The EVM record uid is the 0x-prefixed hash, but Thornode/Mayanode tx ids are the bare hex hash.
     fun getCanonicalTxHash(): String? = when (this) {
         is Btc -> canonicalHashReversedHex
         is Evm -> fullTransaction.transaction.hashString.removePrefix("0x")
+        is Thorchain -> txHash
         else -> getRecordUid()
     }
 }

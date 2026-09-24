@@ -1062,6 +1062,7 @@
     <string name="offline_broadcast_error_timeout">زمان درخواست به پایان رسید. بعداً دوباره تلاش کنید.</string>
     <string name="offline_broadcast_error_already_sent">این تراکنش از قبل برای شبکه شناخته شده است.</string>
     <string name="offline_broadcast_error_seqno_consumed">شماره تراکنش (seqno) قبلاً استفاده شده است. این تراکنش ممکن است قبلاً ارسال شده باشد؛ پیش از امضای دوباره، تاریخچه تراکنش‌ها را بررسی کنید.</string>
+    <string name="offline_broadcast_error_outcome_unknown">شبکه دریافت تراکنش را تأیید نکرد. این تراکنش ممکن است قبلاً ارسال شده باشد؛ پیش از ارسال دوباره، تاریخچه تراکنش‌ها را بررسی کنید.</string>
     <string name="offline_broadcast_error_nonce_used">نانس این تراکنش قبلاً استفاده شده است. ممکن است ارسال یا جایگزین شده باشد.</string>
     <string name="offline_broadcast_error_low_fee">کارمزد شبکه خیلی کم است. تراکنشی با کارمزد بالاتر ایجاد کنید.</string>
     <string name="offline_broadcast_error_rejected">شبکه این تراکنش امضاشده را رد کرد.</string>

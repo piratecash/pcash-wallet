@@ -70,6 +70,7 @@ piratecash-ton = "v1.0.0-pcash.6"
 piratecash-bitcoin = "v0.1.0-pcash.35"
 hd-wallet-kit = "1.0.1"
 stellar-kit = "v1.0.0-pcash.3"
+thorchain-kit = "1.2.0"
 trezor-kit = "1.3.6"
 piratecash-ethereum = "v0.1.0-pcash.18"
 horizontalsystems-blockchain-fee = "393cc14"
@@ -228,6 +229,7 @@ bitcoin-piratecash-kit = { group = "com.github.piratecash.bitcoin-kit-android", 
 bitcoin-hodler = { group = "com.github.piratecash.bitcoin-kit-android", name = "hodler", version.ref = "piratecash-bitcoin" }
 hd-wallet-kit = { group = "com.github.piratecash.hd-wallet-kit-android", name = "hd-wallet-kit-kmp", version.ref = "hd-wallet-kit" }
 stellar-kit = { group = "com.github.piratecash", name = "stellar-kit-android", version.ref = "stellar-kit" }
+thorchain-kit = { group = "com.github.piratecash.thorchain-kit-android", name = "thorchainkit", version.ref = "thorchain-kit" }
 trezor-kit = { group = "com.github.piratecash", name = "trezor-kit-android", version.ref = "trezor-kit" }
 solana-kit = { group = "com.github.piratecash", name = "solana-kit-android", version.ref = "piratecash-solana" }
 monero-kit = { group = "com.github.piratecash", name = "monero-kit-android", version.ref = "monero-kit-android" }

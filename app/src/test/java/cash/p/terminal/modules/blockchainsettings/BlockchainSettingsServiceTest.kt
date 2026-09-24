@@ -145,6 +145,28 @@ class BlockchainSettingsServiceTest {
         assertTrue(service.blockchainItems.none { it is BlockchainItem.Solana })
     }
 
+    @Test
+    fun start_thorchainFamily_buildsStatusOnlyItems() {
+        val thorchain = blockchain(BlockchainType.Thorchain)
+        val maya = blockchain(BlockchainType.Mayachain)
+
+        every { btcBlockchainManager.allBlockchains } returns emptyList()
+        every { evmBlockchainManager.allBlockchains } returns emptyList()
+        every { solanaRpcSourceManager.blockchain } returns null
+        every {
+            marketKit.blockchains(match { it.containsAll(listOf(thorchain.uid, maya.uid)) })
+        } returns listOf(thorchain, maya)
+
+        val service = createService()
+
+        service.start()
+
+        assertEquals(
+            setOf(thorchain, maya),
+            service.blockchainItems.filterIsInstance<BlockchainItem.StatusOnly>().map { it.blockchain }.toSet(),
+        )
+    }
+
     private fun createService(): BlockchainSettingsService {
         return BlockchainSettingsService(
             btcBlockchainManager = btcBlockchainManager,

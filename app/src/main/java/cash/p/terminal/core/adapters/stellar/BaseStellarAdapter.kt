@@ -2,7 +2,7 @@ package cash.p.terminal.core.adapters.stellar
 
 import cash.p.terminal.core.BroadcastRawTransactionResult
 import cash.p.terminal.core.BroadcastRawTransactionStatus
-import cash.p.terminal.core.ISendStellarAdapter
+import cash.p.terminal.core.ISendMemoAdapter
 import cash.p.terminal.core.OfflineBroadcastMetadata
 import cash.p.terminal.core.OfflineSignRequest
 import cash.p.terminal.core.OfflineStellarSignRequest
@@ -27,7 +27,7 @@ abstract class BaseStellarAdapter(
 ) : IAdapter,
     IBalanceAdapter,
     IReceiveAdapter,
-    ISendStellarAdapter,
+    ISendMemoAdapter,
     OfflineTransactionAdapter<SignedOfflineStellarTransaction>,
     OfflineTransactionStatusAdapter {
     protected val stellarKit = stellarKitWrapper.stellarKit

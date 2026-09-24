@@ -102,6 +102,11 @@ class AddressHandlerFactory(
                 addressHandlers.add(AddressHandlerStellar())
             }
 
+            BlockchainType.Thorchain,
+            BlockchainType.Mayachain -> {
+                addressHandlers.add(AddressHandlerThorchain.forBlockchainType(blockchainType))
+            }
+
             is BlockchainType.Unsupported -> {
             }
         }

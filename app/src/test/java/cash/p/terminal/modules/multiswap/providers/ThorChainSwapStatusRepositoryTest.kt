@@ -145,4 +145,75 @@ class ThorChainSwapStatusRepositoryTest {
         assertEquals(TransactionStatusEnum.REFUNDED, result.status)
         assertNotNull(result.finishedAt)
     }
+
+    @Test
+    fun mapTxStatus_swapFinalisedNoOutboundStageWithOutTxs_returnsFinished() {
+        val result = mapTxStatus(nativeOutputStatus(outTxs = listOf(runeOutTx())), destinationAddress)
+
+        assertEquals(TransactionStatusEnum.FINISHED, result.status)
+        assertNotNull(result.finishedAt)
+    }
+
+    @Test
+    fun mapTxStatus_refundNoOutboundStageWithOutTxs_returnsRefunded() {
+        val txStatus = nativeOutputStatus(
+            outTxs = listOf(runeOutTx()),
+            plannedOutTxs = listOf(
+                ThornodeAPI.Response.TxStatus.PlannedOutTx(
+                    refund = true,
+                    chain = "THOR",
+                    toAddress = destinationAddress,
+                    coin = ThornodeAPI.Response.TxStatus.Coin(asset = "THOR.RUNE", amount = BigDecimal(50_000_000)),
+                ),
+            ),
+        )
+
+        assertEquals(TransactionStatusEnum.REFUNDED, mapTxStatus(txStatus, destinationAddress).status)
+    }
+
+    @Test
+    fun mapTxStatus_swapFinalisedNoOutboundStageEmptyOutTxs_returnsSending() {
+        val result = mapTxStatus(nativeOutputStatus(outTxs = emptyList()), destinationAddress)
+
+        assertEquals(TransactionStatusEnum.SENDING, result.status)
+        assertNull(result.finishedAt)
+    }
+
+    @Test
+    fun mapTxStatus_cacaoOutTx_scalesAmountByTenDecimals() {
+        val cacaoOutTx = ThornodeAPI.Response.TxStatus.OutTx(
+            chain = "MAYA",
+            toAddress = destinationAddress,
+            coins = listOf(
+                ThornodeAPI.Response.TxStatus.Coin(asset = "MAYA.CACAO", amount = BigDecimal(15_000_000_000)),
+            ),
+        )
+
+        val result = mapTxStatus(nativeOutputStatus(outTxs = listOf(cacaoOutTx)), destinationAddress)
+
+        assertEquals(0, BigDecimal("1.5").compareTo(result.amountOutReal))
+    }
+
+    private fun runeOutTx() = ThornodeAPI.Response.TxStatus.OutTx(
+        chain = "THOR",
+        toAddress = destinationAddress,
+        coins = listOf(ThornodeAPI.Response.TxStatus.Coin(asset = "THOR.RUNE", amount = BigDecimal(100_000_000))),
+    )
+
+    // THORNode pays native outputs in-chain, so tx/status has no outbound_signed stage at all.
+    private fun nativeOutputStatus(
+        outTxs: List<ThornodeAPI.Response.TxStatus.OutTx>,
+        plannedOutTxs: List<ThornodeAPI.Response.TxStatus.PlannedOutTx>? = null,
+    ) = ThornodeAPI.Response.TxStatus(
+        stages = ThornodeAPI.Response.TxStatus.Stages(
+            inboundObserved = ThornodeAPI.Response.TxStatus.StageObserved(completed = true),
+            inboundConfirmationCounted = null,
+            inboundFinalised = ThornodeAPI.Response.TxStatus.StageCompleted(completed = true),
+            swapStatus = ThornodeAPI.Response.TxStatus.SwapStatus(pending = false),
+            swapFinalised = ThornodeAPI.Response.TxStatus.StageCompleted(completed = true),
+            outboundSigned = null,
+        ),
+        outTxs = outTxs,
+        plannedOutTxs = plannedOutTxs,
+    )
 }

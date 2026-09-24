@@ -108,9 +108,11 @@ class SolanaKitManager(
         is AccountType.EvmAddress,
         is AccountType.EvmPrivateKey,
         is AccountType.HdExtendedKey,
+        is AccountType.MayachainAddress,
         is AccountType.MnemonicMonero,
         is AccountType.StellarAddress,
         is AccountType.StellarSecretKey,
+        is AccountType.ThorchainAddress,
         is AccountType.TonAddress,
         is AccountType.TronAddress,
         is AccountType.ZCashUfvKey -> throw UnsupportedAccountException()

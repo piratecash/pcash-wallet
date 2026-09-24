@@ -129,16 +129,7 @@ class OffChainSwapProviderSupport(
         memo: String?,
     ): SendTransactionData {
         return when {
-            tokenIn.blockchainType.isEvm -> {
-                val adapter = adapterManager.getAdapterForToken<ISendEthereumAdapter>(tokenIn)
-                    ?: throw IllegalStateException("Ethereum adapter not found")
-                val transactionData = adapter.getTransactionData(
-                    amountIn,
-                    Address(depositAddress)
-                )
-
-                SendTransactionData.Evm(transactionData, null, amount = amountIn, recipientAddress = depositAddress)
-            }
+            tokenIn.blockchainType.isEvm -> buildEvmTransactionData(tokenIn, amountIn, depositAddress)
 
             tokenIn.blockchainType == BlockchainType.Tron -> {
                 SendTransactionData.Tron.Regular(
@@ -154,6 +145,10 @@ class OffChainSwapProviderSupport(
                     memo = memo.orEmpty()
                 )
             }
+
+            tokenIn.blockchainType == BlockchainType.Thorchain ||
+                    tokenIn.blockchainType == BlockchainType.Mayachain ->
+                buildThorchainTransactionData(amountIn, depositAddress, memo)
 
             tokenIn.blockchainType == BlockchainType.Solana -> {
                 SendTransactionData.Solana.Regular(
@@ -207,6 +202,33 @@ class OffChainSwapProviderSupport(
             )
         )
     }
+
+    private fun buildEvmTransactionData(
+        tokenIn: Token,
+        amountIn: BigDecimal,
+        depositAddress: String,
+    ): SendTransactionData {
+        val adapter = adapterManager.getAdapterForToken<ISendEthereumAdapter>(tokenIn)
+            ?: throw IllegalStateException("Ethereum adapter not found")
+        val transactionData = adapter.getTransactionData(
+            amountIn,
+            Address(depositAddress)
+        )
+
+        return SendTransactionData.Evm(transactionData, null, amount = amountIn, recipientAddress = depositAddress)
+    }
+
+    // The deposit address is shared by all orders: without the memo the funds are not attributed to this one.
+    private fun buildThorchainTransactionData(
+        amountIn: BigDecimal,
+        depositAddress: String,
+        memo: String?,
+    ): SendTransactionData =
+        if (memo.isNullOrBlank()) {
+            SendTransactionData.Unsupported
+        } else {
+            SendTransactionData.Thorchain.Send(address = depositAddress, amount = amountIn, memo = memo)
+        }
 
     private suspend fun getCachedZcashTransparentAddress(): String? =
         zcashAddressMutex.withLock {

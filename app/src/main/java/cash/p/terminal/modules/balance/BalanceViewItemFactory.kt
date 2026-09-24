@@ -228,6 +228,8 @@ class BalanceViewItemFactory(
         BlockchainType.Stellar,
         BlockchainType.Ton -> 50
 
+        BlockchainType.Thorchain,
+        BlockchainType.Mayachain,
         is BlockchainType.Unsupported -> 0
     }
 

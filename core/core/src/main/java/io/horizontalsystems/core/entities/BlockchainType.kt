@@ -171,6 +171,18 @@ sealed class BlockchainType : Parcelable {
     }
 
     @Parcelize
+    object Thorchain : BlockchainType() {
+        @IgnoredOnParcel
+        override val uid = "thorchain"
+    }
+
+    @Parcelize
+    object Mayachain : BlockchainType() {
+        @IgnoredOnParcel
+        override val uid = "mayachain"
+    }
+
+    @Parcelize
     class Unsupported(val _uid: String) : BlockchainType() {
         @IgnoredOnParcel
         override val uid: String get() = _uid
@@ -215,6 +227,8 @@ sealed class BlockchainType : Parcelable {
             "robinhood" -> RobinhoodChain
             "monero" -> Monero
             "stellar" -> Stellar
+            "thorchain" -> Thorchain
+            "mayachain" -> Mayachain
             else -> Unsupported(uid)
         }
     }

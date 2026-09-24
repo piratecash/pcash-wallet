@@ -135,6 +135,12 @@ sealed class AccountType : Parcelable {
     data class StellarAddress(val address: String) : AccountType()
 
     @Parcelize
+    data class ThorchainAddress(val address: String) : AccountType()
+
+    @Parcelize
+    data class MayachainAddress(val address: String) : AccountType()
+
+    @Parcelize
     data class BitcoinAddress(
         val address: String,
         val blockchainType: BlockchainType,
@@ -328,6 +334,8 @@ sealed class AccountType : Parcelable {
             is TronAddress -> "Tron Address"
             is TonAddress -> "Ton Address"
             is StellarAddress -> "Stellar Address"
+            is ThorchainAddress -> "THORChain Address"
+            is MayachainAddress -> "Maya Address"
             is StellarSecretKey -> "Stellar Secret Key"
             is EvmPrivateKey -> "EVM Private Key"
             is ZCashUfvKey -> "ZCash UFV Key"
@@ -373,6 +381,8 @@ sealed class AccountType : Parcelable {
             is TronAddress -> this.address.shorten()
             is TonAddress -> this.address.shorten()
             is StellarAddress -> this.address.shorten()
+            is ThorchainAddress -> this.address.shorten()
+            is MayachainAddress -> this.address.shorten()
             is BitcoinAddress -> this.address.shorten()
             else -> this.description
         }
@@ -401,6 +411,8 @@ sealed class AccountType : Parcelable {
             is TronAddress,
             is TonAddress,
             is StellarAddress,
+            is ThorchainAddress,
+            is MayachainAddress,
             is BitcoinAddress -> true
 
             is HdExtendedKey -> hdExtendedKey.isPublic

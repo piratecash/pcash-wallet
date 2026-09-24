@@ -1058,6 +1058,7 @@
     <string name="offline_broadcast_error_timeout">La solicitud agotó el tiempo de espera. Inténtalo de nuevo más tarde.</string>
     <string name="offline_broadcast_error_already_sent">Esta transacción ya es conocida por la red.</string>
     <string name="offline_broadcast_error_seqno_consumed">El número de transacción (seqno) ya se ha utilizado. Es posible que esta transacción ya se haya enviado; revisa el historial de transacciones antes de volver a firmar.</string>
+    <string name="offline_broadcast_error_outcome_unknown">La red no confirmó la recepción. Es posible que la transacción ya se haya enviado; revisa el historial de transacciones antes de retransmitirla.</string>
     <string name="offline_broadcast_error_nonce_used">El nonce de esta transacción ya se ha utilizado. Puede que ya se haya enviado o reemplazado.</string>
     <string name="offline_broadcast_error_low_fee">La comisión de red es demasiado baja. Crea una transacción con una comisión más alta.</string>
     <string name="offline_broadcast_error_rejected">La red rechazó esta transacción firmada.</string>

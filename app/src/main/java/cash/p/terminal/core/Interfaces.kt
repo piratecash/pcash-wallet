@@ -240,7 +240,8 @@ data class BroadcastRawTransactionResult(
 )
 
 enum class BroadcastRawTransactionStatus {
-    Submitted, Queued, AlreadyKnown, SeqnoConsumed
+    // OutcomeUnknown: the node may or may not have received the transaction.
+    Submitted, Queued, AlreadyKnown, SeqnoConsumed, OutcomeUnknown
 }
 
 sealed interface OfflineBroadcastMetadata {
@@ -353,14 +354,32 @@ data class OfflineStellarSignRequest(
     val memo: String?,
 ) : OfflineSignRequest
 
+interface SignedOfflineMemoTransaction {
+    val rawHex: String
+    val txHash: String
+    val fee: BigDecimal
+}
+
 data class SignedOfflineStellarTransaction(
-    val rawHex: String,
-    val txHash: String,
-    val fee: BigDecimal,
+    override val rawHex: String,
+    override val txHash: String,
+    override val fee: BigDecimal,
     val sourceAccountId: String,
     val sequenceNumber: Long,
     val validUntil: Long,
-)
+) : SignedOfflineMemoTransaction
+
+data class OfflineThorchainSignRequest(
+    val amount: BigDecimal,
+    val address: String,
+    val memo: String?,
+) : OfflineSignRequest
+
+data class SignedOfflineThorchainTransaction(
+    override val rawHex: String,
+    override val txHash: String,
+    override val fee: BigDecimal,
+) : SignedOfflineMemoTransaction
 
 data class OfflineMoneroSignRequest(
     val amount: BigDecimal,
@@ -448,8 +467,10 @@ interface ISendTonAdapter : IBalanceAdapter {
     suspend fun fetchOfflineAnchor(): TonOfflineAnchor
 }
 
-interface ISendStellarAdapter : IBalanceAdapter {
+interface ISendMemoAdapter : IBalanceAdapter {
     val sendFee: BigDecimal
+    val sendFeeUpdatedFlow: Flow<Unit>
+        get() = emptyFlow()
     fun validate(address: String)
     suspend fun getMinimumSendAmount(address: String) : BigDecimal?
     suspend fun send(amount: BigDecimal, address: String, memo: String?): String?

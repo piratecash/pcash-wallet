@@ -26,12 +26,14 @@ import cash.p.terminal.wallet.AccountType.EvmAddress
 import cash.p.terminal.wallet.AccountType.EvmPrivateKey
 import cash.p.terminal.wallet.AccountType.HardwareCard
 import cash.p.terminal.wallet.AccountType.HdExtendedKey
+import cash.p.terminal.wallet.AccountType.MayachainAddress
 import cash.p.terminal.wallet.AccountType.TrezorDevice
 import cash.p.terminal.wallet.AccountType.Mnemonic
 import cash.p.terminal.wallet.AccountType.MnemonicMonero
 import cash.p.terminal.wallet.AccountType.SolanaAddress
 import cash.p.terminal.wallet.AccountType.StellarAddress
 import cash.p.terminal.wallet.AccountType.StellarSecretKey
+import cash.p.terminal.wallet.AccountType.ThorchainAddress
 import cash.p.terminal.wallet.AccountType.TonAddress
 import cash.p.terminal.wallet.AccountType.TronAddress
 import cash.p.terminal.wallet.AccountType.ZCashUfvKey
@@ -196,6 +198,8 @@ class DuplicateWalletViewModel(
                 is EvmAddress,
                 is SolanaAddress,
                 is StellarAddress,
+                is ThorchainAddress,
+                is MayachainAddress,
                 is TonAddress,
                 is TronAddress,
                 is ZCashUfvKey,

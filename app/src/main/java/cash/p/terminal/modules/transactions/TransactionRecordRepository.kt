@@ -145,6 +145,8 @@ class TransactionRecordRepository(
                 BlockchainType.Solana,
                 BlockchainType.Tron,
                 BlockchainType.Stellar,
+                BlockchainType.Thorchain,
+                BlockchainType.Mayachain,
                 BlockchainType.Ton -> {
                     if (mergedWallets.none { it.source == wallet.source }) {
                         mergedWallets.add(TransactionWallet(null, wallet.source, null))

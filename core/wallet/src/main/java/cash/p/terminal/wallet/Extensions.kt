@@ -92,7 +92,9 @@ val TokenQuery.protocolType: String?
                 BlockchainType.Ethereum,
                 BlockchainType.BinanceSmartChain,
                 BlockchainType.Tron,
-                BlockchainType.Ton -> null
+                BlockchainType.Ton,
+                BlockchainType.Thorchain,
+                BlockchainType.Mayachain -> null
 
                 else -> blockchainType.title
             }
@@ -139,6 +141,8 @@ val BlockchainType.title: String
         BlockchainType.Cosanta -> "Cosanta"
         BlockchainType.PirateCash -> "PirateCash"
         BlockchainType.Monero -> "Monero"
+        BlockchainType.Thorchain -> "THORChain"
+        BlockchainType.Mayachain -> "Maya"
         is BlockchainType.Unsupported -> this.uid
     }
 

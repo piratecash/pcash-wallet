@@ -82,6 +82,7 @@ class ConfiguredTokenInfoViewModel(
             }
 
             is TokenType.Trc10 -> null
+            is TokenType.ThorchainAsset -> null
             is TokenType.Unsupported -> null
         }
 

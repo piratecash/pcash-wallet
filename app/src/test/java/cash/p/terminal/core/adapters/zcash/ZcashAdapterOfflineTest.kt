@@ -6,6 +6,7 @@ import cash.p.terminal.core.managers.MoneroKitManager
 import cash.p.terminal.core.managers.OfflineNetworkController
 import cash.p.terminal.core.managers.SolanaKitManager
 import cash.p.terminal.core.managers.StellarKitManager
+import cash.p.terminal.core.managers.ThorchainKitManagers
 import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TronKitManager
 import cash.p.terminal.wallet.IAdapterManager
@@ -149,6 +150,7 @@ class ZcashAdapterOfflineTest : ZcashAdapterTestFixture() {
             mockk<TonKitManager>(relaxed = true),
             mockk<StellarKitManager>(relaxed = true),
             mockk<MoneroKitManager>(relaxed = true),
+            mockk<ThorchainKitManagers>(relaxed = true),
         )
     }
 
