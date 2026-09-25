@@ -4,7 +4,7 @@ import android.util.Range
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.modules.multiswap.settings.ui.SlippageAmount
 import cash.p.terminal.ui_compose.entities.FormsInputStateWarning
 import io.reactivex.subjects.PublishSubject
@@ -22,7 +22,7 @@ data class SwapSettingSlippage(
 
     @Composable
     override fun GetContent(
-        navController: NavController,
+        navigation: HSNavigation,
         onError: (Throwable?) -> Unit,
         onValueChange: (Any?) -> Unit
     ) {

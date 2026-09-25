@@ -1,8 +1,8 @@
 package cash.p.terminal.modules.multiswap
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.Token
 import org.koin.compose.viewmodel.koinViewModel
@@ -11,7 +11,7 @@ import org.koin.java.KoinJavaComponent.inject
 
 @Composable
 fun SwapSelectCoinScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     token: Token?,
     title: String?,
     onSelect: (Token) -> Unit
@@ -29,7 +29,7 @@ fun SwapSelectCoinScreen(
         coinBalanceItems = uiState.coinBalanceItems,
         loading = uiState.loading,
         onSearchTextChanged = viewModel::setQuery,
-        onClose = navController::popBackStackSafely,
+        onClose = navigation::navigateUpSafely,
         onClickItem = { onSelect(it.token) },
         fiatItems = uiState.fiatItems,
         hasFiatSection = uiState.hasFiatSection,

@@ -10,34 +10,15 @@ import android.os.Build
 import android.os.Parcelable
 import android.provider.DocumentsContract
 import android.widget.ImageView
-import androidx.annotation.IdRes
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.Clipboard
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NamedNavArgument
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
 import cash.p.terminal.R
 import cash.p.terminal.modules.backuplocal.BackupLocalModule
 import cash.p.terminal.modules.backuplocal.fullbackup.BackupFileValidator
 import cash.p.terminal.modules.main.MainActivity
 import cash.p.terminal.modules.main.MainModule
 import cash.p.terminal.modules.market.topplatforms.Platform
-import cash.p.terminal.modules.premium.about.AboutPremiumFragment
-import cash.p.terminal.navigation.slideFromBottomForResult
+import cash.p.terminal.modules.premium.about.AboutPremiumPage
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
 import cash.p.terminal.ui_compose.components.ImageSource
 import cash.p.terminal.wallet.entities.FullCoin
@@ -49,7 +30,6 @@ import io.horizontalsystems.ethereumkit.core.toRawHexString
 import io.horizontalsystems.hdwalletkit.Language
 import io.horizontalsystems.hodler.LockTimeInterval
 import kotlin.system.exitProcess
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
@@ -212,98 +192,6 @@ fun LockTimeInterval?.stringResId(): Int {
     }
 }
 
-//Compose Animated Navigation
-
-fun NavGraphBuilder.composablePage(
-    route: String,
-    arguments: List<NamedNavArgument> = emptyList(),
-    content: @Composable AnimatedVisibilityScope.(NavBackStackEntry) -> Unit,
-) {
-    composable(
-        route = route,
-        arguments = arguments,
-        enterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Left,
-                animationSpec = tween(300)
-            )
-        },
-        popExitTransition = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Right,
-                animationSpec = tween(300)
-            )
-        },
-        popEnterTransition = { null },
-        content = content
-    )
-}
-
-fun NavGraphBuilder.composablePopup(
-    route: String,
-    content: @Composable AnimatedVisibilityScope.(NavBackStackEntry) -> Unit
-) {
-    composable(
-        route,
-        enterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Up,
-                animationSpec = tween(250)
-            )
-        },
-        popExitTransition = {
-            fadeOut(animationSpec = tween(250)) +
-                    slideOutOfContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Down,
-                        animationSpec = tween(250)
-                    )
-        },
-        content = content
-    )
-}
-
-inline fun <reified T : Any> NavGraphBuilder.composablePage(
-    noinline content: @Composable AnimatedVisibilityScope.(NavBackStackEntry) -> Unit,
-) {
-    composable<T>(
-        enterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Left,
-                animationSpec = tween(300)
-            )
-        },
-        popExitTransition = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Right,
-                animationSpec = tween(300)
-            )
-        },
-        popEnterTransition = { null },
-        content = content
-    )
-}
-
-inline fun <reified T : Any> NavGraphBuilder.composablePopup(
-    noinline content: @Composable AnimatedVisibilityScope.(NavBackStackEntry) -> Unit
-) {
-    composable<T>(
-        enterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Up,
-                animationSpec = tween(250)
-            )
-        },
-        popExitTransition = {
-            fadeOut(animationSpec = tween(250)) +
-                    slideOutOfContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Down,
-                        animationSpec = tween(250)
-                    )
-        },
-        content = content
-    )
-}
-
 suspend fun <T> retryWhen(
     times: Int,
     predicate: suspend (cause: Throwable) -> Boolean,
@@ -448,66 +336,17 @@ fun Context.hasNFC(): Boolean {
     return pm.defaultAdapter?.isEnabled == true
 }
 
-fun NavController.premiumAction(block: () -> Unit) {
+fun HSNavigation.premiumAction(block: () -> Unit) {
     val checkPremiumUseCase: CheckPremiumUseCase by inject(CheckPremiumUseCase::class.java)
     if (checkPremiumUseCase.getPremiumType().isPremium()) {
         block.invoke()
     } else {
-        slideFromBottomForResult<AboutPremiumFragment.Result>(
-            R.id.aboutPremiumFragment,
-            AboutPremiumFragment.CloseOnPremiumInput()
+        slideFromBottomForResult<AboutPremiumPage.Result>(
+            AboutPremiumPage(AboutPremiumPage.CloseOnPremiumInput())
         ) {
-            val backStackEntry = currentBackStackEntry
-            if (backStackEntry != null) {
-                backStackEntry.lifecycleScope.launch {
-                    val job = this
-                    val observer = object : DefaultLifecycleObserver {
-                        override fun onResume(owner: LifecycleOwner) {
-                            super.onResume(owner)
-                            backStackEntry.lifecycle.removeObserver(this)
-                            job.cancel()
-
-                            if (backStackEntry.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
-                                block.invoke()
-                            }
-                        }
-
-                        override fun onDestroy(owner: LifecycleOwner) {
-                            super.onDestroy(owner)
-                            backStackEntry.lifecycle.removeObserver(this)
-                            job.cancel()
-                        }
-                    }
-
-                    if (backStackEntry.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
-                        backStackEntry.lifecycle.addObserver(observer)
-                    } else {
-                        job.cancel()
-                    }
-                }
-            } else {
-                block.invoke()
-            }
+            block.invoke()
         }
     }
-}
-
-@Composable
-inline fun <reified VM : ViewModel> rememberViewModelFromGraph(
-    navController: NavController,
-    @IdRes destinationId: Int,
-    factory: ViewModelProvider.Factory? = null,
-): VM? {
-    val viewModelStoreOwner = remember(navController.currentBackStackEntry) {
-        tryOrNull {
-            navController.getBackStackEntry(destinationId)
-        }
-    } ?: return null
-
-    return viewModel<VM>(
-        viewModelStoreOwner = viewModelStoreOwner,
-        factory = factory
-    )
 }
 
 suspend fun Clipboard.getText(): String? {

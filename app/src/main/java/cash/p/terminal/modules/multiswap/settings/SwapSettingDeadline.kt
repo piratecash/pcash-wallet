@@ -4,7 +4,7 @@ import android.util.Range
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.modules.multiswap.settings.ui.TransactionDeadlineInput
 import io.reactivex.subjects.PublishSubject
 import java.util.Optional
@@ -21,7 +21,7 @@ data class SwapSettingDeadline(
 
     @Composable
     override fun GetContent(
-        navController: NavController,
+        navigation: HSNavigation,
         onError: (Throwable?) -> Unit,
         onValueChange: (Any?) -> Unit
     ) {

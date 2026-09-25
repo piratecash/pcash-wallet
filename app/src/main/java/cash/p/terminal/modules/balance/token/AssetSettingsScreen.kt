@@ -22,8 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.R
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.displayoptions.DisplayPricePeriod
@@ -31,9 +30,10 @@ import cash.p.terminal.modules.displayoptions.PriceParametersSection
 import cash.p.terminal.modules.offline.OfflineModeConfirmationBottomSheet
 import cash.p.terminal.modules.offline.OfflineModeInfoBottomSheet
 import cash.p.terminal.modules.offline.OfflineModeToggleUiState
+import cash.p.terminal.modules.premium.settings.PremiumSettingsPage
 import cash.p.terminal.modules.transactions.AmlCheckInfoBottomSheet
 import cash.p.terminal.modules.transactions.AmlCheckRow
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui.compose.components.AlertGroup
 import cash.p.terminal.ui_compose.Select
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
@@ -62,7 +62,7 @@ fun AssetSettingsScreen(
     onConfirmOffline: () -> Unit,
     onGoOnline: () -> Unit,
     onOfflineSheetDismiss: () -> Unit,
-    navController: NavController,
+    navigation: HSNavigation,
     onBack: () -> Unit,
     creationBlockVisible: Boolean,
     currentHeightText: String?,
@@ -198,7 +198,7 @@ fun AssetSettingsScreen(
         AmlCheckInfoBottomSheet(
             onPremiumSettingsClick = {
                 showAmlInfoSheet = false
-                navController.slideFromRight(R.id.premiumSettingsFragment)
+                navigation.slideFromRight(PremiumSettingsPage())
             },
             onLaterClick = { showAmlInfoSheet = false },
             onDismiss = { showAmlInfoSheet = false }
@@ -253,7 +253,7 @@ private fun AssetSettingsScreenPreview() {
             onConfirmOffline = {},
             onGoOnline = {},
             onOfflineSheetDismiss = {},
-            navController = rememberNavController(),
+            navigation = HSNavigation(NavBackStack()),
             onBack = {},
             creationBlockVisible = true,
             currentHeightText = "2477000",

@@ -22,12 +22,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import cash.p.terminal.MainGraphDirections
 import cash.p.terminal.R
 import cash.p.terminal.modules.walletconnect.list.WalletConnectListModule
 import cash.p.terminal.modules.walletconnect.session.WCSessionModule
-import cash.p.terminal.navigation.slideFromBottom
+import cash.p.terminal.modules.walletconnect.session.WCSessionPage
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui.compose.components.BadgeText
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
@@ -39,7 +38,7 @@ fun WCSessionCell(
     shape: Shape,
     showDivider: Boolean = false,
     session: WalletConnectListModule.SessionViewItem,
-    navController: NavController,
+    navigation: HSNavigation,
 ) {
     Box(
         modifier = Modifier
@@ -48,8 +47,8 @@ fun WCSessionCell(
             .clip(shape)
             .background(ComposeAppTheme.colors.lawrence)
             .clickable {
-                navController.slideFromBottom(
-                    MainGraphDirections.actionGlobalToWcSessionFragment(
+                navigation.slideFromBottom(
+                    WCSessionPage(
                         WCSessionModule.Input(
                             session.sessionTopic
                         )

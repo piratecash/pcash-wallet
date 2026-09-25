@@ -50,7 +50,7 @@ class SwapPayCoreNavigationTest {
             ),
         )
 
-        val params = page.toPaymentParams("0xReceiveAddress")
+        val params = page.input.toPaymentParams("0xReceiveAddress")
 
         assertEquals(SwapAmountDirection.Out, params.direction)
         assertEquals(0, targetAmount.compareTo(requireNotNull(params.requestedAmountOut)))

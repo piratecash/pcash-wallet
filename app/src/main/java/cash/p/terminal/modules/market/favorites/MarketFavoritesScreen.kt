@@ -9,11 +9,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import org.koin.compose.viewmodel.koinViewModel
 import cash.p.terminal.R
-import cash.p.terminal.navigation.slideFromBottom
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.modules.coin.CoinPage
+import cash.p.terminal.modules.main.MainPage
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.viewModelStoreOwnerForPage
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.ui_compose.CoinFragmentInput
 import cash.p.terminal.modules.coin.overview.ui.Loading
@@ -34,10 +35,10 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MarketFavoritesScreen(
-    navController: NavController
+    navigation: HSNavigation
 ) {
     val viewModel = koinViewModel<MarketFavoritesViewModel>(
-        viewModelStoreOwner = requireNotNull(navController.currentBackStackEntry)
+        viewModelStoreOwner = navigation.viewModelStoreOwnerForPage(MainPage::class)
     )
     val uiState = viewModel.uiState
     var openSortingSelector by rememberSaveable { mutableStateOf(false) }
@@ -74,7 +75,7 @@ fun MarketFavoritesScreen(
                         if (uiState.showSignalsInfo) {
                             viewModel.onSignalsInfoShown()
 
-                            navController.slideFromBottom(R.id.marketSignalsFragment)
+                            navigation.slideFromBottom(MarketSignalsPage())
                         }
 
                         CoinListOrderable(
@@ -85,8 +86,7 @@ fun MarketFavoritesScreen(
                                 viewModel.removeFromFavorites(uid)
                             },
                             onCoinClick = { coinUid ->
-                                val arguments = CoinFragmentInput(coinUid)
-                                navController.slideFromRight(R.id.coinFragment, arguments)
+                                navigation.slideFromRight(CoinPage(CoinFragmentInput(coinUid)))
                             },
                             onReorder = { from, to ->
                                 viewModel.reorder(from, to)

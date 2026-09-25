@@ -17,10 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.Caution
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpFrom
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
 import cash.p.terminal.strings.helpers.TranslatableString
@@ -35,13 +36,14 @@ import io.horizontalsystems.core.entities.Blockchain
 
 @Composable
 fun AddRpcScreen(
-    navController: NavController,
+    page: AddRpcPage,
+    navigation: HSNavigation,
     blockchain: Blockchain,
     windowInsets: WindowInsets = NavigationBarDefaults.windowInsets
 ) {
     val viewModel = viewModel<AddRpcViewModel>(factory = AddRpcModule.Factory(blockchain))
     if (viewModel.viewState.closeScreen) {
-        navController.popBackStack()
+        navigation.navigateUpFrom(page)
         viewModel.onScreenClose()
     }
 
@@ -57,9 +59,7 @@ fun AddRpcScreen(
                 MenuItem(
                     title = TranslatableString.ResString(R.string.Button_Close),
                     icon = R.drawable.ic_close_24,
-                    onClick = {
-                        navController.popBackStackSafely()
-                    }
+                    onClick = navigation::navigateUpSafely
                 )
             )
         )
@@ -75,6 +75,7 @@ fun AddRpcScreen(
             FormsInput(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 qrScannerEnabled = true,
+                navigation = navigation,
                 qrScannerTitle = stringResource(R.string.AddEvmSyncSource_RpcUrl),
                 onValueChange = viewModel::onEnterRpcUrl,
                 hint = "",
@@ -86,6 +87,7 @@ fun AddRpcScreen(
             FormsInput(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 qrScannerEnabled = true,
+                navigation = navigation,
                 qrScannerTitle = stringResource(R.string.AddEvmSyncSource_BasicAuthentication),
                 onValueChange = viewModel::onEnterBasicAuth,
                 hint = ""

@@ -1,0 +1,35 @@
+package cash.p.terminal.modules.pin
+
+import android.os.Parcelable
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import cash.p.terminal.R
+import cash.p.terminal.modules.pin.ui.PinConfirm
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
+import kotlinx.parcelize.Parcelize
+import cash.p.terminal.navigation.navigateUpSafely
+
+class ConfirmPinPage(val input: InputConfirm?) : HSPage(screenshotEnabled = false) {
+
+    @Composable
+    override fun GetContent(navigation: HSNavigation) {
+        PinConfirm(
+            title = stringResource(input?.descriptionResId ?: R.string.Unlock_EnterPasscode),
+            pinType = input?.pinType ?: PinType.REGULAR,
+            onSuccess = {
+                navigation.setResult(this, Result(true))
+                navigation.navigateUpSafely()
+            },
+            onCancel = {
+                navigation.navigateUpSafely()
+            }
+        )
+    }
+
+    @Parcelize
+    data class InputConfirm(val descriptionResId: Int, val pinType: PinType) : Parcelable
+
+    @Parcelize
+    data class Result(val success: Boolean) : Parcelable
+}

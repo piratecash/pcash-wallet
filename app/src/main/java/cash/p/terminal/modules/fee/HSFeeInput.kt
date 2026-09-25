@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import io.horizontalsystems.core.entities.CurrencyValue
@@ -24,7 +24,7 @@ fun HSFeeRaw(
     fee: BigDecimal?,
     amountInputType: AmountInputType,
     rate: CurrencyValue?,
-    navController: NavController,
+    navigation: HSNavigation,
     viewState: ViewState? = null
 ) {
 

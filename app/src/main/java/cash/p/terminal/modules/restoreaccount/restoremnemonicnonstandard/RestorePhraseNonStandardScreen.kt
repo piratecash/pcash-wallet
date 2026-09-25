@@ -37,7 +37,6 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -53,14 +52,16 @@ import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.findNavController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
 import cash.p.terminal.core.utils.Utils
 import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.modules.mnemonic.MnemonicLanguageCell
 import cash.p.terminal.modules.mnemonic.MnemonicLanguageSelectorDialog
+import cash.p.terminal.navigation.AppPages
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.openQrScanner
+import org.koin.compose.koinInject
 import cash.p.terminal.modules.restoreaccount.RestoreViewModel
 import cash.p.terminal.modules.restoreaccount.restoremnemonic.SuggestionsBar
 import cash.p.terminal.ui.compose.Keyboard
@@ -92,6 +93,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun RestorePhraseNonStandard(
+    navigation: HSNavigation,
     mainViewModel: RestoreViewModel,
     openSelectCoinsScreen: () -> Unit,
     onBackClick: () -> Unit,
@@ -100,7 +102,7 @@ fun RestorePhraseNonStandard(
         viewModel<RestoreMnemonicNonStandardViewModel>(factory = RestoreMnemonicNonStandardModule.Factory())
     val uiState = viewModel.uiState
     val context = LocalContext.current
-    val view = LocalView.current
+    val appPages: AppPages = koinInject()
     val focusManager = LocalFocusManager.current
     val scannerTitle = stringResource(R.string.Restore_RecoveryPhrase)
 
@@ -240,7 +242,7 @@ fun RestorePhraseNonStandard(
                                 icon = R.drawable.ic_qr_scan_20,
                                 onClick = {
                                     coroutineScope.launchAfterClearingFocus(focusManager) {
-                                        view.findNavController().openQrScanner(scannerTitle) { scannedText ->
+                                        navigation.openQrScanner(appPages, scannerTitle) { scannedText ->
                                             textState = textState.copy(
                                                 text = scannedText,
                                                 selection = TextRange(scannedText.length)

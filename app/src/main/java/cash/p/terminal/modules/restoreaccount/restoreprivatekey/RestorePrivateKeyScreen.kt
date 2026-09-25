@@ -18,6 +18,7 @@ import cash.p.terminal.R
 import cash.p.terminal.modules.restoreaccount.RestoreViewModel
 import cash.p.terminal.modules.restoreaccount.restoremenu.RestoreByMenu
 import cash.p.terminal.modules.restoreaccount.restoremenu.RestoreMenuViewModel
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui.compose.components.FormsInput
@@ -29,6 +30,7 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @Composable
 fun RestorePrivateKey(
+    navigation: HSNavigation,
     restoreMenuViewModel: RestoreMenuViewModel,
     mainViewModel: RestoreViewModel,
     openSelectCoinsScreen: () -> Unit,
@@ -84,6 +86,7 @@ fun RestorePrivateKey(
                 hint = stringResource(id = R.string.Restore_PrivateKeyHint),
                 state = viewModel.inputState,
                 qrScannerEnabled = true,
+                navigation = navigation,
                 qrScannerTitle = stringResource(R.string.Restore_PrivateKey),
                 onValueChange = {
                     viewModel.onEnterPrivateKey(it)

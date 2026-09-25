@@ -22,7 +22,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.modules.receive.ui.AddressBadgeChip
 import cash.p.terminal.modules.receive.ui.ReceiveAddressScreen
@@ -31,8 +30,9 @@ import cash.p.terminal.modules.receive.viewmodels.MoneroSubaddressParcelable
 import cash.p.terminal.modules.receive.viewmodels.MoneroUsedAddressesParams
 import cash.p.terminal.modules.receive.viewmodels.ReceiveMoneroUiState
 import cash.p.terminal.modules.receive.viewmodels.ReceiveMoneroViewModel
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
-import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.ui_compose.BottomSheetHeader
 import cash.p.terminal.ui_compose.TransparentModalBottomSheet
 import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
@@ -46,12 +46,13 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Wallet
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import kotlin.reflect.KClass
 
 @Composable
 fun ReceiveMoneroScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     wallet: Wallet,
-    receiveEntryPointDestId: Int,
+    receiveEntryPoint: KClass<out HSPage>?,
 ) {
     val viewModel: ReceiveMoneroViewModel = koinViewModel { parametersOf(wallet) }
     val uiState = viewModel.uiState
@@ -62,19 +63,13 @@ fun ReceiveMoneroScreen(
         uiState = uiState,
         setAmount = viewModel::setAmount,
         onErrorClick = viewModel::onErrorClick,
-        topContent = { MoneroTopContent(uiState, viewModel, navController) },
+        topContent = { MoneroTopContent(uiState, viewModel, navigation) },
         addressBadge = { MoneroAddressBadge(uiState.addressBadge) },
         bottomContent = {
             MoneroBottomContent(uiState, viewModel) { showConfirmDialog = true }
         },
-        onBackPress = navController::navigateUpSafely,
-        closeModule = {
-            if (receiveEntryPointDestId == 0) {
-                navController.navigateUpSafely()
-            } else {
-                navController.popBackStack(receiveEntryPointDestId, true)
-            }
-        }
+        onBackPress = navigation::navigateUpSafely,
+        closeModule = { navigation.closeReceiveModule(receiveEntryPoint) }
     )
 
     if (showConfirmDialog) {
@@ -95,7 +90,7 @@ fun ReceiveMoneroScreen(
 private fun MoneroTopContent(
     uiState: ReceiveMoneroUiState,
     viewModel: ReceiveMoneroViewModel,
-    navController: NavController,
+    navigation: HSNavigation,
 ) {
     UsedAddressesRow(
         enabled = uiState.hasAddressHistory,
@@ -106,10 +101,7 @@ private fun MoneroTopContent(
                         MoneroSubaddressParcelable(it.index, it.address, it.receivedAmount)
                     }
                 )
-                navController.slideFromRight(
-                    R.id.moneroUsedAddressesFragment,
-                    params
-                )
+                navigation.slideFromRight(MoneroUsedAddressesPage(params))
             }
         } else null
     )

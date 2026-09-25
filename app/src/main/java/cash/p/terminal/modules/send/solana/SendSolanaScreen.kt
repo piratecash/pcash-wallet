@@ -15,10 +15,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import cash.p.terminal.R
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.address.AddressParserModule
@@ -29,17 +25,17 @@ import cash.p.terminal.modules.amount.AmountInputType
 import cash.p.terminal.modules.amount.AmountInputModeViewModel
 import cash.p.terminal.modules.amount.HSAmountInput
 import cash.p.terminal.modules.fee.FeeInfoSection
-import cash.p.terminal.modules.send.SendConfirmationFragment
-import cash.p.terminal.modules.send.SendFragment.ProceedActionData
+import cash.p.terminal.modules.send.SendConfirmationPage
+import cash.p.terminal.modules.send.SendPage.ProceedActionData
 import cash.p.terminal.modules.send.SendScreen
 import cash.p.terminal.modules.send.SendSuggestionsBar
 import cash.p.terminal.modules.send.address.AddressCheckerControl
 import cash.p.terminal.modules.send.address.SmartContractCheckSection
 import cash.p.terminal.modules.send.offline.OfflineSignActionCell
-import cash.p.terminal.modules.send.offline.OfflineSignFlowRoutes
-import cash.p.terminal.modules.send.offline.offlineSignFlowRoutes
+import cash.p.terminal.modules.send.offline.OfflineSignPage
 import cash.p.terminal.modules.sendtokenselect.PrefilledData
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui.compose.components.PoisonAddressRiskSection
 import cash.p.terminal.ui.compose.components.PoisonWarningCell
 import cash.p.terminal.ui.compose.components.TextPreprocessor
@@ -55,53 +51,32 @@ import io.horizontalsystems.solanakit.SolanaKit
 import java.math.BigDecimal
 
 @Composable
-fun SendSolanaNavHost(
+fun SendSolanaPageContent(
     title: String,
-    fragmentNavController: NavController,
+    navigation: HSNavigation,
     viewModel: SendSolanaViewModel,
     amountInputModeViewModel: AmountInputModeViewModel,
     prefilledData: PrefilledData?,
     addressCheckerControl: AddressCheckerControl,
     onNextClick: (ProceedActionData) -> Unit,
 ) {
-    val navController = rememberNavController()
-    NavHost(
-        navController = navController,
-        startDestination = SendSolanaPage,
-    ) {
-        composable(SendSolanaPage) {
-            SendSolanaScreen(
-                title = title,
-                navController = fragmentNavController,
-                state = viewModel.toScreenState(amountInputModeViewModel.inputType),
-                prefilledData = prefilledData,
-                addressCheckerControl = addressCheckerControl,
-                actions = SendSolanaScreenActions(
-                    onEnterAmount = viewModel::onEnterAmount,
-                    onEnterAddress = viewModel::onEnterAddress,
-                    onToggleInputType = amountInputModeViewModel::onToggleInputType,
-                    onRiskAcceptedChange = viewModel::onRiskAcceptedChange,
-                    onBalanceClicked = viewModel::toggleHideBalance,
-                    onOfflineSignClick = { navController.navigate(OfflineSolanaSignPage) },
-                    onNextClick = onNextClick,
-                ),
-            )
-        }
-        offlineSignFlowRoutes(
-            routes = OfflineSignFlowRoutes(
-                signRoute = OfflineSolanaSignPage,
-                transferRoute = OfflineSolanaTransactionTransferPage,
-            ),
-            navController = navController,
-            fragmentNavController = fragmentNavController,
-            sendViewModel = viewModel,
-        )
-    }
+    SendSolanaScreen(
+        title = title,
+        navigation = navigation,
+        state = viewModel.toScreenState(amountInputModeViewModel.inputType),
+        prefilledData = prefilledData,
+        addressCheckerControl = addressCheckerControl,
+        actions = SendSolanaScreenActions(
+            onEnterAmount = viewModel::onEnterAmount,
+            onEnterAddress = viewModel::onEnterAddress,
+            onToggleInputType = amountInputModeViewModel::onToggleInputType,
+            onRiskAcceptedChange = viewModel::onRiskAcceptedChange,
+            onBalanceClicked = viewModel::toggleHideBalance,
+            onOfflineSignClick = { navigation.slideFromRight(OfflineSignPage(SendSolanaViewModel::class)) },
+            onNextClick = onNextClick,
+        ),
+    )
 }
-
-private const val SendSolanaPage = "send_solana"
-private const val OfflineSolanaSignPage = "offline_solana_sign"
-private const val OfflineSolanaTransactionTransferPage = "offline_solana_transaction_transfer"
 
 data class SendSolanaScreenState(
     val wallet: Wallet,
@@ -137,7 +112,7 @@ data class SendSolanaScreenActions(
 @Composable
 fun SendSolanaScreen(
     title: String,
-    navController: NavController,
+    navigation: HSNavigation,
     state: SendSolanaScreenState,
     prefilledData: PrefilledData?,
     addressCheckerControl: AddressCheckerControl,
@@ -163,7 +138,7 @@ fun SendSolanaScreen(
 
         SendScreen(
             title = title,
-            onCloseClick = { navController.popBackStackSafely() },
+            onCloseClick = { navigation.navigateUpSafely() },
             proceedEnabled = state.uiState.canBeSend,
             onSendClick = form.actions.onProceed,
             bottomOverlay = {
@@ -181,7 +156,7 @@ fun SendSolanaScreen(
         ) {
             val inputContext = SendSolanaInputContext(
                 textPreprocessor = textPreprocessor,
-                navController = navController,
+                navigation = navigation,
                 prefilledData = prefilledData,
                 addressCheckerControl = addressCheckerControl,
             )
@@ -216,7 +191,7 @@ private data class SendSolanaFormActions(
 
 private data class SendSolanaInputContext(
     val textPreprocessor: TextPreprocessor,
-    val navController: NavController,
+    val navigation: HSNavigation,
     val prefilledData: PrefilledData?,
     val addressCheckerControl: AddressCheckerControl,
 )
@@ -253,7 +228,7 @@ private fun handleSolanaProceed(
         ProceedActionData(
             address = state.uiState.address?.hex,
             wallet = state.wallet,
-            type = SendConfirmationFragment.Type.Solana,
+            type = SendConfirmationPage.Type.Solana,
         )
     )
 }
@@ -295,7 +270,7 @@ private fun SendSolanaAddressInput(
         coinCode = wallet.coin.code,
         error = state.uiState.addressError,
         textPreprocessor = inputContext.textPreprocessor,
-        navController = inputContext.navController,
+        navigation = inputContext.navigation,
         isPoisonAddress = state.uiState.isPoisonAddress,
         onValueChange = actions.onEnterAddress,
     )
@@ -364,7 +339,7 @@ private fun SendSolanaAddressChecks(
     }
     SmartContractCheckSection(
         token = state.wallet.token,
-        navController = inputContext.navController,
+        navigation = inputContext.navigation,
         addressCheckerControl = inputContext.addressCheckerControl,
         modifier = Modifier.padding(top = 8.dp),
     )

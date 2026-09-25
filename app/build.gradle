@@ -14,7 +14,6 @@ plugins {
     id 'com.google.firebase.crashlytics'
     id 'com.google.gms.google-services'
     id 'org.jetbrains.kotlin.plugin.serialization'
-    id 'androidx.navigation.safeargs.kotlin'
     id 'io.github.takahirom.roborazzi' version '1.65.0'
     id 'androidx.baselineprofile'
 }
@@ -418,16 +417,12 @@ dependencies {
     // ViewPager circle indicator
     implementation libs.circleindicator
 
+    // BaseTransientBottomBar (CustomSnackbar) and ViewPager2 (NestedScrollableHost); previously
+    // reached transitively through navigation-ui-ktx / material.
+    implementation libs.material
+
     //Custom tabs, chrome
     implementation libs.androidx.browser
-
-    // Navigation component
-    implementation libs.androidx.navigation.fragment.ktx
-    implementation libs.androidx.navigation.ui.ktx
-
-    //Compose Navigation
-    implementation libs.androidx.navigation.compose
-    implementation libs.accompanist.navigation.animation
 
     // QR code scanning with CameraX + ZXing core
     implementation libs.camerax.camera2
@@ -551,6 +546,7 @@ dependencies {
     testImplementation libs.powermock.api.mockito2
     testImplementation libs.powermock.module.junit4
     testImplementation libs.koin.test.junit4
+    testImplementation libs.classgraph
     implementation libs.ktor.client.core
     implementation libs.ktor.client.okhttp
 

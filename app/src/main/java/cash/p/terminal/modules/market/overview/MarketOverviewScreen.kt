@@ -13,10 +13,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import cash.p.terminal.R
-import cash.p.terminal.navigation.slideFromBottom
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.modules.market.category.MarketCategoryPage
+import cash.p.terminal.modules.market.platform.MarketPlatformPage
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.modules.coin.overview.ui.Loading
 import cash.p.terminal.modules.market.overview.ui.MetricChartsView
@@ -30,7 +30,7 @@ import cash.p.terminal.ui.helpers.LinkHelper
 
 @Composable
 fun MarketOverviewScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     viewModel: MarketOverviewViewModel = viewModel(factory = MarketOverviewModule.Factory())
 ) {
     val context = LocalContext.current
@@ -61,32 +61,7 @@ fun MarketOverviewScreen(
                                 .fillMaxSize()
                                 .verticalScroll(scrollState)
                         ) {
-                            MetricChartsView(viewItem.marketMetrics, navController)
-//                            BoardsView(
-//                                boards = viewItem.boards,
-//                                navController = navController,
-//                                onClickSeeAll = { listType ->
-//                                    val (sortingField, topMarket, marketField) = viewModel.getTopCoinsParams(
-//                                        listType
-//                                    )
-//
-////                                    navController.slideFromBottom(
-////                                        R.id.marketTopCoinsFragment,
-////                                        MarketTopCoinsFragment.CoinFragmentInput(
-////                                            sortingField,
-////                                            topMarket,
-////                                            marketField
-////                                        )
-////                                    )
-//
-//                                    stat(page = StatPage.MarketOverview, section = listType.statSection, event = StatEvent.Open(StatPage.TopCoins))
-//                                },
-//                                onSelectTopMarket = { topMarket, listType ->
-//                                    viewModel.onSelectTopMarket(topMarket, listType)
-//
-//                                    stat(page = StatPage.MarketOverview, section = listType.statSection, event = StatEvent.SwitchMarketTop(topMarket.statMarketTop))
-//                                }
-//                            )
+                            MetricChartsView(viewItem.marketMetrics, navigation)
 
                             TopPairsBoardView(
                                 topMarketPairs = viewItem.topMarketPairs,
@@ -96,7 +71,6 @@ fun MarketOverviewScreen(
                                     }
                                 }
                             ) {
-                                //navController.slideFromBottom(R.id.topPairsFragment)
                             }
 
                             TopPlatformsBoardView(
@@ -105,25 +79,16 @@ fun MarketOverviewScreen(
                                     viewModel.onSelectTopPlatformsTimeDuration(timeDuration)
                                 },
                                 onItemClick = {
-                                    navController.slideFromRight(R.id.marketPlatformFragment, it)
+                                    navigation.slideFromRight(MarketPlatformPage(it))
                                 },
                                 onClickSeeAll = {
-                                    val timeDuration = viewModel.topPlatformsTimeDuration
-
-//                                    navController.slideFromBottom(
-//                                        R.id.marketTopPlatformsFragment,
-//                                        timeDuration
-//                                    )
                                 }
                             )
 
                             TopSectorsBoardView(
                                 board = viewItem.topSectorsBoard
                             ) { coinCategory ->
-                                navController.slideFromBottom(
-                                    R.id.marketCategoryFragment,
-                                    coinCategory
-                                )
+                                navigation.slideFromBottom(MarketCategoryPage(coinCategory))
                             }
 
                             VSpacer(height = 32.dp)

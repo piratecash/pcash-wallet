@@ -82,6 +82,7 @@ dependencies {
     implementation(project(":core:strings"))
     implementation(project(":core:core"))
     implementation(project(":core:network"))
+    implementation(project(":core:navigation"))
 
     testImplementation(libs.junit)
     testImplementation(libs.mockk)

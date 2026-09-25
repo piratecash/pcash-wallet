@@ -138,6 +138,7 @@ import cash.p.terminal.feature.miniapp.domain.usecase.EvmPersonalSigner
 import cash.p.terminal.feature.miniapp.domain.usecase.GetTonAddressUseCase
 import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.modules.addtoken.AddTokenService
+import cash.p.terminal.modules.main.AppPagesImpl
 import cash.p.terminal.modules.market.favorites.MarketFavoritesMenuService
 import cash.p.terminal.modules.market.favorites.MarketFavoritesRepository
 import cash.p.terminal.modules.market.favorites.MarketFavoritesService
@@ -170,10 +171,12 @@ import cash.p.terminal.network.alphaaml.api.AlphaAmlApi
 import cash.p.terminal.network.data.AppHeadersProvider
 import cash.p.terminal.network.pirate.di.PREMIUM_API_BASE_URL_QUALIFIER
 import cash.p.terminal.premium.di.PREMIUM_IS_DEBUG_QUALIFIER
+import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import cash.p.terminal.wallet.managers.ITransactionHiddenManager
 import cash.p.terminal.wallet.managers.UserManager
+import cash.p.terminal.wallet.navigation.WalletPages
 import com.m2049r.xmrwallet.service.MoneroWalletService
 import io.horizontalsystems.bitcoincore.core.IConnectionManager
 import io.horizontalsystems.core.BackgroundManager
@@ -203,6 +206,7 @@ import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.bind
+import org.koin.dsl.binds
 import org.koin.dsl.module
 
 val managerModule = module {
@@ -362,6 +366,7 @@ val managerModule = module {
     singleOf(::PoisonAddressManager)
     singleOf(::AddressCheckManager)
     singleOf(::DeeplinkParser)
+    singleOf(::AppPagesImpl) binds arrayOf(AppPages::class, WalletPages::class)
     singleOf(::CheckAmlIncomingTransactionUseCase)
     singleOf(::TransactionAdapterManager)
     // Per-screen: the token screen owns its repository and clear()s it, so a shared instance

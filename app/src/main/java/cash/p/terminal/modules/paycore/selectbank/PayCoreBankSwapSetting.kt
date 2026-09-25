@@ -5,10 +5,11 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import cash.p.terminal.navigation.HSNavigation
+import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.R
 import cash.p.terminal.modules.multiswap.settings.ISwapSetting
 import cash.p.terminal.modules.paycore.PayCoreBankResponse
@@ -29,7 +30,7 @@ data class PayCoreBankSwapSetting(
 
     @Composable
     override fun GetContent(
-        navController: NavController,
+        navigation: HSNavigation,
         onError: (Throwable?) -> Unit,
         onValueChange: (Any?) -> Unit,
     ) {
@@ -45,7 +46,7 @@ data class PayCoreBankSwapSetting(
     }
 
     override fun LazyListScope.addContentItems(
-        navController: NavController,
+        navigation: HSNavigation,
         value: Any?,
         onError: (Throwable?) -> Unit,
         onValueChange: (Any?) -> Unit
@@ -142,13 +143,13 @@ private fun PayCoreBankSwapSettingPreviewContent(
     banks: List<PayCoreBankResponse>,
     selectedBank: PayCoreBankResponse?,
 ) {
-    val navController = rememberNavController()
+    val navigation = remember { HSNavigation(NavBackStack()) }
     val setting = PayCoreBankSwapSetting(banks, selectedBank)
 
     LazyColumn {
         with(setting) {
             addContentItems(
-                navController = navController,
+                navigation = navigation,
                 value = selectedBank,
                 onError = {},
                 onValueChange = {},

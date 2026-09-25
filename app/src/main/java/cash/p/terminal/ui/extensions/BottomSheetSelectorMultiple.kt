@@ -37,7 +37,7 @@ import cash.p.terminal.ui_compose.components.HudHelper
 
 @Composable
 fun BottomSheetSelectorMultiple(
-    config: BottomSheetSelectorMultipleDialog.Config,
+    config: BottomSheetSelectorMultipleSheet.Config,
     onItemsSelected: (List<Int>) -> Unit,
     onCloseClick: () -> Unit,
     maxListHeight: Dp = Dp.Unspecified,
@@ -153,7 +153,7 @@ private fun SelectorRow(
 @Preview(showBackground = true)
 @Composable
 private fun BottomSheetSelectorMultiplePreview() {
-    val config = BottomSheetSelectorMultipleDialog.Config(
+    val config = BottomSheetSelectorMultipleSheet.Config(
         title = "Select Options",
         description = "Please select the options you want.",
         descriptionTitle = "Options",

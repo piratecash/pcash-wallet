@@ -15,12 +15,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.description
 import cash.p.terminal.core.title
 import cash.p.terminal.modules.receive.viewmodels.NetworkSelectViewModel
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HsBackButton
@@ -40,7 +40,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun NetworkSelectScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     activeAccount: Account,
     fullCoin: FullCoin,
     onSelect: (Wallet) -> Unit
@@ -59,7 +59,7 @@ fun NetworkSelectScreen(
             AppBar(
                 title = stringResource(R.string.Balance_Network),
                 navigationIcon = {
-                    HsBackButton(onClick = { navController.popBackStackSafely() })
+                    HsBackButton(onClick = navigation::navigateUpSafely)
                 },
                 menuItems = listOf()
             )

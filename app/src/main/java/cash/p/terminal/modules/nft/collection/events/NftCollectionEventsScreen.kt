@@ -19,13 +19,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import cash.p.terminal.R
-import cash.p.terminal.navigation.slideFromBottom
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.modules.coin.ContractInfo
 import cash.p.terminal.modules.coin.overview.ui.Loading
 import cash.p.terminal.modules.nft.asset.NftAssetModule
+import cash.p.terminal.modules.nft.asset.NftAssetPage
 import cash.p.terminal.ui_compose.components.HSSwipeRefresh
 import cash.p.terminal.ui.compose.OnBottomReached
 import cash.p.terminal.ui_compose.SelectOptional
@@ -48,7 +48,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun NftCollectionEventsScreen(
-    navController: NavController, blockchainType: BlockchainType, collectionUid: String, contracts: List<ContractInfo>
+    navigation: HSNavigation, blockchainType: BlockchainType, collectionUid: String, contracts: List<ContractInfo>
 ) {
     val viewModel = viewModel<NftCollectionEventsViewModel>(
         factory = NftCollectionEventsModule.Factory(
@@ -77,7 +77,7 @@ fun NftCollectionEventsScreen(
                 }
 
                 ViewState.Success -> {
-                    NftEvents(viewModel, navController)
+                    NftEvents(viewModel, navigation)
                 }
             }
         }
@@ -180,7 +180,7 @@ private fun ContractBottomSheet(
 @Composable
 fun NftEvents(
     viewModel: NftCollectionEventsViewModel,
-    navController: NavController?,
+    navigation: HSNavigation?,
     hideEventIcon: Boolean = false,
 ) {
     val listState = rememberLazyListState()
@@ -239,11 +239,12 @@ fun NftEvents(
                                 iconUrl = if (hideEventIcon) null else event.imageUrl ?: "",
                                 coinValue = event.price?.getFormattedFull(),
                                 currencyValue = event.priceInFiat?.getFormattedFull(),
-                                onClick = navController?.let {
+                                onClick = navigation?.let {
                                     {
-                                        navController.slideFromBottom(
-                                            R.id.nftAssetFragment,
-                                            NftAssetModule.Input(event.providerCollectionUid, event.nftUid)
+                                        navigation.slideFromBottom(
+                                            NftAssetPage(
+                                                NftAssetModule.Input(event.providerCollectionUid, event.nftUid)
+                                            )
                                         )
                                     }
                                 }

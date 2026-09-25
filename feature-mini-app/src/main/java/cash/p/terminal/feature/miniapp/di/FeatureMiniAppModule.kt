@@ -34,7 +34,7 @@ val featureMiniAppModule = module {
             marketKitWrapper = get(),
             balanceService = get(named("wallet")),
             uniqueCodeStorage = get(),
-            savedStateHandle = params.get()
+            input = params.getOrNull()
         )
     }
 }

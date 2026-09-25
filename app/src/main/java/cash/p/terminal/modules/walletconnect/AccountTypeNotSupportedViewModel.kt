@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class AccountTypeNotSupportedViewModel(
-    input: AccountTypeNotSupportedDialog.Input,
+    input: AccountTypeNotSupportedSheet.Input,
     accountManager: IAccountManager
 ) : ViewModel() {
 

@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.ISendMoneroAdapter
@@ -257,5 +257,5 @@ class SendTransactionServiceMonero(
     override fun hasSettings() = false
 
     @Composable
-    override fun GetSettingsContent(navController: NavController) = Unit
+    override fun GetSettingsContent(navigation: HSNavigation) = Unit
 }

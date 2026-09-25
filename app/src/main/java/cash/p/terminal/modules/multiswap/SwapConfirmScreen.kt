@@ -8,7 +8,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,7 +15,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.MoneroSpendReadiness
 import cash.p.terminal.core.requiresTrezorPreparation
@@ -28,14 +26,15 @@ import cash.p.terminal.modules.evmfee.Cautions
 import cash.p.terminal.modules.fee.FeeInfoSection
 import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
 import cash.p.terminal.modules.multiswap.ui.SwapProviderField
-import cash.p.terminal.modules.multiswap.exchanges.MultiSwapExchangesFragment
+import cash.p.terminal.modules.multiswap.exchanges.MultiSwapExchangesPage
 import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.SendResultHud
 import cash.p.terminal.modules.send.hasInsufficientFeeTokenBalance
 import cash.p.terminal.modules.send.fee.NetworkFeeWarningOverlay
 import cash.p.terminal.modules.send.fee.NetworkFeeWarningData
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
-import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.ui.compose.components.CoinImage
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
@@ -61,11 +60,14 @@ import io.horizontalsystems.core.entities.Currency
 import io.horizontalsystems.core.entities.CurrencyValue
 import kotlinx.coroutines.delay
 import java.math.BigDecimal
+import kotlin.reflect.KClass
 
 data class SwapConfirmNavigation(
-    val fragment: NavController,
-    val swap: NavController,
-)
+    val navigation: HSNavigation,
+    val flowRoot: KClass<out HSPage>,
+) {
+    fun exitFlow() = navigation.removeLastUntil(flowRoot, inclusive = true)
+}
 
 data class SwapConfirmQuoteParams(
     val quote: SwapProviderQuote,
@@ -121,7 +123,7 @@ fun SwapConfirmScreen(
     SwapResultEffects(viewModel, navigation, quoteParams.multiSwapLegInfo)
 
     ConfirmTransactionScreen(
-        onClickBack = navigation.swap::navigateUpSafely,
+        onClickBack = navigation.navigation::navigateUpSafely,
         onClickSettings = if (uiState.isAdvancedSettingsAvailable && onOpenSettings != null) {
             { onOpenSettings.invoke() }
         } else {
@@ -155,13 +157,11 @@ private fun swapConfirmViewModel(
     navigation: SwapConfirmNavigation,
     params: SwapConfirmQuoteParams,
 ): SwapConfirmViewModel {
-    val backStackEntry = remember { navigation.swap.currentBackStackEntry }
     return viewModel(
-        viewModelStoreOwner = requireNotNull(backStackEntry),
         factory = SwapConfirmViewModel.provideFactory(
             quote = params.quote,
             settings = params.settings,
-            navController = navigation.fragment,
+            navigation = navigation,
             direction = params.direction,
             requestedAmountOut = params.requestedAmountOut,
             multiSwapLegInfo = params.multiSwapLegInfo,
@@ -189,15 +189,12 @@ private fun SwapResultEffects(
         val multiSwapId = viewModel.completedMultiSwapId
         when {
             multiSwapId != null && multiSwapLegInfo is MultiSwapLegInfo.Leg1 -> {
-                navigation.fragment.popBackStack(R.id.multiswap, inclusive = true)
-                navigation.fragment.slideFromRight(
-                    R.id.multiSwapExchanges,
-                    MultiSwapExchangesFragment.ARG_PENDING_MULTI_SWAP_ID to multiSwapId,
-                )
+                navigation.navigation.removeLastUntil(SwapPage::class, inclusive = true)
+                navigation.navigation.slideFromRight(MultiSwapExchangesPage(pendingMultiSwapId = multiSwapId))
             }
             multiSwapLegInfo is MultiSwapLegInfo.Leg2 ->
-                navigation.fragment.popBackStack(R.id.multiSwapExchanges, inclusive = true)
-            else -> navigation.fragment.navigateUp()
+                navigation.navigation.removeLastUntil(MultiSwapExchangesPage::class, inclusive = true)
+            else -> navigation.exitFlow()
         }
     }
 }
@@ -391,8 +388,8 @@ private fun SwapConfirmContent(
 ) {
     Column {
         SwapAmountsSection(uiState)
-        SwapQuoteSection(uiState, balanceParams.provider, navigation.fragment)
-        SwapTransactionFields(uiState, navigation.fragment)
+        SwapQuoteSection(uiState, balanceParams.provider, navigation.navigation)
+        SwapTransactionFields(uiState, navigation.navigation)
         SwapConfirmFeeInfo(
             uiState,
             balanceParams,
@@ -432,7 +429,7 @@ private fun SwapAmountsSection(uiState: SwapConfirmUiState) {
 private fun SwapQuoteSection(
     uiState: SwapConfirmUiState,
     provider: IMultiSwapProvider?,
-    navController: NavController,
+    navigation: HSNavigation,
 ) {
     val amountOut = uiState.amountOut ?: return
     VSpacer(height = 16.dp)
@@ -451,17 +448,17 @@ private fun SwapQuoteSection(
             )
         }
         provider?.let { SwapProviderField(title = it.title, iconId = it.icon) }
-        uiState.quoteFields.forEach { it.GetContent(navController, true) }
+        uiState.quoteFields.forEach { it.GetContent(navigation, true) }
     }
 }
 
 @Composable
-private fun SwapTransactionFields(uiState: SwapConfirmUiState, navController: NavController) {
+private fun SwapTransactionFields(uiState: SwapConfirmUiState, navigation: HSNavigation) {
     if (uiState.transactionFields.isEmpty()) return
     VSpacer(height = 16.dp)
     SectionUniversalLawrence {
         uiState.transactionFields.forEachIndexed { index, field ->
-            field.GetContent(navController, index != 0)
+            field.GetContent(navigation, index != 0)
         }
     }
 }

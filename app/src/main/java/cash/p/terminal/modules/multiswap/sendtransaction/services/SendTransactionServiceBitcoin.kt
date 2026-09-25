@@ -18,7 +18,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.ILocalStorage
@@ -50,7 +51,6 @@ import cash.p.terminal.modules.send.bitcoin.SendBitcoinPluginService
 import cash.p.terminal.modules.send.bitcoin.advanced.FeeRateCaution
 import cash.p.terminal.modules.send.bitcoin.settings.SendBtcSettingsViewModel
 import cash.p.terminal.modules.xrate.XRateService
-import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
@@ -256,12 +256,12 @@ class SendTransactionServiceBitcoin(
     override fun hasSettings() = true
 
     @Composable
-    override fun GetSettingsContent(navController: NavController) {
+    override fun GetSettingsContent(navigation: HSNavigation) {
         val sendSettingsViewModel = viewModel<SendBtcSettingsViewModel>(
             factory = SendBtcSettingsViewModel.Factory(feeRateService, feeService, token)
         )
 
-        SendBtcFeeSettingsScreen(navController, sendSettingsViewModel)
+        SendBtcFeeSettingsScreen(navigation, sendSettingsViewModel)
     }
 
     override suspend fun sendTransaction(mevProtectionEnabled: Boolean): SendTransactionResult.Btc =
@@ -296,7 +296,7 @@ class SendTransactionServiceBitcoin(
 
 @Composable
 fun SendBtcFeeSettingsScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     viewModel: SendBtcSettingsViewModel
 ) {
     val uiState = viewModel.uiState
@@ -310,7 +310,7 @@ fun SendBtcFeeSettingsScreen(
         AppBar(
             title = stringResource(R.string.SendEvmSettings_Title),
             navigationIcon = {
-                HsIconButton(onClick = { navController.popBackStackSafely() }) {
+                HsIconButton(onClick = { navigation.navigateUpSafely() }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_back),
                         contentDescription = "back button",
@@ -339,7 +339,7 @@ fun SendBtcFeeSettingsScreen(
                     fee = uiState.fee,
                     amountInputType = AmountInputType.COIN,
                     rate = uiState.rate,
-                    navController = navController
+                    navigation = navigation
                 )
             }
         )
@@ -352,7 +352,7 @@ fun SendBtcFeeSettingsScreen(
                 value = uiState.feeRate?.toBigDecimal() ?: BigDecimal.ZERO,
                 decimals = 0,
                 caution = uiState.feeRateCaution,
-                navController = navController,
+                navigation = navigation,
                 onValueChange = {
                     viewModel.updateFeeRate(it.toInt())
                 },

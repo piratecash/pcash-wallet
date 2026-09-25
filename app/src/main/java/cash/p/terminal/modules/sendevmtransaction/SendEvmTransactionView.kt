@@ -17,7 +17,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.R
 import cash.p.terminal.core.ethereum.CautionViewItem
 import cash.p.terminal.modules.evmfee.Cautions
@@ -54,7 +54,7 @@ import cash.p.terminal.wallet.Token
 
 @Composable
 fun SendEvmTransactionView(
-    navController: NavController,
+    navigation: HSNavigation,
     items: List<SectionViewItem>,
     cautions: List<CautionViewItem>,
     transactionFields: List<DataField>,
@@ -62,7 +62,7 @@ fun SendEvmTransactionView(
 ) {
     Column {
         items.forEach { sectionViewItem ->
-            SectionView(sectionViewItem.viewItems, navController)
+            SectionView(sectionViewItem.viewItems, navigation)
             Spacer(Modifier.height(16.dp))
         }
 
@@ -70,7 +70,7 @@ fun SendEvmTransactionView(
             VSpacer(height = 16.dp)
             SectionUniversalLawrence {
                 transactionFields.forEachIndexed { index, field ->
-                    field.GetContent(navController, index != 0)
+                    field.GetContent(navigation, index != 0)
                 }
             }
         }
@@ -117,7 +117,7 @@ private fun NonceView(nonceViewModel: SendEvmNonceViewModel) {
 }
 
 @Composable
-fun SectionView(viewItems: List<ViewItem>, navController: NavController) {
+fun SectionView(viewItems: List<ViewItem>, navigation: HSNavigation) {
     CellUniversalLawrenceSection(viewItems) { item ->
         when (item) {
             is ViewItem.Subhead -> Subhead(item)
@@ -133,7 +133,7 @@ fun SectionView(viewItems: List<ViewItem>, navController: NavController) {
                     value = item.value,
                     showAdd = item.showAdd,
                     blockchainType = item.blockchainType,
-                    navController = navController,
+                    navigation = navigation,
                     onCopy = {
                     },
                     onAddToExisting = {

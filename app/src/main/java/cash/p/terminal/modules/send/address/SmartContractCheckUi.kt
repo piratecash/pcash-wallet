@@ -2,7 +2,7 @@ package cash.p.terminal.modules.send.address
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import cash.p.terminal.R
@@ -22,7 +22,7 @@ fun isSmartContractCheckSupported(token: Token): Boolean =
 @Composable
 fun SmartContractCheckSection(
     token: Token,
-    navController: NavController,
+    navigation: HSNavigation,
     addressCheckerControl: AddressCheckerControl,
     modifier: Modifier = Modifier
 ) {
@@ -37,7 +37,7 @@ fun SmartContractCheckSection(
             text = stringResource(R.string.settings_smart_contract_check),
             checked = addressCheckerControl.uiState.addressCheckSmartContractEnabled,
             onCheckedChange = {
-                navController.premiumAction {
+                navigation.premiumAction {
                     addressCheckerControl.onCheckSmartContractAddressClick(it)
                 }
             }

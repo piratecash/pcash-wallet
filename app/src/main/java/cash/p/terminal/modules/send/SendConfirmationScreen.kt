@@ -31,11 +31,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.entities.Address
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.navigateUpSafely
 import io.horizontalsystems.core.entities.CurrencyValue
 import cash.p.terminal.modules.contacts.model.Contact
 import cash.p.terminal.modules.fee.FeeInfoSection
@@ -65,10 +66,11 @@ import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.ui_compose.components.VSpacer
 import kotlinx.coroutines.delay
 import java.math.BigDecimal
+import kotlin.reflect.KClass
 
 @Composable
 fun SendConfirmationScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     coinMaxAllowedDecimals: Int,
     feeCoinMaxAllowedDecimals: Int,
     rate: CurrencyValue?,
@@ -85,7 +87,7 @@ fun SendConfirmationScreen(
     memo: String?,
     rbfEnabled: Boolean?,
     onClickSend: () -> Unit,
-    sendEntryPointDestId: Int,
+    sendEntryPoint: KClass<out HSPage>?,
     isSynced: Boolean,
     hasAdapterError: Boolean,
     onRetrySync: () -> Unit,
@@ -101,11 +103,7 @@ fun SendConfirmationScreen(
     feeWarningData: NetworkFeeWarningData? = null,
     windowInsets: WindowInsets = NavigationBarDefaults.windowInsets,
 ) {
-    val closeUntilDestId = if (sendEntryPointDestId == 0) {
-        R.id.sendXFragment
-    } else {
-        sendEntryPointDestId
-    }
+    val closeUntil = sendEntryPoint ?: SendPage::class
     SendResultHud(
         sendResult = sendResult,
         sendingTextRes = R.string.Send_Sending,
@@ -115,13 +113,13 @@ fun SendConfirmationScreen(
     LaunchedEffect(sendResult) {
         if (sendResult is SendResult.Sent || sendResult is SendResult.SentButQueued) {
             delay(1200)
-            navController.popBackStack(closeUntilDestId, true)
+            navigation.removeLastUntil(closeUntil, true)
         }
     }
 
     LifecycleEventEffect(event = Lifecycle.Event.ON_RESUME) {
         if (sendResult is SendResult.Sent || sendResult is SendResult.SentButQueued) {
-            navController.popBackStack(closeUntilDestId, true)
+            navigation.removeLastUntil(closeUntil, true)
         }
     }
 
@@ -129,7 +127,7 @@ fun SendConfirmationScreen(
         AppBar(
             title = stringResource(R.string.Send_Confirmation_Title),
             navigationIcon = {
-                HsBackButton(onClick = { navController.popBackStackSafely() })
+                HsBackButton(onClick = navigation::navigateUpSafely)
             },
             menuItems = listOf()
         )
@@ -170,7 +168,7 @@ fun SendConfirmationScreen(
                             value = address.hex,
                             showAdd = contact == null,
                             blockchainType = blockchainType,
-                            navController = navController,
+                            navigation = navigation,
                             onCopy = {
                             },
                             onAddToExisting = {

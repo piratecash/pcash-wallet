@@ -3,7 +3,7 @@ package cash.p.terminal.modules.multiswap.settings
 import androidx.annotation.StringRes
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
 
 interface ISwapSetting {
     val id: String
@@ -13,20 +13,20 @@ interface ISwapSetting {
 
     @Composable
     fun GetContent(
-        navController: NavController,
+        navigation: HSNavigation,
         onError: (Throwable?) -> Unit,
         onValueChange: (Any?) -> Unit
     )
 
     fun LazyListScope.addContentItems(
-        navController: NavController,
+        navigation: HSNavigation,
         value: Any?,
         onError: (Throwable?) -> Unit,
         onValueChange: (Any?) -> Unit
     ) {
         item(key = id) {
             GetContent(
-                navController = navController,
+                navigation = navigation,
                 onError = onError,
                 onValueChange = onValueChange,
             )

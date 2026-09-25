@@ -25,7 +25,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.iconPlaceholder
 import cash.p.terminal.modules.coin.CoinLink
@@ -36,9 +35,10 @@ import cash.p.terminal.modules.coin.ui.CoinScreenTitle
 import cash.p.terminal.modules.enablecoin.restoresettings.RestoreSettingsViewModel
 import cash.p.terminal.modules.managewallets.ManageWalletsModule
 import cash.p.terminal.modules.managewallets.ManageWalletsViewModel
-import cash.p.terminal.modules.markdown.MarkdownFragment
+import cash.p.terminal.modules.coin.indicators.IndicatorsPage
+import cash.p.terminal.modules.markdown.MarkdownPage
 import cash.p.terminal.modules.enablecoin.restoresettings.openRestoreSettingsDialog
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
 import cash.p.terminal.ui.compose.components.ListErrorView
 import cash.p.terminal.ui.helpers.LinkHelper
@@ -64,7 +64,7 @@ import cash.p.terminal.ui_compose.currentYear
 @Composable
 fun CoinOverviewScreen(
     fullCoin: FullCoin,
-    navController: NavController
+    navigation: HSNavigation
 ) {
     val vmFactory by lazy { CoinOverviewModule.Factory(fullCoin) }
     val viewModel = viewModel<CoinOverviewViewModel>(factory = vmFactory)
@@ -102,7 +102,7 @@ fun CoinOverviewScreen(
     val manageWalletsViewModel = viewModel<ManageWalletsViewModel>(factory = vmFactory1)
     val restoreSettingsViewModel = viewModel<RestoreSettingsViewModel>(factory = vmFactory1)
 
-    navController.openRestoreSettingsDialog(
+    navigation.openRestoreSettingsDialog(
         token = restoreSettingsViewModel.openTokenConfigure,
         restoreSettingsViewModel = restoreSettingsViewModel
     )
@@ -170,7 +170,7 @@ fun CoinOverviewScreen(
                                             ButtonSecondaryCircle(
                                                 icon = R.drawable.ic_setting_20
                                             ) {
-                                                navController.slideFromRight(R.id.indicatorsFragment)
+                                                navigation.slideFromRight(IndicatorsPage())
                                             }
                                         }
                                     }
@@ -214,7 +214,7 @@ fun CoinOverviewScreen(
 
                                 if (overview.links.isNotEmpty()) {
                                     Spacer(modifier = Modifier.height(24.dp))
-                                    Links(overview.links) { onClick(it, context, navController) }
+                                    Links(overview.links) { onClick(it, context, navigation) }
                                 }
 
                                 Spacer(modifier = Modifier.height(32.dp))
@@ -238,15 +238,12 @@ fun CoinOverviewScreen(
     )
 }
 
-private fun onClick(coinLink: CoinLink, context: Context, navController: NavController) {
+private fun onClick(coinLink: CoinLink, context: Context, navigation: HSNavigation) {
     val absoluteUrl = getAbsoluteUrl(coinLink)
 
     when (coinLink.linkType) {
         LinkType.Guide -> {
-            navController.slideFromRight(
-                R.id.markdownFragment,
-                MarkdownFragment.Input(absoluteUrl, true)
-            )
+            navigation.slideFromRight(MarkdownPage(MarkdownPage.Input(absoluteUrl, true)))
         }
 
         else -> LinkHelper.openLinkInAppBrowser(context, absoluteUrl)

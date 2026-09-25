@@ -25,12 +25,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.R
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusButton
 import cash.p.terminal.modules.btcblockchainsettings.BtcBlockchainSettingsModule.BlockchainSettingsIcon
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.FormsInput
@@ -53,13 +53,13 @@ internal fun BtcBlockchainSettingsScreen(
     onSaveClick: () -> Unit,
     onSelectRestoreMode: (BtcBlockchainSettingsModule.ViewItem) -> Unit,
     onCustomPeersChange: (String) -> Unit,
-    fragmentNavController: NavController,
+    navigation: HSNavigation,
     onBlockchainStatusClick: () -> Unit,
     windowInsets: WindowInsets = NavigationBarDefaults.windowInsets,
 ) {
 
     if (uiState.closeScreen) {
-        fragmentNavController.navigateUp()
+        navigation.navigateUp()
     }
 
     Surface(color = ComposeAppTheme.colors.tyler) {
@@ -82,7 +82,7 @@ internal fun BtcBlockchainSettingsScreen(
                     MenuItem(
                         title = TranslatableString.ResString(R.string.Button_Close),
                         icon = R.drawable.ic_close_24,
-                        onClick = fragmentNavController::navigateUpSafely
+                        onClick = navigation::navigateUpSafely
                     )
                 )
             )
@@ -261,7 +261,7 @@ private fun BtcBlockchainSettingsScreenPreview() {
             onSaveClick = {},
             onSelectRestoreMode = {},
             onCustomPeersChange = {},
-            fragmentNavController = rememberNavController(),
+            navigation = HSNavigation(NavBackStack()),
             onBlockchainStatusClick = {}
         )
     }

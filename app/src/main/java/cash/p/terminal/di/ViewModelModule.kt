@@ -62,7 +62,7 @@ import cash.p.terminal.modules.settings.privacy.PrivacyViewModel
 import cash.p.terminal.modules.settings.security.passcode.SecuritySettingsViewModel
 import cash.p.terminal.modules.tonconnect.TonConnectListViewModel
 import cash.p.terminal.modules.transactions.TransactionsRateRepository
-import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedDialog
+import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedSheet
 import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedViewModel
 import cash.p.terminal.modules.solananetwork.SolanaNetworkService
 import cash.p.terminal.modules.solananetwork.SolanaNetworkViewModel
@@ -131,7 +131,7 @@ val viewModelModule = module {
     viewModelOf(::QRScannerViewModel)
     viewModelOf(::AddTokenViewModel)
     viewModelOf(::PinUnlockViewModel)
-    viewModel { (input: AccountTypeNotSupportedDialog.Input) ->
+    viewModel { (input: AccountTypeNotSupportedSheet.Input) ->
         AccountTypeNotSupportedViewModel(input = input, accountManager = get())
     }
     viewModel { (token: Token) ->

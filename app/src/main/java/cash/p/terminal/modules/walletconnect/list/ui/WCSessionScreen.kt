@@ -23,18 +23,19 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.Caution
 import cash.p.terminal.core.managers.FaqManager
 import cash.p.terminal.modules.contacts.screen.ConfirmationBottomSheet
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
+import cash.p.terminal.navigation.AppPages
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.navigation.openQrScanner
 import cash.p.terminal.modules.walletconnect.list.WalletConnectListModule
 import cash.p.terminal.modules.walletconnect.list.WalletConnectListUiState
 import cash.p.terminal.modules.walletconnect.list.WalletConnectListViewModel
 import cash.p.terminal.modules.walletconnect.list.WalletConnectListViewModel.ConnectionResult
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.ListEmptyView
 import cash.p.terminal.ui_compose.components.AppBar
@@ -44,10 +45,11 @@ import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 @Composable
 fun WCSessionsScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     deepLinkUri: String?,
     windowInsets: WindowInsets = NavigationBarDefaults.windowInsets,
 ) {
@@ -85,6 +87,7 @@ fun WCSessionsScreen(
     }
 
     val scannerTitle = stringResource(R.string.WalletConnect_Title)
+    val appPages: AppPages = koinInject()
 
     AppModalBottomSheetLayout(
         sheetState = invalidUrlBottomSheetState,
@@ -100,7 +103,8 @@ fun WCSessionsScreen(
                 onConfirm = {
                     coroutineScope.launch {
                         invalidUrlBottomSheetState.hide()
-                        navController.openQrScanner(
+                        navigation.openQrScanner(
+                            appPages = appPages,
                             title = scannerTitle,
                             showPasteButton = true
                         ) { scannedText ->
@@ -120,7 +124,7 @@ fun WCSessionsScreen(
                 AppBar(
                     title = stringResource(R.string.WalletConnect_Title),
                     navigationIcon = {
-                        HsBackButton(onClick = { navController.popBackStackSafely() })
+                        HsBackButton(onClick = { navigation.navigateUpSafely() })
                     },
                     menuItems = listOf(
                         MenuItem(
@@ -148,7 +152,7 @@ fun WCSessionsScreen(
                     } else {
                         WCSessionList(
                             viewModel,
-                            navController
+                            navigation
                         )
                     }
                 }
@@ -159,7 +163,8 @@ fun WCSessionsScreen(
                             .fillMaxWidth(),
                         title = stringResource(R.string.WalletConnect_NewConnect),
                         onClick = {
-                            navController.openQrScanner(
+                            navigation.openQrScanner(
+                                appPages = appPages,
                                 title = scannerTitle,
                                 showPasteButton = true
                             ) { scannedText ->

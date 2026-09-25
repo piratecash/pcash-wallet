@@ -24,7 +24,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.R
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.address.HSAddressInput
@@ -90,7 +90,7 @@ fun TransactionDeadlineInput(
 @Composable
 fun RecipientAddress(
     token: Token,
-    navController: NavController,
+    navigation: HSNavigation,
     initial: Address?,
     onError: (Throwable?) -> Unit,
     onValueChange: (Address?) -> Unit,
@@ -103,7 +103,7 @@ fun RecipientAddress(
         initial = initial,
         tokenQuery = token.tokenQuery,
         coinCode = token.coin.code,
-        navController = navController,
+        navigation = navigation,
         onError = onError,
         onValueChange = onValueChange,
     )

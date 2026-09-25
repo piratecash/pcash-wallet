@@ -1,11 +1,18 @@
 package cash.p.terminal.modules.main
 
+import androidx.compose.runtime.Composable
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.managers.DAppRequestEntityWrapper
 import cash.p.terminal.core.managers.DefaultUserManager
 import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.modules.calculator.domain.CalculatorModeService
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
 import cash.p.terminal.premium.domain.usecase.PremiumType
 import cash.p.terminal.wallet.IAccountManager
@@ -33,6 +40,9 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertSame
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainActivityViewModelTest {
@@ -116,6 +126,33 @@ class MainActivityViewModelTest {
         advanceUntilIdle()
 
         verify { calculatorModeService.disableAfterPremiumLoss() }
+    }
+
+    @Test
+    fun navBackStack_newViewModel_startsAtMainPage() {
+        val backStack = createViewModel().navBackStack
+
+        assertEquals(1, backStack.size)
+        assertIs<MainPage>(backStack.single())
+    }
+
+    @Test
+    fun navBackStack_activityRecreatedOnRetainedStore_keepsPushedPages() {
+        val store = ViewModelStore()
+        val factory = viewModelFactory { initializer { createViewModel() } }
+        val detail = DetailPage()
+        HSNavigation(ViewModelProvider(store, factory)[MainActivityViewModel::class.java].navBackStack)
+            .slideFromRight(detail)
+
+        val recreated = ViewModelProvider(store, factory)[MainActivityViewModel::class.java]
+
+        assertSame(detail, recreated.navBackStack.last())
+        assertEquals(2, recreated.navBackStack.size)
+    }
+
+    private class DetailPage : HSPage() {
+        @Composable
+        override fun GetContent(navigation: HSNavigation) = Unit
     }
 
     private fun createViewModel() = MainActivityViewModel(

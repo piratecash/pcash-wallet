@@ -1,7 +1,6 @@
 package cash.p.terminal.navigation
 
 import android.os.Parcelable
-import androidx.navigation.NavController
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -14,15 +13,15 @@ data class QrScannerInput(
 @Parcelize
 data class QrScannerResult(val text: String) : Parcelable
 
-fun NavController.openQrScanner(
+fun HSNavigation.openQrScanner(
+    appPages: AppPages,
     title: String,
     showPasteButton: Boolean = false,
     allowGalleryWithoutPremium: Boolean = false,
     onResult: (String) -> Unit,
 ) {
     slideFromBottomForResult<QrScannerResult>(
-        R.id.qrScannerFragment,
-        QrScannerInput(title, showPasteButton, allowGalleryWithoutPremium)
+        appPages.qrScanner(QrScannerInput(title, showPasteButton, allowGalleryWithoutPremium))
     ) { result ->
         onResult(result.text)
     }

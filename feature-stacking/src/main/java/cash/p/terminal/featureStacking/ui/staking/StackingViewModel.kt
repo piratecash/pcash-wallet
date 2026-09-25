@@ -7,7 +7,7 @@ import cash.p.terminal.featureStacking.R
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.ui_compose.components.TabItem
 
-internal class StackingViewModel : ViewModel() {
+internal class StackingViewModel(initialType: StackingType?) : ViewModel() {
 
     private val _uiState =
         mutableStateOf(
@@ -27,6 +27,11 @@ internal class StackingViewModel : ViewModel() {
             )
         )
     val uiState: State<StackingUIState> get() = _uiState
+
+    // Applied before the first composition so the pager starts on the requested tab.
+    init {
+        initialType?.let(::setStackingType)
+    }
 
     fun setStackingType(stackingType: StackingType) {
         _uiState.value = uiState.value.copy(

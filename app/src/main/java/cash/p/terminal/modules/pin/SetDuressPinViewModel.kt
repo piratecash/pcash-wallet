@@ -6,7 +6,7 @@ import cash.p.terminal.core.App
 import cash.p.terminal.core.managers.DefaultUserManager
 
 class SetDuressPinViewModel(
-    private val input: SetDuressPinFragment.Input?,
+    private val input: SetDuressPinPage.Input?,
     private val userManager: DefaultUserManager,
 ) : ViewModel() {
 
@@ -17,7 +17,7 @@ class SetDuressPinViewModel(
         }
     }
 
-    class Factory(private val input: SetDuressPinFragment.Input?) : ViewModelProvider.Factory {
+    class Factory(private val input: SetDuressPinPage.Input?) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return SetDuressPinViewModel(input, App.userManager) as T

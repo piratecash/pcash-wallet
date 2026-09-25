@@ -29,9 +29,9 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import cash.p.terminal.R
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.modules.walletconnect.pairing.WCPairingsPage
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.modules.walletconnect.list.WalletConnectListModule
 import cash.p.terminal.modules.walletconnect.list.WalletConnectListUiState
 import cash.p.terminal.modules.walletconnect.list.WalletConnectListViewModel
@@ -47,7 +47,7 @@ import cash.p.terminal.ui_compose.components.showDivider
 @Composable
 fun WCSessionList(
     viewModel: WalletConnectListViewModel,
-    navController: NavController
+    navigation: HSNavigation
 ) {
     val uiState by viewModel.uiState.collectAsState(initial = WalletConnectListUiState())
     var revealedCardId by remember { mutableStateOf<String?>(null) }
@@ -61,7 +61,7 @@ fun WCSessionList(
     LazyColumn(contentPadding = PaddingValues(top = 12.dp, bottom = 32.dp)) {
         WCSection(
             uiState.sessionViewItems,
-            navController,
+            navigation,
             revealedCardId,
             onReveal = { id ->
                 if (revealedCardId != id) {
@@ -87,7 +87,7 @@ fun WCSessionList(
                         modifier = Modifier
                             .fillMaxSize()
                             .clickable {
-                                navController.slideFromRight(R.id.wcPairingsFragment)
+                                navigation.slideFromRight(WCPairingsPage())
                             }
                             .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -110,7 +110,7 @@ fun WCSessionList(
 
 private fun LazyListScope.WCSection(
     viewItems: List<WalletConnectListModule.SessionViewItem>,
-    navController: NavController,
+    navigation: HSNavigation,
     revealedCardId: String?,
     onReveal: (String) -> Unit,
     onConceal: () -> Unit,
@@ -151,7 +151,7 @@ private fun LazyListScope.WCSection(
                         shape = shape,
                         showDivider = showDivider,
                         session = item,
-                        navController = navController
+                        navigation = navigation
                     )
                 }
             )

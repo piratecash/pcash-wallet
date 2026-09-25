@@ -15,10 +15,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import cash.p.terminal.R
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.address.AddressParserModule
@@ -29,17 +25,17 @@ import cash.p.terminal.modules.amount.AmountInputModeViewModel
 import cash.p.terminal.modules.amount.HSAmountInput
 import cash.p.terminal.modules.fee.FeeInfoSection
 import cash.p.terminal.modules.memo.HSMemoInput
-import cash.p.terminal.modules.send.SendConfirmationFragment
-import cash.p.terminal.modules.send.SendFragment.ProceedActionData
+import cash.p.terminal.modules.send.SendConfirmationPage
+import cash.p.terminal.modules.send.SendPage.ProceedActionData
 import cash.p.terminal.modules.send.SendScreen
 import cash.p.terminal.modules.send.SendSuggestionsBar
 import cash.p.terminal.modules.send.address.AddressCheckerControl
 import cash.p.terminal.modules.send.address.SmartContractCheckSection
 import cash.p.terminal.modules.send.offline.OfflineSignActionCell
-import cash.p.terminal.modules.send.offline.OfflineSignFlowRoutes
-import cash.p.terminal.modules.send.offline.offlineSignFlowRoutes
+import cash.p.terminal.modules.send.offline.OfflineSignPage
 import cash.p.terminal.modules.sendtokenselect.PrefilledData
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui.compose.components.PoisonAddressRiskSection
 import cash.p.terminal.ui.compose.components.PoisonWarningCell
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
@@ -51,52 +47,31 @@ import cash.z.ecc.android.sdk.ext.ZcashSdk.MAX_MEMO_SIZE
 import java.math.BigDecimal
 
 @Composable
-fun SendZCashNavHost(
+fun SendZCashPageContent(
     title: String,
-    fragmentNavController: NavController,
+    navigation: HSNavigation,
     viewModel: SendZCashViewModel,
     amountInputModeViewModel: AmountInputModeViewModel,
     prefilledData: PrefilledData?,
     addressCheckerControl: AddressCheckerControl,
     onNextClick: (ProceedActionData) -> Unit,
 ) {
-    val navController = rememberNavController()
-    NavHost(
-        navController = navController,
-        startDestination = SendZCashPage,
-    ) {
-        composable(SendZCashPage) {
-            SendZCashScreen(
-                title = title,
-                navController = fragmentNavController,
-                viewModel = viewModel,
-                amountInputModeViewModel = amountInputModeViewModel,
-                prefilledData = prefilledData,
-                addressCheckerControl = addressCheckerControl,
-                onNextClick = onNextClick,
-                onOfflineSignClick = { navController.navigate(OfflineZcashSignPage) },
-            )
-        }
-        offlineSignFlowRoutes(
-            routes = OfflineSignFlowRoutes(
-                signRoute = OfflineZcashSignPage,
-                transferRoute = OfflineZcashTransactionTransferPage,
-            ),
-            navController = navController,
-            fragmentNavController = fragmentNavController,
-            sendViewModel = viewModel,
-        )
-    }
+    SendZCashScreen(
+        title = title,
+        navigation = navigation,
+        viewModel = viewModel,
+        amountInputModeViewModel = amountInputModeViewModel,
+        prefilledData = prefilledData,
+        addressCheckerControl = addressCheckerControl,
+        onNextClick = onNextClick,
+        onOfflineSignClick = { navigation.slideFromRight(OfflineSignPage(SendZCashViewModel::class)) },
+    )
 }
-
-private const val SendZCashPage = "send_zcash"
-private const val OfflineZcashSignPage = "offline_zcash_sign"
-private const val OfflineZcashTransactionTransferPage = "offline_zcash_transaction_transfer"
 
 @Composable
 private fun SendZCashScreen(
     title: String,
-    navController: NavController,
+    navigation: HSNavigation,
     viewModel: SendZCashViewModel,
     amountInputModeViewModel: AmountInputModeViewModel,
     prefilledData: PrefilledData?,
@@ -130,14 +105,14 @@ private fun SendZCashScreen(
 
         SendScreen(
             title = title,
-            onCloseClick = { navController.popBackStackSafely() },
+            onCloseClick = { navigation.navigateUpSafely() },
             proceedEnabled = proceedEnabled,
             onSendClick = {
                 onNextClick(
                     ProceedActionData(
                         address = uiState.address?.hex,
                         wallet = wallet,
-                        type = SendConfirmationFragment.Type.ZCash,
+                        type = SendConfirmationPage.Type.ZCash,
                     )
                 )
             },
@@ -167,7 +142,7 @@ private fun SendZCashScreen(
                     coinCode = wallet.coin.code,
                     error = uiState.addressError,
                     textPreprocessor = paymentAddressViewModel,
-                    navController = navController,
+                    navigation = navigation,
                     isPoisonAddress = uiState.isPoisonAddress,
                     onValueChange = { viewModel.onEnterAddress(it) },
                 )
@@ -230,7 +205,7 @@ private fun SendZCashScreen(
             }
             SmartContractCheckSection(
                 token = wallet.token,
-                navController = navController,
+                navigation = navigation,
                 addressCheckerControl = addressCheckerControl,
                 modifier = Modifier.padding(top = 8.dp)
             )
@@ -257,7 +232,7 @@ private fun SendZCashScreen(
                         ProceedActionData(
                             address = uiState.address?.hex,
                             wallet = wallet,
-                            type = SendConfirmationFragment.Type.ZCash,
+                            type = SendConfirmationPage.Type.ZCash,
                         )
                     )
                 },

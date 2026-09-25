@@ -1,14 +1,15 @@
 package cash.p.terminal.modules.multiswap.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import cash.p.terminal.navigation.HSNavigation
+import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.entities.Address
@@ -26,7 +27,7 @@ data class DataFieldRecipientExtended(
     val blockchainType: BlockchainType
 ) : DataField {
     @Composable
-    override fun GetContent(navController: NavController, borderTop: Boolean) {
+    override fun GetContent(navigation: HSNavigation, borderTop: Boolean) {
         QuoteInfoRow(
             borderTop = borderTop,
             title = {
@@ -76,11 +77,11 @@ data class DataFieldRecipientExtended(
 @Preview
 @Composable
 fun DataFieldRecipientExtendedPreview() {
-    val navController = rememberNavController()
+    val navigation = remember { HSNavigation(NavBackStack()) }
     cash.p.terminal.ui_compose.theme.ComposeAppTheme {
         DataFieldRecipientExtended(
             Address("0x1234567890abcdef1234567890abcdef12345678"),
             BlockchainType.Bitcoin
-        ).GetContent(navController = navController, borderTop = true)
+        ).GetContent(navigation = navigation, borderTop = true)
     }
 }

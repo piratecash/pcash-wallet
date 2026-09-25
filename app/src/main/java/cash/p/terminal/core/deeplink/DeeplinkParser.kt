@@ -2,17 +2,18 @@ package cash.p.terminal.core.deeplink
 
 import android.net.Uri
 import cash.p.terminal.BuildConfig
-import cash.p.terminal.R
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.feature.miniapp.domain.storage.IUniqueCodeStorage
 import cash.p.terminal.feature.miniapp.ui.connect.ConnectMiniAppDeeplinkInput
+import cash.p.terminal.feature.miniapp.ui.connect.ConnectMiniAppPage
 import cash.p.terminal.modules.main.DeeplinkPage
-import cash.p.terminal.modules.multiswap.SwapDeeplinkInput
+import cash.p.terminal.modules.multiswap.SwapPage
+import cash.p.terminal.modules.premium.about.AboutPremiumPage
 import cash.p.terminal.wallet.entities.TokenQuery
 
 /**
  * Parses pcash:// deeplinks for swap and premium screens.
- * Used by both QRScannerFragment (for scanned QR codes) and MainViewModel (for external deeplinks).
+ * Used by both QRScannerPage (for scanned QR codes) and MainViewModel (for external deeplinks).
  */
 class DeeplinkParser(
     private val coinManager: ICoinManager,
@@ -25,7 +26,7 @@ class DeeplinkParser(
 
         return when (uri.host) {
             "premium" -> {
-                DeeplinkPage(R.id.aboutPremiumFragment, null)
+                DeeplinkPage(AboutPremiumPage(null), fromBottom = false)
             }
 
             "swap" -> {
@@ -36,7 +37,7 @@ class DeeplinkParser(
                     else -> null
                 }
                 val token = tokenQuery?.let { coinManager.getToken(it) }
-                DeeplinkPage(R.id.multiswap, SwapDeeplinkInput(token))
+                DeeplinkPage(SwapPage(tokenOut = token), fromBottom = false)
             }
 
             "auth" -> parseAuth(uri)
@@ -57,10 +58,13 @@ class DeeplinkParser(
             uri.getQueryParameter("code")?.let { uniqueCodeStorage.uniqueCode = it }
         }
         return DeeplinkPage(
-            R.id.connectMiniAppFragment, ConnectMiniAppDeeplinkInput(
-                jwt = jwt,
-                endpoint = endpoint
-            )
+            ConnectMiniAppPage(
+                ConnectMiniAppDeeplinkInput(
+                    jwt = jwt,
+                    endpoint = endpoint
+                )
+            ),
+            fromBottom = true
         )
     }
 

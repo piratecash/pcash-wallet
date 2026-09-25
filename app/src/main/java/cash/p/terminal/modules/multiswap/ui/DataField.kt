@@ -1,9 +1,9 @@
 package cash.p.terminal.modules.multiswap.ui
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
 
 interface DataField {
     @Composable
-    fun GetContent(navController: NavController, borderTop: Boolean)
+    fun GetContent(navigation: HSNavigation, borderTop: Boolean)
 }

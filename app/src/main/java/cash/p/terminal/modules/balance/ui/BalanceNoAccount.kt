@@ -22,10 +22,13 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.navigateWithTermsAccepted
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.modules.createaccount.CreateAccountPage
+import cash.p.terminal.modules.hardwarewallet.HardwareWalletPage
+import cash.p.terminal.modules.importwallet.ImportWalletPage
+import cash.p.terminal.modules.watchaddress.WatchAddressPage
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
 import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
@@ -33,7 +36,7 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @Composable
 fun BalanceNoAccount(
-    navController: NavController,
+    navigation: HSNavigation,
     paddingValuesParent: PaddingValues
 ) {
     Column(
@@ -68,8 +71,8 @@ fun BalanceNoAccount(
                 .testTag("onboarding_create_wallet"),
             title = stringResource(R.string.ManageAccounts_CreateNewWallet),
             onClick = {
-                navController.navigateWithTermsAccepted {
-                    navController.slideFromRight(R.id.createAccountFragment)
+                navigation.navigateWithTermsAccepted {
+                    navigation.slideFromRight(CreateAccountPage(null))
                 }
             }
         )
@@ -80,8 +83,8 @@ fun BalanceNoAccount(
                 .padding(horizontal = 48.dp),
             title = stringResource(R.string.ManageAccounts_ImportWallet),
             onClick = {
-                navController.navigateWithTermsAccepted {
-                    navController.slideFromRight(R.id.importWalletFragment)
+                navigation.navigateWithTermsAccepted {
+                    navigation.slideFromRight(ImportWalletPage(null))
                 }
             }
         )
@@ -92,8 +95,8 @@ fun BalanceNoAccount(
                 .padding(horizontal = 48.dp),
             title = stringResource(R.string.hardware_wallet),
             onClick = {
-                navController.navigateWithTermsAccepted {
-                    navController.slideFromRight(R.id.hardwareWalletFragment)
+                navigation.navigateWithTermsAccepted {
+                    navigation.slideFromRight(HardwareWalletPage(null))
                 }
             }
         )
@@ -104,7 +107,7 @@ fun BalanceNoAccount(
                 .padding(horizontal = 48.dp),
             title = stringResource(R.string.ManageAccounts_WatchAddress),
             onClick = {
-                navController.slideFromRight(R.id.watchAddressFragment)
+                navigation.slideFromRight(WatchAddressPage(null))
             }
         )
 

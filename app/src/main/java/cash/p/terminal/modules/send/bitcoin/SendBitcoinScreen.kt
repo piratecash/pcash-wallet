@@ -24,15 +24,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import cash.p.terminal.R
-import cash.p.terminal.core.composablePage
-import cash.p.terminal.core.composablePopup
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.address.AddressParserModule
 import cash.p.terminal.modules.address.AddressParserViewModel
@@ -42,20 +34,19 @@ import cash.p.terminal.modules.amount.AmountInputModeViewModel
 import cash.p.terminal.modules.amount.HSAmountInput
 import cash.p.terminal.modules.fee.FeeInfoSection
 import cash.p.terminal.modules.memo.HSMemoInput
-import cash.p.terminal.modules.send.SendConfirmationFragment
-import cash.p.terminal.modules.send.SendFragment.ProceedActionData
+import cash.p.terminal.modules.send.SendBtcAdvancedSettingsPage
+import cash.p.terminal.modules.send.SendConfirmationPage
+import cash.p.terminal.modules.send.SendPage.ProceedActionData
 import cash.p.terminal.modules.send.SendSuggestionsBar
 import cash.p.terminal.modules.send.address.AddressCheckerControl
 import cash.p.terminal.modules.send.address.SmartContractCheckSection
-import cash.p.terminal.modules.send.bitcoin.advanced.BtcTransactionInputSortInfoScreen
 import cash.p.terminal.modules.send.bitcoin.advanced.FeeRateCaution
-import cash.p.terminal.modules.send.bitcoin.advanced.SendBtcAdvancedSettingsScreen
-import cash.p.terminal.modules.send.bitcoin.utxoexpert.UtxoExpertModeScreen
+import cash.p.terminal.modules.send.UtxoExpertModePage
 import cash.p.terminal.modules.send.offline.OfflineSignActionCell
-import cash.p.terminal.modules.send.offline.OfflineSignFlowRoutes
-import cash.p.terminal.modules.send.offline.offlineSignFlowRoutes
+import cash.p.terminal.modules.send.offline.OfflineSignPage
 import cash.p.terminal.modules.sendtokenselect.PrefilledData
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.PoisonAddressRiskSection
 import cash.p.terminal.ui.compose.components.PoisonWarningCell
@@ -76,93 +67,10 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import java.math.BigDecimal
 
 
-const val SendBtcPage = "send_btc"
-const val SendBtcAdvancedSettingsPage = "send_btc_advanced_settings"
-const val TransactionInputsSortInfoPage = "transaction_input_sort_info_settings"
-const val UtxoExpertModePage = "utxo_expert_mode_page"
-private const val OfflineBitcoinSignPage = "offline_bitcoin_sign"
-private const val OfflineTransactionTransferPage = "offline_transaction_transfer"
-
 @Composable
-fun SendBitcoinNavHost(
+internal fun SendBitcoinScreen(
     title: String,
-    fragmentNavController: NavController,
-    viewModel: SendBitcoinViewModel,
-    amountInputModeViewModel: AmountInputModeViewModel,
-    prefilledData: PrefilledData?,
-    addressCheckerControl: AddressCheckerControl,
-    onNextClick: (ProceedActionData) -> Unit,
-) {
-    val navController = rememberNavController()
-    NavHost(
-        navController = navController,
-        startDestination = SendBtcPage,
-    ) {
-        composable(SendBtcPage) {
-            SendBitcoinScreen(
-                title = title,
-                fragmentNavController = fragmentNavController,
-                composeNavController = navController,
-                viewModel = viewModel,
-                amountInputModeViewModel = amountInputModeViewModel,
-                prefilledData = prefilledData,
-                addressCheckerControl = addressCheckerControl,
-                onNextClick = onNextClick
-            )
-        }
-        composablePage(SendBtcAdvancedSettingsPage) {
-            SendBtcAdvancedSettingsScreen(
-                fragmentNavController = fragmentNavController,
-                navController = navController,
-                sendBitcoinViewModel = viewModel,
-                amountInputType = amountInputModeViewModel.inputType,
-            )
-        }
-        composablePopup(
-            TransactionInputsSortInfoPage
-        ) { BtcTransactionInputSortInfoScreen { navController.popBackStackSafely() } }
-        composablePage(UtxoExpertModePage) {
-            UtxoExpertModeScreen(
-                adapter = viewModel.adapter,
-                token = viewModel.wallet.token,
-                customUnspentOutputs = viewModel.customUnspentOutputs,
-                updateUnspentOutputs = {
-                    viewModel.updateCustomUnspentOutputs(it)
-                },
-                onBackClick = {
-                    navController.popBackStackSafely()
-                }
-            )
-        }
-        offlineBitcoinSignFlowRoutes(
-            navController = navController,
-            fragmentNavController = fragmentNavController,
-            sendViewModel = viewModel,
-        )
-    }
-}
-
-private fun NavGraphBuilder.offlineBitcoinSignFlowRoutes(
-    navController: NavHostController,
-    fragmentNavController: NavController,
-    sendViewModel: SendBitcoinViewModel,
-) {
-    offlineSignFlowRoutes(
-        routes = OfflineSignFlowRoutes(
-            signRoute = OfflineBitcoinSignPage,
-            transferRoute = OfflineTransactionTransferPage,
-        ),
-        navController = navController,
-        fragmentNavController = fragmentNavController,
-        sendViewModel = sendViewModel,
-    )
-}
-
-@Composable
-private fun SendBitcoinScreen(
-    title: String,
-    fragmentNavController: NavController,
-    composeNavController: NavController,
+    navigation: HSNavigation,
     viewModel: SendBitcoinViewModel,
     amountInputModeViewModel: AmountInputModeViewModel,
     prefilledData: PrefilledData?,
@@ -202,7 +110,7 @@ private fun SendBitcoinScreen(
             AppBar(
                 title = title,
                 navigationIcon = {
-                    HsBackButton(onClick = { fragmentNavController.popBackStackSafely() })
+                    HsBackButton(onClick = { navigation.navigateUpSafely() })
                 },
                 menuItems = if (uiState.isAdvancedSettingsAvailable) {
                     listOf(
@@ -210,7 +118,7 @@ private fun SendBitcoinScreen(
                             title = TranslatableString.ResString(R.string.SendEvmSettings_Title),
                             icon = R.drawable.ic_manage_2,
                             tint = ComposeAppTheme.colors.jacob,
-                            onClick = { composeNavController.navigate(SendBtcAdvancedSettingsPage) }
+                            onClick = { navigation.slideFromRight(SendBtcAdvancedSettingsPage()) }
                         ),
                         MenuItem(
                             title = TranslatableString.ResString(R.string.Send_DialogProceed),
@@ -221,7 +129,7 @@ private fun SendBitcoinScreen(
                                     ProceedActionData(
                                         address = uiState.address?.hex,
                                         wallet = wallet,
-                                        type = SendConfirmationFragment.Type.Bitcoin,
+                                        type = SendConfirmationPage.Type.Bitcoin,
                                     )
                                 )
                             }
@@ -252,7 +160,7 @@ private fun SendBitcoinScreen(
                             coinCode = wallet.coin.code,
                             error = uiState.addressError,
                             textPreprocessor = paymentAddressViewModel,
-                            navController = fragmentNavController,
+                            navigation = navigation,
                             isPoisonAddress = uiState.isPoisonAddress,
                             onValueChange = { viewModel.onEnterAddress(it) },
                         )
@@ -295,7 +203,7 @@ private fun SendBitcoinScreen(
                         CellUniversalLawrenceSection(listOf {
                             UtxoCell(
                                 utxoData = utxoData,
-                                onClick = { composeNavController.navigate(UtxoExpertModePage) }
+                                onClick = { navigation.slideFromRight(UtxoExpertModePage()) }
                             )
                         })
                     }
@@ -330,7 +238,7 @@ private fun SendBitcoinScreen(
                     }
                     SmartContractCheckSection(
                         token = wallet.token,
-                        navController = fragmentNavController,
+                        navigation = navigation,
                         addressCheckerControl = addressCheckerControl,
                         modifier = Modifier.padding(top = 8.dp)
                     )
@@ -344,7 +252,7 @@ private fun SendBitcoinScreen(
                     OfflineSignActionCell(
                         supported = viewModel.offlineSignSupported,
                         enabled = proceedEnabled,
-                        onClick = { composeNavController.navigate(OfflineBitcoinSignPage) },
+                        onClick = { navigation.slideFromRight(OfflineSignPage(SendBitcoinViewModel::class)) },
                     )
 
                     ButtonPrimaryYellow(
@@ -357,7 +265,7 @@ private fun SendBitcoinScreen(
                                 ProceedActionData(
                                     address = uiState.address?.hex,
                                     wallet = wallet,
-                                    type = SendConfirmationFragment.Type.Bitcoin,
+                                    type = SendConfirmationPage.Type.Bitcoin,
                                 )
                             )
                         },

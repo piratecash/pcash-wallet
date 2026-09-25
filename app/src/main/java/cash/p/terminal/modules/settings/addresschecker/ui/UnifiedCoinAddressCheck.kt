@@ -67,13 +67,16 @@ import cash.p.terminal.ui_compose.theme.YellowL
 import cash.p.terminal.wallet.imageUrl
 import coil3.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.launch
+import cash.p.terminal.navigation.HSNavigation
+import androidx.navigation3.runtime.NavBackStack
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UnifiedAddressCheckScreen(
-    initialAddress: String? = null,
+    navigation: HSNavigation,
     onClose: () -> Unit,
     onPremiumClick: () -> Unit,
+    initialAddress: String? = null,
 ) {
     val viewModel =
         viewModel<UnifiedAddressCheckerViewModel>(factory = UnifiedAddressCheckerViewModel.Factory(initialAddress))
@@ -117,6 +120,7 @@ fun UnifiedAddressCheckScreen(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     value = uiState.value,
                     hint = stringResource(id = R.string.Send_Hint_Address),
+                    navigation = navigation,
                     state = uiState.inputState,
                 ) {
                     viewModel.onEnterAddress(it)
@@ -469,6 +473,7 @@ fun CheckInfoBottomSheet(
 fun SecurityCheckScreenPreview() {
     ComposeAppTheme {
         UnifiedAddressCheckScreen(
+            navigation = HSNavigation(NavBackStack()),
             onClose = {},
             onPremiumClick = {}
         )

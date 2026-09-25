@@ -15,10 +15,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import cash.p.terminal.R
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.address.AddressParserModule
@@ -28,17 +24,17 @@ import cash.p.terminal.modules.address.HSAddressInput
 import cash.p.terminal.modules.amount.AmountInputModeViewModel
 import cash.p.terminal.modules.amount.HSAmountInput
 import cash.p.terminal.modules.fee.FeeInfoSection
-import cash.p.terminal.modules.send.SendConfirmationFragment
-import cash.p.terminal.modules.send.SendFragment.ProceedActionData
+import cash.p.terminal.modules.send.SendConfirmationPage
+import cash.p.terminal.modules.send.SendPage.ProceedActionData
 import cash.p.terminal.modules.send.SendScreen
 import cash.p.terminal.modules.send.SendSuggestionsBar
 import cash.p.terminal.modules.send.address.AddressCheckerControl
 import cash.p.terminal.modules.send.address.SmartContractCheckSection
 import cash.p.terminal.modules.send.offline.OfflineSignActionCell
-import cash.p.terminal.modules.send.offline.OfflineSignFlowRoutes
-import cash.p.terminal.modules.send.offline.offlineSignFlowRoutes
+import cash.p.terminal.modules.send.offline.OfflineSignPage
 import cash.p.terminal.modules.sendtokenselect.PrefilledData
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui.compose.components.PoisonAddressRiskSection
 import cash.p.terminal.ui.compose.components.PoisonWarningCell
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
@@ -49,53 +45,32 @@ import java.math.BigDecimal
 
 @Composable
 @Suppress("ViewModelForwarding")
-fun SendTronNavHost(
+fun SendTronPageContent(
     title: String,
-    fragmentNavController: NavController,
+    navigation: HSNavigation,
     viewModel: SendTronViewModel,
     amountInputModeViewModel: AmountInputModeViewModel,
     prefilledData: PrefilledData?,
     addressCheckerControl: AddressCheckerControl,
     onNextClick: (ProceedActionData) -> Unit,
 ) {
-    val navController = rememberNavController()
-    NavHost(
-        navController = navController,
-        startDestination = SendTronPage,
-    ) {
-        composable(SendTronPage) {
-            SendTronScreen(
-                title = title,
-                navController = fragmentNavController,
-                viewModel = viewModel,
-                amountInputModeViewModel = amountInputModeViewModel,
-                prefilledData = prefilledData,
-                addressCheckerControl = addressCheckerControl,
-                onOfflineSignClick = { navController.navigate(OfflineTronSignPage) },
-                onNextClick = onNextClick,
-            )
-        }
-        offlineSignFlowRoutes(
-            routes = OfflineSignFlowRoutes(
-                signRoute = OfflineTronSignPage,
-                transferRoute = OfflineTronTransactionTransferPage,
-            ),
-            navController = navController,
-            fragmentNavController = fragmentNavController,
-            sendViewModel = viewModel,
-        )
-    }
+    SendTronScreen(
+        title = title,
+        navigation = navigation,
+        viewModel = viewModel,
+        amountInputModeViewModel = amountInputModeViewModel,
+        prefilledData = prefilledData,
+        addressCheckerControl = addressCheckerControl,
+        onOfflineSignClick = { navigation.slideFromRight(OfflineSignPage(SendTronViewModel::class)) },
+        onNextClick = onNextClick,
+    )
 }
-
-private const val SendTronPage = "send_tron"
-private const val OfflineTronSignPage = "offline_tron_sign"
-private const val OfflineTronTransactionTransferPage = "offline_tron_transaction_transfer"
 
 @Composable
 @Suppress("LongMethod", "LongParameterList")
 fun SendTronScreen(
     title: String,
-    navController: NavController,
+    navigation: HSNavigation,
     viewModel: SendTronViewModel,
     amountInputModeViewModel: AmountInputModeViewModel,
     prefilledData: PrefilledData?,
@@ -127,7 +102,7 @@ fun SendTronScreen(
                 ProceedActionData(
                     address = uiState.address?.hex,
                     wallet = wallet,
-                    type = SendConfirmationFragment.Type.Tron,
+                    type = SendConfirmationPage.Type.Tron,
                 )
             )
         }
@@ -138,7 +113,7 @@ fun SendTronScreen(
 
         SendScreen(
             title = title,
-            onCloseClick = { navController.popBackStackSafely() },
+            onCloseClick = { navigation.navigateUpSafely() },
             proceedEnabled = proceedEnabled,
             onSendClick = onProceed,
             bottomOverlay = {
@@ -167,7 +142,7 @@ fun SendTronScreen(
                     coinCode = wallet.coin.code,
                     error = uiState.addressError,
                     textPreprocessor = paymentAddressViewModel,
-                    navController = navController,
+                    navigation = navigation,
                     isPoisonAddress = uiState.isPoisonAddress,
                     onValueChange = { viewModel.onEnterAddress(it) },
                 )
@@ -219,7 +194,7 @@ fun SendTronScreen(
             }
             SmartContractCheckSection(
                 token = wallet.token,
-                navController = navController,
+                navigation = navigation,
                 addressCheckerControl = addressCheckerControl,
                 modifier = Modifier.padding(top = 8.dp)
             )
