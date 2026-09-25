@@ -3,7 +3,7 @@ package cash.p.terminal.domain.usecase
 import android.content.Context
 import androidx.core.content.edit
 import androidx.glance.appwidget.GlanceAppWidgetManager
-import cash.p.terminal.core.App
+import cash.p.terminal.core.managers.KeyStoreCleaner
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.storage.AppDatabase
 import cash.p.terminal.core.tor.torcore.TorConstants
@@ -11,12 +11,12 @@ import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.settings.appearance.AppIconService
 import cash.p.terminal.modules.walletconnect.WCDelegate
 import cash.p.terminal.strings.helpers.LocaleHelper
-import cash.p.terminal.wallet.IAccountCleaner
-import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.AccountDeletionPreflight
 import cash.p.terminal.widgets.MarketWidget
 import cash.p.terminal.widgets.MarketWidgetStateDefinition
 import cash.p.terminal.widgets.MarketWidgetWorker
 import io.horizontalsystems.core.DispatcherProvider
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
@@ -25,41 +25,49 @@ class ResetUseCase(
     private val context: Context,
     private val localStorage: ILocalStorage,
     private val appDatabase: AppDatabase,
-    private val accountManager: IAccountManager,
-    private val accountCleaner: IAccountCleaner,
     private val contactsRepository: ContactsRepository,
     private val dispatcherProvider: DispatcherProvider,
     private val glanceManager: GlanceAppWidgetManager,
     private val appIconService: AppIconService,
+    private val deletionPreflight: AccountDeletionPreflight,
+    private val keyStoreCleaner: KeyStoreCleaner,
 ) {
 
     suspend operator fun invoke() {
         withContext(dispatcherProvider.io) {
+            deletionPreflight.prepareExplicitReset()
             haltWalletConnect()
 
-            runCatching {
-                val accountIds = accountManager.accounts.map { it.id }
-                if (accountIds.isNotEmpty()) {
-                    accountCleaner.clearAccounts(accountIds)
-                }
-            }.onFailure { Timber.w(it, "Failed clearing account artifacts") }
-
-            runCatching {
-                val mainShowedOnce = localStorage.mainShowedOnce
-                val appIcon = localStorage.appIcon
-                val isSystemPinRequired = localStorage.isSystemPinRequired
-
-                App.keyStoreManager.resetApp("InvalidKey")
-
-                appIcon?.let(appIconService::setAppIcon)
-                localStorage.mainShowedOnce = mainShowedOnce
-                localStorage.isSystemPinRequired = isSystemPinRequired
-            }.onFailure { Timber.w(it, "Failed resetting keystore") }
+            clearKeystoreLinkage()
 
             purgeDatabases()
             purgeLocalePreferences()
             purgeFilesAndCaches()
+            finishResetMarker()
         }
+    }
+
+    // The app is already wiped here: the BEAM key wrappers are shredded and the global clear ran.
+    // A retained marker only means startup cleanup still has a leftover file to remove, so it must
+    // not surface on the PIN screen as a failed reset.
+    private suspend fun finishResetMarker() {
+        try {
+            deletionPreflight.finishExplicitReset()
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            Timber.w(error, "BEAM reset marker retained; startup cleanup will finish it")
+        }
+    }
+
+    private suspend fun clearKeystoreLinkage() {
+        val mainShowedOnce = localStorage.mainShowedOnce
+        val appIcon = localStorage.appIcon
+        val isSystemPinRequired = localStorage.isSystemPinRequired
+        keyStoreCleaner.cleanExplicitReset()
+        appIcon?.let(appIconService::setAppIcon)
+        localStorage.mainShowedOnce = mainShowedOnce
+        localStorage.isSystemPinRequired = isSystemPinRequired
     }
 
     private fun haltWalletConnect() {
@@ -72,8 +80,7 @@ class ResetUseCase(
     }
 
     private fun purgeDatabases() {
-        runCatching { appDatabase.clearAllTables() }
-            .onFailure { Timber.w(it, "Failed clearing app database") }
+        appDatabase.clearAllTables()
 
         runCatching { context.deleteDatabase(PREMIUM_DB_NAME) }
             .onFailure { Timber.w(it, "Failed deleting premium database file") }

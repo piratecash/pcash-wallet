@@ -7,7 +7,8 @@ object PinUnlockModule {
         val fingerScannerEnabled: Boolean,
         val unlocked: Boolean,
         val showShakeAnimation: Boolean,
-        val inputState: InputState
+        val inputState: InputState,
+        val resetBlocked: Boolean = false,
     )
 
     sealed class InputState {

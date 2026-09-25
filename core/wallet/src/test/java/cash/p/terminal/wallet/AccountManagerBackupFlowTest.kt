@@ -40,6 +40,7 @@ class AccountManagerBackupFlowTest {
             getMoneroWalletFilesNameUseCase = getMoneroWalletFilesNameUseCase,
             removeMoneroWalletFilesUseCase = mockk<RemoveMoneroWalletFilesUseCase>(relaxed = true),
             balanceHiddenManager = mockk<IBalanceHiddenManager>(relaxed = true),
+            deletionPreflight = mockk(relaxed = true),
         )
         accountManager.save(account, updateActive = false)
         assertEquals(account, accountManager.newAccountBackupRequiredFlow.value)

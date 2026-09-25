@@ -1,7 +1,10 @@
 package cash.p.terminal.modules.settings.main
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
@@ -27,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -53,6 +57,7 @@ import cash.p.terminal.ui.helpers.LinkHelper
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellSingleLineLawrenceSection
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
+import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.components.PremiumHeader
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.SectionPremiumUniversalLawrence
@@ -61,6 +66,9 @@ import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.caption_grey
 import cash.p.terminal.ui_compose.components.subhead1_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import io.horizontalsystems.core.IPinComponent
+import io.horizontalsystems.core.launchExternalActivity
+import org.koin.compose.koinInject
 
 @Composable
 fun SettingsScreen(
@@ -97,9 +105,22 @@ private fun SettingSections(
 ) {
     val uiState = viewModel.uiState
     val context = LocalContext.current
+    val view = LocalView.current
+    val pinComponent: IPinComponent = koinInject()
     val rawTxScanTitle = stringResource(R.string.offline_broadcast_title)
     val walletConnectTitle = stringResource(R.string.WalletConnect_Title)
     val tonConnectTitle = stringResource(R.string.TonConnect_Title)
+    val transactionFileLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let {
+            navController.slideFromRight(
+                MainGraphDirections.actionGlobalToOfflineBroadcastFragment(
+                    OfflineBroadcastFragment.Input(fileUri = it.toString())
+                )
+            )
+        }
+    }
 
     CellUniversalLawrenceSection(
         listOf {
@@ -311,24 +332,43 @@ private fun SettingSections(
     )
     VSpacer(32.dp)
     CellUniversalLawrenceSection(
-        listOf({
-            HsSettingCell(
-                title = R.string.offline_broadcast_title,
-                icon = R.drawable.ic_send_24,
-                onClick = {
-                    navController.openQrScanner(
-                        title = rawTxScanTitle,
-                        showPasteButton = true,
-                    ) { scannedText ->
-                        navController.slideFromRight(
-                            MainGraphDirections.actionGlobalToOfflineBroadcastFragment(
-                                OfflineBroadcastFragment.Input(initialInput = scannedText)
+        listOf(
+            {
+                HsSettingCell(
+                    title = R.string.offline_broadcast_title,
+                    icon = R.drawable.ic_send_24,
+                    onClick = {
+                        navController.openQrScanner(
+                            title = rawTxScanTitle,
+                            showPasteButton = true,
+                        ) { scannedText ->
+                            navController.slideFromRight(
+                                MainGraphDirections.actionGlobalToOfflineBroadcastFragment(
+                                    OfflineBroadcastFragment.Input(initialInput = scannedText)
+                                )
                             )
-                        )
+                        }
                     }
-                }
-            )
-        })
+                )
+            },
+            {
+                HsSettingCell(
+                    title = R.string.offline_broadcast_import_file,
+                    icon = R.drawable.ic_file_24,
+                    onClick = {
+                        try {
+                            pinComponent.launchExternalActivity {
+                                transactionFileLauncher.launch(
+                                    arrayOf("text/plain", "application/octet-stream")
+                                )
+                            }
+                        } catch (_: ActivityNotFoundException) {
+                            HudHelper.showErrorMessage(view, R.string.offline_broadcast_file_read_failed)
+                        }
+                    }
+                )
+            },
+        )
     )
 
     VSpacer(24.dp)

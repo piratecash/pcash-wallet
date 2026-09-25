@@ -78,6 +78,14 @@ internal fun rememberBlockchainStatusProvider(blockchain: Blockchain): Blockchai
             }
         }
 
+        type == BlockchainType.Beam -> {
+            val walletManager = koinInject<IWalletManager>()
+            val adapterManager = koinInject<IAdapterManager>()
+            remember(walletManager, adapterManager) {
+                BeamBlockchainStatusProvider(walletManager, adapterManager)
+            }
+        }
+
         else -> error("Unsupported blockchain type for status: ${type.uid}")
     }
 }

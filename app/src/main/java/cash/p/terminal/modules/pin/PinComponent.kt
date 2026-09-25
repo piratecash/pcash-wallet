@@ -139,8 +139,8 @@ class PinComponent(
         var pinLevel = PinLevels.resolvedUserLevelAfterUnlock(pinLevelDetected) ?: return@withContext false
 
         if (pinLevelDetected == PinLevels.SECURE_RESET) {
-            disableSecureResetPin()
             resetUseCase()
+            disableSecureResetPin()
             pinManager.store(pin, 0)
             pinLevel = 0
         }

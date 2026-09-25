@@ -5,8 +5,10 @@ import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.AccountType.MnemonicMonero
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.Coin
+import cash.p.terminal.wallet.entities.FullCoin
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.title
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.hdwalletkit.ExtendedKeyCoinType
@@ -413,5 +415,57 @@ class BlockchainTypeSupportTest {
             )
         )
         assertTrue(BlockchainType.RobinhoodChain.supports(AccountType.EvmPrivateKey(BigInteger.ONE)))
+    }
+
+    @Test
+    fun beam_nativeCatalog_hasSupportedDefaultQuery() {
+        val query = TokenQuery(BlockchainType.Beam, TokenType.Native)
+
+        assertTrue(query.isSupported)
+        assertEquals(query, BlockchainType.Beam.defaultTokenQuery)
+        assertEquals(listOf(query), BlockchainType.Beam.nativeTokenQueries)
+        assertTrue(BlockchainType.Beam in BlockchainType.supported)
+        assertTrue(BlockchainType.Beam.order < Int.MAX_VALUE)
+        assertEquals("BEAM", BlockchainType.Beam.title)
+        assertFalse(BlockchainType.Beam.isEvm)
+        assertFalse(BlockchainType.Beam.isBtcLike)
+        assertFalse(TokenQuery(BlockchainType.Beam, TokenType.Eip20("contract")).isSupported)
+        assertFalse(TokenQuery(BlockchainType.fromUid("beam-2"), TokenType.Native).isSupported)
+    }
+
+    @Test
+    fun eligibleTokens_nativeBeam_allowsOnlyMnemonic() {
+        val beam = token(BlockchainType.Beam).copy(coin = Coin("beam", "BEAM", "BEAM"))
+        val fullCoin = FullCoin(beam.coin, listOf(beam))
+        val accounts = listOf(
+            mnemonicAccount(), moneroMnemonicAccount(), hardwareCardAccount(),
+            mockk<AccountType.TrezorDevice>(), mockk<AccountType.HdExtendedKey>(),
+            AccountType.BitcoinAddress("address", BlockchainType.Beam, TokenType.Native),
+            mockk<AccountType.EvmAddress>(), mockk<AccountType.EvmPrivateKey>(),
+            mockk<AccountType.SolanaAddress>(), mockk<AccountType.TronAddress>(),
+            mockk<AccountType.TonAddress>(), mockk<AccountType.StellarAddress>(),
+            mockk<AccountType.StellarSecretKey>(), mockk<AccountType.ZCashUfvKey>()
+        )
+
+        accounts.forEach { account ->
+            val eligible = account is AccountType.Mnemonic
+            assertEquals(eligible, BlockchainType.Beam.supports(account))
+            assertEquals(eligible, beam.supports(account))
+            assertEquals(if (eligible) listOf(beam) else emptyList(), fullCoin.eligibleTokens(account))
+        }
+    }
+
+    @Test
+    fun eligibleTokens_gameBeam_preservesErc20AndBep20ForEvmAccounts() {
+        val coin = Coin("beam-2", "Beam", "BEAM")
+        val tokens = listOf(BlockchainType.Ethereum, BlockchainType.BinanceSmartChain).map {
+            token(it, TokenType.Eip20("0x62d0a8458ed7719fdaf978fe5929c6d342b0bfce"))
+                .copy(coin = coin, decimals = 18)
+        }
+        val fullCoin = FullCoin(coin, tokens)
+
+        listOf(mnemonicAccount(), AccountType.EvmAddress("address"), AccountType.EvmPrivateKey(BigInteger.ONE))
+            .forEach { account -> assertEquals(tokens, fullCoin.eligibleTokens(account)) }
+        assertTrue(tokens.all { it.type is TokenType.Eip20 && it.blockchainType != BlockchainType.Beam })
     }
 }

@@ -1,6 +1,8 @@
 package cash.p.terminal.modules.send.offline
 
 import androidx.lifecycle.viewModelScope
+import cash.p.beam.BeamNetwork
+import cash.p.beam.BeamRelayOutcome
 import cash.p.terminal.R
 import cash.p.terminal.core.BroadcastRawTransactionStatus
 import cash.p.terminal.core.EvmError
@@ -9,10 +11,12 @@ import cash.p.terminal.core.LocalizedException
 import cash.p.terminal.core.OfflineBroadcastMetadata
 import cash.p.terminal.core.OfflineTransactionAdapter
 import cash.p.terminal.core.UnsupportedException
+import cash.p.terminal.core.adapters.BeamAdapter
 import cash.p.terminal.core.convertedError
 import cash.p.terminal.core.isZcashAlreadyCommittedToBestChainError
 import cash.p.terminal.core.managers.OfflineSignedTransactionRepository
 import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
+import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder.DecodeResult
 import cash.p.terminal.core.nativeTokenQueries
 import cash.p.terminal.core.order
 import cash.p.terminal.core.supported
@@ -28,7 +32,6 @@ import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapter
 import cash.p.terminal.wallet.IAdapterManager
-import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Token
@@ -41,6 +44,8 @@ import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
@@ -53,13 +58,13 @@ import java.util.concurrent.TimeoutException
 class OfflineBroadcastViewModel(
     private val payloadEncoder: OfflineTransactionPayloadEncoder,
     private val offlineSignedTransactionRepository: OfflineSignedTransactionRepository,
-    private val walletManager: IWalletManager,
     private val accountManager: IAccountManager,
     private val adapterManager: IAdapterManager,
     private val walletUseCase: WalletUseCase,
     private val marketKit: MarketKitWrapper,
     private val offlineBroadcastTokenResolver: OfflineBroadcastTokenResolver,
     private val dispatcherProvider: DispatcherProvider,
+    private val beamRelay: BeamOfflineTransactionRelay,
 ) : ViewModelUiState<OfflineBroadcastUiState>() {
 
     private var step = OfflineBroadcastStep.Loading
@@ -79,6 +84,9 @@ class OfflineBroadcastViewModel(
     private var prefilled = false
     private var offlineRecordKey: OfflineRecordKey? = null
     private var broadcastMetadata: OfflineBroadcastMetadata? = null
+    private var beamPrepared: BeamOfflineTransactionRelay.Prepared? = null
+    private var beamPreparationJob: Job? = null
+    private var selectionGeneration = 0L
 
     override fun createState() = OfflineBroadcastUiState(
         step = step,
@@ -98,11 +106,11 @@ class OfflineBroadcastViewModel(
                 selectable = networkSelectable,
                 blockchainName = selectedBlockchain?.name,
                 action = confirmAction,
+                validated = selectedBlockchain?.type != BlockchainType.Beam || beamPrepared != null,
             )
         }
 
-    // The scanner is the only input source. Decode the scanned payload and open the confirmation
-    // screen with the network fixed (pcash payload) or selectable (plain RAW HEX).
+    // Envelopes fix the network; plain RAW HEX requires an explicit network selection.
     fun prefillAndAdvance(value: String) {
         if (prefilled) return
         prefilled = true
@@ -112,17 +120,29 @@ class OfflineBroadcastViewModel(
             dismissWithError(R.string.offline_broadcast_invalid_input)
             return
         }
-        val decoded = payloadEncoder.decode(text)
-        if (decoded != null) prepareFromDecoded(decoded, text) else prepareFromRawHex(text)
+        when (val decoded = payloadEncoder.decodeResult(text)) {
+            DecodeResult.NotEnvelope -> prepareFromRawHex(text)
+            DecodeResult.Invalid -> dismissWithError(R.string.offline_broadcast_invalid_input)
+            is DecodeResult.Decoded -> prepareFromDecoded(decoded.transaction, text)
+        }
     }
 
     fun onPickNetwork() {
-        if (!networkSelectable) return
+        if (!canSelectNetwork()) return
         step = OfflineBroadcastStep.SelectBlockchain
         emitState()
     }
 
     fun onSelectBlockchain(blockchain: Blockchain) {
+        if (!canSelectNetwork() || blockchain !in selectableBlockchains) return
+        selectionGeneration++
+        beamPreparationJob?.cancel()
+        beamPrepared = null
+        result = null
+        if (blockchain.type == BlockchainType.Beam) {
+            prepareBeam(blockchain, null)
+            return
+        }
         val wallet = walletFor(blockchain.type)
         selectedBlockchain = blockchain
         targetWallet = wallet
@@ -132,9 +152,13 @@ class OfflineBroadcastViewModel(
         emitState()
     }
 
+    private fun canSelectNetwork() = networkSelectable && !broadcasting &&
+        confirmAction !is OfflineBroadcastConfirmAction.PreparingNetwork
+
     // Single entry point for the confirm screen's primary button. The button's meaning follows the
     // current action, so the ViewModel — not the UI — decides whether to enable or broadcast.
     fun onPrimaryAction() {
+        if (step != OfflineBroadcastStep.Confirm || broadcasting) return
         when (confirmAction) {
             is OfflineBroadcastConfirmAction.EnableNetwork -> onEnableNetwork()
             is OfflineBroadcastConfirmAction.PreparingNetwork -> Unit
@@ -209,6 +233,10 @@ class OfflineBroadcastViewModel(
         // A second tap while the first broadcast is still running could re-attempt the send and roll a
         // freshly broadcasted record back to pending, so ignore re-entrant taps.
         if (broadcasting) return
+        if (selectedBlockchain?.type == BlockchainType.Beam) {
+            onBeamBroadcast()
+            return
+        }
         if (rejectWatchOnlyIfUnsupported(selectedBlockchain)) return
         val wallet = targetWallet
         if (wallet == null) {
@@ -340,6 +368,7 @@ class OfflineBroadcastViewModel(
     }
 
     fun onRetry() {
+        if (broadcasting || result !is OfflineBroadcastResult.Error) return
         result = null
         step = OfflineBroadcastStep.Confirm
         onBroadcast()
@@ -368,6 +397,15 @@ class OfflineBroadcastViewModel(
 
     private fun prepareFromDecoded(decoded: DecodedOfflineTransaction, payload: String) {
         val blockchain = marketKit.blockchain(decoded.blockchainUid)
+        if (decoded.blockchainUid == BlockchainType.Beam.uid) {
+            if (blockchain?.type != BlockchainType.Beam) {
+                dismissWithError(R.string.offline_broadcast_invalid_input)
+                return
+            }
+            rawHex = decoded.rawHex
+            prepareBeam(blockchain, PendingImport(decoded, payload))
+            return
+        }
         val account = accountManager.activeAccount
         // Gate on broadcast capability before arming Send: a crafted payload may target a blockchain
         // whose active wallet cannot relay (e.g. an EVM chain), and proceeding would later cast a
@@ -460,20 +498,21 @@ class OfflineBroadcastViewModel(
             ?.takeIf { it.isNotBlank() }
 
     private fun walletFor(type: BlockchainType): Wallet? {
-        val wallets = walletManager.activeWallets.filter { it.token.blockchainType == type }
+        val wallets = walletUseCase.getWallets(type)
         return wallets.firstOrNull { it.token.type is TokenType.Native } ?: wallets.firstOrNull()
     }
 
     private fun supportedBlockchains(): List<Blockchain> {
-        val accountType = accountManager.activeAccount?.type ?: return emptyList()
+        val beam = marketKit.blockchain(BlockchainType.Beam.uid)?.takeIf { it.type == BlockchainType.Beam }
+        val accountType = accountManager.activeAccount?.type ?: return listOfNotNull(beam)
         val tokenQueries = BlockchainType.supported
             .filter { it.supports(accountType) }
             .flatMap { it.nativeTokenQueries }
 
-        return marketKit.tokens(tokenQueries)
+        val compatible = marketKit.tokens(tokenQueries)
             .filter { it.supports(accountType) && it.blockchainType.supports(accountType) }
             .map { it.blockchain }
-            .distinctBy { it.uid }
+        return (compatible + listOfNotNull(beam)).distinctBy { it.uid }
             .sortedBy { it.type.order }
     }
 
@@ -518,6 +557,111 @@ class OfflineBroadcastViewModel(
         dismissError = Translator.getString(messageRes)
         emitState()
     }
+
+    // Relaying needs no wallet; an existing BEAM wallet only lets the relay be listed in "Signed offline".
+    private fun prepareBeam(blockchain: Blockchain, scanned: PendingImport?) {
+        selectedBlockchain = blockchain
+        targetWallet = walletFor(BlockchainType.Beam)
+        tokenToEnable = null
+        pendingImport = null
+        offlineRecordKey = null
+        confirmAction = OfflineBroadcastConfirmAction.Send
+        step = OfflineBroadcastStep.Confirm
+        val generation = selectionGeneration
+        emitState()
+        beamPreparationJob = viewModelScope.launch {
+            try {
+                val prepared = beamRelay.prepare(rawHex, BeamNetwork.Mainnet, scanned?.decoded)
+                currentCoroutineContext().ensureActive()
+                if (generation != selectionGeneration) return@launch
+                val wallet = targetWallet
+                if (scanned != null && wallet != null) {
+                    pendingImport = scanned
+                    savePendingImport(wallet)
+                }
+                beamPrepared = prepared
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                if (generation != selectionGeneration) return@launch
+                dismissWithError(R.string.offline_broadcast_invalid_input)
+            }
+            emitState()
+        }
+    }
+
+    private fun onBeamBroadcast() {
+        val prepared = beamPrepared ?: return
+        val networkName = selectedBlockchain?.name ?: return
+        broadcasting = true
+        emitState()
+        viewModelScope.launch {
+            try {
+                val relayed = relayBeam(prepared, networkName)
+                currentCoroutineContext().ensureActive()
+                recordBeamRelay(relayed)
+                result = relayed
+                step = OfflineBroadcastStep.Result
+            } finally {
+                broadcasting = false
+                emitState()
+            }
+        }
+    }
+
+    private suspend fun relayBeam(
+        prepared: BeamOfflineTransactionRelay.Prepared,
+        networkName: String,
+    ): OfflineBroadcastResult = try {
+        val relayed = beamRelay.relay(prepared)
+        when (val outcome = relayed.outcome) {
+            BeamRelayOutcome.Accepted -> OfflineBroadcastResult.Success(
+                networkName, relayed.transaction.mainKernelId, queued = false,
+                explorerUrl = BeamAdapter.kernelExplorerUrl(relayed.transaction.mainKernelId, mainNet = true),
+            )
+            is BeamRelayOutcome.Rejected -> beamError(networkName, R.string.offline_broadcast_error_rejected)
+            is BeamRelayOutcome.Timeout -> beamError(
+                networkName, R.string.offline_broadcast_error_timeout, outcome.acceptanceUnknown,
+            )
+            BeamRelayOutcome.UnknownAcceptance -> beamError(networkName, R.string.offline_broadcast_error_timeout, true)
+            BeamRelayOutcome.NetworkUnavailable -> beamError(networkName, R.string.Hud_Text_NoInternet)
+        }
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: BeamOfflineTransactionRelay.Offline) {
+        OfflineBroadcastResult.Error(
+            networkName, rawHex, Translator.getString(R.string.offline_mode_operation_blocked, networkName),
+            acceptanceUnknown = e.acceptanceUnknown,
+        )
+    } catch (e: Exception) {
+        beamError(networkName, R.string.offline_broadcast_error_send_failed, true)
+    }
+
+    // Same bookkeeping as other chains: an imported record tracks every attempt, and plain RAW HEX is
+    // persisted only once the network accepted it.
+    private suspend fun recordBeamRelay(result: OfflineBroadcastResult) {
+        val wallet = targetWallet ?: return
+        val recordKey = offlineRecordKey
+        if (recordKey != null) {
+            recordBroadcastAttempt()
+            when (result) {
+                is OfflineBroadcastResult.Success -> offlineSignedTransactionRepository.markBroadcasted(
+                    recordKey.accountId, recordKey.txHash, result.txHash,
+                )
+                is OfflineBroadcastResult.Error -> offlineSignedTransactionRepository.markBroadcastFailed(
+                    recordKey.accountId, recordKey.txHash, result.message,
+                )
+            }
+        } else if (result is OfflineBroadcastResult.Success) {
+            persistRawBroadcast(wallet, result.txHash, queued = false)
+        }
+        if (result is OfflineBroadcastResult.Success) {
+            offlineSignedTransactionRepository.markBroadcastedByRawHex(rawHex, result.txHash)
+        }
+    }
+
+    private fun beamError(networkName: String, messageRes: Int, acceptanceUnknown: Boolean = false) =
+        OfflineBroadcastResult.Error(networkName, rawHex, Translator.getString(messageRes), acceptanceUnknown)
 
     companion object {
         private const val WALLET_WAIT_TIMEOUT_MS = 10_000L
@@ -576,9 +720,10 @@ data class OfflineBroadcastConfirm(
     val selectable: Boolean,
     val blockchainName: String?,
     val action: OfflineBroadcastConfirmAction = OfflineBroadcastConfirmAction.Send,
+    val validated: Boolean = true,
 ) {
     val canBroadcast: Boolean
-        get() = blockchainName != null
+        get() = blockchainName != null && validated
 
     // Network name to show in the enable warning; null hides the warning block.
     val enableNetworkName: String?
@@ -603,6 +748,7 @@ sealed interface OfflineBroadcastResult {
         override val networkName: String,
         val rawHex: String,
         val message: String,
+        val acceptanceUnknown: Boolean = false,
     ) : OfflineBroadcastResult
 }
 

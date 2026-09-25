@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import cash.p.terminal.R
+import cash.p.terminal.modules.manageaccount.AccountDeletionError
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.ui_compose.BaseComposableBottomSheetFragment
 import cash.p.terminal.ui_compose.BottomSheetHeader
@@ -77,12 +78,15 @@ private fun UnlinkAccountScreen(navController: NavController, account: Account) 
 
     val confirmations = viewModel.confirmations
     val unlinkEnabled = viewModel.unlinkEnabled
-    val deleteWarningMsg = viewModel.deleteWarningMsg
+    val deleteWarningMessages = listOfNotNull(viewModel.deleteWarningMsg)
+    val view = LocalView.current
+    AccountDeletionError(viewModel.deletionState)
 
     LaunchedEffect(viewModel.closeScreen) {
         if (viewModel.closeScreen) {
+            HudHelper.showSuccessMessage(view, R.string.Hud_Text_Done)
             delay(1000)
-            navController.popBackStack()
+            navController.popBackStack(R.id.manageAccountFragment, true)
         }
     }
 
@@ -113,15 +117,12 @@ private fun UnlinkAccountScreen(navController: NavController, account: Account) 
             }
         }
 
-        deleteWarningMsg?.let {
+        deleteWarningMessages.forEach {
             TextImportantWarning(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 text = stringResource(id = it)
             )
         }
-
-        val view = LocalView.current
-        val doneConfirmationMessage = stringResource(R.string.Hud_Text_Done)
 
         Spacer(Modifier.height(32.dp))
         ButtonPrimaryRed(
@@ -131,8 +132,6 @@ private fun UnlinkAccountScreen(navController: NavController, account: Account) 
             title = stringResource(viewModel.deleteButtonText),
             onClick = {
                 viewModel.onUnlink()
-                HudHelper.showSuccessMessage(view, doneConfirmationMessage)
-                navController.popBackStackSafely()
             },
             enabled = unlinkEnabled
         )

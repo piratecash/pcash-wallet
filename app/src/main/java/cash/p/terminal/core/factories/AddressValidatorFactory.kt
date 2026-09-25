@@ -11,6 +11,7 @@ import cash.p.terminal.modules.send.address.TonAddressValidator
 import cash.p.terminal.modules.send.address.TronAddressValidator
 import cash.p.terminal.modules.send.address.ZcashAddressValidator
 import cash.p.terminal.wallet.Token
+import cash.p.terminal.modules.send.beam.BeamRecipient
 import io.horizontalsystems.core.entities.BlockchainType
 
 object AddressValidatorFactory {
@@ -64,6 +65,7 @@ object AddressValidatorFactory {
 
             BlockchainType.Monero -> MoneroAddressValidator()
 
+            BlockchainType.Beam -> BeamRecipient
             is BlockchainType.Unsupported -> error("Unsupported blockchain type: ${token.blockchainType}")
 
         }

@@ -4,16 +4,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import cash.p.terminal.core.ILocalStorage
+import cash.p.terminal.wallet.AccountDeletionBlockedException
+import cash.p.terminal.wallet.AccountDeletionPreflight
 import io.horizontalsystems.core.IKeyStoreManager
-import org.koin.java.KoinJavaComponent.inject
+import kotlinx.coroutines.launch
 
 class KeyStoreViewModel(
     private val keyStoreManager: IKeyStoreManager,
+    private val localStorage: ILocalStorage,
+    private val deletionPreflight: AccountDeletionPreflight,
     mode: KeyStoreModule.ModeType
 ) : ViewModel() {
 
-    private val localStorage: ILocalStorage by inject(ILocalStorage::class.java)
+    var recoveryRequired by mutableStateOf(false)
+        private set
 
     var showSystemLockWarning by mutableStateOf(false)
         private set
@@ -39,14 +45,11 @@ class KeyStoreViewModel(
 
     init {
         when (mode) {
-            KeyStoreModule.ModeType.NoSystemLock -> {
-                showSystemLockWarning = true
-                keyStoreManager.resetApp("NoSystemLock")
-            }
-
-            KeyStoreModule.ModeType.InvalidKey -> {
-                showInvalidKeyWarning = true
-                keyStoreManager.resetApp("InvalidKey")
+            KeyStoreModule.ModeType.NoSystemLock,
+            KeyStoreModule.ModeType.InvalidKey -> withResetPreflight {
+                keyStoreManager.resetApp(mode.name)
+                showSystemLockWarning = mode == KeyStoreModule.ModeType.NoSystemLock
+                showInvalidKeyWarning = mode == KeyStoreModule.ModeType.InvalidKey
             }
 
             KeyStoreModule.ModeType.UserAuthentication -> {
@@ -56,9 +59,26 @@ class KeyStoreViewModel(
     }
 
     fun onCloseInvalidKeyWarning() {
-        keyStoreManager.removeKey()
-        showInvalidKeyWarning = false
-        openMainModule = true
+        if (!showInvalidKeyWarning || recoveryRequired) return
+        withResetPreflight {
+            keyStoreManager.removeKey()
+            showInvalidKeyWarning = false
+            openMainModule = true
+        }
+    }
+
+    private fun withResetPreflight(action: () -> Unit) {
+        viewModelScope.launch {
+            try {
+                deletionPreflight.ensureCanReset()
+                action()
+            } catch (_: AccountDeletionBlockedException) {
+                showSystemLockWarning = false
+                showInvalidKeyWarning = false
+                showTermsDialog = false
+                recoveryRequired = true
+            }
+        }
     }
 
     fun onAuthenticationCanceled() {
@@ -67,6 +87,7 @@ class KeyStoreViewModel(
     }
 
     fun onAuthenticationSuccess() {
+        if (recoveryRequired) return
         showBiometricPrompt = false
         openMainModule = true
     }
@@ -80,6 +101,7 @@ class KeyStoreViewModel(
     }
 
     fun changeSystemPinRequired(required: Boolean) {
+        if (!showSystemLockWarning || recoveryRequired) return
         setSystemPinRequiredInner(required)
 
         if (!required) {
@@ -93,6 +115,7 @@ class KeyStoreViewModel(
     }
 
     fun onTermsAccepted() {
+        if (!showTermsDialog || recoveryRequired) return
         showTermsDialog = false
 
         setSystemPinRequiredInner(false)

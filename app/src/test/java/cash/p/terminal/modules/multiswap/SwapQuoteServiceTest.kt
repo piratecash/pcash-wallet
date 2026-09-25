@@ -6,6 +6,8 @@ import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
 import cash.p.terminal.modules.multiswap.providers.SwapProvidersRegistry
 import cash.p.terminal.modules.multiswap.providers.SwapProvidersRepository
 import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.entities.TokenType
+import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -880,8 +882,14 @@ abstract class SwapQuoteServiceTestFixture {
 
     private val mainDispatcher = UnconfinedTestDispatcher()
 
-    protected val tokenIn = mockk<Token>()
-    protected val tokenOut = mockk<Token>()
+    protected val tokenIn = mockk<Token> {
+        every { blockchainType } returns BlockchainType.Ethereum
+        every { type } returns TokenType.Native
+    }
+    protected val tokenOut = mockk<Token> {
+        every { blockchainType } returns BlockchainType.Ethereum
+        every { type } returns TokenType.Eip20("0x1")
+    }
 
     protected fun mockProvider(
         providerId: String,

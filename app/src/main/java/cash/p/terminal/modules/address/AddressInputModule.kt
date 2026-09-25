@@ -6,6 +6,7 @@ import cash.p.terminal.core.App
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.core.utils.AddressUriParser
 import cash.p.terminal.entities.Address
+import cash.p.terminal.modules.send.beam.BeamRecipient
 import io.horizontalsystems.core.entities.BlockchainType
 import cash.p.terminal.wallet.entities.TokenQuery
 
@@ -67,6 +68,10 @@ object AddressInputModule {
                     addressParserChain.addHandler(AddressHandlerStellar())
                 }
 
+                BlockchainType.Beam -> {
+                    addressParserChain.addHandler(BeamRecipient)
+                }
+
                 is BlockchainType.Unsupported -> Unit
             }
 
@@ -121,6 +126,7 @@ object AddressInputModule {
                 BlockchainType.Ton,
                 BlockchainType.Monero,
                 BlockchainType.Stellar,
+                BlockchainType.Beam,
                 is BlockchainType.Unsupported -> Unit
 
             }

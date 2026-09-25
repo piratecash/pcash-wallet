@@ -26,6 +26,7 @@ import cash.p.terminal.R
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.tangem.ui.HardwareWalletError
+import cash.p.terminal.modules.manageaccount.AccountDeletionError
 import cash.p.terminal.ui_compose.components.HsCheckbox
 import cash.p.terminal.ui_compose.BaseComposeFragment
 import cash.p.terminal.ui_compose.components.AppBar
@@ -54,6 +55,7 @@ class ResetToFactorySettingsFragment : BaseComposeFragment() {
         }
 
         val view = LocalView.current
+        AccountDeletionError(viewModel.deletionState)
         LaunchedEffect(Unit) {
             viewModel.errorEvents.collect { error ->
                 when (error) {

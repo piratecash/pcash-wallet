@@ -2,6 +2,7 @@ package cash.p.terminal.entities
 
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
+import kotlinx.serialization.Serializable
 import java.math.BigDecimal
 
 data class OfflineSignedTransaction(
@@ -25,6 +26,7 @@ data class OfflineSignedTransactionDraft(
     val tonRetryMetadata: OfflineTonRetryMetadata? = null,
     val tronRetryMetadata: OfflineTronRetryMetadata? = null,
     val stellarRetryMetadata: OfflineStellarRetryMetadata? = null,
+    val beamMetadata: OfflineBeamMetadata? = null,
 )
 
 enum class OfflineSignedTransactionStatus(val value: String) {
@@ -72,6 +74,16 @@ data class OfflineStellarRetryMetadata(
     val validUntil: Long,
 )
 
+/** Transport metadata only: populate from the SDK signed result; never persist own BEAM exports in Room. */
+@Serializable
+data class OfflineBeamMetadata(
+    val version: Int,
+    val network: String,
+    val rulesSignature: String,
+    val mainKernelId: String,
+    val coreTxId: String? = null,
+)
+
 // Result of decoding a pcash:tx:v1 payload back into its parts.
 data class DecodedOfflineTransaction(
     val blockchainUid: String,
@@ -87,4 +99,6 @@ data class DecodedOfflineTransaction(
     val tonRetryMetadata: OfflineTonRetryMetadata? = null,
     val tronRetryMetadata: OfflineTronRetryMetadata? = null,
     val stellarRetryMetadata: OfflineStellarRetryMetadata? = null,
+    // Untrusted until SDK inspection of these exact raw bytes under explicit network/rules.
+    val beamMetadata: OfflineBeamMetadata? = null,
 )

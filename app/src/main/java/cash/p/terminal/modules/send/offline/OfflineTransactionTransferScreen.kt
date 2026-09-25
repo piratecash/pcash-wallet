@@ -1,8 +1,14 @@
 package cash.p.terminal.modules.send.offline
 
+import android.content.ActivityNotFoundException
+import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.net.Uri
+import android.view.View
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,6 +48,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
+import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
 import cash.p.terminal.entities.OfflineSignedTransaction
 import cash.p.terminal.ui.compose.components.AnimatedQrCode
 import cash.p.terminal.ui.compose.components.animatedQrFrames
@@ -61,7 +68,10 @@ import cash.p.terminal.ui_compose.components.headline2_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.core.DefaultDispatcherProvider
+import io.horizontalsystems.core.IPinComponent
+import io.horizontalsystems.core.launchExternalActivity
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 @Composable
 internal fun OfflineTransactionTransferScreen(
@@ -70,6 +80,7 @@ internal fun OfflineTransactionTransferScreen(
     qrCodeSaver: OfflineQrCodeSaver,
     onBackClick: () -> Unit,
     onDoneClick: () -> Unit,
+    fileTransfer: OfflineTransactionFileTransfer = koinInject(),
     windowInsets: WindowInsets = NavigationBarDefaults.windowInsets,
 ) {
     val view = LocalView.current
@@ -117,6 +128,7 @@ internal fun OfflineTransactionTransferScreen(
                 transaction = transaction,
                 selectedFormat = selectedFormat,
                 qrCodeSaver = qrCodeSaver,
+                fileTransfer = fileTransfer,
             )
         }
     }
@@ -142,6 +154,7 @@ private fun TransferContent(
     transaction: OfflineSignedTransaction,
     selectedFormat: OfflineTransactionFormat,
     qrCodeSaver: OfflineQrCodeSaver,
+    fileTransfer: OfflineTransactionFileTransfer,
     modifier: Modifier = Modifier,
 ) {
     val qrContent = selectedFormat.content(transaction)
@@ -155,7 +168,8 @@ private fun TransferContent(
         qrContent = qrContent,
         qrCodePainter = qrCodePainter,
         frames = frames,
-        qrCodeSaver = qrCodeSaver
+        qrCodeSaver = qrCodeSaver,
+        fileTransfer = fileTransfer,
     )
 }
 
@@ -167,6 +181,7 @@ private fun TransferScrollableContent(
     qrCodePainter: Painter?,
     frames: List<String>?,
     qrCodeSaver: OfflineQrCodeSaver,
+    fileTransfer: OfflineTransactionFileTransfer,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -195,6 +210,8 @@ private fun TransferScrollableContent(
             qrContent = qrContent,
             qrCodePainter = qrCodePainter,
             qrCodeSaver = qrCodeSaver,
+            selectedFormat = selectedFormat,
+            fileTransfer = fileTransfer,
         )
         VSpacer(24.dp)
         RawTransactionSection(rawHex = transaction.rawHex)
@@ -295,10 +312,10 @@ private fun TransferActionButtons(
     qrContent: String,
     qrCodePainter: Painter?,
     qrCodeSaver: OfflineQrCodeSaver,
+    selectedFormat: OfflineTransactionFormat,
+    fileTransfer: OfflineTransactionFileTransfer,
 ) {
-    val context = LocalContext.current
     val view = LocalView.current
-    val shareTitle = stringResource(R.string.Button_Share)
 
     Row(
         modifier = Modifier
@@ -323,25 +340,110 @@ private fun TransferActionButtons(
             },
             modifier = Modifier.weight(1f),
         )
-        TransferActionButton(
-            icon = R.drawable.ic_share_24px,
-            text = shareTitle,
-            onClick = {
-                context.startActivity(
-                    Intent.createChooser(
-                        Intent().apply {
-                            action = Intent.ACTION_SEND
-                            putExtra(Intent.EXTRA_TEXT, qrContent)
-                            type = "text/plain"
-                        },
-                        shareTitle,
-                    )
-                )
-            },
+        SaveTransactionFileActionButton(
+            content = qrContent,
+            selectedFormat = selectedFormat,
+            fileTransfer = fileTransfer,
+            modifier = Modifier.weight(1f),
+        )
+        ShareTransactionFileActionButton(
+            content = qrContent,
+            fileTransfer = fileTransfer,
             modifier = Modifier.weight(1f),
         )
     }
 }
+
+@Composable
+private fun SaveTransactionFileActionButton(
+    content: String,
+    selectedFormat: OfflineTransactionFormat,
+    fileTransfer: OfflineTransactionFileTransfer,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    val view = LocalView.current
+    val scope = rememberCoroutineScope()
+    val pinComponent: IPinComponent = koinInject()
+    var saving by remember { mutableStateOf(false) }
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
+        if (uri == null) {
+            saving = false
+            return@rememberLauncherForActivityResult
+        }
+        scope.launch {
+            val saved = fileTransfer.save(context, uri, content)
+            if (saved) HudHelper.showSuccessMessage(view, R.string.offline_transaction_file_saved)
+            else HudHelper.showErrorMessage(view, R.string.offline_transaction_file_save_failed)
+            saving = false
+        }
+    }
+
+    TransferActionButton(
+        icon = R.drawable.ic_download_20,
+        text = stringResource(R.string.offline_transaction_save_file),
+        onClick = {
+            if (saving) return@TransferActionButton
+            saving = true
+            try {
+                pinComponent.launchExternalActivity { launcher.launch(selectedFormat.fileName) }
+            } catch (_: ActivityNotFoundException) {
+                saving = false
+                HudHelper.showErrorMessage(view, R.string.offline_transaction_file_save_failed)
+            }
+        },
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun ShareTransactionFileActionButton(
+    content: String,
+    fileTransfer: OfflineTransactionFileTransfer,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    val view = LocalView.current
+    val scope = rememberCoroutineScope()
+    val title = stringResource(R.string.Button_Share)
+    var sharing by remember { mutableStateOf(false) }
+
+    TransferActionButton(
+        icon = R.drawable.ic_share_24px,
+        text = title,
+        onClick = {
+            if (sharing) return@TransferActionButton
+            sharing = true
+            scope.launch {
+                val uri = fileTransfer.createShareUri(context, content)
+                if (uri == null) HudHelper.showErrorMessage(view, R.string.offline_transaction_file_save_failed)
+                else shareTransactionFile(context, uri, title, view)
+                sharing = false
+            }
+        },
+        modifier = modifier,
+    )
+}
+
+private fun shareTransactionFile(context: Context, uri: Uri, title: String, view: View) {
+    try {
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            clipData = ClipData.newRawUri(title, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(Intent.createChooser(shareIntent, title))
+    } catch (_: RuntimeException) {
+        HudHelper.showErrorMessage(view, R.string.offline_transaction_file_save_failed)
+    }
+}
+
+private val OfflineTransactionFormat.fileName: String
+    get() = when (this) {
+        OfflineTransactionFormat.Pcash -> "pcash-offline-transaction.txt"
+        OfflineTransactionFormat.Raw -> "raw-offline-transaction.txt"
+    }
 
 @Composable
 private fun SaveQrActionButton(
@@ -438,6 +540,7 @@ private fun OfflineTransactionTransferScreenPreview() {
             qrCodeSaver = OfflineQrCodeSaver(DefaultDispatcherProvider()),
             onBackClick = {},
             onDoneClick = {},
+            fileTransfer = previewFileTransfer,
         )
     }
 }
@@ -453,6 +556,7 @@ private fun OfflineTransactionTransferScreenAnimatedPreview() {
             qrCodeSaver = OfflineQrCodeSaver(DefaultDispatcherProvider()),
             onBackClick = {},
             onDoneClick = {},
+            fileTransfer = previewFileTransfer,
         )
     }
 }
@@ -468,6 +572,7 @@ private fun OfflineTransactionTransferScreenQrUnavailablePreview() {
             qrCodeSaver = OfflineQrCodeSaver(DefaultDispatcherProvider()),
             onBackClick = {},
             onDoneClick = {},
+            fileTransfer = previewFileTransfer,
         )
     }
 }
@@ -482,4 +587,9 @@ private val previewOfflineSignedTransaction = OfflineSignedTransaction(
     pcashPayload = "pcash:tx:v1:bitcoin:eNqLrlZKSSxJVLJSykzOSC1KVrJS8kvMTVWyMjQwMFIyNjE1NLO0BAA0QQmG",
     txHash = "7c2a4ef0a8823a1d90f5d557b1c75675e5efb3d8802aa1d4e58c1cc3d3a3f8f2",
     createdAt = 0L,
+)
+
+private val previewFileTransfer = OfflineTransactionFileTransfer(
+    DefaultDispatcherProvider(),
+    OfflineTransactionPayloadEncoder(),
 )
