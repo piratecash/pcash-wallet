@@ -17,10 +17,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import cash.p.terminal.R
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.address.AddressParserModule
@@ -33,17 +29,17 @@ import cash.p.terminal.modules.amount.AmountInputType
 import cash.p.terminal.modules.amount.HSAmountInput
 import cash.p.terminal.modules.fee.FeeInfoSection
 import cash.p.terminal.modules.memo.HSMemoInput
-import cash.p.terminal.modules.send.SendConfirmationFragment
-import cash.p.terminal.modules.send.SendFragment.ProceedActionData
+import cash.p.terminal.modules.send.SendConfirmationPage
+import cash.p.terminal.modules.send.SendPage.ProceedActionData
 import cash.p.terminal.modules.send.SendScreen
 import cash.p.terminal.modules.send.SendSuggestionsBar
 import cash.p.terminal.modules.send.address.AddressCheckerControl
 import cash.p.terminal.modules.send.address.SmartContractCheckSection
 import cash.p.terminal.modules.send.offline.OfflineSignActionCell
-import cash.p.terminal.modules.send.offline.OfflineSignFlowRoutes
-import cash.p.terminal.modules.send.offline.offlineSignFlowRoutes
+import cash.p.terminal.modules.send.offline.OfflineSignPage
 import cash.p.terminal.modules.sendtokenselect.PrefilledData
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui.compose.components.PoisonAddressRiskSection
 import cash.p.terminal.ui.compose.components.PoisonWarningCell
 import cash.p.terminal.ui.compose.components.TextPreprocessor
@@ -58,73 +54,52 @@ import io.horizontalsystems.core.entities.CurrencyValue
 import java.math.BigDecimal
 
 @Composable
-fun SendStellarNavHost(
+fun SendStellarPageContent(
     title: String,
-    fragmentNavController: NavController,
+    navigation: HSNavigation,
     viewModel: SendStellarViewModel,
     amountInputModeViewModel: AmountInputModeViewModel,
     prefilledData: PrefilledData?,
     addressCheckerControl: AddressCheckerControl,
     onNextClick: (ProceedActionData) -> Unit,
 ) {
-    val navController = rememberNavController()
-    NavHost(
-        navController = navController,
-        startDestination = SendStellarPage,
-    ) {
-        composable(SendStellarPage) {
-            SendStellarScreen(
-                navController = fragmentNavController,
-                prefilledData = prefilledData,
-                addressCheckerControl = addressCheckerControl,
-                state = SendStellarScreenState(
-                    title = title,
-                    wallet = viewModel.wallet,
-                    uiState = viewModel.uiState,
-                    amountInputType = amountInputModeViewModel.inputType,
-                    coinMaxAllowedDecimals = viewModel.coinMaxAllowedDecimals,
-                    fiatMaxAllowedDecimals = viewModel.fiatMaxAllowedDecimals,
-                    coinRate = viewModel.coinRate,
-                    displayBalance = viewModel.displayBalance,
-                    balanceHidden = viewModel.balanceHidden,
-                    feeToken = viewModel.feeToken,
-                    feeCoinBalance = viewModel.feeCoinBalance,
-                    feePrimary = viewModel.formatFeePrimary(viewModel.uiState.fee),
-                    feeSecondary = viewModel.formatFeeSecondary(viewModel.uiState.fee, viewModel.feeCoinRate),
-                    insufficientFeeBalance = viewModel.isInsufficientFeeBalance(viewModel.uiState.fee),
-                    offlineSignSupported = viewModel.offlineSignSupported,
-                ),
-                callbacks = SendStellarScreenCallbacks(
-                    onOfflineSignClick = { navController.navigate(OfflineStellarSignPage) },
-                    onNextClick = onNextClick,
-                    onEnterAddress = viewModel::onEnterAddress,
-                    onEnterAmount = viewModel::onEnterAmount,
-                    onEnterMemo = viewModel::onEnterMemo,
-                    onToggleAmountInputType = amountInputModeViewModel::onToggleInputType,
-                    onToggleHideBalance = viewModel::toggleHideBalance,
-                    onRiskAcceptedChange = viewModel::onRiskAcceptedChange,
-                ),
-            )
-        }
-        offlineSignFlowRoutes(
-            routes = OfflineSignFlowRoutes(
-                signRoute = OfflineStellarSignPage,
-                transferRoute = OfflineStellarTransactionTransferPage,
-            ),
-            navController = navController,
-            fragmentNavController = fragmentNavController,
-            sendViewModel = viewModel,
-        )
-    }
+    SendStellarScreen(
+        navigation = navigation,
+        prefilledData = prefilledData,
+        addressCheckerControl = addressCheckerControl,
+        state = SendStellarScreenState(
+            title = title,
+            wallet = viewModel.wallet,
+            uiState = viewModel.uiState,
+            amountInputType = amountInputModeViewModel.inputType,
+            coinMaxAllowedDecimals = viewModel.coinMaxAllowedDecimals,
+            fiatMaxAllowedDecimals = viewModel.fiatMaxAllowedDecimals,
+            coinRate = viewModel.coinRate,
+            displayBalance = viewModel.displayBalance,
+            balanceHidden = viewModel.balanceHidden,
+            feeToken = viewModel.feeToken,
+            feeCoinBalance = viewModel.feeCoinBalance,
+            feePrimary = viewModel.formatFeePrimary(viewModel.uiState.fee),
+            feeSecondary = viewModel.formatFeeSecondary(viewModel.uiState.fee, viewModel.feeCoinRate),
+            insufficientFeeBalance = viewModel.isInsufficientFeeBalance(viewModel.uiState.fee),
+            offlineSignSupported = viewModel.offlineSignSupported,
+        ),
+        callbacks = SendStellarScreenCallbacks(
+            onOfflineSignClick = { navigation.slideFromRight(OfflineSignPage(SendStellarViewModel::class)) },
+            onNextClick = onNextClick,
+            onEnterAddress = viewModel::onEnterAddress,
+            onEnterAmount = viewModel::onEnterAmount,
+            onEnterMemo = viewModel::onEnterMemo,
+            onToggleAmountInputType = amountInputModeViewModel::onToggleInputType,
+            onToggleHideBalance = viewModel::toggleHideBalance,
+            onRiskAcceptedChange = viewModel::onRiskAcceptedChange,
+        ),
+    )
 }
-
-private const val SendStellarPage = "send_stellar"
-private const val OfflineStellarSignPage = "offline_stellar_sign"
-private const val OfflineStellarTransactionTransferPage = "offline_stellar_transaction_transfer"
 
 @Composable
 private fun SendStellarScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     prefilledData: PrefilledData?,
     addressCheckerControl: AddressCheckerControl,
     state: SendStellarScreenState,
@@ -135,7 +110,7 @@ private fun SendStellarScreen(
     )
     ComposeAppTheme {
         SendStellarContent(
-            navController = navController,
+            navigation = navigation,
             prefilledData = prefilledData,
             addressCheckerControl = addressCheckerControl,
             state = state,
@@ -176,7 +151,7 @@ private data class SendStellarScreenCallbacks(
 
 @Composable
 private fun SendStellarContent(
-    navController: NavController,
+    navigation: HSNavigation,
     prefilledData: PrefilledData?,
     addressCheckerControl: AddressCheckerControl,
     state: SendStellarScreenState,
@@ -193,7 +168,7 @@ private fun SendStellarContent(
 
     SendScreen(
         title = state.title,
-        onCloseClick = { navController.popBackStackSafely() },
+        onCloseClick = { navigation.navigateUpSafely() },
         proceedEnabled = state.uiState.canBeSend,
         onSendClick = { callbacks.onNextClick(state.uiState.proceedActionData(state.wallet)) },
         bottomOverlay = {
@@ -212,7 +187,7 @@ private fun SendStellarContent(
             state = state,
             prefilledData = prefilledData,
             textPreprocessor = addressInputState.textPreprocessor,
-            navController = navController,
+            navigation = navigation,
             onValueChange = callbacks.onEnterAddress,
         )
         StellarAmountSection(
@@ -231,7 +206,7 @@ private fun SendStellarContent(
         VSpacer(12.dp)
         StellarFeeAndRiskSections(
             state = state,
-            navController = navController,
+            navigation = navigation,
             addressCheckerControl = addressCheckerControl,
             onBalanceClick = callbacks.onToggleHideBalance,
             onRiskAcceptedChange = callbacks.onRiskAcceptedChange,
@@ -261,7 +236,7 @@ private fun StellarAddressSection(
     state: SendStellarScreenState,
     prefilledData: PrefilledData?,
     textPreprocessor: TextPreprocessor,
-    navController: NavController,
+    navigation: HSNavigation,
     onValueChange: (Address?) -> Unit,
 ) {
     Column {
@@ -278,7 +253,7 @@ private fun StellarAddressSection(
                 coinCode = state.wallet.coin.code,
                 error = state.uiState.addressError,
                 textPreprocessor = textPreprocessor,
-                navController = navController,
+                navigation = navigation,
                 isPoisonAddress = state.uiState.isPoisonAddress,
                 onValueChange = onValueChange,
             )
@@ -316,7 +291,7 @@ private fun StellarAmountSection(
 @Composable
 private fun StellarFeeAndRiskSections(
     state: SendStellarScreenState,
-    navController: NavController,
+    navigation: HSNavigation,
     addressCheckerControl: AddressCheckerControl,
     onBalanceClick: () -> Unit,
     onRiskAcceptedChange: (Boolean) -> Unit,
@@ -344,7 +319,7 @@ private fun StellarFeeAndRiskSections(
         }
         SmartContractCheckSection(
             token = state.wallet.token,
-            navController = navController,
+            navigation = navigation,
             addressCheckerControl = addressCheckerControl,
             modifier = Modifier.padding(top = 8.dp)
         )
@@ -383,5 +358,5 @@ private fun SendStellarUiState.proceedActionData(wallet: Wallet) =
     ProceedActionData(
         address = address?.hex,
         wallet = wallet,
-        type = SendConfirmationFragment.Type.Stellar,
+        type = SendConfirmationPage.Type.Stellar,
     )

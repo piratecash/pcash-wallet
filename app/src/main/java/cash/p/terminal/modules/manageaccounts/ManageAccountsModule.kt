@@ -4,15 +4,15 @@ import android.os.Parcelable
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import cash.p.terminal.core.tryOrNull
+import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.premium.domain.usecase.PremiumType
 import io.horizontalsystems.hdwalletkit.Language
-import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
+import kotlin.reflect.KClass
 
 object ManageAccountsModule {
-    @Parcelize
     data class Input(
-        val popOffOnSuccess: Int,
+        val popOffOnSuccess: KClass<out HSPage>,
         val popOffInclusive: Boolean,
         val defaultRoute: String? = null,
         val accountId: String? = null,
@@ -21,8 +21,7 @@ object ManageAccountsModule {
         val prefillPassphrase: String? = null,
         val prefillMoneroHeight: Long? = null,
         val prefillMnemonicLanguageName: String? = null
-    ) : Parcelable {
-        @IgnoredOnParcel
+    ) {
         val prefillMnemonicLanguage: Language?
             get() = prefillMnemonicLanguageName?.let { tryOrNull { Language.valueOf(it) } }
     }

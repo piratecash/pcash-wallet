@@ -48,7 +48,6 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.ktor.client.core)
 
-    implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.timber)
     implementation(libs.ethereum.kit)
     implementation(libs.solanakt)

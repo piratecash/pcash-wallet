@@ -86,7 +86,7 @@ class RecoveryPhraseViewModelTest {
 
         val viewModel = RecoveryPhraseViewModel(
             account = account,
-            recoveryPhraseType = RecoveryPhraseFragment.RecoveryPhraseType.Mnemonic,
+            recoveryPhraseType = RecoveryPhrasePage.RecoveryPhraseType.Mnemonic,
             seedPhraseQrCrypto = crypto,
             localStorage = localStorage,
             restoreSettingsManager = restoreSettingsManager
@@ -110,7 +110,7 @@ class RecoveryPhraseViewModelTest {
 
         val viewModel = RecoveryPhraseViewModel(
             account = account,
-            recoveryPhraseType = RecoveryPhraseFragment.RecoveryPhraseType.Mnemonic,
+            recoveryPhraseType = RecoveryPhrasePage.RecoveryPhraseType.Mnemonic,
             seedPhraseQrCrypto = crypto,
             localStorage = localStorage,
             restoreSettingsManager = restoreSettingsManager
@@ -129,7 +129,7 @@ class RecoveryPhraseViewModelTest {
 
         val viewModel = RecoveryPhraseViewModel(
             account = moneroAccount,
-            recoveryPhraseType = RecoveryPhraseFragment.RecoveryPhraseType.Monero,
+            recoveryPhraseType = RecoveryPhrasePage.RecoveryPhraseType.Monero,
             seedPhraseQrCrypto = crypto,
             localStorage = localStorage,
             restoreSettingsManager = restoreSettingsManager
@@ -151,7 +151,7 @@ class RecoveryPhraseViewModelTest {
 
         val viewModel = RecoveryPhraseViewModel(
             account = account,
-            recoveryPhraseType = RecoveryPhraseFragment.RecoveryPhraseType.Mnemonic,
+            recoveryPhraseType = RecoveryPhrasePage.RecoveryPhraseType.Mnemonic,
             seedPhraseQrCrypto = crypto,
             localStorage = localStorage,
             restoreSettingsManager = restoreSettingsManager
@@ -178,7 +178,7 @@ class RecoveryPhraseViewModelTest {
 
         val viewModel = RecoveryPhraseViewModel(
             account = account,
-            recoveryPhraseType = RecoveryPhraseFragment.RecoveryPhraseType.Mnemonic,
+            recoveryPhraseType = RecoveryPhrasePage.RecoveryPhraseType.Mnemonic,
             seedPhraseQrCrypto = crypto,
             localStorage = localStorage,
             restoreSettingsManager = restoreSettingsManager
@@ -197,7 +197,7 @@ class RecoveryPhraseViewModelTest {
 
         val viewModel = RecoveryPhraseViewModel(
             account = moneroAccount,
-            recoveryPhraseType = RecoveryPhraseFragment.RecoveryPhraseType.Monero,
+            recoveryPhraseType = RecoveryPhrasePage.RecoveryPhraseType.Monero,
             seedPhraseQrCrypto = crypto,
             localStorage = localStorage,
             restoreSettingsManager = restoreSettingsManager
@@ -226,7 +226,7 @@ class RecoveryPhraseViewModelTest {
 
         val viewModel = RecoveryPhraseViewModel(
             account = account,
-            recoveryPhraseType = RecoveryPhraseFragment.RecoveryPhraseType.Monero,
+            recoveryPhraseType = RecoveryPhrasePage.RecoveryPhraseType.Monero,
             seedPhraseQrCrypto = crypto,
             localStorage = localStorage,
             restoreSettingsManager = restoreSettingsManager
@@ -246,7 +246,7 @@ class RecoveryPhraseViewModelTest {
 
         val viewModel = RecoveryPhraseViewModel(
             account = account,
-            recoveryPhraseType = RecoveryPhraseFragment.RecoveryPhraseType.Mnemonic,
+            recoveryPhraseType = RecoveryPhrasePage.RecoveryPhraseType.Mnemonic,
             seedPhraseQrCrypto = crypto,
             localStorage = localStorage,
             restoreSettingsManager = restoreSettingsManager

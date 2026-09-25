@@ -1,18 +1,19 @@
 package cash.p.terminal.modules.settings.security
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.authorizedAction
 import cash.p.terminal.core.ensurePinSet
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.modules.pin.EditDuressPinPage
+import cash.p.terminal.modules.pin.SetDuressPinIntroPage
 import cash.p.terminal.modules.settings.security.passcode.SecuritySettingsViewModel
 import cash.p.terminal.modules.settings.security.ui.ManagePasscodeSection
+import cash.p.terminal.navigation.HSNavigation
 
 @Composable
 fun DuressPasscodeBlock(
     viewModel: SecuritySettingsViewModel,
-    navController: NavController
+    navigation: HSNavigation
 ) {
     val uiState = viewModel.uiState
 
@@ -24,21 +25,21 @@ fun DuressPasscodeBlock(
         disableTextRes = R.string.SettingsSecurity_DisableDuressPin,
         onManageClick = {
             if (uiState.pinEnabled) {
-                navController.authorizedAction {
+                navigation.authorizedAction {
                     if (uiState.duressPinEnabled) {
-                        navController.slideFromRight(R.id.editDuressPinFragment)
+                        navigation.slideFromRight(EditDuressPinPage())
                     } else {
-                        navController.slideFromRight(R.id.setDuressPinIntroFragment)
+                        navigation.slideFromRight(SetDuressPinIntroPage())
                     }
                 }
             } else {
-                navController.ensurePinSet(R.string.PinSet_ForDuress) {
-                    navController.slideFromRight(R.id.setDuressPinIntroFragment)
+                navigation.ensurePinSet(R.string.PinSet_ForDuress) {
+                    navigation.slideFromRight(SetDuressPinIntroPage())
                 }
             }
         },
         onDisableClick = {
-            navController.authorizedAction {
+            navigation.authorizedAction {
                 viewModel.disableDuressPin()
             }
         }

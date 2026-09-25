@@ -15,13 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.managers.FaqManager
 import cash.p.terminal.modules.manageaccount.ui.ActionButton
 import cash.p.terminal.modules.manageaccount.ui.ConfirmCopyBottomSheet
 import cash.p.terminal.modules.manageaccount.ui.HidableContent
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.helpers.TextHelper
 import cash.p.terminal.ui_compose.components.AppBar
@@ -32,10 +31,11 @@ import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.ui_compose.components.HudHelper
 import kotlinx.coroutines.launch
+import cash.p.terminal.navigation.navigateUpSafely
 
 @Composable
 fun SecretKeyScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     secretKey: String,
     title: String,
     hideScreenText: String,
@@ -71,7 +71,7 @@ fun SecretKeyScreen(
                 AppBar(
                     title = title,
                     navigationIcon = {
-                        HsBackButton(onClick = navController::popBackStackSafely)
+                        HsBackButton(onClick = navigation::navigateUpSafely)
                     },
                     menuItems = listOf(
                         MenuItem(

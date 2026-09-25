@@ -15,10 +15,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import cash.p.terminal.R
 import cash.p.terminal.modules.address.AddressParserModule
 import cash.p.terminal.modules.address.AddressParserViewModel
@@ -28,17 +24,17 @@ import cash.p.terminal.modules.amount.AmountInputModeViewModel
 import cash.p.terminal.modules.amount.HSAmountInput
 import cash.p.terminal.modules.fee.FeeInfoSection
 import cash.p.terminal.modules.evmfee.Cautions
-import cash.p.terminal.modules.send.SendConfirmationFragment
-import cash.p.terminal.modules.send.SendFragment.ProceedActionData
+import cash.p.terminal.modules.send.SendConfirmationPage
+import cash.p.terminal.modules.send.SendPage.ProceedActionData
 import cash.p.terminal.modules.send.SendScreen
 import cash.p.terminal.modules.send.SendSuggestionsBar
 import cash.p.terminal.modules.send.address.AddressCheckerControl
 import cash.p.terminal.modules.send.address.SmartContractCheckSection
 import cash.p.terminal.modules.send.offline.OfflineSignActionCell
-import cash.p.terminal.modules.send.offline.OfflineSignFlowRoutes
-import cash.p.terminal.modules.send.offline.offlineSignFlowRoutes
+import cash.p.terminal.modules.send.offline.OfflineSignPage
 import cash.p.terminal.modules.sendtokenselect.PrefilledData
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui.compose.components.PoisonAddressRiskSection
 import cash.p.terminal.ui.compose.components.PoisonWarningCell
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
@@ -50,9 +46,9 @@ import cash.p.terminal.wallet.Wallet
 import java.math.BigDecimal
 
 @Composable
-internal fun SendEvmNavHost(
+internal fun SendEvmPageContent(
     title: String,
-    fragmentNavController: NavController,
+    navigation: HSNavigation,
     viewModel: SendEvmViewModel,
     amountInputModeViewModel: AmountInputModeViewModel,
     wallet: Wallet,
@@ -60,41 +56,20 @@ internal fun SendEvmNavHost(
     addressCheckerControl: AddressCheckerControl,
     onNextClick: (ProceedActionData) -> Unit,
 ) {
-    val navController = rememberNavController()
-    NavHost(
-        navController = navController,
-        startDestination = SendEvmPage,
-    ) {
-        composable(SendEvmPage) {
-            SendEvmScreen(
-                title = title,
-                navController = fragmentNavController,
-                viewModel = viewModel,
-                amountInputModeViewModel = amountInputModeViewModel,
-                wallet = wallet,
-                amount = amount,
-                addressCheckerControl = addressCheckerControl,
-                actions = SendEvmScreenActions(
-                    onNextClick = onNextClick,
-                    onOfflineSignClick = { navController.navigate(OfflineEvmSignPage) },
-                ),
-            )
-        }
-        offlineSignFlowRoutes(
-            routes = OfflineSignFlowRoutes(
-                signRoute = OfflineEvmSignPage,
-                transferRoute = OfflineEvmTransactionTransferPage,
-            ),
-            navController = navController,
-            fragmentNavController = fragmentNavController,
-            sendViewModel = viewModel,
-        )
-    }
+    SendEvmScreen(
+        title = title,
+        navigation = navigation,
+        viewModel = viewModel,
+        amountInputModeViewModel = amountInputModeViewModel,
+        wallet = wallet,
+        amount = amount,
+        addressCheckerControl = addressCheckerControl,
+        actions = SendEvmScreenActions(
+            onNextClick = onNextClick,
+            onOfflineSignClick = { navigation.slideFromRight(OfflineSignPage(SendEvmViewModel::class)) },
+        ),
+    )
 }
-
-private const val SendEvmPage = "send_evm"
-private const val OfflineEvmSignPage = "offline_evm_sign"
-private const val OfflineEvmTransactionTransferPage = "offline_evm_transaction_transfer"
 
 private data class SendEvmScreenActions(
     val onNextClick: (ProceedActionData) -> Unit,
@@ -104,7 +79,7 @@ private data class SendEvmScreenActions(
 @Composable
 private fun SendEvmScreen(
     title: String,
-    navController: NavController,
+    navigation: HSNavigation,
     viewModel: SendEvmViewModel,
     amountInputModeViewModel: AmountInputModeViewModel,
     wallet: Wallet,
@@ -140,13 +115,13 @@ private fun SendEvmScreen(
         SendScreen(
             title = title,
             proceedEnabled = proceedEnabled,
-            onCloseClick = { navController.popBackStackSafely() },
+            onCloseClick = { navigation.navigateUpSafely() },
             onSendClick = {
                 actions.onNextClick(
                     ProceedActionData(
                         address = uiState.address?.hex,
                         wallet = wallet,
-                        type = SendConfirmationFragment.Type.Evm,
+                        type = SendConfirmationPage.Type.Evm,
                     )
                 )
             },
@@ -176,7 +151,7 @@ private fun SendEvmScreen(
                     coinCode = wallet.coin.code,
                     error = addressError,
                     textPreprocessor = paymentAddressViewModel,
-                    navController = navController,
+                    navigation = navigation,
                     onValueChange = { viewModel.onEnterAddress(it) },
                     isPoisonAddress = uiState.isPoisonAddress,
                 )
@@ -227,7 +202,7 @@ private fun SendEvmScreen(
             }
             SmartContractCheckSection(
                 token = wallet.token,
-                navController = navController,
+                navigation = navigation,
                 addressCheckerControl = addressCheckerControl,
                 modifier = Modifier.padding(top = 8.dp)
             )
@@ -258,7 +233,7 @@ private fun SendEvmScreen(
                         ProceedActionData(
                             address = uiState.address?.hex,
                             wallet = wallet,
-                            type = SendConfirmationFragment.Type.Evm,
+                            type = SendConfirmationPage.Type.Evm,
                         )
                     )
                 },

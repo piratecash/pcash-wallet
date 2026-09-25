@@ -22,9 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Density
-import androidx.fragment.app.Fragment
-import androidx.navigation.NavController
-import androidx.navigation.fragment.NavHostFragment
 import kotlinx.coroutines.flow.first
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -44,27 +41,9 @@ suspend fun WindowInsets.awaitImeHidden(density: Density) {
     snapshotFlow { getBottom(density) }.first { it == 0 }
 }
 
-//  Fragment
-
-fun Fragment.findNavController(): NavController {
-    return NavHostFragment.findNavController(this)
-}
-
 inline fun <reified T : Parcelable> Bundle.parcelable(key: String): T? = when {
     SDK_INT >= 33 -> getParcelable(key, T::class.java)
     else -> @Suppress("DEPRECATION") getParcelable(key) as? T
-}
-
-inline fun <reified T : Parcelable> Bundle.getInputX(): T? {
-    return parcelable("input")
-}
-
-inline fun <reified T : Parcelable> NavController.getInput(): T? {
-    return currentBackStackEntry?.arguments?.getInputX()
-}
-
-inline fun <reified T : Parcelable> NavController.requireInput(): T {
-    return requireNotNull(getInput()) { "Navigation input of type ${T::class.simpleName} is required but was null" }
 }
 
 internal inline fun <reified T> getKoinInstance(): T {

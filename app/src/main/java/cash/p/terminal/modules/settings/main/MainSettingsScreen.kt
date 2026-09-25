@@ -21,8 +21,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material.Text
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,21 +30,42 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import androidx.navigation.NavController
-import cash.p.terminal.MainGraphDirections
 import cash.p.terminal.R
 import cash.p.terminal.core.managers.RateAppManager
-import cash.p.terminal.modules.contacts.ContactsFragment
+import cash.p.terminal.feature.miniapp.ui.miniapp.MiniAppPage
+import cash.p.terminal.modules.backuplocal.fullbackup.BackupManagerPage
+import cash.p.terminal.modules.basecurrency.BaseCurrencySettingsPage
+import cash.p.terminal.modules.blockchainsettings.BlockchainSettingsPage
+import cash.p.terminal.modules.contacts.ContactsPage
 import cash.p.terminal.modules.contacts.Mode
-import cash.p.terminal.modules.manageaccount.dialogs.BackupRequiredDialog
+import cash.p.terminal.modules.manageaccount.dialogs.BackupRequiredSheet
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
-import cash.p.terminal.modules.send.offline.OfflineBroadcastFragment
-import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedDialog
+import cash.p.terminal.modules.manageaccounts.ManageAccountsPage
+import cash.p.terminal.modules.multiswap.providersettings.SwapProvidersSettingsPage
+import cash.p.terminal.modules.premium.about.AboutPremiumPage
+import cash.p.terminal.modules.premium.settings.PremiumSettingsPage
+import cash.p.terminal.modules.send.offline.OfflineBroadcastPage
+import cash.p.terminal.modules.settings.about.AboutPage
+import cash.p.terminal.modules.settings.about.ContactOptionsSheet
+import cash.p.terminal.modules.settings.about.ContactUsPage
+import cash.p.terminal.modules.settings.addresschecker.AddressCheckerPage
+import cash.p.terminal.modules.settings.advancedsecurity.AdvancedSecurityPage
+import cash.p.terminal.modules.settings.appearance.AppearancePage
+import cash.p.terminal.modules.settings.donate.DonateTokenSelectPage
+import cash.p.terminal.modules.settings.language.LanguageSettingsPage
+import cash.p.terminal.modules.settings.security.SecuritySettingsPage
+import cash.p.terminal.modules.softwareupdate.SoftwareUpdatePage
+import cash.p.terminal.modules.tonconnect.TonConnectMainPage
+import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedSheet
+import cash.p.terminal.modules.walletconnect.WCErrorNoAccountSheet
 import cash.p.terminal.modules.walletconnect.WCManager
+import cash.p.terminal.modules.walletconnect.list.WCListPage
+import cash.p.terminal.navigation.AppPages
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.PageResumeEffect
 import cash.p.terminal.navigation.openQrScanner
-import cash.p.terminal.navigation.slideFromBottom
-import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.ui.compose.components.BadgeText
 import cash.p.terminal.ui.helpers.LinkHelper
@@ -64,13 +83,11 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @Composable
 fun SettingsScreen(
-    fragmentNavController: NavController,
+    navigation: HSNavigation,
     paddingValues: PaddingValues,
     viewModel: MainSettingsViewModel = koinViewModel(),
 ) {
-    LifecycleEventEffect(event = Lifecycle.Event.ON_RESUME) {
-        viewModel.refresh()
-    }
+    PageResumeEffect(onResume = viewModel::refresh, onPause = {})
     Surface(color = ComposeAppTheme.colors.tyler) {
         Column {
             AppBar(
@@ -83,7 +100,7 @@ fun SettingsScreen(
                     .verticalScroll(rememberScrollState())
             ) {
                 Spacer(modifier = Modifier.height(12.dp))
-                SettingSections(viewModel, fragmentNavController)
+                SettingSections(viewModel, navigation)
                 SettingsFooter(viewModel.appVersion, viewModel.companyWebPage)
             }
         }
@@ -93,10 +110,11 @@ fun SettingsScreen(
 @Composable
 private fun SettingSections(
     viewModel: MainSettingsViewModel,
-    navController: NavController
+    navigation: HSNavigation
 ) {
     val uiState = viewModel.uiState
     val context = LocalContext.current
+    val appPages: AppPages = koinInject()
     val rawTxScanTitle = stringResource(R.string.offline_broadcast_title)
     val walletConnectTitle = stringResource(R.string.WalletConnect_Title)
     val tonConnectTitle = stringResource(R.string.TonConnect_Title)
@@ -108,7 +126,7 @@ private fun SettingSections(
                 icon = R.drawable.ic_heart_filled_24,
                 iconTint = ComposeAppTheme.colors.jacob,
                 onClick = {
-                    navController.slideFromRight(R.id.donateTokenSelectFragment)
+                    navigation.slideFromRight(DonateTokenSelectPage())
                 }
             )
         }
@@ -122,7 +140,7 @@ private fun SettingSections(
                 R.string.settings_mini_app,
                 R.drawable.ic_uwt2_24,
                 onClick = {
-                    navController.slideFromRight(R.id.miniAppFragment)
+                    navigation.slideFromRight(MiniAppPage())
                 }
             )
         }
@@ -137,10 +155,7 @@ private fun SettingSections(
                 R.drawable.ic_wallet_20,
                 showAlert = uiState.manageWalletShowAlert,
                 onClick = {
-                    navController.slideFromRight(
-                        R.id.manageAccountsFragment,
-                        ManageAccountsModule.Mode.Manage
-                    )
+                    navigation.slideFromRight(ManageAccountsPage(ManageAccountsModule.Mode.Manage))
                 }
             )
         }, {
@@ -148,7 +163,7 @@ private fun SettingSections(
                 R.string.BlockchainSettings_Title,
                 R.drawable.ic_blocks_20,
                 onClick = {
-                    navController.slideFromRight(R.id.blockchainSettingsFragment)
+                    navigation.slideFromRight(BlockchainSettingsPage())
                 }
             )
         }, {
@@ -163,25 +178,24 @@ private fun SettingSections(
                 onClick = {
                     when (val state = viewModel.walletConnectSupportState) {
                         WCManager.SupportState.Supported -> {
-                            navController.slideFromRight(R.id.wcListFragment)
+                            navigation.slideFromRight(WCListPage(null))
                         }
 
                         WCManager.SupportState.NotSupportedDueToNoActiveAccount -> {
-                            navController.slideFromBottom(R.id.wcErrorNoAccountFragment)
+                            navigation.slideFromBottom(WCErrorNoAccountSheet())
                         }
 
                         is WCManager.SupportState.NotSupportedDueToNonBackedUpAccount -> {
                             val text = Translator.getString(R.string.WalletConnect_Error_NeedBackup)
-                            navController.slideFromBottom(
-                                R.id.backupRequiredDialog,
-                                BackupRequiredDialog.Input(state.account, text)
+                            navigation.slideFromBottom(
+                                BackupRequiredSheet(BackupRequiredSheet.Input(state.account, text))
                             )
                         }
 
                         is WCManager.SupportState.NotSupported -> {
-                            navController.slideFromBottom(
-                                MainGraphDirections.actionGlobalToAccountTypeNotSupportedDialog(
-                                    AccountTypeNotSupportedDialog.Input(
+                            navigation.slideFromBottom(
+                                AccountTypeNotSupportedSheet(
+                                    AccountTypeNotSupportedSheet.Input(
                                         iconResId = R.drawable.ic_wallet_connect_24,
                                         titleResId = R.string.WalletConnect_Title,
                                         connectionLabel = walletConnectTitle
@@ -200,11 +214,11 @@ private fun SettingSections(
                 counterBadge = null,
                 onClick = {
                     if (viewModel.currentAccountSupportsTonConnect) {
-                        navController.slideFromRight(R.id.tcListFragment)
+                        navigation.slideFromRight(TonConnectMainPage(null))
                     } else {
-                        navController.slideFromBottom(
-                            MainGraphDirections.actionGlobalToAccountTypeNotSupportedDialog(
-                                AccountTypeNotSupportedDialog.Input(
+                        navigation.slideFromBottom(
+                            AccountTypeNotSupportedSheet(
+                                AccountTypeNotSupportedSheet.Input(
                                     iconResId = R.drawable.ic_ton_connect_24,
                                     titleResId = R.string.TonConnect_Title,
                                     connectionLabel = tonConnectTitle
@@ -219,7 +233,7 @@ private fun SettingSections(
                 R.string.BackupManager_Title,
                 R.drawable.ic_file_24,
                 onClick = {
-                    navController.slideFromRight(R.id.backupManagerFragment)
+                    navigation.slideFromRight(BackupManagerPage())
                 }
             )
         }
@@ -241,7 +255,7 @@ private fun SettingSections(
                     },
                     showAlert = uiState.securityCenterShowAlert,
                     onClick = {
-                        navController.slideFromRight(R.id.securitySettingsFragment)
+                        navigation.slideFromRight(SecuritySettingsPage())
                     }
                 )
             },
@@ -250,10 +264,7 @@ private fun SettingSections(
                     R.string.Contacts,
                     R.drawable.ic_user_20,
                     onClick = {
-                        navController.slideFromRight(
-                            R.id.contactsFragment,
-                            ContactsFragment.Input(Mode.Full)
-                        )
+                        navigation.slideFromRight(ContactsPage(ContactsPage.Input(Mode.Full)))
                     }
                 )
             },
@@ -262,7 +273,7 @@ private fun SettingSections(
                     R.string.Settings_Appearance,
                     R.drawable.ic_brush_20,
                     onClick = {
-                        navController.slideFromRight(R.id.appearanceFragment)
+                        navigation.slideFromRight(AppearancePage())
                     }
                 )
             },
@@ -272,7 +283,7 @@ private fun SettingSections(
                     R.drawable.ic_currency,
                     value = uiState.baseCurrencyCode,
                     onClick = {
-                        navController.slideFromRight(R.id.baseCurrencySettingsFragment)
+                        navigation.slideFromRight(BaseCurrencySettingsPage())
                     }
                 )
             },
@@ -282,7 +293,7 @@ private fun SettingSections(
                     R.drawable.ic_language,
                     value = uiState.currentLanguage,
                     onClick = {
-                        navController.slideFromRight(R.id.languageSettingsFragment)
+                        navigation.slideFromRight(LanguageSettingsPage())
                     }
                 )
             }
@@ -296,7 +307,7 @@ private fun SettingSections(
                 title = R.string.address_checker_title,
                 icon = R.drawable.ic_radar_24,
                 onClick = {
-                    navController.slideFromRight(R.id.addressCheckerFragment)
+                    navigation.slideFromRight(AddressCheckerPage())
                 }
             )
         }, {
@@ -304,7 +315,7 @@ private fun SettingSections(
                 title = R.string.swap_providers_title,
                 icon = R.drawable.ic_swap_24,
                 onClick = {
-                    navController.slideFromRight(R.id.swapProvidersSettingsFragment)
+                    navigation.slideFromRight(SwapProvidersSettingsPage())
                 }
             )
         })
@@ -316,14 +327,13 @@ private fun SettingSections(
                 title = R.string.offline_broadcast_title,
                 icon = R.drawable.ic_send_24,
                 onClick = {
-                    navController.openQrScanner(
+                    navigation.openQrScanner(
+                        appPages = appPages,
                         title = rawTxScanTitle,
                         showPasteButton = true,
                     ) { scannedText ->
-                        navController.slideFromRight(
-                            MainGraphDirections.actionGlobalToOfflineBroadcastFragment(
-                                OfflineBroadcastFragment.Input(initialInput = scannedText)
-                            )
+                        navigation.slideFromRight(
+                            OfflineBroadcastPage(OfflineBroadcastPage.Input(initialInput = scannedText))
                         )
                     }
                 }
@@ -341,7 +351,7 @@ private fun SettingSections(
             icon = R.drawable.ic_info_20,
             iconTint = ComposeAppTheme.colors.jacob,
             onClick = {
-                navController.slideFromBottom(R.id.aboutPremiumFragment)
+                navigation.slideFromBottom(AboutPremiumPage(null))
             }
         )
         HsSettingCell(
@@ -350,7 +360,7 @@ private fun SettingSections(
             iconTint = ComposeAppTheme.colors.jacob,
             showAlert = uiState.premiumSettingsShowAlert,
             onClick = {
-                navController.slideFromRight(R.id.premiumSettingsFragment)
+                navigation.slideFromRight(PremiumSettingsPage())
             }
         )
         HsSettingCell(
@@ -358,40 +368,12 @@ private fun SettingSections(
             icon = R.drawable.ic_shield_24,
             iconTint = ComposeAppTheme.colors.jacob,
             onClick = {
-                navController.slideFromRight(R.id.advancedSecurityFragment)
+                navigation.slideFromRight(AdvancedSecurityPage())
             }
         )
     }
 
     VSpacer(32.dp)
-    /*
-        CellUniversalLawrenceSection(
-            listOf({
-                HsSettingCell(
-                    R.string.Settings_Faq,
-                    R.drawable.ic_faq_20,
-                    onClick = {
-                        navController.slideFromRight(R.id.faqListFragment)
-
-                        stat(page = StatPage.Settings, event = StatEvent.Open(StatPage.Faq))
-                    }
-                )
-            }, {
-                HsSettingCell(
-                    R.string.Guides_Title,
-                    R.drawable.ic_academy_20,
-                    onClick = {
-                        navController.slideFromRight(R.id.academyFragment)
-
-                        stat(page = StatPage.Settings, event = StatEvent.Open(StatPage.Academy))
-                    }
-                )
-            })
-        )
-
-        VSpacer(32.dp)
-    */
-
     CellUniversalLawrenceSection(
         listOf({
             HsSettingCell(
@@ -399,7 +381,7 @@ private fun SettingSections(
                 R.drawable.ic_refresh,
                 showAlert = uiState.isUpdateAvailable,
                 onClick = {
-                    navController.slideFromRight(R.id.softwareUpdateFragment)
+                    navigation.slideFromRight(SoftwareUpdatePage())
                 }
             )
         }, {
@@ -408,7 +390,7 @@ private fun SettingSections(
                 R.drawable.ic_about_app_20,
                 showAlert = uiState.aboutAppShowAlert,
                 onClick = {
-                    navController.slideFromRight(R.id.aboutAppFragment)
+                    navigation.slideFromRight(AboutPage())
                 }
             )
         }, {
@@ -433,9 +415,9 @@ private fun SettingSections(
                 R.drawable.ic_mail_24,
                 onClick = {
                     if (uiState.isPayCoreEnabled) {
-                        navController.slideFromRight(R.id.contactUsFragment)
+                        navigation.slideFromRight(ContactUsPage())
                     } else {
-                        navController.slideFromBottom(R.id.contactOptionsDialog)
+                        navigation.slideFromBottom(ContactOptionsSheet(null))
                     }
                 },
             )

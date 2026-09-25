@@ -19,11 +19,13 @@ import cash.p.terminal.feature.logging.domain.usecase.LogLoginAttemptUseCase
 import cash.p.terminal.modules.balance.OpenSendTokenSelect
 import cash.p.terminal.modules.balance.openSendTokenSelect
 import cash.p.terminal.shared.main.MainDestination
+import cash.p.terminal.modules.coin.CoinPage
+import cash.p.terminal.modules.market.platform.MarketPlatformPage
 import cash.p.terminal.modules.market.topplatforms.Platform
-import cash.p.terminal.modules.nft.collection.NftCollectionFragment
+import cash.p.terminal.modules.nft.collection.NftCollectionPage
 import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.modules.walletconnect.WCSessionManager
-import cash.p.terminal.modules.walletconnect.list.WCListFragment
+import cash.p.terminal.modules.walletconnect.list.WCListPage
 import cash.p.terminal.ui_compose.CoinFragmentInput
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.ActiveAccountState
@@ -325,7 +327,7 @@ class MainViewModel(
                 when {
                     deeplinkString.contains("coin-page") -> {
                         uid?.let {
-                            deeplinkPage = DeeplinkPage(R.id.coinFragment, CoinFragmentInput(it))
+                            deeplinkPage = DeeplinkPage(CoinPage(CoinFragmentInput(it)), fromBottom = false)
                             tab = MainDestination.Market
                         }
                     }
@@ -334,8 +336,8 @@ class MainViewModel(
                         val blockchainTypeUid = deepLink.getQueryParameterSafe("blockchainTypeUid")
                         if (uid != null && blockchainTypeUid != null) {
                             deeplinkPage = DeeplinkPage(
-                                R.id.nftCollectionFragment,
-                                NftCollectionFragment.Input(uid, blockchainTypeUid)
+                                NftCollectionPage(NftCollectionPage.Input(uid, blockchainTypeUid)),
+                                fromBottom = false
                             )
                             tab = MainDestination.Market
                         }
@@ -345,7 +347,7 @@ class MainViewModel(
                         val title = deepLink.getQueryParameterSafe("title")
                         if (title != null && uid != null) {
                             val platform = Platform(uid, title)
-                            deeplinkPage = DeeplinkPage(R.id.marketPlatformFragment, platform)
+                            deeplinkPage = DeeplinkPage(MarketPlatformPage(platform), fromBottom = false)
                             tab = MainDestination.Market
                         }
                     }
@@ -356,7 +358,7 @@ class MainViewModel(
                 wcSupportState = wcManager.getWalletConnectSupportState()
                 if (wcSupportState == WCManager.SupportState.Supported) {
                     deeplinkPage =
-                        DeeplinkPage(R.id.wcListFragment, WCListFragment.Input(deeplinkString))
+                        DeeplinkPage(WCListPage(WCListPage.Input(deeplinkString)), fromBottom = false)
                     tab = MainDestination.Settings
                 }
             }

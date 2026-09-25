@@ -10,14 +10,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.authorizedAction
 import cash.p.terminal.core.ensurePinSet
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.modules.pin.EditPinPage
+import cash.p.terminal.modules.pin.SetPinPage
 import cash.p.terminal.modules.settings.security.SecurityCenterCell
+import cash.p.terminal.modules.settings.security.autolock.AutoLockIntervalsPage
 import cash.p.terminal.modules.settings.security.passcode.SecuritySettingsViewModel
 import cash.p.terminal.modules.settings.main.HsSettingCell
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HsSwitch
 import cash.p.terminal.ui_compose.components.VSpacer
@@ -27,7 +29,7 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 @Composable
 fun PasscodeBlock(
     viewModel: SecuritySettingsViewModel,
-    navController: NavController,
+    navigation: HSNavigation,
 ) {
     val uiState = viewModel.uiState
 
@@ -39,15 +41,15 @@ fun PasscodeBlock(
         showWarningWhenDisabled = true,
         onManageClick = {
             if (!uiState.pinEnabled) {
-                navController.slideFromRight(R.id.setPinFragment)
+                navigation.slideFromRight(SetPinPage(null))
             } else {
-                navController.authorizedAction {
-                    navController.slideFromRight(R.id.editPinFragment)
+                navigation.authorizedAction {
+                    navigation.slideFromRight(EditPinPage(null))
                 }
             }
         },
         onDisableClick = {
-            navController.authorizedAction {
+            navigation.authorizedAction {
                 viewModel.disablePin()
             }
         }
@@ -62,7 +64,7 @@ fun PasscodeBlock(
                     R.drawable.ic_lock_20,
                     value = stringResource(uiState.autoLockIntervalName),
                     onClick = {
-                        navController.slideFromRight(R.id.autoLockIntervalsFragment)
+                        navigation.slideFromRight(AutoLockIntervalsPage())
                     }
                 )
             }
@@ -93,7 +95,7 @@ fun PasscodeBlock(
                         checked = uiState.biometricsEnabled,
                         onCheckedChange = { enabled ->
                             if (enabled) {
-                                navController.ensurePinSet(R.string.PinSet_ForBiometrics) {
+                                navigation.ensurePinSet(R.string.PinSet_ForBiometrics) {
                                     viewModel.enableBiometrics()
                                 }
                             } else {

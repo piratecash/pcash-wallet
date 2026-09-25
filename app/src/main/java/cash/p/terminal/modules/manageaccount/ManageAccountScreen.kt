@@ -24,9 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import cash.p.terminal.MainGraphDirections
+import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.R
 import cash.p.terminal.core.authorizedAction
 import cash.p.terminal.core.managers.FaqManager
@@ -36,17 +34,21 @@ import cash.p.terminal.modules.balance.ui.NoteError
 import cash.p.terminal.modules.balance.ui.NoteWarning
 import cash.p.terminal.modules.manageaccount.ManageAccountModule.BackupItem
 import cash.p.terminal.modules.manageaccount.ManageAccountModule.KeyAction
-import cash.p.terminal.modules.manageaccount.recoveryphrase.RecoveryPhraseFragment
+import cash.p.terminal.modules.backuplocal.BackupLocalPage
+import cash.p.terminal.modules.manageaccount.backupkey.BackupKeyPage
+import cash.p.terminal.modules.manageaccount.privatekeys.PrivateKeysPage
+import cash.p.terminal.modules.manageaccount.publickeys.PublicKeysPage
+import cash.p.terminal.modules.manageaccount.recoveryphrase.RecoveryPhrasePage
 import cash.p.terminal.navigation.BackupKeyInput
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
-import cash.p.terminal.modules.resettofactorysettings.ResetToFactorySettingsFragment
-import cash.p.terminal.modules.resettofactorysettings.ResetToFactorySettingsFragment.Input
-import cash.p.terminal.modules.restoreaccount.RestoreAccountFragment
+import cash.p.terminal.modules.manageaccounts.ManageAccountsPage
+import cash.p.terminal.modules.resettofactorysettings.ResetToFactorySettingsPage
+import cash.p.terminal.modules.resettofactorysettings.ResetToFactorySettingsPage.Input
+import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
+import cash.p.terminal.modules.restoreaccount.duplicatewallet.DuplicateWalletInfoSheet
 import cash.p.terminal.modules.settings.main.HsSettingCell
-import cash.p.terminal.navigation.popBackStackSafely
-import cash.p.terminal.navigation.slideFromBottom
-import cash.p.terminal.navigation.slideFromBottomForResult
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.modules.unlinkaccount.UnlinkAccountSheet
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.FormsInput
 import cash.p.terminal.ui_compose.components.AppBar
@@ -68,10 +70,11 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.navigation.navigateUpSafely
 
 @Composable
 internal fun ManageAccountScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     viewState: ManageAccountModule.ViewState,
     account: Account,
     onCloseClicked: () -> Unit,
@@ -80,7 +83,7 @@ internal fun ManageAccountScreen(
     onActionClick: (KeyAction) -> Unit,
 ) {
     if (viewState.closeScreen) {
-        navController.popBackStack()
+        navigation.navigateUp()
         onCloseClicked()
     }
 
@@ -88,7 +91,7 @@ internal fun ManageAccountScreen(
         AppBar(
             title = viewState.title,
             navigationIcon = {
-                HsBackButton(onClick = { navController.popBackStackSafely() })
+                HsBackButton(onClick = { navigation.navigateUpSafely() })
             },
             menuItems = listOf(
                 MenuItem(
@@ -164,14 +167,14 @@ internal fun ManageAccountScreen(
                 viewState = viewState,
                 account = account,
                 onActionClick = onActionClick,
-                navController = navController
+                navigation = navigation
             )
 
             if (viewState.backupActions.isNotEmpty()) {
                 BackupActions(
                     viewState.backupActions,
                     account,
-                    navController
+                    navigation
                 )
             }
 
@@ -183,20 +186,18 @@ internal fun ManageAccountScreen(
                             title = stringResource(id = R.string.duplicate_wallet),
                             icon = painterResource(id = R.drawable.ic_copy_24px),
                             onInfoClick = {
-                                navController.slideFromBottom(
-                                    R.id.duplicateWalletInfoDialog,
-                                    account
-                                )
+                                navigation.slideFromBottom(DuplicateWalletInfoSheet())
                             },
                             onClick = {
-                                navController.authorizedAction {
-                                    navController.slideFromRight(
-                                        R.id.restoreAccountFragment,
-                                        ManageAccountsModule.Input(
-                                            popOffOnSuccess = R.id.manageAccountsFragment,
-                                            popOffInclusive = true,
-                                            defaultRoute = RestoreAccountFragment.ROUTE_DUPLICATE,
-                                            accountId = account.id
+                                navigation.authorizedAction {
+                                    navigation.slideFromRight(
+                                        RestoreAccountPage(
+                                            ManageAccountsModule.Input(
+                                                popOffOnSuccess = ManageAccountsPage::class,
+                                                popOffInclusive = true,
+                                                defaultRoute = RestoreAccountPage.ROUTE_DUPLICATE,
+                                                accountId = account.id
+                                            )
                                         )
                                     )
                                 }
@@ -212,10 +213,7 @@ internal fun ManageAccountScreen(
                         title = stringResource(id = R.string.ManageAccount_Unlink),
                         icon = painterResource(id = R.drawable.ic_delete_20)
                     ) {
-                        navController.slideFromBottom(
-                            R.id.unlinkConfirmationDialog,
-                            account
-                        )
+                        navigation.slideFromBottom(UnlinkAccountSheet(account))
                     }
                 })
             VSpacer(32.dp)
@@ -228,7 +226,7 @@ private fun KeyActions(
     viewState: ManageAccountModule.ViewState,
     account: Account,
     onActionClick: (KeyAction) -> Unit,
-    navController: NavController
+    navigation: HSNavigation
 ) {
     val actionItems = mutableListOf<@Composable () -> Unit>()
 
@@ -240,12 +238,12 @@ private fun KeyActions(
                         title = stringResource(id = R.string.RecoveryPhrase_Title),
                         icon = painterResource(id = R.drawable.icon_paper_contract_20)
                     ) {
-                        navController.authorizedAction {
-                            navController.slideFromRight(
-                                MainGraphDirections.actionGlobalToRecoveryPhraseFragment(
-                                    RecoveryPhraseFragment.Input(
+                        navigation.authorizedAction {
+                            navigation.slideFromRight(
+                                RecoveryPhrasePage(
+                                    RecoveryPhrasePage.Input(
                                         account = account,
-                                        recoveryPhraseType = RecoveryPhraseFragment.RecoveryPhraseType.Mnemonic
+                                        recoveryPhraseType = RecoveryPhrasePage.RecoveryPhraseType.Mnemonic
                                     )
                                 )
                             )
@@ -261,13 +259,13 @@ private fun KeyActions(
                         icon = painterResource(id = R.drawable.icon_paper_contract_20),
                         iconTint = ComposeAppTheme.colors.jacob
                     ) {
-                        navController.authorizedAction {
-                            navController.premiumAction {
-                                navController.slideFromRight(
-                                    MainGraphDirections.actionGlobalToRecoveryPhraseFragment(
-                                        RecoveryPhraseFragment.Input(
+                        navigation.authorizedAction {
+                            navigation.premiumAction {
+                                navigation.slideFromRight(
+                                    RecoveryPhrasePage(
+                                        RecoveryPhrasePage.Input(
                                             account = account,
-                                            recoveryPhraseType = RecoveryPhraseFragment.RecoveryPhraseType.Monero
+                                            recoveryPhraseType = RecoveryPhrasePage.RecoveryPhraseType.Monero
                                         )
                                     )
                                 )
@@ -283,10 +281,7 @@ private fun KeyActions(
                         title = stringResource(id = R.string.PrivateKeys_Title),
                         icon = painterResource(id = R.drawable.ic_key_20)
                     ) {
-                        navController.slideFromRight(
-                            R.id.privateKeysFragment,
-                            account
-                        )
+                        navigation.slideFromRight(PrivateKeysPage(account))
                     }
                 }
             }
@@ -297,10 +292,7 @@ private fun KeyActions(
                         title = stringResource(id = R.string.PublicKeys_Title),
                         icon = painterResource(id = R.drawable.icon_binocule_20)
                     ) {
-                        navController.slideFromRight(
-                            R.id.publicKeysFragment,
-                            account
-                        )
+                        navigation.slideFromRight(PublicKeysPage(account))
                     }
                 }
             }
@@ -311,9 +303,8 @@ private fun KeyActions(
                         title = stringResource(id = R.string.reset_to_factory_settings),
                         icon = painterResource(id = R.drawable.ic_delete_20)
                     ) {
-                        navController.slideFromBottomForResult<ResetToFactorySettingsFragment.Result>(
-                            resId = R.id.resetToFactorySettingsFragment,
-                            input = Input(account)
+                        navigation.slideFromBottomForResult<ResetToFactorySettingsPage.Result>(
+                            ResetToFactorySettingsPage(Input(account))
                         ) {
                             if (it.success) {
                                 onActionClick(keyAction)
@@ -390,7 +381,7 @@ private fun KeyActions(
 private fun BackupActions(
     backupActions: List<BackupItem>,
     account: Account,
-    navController: NavController
+    navigation: HSNavigation
 ) {
     val actionItems = mutableListOf<@Composable () -> Unit>()
     val infoItems = mutableListOf<@Composable () -> Unit>()
@@ -405,10 +396,9 @@ private fun BackupActions(
                         attention = action.showAttention,
                         completed = action.completed
                     ) {
-                        navController.authorizedAction {
-                            navController.slideFromBottom(
-                                R.id.backupKeyFragment,
-                                BackupKeyInput(account.id)
+                        navigation.authorizedAction {
+                            navigation.slideFromBottom(
+                                BackupKeyPage(BackupKeyInput(account.id))
                             )
                         }
                     }
@@ -422,8 +412,8 @@ private fun BackupActions(
                         icon = painterResource(id = R.drawable.ic_file_24),
                         attention = action.showAttention
                     ) {
-                        navController.authorizedAction {
-                            navController.slideFromBottom(R.id.backupLocalFragment, account)
+                        navigation.authorizedAction {
+                            navigation.slideFromBottom(BackupLocalPage(account))
                         }
                     }
                 }
@@ -650,7 +640,7 @@ private fun YellowActionItem(
 private fun ManageAccountScreenPreview() {
     ComposeAppTheme {
         ManageAccountScreen(
-            navController = rememberNavController(),
+            navigation = HSNavigation(NavBackStack()),
             viewState = ManageAccountModule.ViewState(
                 title = "Account name",
                 newName = "Account name",

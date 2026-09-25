@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 
 class RecoveryPhraseViewModel(
     account: Account,
-    recoveryPhraseType: RecoveryPhraseFragment.RecoveryPhraseType,
+    recoveryPhraseType: RecoveryPhrasePage.RecoveryPhraseType,
     private val seedPhraseQrCrypto: SeedPhraseQrCrypto,
     private val localStorage: ILocalStorage,
     private val restoreSettingsManager: RestoreSettingsManager
@@ -49,7 +49,7 @@ class RecoveryPhraseViewModel(
     init {
         when (account.type) {
             is AccountType.Mnemonic -> {
-                if (recoveryPhraseType == RecoveryPhraseFragment.RecoveryPhraseType.Monero) {
+                if (recoveryPhraseType == RecoveryPhrasePage.RecoveryPhraseType.Monero) {
                     words = MoneroWalletSeedConverter.getLegacySeedFromBip39(
                         words = (account.type as AccountType.Mnemonic).words,
                         passphrase = (account.type as AccountType.Mnemonic).passphrase

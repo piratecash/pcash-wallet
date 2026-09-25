@@ -7,13 +7,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
-import cash.p.terminal.core.rememberViewModelFromGraph
 import cash.p.terminal.modules.confirm.ConfirmTransactionScreen
 import cash.p.terminal.modules.sendevmtransaction.SendEvmTransactionView
+import cash.p.terminal.modules.walletconnect.request.WCRequestPage
 import cash.p.terminal.modules.walletconnect.request.sendtransaction.WalletConnectTransaction
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.viewModelStoreOwnerForPage
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.HudHelper
@@ -25,28 +27,27 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun WCSignEthereumTransactionRequestScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     logger: AppLogger,
     blockchainType: BlockchainType,
     transaction: WalletConnectTransaction,
     peerName: String,
 ) {
-    val viewModel = rememberViewModelFromGraph<WCSignEthereumTransactionRequestViewModel>(
-        navController,
-        R.id.wcRequestFragment,
-        WCSignEthereumTransactionRequestViewModel.Factory(
+    val viewModel = viewModel<WCSignEthereumTransactionRequestViewModel>(
+        viewModelStoreOwner = navigation.viewModelStoreOwnerForPage(WCRequestPage::class),
+        factory = WCSignEthereumTransactionRequestViewModel.Factory(
             blockchainType = blockchainType,
             transaction = transaction,
             peerName = peerName
         )
-    ) ?: return
+    )
     val uiState = viewModel.uiState
 
     ConfirmTransactionScreen(
         title = stringResource(id = R.string.WalletConnect_SignMessageRequest_Title),
-        onClickBack = navController::popBackStackSafely,
+        onClickBack = navigation::navigateUpSafely,
         onClickSettings = null,
-        onClickClose = navController::popBackStackSafely,
+        onClickClose = navigation::navigateUpSafely,
         buttonsSlot = {
             val coroutineScope = rememberCoroutineScope()
             val view = LocalView.current
@@ -69,7 +70,7 @@ fun WCSignEthereumTransactionRequestScreen(
                             HudHelper.showErrorMessage(view, t.javaClass.simpleName)
                         }
 
-                        navController.popBackStack()
+                        navigation.navigateUp()
                     }
                 }
             )
@@ -79,13 +80,13 @@ fun WCSignEthereumTransactionRequestScreen(
                 title = stringResource(R.string.Button_Reject),
                 onClick = {
                     viewModel.reject()
-                    navController.popBackStackSafely()
+                    navigation.navigateUpSafely()
                 }
             )
         }
     ) {
         SendEvmTransactionView(
-            navController,
+            navigation,
             uiState.sectionViewItems,
             uiState.cautions,
             uiState.transactionFields,

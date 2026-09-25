@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.HSCaution
@@ -597,7 +597,7 @@ class SwapConfirmViewModel(
         fun provideFactory(
             quote: SwapProviderQuote,
             settings: Map<String, Any?>,
-            navController: NavController,
+            navigation: SwapConfirmNavigation,
             direction: SwapAmountDirection = SwapAmountDirection.In,
             requestedAmountOut: BigDecimal? = null,
             multiSwapLegInfo: MultiSwapLegInfo? = null,
@@ -609,7 +609,7 @@ class SwapConfirmViewModel(
             ): T {
                 val wallet = App.walletManager.activeWallets
                     .find { it.token == quote.tokenIn }
-                val sendTransactionService = createSendTransactionService(quote, wallet, navController)
+                val sendTransactionService = createSendTransactionService(quote, wallet, navigation)
 
                 // When wallet is null the dummy service above (sendable=false)
                 // prevents any swap execution while the screen navigates back.
@@ -644,13 +644,13 @@ class SwapConfirmViewModel(
         private fun createSendTransactionService(
             quote: SwapProviderQuote,
             wallet: Wallet?,
-            navController: NavController,
+            navigation: SwapConfirmNavigation,
         ): ISendTransactionService<*> = try {
             checkNotNull(wallet) { "Wallet not found for ${quote.tokenIn}" }
             SwapTransactionServiceFactory.create(quote.tokenIn, quote.provider)
         } catch (e: Exception) {
             Toast.makeText(App.instance, R.string.unsupported_token, Toast.LENGTH_SHORT).show()
-            navController.popBackStack()
+            navigation.exitFlow()
             unavailableSendTransactionService(quote.tokenIn)
         }
 
@@ -663,7 +663,7 @@ class SwapConfirmViewModel(
                 override fun hasSettings(): Boolean = false
 
                 @Composable
-                override fun GetSettingsContent(navController: NavController) = Unit
+                override fun GetSettingsContent(navigation: HSNavigation) = Unit
 
                 override suspend fun sendTransaction(
                     mevProtectionEnabled: Boolean,

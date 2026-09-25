@@ -8,44 +8,36 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.LifecycleResumeEffect
-import androidx.navigation.NavController
 import cash.p.terminal.modules.send.SendConfirmationData
 import cash.p.terminal.modules.send.SendConfirmationScreen
 import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.fee.NetworkFeeWarningData
 import cash.p.terminal.modules.send.fee.NetworkFeeWarningOverlay
-import cash.p.terminal.modules.send.offline.OfflineSignFlowRoutes
 import cash.p.terminal.modules.send.offline.OfflineSignableConfirmationHost
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.wallet.Token
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.entities.CurrencyValue
 import java.math.BigDecimal
-
-private const val TonConfirmationPage = "ton_confirmation"
-private const val OfflineTonSignPage = "offline_ton_sign"
-private const val OfflineTonTransactionTransferPage = "offline_ton_transaction_transfer"
+import kotlin.reflect.KClass
 
 @Composable
 fun SendTonConfirmationScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     sendViewModel: SendTonViewModel,
-    sendEntryPointDestId: Int
+    sendEntryPoint: KClass<out HSPage>?
 ) {
     OfflineSignableConfirmationHost(
-        fragmentNavController = navController,
+        navigation = navigation,
         sendViewModel = sendViewModel,
-        confirmationRoute = TonConfirmationPage,
-        signFlowRoutes = OfflineSignFlowRoutes(
-            signRoute = OfflineTonSignPage,
-            transferRoute = OfflineTonTransactionTransferPage,
-        ),
         sourceChangeable = false,
         onChangeSourceClick = {},
     ) { onRequestOfflineSign ->
         TonOnlineConfirmation(
-            navController = navController,
+            navigation = navigation,
             sendViewModel = sendViewModel,
-            sendEntryPointDestId = sendEntryPointDestId,
+            sendEntryPoint = sendEntryPoint,
             onRequestOfflineSign = onRequestOfflineSign,
         )
     }
@@ -53,9 +45,9 @@ fun SendTonConfirmationScreen(
 
 @Composable
 private fun TonOnlineConfirmation(
-    navController: NavController,
+    navigation: HSNavigation,
     sendViewModel: SendTonViewModel,
-    sendEntryPointDestId: Int,
+    sendEntryPoint: KClass<out HSPage>?,
     onRequestOfflineSign: (() -> Unit)?,
 ) {
     var confirmationData by remember { mutableStateOf(sendViewModel.getConfirmationData()) }
@@ -69,8 +61,8 @@ private fun TonOnlineConfirmation(
     )
 
     TonConfirmationForm(
-        navController = navController,
-        sendEntryPointDestId = sendEntryPointDestId,
+        navigation = navigation,
+        sendEntryPoint = sendEntryPoint,
         state = sendViewModel.confirmationState(confirmationData),
         onRequestOfflineSign = onRequestOfflineSign,
         callbacks = TonConfirmationCallbacks(
@@ -111,14 +103,14 @@ private fun TonConfirmationRefreshEffect(
 
 @Composable
 private fun TonConfirmationForm(
-    navController: NavController,
-    sendEntryPointDestId: Int,
+    navigation: HSNavigation,
+    sendEntryPoint: KClass<out HSPage>?,
     state: TonConfirmationState,
     onRequestOfflineSign: (() -> Unit)?,
     callbacks: TonConfirmationCallbacks,
 ) {
     SendConfirmationScreen(
-        navController = navController,
+        navigation = navigation,
         coinMaxAllowedDecimals = state.coinMaxAllowedDecimals,
         feeCoinMaxAllowedDecimals = state.feeCoinMaxAllowedDecimals,
         rate = state.rate,
@@ -135,7 +127,7 @@ private fun TonConfirmationForm(
         memo = state.confirmationData.memo,
         rbfEnabled = state.confirmationData.rbfEnabled,
         onClickSend = callbacks.onClickSend,
-        sendEntryPointDestId = sendEntryPointDestId,
+        sendEntryPoint = sendEntryPoint,
         isSynced = state.isSynced,
         hasAdapterError = state.hasAdapterError,
         onRetrySync = callbacks.onRetrySync,

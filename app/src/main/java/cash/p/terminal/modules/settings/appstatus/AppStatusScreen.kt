@@ -24,12 +24,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.modules.blockchainstatus.StatusSectionBlock
+import cash.p.terminal.modules.settings.appcache.AppCachePage
 import cash.p.terminal.modules.settings.appstatus.AppStatusModule.BlockContent
 import cash.p.terminal.modules.settings.appstatus.AppStatusModule.BlockData
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
@@ -46,11 +47,9 @@ import cash.p.terminal.ui_compose.components.subhead2_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import org.koin.compose.viewmodel.koinViewModel
 
-private const val AppCachePage = "app_cache"
-
 @Composable
 fun AppStatusScreen(
-    navController: NavController
+    navigation: HSNavigation
 ) {
     val viewModel = koinViewModel<AppStatusViewModel>()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -64,7 +63,7 @@ fun AppStatusScreen(
             AppBar(
                 title = stringResource(R.string.Settings_AppStatus),
                 navigationIcon = {
-                    HsBackButton(onClick = { navController.popBackStackSafely() })
+                    HsBackButton(onClick = navigation::navigateUpSafely)
                 },
             )
         }
@@ -141,7 +140,7 @@ fun AppStatusScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
                         title = stringResource(R.string.settings_app_cache_title),
-                        onClick = { navController.navigate(AppCachePage) }
+                        onClick = { navigation.slideFromRight(AppCachePage()) }
                     )
                 }
                 items(uiState.blockViewItems) { blockData ->

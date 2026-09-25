@@ -23,17 +23,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.NavController
-import cash.p.terminal.navigation.popBackStackSafely
-import cash.p.terminal.navigation.setNavigationResultX
-import cash.p.terminal.navigation.slideFromBottomForResult
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.tangem.R
 import cash.p.terminal.tangem.ui.HardwareWalletError
-import cash.p.terminal.tangem.ui.HardwareWalletOnboardingFragment
 import cash.p.terminal.tangem.ui.HardwareWalletOnboardingViewModel
 import cash.p.terminal.tangem.ui.OnboardingStep
-import cash.p.terminal.tangem.ui.accesscode.AddAccessCodeDialog
-import cash.p.terminal.tangem.ui.resetBackupDialog.ResetBackupDialog
+import cash.p.terminal.tangem.ui.accesscode.AddAccessCodeSheet
+import cash.p.terminal.tangem.ui.resetBackupDialog.ResetBackupSheet
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.HudHelper
@@ -44,7 +41,8 @@ import io.horizontalsystems.core.ui.dialogs.ConfirmationDialogBottomSheet
 @Composable
 internal fun OnboardingScreen(
     viewModel: HardwareWalletOnboardingViewModel,
-    navController: NavController
+    navigation: HSNavigation,
+    onSuccess: () -> Unit
 ) {
     val uiState = viewModel.uiState.value
     val view = LocalView.current
@@ -56,7 +54,7 @@ internal fun OnboardingScreen(
             AppBar(
                 title = stringResource(R.string.create_wallet),
                 navigationIcon = {
-                    HsBackButton(onClick = { navController.popBackStackSafely() })
+                    HsBackButton(onClick = { navigation.navigateUpSafely() })
                 },
             )
         }
@@ -85,8 +83,8 @@ internal fun OnboardingScreen(
 
                         HardwareWalletError.CardNotActivated -> null
                         is HardwareWalletError.NeedFactoryReset -> {
-                            navController.slideFromBottomForResult<ResetBackupDialog.Result>(
-                                R.id.resetBackupDialog
+                            navigation.slideFromBottomForResult<ResetBackupSheet.Result>(
+                                ResetBackupSheet()
                             ) {
                                 if (it.confirmed) {
                                     viewModel.resetCard(error.cardId)
@@ -107,8 +105,7 @@ internal fun OnboardingScreen(
 
         LaunchedEffect(uiState.success) {
             if (uiState.success) {
-                navController.setNavigationResultX(HardwareWalletOnboardingFragment.Result(true))
-                navController.popBackStack()
+                onSuccess()
             }
         }
 
@@ -164,8 +161,8 @@ internal fun OnboardingScreen(
 
                     OnboardingStep.CREATE_ACCESS_CODE -> CreateAccessCodeScreen(
                         onCreateCodeClick = {
-                            navController.slideFromBottomForResult<AddAccessCodeDialog.Result>(
-                                R.id.addAccessCodeDialog
+                            navigation.slideFromBottomForResult<AddAccessCodeSheet.Result>(
+                                AddAccessCodeSheet()
                             ) {
                                 if (it.code.isNotEmpty()) {
                                     viewModel.setAccessCode(it.code)

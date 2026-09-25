@@ -1,7 +1,7 @@
 package cash.p.terminal.modules.multiswap.sendtransaction
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.EvmError
@@ -81,7 +81,7 @@ abstract class ISendTransactionService<T>(protected val token: Token) :
     abstract suspend fun setSendTransactionData(data: SendTransactionData)
 
     @Composable
-    abstract fun GetSettingsContent(navController: NavController)
+    abstract fun GetSettingsContent(navigation: HSNavigation)
 
     /**
      * The last cancellable point before an irreversible signature or broadcast: a flow opened online

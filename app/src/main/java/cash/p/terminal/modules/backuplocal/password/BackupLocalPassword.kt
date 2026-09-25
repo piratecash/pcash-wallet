@@ -26,11 +26,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.premiumAction
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellowWithSpinner
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
@@ -53,7 +53,7 @@ import io.horizontalsystems.core.launchExternalActivity
 @Composable
 fun LocalBackupPasswordScreen(
     backupType: BackupType,
-    navController: NavController,
+    navigation: HSNavigation,
     onBackClick: () -> Unit,
     onFinish: () -> Unit
 ) {
@@ -165,7 +165,7 @@ fun LocalBackupPasswordScreen(
                         onInfoClick = { showDuressInfoSheet = true },
                         onToggleClick = {
                             // Check premium and then verify PIN
-                            navController.premiumAction {
+                            navigation.premiumAction {
                                 viewModel.onDuressBackupToggle(true)
                             }
                         },

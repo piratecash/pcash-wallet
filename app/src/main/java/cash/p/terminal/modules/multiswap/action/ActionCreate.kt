@@ -3,7 +3,7 @@ package cash.p.terminal.modules.multiswap.action
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.R
 import cash.p.terminal.wallet.Token
 
@@ -25,5 +25,5 @@ class ActionCreate(
     @Composable
     override fun getDescription() = stringResource(descriptionResId)
 
-    override fun execute(navController: NavController, onActionCompleted: () -> Unit) = Unit
+    override fun execute(navigation: HSNavigation, onActionCompleted: () -> Unit) = Unit
 }

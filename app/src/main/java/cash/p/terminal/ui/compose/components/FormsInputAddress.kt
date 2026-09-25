@@ -32,11 +32,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.entities.Address
-import cash.p.terminal.modules.contacts.ChooseContactFragment
-import cash.p.terminal.navigation.slideFromRightForResult
+import cash.p.terminal.modules.contacts.ChooseContactPage
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
 import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
 import cash.p.terminal.ui_compose.components.HSCircularProgressIndicator
@@ -56,7 +55,7 @@ fun FormsInputAddress(
     state: DataState<Address>? = null,
     showStateIcon: Boolean = true,
     textPreprocessor: TextPreprocessor = TextPreprocessorImpl,
-    navController: NavController,
+    navigation: HSNavigation,
     chooseContactEnable: Boolean,
     blockchainType: BlockchainType?,
     onQrScanClick: () -> Unit,
@@ -189,9 +188,8 @@ fun FormsInputAddress(
                         modifier = Modifier.padding(end = 8.dp),
                         icon = R.drawable.ic_user_20,
                         onClick = {
-                            navController.slideFromRightForResult<ChooseContactFragment.Result>(
-                                R.id.chooseContact,
-                                blockchainType
+                            navigation.slideFromRightForResult<ChooseContactPage.Result>(
+                                ChooseContactPage(blockchainType)
                             ) {
                                 val textProcessed = textPreprocessor.process(it.address)
                                 onValueChange.invoke(textProcessed)

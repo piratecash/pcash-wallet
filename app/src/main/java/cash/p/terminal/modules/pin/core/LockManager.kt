@@ -22,9 +22,10 @@ class LockManager(
         ScreenSecurityState.isAppLocked = _isLocked.value
     }
 
+    // Before the flow: its collectors (Nav3Host's FLAG_SECURE) read ScreenSecurityState.
     private fun setLocked(locked: Boolean) {
-        _isLocked.value = locked
         ScreenSecurityState.isAppLocked = locked
+        _isLocked.value = locked
     }
 
     private var appLastVisitTime: Long

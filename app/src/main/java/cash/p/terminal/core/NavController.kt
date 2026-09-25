@@ -1,18 +1,16 @@
 package cash.p.terminal.core
 
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.managers.TransactionHiddenManager
-import cash.p.terminal.modules.pin.ConfirmPinFragment
+import cash.p.terminal.modules.pin.ConfirmPinPage
 import cash.p.terminal.modules.pin.PinType
-import cash.p.terminal.modules.pin.SetPinFragment
-import cash.p.terminal.modules.settings.terms.TermsFragment
-import cash.p.terminal.navigation.slideFromBottomForResult
-import cash.p.terminal.navigation.slideFromRight
-import cash.p.terminal.navigation.slideFromRightForResult
+import cash.p.terminal.modules.pin.SetPinPage
+import cash.p.terminal.modules.settings.advancedsecurity.terms.DeleteContactsTermsPage
+import cash.p.terminal.modules.settings.terms.TermsPage
+import cash.p.terminal.navigation.HSNavigation
 
-fun NavController.authorizedAction(
-    input: ConfirmPinFragment.InputConfirm? = null,
+fun HSNavigation.authorizedAction(
+    input: ConfirmPinPage.InputConfirm? = null,
     action: () -> Unit
 ) {
     val needEnterPin = when (input?.pinType) {
@@ -23,10 +21,7 @@ fun NavController.authorizedAction(
         PinType.LOG_LOGGING -> App.pinComponent.isLogLoggingPinSet() || App.pinComponent.isPinSet
     }
     if (needEnterPin) {
-        slideFromBottomForResult<ConfirmPinFragment.Result>(
-            resId = R.id.confirmPinFragment,
-            input = input
-        ) {
+        slideFromBottomForResult<ConfirmPinPage.Result>(ConfirmPinPage(input)) {
             if (it.success) {
                 action.invoke()
             }
@@ -36,9 +31,9 @@ fun NavController.authorizedAction(
     }
 }
 
-fun NavController.navigateWithTermsAccepted(action: () -> Unit) {
+fun HSNavigation.navigateWithTermsAccepted(action: () -> Unit) {
     if (!App.termsManager.allTermsAccepted) {
-        slideFromBottomForResult<TermsFragment.Result>(R.id.termsFragment) { result ->
+        slideFromBottomForResult<TermsPage.Result>(TermsPage()) { result ->
             if (result.termsAccepted) {
                 action.invoke()
             }
@@ -48,7 +43,7 @@ fun NavController.navigateWithTermsAccepted(action: () -> Unit) {
     }
 }
 
-fun NavController.ensurePinSet(
+fun HSNavigation.ensurePinSet(
     descriptionResId: Int,
     pinType: PinType = PinType.REGULAR,
     action: () -> Unit
@@ -62,16 +57,15 @@ fun NavController.ensurePinSet(
     if (pinSetAlready) {
         action.invoke()
     } else {
-        slideFromRightForResult<SetPinFragment.Result>(
-            R.id.setPinFragment,
-            SetPinFragment.Input(descriptionResId, pinType)
+        slideFromRightForResult<SetPinPage.Result>(
+            SetPinPage(SetPinPage.Input(descriptionResId, pinType))
         ) {
             action.invoke()
         }
     }
 }
 
-fun NavController.ensurePinSetPremiumAction(
+fun HSNavigation.ensurePinSetPremiumAction(
     descriptionResId: Int,
     pinType: PinType = PinType.REGULAR,
     setter: (Boolean) -> Unit
@@ -91,7 +85,7 @@ fun NavController.ensurePinSetPremiumAction(
  * Authorizes access to Login Logging screens.
  * Requires LOG_LOGGING PIN if set, otherwise REGULAR PIN if set.
  */
-fun NavController.authorizedLoggingAction(action: () -> Unit) {
+fun HSNavigation.authorizedLoggingAction(action: () -> Unit) {
     val pinType = if (App.pinComponent.isLogLoggingPinSet()) {
         PinType.LOG_LOGGING
     } else {
@@ -100,19 +94,19 @@ fun NavController.authorizedLoggingAction(action: () -> Unit) {
 
     authorizedAction(
         input = pinType?.let {
-            ConfirmPinFragment.InputConfirm(R.string.confirm_pin_to_access_login_logging, it)
+            ConfirmPinPage.InputConfirm(R.string.confirm_pin_to_access_login_logging, it)
         },
         action = action
     )
 }
 
-fun NavController.slideToDeleteContactsTerms() {
-    slideFromRight(R.id.deleteContactsTermsFragment)
+fun HSNavigation.slideToDeleteContactsTerms() {
+    slideFromRight(DeleteContactsTermsPage())
 }
 
-fun NavController.authorizedDeleteContactsPasscodeAction(action: () -> Unit) {
+fun HSNavigation.authorizedDeleteContactsPasscodeAction(action: () -> Unit) {
     authorizedAction(
-        input = ConfirmPinFragment.InputConfirm(
+        input = ConfirmPinPage.InputConfirm(
             R.string.confirm_pin_to_disable_delete_all_contacts_passcode,
             PinType.DELETE_CONTACTS
         ),

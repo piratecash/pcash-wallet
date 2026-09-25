@@ -1,5 +1,7 @@
 package cash.p.terminal.modules.main
 
+import android.net.Uri
+import cash.p.terminal.R
 import cash.p.terminal.core.IBackupManager
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.IRateAppManager
@@ -7,18 +9,27 @@ import cash.p.terminal.core.ITermsManager
 import cash.p.terminal.core.deeplink.DeeplinkParser
 import cash.p.terminal.core.managers.ReleaseNotesManager
 import cash.p.terminal.feature.logging.domain.usecase.LogLoginAttemptUseCase
+import cash.p.terminal.modules.coin.CoinPage
+import cash.p.terminal.modules.market.platform.MarketPlatformPage
+import cash.p.terminal.modules.market.topplatforms.Platform
+import cash.p.terminal.modules.nft.collection.NftCollectionPage
 import cash.p.terminal.modules.softwareupdate.AppUpdateChecker
 import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.modules.walletconnect.WCSessionManager
+import cash.p.terminal.modules.walletconnect.list.WCListPage
 import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
 import cash.p.terminal.premium.domain.usecase.PremiumType
 import cash.p.terminal.shared.main.MainDestination
+import cash.p.terminal.strings.helpers.Translator
+import cash.p.terminal.ui_compose.CoinFragmentInput
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.IAccountManager
 import io.horizontalsystems.core.IPinComponent
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import io.reactivex.Flowable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,12 +43,19 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertSame
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@RunWith(RobolectricTestRunner::class)
+@Config(manifest = Config.NONE)
 class MainViewModelTest {
 
     private val dispatcher = UnconfinedTestDispatcher()
@@ -88,6 +106,9 @@ class MainViewModelTest {
         coEvery { logLoginAttemptUseCase.selfieEnabledAndHasProblem() } returns false
         every { appUpdateChecker.updateAvailable } returns MutableStateFlow(false)
         every { checkPremiumUseCase.premiumTypesFlow } returns premiumTypesFlow
+        every { deeplinkParser.parse(any<Uri>()) } returns null
+        mockkObject(Translator)
+        every { Translator.getString(R.string.DeeplinkScheme) } returns "pcash"
 
         startKoin {
             modules(
@@ -102,6 +123,7 @@ class MainViewModelTest {
     @After
     fun tearDown() {
         stopKoin()
+        unmockkObject(Translator)
         Dispatchers.resetMain()
     }
 
@@ -176,6 +198,58 @@ class MainViewModelTest {
 
         assertEquals(MainDestination.Market, storedMainTab)
         assertEquals(MainDestination.Market, viewModel.uiState.mainNavItems.first { it.selected }.mainNavItem)
+    }
+
+    @Test
+    fun handleDeepLink_coinPage_opensCoinPageFromRight() = runTest(dispatcher) {
+        val deeplinkPage = resolveDeepLink("pcash://coin-page?uid=bitcoin")
+
+        assertEquals(false, deeplinkPage?.fromBottom)
+        assertEquals("bitcoin", assertIs<CoinPage>(deeplinkPage?.page).input.coinUid)
+    }
+
+    @Test
+    fun handleDeepLink_nftCollection_opensNftCollectionPageFromRight() = runTest(dispatcher) {
+        val deeplinkPage = resolveDeepLink("pcash://nft-collection?uid=punks&blockchainTypeUid=ethereum")
+
+        assertEquals(false, deeplinkPage?.fromBottom)
+        assertEquals(
+            NftCollectionPage.Input("punks", "ethereum"),
+            assertIs<NftCollectionPage>(deeplinkPage?.page).input,
+        )
+    }
+
+    @Test
+    fun handleDeepLink_topPlatforms_opensMarketPlatformPageFromRight() = runTest(dispatcher) {
+        val deeplinkPage = resolveDeepLink("pcash://top-platforms?uid=ethereum&title=Ethereum")
+
+        assertEquals(false, deeplinkPage?.fromBottom)
+        assertEquals(Platform("ethereum", "Ethereum"), assertIs<MarketPlatformPage>(deeplinkPage?.page).input)
+    }
+
+    @Test
+    fun handleDeepLink_walletConnectSupported_opensWcListPageFromRight() = runTest(dispatcher) {
+        every { wcManager.getWalletConnectSupportState() } returns WCManager.SupportState.Supported
+        val link = "wc:topic@2?relay-protocol=irn&symKey=key"
+
+        val deeplinkPage = resolveDeepLink(link)
+
+        assertEquals(false, deeplinkPage?.fromBottom)
+        assertEquals(WCListPage.Input(link), assertIs<WCListPage>(deeplinkPage?.page).input)
+    }
+
+    @Test
+    fun handleDeepLink_parserRecognizesLink_passesParsedPageThrough() = runTest(dispatcher) {
+        val parsed = DeeplinkPage(CoinPage(CoinFragmentInput("any")), fromBottom = true)
+        every { deeplinkParser.parse(any<Uri>()) } returns parsed
+
+        assertSame(parsed, resolveDeepLink("pcash://auth?token=jwt"))
+    }
+
+    private fun resolveDeepLink(link: String): DeeplinkPage? {
+        val viewModel = createViewModel()
+        viewModel.handleDeepLink(Uri.parse(link))
+        return viewModel.uiState.deeplinkPage
     }
 
     private fun createViewModel() = MainViewModel(

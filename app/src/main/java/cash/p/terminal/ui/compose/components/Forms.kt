@@ -34,7 +34,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
@@ -44,8 +43,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.findNavController
 import cash.p.terminal.R
+import cash.p.terminal.navigation.AppPages
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.openQrScanner
 import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
 import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
@@ -56,6 +56,7 @@ import cash.p.terminal.ui_compose.entities.FormsInputStateWarning
 import cash.p.terminal.ui_compose.theme.ColoredTextStyle
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.core.launchAfterClearingFocus
+import org.koin.compose.koinInject
 
 @Composable
 fun FormsInput(
@@ -72,6 +73,7 @@ fun FormsInput(
     state: DataState<Any>? = null,
     qrScannerEnabled: Boolean = false,
     qrScannerTitle: String? = null,
+    navigation: HSNavigation? = null,
     pasteEnabled: Boolean = true,
     trailingIcon: Int? = null,
     onTrailingIconClick: (() -> Unit)? = null,
@@ -84,7 +86,6 @@ fun FormsInput(
     onValueChange: (String) -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
-    val view = LocalView.current
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
 
@@ -231,12 +232,13 @@ fun FormsInput(
             } else {
                 if (qrScannerEnabled) {
                     val scannerTitle = qrScannerTitle ?: stringResource(R.string.qr_scanner_title_smart_scan)
+                    val appPages: AppPages = koinInject()
                     ButtonSecondaryCircle(
                         modifier = Modifier.padding(end = if (pasteEnabled) 8.dp else 16.dp),
                         icon = R.drawable.ic_qr_scan_20,
                         onClick = {
                             coroutineScope.launchAfterClearingFocus(focusManager) {
-                                view.findNavController().openQrScanner(scannerTitle) { scannedText ->
+                                checkNotNull(navigation).openQrScanner(appPages, scannerTitle) { scannedText ->
                                     val textProcessed = textPreprocessor.process(scannedText)
                                     textState = TextFieldValue(
                                         text = textProcessed,
@@ -307,6 +309,7 @@ fun FormsInputMultiline(
     pasteEnabled: Boolean = true,
     qrScannerEnabled: Boolean = false,
     qrScannerTitle: String? = null,
+    navigation: HSNavigation? = null,
     textPreprocessor: TextPreprocessor = TextPreprocessorImpl,
     onChangeFocus: ((Boolean) -> Unit)? = null,
     maxLength: Int? = null,
@@ -317,7 +320,6 @@ fun FormsInputMultiline(
     onPaste: (() -> Unit)? = null,
     onScanQR: (() -> Unit)? = null
 ) {
-    val view = LocalView.current
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
 
@@ -455,12 +457,13 @@ fun FormsInputMultiline(
                 } else {
                     if (qrScannerEnabled) {
                         val scannerTitle = qrScannerTitle ?: stringResource(R.string.qr_scanner_title_smart_scan)
+                        val appPages: AppPages = koinInject()
                         ButtonSecondaryCircle(
                             modifier = Modifier.padding(end = if (pasteEnabled) 8.dp else 16.dp),
                             icon = R.drawable.ic_qr_scan_20,
                             onClick = {
                                 coroutineScope.launchAfterClearingFocus(focusManager) {
-                                    view.findNavController().openQrScanner(scannerTitle) { scannedText ->
+                                    checkNotNull(navigation).openQrScanner(appPages, scannerTitle) { scannedText ->
                                         val textProcessed = textPreprocessor.process(scannedText)
                                         textState = textState.copy(
                                             text = textProcessed,

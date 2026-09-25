@@ -1,7 +1,7 @@
 package cash.p.terminal.modules.multiswap.sendtransaction.services
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.core.ISendStellarAdapter
 import cash.p.terminal.core.managers.StellarKitManager
 import cash.p.terminal.entities.CoinValue
@@ -64,7 +64,7 @@ class SendTransactionServiceStellar(account: Account, token: Token) :
     override fun hasSettings() = false
 
     @Composable
-    override fun GetSettingsContent(navController: NavController) = Unit
+    override fun GetSettingsContent(navigation: HSNavigation) = Unit
 
     override suspend fun sendTransaction(mevProtectionEnabled: Boolean): SendTransactionResult {
         val response = if (transactionEnvelope != null) {

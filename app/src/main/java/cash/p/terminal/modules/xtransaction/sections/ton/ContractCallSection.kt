@@ -3,7 +3,6 @@ package cash.p.terminal.modules.xtransaction.sections.ton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.modules.transactions.TransactionViewItem
@@ -13,12 +12,13 @@ import cash.p.terminal.modules.xtransaction.cells.AmountColor
 import cash.p.terminal.modules.xtransaction.cells.AmountSign
 import cash.p.terminal.modules.xtransaction.cells.HeaderCell
 import cash.p.terminal.modules.xtransaction.helpers.TransactionInfoHelper
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui_compose.components.SectionUniversalLawrence
 import io.horizontalsystems.core.entities.BlockchainType
 
 @Composable
 fun ContractCallSection(
-    navController: NavController,
+    navigation: HSNavigation,
     operation: String,
     address: String,
     transactionValue: TransactionValue,
@@ -39,7 +39,7 @@ fun ContractCallSection(
             value = address,
             showAddContactButton = contact == null,
             blockchainType = blockchainType,
-            navController = navController
+            navigation = navigation
         )
 
         AmountCellTV(
@@ -48,7 +48,7 @@ fun ContractCallSection(
             coinAmountColor = AmountColor.Negative,
             coinAmountSign = AmountSign.Minus,
             transactionInfoHelper = transactionInfoHelper,
-            navController = navController,
+            navigation = navigation,
         )
     }
 }

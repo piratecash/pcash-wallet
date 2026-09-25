@@ -4,12 +4,14 @@ import android.content.Intent
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.managers.DAppRequestEntityWrapper
 import cash.p.terminal.core.managers.DefaultUserManager
 import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.modules.calculator.domain.CalculatorModeService
 import cash.p.terminal.modules.walletconnect.WCDelegate
+import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.managers.UserManager
@@ -47,6 +49,10 @@ class MainActivityViewModel(
 ) : ViewModel() {
 
     val isLockedFlow = pinComponent.isLockedFlow
+
+    // Survives configuration changes only: pages hold live state a killed process loses, so a new
+    // process starts over at the root.
+    val navBackStack = NavBackStack<HSPage>(MainPage())
 
     val navigateToMainLiveData = MutableLiveData(false)
     val wcEvent = MutableLiveData<Wallet.Model?>()

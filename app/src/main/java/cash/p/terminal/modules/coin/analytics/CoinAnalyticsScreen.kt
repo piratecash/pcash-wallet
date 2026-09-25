@@ -15,12 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import cash.p.terminal.R
-import cash.p.terminal.navigation.slideFromBottom
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.AnalyticsViewItem
 import cash.p.terminal.modules.coin.analytics.ui.AnalyticsBlockHeader
@@ -28,13 +25,20 @@ import cash.p.terminal.modules.coin.analytics.ui.AnalyticsChart
 import cash.p.terminal.modules.coin.analytics.ui.AnalyticsContainer
 import cash.p.terminal.modules.coin.analytics.ui.AnalyticsContentNumber
 import cash.p.terminal.modules.coin.analytics.ui.AnalyticsFooterCell
-import cash.p.terminal.modules.coin.audits.CoinAuditsFragment
-import cash.p.terminal.modules.coin.detectors.DetectorsFragment
-import cash.p.terminal.modules.coin.investments.CoinInvestmentsFragment
-import cash.p.terminal.modules.coin.majorholders.CoinMajorHoldersFragment
+import cash.p.terminal.modules.coin.audits.CoinAuditsPage
+import cash.p.terminal.modules.coin.detectors.DetectorsPage
+import cash.p.terminal.modules.coin.investments.CoinInvestmentsPage
+import cash.p.terminal.modules.coin.majorholders.CoinMajorHoldersPage
 import cash.p.terminal.modules.coin.overview.ui.Loading
-import cash.p.terminal.modules.coin.reports.CoinReportsFragment
-import cash.p.terminal.modules.metricchart.ProChartFragment
+import cash.p.terminal.modules.coin.ranks.CoinRankPage
+import cash.p.terminal.modules.coin.reports.CoinReportsPage
+import cash.p.terminal.modules.coin.treasuries.CoinTreasuriesPage
+import cash.p.terminal.modules.info.CoinAnalyticsInfoPage
+import cash.p.terminal.modules.info.OverallScoreInfoPage
+import cash.p.terminal.modules.market.tvl.TvlPage
+import cash.p.terminal.modules.metricchart.ProChartSheet
+import cash.p.terminal.modules.subscription.SubscriptionInfoPage
+import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.ui_compose.components.HSSwipeRefresh
 import cash.p.terminal.ui_compose.components.InfoText
 import cash.p.terminal.ui.compose.components.ListEmptyView
@@ -52,8 +56,7 @@ import cash.p.terminal.wallet.entities.FullCoin
 @Composable
 fun CoinAnalyticsScreen(
     fullCoin: FullCoin,
-    navController: NavController,
-    fragmentManager: FragmentManager
+    navigation: HSNavigation,
 ) {
     val viewModel =
         viewModel<CoinAnalyticsViewModel>(factory = CoinAnalyticsModule.Factory(fullCoin))
@@ -81,15 +84,14 @@ fun CoinAnalyticsScreen(
                         is AnalyticsViewItem.Preview -> {
                             AnalyticsDataPreview(
                                 previewBlocks = item.blocks,
-                                navController = navController
+                                navigation = navigation
                             )
                         }
 
                         is AnalyticsViewItem.Analytics -> {
                             AnalyticsData(
                                 item.blocks,
-                                navController,
-                                fragmentManager,
+                                navigation,
                             )
                         }
 
@@ -110,15 +112,13 @@ fun CoinAnalyticsScreen(
 @Composable
 private fun AnalyticsData(
     blocks: List<CoinAnalyticsModule.BlockViewItem>,
-    navController: NavController,
-    fragmentManager: FragmentManager,
+    navigation: HSNavigation,
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         items(blocks) { block ->
             AnalyticsBlock(
                 block,
-                navController,
-                fragmentManager,
+                navigation,
             )
         }
         item {
@@ -130,11 +130,11 @@ private fun AnalyticsData(
 @Composable
 private fun AnalyticsDataPreview(
     previewBlocks: List<CoinAnalyticsModule.PreviewBlockViewItem>,
-    navController: NavController,
+    navigation: HSNavigation,
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         items(previewBlocks) { block ->
-            AnalyticsPreviewBlock(block, navController)
+            AnalyticsPreviewBlock(block, navigation)
         }
         item {
             Spacer(modifier = Modifier.height(32.dp))
@@ -145,8 +145,7 @@ private fun AnalyticsDataPreview(
 @Composable
 private fun AnalyticsBlock(
     block: CoinAnalyticsModule.BlockViewItem,
-    navController: NavController,
-    fragmentManager: FragmentManager,
+    navigation: HSNavigation,
 ) {
     AnalyticsContainer(
         showFooterDivider = block.showFooterDivider,
@@ -164,7 +163,7 @@ private fun AnalyticsBlock(
                     title = stringResource(it),
                     onInfoClick = block.info?.let { info ->
                         {
-                            navController.slideFromRight(R.id.coinAnalyticsInfoFragment, info)
+                            navigation.slideFromRight(CoinAnalyticsInfoPage(info))
                         }
                     }
                 )
@@ -177,7 +176,7 @@ private fun AnalyticsBlock(
         },
         bottomRows = {
             block.footerItems.forEachIndexed { index, item ->
-                FooterCell(item, index, navController)
+                FooterCell(item, index, navigation)
             }
         }
     ) {
@@ -188,11 +187,14 @@ private fun AnalyticsBlock(
                     val coinUid = block.analyticChart?.coinUid
                     val chartType = block.analyticChart?.chartType
                     if (coinUid != null && chartType != null) {
-                        ProChartFragment.show(
-                            fragmentManager,
-                            coinUid,
-                            cash.p.terminal.strings.helpers.Translator.getString(chartType.titleRes),
-                            chartType,
+                        navigation.slideFromBottom(
+                            ProChartSheet(
+                                ProChartSheet.Input(
+                                    coinUid,
+                                    Translator.getString(chartType.titleRes),
+                                    chartType.ordinal,
+                                )
+                            )
                         )
                     }
                 }
@@ -213,7 +215,7 @@ private fun AnalyticsBlock(
 private fun FooterCell(
     item: CoinAnalyticsModule.FooterType,
     index: Int,
-    navController: NavController
+    navigation: HSNavigation
 ) {
     when (item) {
         is CoinAnalyticsModule.FooterType.FooterItem -> {
@@ -224,7 +226,7 @@ private fun FooterCell(
                 showRightArrow = item.action != null,
                 cellAction = item.action,
                 onActionClick = { action ->
-                    handleActionClick(action, navController)
+                    handleActionClick(action, navigation)
                 }
             )
         }
@@ -232,7 +234,7 @@ private fun FooterCell(
         is CoinAnalyticsModule.FooterType.DetectorFooterItem -> {
             Column(
                 modifier = Modifier.clickable {
-                    item.action?.let { handleActionClick(it, navController) }
+                    item.action?.let { handleActionClick(it, navigation) }
                 }
             ) {
                 AnalyticsFooterCell(
@@ -278,7 +280,7 @@ private fun FooterCell(
 @Composable
 private fun AnalyticsPreviewBlock(
     block: CoinAnalyticsModule.PreviewBlockViewItem,
-    navController: NavController
+    navigation: HSNavigation
 ) {
     AnalyticsContainer(
         showFooterDivider = block.showFooterDivider,
@@ -296,7 +298,7 @@ private fun AnalyticsPreviewBlock(
                     title = stringResource(it),
                     onInfoClick = block.info?.let { info ->
                         {
-                            navController.slideFromRight(R.id.coinAnalyticsInfoFragment, info)
+                            navigation.slideFromRight(CoinAnalyticsInfoPage(info))
                         }
                     }
                 )
@@ -304,7 +306,7 @@ private fun AnalyticsPreviewBlock(
         },
         bottomRows = {
             block.footerItems.forEachIndexed { index, item ->
-                FooterCell(item, index, navController)
+                FooterCell(item, index, navigation)
             }
         }
     ) {
@@ -338,54 +340,49 @@ private fun AnalyticsPreviewBlock(
 
 private fun handleActionClick(
     action: CoinAnalyticsModule.ActionType,
-    navController: NavController
+    navigation: HSNavigation
 ) {
     when (action) {
         is CoinAnalyticsModule.ActionType.OpenTokenHolders -> {
-            navController.slideFromBottom(
-                R.id.coinMajorHoldersFragment,
-                CoinMajorHoldersFragment.Input(action.coin.uid, action.blockchain)
+            navigation.slideFromBottom(
+                CoinMajorHoldersPage(CoinMajorHoldersPage.Input(action.coin.uid, action.blockchain))
             )
         }
 
         is CoinAnalyticsModule.ActionType.OpenAudits -> {
-            val arguments = CoinAuditsFragment.Input(action.audits)
-            navController.slideFromRight(R.id.coinAuditsFragment, arguments)
+            navigation.slideFromRight(CoinAuditsPage(CoinAuditsPage.Input(action.audits)))
         }
 
         is CoinAnalyticsModule.ActionType.OpenTreasuries -> {
-            navController.slideFromRight(R.id.coinTreasuriesFragment, action.coin)
+            navigation.slideFromRight(CoinTreasuriesPage(action.coin))
         }
 
         is CoinAnalyticsModule.ActionType.OpenReports -> {
-            val arguments = CoinReportsFragment.Input(action.coinUid)
-            navController.slideFromRight(R.id.coinReportsFragment, arguments)
+            navigation.slideFromRight(CoinReportsPage(CoinReportsPage.Input(action.coinUid)))
         }
 
         is CoinAnalyticsModule.ActionType.OpenInvestors -> {
-            val arguments = CoinInvestmentsFragment.Input(action.coinUid)
-            navController.slideFromRight(R.id.coinInvestmentsFragment, arguments)
+            navigation.slideFromRight(CoinInvestmentsPage(CoinInvestmentsPage.Input(action.coinUid)))
         }
 
         is CoinAnalyticsModule.ActionType.OpenRank -> {
-            navController.slideFromBottom(R.id.coinRankFragment, action.type)
+            navigation.slideFromBottom(CoinRankPage(action.type))
         }
 
         is CoinAnalyticsModule.ActionType.OpenOverallScoreInfo -> {
-            navController.slideFromRight(R.id.overallScoreInfoFragment, action.scoreCategory)
+            navigation.slideFromRight(OverallScoreInfoPage(action.scoreCategory))
         }
 
         CoinAnalyticsModule.ActionType.OpenTvl -> {
-            navController.slideFromBottom(R.id.tvlFragment)
+            navigation.slideFromBottom(TvlPage())
         }
 
         CoinAnalyticsModule.ActionType.Preview -> {
-            navController.slideFromBottom(R.id.subscriptionInfoFragment)
+            navigation.slideFromBottom(SubscriptionInfoPage())
         }
 
         is CoinAnalyticsModule.ActionType.OpenDetectorsDetails -> {
-            val params = DetectorsFragment.Input(action.title, action.issues)
-            navController.slideFromRight(R.id.coinDetectorsFragment, params)
+            navigation.slideFromRight(DetectorsPage(DetectorsPage.Input(action.title, action.issues)))
         }
     }
 }
