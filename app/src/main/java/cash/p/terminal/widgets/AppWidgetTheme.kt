@@ -4,32 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import androidx.glance.color.ColorProvider
 import androidx.glance.text.FontWeight
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import cash.p.terminal.ui_compose.theme.Black50
-import cash.p.terminal.ui_compose.theme.Dark
-import cash.p.terminal.ui_compose.theme.Green50
-import cash.p.terminal.ui_compose.theme.GreenD
-import cash.p.terminal.ui_compose.theme.GreenL
-import cash.p.terminal.ui_compose.theme.Light
-import cash.p.terminal.ui_compose.theme.LightGrey
-import cash.p.terminal.ui_compose.theme.Red20
-import cash.p.terminal.ui_compose.theme.Red50
-import cash.p.terminal.ui_compose.theme.RedD
-import cash.p.terminal.ui_compose.theme.RedL
-import cash.p.terminal.ui_compose.theme.Steel10
-import cash.p.terminal.ui_compose.theme.Steel20
-import cash.p.terminal.ui_compose.theme.SteelDark
-import cash.p.terminal.ui_compose.theme.SteelLight
-import cash.p.terminal.ui_compose.theme.Yellow20
-import cash.p.terminal.ui_compose.theme.Yellow50
-import cash.p.terminal.ui_compose.theme.YellowD
-import cash.p.terminal.ui_compose.theme.YellowL
 import cash.p.terminal.ui_compose.theme.darkPalette
 import cash.p.terminal.ui_compose.theme.lightPalette
 
@@ -95,10 +75,6 @@ internal val LocalColorProviders = staticCompositionLocalOf {
         tyler = ColorProvider(lightPalette.tyler, darkPalette.tyler),
         bran = ColorProvider(lightPalette.bran, darkPalette.bran),
         textPrimary = ColorProvider(lightPalette.textPrimary, darkPalette.textPrimary),
-        claude = ColorProvider(lightPalette.claude, darkPalette.claude),
-        lawrence = ColorProvider(lightPalette.lawrence, darkPalette.lawrence),
-        jeremy = ColorProvider(lightPalette.jeremy, darkPalette.jeremy),
-        raina = ColorProvider(lightPalette.raina, darkPalette.raina),
         textSecondary = ColorProvider(lightPalette.textSecondary, darkPalette.textSecondary),
     )
 }
@@ -110,36 +86,5 @@ data class ColorProviders(
     val tyler: ColorProvider,
     val bran: ColorProvider,
     val textPrimary: ColorProvider,
-    val claude: ColorProvider,
-    val lawrence: ColorProvider,
-    val jeremy: ColorProvider,
-    val raina: ColorProvider,
     val textSecondary: ColorProvider,
 )
-
-//base colors
-val transparent = Color.Transparent
-val dark = Dark
-val light = Light
-val white = Color.White
-val black50 = Black50
-val issykBlue = Color(0xFF3372FF)
-val lightGrey = LightGrey
-val steelLight = SteelLight
-val steelDark = SteelDark
-val steel10 = Steel10
-val steel20 = Steel20
-val yellow50 = Yellow50
-val yellow20 = Yellow20
-
-val yellowD = YellowD
-val yellowL = YellowL
-val greenD = GreenD
-val greenL = GreenL
-val green50 = Green50
-val redD = RedD
-val redL = RedL
-val elenaD = Color(0xFF6E7899)
-val red50 = Red50
-val red20 = Red20
-

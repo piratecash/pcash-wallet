@@ -55,11 +55,12 @@ fun ButtonSecondaryDefault(
         modifier = modifier,
         onClick = onClick,
         content = {
-            if (enabled) {
-                subhead2_leah(text = title, maxLines = 1, overflow = overflow)
-            } else {
-                subhead2_disabled(text = title, maxLines = 1, overflow = overflow)
-            }
+            D1(
+                text = title,
+                maxLines = 1,
+                overflow = overflow,
+                textColor = if (enabled) ComposeAppTheme.colors.textPrimary else ComposeAppTheme.colors.textDisabled,
+            )
         },
         enabled = enabled
     )
@@ -77,15 +78,11 @@ fun ButtonSecondaryCustom(
         modifier = modifier,
         onClick = onClick,
         content = {
-            if (enabled) {
-                D1(
-                    text = title,
-                    maxLines = 1,
-                    textColor = textColor
-                )
-            } else {
-                subhead2_disabled(text = title, maxLines = 1)
-            }
+            D1(
+                text = title,
+                maxLines = 1,
+                textColor = if (enabled) textColor else ComposeAppTheme.colors.textDisabled,
+            )
         },
         enabled = enabled
     )
@@ -139,11 +136,12 @@ fun ButtonSecondaryWithIcon(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (enabled) {
-                    subhead2_leah(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                } else {
-                    subhead2_disabled(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
+                D1(
+                    text = title,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textColor = if (enabled) ComposeAppTheme.colors.textPrimary else ComposeAppTheme.colors.textDisabled,
+                )
                 Icon(
                     modifier = Modifier.padding(start = 2.dp),
                     painter = iconRight,

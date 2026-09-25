@@ -13,9 +13,8 @@ import cash.p.terminal.core.displayNameStringRes
 import cash.p.terminal.ui.compose.components.SelectorDialogCompose
 import cash.p.terminal.ui.compose.components.SelectorItem
 import cash.p.terminal.ui_compose.components.B2
+import cash.p.terminal.ui_compose.components.D1
 import cash.p.terminal.ui_compose.components.RowUniversal
-import cash.p.terminal.ui_compose.components.subhead2_grey
-import cash.p.terminal.ui_compose.components.subhead2_disabled
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.hdwalletkit.Language
 
@@ -75,15 +74,10 @@ internal fun MnemonicLanguageCell(
             modifier = Modifier.padding(horizontal = 16.dp)
         )
         Spacer(Modifier.weight(1f))
-        if (enabled) {
-            subhead2_grey(
-                text = stringResource(language.displayNameStringRes),
-            )
-        } else {
-            subhead2_disabled(
-                text = stringResource(language.displayNameStringRes),
-            )
-        }
+        D1(
+            text = stringResource(language.displayNameStringRes),
+            textColor = if (enabled) ComposeAppTheme.colors.textSecondary else ComposeAppTheme.colors.textDisabled,
+        )
         Icon(
             modifier = Modifier.padding(start = 4.dp),
             painter = painterResource(id = R.drawable.ic_down_arrow_20),

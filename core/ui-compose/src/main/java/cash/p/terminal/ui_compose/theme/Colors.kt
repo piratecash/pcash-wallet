@@ -39,7 +39,6 @@ class Colors(
     buttonPrimaryOutlineContent: Color,
     buttonPrimaryOutlineBorder: Color,
     jeremy: Color,
-    purple: Color,
     raina: Color,
     blade: Color,
     midnight: Color,
@@ -49,13 +48,11 @@ class Colors(
     //base colors
     val transparent = Color.Transparent
     val dark = Dark
-    val light = Light
     val white = Color.White
     val black50 = Black50
     val issykBlue = Color(0xFF3372FF)
     val lightGrey = LightGrey
     val steelLight = SteelLight
-    val steelDark = SteelDark
     val steel10 = Steel10
     val steel20 = Steel20
     val yellow50 = Yellow50
@@ -63,9 +60,7 @@ class Colors(
     val green20 = Green20
 
     val yellowD = YellowD
-    val yellowL = YellowL
     val greenD = GreenD
-    val greenL = GreenL
     val green50 = Green50
     val redD = RedD
     val redL = RedL
@@ -136,8 +131,6 @@ class Colors(
         private set
     var jeremy by mutableStateOf(jeremy)
         private set
-    var purple by mutableStateOf(purple)
-        private set
     var raina by mutableStateOf(raina)
         private set
     var blade by mutableStateOf(blade)
@@ -179,7 +172,6 @@ class Colors(
         buttonPrimaryOutlineContent = other.buttonPrimaryOutlineContent
         buttonPrimaryOutlineBorder = other.buttonPrimaryOutlineBorder
         jeremy = other.jeremy
-        purple = other.purple
         raina = other.raina
         blade = other.blade
         midnight = other.midnight
@@ -218,7 +210,6 @@ class Colors(
         buttonPrimaryOutlineContent = buttonPrimaryOutlineContent,
         buttonPrimaryOutlineBorder = buttonPrimaryOutlineBorder,
         jeremy = jeremy,
-        purple = purple,
         raina = raina,
         blade = blade,
         midnight = midnight,
