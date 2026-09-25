@@ -1,7 +1,9 @@
 package cash.p.terminal.ui_compose.components
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
@@ -59,7 +61,8 @@ fun ButtonSecondaryCircle(
     @DrawableRes icon: Int = R.drawable.ic_arrow_down_20,
     contentDescription: String? = null,
     tint: Color = ComposeAppTheme.colors.iconPrimary,
-    background: Color = ComposeAppTheme.colors.steel20,
+    background: Color = ComposeAppTheme.colors.buttonSecondaryFilledBackground,
+    border: BorderStroke? = SecondaryButtonDefaults.filledBorder(),
     onClick: () -> Unit,
 ) {
     HsIconButton(
@@ -67,14 +70,15 @@ fun ButtonSecondaryCircle(
         modifier = modifier
             .size(28.dp)
             .clip(CircleShape)
-            .background(background),
+            .background(background)
+            .then(if (border != null) Modifier.border(border, CircleShape) else Modifier),
         enabled = enabled,
         rippleColor = tint
     ) {
         Icon(
             painter = painterResource(id = icon),
             contentDescription = contentDescription,
-            tint = tint
+            tint = if (enabled) tint else ComposeAppTheme.colors.iconDisabled
         )
     }
 }

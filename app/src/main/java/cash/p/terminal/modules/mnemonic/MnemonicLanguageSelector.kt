@@ -14,8 +14,8 @@ import cash.p.terminal.ui.compose.components.SelectorDialogCompose
 import cash.p.terminal.ui.compose.components.SelectorItem
 import cash.p.terminal.ui_compose.components.B2
 import cash.p.terminal.ui_compose.components.RowUniversal
-import cash.p.terminal.ui_compose.components.subhead1_grey
-import cash.p.terminal.ui_compose.components.subhead1_disabled
+import cash.p.terminal.ui_compose.components.subhead2_grey
+import cash.p.terminal.ui_compose.components.subhead2_disabled
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.hdwalletkit.Language
 
@@ -76,11 +76,11 @@ internal fun MnemonicLanguageCell(
         )
         Spacer(Modifier.weight(1f))
         if (enabled) {
-            subhead1_grey(
+            subhead2_grey(
                 text = stringResource(language.displayNameStringRes),
             )
         } else {
-            subhead1_disabled(
+            subhead2_disabled(
                 text = stringResource(language.displayNameStringRes),
             )
         }

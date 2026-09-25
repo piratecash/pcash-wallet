@@ -24,6 +24,7 @@ import cash.p.terminal.ui.compose.components.AlertGroup
 import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
 import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
 import cash.p.terminal.ui_compose.components.ButtonSecondaryYellow
+import cash.p.terminal.ui_compose.components.SecondaryButtonDefaults
 import cash.p.terminal.ui.compose.components.CoinListOrderable
 import cash.p.terminal.ui_compose.components.HSpacer
 import cash.p.terminal.ui_compose.components.HeaderSorting
@@ -115,7 +116,9 @@ fun MarketFavoritesScreen(
                                                 tint = if (manualOrderEnabled) ComposeAppTheme.colors.dark else
                                                     ComposeAppTheme.colors.iconPrimary,
                                                 background = if (manualOrderEnabled) ComposeAppTheme.colors.brand
-                                                else ComposeAppTheme.colors.steel20,
+                                                else ComposeAppTheme.colors.buttonSecondaryFilledBackground,
+                                                border = if (manualOrderEnabled) null
+                                                else SecondaryButtonDefaults.filledBorder(),
                                             ) {
                                                 manualOrderEnabled = !manualOrderEnabled
                                             }

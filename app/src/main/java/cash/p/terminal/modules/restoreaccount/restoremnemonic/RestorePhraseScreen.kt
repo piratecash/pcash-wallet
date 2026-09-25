@@ -105,7 +105,7 @@ import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.body_disabled
 import cash.p.terminal.ui_compose.components.body_leah
-import cash.p.terminal.ui_compose.components.captionSB_leah
+import cash.p.terminal.ui_compose.components.subhead2_leah
 import cash.p.terminal.ui_compose.components.caption_lucian
 import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.ui_compose.theme.ColoredTextStyle
@@ -600,7 +600,7 @@ fun SuggestionsBar(
                                 onClick.invoke(wordItem, suggestion)
                             }
                         ) {
-                            captionSB_leah(text = suggestion)
+                            subhead2_leah(text = suggestion)
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                     }

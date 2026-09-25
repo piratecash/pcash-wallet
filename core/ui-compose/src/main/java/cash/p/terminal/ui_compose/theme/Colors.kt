@@ -19,8 +19,8 @@ class Colors(
     actionBackground: Color,
     actionBorder: Color,
     divider: Color,
-    filterBackground: Color,
-    filterBorder: Color,
+    buttonSecondaryFilledBackground: Color,
+    buttonSecondaryFilledBorder: Color,
     textPrimary: Color,
     textSecondary: Color,
     textSecondaryDimmed: Color,
@@ -30,7 +30,6 @@ class Colors(
     iconDisabled: Color,
     brand: Color,
     borderAccentSubtle: Color,
-    filterText: Color,
     buttonPrimaryBrandContent: Color,
     buttonPrimaryNeutralBackground: Color,
     buttonPrimaryNeutralContent: Color,
@@ -97,9 +96,9 @@ class Colors(
         private set
     var divider by mutableStateOf(divider)
         private set
-    var filterBackground by mutableStateOf(filterBackground)
+    var buttonSecondaryFilledBackground by mutableStateOf(buttonSecondaryFilledBackground)
         private set
-    var filterBorder by mutableStateOf(filterBorder)
+    var buttonSecondaryFilledBorder by mutableStateOf(buttonSecondaryFilledBorder)
         private set
     var textPrimary by mutableStateOf(textPrimary)
         private set
@@ -118,8 +117,6 @@ class Colors(
     var brand by mutableStateOf(brand)
         private set
     var borderAccentSubtle by mutableStateOf(borderAccentSubtle)
-        private set
-    var filterText by mutableStateOf(filterText)
         private set
     var buttonPrimaryBrandContent by mutableStateOf(buttonPrimaryBrandContent)
         private set
@@ -162,8 +159,8 @@ class Colors(
         actionBackground = other.actionBackground
         actionBorder = other.actionBorder
         divider = other.divider
-        filterBackground = other.filterBackground
-        filterBorder = other.filterBorder
+        buttonSecondaryFilledBackground = other.buttonSecondaryFilledBackground
+        buttonSecondaryFilledBorder = other.buttonSecondaryFilledBorder
         textPrimary = other.textPrimary
         textSecondary = other.textSecondary
         textSecondaryDimmed = other.textSecondaryDimmed
@@ -173,7 +170,6 @@ class Colors(
         iconDisabled = other.iconDisabled
         brand = other.brand
         borderAccentSubtle = other.borderAccentSubtle
-        filterText = other.filterText
         buttonPrimaryBrandContent = other.buttonPrimaryBrandContent
         buttonPrimaryNeutralBackground = other.buttonPrimaryNeutralBackground
         buttonPrimaryNeutralContent = other.buttonPrimaryNeutralContent
@@ -202,8 +198,8 @@ class Colors(
         actionBackground = actionBackground,
         actionBorder = actionBorder,
         divider = divider,
-        filterBackground = filterBackground,
-        filterBorder = filterBorder,
+        buttonSecondaryFilledBackground = buttonSecondaryFilledBackground,
+        buttonSecondaryFilledBorder = buttonSecondaryFilledBorder,
         textPrimary = textPrimary,
         textSecondary = textSecondary,
         textSecondaryDimmed = textSecondaryDimmed,
@@ -213,7 +209,6 @@ class Colors(
         iconDisabled = iconDisabled,
         brand = brand,
         borderAccentSubtle = borderAccentSubtle,
-        filterText = filterText,
         buttonPrimaryBrandContent = buttonPrimaryBrandContent,
         buttonPrimaryNeutralBackground = buttonPrimaryNeutralBackground,
         buttonPrimaryNeutralContent = buttonPrimaryNeutralContent,

@@ -1023,26 +1023,6 @@ fun Subhead1(
 }
 
 @Composable
-fun Subhead1Filter(
-    text: String,
-    modifier: Modifier = Modifier,
-    textAlign: TextAlign? = null,
-    overflow: TextOverflow = TextOverflow.Clip,
-    maxLines: Int = Int.MAX_VALUE,
-    onTextLayout: (TextLayoutResult) -> Unit = {}
-) {
-    Subhead1(
-        text = text,
-        color = ComposeAppTheme.colors.filterText,
-        modifier = modifier,
-        textAlign = textAlign,
-        overflow = overflow,
-        maxLines = maxLines,
-        onTextLayout = onTextLayout,
-    )
-}
-
-@Composable
 fun C2(
     text: String,
     modifier: Modifier = Modifier,
@@ -3758,7 +3738,6 @@ private fun BalanceTypographyPreview() {
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Subhead1("Balance", color = ComposeAppTheme.colors.textPrimary)
-            Subhead1Filter("Balance")
             MicroSBSecondary("TOTAL BALANCE")
             Title1Primary("\$1,700.00")
             Title1Primary("\$1,700.00", dimmed = true)

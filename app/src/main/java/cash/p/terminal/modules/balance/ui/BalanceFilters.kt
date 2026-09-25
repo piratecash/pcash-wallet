@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
@@ -41,7 +42,7 @@ import cash.p.terminal.ui.compose.components.SelectorDialogCompose
 import cash.p.terminal.ui.compose.components.SelectorItem
 import cash.p.terminal.ui_compose.Select
 import cash.p.terminal.ui_compose.components.balanceSurfaceIndication
-import cash.p.terminal.ui_compose.components.Subhead1Filter
+import cash.p.terminal.ui_compose.components.subhead2_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.BalanceSortType
 
@@ -160,18 +161,19 @@ private fun FilterButton(
         Row(
             modifier = Modifier
                 .clip(RoundedCornerShape(100.dp))
-                .background(ComposeAppTheme.colors.filterBackground)
+                .background(ComposeAppTheme.colors.buttonSecondaryFilledBackground)
                 .border(
                     width = 1.dp,
-                    color = ComposeAppTheme.colors.filterBorder,
+                    color = ComposeAppTheme.colors.buttonSecondaryFilledBorder,
                     shape = RoundedCornerShape(100.dp),
                 )
                 .balanceSurfaceIndication(interactionSource)
-                .padding(horizontal = 12.dp, vertical = 6.dp),
+                .heightIn(min = 28.dp)
+                .padding(horizontal = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Subhead1Filter(
+            subhead2_leah(
                 text = label,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -180,7 +182,7 @@ private fun FilterButton(
                 modifier = Modifier.size(16.dp),
                 painter = painterResource(R.drawable.ic_balance_chevron_down_16),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.filterText,
+                tint = ComposeAppTheme.colors.iconPrimary,
             )
         }
     }
@@ -218,8 +220,8 @@ private fun FilterIconButton(
             modifier = Modifier
                 .size(28.dp)
                 .clip(RoundedCornerShape(9.dp))
-                .background(ComposeAppTheme.colors.filterBackground)
-                .border(1.dp, ComposeAppTheme.colors.filterBorder, RoundedCornerShape(9.dp))
+                .background(ComposeAppTheme.colors.buttonSecondaryFilledBackground)
+                .border(1.dp, ComposeAppTheme.colors.buttonSecondaryFilledBorder, RoundedCornerShape(9.dp))
                 .balanceSurfaceIndication(interactionSource),
             contentAlignment = Alignment.Center,
         ) {
@@ -227,7 +229,7 @@ private fun FilterIconButton(
                 modifier = Modifier.size(16.dp),
                 painter = painterResource(icon),
                 contentDescription = contentDescription,
-                tint = ComposeAppTheme.colors.filterText,
+                tint = ComposeAppTheme.colors.iconPrimary,
             )
         }
     }
