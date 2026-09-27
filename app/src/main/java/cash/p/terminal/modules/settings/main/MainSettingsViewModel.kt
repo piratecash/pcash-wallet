@@ -9,7 +9,8 @@ import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.modules.softwareupdate.AppUpdateChecker
 import cash.p.terminal.feature.logging.domain.usecase.LogLoginAttemptUseCase
 import cash.p.terminal.modules.paycore.PayCoreFeatureToggle
-import cash.p.terminal.modules.settings.main.MainSettingsModule.CounterType
+import cash.p.terminal.shared.settings.CounterType
+import cash.p.terminal.shared.settings.MainSettingUiState
 import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.modules.walletconnect.WCSessionManager
 import cash.p.terminal.wallet.IAccountManager
@@ -165,21 +166,3 @@ class MainSettingsViewModel(
         emitState()
     }
 }
-
-data class MainSettingUiState(
-    val isUpdateAvailable: Boolean,
-    val currentLanguage: String,
-    val baseCurrencyCode: String,
-    val appWebPageLink: String,
-    val hasNonStandardAccount: Boolean,
-    val allBackedUp: Boolean,
-    val pendingRequestCount: Int,
-    val walletConnectSessionCount: Int,
-    val manageWalletShowAlert: Boolean,
-    val securityCenterShowAlert: Boolean,
-    val securityCenterShowNewBadge: Boolean,
-    val aboutAppShowAlert: Boolean,
-    val wcCounterType: CounterType?,
-    val premiumSettingsShowAlert: Boolean,
-    val isPayCoreEnabled: Boolean
-)

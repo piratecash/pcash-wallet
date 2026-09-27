@@ -4,6 +4,7 @@
 import com.android.tools.profgen.ArtProfileKt
 import com.android.tools.profgen.ArtProfileSerializer
 import com.android.tools.profgen.DexFile
+import groovy.xml.XmlSlurper
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -68,6 +69,13 @@ if (configuredFirebaseDevSigningValues && configuredFirebaseDevSigningValues.siz
 def firebaseDevSigningEnabled = configuredFirebaseDevSigningValues.size() == firebaseDevSigning.size()
 
 android {
+
+    // Library translations of unsupported languages make Android pick them over a supported secondary language.
+    androidResources {
+        localeFilters += new XmlSlurper(false, false)
+                .parse(file('src/main/res/xml/locales_config.xml'))
+                .locale.collect { it.@'android:name'.text().replace('-', '-r') }
+    }
 
     defaultConfig {
         applicationId "cash.p.terminal"

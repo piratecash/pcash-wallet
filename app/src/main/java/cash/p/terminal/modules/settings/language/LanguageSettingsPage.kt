@@ -23,10 +23,10 @@ import androidx.activity.compose.LocalActivity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
+import cash.p.terminal.core.fullRestart
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
-import cash.p.terminal.modules.main.MainModule
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HsBackButton
@@ -42,7 +42,7 @@ class LanguageSettingsPage : HSPage() {
         val activity = LocalActivity.current
         LanguageScreen(
             navigation,
-            { activity?.let { MainModule.startAsNewTask(it) } }
+            { activity?.fullRestart() }
         )
     }
 

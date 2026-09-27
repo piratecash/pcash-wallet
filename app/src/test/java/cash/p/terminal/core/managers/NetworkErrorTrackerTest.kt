@@ -1,11 +1,51 @@
 package cash.p.terminal.core.managers
 
+import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.core.logger.AppLog
+import io.mockk.every
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
+import io.mockk.verify
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 
 class NetworkErrorTrackerTest {
+
+    @Before
+    fun setUp() {
+        mockkObject(AppLog)
+        every { AppLog.warning(any(), any<String>()) } returns Unit
+    }
+
+    @After
+    fun tearDown() {
+        unmockkObject(AppLog)
+    }
+
+    @Test
+    fun record_sameErrorWithin5Minutes_writesAppLogOnce() {
+        val tracker = NetworkErrorTracker()
+        val accountId = "account-1"
+        val error = NetworkErrorInfo(
+            source = "api.blockscout.com",
+            method = "GET",
+            url = "https://api.blockscout.com/api",
+            host = "api.blockscout.com",
+            resolvedIps = emptyList(),
+            throwable = HttpStatusException(402),
+        )
+
+        tracker.record(BlockchainType.Ethereum, accountId, error)
+        tracker.record(BlockchainType.Ethereum, accountId, error)
+
+        verify(exactly = 1) { AppLog.warning(any(), any<String>()) }
+        // recentByKey (status screen) still reflects the latest occurrence despite the dedup.
+        assertTrue(tracker.errorInfo(BlockchainType.Ethereum, accountId)?.isNotEmpty() == true)
+    }
 
     @Test
     fun boundedStackTraceToString_deepStack_capsFramesAndShrinks() {

@@ -41,7 +41,10 @@ class EvmSyncSourceManager(
             BlockchainType.Gnosis -> TransactionSource.gnosis(AppConfigProvider.etherscanApiKey)
             BlockchainType.Fantom -> TransactionSource.fantom(AppConfigProvider.etherscanApiKey)
             BlockchainType.ZkSync -> TransactionSource.zkSync(AppConfigProvider.blockscoutApiKey)
-            BlockchainType.RobinhoodChain -> TransactionSource.robinhood(AppConfigProvider.blockscoutApiKey)
+            BlockchainType.RobinhoodChain -> TransactionSource.robinhood(
+                AppConfigProvider.blockscoutApiKey,
+                AppConfigProvider.etherscanApiKey
+            )
             else -> throw Exception("Non-supported EVM blockchain")
         }
     }
