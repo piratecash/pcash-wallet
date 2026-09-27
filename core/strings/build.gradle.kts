@@ -40,6 +40,7 @@ kotlin {
 dependencies {
     api(project(":core:resources"))
     implementation(libs.androidx.annotation)
+    implementation(libs.appcompat)
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.material)
 }
