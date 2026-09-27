@@ -45,6 +45,9 @@ data class SwapProviderTransaction(
     // Aggregator sub-provider: Unstoppable api id (e.g. "LETSEXCHANGE") or YiFi exchanger name.
     // Drives the per-sub-provider display name in history.
     val unstoppableSubProviderId: String? = null,
+    // TokenQuery.id of each side; null for the PayCore RUB side and for rows saved before it existed.
+    val tokenQueryIdIn: String? = null,
+    val tokenQueryIdOut: String? = null,
 ) {
     fun isFinished() = status in FINISHED_STATUSES
 

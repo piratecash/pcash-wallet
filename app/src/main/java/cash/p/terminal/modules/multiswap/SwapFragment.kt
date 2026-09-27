@@ -207,6 +207,7 @@ internal data class PayCorePaymentPage(
     val tokenOutUid: String,
     val blockchainTypeIn: String,
     val blockchainTypeOut: String,
+    val tokenQueryIdOut: String,
     val direction: SwapAmountDirection,
     val requestedAmountOut: String?,
 )
@@ -516,6 +517,7 @@ internal fun buildPayCorePaymentPage(uiState: SwapUiState): PayCorePaymentPage? 
         tokenOutUid = tokenOut.coin.uid,
         blockchainTypeIn = tokenIn.blockchainType.uid,
         blockchainTypeOut = tokenOut.blockchainType.uid,
+        tokenQueryIdOut = tokenOut.tokenQuery.id,
         direction = uiState.direction,
         requestedAmountOut = uiState.requestedAmountOut?.toPlainString(),
     )
@@ -529,6 +531,7 @@ internal fun PayCorePaymentPage.toPaymentParams(addressOut: String) = PayCorePay
     tokenOutUid = tokenOutUid,
     blockchainTypeIn = blockchainTypeIn,
     blockchainTypeOut = blockchainTypeOut,
+    tokenQueryIdOut = tokenQueryIdOut,
     addressOut = addressOut,
     direction = direction,
     requestedAmountOut = requestedAmountOut?.toBigDecimal(),
@@ -558,11 +561,14 @@ private fun buildMultiSwapLeg1Info(viewModel: SwapViewModel): MultiSwapLegInfo? 
     return MultiSwapLegInfo.Leg1(
         coinUidIn = tokenIn.coin.uid,
         blockchainTypeIn = tokenIn.blockchainType.uid,
+        tokenQueryIdIn = tokenIn.swapSideTokenQueryId,
         amountIn = amountIn,
         coinUidIntermediate = route.intermediateCoin.coin.uid,
         blockchainTypeIntermediate = route.intermediateCoin.blockchainType.uid,
+        tokenQueryIdIntermediate = route.intermediateCoin.swapSideTokenQueryId,
         coinUidOut = tokenOut.coin.uid,
         blockchainTypeOut = tokenOut.blockchainType.uid,
+        tokenQueryIdOut = tokenOut.swapSideTokenQueryId,
         leg1ProviderId = route.selectedLeg1Quote.provider.id,
         leg2ProviderId = leg2Provider.id,
         leg2IsOffChain = leg2Provider.isOffChain,

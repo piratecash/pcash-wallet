@@ -9,6 +9,7 @@ import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
@@ -28,13 +29,17 @@ class BaseTokenManager(
         }
     }
 
-    var token = localStorage.balanceTotalCoinUid?.let { balanceTotalCoinUid ->
-        tokens.find { it.coin.uid == balanceTotalCoinUid }
-    } ?: tokens.firstOrNull()
-        private set
+    private val _baseTokenFlow by lazy {
+        MutableStateFlow(
+            localStorage.balanceTotalCoinUid?.let { balanceTotalCoinUid ->
+                tokens.find { it.coin.uid == balanceTotalCoinUid }
+            } ?: tokens.firstOrNull()
+        )
+    }
+    val baseTokenFlow: StateFlow<Token?> by lazy { _baseTokenFlow.asStateFlow() }
 
-    private val _baseTokenFlow = MutableStateFlow(token)
-    val baseTokenFlow = _baseTokenFlow.asStateFlow()
+    val token: Token?
+        get() = _baseTokenFlow.value
 
     fun toggleBaseToken() {
         val indexOfNext = tokens.indexOf(token) + 1
@@ -48,7 +53,6 @@ class BaseTokenManager(
     }
 
     private fun setBaseToken(token: Token?) {
-        this.token = token
         localStorage.balanceTotalCoinUid = token?.coin?.uid
 
         _baseTokenFlow.update {

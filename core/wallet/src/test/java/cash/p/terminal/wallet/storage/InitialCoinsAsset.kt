@@ -39,20 +39,66 @@ internal fun validateDumpSql(dump: String) {
             database.endTransaction()
         }
 
-        assertRowCountsMatchInserts(database, statements)
+        assertRowCountsMatchInserts(database, dump)
         assertNoForeignKeyViolations(database)
     } finally {
         database.close()
     }
 }
 
-private fun assertRowCountsMatchInserts(database: SQLiteDatabase, statements: List<String>) {
-    val insertCountsByTable = statements
-        .mapNotNull { insertTablePattern.find(it)?.groupValues?.get(1) }
-        .groupingBy { it }
-        .eachCount()
+/**
+ * Counts VALUES tuples for [table] in [dump], independent of how many rows a single
+ * `INSERT OR REPLACE` statement batches together (see DumpManager.CHUNK_SIZE). Scans
+ * quote-aware so a literal '(' or ')' inside an escaped string value is not mistaken for a
+ * tuple boundary.
+ */
+internal fun countValueRows(dump: String, table: String): Int {
+    val prefix = "INSERT OR REPLACE INTO $table "
+    return dump.lineSequence()
+        .filter { it.startsWith(prefix) }
+        .sumOf { countTuples(it) }
+}
 
-    insertCountsByTable.forEach { (table, expectedCount) ->
+private fun countTuples(statement: String): Int {
+    var depth = 0
+    var tuples = 0
+    var i = 0
+    while (i < statement.length) {
+        when (statement[i]) {
+            '\'' -> {
+                i = skipStringLiteral(statement, i) - 1 // loop's i++ below lands right after it
+            }
+            '(' -> {
+                if (depth == 0) tuples++
+                depth++
+            }
+            ')' -> depth--
+        }
+        i++
+    }
+    return tuples
+}
+
+/** Returns the index right after the closing quote of the string literal starting at [quoteStart], honoring '' escapes. */
+private fun skipStringLiteral(statement: String, quoteStart: Int): Int {
+    var i = quoteStart + 1
+    while (i < statement.length) {
+        if (statement[i] == '\'') {
+            val isEscapedQuote = i + 1 < statement.length && statement[i + 1] == '\''
+            if (isEscapedQuote) i++ else return i + 1
+        }
+        i++
+    }
+    return i
+}
+
+private fun assertRowCountsMatchInserts(database: SQLiteDatabase, dump: String) {
+    val tables = dump.lineSequence()
+        .mapNotNull { insertTablePattern.find(it)?.groupValues?.get(1) }
+        .toSet()
+
+    tables.forEach { table ->
+        val expectedCount = countValueRows(dump, table)
         database.rawQuery("SELECT COUNT(*) FROM $table", null).use { cursor ->
             cursor.moveToFirst()
             assertEquals("Row count mismatch for $table (duplicate primary key?)", expectedCount, cursor.getInt(0))

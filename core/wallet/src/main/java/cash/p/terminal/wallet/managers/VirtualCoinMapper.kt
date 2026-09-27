@@ -3,7 +3,7 @@ package cash.p.terminal.wallet.managers
 import io.horizontalsystems.core.entities.BlockchainType
 
 data class VirtualCoinMapping(
-    val realCoinCode: String,
+    val realCoinUid: String,
     val blockchainType: BlockchainType,
     val virtualCoinUid: String
 )
@@ -12,16 +12,16 @@ class VirtualCoinMapper {
 
     val allMappings: List<VirtualCoinMapping> = listOf(
         VirtualCoinMapping(
-            realCoinCode = "BSC-USD",
+            realCoinUid = "binance-bridged-usdt-bnb-smart-chain",
             blockchainType = BlockchainType.BinanceSmartChain,
             virtualCoinUid = "tether"
         )
     )
 
-    private val realCoinCodeIndex: Map<String, VirtualCoinMapping> by lazy {
-        allMappings.associateBy { it.realCoinCode }
+    private val realCoinUidIndex: Map<String, VirtualCoinMapping> by lazy {
+        allMappings.associateBy { it.realCoinUid }
     }
 
-    fun getVirtualCoinUidForRealCoinCode(realCoinCode: String): String? =
-        realCoinCodeIndex[realCoinCode]?.virtualCoinUid
+    fun getVirtualCoinUidForRealCoinUid(realCoinUid: String): String? =
+        realCoinUidIndex[realCoinUid]?.virtualCoinUid
 }

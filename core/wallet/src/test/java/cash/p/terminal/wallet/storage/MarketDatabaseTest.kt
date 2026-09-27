@@ -28,9 +28,11 @@ class MarketDatabaseTest {
     @Test
     fun initialCoins_litecoin_containsMwebToken() {
         val file = initialCoinsFile()
-        val mwebTokenSql = "INSERT OR REPLACE INTO TokenEntity VALUES('litecoin','litecoin','mweb',8,'');"
+        // Rows are batched into multi-row INSERT statements (see DumpManager.CHUNK_SIZE), so the
+        // tuple is checked as a substring rather than expecting it to be a whole statement/line.
+        val mwebTokenTuple = "('litecoin','litecoin','mweb',8,'')"
 
-        assertTrue(file.readLines().contains(mwebTokenSql))
+        assertTrue(file.readText().contains(mwebTokenTuple))
     }
 
 }

@@ -57,14 +57,12 @@ class MarketKitWrapper(
 
     fun coin(coinUid: String): Coin? {
         val coin = marketKit.coin(coinUid)
-        // If the coin's code maps to a virtual coin, return the virtual coin instead
-        val virtualCoinUid = coin?.let { virtualCoinMapper.getVirtualCoinUidForRealCoinCode(it.code) }
+        // If the coin's uid maps to a virtual coin, return the virtual coin instead
+        val virtualCoinUid = coin?.let { virtualCoinMapper.getVirtualCoinUidForRealCoinUid(it.uid) }
         return if (virtualCoinUid != null) marketKit.coin(virtualCoinUid) else coin
     }
 
     fun allCoins() = marketKit.allCoins()
-
-    fun coinGeckoIds(uids: List<String>) = marketKit.coinGeckoIds(uids)
 
     fun token(query: TokenQuery) = marketKit.token(query)
 
@@ -126,7 +124,7 @@ class MarketKitWrapper(
     ) =
         marketKit.coinCategoryMarketPointsSingle(categoryUid, interval, currencyCode)
 
-    fun sync(forceUpdate: Boolean) = marketKit.sync(forceUpdate)
+    suspend fun sync(forceUpdate: Boolean) = marketKit.sync(forceUpdate)
 
     // Coin Prices
 

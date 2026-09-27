@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.multiswap.providers
 
 import cash.p.terminal.entities.SwapProviderTransaction
+import cash.p.terminal.modules.multiswap.swapSideTokenQueryId
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.wallet.IAccountManager
@@ -42,5 +43,7 @@ class SwapProviderTransactionFactory(
         addressOut = recipientAddressOut ?: walletUseCase.getReceiveAddress(tokenOut),
         accountId = accountManager.activeAccount?.id.orEmpty(),
         unstoppableSubProviderId = subProviderId,
+        tokenQueryIdIn = tokenIn.swapSideTokenQueryId,
+        tokenQueryIdOut = tokenOut.swapSideTokenQueryId,
     )
 }

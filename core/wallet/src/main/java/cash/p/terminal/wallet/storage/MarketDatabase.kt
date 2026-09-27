@@ -7,13 +7,10 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
-import cash.p.terminal.wallet.entities.Coin
-import cash.p.terminal.wallet.models.BlockchainEntity
 import cash.p.terminal.wallet.models.CoinHistoricalPrice
 import cash.p.terminal.wallet.models.CoinPrice
 import cash.p.terminal.wallet.models.GlobalMarketInfo
 import cash.p.terminal.wallet.models.SyncerState
-import cash.p.terminal.wallet.models.TokenEntity
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.logging.Logger
@@ -21,26 +18,24 @@ import java.util.logging.Logger
 
 @Database(
     entities = [
-        Coin::class,
-        BlockchainEntity::class,
-        TokenEntity::class,
+        CoinRecord::class,
+        BlockchainRecord::class,
+        TokenRecord::class,
         CoinPrice::class,
         CoinHistoricalPrice::class,
         GlobalMarketInfo::class,
         SyncerState::class,
     ],
-    version = 16,
+    version = 17,
     exportSchema = false
 )
 @TypeConverters(DatabaseTypeConverters::class)
 abstract class MarketDatabase : RoomDatabase() {
-    abstract fun coinDao(): CoinDao
+    internal abstract fun coinDao(): CoinDao
     abstract fun coinPriceDao(): CoinPriceDao
     abstract fun coinHistoricalPriceDao(): CoinHistoricalPriceDao
     abstract fun globalMarketInfoDao(): GlobalMarketInfoDao
     abstract fun syncerStateDao(): SyncerStateDao
-    abstract fun blockchainEntityDao(): BlockchainEntityDao
-    abstract fun tokenEntityDao(): TokenEntityDao
 
     companion object {
 
@@ -69,7 +64,6 @@ abstract class MarketDatabase : RoomDatabase() {
                         logger.info("onDestructiveMigration Loaded coins count: $loadedCount")
                     }
                 })
-                .addMigrations(Migration_13_14, Migration_14_15, Migration_15_16)
 //                .setQueryCallback({ sqlQuery, bindArgs ->
 //                    println("SQL Query: $sqlQuery SQL Args: $bindArgs")
 //                }, Executors.newSingleThreadExecutor())

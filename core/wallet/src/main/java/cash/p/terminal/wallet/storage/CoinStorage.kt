@@ -7,30 +7,18 @@ import io.horizontalsystems.core.entities.Blockchain
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.FullCoin
 import cash.p.terminal.wallet.entities.TokenQuery
-import cash.p.terminal.wallet.models.BlockchainEntity
-import cash.p.terminal.wallet.models.TokenEntity
 
 class CoinStorage(val marketDatabase: MarketDatabase) {
 
     private val coinDao = marketDatabase.coinDao()
 
     fun coin(coinUid: String): Coin? =
-        coinDao.getCoin(coinUid)
+        coinDao.getCoin(coinUid)?.toCoin()
 
     fun coins(coinUids: List<String>): List<Coin> =
-        coinDao.getCoins(coinUids)
+        coinDao.getCoins(coinUids).map { it.toCoin() }
 
-    fun getCoinGeckoIds(uids: List<String>): Map<String, String> =
-        coinDao.getCoinGeckoIds(uids)
-            .mapNotNull { mapping ->
-                mapping.coinGeckoId?.let { mapping.uid to it }
-            }
-            .toMap()
-
-    fun getCoinGeckoId(uid: String): String? =
-        coinDao.getCoinGeckoId(uid)
-
-    fun allCoins(): List<Coin> = coinDao.getAllCoins()
+    fun allCoins(): List<Coin> = coinDao.getAllCoins().map { it.toCoin() }
 
     fun fullCoins(filter: String, limit: Int): List<FullCoin> {
         val sql = """
@@ -57,8 +45,8 @@ class CoinStorage(val marketDatabase: MarketDatabase) {
         val (clause, args) = buildTokenQueryClause(query, referenceMatch) ?: return null
         // Order by marketCapRank to prefer canonical coin when duplicates exist
         val sql = """
-            SELECT * FROM TokenEntity
-            JOIN Coin ON Coin.uid = TokenEntity.coinUid
+            SELECT * FROM Token
+            JOIN Coin ON Coin.uid = Token.coinUid
             WHERE $clause
             ORDER BY ${canonicalCoinOrderBy()}
             LIMIT 1
@@ -100,8 +88,8 @@ class CoinStorage(val marketDatabase: MarketDatabase) {
 
         // Order by marketCapRank to prefer canonical coin when duplicates exist
         val sql = """
-            SELECT * FROM TokenEntity
-            JOIN Coin ON Coin.uid = TokenEntity.coinUid
+            SELECT * FROM Token
+            JOIN Coin ON Coin.uid = Token.coinUid
             WHERE ${whereClauses.joinToString(" OR ")}
             ORDER BY ${canonicalCoinOrderBy()}
         """.trimIndent()
@@ -113,7 +101,7 @@ class CoinStorage(val marketDatabase: MarketDatabase) {
     }
 
     fun getTokens(reference: String): List<Token> {
-        val sql = "SELECT * FROM TokenEntity WHERE `TokenEntity`.`reference` LIKE ?"
+        val sql = "SELECT * FROM Token WHERE `Token`.`reference` LIKE ?"
         val args = arrayOf("%$reference")
 
         return coinDao.getTokens(SimpleSQLiteQuery(sql, args)).map { it.token }
@@ -121,10 +109,10 @@ class CoinStorage(val marketDatabase: MarketDatabase) {
 
     fun getTokens(blockchainType: BlockchainType, filter: String, limit: Int): List<Token> {
         val sql = """
-            SELECT * FROM TokenEntity
-            JOIN Coin ON `Coin`.`uid` = `TokenEntity`.`coinUid`
-            WHERE 
-              `TokenEntity`.`blockchainUid` = ?
+            SELECT * FROM Token
+            JOIN Coin ON `Coin`.`uid` = `Token`.`coinUid`
+            WHERE
+              `Token`.`blockchainUid` = ?
               AND (${filterWhereStatement()})
             ORDER BY ${filterOrderByStatement()}
             LIMIT ?
@@ -135,13 +123,13 @@ class CoinStorage(val marketDatabase: MarketDatabase) {
     }
 
     fun getBlockchain(uid: String): Blockchain? =
-        coinDao.getBlockchain(uid)?.blockchain
+        coinDao.getBlockchain(uid)?.toBlockchain()
 
     fun getBlockchains(uids: List<String>): List<Blockchain> =
-        coinDao.getBlockchains(uids).map { it.blockchain }
+        coinDao.getBlockchains(uids).map { it.toBlockchain() }
 
     fun getAllBlockchains(): List<Blockchain> =
-        coinDao.getAllBlockchains().map { it.blockchain }
+        coinDao.getAllBlockchains().map { it.toBlockchain() }
 
     private fun buildTokenQueryClause(
         query: TokenQuery,
@@ -154,16 +142,16 @@ class CoinStorage(val marketDatabase: MarketDatabase) {
         val conditions = mutableListOf<String>()
         val args = mutableListOf<Any>()
 
-        conditions.add("`TokenEntity`.`blockchainUid` = ?")
+        conditions.add("`Token`.`blockchainUid` = ?")
         args.add(query.blockchainType.uid)
 
-        conditions.add("`TokenEntity`.`type` = ?")
+        conditions.add("`Token`.`type` = ?")
         args.add(type)
 
         if (reference.isNotBlank()) {
             val referenceCondition = when (referenceMatch) {
-                ReferenceMatch.Exact -> "`TokenEntity`.`reference` = ?"
-                ReferenceMatch.LegacySuffix -> "`TokenEntity`.`reference` LIKE ?"
+                ReferenceMatch.Exact -> "`Token`.`reference` = ?"
+                ReferenceMatch.LegacySuffix -> "`Token`.`reference` LIKE ?"
             }
             conditions.add(referenceCondition)
             args.add(referenceMatch.argument(reference))
@@ -210,7 +198,7 @@ class CoinStorage(val marketDatabase: MarketDatabase) {
             ELSE 0
         END,
         `Coin`.`marketCapRank` ASC,
-        `Coin`.`name` ASC 
+        `Coin`.`name` ASC
     """
 
     private fun filterArgs(filter: String): Array<String> {
@@ -224,15 +212,23 @@ class CoinStorage(val marketDatabase: MarketDatabase) {
         )
     }
 
-    fun update(coins: List<Coin>, blockchainEntities: List<BlockchainEntity>, tokenEntities: List<TokenEntity>) {
+    internal fun replaceAll(data: CoinsData) {
         marketDatabase.runInTransaction {
-            // TODO It's not good solution for update information
             coinDao.deleteAllCoins()
             coinDao.deleteAllBlockchains()
             coinDao.deleteAllTokens()
-            coins.forEach { coinDao.insert(it) }
-            blockchainEntities.forEach { coinDao.insert(it) }
-            tokenEntities.forEach { coinDao.insert(it) }
+            coinDao.insertCoins(data.coins)
+            coinDao.insertBlockchains(data.blockchains)
+            coinDao.insertTokens(data.tokens)
+        }
+    }
+
+    internal fun ranks(): Map<String, Int> = coinDao.getRanks().associate { it.uid to it.marketCapRank }
+
+    fun applyRanks(ranks: Map<String, Int>) {
+        marketDatabase.runInTransaction {
+            coinDao.clearRanks()
+            ranks.forEach { (uid, rank) -> coinDao.setRank(uid, rank) }
         }
     }
 }

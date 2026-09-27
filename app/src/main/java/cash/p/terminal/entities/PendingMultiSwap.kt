@@ -32,6 +32,10 @@ data class PendingMultiSwap(
     val leg1ProviderTransactionId: String? = null,
     val leg2ProviderTransactionId: String? = null,
     val leg1InfoRecordUid: String? = null,
+    // TokenQuery.id of each side; null for the PayCore RUB side and for rows saved before it existed.
+    val tokenQueryIdIn: String? = null,
+    val tokenQueryIdIntermediate: String? = null,
+    val tokenQueryIdOut: String? = null,
 ) {
     fun isTerminal(): Boolean =
         leg1Status == STATUS_FAILED ||

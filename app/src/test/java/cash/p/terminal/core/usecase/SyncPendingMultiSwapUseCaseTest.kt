@@ -257,12 +257,32 @@ class SyncPendingMultiSwapUseCaseTest {
             leg1AmountOut = BigDecimal("5.0")
         )
 
-        val outputSource = mockk<TransactionSource>()
         val outputWallet = mockk<Wallet>(relaxed = true) {
             every { coin.uid } returns "the-open-network"
             every { token.blockchainType } returns BlockchainType.fromUid("the-open-network")
-            every { transactionSource } returns outputSource
         }
+
+        assertLeg1CompletedByIncomingOn(outputWallet, swap)
+    }
+
+    @Test
+    fun leg1OnChain_intermediateCoinLabelDiffersFromWalletCoin_matchesWalletByToken() = runTest(dispatcher) {
+        val swap = swap(
+            leg1IsOffChain = false,
+            leg1TransactionId = null,
+            leg1AmountOut = BigDecimal("5.0")
+        ).copy(coinUidIntermediate = "renamed-ton", tokenQueryIdIntermediate = TON_TOKEN_QUERY_ID)
+        val outputWallet = mockk<Wallet>(relaxed = true) {
+            every { coin.uid } returns "the-open-network"
+            every { token.tokenQuery.id } returns TON_TOKEN_QUERY_ID
+        }
+
+        assertLeg1CompletedByIncomingOn(outputWallet, swap)
+    }
+
+    private suspend fun assertLeg1CompletedByIncomingOn(outputWallet: Wallet, swap: PendingMultiSwap) {
+        val outputSource = mockk<TransactionSource>()
+        every { outputWallet.transactionSource } returns outputSource
         val txAdapter = mockk<ITransactionsAdapter>(relaxed = true)
         val mainValue = mockk<TransactionValue>(relaxed = true) {
             every { decimalValue } returns BigDecimal("4.8")
@@ -885,8 +905,7 @@ class SyncPendingMultiSwapUseCaseTest {
         every {
             swapProviderTransactionsStorage.getByProviderAndTokenOut(
                 provider = SwapProvider.CHANGENOW,
-                coinUidOut = "the-open-network",
-                blockchainTypeOut = "the-open-network",
+                tokenOut = intermediateWallet.token,
                 accountId = "test-account",
                 addressOut = "UQ-fallback-addr",
                 expectedAmount = BigDecimal("1.5"),
@@ -1495,3 +1514,5 @@ class SyncPendingMultiSwapUseCaseTest {
         }
     }
 }
+
+private const val TON_TOKEN_QUERY_ID = "the-open-network|native"

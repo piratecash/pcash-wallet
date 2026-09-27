@@ -294,9 +294,7 @@ class TransactionAdapterWrapper(
         return if (transactionWallet.token != null) {
             val token = transactionWallet.token
             filtered
-                .filter {
-                    it.coinUid == token.coin.uid && it.tokenTypeId == token.type.id
-                }
+                .filter { it.tokenTypeId == token.type.id }
                 .map { pendingConverter.convert(it, token) }
         } else {
             filtered

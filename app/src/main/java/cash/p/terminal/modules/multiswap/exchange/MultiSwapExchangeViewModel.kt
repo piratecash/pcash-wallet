@@ -16,6 +16,7 @@ import cash.p.terminal.modules.multiswap.AssetFiatRateService
 import cash.p.terminal.modules.multiswap.SwapAmountDirection
 import cash.p.terminal.modules.multiswap.SwapProviderQuote
 import cash.p.terminal.modules.multiswap.SwapQuoteService
+import cash.p.terminal.modules.multiswap.SwapSide
 import cash.p.terminal.modules.multiswap.TimerService
 import cash.p.terminal.core.ServiceStateFlow
 import cash.p.terminal.modules.multiswap.TokenBalanceService
@@ -24,6 +25,9 @@ import cash.p.terminal.modules.multiswap.providers.ProviderRiskType
 import cash.p.terminal.modules.multiswap.providers.SwapProvidersRepository
 import cash.p.terminal.modules.multiswap.providers.isOffChain
 import cash.p.terminal.modules.multiswap.action.ActionCreate
+import cash.p.terminal.modules.multiswap.sideIn
+import cash.p.terminal.modules.multiswap.sideIntermediate
+import cash.p.terminal.modules.multiswap.sideOut
 import cash.p.terminal.modules.paycore.PayCoreAssets
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapterManager
@@ -31,6 +35,7 @@ import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.badge
+import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import cash.p.terminal.wallet.coinImageUrl
@@ -179,8 +184,8 @@ class MultiSwapExchangeViewModel(
     }
 
     private fun fetchLeg2Quotes(swap: PendingMultiSwap) {
-        val tokenIn = resolveToken(swap.coinUidIntermediate, swap.blockchainTypeIntermediate) ?: return
-        val tokenOut = resolveToken(swap.coinUidOut, swap.blockchainTypeOut) ?: return
+        val tokenIn = resolveToken(swap.sideIntermediate) ?: return
+        val tokenOut = resolveToken(swap.sideOut) ?: return
         val amountIn = swap.leg1AmountOut ?: return
 
         tokenBalanceService.setToken(tokenIn)
@@ -228,7 +233,7 @@ class MultiSwapExchangeViewModel(
     }
 
     fun toggleLeg2BalanceHidden() {
-        val tokenIn = currentSwap?.let { resolveToken(it.coinUidIntermediate, it.blockchainTypeIntermediate) }
+        val tokenIn = currentSwap?.let { resolveToken(it.sideIntermediate) }
         if (tokenIn != null) {
             balanceHiddenManager.toggleWalletBalanceHidden(tokenIn.tokenQuery.id)
         } else {
@@ -238,7 +243,7 @@ class MultiSwapExchangeViewModel(
     }
 
     private fun updateLeg2BalanceHidden() {
-        val tokenIn = currentSwap?.let { resolveToken(it.coinUidIntermediate, it.blockchainTypeIntermediate) }
+        val tokenIn = currentSwap?.let { resolveToken(it.sideIntermediate) }
         leg2BalanceHidden = tokenIn?.let { balanceHiddenManager.isWalletBalanceHidden(it.tokenQuery.id) }
             ?: balanceHiddenManager.balanceHidden
     }
@@ -246,8 +251,7 @@ class MultiSwapExchangeViewModel(
     private fun startMonitoringIfNeeded(swap: PendingMultiSwap) {
         if (swap.leg1Status == PendingMultiSwap.STATUS_EXECUTING && !monitoringLeg1) {
             monitoringLeg1 = onChainMonitor.observeBalanceIncrease(
-                coinUid = swap.coinUidIntermediate,
-                blockchainType = BlockchainType.fromUid(swap.blockchainTypeIntermediate),
+                side = swap.sideIntermediate,
                 scope = viewModelScope,
             ) {
                 viewModelScope.launch {
@@ -258,8 +262,7 @@ class MultiSwapExchangeViewModel(
         }
         if (swap.leg2Status == PendingMultiSwap.STATUS_EXECUTING && !monitoringLeg2) {
             monitoringLeg2 = onChainMonitor.observeBalanceIncrease(
-                coinUid = swap.coinUidOut,
-                blockchainType = BlockchainType.fromUid(swap.blockchainTypeOut),
+                side = swap.sideOut,
                 scope = viewModelScope,
             ) {
                 viewModelScope.launch {
@@ -317,11 +320,12 @@ class MultiSwapExchangeViewModel(
         return amount * rate
     }
 
-    private fun resolveToken(coinUid: String, blockchainTypeUid: String): Token? {
-        if (PayCoreAssets.isRub(coinUid)) return PayCoreAssets.rubToken
+    private fun resolveToken(side: SwapSide): Token? {
+        if (PayCoreAssets.isRub(side.coinUid)) return PayCoreAssets.rubToken
+        side.tokenQueryId?.let { id -> return TokenQuery.fromId(id)?.let(marketKit::token) }
 
-        val blockchainType = BlockchainType.fromUid(blockchainTypeUid)
-        return marketKit.fullCoins(listOf(coinUid))
+        val blockchainType = BlockchainType.fromUid(side.blockchainTypeUid)
+        return marketKit.fullCoins(listOf(side.coinUid))
             .firstOrNull()
             ?.tokens
             ?.firstOrNull { it.blockchainType == blockchainType }
@@ -358,9 +362,9 @@ class MultiSwapExchangeViewModel(
     }
 
     private suspend fun mapToUiState(swap: PendingMultiSwap): MultiSwapExchangeUiState {
-        val tokenIn = resolveToken(swap.coinUidIn, swap.blockchainTypeIn)
-        val tokenIntermediate = resolveToken(swap.coinUidIntermediate, swap.blockchainTypeIntermediate)
-        val tokenOut = resolveToken(swap.coinUidOut, swap.blockchainTypeOut)
+        val tokenIn = resolveToken(swap.sideIn)
+        val tokenIntermediate = resolveToken(swap.sideIntermediate)
+        val tokenOut = resolveToken(swap.sideOut)
 
         val coinIn = marketKit.coin(swap.coinUidIn)
         val coinIntermediate = marketKit.coin(swap.coinUidIntermediate)

@@ -31,9 +31,8 @@ internal fun yiFiTestToken(
     type: TokenType,
     code: String,
     coinUid: String = code.lowercase(),
-    coinGeckoId: String? = null,
 ) = Token(
-    coin = Coin(uid = coinUid, name = code, code = code, coinGeckoId = coinGeckoId),
+    coin = Coin(uid = coinUid, name = code, code = code),
     blockchain = Blockchain(blockchainType, blockchainType.uid, null),
     type = type,
     decimals = 8,
@@ -148,10 +147,10 @@ class YiFiTokenResolverTest {
     }
 
     @Test
-    fun resolveAsset_tonWithUnrelatedCoinGeckoId_resolvesByCoinCode() = runTest(dispatcher) {
+    fun resolveAsset_tonWithCatalogUid_resolvesByCoinCode() = runTest(dispatcher) {
         val token = yiFiTestToken(
             BlockchainType.Ton, TokenType.Native, "TON",
-            coinUid = "the-open-network", coinGeckoId = "toncoin-wrong",
+            coinUid = "the-open-network",
         )
 
         assertEquals(YiFiAsset("TON", "TON"), resolver.resolveAsset(token))

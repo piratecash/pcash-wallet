@@ -8,6 +8,14 @@ import cash.p.terminal.entities.SwapProviderTransaction
 import kotlinx.coroutines.flow.Flow
 import java.math.BigDecimal
 
+// Rows saved before tokenQueryId existed fall back to the coin label + chain match.
+private const val TOKEN_IN_MATCHES = "(tokenQueryIdIn = :tokenQueryId OR " +
+        "(tokenQueryIdIn IS NULL AND coinUidIn = :coinUid AND blockchainTypeIn = :blockchainType))"
+private const val TOKEN_OUT_MATCHES = "(tokenQueryIdOut = :tokenQueryId OR " +
+        "(tokenQueryIdOut IS NULL AND coinUidOut = :coinUid AND blockchainTypeOut = :blockchainType))"
+private const val TOKEN_AND_ADDRESS_MATCH =
+    "(($TOKEN_IN_MATCHES AND addressIn = :address) OR ($TOKEN_OUT_MATCHES AND addressOut = :address))"
+
 @Dao
 interface SwapProviderTransactionsDao {
 
@@ -15,12 +23,11 @@ interface SwapProviderTransactionsDao {
     fun insert(swapProviderTransaction: SwapProviderTransaction)
 
     @Query(
-        "SELECT * FROM SwapProviderTransaction WHERE " +
-                "((coinUidIn = :coinUid AND blockchainTypeIn = :blockchainType AND addressIn = :address) OR " +
-                "(coinUidOut = :coinUid AND blockchainTypeOut = :blockchainType AND addressOut = :address)) AND " +
+        "SELECT * FROM SwapProviderTransaction WHERE $TOKEN_AND_ADDRESS_MATCH AND " +
                 "status not in (:statusesExcluded) ORDER BY date DESC LIMIT :limit"
     )
     fun getAll(
+        tokenQueryId: String,
         coinUid: String,
         blockchainType: String,
         address: String,
@@ -41,12 +48,10 @@ interface SwapProviderTransactionsDao {
     ): List<SwapProviderTransaction>
 
     @Query(
-        "SELECT * FROM SwapProviderTransaction WHERE " +
-                "((coinUidIn = :coinUid AND blockchainTypeIn = :blockchainType AND addressIn = :address) OR " +
-                "(coinUidOut = :coinUid AND blockchainTypeOut = :blockchainType AND addressOut = :address)) " +
-                "ORDER BY date DESC LIMIT :limit"
+        "SELECT * FROM SwapProviderTransaction WHERE $TOKEN_AND_ADDRESS_MATCH ORDER BY date DESC LIMIT :limit"
     )
     fun observeByToken(
+        tokenQueryId: String,
         coinUid: String,
         blockchainType: String,
         address: String,
@@ -71,11 +76,11 @@ interface SwapProviderTransactionsDao {
 
     @Query(
         "SELECT * FROM SwapProviderTransaction WHERE " +
-                "(coinUidIn = :coinUid AND blockchainTypeIn = :blockchainType AND date >= :dateFrom AND date <= " +
-                ":dateTo) " +
+                "($TOKEN_IN_MATCHES AND date >= :dateFrom AND date <= :dateTo) " +
                 "AND (:amountIn is NULL OR amountIn == :amountIn) ORDER BY date DESC LIMIT 1"
     )
     fun getByTokenIn(
+        tokenQueryId: String,
         coinUid: String,
         amountIn: BigDecimal?,
         blockchainType: String,
@@ -95,10 +100,11 @@ interface SwapProviderTransactionsDao {
 
     @Query(
         "SELECT * FROM SwapProviderTransaction WHERE " +
-                "(coinUidOut = :coinUid AND blockchainTypeOut = :blockchainType AND accountId IN ('', :accountId) AND" +
+                "($TOKEN_OUT_MATCHES AND accountId IN ('', :accountId) AND" +
                 " date >= :dateFrom AND date <= :dateTo) ORDER BY date DESC LIMIT 1"
     )
     fun getByTokenOut(
+        tokenQueryId: String,
         coinUid: String,
         blockchainType: String,
         accountId: String,
@@ -113,8 +119,7 @@ interface SwapProviderTransactionsDao {
         """
         SELECT * FROM SwapProviderTransaction WHERE
         addressOut = :address
-        AND blockchainTypeOut = :blockchainType
-        AND coinUidOut = :coinUid
+        AND $TOKEN_OUT_MATCHES
         AND accountId IN ('', :accountId)
         AND incomingRecordUid IS NULL
         AND CAST(COALESCE(amountOutReal, amountOut) AS REAL) != 0
@@ -130,8 +135,9 @@ interface SwapProviderTransactionsDao {
     )
     fun getByAddressAndAmount(
         address: String,
-        blockchainType: String,
+        tokenQueryId: String,
         coinUid: String,
+        blockchainType: String,
         accountId: String,
         amount: Double,
         tolerance: Double,
@@ -171,8 +177,7 @@ interface SwapProviderTransactionsDao {
     @Query(
         """
         SELECT * FROM SwapProviderTransaction
-        WHERE coinUidOut = :coinUid
-        AND blockchainTypeOut = :blockchainType
+        WHERE $TOKEN_OUT_MATCHES
         AND accountId IN ('', :accountId)
         AND incomingRecordUid IS NULL
         AND date >= :dateFrom
@@ -184,6 +189,7 @@ interface SwapProviderTransactionsDao {
         """
     )
     fun getUnmatchedSwapsByTokenOut(
+        tokenQueryId: String,
         coinUid: String,
         blockchainType: String,
         accountId: String,
@@ -198,8 +204,7 @@ interface SwapProviderTransactionsDao {
         """
         SELECT * FROM SwapProviderTransaction
         WHERE provider = :provider
-        AND coinUidOut = :coinUidOut
-        AND blockchainTypeOut = :blockchainTypeOut
+        AND $TOKEN_OUT_MATCHES
         AND accountId IN ('', :accountId)
         AND addressOut = :addressOut
         AND CAST(amountOut AS REAL) != 0
@@ -212,8 +217,9 @@ interface SwapProviderTransactionsDao {
     )
     fun getByProviderAndTokenOut(
         provider: String,
-        coinUidOut: String,
-        blockchainTypeOut: String,
+        tokenQueryId: String,
+        coinUid: String,
+        blockchainType: String,
         accountId: String,
         addressOut: String,
         expectedAmount: Double,

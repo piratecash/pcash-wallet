@@ -24,13 +24,15 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpHeaders
 import java.util.Locale
 
+internal const val PCASH_BASE_URL = "https://p.cash"
+
 internal class PlaceApi(
     private val httpClient: HttpClient,
     private val appHeadersProvider: AppHeadersProvider,
     private val premiumApiBaseUrl: String,
 ) {
     private companion object {
-        const val PIRATE_BASE_PLACE_URL = "https://p.cash/api/"
+        const val PIRATE_BASE_PLACE_URL = "$PCASH_BASE_URL/api/"
     }
 
     private fun HttpRequestBuilder.appHeaders() {

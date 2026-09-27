@@ -353,7 +353,7 @@ class TransactionRecordRepositoryWalletSwitchTest {
         val adapter = swapFilterAdapter(fixture.token, { listOf(fixture.record) })
         val swapProviderTransactionsStorage = mockk<SwapProviderTransactionsStorage>(relaxed = true) {
             every { getByOutgoingRecordUid(fixture.record.uid) } answers { matchedSwap }
-            every { getByCoinUidIn(any(), any(), any(), any()) } returns null
+            every { getByTokenIn(any(), any(), any()) } returns null
             every { observeAll() } returns swapProviderUpdates
         }
         val repository = createRepository(

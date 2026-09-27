@@ -569,9 +569,8 @@ class TransactionViewItemFactoryCacheTest {
 
     private fun stubOutgoingFallback(swap: SwapProviderTransaction) {
         every {
-            swapProviderTransactionsStorage.getByCoinUidIn(
-                coinUid = "zcash",
-                blockchainType = BlockchainType.Zcash.uid,
+            swapProviderTransactionsStorage.getByTokenIn(
+                token = match { it.coin.uid == "zcash" && it.blockchainType == BlockchainType.Zcash },
                 amountIn = ZEC_AMOUNT,
                 timestamp = PENDING_TIMESTAMP * 1_000,
             )
