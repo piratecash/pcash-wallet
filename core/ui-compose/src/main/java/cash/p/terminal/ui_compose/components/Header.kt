@@ -139,26 +139,11 @@ fun PremiumHeader(
     text: String = stringResource(R.string.premium_title),
     horizontalPadding: Dp = 32.dp,
 ) {
-    Row(
-        modifier = Modifier
-            .padding(horizontal = horizontalPadding)
-            .height(32.dp)
-            .padding(top = 1.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(
-            modifier = Modifier
-                .padding(end = 10.dp)
-                .size(16.dp),
-            painter = painterResource(R.drawable.star_filled_yellow_16),
-            tint = ComposeAppTheme.colors.jacob,
-            contentDescription = null,
-        )
-        subhead1_jacob(
-            text = text,
-            maxLines = 1
-        )
-    }
+    PremiumHeader(
+        starPainter = painterResource(R.drawable.star_filled_yellow_16),
+        text = text,
+        horizontalPadding = horizontalPadding,
+    )
 }
 
 @Composable

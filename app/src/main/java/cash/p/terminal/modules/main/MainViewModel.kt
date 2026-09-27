@@ -8,6 +8,7 @@ import cash.p.terminal.core.IBackupManager
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.IRateAppManager
 import cash.p.terminal.core.ITermsManager
+import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.ReleaseNotesManager
 import cash.p.terminal.core.managers.isTonConnectDeeplink
 import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
@@ -58,6 +59,8 @@ class MainViewModel(
     private val checkPremiumUseCase: CheckPremiumUseCase by inject(
         CheckPremiumUseCase::class.java
     )
+
+    private val evmBlockchainManager: EvmBlockchainManager by inject(EvmBlockchainManager::class.java)
 
     private var walletSwitchPremiumTypes: Map<String, PremiumType> = emptyMap()
 
@@ -227,6 +230,9 @@ class MainViewModel(
     fun onSelect(mainNavItem: MainDestination) {
         if (mainNavItem != MainDestination.Settings) {
             currentMainTab = mainNavItem
+        }
+        if (mainNavItem == MainDestination.Transactions) {
+            evmBlockchainManager.syncTransactionHistory()
         }
         selectedTabIndex = items.indexOf(mainNavItem)
         syncNavigation()

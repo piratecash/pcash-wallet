@@ -35,6 +35,9 @@ class Eip1559GasPriceService(
         const val BLOCKS_COUNT = 10L
         val REWARD_PERCENTILE = listOf(50)
         const val LAST_N_RECOMMENDED_BASE_FEES = 2
+
+        /** Headroom for baseFee growth between the fee estimate and the broadcast. */
+        private const val GAS_PRICE_HEADROOM_PERCENT = 125
     }
 
     private val minBaseFee: Long? = minGasPrice?.let { it.maxFeePerGas - it.maxPriorityFeePerGas }
@@ -179,7 +182,10 @@ class Eip1559GasPriceService(
         val recommendedPriorityFee = max(recommendedPriorityFee(feeHistory), minPriorityFee ?: 0)
         currentPriorityFee = recommendedPriorityFee
 
-        val newRecommendGasPrice = GasPrice.Eip1559(recommendedBaseFee + recommendedPriorityFee, recommendedPriorityFee)
+        val newRecommendGasPrice = GasPrice.Eip1559(
+            (recommendedBaseFee + recommendedPriorityFee) * GAS_PRICE_HEADROOM_PERCENT / 100,
+            recommendedPriorityFee
+        )
 
         recommendedGasPrice = newRecommendGasPrice
 

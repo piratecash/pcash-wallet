@@ -31,10 +31,22 @@ data class NetworkErrorInfo(
 class NetworkErrorTracker {
 
     private val recentByKey = ConcurrentHashMap<String, Map<String, String>>()
+    private val creditsByKey = ConcurrentHashMap<String, String>()
+    private val lastAppLogWriteByKey = ConcurrentHashMap<String, AppLogWrite>()
 
     fun record(blockchainType: BlockchainType, accountId: String, error: NetworkErrorInfo) {
         val info = buildInfo(error)
-        recentByKey[key(blockchainType, accountId)] = info
+        val key = key(blockchainType, accountId)
+        recentByKey[key] = info
+
+        // Same error repeating during a quota outage (up to 3 calls x 6 retry attempts per sync)
+        // would otherwise write a fresh AppLog row every few seconds; recentByKey above still keeps
+        // the status screen current, only the AppLog/Timber write below is deduplicated.
+        val now = System.currentTimeMillis()
+        val signature = "${error.host}:${error.throwable.javaClass.simpleName}:${error.throwable.message.orEmpty()}"
+        if (isRepeatOfLastAppLogWrite(key, signature, now)) return
+
+        lastAppLogWriteByKey[key] = AppLogWrite(signature, now)
 
         val message = info.entries.joinToString(separator = "\n") { (key, value) -> "$key: $value" }
         // Use logTag (not uid): the blockchain status screen filters its APP LOG by
@@ -49,8 +61,22 @@ class NetworkErrorTracker {
         Timber.tag("NetworkError").e(error.throwable, message)
     }
 
+    private fun isRepeatOfLastAppLogWrite(key: String, signature: String, now: Long): Boolean {
+        val lastWrite = lastAppLogWriteByKey[key] ?: return false
+
+        return lastWrite.signature == signature &&
+                now - lastWrite.timestampMs < APP_LOG_DEDUP_WINDOW_MS
+    }
+
+    fun recordExplorerCredits(blockchainType: BlockchainType, accountId: String, credits: String) {
+        creditsByKey[key(blockchainType, accountId)] = credits
+    }
+
     fun errorInfo(blockchainType: BlockchainType, accountId: String): Map<String, String>? =
         recentByKey[key(blockchainType, accountId)]
+
+    fun creditsInfo(blockchainType: BlockchainType, accountId: String): String? =
+        creditsByKey[key(blockchainType, accountId)]
 
     private fun buildInfo(error: NetworkErrorInfo): Map<String, String> {
         val info = linkedMapOf(
@@ -71,10 +97,15 @@ class NetworkErrorTracker {
     }
 
     private fun key(blockchainType: BlockchainType, accountId: String) = "${blockchainType.uid}:$accountId"
+
+    private data class AppLogWrite(val signature: String, val timestampMs: Long)
 }
 
+private const val APP_LOG_DEDUP_WINDOW_MS = 5 * 60 * 1000L
+
 /**
- * Merges the tracker's most recent network error (if any) into [base]. Use when a status map is
+ * Merges the tracker's most recent network error (if any) and, for explorer hosts (e.g.
+ * Blockscout's `x-credits-remaining`), the last known quota into [base]. Use when a status map is
  * already guaranteed to exist (e.g. the kit is running).
  */
 fun NetworkErrorTracker.appendNetworkErrors(
@@ -82,8 +113,10 @@ fun NetworkErrorTracker.appendNetworkErrors(
     blockchainType: BlockchainType,
     accountId: String,
 ): Map<String, Any> {
-    val errors = errorInfo(blockchainType, accountId)
-    return if (errors.isNullOrEmpty()) base else base + errors
+    var result = base
+    errorInfo(blockchainType, accountId)?.let { errors -> result += errors }
+    creditsInfo(blockchainType, accountId)?.let { credits -> result += ("Explorer credits remaining" to credits) }
+    return result
 }
 
 /**
