@@ -22,6 +22,7 @@ import cash.p.terminal.core.zcashAddressSpecs
 import cash.p.terminal.core.managers.AmlStatusManager
 import cash.p.terminal.core.managers.AddressLabelManager
 import cash.p.terminal.core.managers.ConnectivityManager
+import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.MarketFavoritesManager
 import cash.p.terminal.core.managers.OfflineKey
 import cash.p.terminal.core.managers.OfflineModeManager
@@ -144,6 +145,7 @@ class TokenBalanceViewModel(
     private val poisonAddressManager: PoisonAddressManager = getKoinInstance()
     private val addressLabelManager: AddressLabelManager = getKoinInstance()
     private val pendingRegistrar: PendingTransactionRegistrar = getKoinInstance()
+    private val evmBlockchainManager: EvmBlockchainManager = getKoinInstance()
 
     private val title = wallet.token.coin.name
 
@@ -219,6 +221,9 @@ class TokenBalanceViewModel(
         viewModelScope.launch {
             balanceService.start()
             transactionsService.start()
+            evmBlockchainManager.getBlockchain(wallet.token)?.let {
+                evmBlockchainManager.syncTransactionHistory(it.type)
+            }
             if (isStakingCoin) {
                 stakingAddress = adapterManager.getReceiveAdapterForWallet(wallet)?.receiveAddress
                 refreshStaking()

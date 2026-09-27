@@ -10,6 +10,7 @@ import cash.p.terminal.core.adapters.zcash.convertZatoshiToZec
 import cash.p.terminal.core.managers.AmlStatusManager
 import cash.p.terminal.core.managers.AddressLabelManager
 import cash.p.terminal.core.managers.ConnectivityManager
+import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.core.managers.OfflineKey
 import cash.p.terminal.core.managers.OfflineModeManager
@@ -147,6 +148,7 @@ class TokenBalanceViewModelTest : KoinTest {
     private val adapterManager = mockk<IAdapterManager>(relaxed = true)
     private val locallyCreatedTransactionRepository = mockk<LocallyCreatedTransactionRepository>(relaxed = true)
     private val pendingRegistrar = mockk<PendingTransactionRegistrar>(relaxed = true)
+    private val evmBlockchainManager = mockk<EvmBlockchainManager>(relaxed = true)
     private val addressLabelsChangedFlow = MutableSharedFlow<Unit>()
     private val addressLabelManager = mockk<AddressLabelManager>(relaxed = true) {
         every { labelsChangedFlow } returns addressLabelsChangedFlow
@@ -193,6 +195,7 @@ class TokenBalanceViewModelTest : KoinTest {
                     }
                 }
                 single { addressLabelManager }
+                single { evmBlockchainManager }
             }
         )
     }
@@ -257,6 +260,7 @@ class TokenBalanceViewModelTest : KoinTest {
         coEvery { adapterManager.awaitAdapterForWallet<IReceiveAdapter>(any(), any()) } returns null
         // The relaxed mock would return a bare Object, which fails the caller's unchecked cast.
         every { adapterManager.getAdapterForWallet<Any>(any()) } returns null
+        every { evmBlockchainManager.getBlockchain(any<Token>()) } returns null
     }
 
     @After
@@ -1957,6 +1961,27 @@ class TokenBalanceViewModelTest : KoinTest {
         assertEquals(emptyList<TokenBalanceModule.Event>(), events)
         coVerify(exactly = 1) { adapter.refreshHardwareKeyImages() }
         eventsJob.cancel()
+    }
+
+    // endregion
+
+    // region Sync Trigger Tests
+
+    @Test
+    fun init_evmWallet_requestsHistorySync() = runTest(dispatcher) {
+        val bep20Wallet = createBep20Wallet()
+        testWallet = bep20Wallet
+        val blockchain = Blockchain(
+            type = BlockchainType.BinanceSmartChain,
+            name = "BNB Smart Chain",
+            eip3091url = null
+        )
+        every { evmBlockchainManager.getBlockchain(bep20Wallet.token) } returns blockchain
+
+        createViewModel()
+        advanceUntilIdle()
+
+        verify(exactly = 1) { evmBlockchainManager.syncTransactionHistory(BlockchainType.BinanceSmartChain) }
     }
 
     // endregion

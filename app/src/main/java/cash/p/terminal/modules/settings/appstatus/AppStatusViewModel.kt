@@ -31,6 +31,7 @@ import cash.p.terminal.modules.blockchainstatus.TonBlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.TronBlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.ZcashBlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.appendStatusSection
+import cash.p.terminal.modules.blockchainstatus.reportBuildInfo
 import cash.p.terminal.modules.settings.appstatus.AppStatusModule.BlockContent
 import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
 import cash.p.terminal.wallet.IAccountManager
@@ -358,8 +359,7 @@ class AppStatusViewModel(
     private fun getAppInfo(): Map<String, Any> {
         val appInfo = LinkedHashMap<String, Any>()
         appInfo["Current Time"] = Date()
-        appInfo["App Version"] = systemInfoManager.appVersionFull
-        appInfo["Git Branch"] = AppConfigProvider.appGitBranch
+        getBuildInfo().forEach { (title, value) -> appInfo[title] = value }
         systemInfoManager.getSigningCertFingerprint()?.let {
             appInfo["App Signature"] = it
         }
@@ -383,8 +383,11 @@ class AppStatusViewModel(
                         DateHelper.formatDate(Date(), "MMM d, yyyy, HH:mm")
                     )
                 )
-                add(BlockContent.TitleValue("App Version", systemInfoManager.appVersionFull))
-                add(BlockContent.TitleValue("Git Branch", AppConfigProvider.appGitBranch))
+                addAll(
+                    getBuildInfo().map { (title, value) ->
+                        BlockContent.TitleValue(title, value)
+                    }
+                )
                 systemInfoManager.getSigningCertFingerprint()?.let {
                     add(BlockContent.TitleValue("App Signature", it))
                 }
@@ -408,6 +411,10 @@ class AppStatusViewModel(
         )
     }
 
+    private fun getBuildInfo(): Map<String, String> = reportBuildInfo(
+        systemInfoManager.appVersionFull,
+        AppConfigProvider.appGitBranch,
+    )
     private fun getShortUniqueCode(): String {
         val code = uniqueCodeStorage.uniqueCode
         if (code.isBlank()) return "None"
