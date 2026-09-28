@@ -36,6 +36,9 @@ class BackendSwapAssetResolverTest {
     private val usdt = yiFiTestToken(
         BlockchainType.Ethereum, TokenType.Eip20(USDT_CONTRACT), "USDT", coinGeckoId = "tether"
     )
+    private val stellarUsdc = yiFiTestToken(
+        BlockchainType.Stellar, TokenType.Asset("USDC", STELLAR_USDC_ISSUER), "USDC", coinGeckoId = "usd-coin"
+    )
 
     @Test
     fun resolve_nativeWithSingleRow_returnsBackendNetworkName() = runTest(dispatcher) {
@@ -153,6 +156,30 @@ class BackendSwapAssetResolverTest {
     }
 
     @Test
+    fun resolve_stellarAssetWithLowercasedBackendContract_returnsAsset() = runTest(dispatcher) {
+        stubCurrencies(currency("usd-coin", "stellar", "usdc-${STELLAR_USDC_ISSUER.lowercase()}"))
+
+        assertEquals(BackendSwapAsset("usd-coin", "stellar"), resolve(stellarUsdc))
+    }
+
+    @Test
+    fun resolve_stellarAssetFromOtherIssuer_returnsNull() = runTest(dispatcher) {
+        stubCurrencies(currency("usd-coin", "stellar", "usdc-${OTHER_STELLAR_ISSUER.lowercase()}"))
+
+        assertNull(resolve(stellarUsdc))
+    }
+
+    @Test
+    fun resolve_splContractInOtherCase_returnsNull() = runTest(dispatcher) {
+        stubCurrencies(currency("usd-coin", "solana", SOLANA_USDC_MINT.lowercase()))
+        val solanaUsdc = yiFiTestToken(
+            BlockchainType.Solana, TokenType.Spl(SOLANA_USDC_MINT), "USDC", coinGeckoId = "usd-coin"
+        )
+
+        assertNull(resolve(solanaUsdc))
+    }
+
+    @Test
     fun resolve_loadFailed_retriesOnNextCall() = runTest(dispatcher) {
         coEvery { repository.getCurrencies(PROVIDER) } throws IOException("offline") andThen
             listOf(currency("bitcoin", "bitcoin"))
@@ -188,5 +215,8 @@ class BackendSwapAssetResolverTest {
         const val PROVIDER = "changelly"
         const val USDT_CONTRACT = "0xdac17f958d2ee523a2206206994597c13d831ec7"
         const val BSC_USDT_CONTRACT = "0x55d398326f99059ff775485246999027b3197955"
+        const val STELLAR_USDC_ISSUER = "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN"
+        const val OTHER_STELLAR_ISSUER = "GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH"
+        const val SOLANA_USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
     }
 }
