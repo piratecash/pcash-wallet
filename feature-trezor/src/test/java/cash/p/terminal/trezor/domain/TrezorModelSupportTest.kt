@@ -150,4 +150,29 @@ class TrezorModelSupportTest {
 
         assertEquals(queries, result)
     }
+
+    @Test
+    fun supportsTypedData_modelOneAroundMinimum_admitsFrom1105() {
+        assertFalse(TrezorModelSupport.supportsTypedData(TrezorModel.One, "1.10.4"))
+        assertTrue(TrezorModelSupport.supportsTypedData(TrezorModel.One, "1.10.5"))
+    }
+
+    @Test
+    fun supportsTypedData_coreModelsAroundMinimum_admitFrom243() {
+        listOf(TrezorModel.ModelT, TrezorModel.Safe3, TrezorModel.Safe5, TrezorModel.Safe7).forEach { model ->
+            assertFalse(TrezorModelSupport.supportsTypedData(model, "2.4.2"))
+            assertTrue(TrezorModelSupport.supportsTypedData(model, "2.4.3"))
+        }
+    }
+
+    @Test
+    fun supportsTypedData_unknownModel_returnsFalse() {
+        assertFalse(TrezorModelSupport.supportsTypedData(null, "2.8.10"))
+    }
+
+    @Test
+    fun supportsTypedData_unparsableFirmware_returnsFalse() {
+        assertFalse(TrezorModelSupport.supportsTypedData(TrezorModel.Safe5, "2.8"))
+        assertFalse(TrezorModelSupport.supportsTypedData(TrezorModel.Safe5, "garbage"))
+    }
 }

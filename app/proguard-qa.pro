@@ -13,9 +13,6 @@
     <init>();
 }
 
-# gRPC related - https://github.com/grpc/grpc-java/issues/6612
--keep class * extends com.google.protobuf.GeneratedMessageLite { *; }
-
 # Prevent OKHttp from causing warnings for consumers of the SDK
 -dontwarn org.bouncycastle.jsse.BCSSLParameters
 -dontwarn org.bouncycastle.jsse.BCSSLSocket

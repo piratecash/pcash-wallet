@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.multiswap
 
 import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,7 +28,7 @@ import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
 import cash.p.terminal.modules.multiswap.providers.IExactOutSwapProvider
 import cash.p.terminal.modules.multiswap.providers.InsufficientAllowanceCaution
 import cash.p.terminal.modules.multiswap.providers.OffChainSwapProvider
-import cash.p.terminal.modules.multiswap.providers.YiFiDepositMemoUnsupported
+import cash.p.terminal.modules.multiswap.providers.SwapDepositMemoUnsupported
 import cash.p.terminal.modules.multiswap.providers.isOffChain
 import cash.p.terminal.modules.multiswap.providers.requiredInput
 import cash.p.terminal.modules.multiswap.sendtransaction.ISendTransactionService
@@ -43,13 +44,13 @@ import cash.p.terminal.modules.send.hardwareWalletUserMessageRes
 import cash.p.terminal.modules.send.SendModule
 import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.isHardwareWalletCancelled
-import cash.p.terminal.modules.send.userMessageRes
+import cash.p.terminal.network.backendswap.data.entity.BackendSwapError
 import cash.p.terminal.network.changenow.data.entity.BackendChangeNowResponseError
 import cash.p.terminal.network.exolix.data.entity.BackendExolixResponseError
 import cash.p.terminal.network.yifi.data.entity.BackendYiFiResponseError
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.strings.helpers.Translator
-import cash.p.terminal.trezor.domain.TrezorCancelledException
+import cash.p.terminal.trezor.domain.TrezorSigningException
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
@@ -243,7 +244,7 @@ class SwapConfirmViewModel(
         val cautions = buildCautions()
 
         return SwapConfirmUiState(
-            expiresIn = timerState.remaining,
+            expiresIn = timerState.remaining.takeIf { needUseTimer() },
             expired = timerState.timeout,
             loading = loading,
             tokenIn = tokenIn,
@@ -386,24 +387,49 @@ class SwapConfirmViewModel(
                 sendTransactionService.setSendTransactionData(finalQuote.sendTransactionData)
 
                 priceImpactService.setPriceImpact(finalQuote.priceImpact?.negate(), swapProvider.title)
+                startDepositDeadlineTimer(finalQuote.validUntilMillis)
 
                 emitState()
             } catch (e: BackendChangeNowResponseError) {
                 setCriticalError(e.changeNowCriticalError)
             } catch (e: BackendExolixResponseError) {
-                setCriticalError(e.exolixCriticalError)
+                setCriticalError(criticalErrorOf(e.message, e.error))
             } catch (e: BackendYiFiResponseError) {
-                setCriticalError(e.yiFiCriticalError)
-            } catch (_: YiFiDepositMemoUnsupported) {
+                setCriticalError(criticalErrorOf(e.message, e.code))
+            } catch (e: BackendSwapError) {
+                setCriticalError(criticalErrorOf(e.message, e.code))
+            } catch (_: SwapDepositMemoUnsupported) {
                 setCriticalError(Translator.getString(R.string.swap_yifi_memo_unsupported))
             } catch (_: CancellationException) {
                 Timber.w("fetchFinalQuote was cancelled")
             } catch (t: Throwable) {
-                Timber.e(t, "fetchFinalQuote error")
-                setCriticalError(Translator.getString(R.string.unexpected_error))
+                setCriticalError(finalQuoteCriticalError(t))
             }
         }
     }
+
+    // Off-chain deposit orders expire server-side; on-chain quotes keep their own short timer.
+    private suspend fun startDepositDeadlineTimer(validUntilMillis: Long?) {
+        if (!swapProvider.isOffChain) return
+        withContext(dispatcherProvider.main) {
+            if (validUntilMillis == null) {
+                timerService.reset()
+            } else {
+                val remainingSeconds = (validUntilMillis - System.currentTimeMillis()) / 1000
+                timerService.start(remainingSeconds.coerceAtLeast(0))
+            }
+        }
+    }
+
+    private fun finalQuoteCriticalError(error: Throwable): String =
+        when (val hardwareError = error.toHardwareWalletError()) {
+            HardwareWalletError.Cancelled -> Translator.getString(R.string.Button_Refresh)
+            is HardwareWalletError.Failed -> Translator.getString(hardwareError.messageRes)
+            null -> {
+                Timber.e(error, "fetchFinalQuote error")
+                Translator.getString(R.string.unexpected_error)
+            }
+        }
 
     private suspend fun fetchFinalQuoteByExecutionMode(): ISwapFinalQuote =
         when (executionMode) {
@@ -444,18 +470,8 @@ class SwapConfirmViewModel(
             }
         }
 
-    private val BackendExolixResponseError.exolixCriticalError: String
-        get() = message.notBlank()
-            ?: error.notBlank()
-            ?: Translator.getString(R.string.unexpected_error)
-
-    private val BackendYiFiResponseError.yiFiCriticalError: String
-        get() = message.notBlank()
-            ?: code.notBlank()
-            ?: Translator.getString(R.string.unexpected_error)
-
-    private fun String?.notBlank(): String? =
-        takeIf { !it.isNullOrBlank() }
+    private fun criticalErrorOf(vararg candidates: String?): String =
+        candidates.firstOrNull { !it.isNullOrBlank() } ?: Translator.getString(R.string.unexpected_error)
 
     private fun setCriticalError(error: String) {
         loading = false
@@ -491,36 +507,38 @@ class SwapConfirmViewModel(
                 } else {
                     SendResult.Sent()
                 }
-            } catch (e: TangemSdkError.UserCancelled) {
-                // User cancelled - just reset state, no error message
-                sendResult = null
-            } catch (e: TrezorCancelledException) {
-                sendResult = null
-            } catch (e: HardwareWalletOperationException) {
-                sendResult = if (e.isHardwareWalletCancelled()) {
-                    null
-                } else {
-                    SendResult.Failed(
-                        HSCaution(TranslatableString.ResString(e.userMessageRes()))
-                    )
-                }
-            } catch (e: TangemSdkError) {
-                // Other Tangem errors - reset state
-                sendResult = null
             } catch (e: ResponseError.RpcError) {
                 val caution = HSCaution(TranslatableString.PlainString(e.error.message))
                 sendResult = SendResult.Failed(caution)
             } catch (t: Throwable) {
-                val caution = if (t.cause is SendValueErrors.InsufficientUnspentOutputs) {
-                    HSCaution(
-                        TranslatableString.ResString(R.string.EthereumTransaction_Error_InsufficientBalance_Title)
-                    )
-                } else {
-                    HSCaution(TranslatableString.PlainString(t.javaClass.simpleName))
+                sendResult = when (val hardwareError = t.toHardwareWalletError()) {
+                    // A cancel on the device, or any other Tangem error, just resets the state.
+                    HardwareWalletError.Cancelled -> null
+                    is HardwareWalletError.Failed ->
+                        SendResult.Failed(HSCaution(TranslatableString.ResString(hardwareError.messageRes)))
+                    null -> SendResult.Failed(sendFailureCaution(t))
                 }
-                sendResult = SendResult.Failed(caution)
             }
         }
+    }
+
+    private fun sendFailureCaution(error: Throwable): HSCaution =
+        if (error.cause is SendValueErrors.InsufficientUnspentOutputs) {
+            HSCaution(TranslatableString.ResString(R.string.EthereumTransaction_Error_InsufficientBalance_Title))
+        } else {
+            HSCaution(TranslatableString.PlainString(error.javaClass.simpleName))
+        }
+
+    private sealed interface HardwareWalletError {
+        data object Cancelled : HardwareWalletError
+        class Failed(@StringRes val messageRes: Int) : HardwareWalletError
+    }
+
+    private fun Throwable.toHardwareWalletError(): HardwareWalletError? = when {
+        isHardwareWalletCancelled() || this is TangemSdkError -> HardwareWalletError.Cancelled
+        this is HardwareWalletOperationException || this is TrezorSigningException ->
+            HardwareWalletError.Failed(hardwareWalletUserMessageRes())
+        else -> null
     }
 
     private suspend fun handleMultiSwapCompletion(result: SendTransactionResult) {

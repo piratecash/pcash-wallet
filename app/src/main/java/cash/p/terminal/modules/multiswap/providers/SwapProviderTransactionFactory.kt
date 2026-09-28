@@ -26,6 +26,8 @@ class SwapProviderTransactionFactory(
         amountOut: BigDecimal,
         recipientAddressOut: String? = null,
         subProviderId: String? = null,
+        externalId: String? = null,
+        walletAddress: String? = null,
     ) = SwapProviderTransaction(
         date = System.currentTimeMillis(),
         outgoingRecordUid = null,
@@ -41,6 +43,8 @@ class SwapProviderTransactionFactory(
         amountOut = amountOut,
         addressOut = recipientAddressOut ?: walletUseCase.getReceiveAddress(tokenOut),
         accountId = accountManager.activeAccount?.id.orEmpty(),
-        unstoppableSubProviderId = subProviderId,
+        subProviderId = subProviderId,
+        providerExternalId = externalId,
+        providerWalletAddress = walletAddress,
     )
 }

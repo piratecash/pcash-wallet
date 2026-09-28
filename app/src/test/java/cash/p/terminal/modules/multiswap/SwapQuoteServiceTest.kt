@@ -1007,6 +1007,7 @@ abstract class SwapQuoteServiceTestFixture {
             fetchSwapQuotesUseCase ?: FetchSwapQuotesUseCase(mockk(relaxed = true)),
             repository,
             registry,
+            mockk(relaxed = true),
             TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)),
         )
     }

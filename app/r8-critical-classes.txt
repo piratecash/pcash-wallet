@@ -33,6 +33,9 @@ cash.p.terminal.modules.paycore.PayCoreTicker
 # The class name is the SharedPreferences filename holding the selected language.
 cash.p.terminal.strings.helpers.LocaleHelper
 
+# protobuf-lite message: its fields are looked up by name, so a rename means the keep rule is gone.
+com.satoshilabs.trezor.lib.protobuf.TrezorMessageEthereum$EthereumSignTx
+
 # Bound by Moshi's reflective Kotlin adapter, which matches JSON keys to property names.
 io.tonapi.models.Account
 

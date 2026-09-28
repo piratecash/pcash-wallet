@@ -1,5 +1,7 @@
 package cash.p.terminal.modules.multiswap.providers
 
+import cash.p.terminal.modules.multiswap.providers.backendswap.BackendSwapProvidersFactory
+import cash.p.terminal.modules.multiswap.providers.backendswap.BackendSwapProvidersRepository
 import cash.p.terminal.modules.paycore.PayCoreProvider
 
 class SwapProvidersRegistry(
@@ -10,8 +12,10 @@ class SwapProvidersRegistry(
     stonFiProvider: StonFiProvider,
     payCoreProvider: PayCoreProvider,
     unstoppableProvidersFactory: UnstoppableProvidersFactory,
+    private val backendSwapProvidersRepository: BackendSwapProvidersRepository,
+    private val backendSwapProvidersFactory: BackendSwapProvidersFactory,
 ) {
-    val providers: List<IMultiSwapProvider> = listOf(
+    private val staticProviders: List<IMultiSwapProvider> = listOf(
         OneInchProvider,
         PancakeSwapProvider,
         PancakeSwapV3Provider,
@@ -28,6 +32,9 @@ class SwapProvidersRegistry(
         stonFiProvider,
         payCoreProvider
     ) + unstoppableProvidersFactory.create()
+
+    val providers: List<IMultiSwapProvider>
+        get() = staticProviders + backendSwapProvidersFactory.providers(backendSwapProvidersRepository.providers.value)
 
     fun findById(id: String): IMultiSwapProvider? =
         providers.firstOrNull { it.id == id }

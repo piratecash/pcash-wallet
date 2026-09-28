@@ -6,8 +6,10 @@ import cash.p.terminal.modules.multiswap.SwapDepositTooSmall
 import cash.p.terminal.modules.multiswap.SwapFinalQuoteEvm
 import cash.p.terminal.modules.multiswap.SwapQuoteOffChain
 import cash.p.terminal.modules.multiswap.SwapRouteNotFound
+import cash.p.terminal.modules.multiswap.providers.backendswap.BackendSwapProvidersRepository
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionData
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionResult
+import cash.p.terminal.network.backendswap.domain.entity.BackendSwapProviderInfo
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.network.yifi.data.entity.BackendYiFiResponseError
 import cash.p.terminal.network.yifi.data.repository.YiFiRepository
@@ -26,6 +28,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.MockKVerificationScope
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -45,6 +48,7 @@ class YiFiProviderTest {
         every { activeAccount } returns buildTestAccount("acc-1")
     }
     private val providerSupport = mockk<OffChainSwapProviderSupport>(relaxed = true)
+    private val backendProviders = MutableStateFlow(emptyList<BackendSwapProviderInfo>())
 
     private val provider = YiFiProvider(
         walletUseCase = walletUseCase,
@@ -53,6 +57,9 @@ class YiFiProviderTest {
         accountManager = accountManager,
         dispatcherProvider = TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)),
         providerSupport = providerSupport,
+        backendSwapProvidersRepository = mockk<BackendSwapProvidersRepository> {
+            every { providers } returns backendProviders
+        },
     )
 
     private val eth = yiFiTestToken(BlockchainType.Ethereum, TokenType.Native, "ETH")
@@ -122,6 +129,24 @@ class YiFiProviderTest {
     }
 
     @Test
+    fun fetchQuote_backendProviderActive_excludesItFromYiFiQuote() = runTest(dispatcher) {
+        backendProviders.value = listOf(
+            BackendSwapProviderInfo(
+                name = "changelly",
+                displayName = "Changelly",
+                logoUrl = null,
+                active = true,
+                supportsFixed = false,
+                supportsFloat = true,
+            )
+        )
+
+        fetchQuote()
+
+        coVerify { repository.getBestQuote(any(), any(), any(), any(), any(), setOf("changelly")) }
+    }
+
+    @Test
     fun fetchQuote_inRange_returnsBestQuoteWithEta() = runTest(dispatcher) {
         val quote = fetchQuote()
 
@@ -184,7 +209,7 @@ class YiFiProviderTest {
     fun fetchFinalQuote_memoOnEveryAttempt_throwsMemoUnsupported() = runTest(dispatcher) {
         stubOrders(order(memo = "251398"))
 
-        assertFailsWith<YiFiDepositMemoUnsupported> { fetchFinalQuote() }
+        assertFailsWith<SwapDepositMemoUnsupported> { fetchFinalQuote() }
         verify(exactly = 0) { providerSupport.buildTransactionData(any(), any(), any(), any()) }
     }
 
@@ -193,7 +218,7 @@ class YiFiProviderTest {
         coEvery { repository.getBestQuote(any(), any(), any(), any(), any(), setOf("ff")) } returns null
         stubOrders(order(memo = "251398"))
 
-        assertFailsWith<YiFiDepositMemoUnsupported> { fetchFinalQuote() }
+        assertFailsWith<SwapDepositMemoUnsupported> { fetchFinalQuote() }
         coVerify(exactly = 1) { repository.createSwap(any()) }
     }
 

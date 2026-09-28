@@ -1,10 +1,14 @@
 package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.installEthereumCryptoProviderForTest
+import cash.p.terminal.modules.multiswap.providers.backendswap.BackendSwapGoldenVectors
 import cash.p.terminal.tangem.common.CustomXPubKeyAddressParser
 import cash.p.terminal.tangem.signer.HardwareWalletEvmSigner
+import cash.p.terminal.trezor.domain.TrezorCancelledException
 import cash.p.terminal.trezor.signer.TrezorEvmSigner
 import cash.p.terminal.trezorkit.client.ITrezorClient
+import cash.p.terminal.trezorkit.client.TrezorClientSession
+import cash.p.terminal.trezorkit.client.TrezorMessageSignature
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -22,6 +26,7 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -153,6 +158,37 @@ class EvmSignerFactoryTest {
 
         assertEquals(expectedAddress, address)
     }
+
+    @Test
+    fun createSigner_trezorOneAccount_signsTypedDataViaTypedHash() = runBlocking {
+        val session = mockk<TrezorClientSession>()
+        coEvery { trezorClient.connect<TrezorMessageSignature>(any()) } coAnswers {
+            firstArg<suspend TrezorClientSession.() -> TrezorMessageSignature>().invoke(session)
+        }
+        coEvery { session.signEthereumTypedHash(any(), any(), any()) } throws TrezorCancelledException()
+        coEvery {
+            hardwarePublicKeyStorage.getKey(trezorOneAccount.id, BlockchainType.Ethereum, TokenType.Native)
+        } returns hardwarePublicKey
+        val signer = factory.createSigner(trezorOneAccount, BlockchainType.Ethereum, Chain.Ethereum) as TrezorEvmSigner
+
+        assertThrows(TrezorCancelledException::class.java) {
+            runBlocking { signer.signTypedDataMessage(BackendSwapGoldenVectors.m1.toTypedDataJson()) }
+        }
+        coVerify(exactly = 0) { session.signEthereumTypedData(any(), any()) }
+    }
+
+    private val trezorOneAccount = Account(
+        id = "trezor-account-id",
+        name = "Trezor",
+        type = AccountType.TrezorDevice(
+            deviceId = "device-id",
+            model = "T1B1",
+            firmwareVersion = "1.12.1",
+            walletPublicKey = "wallet-public-key",
+        ),
+        origin = AccountOrigin.Restored,
+        level = 0
+    )
 
     private fun mnemonicAccount() = Account(
         id = "mnemonic-account-id",

@@ -7,6 +7,9 @@ import io.horizontalsystems.core.entities.BlockchainType
 
 object TrezorModelSupport {
 
+    private val oneTypedDataMinimum = FirmwareVersion(1, 10, 5)
+    private val coreTypedDataMinimum = FirmwareVersion(2, 4, 3)
+
     private val universalBlockchains = setOf(
         BlockchainType.Bitcoin,
         BlockchainType.Litecoin,
@@ -51,6 +54,17 @@ object TrezorModelSupport {
 
     fun isSupported(model: TrezorModel?, blockchainType: BlockchainType): Boolean =
         blockchainType in getSupportedBlockchains(model)
+
+    /** EIP-712 minimums from trezor-suite connect config. */
+    fun supportsTypedData(model: TrezorModel?, firmwareVersion: String): Boolean {
+        val firmware = FirmwareVersion.parse(firmwareVersion) ?: return false
+        val minimum = when (model) {
+            null -> return false
+            TrezorModel.One -> oneTypedDataMinimum
+            else -> coreTypedDataMinimum
+        }
+        return firmware >= minimum
+    }
 
     fun getDefaultTokenQueries(model: TrezorModel?): List<TokenQuery> {
         val supported = getSupportedBlockchains(model)
