@@ -5,6 +5,7 @@ import androidx.core.content.edit
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.network.backendswap.data.repository.BackendSwapRepository
 import cash.p.terminal.network.backendswap.domain.entity.BackendSwapProviderInfo
+import co.touchlab.kermit.Logger
 import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +15,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import timber.log.Timber
 
 /** Last known active p.cash backend providers; persisted so pending swaps and history resolve after a restart. */
 class BackendSwapProvidersRepository(
@@ -34,10 +34,14 @@ class BackendSwapProvidersRepository(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Timber.w(e, "Backend swap providers refresh failed")
+            logger.w(e) { "Backend swap providers refresh failed" }
             null
         } ?: return
-        val usable = fetched.filter { it.active && (it.supportsFloat || it.supportsFixed) }
+        // Fixed-rate orders need a guaranteed minimum on the confirm screen, which is not implemented yet.
+        val (usable, unsupported) = fetched.filter { it.active }.partition { it.supportsFloat }
+        if (unsupported.isNotEmpty()) {
+            logger.w { "Hidden backend swap providers without float rate support: ${unsupported.map { it.name }}" }
+        }
         _providers.value = usable
         withContext(dispatcherProvider.io) {
             preferences.edit { putString(KEY_PROVIDERS, json.encodeToString(usable.map(StoredProvider::from))) }
@@ -48,6 +52,7 @@ class BackendSwapProvidersRepository(
         preferences.getString(KEY_PROVIDERS, null)
             ?.let { tryOrNull { json.decodeFromString<List<StoredProvider>>(it) } }
             ?.map(StoredProvider::toInfo)
+            ?.filter { it.supportsFloat }
             .orEmpty()
 
     @Serializable
@@ -81,6 +86,7 @@ class BackendSwapProvidersRepository(
     private companion object {
         const val KEY_PROVIDERS = "backend_swap_providers"
         const val REFRESH_TIMEOUT_MS = 5_000L
+        val logger = Logger.withTag("BackendSwapProviders")
         val json = Json { ignoreUnknownKeys = true }
     }
 }

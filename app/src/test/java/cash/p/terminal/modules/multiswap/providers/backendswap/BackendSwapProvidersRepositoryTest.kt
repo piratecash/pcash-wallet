@@ -63,7 +63,7 @@ class BackendSwapProvidersRepositoryTest {
     }
 
     @Test
-    fun refresh_inactiveOrTypelessProviders_dropped() = runTest(dispatcher) {
+    fun refresh_inactiveTypelessOrFixedOnlyProviders_dropped() = runTest(dispatcher) {
         coEvery { backendSwapRepository.getProviders() } returns listOf(
             changelly,
             provider("inactive", active = false),
@@ -74,7 +74,15 @@ class BackendSwapProvidersRepositoryTest {
 
         repository.refresh()
 
-        assertEquals(listOf("changelly", "fixedonly"), repository.providers.value.map { it.name })
+        assertEquals(listOf("changelly"), repository.providers.value.map { it.name })
+    }
+
+    @Test
+    fun providers_fixedOnlyProviderCachedByOlderBuild_notLoaded() = runTest(dispatcher) {
+        stored["backend_swap_providers"] =
+            """[{"name":"fixedonly","displayName":"Fixedonly","supportsFixed":true,"supportsFloat":false}]"""
+
+        assertEquals(emptyList<BackendSwapProviderInfo>(), createRepository().providers.value)
     }
 
     private fun createRepository() = BackendSwapProvidersRepository(

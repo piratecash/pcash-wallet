@@ -63,8 +63,6 @@ class BackendSwapProvider(
     override val riskType = ProviderRiskType.Controlled
     override val mevProtectionAvailable = false
 
-    private val swapType = if (info.supportsFloat) TYPE_FLOAT else TYPE_FIXED
-
     // SwapConfirmViewModel requests the final quote repeatedly; each miss creates a new order.
     private var placedOrder: PlacedOrder? by accountManager.accountScoped()
     private val placedOrderMutex = Mutex()
@@ -104,7 +102,7 @@ class BackendSwapProvider(
     ): ISwapQuote = withContext(dispatcherProvider.io) {
         val request = BackendSwapEstimateRequest(
             provider = info.name,
-            type = swapType,
+            type = TYPE_FLOAT,
             from = requireAsset(tokenIn),
             to = requireAsset(tokenOut),
             amount = amountIn,
@@ -195,7 +193,7 @@ class BackendSwapProvider(
         val assetIn = requireAsset(tokenIn)
         val message = CreateSwapMessage(
             provider = info.name,
-            type = swapType,
+            type = TYPE_FLOAT,
             from = assetIn,
             to = requireAsset(tokenOut),
             amount = key.amountIn,
@@ -273,7 +271,6 @@ class BackendSwapProvider(
     companion object {
         private const val ID_PREFIX = "p_"
         private const val TYPE_FLOAT = "float"
-        private const val TYPE_FIXED = "fixed"
         private const val AMOUNT_LIMITS_ERROR = "AMOUNT_LIMITS_ERROR"
         private const val AMOUNT_OUT_OF_RANGE = "AMOUNT_OUT_OF_RANGE"
         private const val LIMIT_MINIMUM = "minimum"
