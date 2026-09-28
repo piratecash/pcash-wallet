@@ -27,6 +27,17 @@ class EvmBlockchainManager(
     val allMainNetBlockchains: List<Blockchain>
         get() = marketKit.blockchains(blockchainTypes.map { it.uid })
 
+    private fun getEvmKitManagerOrNull(blockchainType: BlockchainType): EvmKitManager? =
+        evmKitManagersMap[blockchainType]?.first
+
+    fun syncTransactionHistory(blockchainType: BlockchainType) {
+        getEvmKitManagerOrNull(blockchainType)?.evmKitWrapper?.evmKit?.syncTransactions()
+    }
+
+    fun syncTransactionHistory() {
+        blockchainTypes.forEach(::syncTransactionHistory)
+    }
+
     private fun getEvmKitManagers(blockchainType: BlockchainType): Pair<EvmKitManager, EvmAccountManager> {
         val evmKitManagers = evmKitManagersMap[blockchainType]
 

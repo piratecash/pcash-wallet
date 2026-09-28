@@ -7,6 +7,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.BuildConfig
+import cash.p.terminal.R
 import cash.p.terminal.core.App
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.helpers.DateHelper
@@ -18,6 +19,19 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.Date
+
+internal fun reportBuildInfo(appVersion: String, gitBranch: String): Map<String, String> =
+    linkedMapOf(
+        "App Version" to appVersion,
+        "Version Code" to BuildConfig.VERSION_CODE.toString(),
+        "Build Type" to BuildConfig.BUILD_TYPE,
+        "Git Branch" to gitBranch,
+        "Git Hash" to BuildConfig.GIT_HASH,
+        "Mapping ID" to (
+            App.instance.getString(R.string.com_google_firebase_crashlytics_mapping_file_id)
+                .takeUnless { id -> id.all { it == '0' } } ?: "None"
+        ),
+    )
 
 class BlockchainStatusViewModel(
     private val provider: BlockchainStatusProvider,
@@ -99,6 +113,9 @@ class BlockchainStatusViewModel(
         logBlocks: List<LogBlock>
     ): String = buildString {
         appendLine("${provider.blockchainName} Status")
+        reportBuildInfo(BuildConfig.VERSION_NAME, BuildConfig.GIT_BRANCH).forEach { (title, value) ->
+            appendLine("$title: $value")
+        }
         appendLine("Kit Version: ${provider.kitVersion}")
         appendLine("Kit Started: ${if (provider.kitStarted) "Yes" else "No"}")
         appendLine()

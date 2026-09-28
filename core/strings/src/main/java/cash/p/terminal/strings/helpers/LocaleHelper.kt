@@ -1,17 +1,28 @@
 package cash.p.terminal.strings.helpers
 
+import android.app.LocaleManager
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Configuration
+import android.os.Build
+import android.os.LocaleList
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.edit
+import androidx.core.os.LocaleListCompat
 import java.util.Locale
 
-// https://github.com/zeugma-solutions/locale-helper-android
-
+// The app language is owned by LocaleManager on API 33+. Below it the platform has no storage,
+// so the preference keeps it and AppCompat applies it. AppCompat's autoStoreLocales is not used:
+// its one-time sync to LocaleManager can overwrite a locale set before the first activity.
 object LocaleHelper {
 
     val fallbackLocale: Locale = Locale.ENGLISH
 
+    // The file name is data (it predates the per-app API), so it stays a literal.
+    private const val PREFERENCES_NAME = "cash.p.terminal.strings.helpers.LocaleHelper"
     private const val SELECTED_LANGUAGE = "Locale.Helper.Selected.Language"
+
     private val supportedLanguageTags: Set<String> by lazy {
         LocaleType.values().mapTo(hashSetOf()) { it.tag }
     }
@@ -32,62 +43,93 @@ object LocaleHelper {
         )
     }
 
+    /** Localizes a non-activity context on API <= 32, where the platform does not apply per-app locales. */
     fun onAttach(context: Context): Context {
-        val locale = getLocale(context)
-        return updateContextLocale(context, locale)
-    }
-
-    fun getLocale(context: Context): Locale {
-        val storedLocale = getStoredLocale(context)
-        storedLocale?.let {
-            return storedLocale
+        val locales = appCompatLocales()
+        if (locales == null) {
+            syncDefaultLocales(context)
+            return context
         }
+        val primary = locales[0] ?: return context
 
-        return getSystemLocale(context)
+        Locale.setDefault(primary)
+        val configuration = Configuration(context.resources.configuration)
+        configuration.setLocales(LocaleList.forLanguageTags(locales.toLanguageTags()))
+        return context.createConfigurationContext(configuration)
     }
 
-    private fun getSystemLocale(context: Context): Locale {
-        val tag = context.resources.configuration.locales.get(0).supportedLanguageTag()
+    fun getLocale(context: Context): Locale =
+        displayedLocales(context).firstSupported()?.let { Locale.forLanguageTag(it.supportedLanguageTag()) }
+            ?: fallbackLocale
 
-        //use system locale if it is supported by app, else use fallback locale
-        if (supportedLanguageTags.contains(tag)) {
-            val localeFromSupportedTag = Locale.forLanguageTag(tag)
-            persist(context, localeFromSupportedTag)
-            return localeFromSupportedTag
-        }
-        return fallbackLocale
-    }
-
+    /** Must run on the main thread: on API <= 32 AppCompat recreates the running activities. */
     fun setLocale(context: Context, locale: Locale) {
-        persist(context, locale)
+        if (Build.VERSION.SDK_INT < 33) {
+            // Synchronous: the language picker restarts the process right after this call.
+            preferences(context).edit(commit = true) { putString(SELECTED_LANGUAGE, locale.toLanguageTag()) }
+        }
+        applyApplicationLocales(context, LocaleListCompat.create(locale))
+    }
 
-        updateContextLocale(context, locale)
+    /** Must run on the main thread, see [setLocale]. */
+    fun resetLocale(context: Context) {
+        preferences(context).edit { clear() }
+        applyApplicationLocales(context, LocaleListCompat.getEmptyLocaleList())
+    }
+
+    /** Runs at process start: hands the stored locale to AppCompat, or moves it to LocaleManager once. */
+    fun restoreLocale(context: Context) {
+        val preferences = preferences(context)
+        val tag = preferences.getString(SELECTED_LANGUAGE, null) ?: return
+        if (Build.VERSION.SDK_INT < 33) {
+            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag))
+            return
+        }
+        if (localeManager(context).applicationLocales.isEmpty) {
+            applyApplicationLocales(context, LocaleListCompat.forLanguageTags(tag))
+        }
+        preferences.edit { remove(SELECTED_LANGUAGE) }
+    }
+
+    /** CMP reads the first default locale, which each activity launch may reset to an unsupported language. */
+    fun syncDefaultLocales(context: Context) {
+        val primary = displayedLocales(context).firstSupported() ?: fallbackLocale
+        val defaults = LocaleList.getDefault()
+        val others = (0 until defaults.size()).map(defaults::get).filter { it != primary }
+        val tags = (listOf(primary) + others).joinToString(",") { it.toLanguageTag() }
+        LocaleList.setDefault(LocaleList.forLanguageTags(tags))
     }
 
     fun isRTL(locale: Locale): Boolean {
         return RTL.contains(locale.language)
     }
 
-    private fun getStoredLocale(context: Context): Locale? {
-        val preferences = getPreferences(context)
-        val languageTag = preferences.getString(SELECTED_LANGUAGE, null)
-        return languageTag?.let { Locale.forLanguageTag(it) }
-    }
+    // API 33+ applies the app locales to the configuration; below it onAttach has already localized it.
+    private fun displayedLocales(context: Context): LocaleListCompat =
+        appCompatLocales() ?: LocaleListCompat.wrap(context.resources.configuration.locales)
 
-    private fun updateContextLocale(context: Context, locale: Locale): Context {
-        Locale.setDefault(locale)
-
-        val currentConfiguration = context.resources.configuration
-        if (currentConfiguration.locales.get(0).supportedLanguageTag() == locale.toLanguageTag()) {
-            return context
+    private fun appCompatLocales(): LocaleListCompat? =
+        if (Build.VERSION.SDK_INT < 33) {
+            AppCompatDelegate.getApplicationLocales().takeUnless { it.isEmpty }
+        } else {
+            null
         }
 
-        val configuration = Configuration(currentConfiguration)
-        configuration.setLocale(locale)
-        configuration.setLayoutDirection(locale)
-
-        return context.createConfigurationContext(configuration)
+    // AppCompatDelegate reaches LocaleManager only through a live activity, which may not exist yet.
+    private fun applyApplicationLocales(context: Context, locales: LocaleListCompat) {
+        if (Build.VERSION.SDK_INT >= 33) {
+            localeManager(context).applicationLocales = LocaleList.forLanguageTags(locales.toLanguageTags())
+        } else {
+            AppCompatDelegate.setApplicationLocales(locales)
+        }
     }
+
+    @RequiresApi(33)
+    private fun localeManager(context: Context): LocaleManager =
+        context.getSystemService(LocaleManager::class.java)
+
+    private fun LocaleListCompat.firstSupported(): Locale? =
+        (0 until size()).mapNotNull(::get).firstOrNull { it.supportedLanguageTag() in supportedLanguageTags }
 
     private fun Locale.supportedLanguageTag(): String {
         val tag = toLanguageTag()
@@ -98,17 +140,8 @@ object LocaleHelper {
         }
     }
 
-    private fun getPreferences(context: Context): SharedPreferences {
-        return context.getSharedPreferences(LocaleHelper::class.java.name, Context.MODE_PRIVATE)
-    }
-
-    private fun persist(context: Context, locale: Locale?) {
-        if (locale == null) return
-        getPreferences(context)
-            .edit()
-            .putString(SELECTED_LANGUAGE, locale.toLanguageTag())
-            .apply()
-    }
+    private fun preferences(context: Context): SharedPreferences =
+        context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
 
 }
 

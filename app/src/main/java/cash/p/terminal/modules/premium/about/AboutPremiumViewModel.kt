@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import cash.p.terminal.domain.usecase.GetLocalizedAssetUseCase
 import cash.p.terminal.featureStacking.ui.staking.StackingType
 import cash.p.terminal.network.pirate.domain.enity.PeriodType
+import cash.p.terminal.network.pirate.domain.enity.annualRoiPercent
 import cash.p.terminal.network.pirate.domain.enity.PremiumAccountEligibility
 import cash.p.terminal.network.pirate.domain.enity.TrialPremiumResult
 import cash.p.terminal.network.pirate.domain.repository.PiratePlaceRepository
@@ -209,8 +210,9 @@ class AboutPremiumViewModel(
                 currencyDecimals = 0
             )
 
+            val roiPercent = calculatorData.annualRoiPercent(amount.toDouble()) ?: return null
             val roi = numberFormatter.formatNumberShort(
-                ((itemData.amount / amount) * 100).toBigDecimal(),
+                roiPercent.toBigDecimal(),
                 maximumFractionDigits = 0
             )
 

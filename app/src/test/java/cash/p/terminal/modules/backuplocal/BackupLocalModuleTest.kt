@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.backuplocal
 
-import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.AccountType
 import com.google.gson.GsonBuilder
 import org.junit.Assert.assertEquals
@@ -26,7 +25,7 @@ class BackupLocalModuleTest {
 
     @Test
     fun `getAccountTypeString returns correct type for Mnemonic`() {
-        val accountType = AccountType.Mnemonic(validMnemonicWords, "", MnemonicDerivation.Legacy)
+        val accountType = AccountType.Mnemonic(validMnemonicWords, "")
         assertEquals("mnemonic", BackupLocalModule.getAccountTypeString(accountType))
     }
 
@@ -59,7 +58,7 @@ class BackupLocalModuleTest {
 
     @Test
     fun `getDataForEncryption encodes mnemonic without passphrase correctly`() {
-        val accountType = AccountType.Mnemonic(validMnemonicWords, "", MnemonicDerivation.Legacy)
+        val accountType = AccountType.Mnemonic(validMnemonicWords, "")
         val data = BackupLocalModule.getDataForEncryption(accountType)
         val expected = validMnemonicWords.joinToString(" ")
         assertEquals(expected, String(data!!, Charsets.UTF_8))
@@ -68,7 +67,7 @@ class BackupLocalModuleTest {
     @Test
     fun `getDataForEncryption encodes mnemonic with passphrase correctly`() {
         val passphrase = "myPassphrase"
-        val accountType = AccountType.Mnemonic(validMnemonicWords, passphrase, MnemonicDerivation.Legacy)
+        val accountType = AccountType.Mnemonic(validMnemonicWords, passphrase)
         val data = BackupLocalModule.getDataForEncryption(accountType)
         val expected = validMnemonicWords.joinToString(" ") + "@$passphrase"
         assertEquals(expected, String(data!!, Charsets.UTF_8))
@@ -240,7 +239,7 @@ class BackupLocalModuleTest {
 
     @Test
     fun `mnemonic encode and decode round-trip without passphrase`() = runBlockingSuspend {
-        val original = AccountType.Mnemonic(validMnemonicWords, "", MnemonicDerivation.Legacy)
+        val original = AccountType.Mnemonic(validMnemonicWords, "")
         val typeString = BackupLocalModule.getAccountTypeString(original)
         val data = BackupLocalModule.getDataForEncryption(original)
         val decoded = BackupLocalModule.getAccountTypeFromData(typeString, data!!)
@@ -253,7 +252,7 @@ class BackupLocalModuleTest {
 
     @Test
     fun `mnemonic encode and decode round-trip with passphrase`() = runBlockingSuspend {
-        val original = AccountType.Mnemonic(validMnemonicWords, "secretPass123", MnemonicDerivation.Legacy)
+        val original = AccountType.Mnemonic(validMnemonicWords, "secretPass123")
         val typeString = BackupLocalModule.getAccountTypeString(original)
         val data = BackupLocalModule.getDataForEncryption(original)
         val decoded = BackupLocalModule.getAccountTypeFromData(typeString, data!!)

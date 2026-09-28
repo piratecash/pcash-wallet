@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.fragment.navArgs
-import cash.p.terminal.modules.mnemonic.JapaneseMnemonicFormat
 import cash.p.terminal.R
 import cash.p.terminal.core.managers.FaqManager
 import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesFragment
@@ -180,7 +179,6 @@ private fun RecoveryPhraseScreen(
                     }
                 }
                 VSpacer(24.dp)
-                JapaneseMnemonicFormat(viewModel.japaneseDerivation)
                 SeedPhraseList(viewModel.wordsNumbered, phraseHidden) {
                     if (!phraseHidden) {
                         // Already revealed - just hide

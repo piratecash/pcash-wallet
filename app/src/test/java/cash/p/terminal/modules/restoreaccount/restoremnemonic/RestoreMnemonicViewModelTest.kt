@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.restoreaccount.restoremnemonic
 
-import cash.p.terminal.modules.restoreaccount.MnemonicImportDraft
 import cash.p.terminal.R
 import cash.p.terminal.core.IAccountFactory
 import cash.p.terminal.core.managers.SeedPhraseQrCrypto
@@ -98,12 +97,12 @@ class RestoreMnemonicViewModelTest {
             val viewModel = createViewModel()
 
             viewModel.setMnemonicLanguage(Language.French)
-            viewModel.applyDraft(MnemonicImportDraft.decoded(SeedPhraseQrCrypto.DecryptedSeed(
+            viewModel.applyMnemonicPhrase(
                 words = List(25) { "word$it" },
                 passphrase = "",
-                height = 123L,
+                moneroHeight = 123L,
                 language = null
-            )))
+            )
             advanceUntilIdle()
 
             assertTrue(viewModel.uiState.isMoneroMnemonic)
@@ -112,7 +111,7 @@ class RestoreMnemonicViewModelTest {
 
             viewModel.onToggleMoneroMnemonic(false)
             advanceUntilIdle()
-            assertEquals(Language.English, viewModel.uiState.language)
+            assertEquals(Language.French, viewModel.uiState.language)
         }
 
     // ==================== Language autodetect on user input (#6) ====================
@@ -205,12 +204,12 @@ class RestoreMnemonicViewModelTest {
         runTest(dispatcher) {
             val viewModel = createViewModel()
 
-            viewModel.applyDraft(MnemonicImportDraft.decoded(SeedPhraseQrCrypto.DecryptedSeed(
+            viewModel.applyMnemonicPhrase(
                 words = spanishSeed12,
                 passphrase = "",
-                height = null,
+                moneroHeight = null,
                 language = Language.Spanish
-            )))
+            )
             advanceUntilIdle()
 
             assertEquals(Language.Spanish, viewModel.uiState.language)
@@ -227,12 +226,12 @@ class RestoreMnemonicViewModelTest {
                 Bip39LanguageDetector.detectExact(simplifiedChineseSeed12).firstOrNull()
             )
 
-            viewModel.applyDraft(MnemonicImportDraft.decoded(SeedPhraseQrCrypto.DecryptedSeed(
+            viewModel.applyMnemonicPhrase(
                 words = simplifiedChineseSeed12,
                 passphrase = "",
-                height = null,
+                moneroHeight = null,
                 language = Language.TraditionalChinese
-            )))
+            )
             advanceUntilIdle()
 
             assertEquals(Language.TraditionalChinese, viewModel.uiState.language)
@@ -257,7 +256,7 @@ class RestoreMnemonicViewModelTest {
 
         assertEquals(
             Language.Spanish,
-            result.draft.language,
+            result.language,
             "Consumer must forward decrypted.language; null breaks the JSON v2 hint contract"
         )
     }
@@ -278,7 +277,7 @@ class RestoreMnemonicViewModelTest {
         val result = viewModel.handleScannedQrData("seed:legacy")
             as RestoreMnemonicModule.QrScanResult.Success
 
-        assertEquals(Language.Japanese, result.draft.language)
+        assertEquals(null, result.language)
     }
 
     @Test
@@ -288,12 +287,12 @@ class RestoreMnemonicViewModelTest {
             // from the words themselves.
             val viewModel = createViewModel()
 
-            viewModel.applyDraft(MnemonicImportDraft.decoded(SeedPhraseQrCrypto.DecryptedSeed(
+            viewModel.applyMnemonicPhrase(
                 words = japaneseSeed12,
                 passphrase = "",
-                height = null,
+                moneroHeight = null,
                 language = null
-            )))
+            )
             advanceUntilIdle()
 
             assertEquals(Language.Japanese, viewModel.uiState.language)
@@ -330,6 +329,25 @@ class RestoreMnemonicViewModelTest {
                 Translator.getString(R.string.invalid_height_format),
                 viewModel.uiState.errorHeight
             )
+        }
+
+    @Test
+    fun onEnterMnemonicPhrase_japaneseWordsJoinedWithIdeographicSpace_marksOnlyInvalidWordAtSourceRange() =
+        runTest(dispatcher) {
+            val viewModel = createViewModel()
+            viewModel.setMnemonicLanguage(Language.Japanese)
+            advanceUntilIdle()
+
+            // ざぶとん is absent from the BIP39 list and carries a dakuten, so NFKD would
+            // lengthen it — the range below only holds if the source text is tokenized.
+            val invalidWord = "ざぶとん"
+            val text = (List(11) { "あいこくしん" } + invalidWord).joinToString("　")
+
+            viewModel.onEnterMnemonicPhrase(text, cursorPosition = 0)
+            advanceUntilIdle()
+
+            val start = text.length - invalidWord.length
+            assertEquals(listOf(start..text.lastIndex), viewModel.uiState.invalidWordRanges)
         }
 
     private fun createViewModel() = RestoreMnemonicViewModel(

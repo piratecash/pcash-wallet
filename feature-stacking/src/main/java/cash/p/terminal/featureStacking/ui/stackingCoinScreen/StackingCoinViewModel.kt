@@ -11,7 +11,7 @@ import androidx.lifecycle.viewModelScope
 import cash.p.terminal.featureStacking.R
 import cash.p.terminal.featureStacking.ui.entities.PayoutViewItem
 import cash.p.terminal.featureStacking.ui.staking.StackingType
-import cash.p.terminal.network.pirate.domain.enity.PeriodType
+import cash.p.terminal.network.pirate.domain.enity.annualRoiPercent
 import cash.p.terminal.network.pirate.domain.enity.TrialPremiumResult
 import cash.p.terminal.network.pirate.domain.repository.PiratePlaceRepository
 import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
@@ -66,6 +66,7 @@ internal abstract class StackingCoinViewModel(
         const val COSANTA_DEFAULT_ANNUAL_INTEREST = "25%"
         const val PIRATE_DEFAULT_ANNUAL_INTEREST = "8%"
         const val NEXT_PAYOUT_PATTERN = "yyyy-MM-dd HH:mm"
+        const val ANNUAL_INTEREST_STAKE = 100.0
     }
 
     abstract val minStackingAmount: Int
@@ -161,11 +162,11 @@ internal abstract class StackingCoinViewModel(
         try {
             val data = piratePlaceRepository.getCalculatorData(
                 coinGeckoUid = stackingType.value,
-                amount = 100.0
+                amount = ANNUAL_INTEREST_STAKE
             )
-            data.items.find { it.periodType == PeriodType.YEAR }?.let {
+            data.annualRoiPercent(ANNUAL_INTEREST_STAKE)?.let {
                 _uiState.value = uiState.value.copy(
-                    annualInterest = it.amount.smartFormat() + "%"
+                    annualInterest = it.smartFormat() + "%"
                 )
             }
         } catch (e: Exception) {

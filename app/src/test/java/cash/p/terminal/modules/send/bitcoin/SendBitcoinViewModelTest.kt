@@ -1,7 +1,5 @@
 package cash.p.terminal.modules.send.bitcoin
 
-import cash.p.terminal.wallet.MnemonicDerivation
-
 import cash.p.terminal.R
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.ISendBitcoinAdapter
@@ -267,7 +265,7 @@ class SendBitcoinViewModelTest {
                 account = Account(
                     id = "litecoin-account-id",
                     name = "Litecoin",
-                    type = AccountType.Mnemonic(List(12) { "word$it" }, "", MnemonicDerivation.Legacy),
+                    type = AccountType.Mnemonic(List(12) { "word$it" }, ""),
                     origin = AccountOrigin.Created,
                     level = 0,
                 ),

@@ -269,46 +269,6 @@ fun body_grey(
 }
 
 @Composable
-fun B2(
-    text: String,
-    modifier: Modifier = Modifier,
-    textAlign: TextAlign? = null,
-    overflow: TextOverflow = TextOverflow.Clip,
-    maxLines: Int = Int.MAX_VALUE,
-    onTextLayout: (TextLayoutResult) -> Unit = {}
-) {
-    Text(
-        text = text,
-        modifier = modifier,
-        textAlign = textAlign,
-        overflow = overflow,
-        maxLines = maxLines,
-        onTextLayout = onTextLayout,
-        style = ComposeAppTheme.typography.body,
-        color = ComposeAppTheme.colors.textPrimary,
-    )
-}
-
-@Composable
-fun body_leah(
-    text: String,
-    modifier: Modifier = Modifier,
-    textAlign: TextAlign? = null,
-    overflow: TextOverflow = TextOverflow.Clip,
-    maxLines: Int = Int.MAX_VALUE,
-    onTextLayout: (TextLayoutResult) -> Unit = {}
-) {
-    B2(
-        text = text,
-        modifier = modifier,
-        textAlign = textAlign,
-        overflow = overflow,
-        maxLines = maxLines,
-        onTextLayout = onTextLayout,
-    )
-}
-
-@Composable
 fun B3(
     text: String,
     modifier: Modifier = Modifier,
@@ -469,44 +429,6 @@ fun body_disabled(
 
 
 @Composable
-fun C1(
-    text: String,
-    modifier: Modifier = Modifier,
-    textAlign: TextAlign? = null,
-    overflow: TextOverflow = TextOverflow.Clip,
-    maxLines: Int = Int.MAX_VALUE,
-    onTextLayout: (TextLayoutResult) -> Unit = {}
-) {
-    Subhead1(
-        text = text,
-        modifier = modifier,
-        textAlign = textAlign,
-        overflow = overflow,
-        maxLines = maxLines,
-        onTextLayout = onTextLayout,
-        color = ComposeAppTheme.colors.textSecondary,
-    )
-}
-@Composable
-fun subhead1_grey(
-    text: String,
-    modifier: Modifier = Modifier,
-    textAlign: TextAlign? = null,
-    overflow: TextOverflow = TextOverflow.Clip,
-    maxLines: Int = Int.MAX_VALUE,
-    onTextLayout: (TextLayoutResult) -> Unit = {}
-) {
-    C1(
-        text = text,
-        modifier = modifier,
-        textAlign = textAlign,
-        overflow = overflow,
-        maxLines = maxLines,
-        onTextLayout = onTextLayout,
-    )
-}
-
-@Composable
 fun Subhead1(
     text: String,
     color: Color,
@@ -567,26 +489,6 @@ fun subhead1_leah(
     )
 }
 
-@Composable
-fun C3(
-    text: String,
-    modifier: Modifier = Modifier,
-    textAlign: TextAlign? = null,
-    overflow: TextOverflow = TextOverflow.Clip,
-    maxLines: Int = Int.MAX_VALUE,
-    onTextLayout: (TextLayoutResult) -> Unit = {}
-) {
-    Text(
-        text = text,
-        modifier = modifier,
-        textAlign = textAlign,
-        overflow = overflow,
-        maxLines = maxLines,
-        onTextLayout = onTextLayout,
-        style = ComposeAppTheme.typography.subhead1,
-        color = ComposeAppTheme.colors.brand,
-    )
-}
 @Composable
 fun subhead1_brand(
     text: String,
@@ -1241,45 +1143,6 @@ fun captionSB_lucian(
 
 
 
-
-@Composable
-fun F1(
-    text: String,
-    modifier: Modifier = Modifier,
-    textAlign: TextAlign? = null,
-    overflow: TextOverflow = TextOverflow.Clip,
-    maxLines: Int = Int.MAX_VALUE,
-    onTextLayout: (TextLayoutResult) -> Unit = {}
-) {
-    Text(
-        text = text,
-        modifier = modifier,
-        textAlign = textAlign,
-        overflow = overflow,
-        maxLines = maxLines,
-        onTextLayout = onTextLayout,
-        style = ComposeAppTheme.typography.caption,
-        color = ComposeAppTheme.colors.textSecondary,
-    )
-}
-@Composable
-fun caption_grey(
-    text: String,
-    modifier: Modifier = Modifier,
-    textAlign: TextAlign? = null,
-    overflow: TextOverflow = TextOverflow.Clip,
-    maxLines: Int = Int.MAX_VALUE,
-    onTextLayout: (TextLayoutResult) -> Unit = {}
-) {
-    F1(
-        text = text,
-        modifier = modifier,
-        textAlign = textAlign,
-        overflow = overflow,
-        maxLines = maxLines,
-        onTextLayout = onTextLayout,
-    )
-}
 
 @Composable
 fun F2(

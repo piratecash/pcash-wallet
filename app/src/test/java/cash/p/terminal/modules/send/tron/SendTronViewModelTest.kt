@@ -1,7 +1,5 @@
 package cash.p.terminal.modules.send.tron
 
-import cash.p.terminal.wallet.MnemonicDerivation
-
 import cash.p.terminal.core.ISendTronAdapter
 import cash.p.terminal.core.OfflineTransactionAdapter
 import cash.p.terminal.core.OfflineTronSignRequest
@@ -101,7 +99,7 @@ class SendTronViewModelTest : KoinTest {
     private val account = Account(
         id = "account-id",
         name = "Account",
-        type = AccountType.Mnemonic(List(12) { "word$it" }, "", MnemonicDerivation.Legacy),
+        type = AccountType.Mnemonic(List(12) { "word$it" }, ""),
         origin = AccountOrigin.Created,
         level = 0,
         isBackedUp = true,

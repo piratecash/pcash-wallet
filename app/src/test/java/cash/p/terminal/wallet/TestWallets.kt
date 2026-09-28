@@ -25,7 +25,7 @@ internal fun zcashTransparentWallet(
 internal fun zcashMnemonicAccount(id: String = "zcash-account") = Account(
     id = id,
     name = "Zcash Account",
-    type = AccountType.Mnemonic(List(12) { "word$it" }, "", MnemonicDerivation.Legacy),
+    type = AccountType.Mnemonic(List(12) { "word$it" }, ""),
     origin = AccountOrigin.Created,
     level = 0,
     isBackedUp = true,

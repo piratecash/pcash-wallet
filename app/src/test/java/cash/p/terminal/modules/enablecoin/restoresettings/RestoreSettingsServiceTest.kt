@@ -1,7 +1,5 @@
 package cash.p.terminal.modules.enablecoin.restoresettings
 
-import cash.p.terminal.wallet.MnemonicDerivation
-
 import cash.p.terminal.core.managers.LitecoinBirthdayProvider
 import cash.p.terminal.core.managers.RestoreSettingType
 import cash.p.terminal.core.managers.RestoreSettings
@@ -188,7 +186,7 @@ class RestoreSettingsServiceTest : KoinTest {
     private fun account(origin: AccountOrigin = AccountOrigin.Restored) = Account(
         id = "account-id",
         name = "Account",
-        type = AccountType.Mnemonic(List(12) { "word" }, "", MnemonicDerivation.Legacy),
+        type = AccountType.Mnemonic(List(12) { "word" }, ""),
         origin = origin,
         level = 0
     )

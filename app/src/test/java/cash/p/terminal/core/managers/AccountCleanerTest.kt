@@ -1,7 +1,5 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.wallet.MnemonicDerivation
-
 import cash.p.terminal.core.adapters.Eip20Adapter
 import cash.p.terminal.core.adapters.EvmAdapter
 import cash.p.terminal.core.adapters.SolanaAdapter
@@ -352,8 +350,7 @@ class AccountCleanerTest {
         name = "Account-$id",
         type = AccountType.Mnemonic(
             words = List(12) { "word$it" },
-            passphrase = "",
-            derivation = MnemonicDerivation.Legacy
+            passphrase = ""
         ),
         origin = AccountOrigin.Created,
         level = 0,

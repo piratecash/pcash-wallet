@@ -6,11 +6,9 @@ import cash.p.terminal.core.utils.MoneroWalletSeedConverter
 class ValidateMoneroMnemonicUseCase(
     private val commonWordsManager: WordsManager
 ) {
-    operator fun invoke(mnemonicWords: List<String>, isMonero: Boolean, strict: Boolean = true) {
+    operator fun invoke(mnemonicWords: List<String>, isMonero: Boolean) {
         if (isMonero) {
             validateMoneroChecksum(mnemonicWords)
-        } else if (!strict) {
-            commonWordsManager.validateChecksum(mnemonicWords)
         } else {
             commonWordsManager.validateChecksumStrict(mnemonicWords)
         }

@@ -8,7 +8,6 @@ import cash.p.terminal.feature.miniapp.domain.storage.IUniqueCodeStorage
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
-import cash.p.terminal.wallet.MnemonicDerivation
 import io.horizontalsystems.core.DispatcherProvider
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -56,7 +55,7 @@ class ConnectMiniAppWalletUseCaseTest {
     private val account = Account(
         id = "account-1",
         name = "Wallet",
-        type = AccountType.Mnemonic(words = listOf("a", "b"), passphrase = "", derivation = MnemonicDerivation.Legacy),
+        type = AccountType.Mnemonic(words = listOf("a", "b"), passphrase = ""),
         origin = AccountOrigin.Created,
         level = 0
     )

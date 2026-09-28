@@ -15,7 +15,6 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
-import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
@@ -1665,8 +1664,7 @@ class CheckPremiumUseCaseTest {
         name = "Account",
         type = AccountType.Mnemonic(
             words = List(12) { "abandon" },
-            passphrase = "",
-            derivation = MnemonicDerivation.Legacy
+            passphrase = ""
         ),
         origin = AccountOrigin.Created,
         level = level,

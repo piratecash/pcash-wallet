@@ -13,7 +13,7 @@ buildscript {
         appcompat_version = "1.7.1"
         constraint_version = "2.2.1"
         core_ktx_version = "1.18.0"
-        fragment_ktx_version = "1.8.9"
+        fragment_ktx_version = "1.9.0"
         rxjava_version = "2.2.21"
         biometric_version = "1.1.0"
         junit_version = "4.13.2"

@@ -11,11 +11,10 @@ import cash.p.terminal.core.managers.SeedPhraseQrCrypto
 import cash.p.terminal.core.utils.Bip39LanguageDetector
 import cash.p.terminal.core.utils.MoneroWalletSeedConverter
 import cash.p.terminal.wallet.Account
-import cash.p.terminal.wallet.MnemonicDerivation
 import cash.p.terminal.wallet.AccountType
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.hdwalletkit.Language
-import io.horizontalsystems.core.DispatcherProvider
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class RecoveryPhraseViewModel(
@@ -23,13 +22,8 @@ class RecoveryPhraseViewModel(
     recoveryPhraseType: RecoveryPhraseFragment.RecoveryPhraseType,
     private val seedPhraseQrCrypto: SeedPhraseQrCrypto,
     private val localStorage: ILocalStorage,
-    private val restoreSettingsManager: RestoreSettingsManager,
-    private val dispatcherProvider: DispatcherProvider
+    private val restoreSettingsManager: RestoreSettingsManager
 ) : ViewModel() {
-
-    private val derivation = (account.type as? AccountType.Mnemonic)?.derivation ?: MnemonicDerivation.Legacy
-    val japaneseDerivation: MnemonicDerivation?
-        get() = derivation.takeIf { languageHint == Language.Japanese }
 
     val safetyRulesAgreed: Boolean
         get() = localStorage.safetyRulesAgreed
@@ -57,7 +51,8 @@ class RecoveryPhraseViewModel(
             is AccountType.Mnemonic -> {
                 if (recoveryPhraseType == RecoveryPhraseFragment.RecoveryPhraseType.Monero) {
                     words = MoneroWalletSeedConverter.getLegacySeedFromBip39(
-                        seed = (account.type as AccountType.Mnemonic).seed
+                        words = (account.type as AccountType.Mnemonic).words,
+                        passphrase = (account.type as AccountType.Mnemonic).passphrase
                     )
                     seed = null
                     passphrase = null
@@ -107,14 +102,13 @@ class RecoveryPhraseViewModel(
      * Call this when hiding the QR code so next reveal has valid encryption.
      */
     fun regenerateEncryptedQrContent() {
-        viewModelScope.launch(dispatcherProvider.default) {
+        viewModelScope.launch(Dispatchers.Default) {
             try {
                 val encrypted = seedPhraseQrCrypto.encrypt(
                     words = words,
                     passphrase = passphrase ?: "",
                     height = moneroHeight,
-                    language = languageHint,
-                    derivation = if (seed != null) derivation else MnemonicDerivation.Legacy
+                    language = languageHint
                 )
                 encryptedSeedQrContent = encrypted
                 qrGenerationError = false

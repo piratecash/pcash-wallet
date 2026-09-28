@@ -1,7 +1,6 @@
 package cash.p.terminal.domain.usecase
 
 import android.content.Context
-import androidx.core.content.edit
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import cash.p.terminal.core.App
 import cash.p.terminal.core.ILocalStorage
@@ -85,13 +84,9 @@ class ResetUseCase(
             .onFailure { Timber.w(it, "Failed deleting logging database file") }
     }
 
-    private fun purgeLocalePreferences() {
-        runCatching {
-            context.getSharedPreferences(LocaleHelper::class.java.name, Context.MODE_PRIVATE)
-                .edit {
-                    clear()
-                }
-        }.onFailure { Timber.w(it, "Failed clearing locale prefs") }
+    private suspend fun purgeLocalePreferences() = withContext(dispatcherProvider.main) {
+        runCatching { LocaleHelper.resetLocale(context) }
+            .onFailure { Timber.w(it, "Failed resetting app language") }
     }
 
     private suspend fun purgeFilesAndCaches() {

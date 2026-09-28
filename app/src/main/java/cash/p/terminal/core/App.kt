@@ -63,6 +63,7 @@ import cash.p.terminal.modules.walletconnect.WCDelegate
 import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.modules.walletconnect.WCSessionManager
 import cash.p.terminal.modules.walletconnect.WCWalletRequestHandler
+import cash.p.terminal.strings.helpers.LocaleHelper
 import cash.p.terminal.wallet.IAccountCleaner
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAccountsStorage
@@ -250,7 +251,7 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
     override fun onCreate() {
         super.onCreate()
 
-        if (BuildConfig.DEBUG) {
+        if (BuildConfig.DIAGNOSTIC_LOGGING) {
             Timber.plant(Timber.DebugTree())
             KermitLogger.setLogWriters(platformLogWriter())
             KermitLogger.setMinSeverity(Severity.Debug)
@@ -273,7 +274,7 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
             modules(appModule)
         }
 
-        if (!BuildConfig.DEBUG) {
+        if (!BuildConfig.DIAGNOSTIC_LOGGING) {
             //Disable logging for lower levels in Release build
             Logger.getLogger("").level = Level.SEVERE
         }
@@ -462,7 +463,7 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
     }
 
     override val workManagerConfiguration: WorkConfiguration
-        get() = if (BuildConfig.DEBUG) {
+        get() = if (BuildConfig.DIAGNOSTIC_LOGGING) {
             WorkConfiguration.Builder()
                 .setMinimumLoggingLevel(Log.DEBUG)
                 .build()
@@ -477,6 +478,7 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
     }
 
     override fun attachBaseContext(base: Context) {
+        LocaleHelper.restoreLocale(base)
         super.attachBaseContext(localeAwareContext(base))
     }
 
