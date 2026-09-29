@@ -2,7 +2,6 @@ package cash.p.terminal.core.managers
 
 import android.content.Context
 import io.horizontalsystems.bitcoincore.core.IConnectionManager
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -25,7 +24,7 @@ class BitcoinKitDatabaseManager(
     private val mwebDataDir = context.noBackupFilesDir.absolutePath
 
     suspend fun prepare(accountId: String): BitcoinKitEnvironment = mutex.withLock {
-        val databaseKey = awaitDatabaseKey(accountId)
+        val databaseKey = keyProvider.awaitKey(accountId)
         if (accountId !in preparedAccountIds) {
             operations.migrate(dataDir, accountId, databaseKey)
             preparedAccountIds.add(accountId)
@@ -43,18 +42,7 @@ class BitcoinKitDatabaseManager(
         operations.clearMweb(dataDir, mwebDataDir, accountId)
     }
 
-    private suspend fun awaitDatabaseKey(accountId: String): ByteArray {
-        while (true) {
-            try {
-                return keyProvider.keyFor(accountId)
-            } catch (_: BitcoinKitDatabaseKeyLockedException) {
-                delay(KEYSTORE_RETRY_DELAY_MS)
-            }
-        }
-    }
-
     private companion object {
         const val DATABASE_PATH_MARKER = "bitcoin-kit-path"
-        const val KEYSTORE_RETRY_DELAY_MS = 500L
     }
 }
