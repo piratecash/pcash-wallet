@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.multiswap.sendtransaction
 
+import cash.p.terminal.modules.send.SendResult
 import io.horizontalsystems.ethereumkit.models.FullTransaction
 import io.horizontalsystems.ethereumkit.models.Transaction
 import io.mockk.every
@@ -39,5 +40,13 @@ class SendTransactionResultTest {
         assertEquals("0xabc", result.getRecordUid())
         assertEquals("abc", result.getCanonicalTxHash())
         assertNotEquals(result.getRecordUid(), result.getCanonicalTxHash())
+    }
+
+    @Test
+    fun beamResult_recordUidIsTheHistoryUidAndCanonicalHashTheTxId() {
+        val result = SendTransactionResult.Beam(SendResult.SentButQueued("beam:7:account:tx"), "tx")
+
+        assertEquals("beam:7:account:tx", result.getRecordUid())
+        assertEquals("tx", result.getCanonicalTxHash())
     }
 }

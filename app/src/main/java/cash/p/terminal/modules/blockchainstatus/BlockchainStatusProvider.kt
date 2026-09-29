@@ -11,6 +11,7 @@ import cash.p.terminal.core.managers.TronKitManager
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.core.adapters.BitcoinBaseAdapter
+import cash.p.terminal.core.adapters.BeamAdapter
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
@@ -253,6 +254,24 @@ class ZcashBlockchainStatusProvider(
 
         return statusFromMap(blockchainName, adapter?.statusInfo)
     }
+}
+
+class BeamBlockchainStatusProvider(
+    private val walletManager: IWalletManager,
+    private val adapterManager: IAdapterManager,
+) : BlockchainStatusProvider {
+    override val blockchainName = "BEAM"
+    override val kitVersion = BuildConfig.BEAM_SDK_VERSION
+    override val logFilterTag = BlockchainType.Beam.uid
+
+    private val adapter: BeamAdapter?
+        get() = walletManager.activeWallets
+            .firstOrNull { it.token.blockchainType == BlockchainType.Beam }
+            ?.let { adapterManager.getAdapterForWallet<BeamAdapter>(it) }
+
+    override val kitStarted: Boolean get() = adapter != null
+
+    override fun getStatus(): BlockchainStatus = statusFromMap(blockchainName, adapter?.statusInfo)
 }
 
 private fun statusFromMap(title: String, statusInfo: Map<String, Any>?): BlockchainStatus {

@@ -33,4 +33,24 @@ class MarketDatabaseTest {
         assertTrue(file.readLines().contains(mwebTokenSql))
     }
 
+    @Test
+    fun initialCoins_beam_keepsNativeAndGameTokensSeparate() {
+        val rows = initialCoinsFile().readLines()
+        val tokenRows = rows.filter {
+            it.startsWith("INSERT OR REPLACE INTO TokenEntity VALUES('beam',") ||
+                it.startsWith("INSERT OR REPLACE INTO TokenEntity VALUES('beam-2',")
+        }
+
+        assertEquals(
+            listOf(
+                "INSERT OR REPLACE INTO TokenEntity VALUES('beam','beam','native',8,'');",
+                "INSERT OR REPLACE INTO TokenEntity VALUES('beam-2','ethereum','eip20',18," +
+                    "'0x62d0a8458ed7719fdaf978fe5929c6d342b0bfce');",
+                "INSERT OR REPLACE INTO TokenEntity VALUES('beam-2','binance-smart-chain','eip20',18," +
+                    "'0x62d0a8458ed7719fdaf978fe5929c6d342b0bfce');"
+            ),
+            tokenRows
+        )
+    }
+
 }

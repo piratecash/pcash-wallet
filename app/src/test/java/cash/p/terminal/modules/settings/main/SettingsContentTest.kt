@@ -67,6 +67,7 @@ class SettingsContentTest {
             R.string.address_checker_title to SettingsAction.AddressChecker,
             R.string.swap_providers_title to SettingsAction.SwapProviders,
             R.string.offline_broadcast_title to SettingsAction.OfflineBroadcast,
+            R.string.offline_broadcast_import_file to SettingsAction.ImportTransactionFile,
             R.string.about_premium to SettingsAction.AboutPremium,
             R.string.premium_settings to SettingsAction.PremiumSettings,
             R.string.advanced_security to SettingsAction.AdvancedSecurity,
@@ -81,8 +82,8 @@ class SettingsContentTest {
             compose.onNodeWithText(application.getString(title)).performScrollTo().performClick()
         }
         val clickableNodes = compose.onAllNodes(hasClickAction())
-        assertEquals(24, clickableNodes.fetchSemanticsNodes().size)
-        clickableNodes[23].performScrollTo().performClick()
+        assertEquals(25, clickableNodes.fetchSemanticsNodes().size)
+        clickableNodes[24].performScrollTo().performClick()
 
         assertEquals(expectedRows.map { it.second } + SettingsAction.CompanyWebsite, emitted)
     }

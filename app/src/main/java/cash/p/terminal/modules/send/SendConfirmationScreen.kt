@@ -171,6 +171,9 @@ fun SendConfirmationScreen(
                             showAdd = contact == null,
                             blockchainType = blockchainType,
                             navController = navController,
+                            // BEAM offline addresses run to ~500 chars; cap the preview, tap to see it all.
+                            collapseAddress = true,
+                            collapsedMaxLines = 5,
                             onCopy = {
                             },
                             onAddToExisting = {
