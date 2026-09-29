@@ -16,6 +16,7 @@ import io.horizontalsystems.core.ViewModelUiState
 import io.horizontalsystems.core.entities.Currency
 import io.horizontalsystems.core.entities.CurrencyValue
 import io.horizontalsystems.stellarkit.EnablingAssetError
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -41,17 +42,24 @@ class ActivateTokenViewModel(
             if (tmpAdapter == null) {
                 activateEnabled = false
                 error = ActivateTokenError.NullAdapter()
-            } else if (tmpAdapter.isTrustlineEstablished()) {
-                activateEnabled = false
-                error = ActivateTokenError.AlreadyActive()
             } else try {
-                tmpAdapter.validateActivation()
+                if (tmpAdapter.isTrustlineEstablished()) {
+                    activateEnabled = false
+                    error = ActivateTokenError.AlreadyActive()
+                } else {
+                    tmpAdapter.validateActivation()
 
-                activateEnabled = true
-                error = null
+                    activateEnabled = true
+                    error = null
+                }
             } catch (e: EnablingAssetError.InsufficientBalance) {
                 activateEnabled = false
                 error = ActivateTokenError.InsufficientBalance()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                activateEnabled = false
+                error = ActivateTokenError.NullAdapter()
             }
 
             feeAmount?.let { feeAmount ->

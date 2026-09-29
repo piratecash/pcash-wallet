@@ -8,6 +8,7 @@ import cash.p.terminal.modules.walletconnect.request.WCChainData
 import cash.p.terminal.modules.walletconnect.session.ValidationError
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.IAccountManager
+import co.touchlab.kermit.Logger
 import com.reown.walletkit.client.Wallet
 import io.horizontalsystems.core.entities.BlockchainType
 
@@ -22,6 +23,7 @@ class WCManager(
     }
 
     private val handlersMap = mutableMapOf<String, IWCHandler>()
+    private val logger = Logger.withTag("WCManager")
 
     fun addWcHandler(wcHandler: IWCHandler) {
         handlersMap[wcHandler.chainNamespace] = wcHandler
@@ -49,7 +51,12 @@ class WCManager(
 
         val handler = handlersMap[chainNamespace] ?: return null
 
-        return handler.getAction(sessionRequest.request, sessionRequest.peerMetaData, chainInternalId)
+        return try {
+            handler.getAction(sessionRequest.request, sessionRequest.peerMetaData, chainInternalId)
+        } catch (e: Exception) {
+            logger.w(e) { "Failed to build action for ${sessionRequest.request.method}" }
+            null
+        }
     }
 
     fun getWalletConnectSupportState(): SupportState {

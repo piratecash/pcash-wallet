@@ -70,6 +70,7 @@
 -keep class io.tonapi.** { *; }
 -keep class io.horizontalsystems.solanakit.** { *; }
 -keep class io.horizontalsystems.bitcoincore.** { *; }
+-keep class io.horizontalsystems.sqlcipher.room.** { *; }
 -keep class io.horizontalsystems.bitcoinkit.** { *; }
 -keep class io.horizontalsystems.dashkit.** { *; }
 -keep class io.horizontalsystems.litecoinkit.** { *; }

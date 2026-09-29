@@ -51,6 +51,7 @@ class AccountCleanerTest {
     private lateinit var pinDbStorage: PinDbStorage
     private lateinit var accountStorageCleaner: AccountStorageCleaner
     private lateinit var bitcoinKitDatabaseManager: BitcoinKitDatabaseManager
+    private lateinit var stellarKitManager: StellarKitManager
 
     @Before
     fun setUp() {
@@ -64,6 +65,7 @@ class AccountCleanerTest {
         pinDbStorage = mockk(relaxed = true)
         accountStorageCleaner = mockk(relaxed = true)
         bitcoinKitDatabaseManager = mockk(relaxed = true)
+        stellarKitManager = mockk(relaxed = true)
 
         coEvery { clearZCashWalletDataUseCase.invoke(any()) } returns ZcashEraseResult.ALL
         coEvery { removeMoneroWalletFilesUseCase.invoke(any<Account>()) } returns true
@@ -83,6 +85,7 @@ class AccountCleanerTest {
             pinDbStorage,
             accountStorageCleaner,
             bitcoinKitDatabaseManager,
+            stellarKitManager,
         )
     }
 
@@ -343,6 +346,7 @@ class AccountCleanerTest {
         verify(exactly = 1) { Eip20Adapter.clear(accountId) }
         verify(exactly = 1) { SolanaAdapter.clear(accountId) }
         verify(exactly = 1) { TronAdapter.clear(accountId) }
+        coVerify(exactly = 1) { stellarKitManager.clear(accountId) }
     }
 
     private fun account(id: String) = Account(

@@ -30,6 +30,7 @@ class AccountCleaner(
     private val pinDbStorage: PinDbStorage,
     private val accountStorageCleaner: AccountStorageCleaner,
     private val bitcoinKitDatabaseManager: BitcoinKitDatabaseManager,
+    private val stellarKitManager: StellarKitManager,
 ) : IAccountCleaner {
 
     /** Storage rows go last: their failure must reach the caller without skipping the wipes above. */
@@ -47,6 +48,7 @@ class AccountCleaner(
         clearWalletDataForBlockchainIfInactive(accountId, BlockchainType.Zcash)
         SolanaAdapter.clear(accountId)
         TronAdapter.clear(accountId)
+        stellarKitManager.clear(accountId)
         clearSmsNotificationSettings(accountId)
     }
 

@@ -48,6 +48,7 @@ class StellarKitManager(
     private val backgroundKeepAliveManager: BackgroundKeepAliveManager,
     private val networkErrorTracker: NetworkErrorTracker,
     private val offlineModeManager: OfflineModeManager,
+    private val stellarKitDatabaseKeyProvider: StellarKitDatabaseKeyProvider,
 ) {
     private val lifecycleMutex = Mutex()
     private val pollingSessionCount = AtomicInteger(0)
@@ -87,11 +88,11 @@ class StellarKitManager(
                     is AccountType.StellarAddress,
                     is AccountType.HardwareCard,
                     is AccountType.StellarSecretKey -> {
-                        createKitInstance(accountType, account)
+                        createKitInstance(accountType, account, prepareDatabase(account))
                     }
 
                     is AccountType.TrezorDevice -> {
-                        createTrezorKitInstance(account)
+                        createTrezorKitInstance(account, prepareDatabase(account))
                     }
 
                     is AccountType.BitcoinAddress,
@@ -119,7 +120,13 @@ class StellarKitManager(
     private fun eventListenerFactory(account: Account): NetworkErrorEventListener.Factory =
         NetworkErrorEventListener.Factory(BlockchainType.Stellar, account.id, networkErrorTracker)
 
-    private fun createTrezorKitInstance(account: Account): StellarKitWrapper {
+    private suspend fun prepareDatabase(account: Account): ByteArray {
+        val databaseKey = stellarKitDatabaseKeyProvider.awaitKey(account.id)
+        StellarKit.migrateDatabase(App.instance, Network.MainNet, account.id, databaseKey)
+        return databaseKey
+    }
+
+    private fun createTrezorKitInstance(account: Account, databaseKey: ByteArray): StellarKitWrapper {
         val key = runBlocking {
             hardwarePublicKeyStorage.getKeyByBlockchain(account.id, BlockchainType.Stellar)
         } ?: throw UnsupportedException("Trezor does not have a key for Stellar")
@@ -131,16 +138,21 @@ class StellarKitManager(
             trezorClient = trezorClient
         )
         val kit = StellarKit.getInstance(
-            signer,
-            Network.MainNet,
-            App.instance,
-            account.id,
-            eventListenerFactory(account)
+            signer = signer,
+            network = Network.MainNet,
+            context = App.instance,
+            walletId = account.id,
+            databaseKey = databaseKey,
+            eventListenerFactory = eventListenerFactory(account)
         )
         return StellarKitWrapper(kit)
     }
 
-    private fun createKitInstance(accountType: AccountType, account: Account): StellarKitWrapper {
+    private fun createKitInstance(
+        accountType: AccountType,
+        account: Account,
+        databaseKey: ByteArray,
+    ): StellarKitWrapper {
         val kit = if (accountType is AccountType.HardwareCard) {
             val hardwarePublicKey = runBlocking {
                 hardwarePublicKeyStorage.getKey(
@@ -154,23 +166,33 @@ class StellarKitManager(
                 hardwarePublicKey = hardwarePublicKey
             )
             StellarKit.getInstance(
-                stellarWallet,
-                Network.MainNet,
-                App.instance,
-                account.id,
-                eventListenerFactory(account)
+                signer = stellarWallet,
+                network = Network.MainNet,
+                context = App.instance,
+                walletId = account.id,
+                databaseKey = databaseKey,
+                eventListenerFactory = eventListenerFactory(account)
             )
         } else {
             StellarKit.getInstance(
-                accountType.toStellarWallet(),
-                Network.MainNet,
-                App.instance,
-                account.id,
-                eventListenerFactory(account)
+                stellarWallet = accountType.toStellarWallet(),
+                network = Network.MainNet,
+                context = App.instance,
+                walletId = account.id,
+                databaseKey = databaseKey,
+                eventListenerFactory = eventListenerFactory(account)
             )
         }
 
         return StellarKitWrapper(kit)
+    }
+
+    suspend fun clear(accountId: String) = lifecycleMutex.withLock {
+        if (currentAccount?.id == accountId) {
+            stop()
+        }
+        Network.entries.forEach { StellarKit.clear(App.instance, it, accountId) }
+        stellarKitDatabaseKeyProvider.remove(accountId)
     }
 
     suspend fun unlink(account: Account) = lifecycleMutex.withLock {
@@ -277,8 +299,8 @@ class StellarKitManager(
             val hardwarePublicKey = runBlocking {
                 hardwarePublicKeyStorage.getKeyByBlockchain(account.id, BlockchainType.Stellar)
             } ?: throw UnsupportedException("Hardware card does not have a public key for Stellar")
-            val stellarWallet = HardwareWalletStellarSigner(hardwarePublicKey = hardwarePublicKey)
-            StellarKit.getInstance(stellarWallet, Network.MainNet, App.instance, account.id).receiveAddress
+            val signer = HardwareWalletStellarSigner(hardwarePublicKey = hardwarePublicKey)
+            StellarKit.getAccountId(StellarWallet.Hardware(signer.publicKey))
         }
 
         is AccountType.TrezorDevice -> {

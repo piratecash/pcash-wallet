@@ -110,6 +110,7 @@ import io.horizontalsystems.core.logger.AppLog
 import io.horizontalsystems.core.security.KeyStoreManager
 import io.horizontalsystems.ethereumkit.core.EthereumKit
 import io.reactivex.plugins.RxJavaPlugins
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -560,8 +561,14 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
             restoreSettingsManager.backfillTrezorMoneroRestoreHeights(
                 accountManager.accounts + deletedAccounts,
             )
-            accountCleaner.clearAccounts(deletedAccountIds)
-            accountManager.clearDeleted(deletedAccountIds)
+            try {
+                accountCleaner.clearAccounts(deletedAccountIds)
+                accountManager.clearDeleted(deletedAccountIds)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                KermitLogger.w(e) { "Failed to clear deleted accounts; retrying on next start" }
+            }
         }
     }
 
