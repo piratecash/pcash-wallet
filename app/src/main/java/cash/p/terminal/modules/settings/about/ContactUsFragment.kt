@@ -58,7 +58,7 @@ private fun ContactUsScreen(
     onPaycoreSupport: () -> Unit,
     onBackPress: () -> Unit
 ) {
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(
                 title = stringResource(R.string.SettingsContact_Title),

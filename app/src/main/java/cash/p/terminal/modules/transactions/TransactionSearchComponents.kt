@@ -128,7 +128,7 @@ internal fun TransactionSearchField(
                         keyboardController?.hide()
                     }
                 ),
-                cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
+                cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
@@ -153,7 +153,7 @@ private fun SearchCloseButton(onClick: () -> Unit) {
         Icon(
             painter = painterResource(R.drawable.ic_close_24),
             contentDescription = stringResource(R.string.Button_Cancel),
-            tint = ComposeAppTheme.colors.brand,
+            tint = ComposeAppTheme.colors.brandDefault,
             modifier = Modifier.size(24.dp),
         )
     }

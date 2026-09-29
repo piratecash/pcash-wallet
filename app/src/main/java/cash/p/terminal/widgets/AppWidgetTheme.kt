@@ -26,7 +26,7 @@ class TextStyles {
     @Composable
     fun c3(textAlign: TextAlign = TextAlign.Start) =
         TextStyle(
-            color = AppWidgetTheme.colors.brand,
+            color = AppWidgetTheme.colors.brandDefault,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             textAlign = textAlign
@@ -44,7 +44,7 @@ class TextStyles {
     @Composable
     fun d3(textAlign: TextAlign = TextAlign.Start) =
         TextStyle(
-            color = AppWidgetTheme.colors.brand,
+            color = AppWidgetTheme.colors.brandDefault,
             fontSize = 14.sp,
             fontWeight = FontWeight.Normal,
             textAlign = textAlign
@@ -69,22 +69,30 @@ fun AppWidgetTheme(colors: ColorProviders = AppWidgetTheme.colors, content: @Com
 
 internal val LocalColorProviders = staticCompositionLocalOf {
     ColorProviders(
-        brand = ColorProvider(lightPalette.brand, darkPalette.brand),
-        remus = ColorProvider(lightPalette.remus, darkPalette.remus),
-        lucian = ColorProvider(lightPalette.lucian, darkPalette.lucian),
-        tyler = ColorProvider(lightPalette.tyler, darkPalette.tyler),
-        bran = ColorProvider(lightPalette.bran, darkPalette.bran),
+        brandDefault = ColorProvider(lightPalette.brandDefault, darkPalette.brandDefault),
+        statusSuccess = ColorProvider(lightPalette.statusSuccess, darkPalette.statusSuccess),
+        statusError = ColorProvider(lightPalette.statusError, darkPalette.statusError),
+        backgroundBase = ColorProvider(lightPalette.backgroundBase, darkPalette.backgroundBase),
+        surfacePrimary = ColorProvider(lightPalette.surfacePrimary, darkPalette.surfacePrimary),
+        surfacePlaceholder = ColorProvider(lightPalette.surfacePlaceholder, darkPalette.surfacePlaceholder),
+        borderDefault = ColorProvider(lightPalette.borderDefault, darkPalette.borderDefault),
+        borderDivider = ColorProvider(lightPalette.borderDivider, darkPalette.borderDivider),
+        badgeBackground = ColorProvider(lightPalette.badgeBackground, darkPalette.badgeBackground),
         textPrimary = ColorProvider(lightPalette.textPrimary, darkPalette.textPrimary),
         textSecondary = ColorProvider(lightPalette.textSecondary, darkPalette.textSecondary),
     )
 }
 
 data class ColorProviders(
-    val brand: ColorProvider,
-    val remus: ColorProvider,
-    val lucian: ColorProvider,
-    val tyler: ColorProvider,
-    val bran: ColorProvider,
+    val brandDefault: ColorProvider,
+    val statusSuccess: ColorProvider,
+    val statusError: ColorProvider,
+    val backgroundBase: ColorProvider,
+    val surfacePrimary: ColorProvider,
+    val surfacePlaceholder: ColorProvider,
+    val borderDefault: ColorProvider,
+    val borderDivider: ColorProvider,
+    val badgeBackground: ColorProvider,
     val textPrimary: ColorProvider,
     val textSecondary: ColorProvider,
 )

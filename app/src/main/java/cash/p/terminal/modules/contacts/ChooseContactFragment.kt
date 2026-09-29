@@ -72,7 +72,7 @@ fun ChooseContactScreen(
     val items = viewModel.items
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             var searchMode by remember { mutableStateOf(false) }
 
@@ -101,7 +101,7 @@ fun ChooseContactScreen(
                                 }
                                 innerTextField()
                             },
-                            cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
+                            cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
                         )
                         SideEffect {
                             focusRequester.requestFocus()

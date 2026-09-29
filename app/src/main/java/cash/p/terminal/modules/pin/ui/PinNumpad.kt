@@ -137,7 +137,7 @@ private fun NumberKey(
         modifier = Modifier
             .size(72.dp)
             .clip(CircleShape)
-            .border(1.dp, ComposeAppTheme.colors.steel20, CircleShape)
+            .border(1.dp, ComposeAppTheme.colors.borderDefault, CircleShape)
             .clickable(
                 enabled = enabled,
                 onClick = {
@@ -150,7 +150,7 @@ private fun NumberKey(
         Text(
             text = number.toString(),
             style = ComposeAppTheme.typography.title2R,
-            color = if (enabled) ComposeAppTheme.colors.textPrimary else ComposeAppTheme.colors.steel20,
+            color = if (enabled) ComposeAppTheme.colors.textPrimary else ComposeAppTheme.colors.textDisabled,
         )
     }
 }
@@ -181,7 +181,7 @@ private fun ImageKey(
             Icon(
                 modifier = Modifier.align(Alignment.Center),
                 painter = painterResource(image),
-                tint = if (enabled) ComposeAppTheme.colors.iconSecondary else ComposeAppTheme.colors.steel20,
+                tint = if (enabled) ComposeAppTheme.colors.iconSecondary else ComposeAppTheme.colors.iconDisabled,
                 contentDescription = contentDescription,
             )
         }
@@ -194,7 +194,7 @@ fun Preview_Pin() {
     ComposeAppTheme {
         Column(
             modifier = Modifier
-                .background(color = ComposeAppTheme.colors.tyler)
+                .background(color = ComposeAppTheme.colors.backgroundBase)
         ) {
             PinNumpad(
                 onNumberClick = { },
@@ -215,7 +215,7 @@ fun Preview_PinLocked() {
     ComposeAppTheme {
         Column(
             modifier = Modifier
-                .background(color = ComposeAppTheme.colors.tyler)
+                .background(color = ComposeAppTheme.colors.backgroundBase)
         ) {
             PinNumpad(
                 onNumberClick = { },

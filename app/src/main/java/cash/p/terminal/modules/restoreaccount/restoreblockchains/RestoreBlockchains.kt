@@ -119,7 +119,6 @@ fun ManageWalletsScreen(
                 contenView = view,
                 resId = R.string.Hud_Text_Restored,
                 icon = R.drawable.icon_add_to_wallet_2_24,
-                iconTint = R.color.white
             )
             delay(300)
             currentOnFinish()
@@ -169,7 +168,7 @@ fun ManageWalletsScreen(
         }
     }
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.Restore_Title),
@@ -195,7 +194,7 @@ fun ManageWalletsScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 HorizontalDivider(
                     thickness = 1.dp,
-                    color = ComposeAppTheme.colors.steel10,
+                    color = ComposeAppTheme.colors.borderDivider,
                 )
             }
             coinItems?.let {

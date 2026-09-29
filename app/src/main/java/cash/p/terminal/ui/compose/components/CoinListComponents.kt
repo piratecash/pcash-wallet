@@ -1,6 +1,8 @@
 package cash.p.terminal.ui.compose.components
 
 import androidx.annotation.DrawableRes
+import cash.p.terminal.ui_compose.components.plateOutline
+import cash.p.terminal.ui_compose.components.plateBackground
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
@@ -100,7 +102,13 @@ fun CoinList(
                 Box(
                     modifier = Modifier
                         .fillMaxHeight()
-                        .background(if (item.favorited) ComposeAppTheme.colors.lucian else ComposeAppTheme.colors.brand)
+                        .background(
+                            if (item.favorited) {
+                                ComposeAppTheme.colors.statusError
+                            } else {
+                                ComposeAppTheme.colors.brandDefault
+                            }
+                        )
                         .align(Alignment.CenterEnd)
                         .width(100.dp)
                         .clickable {
@@ -120,7 +128,7 @@ fun CoinList(
                         painter = painterResource(
                             id = if (item.favorited) R.drawable.ic_star_off_24 else R.drawable.ic_star_24
                         ),
-                        tint = ComposeAppTheme.colors.claude,
+                        tint = ComposeAppTheme.colors.contentInverse,
                         contentDescription = stringResource(
                             if (item.favorited) R.string.CoinPage_Unfavorite else R.string.CoinPage_Favorite
                         ),
@@ -155,7 +163,7 @@ fun CoinList(
                 )
                 Divider(
                     thickness = 1.dp,
-                    color = ComposeAppTheme.colors.steel10,
+                    color = ComposeAppTheme.colors.borderDivider,
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
             }
@@ -238,7 +246,7 @@ fun ScreenMessageWithAction(
             modifier = Modifier
                 .size(100.dp)
                 .background(
-                    color = ComposeAppTheme.colors.raina,
+                    color = ComposeAppTheme.colors.surfacePlaceholder,
                     shape = CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -305,7 +313,7 @@ fun TopCloseButton(
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
                     .size(24.dp),
-                tint = ComposeAppTheme.colors.brand
+                tint = ComposeAppTheme.colors.brandDefault
             )
         }
     }
@@ -317,7 +325,7 @@ fun DescriptionCard(title: String, description: String, image: ImageSource) {
         Row(
             modifier = Modifier
                 .height(108.dp)
-                .background(ComposeAppTheme.colors.tyler)
+                .background(ComposeAppTheme.colors.backgroundBase)
         ) {
             Column(
                 modifier = Modifier
@@ -354,10 +362,10 @@ fun CategoryCard(
     onClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier.height(128.dp),
+        modifier = Modifier.height(128.dp).plateOutline(RoundedCornerShape(12.dp)),
         shape = RoundedCornerShape(12.dp),
         elevation = 0.dp,
-        backgroundColor = ComposeAppTheme.colors.lawrence,
+        backgroundColor = plateBackground(),
         onClick = onClick
     ) {
         Box(modifier = Modifier.fillMaxSize()) {

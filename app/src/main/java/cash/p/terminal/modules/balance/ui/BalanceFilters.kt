@@ -37,9 +37,9 @@ import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.displayoptions.DisplayPricePeriod
-import cash.p.terminal.ui.compose.components.AlertGroup
-import cash.p.terminal.ui.compose.components.SelectorDialogCompose
-import cash.p.terminal.ui.compose.components.SelectorItem
+import cash.p.terminal.ui_compose.components.AlertGroup
+import cash.p.terminal.ui_compose.components.AppSelectorDialog
+import cash.p.terminal.ui_compose.components.AppSelectorItem
 import cash.p.terminal.ui_compose.Select
 import cash.p.terminal.ui_compose.components.balanceSurfaceIndication
 import cash.p.terminal.ui_compose.components.subhead2_leah
@@ -59,7 +59,7 @@ internal fun BalanceFilters(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(ComposeAppTheme.colors.tyler)
+            .background(ComposeAppTheme.colors.backgroundBase)
             .padding(start = 16.dp, top = 2.dp, bottom = 2.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -106,13 +106,13 @@ private fun BalanceSortingSelector(
         onClick = { showDialog = true },
     )
     if (showDialog) {
-        SelectorDialogCompose(
+        AppSelectorDialog(
             title = stringResource(R.string.Balance_Sort_PopupTitle),
             items = sort.options.map {
-                SelectorItem(stringResource(it.getTitleRes()), it == sort.selected, it)
+                AppSelectorItem(stringResource(it.getTitleRes()), it == sort.selected, it)
             },
-            onDismissRequest = { showDialog = false },
-            onSelectItem = onSelectSortType,
+            onDismiss = { showDialog = false },
+            onSelect = onSelectSortType,
         )
     }
 }
@@ -244,7 +244,7 @@ private fun BalanceFiltersPreview() {
             BalanceSortType.Value,
             listOf(BalanceSortType.Value, BalanceSortType.Name, BalanceSortType.PercentGrowth),
         )
-        Column(modifier = Modifier.background(ComposeAppTheme.colors.tyler)) {
+        Column(modifier = Modifier.background(ComposeAppTheme.colors.backgroundBase)) {
             listOf(
                 DisplayDiffOptionType.BOTH to false,
                 DisplayDiffOptionType.NONE to false,

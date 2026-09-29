@@ -90,7 +90,7 @@ fun FeeInfoSection(
         VSpacer(height = 8.dp)
         Caption(
             text = feeWarningText,
-            color = ComposeAppTheme.colors.yellow,
+            color = ComposeAppTheme.colors.statusWarning,
             modifier = Modifier.padding(horizontal = 32.dp),
         )
     }

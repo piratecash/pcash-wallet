@@ -170,7 +170,6 @@ private fun RestoreLocalScreen(
                 contenView = view,
                 resId = R.string.Hud_Text_Restored,
                 icon = R.drawable.icon_add_to_wallet_2_24,
-                iconTint = R.color.white
             )
             delay(300)
             close.invoke()
@@ -213,7 +212,7 @@ private fun RestoreLocalScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.ImportBackupFile_EnterPassword),
@@ -293,7 +292,6 @@ private fun BackupFileItems(
                 contenView = view,
                 resId = R.string.Hud_Text_Restored,
                 icon = R.drawable.icon_add_to_wallet_2_24,
-                iconTint = R.color.white
             )
             delay(300)
             close.invoke()
@@ -322,7 +320,7 @@ private fun BackupFileItems(
                 title = stringResource(R.string.BackupManager_MergeTitle),
                 text = stringResource(R.string.BackupManager_MergeDescription),
                 iconPainter = painterResource(R.drawable.icon_warning_2_20),
-                iconTint = ColorFilter.tint(ComposeAppTheme.colors.lucian),
+                iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusError),
                 confirmText = stringResource(R.string.BackupManager_MergeButton),
                 cautionType = Caution.Type.Error,
                 cancelText = stringResource(R.string.Button_Cancel),
@@ -337,7 +335,7 @@ private fun BackupFileItems(
         }
     ) {
         Scaffold(
-            containerColor = ComposeAppTheme.colors.tyler,
+            containerColor = ComposeAppTheme.colors.backgroundBase,
             topBar = {
                 AppBar(
                     title = stringResource(R.string.BackupManager_BаckupFile),

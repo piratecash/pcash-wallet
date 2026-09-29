@@ -80,7 +80,7 @@ fun ReleaseNotesScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             if (closeablePopup) {
                 AppBar(
@@ -116,14 +116,14 @@ fun ReleaseNotesScreen(
 
             HorizontalDivider(
                 thickness = 1.dp,
-                color = ComposeAppTheme.colors.steel10,
+                color = ComposeAppTheme.colors.borderDivider,
             )
 
             ConnectionStatusView()
             RowUniversal(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(ComposeAppTheme.colors.tyler)
+                    .background(ComposeAppTheme.colors.backgroundBase)
                     .padding(horizontal = 16.dp),
                 onClick = onShowChangelogToggle,
             ) {
@@ -143,7 +143,7 @@ fun ReleaseNotesScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(ComposeAppTheme.colors.tyler)
+                    .background(ComposeAppTheme.colors.backgroundBase)
                     .padding(bottom = paddingValues.calculateBottomPadding())
                     .height(40.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -186,7 +186,7 @@ private fun IconButton(icon: Int, url: String, description: String) {
         Icon(
             painter = painterResource(id = icon),
             contentDescription = description,
-            tint = ComposeAppTheme.colors.brand
+            tint = ComposeAppTheme.colors.brandDefault
         )
     }
 }

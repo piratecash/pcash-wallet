@@ -14,8 +14,8 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 fun BadgeText(
     text: String,
     modifier: Modifier = Modifier,
-    background: Color = ComposeAppTheme.colors.lucian,
-    textColor: Color = ComposeAppTheme.colors.white,
+    background: Color = ComposeAppTheme.colors.statusError,
+    textColor: Color = ComposeAppTheme.colors.contentOnColor,
 ) {
     BadgeBase(
         background = background,
@@ -109,7 +109,7 @@ fun C3(
 ) {
     SettingsText(
         text = text,
-        color = ComposeAppTheme.colors.brand,
+        color = ComposeAppTheme.colors.brandDefault,
         style = ComposeAppTheme.typography.subhead1,
         modifier = modifier,
         textAlign = textAlign,

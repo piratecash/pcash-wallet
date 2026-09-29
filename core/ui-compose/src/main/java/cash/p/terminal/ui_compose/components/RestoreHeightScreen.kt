@@ -59,7 +59,7 @@ fun RestoreHeightScreen(
 ) {
     Scaffold(
         modifier = modifier,
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = topBar,
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
@@ -164,7 +164,7 @@ private fun RestoreHeightModeCell(
             if (checked) {
                 Icon(
                     painter = painterResource(R.drawable.ic_checkmark_20),
-                    tint = ComposeAppTheme.colors.brand,
+                    tint = ComposeAppTheme.colors.brandDefault,
                     contentDescription = null,
                 )
             }

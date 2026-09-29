@@ -113,7 +113,7 @@ fun BalanceCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(ComposeAppTheme.colors.surfacePrimary)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -159,12 +159,12 @@ fun BalanceCardInner(
                 viewItem.stackingUnpaid?.let { stackingUnpaid ->
                     if (layout.fullWidth) {
                         Spacer(Modifier.height(17.dp))
-                        HorizontalDivider(thickness = 1.dp, color = ComposeAppTheme.colors.divider)
+                        HorizontalDivider(thickness = 1.dp, color = ComposeAppTheme.colors.borderDivider)
                         Spacer(Modifier.height(5.dp))
                     } else {
                         HorizontalDivider(
                             thickness = 1.dp,
-                            color = ComposeAppTheme.colors.steel10,
+                            color = ComposeAppTheme.colors.borderDivider,
                             modifier = Modifier.padding(horizontal = 12.dp)
                         )
                     }
@@ -176,7 +176,7 @@ fun BalanceCardInner(
             HorizontalDivider(
                 modifier = Modifier.align(Alignment.TopCenter),
                 thickness = 1.dp,
-                color = ComposeAppTheme.colors.divider,
+                color = ComposeAppTheme.colors.borderDivider,
             )
         }
     }

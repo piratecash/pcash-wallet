@@ -124,7 +124,7 @@ fun ReceiveScreen(navController: NavController, wallet: Wallet, receiveEntryPoin
                 HorizontalDivider(
                     modifier = Modifier.fillMaxWidth(),
                     thickness = 1.dp,
-                    color = ComposeAppTheme.colors.steel20,
+                    color = ComposeAppTheme.colors.borderDivider,
                 )
             }
         },

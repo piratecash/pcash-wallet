@@ -46,7 +46,7 @@ class IndicatorsAlertDialog : BaseComposableBottomSheetFragment() {
 
 @Composable
 private fun IndicatorsAlertScreen(navController: NavController) {
-    cash.p.terminal.ui_compose.theme.ComposeAppTheme {
+    ComposeAppTheme {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.icon_24_lock),
             iconTint = ColorFilter.tint(ComposeAppTheme.colors.iconSecondary),

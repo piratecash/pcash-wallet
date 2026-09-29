@@ -59,7 +59,7 @@ fun AppStatusScreen(
     val context = LocalContext.current
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.Settings_AppStatus),

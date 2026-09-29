@@ -72,7 +72,7 @@ fun headline1_bran(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.headline1,
-        color = ComposeAppTheme.colors.bran,
+        color = ComposeAppTheme.colors.textPrimary,
     )
 }
 
@@ -93,7 +93,7 @@ fun body_bran(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.body,
-        color = ComposeAppTheme.colors.bran,
+        color = ComposeAppTheme.colors.textPrimary,
     )
 }
 
@@ -197,7 +197,7 @@ fun A3(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.headline2,
-        color = ComposeAppTheme.colors.brand,
+        color = ComposeAppTheme.colors.brandDefault,
     )
 }
 @Composable
@@ -285,7 +285,7 @@ fun B3(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.body,
-        color = ComposeAppTheme.colors.brand,
+        color = ComposeAppTheme.colors.brandDefault,
     )
 }
 @Composable
@@ -324,7 +324,7 @@ fun B4(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.body,
-        color = ComposeAppTheme.colors.remus,
+        color = ComposeAppTheme.colors.statusSuccess,
     )
 }
 @Composable
@@ -363,7 +363,7 @@ fun B5(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.body,
-        color = ComposeAppTheme.colors.lucian,
+        color = ComposeAppTheme.colors.statusError,
     )
 }
 @Composable
@@ -525,7 +525,7 @@ fun C4(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead1,
-        color = ComposeAppTheme.colors.remus,
+        color = ComposeAppTheme.colors.statusSuccess,
     )
 }
 @Composable
@@ -564,7 +564,7 @@ fun C5(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead1,
-        color = ComposeAppTheme.colors.lucian,
+        color = ComposeAppTheme.colors.statusError,
     )
 }
 @Composable
@@ -751,7 +751,7 @@ fun D3(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead2,
-        color = ComposeAppTheme.colors.brand,
+        color = ComposeAppTheme.colors.brandDefault,
     )
 }
 @Composable
@@ -790,7 +790,7 @@ fun D4(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead2,
-        color = ComposeAppTheme.colors.remus,
+        color = ComposeAppTheme.colors.statusSuccess,
     )
 }
 @Composable
@@ -829,7 +829,7 @@ fun D5(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead2,
-        color = ComposeAppTheme.colors.lucian,
+        color = ComposeAppTheme.colors.statusError,
     )
 }
 @Composable
@@ -890,7 +890,7 @@ fun D6(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.subhead2,
-        color = ComposeAppTheme.colors.issykBlue,
+        color = ComposeAppTheme.colors.brandDefault,
     )
 }
 
@@ -1078,7 +1078,7 @@ fun E4(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.captionSB,
-        color = ComposeAppTheme.colors.remus,
+        color = ComposeAppTheme.colors.statusSuccess,
     )
 }
 @Composable
@@ -1117,7 +1117,7 @@ fun E5(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.captionSB,
-        color = ComposeAppTheme.colors.lucian,
+        color = ComposeAppTheme.colors.statusError,
     )
 }
 @Composable
@@ -1200,7 +1200,7 @@ fun F3(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.caption,
-        color = ComposeAppTheme.colors.brand,
+        color = ComposeAppTheme.colors.brandDefault,
     )
 }
 @Composable
@@ -1239,7 +1239,7 @@ fun F4(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.caption,
-        color = ComposeAppTheme.colors.remus,
+        color = ComposeAppTheme.colors.statusSuccess,
     )
 }
 @Composable
@@ -1278,7 +1278,7 @@ fun F5(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.caption,
-        color = ComposeAppTheme.colors.lucian,
+        color = ComposeAppTheme.colors.statusError,
     )
 }
 @Composable
@@ -1322,7 +1322,7 @@ fun F11(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
         style = ComposeAppTheme.typography.caption,
-        color = ComposeAppTheme.colors.bran,
+        color = ComposeAppTheme.colors.textPrimary,
     )
 }
 
@@ -1616,7 +1616,7 @@ private fun BalanceTypographyPreview() {
     ComposeAppTheme {
         Column(
             modifier = Modifier
-                .background(ComposeAppTheme.colors.tyler)
+                .background(ComposeAppTheme.colors.backgroundBase)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {

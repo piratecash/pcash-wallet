@@ -305,7 +305,7 @@ fun SendBtcFeeSettingsScreen(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
             .fillMaxSize()
-            .background(color = ComposeAppTheme.colors.tyler)
+            .background(color = ComposeAppTheme.colors.backgroundBase)
     ) {
         AppBar(
             title = stringResource(R.string.SendEvmSettings_Title),
@@ -314,7 +314,7 @@ fun SendBtcFeeSettingsScreen(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_back),
                         contentDescription = "back button",
-                        tint = ComposeAppTheme.colors.brand
+                        tint = ComposeAppTheme.colors.brandDefault
                     )
                 }
             },
@@ -322,7 +322,7 @@ fun SendBtcFeeSettingsScreen(
                 MenuItem(
                     title = TranslatableString.ResString(R.string.Button_Reset),
                     enabled = uiState.resetEnabled,
-                    tint = ComposeAppTheme.colors.brand,
+                    tint = ComposeAppTheme.colors.brandDefault,
                     onClick = {
                         viewModel.reset()
                     }

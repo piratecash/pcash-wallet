@@ -47,7 +47,7 @@ fun CellBlockchainChecked(
         if (checked) {
             Icon(
                 painter = painterResource(R.drawable.ic_checkmark_20),
-                tint = ComposeAppTheme.colors.brand,
+                tint = ComposeAppTheme.colors.brandDefault,
                 contentDescription = null,
             )
         }

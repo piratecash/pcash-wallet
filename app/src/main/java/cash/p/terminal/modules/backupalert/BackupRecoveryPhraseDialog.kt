@@ -59,7 +59,7 @@ fun BackupRecoveryPhraseScreen(
     ComposeAppTheme {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_attention_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.yellow),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
             title = stringResource(R.string.BackupRecoveryPhrase_Title),
             onCloseClick = {
                 navController.popBackStackSafely()

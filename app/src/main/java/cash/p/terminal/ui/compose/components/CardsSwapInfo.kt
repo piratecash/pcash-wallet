@@ -18,9 +18,9 @@ fun CardsSwapInfo(
     content: @Composable (ColumnScope.() -> Unit)
 ) {
     val borderColor = when {
-        isError -> ComposeAppTheme.colors.lucian
-        isWarning -> ComposeAppTheme.colors.yellow
-        else -> ComposeAppTheme.colors.steel20
+        isError -> ComposeAppTheme.colors.statusError
+        isWarning -> ComposeAppTheme.colors.statusWarning
+        else -> ComposeAppTheme.colors.borderDefault
     }
     Column(
         modifier = Modifier

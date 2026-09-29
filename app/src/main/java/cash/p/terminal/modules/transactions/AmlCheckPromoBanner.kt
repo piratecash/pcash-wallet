@@ -44,8 +44,8 @@ fun AmlCheckPromoBanner(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, ComposeAppTheme.colors.yellow, RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence)
+            .border(1.dp, ComposeAppTheme.colors.statusWarning, RoundedCornerShape(12.dp))
+            .background(ComposeAppTheme.colors.surfacePrimary)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -55,12 +55,12 @@ fun AmlCheckPromoBanner(
             Icon(
                 painter = painterResource(id = R.drawable.ic_star_filled_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.yellow,
+                tint = ComposeAppTheme.colors.statusWarning,
                 modifier = Modifier.size(20.dp)
             )
             Subhead1(
                 text = stringResource(R.string.premium_title),
-                color = ComposeAppTheme.colors.yellow,
+                color = ComposeAppTheme.colors.statusWarning,
                 modifier = Modifier.weight(1f),
             )
             HsIconButton(
@@ -69,7 +69,7 @@ fun AmlCheckPromoBanner(
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_close_24),
-                    tint = ComposeAppTheme.colors.yellow,
+                    tint = ComposeAppTheme.colors.statusWarning,
                     contentDescription = null,
                 )
             }
@@ -81,7 +81,7 @@ fun AmlCheckPromoBanner(
                 .padding(start = 4.dp, end = 4.dp, bottom = 4.dp)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
-                .border(1.dp, ComposeAppTheme.colors.steel20, RoundedCornerShape(12.dp))
+                .border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(12.dp))
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
             Text(

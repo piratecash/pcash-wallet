@@ -374,7 +374,7 @@ fun SendEvmFeeSettingsScreen(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
             .fillMaxSize()
-            .background(color = ComposeAppTheme.colors.tyler)
+            .background(color = ComposeAppTheme.colors.backgroundBase)
     ) {
         AppBar(
             title = stringResource(R.string.SendEvmSettings_Title),
@@ -383,7 +383,7 @@ fun SendEvmFeeSettingsScreen(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_back),
                         contentDescription = "back button",
-                        tint = ComposeAppTheme.colors.brand
+                        tint = ComposeAppTheme.colors.brandDefault
                     )
                 }
             },

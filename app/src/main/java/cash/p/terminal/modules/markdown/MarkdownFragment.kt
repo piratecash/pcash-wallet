@@ -63,7 +63,7 @@ private fun MarkdownScreen(
 ) {
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             if (showAsPopup) {
                 AppBar(

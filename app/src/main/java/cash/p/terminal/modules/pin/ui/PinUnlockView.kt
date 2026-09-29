@@ -71,15 +71,13 @@ fun PinUnlock(
     }
 
     if (showBiometricDisabledAlert) {
-        BiometricDisabledDialog {
-            showBiometricDisabledAlert = false
-        }
+        BiometricDisabledDialog(onClick = { showBiometricDisabledAlert = false })
     }
 
     if (!showPinLockScreen) return
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             Row(
                 modifier = Modifier

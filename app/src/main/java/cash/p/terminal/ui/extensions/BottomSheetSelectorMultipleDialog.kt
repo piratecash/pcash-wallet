@@ -35,6 +35,7 @@ import cash.p.terminal.ui.helpers.TextHelper
 import cash.p.terminal.ui_compose.BaseComposableBottomSheetFragment
 import cash.p.terminal.ui_compose.BottomSheetHeader
 import cash.p.terminal.ui_compose.components.HudHelper
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import java.util.UUID
 
 class BottomSheetSelectorMultipleDialog(
@@ -64,7 +65,7 @@ class BottomSheetSelectorMultipleDialog(
                 ViewCompositionStrategy.DisposeOnLifecycleDestroyed(viewLifecycleOwner)
             )
             setContent {
-                cash.p.terminal.ui_compose.theme.ComposeAppTheme {
+                ComposeAppTheme {
                     BottomSheetHeader(
                         iconPainter = icon.painter(),
                         title = title,
@@ -92,7 +93,7 @@ class BottomSheetSelectorMultipleDialog(
                 .padding(horizontal = 16.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .border(
-                    1.dp, cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.steel10, RoundedCornerShape(12.dp)
+                    1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(12.dp)
                 )
         ) {
             items.forEachIndexed { index, item ->

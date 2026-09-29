@@ -64,7 +64,7 @@ fun TokenMissingScreen(
                     modifier = Modifier
                         .size(100.dp)
                         .clip(CircleShape)
-                        .background(ComposeAppTheme.colors.steel10),
+                        .background(ComposeAppTheme.colors.surfacePlaceholder),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(

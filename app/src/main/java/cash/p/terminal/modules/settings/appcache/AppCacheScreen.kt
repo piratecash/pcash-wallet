@@ -65,7 +65,7 @@ private fun AppCacheContent(
     onClearItemClick: (CacheType) -> Unit
 ) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.settings_app_cache_title),

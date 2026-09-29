@@ -35,7 +35,7 @@ fun LocalBackupTermsScreen(
     var termChecked by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.LocalBackup_Title),

@@ -42,7 +42,7 @@ internal fun TokenSelectScreen(
     header: @Composable (() -> Unit)? = null
 ) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             SearchBarV2(
                 title = title,

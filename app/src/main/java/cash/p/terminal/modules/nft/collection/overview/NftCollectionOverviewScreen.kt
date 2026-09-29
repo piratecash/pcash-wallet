@@ -212,7 +212,7 @@ private fun Stats(collection: NftCollectionOverviewViewItem) {
                     .weight(1f),
                 shape = RoundedCornerShape(12.dp),
                 elevation = 0.dp,
-                backgroundColor = cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.lawrence
+                backgroundColor = ComposeAppTheme.colors.surfacePrimary
             ) {
                 Column(
                     modifier = Modifier.padding(12.dp)
@@ -222,7 +222,7 @@ private fun Stats(collection: NftCollectionOverviewViewItem) {
                     Text(
                         text = collection.totalSupply,
                         style = ComposeAppTheme.typography.headline1,
-                        color = ComposeAppTheme.colors.bran,
+                        color = ComposeAppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
@@ -240,7 +240,7 @@ private fun Stats(collection: NftCollectionOverviewViewItem) {
                     .weight(1f),
                 shape = RoundedCornerShape(12.dp),
                 elevation = 0.dp,
-                backgroundColor = cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.lawrence
+                backgroundColor = ComposeAppTheme.colors.surfacePrimary
             ) {
                 Column(
                     modifier = Modifier.padding(12.dp)
@@ -250,7 +250,7 @@ private fun Stats(collection: NftCollectionOverviewViewItem) {
                     Text(
                         text = collection.floorPrice?.coinValue ?: "---",
                         style = ComposeAppTheme.typography.headline1,
-                        color = ComposeAppTheme.colors.bran,
+                        color = ComposeAppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
@@ -270,7 +270,7 @@ private fun Stats(collection: NftCollectionOverviewViewItem) {
                     .weight(1f),
                 shape = RoundedCornerShape(12.dp),
                 elevation = 0.dp,
-                backgroundColor = cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.lawrence
+                backgroundColor = ComposeAppTheme.colors.surfacePrimary
             ) {
                 Column(
                     modifier = Modifier.padding(12.dp)
@@ -280,7 +280,7 @@ private fun Stats(collection: NftCollectionOverviewViewItem) {
                     Text(
                         text = collection.oneDayVolume ?: "---",
                         style = ComposeAppTheme.typography.headline1,
-                        color = ComposeAppTheme.colors.bran,
+                        color = ComposeAppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
@@ -299,7 +299,7 @@ private fun Stats(collection: NftCollectionOverviewViewItem) {
                     .weight(1f),
                 shape = RoundedCornerShape(12.dp),
                 elevation = 0.dp,
-                backgroundColor = cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.lawrence
+                backgroundColor = ComposeAppTheme.colors.surfacePrimary
             ) {
                 Column(
                     modifier = Modifier.padding(12.dp)
@@ -313,7 +313,7 @@ private fun Stats(collection: NftCollectionOverviewViewItem) {
                             )
                         } ?: "",
                         style = ComposeAppTheme.typography.headline1,
-                        color = ComposeAppTheme.colors.bran,
+                        color = ComposeAppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(

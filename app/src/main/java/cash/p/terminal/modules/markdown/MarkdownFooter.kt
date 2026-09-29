@@ -21,7 +21,7 @@ fun ColumnScope.MarkdownFooter() {
     Divider(
         modifier = Modifier.fillMaxWidth(),
         thickness = 1.dp,
-        color = ComposeAppTheme.colors.steel10
+        color = ComposeAppTheme.colors.borderDivider
     )
 
     Spacer(Modifier.height(12.dp))

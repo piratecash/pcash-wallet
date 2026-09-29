@@ -59,7 +59,7 @@ fun AddressCheckerScreen(
     val viewModel = viewModel<AddressCheckerViewModel>(factory = AddressCheckerModule.Factory())
     val uiState = viewModel.uiState
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.address_checker_title),

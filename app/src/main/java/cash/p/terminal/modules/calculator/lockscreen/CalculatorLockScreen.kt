@@ -65,7 +65,7 @@ fun CalculatorLockScreen(
 ) {
     Scaffold(
         modifier = modifier,
-        containerColor = ComposeAppTheme.colors.tyler
+        containerColor = ComposeAppTheme.colors.backgroundBase
     ) { contentPadding ->
         Column(
             modifier = Modifier
@@ -95,7 +95,7 @@ fun CalculatorLockScreen(
             HorizontalDivider(
                 modifier = Modifier.padding(top = 4.dp, bottom = 24.dp),
                 thickness = 0.5.dp,
-                color = ComposeAppTheme.colors.steel20,
+                color = ComposeAppTheme.colors.borderDivider,
             )
             Keypad(
                 actions = actions,
@@ -270,7 +270,7 @@ private fun CircleButton(
             .background(style.backgroundColor())
             .then(
                 if (style.hasBorder) {
-                    Modifier.border(1.dp, ComposeAppTheme.colors.steel20, CircleShape)
+                    Modifier.border(1.dp, ComposeAppTheme.colors.borderDefault, CircleShape)
                 } else {
                     Modifier
                 }
@@ -334,9 +334,9 @@ private enum class ButtonStyle {
 
     @Composable
     fun backgroundColor(): Color = when (this) {
-        Digit -> ComposeAppTheme.colors.lawrence
+        Digit -> ComposeAppTheme.colors.surfacePrimary
         Operator -> ComposeAppTheme.colors.textSecondary
-        Equals -> ComposeAppTheme.colors.brand
+        Equals -> ComposeAppTheme.colors.brandDefault
         Transparent -> Color.Transparent
     }
 
@@ -345,7 +345,7 @@ private enum class ButtonStyle {
         Digit -> ComposeAppTheme.colors.textPrimary
         Operator -> ComposeAppTheme.colors.textPrimary
         Equals -> ComposeAppTheme.colors.textPrimary
-        Transparent -> ComposeAppTheme.colors.brand
+        Transparent -> ComposeAppTheme.colors.brandDefault
     }
 }
 

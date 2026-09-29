@@ -51,7 +51,7 @@ class WCErrorNoAccountFragment : BaseComposableBottomSheetFragment() {
 fun WalletConnectErrorNoAccount(onCloseClick: () -> Unit) {
     BottomSheetHeader(
         iconPainter = painterResource(R.drawable.ic_wallet_connect_24),
-        iconTint = ColorFilter.tint(ComposeAppTheme.colors.brand),
+        iconTint = ColorFilter.tint(ComposeAppTheme.colors.brandDefault),
         title = stringResource(R.string.WalletConnect_Title),
         onCloseClick = onCloseClick
     ) {

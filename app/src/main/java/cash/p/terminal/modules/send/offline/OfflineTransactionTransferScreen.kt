@@ -89,7 +89,7 @@ internal fun OfflineTransactionTransferScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.offline_transaction_transfer_title),
@@ -261,7 +261,7 @@ private fun QrCodePanelFrame(
             .padding(horizontal = 16.dp)
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(ComposeAppTheme.colors.surfacePrimary)
             .padding(vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -271,7 +271,7 @@ private fun QrCodePanelFrame(
                 .fillMaxWidth()
                 .aspectRatio(1f)
                 .clip(RoundedCornerShape(8.dp))
-                .background(ComposeAppTheme.colors.white),
+                .background(ComposeAppTheme.colors.qrBackground),
             contentAlignment = Alignment.Center,
             content = content,
         )

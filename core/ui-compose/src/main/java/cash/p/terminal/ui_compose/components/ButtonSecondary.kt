@@ -100,9 +100,9 @@ fun ButtonSecondaryYellow(
         onClick = onClick,
         border = null,
         buttonColors = ButtonPrimaryDefaults.textButtonColors(
-            backgroundColor = ComposeAppTheme.colors.brand,
-            contentColor = ComposeAppTheme.colors.dark,
-            disabledBackgroundColor = ComposeAppTheme.colors.steel20,
+            backgroundColor = ComposeAppTheme.colors.brandDefault,
+            contentColor = ComposeAppTheme.colors.buttonPrimaryBrandContent,
+            disabledBackgroundColor = ComposeAppTheme.colors.buttonPrimaryDisabledBackground,
             disabledContentColor = ComposeAppTheme.colors.textDisabled,
         ),
         content = {
@@ -250,7 +250,7 @@ fun <T : WithTranslatableTitle> ButtonSecondaryToggle(
                                 .clip(CircleShape)
                                 .background(
                                     if (select.selected == it) {
-                                        ComposeAppTheme.colors.brand
+                                        ComposeAppTheme.colors.brandDefault
                                     } else {
                                         ComposeAppTheme.colors.textSecondary
                                     }
@@ -378,17 +378,17 @@ private fun ButtonSecondaryCustomPreview() {
         ) {
             ButtonSecondaryCustom(
                 title = "Custom Color",
-                textColor = ComposeAppTheme.colors.brand,
+                textColor = ComposeAppTheme.colors.brandDefault,
                 onClick = {}
             )
             ButtonSecondaryCustom(
                 title = "Custom Red",
-                textColor = ComposeAppTheme.colors.lucian,
+                textColor = ComposeAppTheme.colors.statusError,
                 onClick = {}
             )
             ButtonSecondaryCustom(
                 title = "Custom Disabled",
-                textColor = ComposeAppTheme.colors.brand,
+                textColor = ComposeAppTheme.colors.brandDefault,
                 onClick = {},
                 enabled = false
             )

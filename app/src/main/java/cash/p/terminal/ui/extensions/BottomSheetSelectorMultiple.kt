@@ -66,7 +66,7 @@ fun BottomSheetSelectorMultiple(
             val listModifier = Modifier
                 .padding(horizontal = 16.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .border(1.dp, ComposeAppTheme.colors.steel10, RoundedCornerShape(12.dp))
+                .border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(12.dp))
 
             val row: @Composable (Int, BottomSheetSelectorViewItem) -> Unit = { index, item ->
                 val borderTop = index != 0

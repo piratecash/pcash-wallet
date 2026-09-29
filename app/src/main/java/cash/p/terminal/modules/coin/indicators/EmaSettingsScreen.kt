@@ -36,8 +36,8 @@ import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.InfoText
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.RowUniversal
-import cash.p.terminal.ui.compose.components.SelectorDialogCompose
-import cash.p.terminal.ui.compose.components.SelectorItem
+import cash.p.terminal.ui_compose.components.AppSelectorDialog
+import cash.p.terminal.ui_compose.components.AppSelectorItem
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead1_grey
@@ -61,22 +61,22 @@ fun EmaSettingsScreen(navController: NavController, indicatorSetting: ChartIndic
     val maType = uiState.maType ?: viewModel.defaultMaType
 
     if (showEmaSelectorDialog) {
-        SelectorDialogCompose(
+        AppSelectorDialog(
             title = stringResource(R.string.CoinPage_Type),
             items = viewModel.maTypes.map {
-                SelectorItem(it, it == maType, it)
+                AppSelectorItem(it, it == maType, it)
             },
-            onDismissRequest = {
+            onDismiss = {
                 showEmaSelectorDialog = false
             },
-            onSelectItem = {
+            onSelect = {
                 viewModel.onSelectMaType(it)
             }
         )
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = viewModel.name,

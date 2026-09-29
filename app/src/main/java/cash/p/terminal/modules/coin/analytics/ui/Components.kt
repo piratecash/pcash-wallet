@@ -107,7 +107,7 @@ fun AnalyticsFooterCell(
     if (showTopDivider) {
         Divider(
             thickness = 1.dp,
-            color = ComposeAppTheme.colors.steel10,
+            color = ComposeAppTheme.colors.borderDivider,
             modifier = Modifier.fillMaxWidth()
         )
     }
@@ -207,8 +207,8 @@ private fun BoxItemCell(
 @Composable
 private fun RatingCell(rating: OverallScore) {
     val color = when (rating) {
-        OverallScore.Excellent -> Color(0xFF05C46B)
-        OverallScore.Good -> Color(0xFFFFA800)
+        OverallScore.Excellent -> ComposeAppTheme.colors.statusSuccess
+        OverallScore.Good -> ComposeAppTheme.colors.statusWarning
         OverallScore.Fair -> Color(0xFFFF7A00)
         OverallScore.Poor -> Color(0xFFFF3D00)
     }
@@ -237,7 +237,7 @@ fun AnalyticsContainer(
     sectionTitle?.let {
         Divider(
             thickness = 1.dp,
-            color = ComposeAppTheme.colors.steel10,
+            color = ComposeAppTheme.colors.borderDivider,
             modifier = Modifier.fillMaxWidth()
         )
         RowUniversal(content = it)
@@ -247,14 +247,14 @@ fun AnalyticsContainer(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(ComposeAppTheme.colors.surfacePrimary)
     ) {
         titleRow?.invoke()
         content.invoke()
         if (showFooterDivider) {
             Divider(
                 thickness = 1.dp,
-                color = ComposeAppTheme.colors.steel10,
+                color = ComposeAppTheme.colors.borderDivider,
                 modifier = Modifier.fillMaxWidth()
             )
         }

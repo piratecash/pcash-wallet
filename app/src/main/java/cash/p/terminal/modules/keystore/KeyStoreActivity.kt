@@ -14,23 +14,20 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
+import cash.p.terminal.ui_compose.components.AppDialog
 import androidx.core.content.ContextCompat
 import cash.p.terminal.R
 import cash.p.terminal.core.BaseActivity
@@ -173,12 +170,12 @@ private fun KeyStoreScreen(
     ComposeAppTheme {
         if (viewModel.showSystemLockWarning) {
             Scaffold(
-                containerColor = ComposeAppTheme.colors.tyler,
+                containerColor = ComposeAppTheme.colors.backgroundBase,
             ) { innerPaddings ->
                 Column(
                     modifier = Modifier
                         .padding(innerPaddings)
-                        .background(color = ComposeAppTheme.colors.tyler)
+                        .background(color = ComposeAppTheme.colors.backgroundBase)
                         .fillMaxSize(),
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -240,27 +237,20 @@ private fun NoSystemLockWarning(
 
 @Composable
 private fun KeysInvalidatedDialog(onClick: () -> Unit) {
-    Dialog(onDismissRequest = onClick) {
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(ComposeAppTheme.colors.lawrence)
-        ) {
-            BottomSheetsElementsHeader(
-                icon = painterResource(R.drawable.icon_key_24),
-                title = stringResource(R.string.alert_keys_invalidated_title),
-                subtitle = stringResource(R.string.Error),
-                onClickClose = onClick
-            )
-            BottomSheetsElementsText(
-                text = stringResource(R.string.alert_keys_invalidated_description)
-            )
-            BottomSheetsElementsButtons(
-                buttonPrimaryText = stringResource(R.string.Button_Ok),
-                onClickPrimary = onClick
-            )
-        }
+    AppDialog(onDismissRequest = onClick) {
+        BottomSheetsElementsHeader(
+            icon = painterResource(R.drawable.icon_key_24),
+            title = stringResource(R.string.alert_keys_invalidated_title),
+            subtitle = stringResource(R.string.Error),
+            onClickClose = onClick
+        )
+        BottomSheetsElementsText(
+            text = stringResource(R.string.alert_keys_invalidated_description)
+        )
+        BottomSheetsElementsButtons(
+            buttonPrimaryText = stringResource(R.string.Button_Ok),
+            onClickPrimary = onClick
+        )
     }
 }
 

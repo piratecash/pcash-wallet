@@ -80,7 +80,7 @@ private fun ContactOptionsScreen(
     ComposeAppTheme {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_mail_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.brand),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.brandDefault),
             title = stringResource(input.titleRes),
             onCloseClick = onCloseClick
         ) {

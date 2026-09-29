@@ -70,7 +70,7 @@ class MarketWidgetConfigurationActivity : AppCompatActivity() {
                         .fillMaxSize()
                         .systemBarsPadding()
                 ) {
-                    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+                    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
                         AppBar(
                             title = stringResource(R.string.WidgetList_Config_Title),
                             navigationIcon = null,
@@ -110,7 +110,7 @@ class MarketWidgetConfigurationActivity : AppCompatActivity() {
                                         Image(
                                             painter = painterResource(id = R.drawable.ic_checkmark_20),
                                             contentDescription = null,
-                                            colorFilter = ColorFilter.tint(ComposeAppTheme.colors.brand)
+                                            colorFilter = ColorFilter.tint(ComposeAppTheme.colors.brandDefault)
                                         )
                                     }
                                 }

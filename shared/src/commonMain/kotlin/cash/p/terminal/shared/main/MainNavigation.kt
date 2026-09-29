@@ -77,19 +77,19 @@ fun MainNavigation(
     val colors = ComposeAppTheme.colors
     val itemColors = NavigationSuiteDefaults.itemColors(
         navigationBarItemColors = NavigationBarItemDefaults.colors(
-            selectedIconColor = colors.brand,
+            selectedIconColor = colors.brandDefault,
             unselectedIconColor = colors.iconSecondary,
         ),
         navigationRailItemColors = NavigationRailItemDefaults.colors(
-            selectedIconColor = colors.brand,
+            selectedIconColor = colors.brandDefault,
             unselectedIconColor = colors.iconSecondary,
         ),
     )
     NavigationSuiteScaffold(
         modifier = modifier,
         navigationSuiteColors = NavigationSuiteDefaults.colors(
-            navigationBarContainerColor = colors.navigation,
-            navigationRailContainerColor = colors.navigation,
+            navigationBarContainerColor = colors.backgroundNavigation,
+            navigationRailContainerColor = colors.backgroundNavigation,
         ),
         navigationSuiteItems = {
             MainDestination.entries.forEach { destination ->

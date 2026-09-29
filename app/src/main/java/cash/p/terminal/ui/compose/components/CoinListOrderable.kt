@@ -105,8 +105,8 @@ fun CoinListOrderable(
                         modifier = Modifier
                             .fillMaxHeight()
                             .background(
-                                if (item.favorited) ComposeAppTheme.colors.lucian
-                                else ComposeAppTheme.colors.brand
+                                if (item.favorited) ComposeAppTheme.colors.statusError
+                                else ComposeAppTheme.colors.brandDefault
                             )
                             .align(Alignment.CenterEnd)
                             .width(100.dp)
@@ -127,7 +127,7 @@ fun CoinListOrderable(
                             painter = painterResource(
                                 id = if (item.favorited) R.drawable.ic_star_off_24 else R.drawable.ic_star_24
                             ),
-                            tint = ComposeAppTheme.colors.claude,
+                            tint = ComposeAppTheme.colors.contentInverse,
                             contentDescription = stringResource(
                                 if (item.favorited) R.string.CoinPage_Unfavorite else R.string.CoinPage_Favorite
                             ),
@@ -167,7 +167,7 @@ fun CoinListOrderable(
                     )
                     Divider(
                         thickness = 1.dp,
-                        color = ComposeAppTheme.colors.steel10,
+                        color = ComposeAppTheme.colors.borderDivider,
                         modifier = Modifier.align(Alignment.BottomCenter)
                     )
                 }

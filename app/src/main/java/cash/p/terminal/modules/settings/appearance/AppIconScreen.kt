@@ -73,7 +73,7 @@ internal fun AppIconScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.Appearance_AppIcon),
@@ -142,7 +142,7 @@ private fun AppIconCard(
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(ComposeAppTheme.colors.surfacePrimary)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -207,7 +207,7 @@ private fun IconBox(
                     if (selected) {
                         Modifier
                             .clip(iconCornerShape)
-                            .border(2.dp, ComposeAppTheme.colors.brand, iconCornerShape)
+                            .border(2.dp, ComposeAppTheme.colors.brandDefault, iconCornerShape)
                     } else {
                         Modifier
                     }
@@ -231,7 +231,7 @@ private fun IconBox(
         if (selected || premium) {
             Text(
                 text = name,
-                color = if (premium) ComposeAppTheme.colors.yellow else ComposeAppTheme.colors.brand,
+                color = if (premium) ComposeAppTheme.colors.statusWarning else ComposeAppTheme.colors.brandDefault,
                 style = ComposeAppTheme.typography.subhead1,
             )
         } else {

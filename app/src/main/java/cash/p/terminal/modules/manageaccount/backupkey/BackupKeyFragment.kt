@@ -72,7 +72,7 @@ fun RecoveryPhraseScreen(
     if (viewModel.accountNotFound || account == null) return
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.RecoveryPhrase_Title),

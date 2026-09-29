@@ -103,9 +103,9 @@ fun HSAmountInput(
     }
 
     val borderColor = when (caution?.type) {
-        HSCaution.Type.Error -> ComposeAppTheme.colors.red50
-        HSCaution.Type.Warning -> ComposeAppTheme.colors.yellow50
-        else -> ComposeAppTheme.colors.steel20
+        HSCaution.Type.Error -> ComposeAppTheme.colors.statusError50
+        HSCaution.Type.Warning -> ComposeAppTheme.colors.statusWarning50
+        else -> ComposeAppTheme.colors.borderDefault
     }
 
     var textState by rememberSaveable(stateSaver = TextFieldValue.Saver) {
@@ -153,11 +153,11 @@ fun HSAmountInput(
     when (inputType) {
         AmountInputType.COIN -> {
             inputTextColor = ComposeAppTheme.colors.textPrimary
-            hintTextColor = ComposeAppTheme.colors.brand
+            hintTextColor = ComposeAppTheme.colors.brandDefault
         }
 
         AmountInputType.CURRENCY -> {
-            inputTextColor = ComposeAppTheme.colors.brand
+            inputTextColor = ComposeAppTheme.colors.brandDefault
             hintTextColor = ComposeAppTheme.colors.textPrimary
         }
     }
@@ -167,7 +167,7 @@ fun HSAmountInput(
             modifier = Modifier
                 .clip(RoundedCornerShape(12.dp))
                 .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-                .background(ComposeAppTheme.colors.lawrence),
+                .background(ComposeAppTheme.colors.surfacePrimary),
         ) {
             Row(
                 modifier = Modifier
@@ -208,7 +208,7 @@ fun HSAmountInput(
                         textStyle = ComposeAppTheme.typography.headline2
                     ),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
+                    cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
                     decorationBox = { innerTextField ->
                         Row {
                             viewModel.inputPrefix?.let {
@@ -291,7 +291,7 @@ fun HSAmountInput(
 
             Divider(
                 modifier = Modifier.padding(horizontal = 8.dp),
-                color = ComposeAppTheme.colors.steel10
+                color = ComposeAppTheme.colors.borderDivider
             )
 
             Row(
@@ -321,8 +321,8 @@ fun HSAmountInput(
 
         caution?.let { caution ->
             val color: Color = when (caution.type) {
-                HSCaution.Type.Error -> ComposeAppTheme.colors.redD
-                HSCaution.Type.Warning -> ComposeAppTheme.colors.yellowD
+                HSCaution.Type.Error -> ComposeAppTheme.colors.statusError
+                HSCaution.Type.Warning -> ComposeAppTheme.colors.statusWarning
             }
             Text(
                 modifier = Modifier.padding(start = 8.dp, top = 8.dp, end = 8.dp),

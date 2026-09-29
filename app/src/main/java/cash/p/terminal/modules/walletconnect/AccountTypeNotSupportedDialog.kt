@@ -94,11 +94,11 @@ private fun AccountTypeNotSupportedScreen(
     onSwitchClick: () -> Unit
 ) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler
+        containerColor = ComposeAppTheme.colors.backgroundBase
     ) { innerPadding ->
         BottomSheetHeader(
             iconPainter = painterResource(uiState.iconResId),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.brand),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.brandDefault),
             title = stringResource(uiState.titleResId),
             modifier = Modifier
                 .padding(innerPadding)

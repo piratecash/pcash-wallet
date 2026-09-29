@@ -84,7 +84,7 @@ internal fun ManageAccountScreen(
         onCloseClicked()
     }
 
-    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
         AppBar(
             title = viewState.title,
             navigationIcon = {
@@ -259,7 +259,7 @@ private fun KeyActions(
                     AccountActionItem(
                         title = stringResource(id = R.string.RecoveryPhrase_monero_Title),
                         icon = painterResource(id = R.drawable.icon_paper_contract_20),
-                        iconTint = ComposeAppTheme.colors.yellow
+                        iconTint = ComposeAppTheme.colors.statusWarning
                     ) {
                         navController.authorizedAction {
                             navController.premiumAction {
@@ -462,7 +462,7 @@ private fun RedActionItem(
                 .size(24.dp),
             painter = icon,
             contentDescription = null,
-            tint = ComposeAppTheme.colors.lucian
+            tint = ComposeAppTheme.colors.statusError
         )
 
         body_lucian(
@@ -516,7 +516,7 @@ private fun AccountActionItem(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 painter = painterResource(id = R.drawable.ic_attention_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.lucian
+                tint = ComposeAppTheme.colors.statusError
             )
             Spacer(modifier = Modifier.width(6.dp))
         }
@@ -616,13 +616,13 @@ private fun YellowActionItem(
                     .size(24.dp),
                 painter = icon,
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.yellow
+                tint = ComposeAppTheme.colors.statusWarning
             )
         }
 
         Body(
             text = title,
-            color = ComposeAppTheme.colors.yellow,
+            color = ComposeAppTheme.colors.statusWarning,
             modifier = Modifier.weight(1f),
         )
 
@@ -631,7 +631,7 @@ private fun YellowActionItem(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 painter = painterResource(id = R.drawable.ic_attention_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.lucian
+                tint = ComposeAppTheme.colors.statusError
             )
             HSpacer(6.dp)
         } else if (completed) {
@@ -639,7 +639,7 @@ private fun YellowActionItem(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 painter = painterResource(id = R.drawable.ic_checkmark_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.remus
+                tint = ComposeAppTheme.colors.statusSuccess
             )
             HSpacer(6.dp)
         }

@@ -729,7 +729,7 @@ private fun SwapScreenInner(
 
     Scaffold(
         topBar = { SwapAppBar(uiState, controller) },
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
     ) { contentPadding ->
         val keyboardState by observeKeyboardState()
         var inputFocus by remember { mutableStateOf(SwapInputFocus.None) }
@@ -1157,7 +1157,7 @@ private fun SwapInput(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(18.dp))
-                .background(ComposeAppTheme.colors.lawrence)
+                .background(ComposeAppTheme.colors.surfacePrimary)
         ) {
             SwapCoinInputIn(
                 uiState = uiState,
@@ -1175,7 +1175,7 @@ private fun SwapInput(
         HorizontalDivider(
             modifier = Modifier.align(Alignment.Center),
             thickness = 1.dp,
-            color = ComposeAppTheme.colors.steel20
+            color = ComposeAppTheme.colors.borderDivider
         )
         SwapDirectionIndicator(
             modifier = Modifier.align(Alignment.Center),
@@ -1422,7 +1422,7 @@ private fun FiatAmountInput(
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Decimal
             ),
-            cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
+            cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
             decorationBox = { innerTextField ->
                 if (text.isEmpty()) {
                     body_grey(text = "0")
@@ -1514,7 +1514,7 @@ private fun AmountInput(
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Decimal
         ),
-        cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
+        cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
         decorationBox = { innerTextField ->
             if (textFieldValue.text.isEmpty()) {
                 headline1_grey(text = "0")
@@ -1530,8 +1530,8 @@ private fun parseAmount(value: String): BigDecimal? =
 @Composable
 fun getPriceImpactColor(priceImpactLevel: PriceImpactLevel?): Color {
     return when (priceImpactLevel) {
-        PriceImpactLevel.Warning -> ComposeAppTheme.colors.lucian
-        PriceImpactLevel.Good -> ComposeAppTheme.colors.remus
+        PriceImpactLevel.Warning -> ComposeAppTheme.colors.statusError
+        PriceImpactLevel.Good -> ComposeAppTheme.colors.statusSuccess
         else -> ComposeAppTheme.colors.textSecondary
     }
 }

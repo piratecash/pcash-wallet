@@ -60,7 +60,6 @@ import cash.p.terminal.ui_compose.components.TitleAndTwoValuesCell
 import cash.p.terminal.ui_compose.components.TitleAndValueCell
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.entities.ViewState
-import cash.p.terminal.ui_compose.theme.ColorDivider
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.alternativeImageUrl
@@ -204,7 +203,7 @@ private fun NoCoins(
         )
         Text(
             style = ComposeAppTheme.typography.subhead2,
-            color = ComposeAppTheme.colors.bran.copy(alpha = 0.6f),
+            color = ComposeAppTheme.colors.textSecondary,
             text = stringResource(id = stringResId)
                 .replace("_annual_interest_", uiState.annualInterest)
                 .toSpanned()
@@ -225,7 +224,7 @@ private fun NoCoins(
             )
             Text(
                 style = ComposeAppTheme.typography.subhead2,
-                color = ComposeAppTheme.colors.bran.copy(alpha = 0.6f),
+                color = ComposeAppTheme.colors.textSecondary,
                 text = buyPremiumStringResId,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = 16.dp)
@@ -309,7 +308,7 @@ private fun PirateCoinScreenWithGraph(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(ColorDivider)
+                    .background(ComposeAppTheme.colors.borderDivider)
             )
             Text(
                 style = ComposeAppTheme.typography.body,
@@ -329,7 +328,7 @@ private fun PirateCoinScreenWithGraph(
                     .padding(top = 24.dp)
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(ColorDivider)
+                    .background(ComposeAppTheme.colors.borderDivider)
             )
         }
         payoutList(

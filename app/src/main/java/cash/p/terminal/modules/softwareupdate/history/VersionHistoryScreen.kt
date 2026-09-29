@@ -39,7 +39,7 @@ internal fun VersionHistoryScreen(
     onVersionClick: (ChangelogRequest) -> Unit,
 ) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.version_history_title),

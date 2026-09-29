@@ -35,7 +35,7 @@ fun ManagePasscodeSection(
                 start = {
                     Icon(
                         painter = painterResource(iconRes),
-                        tint = ComposeAppTheme.colors.brand,
+                        tint = ComposeAppTheme.colors.brandDefault,
                         modifier = Modifier.size(24.dp),
                         contentDescription = null,
                     )
@@ -65,7 +65,7 @@ fun ManagePasscodeSection(
                     start = {
                         Icon(
                             painter = painterResource(R.drawable.ic_delete_20),
-                            tint = ComposeAppTheme.colors.lucian,
+                            tint = ComposeAppTheme.colors.statusError,
                             modifier = Modifier.size(24.dp),
                             contentDescription = null,
                         )

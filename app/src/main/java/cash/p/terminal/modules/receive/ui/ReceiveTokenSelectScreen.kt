@@ -50,7 +50,7 @@ fun ReceiveTokenSelectScreen(
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             SearchBar(
                 title = stringResource(R.string.Balance_Receive),

@@ -93,7 +93,7 @@ fun MarketCoin(
                 onClick = onClick ?: { },
                 onLongClick = onLongClick
             )
-            .background(ComposeAppTheme.colors.tyler)
+            .background(ComposeAppTheme.colors.backgroundBase)
             .padding(horizontal = 16.dp)
             .padding(vertical = 12.dp),
         verticalAlignment =  Alignment.CenterVertically,
@@ -143,7 +143,7 @@ fun MarketCoinFirstRow(
                     modifier = Modifier
                         .padding(start = 8.dp)
                         .clip(RoundedCornerShape(4.dp))
-                        .background(ComposeAppTheme.colors.jeremy)
+                        .background(ComposeAppTheme.colors.badgeBackground)
                 ) {
                     Text(
                         modifier = Modifier.padding(
@@ -152,7 +152,7 @@ fun MarketCoinFirstRow(
                             bottom = 1.dp
                         ),
                         text = badge,
-                        color = ComposeAppTheme.colors.bran,
+                        color = ComposeAppTheme.colors.textPrimary,
                         style = ComposeAppTheme.typography.microSB,
                         maxLines = 1,
                     )
@@ -173,21 +173,21 @@ fun MarketCoinFirstRow(
 @Composable
 fun SignalBadge(advice: Advice) {
     val textColor = when (advice) {
-        Advice.Buy -> ComposeAppTheme.colors.remus
-        Advice.Sell -> ComposeAppTheme.colors.lucian
-        Advice.StrongBuy -> ComposeAppTheme.colors.tyler
-        Advice.StrongSell -> ComposeAppTheme.colors.tyler
-        Advice.Neutral -> ComposeAppTheme.colors.bran
-        else -> ComposeAppTheme.colors.brand
+        Advice.Buy -> ComposeAppTheme.colors.statusSuccess
+        Advice.Sell -> ComposeAppTheme.colors.statusError
+        Advice.StrongBuy -> ComposeAppTheme.colors.backgroundBase
+        Advice.StrongSell -> ComposeAppTheme.colors.backgroundBase
+        Advice.Neutral -> ComposeAppTheme.colors.textPrimary
+        else -> ComposeAppTheme.colors.brandDefault
     }
 
     val backgroundColor = when (advice) {
-        Advice.Buy -> ComposeAppTheme.colors.green20
-        Advice.Sell -> ComposeAppTheme.colors.red20
-        Advice.StrongBuy -> ComposeAppTheme.colors.remus
-        Advice.StrongSell -> ComposeAppTheme.colors.lucian
-        Advice.Neutral -> ComposeAppTheme.colors.jeremy
-        else -> ComposeAppTheme.colors.yellow20
+        Advice.Buy -> ComposeAppTheme.colors.statusSuccess20
+        Advice.Sell -> ComposeAppTheme.colors.statusError20
+        Advice.StrongBuy -> ComposeAppTheme.colors.statusSuccess
+        Advice.StrongSell -> ComposeAppTheme.colors.statusError
+        Advice.Neutral -> ComposeAppTheme.colors.badgeBackground
+        else -> ComposeAppTheme.colors.statusWarning20
     }
 
     val text = when (advice) {

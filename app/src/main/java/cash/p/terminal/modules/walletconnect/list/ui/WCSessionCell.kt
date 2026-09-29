@@ -46,7 +46,7 @@ fun WCSessionCell(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(shape)
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(ComposeAppTheme.colors.surfacePrimary)
             .clickable {
                 navController.slideFromBottom(
                     MainGraphDirections.actionGlobalToWcSessionFragment(
@@ -61,7 +61,7 @@ fun WCSessionCell(
         if (showDivider) {
             Divider(
                 thickness = 1.dp,
-                color = ComposeAppTheme.colors.steel10,
+                color = ComposeAppTheme.colors.borderDivider,
                 modifier = Modifier.align(Alignment.TopCenter)
             )
         }

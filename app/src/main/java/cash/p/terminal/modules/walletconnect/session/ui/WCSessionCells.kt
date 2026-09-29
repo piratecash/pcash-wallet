@@ -69,9 +69,9 @@ fun StatusCell(connectionStatus: Status?) {
         Spacer(Modifier.weight(1f))
         connectionStatus?.let { status ->
             val color = when (status) {
-                Status.OFFLINE -> ComposeAppTheme.colors.lucian
+                Status.OFFLINE -> ComposeAppTheme.colors.statusError
                 Status.CONNECTING -> ComposeAppTheme.colors.textPrimary
-                Status.ONLINE -> ComposeAppTheme.colors.remus
+                Status.ONLINE -> ComposeAppTheme.colors.statusSuccess
             }
             Text(
                 text = stringResource(status.value),

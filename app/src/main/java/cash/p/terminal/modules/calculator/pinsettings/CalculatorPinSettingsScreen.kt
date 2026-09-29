@@ -103,7 +103,7 @@ private fun CalculatorPinSettingsContent(
 ) {
     Scaffold(
         modifier = modifier,
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.calculator_pin_settings_title),

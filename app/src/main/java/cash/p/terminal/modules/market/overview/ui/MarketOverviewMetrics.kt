@@ -49,7 +49,7 @@ private fun ChartView(metricsData: MetricData, navController: NavController) {
             },
         shape = RoundedCornerShape(12.dp),
         elevation = 0.dp,
-        backgroundColor = cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.lawrence
+        backgroundColor = ComposeAppTheme.colors.surfacePrimary
     ) {
         Column(
             modifier = Modifier.padding(12.dp)
@@ -60,7 +60,7 @@ private fun ChartView(metricsData: MetricData, navController: NavController) {
                 Text(
                     text = metricsData.value,
                     style = ComposeAppTheme.typography.headline1,
-                    color = ComposeAppTheme.colors.bran,
+                    color = ComposeAppTheme.colors.textPrimary,
                 )
             } else {
                 Text(
@@ -76,7 +76,11 @@ private fun ChartView(metricsData: MetricData, navController: NavController) {
                     Text(
                         text = App.numberFormatter.format(metricsData.diff.abs(), 0, 2, sign, "%"),
                         style = ComposeAppTheme.typography.subhead1,
-                        color = if (metricsData.diff >= BigDecimal.ZERO) cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.remus else cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.lucian,
+                        color = if (metricsData.diff >= BigDecimal.ZERO) {
+                            ComposeAppTheme.colors.statusSuccess
+                        } else {
+                            ComposeAppTheme.colors.statusError
+                        },
                     )
                 } else {
                     Text(

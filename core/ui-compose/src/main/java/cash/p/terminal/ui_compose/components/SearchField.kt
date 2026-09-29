@@ -49,7 +49,8 @@ fun SearchField(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(plateBackground())
+            .plateOutline(RoundedCornerShape(8.dp))
             .height(40.dp),
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
     ) {
@@ -59,7 +60,7 @@ fun SearchField(
                 .size(24.dp),
             painter = painterResource(id = R.drawable.ic_search),
             contentDescription = "search",
-            tint = ComposeAppTheme.colors.brand
+            tint = ComposeAppTheme.colors.brandDefault
         )
         BasicTextField(
             value = searchText,
@@ -77,7 +78,7 @@ fun SearchField(
             keyboardActions = KeyboardActions(onDone = {
                 keyboardController?.hide()
             }),
-            cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
+            cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
             modifier = Modifier
                 .padding(end = 16.dp)
                 .focusRequester(focusRequester)

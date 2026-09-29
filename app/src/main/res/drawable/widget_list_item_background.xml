@@ -4,7 +4,7 @@
     <item android:gravity="top">
         <shape>
             <size android:height="1dp" />
-            <solid android:color="@color/steel_10" />
+            <solid android:color="@android:color/white" />
         </shape>
     </item>
 </ripple>

@@ -79,21 +79,21 @@ fun InfoBlock(checkType: AddressCheckType) {
             text = stringResource(R.string.Send_Address_BlacklistCheck_Info1),
             textColor = ComposeAppTheme.colors.textPrimary,
             highlightPart = "Hashdit.io",
-            highlightColor = ComposeAppTheme.colors.brand
+            highlightColor = ComposeAppTheme.colors.brandDefault
         )
 
         AddressCheckType.AmlCheck -> highlightText(
             text = stringResource(R.string.Send_Address_AmlCheck_Info1),
             textColor = ComposeAppTheme.colors.textPrimary,
             highlightPart = " alpha-aml.com",
-            highlightColor = ComposeAppTheme.colors.brand
+            highlightColor = ComposeAppTheme.colors.brandDefault
         )
 
         AddressCheckType.Sanction -> highlightText(
             text = stringResource(R.string.Send_Address_SanctionCheck_Info1),
             textColor = ComposeAppTheme.colors.textPrimary,
             highlightPart = "Chainalysis.com",
-            highlightColor = ComposeAppTheme.colors.brand
+            highlightColor = ComposeAppTheme.colors.brandDefault
         )
     }
 
@@ -102,35 +102,35 @@ fun InfoBlock(checkType: AddressCheckType) {
             text = stringResource(R.string.Send_Address_NotSmartContractCheck_Info2),
             textColor = ComposeAppTheme.colors.textPrimary,
             highlightPart = stringResource(R.string.Send_Address_Error_Clear),
-            highlightColor = ComposeAppTheme.colors.remus
+            highlightColor = ComposeAppTheme.colors.statusSuccess
         )
 
         AddressCheckType.Phishing -> highlightText(
             text = stringResource(R.string.Send_Address_PhishingCheck_Info2),
             textColor = ComposeAppTheme.colors.textPrimary,
             highlightPart = stringResource(R.string.Send_Address_Error_Clear),
-            highlightColor = ComposeAppTheme.colors.remus
+            highlightColor = ComposeAppTheme.colors.statusSuccess
         )
 
         AddressCheckType.Blacklist -> highlightText(
             text = stringResource(R.string.Send_Address_BlacklistCheck_Info2),
             textColor = ComposeAppTheme.colors.textPrimary,
             highlightPart = stringResource(R.string.Send_Address_Error_Clear),
-            highlightColor = ComposeAppTheme.colors.remus
+            highlightColor = ComposeAppTheme.colors.statusSuccess
         )
 
         AddressCheckType.AmlCheck -> highlightText(
             text = stringResource(R.string.Send_Address_AmlCheck_Info2),
             textColor = ComposeAppTheme.colors.textPrimary,
             highlightPart = stringResource(R.string.Send_Address_Error_Clear),
-            highlightColor = ComposeAppTheme.colors.remus
+            highlightColor = ComposeAppTheme.colors.statusSuccess
         )
 
         AddressCheckType.Sanction -> highlightText(
             text = stringResource(R.string.Send_Address_SanctionCheck_Info2),
             textColor = ComposeAppTheme.colors.textPrimary,
             highlightPart = stringResource(R.string.Send_Address_Error_Clear),
-            highlightColor = ComposeAppTheme.colors.remus
+            highlightColor = ComposeAppTheme.colors.statusSuccess
         )
     }
 
@@ -139,35 +139,35 @@ fun InfoBlock(checkType: AddressCheckType) {
             text = stringResource(R.string.Send_Address_NotSmartContractCheck_Info3),
             textColor = ComposeAppTheme.colors.textPrimary,
             highlightPart = stringResource(R.string.Send_Address_Error_Detected),
-            highlightColor = ComposeAppTheme.colors.lucian
+            highlightColor = ComposeAppTheme.colors.statusError
         )
 
         AddressCheckType.Phishing -> highlightText(
             text = stringResource(R.string.Send_Address_PhishingCheck_Info3),
             textColor = ComposeAppTheme.colors.textPrimary,
             highlightPart = stringResource(R.string.Send_Address_Error_Detected),
-            highlightColor = ComposeAppTheme.colors.lucian
+            highlightColor = ComposeAppTheme.colors.statusError
         )
 
         AddressCheckType.Blacklist -> highlightText(
             text = stringResource(R.string.Send_Address_BlacklistCheck_Info3),
             textColor = ComposeAppTheme.colors.textPrimary,
             highlightPart = stringResource(R.string.Send_Address_Error_Detected),
-            highlightColor = ComposeAppTheme.colors.lucian
+            highlightColor = ComposeAppTheme.colors.statusError
         )
 
         AddressCheckType.AmlCheck -> highlightText(
             text = stringResource(R.string.Send_Address_AmlCheck_Info3),
             textColor = ComposeAppTheme.colors.textPrimary,
             highlightPart = stringResource(R.string.Send_Address_Error_Detected),
-            highlightColor = ComposeAppTheme.colors.lucian
+            highlightColor = ComposeAppTheme.colors.statusError
         )
 
         AddressCheckType.Sanction -> highlightText(
             text = stringResource(R.string.Send_Address_SanctionCheck_Info3),
             textColor = ComposeAppTheme.colors.textPrimary,
             highlightPart = stringResource(R.string.Send_Address_Error_Detected),
-            highlightColor = ComposeAppTheme.colors.lucian
+            highlightColor = ComposeAppTheme.colors.statusError
         )
     }
 

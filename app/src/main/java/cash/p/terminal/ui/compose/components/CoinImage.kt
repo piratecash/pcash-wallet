@@ -99,7 +99,7 @@ fun CoinIconWithSyncProgress(
     val progress = syncingProgress.progress
     val iconAlpha = if (syncingProgress.type == null) 1f else 0.3f
     val ringColor = ComposeAppTheme.colors.iconPrimary
-    val circleColor = ComposeAppTheme.colors.steel10
+    val circleColor = ComposeAppTheme.colors.surfacePlaceholder
 
     Box(
         modifier = Modifier
@@ -178,7 +178,7 @@ fun CoinIconWithSyncProgress(
                     .then(clickableModifier),
                 painter = painterResource(id = R.drawable.ic_attention_24),
                 contentDescription = "coin icon",
-                colorFilter = ColorFilter.tint(ComposeAppTheme.colors.lucian)
+                colorFilter = ColorFilter.tint(ComposeAppTheme.colors.statusError)
             )
         } else {
             CoinImage(
@@ -223,7 +223,7 @@ private fun SyncProgressTextPreview() {
                 val progressF = (progress.coerceAtLeast(10.0) / 100.0).toFloat()
                 val angle = 360f * progressF
                 val ringColor = ComposeAppTheme.colors.iconPrimary
-                val circleColor = ComposeAppTheme.colors.steel10
+                val circleColor = ComposeAppTheme.colors.surfacePlaceholder
 
                 Box(
                     modifier = Modifier

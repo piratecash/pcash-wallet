@@ -90,7 +90,7 @@ fun MiniAppStepScaffold(
                         StepDescriptionStyle.Green -> subhead2_remus(text = stepDescription)
                         StepDescriptionStyle.Yellow -> subhead2(
                             text = stepDescription,
-                            color = ComposeAppTheme.colors.yellow,
+                            color = ComposeAppTheme.colors.statusWarning,
                         )
                     }
                 }
@@ -118,7 +118,7 @@ fun MiniAppStepScaffold(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = ComposeAppTheme.colors.brand)
+                CircularProgressIndicator(color = ComposeAppTheme.colors.brandDefault)
             }
         } else {
             Column(
@@ -141,14 +141,14 @@ fun MiniAppStepScaffold(
                                 brush = Brush.verticalGradient(
                                     listOf(
                                         ComposeAppTheme.colors.transparent,
-                                        ComposeAppTheme.colors.tyler
+                                        ComposeAppTheme.colors.backgroundBase
                                     )
                                 )
                             )
                     )
                     Column(
                         modifier = Modifier
-                            .background(ComposeAppTheme.colors.tyler)
+                            .background(ComposeAppTheme.colors.backgroundBase)
                             .padding(horizontal = 16.dp)
                             .padding(bottom = 8.dp)
                     ) {

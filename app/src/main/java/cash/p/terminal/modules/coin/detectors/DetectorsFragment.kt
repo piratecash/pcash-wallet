@@ -84,7 +84,7 @@ private fun DetectorsScreen(
     val uiState = viewModel.uiState
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = uiState.title,
@@ -143,7 +143,7 @@ fun IssueList(
             if (index > 0) {
                 Divider(
                     thickness = 1.dp,
-                    color = ComposeAppTheme.colors.steel10,
+                    color = ComposeAppTheme.colors.borderDivider,
                 )
             }
             DetectorCell(
@@ -169,24 +169,24 @@ fun DetectorCell(
         when (it.impact) {
             "Critical" -> {
                 iconResource = R.drawable.ic_warning_24
-                iconTint = ComposeAppTheme.colors.lucian
+                iconTint = ComposeAppTheme.colors.statusError
             }
 
             "High" -> {
                 iconResource = R.drawable.ic_warning_24
-                iconTint = ComposeAppTheme.colors.yellow
+                iconTint = ComposeAppTheme.colors.statusWarning
             }
 
             "Low" -> {
                 iconResource = R.drawable.ic_warning_24
-                iconTint = ComposeAppTheme.colors.remus
+                iconTint = ComposeAppTheme.colors.statusSuccess
             }
 
             "Informational",
             "Optimization" -> {
                 if (issues.isNotEmpty()) {
                     iconResource = R.drawable.ic_warning_24
-                    iconTint = ComposeAppTheme.colors.brand
+                    iconTint = ComposeAppTheme.colors.brandDefault
                 }
             }
 
@@ -205,7 +205,7 @@ fun DetectorCell(
         RowUniversal(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(ComposeAppTheme.colors.lawrence)
+                .background(ComposeAppTheme.colors.surfacePrimary)
                 .padding(horizontal = 16.dp),
         ) {
             Icon(
@@ -265,7 +265,7 @@ fun DetectorCell(
                     if (index > 0) {
                         Divider(
                             thickness = 1.dp,
-                            color = ComposeAppTheme.colors.steel10,
+                            color = ComposeAppTheme.colors.borderDivider,
                         )
                     }
                     InfoText(

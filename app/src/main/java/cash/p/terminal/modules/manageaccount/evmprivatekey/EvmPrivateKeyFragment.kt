@@ -83,7 +83,7 @@ private fun EvmPrivateKeyScreen(
         }
     ) {
         Scaffold(
-            containerColor = ComposeAppTheme.colors.tyler,
+            containerColor = ComposeAppTheme.colors.backgroundBase,
             topBar = {
                 AppBar(
                     title = stringResource(R.string.EvmPrivateKey_Title),

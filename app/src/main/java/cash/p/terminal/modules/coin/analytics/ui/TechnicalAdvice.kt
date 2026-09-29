@@ -29,6 +29,7 @@ import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.caption_grey
 import cash.p.terminal.ui_compose.components.headline1_bran
 import cash.p.terminal.ui_compose.components.headline2_leah
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @Composable
 fun TechnicalAdviceBlock(
@@ -75,10 +76,10 @@ fun TechnicalAdviceBlock(
 private fun AdviceSlider(sliderPosition: Int) {
     val thumbSize = 32.dp
     val color = when (sliderPosition) {
-        0 -> Color(0xFFF43A4F)
+        0 -> ComposeAppTheme.colors.statusError
         1 -> Color(0xFFF5A840)
         2 -> Color(0xFFA8DD26)
-        3 -> Color(0xFF05C46B)
+        3 -> ComposeAppTheme.colors.statusSuccess
         else -> Color.Transparent
     }
     Box(
@@ -89,9 +90,9 @@ private fun AdviceSlider(sliderPosition: Int) {
             .background(
                 brush = Brush.horizontalGradient(
                     colors = listOf(
-                        Color(0x33F43A4F),
-                        Color(0x33FFD600),
-                        Color(0x3305C46B),
+                        ComposeAppTheme.colors.statusError20,
+                        ComposeAppTheme.colors.statusWarning20,
+                        ComposeAppTheme.colors.statusSuccess20,
                     )
                 )
             )

@@ -11,10 +11,10 @@ fun defaultHeadingStyle(colors: Colors): HeadingStyle {
         when (level) {
             0 -> TextStyle(fontSize = 34.sp, fontWeight = FontWeight.Bold, color = colors.textPrimary)
             1 -> TextStyle(fontSize = 32.sp, fontWeight = FontWeight.Bold, color = colors.textPrimary)
-            2 -> TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold, color = colors.brand)
-            3 -> TextStyle(fontSize = 16.sp, color = colors.brand)
-            4 -> TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.brand)
-            5 -> TextStyle(fontWeight = FontWeight.Bold, color = colors.brand)
+            2 -> TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold, color = colors.brandDefault)
+            3 -> TextStyle(fontSize = 16.sp, color = colors.brandDefault)
+            4 -> TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.brandDefault)
+            5 -> TextStyle(fontWeight = FontWeight.Bold, color = colors.brandDefault)
             else -> textStyle
         }
     }

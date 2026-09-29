@@ -262,7 +262,7 @@ private fun FooterCell(
                                 CoinAnalyticsModule.IssueType.Medium -> {
                                     Subhead1(
                                         text = snippet.count,
-                                        color = ComposeAppTheme.colors.yellow,
+                                        color = ComposeAppTheme.colors.statusWarning,
                                     )
                                 }
 

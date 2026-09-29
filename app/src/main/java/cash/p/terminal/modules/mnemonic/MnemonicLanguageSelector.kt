@@ -10,8 +10,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
 import cash.p.terminal.core.displayNameStringRes
-import cash.p.terminal.ui.compose.components.SelectorDialogCompose
-import cash.p.terminal.ui.compose.components.SelectorItem
+import cash.p.terminal.ui_compose.components.AppSelectorDialog
+import cash.p.terminal.ui_compose.components.AppSelectorItem
 import cash.p.terminal.ui_compose.components.B2
 import cash.p.terminal.ui_compose.components.D1
 import cash.p.terminal.ui_compose.components.RowUniversal
@@ -38,17 +38,17 @@ internal fun MnemonicLanguageSelectorDialog(
     onDismissRequest: () -> Unit,
     onSelectLanguage: (Language) -> Unit
 ) {
-    SelectorDialogCompose(
+    AppSelectorDialog(
         title = stringResource(R.string.CreateWallet_Wordlist),
         items = languages.map {
-            SelectorItem(
+            AppSelectorItem(
                 stringResource(it.displayNameStringRes),
                 it == selectedLanguage,
                 it
             )
         },
-        onDismissRequest = onDismissRequest,
-        onSelectItem = onSelectLanguage
+        onDismiss = onDismissRequest,
+        onSelect = onSelectLanguage
     )
 }
 

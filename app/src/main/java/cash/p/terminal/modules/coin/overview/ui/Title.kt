@@ -25,8 +25,8 @@ fun Title(rate: String?, rateDiff: BigDecimal?) {
             val text = App.numberFormatter.format(value.abs(), 0, 2, sign, "%")
 
             val color = when {
-                value >= BigDecimal.ZERO -> ComposeAppTheme.colors.remus
-                else -> ComposeAppTheme.colors.lucian
+                value >= BigDecimal.ZERO -> ComposeAppTheme.colors.statusSuccess
+                else -> ComposeAppTheme.colors.statusError
             }
 
             Text(

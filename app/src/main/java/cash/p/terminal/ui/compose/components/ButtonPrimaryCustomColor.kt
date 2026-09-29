@@ -42,7 +42,7 @@ fun ButtonPrimaryCustomColor(
             .background(brush),
         shape = ButtonPrimaryDefaults.Shape,
         color = Color.Transparent,
-        contentColor = ComposeAppTheme.colors.dark,
+        contentColor = ComposeAppTheme.colors.buttonPrimaryBrandContent,
         onClick = onClick,
         enabled = enabled && !isLoading,
     ) {
@@ -62,7 +62,7 @@ fun ButtonPrimaryCustomColor(
                 if (isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(18.dp),
-                        color = ComposeAppTheme.colors.dark,
+                        color = ComposeAppTheme.colors.buttonPrimaryBrandContent,
                         strokeWidth = 2.dp
                     )
                     Spacer(modifier = Modifier.width(8.dp))

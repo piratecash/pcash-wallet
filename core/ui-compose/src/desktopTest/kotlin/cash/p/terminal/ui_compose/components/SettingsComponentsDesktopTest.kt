@@ -55,7 +55,7 @@ class SettingsComponentsDesktopTest {
                     val materialColors = MaterialTheme.colorScheme
                     val materialTypography = MaterialTheme.typography
                     renderedTheme = RenderedTheme(
-                        sharedBackground = colors.lawrence,
+                        sharedBackground = colors.surfacePrimary,
                         fontScale = LocalDensity.current.fontScale,
                         background = materialColors.background,
                         onBackground = materialColors.onBackground,
@@ -124,16 +124,16 @@ class SettingsComponentsDesktopTest {
 
         fun assertTheme(colors: Colors, typography: Typography) {
             waitForIdle()
-            assertEquals(colors.lawrence, renderedTheme.sharedBackground)
+            assertEquals(colors.surfacePrimary, renderedTheme.sharedBackground)
             assertEquals(1f, renderedTheme.fontScale)
-            assertEquals(colors.tyler, renderedTheme.background)
+            assertEquals(colors.backgroundBase, renderedTheme.background)
             assertEquals(colors.textPrimary, renderedTheme.onBackground)
-            assertEquals(colors.lawrence, renderedTheme.surface)
+            assertEquals(colors.surfacePrimary, renderedTheme.surface)
             assertEquals(colors.textPrimary, renderedTheme.onSurface)
             assertEquals(colors.textPrimary, renderedTheme.backgroundContent)
             assertEquals(colors.textPrimary, renderedTheme.surfaceContent)
-            assertEquals(colors.tyler, onNodeWithTag(BACKGROUND_TAG).captureToImage().toPixelMap()[0, 0])
-            assertEquals(colors.lawrence, onNodeWithTag(SURFACE_TAG).captureToImage().toPixelMap()[0, 0])
+            assertEquals(colors.backgroundBase, onNodeWithTag(BACKGROUND_TAG).captureToImage().toPixelMap()[0, 0])
+            assertEquals(colors.surfacePrimary, onNodeWithTag(SURFACE_TAG).captureToImage().toPixelMap()[0, 0])
             assertEquals(typography.body, renderedTheme.typography.bodyLarge)
             assertEquals(typography.subhead2, renderedTheme.typography.bodyMedium)
             assertEquals(typography.title3, renderedTheme.typography.titleLarge)
@@ -160,7 +160,7 @@ class SettingsComponentsDesktopTest {
         }
 
         assertTheme(darkPalette, Typography())
-        assertEquals(Color.White, lightPalette.lawrence)
+        assertEquals(Color.White, lightPalette.surfacePrimary)
         runOnIdle { darkTheme = false }
 
         assertTheme(lightPalette, Typography())

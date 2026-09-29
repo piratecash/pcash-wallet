@@ -126,7 +126,7 @@ private fun ResetToFactorySettingsScreen(
                 navigationIcon = { HsBackButton(onClick = { navController.popBackStackSafely() }) }
             )
         },
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
     ) {
         Column(
             modifier = Modifier

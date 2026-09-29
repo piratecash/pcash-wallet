@@ -79,7 +79,7 @@ fun HidableContent(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(24.dp))
-            .border(1.dp, ComposeAppTheme.colors.steel20, RoundedCornerShape(24.dp))
+            .border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(24.dp))
             .clickable(enabled = hideScreenText != null, onClick = {
                 hidden = !hidden
                 onToggleHidden?.invoke()
@@ -97,7 +97,7 @@ fun HidableContent(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .background(ComposeAppTheme.colors.tyler),
+                    .background(ComposeAppTheme.colors.backgroundBase),
                 contentAlignment = Alignment.Center
             ) {
                 subhead2_grey(hideScreenText)
@@ -138,7 +138,7 @@ fun KeyActionItem(
 fun ConfirmCopyBottomSheet(onConfirm: () -> Unit, onCancel: () -> Unit) {
     BottomSheetHeader(
         iconPainter = painterResource(R.drawable.ic_attention_24),
-        iconTint = ColorFilter.tint(ComposeAppTheme.colors.yellow),
+        iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
         title = stringResource(R.string.RecoveryPhrase_CopyWarning_Title),
         onCloseClick = onCancel
     ) {
@@ -212,7 +212,7 @@ fun SeedPhraseList(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(24.dp))
-            .border(1.dp, ComposeAppTheme.colors.steel20, RoundedCornerShape(24.dp))
+            .border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(24.dp))
             .clickable(
                 onClick = onClick,
                 interactionSource = remember { MutableInteractionSource() },
@@ -243,7 +243,7 @@ fun SeedPhraseList(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .background(ComposeAppTheme.colors.tyler),
+                    .background(ComposeAppTheme.colors.backgroundBase),
                 contentAlignment = Alignment.Center
             ) {
                 subhead2_grey(text = stringResource(R.string.RecoveryPhrase_ShowPhrase))
@@ -263,7 +263,7 @@ fun SeedPhraseQrCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(24.dp))
-            .border(1.dp, ComposeAppTheme.colors.steel20, RoundedCornerShape(24.dp))
+            .border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(24.dp))
             .clickable(
                 onClick = onClick,
                 interactionSource = remember { MutableInteractionSource() },
@@ -274,7 +274,7 @@ fun SeedPhraseQrCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(1f)
-                .background(ComposeAppTheme.colors.white)
+                .background(ComposeAppTheme.colors.qrBackground)
                 .padding(24.dp)
                 .clip(RoundedCornerShape(8.dp)),
             contentAlignment = Alignment.Center
@@ -286,7 +286,7 @@ fun SeedPhraseQrCard(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .background(ComposeAppTheme.colors.tyler),
+                    .background(ComposeAppTheme.colors.backgroundBase),
                 contentAlignment = Alignment.Center
             ) {
                 subhead2_grey(text = stringResource(R.string.tap_to_show_qr_code))

@@ -1,6 +1,7 @@
 package cash.p.terminal.ui.compose.components
 
 import androidx.compose.animation.animateContentSize
+import cash.p.terminal.ui_compose.components.plateBackground
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -56,8 +57,8 @@ private fun SwapDirectionIndicatorContent(
     intermediateToken: Token?,
     onClick: () -> Unit,
 ) {
-    val backgroundColor = ComposeAppTheme.colors.steel20
-        .compositeOver(ComposeAppTheme.colors.lawrence)
+    val backgroundColor = ComposeAppTheme.colors.surfacePlaceholder
+        .compositeOver(plateBackground())
 
     Row(
         modifier = modifier

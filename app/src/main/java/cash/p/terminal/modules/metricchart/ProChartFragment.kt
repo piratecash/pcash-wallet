@@ -43,10 +43,10 @@ class ProChartFragment : BaseComposableBottomSheetFragment() {
                     )
                 )
 
-                cash.p.terminal.ui_compose.theme.ComposeAppTheme {
+                ComposeAppTheme {
                     BottomSheetHeader(
                         iconPainter = painterResource(R.drawable.ic_chart_24),
-                        iconTint = ColorFilter.tint(ComposeAppTheme.colors.brand),
+                        iconTint = ColorFilter.tint(ComposeAppTheme.colors.brandDefault),
                         title = input.title,
                         onCloseClick = { close() }
                     ) {

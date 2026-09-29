@@ -81,7 +81,7 @@ private fun AddAccessCodeScreen(
 ) {
     BottomSheetHeader(
         iconPainter = painterResource(R.drawable.ic_attention_24),
-        iconTint = ColorFilter.tint(ComposeAppTheme.colors.brand),
+        iconTint = ColorFilter.tint(ComposeAppTheme.colors.brandDefault),
         title = stringResource(R.string.access_code),
         onCloseClick = onCloseClick
     ) {

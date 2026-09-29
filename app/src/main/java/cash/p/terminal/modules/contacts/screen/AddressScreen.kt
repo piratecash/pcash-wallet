@@ -58,7 +58,7 @@ fun AddressScreen(
                 title = stringResource(R.string.Contacts_DeleteAddress),
                 text = stringResource(R.string.Contacts_DeleteAddress_Warning),
                 iconPainter = painterResource(R.drawable.ic_delete_20),
-                iconTint = ColorFilter.tint(cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.lucian),
+                iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusError),
                 confirmText = stringResource(R.string.Button_Delete),
                 cautionType = Caution.Type.Error,
                 cancelText = stringResource(R.string.Button_Cancel),
@@ -72,7 +72,7 @@ fun AddressScreen(
         }
     ) {
         Scaffold(
-            containerColor = ComposeAppTheme.colors.tyler,
+            containerColor = ComposeAppTheme.colors.backgroundBase,
             topBar = {
                 AppBar(
                     title = uiState.headerTitle.getString(),
@@ -163,7 +163,7 @@ private fun DeleteAddressButton(onClick: () -> Unit) {
                     modifier = Modifier.padding(horizontal = 16.dp),
                     painter = painterResource(R.drawable.ic_delete_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.lucian
+                    tint = ComposeAppTheme.colors.statusError
                 )
                 body_lucian(
                     text = stringResource(R.string.Contacts_DeleteAddress),

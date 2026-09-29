@@ -9,12 +9,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @Composable
 fun StackedBarChart(
     slices: List<StackBarSlice>,
     modifier: Modifier = Modifier,
 ) {
+    val colors = ComposeAppTheme.colors
     Row(
         modifier = modifier
             .height(40.dp)
@@ -28,7 +30,7 @@ fun StackedBarChart(
                     modifier = Modifier
                         .fillMaxHeight()
                         .clip(RoundedCornerShape(2.dp))
-                        .background(it.color)
+                        .background(it.color ?: if (it.dimmed) colors.statusWarning50 else colors.statusWarning)
                         .weight(it.value),
                 )
             }
@@ -37,7 +39,8 @@ fun StackedBarChart(
 
 data class StackBarSlice(
     val value: Float,
-    val color: Color,
+    val color: Color?,
+    val dimmed: Boolean = false,
 )
 
 @Preview

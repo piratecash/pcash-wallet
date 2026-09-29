@@ -21,8 +21,8 @@ import cash.p.terminal.R
 import cash.p.terminal.core.stringResId
 import cash.p.terminal.ui_compose.components.ButtonSecondaryWithIcon
 import cash.p.terminal.ui_compose.components.RowUniversal
-import cash.p.terminal.ui.compose.components.SelectorDialogCompose
-import cash.p.terminal.ui.compose.components.SelectorItem
+import cash.p.terminal.ui_compose.components.AppSelectorDialog
+import cash.p.terminal.ui_compose.components.AppSelectorItem
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead1_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
@@ -37,15 +37,15 @@ fun HSHodlerInput(
 ) {
     var showSelectorDialog by remember { mutableStateOf(false) }
     if (showSelectorDialog) {
-        SelectorDialogCompose(
+        AppSelectorDialog(
             title = stringResource(R.string.Send_DialogSpeed),
             items = lockTimeIntervals.map {
-                SelectorItem(stringResource(it.stringResId()), it == lockTimeInterval, it)
+                AppSelectorItem(stringResource(it.stringResId()), it == lockTimeInterval, it)
             },
-            onDismissRequest = {
+            onDismiss = {
                 showSelectorDialog = false
             },
-            onSelectItem = {
+            onSelect = {
                 onSelect.invoke(it)
             }
         )

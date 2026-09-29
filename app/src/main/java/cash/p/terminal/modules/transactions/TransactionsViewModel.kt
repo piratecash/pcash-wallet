@@ -835,9 +835,9 @@ val AmlStatus.riskTextRes: Int
 
 @Composable
 fun AmlStatus.riskColor(): Color = when (this) {
-    AmlStatus.Low -> ComposeAppTheme.colors.remus
-    AmlStatus.Medium -> ComposeAppTheme.colors.yellow
-    AmlStatus.High -> ComposeAppTheme.colors.lucian
+    AmlStatus.Low -> ComposeAppTheme.colors.statusSuccess
+    AmlStatus.Medium -> ComposeAppTheme.colors.statusWarning
+    AmlStatus.High -> ComposeAppTheme.colors.statusError
     AmlStatus.Loading,
     AmlStatus.Unknown -> ComposeAppTheme.colors.textDisabled
 }

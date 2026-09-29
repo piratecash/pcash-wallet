@@ -60,7 +60,7 @@ fun WCPairingsScreen(navController: NavController) {
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.WalletConnect_PairedDApps),
@@ -103,7 +103,7 @@ fun WCPairingsScreen(navController: NavController) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_delete_20),
                             contentDescription = null,
-                            tint = ComposeAppTheme.colors.lucian
+                            tint = ComposeAppTheme.colors.statusError
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                         body_lucian(text = stringResource(id = R.string.delete_all))
@@ -155,7 +155,7 @@ fun Pairing(pairing: PairingViewItem, onDelete: () -> Unit) {
         ButtonSecondaryCircle(
             modifier = Modifier.padding(start = 16.dp),
             icon = R.drawable.ic_delete_20,
-            tint = ComposeAppTheme.colors.lucian,
+            tint = ComposeAppTheme.colors.statusError,
             onClick = onDelete
         )
     }

@@ -31,6 +31,7 @@ import cash.p.terminal.ui.compose.OnBottomReached
 import cash.p.terminal.ui_compose.SelectOptional
 import cash.p.terminal.ui.compose.components.*
 import cash.p.terminal.ui_compose.BottomSheetHeader
+import cash.p.terminal.ui_compose.components.AlertGroup
 import cash.p.terminal.ui_compose.components.AppModalBottomSheetLayout
 import cash.p.terminal.ui_compose.components.ButtonSecondaryWithIcon
 import cash.p.terminal.ui_compose.components.HSCircularProgressIndicator
@@ -94,7 +95,7 @@ private fun ContractBottomSheet(
         iconPainter = painterResource(R.drawable.icon_paper_contract_20),
         title = stringResource(R.string.CoinPage_Contracts),
         onCloseClick = onClose,
-        iconTint = ColorFilter.tint(ComposeAppTheme.colors.brand)
+        iconTint = ColorFilter.tint(ComposeAppTheme.colors.brandDefault)
     ) {
         Spacer(Modifier.height(12.dp))
 
@@ -142,12 +143,12 @@ private fun ContractBottomSheet(
                                     modifier = Modifier
                                         .padding(start = 8.dp)
                                         .clip(RoundedCornerShape(4.dp))
-                                        .background(ComposeAppTheme.colors.jeremy)
+                                        .background(ComposeAppTheme.colors.badgeBackground)
                                 ) {
                                     Text(
                                         modifier = Modifier.padding(start = 4.dp, end = 4.dp, bottom = 1.dp),
                                         text = labelText,
-                                        color = ComposeAppTheme.colors.bran,
+                                        color = ComposeAppTheme.colors.textPrimary,
                                         style = ComposeAppTheme.typography.microSB,
                                         maxLines = 1,
                                     )
@@ -166,7 +167,7 @@ private fun ContractBottomSheet(
                     Image(
                         modifier = Modifier.padding(start = 5.dp),
                         painter = painterResource(id = R.drawable.ic_checkmark_20),
-                        colorFilter = ColorFilter.tint(ComposeAppTheme.colors.brand),
+                        colorFilter = ColorFilter.tint(ComposeAppTheme.colors.brandDefault),
                         contentDescription = null
                     )
                 }

@@ -61,7 +61,7 @@ private fun DuplicateWalletInfoScreen(navController: NavController) {
             text = stringResource(R.string.duplicate_wallet_info),
             modifier = Modifier
                 .padding(16.dp)
-                .border(1.dp, ComposeAppTheme.colors.jeremy,
+                .border(1.dp, ComposeAppTheme.colors.borderDefault,
                     RoundedCornerShape(12.dp))
                 .padding(16.dp)
         )

@@ -87,7 +87,7 @@ fun CoinTabs(
     val view = LocalView.current
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = viewModel.fullCoin.coin.code,
@@ -101,7 +101,7 @@ fun CoinTabs(
                                 MenuItem(
                                     title = TranslatableString.ResString(R.string.CoinPage_Unfavorite),
                                     icon = R.drawable.ic_filled_star_24,
-                                    tint = ComposeAppTheme.colors.brand,
+                                    tint = ComposeAppTheme.colors.brandDefault,
                                     onClick = {
                                         viewModel.onUnfavoriteClick()
                                     }
@@ -181,7 +181,7 @@ fun CoinTabs(
 @Composable
 fun CoinNotFound(coinUid: String, navController: NavController) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = coinUid,

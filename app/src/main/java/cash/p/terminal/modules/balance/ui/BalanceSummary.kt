@@ -71,7 +71,7 @@ internal fun BalanceSummary(
         modifier = modifier
             .fillMaxWidth()
             .clip(shape)
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(ComposeAppTheme.colors.surfacePrimary)
             .balanceSummaryBorder(cornerRadius, borderColor)
             .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
@@ -166,7 +166,7 @@ private fun BalanceSummaryAmounts(
                 modifier = Modifier.size(12.dp),
                 painter = painterResource(R.drawable.ic_balance_triangle_down_12),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.brand,
+                tint = ComposeAppTheme.colors.brandDefault,
             )
         }
     }
@@ -209,7 +209,7 @@ private fun BalanceSummaryPreview() {
     ComposeAppTheme {
         Column(
             modifier = Modifier
-                .background(ComposeAppTheme.colors.tyler)
+                .background(ComposeAppTheme.colors.backgroundBase)
                 .padding(vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {

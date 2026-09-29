@@ -32,8 +32,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
-import cash.p.terminal.ui.compose.components.SelectorDialogCompose
-import cash.p.terminal.ui.compose.components.SelectorItem
+import cash.p.terminal.ui_compose.components.AppSelectorDialog
+import cash.p.terminal.ui_compose.components.AppSelectorItem
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HsBackButton
@@ -72,7 +72,7 @@ internal fun PushNotificationsScreen(
     onPermissionWarningClick: () -> Unit = {},
 ) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.push_notification),
@@ -146,17 +146,17 @@ private fun PollingIntervalSection(
     var showDialog by remember { mutableStateOf(false) }
 
     if (showDialog) {
-        SelectorDialogCompose(
+        AppSelectorDialog(
             title = stringResource(R.string.push_notification_polling_interval),
             items = PollingInterval.entries.map { interval ->
-                SelectorItem(
+                AppSelectorItem(
                     title = stringResource(interval.titleResId),
                     selected = interval == pollingInterval,
                     item = interval,
                 )
             },
-            onDismissRequest = { showDialog = false },
-            onSelectItem = { interval ->
+            onDismiss = { showDialog = false },
+            onSelect = { interval ->
                 onPollingIntervalChange(interval)
                 showDialog = false
             }
@@ -293,13 +293,13 @@ private fun BlockchainSectionCell(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(shape)
-            .background(ComposeAppTheme.colors.lawrence),
+            .background(ComposeAppTheme.colors.surfacePrimary),
     ) {
         if (showDivider) {
             HorizontalDivider(
                 modifier = Modifier.align(Alignment.TopCenter),
                 thickness = 1.dp,
-                color = ComposeAppTheme.colors.steel10,
+                color = ComposeAppTheme.colors.borderDivider,
             )
         }
         content()

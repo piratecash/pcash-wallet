@@ -58,7 +58,7 @@ private fun FaqScreen(
     viewModel: FaqViewModel = viewModel(factory = FaqModule.Factory())
 ) {
     val viewState = viewModel.viewState
-    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
         AppBar(
             title = stringResource(R.string.Settings_Faq),
             navigationIcon = {

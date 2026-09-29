@@ -67,7 +67,7 @@ fun AppBarMenuButton(
                         .align(Alignment.TopEnd)
                         .size(8.dp)
                         .background(
-                            ComposeAppTheme.colors.lucian,
+                            ComposeAppTheme.colors.statusError,
                             shape = CircleShape
                         )
                 )
@@ -82,7 +82,7 @@ fun AppBar(
     navigationIcon: @Composable (() -> Unit)? = null,
     menuItems: List<IMenuItem> = listOf(),
     showSpinner: Boolean = false,
-    backgroundColor: Color = ComposeAppTheme.colors.tyler
+    backgroundColor: Color = ComposeAppTheme.colors.backgroundBase
 ) {
     val titleComposable: @Composable () -> Unit = {
         title?.let {
@@ -110,7 +110,7 @@ fun AppBar(
     navigationIcon: @Composable (() -> Unit)? = null,
     menuItems: List<IMenuItem> = listOf(),
     showSpinner: Boolean = false,
-    backgroundColor: Color = ComposeAppTheme.colors.tyler
+    backgroundColor: Color = ComposeAppTheme.colors.backgroundBase
 ) {
     TopAppBar(
         modifier = Modifier
@@ -132,7 +132,7 @@ fun AppBar(
                     modifier = Modifier
                         .padding(start = 24.dp, end = 16.dp)
                         .size(24.dp),
-                    color = ComposeAppTheme.colors.brand,
+                    color = ComposeAppTheme.colors.brandDefault,
                     strokeWidth = 2.dp
                 )
             }
@@ -153,7 +153,7 @@ fun AppBar(
                                 CircularProgressIndicator(
                                     progress = 1f,
                                     modifier = Modifier.size(16.dp),
-                                    color = ComposeAppTheme.colors.steel20,
+                                    color = ComposeAppTheme.colors.controlTrack,
                                     strokeWidth = 1.5.dp
                                 )
                                 CircularProgressIndicator(
@@ -161,7 +161,7 @@ fun AppBar(
                                     modifier = Modifier
                                         .size(16.dp)
                                         .scale(scaleX = -1f, scaleY = 1f),
-                                    color = ComposeAppTheme.colors.brand,
+                                    color = ComposeAppTheme.colors.brandDefault,
                                     strokeWidth = 1.5.dp
                                 )
                             }
@@ -177,7 +177,7 @@ fun AppBar(
 private fun MenuItemSimple(menuItem: MenuItem) {
     val color = if (menuItem.enabled) {
         if (menuItem.tint == Color.Unspecified)
-            ComposeAppTheme.colors.brand
+            ComposeAppTheme.colors.brandDefault
         else
             menuItem.tint
     } else {

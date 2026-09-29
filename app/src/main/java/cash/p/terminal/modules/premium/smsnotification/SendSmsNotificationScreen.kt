@@ -140,7 +140,7 @@ fun SendSmsNotificationScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.send_sms_via_zec_title),
@@ -328,8 +328,8 @@ private fun MemoInputField(
             .padding(horizontal = 16.dp)
             .defaultMinSize(minHeight = 44.dp)
             .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, ComposeAppTheme.colors.steel20, RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence),
+            .border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(12.dp))
+            .background(ComposeAppTheme.colors.surfacePrimary),
         verticalAlignment = Alignment.CenterVertically
     ) {
         BasicTextField(
@@ -341,7 +341,7 @@ private fun MemoInputField(
             textStyle = ComposeAppTheme.typography.bodyItalic.copy(
                 color = ComposeAppTheme.colors.textPrimary
             ),
-            cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
+            cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
             singleLine = true,
             decorationBox = { innerTextField ->
                 Box {

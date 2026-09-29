@@ -97,7 +97,7 @@ fun Eip20ApproveScreen(navController: NavController, input: Eip20ApproveFragment
                 )
             )
         },
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
     ) {
         Column(
             modifier = Modifier
