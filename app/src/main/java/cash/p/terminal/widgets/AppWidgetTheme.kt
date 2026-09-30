@@ -80,6 +80,7 @@ internal val LocalColorProviders = staticCompositionLocalOf {
         badgeBackground = ColorProvider(lightPalette.badgeBackground, darkPalette.badgeBackground),
         textPrimary = ColorProvider(lightPalette.textPrimary, darkPalette.textPrimary),
         textSecondary = ColorProvider(lightPalette.textSecondary, darkPalette.textSecondary),
+        iconSecondary = ColorProvider(lightPalette.iconSecondary, darkPalette.iconSecondary),
     )
 }
 
@@ -95,4 +96,5 @@ data class ColorProviders(
     val badgeBackground: ColorProvider,
     val textPrimary: ColorProvider,
     val textSecondary: ColorProvider,
+    val iconSecondary: ColorProvider,
 )
