@@ -32,6 +32,7 @@ class ManageAccountViewModel(
     val account: Account,
     private val accountManager: IAccountManager,
 ) : ViewModel() {
+    val deletionState = AccountDeletionState()
 
     private val tangemSdkManager: TangemSdkManager by inject(TangemSdkManager::class.java)
     private val walletManager: IWalletManager by inject(IWalletManager::class.java)
@@ -127,8 +128,9 @@ class ManageAccountViewModel(
     }
 
     private fun deleteAccount() = viewModelScope.launch {
-        accountManager.delete(account.id)
-        viewState = viewState.copy(closeScreen = true)
+        if (deletionState.run { accountManager.delete(account.id) }) {
+            viewState = viewState.copy(closeScreen = true)
+        }
     }
 
     private fun getBackupItems(account: Account): List<BackupItem> {

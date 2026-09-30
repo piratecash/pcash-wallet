@@ -8,6 +8,7 @@ fun BlockchainType.getSupportedCurves(): List<EllipticCurve> {
     return when (this) {
         BlockchainType.Zcash,
         BlockchainType.Monero,
+        BlockchainType.Beam,
         is BlockchainType.Unsupported -> emptyList()
         /*Tezos,
             -> listOf(

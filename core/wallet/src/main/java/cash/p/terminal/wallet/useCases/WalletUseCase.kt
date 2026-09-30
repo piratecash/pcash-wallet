@@ -17,8 +17,8 @@ import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.expandedZcashAddressSpecTokens
 import cash.p.terminal.wallet.tokenQueryId
-import kotlinx.coroutines.flow.filter
 import io.horizontalsystems.core.entities.BlockchainType
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 
 class WalletUseCase(

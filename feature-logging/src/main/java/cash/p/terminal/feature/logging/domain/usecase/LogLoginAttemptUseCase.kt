@@ -102,6 +102,11 @@ class LogLoginAttemptUseCase(
         }
     }
 
+    /** A blocked secure reset is neither a successful nor a failed login. */
+    suspend fun discardCapturedPhoto(path: String?) {
+        tryDeleteFile(path)
+    }
+
     /**
      * Logs a login attempt with the captured photo.
      *

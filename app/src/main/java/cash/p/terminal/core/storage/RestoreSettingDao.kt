@@ -9,6 +9,15 @@ import cash.p.terminal.entities.RestoreSettingRecord
 @Dao
 interface RestoreSettingDao {
 
+    @Query("SELECT EXISTS(SELECT 1 FROM RestoreSettingRecord WHERE blockchainTypeUid = 'beam')")
+    fun hasBeamSettings(): Boolean
+
+    @Query("DELETE FROM RestoreSettingRecord WHERE blockchainTypeUid = 'beam' AND accountId IN (:accountIds)")
+    fun deleteBeam(accountIds: List<String>)
+
+    @Query("DELETE FROM RestoreSettingRecord WHERE blockchainTypeUid = 'beam'")
+    fun deleteAllBeam()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(records: List<RestoreSettingRecord>)
 

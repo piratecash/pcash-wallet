@@ -1,6 +1,8 @@
 package cash.p.terminal.modules.receive.viewmodels
 
 import androidx.lifecycle.viewModelScope
+import cash.p.beam.BeamAddressType
+import cash.p.beam.BeamNetwork
 import cash.p.terminal.R
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IReceiveAdapter
@@ -20,6 +22,7 @@ import cash.p.terminal.wallet.accountTypeDerivation
 import cash.p.terminal.wallet.bitcoinCashCoinType
 import cash.p.terminal.wallet.entities.TokenType
 import io.horizontalsystems.core.DispatcherProvider
+import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
@@ -34,10 +37,11 @@ import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
 import java.math.BigDecimal
 
-class ReceiveAddressViewModel(
+class ReceiveAddressViewModel internal constructor(
     private val wallet: Wallet,
     private val adapterManager: IAdapterManager,
     private val dispatcherProvider: DispatcherProvider,
+    private val beamAddressProvider: BeamReceiveAddressProvider? = null,
 ) : ViewModelUiState<ReceiveModule.UiState>() {
 
     @Volatile
@@ -72,20 +76,31 @@ class ReceiveAddressViewModel(
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
+    private var beamAddressType = beamAddressProvider?.let { BeamAddressType.PublicOffline }
+    private var beamRequestGeneration = 0L
+    private var beamRequest: Job? = null
 
     init {
-        viewModelScope.launch(dispatcherProvider.io) {
-            // One collector: every trigger fires on the same init, and concurrent
-            // setData() would race two isAddressActive requests against each other.
-            merge(
-                adapterManager.adaptersReadyObservable.asFlow(),
-                adapterManager.initializationInProgressFlow,
-                retries,
-            ).collect {
-                val adapter = setData()
-                freshAddressJob?.cancel()
-                freshAddressJob = adapter?.let { a ->
-                    launch { a.freshReceiveAddressChanges.collect { loadFreshReceiveAddress(a) } }
+        if (beamAddressProvider == null) {
+            viewModelScope.launch(dispatcherProvider.io) {
+                // One collector: every trigger fires on the same init, and concurrent
+                // setData() would race two isAddressActive requests against each other.
+                merge(
+                    adapterManager.adaptersReadyObservable.asFlow(),
+                    adapterManager.initializationInProgressFlow,
+                    retries,
+                ).collect {
+                    val adapter = setData()
+                    freshAddressJob?.cancel()
+                    freshAddressJob = adapter?.let { a ->
+                        launch { a.freshReceiveAddressChanges.collect { loadFreshReceiveAddress(a) } }
+                    }
+                }
+            }
+        } else {
+            viewModelScope.launch {
+                beamAddressProvider.changes(wallet.account).collect {
+                    requestBeamAddress(checkNotNull(beamAddressType), beamAddressProvider)
                 }
             }
         }
@@ -104,6 +119,7 @@ class ReceiveAddressViewModel(
             usedChangeAddresses = usedChangeAddresses,
             isAddressHistorySupported = isAddressHistorySupported,
             showTronAlert = !shown.accountActive,
+            beamAddressType = beamAddressType,
             uri = getUri(shown.address),
             watchAccount = watchAccount,
             additionalItems = getAdditionalData(shown.accountActive),
@@ -257,10 +273,67 @@ class ReceiveAddressViewModel(
     }
 
     fun onErrorClick() {
+        val provider = beamAddressProvider
+        val type = beamAddressType
+        if (provider != null && type != null) {
+            requestBeamAddress(type, provider)
+            return
+        }
         retries.tryEmit(Unit)
     }
 
+    fun onBeamAddressTypeSelect(type: BeamAddressType) {
+        val provider = beamAddressProvider ?: return
+        requestBeamAddress(type, provider)
+    }
+
+    private fun requestBeamAddress(type: BeamAddressType, provider: BeamReceiveAddressProvider) {
+        beamRequest?.cancel()
+        val requestGeneration = ++beamRequestGeneration
+        beamAddressType = type
+        clearBeamAddress(ViewState.Loading)
+        beamRequest = viewModelScope.launch {
+            try {
+                val received = provider.receiveAddress(wallet.account, type)
+                currentCoroutineContext().ensureActive()
+                if (!isCurrentBeamRequest(requestGeneration, type)) return@launch
+                check(received.isCurrent()) { "BEAM receive session changed" }
+                showBeamAddress(received, type)
+            } catch (error: CancellationException) {
+                currentCoroutineContext().ensureActive()
+                if (!isCurrentBeamRequest(requestGeneration, type)) return@launch
+                clearBeamAddress(ViewState.Error(error))
+            } catch (_: BeamReceivePendingException) {
+                if (!isCurrentBeamRequest(requestGeneration, type)) return@launch
+                clearBeamAddress(ViewState.Loading)
+            } catch (error: Exception) {
+                if (!isCurrentBeamRequest(requestGeneration, type)) return@launch
+                clearBeamAddress(ViewState.Error(error))
+            }
+        }
+    }
+
+    private fun showBeamAddress(received: BeamReceiveAddress, type: BeamAddressType) {
+        val result = received.address
+        check(result.type == type) { "Unexpected BEAM receive address type" }
+        shown = shown.copy(address = result.token)
+        mainNet = result.network == BeamNetwork.Mainnet
+        viewState = ViewState.Success
+        emitState()
+    }
+
+    private fun isCurrentBeamRequest(generation: Long, type: BeamAddressType) =
+        generation == beamRequestGeneration && type == beamAddressType
+
+    private fun clearBeamAddress(state: ViewState) {
+        shown = shown.copy(address = "")
+        viewState = state
+        emitState()
+    }
+
     fun setAmount(amount: BigDecimal?) {
+        // BEAM receive tokens are opaque; a generic amount URI would make the QR invalid.
+        if (wallet.token.blockchainType == BlockchainType.Beam) return
         amount?.let {
             if (it <= BigDecimal.ZERO) {
                 this.amount = null

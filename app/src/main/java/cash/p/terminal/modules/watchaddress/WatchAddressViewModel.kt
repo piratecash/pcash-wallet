@@ -228,6 +228,7 @@ class WatchAddressViewModel(
 
         BlockchainType.Zcash,
         BlockchainType.Monero,
+        BlockchainType.Beam,
         is BlockchainType.Unsupported,
         null -> Type.Unsupported
     }
