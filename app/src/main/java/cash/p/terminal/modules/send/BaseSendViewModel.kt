@@ -8,10 +8,11 @@ import cash.p.terminal.core.App
 import cash.p.terminal.core.INativeBalanceProvider
 import cash.p.terminal.core.getFeeTokenBalance
 import cash.p.terminal.core.isNative
-import cash.p.terminal.entities.CoinValue
 import io.horizontalsystems.core.entities.CurrencyValue
 import cash.p.terminal.modules.send.fee.NetworkFeeWarningData
 import cash.p.terminal.modules.send.fee.buildNetworkFeeWarningData
+import cash.p.terminal.modules.send.fee.feePrimaryText
+import cash.p.terminal.modules.send.fee.feeSecondaryText
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IBalanceAdapter
@@ -159,10 +160,7 @@ abstract class BaseSendViewModel<T>(
     val displayBalance: BigDecimal?
         get() = _adapterManager.getAdjustedBalanceDataForToken(wallet.token)?.available
 
-    fun toggleHideBalance() {
-        HudHelper.vibrate(App.instance)
-        balanceHiddenManager.toggleWalletBalanceHidden(wallet.tokenQueryId)
-    }
+    fun toggleHideBalance() = balanceHiddenManager.toggleWalletBalanceWithFeedback(wallet.tokenQueryId)
 
     protected open fun getEstimatedFee(): BigDecimal? = null
     protected open fun onSendRequested() {}
@@ -216,15 +214,9 @@ abstract class BaseSendViewModel<T>(
         )
     }
 
-    fun formatFeePrimary(fee: BigDecimal?): String {
-        if (fee == null) return "---"
-        return feeToken?.let { CoinValue(it, fee).getFormattedFull() } ?: "---"
-    }
+    fun formatFeePrimary(fee: BigDecimal?): String = feePrimaryText(feeToken, fee)
 
-    fun formatFeeSecondary(fee: BigDecimal?, rate: CurrencyValue?): String {
-        val f = fee ?: return ""
-        return rate?.copy(value = f.times(rate.value))?.getFormattedFull() ?: ""
-    }
+    fun formatFeeSecondary(fee: BigDecimal?, rate: CurrencyValue?): String = feeSecondaryText(fee, rate)
 
     private fun handleAdapterState(state: AdapterState) {
         isSynced = state is AdapterState.Synced
@@ -304,4 +296,13 @@ abstract class BaseSendViewModel<T>(
             }
         }
     }
+}
+
+/**
+ * Toggling the balance on a send screen always pairs the state change with haptic feedback.
+ * Shared so screens that cannot extend [BaseSendViewModel] (BEAM) do not re-implement the pair.
+ */
+fun IBalanceHiddenManager.toggleWalletBalanceWithFeedback(walletUid: String) {
+    HudHelper.vibrate(App.instance)
+    toggleWalletBalanceHidden(walletUid)
 }

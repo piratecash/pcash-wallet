@@ -17,6 +17,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestCoroutineScheduler
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -100,6 +101,58 @@ class ConnectivityManagerTest {
         keepAliveManager.clear()
         scheduler.runCurrent()
 
+        verify(exactly = 1) {
+            systemConnectivityManager.unregisterNetworkCallback(any<AndroidConnectivityManager.NetworkCallback>())
+        }
+    }
+
+    @Test
+    fun monitoringLease_unknownBackgroundTracksValidationUntilReleased() {
+        every { systemConnectivityManager.activeNetwork } returns null
+        val manager = createManager()
+        val lease = manager.acquireMonitoringLease()
+        scheduler.runCurrent()
+
+        verify(exactly = 1) {
+            systemConnectivityManager.registerNetworkCallback(any(), any<AndroidConnectivityManager.NetworkCallback>())
+        }
+        every { systemConnectivityManager.activeNetwork } returns validatedNetwork()
+        scheduler.advanceTimeBy(revalidateIntervalMs + 1)
+        scheduler.runCurrent()
+        assertTrue(manager.isConnected.value)
+
+        lease.close()
+        lease.close()
+        scheduler.runCurrent()
+        verify(exactly = 1) {
+            systemConnectivityManager.unregisterNetworkCallback(any<AndroidConnectivityManager.NetworkCallback>())
+        }
+    }
+
+    @Test
+    fun refreshAndAwaitValidation_returnsOnlyAfterPublishedState() = runTest(dispatcher) {
+        every { systemConnectivityManager.activeNetwork } returns null
+        val manager = createManager()
+        every { systemConnectivityManager.activeNetwork } returns validatedNetwork()
+
+        assertTrue(manager.refreshAndAwaitValidation())
+        assertTrue(manager.isConnected.value)
+    }
+
+    @Test
+    fun keepAliveCleanup_queuedBeforePollingLease_doesNotUnregisterNewLease() {
+        val manager = createManager()
+        keepAliveManager.setKeepAlive(setOf(BlockchainType.Bitcoin))
+        scheduler.runCurrent()
+        keepAliveManager.clear()
+        val lease = manager.acquireMonitoringLease()
+        scheduler.runCurrent()
+
+        verify(exactly = 0) {
+            systemConnectivityManager.unregisterNetworkCallback(any<AndroidConnectivityManager.NetworkCallback>())
+        }
+        lease.close()
+        scheduler.runCurrent()
         verify(exactly = 1) {
             systemConnectivityManager.unregisterNetworkCallback(any<AndroidConnectivityManager.NetworkCallback>())
         }

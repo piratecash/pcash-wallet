@@ -12,9 +12,15 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import com.github.takahirom.roborazzi.captureRoboImage
 import io.mockk.every
 import io.mockk.mockk
+import io.horizontalsystems.core.IPinComponent
+import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
@@ -35,6 +41,16 @@ class SettingsScreenScreenshotTest {
         every { companyWebPage } returns "https://example.com"
     }
     private val navController = mockk<NavController>(relaxed = true)
+
+    @Before
+    fun setUp() {
+        startKoin { modules(module { single { mockk<IPinComponent>(relaxed = true) } }) }
+    }
+
+    @After
+    fun tearDown() {
+        stopKoin()
+    }
 
     @Test
     fun settingsScreen_lightEnglish_capturesSnapshot() = capture("light-en", darkTheme = false)

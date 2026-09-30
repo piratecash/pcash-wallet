@@ -33,7 +33,8 @@ class HiddenWalletAccountVisibilityTest {
         storage = storage,
         getMoneroWalletFilesNameUseCase = getMoneroWalletFilesNameUseCase,
         removeMoneroWalletFilesUseCase = removeMoneroWalletFilesUseCase,
-        balanceHiddenManager = balanceHiddenManager
+        balanceHiddenManager = balanceHiddenManager,
+        deletionPreflight = mockk(relaxed = true),
     )
 
     @Before
@@ -141,6 +142,10 @@ private class FakeAppDatabase(
 private class InMemoryAccountsDao : AccountsDao {
     private val accounts = linkedMapOf<String, AccountRecord>()
     private val active = mutableMapOf<Int, ActiveAccount>()
+
+    override fun getIds(): List<String> = accounts.keys.toList()
+
+    override fun isAvailable(id: String): Boolean = accounts[id]?.deleted == false
 
     fun reset() {
         accounts.clear()

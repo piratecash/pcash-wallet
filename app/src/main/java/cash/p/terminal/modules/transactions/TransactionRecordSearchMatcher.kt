@@ -2,6 +2,7 @@ package cash.p.terminal.modules.transactions
 
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
+import cash.p.terminal.entities.transactionrecords.beam.BeamTransactionRecord
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
 import cash.p.terminal.entities.transactionrecords.evm.TransferEvent
@@ -48,6 +49,10 @@ class TransactionRecordSearchMatcher {
             is TonTransactionRecord -> addTonFields(record)
             is StellarTransactionRecord -> addStellarFields(record)
             is MoneroTransactionRecord -> add(record.subaddressLabel)
+            is BeamTransactionRecord -> {
+                add(record.kernelId)
+                add(record.failureReason)
+            }
         }
     }
 
