@@ -173,7 +173,8 @@ class PoisonAddressManager(
             TransactionRecordType.BITCOIN_OUTGOING,
             TransactionRecordType.SOLANA_OUTGOING,
             TransactionRecordType.MONERO_OUTGOING,
-            TransactionRecordType.STELLAR_OUTGOING -> true
+            TransactionRecordType.STELLAR_OUTGOING,
+            TransactionRecordType.BEAM_OUTGOING -> true
 
             TransactionRecordType.TON -> record.to != null && record.from == null
 
@@ -199,7 +200,8 @@ class PoisonAddressManager(
             TransactionRecordType.TRON_EXTERNAL_CONTRACT_CALL,
             TransactionRecordType.TRON_INCOMING,
             TransactionRecordType.MONERO_INCOMING,
-            TransactionRecordType.STELLAR_INCOMING -> false
+            TransactionRecordType.STELLAR_INCOMING,
+            TransactionRecordType.BEAM_INCOMING -> false
         }
     }
 

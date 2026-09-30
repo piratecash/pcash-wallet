@@ -8,6 +8,8 @@ import cash.p.terminal.core.storage.MoneroFileDao
 import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
 import cash.p.terminal.domain.usecase.ZcashEraseResult
 import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.AccountDeletionBlockedException
+import cash.p.terminal.wallet.AccountDeletionPreflight
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
@@ -21,6 +23,7 @@ import cash.p.terminal.modules.pin.core.PinDbStorage
 import io.horizontalsystems.core.ISmsNotificationSettings
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
+import io.mockk.Called
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
@@ -36,6 +39,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
 import java.io.IOException
+import kotlin.test.assertFailsWith
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AccountCleanerTest {
@@ -51,6 +55,7 @@ class AccountCleanerTest {
     private lateinit var pinDbStorage: PinDbStorage
     private lateinit var accountStorageCleaner: AccountStorageCleaner
     private lateinit var bitcoinKitDatabaseManager: BitcoinKitDatabaseManager
+    private val deletionPreflight = mockk<AccountDeletionPreflight>(relaxed = true)
 
     @Before
     fun setUp() {
@@ -83,12 +88,28 @@ class AccountCleanerTest {
             pinDbStorage,
             accountStorageCleaner,
             bitcoinKitDatabaseManager,
+            deletionPreflight,
         )
     }
 
     @After
     fun tearDown() {
         unmockkAll()
+    }
+
+    @Test
+    fun clearAccounts_blockedBatch_doesNotStopAdaptersOrWipeData() = runTest {
+        val ids = listOf("non-beam", "beam")
+        coEvery { deletionPreflight.cleanupDeleted(ids) } throws AccountDeletionBlockedException()
+
+        assertFailsWith<AccountDeletionBlockedException> {
+            accountCleaner.clearAccounts(ids)
+        }
+        verify {
+            listOf(adapterManager, bitcoinKitDatabaseManager, accountStorageCleaner,
+                removeMoneroWalletFilesUseCase, clearZCashWalletDataUseCase, smsNotificationSettings,
+                moneroFileDao, pinDbStorage) wasNot Called
+        }
     }
 
     @Test

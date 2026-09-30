@@ -2,10 +2,17 @@ package cash.p.terminal.modules.restoreaccount.duplicatewallet
 
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.viewModelScope
+import cash.p.beam.BeamWalletSession
+import cash.p.beam.RestoreSource
 import cash.p.terminal.core.IAccountFactory
 import cash.p.terminal.core.ILocalStorage
+import cash.p.terminal.core.managers.BeamDatabaseKeyProvider
+import cash.p.terminal.core.managers.BeamNetwork
+import cash.p.terminal.core.managers.BeamSessionFactory
+import cash.p.terminal.core.managers.BeamStorageLocator
 import cash.p.terminal.core.managers.RestoreSettings
 import cash.p.terminal.core.managers.RestoreSettingsManager
+import cash.p.terminal.core.managers.RestoreSettingsTestFixture
 import cash.p.terminal.core.usecase.MoneroWalletUseCase
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -19,6 +26,7 @@ import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.EnabledWallet
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
+import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.coEvery
@@ -27,6 +35,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import io.mockk.verifyOrder
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -39,9 +48,12 @@ import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -57,6 +69,8 @@ private const val OLD_PASSPHRASE = "source-passphrase"
 @OptIn(ExperimentalCoroutinesApi::class)
 class DuplicateWalletViewModelTest {
 
+    @get:Rule
+    val temporaryFolder = TemporaryFolder()
     private val accountManager: IAccountManager = mockk(relaxed = true)
     private val accountFactory: IAccountFactory = mockk(relaxed = true)
     private val moneroWalletUseCase: MoneroWalletUseCase = mockk(relaxed = true)
@@ -73,7 +87,7 @@ class DuplicateWalletViewModelTest {
     private val pythAddress = "HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3"
     private val unsupportedQuery = TokenQuery(BlockchainType.Solana, TokenType.Spl(pythAddress))
 
-    private val sourceWords = List(12) { "abandon" }
+    private val sourceWords = List(11) { "abandon" } + "about"
 
     private val accountToCopy = Account(
         id = "source-account-id",
@@ -91,7 +105,7 @@ class DuplicateWalletViewModelTest {
         every { accountFactory.getUniqueName(any(), any()) } answers { firstArg() }
         // Mirrors the requested type so tests can tell a same-identity copy from a different-identity one.
         every { accountFactory.account(any(), any(), any(), any(), any()) } answers {
-            newAccount.copy(type = secondArg())
+            newAccount.copy(type = secondArg(), origin = thirdArg())
         }
         every { restoreSettingsManager.settings(any(), any()) } returns RestoreSettings()
         // Nothing is known to MarketKit unless a test says otherwise
@@ -303,6 +317,83 @@ class DuplicateWalletViewModelTest {
         assertTrue(viewModel.uiState.createButtonEnabled)
     }
 
+    @Test
+    fun createAccount_beamDisabledCreatedSource_restoresWhenEnabledAfterRestart() {
+        sourceWallets()
+        val fixture = RestoreSettingsTestFixture()
+        val saved = captureSavedWallets()
+        val created = slot<Account>()
+        var intentAtPublication = false
+        every { accountManager.save(capture(created), any()) } answers {
+            intentAtPublication = fixture.manager().hasBeamRestoreIntent(created.captured)
+        }
+
+        createViewModel(OLD_PASSPHRASE, AccountOrigin.Created, fixture.manager()).createAccount()
+
+        assertTrue(awaitSaved(saved).isEmpty())
+        assertTrue(intentAtPublication)
+        val duplicate = created.captured
+        assertEquals(AccountOrigin.Created, duplicate.origin)
+        assertNotEquals(accountToCopy.id, duplicate.id)
+        val mnemonic = duplicate.type as AccountType.Mnemonic
+        assertEquals(sourceWords, mnemonic.words)
+        assertEquals(OLD_PASSPHRASE, mnemonic.passphrase)
+        assertLateBeamEnableRestores(duplicate, fixture.manager())
+    }
+
+    @Test
+    fun createAccount_passphraseChangedCreatedSource_restoresWhenBeamEnabledLater() {
+        sourceWallets()
+        val fixture = RestoreSettingsTestFixture()
+        val saved = captureSavedWallets()
+
+        createViewModel(OLD_PASSPHRASE, AccountOrigin.Created, fixture.manager()).apply {
+            enterPassphrase(NEW_PASSPHRASE)
+            createAccount()
+        }
+        awaitSaved(saved)
+
+        val created = slot<Account>()
+        verify { accountManager.save(capture(created), any()) }
+        assertEquals(NEW_PASSPHRASE, (created.captured.type as AccountType.Mnemonic).passphrase)
+        assertEquals(AccountOrigin.Created, created.captured.origin)
+        assertLateBeamEnableRestores(created.captured, fixture.manager())
+    }
+
+    @Test
+    fun createAccount_beamEnabled_savesIntentAfterCopiedSettingsBeforePublication() {
+        val beam = TokenQuery(BlockchainType.Beam, TokenType.Native)
+        sourceWallets(enabledWallet(beam))
+        curate(beam)
+        val saved = captureSavedWallets()
+
+        createViewModel(sourceOrigin = AccountOrigin.Created).createAccount()
+        awaitSaved(saved)
+
+        verifyOrder {
+            restoreSettingsManager.save(any(), match { it.id == newAccount.id }, BlockchainType.Beam)
+            restoreSettingsManager.saveBeamRestoreIntent(match { it.id == newAccount.id })
+            accountManager.save(match { it.id == newAccount.id && it.origin == AccountOrigin.Created }, any())
+        }
+    }
+
+    @Test
+    fun createAccount_beamIntentStorageFails_doesNotPublishAccountOrWallets() {
+        sourceWallets()
+        val fixture = RestoreSettingsTestFixture()
+        every { fixture.storage.save(any()) } throws IllegalStateException("Storage unavailable")
+        val viewModel = createViewModel(sourceOrigin = AccountOrigin.Created, settingsManager = fixture.manager())
+
+        viewModel.createAccount()
+        awaitUiState(viewModel) { it.error != null }
+
+        verify(exactly = 0) { accountManager.save(any(), any()) }
+        coVerify(exactly = 0) { walletManager.saveEnabledWallets(any()) }
+        assertFalse(viewModel.uiState.closeScreen)
+        assertTrue(viewModel.uiState.createButtonEnabled)
+        assertFalse(fixture.manager().hasBeamRestoreIntent(newAccount))
+    }
+
     // A post-commit failure test (saveEnabledWallets throwing after accountManager.save succeeds)
     // is intentionally omitted: copyAccount leaves that segment uncaught, and kotlinx-coroutines-test
     // reports the resulting uncaught exception via a JVM-wide handler, so it surfaces as a spurious
@@ -406,6 +497,32 @@ class DuplicateWalletViewModelTest {
         val created = slot<Account>()
         verify { accountManager.save(capture(created), any()) }
         assertEquals(expectedPassphrase, (created.captured.type as AccountType.Mnemonic).passphrase)
+        verifyOrder {
+            restoreSettingsManager.saveBeamRestoreIntent(created.captured)
+            accountManager.save(created.captured, any())
+        }
+    }
+
+    private fun assertLateBeamEnableRestores(account: Account, settingsManager: RestoreSettingsManager) = runBlocking {
+        val directory = temporaryFolder.newFolder()
+        val locator = mockk<BeamStorageLocator> {
+            every { storagePath(account.id, BeamNetwork.Mainnet) } returns directory
+            every { databaseFile(account.id, BeamNetwork.Mainnet) } returns directory.resolve("wallet.db")
+        }
+        val keys = mockk<BeamDatabaseKeyProvider> {
+            every { ensureAvailable(account.id) } returns Unit
+            every { keyForInitialization(account.id, BeamNetwork.Mainnet) } returns
+                BeamDatabaseKeyProvider.Key(ByteArray(32) { 3 }, isNew = true)
+        }
+        val dispatchers = mockk<DispatcherProvider> { every { io } returns Dispatchers.Unconfined }
+        val sdk = mockk<BeamSessionFactory.Factory>()
+        coEvery { sdk.restore(any(), any(), any(), any()) } returns mockk<BeamWalletSession>()
+
+        BeamSessionFactory(keys, locator, dispatchers, settingsManager, sdk).open(account, BeamNetwork.Mainnet)
+
+        coVerify(exactly = 1) { sdk.restore(any(), any(), any(), RestoreSource.SnapshotThenScan()) }
+        coVerify(exactly = 0) { sdk.createNew(any(), any(), any()) }
+        coVerify(exactly = 0) { sdk.openExisting(any(), any()) }
     }
 
     private fun DuplicateWalletViewModel.enterPassphrase(value: String) {
@@ -414,16 +531,21 @@ class DuplicateWalletViewModelTest {
     }
 
     /** [sourcePassphrase] varies the source identity; the destination one is set through the UI. */
-    private fun createViewModel(sourcePassphrase: String = "") = DuplicateWalletViewModel(
+    private fun createViewModel(
+        sourcePassphrase: String = "",
+        sourceOrigin: AccountOrigin = accountToCopy.origin,
+        settingsManager: RestoreSettingsManager = restoreSettingsManager,
+    ) = DuplicateWalletViewModel(
         accountToCopy = accountToCopy.copy(
-            type = AccountType.Mnemonic(sourceWords, sourcePassphrase)
+            type = AccountType.Mnemonic(sourceWords, sourcePassphrase),
+            origin = sourceOrigin,
         ),
         accountManager = accountManager,
         accountFactory = accountFactory,
         moneroWalletUseCase = moneroWalletUseCase,
         enabledWalletStorage = enabledWalletStorage,
         walletManager = walletManager,
-        restoreSettingsManager = restoreSettingsManager,
+        restoreSettingsManager = settingsManager,
         localStorage = localStorage,
         marketKit = marketKit
     ).also {

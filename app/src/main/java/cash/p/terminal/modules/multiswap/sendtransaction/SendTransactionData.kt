@@ -99,6 +99,14 @@ sealed class SendTransactionData {
         override val recipientAddress: String = address
     }
 
+    data class Beam(
+        val address: String,
+        val amount: BigDecimal,
+        val memo: String?,
+    ) : SendTransactionData() {
+        override val recipientAddress: String = address
+    }
+
     object Unsupported : SendTransactionData()
 }
 

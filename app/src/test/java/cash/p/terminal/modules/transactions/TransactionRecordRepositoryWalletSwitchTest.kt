@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.transactions
 
+import cash.p.beam.BeamTransactionStatus
 import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
@@ -41,13 +42,16 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestDispatcher
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.runCurrent
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.koin.core.context.startKoin
@@ -1204,6 +1208,160 @@ class TransactionRecordRepositoryWalletSwitchTest {
 
         collectorJob.cancel()
         repository.clear()
+    }
+
+    @Test
+    fun set_nativeBeamAndGameBeam_keepsNativeWalletAndEvmGroupingSeparate() = runTest {
+        startKoinForTests()
+        val dispatcher = UnconfinedTestDispatcher(testScheduler)
+        val nativeToken = Token(
+            Coin("beam", "Beam", "BEAM"), Blockchain(BlockchainType.Beam, "Beam", null), TokenType.Native, 8,
+        )
+        val gameToken = Token(
+            Coin("beam-2", "Beam", "BEAM"), Blockchain(BlockchainType.Ethereum, "Ethereum", null),
+            TokenType.Eip20("game-token-contract"), 18,
+        )
+        val nativeSource = createSource("beam-account", nativeToken.blockchain)
+        val gameSource = createSource("beam-account", gameToken.blockchain)
+        val nativeWallet = walletFor(nativeToken, nativeSource)
+        val gameWallet = walletFor(gameToken, gameSource)
+        val nativeRecord = mockk<TransactionRecord>(relaxed = true) {
+            every { uid } returns "native-beam-history"
+            every { source } returns nativeSource
+            every { token } returns nativeToken
+        }
+        val nativeAdapter = simpleAdapter(listOf(nativeRecord))
+        val gameAdapter = simpleAdapter(emptyList())
+        val manager = adapterManager(nativeSource, nativeAdapter)
+        every { manager.getAdapter(gameSource) } returns gameAdapter
+        val repository = createRepository(manager, dispatcher, this)
+        val (emissions, collector) = collectRecordUids(repository, dispatcher)
+        try {
+            repository.setAndReload(
+                listOf(nativeWallet, gameWallet), null, FilterTransactionType.All, null, null, null,
+            )
+            advanceUntilIdle()
+            assertEquals(listOf("native-beam-history"), emissions.last())
+            coVerify { nativeAdapter.getTransactions(null, nativeToken, any(), FilterTransactionType.All, null) }
+            coVerify { gameAdapter.getTransactions(null, null, any(), FilterTransactionType.All, null) }
+        } finally {
+            collector.cancel()
+            repository.clear()
+        }
+    }
+
+    @Test
+    fun loadItems_beamDeletedDuringRead_reloadsAuthoritativeEmptySnapshot() = runTest {
+        assertBeamUpdateDuringRead(searchQuery = null, deleted = true)
+    }
+
+    @Test
+    fun loadItems_beamStatusChangedDuringRead_reloadsSameUidRecord() = runTest {
+        assertBeamUpdateDuringRead(searchQuery = null, deleted = false)
+    }
+
+    @Test
+    fun search_beamDeletedDuringRead_reloadsAuthoritativeEmptySnapshot() = runTest {
+        assertBeamUpdateDuringRead(searchQuery = "transaction-id", deleted = true)
+    }
+
+    @Test
+    fun search_beamStatusChangedDuringRead_reloadsSameUidRecord() = runTest {
+        assertBeamUpdateDuringRead(searchQuery = "transaction-id", deleted = false)
+    }
+
+    @Test
+    fun cancelPendingLoads_beamUpdateDuringRead_doesNotRestartCanceledLoad() = runTest {
+        assertBeamUpdateDuringRead(searchQuery = null, deleted = true, cancelBeforeRelease = true)
+    }
+
+    @Test
+    fun cancelPendingLoads_beamUpdateDuringSearch_doesNotRestartCanceledLoad() = runTest {
+        assertBeamUpdateDuringRead(searchQuery = "transaction-id", deleted = true, cancelBeforeRelease = true)
+    }
+
+    private class SuspendedBeamRead {
+        val original = beamHistoryRecord()
+        val updated = beamHistoryRecord(status = BeamTransactionStatus.Registering)
+        val wallet = TransactionWallet(original.token, original.source, null)
+        val updates = MutableSharedFlow<List<TransactionRecord>>()
+        val releaseStaleRead = CompletableDeferred<Unit>()
+        val releaseFreshRead = CompletableDeferred<Unit>()
+        var snapshot: List<TransactionRecord> = listOf(original)
+        var readCount = 0
+            private set
+        val adapter = mockk<ITransactionsAdapter>(relaxed = true) {
+            every { getTransactionRecordsFlow(any(), any(), any()) } returns updates
+            every { getTransactionsReloadSignalFlow() } returns emptyFlow()
+            coEvery { getTransactions(any(), any(), any(), any(), any()) } coAnswers { readSnapshot() }
+        }
+
+        private suspend fun readSnapshot(): List<TransactionRecord> {
+            val captured = snapshot
+            when (++readCount) {
+                1 -> releaseStaleRead.await()
+                2 -> releaseFreshRead.await()
+                else -> error("Unexpected repeated reload")
+            }
+            return captured
+        }
+    }
+
+    private suspend fun TestScope.assertBeamUpdateDuringRead(
+        searchQuery: String?,
+        deleted: Boolean,
+        cancelBeforeRelease: Boolean = false,
+    ) {
+        startKoinForTests()
+        val scenario = SuspendedBeamRead()
+        val manager = adapterManager(scenario.original.source, scenario.adapter)
+        val repository = createRepository(manager, StandardTestDispatcher(testScheduler), this)
+        val emissions = mutableListOf<RecordsBatch>()
+        backgroundScope.launch { repository.itemsFlow.collect { emissions.add(it) } }
+        try {
+            repository.set(listOf(scenario.wallet), scenario.wallet, FilterTransactionType.All, null, null, searchQuery)
+            runCurrent()
+            repository.reloadItems()
+            runCurrent()
+            assertEquals(1, scenario.readCount)
+            scenario.snapshot = if (deleted) emptyList() else listOf(scenario.updated)
+            repeat(3) {
+                scenario.updates.emit(scenario.snapshot)
+                runCurrent()
+            }
+            assertEquals(1, scenario.readCount)
+            assertBeamReadCompletion(repository, scenario, emissions, searchQuery, cancelBeforeRelease)
+        } finally {
+            repository.clear()
+        }
+    }
+
+    private fun TestScope.assertBeamReadCompletion(
+        repository: TransactionRecordRepository,
+        scenario: SuspendedBeamRead,
+        emissions: List<RecordsBatch>,
+        searchQuery: String?,
+        cancelBeforeRelease: Boolean,
+    ) {
+        if (cancelBeforeRelease) repository.cancelPendingLoads()
+        scenario.releaseStaleRead.complete(Unit)
+        runCurrent()
+        assertTrue("The invalidated read must not publish a batch", emissions.isEmpty())
+        if (cancelBeforeRelease) {
+            assertEquals(1, scenario.readCount)
+            return
+        }
+        assertEquals(2, scenario.readCount)
+        scenario.releaseFreshRead.complete(Unit)
+        runCurrent()
+        val batch = emissions.single()
+        if (scenario.snapshot.isEmpty()) {
+            assertTrue(batch.records.isEmpty())
+        } else {
+            assertSame(scenario.updated, batch.records.single())
+        }
+        assertEquals(searchQuery != null, batch.searchCompleted)
+        assertEquals(2, scenario.readCount)
     }
 
     private fun startKoinForTests() {
