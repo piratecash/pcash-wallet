@@ -37,7 +37,6 @@ import cash.p.terminal.core.managers.BitcoinKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.BitcoinKitDatabaseManager
 import cash.p.terminal.core.managers.BitcoinKitDatabaseOperations
 import cash.p.terminal.core.managers.BtcBlockchainManager
-import cash.p.terminal.core.managers.DefaultBitcoinKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.DefaultBitcoinKitDatabaseOperations
 import cash.p.terminal.core.managers.DeviceFlipDetector
 import cash.p.terminal.core.managers.EffectiveMonitoredChains
@@ -106,6 +105,7 @@ import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.SeedPhraseQrCrypto
 import cash.p.terminal.core.managers.SilentCameraManager
 import cash.p.terminal.core.managers.NetworkErrorTracker
+import cash.p.terminal.core.managers.SolanaKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.SolanaKitManager
 import cash.p.terminal.core.managers.SolanaRpcSourceManager
 import cash.p.terminal.core.managers.SolanaWalletManager
@@ -296,7 +296,7 @@ val managerModule = module {
     }
     singleOf(::ConnectivityManager) bind IConnectivityManager::class
     singleOf(::BitcoinKitConnectionManager) bind IConnectionManager::class
-    singleOf(::DefaultBitcoinKitDatabaseKeyProvider) bind BitcoinKitDatabaseKeyProvider::class
+    singleOf(::BitcoinKitDatabaseKeyProvider)
     singleOf(::DefaultBitcoinKitDatabaseOperations) bind BitcoinKitDatabaseOperations::class
     singleOf(::BitcoinKitDatabaseManager)
     singleOf(::EvmSyncSourceManager)
@@ -306,6 +306,7 @@ val managerModule = module {
     singleOf(::BtcBlockchainManager)
     singleOf(::OfflineBroadcastTokenResolver)
     singleOf(::NetworkErrorTracker)
+    singleOf(::SolanaKitDatabaseKeyProvider)
     singleOf(::SolanaKitManager)
     singleOf(::StellarKitManager)
     singleOf(::TonKitManager)

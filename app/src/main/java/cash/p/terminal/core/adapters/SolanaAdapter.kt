@@ -1,6 +1,5 @@
 package cash.p.terminal.core.adapters
 
-import cash.p.terminal.core.App
 import cash.p.terminal.core.OfflineSignRequest
 import cash.p.terminal.core.OfflineSolanaSignRequest
 import cash.p.terminal.core.SignedOfflineSolanaTransaction
@@ -104,10 +103,6 @@ class SolanaAdapter(private val kitWrapper: SolanaKitWrapper) :
             balance?.toBigDecimal()?.let {
                 return scaleDown(it, decimal)
             } ?: return BigDecimal.ZERO
-        }
-
-        fun clear(walletId: String) {
-            SolanaKit.clear(App.instance, walletId)
         }
     }
 
