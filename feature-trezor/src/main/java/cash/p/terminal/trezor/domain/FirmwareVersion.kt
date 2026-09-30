@@ -1,5 +1,6 @@
 package cash.p.terminal.trezor.domain
 
+/** Structured `major.minor.patch` firmware version, comparable so admission policies can gate by a minimum. */
 internal data class FirmwareVersion(
     val major: Int,
     val minor: Int,

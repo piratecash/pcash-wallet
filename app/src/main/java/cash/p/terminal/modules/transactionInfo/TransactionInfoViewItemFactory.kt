@@ -546,15 +546,7 @@ class TransactionInfoViewItemFactory(
                     TransactionRecordType.BITCOIN_OUTGOING -> {
                         sentToSelf = transaction.sentToSelf
                         if (transaction.isIronwoodMigration) {
-                            itemSections.add(
-                                listOf(
-                                    Transaction(
-                                        Translator.getString(R.string.transactions_migrate),
-                                        Translator.getString(R.string.transactions_migrate_to_ironwood),
-                                        R.drawable.ic_migrate_24
-                                    )
-                                )
-                            )
+                            itemSections.add(ironwoodMigrationSectionItems())
                         }
                         itemSections.add(
                             TransactionViewItemFactoryHelper.getSendSectionItems(
@@ -693,6 +685,9 @@ class TransactionInfoViewItemFactory(
             }
 
             is PendingTransactionRecord -> {
+                if (transaction.isIronwoodMigration) {
+                    itemSections.add(ironwoodMigrationSectionItems())
+                }
                 val unknownRecipient = transactionItem.hasUnknownOfflineRecipient
                 itemSections.add(
                     if (unknownRecipient && transaction.amount.signum() == 0) {
@@ -700,7 +695,9 @@ class TransactionInfoViewItemFactory(
                     } else {
                         TransactionViewItemFactoryHelper.getSendSectionItems(
                             value = transaction.mainValue,
-                            toAddress = transaction.to.takeUnless { unknownRecipient },
+                            // The migration pays the account's own internal receiver, which
+                            // is not reported as a recipient once the transaction is rescanned.
+                            toAddress = transaction.to.takeUnless { unknownRecipient || transaction.isIronwoodMigration },
                             coinPrice = rates[transaction.mainValue.coinUid],
                             hideAmount = transactionItem.hideAmount,
                             sentToSelf = transaction.sentToSelf,
@@ -858,6 +855,14 @@ private val TransactionInfoItem.hasUnknownOfflineRecipient: Boolean
         val pendingRecord = record as? PendingTransactionRecord ?: return false
         return offlineStatus != null && pendingRecord.to.orEmpty().all { it.isBlank() }
     }
+
+private fun ironwoodMigrationSectionItems() = listOf(
+    Transaction(
+        Translator.getString(R.string.transactions_migrate),
+        Translator.getString(R.string.transactions_migrate_to_ironwood),
+        R.drawable.ic_migrate_24
+    )
+)
 
 private fun getUnknownOfflineSendSectionItems(
     value: TransactionValue,

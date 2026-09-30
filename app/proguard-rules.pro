@@ -96,7 +96,7 @@
 -keep class com.m2049r.xmrwallet.model.** { *; }
 -keep class com.m2049r.xmrwallet.ledger.** { *; }
 -keep class com.m2049r.xmrwallet.service.BluetoothService { *; }
--keep class cash.z.** { *; }
+-keep class cash.p.zcash.ZcashJni { native <methods>; }
 -keep class com.sun.jna.** { *; }
 -keep class * extends com.sun.jna.Structure { *; }
 -keep class * implements com.sun.jna.Library { *; }

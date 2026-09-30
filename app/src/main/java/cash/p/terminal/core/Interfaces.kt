@@ -31,9 +31,7 @@ import io.horizontalsystems.core.entities.BlockchainType
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.BalanceData
 import cash.p.terminal.wallet.entities.TokenQuery
-import cash.z.ecc.android.sdk.model.FirstClassByteArray
 import io.horizontalsystems.bitcoincore.storage.UtxoFilters
-import io.horizontalsystems.core.logger.AppLogger
 import io.horizontalsystems.hdwalletkit.Language
 import io.horizontalsystems.solanakit.models.FullTransaction
 import io.horizontalsystems.tonkit.FriendlyAddress
@@ -401,11 +399,12 @@ interface ISendZcashAdapter : IBalanceAdapter, OfflineTransactionAdapter<SignedO
     // Start syncing the adapter
     fun start()
 
-    // Stop the adapter (closes synchronizer without erasing data)
+    // Stop the adapter (releases the session without erasing data)
     fun stop()
 
     suspend fun validate(address: String): ZcashAdapter.ZCashAddressType
-    suspend fun send(amount: BigDecimal, address: String, memo: String, logger: AppLogger?): FirstClassByteArray
+    /** Returns the txid of the broadcast transaction. */
+    suspend fun send(amount: BigDecimal, address: String, memo: String): String
     suspend fun getOwnAddresses(): List<String>
 }
 

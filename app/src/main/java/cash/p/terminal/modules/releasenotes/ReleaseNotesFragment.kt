@@ -38,7 +38,6 @@ import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.caption_jacob
 import cash.p.terminal.ui_compose.entities.ViewState
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import kotlinx.parcelize.Parcelize
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -51,7 +50,7 @@ class ReleaseNotesFragment : BaseComposeFragment() {
     @Composable
     override fun GetContent(navController: NavController) {
         ReleaseNotesScreen(
-            closeablePopup = navController.getInput<Input>()?.showAsClosablePopup ?: false,
+            closeablePopup = getInput<Input>()?.showAsClosablePopup ?: false,
             uiState = viewModel.uiState,
             onCloseClick = navController::popBackStackSafely,
             onRetryClick = { viewModel.retry() },
