@@ -31,7 +31,6 @@ import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.ui_compose.components.HudHelper
 import kotlinx.coroutines.launch
@@ -46,8 +45,8 @@ class GeneralPrivateKeyFragment : BaseComposeFragment(screenshotEnabled = false)
     override fun GetContent(navController: NavController) {
         GeneralPrivateKeyScreen(
             navController = navController,
-            generalPrivateKey = navController.getInput<Input>()?.privateKey ?: "",
-            title = navController.getInput<Input>()?.title ?: ""
+            generalPrivateKey = getInput<Input>()?.privateKey ?: "",
+            title = getInput<Input>()?.title ?: ""
         )
     }
 

@@ -66,6 +66,7 @@ import cash.p.terminal.resources.ic_user_20
 import cash.p.terminal.resources.ic_uwt2_24
 import cash.p.terminal.resources.ic_wallet_20
 import cash.p.terminal.resources.ic_wallet_connect_20
+import cash.p.terminal.resources.offline_broadcast_import_file
 import cash.p.terminal.resources.offline_broadcast_title
 import cash.p.terminal.resources.premium_settings
 import cash.p.terminal.resources.settings_mini_app
@@ -256,13 +257,24 @@ private fun ToolsSettingsSections(onAction: (SettingsAction) -> Unit) {
         )
     )
     VSpacer(32.dp)
-    CellUniversalLawrenceSection {
-        SettingsCell(
-            title = Res.string.offline_broadcast_title,
-            icon = Res.drawable.ic_send_24,
-            onClick = onAction.callbackFor(SettingsAction.OfflineBroadcast),
+    CellUniversalLawrenceSection(
+        listOf(
+            {
+                SettingsCell(
+                    title = Res.string.offline_broadcast_title,
+                    icon = Res.drawable.ic_send_24,
+                    onClick = onAction.callbackFor(SettingsAction.OfflineBroadcast),
+                )
+            },
+            {
+                SettingsCell(
+                    title = Res.string.offline_broadcast_import_file,
+                    icon = Res.drawable.ic_file_24,
+                    onClick = onAction.callbackFor(SettingsAction.ImportTransactionFile),
+                )
+            },
         )
-    }
+    )
     VSpacer(24.dp)
 }
 

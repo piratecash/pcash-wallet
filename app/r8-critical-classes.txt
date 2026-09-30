@@ -42,3 +42,6 @@ cash.p.terminal.modules.backuplocal.fullbackup.FullBackup
 cash.p.terminal.wallet.models.GlobalMarketPoint
 io.horizontalsystems.tronkit.network.CreatedTransaction
 cash.p.terminal.core.managers.RestoreSettingType
+
+# zcash-sdk-kmp's native library exports Java_cash_p_zcash_ZcashJni_* symbols.
+cash.p.zcash.ZcashJni

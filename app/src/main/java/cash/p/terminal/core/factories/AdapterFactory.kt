@@ -1,12 +1,16 @@
 package cash.p.terminal.core.factories
 
 import android.content.Context
+import androidx.annotation.VisibleForTesting
 import io.horizontalsystems.core.logger.AppLogger
 import timber.log.Timber
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.ITransactionsAdapter
+import cash.p.terminal.core.UnsupportedAccountException
+import cash.p.terminal.core.UnsupportedException
 import cash.p.terminal.core.adapters.BitcoinAdapter
+import cash.p.terminal.core.adapters.BeamAdapter
 import cash.p.terminal.core.adapters.BitcoinCashAdapter
 import cash.p.terminal.core.adapters.CosantaAdapter
 import cash.p.terminal.core.adapters.DashAdapter
@@ -34,8 +38,11 @@ import cash.p.terminal.core.adapters.TronTransactionsAdapter
 import cash.p.terminal.core.adapters.stellar.StellarAdapter
 import cash.p.terminal.core.adapters.stellar.StellarAssetAdapter
 import cash.p.terminal.core.adapters.stellar.StellarTransactionsAdapter
+import cash.p.terminal.core.adapters.zcash.TrezorZcashSigner
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
-import cash.p.terminal.core.adapters.zcash.ZcashSingleUseAddressManager
+import cash.p.terminal.core.adapters.zcash.ZcashSpendingKeySigner
+import cash.p.terminal.core.adapters.zcash.ZcashTransactionSigner
+import cash.p.terminal.core.adapters.zcash.zcashKey
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.providers.BitcoinCashFeeRateProvider
 import cash.p.terminal.core.providers.BitcoinFeeRateProvider
@@ -47,6 +54,9 @@ import cash.p.terminal.core.providers.FeeRateProvider
 import cash.p.terminal.core.providers.LitecoinFeeRateProvider
 import cash.p.terminal.core.providers.PirateCashFeeRateProvider
 import cash.p.terminal.core.managers.BtcBlockchainManager
+import cash.p.terminal.core.managers.BeamLifecycleCoordinator
+import cash.p.terminal.core.managers.BeamSendCoordinator
+import cash.p.terminal.core.managers.BeamSessionOwner
 import cash.p.terminal.core.managers.BitcoinKitDatabaseManager
 import cash.p.terminal.core.managers.BitcoinKitEnvironment
 import cash.p.terminal.core.managers.EvmBlockchainManager
@@ -63,6 +73,9 @@ import cash.p.terminal.modules.blockchainstatus.logTag
 import cash.p.terminal.data.repository.EvmTransactionRepository
 import cash.p.terminal.network.pirate.domain.repository.MasterNodesRepository
 import cash.p.terminal.premium.domain.usecase.GetBnbAddressUseCase
+import cash.p.terminal.trezor.domain.TrezorAccountIdentityValidator
+import cash.p.terminal.trezor.domain.TrezorFirmwareVersionRecorder
+import cash.p.terminal.trezorkit.client.ITrezorClient
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAdapter
 import cash.p.terminal.wallet.IReceiveAdapter
@@ -70,6 +83,7 @@ import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
 import cash.p.terminal.wallet.isStakingWallet
 import cash.p.terminal.wallet.litecoinMwebAccountIds
 import cash.p.terminal.wallet.transaction.TransactionSource
@@ -79,6 +93,13 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.tonkit.Address
 import org.koin.java.KoinJavaComponent.inject
 import org.koin.core.parameter.parametersOf
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 class AdapterFactory(
     private val context: Context,
@@ -103,9 +124,46 @@ class AdapterFactory(
 ) {
     private val logger = AppLogger("adapter-factory")
     private val bitcoinKitDatabaseManager by lazy { getKoinInstance<BitcoinKitDatabaseManager>() }
+    private val beamSessionOwner by lazy { getKoinInstance<BeamSessionOwner>() }
+    private val beamMutex = Mutex()
+    private var beamAdapter: Pair<Wallet, BeamAdapter>? = null
+
+    private suspend fun getBeamAdapter(wallet: Wallet): BeamAdapter? {
+        if (wallet.account.type !is AccountType.Mnemonic) return null
+        return beamMutex.withLock {
+            beamAdapter?.second?.let { withContext(NonCancellable) { it.close() } }
+            beamAdapter = null
+            try {
+                val session = beamSessionOwner.acquire(wallet.account)
+                currentCoroutineContext().ensureActive()
+                BeamAdapter(
+                    beamSessionOwner, session, dispatcherProvider, wallet,
+                    getKoinInstance<BeamLifecycleCoordinator>(), getKoinInstance<BeamSendCoordinator>(),
+                ).also {
+                    beamAdapter = wallet to it
+                }
+            } catch (error: Throwable) {
+                withContext(NonCancellable) { beamSessionOwner.close() }
+                throw error
+            }
+        }
+    }
 
     private suspend fun bitcoinKitEnvironment(wallet: Wallet): BitcoinKitEnvironment =
         bitcoinKitDatabaseManager.prepare(wallet.account.id)
+
+    private fun createZcashAdapter(wallet: Wallet, addressSpecTyped: AddressSpecType?) =
+        ZcashAdapter(
+            wallet = wallet,
+            addressSpecTyped = addressSpecTyped,
+            backgroundManager = backgroundManager,
+            singleUseAddressManager = getKoinInstance { parametersOf(wallet.account.id) },
+            sessionManager = getKoinInstance(),
+            ironwoodMigrations = getKoinInstance(),
+            addressDeriver = getKoinInstance(),
+            signer = buildZcashSigner(wallet),
+            dispatcherProvider = dispatcherProvider,
+        )
 
     private suspend fun getEvmAdapter(wallet: Wallet): IAdapter? {
         val blockchainType = evmBlockchainManager.getBlockchain(wallet.token)?.type ?: return null
@@ -193,14 +251,27 @@ class AdapterFactory(
         getAdapter(wallet, activeLitecoinMwebAccounts)?.also {
             storeBnbAddresses(it, wallet)
         }
+    } catch (e: CancellationException) {
+        if (wallet.token.blockchainType == BlockchainType.Beam) throw e
+        logAdapterCreationFailure(wallet, e)
     } catch (e: Throwable) {
+        if (wallet.token.blockchainType == BlockchainType.Beam) {
+            // SDK failures can include private wallet data; do not forward their text or causes.
+            Timber.e("Failed to create BEAM adapter")
+            null
+        } else {
+            logAdapterCreationFailure(wallet, e)
+        }
+    }
+
+    private fun logAdapterCreationFailure(wallet: Wallet, e: Throwable): Nothing? {
         val message = "Failed to create adapter for ${wallet.coin.code} (${wallet.token.type})"
         // Scope the log to the wallet's blockchain so the failure shows up in that blockchain's
         // APP LOG on the status screen (it filters by BlockchainType.logTag via a LIKE match),
         // not only under the generic "adapter-factory" tag.
         logger.getScoped(wallet.token.blockchainType.logTag).warning(message, e)
         Timber.e(e, "Failed to create adapter for %s (%s)", wallet.coin.code, wallet.token.type)
-        null
+        return null
     }
 
     /***
@@ -281,25 +352,7 @@ class AdapterFactory(
 
             is TokenType.AddressSpecTyped -> {
                 when (wallet.token.blockchainType) {
-                    BlockchainType.Zcash -> {
-                        val zcashSingleUseAddressManager =
-                            getKoinInstance<ZcashSingleUseAddressManager> {
-                                parametersOf(wallet.account.id)
-                            }
-                        ZcashAdapter(
-                            context = context,
-                            wallet = wallet,
-                            restoreSettings = restoreSettingsManager.settings(
-                                wallet.account,
-                                wallet.token.blockchainType
-                            ),
-                            addressSpecTyped = tokenType.type,
-                            localStorage = localStorage,
-                            backgroundManager = backgroundManager,
-                            singleUseAddressManager = zcashSingleUseAddressManager,
-                            dispatcherProvider = getKoinInstance()
-                        )
-                    }
+                    BlockchainType.Zcash -> createZcashAdapter(wallet, tokenType.type)
 
                     else -> null
                 }
@@ -329,6 +382,7 @@ class AdapterFactory(
             }
 
             TokenType.Native -> when (wallet.token.blockchainType) {
+                BlockchainType.Beam -> getBeamAdapter(wallet)
                 BlockchainType.ECash -> {
                     val syncMode =
                         btcBlockchainManager.syncMode(BlockchainType.ECash, wallet.account.origin)
@@ -396,25 +450,7 @@ class AdapterFactory(
                     )
                 }
 
-                BlockchainType.Zcash -> {
-                    val zcashSingleUseAddressManager =
-                        getKoinInstance<ZcashSingleUseAddressManager> {
-                            parametersOf(wallet.account.id)
-                        }
-                    ZcashAdapter(
-                        context = context,
-                        wallet = wallet,
-                        restoreSettings = restoreSettingsManager.settings(
-                            wallet.account,
-                            wallet.token.blockchainType
-                        ),
-                        addressSpecTyped = null,
-                        localStorage = localStorage,
-                        backgroundManager = backgroundManager,
-                        singleUseAddressManager = zcashSingleUseAddressManager,
-                        dispatcherProvider = getKoinInstance()
-                    )
-                }
+                BlockchainType.Zcash -> createZcashAdapter(wallet, addressSpecTyped = null)
 
                 BlockchainType.Ethereum,
                 BlockchainType.BinanceSmartChain,
@@ -586,7 +622,32 @@ class AdapterFactory(
         )
     }
 
-    suspend fun unlinkAdapter(wallet: Wallet) = unlinkAdapter(wallet.transactionSource)
+    suspend fun unlinkAdapter(wallet: Wallet) {
+        if (wallet.transactionSource.blockchain.type == BlockchainType.Beam) {
+            unlinkBeamAdapter(wallet)
+        } else {
+            unlinkAdapter(wallet.transactionSource)
+        }
+    }
+
+    suspend fun unlinkAdapter(wallet: Wallet, adapter: IAdapter) {
+        if (wallet.token.blockchainType == BlockchainType.Beam) {
+            unlinkBeamAdapter(wallet, adapter)
+        } else {
+            unlinkAdapter(wallet)
+        }
+    }
+
+    private suspend fun unlinkBeamAdapter(wallet: Wallet, expected: IAdapter? = null) {
+        withContext(NonCancellable) {
+            beamMutex.withLock {
+                val linked = beamAdapter ?: return@withLock
+                if (linked.first != wallet || (expected != null && linked.second !== expected)) return@withLock
+                linked.second.close()
+                beamAdapter = null
+            }
+        }
+    }
 
     suspend fun unlinkAdapter(transactionSource: TransactionSource) {
         val account = transactionSource.account
@@ -601,7 +662,36 @@ class AdapterFactory(
             BlockchainType.Ton -> tonKitManager.unlink(account)
             BlockchainType.Monero -> moneroKitManager.unlink(account)
             BlockchainType.Stellar -> stellarKitManager.unlink(account)
+            // TransactionAdapterManager only borrows the wallet adapter's BEAM session.
+            BlockchainType.Beam -> Unit
             else -> Unit
+        }
+    }
+
+    companion object {
+        /** A Trezor account signs on the device; anything else signs with its own spending key. */
+        @JvmStatic
+        @VisibleForTesting
+        internal fun buildZcashSigner(wallet: Wallet): ZcashTransactionSigner {
+            val accountType = wallet.account.type
+            if (accountType !is AccountType.TrezorDevice) {
+                return ZcashSpendingKeySigner(wallet.zcashKey() ?: throw UnsupportedAccountException())
+            }
+            val trezorClient: ITrezorClient by inject(ITrezorClient::class.java)
+            val identityValidator: TrezorAccountIdentityValidator
+                    by inject(TrezorAccountIdentityValidator::class.java)
+            val firmwareVersionRecorder: TrezorFirmwareVersionRecorder
+                    by inject(TrezorFirmwareVersionRecorder::class.java)
+            val hardwareKey = wallet.hardwarePublicKey
+                ?: throw UnsupportedException("Trezor does not have a key for Zcash")
+            return TrezorZcashSigner(
+                accountId = wallet.account.id,
+                deviceId = accountType.deviceId,
+                derivationPath = hardwareKey.derivationPath,
+                trezorClient = trezorClient,
+                identityValidator = identityValidator,
+                firmwareVersionRecorder = firmwareVersionRecorder,
+            )
         }
     }
 }

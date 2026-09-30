@@ -26,6 +26,7 @@ import cash.p.terminal.R
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.tangem.ui.HardwareWalletError
+import cash.p.terminal.modules.manageaccount.AccountDeletionError
 import cash.p.terminal.ui_compose.components.HsCheckbox
 import cash.p.terminal.ui_compose.BaseComposeFragment
 import cash.p.terminal.ui_compose.components.AppBar
@@ -36,7 +37,6 @@ import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.subhead2_leah
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.ui_compose.components.HudHelper
@@ -49,11 +49,12 @@ class ResetToFactorySettingsFragment : BaseComposeFragment() {
     @Composable
     override fun GetContent(navController: NavController) {
         val viewModel: ResetToFactorySettingsViewModel by viewModel<ResetToFactorySettingsViewModel>()
-        navController.getInput<Input>()?.let {
+        getInput<Input>()?.let {
             viewModel.account = it.account
         }
 
         val view = LocalView.current
+        AccountDeletionError(viewModel.deletionState)
         LaunchedEffect(Unit) {
             viewModel.errorEvents.collect { error ->
                 when (error) {

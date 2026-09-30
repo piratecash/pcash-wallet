@@ -75,6 +75,7 @@ class AddressParserChain(
                     addressParserChain.addHandler(AddressHandlerStellar())
                 }
 
+                BlockchainType.Beam,
                 is BlockchainType.Unsupported -> Unit
             }
 

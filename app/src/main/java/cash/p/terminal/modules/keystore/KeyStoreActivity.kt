@@ -171,6 +171,11 @@ private fun KeyStoreScreen(
     }
 
     ComposeAppTheme {
+        if (viewModel.recoveryRequired) {
+            KeysInvalidatedDialog(onClick = closeApp, recoveryRequired = true)
+            return@ComposeAppTheme
+        }
+
         if (viewModel.showSystemLockWarning) {
             Scaffold(
                 containerColor = ComposeAppTheme.colors.tyler,
@@ -191,7 +196,7 @@ private fun KeyStoreScreen(
         }
 
         if (viewModel.showInvalidKeyWarning) {
-            KeysInvalidatedDialog { viewModel.onCloseInvalidKeyWarning() }
+            KeysInvalidatedDialog(onClick = viewModel::onCloseInvalidKeyWarning)
         }
 
         if (viewModel.showTermsDialog) {
@@ -239,7 +244,7 @@ private fun NoSystemLockWarning(
 }
 
 @Composable
-private fun KeysInvalidatedDialog(onClick: () -> Unit) {
+private fun KeysInvalidatedDialog(onClick: () -> Unit, recoveryRequired: Boolean = false) {
     Dialog(onDismissRequest = onClick) {
         Column(
             Modifier
@@ -249,15 +254,23 @@ private fun KeysInvalidatedDialog(onClick: () -> Unit) {
         ) {
             BottomSheetsElementsHeader(
                 icon = painterResource(R.drawable.icon_key_24),
-                title = stringResource(R.string.alert_keys_invalidated_title),
+                title = stringResource(
+                    if (recoveryRequired) R.string.beam_recovery_required_title
+                    else R.string.alert_keys_invalidated_title
+                ),
                 subtitle = stringResource(R.string.Error),
                 onClickClose = onClick
             )
             BottomSheetsElementsText(
-                text = stringResource(R.string.alert_keys_invalidated_description)
+                text = stringResource(
+                    if (recoveryRequired) R.string.beam_recovery_required_description
+                    else R.string.alert_keys_invalidated_description
+                )
             )
             BottomSheetsElementsButtons(
-                buttonPrimaryText = stringResource(R.string.Button_Ok),
+                buttonPrimaryText = stringResource(
+                    if (recoveryRequired) R.string.Button_Close else R.string.Button_Ok
+                ),
                 onClickPrimary = onClick
             )
         }
@@ -268,7 +281,7 @@ private fun KeysInvalidatedDialog(onClick: () -> Unit) {
 @Composable
 private fun Preview_KeysInvalidatedDialog() {
     ComposeAppTheme {
-        KeysInvalidatedDialog {}
+        KeysInvalidatedDialog(onClick = {})
     }
 }
 

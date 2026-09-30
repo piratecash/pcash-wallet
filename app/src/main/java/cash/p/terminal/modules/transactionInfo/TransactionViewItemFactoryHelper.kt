@@ -1,6 +1,9 @@
 package cash.p.terminal.modules.transactionInfo
 
 import cash.p.terminal.R
+import cash.p.beam.BeamTransactionDirection
+import cash.p.terminal.entities.transactionrecords.beam.BeamTransactionRecord
+import cash.p.terminal.modules.transactions.statusTitle
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.isCustom
 import cash.p.terminal.core.managers.AddressMetadataManager
@@ -101,7 +104,7 @@ object TransactionViewItemFactoryHelper {
         transactionValue: TransactionValue,
         rate: CurrencyValue?,
         status: TransactionStatus,
-    ): TransactionInfoViewItem {
+    ): TransactionInfoViewItem.Value {
         val feeAmountString = getFeeAmountString(rate, transactionValue)
         val feeTitle: String = when (status) {
             TransactionStatus.Pending -> Translator.getString(R.string.TransactionInfo_FeeEstimated)
@@ -628,6 +631,27 @@ object TransactionViewItemFactoryHelper {
         return items
     }
 
+    private fun getBeamStatusItems(
+        transaction: BeamTransactionRecord,
+        rate: CurrencyValue?,
+        hideSensitiveInfo: Boolean,
+    ): List<TransactionInfoViewItem> = buildList {
+        // A receiving wallet never pays this fee: the row would report the sender's cost, or nothing
+        // at all on a shielded receive. Neither belongs in the user's own status section.
+        if (transaction.direction != BeamTransactionDirection.Incoming) {
+            val fee = getFeeItem(transaction.fee, rate, transaction.status(null))
+            add(TransactionInfoViewItem.Value(fee.title, fee.value.orHide(hideSensitiveInfo)))
+        }
+        listOf(
+            R.string.beam_history_kernel_id to transaction.kernelId,
+            R.string.beam_history_failure_reason to transaction.failureReason,
+        ).forEach { (title, value) ->
+            value?.takeIf { it.isNotBlank() }?.let {
+                add(TransactionInfoViewItem.Value(Translator.getString(title), it.orHide(hideSensitiveInfo)))
+            }
+        }
+    }
+
     fun getStatusSectionItems(
         transaction: TransactionRecord,
         status: TransactionStatus,
@@ -640,10 +664,21 @@ object TransactionViewItemFactoryHelper {
                 Translator.getString(R.string.TransactionInfo_Date),
                 DateHelper.getFullDate(Date(transaction.timestamp * 1000))
             ),
-            TransactionInfoViewItem.Status(status)
+            if (transaction is BeamTransactionRecord) {
+                TransactionInfoViewItem.Value(
+                    Translator.getString(R.string.TransactionInfo_Status),
+                    Translator.getString(transaction.statusTitle),
+                )
+            } else {
+                TransactionInfoViewItem.Status(status)
+            }
         )
 
         when (transaction) {
+            is BeamTransactionRecord -> items.addAll(
+                getBeamStatusItems(transaction, rates[transaction.fee.coinUid], hideSensitiveInfo)
+            )
+
             is EvmTransactionRecord -> {
                 if (!transaction.foreignTransaction && transaction.fee != null) {
                     items.add(getFeeItem(transaction.fee, rates[transaction.fee.coinUid], status))

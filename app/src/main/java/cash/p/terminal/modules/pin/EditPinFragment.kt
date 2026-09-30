@@ -8,13 +8,12 @@ import cash.p.terminal.modules.pin.SetPinFragment.Input
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.ui_compose.BaseComposeFragment
 import cash.p.terminal.modules.pin.ui.PinSet
-import cash.p.terminal.ui_compose.getInput
 
 class EditPinFragment : BaseComposeFragment(screenshotEnabled = false) {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val input = navController.getInput<Input>()
+        val input = getInput<Input>()
 
         PinSet(
             title = stringResource(R.string.EditPin_Title),

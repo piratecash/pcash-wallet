@@ -34,6 +34,7 @@ import cash.p.terminal.wallet.AccountType.StellarAddress
 import cash.p.terminal.wallet.AccountType.StellarSecretKey
 import cash.p.terminal.wallet.AccountType.TonAddress
 import cash.p.terminal.wallet.AccountType.TronAddress
+import cash.p.terminal.wallet.AccountType.ZCashSaplingKey
 import cash.p.terminal.wallet.AccountType.ZCashUfvKey
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IEnabledWalletStorage
@@ -199,6 +200,7 @@ class DuplicateWalletViewModel(
                 is TonAddress,
                 is TronAddress,
                 is ZCashUfvKey,
+                is ZCashSaplingKey,
                 is EvmPrivateKey,
                 is HardwareCard,
                 is TrezorDevice,
@@ -257,6 +259,7 @@ class DuplicateWalletViewModel(
             val settings = restoreSettingsManager.settings(accountToCopy, tokenQuery.blockchainType)
             restoreSettingsManager.save(settings, newAccount, tokenQuery.blockchainType)
         }
+        if (!persistBeamRestoreIntent(newAccount)) return
 
         // Not caught: these writes aren't atomic, so letting a failure propagate beats retrying into a duplicate account.
         accountManager.save(newAccount)
@@ -267,6 +270,20 @@ class DuplicateWalletViewModel(
             createButtonEnabled = false,
             closeScreen = true
         )
+    }
+
+    private fun persistBeamRestoreIntent(newAccount: Account): Boolean = try {
+        // Persist even with BEAM disabled: publishing this account can trigger its first initialization.
+        if (newAccount.type is Mnemonic) restoreSettingsManager.saveBeamRestoreIntent(newAccount)
+        true
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        uiState = uiState.copy(
+            error = Translator.getString(R.string.error_while_duplicating_wallect),
+            createButtonEnabled = true,
+        )
+        false
     }
 
     /** Metadata comes from the catalog, never the caller's row. Stored decimals are trusted: the rows are this device's own. */

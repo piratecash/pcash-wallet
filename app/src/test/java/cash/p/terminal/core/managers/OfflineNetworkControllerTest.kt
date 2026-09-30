@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.core.adapters.BeamAdapter
 import cash.p.terminal.core.adapters.BitcoinBaseAdapter
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
 import cash.p.terminal.wallet.AdapterState
@@ -19,6 +20,10 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -208,6 +213,34 @@ class OfflineNetworkControllerTest {
         coVerify(exactly = 0) { moneroKitManager.pauseNetwork(any()) }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun pause_beamSynchronizing_waitsForStopBeforeReportingOffline() = runTest {
+        val member = wallet(BlockchainType.Beam)
+        val adapter = mockk<BeamAdapter>(relaxed = true)
+        val stopGate = CompletableDeferred<Unit>()
+        var paused = false
+        every { adapterManager.getAdapterForWalletOld(member) } returns adapter
+        every { adapter.isNetworkPaused } answers { paused }
+        every { adapter.balanceState } returns AdapterState.Syncing(25.0, blocksRemained = 75)
+        coEvery { adapter.pauseNetworkAndAwait() } coAnswers {
+            stopGate.await()
+            paused = true
+        }
+
+        assertFalse(controller.isOffline(member))
+        val pause = async { controller.pause(member) }
+        runCurrent()
+        assertFalse(pause.isCompleted)
+        assertFalse(controller.isOffline(member))
+
+        stopGate.complete(Unit)
+        pause.await()
+        assertTrue(controller.isOffline(member))
+        coVerify(exactly = 1) { adapter.pauseNetworkAndAwait() }
+        coVerify(exactly = 0) { adapter.pauseNetwork() }
+    }
+
     @Test
     fun isOffline_evmDifferentAccount_returnsTrue() {
         val member = wallet(BlockchainType.Ethereum)
@@ -249,7 +282,7 @@ class OfflineNetworkControllerTest {
     }
 
     @Test
-    fun isOffline_zcashSynchronizerNotRunning_returnsTrue() {
+    fun isOffline_zcashNetworkPaused_returnsTrue() {
         val member = wallet(BlockchainType.Zcash)
         val adapter = mockk<ZcashAdapter>(relaxed = true)
         every { adapterManager.getAdapterForWalletOld(member) } returns adapter
@@ -259,7 +292,7 @@ class OfflineNetworkControllerTest {
     }
 
     @Test
-    fun isOffline_zcashSynchronizerRunning_returnsFalse() {
+    fun isOffline_zcashNetworkNotPaused_returnsFalse() {
         val member = wallet(BlockchainType.Zcash)
         val adapter = mockk<ZcashAdapter>(relaxed = true)
         every { adapterManager.getAdapterForWalletOld(member) } returns adapter
@@ -268,9 +301,9 @@ class OfflineNetworkControllerTest {
         assertFalse(controller.isOffline(member))
     }
 
-    // A sync error is not a pause: an erroring but online synchronizer must still be paused on demand.
+    // A sync error is not a pause: an erroring but online adapter must still be pausable.
     @Test
-    fun isOffline_zcashRunningWithSyncError_returnsFalse() {
+    fun isOffline_zcashNetworkNotPausedWithSyncError_returnsFalse() {
         val member = wallet(BlockchainType.Zcash)
         val adapter = mockk<ZcashAdapter>(relaxed = true)
         every { adapterManager.getAdapterForWalletOld(member) } returns adapter

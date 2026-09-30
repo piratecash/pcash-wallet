@@ -158,6 +158,13 @@ class YiFiTokenResolverTest {
     }
 
     @Test
+    fun resolveAsset_nativeBeam_notMatchedToBeamGamingNetwork() = runTest(dispatcher) {
+        val token = yiFiTestToken(BlockchainType.Beam, TokenType.Native, "BEAM")
+
+        assertNull(resolver.resolveAsset(token))
+    }
+
+    @Test
     fun resolveAsset_ioErrorThenSuccess_errorNotCached() = runTest(dispatcher) {
         val token = yiFiTestToken(BlockchainType.Tron, TokenType.Native, "TRX")
         coEvery { repository.getChains() } throws IOException("offline") andThen CHAINS
@@ -220,6 +227,7 @@ class YiFiTokenResolverTest {
             chain("LTC", null, "", "LTC"),
             chain("TRON", null, "TRX", "TRX", "TRON", "TRC20"),
             chain("TON", 5545, "TON", "TON"),
+            chain("BEAM", 4337, "BEAM", "BEAM"),
         )
 
         val CATALOG = mapOf(
@@ -237,6 +245,7 @@ class YiFiTokenResolverTest {
             ("BSC" to BSC_ETH_CONTRACT) to listOf(row("BSC", "ETH", BSC_ETH_CONTRACT.lowercase())),
             ("BSC" to "ETH") to listOf(row("BSC", "ETH", BSC_ETH_CONTRACT.lowercase()), row("BSC", "ETH")),
             ("TON" to "TON") to listOf(row("TON", "TON")),
+            ("BEAM" to "BEAM") to listOf(row("BEAM", "BEAM")),
         )
     }
 }

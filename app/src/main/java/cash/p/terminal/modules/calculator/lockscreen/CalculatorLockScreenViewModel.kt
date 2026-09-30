@@ -25,6 +25,7 @@ class CalculatorLockScreenViewModel(
     private val attemptPinUnlock: AttemptPinUnlockUseCase,
     locale: Locale = Locale.getDefault(),
     private val divideByZeroText: String = Translator.getString(R.string.calculator_error_divide_by_zero),
+    private val resetBlockedText: String = Translator.getString(R.string.Error),
 ) : ViewModel() {
 
     private val decimalSeparator: Char =
@@ -206,9 +207,16 @@ class CalculatorLockScreenViewModel(
         attemptInFlight = true
         viewModelScope.launch {
             try {
-                if (attemptPinUnlock(candidatePin)) {
-                    throttle.reset()
-                    uiState = uiState.copy(unlocked = true)
+                when (attemptPinUnlock(candidatePin)) {
+                    AttemptPinUnlockUseCase.Result.Unlocked -> {
+                        throttle.reset()
+                        uiState = uiState.copy(unlocked = true)
+                    }
+                    AttemptPinUnlockUseCase.Result.ResetBlocked -> {
+                        throttle.refundOne()
+                        uiState = uiState.copy(displayedResult = resetBlockedText)
+                    }
+                    AttemptPinUnlockUseCase.Result.InvalidPin -> Unit
                 }
             } finally {
                 attemptInFlight = false

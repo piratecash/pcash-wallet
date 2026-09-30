@@ -29,6 +29,7 @@ class AccountsStorage(appDatabase: AppDatabase) : IAccountsStorage {
         private const val BITCOIN_ADDRESS = "bitcoin_address"
         private const val HD_EXTENDED_KEY = "hd_extended_key"
         private const val UFVK = "ufvk"
+        private const val ZCASH_SAPLING_KEY = "zcash_sapling_key"
         private const val HARDWARE_CARD = "hardware_card"
         private const val TREZOR_DEVICE = "trezor_device"
         private const val STELLAR_ADDRESS = "stellar_address"
@@ -93,6 +94,7 @@ class AccountsStorage(appDatabase: AppDatabase) : IAccountsStorage {
                 BITCOIN_ADDRESS -> AccountType.BitcoinAddress.fromSerialized(record.key!!.value)
                 HD_EXTENDED_KEY -> AccountType.HdExtendedKey(record.key!!.value)
                 UFVK -> AccountType.ZCashUfvKey(record.key!!.value)
+                ZCASH_SAPLING_KEY -> AccountType.ZCashSaplingKey(record.key!!.value)
                 HARDWARE_CARD -> {
                     val parts = record.key!!.value.split("@")
                     AccountType.HardwareCard(
@@ -248,6 +250,11 @@ class AccountsStorage(appDatabase: AppDatabase) : IAccountsStorage {
             is AccountType.ZCashUfvKey -> {
                 key = SecretString((account.type as AccountType.ZCashUfvKey).key)
                 accountType = UFVK
+            }
+
+            is AccountType.ZCashSaplingKey -> {
+                key = SecretString((account.type as AccountType.ZCashSaplingKey).key)
+                accountType = ZCASH_SAPLING_KEY
             }
 
             is AccountType.HardwareCard -> {
