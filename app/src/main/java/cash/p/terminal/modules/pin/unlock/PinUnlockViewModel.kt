@@ -66,6 +66,7 @@ class PinUnlockViewModel(
     }
 
     fun onKeyClick(number: Int) {
+        uiState = uiState.copy(resetBlocked = false)
         if (enteredPin.length < PinModule.PIN_COUNT) {
 
             enteredPin += number.toString()
@@ -75,23 +76,25 @@ class PinUnlockViewModel(
 
             if (enteredPin.length == PinModule.PIN_COUNT) {
                 viewModelScope.launch {
-                    if (attemptPinUnlock(enteredPin)) {
-                        uiState = uiState.copy(unlocked = true)
-                    } else {
-                        updateLockoutState()
-                        uiState = uiState.copy(
-                            showShakeAnimation = true
-                        )
-                        delay(500)
-                        enteredPin = ""
-                        uiState = uiState.copy(
-                            enteredCount = enteredPin.length,
-                            showShakeAnimation = false
-                        )
+                    when (attemptPinUnlock(enteredPin)) {
+                        AttemptPinUnlockUseCase.Result.Unlocked -> uiState = uiState.copy(unlocked = true)
+                        AttemptPinUnlockUseCase.Result.InvalidPin -> showInvalidPin()
+                        AttemptPinUnlockUseCase.Result.ResetBlocked -> {
+                            enteredPin = ""
+                            uiState = uiState.copy(enteredCount = 0, resetBlocked = true)
+                        }
                     }
                 }
             }
         }
+    }
+
+    private suspend fun showInvalidPin() {
+        updateLockoutState()
+        uiState = uiState.copy(showShakeAnimation = true)
+        delay(500)
+        enteredPin = ""
+        uiState = uiState.copy(enteredCount = 0, showShakeAnimation = false)
     }
 
     fun onDelete() {

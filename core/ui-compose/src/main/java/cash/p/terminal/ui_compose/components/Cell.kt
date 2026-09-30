@@ -419,42 +419,6 @@ fun ColumnUniversal(
         content = content
     )
 }
-@Composable
-fun RowUniversal(
-    modifier: Modifier = Modifier,
-    verticalPadding: Dp = 12.dp,
-    verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
-    onClick: (() -> Unit)? = null,
-    enabled: Boolean = true,
-    minHeight: Dp = 24.dp,
-    content: @Composable RowScope.() -> Unit,
-) {
-    val clickableModifier = when (onClick) {
-        null -> Modifier
-        else -> Modifier.clickable(enabled = enabled) {
-            onClick.invoke()
-        }
-    }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .defaultMinSize(minHeight = minHeight)
-            .then(clickableModifier)
-            .then(modifier)
-            .padding(vertical = verticalPadding),
-        verticalAlignment = verticalAlignment,
-        content = content
-    )
-}
-
-@Composable
-fun CellUniversalLawrenceSection(
-    content: @Composable () -> Unit
-) {
-    CellUniversalLawrenceSection(listOf(content))
-}
-
 fun getShape(itemsCount: Int, index: Int): Shape = when {
     itemsCount == 1 -> RoundedCornerShape(12.dp)
     itemsCount - 1 == index -> RoundedCornerShape(0.dp, 0.dp, 12.dp, 12.dp)
@@ -464,27 +428,6 @@ fun getShape(itemsCount: Int, index: Int): Shape = when {
 
 fun showDivider(itemsCount: Int, index: Int): Boolean =
     itemsCount != 1 && index != 0
-
-@Composable
-fun CellUniversalLawrenceSection(
-    composableItems: List<@Composable () -> Unit>,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .padding(horizontal = 16.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence)
-    ) {
-        composableItems.forEachIndexed { index, composable ->
-            SectionUniversalItem(
-                borderTop = index != 0,
-            ) {
-                composable()
-            }
-        }
-    }
-}
 
 @Composable
 fun CellUniversalLawrenceMutableSection(
@@ -694,39 +637,6 @@ fun <T> CellUniversalLawrenceSection(
             }
         }
     }
-}
-
-@Composable
-fun SectionUniversalItem(
-    borderTop: Boolean = false,
-    borderBottom: Boolean = false,
-    content: @Composable () -> Unit,
-) {
-
-    //content items should use RowUniversal
-
-    Box(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        if (borderTop) {
-            Divider(
-                thickness = 1.dp,
-                color = ComposeAppTheme.colors.steel10,
-                modifier = Modifier.align(Alignment.TopCenter)
-            )
-        }
-
-        if (borderBottom) {
-            Divider(
-                thickness = 1.dp,
-                color = ComposeAppTheme.colors.steel10,
-                modifier = Modifier.align(Alignment.BottomCenter)
-            )
-        }
-
-        content.invoke()
-    }
-
 }
 
 @Composable

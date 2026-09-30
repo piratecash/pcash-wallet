@@ -35,4 +35,18 @@ class MarketDatabaseTest {
         assertTrue(file.readText().contains(mwebTokenTuple))
     }
 
+    @Test
+    fun initialCoins_beam_keepsNativeAndGameTokensSeparate() {
+        val text = initialCoinsFile().readText()
+        // Rows are batched into multi-row INSERT statements, so each token is matched as a tuple.
+        val beamCoinTuples = Regex("""\('beam','[^']*','[^']*',\d*,'[^']*'\)""")
+            .findAll(text).map { it.value }.toList()
+        val gameContract = "0x62d0a8458ed7719fdaf978fe5929c6d342b0bfce"
+
+        assertTrue(beamCoinTuples.contains("('beam','beam','native',8,'')"))
+        assertTrue(beamCoinTuples.none { it.contains(gameContract) })
+        assertTrue(text.contains("('beam-2','ethereum','eip20',18,'$gameContract')"))
+        assertTrue(text.contains("('beam-2','binance-smart-chain','eip20',18,'$gameContract')"))
+    }
+
 }

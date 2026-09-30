@@ -52,6 +52,18 @@ class CalculatorPinAttemptThrottleTest {
     }
 
     @Test
+    fun refundOne_restoresOnlyConsumedTokenWithoutExceedingCapacity() {
+        every { storage.calculatorThrottleTokens } returns 0
+        every { storage.calculatorThrottleLastUptime } returns 1_000L
+        every { storage.calculatorThrottleLastWallClock } returns wallClockTime
+        every { uptimeProvider.uptime } returns 1_000L
+
+        throttle.refundOne()
+
+        verify { storage.calculatorThrottleTokens = 1 }
+    }
+
+    @Test
     fun tryConsume_tokensAvailable_decrementsAndReturnsTrue() {
         every { storage.calculatorThrottleTokens } returns 3
         every { storage.calculatorThrottleLastUptime } returns 1_000L

@@ -9,11 +9,11 @@ class LanguageManager : ILanguageManager {
 
     val fallbackLocale by LocaleHelper::fallbackLocale
 
-    var currentLocale: Locale = App.instance.getLocale()
+    // Not cached: the language can also be changed from the system app-language settings.
+    var currentLocale: Locale
+        get() = App.instance.getLocale()
         set(value) {
-            field = value
-
-            App.instance.setLocale(currentLocale)
+            App.instance.setLocale(value)
         }
 
     var currentLocaleTag: String

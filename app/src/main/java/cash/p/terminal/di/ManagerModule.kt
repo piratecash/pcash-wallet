@@ -21,6 +21,17 @@ import cash.p.terminal.core.managers.BackgroundKeepAliveManager
 import cash.p.terminal.core.managers.BackupManager
 import cash.p.terminal.core.managers.BalanceHiddenManager
 import cash.p.terminal.core.managers.BalanceHideOnFlipManager
+import cash.p.terminal.core.managers.BeamDatabaseKeyProvider
+import cash.p.terminal.core.managers.BeamSessionFactory
+import cash.p.terminal.core.managers.BeamLifecycleCoordinator
+import cash.p.terminal.core.managers.BeamSendCoordinator
+import cash.p.terminal.core.managers.BeamSessionOwner
+import cash.p.terminal.core.managers.BeamStorageLocator
+import cash.p.terminal.core.managers.BeamAccountDeletionPreflight
+import cash.p.terminal.core.managers.BeamDeletionState
+import cash.p.terminal.core.managers.DeletedAccountsCleanup
+import cash.p.terminal.wallet.AccountDeletionPreflight
+import cash.p.terminal.wallet.IAccountCleaner
 import cash.p.terminal.core.managers.BitcoinKitConnectionManager
 import cash.p.terminal.core.managers.BitcoinKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.BitcoinKitDatabaseManager
@@ -38,6 +49,7 @@ import cash.p.terminal.core.notifications.NotificationDeduplicator
 import cash.p.terminal.core.notifications.TransactionMonitor
 import cash.p.terminal.core.notifications.TransactionNotificationCoordinator
 import cash.p.terminal.core.notifications.TransactionNotificationManager
+import cash.p.terminal.core.notifications.polling.BeamTransactionsPoller
 import cash.p.terminal.core.notifications.polling.BtcLikeTransactionsPoller
 import cash.p.terminal.core.notifications.polling.EvmTransactionsPoller
 import cash.p.terminal.core.notifications.polling.MoneroTransactionsPoller
@@ -154,6 +166,9 @@ import cash.p.terminal.modules.calculator.domain.CalculatorModeService
 import cash.p.terminal.modules.calculator.domain.CalculatorPinAttemptThrottle
 import cash.p.terminal.modules.pin.unlock.AttemptPinUnlockUseCase
 import cash.p.terminal.modules.send.offline.OfflineQrCodeSaver
+import cash.p.terminal.modules.send.offline.OfflineTransactionFileTransfer
+import cash.p.terminal.modules.send.offline.BeamOfflineTransactionRelay
+import cash.p.terminal.modules.send.beam.BeamOfflineOperations
 import cash.p.terminal.modules.settings.appearance.AppIconService
 import cash.p.terminal.modules.settings.guides.GuidesRepository
 import cash.p.terminal.modules.pin.hiddenwallet.HiddenWalletPinPolicy
@@ -256,6 +271,7 @@ val managerModule = module {
     singleOf(::StellarTransactionsPoller)
     singleOf(::BtcLikeTransactionsPoller)
     singleOf(::ZcashTransactionsPoller)
+    singleOf(::BeamTransactionsPoller)
     singleOf(::MoneroTransactionsPoller)
     single {
         TransactionPollingManager(
@@ -268,6 +284,7 @@ val managerModule = module {
                 get<BtcLikeTransactionsPoller>(),
                 get<ZcashTransactionsPoller>(),
                 get<MoneroTransactionsPoller>(),
+                get<BeamTransactionsPoller>(),
             ),
             get()
         )
@@ -373,7 +390,9 @@ val managerModule = module {
     singleOf(::TransactionHiddenManager) bind ITransactionHiddenManager::class
     singleOf(::TorManager) bind ITorManager::class
     singleOf(::PredefinedBlockchainSettingsProvider)
-    singleOf(::KeyStoreCleaner) bind IKeyStoreCleaner::class
+    single {
+        KeyStoreCleaner(get(), get(), get(), get(), lazy { get<IAccountCleaner>() })
+    } bind IKeyStoreCleaner::class
     single<KeyStoreManager.Logger> { AppLogger("key-store") }
     single {
         KeyStoreManager(
@@ -385,6 +404,33 @@ val managerModule = module {
     single<IKeyStoreManager> { get<KeyStoreManager>() }
     single<IKeyProvider> { get<KeyStoreManager>() }
     singleOf(::EncryptionManager) bind IEncryptionManager::class
+    singleOf(::BeamStorageLocator)
+    singleOf(::BeamDeletionState)
+    single<AccountDeletionPreflight> {
+        // Key wrapping depends on KeyStoreCleaner, which itself needs the AccountManager guarded here.
+        BeamAccountDeletionPreflight(
+            get(), lazy { get<BeamDatabaseKeyProvider>() }, get(), get(), get(),
+            lazy { get<BeamSessionOwner>() }, lazy { get<IAdapterManager>() },
+        )
+    }
+    singleOf(::DeletedAccountsCleanup)
+    single {
+        BeamSessionFactory(
+            keyProvider = get(), storageLocator = get(), dispatcherProvider = get(), restoreSettingsManager = get(),
+        )
+    }
+    singleOf(::BeamSessionOwner)
+    singleOf(::BeamLifecycleCoordinator)
+    singleOf(::BeamSendCoordinator)
+    single {
+        // Expose only encryption: this instance must never use shared sample validation.
+        val beamEncryption = EncryptionManager(
+            KeyStoreManager(keyAlias = "BEAM_DATABASE_KEY", keyStoreCleaner = get(), logger = get())
+        )
+        BeamDatabaseKeyProvider(
+            context = get(), storageLocator = get(), encryptionManager = beamEncryption, deletionState = get(),
+        )
+    }
     single {
         TonConnectManager(
             context = get(),
@@ -443,6 +489,9 @@ val managerModule = module {
     singleOf(::OfflineSignedTransactionRepository)
     singleOf(::OfflineTransactionPayloadEncoder)
     singleOf(::OfflineQrCodeSaver)
+    singleOf(::OfflineTransactionFileTransfer)
+    singleOf(::BeamOfflineTransactionRelay)
+    singleOf(::BeamOfflineOperations)
     singleOf(::PendingTransactionRepository)
     singleOf(::PendingBalanceCalculator)
     singleOf(::PendingTransactionRegistrarImpl) bind PendingTransactionRegistrar::class

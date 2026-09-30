@@ -1,6 +1,8 @@
 package cash.p.terminal.core.managers
 
 import android.util.Base64
+import cash.p.terminal.entities.OfflineBeamMetadata
+import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder.DecodeResult
 import cash.p.terminal.entities.OfflineSignedTransactionDraft
 import cash.p.terminal.entities.OfflineStellarRetryMetadata
 import cash.p.terminal.entities.OfflineSolanaRetryMetadata
@@ -17,12 +19,21 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
+import io.mockk.verify
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonObject
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import java.io.ByteArrayOutputStream
@@ -564,6 +575,260 @@ class OfflineTransactionPayloadEncoderTest {
         assertFalse(OfflineTransactionPayloadEncoder.isRawTransactionHex("pcash:tx:v1:bitcoin:body"))
     }
 
+    @Test
+    fun decode_beamRoundTrip_keepsKernelAndCoreTxIdSeparate() {
+        for (network in listOf("mainnet", "testnet")) {
+            for (coreTxId in listOf(null, "ab".repeat(16))) {
+                val metadata = beamMetadata().copy(network = network, coreTxId = coreTxId)
+                // Same shape as BeamOfflineOperations.export: the receiver is confidential and left blank.
+                val payload = encoder.encode(draft(toAddress = "", token = beamToken(), beamMetadata = metadata))
+                val decoded = requireNotNull(encoder.decode(payload))
+
+                assertTrue(payload.startsWith("pcash:tx:v1:beam:"))
+                assertEquals("", decoded.toAddress)
+                assertEquals(metadata, decoded.beamMetadata)
+                assertEquals(metadata.mainKernelId, decoded.txHash)
+                assertEquals("beam|native", decoded.token.tokenQueryId)
+                assertEquals(8, decoded.token.decimals)
+                assertEquals("100000", decoded.amountAtomic)
+            }
+        }
+    }
+
+    @Test
+    fun decode_legacyChainRoundTrips_remainCompatibleWithoutBeamExtension() {
+        val chains = listOf(
+            BlockchainType.Bitcoin, BlockchainType.BitcoinCash, BlockchainType.ECash,
+            BlockchainType.Litecoin, BlockchainType.Dogecoin, BlockchainType.Dash,
+            BlockchainType.Ethereum, BlockchainType.BinanceSmartChain, BlockchainType.Polygon,
+            BlockchainType.Avalanche, BlockchainType.Optimism, BlockchainType.ArbitrumOne,
+            BlockchainType.Gnosis, BlockchainType.Fantom, BlockchainType.Base,
+            BlockchainType.Cosanta, BlockchainType.PirateCash, BlockchainType.ZkSync,
+            BlockchainType.RobinhoodChain,
+        )
+        chains.forEach { chain ->
+            val token = token(chain, chain.uid, Coin(chain.uid, chain.uid, "COIN"), decimals = 8)
+            val decoded = requireNotNull(encoder.decode(encoder.encode(draft(token = token))))
+            assertEquals(chain.uid, decoded.blockchainUid)
+            assertEquals(TX_HASH, decoded.txHash)
+            assertNull(decoded.beamMetadata)
+        }
+        assertNotNull(encoder.decode(payloadFromBody(validBody())))
+    }
+
+    @Test
+    fun decode_unknownOptionalFields_preservesV1Compatibility() {
+        listOf("bitcoin" to validBody(), "beam" to beamBody()).forEach { (chain, body) ->
+            val extended = bodyWithField("future", JsonObject(mapOf("flag" to JsonPrimitive(true))), body)
+            assertNotNull(encoder.decode(payloadFromBody(extended, chain)))
+        }
+        val nested = bodyWithField("beam.future", JsonPrimitive("ignored"))
+        assertNotNull(encoder.decode(payloadFromBody(nested, "beam")))
+    }
+
+    @Test
+    fun decode_beamInvalidMetadata_rejectsStructurally() {
+        val invalidFields = listOf(
+            "beam" to JsonNull,
+            "beam" to JsonPrimitive("invalid"),
+            "beam.version" to JsonPrimitive(0),
+            "beam.version" to JsonPrimitive(2),
+            "beam.network" to JsonPrimitive(""),
+            "beam.network" to JsonPrimitive("Mainnet"),
+            "beam.network" to JsonPrimitive("unknown"),
+            "beam.rulesSignature" to JsonPrimitive(""),
+            "beam.rulesSignature" to JsonPrimitive(" \n\t"),
+            "beam.rulesSignature" to JsonPrimitive("rules\u0000"),
+            "beam.rulesSignature" to JsonPrimitive("rules\u007f"),
+            "beam.rulesSignature" to JsonPrimitive("é"),
+            "beam.rulesSignature" to JsonPrimitive("a".repeat(2049)),
+        )
+        assertInvalidBeamFields(invalidFields)
+    }
+
+    @Test
+    fun decode_beamInvalidKernelOrCoreTxId_rejectsStructurally() {
+        assertInvalidBeamFields(listOf(
+            "beam.mainKernelId" to JsonPrimitive(TX_HASH.uppercase()),
+            "beam.mainKernelId" to JsonPrimitive("ab".repeat(16)),
+            "beam.mainKernelId" to JsonPrimitive("ab".repeat(32)),
+            "beam.mainKernelId" to JsonPrimitive("z".repeat(64)),
+            "beam.coreTxId" to JsonPrimitive("AB".repeat(16)),
+            "beam.coreTxId" to JsonPrimitive("z".repeat(32)),
+            "beam.coreTxId" to JsonPrimitive(TX_HASH),
+            "beam.coreTxId" to JsonPrimitive(""),
+            "txHash" to JsonPrimitive("ab".repeat(16)),
+        ))
+    }
+
+    @Test
+    fun decode_beamInvalidNativeIdentityAndAmounts_rejectsStructurally() {
+        assertInvalidBeamFields(listOf(
+            "blockchainUid" to JsonPrimitive("beam-2"),
+            "token.tokenQueryId" to JsonPrimitive("beam-2|native"),
+            "token.tokenQueryId" to JsonPrimitive("beam|eip20:asset"),
+            "token.decimals" to JsonPrimitive(9),
+            "fee.tokenQueryId" to JsonPrimitive("ethereum|native"),
+            "fee.decimals" to JsonPrimitive(7),
+            "fee.atomic" to JsonPrimitive("9223372036854775808"),
+            "amountAtomic" to JsonPrimitive("9223372036854775808"),
+            "amountAtomic" to JsonPrimitive("-1"),
+            "amountAtomic" to JsonPrimitive("1.5"),
+            "amountAtomic" to JsonPrimitive("+1"),
+            "rawHex" to JsonPrimitive("DEADBEEFDEADBEEF"),
+            "rawHex" to JsonPrimitive("abc"),
+        ))
+    }
+
+    @Test
+    fun decode_beamMissingRequiredFields_rejectsStructurally() {
+        val root = Json.parseToJsonElement(beamBody()).jsonObject
+        val metadata = root.getValue("beam").jsonObject
+        for (field in listOf("version", "network", "rulesSignature", "mainKernelId")) {
+            val body = bodyWithField("beam", JsonObject(metadata - field))
+            assertEquals(field, DecodeResult.Invalid, encoder.decodeResult(payloadFromBody(body, "beam")))
+        }
+        assertNull(encoder.decode(payloadFromBody(JsonObject(root - "beam").toString(), "beam")))
+    }
+
+    @Test
+    fun decode_beamRulesAndAtomicBoundaries_acceptsStructurally() {
+        val body = bodyWithField("beam.rulesSignature", JsonPrimitive("a".repeat(2046) + "\n\t"))
+        val changed = bodyWithField("amountAtomic", JsonPrimitive(Long.MAX_VALUE.toString()), body)
+        assertNotNull(encoder.decode(payloadFromBody(changed, "beam")))
+    }
+
+    @Test
+    fun encode_foreignOrMissingBeamMetadata_rejectsStructurally() {
+        assertThrows(IllegalArgumentException::class.java) { encoder.encode(draft(beamMetadata = beamMetadata())) }
+        assertThrows(IllegalArgumentException::class.java) { encoder.encode(draft(token = beamToken())) }
+        val body = bodyWithField("beam", Json.parseToJsonElement(Json.encodeToString(beamMetadata())), validBody())
+        assertEquals(DecodeResult.Invalid, encoder.decodeResult(payloadFromBody(body)))
+    }
+
+    @Test
+    fun encode_beamFractionalAtomicOrOverflow_rejectsWithoutTruncation() {
+        for (amount in listOf(BigDecimal("0.000000001"), BigDecimal("92233720368.54775808"))) {
+            val draft = draft(token = beamToken(), beamMetadata = beamMetadata())
+            assertThrows(ArithmeticException::class.java) { encoder.encode(draft.copy(amount = amount)) }
+            assertThrows(ArithmeticException::class.java) { encoder.encode(draft.copy(fee = amount)) }
+        }
+    }
+
+    @Test
+    fun decode_displayMetadataChanges_doNotBecomeCryptographicProof() {
+        val body = bodyWithField("toAddress", JsonPrimitive("unverified receiver"))
+        val amount = bodyWithField("amountAtomic", JsonPrimitive("42"), body)
+        val changed = bodyWithField("createdAt", JsonPrimitive(1L), amount)
+        val decoded = requireNotNull(encoder.decode(payloadFromBody(changed, "beam")))
+        assertEquals("42", decoded.amountAtomic)
+        assertEquals("unverified receiver", decoded.toAddress)
+        assertEquals("deadbeefdeadbeef", decoded.rawHex)
+        assertEquals(1L, decoded.createdAt)
+    }
+
+    @Test
+    fun decodeResult_recognizedMalformedEnvelope_neverReturnsNotEnvelope() {
+        listOf("pcash:tx:", "pcash:tx:v1", "pcash:tx:v2:bitcoin:body", " pcash:tx:v1:bitcoin:@@ ")
+            .forEach { assertEquals(DecodeResult.Invalid, encoder.decodeResult(it)) }
+        assertEquals(DecodeResult.NotEnvelope, encoder.decodeResult("deadbeefdeadbeefdead"))
+        assertTrue(encoder.decodeResult(payloadFromBody(validBody())) is DecodeResult.Decoded)
+    }
+
+    @Test
+    fun decodeResult_oversizedInput_rejectsBeforeBase64Allocation() {
+        val oversized = "a".repeat(OfflineTransactionPayloadEncoder.MAX_INPUT_CHARACTERS + 1)
+        assertEquals(DecodeResult.Invalid, encoder.decodeResult("pcash:tx:v1:bitcoin:$oversized"))
+        assertEquals(DecodeResult.Invalid, encoder.decodeResult(oversized))
+        assertFalse(OfflineTransactionPayloadEncoder.isRawTransactionHex(oversized + "a"))
+        verify(exactly = 0) { Base64.decode(any<String>(), any()) }
+    }
+
+    @Test
+    fun encode_oversizedRawHex_rejectsBeforeChecksumOrHexNormalization() {
+        val oversized = "A".repeat(OfflineTransactionPayloadEncoder.MAX_INPUT_CHARACTERS + 1)
+        assertThrows(IllegalArgumentException::class.java) { encoder.encode(draft(rawHex = oversized)) }
+        verify(exactly = 0) { Base64.encodeToString(any(), any()) }
+    }
+
+    @Test
+    fun decode_compressionBomb_rejectsAtExistingOneMiBLimit() {
+        val body = bodyWithField("future", JsonPrimitive("a".repeat(1024 * 1024)), validBody())
+        assertEquals(DecodeResult.Invalid, encoder.decodeResult(payloadFromBody(body)))
+    }
+
+    @Test
+    fun decode_inflatedSizeBoundary_acceptsOneMiBRejectsOneByteMore() {
+        val body = validBody().padEnd(1024 * 1024, ' ')
+        assertNotNull(encoder.decode(payloadFromBody(body)))
+        assertEquals(DecodeResult.Invalid, encoder.decodeResult(payloadFromBody(body + " ")))
+    }
+
+    @Test
+    fun decode_trailingOrUnfinishedZlibStream_rejectsEvenWithCompleteJson() {
+        val compressed = JavaBase64.getUrlDecoder().decode(compressedBase64(validBody()))
+        val invalid = listOf(
+            compressed + byteArrayOf(0),
+            compressed + compressed,
+            compressed.copyOf(compressed.size - 1),
+            compressed.copyOf(compressed.size - 4),
+            compressed.copyOf(compressed.size / 2),
+        )
+        invalid.forEach { bytes ->
+            val body = JavaBase64.getUrlEncoder().withoutPadding().encodeToString(bytes)
+            assertEquals(DecodeResult.Invalid, encoder.decodeResult("pcash:tx:v1:bitcoin:$body"))
+        }
+    }
+
+    @Test
+    fun decode_zlibRequiresDictionary_rejectsWithoutLooping() {
+        val body = compressedBase64(validBody(), dictionary = "bitcoin rawhex token".encodeToByteArray())
+        assertEquals(DecodeResult.Invalid, encoder.decodeResult("pcash:tx:v1:bitcoin:$body"))
+    }
+
+    @Test
+    fun decode_base64WithTrailingPunctuation_rejectsBeforePermissiveAndroidDecoder() {
+        val payload = payloadFromBody(validBody()) + "!"
+        assertEquals(DecodeResult.Invalid, encoder.decodeResult(payload))
+        verify(exactly = 0) { Base64.decode(any<String>(), any()) }
+    }
+
+    private fun assertInvalidBeamFields(fields: List<Pair<String, JsonElement>>) {
+        fields.forEach { (path, value) ->
+            val payload = payloadFromBody(bodyWithField(path, value), "beam")
+            assertEquals(path, DecodeResult.Invalid, encoder.decodeResult(payload))
+        }
+    }
+
+    private fun bodyWithField(path: String, value: JsonElement, body: String = beamBody()): String {
+        val fields = Json.parseToJsonElement(body).jsonObject.toMutableMap()
+        val parts = path.split('.', limit = 2)
+        fields[parts[0]] = if (parts.size == 1) value else {
+            JsonObject(fields.getValue(parts[0]).jsonObject + (parts[1] to value))
+        }
+        return JsonObject(fields).toString()
+    }
+
+    private fun beamBody(): String {
+        val body = validBody("beam|native", "beam|native", "beam")
+        return bodyWithField("beam", Json.parseToJsonElement(Json.encodeToString(beamMetadata())), body)
+    }
+
+    private fun beamMetadata() = OfflineBeamMetadata(
+        version = 1,
+        network = "mainnet",
+        rulesSignature = "synthetic structural fixture; not SDK-validated",
+        mainKernelId = TX_HASH,
+        coreTxId = "ab".repeat(16),
+    )
+
+    private fun beamToken() = token(
+        blockchainType = BlockchainType.Beam,
+        blockchainName = "Beam",
+        coin = Coin(uid = "beam", name = "BEAM", code = "BEAM"),
+        decimals = 8,
+    )
+
     private fun draft(
         rawHex: String = "deadbeefdeadbeef",
         txHash: String = TX_HASH,
@@ -581,6 +846,7 @@ class OfflineTransactionPayloadEncoderTest {
         tonRetryMetadata: OfflineTonRetryMetadata? = null,
         tronRetryMetadata: OfflineTronRetryMetadata? = null,
         stellarRetryMetadata: OfflineStellarRetryMetadata? = null,
+        beamMetadata: OfflineBeamMetadata? = null,
     ): OfflineSignedTransactionDraft {
         val wallet = mockk<Wallet>(relaxed = true) {
             every { this@mockk.token } returns token
@@ -599,6 +865,7 @@ class OfflineTransactionPayloadEncoderTest {
             tonRetryMetadata = tonRetryMetadata,
             tronRetryMetadata = tronRetryMetadata,
             stellarRetryMetadata = stellarRetryMetadata,
+            beamMetadata = beamMetadata,
         )
     }
 
@@ -697,9 +964,10 @@ class OfflineTransactionPayloadEncoderTest {
         decimals = 8,
     )
 
-    private fun compressedBase64(json: String): String {
+    private fun compressedBase64(json: String, dictionary: ByteArray? = null): String {
         val deflater = Deflater(Deflater.BEST_COMPRESSION)
         return try {
+            dictionary?.let(deflater::setDictionary)
             deflater.setInput(json.encodeToByteArray())
             deflater.finish()
             val output = ByteArrayOutputStream(json.length)

@@ -48,6 +48,8 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.core.launchAfterClearingFocus
 import io.horizontalsystems.core.entities.BlockchainType
 
+private const val ADDRESS_INPUT_MAX_LINES = 5
+
 @Composable
 fun FormsInputAddress(
     modifier: Modifier = Modifier,
@@ -111,6 +113,9 @@ fun FormsInputAddress(
                     textStyle = ComposeAppTheme.typography.body
                 ),
                 singleLine = false,
+                // Five lines fit long addresses (Monero ~95-106 chars, Zcash Unified 140+) without
+                // scrolling; BEAM's offline tokens run into the thousands and scroll inside the field.
+                maxLines = ADDRESS_INPUT_MAX_LINES,
                 cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
                 decorationBox = { innerTextField ->
                     if (value.isEmpty()) {
