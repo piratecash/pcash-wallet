@@ -8,6 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import cash.p.terminal.modules.amount.AmountInputModeViewModel
+import cash.p.terminal.modules.send.beam.BeamSendConfirmationScreen
+import cash.p.terminal.modules.send.beam.BeamSendViewModel
 import cash.p.terminal.modules.send.bitcoin.SendBitcoinConfirmationScreen
 import cash.p.terminal.modules.send.bitcoin.SendBitcoinViewModel
 import cash.p.terminal.modules.send.evm.SendEvmConfirmationScreen
@@ -38,6 +40,13 @@ class SendConfirmationPage(
     @Composable
     override fun GetContent(navigation: HSNavigation) {
         when (type) {
+            Type.Beam -> ConfirmationOrRecover(
+                navigation,
+                navigation.rememberExistingViewModel(SendPage::class, BeamSendViewModel::class)
+            ) {
+                BeamSendConfirmationScreen(navigation, it, sendEntryPoint)
+            }
+
             Type.Bitcoin -> ConfirmationOrRecover(
                 navigation,
                 navigation.rememberExistingViewModel(SendPage::class, SendBitcoinViewModel::class)
@@ -137,7 +146,7 @@ class SendConfirmationPage(
 
     @Parcelize
     enum class Type : Parcelable {
-        Bitcoin, ZCash, Evm, Solana, Tron, Ton, Monero, Stellar
+        Bitcoin, ZCash, Evm, Solana, Tron, Ton, Monero, Stellar, Beam
     }
 }
 

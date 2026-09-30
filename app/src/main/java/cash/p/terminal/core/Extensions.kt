@@ -11,6 +11,7 @@ import android.os.Parcelable
 import android.provider.DocumentsContract
 import android.widget.ImageView
 import androidx.compose.ui.platform.Clipboard
+import cash.p.beam.BeamAddressType
 import cash.p.terminal.R
 import cash.p.terminal.modules.backuplocal.BackupLocalModule
 import cash.p.terminal.modules.backuplocal.fullbackup.BackupFileValidator
@@ -190,6 +191,12 @@ fun LockTimeInterval?.stringResId(): Int {
         LockTimeInterval.year -> R.string.Send_LockTime_Year
         null -> R.string.Send_LockTime_Off
     }
+}
+
+fun BeamAddressType.titleResId(): Int = when (this) {
+    BeamAddressType.Offline -> R.string.beam_send_offline
+    BeamAddressType.PublicOffline -> R.string.beam_send_public_offline
+    BeamAddressType.MaxPrivacy -> R.string.beam_send_max_privacy
 }
 
 suspend fun <T> retryWhen(

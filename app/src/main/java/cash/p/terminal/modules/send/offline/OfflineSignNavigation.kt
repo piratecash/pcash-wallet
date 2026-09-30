@@ -89,25 +89,14 @@ class OfflineSignPage(val sendViewModel: KClass<out ViewModel>) : HSPage() {
     @Composable
     override fun GetContent(navigation: HSNavigation) {
         val viewModel = navigation.rememberOfflineSignViewModel(sendViewModel) ?: return
-        val state = viewModel.offlineSignRouteState()
-        if (state == null) {
-            LaunchedEffect(Unit) {
-                navigation.navigateUpFrom(this@OfflineSignPage)
-            }
-            return
-        }
-
         val onLeave: () -> Unit = {
             viewModel.resetOfflineSignState()
             navigation.navigateUpSafely()
         }
-        OfflineSignScreen(
-            confirmationData = state.confirmationData,
-            blockchainName = state.blockchainName,
-            coinMaxAllowedDecimals = state.coinMaxAllowedDecimals,
-            feeCoinMaxAllowedDecimals = state.feeCoinMaxAllowedDecimals,
-            rate = state.rate,
-            signState = state.signState,
+        OfflineSignPageContent(
+            page = this,
+            navigation = navigation,
+            state = viewModel.offlineSignRouteState(),
             callbacks = OfflineSignCallbacks(
                 onBackClick = onLeave,
                 onCancelClick = onLeave,
@@ -129,18 +118,53 @@ class OfflineTransactionTransferPage(
     @Composable
     override fun GetContent(navigation: HSNavigation) {
         val viewModel = navigation.rememberOfflineSignViewModel(sendViewModel) ?: return
-        val qrCodeSaver: OfflineQrCodeSaver = koinInject()
-        OfflineTransactionTransferScreen(
-            transaction = viewModel.offlineSignedTransaction,
-            selectedFormat = format,
-            qrCodeSaver = qrCodeSaver,
-            onBackClick = navigation::navigateUpSafely,
-            onDoneClick = {
-                viewModel.onOfflineTransferClosed()
-                navigation.removeLastUntil(SendPage::class, true)
-            },
-        )
+        OfflineTransactionTransferPageContent(navigation, viewModel.offlineSignedTransaction, format) {
+            viewModel.onOfflineTransferClosed()
+            navigation.removeLastUntil(SendPage::class, true)
+        }
     }
+}
+
+@Composable
+internal fun OfflineSignPageContent(
+    page: HSPage,
+    navigation: HSNavigation,
+    state: OfflineSignRouteState?,
+    callbacks: OfflineSignCallbacks,
+) {
+    if (state == null) {
+        LaunchedEffect(Unit) {
+            navigation.navigateUpFrom(page)
+        }
+        return
+    }
+
+    OfflineSignScreen(
+        confirmationData = state.confirmationData,
+        blockchainName = state.blockchainName,
+        coinMaxAllowedDecimals = state.coinMaxAllowedDecimals,
+        feeCoinMaxAllowedDecimals = state.feeCoinMaxAllowedDecimals,
+        rate = state.rate,
+        signState = state.signState,
+        callbacks = callbacks,
+    )
+}
+
+@Composable
+internal fun OfflineTransactionTransferPageContent(
+    navigation: HSNavigation,
+    transaction: OfflineSignedTransaction?,
+    format: OfflineTransactionFormat,
+    onDoneClick: () -> Unit,
+) {
+    val qrCodeSaver: OfflineQrCodeSaver = koinInject()
+    OfflineTransactionTransferScreen(
+        transaction = transaction,
+        selectedFormat = format,
+        qrCodeSaver = qrCodeSaver,
+        onBackClick = navigation::navigateUpSafely,
+        onDoneClick = onDoneClick,
+    )
 }
 
 @Composable

@@ -344,6 +344,7 @@ fun TransactionInfoAddressCell(
     onValueClick: (() -> Unit)? = null,
     showCopyWarning: Boolean = false,
     collapseAddress: Boolean = false,
+    collapsedMaxLines: Int = 1,
 ) {
     val view = LocalView.current
     var dialogState by remember { mutableStateOf<AddressDialogState>(AddressDialogState.Hidden) }
@@ -376,6 +377,7 @@ fun TransactionInfoAddressCell(
             textAlign = textAlign,
             onValueClick = onValueClick,
             collapsible = collapseAddress,
+            collapsedMaxLines = collapsedMaxLines,
             modifier = Modifier.weight(1f),
         )
     }
@@ -510,6 +512,7 @@ private fun ExpandableAddressValue(
     textAlign: TextAlign,
     onValueClick: (() -> Unit)?,
     collapsible: Boolean,
+    collapsedMaxLines: Int,
     modifier: Modifier = Modifier,
 ) {
     var showFullAddress by remember(text) { mutableStateOf(false) }
@@ -521,8 +524,13 @@ private fun ExpandableAddressValue(
     subhead1_leah(
         text = text,
         textAlign = textAlign,
-        overflow = if (expanded) TextOverflow.Clip else TextOverflow.MiddleEllipsis,
-        maxLines = if (expanded) Int.MAX_VALUE else 1,
+        overflow = when {
+            expanded -> TextOverflow.Clip
+            // Android draws a middle ellipsis on single-line text only; multi-line would clip silently.
+            collapsedMaxLines > 1 -> TextOverflow.Ellipsis
+            else -> TextOverflow.MiddleEllipsis
+        },
+        maxLines = if (expanded) Int.MAX_VALUE else collapsedMaxLines,
         modifier = modifier.clickable(
             interactionSource = remember { MutableInteractionSource() },
             indication = null,
@@ -1054,6 +1062,7 @@ private fun openTransactionOptionsModule(
         BlockchainType.Tron,
         BlockchainType.Ton,
         BlockchainType.Stellar,
+        BlockchainType.Beam,
         is BlockchainType.Unsupported -> Unit
     }
 }

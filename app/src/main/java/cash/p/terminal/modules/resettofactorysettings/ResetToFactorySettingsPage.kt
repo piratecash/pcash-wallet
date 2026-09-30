@@ -27,6 +27,7 @@ import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.tangem.ui.HardwareWalletError
+import cash.p.terminal.modules.manageaccount.AccountDeletionError
 import cash.p.terminal.ui_compose.components.HsCheckbox
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
@@ -50,6 +51,7 @@ class ResetToFactorySettingsPage(val input: Input) : HSPage() {
         viewModel.account = input.account
 
         val view = LocalView.current
+        AccountDeletionError(viewModel.deletionState)
         LaunchedEffect(Unit) {
             viewModel.errorEvents.collect { error ->
                 when (error) {

@@ -16,6 +16,7 @@ sealed interface SettingsAction {
     data object AddressChecker : SettingsAction
     data object SwapProviders : SettingsAction
     data object OfflineBroadcast : SettingsAction
+    data object ImportTransactionFile : SettingsAction
     data object AboutPremium : SettingsAction
     data object PremiumSettings : SettingsAction
     data object AdvancedSecurity : SettingsAction

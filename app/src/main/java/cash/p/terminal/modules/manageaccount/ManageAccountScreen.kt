@@ -13,7 +13,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
@@ -49,6 +52,7 @@ import cash.p.terminal.modules.restoreaccount.duplicatewallet.DuplicateWalletInf
 import cash.p.terminal.modules.settings.main.HsSettingCell
 import cash.p.terminal.modules.unlinkaccount.UnlinkAccountSheet
 import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.FormsInput
 import cash.p.terminal.ui_compose.components.AppBar
@@ -82,9 +86,13 @@ internal fun ManageAccountScreen(
     onNameChanged: (String) -> Unit,
     onActionClick: (KeyAction) -> Unit,
 ) {
-    if (viewState.closeScreen) {
-        navigation.navigateUp()
-        onCloseClicked()
+    val topPage = navigation.lastOrNull()
+    val currentOnCloseClicked by rememberUpdatedState(onCloseClicked)
+    if (shouldCloseManageAccount(viewState.closeScreen, topPage)) {
+        LaunchedEffect(viewState.closeScreen, topPage) {
+            navigation.removeLastUntil(ManageAccountPage::class, inclusive = true)
+            currentOnCloseClicked()
+        }
     }
 
     Column(modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)) {
@@ -220,6 +228,9 @@ internal fun ManageAccountScreen(
         }
     }
 }
+
+internal fun shouldCloseManageAccount(closeScreen: Boolean, topPage: HSPage?): Boolean =
+    closeScreen && topPage is ManageAccountPage
 
 @Composable
 private fun KeyActions(

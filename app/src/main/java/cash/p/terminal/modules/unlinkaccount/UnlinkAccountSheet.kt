@@ -14,6 +14,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
+import cash.p.terminal.modules.manageaccount.AccountDeletionError
+import cash.p.terminal.modules.manageaccount.ManageAccountPage
 import cash.p.terminal.navigation.HSBottomSheet
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.navigateUpSafely
@@ -46,12 +48,15 @@ private fun UnlinkAccountScreen(navigation: HSNavigation, account: Account) {
 
     val confirmations = viewModel.confirmations
     val unlinkEnabled = viewModel.unlinkEnabled
-    val deleteWarningMsg = viewModel.deleteWarningMsg
+    val deleteWarningMessages = listOfNotNull(viewModel.deleteWarningMsg)
+    val view = LocalView.current
+    AccountDeletionError(viewModel.deletionState)
 
     LaunchedEffect(viewModel.closeScreen) {
         if (viewModel.closeScreen) {
+            HudHelper.showSuccessMessage(view, R.string.Hud_Text_Done)
             delay(1000)
-            navigation.navigateUp()
+            navigation.removeLastUntil(ManageAccountPage::class, inclusive = true)
         }
     }
 
@@ -82,15 +87,12 @@ private fun UnlinkAccountScreen(navigation: HSNavigation, account: Account) {
             }
         }
 
-        deleteWarningMsg?.let {
+        deleteWarningMessages.forEach {
             TextImportantWarning(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 text = stringResource(id = it)
             )
         }
-
-        val view = LocalView.current
-        val doneConfirmationMessage = stringResource(R.string.Hud_Text_Done)
 
         Spacer(Modifier.height(32.dp))
         ButtonPrimaryRed(
@@ -100,8 +102,6 @@ private fun UnlinkAccountScreen(navigation: HSNavigation, account: Account) {
             title = stringResource(viewModel.deleteButtonText),
             onClick = {
                 viewModel.onUnlink()
-                HudHelper.showSuccessMessage(view, doneConfirmationMessage)
-                navigation.navigateUpSafely()
             },
             enabled = unlinkEnabled
         )

@@ -48,11 +48,13 @@ import cash.p.terminal.wallet.AccountType
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import io.horizontalsystems.core.IPinComponent
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -76,6 +78,7 @@ class SettingsActionHandlerTest {
     private val context = mockk<Context>(relaxed = true)
     private var walletConnectSupport: WCManager.SupportState = WCManager.SupportState.Supported
     private var tonConnectSupported = true
+    private var importTransactionFileCalls = 0
     private val viewModel = mockk<MainSettingsViewModel>(relaxed = true) {
         every { uiState } returns settingsContentTestState
         every { appVersion } returns "1.2.3"
@@ -84,14 +87,33 @@ class SettingsActionHandlerTest {
         every { currentAccountSupportsTonConnect } answers { tonConnectSupported }
     }
 
+    @Before
+    fun setUp() {
+        startKoin {
+            modules(
+                module {
+                    single { mockk<IPinComponent>(relaxed = true) }
+                    single { appPages }
+                }
+            )
+        }
+    }
+
     @After
     fun tearDown() {
         stopKoin()
     }
 
     @Test
+    fun handleSettingsAction_importTransactionFile_opensFilePicker() {
+        handle(SettingsAction.ImportTransactionFile)
+
+        assertEquals(1, importTransactionFileCalls)
+        assertTrue(openedPages().isEmpty())
+    }
+
+    @Test
     fun settingsScreen_supportChangesBeforeClick_usesLatestConnectionSupport() {
-        startKoin { modules(module { single { appPages } }) }
         compose.setContent {
             CompositionLocalProvider(LocalHostLifecycleOwner provides LocalLifecycleOwner.current) {
                 ComposeAppTheme {
@@ -203,6 +225,7 @@ class SettingsActionHandlerTest {
             rawTxScanTitle = "Raw transaction",
             walletConnectTitle = "WalletConnect",
             tonConnectTitle = "TON Connect",
+            importTransactionFile = { importTransactionFileCalls++ },
         )
     }
 }

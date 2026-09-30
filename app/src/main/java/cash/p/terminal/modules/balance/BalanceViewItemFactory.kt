@@ -168,7 +168,10 @@ class BalanceViewItemFactory(
         return when (state) {
             is AdapterState.Connecting -> SyncingProgress(SyncingProgressType.Spinner, 10.0)
             is AdapterState.Syncing -> {
-                if (state.substatus != null) {
+                val restore = state.substatus as? AdapterState.Substatus.SnapshotRestore
+                if (restore?.showsProgressRing == true && state.progress != null) {
+                    SyncingProgress(SyncingProgressType.ProgressWithRing, state.progress)
+                } else if (state.substatus != null) {
                     SyncingProgress(SyncingProgressType.Spinner, 10.0)
                 } else {
                     val progress = state.progress
@@ -196,6 +199,7 @@ class BalanceViewItemFactory(
         BlockchainType.Cosanta,
         BlockchainType.Zcash,
         BlockchainType.Monero,
+        BlockchainType.Beam,
         BlockchainType.BinanceSmartChain -> true
         else -> false
     }
@@ -210,6 +214,7 @@ class BalanceViewItemFactory(
         BlockchainType.PirateCash,
         BlockchainType.Cosanta,
         BlockchainType.Monero,
+        BlockchainType.Beam,
         BlockchainType.Zcash -> 10
 
         BlockchainType.Ethereum,
@@ -247,9 +252,17 @@ class BalanceViewItemFactory(
     }
 
     private fun getSyncingProgressText(state: AdapterState.Syncing): String {
-        val sub = state.substatus
-        if (sub is AdapterState.Substatus.WaitingForPeers) {
-            return Translator.getString(R.string.balance_waiting_for_peers, sub.connected, sub.required)
+        when (val substatus = state.substatus) {
+            is AdapterState.Substatus.WaitingForPeers -> return Translator.getString(
+                R.string.balance_waiting_for_peers,
+                substatus.connected,
+                substatus.required,
+            )
+            is AdapterState.Substatus.SnapshotRestore -> return getSnapshotRestoreText(
+                substatus,
+                state.progress,
+            )
+            null -> Unit
         }
 
         val blocksRemained = state.blocksRemained
@@ -274,6 +287,44 @@ class BalanceViewItemFactory(
         }
     }
 
+    private fun getSnapshotRestoreText(
+        restore: AdapterState.Substatus.SnapshotRestore,
+        progress: Double?,
+    ): String = when (restore.stage) {
+        AdapterState.SnapshotRestoreStage.ResolvingBirthday ->
+            Translator.getString(R.string.beam_restore_resolving_birthday)
+        AdapterState.SnapshotRestoreStage.DownloadingSnapshot -> getSnapshotDownloadText(restore)
+        AdapterState.SnapshotRestoreStage.ValidatingSnapshot ->
+            Translator.getString(R.string.beam_restore_validating_snapshot)
+        AdapterState.SnapshotRestoreStage.CountingShieldedOutputs ->
+            Translator.getString(R.string.beam_restore_counting_shielded_outputs)
+        AdapterState.SnapshotRestoreStage.ScanningWalletOutputs ->
+            Translator.getString(R.string.beam_restore_scanning_wallet_outputs)
+        AdapterState.SnapshotRestoreStage.ImportingSnapshot ->
+            Translator.getString(R.string.beam_restore_importing_snapshot)
+        AdapterState.SnapshotRestoreStage.CatchingUp -> progress?.let {
+            Translator.getString(R.string.beam_restore_catching_up_progress, formatProgressPercent(it))
+        } ?: Translator.getString(R.string.beam_restore_catching_up)
+    }
+
+    private fun getSnapshotDownloadText(restore: AdapterState.Substatus.SnapshotRestore): String {
+        val downloaded = restore.downloadedBytes?.takeIf { it >= 0 } ?: return Translator.getString(
+            R.string.beam_restore_downloading_snapshot,
+        )
+        val downloadedMiB = formatMiB(downloaded)
+        val total = restore.totalBytes?.takeIf { it > 0 } ?: return Translator.getString(
+            R.string.beam_restore_downloading_snapshot_downloaded,
+            downloadedMiB,
+        )
+        return Translator.getString(
+            R.string.beam_restore_downloading_snapshot_progress,
+            downloadedMiB,
+            formatMiB(total),
+        )
+    }
+
+    private fun formatMiB(bytes: Long) = App.numberFormatter.format(bytes / MEBIBYTE.toDouble(), 0, 1)
+
     private fun formatBlocksRemaining(blocks: Long): String {
         val (value, suffix) = when {
             blocks >= 1_000_000 -> (blocks / 1_000_000.0) to Translator.getString(R.string.CoinPage_MarketCap_Million)
@@ -283,6 +334,10 @@ class BalanceViewItemFactory(
         val formattedValue = App.numberFormatter.format(value, 0, 1)
         return Translator.getString(R.string.LargeNumberFormat, formattedValue, suffix)
     }
+
+    private val AdapterState.Substatus.SnapshotRestore.showsProgressRing: Boolean
+        get() = stage == AdapterState.SnapshotRestoreStage.DownloadingSnapshot ||
+            stage == AdapterState.SnapshotRestoreStage.CatchingUp
 
     private fun getSyncedUntilText(state: AdapterState?): String? {
         if (state == null) {
@@ -372,11 +427,17 @@ class BalanceViewItemFactory(
                 coinDecimals = wallet.decimal,
                 token = wallet.token
             )?.let {
+                // BEAM reports maturing coins here, mostly Max Privacy receipts waiting for their anonymity set.
+                val beam = wallet.token.blockchainType == BlockchainType.Beam
                 add(
                     LockedValue(
                         title = TranslatableString.ResString(R.string.Balance_LockedAmount_Title),
-                        infoTitle = TranslatableString.ResString(R.string.Info_LockTime_Title),
-                        info = TranslatableString.ResString(R.string.Info_ProcessingBalance_Description),
+                        infoTitle = TranslatableString.ResString(
+                            if (beam) R.string.Balance_LockedAmount_Title else R.string.Info_LockTime_Title
+                        ),
+                        info = TranslatableString.ResString(
+                            if (beam) R.string.beam_locked_balance_info else R.string.Info_ProcessingBalance_Description
+                        ),
                         coinValue = it
                     )
                 )
@@ -607,3 +668,5 @@ class BalanceViewItemFactory(
         return "$diffPercentageText$diffCurrencyText"
     }
 }
+
+private const val MEBIBYTE = 1024 * 1024

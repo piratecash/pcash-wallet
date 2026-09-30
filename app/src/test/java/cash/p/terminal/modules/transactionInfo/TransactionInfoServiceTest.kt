@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.transactionInfo
 
+import cash.p.beam.BeamTransactionStatus
 import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.TransactionExplorerData
@@ -14,8 +15,10 @@ import cash.p.terminal.entities.transactionrecords.PendingTransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
+import cash.p.terminal.entities.transactionrecords.beam.BeamTransactionRecord
 import cash.p.terminal.modules.transactions.NftMetadataService
 import cash.p.terminal.modules.transactions.TransactionStatus
+import cash.p.terminal.modules.transactions.beamHistoryRecord
 import cash.p.terminal.modules.transactions.poison_status.PoisonStatus
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.network.swaprepository.SwapProvider
@@ -49,6 +52,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -57,6 +61,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.Assert.assertSame
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.KoinTest
@@ -173,6 +178,46 @@ class TransactionInfoServiceTest : KoinTest {
         transactionStatusUrl = null,
         offlineStatus = null,
     )
+
+    @Test
+    fun adapterUpdate_completedBeamReorg_emitsRegisteringRecord() = runTest(dispatcher) {
+        assertBeamUpdateEmitted(
+            initial = beamHistoryRecord(),
+            updated = beamHistoryRecord(status = BeamTransactionStatus.Registering),
+        )
+    }
+
+    @Test
+    fun adapterUpdate_sameFailedBeamUid_emitsChangedFailureReason() = runTest(dispatcher) {
+        assertBeamUpdateEmitted(
+            initial = beamHistoryRecord(status = BeamTransactionStatus.Failed, failureReason = "old failure"),
+            updated = beamHistoryRecord(status = BeamTransactionStatus.Failed, failureReason = "new failure"),
+        )
+    }
+
+    private suspend fun TestScope.assertBeamUpdateEmitted(
+        initial: BeamTransactionRecord,
+        updated: BeamTransactionRecord,
+    ) {
+        val updates = MutableSharedFlow<List<TransactionRecord>>()
+        every { adapter.getTransactionRecordsFlow(any(), any(), any()) } returns updates
+        val service = createService(initialTransactionRecord = initial)
+        val emissions = mutableListOf<TransactionInfoItem>()
+        backgroundScope.launch { service.transactionInfoItemFlow.collect { emissions.add(it) } }
+        backgroundScope.launch { service.start() }
+        advanceUntilIdle()
+        val initialCount = emissions.size
+        assertSame(initial, emissions.last().record)
+        assertEquals(initial.uid, updated.uid)
+
+        updates.emit(listOf(updated))
+        advanceUntilIdle()
+
+        assertEquals(initialCount + 1, emissions.size)
+        assertSame(updated, emissions.last().record)
+        assertSame(updated, service.transactionRecord)
+        assertSame(updated, service.transactionInfoItemFlow.first().record)
+    }
 
     @Test
     fun start_nonSwapTransaction_externalStatusIsNull() = runTest(dispatcher) {

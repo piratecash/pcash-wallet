@@ -19,6 +19,7 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import com.github.takahirom.roborazzi.captureRoboImage
 import io.mockk.every
 import io.mockk.mockk
+import io.horizontalsystems.core.IPinComponent
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -50,7 +51,14 @@ class SettingsScreenScreenshotTest {
 
     @Before
     fun setUp() {
-        startKoin { modules(module { single { mockk<AppPages>() } }) }
+        startKoin {
+            modules(
+                module {
+                    single { mockk<AppPages>() }
+                    single { mockk<IPinComponent>(relaxed = true) }
+                }
+            )
+        }
     }
 
     @After

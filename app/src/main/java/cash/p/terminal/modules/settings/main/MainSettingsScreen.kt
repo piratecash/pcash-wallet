@@ -1,7 +1,10 @@
 package cash.p.terminal.modules.settings.main
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column
@@ -14,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -60,7 +64,10 @@ import cash.p.terminal.ui.helpers.LinkHelper
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellSingleLineLawrenceSection
 import cash.p.terminal.ui_compose.components.HsSettingCell as SharedHsSettingCell
+import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import io.horizontalsystems.core.IPinComponent
+import io.horizontalsystems.core.launchExternalActivity
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -90,9 +97,29 @@ fun SettingsScreen(
     PageResumeEffect(onResume = viewModel::refresh, onPause = {})
     val context = LocalContext.current
     val appPages: AppPages = koinInject()
+    val view = LocalView.current
+    val pinComponent: IPinComponent = koinInject()
     val rawTxScanTitle = stringResource(R.string.offline_broadcast_title)
     val walletConnectTitle = stringResource(R.string.WalletConnect_Title)
     val tonConnectTitle = stringResource(R.string.TonConnect_Title)
+    val transactionFileLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let {
+            navigation.slideFromRight(
+                OfflineBroadcastPage(OfflineBroadcastPage.Input(fileUri = it.toString()))
+            )
+        }
+    }
+    val importTransactionFile = {
+        try {
+            pinComponent.launchExternalActivity {
+                transactionFileLauncher.launch(arrayOf("text/plain", "application/octet-stream"))
+            }
+        } catch (_: ActivityNotFoundException) {
+            HudHelper.showErrorMessage(view, R.string.offline_broadcast_file_read_failed)
+        }
+    }
 
     Surface(color = ComposeAppTheme.colors.tyler) {
         Column {
@@ -110,6 +137,7 @@ fun SettingsScreen(
                         rawTxScanTitle = rawTxScanTitle,
                         walletConnectTitle = walletConnectTitle,
                         tonConnectTitle = tonConnectTitle,
+                        importTransactionFile = importTransactionFile,
                     )
                 },
                 alertPainter = painterResource(R.drawable.ic_attention_red_20),
@@ -128,6 +156,7 @@ internal fun handleSettingsAction(
     rawTxScanTitle: String,
     walletConnectTitle: String,
     tonConnectTitle: String,
+    importTransactionFile: () -> Unit,
 ) {
     slideFromRightDestinations[action]?.let { destination ->
         navigation.slideFromRight(destination())
@@ -150,6 +179,7 @@ internal fun handleSettingsAction(
         )
         SettingsAction.Contacts -> navigation.slideFromRight(ContactsPage(ContactsPage.Input(Mode.Full)))
         SettingsAction.OfflineBroadcast -> openOfflineBroadcastScanner(navigation, appPages, rawTxScanTitle)
+        SettingsAction.ImportTransactionFile -> importTransactionFile()
         SettingsAction.AboutPremium -> navigation.slideFromBottom(AboutPremiumPage(null))
         SettingsAction.RateApp -> RateAppManager.openPlayMarket(context)
         SettingsAction.ShareApp -> shareAppLink(viewModel.uiState.appWebPageLink, context)

@@ -15,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
 import cash.p.terminal.core.App
+import cash.p.terminal.core.adapters.BeamAdapter
 import cash.p.terminal.core.ISendBitcoinAdapter
 import cash.p.terminal.core.ISendEthereumAdapter
 import cash.p.terminal.core.ISendTonAdapter
@@ -70,6 +71,11 @@ import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.entities.BlockchainType
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.managers.PoisonAddressManager
+import cash.p.terminal.core.managers.BeamSessionOwner
+import cash.p.terminal.modules.send.beam.BeamSendScreen
+import cash.p.terminal.modules.send.beam.BeamSendViewModel
+import cash.p.terminal.modules.send.beam.handleBeamProceed
+import cash.p.terminal.modules.send.beam.isNativeBeamSendWallet
 import org.koin.java.KoinJavaComponent.inject
 import timber.log.Timber
 import kotlin.reflect.KClass
@@ -92,6 +98,11 @@ class SendPage(val input: Input) : HSPage() {
         val amountInputModeViewModel = viewModel<AmountInputModeViewModel>(
             factory = AmountInputModeModule.Factory(wallet.coin.uid)
         )
+
+        if (wallet.token.blockchainType == BlockchainType.Beam) {
+            BeamContent(wallet, title, navigation, keyboardController, amountInputModeViewModel)
+            return
+        }
 
         when (wallet.token.blockchainType) {
             BlockchainType.Bitcoin,
@@ -376,6 +387,39 @@ class SendPage(val input: Input) : HSPage() {
     }
 
     @Composable
+    private fun BeamContent(
+        wallet: Wallet,
+        title: String,
+        navigation: HSNavigation,
+        keyboardController: SoftwareKeyboardController?,
+        amountInputModeViewModel: AmountInputModeViewModel,
+    ) {
+        val owner: BeamSessionOwner = getKoinInstance()
+        val session = owner.current
+        val adapter: BeamAdapter? = App.adapterManager.getAdapterForWallet(wallet)
+        if (!isNativeBeamSendWallet(wallet, session, adapter) || session == null || adapter == null) {
+            MissingWalletAdapterEffect(navigation, wallet.coin.uid, wallet.coin.code)
+            return
+        }
+        // initialize() must run at construction time (inside the Factory), not as a LaunchedEffect:
+        // in the very first composition BeamSendScreen -> BeamAddressInput reads recipient/hideAddress
+        // to build its own AddressViewModel, so that state must already exist before this composable
+        // runs rather than after an effect fires on a later frame.
+        val viewModel = viewModel<BeamSendViewModel>(
+            factory = BeamSendViewModel.Factory(wallet, session, adapter, input.prefilledData, input.hideAddress)
+        )
+        BeamSendScreen(
+            title = title,
+            viewModel = viewModel,
+            navigation = navigation,
+            inputType = amountInputModeViewModel.inputType,
+            onToggleInputType = amountInputModeViewModel::onToggleInputType,
+        ) {
+            navigation.handleProceedAction(it, keyboardController)
+        }
+    }
+
+    @Composable
     private fun MissingWalletAdapterEffect(
         navigation: HSNavigation,
         coinUid: String,
@@ -394,6 +438,16 @@ class SendPage(val input: Input) : HSPage() {
         data: ProceedActionData,
         keyboardController: SoftwareKeyboardController?
     ) {
+        if (handleBeamProceed(data) {
+                openConfirm(
+                    type = Type.Beam,
+                    riskyAddress = input.riskyAddress,
+                    poisonAddress = isAddressSuspicious(data.address),
+                    keyboardController = keyboardController,
+                    sendEntryPoint = input.sendEntryPoint,
+                )
+            }) return
+
         val smartContractCheckEnabledForToken =
             addressCheckerControl.uiState.addressCheckSmartContractEnabled &&
                     isSmartContractCheckSupported(data.wallet.token)

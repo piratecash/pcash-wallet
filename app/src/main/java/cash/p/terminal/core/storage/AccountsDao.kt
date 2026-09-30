@@ -8,6 +8,12 @@ import io.reactivex.Flowable
 @Dao
 interface AccountsDao {
 
+    @Query("SELECT id FROM AccountRecord")
+    fun getIds(): List<String>
+
+    @Query("SELECT EXISTS(SELECT 1 FROM AccountRecord WHERE id = :id AND deleted = 0)")
+    fun isAvailable(id: String): Boolean
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(accountRow: AccountRecord)
 

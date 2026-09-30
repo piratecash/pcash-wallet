@@ -48,6 +48,7 @@ private fun ManageAccountContent(navigation: HSNavigation, input: ManageAccountP
         return
     }
     val viewModel = viewModel<ManageAccountViewModel>(factory = ManageAccountModule.Factory(account))
+    AccountDeletionError(viewModel.deletionState)
 
     LaunchedEffect(Unit) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
