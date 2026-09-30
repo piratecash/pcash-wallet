@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import cash.p.beam.BeamNetwork
 import cash.p.beam.BeamRelayOutcome
 import cash.p.terminal.R
+import cash.p.terminal.core.BroadcastRawTransactionResult
 import cash.p.terminal.core.BroadcastRawTransactionStatus
 import cash.p.terminal.core.EvmError
 import cash.p.terminal.core.ITransactionsAdapter
@@ -17,6 +18,8 @@ import cash.p.terminal.core.isZcashAlreadyCommittedToBestChainError
 import cash.p.terminal.core.managers.OfflineSignedTransactionRepository
 import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
 import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder.DecodeResult
+import cash.p.terminal.core.managers.PendingTransactionRegistrar
+import cash.p.terminal.core.managers.broadcasting
 import cash.p.terminal.core.nativeTokenQueries
 import cash.p.terminal.core.order
 import cash.p.terminal.core.supported
@@ -27,6 +30,8 @@ import cash.p.terminal.entities.OfflineSolanaRetryMetadata
 import cash.p.terminal.entities.OfflineStellarRetryMetadata
 import cash.p.terminal.entities.OfflineTonRetryMetadata
 import cash.p.terminal.entities.OfflineTronRetryMetadata
+import cash.p.terminal.entities.PendingTransactionDraft
+import cash.p.terminal.modules.send.zcash.zcashPendingDraft
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.wallet.IAccountManager
@@ -36,8 +41,8 @@ import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
-import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.useCases.WalletUseCase
+import co.touchlab.kermit.Logger
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.ViewModelUiState
 import io.horizontalsystems.core.entities.Blockchain
@@ -50,6 +55,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.io.InterruptedIOException
+import java.math.BigDecimal
 import java.net.ConnectException
 import java.net.NoRouteToHostException
 import java.net.UnknownHostException
@@ -63,6 +69,7 @@ class OfflineBroadcastViewModel(
     private val walletUseCase: WalletUseCase,
     private val marketKit: MarketKitWrapper,
     private val offlineBroadcastTokenResolver: OfflineBroadcastTokenResolver,
+    private val pendingRegistrar: PendingTransactionRegistrar,
     private val dispatcherProvider: DispatcherProvider,
     private val beamRelay: BeamOfflineTransactionRelay,
 ) : ViewModelUiState<OfflineBroadcastUiState>() {
@@ -84,6 +91,7 @@ class OfflineBroadcastViewModel(
     private var prefilled = false
     private var offlineRecordKey: OfflineRecordKey? = null
     private var broadcastMetadata: OfflineBroadcastMetadata? = null
+    private var registration: OfflineRegistration? = null
     private var beamPrepared: BeamOfflineTransactionRelay.Prepared? = null
     private var beamPreparationJob: Job? = null
     private var selectionGeneration = 0L
@@ -143,7 +151,7 @@ class OfflineBroadcastViewModel(
             prepareBeam(blockchain, null)
             return
         }
-        val wallet = walletFor(blockchain.type)
+        val wallet = walletUseCase.getWalletForBlockchain(blockchain.type)
         selectedBlockchain = blockchain
         targetWallet = wallet
         tokenToEnable = null
@@ -210,12 +218,12 @@ class OfflineBroadcastViewModel(
         // moment later; bound the wait so it cannot strand the UI in "Preparing". Other account types
         // persist synchronously, so the lookup is already authoritative and an absent wallet means the
         // enable failed — fail fast instead of waiting on a wallet that will never appear.
-        if (account.isHardwareWalletAccount && walletFor(type) == null) {
+        if (account.isHardwareWalletAccount && walletUseCase.getWalletForBlockchain(type) == null) {
             withTimeoutOrNull(WALLET_WAIT_TIMEOUT_MS) {
                 walletUseCase.awaitWallets(setOf(token))
             }
         }
-        val wallet = walletFor(type) ?: return null
+        val wallet = walletUseCase.getWalletForBlockchain(type) ?: return null
         return wallet.takeIf { awaitOfflineTransactionAdapter(it) != null }
     }
 
@@ -265,16 +273,50 @@ class OfflineBroadcastViewModel(
         }
     }
 
+    /**
+     * A Zcash spend stays invisible until the block carrying it is scanned, so the pending row is
+     * the only record of it in the meantime. It is registered with the hash the payload claims and
+     * reconciled to the txid the network assigned once the bytes are out.
+     */
+    private suspend fun broadcastRaw(
+        wallet: Wallet,
+        adapter: OfflineTransactionAdapter<*>,
+    ): BroadcastRawTransactionResult {
+        val draft = zcashDraft(wallet)
+            ?: return adapter.broadcastRawTransaction(rawHex, broadcastMetadata)
+
+        var outcome: BroadcastRawTransactionResult? = null
+        pendingRegistrar.broadcasting(draft) {
+            adapter.broadcastRawTransaction(rawHex, broadcastMetadata)
+                .also { outcome = it }
+                .txHash
+        }
+        return checkNotNull(outcome)
+    }
+
+    private fun zcashDraft(wallet: Wallet): PendingTransactionDraft? {
+        if (wallet.token.blockchainType != BlockchainType.Zcash) return null
+        val snapshot = registration ?: return null
+        return adapterManager.zcashPendingDraft(
+            wallet = wallet,
+            amount = snapshot.amount,
+            fee = snapshot.fee,
+            toAddress = snapshot.toAddress,
+            txHash = snapshot.txHash,
+        )
+    }
+
     private suspend fun broadcast(wallet: Wallet, adapter: OfflineTransactionAdapter<*>): OfflineBroadcastResult {
         val networkName = wallet.token.blockchain.name
 
         val broadcastResult = try {
             withContext(dispatcherProvider.io) {
-                adapter.broadcastRawTransaction(rawHex, broadcastMetadata)
+                broadcastRaw(wallet, adapter)
             }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
+            Logger.e(throwable = e, tag = "OfflineBroadcast") { "Broadcast failed network=$networkName" }
             recordBroadcastAttempt()
             val message = e.offlineBroadcastErrorMessage(wallet.token.coin.code)
             offlineRecordKey?.let {
@@ -421,10 +463,11 @@ class OfflineBroadcastViewModel(
         }
         rawHex = decoded.rawHex
         broadcastMetadata = decoded.broadcastMetadata()
+        registration = decoded.registration()
         networkSelectable = false
         selectedBlockchain = blockchain
 
-        val wallet = walletFor(blockchain.type)
+        val wallet = walletUseCase.getWalletForBlockchain(blockchain.type)
         if (wallet != null) {
             prepareReadyToSend(wallet, decoded, payload)
         } else {
@@ -486,6 +529,7 @@ class OfflineBroadcastViewModel(
         }
         rawHex = normalized
         broadcastMetadata = null
+        registration = null
         networkSelectable = true
         offlineRecordKey = null
         step = OfflineBroadcastStep.Confirm
@@ -496,11 +540,6 @@ class OfflineBroadcastViewModel(
         (adapterManager.getAdapterForWalletOld(wallet) as? ITransactionsAdapter)
             ?.getTransactionUrl(txHash)
             ?.takeIf { it.isNotBlank() }
-
-    private fun walletFor(type: BlockchainType): Wallet? {
-        val wallets = walletUseCase.getWallets(type)
-        return wallets.firstOrNull { it.token.type is TokenType.Native } ?: wallets.firstOrNull()
-    }
 
     private fun supportedBlockchains(): List<Blockchain> {
         val beam = marketKit.blockchain(BlockchainType.Beam.uid)?.takeIf { it.type == BlockchainType.Beam }
@@ -561,7 +600,7 @@ class OfflineBroadcastViewModel(
     // Relaying needs no wallet; an existing BEAM wallet only lets the relay be listed in "Signed offline".
     private fun prepareBeam(blockchain: Blockchain, scanned: PendingImport?) {
         selectedBlockchain = blockchain
-        targetWallet = walletFor(BlockchainType.Beam)
+        targetWallet = walletUseCase.getWalletForBlockchain(BlockchainType.Beam)
         tokenToEnable = null
         pendingImport = null
         offlineRecordKey = null
@@ -698,6 +737,24 @@ private fun OfflineStellarRetryMetadata.toBroadcastMetadata() = OfflineBroadcast
     sourceAccountId = sourceAccountId,
     sequenceNumber = sequenceNumber,
     validUntil = validUntil,
+)
+
+/**
+ * Fields the pending row needs, held in memory: the imported record is best-effort and may never
+ * reach the database, and the broadcast metadata carries only the hash.
+ */
+private data class OfflineRegistration(
+    val amount: BigDecimal,
+    val fee: BigDecimal?,
+    val toAddress: String,
+    val txHash: String,
+)
+
+private fun DecodedOfflineTransaction.registration() = OfflineRegistration(
+    amount = amountAtomic.toBigDecimalOrNull()?.movePointLeft(token.decimals) ?: BigDecimal.ZERO,
+    fee = fee?.let { it.atomic.toBigDecimalOrNull()?.movePointLeft(it.decimals) },
+    toAddress = toAddress,
+    txHash = txHash,
 )
 
 private fun DecodedOfflineTransaction.broadcastMetadata(): OfflineBroadcastMetadata? =

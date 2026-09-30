@@ -11,6 +11,7 @@ import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.amount.AmountValidator
 import cash.p.terminal.modules.amount.SendAmountService
 import cash.p.terminal.modules.xrate.XRateService
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.DispatcherProvider
@@ -37,14 +38,16 @@ object SendZCashModule {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             val xRateService = XRateService(App.marketKit, App.currencyManager.baseCurrency)
-            val availableBalance = adapterManager.getZcashAvailableToSend(wallet, adapter)
+            val availableBalance = adapter.maxSpendableBalance
             val amountService = SendAmountService(
                 amountValidator = AmountValidator(),
                 coinCode = wallet.coin.code,
                 availableBalance = availableBalance
             )
             val addressService = SendZCashAddressService(adapter)
-            val memoService = SendZCashMemoService()
+            val memoService = SendZCashMemoService(
+                memoSupportedByAccount = wallet.account.type !is AccountType.TrezorDevice
+            )
 
             return SendZCashViewModel(
                 adapter = adapter,

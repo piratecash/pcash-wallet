@@ -284,7 +284,8 @@ class ManageWalletsService(
 
     private fun getRelatedTokens(token: Token): List<Token> {
         if (token.isZcashAddressSpec) {
-            return listOf(token).expandedZcashAddressSpecTokens(marketKit)
+            val accountType = account?.type ?: return listOf(token)
+            return listOf(token).expandedZcashAddressSpecTokens(marketKit, accountType)
                 .ifEmpty { listOf(token) }
         }
 

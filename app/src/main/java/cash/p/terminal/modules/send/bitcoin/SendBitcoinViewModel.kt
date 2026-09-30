@@ -37,7 +37,7 @@ import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.Wallet
-import cash.z.ecc.android.sdk.ext.collectWith
+import io.horizontalsystems.core.collectWith
 import cash.p.terminal.trezor.domain.TrezorCancelledException
 import com.tangem.common.core.TangemSdkError
 import io.horizontalsystems.bitcoincore.storage.UnspentOutputInfo
