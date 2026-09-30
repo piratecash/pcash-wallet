@@ -42,7 +42,7 @@ class YiFiTokenResolver(
     }
 
     suspend fun resolveAsset(token: Token): YiFiAsset? {
-        val kind = token.swapAssetKind ?: return null
+        val kind = token.swapAssetKind?.takeUnless { token.isMimblewimbleBeam } ?: return null
         return withContext(dispatcherProvider.io) {
             assetCache.getOrLoad("${token.coin.uid}|${token.tokenQuery.id}") {
                 when (kind) {
@@ -101,6 +101,10 @@ class YiFiTokenResolver(
 
     private suspend fun searchTokens(network: String, query: String): List<YiFiToken> =
         searchCache.getOrLoad(network to query) { yiFiRepository.searchTokens(network, query) }
+
+    // YiFi's "BEAM" network is the Beam gaming L1 (beam-2), which shares the ticker with ours.
+    private val Token.isMimblewimbleBeam: Boolean
+        get() = blockchainType == BlockchainType.Beam
 
     private val YiFiToken.isContractless: Boolean
         get() = contractAddress.isNullOrBlank()

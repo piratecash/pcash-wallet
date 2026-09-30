@@ -1,6 +1,8 @@
 package cash.p.terminal.modules.send.offline
 
 import androidx.lifecycle.viewModelScope
+import cash.p.beam.BeamSendOperation
+import cash.p.terminal.modules.send.beam.BeamOfflineOperations
 import cash.p.terminal.R
 import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.OfflineTransactionStatusAdapter
@@ -63,12 +65,14 @@ class OfflineSignedTransactionsViewModel(
     private val marketKit: MarketKitWrapper,
     private val rateRepository: TransactionsRateRepository,
     private val dispatcherProvider: DispatcherProvider,
+    private val beamOperations: BeamOfflineOperations,
 ) : ViewModelUiState<OfflineSignedTransactionsUiState>() {
 
     private var items: List<OfflineSignedTransactionViewItem> = emptyList()
     private var statusReconciliationJob: Job? = null
+    private val beamFirstObservedAt = mutableMapOf<String, Long>()
 
-    override fun createState() = OfflineSignedTransactionsUiState(items = items)
+    override fun createState() = OfflineSignedTransactionsUiState(items)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val itemsFlow = accountManager.activeAccountStateFlow
@@ -78,10 +82,15 @@ class OfflineSignedTransactionsViewModel(
             if (account == null) {
                 flowOf(OfflineSignedTransactionsInput(account = null, entities = emptyList()))
             } else {
-                repository.observe(account.id)
-                    .map { entities ->
-                        OfflineSignedTransactionsInput(account = account, entities = entities)
-                    }
+                combine(repository.observe(account.id), beamOperations.observe(account.id)) { entities, beam ->
+                    // Own BEAM exports are listed from the SDK inventory; Room holds relayed imports only,
+                    // so a relay of our own export must not list it twice.
+                    val ownKernelIds = BeamOfflineOperations.ownExported(beam.operations)
+                        .mapNotNullTo(HashSet()) { it.mainKernelId }
+                    OfflineSignedTransactionsInput(account, entities.filterNot {
+                        it.blockchainTypeUid == BlockchainType.Beam.uid && it.txHash in ownKernelIds
+                    }, beam)
+                }
             }
         }
         .combine(walletManager.activeWalletsFlow) { input, wallets ->
@@ -89,6 +98,7 @@ class OfflineSignedTransactionsViewModel(
                 account = input.account,
                 entities = input.entities,
                 wallets = wallets,
+                beam = input.beam,
             )
         }
 
@@ -96,10 +106,42 @@ class OfflineSignedTransactionsViewModel(
         viewModelScope.launch(dispatcherProvider.default) {
             itemsFlow.collect { snapshot ->
                 items = snapshot.entities.mapNotNull { it.toViewItem(snapshot.account, snapshot.wallets) }
+                val beamWallet = snapshot.wallets.firstOrNull {
+                    it.account.id == snapshot.account?.id && it.token.blockchainType == BlockchainType.Beam
+                }
+                if (beamWallet != null) {
+                    items = items + BeamOfflineOperations.ownExported(snapshot.beam.operations)
+                        .map { it.toBeamViewItem(beamWallet) }
+                }
                 reconcileBroadcastedStatuses(snapshot)
                 emitState()
             }
         }
+    }
+
+    private fun BeamSendOperation.toBeamViewItem(wallet: Wallet): OfflineSignedTransactionViewItem {
+        val status = if (observedProofHeight > 0) {
+            ColoredValue(Translator.getString(R.string.StatusInfo_Confirmed), ColorName.Remus)
+        } else {
+            ColoredValue(Translator.getString(R.string.offline_signed_status_unknown), ColorName.Grey)
+        }
+        val uid = "beam-offline:$operationId"
+        val hash = mainKernelId.orEmpty()
+        val timestamp = createdAtEpochSeconds
+            ?: beamFirstObservedAt.getOrPut(operationId) { System.currentTimeMillis() / MILLISECONDS_IN_SECOND }
+        val record = PendingTransactionRecord(
+            uid = uid, transactionHash = hash, timestamp = timestamp, source = wallet.transactionSource,
+            token = wallet.token, amount = BigDecimal.valueOf(amount, 8), toAddress = "", fromAddress = "",
+            expiresAt = Long.MAX_VALUE, memo = null,
+        )
+        return OfflineSignedTransactionViewItem(
+            uid = uid, txHash = hash,
+            transactionItem = TransactionItem(
+                record, record.currencyValue(rateRepository), null, emptyMap(),
+                walletUid = wallet.tokenQueryId, offlineStatus = status,
+            ),
+            statusValue = status, metadataUnknown = false,
+        )
     }
 
     private fun reconcileBroadcastedStatuses(snapshot: OfflineSignedTransactionsSnapshot) {
@@ -426,12 +468,14 @@ class OfflineSignedTransactionsViewModel(
 private data class OfflineSignedTransactionsInput(
     val account: Account?,
     val entities: List<OfflineSignedTransactionEntity>,
+    val beam: BeamOfflineOperations.Inventory = BeamOfflineOperations.Inventory(emptyList()),
 )
 
 private data class OfflineSignedTransactionsSnapshot(
     val account: Account?,
     val entities: List<OfflineSignedTransactionEntity>,
     val wallets: List<Wallet>,
+    val beam: BeamOfflineOperations.Inventory,
 )
 
 private data class PendingOfflineEntity(

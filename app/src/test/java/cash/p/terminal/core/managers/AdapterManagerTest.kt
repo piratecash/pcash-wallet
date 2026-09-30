@@ -1,6 +1,7 @@
 package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.adapters.BeamAdapter
 import cash.p.terminal.core.factories.AdapterFactory
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AdapterState
@@ -32,6 +33,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -41,6 +43,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
+import org.junit.Assert.assertFalse
 import org.junit.Before
 import org.junit.Test
 import java.math.BigDecimal
@@ -58,6 +61,7 @@ class AdapterManagerTest {
     private lateinit var offlineModeManager: OfflineModeManager
     private lateinit var restoreModeUpdatedSubject: PublishSubject<BlockchainType>
     private lateinit var adapterManager: AdapterManager
+    private val pendingBalanceCalculator = mockk<PendingBalanceCalculator>(relaxed = true)
 
     @Before
     fun setUp() {
@@ -90,7 +94,7 @@ class AdapterManagerTest {
                 every { kitStoppedObservable } returns Observable.never()
             },
             stellarKitManager = mockk(relaxed = true),
-            pendingBalanceCalculator = mockk(relaxed = true),
+            pendingBalanceCalculator = pendingBalanceCalculator,
             fallbackAddressProvider = mockk(relaxed = true),
             offlineModeManager = offlineModeManager,
             dispatcherProvider = TestDispatcherProvider(testDispatcher, testScope)
@@ -105,6 +109,92 @@ class AdapterManagerTest {
         scopeField.isAccessible = true
         (scopeField.get(adapterManager) as CoroutineScope).cancel()
         adapterManager.quit()
+    }
+
+    @Test
+    fun initAdapters_beamAccountHandoff_awaitsExactOldAdapterUnlink() = testScope.runTest {
+        assertBeamReplacementWaits(refresh = false)
+    }
+
+    // Before the SDK session has read the wallet database the adapter has no amounts at all, and
+    // that must stay distinguishable from a genuine zero: the caller falls back to its cache.
+    // Once the database is read, the amounts flow through even though they are not authoritative.
+    @Test
+    fun getAdjustedBalanceData_beamDatabaseNotReadYet_reportsUnknownInsteadOfZero() = testScope.runTest {
+        val wallet = wallet("beam", BlockchainType.Beam, TokenType.Native)
+        val adapter = mockk<BeamAdapter>(relaxed = true) {
+            every { balanceState } returns AdapterState.Connecting
+            every { balanceStateUpdatedFlow } returns emptyFlow()
+            every { balanceUpdatedFlow } returns emptyFlow()
+            every { lastKnownBalanceData } returns null
+        }
+        coEvery { adapterFactory.getAdapterOrNull(wallet, any()) } returns adapter
+        activeWalletsFlow.value = listOf(wallet)
+        adapterManager.startAdapterManager()
+        advanceUntilIdle()
+        assertNull(adapterManager.getAdjustedBalanceData(wallet))
+        verify(exactly = 0) { pendingBalanceCalculator.adjustBalance(wallet, any()) }
+
+        val loaded = BalanceData(BigDecimal("4.2"))
+        every { adapter.lastKnownBalanceData } returns loaded
+        every { pendingBalanceCalculator.adjustBalance(wallet, loaded) } returns loaded
+        assertEquals(loaded, adapterManager.getAdjustedBalanceData(wallet))
+        verify(exactly = 1) { pendingBalanceCalculator.adjustBalance(wallet, loaded) }
+    }
+
+    @Test
+    fun refresh_beamRetryPending_awaitsAdapterAndHonorsManualPause() = testScope.runTest {
+        val wallet = wallet("beam", BlockchainType.Beam, TokenType.Native)
+        val adapter = mockk<IAdapter>(relaxed = true)
+        val retry = CompletableDeferred<Unit>()
+        coEvery { adapter.refresh() } coAnswers { retry.await() }
+        coEvery { adapterFactory.getAdapterOrNull(wallet, any()) } returns adapter
+        activeWalletsFlow.value = listOf(wallet)
+        adapterManager.startAdapterManager()
+        advanceUntilIdle()
+        val refresh = async { adapterManager.refresh() }
+        advanceUntilIdle()
+        assertFalse(refresh.isCompleted)
+        retry.complete(Unit)
+        refresh.await()
+        coVerify(exactly = 1) { adapter.refresh() }
+        every { offlineModeManager.isNetworkPaused(any()) } returns true
+        adapterManager.refresh()
+        adapterManager.refreshByWallet(wallet)
+        advanceUntilIdle()
+        coVerify(exactly = 1) { adapter.refresh() }
+    }
+
+    @Test
+    fun refreshAdapters_beamWallet_awaitsExactOldAdapterUnlink() = testScope.runTest {
+        assertBeamReplacementWaits(refresh = true)
+    }
+
+    private suspend fun TestScope.assertBeamReplacementWaits(refresh: Boolean) {
+        val oldWallet = wallet("old", BlockchainType.Beam, TokenType.Native)
+        val newWallet = if (refresh) oldWallet else wallet("new", BlockchainType.Beam, TokenType.Native)
+        val oldAdapter = mockk<IAdapter>(relaxed = true)
+        val newAdapter = mockk<IAdapter>(relaxed = true)
+        val unlinkGate = CompletableDeferred<Unit>()
+        coEvery { adapterFactory.getAdapterOrNull(oldWallet, any()) } returns oldAdapter
+        coEvery { adapterFactory.unlinkAdapter(oldWallet, oldAdapter) } coAnswers { unlinkGate.await() }
+        activeWalletsFlow.value = listOf(oldWallet)
+        adapterManager.startAdapterManager()
+        advanceUntilIdle()
+        coEvery { adapterFactory.getAdapterOrNull(newWallet, any()) } returns newAdapter
+
+        if (refresh) adapterManager.refreshAdapters(listOf(oldWallet))
+        else activeWalletsFlow.value = listOf(newWallet)
+        advanceUntilIdle()
+        coVerify(exactly = 1) { adapterFactory.unlinkAdapter(oldWallet, oldAdapter) }
+        coVerify(exactly = if (refresh) 1 else 0) { adapterFactory.getAdapterOrNull(newWallet, any()) }
+        verify(exactly = 0) { newAdapter.start() }
+        assertNull(adapterManager.getAdapterForWalletOld(newWallet))
+
+        unlinkGate.complete(Unit)
+        advanceUntilIdle()
+        verify(exactly = 1) { newAdapter.start() }
+        assertSame(newAdapter, adapterManager.getAdapterForWalletOld(newWallet))
     }
 
     /**

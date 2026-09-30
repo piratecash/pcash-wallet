@@ -3,6 +3,7 @@ package cash.p.terminal.core.managers
 import android.os.HandlerThread
 import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.ZcashRescanException
+import cash.p.terminal.core.adapters.BeamAdapter
 import cash.p.terminal.core.factories.AdapterFactory
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.FallbackAddressProvider
@@ -25,11 +26,13 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,6 +54,7 @@ import kotlinx.coroutines.rx2.asFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
 
@@ -147,33 +151,17 @@ class AdapterManager(
     }
 
     private suspend fun reinitAdapters(blockchainType: BlockchainType) {
-        val removedAdapters = mutex.withLock {
-            adaptersMap.keys
-                .filter { it.token.blockchainType == blockchainType }
-                .mapNotNull { wallet ->
-                    val adapter = adaptersMap.remove(wallet) ?: return@mapNotNull null
-                    cancelBalanceSubscription(wallet)
-                    wallet to adapter
-                }
-                .also {
-                    if (it.isNotEmpty()) {
-                        adaptersReadySubject.onNext(HashMap(adaptersMap))
-                    }
-                }
-        }
+        val removedAdapters = removeMatchingAdapters { it.token.blockchainType == blockchainType }
         if (removedAdapters.isEmpty()) return
 
-        removedAdapters.forEach { (wallet, adapter) ->
-            adapter.stop()
-            adapterFactory.unlinkAdapter(wallet)
-        }
+        unlinkOtherAdapters(removedAdapters)
         requestInitAdapters(walletManager.activeWallets)
     }
 
     override suspend fun refresh() {
         val pausedChains = pausedChains()
 
-        coroutineScope.launch {
+        val adaptersRefresh = coroutineScope.launch {
             adaptersMap.forEach { (wallet, adapter) ->
                 if (!wallet.isNetworkPaused()) adapter.refresh()
             }
@@ -189,6 +177,7 @@ class AdapterManager(
         if (BlockchainType.Ton !in pausedChains) tonKitManager.tonKitWrapper?.tonKit?.refresh()
         if (BlockchainType.Monero !in pausedChains) moneroKitManager.moneroKitWrapper?.refresh()
         if (BlockchainType.Stellar !in pausedChains) stellarKitManager.stellarKitWrapper?.stellarKit?.refresh()
+        adaptersRefresh.join()
     }
 
     /** A chain counts as paused only when a wallet of the active account actually holds it paused. */
@@ -234,19 +223,20 @@ class AdapterManager(
             }
         }
 
+        // Keep reusable adapters tracked if an awaited BEAM handoff is cancelled.
+        adaptersMap.putAll(reusable)
+
         // Stop old adapters that won't be reused BEFORE creating new ones.
         // This is critical for Zcash: its SDK forbids creating a new Synchronizer
         // while another one with the same alias is still active.
-        currentAdapters.forEach { (wallet, adapter) ->
-            cancelBalanceSubscription(wallet)
-            adapter.stop()
-            coroutineScope.launch {
-                adapterFactory.unlinkAdapter(wallet)
+        withContext(NonCancellable) {
+            currentAdapters.forEach { (wallet, adapter) ->
+                cancelBalanceSubscription(wallet)
+                retireAdapter(wallet, adapter)
             }
         }
 
         // Add reusable adapters immediately and subscribe to balance updates
-        adaptersMap.putAll(reusable)
         reusable.forEach { (wallet, adapter) ->
             (adapter as? IBalanceAdapter)?.let { subscribeToBalanceUpdates(wallet, it) }
         }
@@ -305,10 +295,7 @@ class AdapterManager(
         wallets.map { wallet ->
             async {
                 try {
-                    adapterFactory.getAdapterOrNull(wallet, activeLitecoinMwebAccounts)?.let {
-                        startAdapter(wallet, it)
-                        true
-                    } ?: false
+                    createAndStartAdapter(wallet, activeLitecoinMwebAccounts)
                 } catch (ex: CancellationException) {
                     throw ex
                 } catch (ex: Exception) {
@@ -317,6 +304,31 @@ class AdapterManager(
                 }
             }
         }.awaitAll().all { it }
+    }
+
+    private suspend fun createAndStartAdapter(wallet: Wallet, activeMwebAccounts: Set<String>): Boolean {
+        val adapter = adapterFactory.getAdapterOrNull(wallet, activeMwebAccounts) ?: return false
+        if (wallet.token.blockchainType == BlockchainType.Beam) {
+            try {
+                currentCoroutineContext().ensureActive()
+                startAdapter(wallet, adapter)
+            } catch (error: Throwable) {
+                retireAdapter(wallet, adapter)
+                throw error
+            }
+        } else {
+            startAdapter(wallet, adapter)
+        }
+        return true
+    }
+
+    private suspend fun retireAdapter(wallet: Wallet, adapter: IAdapter) {
+        adapter.stop()
+        if (wallet.token.blockchainType == BlockchainType.Beam) {
+            withContext(NonCancellable) { adapterFactory.unlinkAdapter(wallet, adapter) }
+        } else {
+            coroutineScope.launch { adapterFactory.unlinkAdapter(wallet) }
+        }
     }
 
     private fun Wallet.needsLitecoinMwebRecreate(
@@ -347,18 +359,13 @@ class AdapterManager(
                 walletsToRefresh.forEach { wallet ->
                     cancelBalanceSubscription(wallet)
                     adaptersMap.remove(wallet)?.let { previousAdapter ->
-                        previousAdapter.stop()
-                        coroutineScope.launch {
-                            adapterFactory.unlinkAdapter(wallet)
-                        }
+                        retireAdapter(wallet, previousAdapter)
                     }
                 }
 
                 // add and start new adapters
                 walletsToRefresh.forEach { wallet ->
-                    adapterFactory.getAdapterOrNull(wallet, activeLitecoinMwebAccounts)?.let { adapter ->
-                        startAdapter(wallet, adapter)
-                    }
+                    createAndStartAdapter(wallet, activeLitecoinMwebAccounts)
                 }
 
                 adaptersReadySubject.onNext(HashMap(adaptersMap))
@@ -451,12 +458,19 @@ class AdapterManager(
     }
 
     private suspend fun stopMatchingAdapters(matchingWallet: (Wallet) -> Boolean) {
-        val removedAdapters = mutex.withLock {
+        unlinkOtherAdapters(removeMatchingAdapters(matchingWallet))
+    }
+
+    private suspend fun removeMatchingAdapters(matchingWallet: (Wallet) -> Boolean): List<Pair<Wallet, IAdapter>> =
+        mutex.withLock {
             adaptersMap.keys
                 .filter(matchingWallet)
+                // Await BEAM first so cancellation leaves other removed adapters tracked.
+                .sortedBy { if (it.token.blockchainType == BlockchainType.Beam) 0 else 1 }
                 .mapNotNull { wallet ->
                     adaptersMap.remove(wallet)?.let { adapter ->
                         cancelBalanceSubscription(wallet)
+                        if (wallet.token.blockchainType == BlockchainType.Beam) retireAdapter(wallet, adapter)
                         wallet to adapter
                     }
                 }
@@ -467,7 +481,8 @@ class AdapterManager(
                 }
         }
 
-        removedAdapters.forEach { (wallet, adapter) ->
+    private suspend fun unlinkOtherAdapters(adapters: List<Pair<Wallet, IAdapter>>) {
+        adapters.filter { it.first.token.blockchainType != BlockchainType.Beam }.forEach { (wallet, adapter) ->
             adapter.stop()
             adapterFactory.unlinkAdapter(wallet)
         }
@@ -512,7 +527,13 @@ class AdapterManager(
 
     override fun getAdjustedBalanceData(wallet: Wallet): BalanceData? {
         val adapter = getBalanceAdapterForWallet(wallet) ?: return null
-        val rawBalance = adapter.balanceData
+        // BEAM is the one adapter that can report "the wallet database has not been read yet",
+        // which is not the same as "the balance is zero": until the SDK session has started, it
+        // has no amounts at all. Passing that through as null keeps the row on the last cached
+        // amount instead of showing — and then persisting — a zero the wallet never had.
+        val rawBalance = if (adapter is BeamAdapter) {
+            adapter.lastKnownBalanceData ?: return null
+        } else adapter.balanceData
         return pendingBalanceCalculator.adjustBalance(wallet, rawBalance)
     }
 

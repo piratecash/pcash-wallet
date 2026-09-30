@@ -205,6 +205,8 @@ class OffChainSwapProviderSupport(
                 )
             }
 
+            tokenIn.isNativeBeam() -> SendTransactionData.Beam(depositAddress, amountIn, memo)
+
             else -> SendTransactionData.Unsupported
         }
     }
@@ -244,6 +246,8 @@ class OffChainSwapProviderSupport(
             TokenType.AddressSpecTyped(TokenType.AddressSpecType.Transparent)
         )
     )
+
+    private fun Token.isNativeBeam() = blockchainType == BlockchainType.Beam && type == TokenType.Native
 
     private fun requiresTransparentRefundAddress(tokenIn: Token): Boolean =
         tokenIn.blockchainType == BlockchainType.Zcash &&
