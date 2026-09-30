@@ -17,11 +17,13 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.isActive
@@ -73,6 +75,7 @@ class TransactionRecordRepository(
     private val coroutineScope = CoroutineScope(dispatcherProvider.io)
     private var updatesJob: Job? = null
     private var loadingJob: Job? = null
+    private var reloadPending = false
 
     // Cache of last load request to avoid duplicate work
     @Volatile
@@ -129,6 +132,7 @@ class TransactionRecordRepository(
                 BlockchainType.Cosanta,
                 BlockchainType.Dash,
                 BlockchainType.Monero,
+                BlockchainType.Beam,
                 BlockchainType.Zcash -> mergedWallets.add(wallet)
 
                 BlockchainType.Ethereum,
@@ -351,9 +355,15 @@ class TransactionRecordRepository(
     private fun handleUpdates() {
         allNormalLoaded.set(false)
         allExtraLoaded.set(false)
-        loadItems(loadedPageNumber)
+        if (loadingJob?.isActive == true && lastLoadRequest?.second == getCurrentFilterContext()) {
+            // Finish this read and coalesce updates into one authoritative follow-up load.
+            reloadPending = true
+        } else {
+            loadItems(loadedPageNumber)
+        }
     }
 
+    @Synchronized
     private fun loadItems(page: Int) {
         // Capture current filter context for validation
         val requestContext = getCurrentFilterContext()
@@ -366,22 +376,49 @@ class TransactionRecordRepository(
 
         // Cache this request for future comparison
         lastLoadRequest = currentRequest
+        reloadPending = false
 
         // Cancel previous load if it's a different request
-        loadingJob?.cancel()
+        val previousJob = loadingJob
+        loadingJob = null
+        previousJob?.cancel()
 
-        val itemsCount = page * itemsPerPage
-        val adapters = activeAdapters
+        startLoad(page, requestContext, activeAdapters)
+    }
 
-        loadingJob = coroutineScope.launch {
+    private fun startLoad(
+        page: Int,
+        requestContext: FilterContext,
+        adapters: List<TransactionAdapterWrapper>,
+    ) {
+        val job = coroutineScope.launch(start = CoroutineStart.LAZY) {
             try {
-                loadItemsForContext(page, itemsCount, requestContext, adapters)
+                loadItemsForContext(page, page * itemsPerPage, requestContext, adapters)
+            } catch (e: StaleTransactionReadException) {
+                ensureActive()
+                queueInvalidatedLoad(requestContext)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
                 Timber.e(e, "Transaction page load failed")
             }
         }
+        loadingJob = job
+        job.invokeOnCompletion { finishLoad(job, page) }
+        job.start()
+    }
+
+    @Synchronized
+    private fun queueInvalidatedLoad(requestContext: FilterContext) {
+        // Invalidation can reach the read before its update signal reaches the subscription.
+        if (requestContext == getCurrentFilterContext()) reloadPending = true
+    }
+
+    @Synchronized
+    private fun finishLoad(job: Job, page: Int) {
+        if (loadingJob !== job) return
+        loadingJob = null
+        if (reloadPending && !job.isCancelled) loadItems(page)
     }
 
     private suspend fun CoroutineScope.loadItemsForContext(
@@ -390,11 +427,13 @@ class TransactionRecordRepository(
         requestContext: FilterContext,
         adapters: List<TransactionAdapterWrapper>,
     ) {
+        val revisions = (adapters + activeSearchExtraAdapters(requestContext))
+            .associateWith { it.cacheRevision }
         val searchQuery = requestContext.searchQuery
         if (searchQuery == null) {
-            loadRegularPage(page, itemsCount, requestContext, adapters)
+            loadRegularPage(page, itemsCount, requestContext, adapters, revisions)
         } else {
-            loadSearchPage(page, itemsCount, requestContext, searchQuery, adapters)
+            loadSearchPage(page, itemsCount, requestContext, searchQuery, adapters, revisions)
         }
     }
 
@@ -403,6 +442,7 @@ class TransactionRecordRepository(
         itemsCount: Int,
         requestContext: FilterContext,
         adapters: List<TransactionAdapterWrapper>,
+        revisions: Map<TransactionAdapterWrapper, Long>,
     ) {
         val normalRecords = loadAdapterRecords(
             adapters = adapters,
@@ -410,10 +450,10 @@ class TransactionRecordRepository(
             transactionType = requestContext.transactionType,
             contact = requestContext.contact,
         )
-        if (!isActive || requestContext.isStale()) return
+        if (!isActive || requestContext.isStale(revisions)) return
 
         val extraRecords = loadRegularSwapExtraRecords(itemsCount, requestContext)
-        if (!isActive || requestContext.isStale()) return
+        if (!isActive || requestContext.isStale(revisions)) return
 
         if (extraRecords.complete && extraRecords.sourceRecordsCount < itemsCount) {
             allExtraLoaded.set(true)
@@ -436,6 +476,7 @@ class TransactionRecordRepository(
         requestContext: FilterContext,
         query: String,
         adapters: List<TransactionAdapterWrapper>,
+        revisions: Map<TransactionAdapterWrapper, Long>,
     ) {
         val result = searchScanner.loadSearchItems(
             expectedItemsCount = itemsCount,
@@ -444,7 +485,7 @@ class TransactionRecordRepository(
             normalAdapters = adapters,
             extraAdapters = activeSearchExtraAdapters(requestContext),
         )
-        if (!isActive || requestContext.isStale()) return
+        if (!isActive || requestContext.isStale(revisions)) return
 
         allNormalLoaded.set(result.normalLoaded)
         allExtraLoaded.set(result.extraLoaded)
@@ -510,8 +551,12 @@ class TransactionRecordRepository(
         }
     }
 
-    private fun FilterContext.isStale(): Boolean {
-        return this != getCurrentFilterContext()
+    private fun FilterContext.isStale(revisions: Map<TransactionAdapterWrapper, Long>): Boolean {
+        if (this != getCurrentFilterContext()) return true
+        if (revisions.any { (adapter, revision) -> adapter.cacheRevision != revision }) {
+            throw StaleTransactionReadException()
+        }
+        return false
     }
 
     private fun emitRecords(

@@ -25,9 +25,16 @@ import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import io.horizontalsystems.core.IPinComponent
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
@@ -42,12 +49,31 @@ class SettingsActionHandlerTest {
     private val context = mockk<Context>(relaxed = true)
     private var walletConnectSupport: WCManager.SupportState = WCManager.SupportState.Supported
     private var tonConnectSupported = true
+    private var importTransactionFileCalls = 0
     private val viewModel = mockk<MainSettingsViewModel>(relaxed = true) {
         every { uiState } returns settingsContentTestState
         every { appVersion } returns "1.2.3"
         every { companyWebPage } returns "https://example.com"
         every { walletConnectSupportState } answers { walletConnectSupport }
         every { currentAccountSupportsTonConnect } answers { tonConnectSupported }
+    }
+
+    @Before
+    fun setUp() {
+        startKoin { modules(module { single { mockk<IPinComponent>(relaxed = true) } }) }
+    }
+
+    @After
+    fun tearDown() {
+        stopKoin()
+    }
+
+    @Test
+    fun handleSettingsAction_importTransactionFile_opensFilePicker() {
+        handle(SettingsAction.ImportTransactionFile)
+
+        assertEquals(1, importTransactionFileCalls)
+        verify(exactly = 0) { navController.navigate(any<Int>(), any(), any()) }
     }
 
     @Test
@@ -165,6 +191,7 @@ class SettingsActionHandlerTest {
             rawTxScanTitle = "Raw transaction",
             walletConnectTitle = "WalletConnect",
             tonConnectTitle = "TON Connect",
+            importTransactionFile = { importTransactionFileCalls++ },
         )
     }
 }
