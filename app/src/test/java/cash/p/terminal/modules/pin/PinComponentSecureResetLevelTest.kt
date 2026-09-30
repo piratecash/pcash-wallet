@@ -11,6 +11,7 @@ import cash.p.terminal.modules.pin.core.PinDbStorage
 import cash.p.terminal.domain.usecase.ResetUseCase
 import cash.p.terminal.modules.pin.core.PinLevels
 import cash.p.terminal.modules.pin.core.PinManager
+import cash.p.terminal.wallet.AccountDeletionBlockedException
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.CoreApp
 import io.horizontalsystems.core.IPinSettingsStorage
@@ -28,6 +29,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import kotlin.test.assertFailsWith
 
 class PinComponentSecureResetLevelTest {
 
@@ -200,6 +202,38 @@ class PinComponentSecureResetLevelTest {
         assertFalse(pinComponent.isSecureResetPinSet())
         assertEquals(0, currentUserLevel)
         assertTrue(secureResetCalled)
+    }
+
+    @Test
+    fun unlock_resetBlocked_retainsAllPinsAndUserLevel() = runTest(dispatcher) {
+        pinComponent.setPin("3333")
+        pinComponent.setSecureResetPin("4444")
+        setUserLevel(1)
+        coEvery { resetUseCase() } coAnswers {
+            assertTrue(pinComponent.isSecureResetPinSet())
+            throw AccountDeletionBlockedException()
+        }
+
+        assertFailsWith<AccountDeletionBlockedException> {
+            pinComponent.unlock("4444", PinLevels.SECURE_RESET)
+        }
+
+        assertEquals(0, pinManager.getPinLevel("3333"))
+        assertEquals(PinLevels.SECURE_RESET, pinManager.getPinLevel("4444"))
+        assertEquals(1, currentUserLevel)
+    }
+
+    @Test
+    fun unlock_resetAllowed_keepsSecurePinUntilResetCompletes() = runTest(dispatcher) {
+        pinComponent.setSecureResetPin("4444")
+        coEvery { resetUseCase() } coAnswers {
+            assertEquals(PinLevels.SECURE_RESET, pinManager.getPinLevel("4444"))
+        }
+
+        assertTrue(pinComponent.unlock("4444", PinLevels.SECURE_RESET))
+
+        assertEquals(0, pinManager.getPinLevel("4444"))
+        assertFalse(pinComponent.isSecureResetPinSet())
     }
 
     @Test

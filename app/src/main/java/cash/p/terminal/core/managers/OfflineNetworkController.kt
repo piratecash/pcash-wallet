@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.core.adapters.BeamAdapter
 import cash.p.terminal.core.adapters.BitcoinBaseAdapter
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
 import cash.p.terminal.wallet.Account
@@ -25,7 +26,11 @@ class OfflineNetworkController(
 ) {
     suspend fun pause(member: Wallet) {
         val adapter = adapterManager.getAdapterForWalletOld(member)
-        if (adapter is ZcashAdapter) adapter.pauseNetworkAndAwait() else adapter?.pauseNetwork()
+        when (adapter) {
+            is BeamAdapter -> adapter.pauseNetworkAndAwait()
+            is ZcashAdapter -> adapter.pauseNetworkAndAwait()
+            else -> adapter?.pauseNetwork()
+        }
         if (isOffline(member, adapter)) return
 
         val account = member.account
@@ -102,6 +107,9 @@ class OfflineNetworkController(
 
             BlockchainType.Zcash ->
                 (adapter as? ZcashAdapter)?.isNetworkPaused ?: true
+
+            BlockchainType.Beam ->
+                (adapter as? BeamAdapter)?.isNetworkPaused ?: true
 
             else -> (adapter as? BitcoinBaseAdapter)?.kit?.isNetworkPaused ?: true
         }

@@ -29,7 +29,8 @@ object TangemConfig {
             BlockchainType.ECash,
             BlockchainType.Monero,
             BlockchainType.Thorchain,
-            BlockchainType.Mayachain
+            BlockchainType.Mayachain,
+            BlockchainType.Beam
         )
     }
 

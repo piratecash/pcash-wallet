@@ -17,6 +17,7 @@ import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
+import cash.p.terminal.entities.transactionrecords.beam.BeamTransactionRecord
 import cash.p.terminal.entities.transactionrecords.monero.MoneroTransactionRecord
 import cash.p.terminal.entities.transactionrecords.nftUids
 import cash.p.terminal.entities.transactionrecords.solana.SolanaTransactionRecord
@@ -75,6 +76,7 @@ class TransactionInfoService(
     // same swap row while status fields are refreshed.
     private var userSwapDate: Long? = null
 
+    @Volatile
     private var _transactionRecord = initialTransactionRecord
     val transactionRecord: TransactionRecord get() = _transactionRecord
 
@@ -211,6 +213,8 @@ class TransactionInfoService(
                     }
                 }
 
+                is BeamTransactionRecord -> listOf(tx.mainValue.coinUid, tx.fee.coinUid)
+
                 is MoneroTransactionRecord -> {
                     when (transactionRecord.transactionRecordType) {
                         TransactionRecordType.MONERO_INCOMING -> {
@@ -303,7 +307,6 @@ class TransactionInfoService(
         }
 
     suspend fun updateRecord(newRecord: TransactionRecord) {
-        _transactionRecord = newRecord
         handleRecordUpdate(newRecord)
     }
 
@@ -478,8 +481,10 @@ class TransactionInfoService(
     private suspend fun handleRecordUpdate(transactionRecord: TransactionRecord) {
         val poisonStatus = computePoisonStatus(transactionRecord)
         mutex.withLock {
+            _transactionRecord = transactionRecord
             transactionInfoItem = transactionInfoItem.copy(
                 record = transactionRecord,
+                recordRevision = transactionInfoItem.recordRevision + 1,
                 poisonStatus = poisonStatus,
             )
         }

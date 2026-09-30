@@ -174,7 +174,8 @@ class PoisonAddressManager(
             TransactionRecordType.SOLANA_OUTGOING,
             TransactionRecordType.MONERO_OUTGOING,
             TransactionRecordType.STELLAR_OUTGOING,
-            TransactionRecordType.THORCHAIN_OUTGOING -> true
+            TransactionRecordType.THORCHAIN_OUTGOING,
+            TransactionRecordType.BEAM_OUTGOING -> true
 
             TransactionRecordType.TON -> record.to != null && record.from == null
 
@@ -201,7 +202,8 @@ class PoisonAddressManager(
             TransactionRecordType.TRON_INCOMING,
             TransactionRecordType.MONERO_INCOMING,
             TransactionRecordType.STELLAR_INCOMING,
-            TransactionRecordType.THORCHAIN_INCOMING -> false
+            TransactionRecordType.THORCHAIN_INCOMING,
+            TransactionRecordType.BEAM_INCOMING -> false
         }
     }
 

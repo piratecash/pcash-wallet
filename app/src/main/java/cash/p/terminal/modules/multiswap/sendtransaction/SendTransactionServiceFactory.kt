@@ -2,6 +2,7 @@ package cash.p.terminal.modules.multiswap.sendtransaction
 
 import android.util.Log
 import cash.p.terminal.core.UnsupportedException
+import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceBeam
 import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceBitcoin
 import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceEvm
 import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceStellar
@@ -103,6 +104,10 @@ object SendTransactionServiceFactory {
 
                 BlockchainType.Thorchain,
                 BlockchainType.Mayachain -> SendTransactionServiceThorchain(token)
+
+                BlockchainType.Beam -> {
+                    SendTransactionServiceBeam(token)
+                }
 
                 else -> throw UnsupportedException("Unsupported token type: $tokenType")
             }

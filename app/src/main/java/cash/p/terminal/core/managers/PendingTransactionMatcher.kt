@@ -244,7 +244,9 @@ class PendingTransactionMatcher {
             TransactionRecordType.TRON_INCOMING,
             TransactionRecordType.MONERO_INCOMING,
             TransactionRecordType.STELLAR_INCOMING,
-            TransactionRecordType.THORCHAIN_INCOMING -> false
+            TransactionRecordType.THORCHAIN_INCOMING,
+            TransactionRecordType.BEAM_INCOMING,
+            TransactionRecordType.BEAM_OUTGOING -> false
         }
     }
 

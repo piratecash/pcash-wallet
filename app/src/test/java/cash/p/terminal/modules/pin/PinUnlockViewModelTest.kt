@@ -66,7 +66,7 @@ class PinUnlockViewModelTest {
     fun unlocked_afterFailedThenSuccessfulPin_resetsAttemptsLeft() = runTest(dispatcher) {
         val viewModel = createViewModel(LockoutState.Unlocked(attemptsLeft = 4))
 
-        coEvery { attemptPinUnlock("123456") } returns true
+        coEvery { attemptPinUnlock("123456") } returns AttemptPinUnlockUseCase.Result.Unlocked
         every { lockoutManager.currentState } returns LockoutState.Unlocked(null)
 
         for (digit in "123456".map { it.digitToInt() }) {
@@ -86,10 +86,28 @@ class PinUnlockViewModelTest {
     }
 
     @Test
+    fun onKeyClick_blockedReset_showsWarningWithoutWrongPinAnimationAndAllowsRetry() = runTest(dispatcher) {
+        val viewModel = createViewModel(LockoutState.Unlocked(attemptsLeft = 4))
+        coEvery { attemptPinUnlock("999999") } returns AttemptPinUnlockUseCase.Result.ResetBlocked
+        "999999".forEach { viewModel.onKeyClick(it.digitToInt()) }
+
+        assertEquals(true, viewModel.uiState.resetBlocked)
+        assertEquals(false, viewModel.uiState.unlocked)
+        assertEquals(false, viewModel.uiState.showShakeAnimation)
+        assertEquals(0, viewModel.uiState.enteredCount)
+        assertEquals(4, (viewModel.uiState.inputState as PinUnlockModule.InputState.Enabled).attemptsLeft)
+
+        coEvery { attemptPinUnlock("123456") } returns AttemptPinUnlockUseCase.Result.Unlocked
+        "123456".forEach { viewModel.onKeyClick(it.digitToInt()) }
+        assertEquals(true, viewModel.uiState.unlocked)
+        assertEquals(false, viewModel.uiState.resetBlocked)
+    }
+
+    @Test
     fun onKeyClick_failedPin_reflectsRemainingAttemptsFromLockoutManager() = runTest(dispatcher) {
         val viewModel = createViewModel(LockoutState.Unlocked(attemptsLeft = 4))
 
-        coEvery { attemptPinUnlock("654321") } returns false
+        coEvery { attemptPinUnlock("654321") } returns AttemptPinUnlockUseCase.Result.InvalidPin
         every { lockoutManager.currentState } returns LockoutState.Unlocked(attemptsLeft = 3)
 
         for (digit in "654321".map { it.digitToInt() }) {

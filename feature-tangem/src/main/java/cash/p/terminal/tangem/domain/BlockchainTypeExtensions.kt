@@ -10,6 +10,7 @@ fun BlockchainType.getSupportedCurves(): List<EllipticCurve> {
         BlockchainType.Monero,
         BlockchainType.Thorchain,
         BlockchainType.Mayachain,
+        BlockchainType.Beam,
         is BlockchainType.Unsupported -> emptyList()
         /*Tezos,
             -> listOf(

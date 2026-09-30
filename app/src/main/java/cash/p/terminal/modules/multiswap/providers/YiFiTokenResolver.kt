@@ -130,7 +130,7 @@ class YiFiTokenResolver(
             TokenType.Native,
             is TokenType.Derived,
             is TokenType.AddressTyped,
-            is TokenType.AddressSpecTyped -> AssetKind.NATIVE.takeUnless { isZcashShielded }
+            is TokenType.AddressSpecTyped -> AssetKind.NATIVE.takeUnless { isZcashShielded || isMimblewimbleBeam }
 
             is TokenType.Eip20,
             is TokenType.Spl,
@@ -142,6 +142,10 @@ class YiFiTokenResolver(
             is TokenType.ThorchainAsset,
             is TokenType.Unsupported -> null
         }
+
+    // YiFi's "BEAM" network is the Beam gaming L1 (beam-2), which shares the ticker with ours.
+    private val Token.isMimblewimbleBeam: Boolean
+        get() = blockchainType == BlockchainType.Beam
 
     // THORChain/Maya natives carry the ticker as a placeholder contract (RUNE: "rune").
     private fun YiFiToken.isNativeCoin(blockchainType: BlockchainType): Boolean =

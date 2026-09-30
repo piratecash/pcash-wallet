@@ -65,6 +65,7 @@ data object Wallet2CardConfig : CardConfig {
             BlockchainType.Stellar,
             BlockchainType.Thorchain,
             BlockchainType.Mayachain,
+            BlockchainType.Beam,
             is BlockchainType.Unsupported -> null
         }
     }

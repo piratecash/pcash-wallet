@@ -11,6 +11,8 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.navArgs
 import cash.p.terminal.R
 import cash.p.terminal.modules.amount.AmountInputModeViewModel
+import cash.p.terminal.modules.send.beam.BeamSendConfirmationScreen
+import cash.p.terminal.modules.send.beam.BeamSendViewModel
 import cash.p.terminal.modules.send.bitcoin.SendBitcoinConfirmationScreen
 import cash.p.terminal.modules.send.bitcoin.SendBitcoinViewModel
 import cash.p.terminal.modules.send.evm.SendEvmConfirmationScreen
@@ -46,6 +48,13 @@ class SendConfirmationFragment : BaseComposeFragment() {
         val sendEntryPointDestId = args.sendEntryPointDestId
 
         when (args.type) {
+            Type.Beam -> ConfirmationOrRecover(
+                navController,
+                graphEntry?.existingViewModelOrNull<BeamSendViewModel>()
+            ) {
+                BeamSendConfirmationScreen(navController, it, sendEntryPointDestId)
+            }
+
             Type.Bitcoin -> ConfirmationOrRecover(
                 navController,
                 graphEntry?.existingViewModelOrNull<SendBitcoinViewModel>()
@@ -152,6 +161,6 @@ class SendConfirmationFragment : BaseComposeFragment() {
 
     @Parcelize
     enum class Type : Parcelable {
-        Bitcoin, ZCash, Evm, Solana, Tron, Ton, Monero, Stellar
+        Bitcoin, ZCash, Evm, Solana, Tron, Ton, Monero, Stellar, Beam
     }
 }

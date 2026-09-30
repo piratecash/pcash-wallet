@@ -37,4 +37,7 @@ enum class TransactionRecordType {
 
     THORCHAIN_INCOMING,
     THORCHAIN_OUTGOING,
+
+    BEAM_INCOMING,
+    BEAM_OUTGOING,
 }

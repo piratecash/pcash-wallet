@@ -64,6 +64,7 @@ val BitcoinAddress.tokenType: TokenType
         BlockchainType.Stellar,
         BlockchainType.Thorchain,
         BlockchainType.Mayachain,
+        BlockchainType.Beam,
         is BlockchainType.Unsupported,
         null -> TokenType.Unsupported("", "")
     }

@@ -495,7 +495,9 @@ class SwapConfirmViewModel(
                     sent
                 }
 
-                sendResult = if (result is SendTransactionResult.Btc && result.isQueued) {
+                val queued = result is SendTransactionResult.Btc && result.isQueued ||
+                    result is SendTransactionResult.Beam && result.result is SendResult.SentButQueued
+                sendResult = if (queued) {
                     SendResult.SentButQueued()
                 } else {
                     SendResult.Sent()

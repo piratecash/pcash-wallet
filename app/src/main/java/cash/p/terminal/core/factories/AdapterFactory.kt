@@ -7,6 +7,7 @@ import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.adapters.BitcoinAdapter
+import cash.p.terminal.core.adapters.BeamAdapter
 import cash.p.terminal.core.adapters.BitcoinCashAdapter
 import cash.p.terminal.core.adapters.CosantaAdapter
 import cash.p.terminal.core.adapters.DashAdapter
@@ -49,6 +50,9 @@ import cash.p.terminal.core.providers.FeeRateProvider
 import cash.p.terminal.core.providers.LitecoinFeeRateProvider
 import cash.p.terminal.core.providers.PirateCashFeeRateProvider
 import cash.p.terminal.core.managers.BtcBlockchainManager
+import cash.p.terminal.core.managers.BeamLifecycleCoordinator
+import cash.p.terminal.core.managers.BeamSendCoordinator
+import cash.p.terminal.core.managers.BeamSessionOwner
 import cash.p.terminal.core.managers.BitcoinKitDatabaseManager
 import cash.p.terminal.core.managers.BitcoinKitEnvironment
 import cash.p.terminal.core.managers.EvmBlockchainManager
@@ -82,6 +86,13 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.tonkit.Address
 import org.koin.java.KoinJavaComponent.inject
 import org.koin.core.parameter.parametersOf
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 class AdapterFactory(
     private val context: Context,
@@ -107,6 +118,30 @@ class AdapterFactory(
 ) {
     private val logger = AppLogger("adapter-factory")
     private val bitcoinKitDatabaseManager by lazy { getKoinInstance<BitcoinKitDatabaseManager>() }
+    private val beamSessionOwner by lazy { getKoinInstance<BeamSessionOwner>() }
+    private val beamMutex = Mutex()
+    private var beamAdapter: Pair<Wallet, BeamAdapter>? = null
+
+    private suspend fun getBeamAdapter(wallet: Wallet): BeamAdapter? {
+        if (wallet.account.type !is AccountType.Mnemonic) return null
+        return beamMutex.withLock {
+            beamAdapter?.second?.let { withContext(NonCancellable) { it.close() } }
+            beamAdapter = null
+            try {
+                val session = beamSessionOwner.acquire(wallet.account)
+                currentCoroutineContext().ensureActive()
+                BeamAdapter(
+                    beamSessionOwner, session, dispatcherProvider, wallet,
+                    getKoinInstance<BeamLifecycleCoordinator>(), getKoinInstance<BeamSendCoordinator>(),
+                ).also {
+                    beamAdapter = wallet to it
+                }
+            } catch (error: Throwable) {
+                withContext(NonCancellable) { beamSessionOwner.close() }
+                throw error
+            }
+        }
+    }
 
     private suspend fun bitcoinKitEnvironment(wallet: Wallet): BitcoinKitEnvironment =
         bitcoinKitDatabaseManager.prepare(wallet.account.id)
@@ -204,14 +239,27 @@ class AdapterFactory(
         getAdapter(wallet, activeLitecoinMwebAccounts)?.also {
             storeBnbAddresses(it, wallet)
         }
+    } catch (e: CancellationException) {
+        if (wallet.token.blockchainType == BlockchainType.Beam) throw e
+        logAdapterCreationFailure(wallet, e)
     } catch (e: Throwable) {
+        if (wallet.token.blockchainType == BlockchainType.Beam) {
+            // SDK failures can include private wallet data; do not forward their text or causes.
+            Timber.e("Failed to create BEAM adapter")
+            null
+        } else {
+            logAdapterCreationFailure(wallet, e)
+        }
+    }
+
+    private fun logAdapterCreationFailure(wallet: Wallet, e: Throwable): Nothing? {
         val message = "Failed to create adapter for ${wallet.coin.code} (${wallet.token.type})"
         // Scope the log to the wallet's blockchain so the failure shows up in that blockchain's
         // APP LOG on the status screen (it filters by BlockchainType.logTag via a LIKE match),
         // not only under the generic "adapter-factory" tag.
         logger.getScoped(wallet.token.blockchainType.logTag).warning(message, e)
         Timber.e(e, "Failed to create adapter for %s (%s)", wallet.coin.code, wallet.token.type)
-        null
+        return null
     }
 
     /***
@@ -340,6 +388,7 @@ class AdapterFactory(
             }
 
             TokenType.Native -> when (wallet.token.blockchainType) {
+                BlockchainType.Beam -> getBeamAdapter(wallet)
                 BlockchainType.ECash -> {
                     val syncMode =
                         btcBlockchainManager.syncMode(BlockchainType.ECash, wallet.account.origin)
@@ -619,7 +668,32 @@ class AdapterFactory(
         )
     }
 
-    suspend fun unlinkAdapter(wallet: Wallet) = unlinkAdapter(wallet.transactionSource)
+    suspend fun unlinkAdapter(wallet: Wallet) {
+        if (wallet.transactionSource.blockchain.type == BlockchainType.Beam) {
+            unlinkBeamAdapter(wallet)
+        } else {
+            unlinkAdapter(wallet.transactionSource)
+        }
+    }
+
+    suspend fun unlinkAdapter(wallet: Wallet, adapter: IAdapter) {
+        if (wallet.token.blockchainType == BlockchainType.Beam) {
+            unlinkBeamAdapter(wallet, adapter)
+        } else {
+            unlinkAdapter(wallet)
+        }
+    }
+
+    private suspend fun unlinkBeamAdapter(wallet: Wallet, expected: IAdapter? = null) {
+        withContext(NonCancellable) {
+            beamMutex.withLock {
+                val linked = beamAdapter ?: return@withLock
+                if (linked.first != wallet || (expected != null && linked.second !== expected)) return@withLock
+                linked.second.close()
+                beamAdapter = null
+            }
+        }
+    }
 
     suspend fun unlinkAdapter(transactionSource: TransactionSource) {
         val account = transactionSource.account
@@ -636,6 +710,8 @@ class AdapterFactory(
             BlockchainType.Stellar -> stellarKitManager.unlink(account)
             BlockchainType.Thorchain,
             BlockchainType.Mayachain -> thorchainKitManagers.forType(blockchainType).unlink(account)
+            // TransactionAdapterManager only borrows the wallet adapter's BEAM session.
+            BlockchainType.Beam -> Unit
             else -> Unit
         }
     }

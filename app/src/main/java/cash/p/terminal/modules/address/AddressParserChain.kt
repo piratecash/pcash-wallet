@@ -82,6 +82,7 @@ class AddressParserChain(
                     )
                 }
 
+                BlockchainType.Beam,
                 is BlockchainType.Unsupported -> Unit
             }
 

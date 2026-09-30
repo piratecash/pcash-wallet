@@ -11,6 +11,10 @@ fun AccountType.isCompatibleWith(blockchainType: BlockchainType, tokenType: Toke
         return this is AccountType.Mnemonic
     }
 
+    if (blockchainType == BlockchainType.Beam) {
+        return this is AccountType.Mnemonic && tokenType == TokenType.Native
+    }
+
     return when (this) {
         is AccountType.MnemonicMonero -> {
             blockchainType == BlockchainType.Monero && tokenType == TokenType.Native

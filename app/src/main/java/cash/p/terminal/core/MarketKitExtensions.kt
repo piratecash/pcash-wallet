@@ -65,6 +65,7 @@ val TokenQuery.isSupported: Boolean
         BlockchainType.Cosanta,
         BlockchainType.ECash,
         BlockchainType.Dogecoin,
+        BlockchainType.Beam,
         BlockchainType.Monero,
         BlockchainType.Dash -> {
             tokenType is TokenType.Native
@@ -120,6 +121,7 @@ val Blockchain.description: String
         BlockchainType.Bitcoin -> "BTC (BIP44, BIP49, BIP84, BIP86)"
         BlockchainType.BitcoinCash -> "BCH (Legacy, CashAddress)"
         BlockchainType.ECash -> "XEC"
+        BlockchainType.Beam -> "BEAM"
         BlockchainType.Zcash -> "ZEC"
         BlockchainType.Litecoin -> "LTC (BIP44, BIP49, BIP84, BIP86, MWEB)"
         BlockchainType.Dash -> "DASH"
@@ -187,6 +189,7 @@ private val blockchainOrderMap: Map<BlockchainType, Int> by lazy {
         BlockchainType.ZkSync,
         BlockchainType.RobinhoodChain,
         BlockchainType.Avalanche,
+        BlockchainType.Beam,
         BlockchainType.Zcash,
         BlockchainType.BitcoinCash,
         BlockchainType.ECash,
@@ -280,6 +283,7 @@ val BlockchainType.isEvm: Boolean
         BlockchainType.Tron,
         is BlockchainType.Unsupported,
         BlockchainType.Zcash,
+        BlockchainType.Beam,
         BlockchainType.Monero,
         BlockchainType.Cosanta,
         BlockchainType.Dogecoin,
@@ -318,6 +322,7 @@ val BlockchainType.isBtcLike: Boolean
         BlockchainType.Tron,
         is BlockchainType.Unsupported,
         BlockchainType.Zcash,
+        BlockchainType.Beam,
         BlockchainType.Monero,
         BlockchainType.Thorchain,
         BlockchainType.Mayachain
@@ -329,6 +334,10 @@ val BlockchainType.isUtxoBased: Boolean
 
 
 fun BlockchainType.supports(accountType: AccountType): Boolean {
+    if (this == BlockchainType.Beam) {
+        return accountType.isCompatibleWith(this, TokenType.Native)
+    }
+
     return when (accountType) {
         is AccountType.ZCashUfvKey ->
             this == BlockchainType.Zcash
@@ -461,24 +470,20 @@ val FullCoin.iconPlaceholder: Int
     }
 
 fun Token.supports(accountType: AccountType): Boolean {
+    if (blockchainType == BlockchainType.Beam) {
+        return accountType.isCompatibleWith(blockchainType, type)
+    }
+
     return when (accountType) {
         is AccountType.BitcoinAddress -> {
             tokenQuery.tokenType == accountType.tokenType
         }
 
-        is AccountType.HardwareCard -> {
-            type != TokenType.Mweb
-        }
-
         is AccountType.HdExtendedKey -> supportsHdExtendedKey(accountType)
 
-        is AccountType.Mnemonic -> {
-            type != TokenType.Mweb || blockchainType == BlockchainType.Litecoin
-        }
-
-        is AccountType.MnemonicMonero -> {
-            accountType.isCompatibleWith(blockchainType, type)
-        }
+        is AccountType.HardwareCard,
+        is AccountType.Mnemonic,
+        is AccountType.MnemonicMonero -> accountType.isCompatibleWith(blockchainType, type)
 
         is AccountType.TrezorDevice -> {
             TrezorMoneroAdmissionPolicy.supportsStoredToken(
@@ -674,6 +679,7 @@ val BlockchainType.Companion.supported: List<BlockchainType>
         BlockchainType.Tron,
         BlockchainType.Ton,
         BlockchainType.Stellar,
+        BlockchainType.Beam,
         BlockchainType.Monero,
         BlockchainType.Dogecoin,
         BlockchainType.Thorchain,
