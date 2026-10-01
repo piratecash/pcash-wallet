@@ -409,7 +409,7 @@ val managerModule = module {
     singleOf(::TorManager) bind ITorManager::class
     singleOf(::PredefinedBlockchainSettingsProvider)
     single {
-        KeyStoreCleaner(get(), get(), get(), get(), lazy { get<IAccountCleaner>() })
+        KeyStoreCleaner(get(), get(), get(), get(), lazy { get<IAccountCleaner>() }, lazy { get<TonConnectManager>() })
     } bind IKeyStoreCleaner::class
     single<KeyStoreManager.Logger> { AppLogger("key-store") }
     single {

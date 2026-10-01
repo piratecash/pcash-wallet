@@ -82,6 +82,22 @@ class KitDatabaseKeyProviderTest {
     }
 
     @Test
+    fun awaitDatabaseKey_createThenReuseThenRemove_reportsIsNew() = runTest {
+        val provider = TonConnectDatabaseKeyProvider(context, encryptionManager)
+
+        val created = provider.awaitDatabaseKey(ACCOUNT_ID)
+        val reused = provider.awaitDatabaseKey(ACCOUNT_ID)
+        provider.remove(ACCOUNT_ID)
+        val recreated = provider.awaitDatabaseKey(ACCOUNT_ID)
+
+        assertTrue(created.isNew)
+        assertFalse(reused.isNew)
+        assertArrayEquals(created.bytes, reused.bytes)
+        assertTrue(recreated.isNew)
+        assertFalse(recreated.bytes.contentEquals(created.bytes))
+    }
+
+    @Test
     fun awaitKey_commitFails_throwsAndLeavesNoUnsavedKey() = runTest {
         val failingContext = FirstPutCommitFailsContext(context)
         val provider = TonKitDatabaseKeyProvider(failingContext, encryptionManager)

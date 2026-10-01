@@ -24,7 +24,9 @@ class KeyStoreCleanerTest {
     private val wallets = mockk<IWalletManager>(relaxed = true)
     private val preflight = mockk<AccountDeletionPreflight>()
     private val artifacts = mockk<IAccountCleaner>(relaxed = true)
-    private val cleaner = KeyStoreCleaner(storage, accounts, wallets, preflight, lazy { artifacts })
+    private val tonConnect = mockk<TonConnectManager>(relaxed = true)
+    private val cleaner =
+        KeyStoreCleaner(storage, accounts, wallets, preflight, lazy { artifacts }, lazy { tonConnect })
 
     @Test
     fun cleanExplicitReset_beamArtifactFailure_preservesGlobalData() = runTest {
@@ -36,14 +38,14 @@ class KeyStoreCleanerTest {
         assertFailsWith<AccountDeletionBlockedException> { cleaner.cleanExplicitReset() }
 
         verify(exactly = 0) { accounts.clear() }
-        verify { listOf(wallets, storage) wasNot Called }
+        verify { listOf(wallets, storage, tonConnect) wasNot Called }
     }
 
     @Test
     fun cleanExplicitReset_cleanupIncomplete_preservesGlobalData() = runTest {
         coEvery { preflight.ensureExplicitResetCleaned() } throws AccountDeletionBlockedException()
         assertFailsWith<AccountDeletionBlockedException> { cleaner.cleanExplicitReset() }
-        verify { listOf(accounts, wallets, storage) wasNot Called }
+        verify { listOf(accounts, wallets, storage, tonConnect) wasNot Called }
     }
 
     @Test
@@ -52,6 +54,7 @@ class KeyStoreCleanerTest {
         cleaner.cleanExplicitReset()
         coVerifyOrder {
             preflight.ensureExplicitResetCleaned()
+            tonConnect.reset()
             accounts.clear()
             wallets.clear()
             storage.clear()
@@ -64,19 +67,20 @@ class KeyStoreCleanerTest {
 
         assertFailsWith<AccountDeletionBlockedException> { cleaner.cleanApp() }
 
-        verify { listOf(accounts, wallets, storage) wasNot Called }
+        verify { listOf(accounts, wallets, storage, tonConnect) wasNot Called }
     }
 
     @Test
     fun cleanApp_preflightAllows_clearsOnlyAfterPreflightCompletes() {
         every { preflight.ensureCanReset() } answers {
-            verify { listOf(accounts, wallets, storage) wasNot Called }
+            verify { listOf(accounts, wallets, storage, tonConnect) wasNot Called }
         }
 
         cleaner.cleanApp()
 
         verifyOrder {
             preflight.ensureCanReset()
+            tonConnect.reset()
             accounts.clear()
             wallets.clear()
             storage.clear()

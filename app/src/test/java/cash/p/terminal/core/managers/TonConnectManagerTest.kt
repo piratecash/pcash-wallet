@@ -11,19 +11,26 @@ import co.touchlab.kermit.Logger
 import co.touchlab.kermit.Severity
 import com.tonapps.wallet.data.tonconnect.entities.DAppEntity
 import io.horizontalsystems.sqlcipher.room.DatabaseKeyMismatchException
+import io.horizontalsystems.sqlcipher.room.DatabaseMigrationConflictException
 import io.horizontalsystems.sqlcipher.room.DatabaseMigrationResult
 import io.horizontalsystems.sqlcipher.room.InsufficientDatabaseMigrationSpaceException
 import io.horizontalsystems.tonkit.core.TonKit
+import io.horizontalsystems.tonkit.models.SignTransaction
 import io.horizontalsystems.tonkit.tonconnect.TonConnectKit
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.runs
 import io.mockk.unmockkAll
+import io.mockk.verify
 import io.reactivex.BackpressureStrategy
 import io.reactivex.subjects.PublishSubject
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
@@ -66,7 +73,8 @@ class TonConnectManagerTest {
         coEvery { TonConnectKit.migrateDatabase(any(), any()) } returns DatabaseMigrationResult(0, 1)
         coEvery { TonConnectKit.getInstance(any(), any(), any(), any()) } returns kit
         coEvery { TonConnectKit.clear(any()) } returns Unit
-        coEvery { keyProvider.awaitKey(any()) } returns databaseKey
+        coEvery { keyProvider.awaitDatabaseKey(any()) } returns DatabaseKey(databaseKey, isNew = false)
+        every { keyProvider.remove(any()) } just runs
         every { accountsDao.getIds() } returns listOf(VISIBLE_ID, HIDDEN_ID, DELETED_ID)
         every { accountsDao.getDeletedIds() } returns listOf(DELETED_ID)
     }
@@ -83,7 +91,7 @@ class TonConnectManagerTest {
         assertSame(kit, manager.kit())
 
         coVerifyOrder {
-            keyProvider.awaitKey(TonConnectManager.TON_CONNECT_DATABASE_ID)
+            keyProvider.awaitDatabaseKey(TonConnectManager.TON_CONNECT_DATABASE_ID)
             TonConnectKit.migrateDatabase(context, databaseKey)
             TonConnectKit.getInstance(context, databaseKey, any(), any())
             kit.removeDAppsExcept(listOf(VISIBLE_ID, HIDDEN_ID))
@@ -126,6 +134,154 @@ class TonConnectManagerTest {
 
         coVerify(exactly = 0) { TonConnectKit.clear(any()) }
         assertNull(manager.kitState.value)
+    }
+
+    @Test
+    fun kit_storedKeyAndMigrationMismatch_propagatesAndNeverClears() = runTest(dispatcher) {
+        coEvery { TonConnectKit.migrateDatabase(any(), any()) } throws keyMismatch()
+        val manager = createManager()
+
+        assertFailsWith<DatabaseKeyMismatchException> { manager.kit() }
+
+        coVerify(exactly = 0) { TonConnectKit.clear(any()) }
+        verify(exactly = 0) { keyProvider.remove(any()) }
+        assertNull(manager.kitState.value)
+    }
+
+    @Test
+    fun kit_freshKeyAndOldDatabase_clearsDatabaseAndMigratesAgain() = runTest(dispatcher) {
+        coEvery { keyProvider.awaitDatabaseKey(any()) } returns DatabaseKey(databaseKey, isNew = true)
+        coEvery { TonConnectKit.migrateDatabase(any(), any()) } throws keyMismatch() andThen
+            DatabaseMigrationResult(0, 1)
+        val manager = createManager()
+
+        assertSame(kit, manager.kit())
+
+        coVerifyOrder {
+            TonConnectKit.migrateDatabase(context, databaseKey)
+            TonConnectKit.clear(context)
+            TonConnectKit.migrateDatabase(context, databaseKey)
+            TonConnectKit.getInstance(context, databaseKey, any(), any())
+        }
+        coVerify(exactly = 2) { TonConnectKit.migrateDatabase(any(), any()) }
+        verify(exactly = 0) { keyProvider.remove(any()) }
+    }
+
+    @Test
+    fun kit_freshKeyDiscardFails_removesKeySoNextCallRetries() = runTest(dispatcher) {
+        coEvery { keyProvider.awaitDatabaseKey(any()) } returns DatabaseKey(databaseKey, isNew = true)
+        coEvery { TonConnectKit.migrateDatabase(any(), any()) } throws keyMismatch()
+        coEvery { TonConnectKit.clear(any()) } throws DatabaseMigrationConflictException("clear conflict")
+        val manager = createManager()
+
+        assertFailsWith<DatabaseMigrationConflictException> { manager.kit() }
+
+        verify(exactly = 1) { keyProvider.remove(TonConnectManager.TON_CONNECT_DATABASE_ID) }
+        coVerify(exactly = 0) { TonConnectKit.getInstance(any(), any(), any(), any()) }
+        assertNull(manager.kitState.value)
+    }
+
+    @Test
+    fun reset_kitCreated_removesKeyAndDropsKit() = runTest(dispatcher) {
+        val manager = createManager()
+        manager.kit()
+
+        manager.reset()
+
+        verify(exactly = 1) { keyProvider.remove(TonConnectManager.TON_CONNECT_DATABASE_ID) }
+        runCurrent()
+        verify(exactly = 1) { kit.stop() }
+        assertNull(manager.kitState.value)
+
+        manager.kit()
+        coVerify(exactly = 2) { TonConnectKit.getInstance(any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun reset_keyRemovalFails_stillDropsKit() = runTest(dispatcher) {
+        every { keyProvider.remove(any()) } throws KitDatabaseKeyException("remove failed")
+        val manager = createManager()
+        manager.kit()
+
+        manager.reset()
+        runCurrent()
+
+        verify(exactly = 1) { kit.stop() }
+        assertNull(manager.kitState.value)
+    }
+
+    @Test
+    fun reset_whileKeyCreationInFlight_removesWrapperPersistedMeanwhile() = runTest(dispatcher) {
+        val keyGate = CompletableDeferred<Unit>()
+        coEvery { keyProvider.awaitDatabaseKey(any()) } coAnswers {
+            keyGate.await()
+            DatabaseKey(databaseKey, isNew = true)
+        }
+        val manager = createManager()
+        launch { manager.kit() }
+        runCurrent()
+
+        manager.reset()
+        verify(exactly = 1) { keyProvider.remove(TonConnectManager.TON_CONNECT_DATABASE_ID) }
+
+        keyGate.complete(Unit)
+        runCurrent()
+
+        coVerifyOrder {
+            keyProvider.awaitDatabaseKey(TonConnectManager.TON_CONNECT_DATABASE_ID)
+            keyProvider.remove(TonConnectManager.TON_CONNECT_DATABASE_ID)
+            TonConnectKit.getInstance(context, databaseKey, any(), any())
+            keyProvider.remove(TonConnectManager.TON_CONNECT_DATABASE_ID)
+            kit.stop()
+        }
+        verify(exactly = 2) { keyProvider.remove(TonConnectManager.TON_CONNECT_DATABASE_ID) }
+        assertNull(manager.kitState.value)
+    }
+
+    @Test
+    fun kit_cancelledDuringFirstMigrationAfterReset_stillRecreatesDatabase() = runTest(dispatcher) {
+        val migrationGate = CompletableDeferred<Unit>()
+        coEvery { keyProvider.awaitDatabaseKey(any()) } returns DatabaseKey(databaseKey, isNew = true)
+        coEvery { TonConnectKit.migrateDatabase(any(), any()) } coAnswers {
+            migrationGate.await()
+            throw keyMismatch()
+        } andThen DatabaseMigrationResult(0, 1)
+        val manager = createManager()
+        val job = launch { manager.kit() }
+        runCurrent()
+
+        job.cancel()
+        migrationGate.complete(Unit)
+        runCurrent()
+
+        coVerifyOrder {
+            TonConnectKit.migrateDatabase(context, databaseKey)
+            TonConnectKit.clear(context)
+            TonConnectKit.migrateDatabase(context, databaseKey)
+        }
+        coVerify(exactly = 2) { TonConnectKit.migrateDatabase(any(), any()) }
+        verify(exactly = 0) { keyProvider.remove(any()) }
+    }
+
+    @Test
+    fun reset_afterKitCreated_stopsForwardingOldKitSendRequests() = runTest(dispatcher) {
+        val oldRequests = MutableSharedFlow<SignTransaction>()
+        every { kit.sendRequestFlow } returns oldRequests
+        val manager = createManager()
+        val collected = mutableListOf<SignTransaction>()
+        backgroundScope.launch { manager.sendRequestFlow.toList(collected) }
+        manager.kit()
+        runCurrent()
+        val beforeReset = mockk<SignTransaction>()
+        oldRequests.emit(beforeReset)
+        runCurrent()
+
+        manager.reset()
+        runCurrent()
+        oldRequests.emit(mockk())
+        runCurrent()
+
+        assertEquals(listOf(beforeReset), collected)
     }
 
     @Test
@@ -226,6 +382,8 @@ class TonConnectManagerTest {
         appDatabase = appDatabase,
         dispatcherProvider = TestDispatcherProvider(dispatcher, backgroundScope),
     )
+
+    private fun keyMismatch() = DatabaseKeyMismatchException("ton-connect", IllegalStateException("wrong key"))
 
     private class CapturingLogWriter : LogWriter() {
         val entries = mutableListOf<Pair<String, Throwable?>>()

@@ -121,15 +121,18 @@ class TonKitManager(
         blockchainType,
     )
 
+    // Under the lifecycle lock so it cannot interleave with clear() of the same account.
     suspend fun getNonActiveTonKitWrapper(
         account: Account,
         blockchainType: BlockchainType?,
-    ) = createKitInstance(
-        getTonWallet(
-            account,
-            blockchainType,
-        ), account
-    )
+    ) = lifecycleMutex.withLock {
+        createKitInstance(
+            getTonWallet(
+                account,
+                blockchainType,
+            ), account
+        )
+    }
 
     private fun eventListenerFactory(account: Account): NetworkErrorEventListener.Factory =
         NetworkErrorEventListener.Factory(BlockchainType.Ton, account.id, networkErrorTracker)

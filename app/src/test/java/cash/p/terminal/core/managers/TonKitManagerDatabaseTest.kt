@@ -22,9 +22,13 @@ import io.mockk.mockkObject
 import io.mockk.runs
 import io.mockk.unmockkAll
 import io.mockk.verify
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertNull
@@ -116,6 +120,30 @@ class TonKitManagerDatabaseTest {
         coVerifyOrder {
             TonKit.migrateDatabase(any(), Network.MainNet, ACCOUNT_ID, databaseKey)
             TonKit.getInstance(any(), Network.MainNet, any(), ACCOUNT_ID, databaseKey, any(), any())
+        }
+    }
+
+    @Test
+    fun getNonActiveTonKitWrapper_clearInProgress_waitsForClearToFinish() = runTest {
+        val clearGate = CompletableDeferred<Unit>()
+        coEvery { TonKit.clear(any(), any(), any()) } coAnswers { clearGate.await() }
+        val manager = createManager()
+        launch { manager.clear(ACCOUNT_ID) }
+        runCurrent()
+
+        val wrapper = async { manager.getNonActiveTonKitWrapper(account, BlockchainType.Ton) }
+        runCurrent()
+
+        coVerify(exactly = 0) { keyProvider.awaitKey(any()) }
+
+        clearGate.complete(Unit)
+
+        assertSame(tonKit, wrapper.await().tonKit)
+        coVerifyOrder {
+            TonKit.clear(any(), Network.TestNet, ACCOUNT_ID)
+            keyProvider.remove(ACCOUNT_ID)
+            keyProvider.awaitKey(ACCOUNT_ID)
+            TonKit.migrateDatabase(any(), Network.MainNet, ACCOUNT_ID, databaseKey)
         }
     }
 

@@ -8,19 +8,21 @@ import cash.p.terminal.wallet.IAccountManager
 import co.touchlab.kermit.Logger
 import com.tonapps.wallet.data.tonconnect.entities.DAppEntity
 import io.horizontalsystems.core.DispatcherProvider
+import io.horizontalsystems.sqlcipher.room.DatabaseKeyMismatchException
 import io.horizontalsystems.tonkit.core.TonKit
 import io.horizontalsystems.tonkit.models.Network
 import io.horizontalsystems.tonkit.models.SignTransaction
 import io.horizontalsystems.tonkit.tonconnect.TonConnectKit
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
@@ -47,12 +49,12 @@ class TonConnectManager(
     val transactionSigner = TonKit.getTransactionSigner(TonKit.getTonApi(Network.MainNet))
 
     val sendRequestFlow: Flow<SignTransaction> =
-        kitState.filterNotNull().flatMapLatest { it.sendRequestFlow }
+        kitState.flatMapLatest { it?.sendRequestFlow ?: emptyFlow() }
     private val _dappRequestFlow = MutableSharedFlow<DAppRequest>()
     val dappRequestFlow
         get() = _dappRequestFlow.asSharedFlow()
 
-    fun getDApps(): Flow<List<DAppEntity>> = kitState.filterNotNull().flatMapLatest { it.getDApps() }
+    fun getDApps(): Flow<List<DAppEntity>> = kitState.flatMapLatest { it?.getDApps() ?: emptyFlow() }
 
     fun start() {
         dispatcherProvider.applicationScope.launch {
@@ -79,14 +81,63 @@ class TonConnectManager(
         }
     }
 
+    /** After a keystore reset: the next [kit] starts over with a new key and an empty database. */
+    fun reset() {
+        removeDatabaseKey()
+        dispatcherProvider.applicationScope.launch {
+            logFailure("drop TON Connect kit after reset") {
+                kitMutex.withLock {
+                    // A kit() in flight may have persisted a key wrapped by the old master key meanwhile.
+                    removeDatabaseKey()
+                    _kitState.value?.stop()
+                    _kitState.value = null
+                }
+            }
+        }
+    }
+
+    private fun removeDatabaseKey() {
+        try {
+            databaseKeyProvider.remove(TON_CONNECT_DATABASE_ID)
+        } catch (e: KitDatabaseKeyException) {
+            logger.w(e) { "Failed to remove TON Connect database key" }
+        }
+    }
+
     private suspend fun createKit(): TonConnectKit {
-        val databaseKey = databaseKeyProvider.awaitKey(TON_CONNECT_DATABASE_ID)
-        TonConnectKit.migrateDatabase(context, databaseKey)
-        val kit = TonConnectKit.getInstance(context, databaseKey, appName, appVersion)
+        val databaseKey = databaseKeyProvider.awaitDatabaseKey(TON_CONNECT_DATABASE_ID)
+        // A cancelled caller must not leave a fresh key stored over a database that was never recreated.
+        withContext(NonCancellable) { prepareDatabase(databaseKey) }
+        val kit = TonConnectKit.getInstance(context, databaseKey.bytes, appName, appVersion)
         // Sessions of accounts deleted before this version would otherwise stay subscribed.
         kit.removeDAppsExcept(liveAccountIds())
         kit.start()
         return kit
+    }
+
+    private suspend fun prepareDatabase(databaseKey: DatabaseKey) {
+        try {
+            TonConnectKit.migrateDatabase(context, databaseKey.bytes)
+        } catch (e: DatabaseKeyMismatchException) {
+            // A stored key may fail to open transiently; only a just-created key proves the old database is lost.
+            if (!databaseKey.isNew) throw e
+            recreateDatabase(databaseKey.bytes)
+        }
+    }
+
+    private suspend fun recreateDatabase(databaseKey: ByteArray) {
+        try {
+            TonConnectKit.clear(context)
+            TonConnectKit.migrateDatabase(context, databaseKey)
+        } catch (e: Throwable) {
+            // The fresh key protects nothing yet; dropping it lets the next kit() discard the database again.
+            try {
+                databaseKeyProvider.remove(TON_CONNECT_DATABASE_ID)
+            } catch (removal: KitDatabaseKeyException) {
+                e.addSuppressed(removal)
+            }
+            throw e
+        }
     }
 
     // Every access level: accountManager.accounts holds only the current level's accounts.
