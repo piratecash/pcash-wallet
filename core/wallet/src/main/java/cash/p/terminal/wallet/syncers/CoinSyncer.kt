@@ -1,117 +1,85 @@
 package cash.p.terminal.wallet.syncers
 
-import android.util.Log
+import cash.p.terminal.network.pirate.domain.repository.CoinsListRepository
 import cash.p.terminal.wallet.SyncInfo
 import cash.p.terminal.wallet.managers.VirtualCoinMapper
-import cash.p.terminal.wallet.models.BlockchainResponse
-import cash.p.terminal.wallet.models.CoinResponse
-import cash.p.terminal.wallet.models.TokenResponse
-import cash.p.terminal.wallet.providers.HsProvider
 import cash.p.terminal.wallet.storage.CoinStorage
 import cash.p.terminal.wallet.storage.SyncerStateDao
-import io.reactivex.Single
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
-import io.reactivex.subjects.PublishSubject
+import co.touchlab.kermit.Logger
+import io.horizontalsystems.core.DispatcherProvider
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.withContext
 
 class CoinSyncer(
-    private val hsProvider: HsProvider,
+    private val repository: CoinsListRepository,
     private val storage: CoinStorage,
     private val syncerStateDao: SyncerStateDao,
-    private val virtualCoinMapper: VirtualCoinMapper
+    private val virtualCoinMapper: VirtualCoinMapper,
+    private val mapper: CoinsListMapper,
+    private val dispatcherProvider: DispatcherProvider,
 ) {
-    private val keyCoinsLastSyncTimestamp = "coin-syncer-coins-last-sync-timestamp"
-    private val keyBlockchainsLastSyncTimestamp = "coin-syncer-blockchains-last-sync-timestamp"
-    private val keyTokensLastSyncTimestamp = "coin-syncer-tokens-last-sync-timestamp"
-    private val keyCoinsCount = "coin-syncer-coins-count"
-    private val keyBlockchainsCount = "coin-syncer-blockchains-count"
-    private val keyTokensCount = "coin-syncer-tokens-count"
-    private val keyLastRequestTimestamp = "coin-syncer-last-request-timestamp"
-    private val keyServerAvailable = "coin-syncer-server-available"
+    private val logger = Logger.withTag("CoinSyncer")
 
-    private var disposable: Disposable? = null
+    private val keyListTimestamp = "coin-syncer-v2-list-timestamp"
+    private val keyListDownloadedAt = "coin-syncer-v2-list-downloaded-at"
+    private val keyRanksDownloadedAt = "coin-syncer-v2-ranks-downloaded-at"
+    private val keyCoinsCount = "coin-syncer-v2-coins-count"
+    private val keyBlockchainsCount = "coin-syncer-v2-blockchains-count"
+    private val keyTokensCount = "coin-syncer-v2-tokens-count"
+    private val keyServerAvailable = "coin-syncer-v2-server-available"
 
-    val fullCoinsUpdatedObservable = PublishSubject.create<Unit>()
-
-    fun sync(
-        coinsTimestamp: Long,
-        blockchainsTimestamp: Long,
-        tokensTimestamp: Long,
-        forceUpdate: Boolean
-    ) {
-        val lastCoinsSyncTimestamp = syncerStateDao.get(keyCoinsLastSyncTimestamp)?.toLong() ?: 0
-        val coinsOutdated = lastCoinsSyncTimestamp != coinsTimestamp
-
-        val lastBlockchainsSyncTimestamp =
-            syncerStateDao.get(keyBlockchainsLastSyncTimestamp)?.toLong() ?: 0
-        val blockchainsOutdated = lastBlockchainsSyncTimestamp != blockchainsTimestamp
-
-        val lastTokensSyncTimestamp = syncerStateDao.get(keyTokensLastSyncTimestamp)?.toLong() ?: 0
-        val tokensOutdated = lastTokensSyncTimestamp != tokensTimestamp
-
-        if (!forceUpdate && !coinsOutdated && !blockchainsOutdated && !tokensOutdated) return
-
-        syncerStateDao.save(keyLastRequestTimestamp, System.currentTimeMillis().toString())
-        syncerStateDao.save(keyServerAvailable, "false")
-
-        disposable = Single.zip(
-            hsProvider.allCoinsSingle(),
-            hsProvider.allBlockchainsSingle(),
-            hsProvider.allTokensSingle()
-        ) { r1, r2, r3 -> Triple(r1, r2, r3) }
-            .subscribeOn(Schedulers.io())
-            .observeOn(Schedulers.io())
-            .subscribe({ coinsData ->
-                val (coinsResponse, blockchainsResponse, tokensResponse) = coinsData
-                if (coinsResponse.isNotEmpty() && blockchainsResponse.isNotEmpty() && tokensResponse.isNotEmpty()) {
-                    handleFetched(coinsResponse, blockchainsResponse, tokensResponse)
-                    saveLastSyncTimestamps(coinsTimestamp, blockchainsTimestamp, tokensTimestamp)
-                    syncerStateDao.save(keyServerAvailable, "true")
-                }
-            }, {
-                Log.e("CoinSyncer", "sync() error", it)
-                syncerStateDao.save(keyServerAvailable, "false")
-            })
+    suspend fun sync(force: Boolean) = withContext(dispatcherProvider.io) {
+        // List and ranks are independent: a failure of one must not block the other.
+        val listSynced = attempt("list") { syncListIfOutdated(force) }
+        val ranksSynced = attempt("ranks") { syncRanksIfStale() }
+        syncerStateDao.save(keyServerAvailable, (listSynced != null && ranksSynced != null).toString())
     }
 
-    fun stop() {
-        disposable?.dispose()
-        disposable = null
+    private inline fun <T : Any> attempt(step: String, block: () -> T): T? = try {
+        block()
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        logger.e(e) { "$step sync error" }
+        null
     }
 
-    private fun handleFetched(
-        coinsResponse: List<CoinResponse>,
-        blockchainsResponse: List<BlockchainResponse>,
-        tokensResponse: List<TokenResponse>
-    ) {
-        val mapped = CoinResponseMapper.mapFetched(
-            coinsResponse,
-            blockchainsResponse,
-            tokensResponse,
-            virtualCoinMapper
-        )
+    private suspend fun syncListIfOutdated(force: Boolean) {
+        val updatedAt = repository.coinsUpdatedAt()
+        if (!force && syncerStateDao.get(keyListTimestamp)?.toLongOrNull() == updatedAt) return
 
-        storage.update(mapped.coins, mapped.blockchains, mapped.tokens)
-
+        val data = mapper.map(repository.coinsList(), storage.ranks(), virtualCoinMapper)
+        check(data.coins.isNotEmpty() && data.blockchains.isNotEmpty() && data.tokens.isNotEmpty()) {
+            "Empty coins list response"
+        }
+        storage.replaceAll(data)
         updateCounts()
+        syncerStateDao.save(keyListTimestamp, updatedAt.toString())
+        syncerStateDao.save(keyListDownloadedAt, System.currentTimeMillis().toString())
+    }
 
-        fullCoinsUpdatedObservable.onNext(Unit)
+    private suspend fun syncRanksIfStale() {
+        if (!ranksStale()) return
+
+        val ranks = repository.coinRanks()
+        check(ranks.isNotEmpty()) { "Empty coin ranks response" }
+        storage.applyRanks(ranks)
+        syncerStateDao.save(keyRanksDownloadedAt, System.currentTimeMillis().toString())
+    }
+
+    private fun ranksStale(): Boolean {
+        val ranksDownloadedAt = syncerStateDao.get(keyRanksDownloadedAt)?.toLongOrNull() ?: return true
+        // Ranks older than the current list miss its new coins, e.g. after a failed post-list refresh.
+        val listDownloadedAt = syncerStateDao.get(keyListDownloadedAt)?.toLongOrNull() ?: 0L
+        val elapsed = System.currentTimeMillis() - ranksDownloadedAt
+        return elapsed < 0 || elapsed >= RANKS_MAX_AGE_MS || ranksDownloadedAt < listDownloadedAt
     }
 
     private fun updateCounts() {
-        val coinsCount = storage.marketDatabase.coinDao().getCoinsCount()
-        val blockchainsCount = storage.marketDatabase.coinDao().getBlockchainsCount()
-        val tokensCount = storage.marketDatabase.coinDao().getTokensCount()
-
-        syncerStateDao.save(keyCoinsCount, coinsCount.toString())
-        syncerStateDao.save(keyBlockchainsCount, blockchainsCount.toString())
-        syncerStateDao.save(keyTokensCount, tokensCount.toString())
-    }
-
-    private fun saveLastSyncTimestamps(coins: Long, blockchains: Long, tokens: Long) {
-        syncerStateDao.save(keyCoinsLastSyncTimestamp, coins.toString())
-        syncerStateDao.save(keyBlockchainsLastSyncTimestamp, blockchains.toString())
-        syncerStateDao.save(keyTokensLastSyncTimestamp, tokens.toString())
+        val coinDao = storage.marketDatabase.coinDao()
+        syncerStateDao.save(keyCoinsCount, coinDao.getCoinsCount().toString())
+        syncerStateDao.save(keyBlockchainsCount, coinDao.getBlockchainsCount().toString())
+        syncerStateDao.save(keyTokensCount, coinDao.getTokensCount().toString())
     }
 
     fun syncInfo(): SyncInfo {
@@ -122,18 +90,18 @@ class CoinSyncer(
             updateCounts()
         }
 
-        val coinsCount = syncerStateDao.get(keyCoinsCount)?.toIntOrNull()
-        val blockchainsCount = syncerStateDao.get(keyBlockchainsCount)?.toIntOrNull()
-        val tokensCount = syncerStateDao.get(keyTokensCount)?.toIntOrNull()
-
         return SyncInfo(
-            coinsTimestamp = syncerStateDao.get(keyCoinsLastSyncTimestamp),
-            blockchainsTimestamp = syncerStateDao.get(keyBlockchainsLastSyncTimestamp),
-            tokensTimestamp = syncerStateDao.get(keyTokensLastSyncTimestamp),
-            coinsCount = coinsCount,
-            blockchainsCount = blockchainsCount,
-            tokensCount = tokensCount,
+            listTimestamp = syncerStateDao.get(keyListTimestamp),
+            listDownloadedAt = syncerStateDao.get(keyListDownloadedAt)?.toLongOrNull(),
+            ranksDownloadedAt = syncerStateDao.get(keyRanksDownloadedAt)?.toLongOrNull(),
+            coinsCount = syncerStateDao.get(keyCoinsCount)?.toIntOrNull(),
+            blockchainsCount = syncerStateDao.get(keyBlockchainsCount)?.toIntOrNull(),
+            tokensCount = syncerStateDao.get(keyTokensCount)?.toIntOrNull(),
             serverAvailable = syncerStateDao.get(keyServerAvailable)?.toBooleanStrictOrNull()
         )
+    }
+
+    private companion object {
+        const val RANKS_MAX_AGE_MS = 60 * 60 * 1000L
     }
 }

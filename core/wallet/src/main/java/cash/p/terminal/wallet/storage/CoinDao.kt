@@ -8,35 +8,27 @@ import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.FullCoin
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.extensions.isEvmLike
-import cash.p.terminal.wallet.models.BlockchainEntity
-import cash.p.terminal.wallet.models.TokenEntity
 
 @Dao
-interface CoinDao {
+internal interface CoinDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(coin: Coin)
+    fun insertCoins(coins: List<CoinRecord>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(blockchainEntity: BlockchainEntity)
+    fun insertBlockchains(blockchains: List<BlockchainRecord>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(tokenEntity: TokenEntity)
+    fun insertTokens(tokens: List<TokenRecord>)
 
     @Query("SELECT * FROM Coin WHERE uid = :uid LIMIT 1")
-    fun getCoin(uid: String): Coin?
+    fun getCoin(uid: String): CoinRecord?
 
     @Query("SELECT * FROM Coin WHERE uid IN (:uids)")
-    fun getCoins(uids: List<String>): List<Coin>
-
-    @Query("SELECT uid, coinGeckoId FROM Coin WHERE uid IN (:uids)")
-    fun getCoinGeckoIds(uids: List<String>): List<CoinUidMapping>
-
-    @Query("SELECT coinGeckoId FROM Coin WHERE uid = :uid LIMIT 1")
-    fun getCoinGeckoId(uid: String): String?
+    fun getCoins(uids: List<String>): List<CoinRecord>
 
     @Query("SELECT * FROM Coin")
-    fun getAllCoins(): List<Coin>
+    fun getAllCoins(): List<CoinRecord>
 
     @Transaction
     @RawQuery
@@ -58,86 +50,95 @@ interface CoinDao {
     @RawQuery
     fun getTokens(filter: SimpleSQLiteQuery): List<TokenWrapper>
 
-    @Query("SELECT * FROM BlockchainEntity WHERE uid = :uid LIMIT 1")
-    fun getBlockchain(uid: String): BlockchainEntity?
+    @Query("SELECT * FROM Blockchain WHERE uid = :uid LIMIT 1")
+    fun getBlockchain(uid: String): BlockchainRecord?
 
-    @Query("SELECT * FROM BlockchainEntity WHERE uid IN (:uids)")
-    fun getBlockchains(uids: List<String>): List<BlockchainEntity>
+    @Query("SELECT * FROM Blockchain WHERE uid IN (:uids)")
+    fun getBlockchains(uids: List<String>): List<BlockchainRecord>
 
-    @Query("SELECT * FROM BlockchainEntity")
-    fun getAllBlockchains(): List<BlockchainEntity>
+    @Query("SELECT * FROM Blockchain")
+    fun getAllBlockchains(): List<BlockchainRecord>
 
     @Query("DELETE FROM Coin")
     fun deleteAllCoins()
 
-    @Query("DELETE FROM BlockchainEntity")
+    @Query("DELETE FROM Blockchain")
     fun deleteAllBlockchains()
 
-    @Query("DELETE FROM TokenEntity")
+    @Query("DELETE FROM Token")
     fun deleteAllTokens()
 
     @Query("SELECT COUNT(*) FROM Coin")
     fun getCoinsCount(): Int
 
-    @Query("SELECT COUNT(*) FROM BlockchainEntity")
+    @Query("SELECT COUNT(*) FROM Blockchain")
     fun getBlockchainsCount(): Int
 
-    @Query("SELECT COUNT(*) FROM TokenEntity")
+    @Query("SELECT COUNT(*) FROM Token")
     fun getTokensCount(): Int
+
+    @Query("SELECT uid, marketCapRank FROM Coin WHERE marketCapRank IS NOT NULL")
+    fun getRanks(): List<CoinRank>
+
+    @Query("UPDATE Coin SET marketCapRank = NULL")
+    fun clearRanks()
+
+    @Query("UPDATE Coin SET marketCapRank = :rank WHERE uid = :uid")
+    fun setRank(uid: String, rank: Int)
 
     data class FullCoinWrapper(
         @Embedded
-        val coin: Coin,
+        val coin: CoinRecord,
 
         @Relation(
-            entity = TokenEntity::class,
+            entity = TokenRecord::class,
             parentColumn = "uid",
             entityColumn = "coinUid"
         )
-        val tokens: List<TokenEntityWrapper>
+        val tokens: List<TokenRecordWrapper>
     ) {
 
         val fullCoin: FullCoin
-        get() = FullCoin(
-            coin,
-            tokens.map { it.token(coin) }
-        )
+            get() {
+                val domainCoin = coin.toCoin()
+                return FullCoin(domainCoin, tokens.map { it.token(domainCoin) })
+            }
 
     }
 
-    data class TokenEntityWrapper(
+    data class TokenRecordWrapper(
         @Embedded
-        val tokenEntity: TokenEntity,
+        val tokenRecord: TokenRecord,
 
         @Relation(
             parentColumn = "blockchainUid",
             entityColumn = "uid"
         )
-        val blockchainEntity: BlockchainEntity
+        val blockchainRecord: BlockchainRecord
     ) {
 
         fun token(coin: Coin): Token {
-            var tokenType = if (tokenEntity.decimals != null) {
+            var tokenType = if (tokenRecord.decimals != null) {
                 TokenType.fromType(
-                    tokenEntity.type,
-                    tokenEntity.reference
+                    tokenRecord.type,
+                    tokenRecord.reference
                 )
             } else {
                 TokenType.Unsupported(
-                    tokenEntity.type,
-                    tokenEntity.reference
+                    tokenRecord.type,
+                    tokenRecord.reference
                 )
             }
 
-            if (tokenType is TokenType.Eip20 && blockchainEntity.blockchain.type.isEvmLike()) {
+            if (tokenType is TokenType.Eip20 && blockchainRecord.toBlockchain().type.isEvmLike()) {
                 tokenType = TokenType.Eip20(tokenType.address.lowercase())
             }
 
             return Token(
                 coin,
-                blockchainEntity.blockchain,
+                blockchainRecord.toBlockchain(),
                 tokenType,
-                tokenEntity.decimals ?: 0
+                tokenRecord.decimals ?: 0
             )
         }
 
@@ -145,29 +146,24 @@ interface CoinDao {
 
     data class TokenWrapper(
         @Embedded
-        val tokenEntity: TokenEntity,
+        val tokenRecord: TokenRecord,
 
         @Relation(
             parentColumn = "coinUid",
             entityColumn = "uid"
         )
-        val coin: Coin,
+        val coin: CoinRecord,
 
         @Relation(
             parentColumn = "blockchainUid",
             entityColumn = "uid"
         )
-        val blockchainEntity: BlockchainEntity,
+        val blockchainRecord: BlockchainRecord,
     ) {
 
         val token: Token
-            get() = TokenEntityWrapper(tokenEntity, blockchainEntity).token(coin)
+            get() = TokenRecordWrapper(tokenRecord, blockchainRecord).token(coin.toCoin())
 
     }
-
-    data class CoinUidMapping(
-        val uid: String,
-        val coinGeckoId: String?
-    )
 
 }

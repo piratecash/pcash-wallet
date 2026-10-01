@@ -6,14 +6,12 @@ import cash.p.terminal.network.pirate.domain.repository.PiratePlaceRepository
 import cash.p.terminal.network.pirate.domain.useCase.FiatCurrencyRateService
 import cash.p.terminal.wallet.models.Analytics
 import cash.p.terminal.wallet.models.AnalyticsPreview
-import cash.p.terminal.wallet.models.BlockchainResponse
 import cash.p.terminal.wallet.models.ChartPoint
 import cash.p.terminal.wallet.models.CoinCategory
 import cash.p.terminal.wallet.models.CoinCategoryMarketPoint
 import cash.p.terminal.wallet.models.CoinInvestment
 import cash.p.terminal.wallet.models.CoinPrice
 import cash.p.terminal.wallet.models.CoinReport
-import cash.p.terminal.wallet.models.CoinResponse
 import cash.p.terminal.wallet.models.CoinTreasury
 import cash.p.terminal.wallet.models.CoinTreasuryResponse
 import cash.p.terminal.wallet.models.DefiMarketInfoResponse
@@ -21,7 +19,6 @@ import cash.p.terminal.wallet.models.EtfPointResponse
 import cash.p.terminal.wallet.models.EtfResponse
 import cash.p.terminal.wallet.models.GlobalMarketPoint
 import cash.p.terminal.wallet.models.HsPointTimePeriod
-import cash.p.terminal.wallet.models.HsStatus
 import cash.p.terminal.wallet.models.MarketGlobal
 import cash.p.terminal.wallet.models.MarketInfoDetailsResponse
 import cash.p.terminal.wallet.models.MarketInfoOverviewRaw
@@ -33,7 +30,6 @@ import cash.p.terminal.wallet.models.RankMultiValue
 import cash.p.terminal.wallet.models.RankValue
 import cash.p.terminal.wallet.models.SubscriptionResponse
 import cash.p.terminal.wallet.models.TokenHolders
-import cash.p.terminal.wallet.models.TokenResponse
 import cash.p.terminal.wallet.models.TopMoversRaw
 import cash.p.terminal.wallet.models.TopPair
 import cash.p.terminal.wallet.models.TopPlatformMarketCapPoint
@@ -65,11 +61,6 @@ class HsProvider(baseUrl: String, apiKey: String) {
     private val retrofitUtils: RetrofitUtils by inject(RetrofitUtils::class.java)
 
     // TODO Remove old base URL https://api-dev.blocksdecoded.com/v1 and switch it to new servers
-    private val pirateService by lazy {
-        retrofitUtils.build(COINS_API_BASE_URL, mapOf("apikey" to apiKey))
-            .create(MarketService::class.java)
-    }
-
     private val service by lazy {
         retrofitUtils.build("${baseUrl}/v1/", mapOf("apikey" to apiKey))
             .create(MarketService::class.java)
@@ -140,17 +131,13 @@ class HsProvider(baseUrl: String, apiKey: String) {
     }
 
     suspend fun getCoinPrices(
-        coinGeckoUidMap: Map<String, String>,
+        coinUids: List<String>,
         currencyCode: String
     ): List<CoinPrice> {
-        val reverseMap = coinGeckoUidMap.entries
-            .groupBy({ it.value }, { it.key })
-
         return piratePlaceRepository.getCoinsPriceChange(
-            coinGeckoUidMap.values.distinct(), currencyCode
-        )?.flatMap { priceInfo ->
-            val originalUids = reverseMap[priceInfo.uid] ?: listOf(priceInfo.uid)
-            originalUids.map { coinUid -> priceInfo.toCoinPrice(currencyCode, coinUid) }
+            coinUids.distinct(), currencyCode
+        )?.map { priceInfo ->
+            priceInfo.toCoinPrice(currencyCode, priceInfo.uid)
         }.orEmpty()
     }
 
@@ -416,22 +403,6 @@ class HsProvider(baseUrl: String, apiKey: String) {
 
     fun topMoversRawSingle(currencyCode: String): Single<TopMoversRaw> {
         return service.getTopMovers(currencyCode)
-    }
-
-    fun statusSingle(): Single<HsStatus> {
-        return pirateService.getStatus()
-    }
-
-    fun allCoinsSingle(): Single<List<CoinResponse>> {
-        return pirateService.getAllCoins()
-    }
-
-    fun allBlockchainsSingle(): Single<List<BlockchainResponse>> {
-        return pirateService.getAllBlockchains()
-    }
-
-    fun allTokensSingle(): Single<List<TokenResponse>> {
-        return pirateService.getAllTokens()
     }
 
     fun analyticsPreviewSingle(
@@ -749,22 +720,6 @@ class HsProvider(baseUrl: String, apiKey: String) {
             @Query("currency") currencyCode: String
         ): Single<TopMoversRaw>
 
-        @GET("status/updates")
-        @Headers("Cache-Control: no-cache, no-store, must-revalidate")
-        fun getStatus(): Single<HsStatus>
-
-        @GET("coins/list")
-        @Headers("Cache-Control: no-cache, no-store, must-revalidate")
-        fun getAllCoins(): Single<List<CoinResponse>>
-
-        @GET("blockchains/list")
-        @Headers("Cache-Control: no-cache, no-store, must-revalidate")
-        fun getAllBlockchains(): Single<List<BlockchainResponse>>
-
-        @GET("tokens/list")
-        @Headers("Cache-Control: no-cache, no-store, must-revalidate")
-        fun getAllTokens(): Single<List<TokenResponse>>
-
         @GET("auth/get-sign-message")
         fun authGetSignMessage(
             @Query("address") address: String
@@ -834,9 +789,6 @@ class HsProvider(baseUrl: String, apiKey: String) {
         }
     }
 
-    companion object {
-        internal const val COINS_API_BASE_URL = "https://pirate.cash/s1/"
-    }
 }
 
 data class HistoricalCoinPriceResponse(

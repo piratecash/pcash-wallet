@@ -1,10 +1,14 @@
 package cash.p.terminal.network.pirate.di
 
+import cash.p.terminal.network.pirate.api.CoinsListApi
 import cash.p.terminal.network.pirate.api.PirateApi
 import cash.p.terminal.network.pirate.api.PlaceApi
+import cash.p.terminal.network.pirate.domain.repository.CoinsListRepository
 import cash.p.terminal.network.pirate.domain.repository.PiratePlaceRepository
+import cash.p.terminal.network.pirate.data.mapper.CoinsListMapper
 import cash.p.terminal.network.pirate.data.mapper.MasterNodesMapper
 import cash.p.terminal.network.pirate.data.mapper.PiratePlaceMapper
+import cash.p.terminal.network.pirate.data.repository.CoinsListRepositoryImpl
 import cash.p.terminal.network.pirate.data.repository.MasterNodesRepositoryImpl
 import cash.p.terminal.network.pirate.data.repository.PiratePlaceRepositoryImpl
 import cash.p.terminal.network.pirate.domain.repository.MasterNodesRepository
@@ -28,8 +32,11 @@ val networkPirateModule = module {
     }
     factoryOf(::MasterNodesRepositoryImpl) bind MasterNodesRepository::class
     factoryOf(::PiratePlaceRepositoryImpl) bind PiratePlaceRepository::class
+    factoryOf(::CoinsListApi)
+    factoryOf(::CoinsListRepositoryImpl) bind CoinsListRepository::class
     factoryOf(::MasterNodesMapper)
     factoryOf(::PiratePlaceMapper)
+    factoryOf(::CoinsListMapper)
     factoryOf(::GetChangeNowAssociatedCoinTickerUseCase)
     single { FiatCurrencyRateService(piratePlaceRepository = get()) }
 }

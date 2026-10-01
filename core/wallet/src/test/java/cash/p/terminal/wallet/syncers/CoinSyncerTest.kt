@@ -1,310 +1,315 @@
 package cash.p.terminal.wallet.syncers
 
-import cash.p.terminal.wallet.entities.Coin
+import cash.p.terminal.network.pirate.domain.model.CoinsList
+import cash.p.terminal.network.pirate.domain.model.RemoteBlockchain
+import cash.p.terminal.network.pirate.domain.model.RemoteCoin
+import cash.p.terminal.network.pirate.domain.model.RemoteToken
+import cash.p.terminal.network.pirate.domain.repository.CoinsListRepository
 import cash.p.terminal.wallet.managers.VirtualCoinMapper
-import cash.p.terminal.wallet.models.BlockchainEntity
-import cash.p.terminal.wallet.models.BlockchainResponse
-import cash.p.terminal.wallet.models.CoinResponse
-import cash.p.terminal.wallet.models.TokenEntity
-import cash.p.terminal.wallet.models.TokenResponse
+import cash.p.terminal.wallet.models.SyncerState
+import cash.p.terminal.wallet.storage.CoinDao
+import cash.p.terminal.wallet.storage.CoinStorage
+import cash.p.terminal.wallet.storage.CoinsData
+import cash.p.terminal.wallet.storage.MarketDatabase
+import cash.p.terminal.wallet.storage.SyncerStateDao
+import io.horizontalsystems.core.DispatcherProvider
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
+private class FakeSyncerStateDao : SyncerStateDao {
+    private val state = mutableMapOf<String, String>()
+
+    override fun insert(syncerState: SyncerState) {
+        state[syncerState.key] = syncerState.value
+    }
+
+    override fun get(key: String): String? = state[key]
+}
+
+private class TestDispatcherProvider(dispatcher: kotlinx.coroutines.CoroutineDispatcher) : DispatcherProvider {
+    override val io = dispatcher
+    override val default = dispatcher
+    override val main = dispatcher
+    override val applicationScope = CoroutineScope(SupervisorJob() + dispatcher)
+}
+
+@RunWith(RobolectricTestRunner::class)
+@Config(manifest = Config.NONE)
 class CoinSyncerTest {
 
-    private val virtualCoinMapper = VirtualCoinMapper()
+    // Mirrors CoinSyncer's private key: staleness tests prime it directly instead of faking the clock.
+    private val keyRanksDownloadedAt = "coin-syncer-v2-ranks-downloaded-at"
 
-    private fun createCoin(uid: String, code: String) = Coin(
-        uid = uid,
-        name = code,
-        code = code,
-        marketCapRank = null,
-        coinGeckoId = null,
-        image = null,
-        priority = 0
+    private val dispatcher = UnconfinedTestDispatcher()
+    private val syncerStateDao = FakeSyncerStateDao()
+    private val repository = mockk<CoinsListRepository>()
+    private val coinDao = mockk<CoinDao> {
+        every { getCoinsCount() } returns 1
+        every { getBlockchainsCount() } returns 1
+        every { getTokensCount() } returns 1
+    }
+    private val storage = mockk<CoinStorage> {
+        every { marketDatabase } returns mockk<MarketDatabase> {
+            every { coinDao() } returns coinDao
+        }
+        every { replaceAll(any()) } returns Unit
+        every { applyRanks(any()) } returns Unit
+        every { ranks() } returns emptyMap()
+    }
+    private val coinSyncer = CoinSyncer(
+        repository = repository,
+        storage = storage,
+        syncerStateDao = syncerStateDao,
+        virtualCoinMapper = VirtualCoinMapper(),
+        mapper = CoinsListMapper(),
+        dispatcherProvider = TestDispatcherProvider(dispatcher),
     )
 
-    @Test
-    fun mapFetched_duplicatePrimaryKeyTokenRows_keepsLastRow() {
-        val coins = listOf(CoinResponse("dogwifcoin", "dogwifhat", "wif", null, null, null, null))
-        val blockchains = listOf(BlockchainResponse("solana", "Solana", null))
-        val duplicateToken = TokenResponse("dogwifcoin", "solana", "spl", null, "EKpQ", null)
-
-        val result = CoinResponseMapper.mapFetched(
-            coins,
-            blockchains,
-            listOf(duplicateToken, duplicateToken.copy(decimals = 6)),
-            virtualCoinMapper
+    private val validCoinsList = CoinsList(
+        blockchains = listOf(RemoteBlockchain("bitcoin", "Bitcoin", null)),
+        coins = listOf(
+            RemoteCoin(
+                coingeckoId = "bitcoin",
+                name = "Bitcoin",
+                code = "btc",
+                priority = null,
+                tokens = listOf(RemoteToken(type = "native", blockchainUid = "bitcoin", address = null, decimals = 8))
+            )
         )
+    )
+    private val validRanks = mapOf("bitcoin" to 1)
 
-        assertEquals(1, result.tokens.size)
-        assertEquals(6, result.tokens.single().decimals)
+    @Test
+    fun sync_updatedAtUnchangedRanksFresh_onlyChecksUpdates() = runTest(dispatcher) {
+        coEvery { repository.coinsUpdatedAt() } returns 10L
+        coEvery { repository.coinRanks() } returns validRanks
+        coEvery { repository.coinsList() } returns validCoinsList
+
+        // First call establishes state from empty; second call sees the same updated_at and
+        // freshly downloaded ranks, so it must not refetch.
+        coinSyncer.sync(force = false)
+        coinSyncer.sync(force = false)
+
+        coVerify(exactly = 2) { repository.coinsUpdatedAt() }
+        coVerify(exactly = 1) { repository.coinRanks() }
+        coVerify(exactly = 1) { repository.coinsList() }
     }
 
     @Test
-    fun tokenPipeline_duplicatePrimaryKeyRows_preservesDuplicates() {
-        val duplicateToken = TokenResponse("dogwifcoin", "solana", "spl", null, "EKpQ", null)
+    fun sync_updatedAtChanged_fetchesListAndRanks_replacesAll() = runTest(dispatcher) {
+        coEvery { repository.coinsUpdatedAt() } returns 10L
+        coEvery { repository.coinRanks() } returns validRanks
+        coEvery { repository.coinsList() } returns validCoinsList
 
-        val result = CoinResponseMapper.tokenPipeline(
-            listOf(createCoin("dogwifcoin", "WIF")),
-            listOf(BlockchainEntity(uid = "solana", name = "Solana", eip3091url = null)),
-            listOf(duplicateToken, duplicateToken.copy(decimals = 6)),
-            virtualCoinMapper
-        )
+        coinSyncer.sync(force = false)
 
-        // Pre-dedup view relied on by the generator's collision-provenance guard.
-        assertEquals(2, result.size)
+        coVerify(exactly = 1) { storage.replaceAll(any()) }
+        val syncInfo = coinSyncer.syncInfo()
+        assertEquals("10", syncInfo.listTimestamp)
+        assertEquals(true, syncInfo.serverAvailable)
     }
 
     @Test
-    fun mapFetched_duplicateNativeRowsOnTransformedChain_matchesLiveDatabaseState() {
-        val coins = listOf(CoinResponse("litecoin", "Litecoin", "ltc", null, null, null, null))
-        val blockchains = listOf(BlockchainResponse("litecoin", "Litecoin", null))
-        val nativeToken = TokenResponse("litecoin", "litecoin", "native", null, null, null)
+    fun sync_ranksOlderThanHour_appliesRanksOnly_keepsListDownloadedAtAndCounts() = runTest(dispatcher) {
+        coEvery { repository.coinsUpdatedAt() } returns 10L
+        coEvery { repository.coinRanks() } returns validRanks
+        coEvery { repository.coinsList() } returns validCoinsList
+        coinSyncer.sync(force = false)
+        val listDownloadedAtBefore = coinSyncer.syncInfo().listDownloadedAt
+        val coinsCountBefore = coinSyncer.syncInfo().coinsCount
+        syncerStateDao.save(keyRanksDownloadedAt, (System.currentTimeMillis() - 61 * 60 * 1000L).toString())
 
-        val result = CoinResponseMapper.mapFetched(
-            coins,
-            blockchains,
-            listOf(nativeToken, nativeToken.copy(decimals = 8)),
-            virtualCoinMapper
-        )
+        coinSyncer.sync(force = false)
 
-        // Live behavior: transform consumes the first native row (null decimals) into the
-        // derived rows; the second native row survives with its own decimals.
-        val derived = result.tokens.filter { it.type == "derived" }
-        assertEquals(listOf("Bip44", "Bip49", "Bip84", "Bip86"), derived.map { it.reference })
-        assertTrue(derived.all { it.decimals == null })
-        assertEquals(8, result.tokens.single { it.type == "native" }.decimals)
-        assertEquals(5, result.tokens.size)
-    }
-
-    // region injectVirtualTokens tests
-
-    @Test
-    fun injectVirtualTokens_bscUsdWithTether_addsVirtualUsdtToken() {
-        val coins = listOf(
-            createCoin("tether", "USDT"),
-            createCoin("bsc-usd", "BSC-USD")
-        )
-        val tokens = listOf(
-            createToken("bsc-usd", "binance-smart-chain")
-        )
-
-        val result = CoinResponseMapper.injectVirtualTokens(coins, tokens, virtualCoinMapper)
-
-        assertEquals(2, result.size)
-        assertTrue(result.any { it.coinUid == "bsc-usd" && it.blockchainUid == "binance-smart-chain" })
-        assertTrue(result.any { it.coinUid == "tether" && it.blockchainUid == "binance-smart-chain" })
+        coVerify(exactly = 1) { storage.replaceAll(any()) }
+        coVerify(exactly = 2) { storage.applyRanks(any()) }
+        coVerify(exactly = 1) { repository.coinsList() }
+        val syncInfo = coinSyncer.syncInfo()
+        assertEquals(listDownloadedAtBefore, syncInfo.listDownloadedAt)
+        assertEquals(coinsCountBefore, syncInfo.coinsCount)
     }
 
     @Test
-    fun injectVirtualTokens_missingTetherCoin_returnsOriginalTokens() {
-        val coins = listOf(
-            createCoin("bsc-usd", "BSC-USD")
-        )
-        val tokens = listOf(
-            createToken("bsc-usd", "binance-smart-chain")
-        )
+    fun sync_ranksDownloadedAtInFuture_refreshesRanks() = runTest(dispatcher) {
+        coEvery { repository.coinsUpdatedAt() } returns 10L
+        coEvery { repository.coinRanks() } returns validRanks
+        coEvery { repository.coinsList() } returns validCoinsList
+        coinSyncer.sync(force = false)
+        syncerStateDao.save(keyRanksDownloadedAt, (System.currentTimeMillis() + 60 * 60 * 1000L).toString())
 
-        val result = CoinResponseMapper.injectVirtualTokens(coins, tokens, virtualCoinMapper)
+        coinSyncer.sync(force = false)
 
-        assertEquals(1, result.size)
-        assertEquals("bsc-usd", result[0].coinUid)
+        coVerify(exactly = 2) { repository.coinRanks() }
+        coVerify(exactly = 2) { storage.applyRanks(any()) }
     }
 
     @Test
-    fun injectVirtualTokens_missingBscUsdCoin_returnsOriginalTokens() {
-        val coins = listOf(
-            createCoin("tether", "USDT")
-        )
-        val tokens = listOf(
-            createToken("some-token", "binance-smart-chain")
-        )
+    fun sync_force_fetchesListEvenIfUpdatedAtUnchanged() = runTest(dispatcher) {
+        coEvery { repository.coinsUpdatedAt() } returns 10L
+        coEvery { repository.coinRanks() } returns validRanks
+        coEvery { repository.coinsList() } returns validCoinsList
+        coinSyncer.sync(force = false)
 
-        val result = CoinResponseMapper.injectVirtualTokens(coins, tokens, virtualCoinMapper)
+        coinSyncer.sync(force = true)
 
-        assertEquals(1, result.size)
-        assertEquals("some-token", result[0].coinUid)
+        coVerify(exactly = 2) { repository.coinsList() }
+        coVerify(exactly = 2) { storage.replaceAll(any()) }
+        assertEquals("10", coinSyncer.syncInfo().listTimestamp)
     }
 
     @Test
-    fun injectVirtualTokens_bscUsdTokenOnWrongBlockchain_returnsOriginalTokens() {
-        val coins = listOf(
-            createCoin("tether", "USDT"),
-            createCoin("bsc-usd", "BSC-USD")
-        )
-        val tokens = listOf(
-            createToken("bsc-usd", "ethereum")
-        )
+    fun sync_updatesRequestFails_listUntouched_staleRanksStillApplied() = runTest(dispatcher) {
+        coEvery { repository.coinsUpdatedAt() } throws RuntimeException("offline")
+        coEvery { repository.coinRanks() } returns validRanks
 
-        val result = CoinResponseMapper.injectVirtualTokens(coins, tokens, virtualCoinMapper)
+        coinSyncer.sync(force = false)
 
-        assertEquals(1, result.size)
-        assertEquals("bsc-usd", result[0].coinUid)
+        coVerify(exactly = 0) { repository.coinsList() }
+        coVerify(exactly = 0) { storage.replaceAll(any()) }
+        coVerify(exactly = 1) { storage.applyRanks(validRanks) }
+        val syncInfo = coinSyncer.syncInfo()
+        assertEquals(false, syncInfo.serverAvailable)
+        assertNull(syncInfo.listTimestamp)
+        assertNotNull(syncInfo.ranksDownloadedAt)
     }
 
     @Test
-    fun injectVirtualTokens_emptyCoins_returnsOriginalTokens() {
-        val coins = emptyList<Coin>()
-        val tokens = listOf(
-            createToken("bsc-usd", "binance-smart-chain")
-        )
+    fun sync_everyRequestFails_nothingWritten_serverUnavailable() = runTest(dispatcher) {
+        coEvery { repository.coinsUpdatedAt() } throws RuntimeException("offline")
+        coEvery { repository.coinRanks() } throws RuntimeException("offline")
 
-        val result = CoinResponseMapper.injectVirtualTokens(coins, tokens, virtualCoinMapper)
+        coinSyncer.sync(force = false)
 
-        assertEquals(tokens, result)
+        coVerify(exactly = 0) { storage.replaceAll(any()) }
+        coVerify(exactly = 0) { storage.applyRanks(any()) }
+        assertEquals(false, coinSyncer.syncInfo().serverAvailable)
+        assertNull(coinSyncer.syncInfo().listTimestamp)
+        assertNull(coinSyncer.syncInfo().ranksDownloadedAt)
     }
 
     @Test
-    fun injectVirtualTokens_emptyTokens_returnsEmptyList() {
-        val coins = listOf(
-            createCoin("tether", "USDT"),
-            createCoin("bsc-usd", "BSC-USD")
-        )
-        val tokens = emptyList<TokenEntity>()
+    fun sync_updatesRecoveredNothingOutdated_marksServerAvailable() = runTest(dispatcher) {
+        coEvery { repository.coinRanks() } returns validRanks
+        coEvery { repository.coinsList() } returns validCoinsList
+        coEvery { repository.coinsUpdatedAt() } returns 10L
+        coinSyncer.sync(force = false)
+        coEvery { repository.coinsUpdatedAt() } throws RuntimeException("offline")
+        coinSyncer.sync(force = false)
+        coEvery { repository.coinsUpdatedAt() } returns 10L
 
-        val result = CoinResponseMapper.injectVirtualTokens(coins, tokens, virtualCoinMapper)
+        coinSyncer.sync(force = false)
 
-        assertTrue(result.isEmpty())
-    }
-
-    // endregion
-
-    // region filterValidTokens tests
-
-    @Test
-    fun transform_litecoinNativeToken_createsDerivedTokens() {
-        val result = CoinResponseMapper.transform(
-            listOf(createToken(coinUid = "litecoin", blockchainUid = "litecoin", decimals = 8))
-        )
-
-        assertEquals(
-            listOf(
-                "derived" to "Bip44",
-                "derived" to "Bip49",
-                "derived" to "Bip84",
-                "derived" to "Bip86"
-            ),
-            result.map { it.type to it.reference }
-        )
-        assertTrue(result.all { it.coinUid == "litecoin" && it.blockchainUid == "litecoin" && it.decimals == 8 })
+        coVerify(exactly = 1) { repository.coinRanks() }
+        assertEquals(true, coinSyncer.syncInfo().serverAvailable)
     }
 
     @Test
-    fun transform_litecoinNativeAndMwebTokens_preservesMwebToken() {
-        val result = CoinResponseMapper.transform(
-            listOf(
-                createToken(coinUid = "litecoin", blockchainUid = "litecoin", decimals = 8),
-                createToken(
-                    coinUid = "litecoin",
-                    blockchainUid = "litecoin",
-                    type = "mweb",
-                    decimals = 8
+    fun sync_ranksRequestFails_listStillReplacedWithStoredRanks() = runTest(dispatcher) {
+        coEvery { repository.coinsUpdatedAt() } returns 10L
+        coEvery { repository.coinsList() } returns validCoinsList
+        coEvery { repository.coinRanks() } throws RuntimeException("offline")
+        every { storage.ranks() } returns mapOf("bitcoin" to 5)
+        val replaced = slot<CoinsData>()
+        every { storage.replaceAll(capture(replaced)) } returns Unit
+
+        coinSyncer.sync(force = false)
+
+        assertEquals(5, replaced.captured.coins.single().marketCapRank)
+        coVerify(exactly = 0) { storage.applyRanks(any()) }
+        val syncInfo = coinSyncer.syncInfo()
+        assertEquals("10", syncInfo.listTimestamp)
+        assertNull(syncInfo.ranksDownloadedAt)
+        assertEquals(false, syncInfo.serverAvailable)
+    }
+
+    @Test
+    fun sync_ranksFailedAfterListReplaced_retriedOnNextSync() = runTest(dispatcher) {
+        coEvery { repository.coinsList() } returns validCoinsList
+        coEvery { repository.coinRanks() } returns validRanks
+        coEvery { repository.coinsUpdatedAt() } returns 10L
+        coinSyncer.sync(force = false)
+        // Still fresh, but strictly older than the next list download even within the same millisecond.
+        syncerStateDao.save(keyRanksDownloadedAt, (System.currentTimeMillis() - 1000L).toString())
+        coEvery { repository.coinsUpdatedAt() } returns 11L
+        coEvery { repository.coinRanks() } throws RuntimeException("offline")
+        coinSyncer.sync(force = false)
+        coEvery { repository.coinRanks() } returns validRanks
+
+        coinSyncer.sync(force = false)
+
+        coVerify(exactly = 3) { repository.coinRanks() }
+        coVerify(exactly = 2) { storage.applyRanks(validRanks) }
+        assertEquals(true, coinSyncer.syncInfo().serverAvailable)
+    }
+
+    @Test
+    fun sync_emptyList_listNotReplaced_ranksStillApplied() = runTest(dispatcher) {
+        coEvery { repository.coinsUpdatedAt() } returns 10L
+        coEvery { repository.coinRanks() } returns validRanks
+        coEvery { repository.coinsList() } returns CoinsList(blockchains = emptyList(), coins = emptyList())
+
+        coinSyncer.sync(force = false)
+
+        coVerify(exactly = 0) { storage.replaceAll(any()) }
+        coVerify(exactly = 1) { storage.applyRanks(validRanks) }
+        assertEquals(false, coinSyncer.syncInfo().serverAvailable)
+        assertNull(coinSyncer.syncInfo().listTimestamp)
+    }
+
+    @Test
+    fun sync_emptyRanks_ranksNotApplied_listStillReplaced() = runTest(dispatcher) {
+        coEvery { repository.coinsUpdatedAt() } returns 10L
+        coEvery { repository.coinsList() } returns validCoinsList
+        coEvery { repository.coinRanks() } returns emptyMap()
+
+        coinSyncer.sync(force = false)
+
+        coVerify(exactly = 1) { storage.replaceAll(any()) }
+        coVerify(exactly = 0) { storage.applyRanks(any()) }
+        val syncInfo = coinSyncer.syncInfo()
+        assertEquals(false, syncInfo.serverAvailable)
+        assertEquals("10", syncInfo.listTimestamp)
+        assertNull(syncInfo.ranksDownloadedAt)
+    }
+
+    @Test
+    fun sync_listWithZeroTokens_nothingWritten_keysNotSaved() = runTest(dispatcher) {
+        coEvery { repository.coinsUpdatedAt() } returns 10L
+        coEvery { repository.coinRanks() } returns validRanks
+        coEvery { repository.coinsList() } returns CoinsList(
+            blockchains = listOf(RemoteBlockchain("bitcoin", "Bitcoin", null)),
+            coins = listOf(
+                RemoteCoin(
+                    coingeckoId = "bitcoin",
+                    name = "Bitcoin",
+                    code = "btc",
+                    priority = null,
+                    // Token references an unlisted blockchain, so it is filtered out by the mapper.
+                    tokens = listOf(
+                        RemoteToken(type = "native", blockchainUid = "unknown-chain", address = null, decimals = 8)
+                    )
                 )
             )
         )
 
-        assertEquals(
-            1,
-            result.count { it.coinUid == "litecoin" && it.blockchainUid == "litecoin" && it.type == "mweb" })
-        assertEquals(
-            4,
-            result.count { it.coinUid == "litecoin" && it.blockchainUid == "litecoin" && it.type == "derived" })
+        coinSyncer.sync(force = false)
+
+        coVerify(exactly = 0) { storage.replaceAll(any()) }
+        assertEquals(false, coinSyncer.syncInfo().serverAvailable)
+        assertNull(coinSyncer.syncInfo().listTimestamp)
     }
-
-    @Test
-    fun filterValidTokens_validBlockchainUid_retainsToken() {
-        val blockchains = listOf(
-            BlockchainEntity(uid = "ethereum", name = "Ethereum", eip3091url = null),
-            BlockchainEntity(uid = "bitcoin", name = "Bitcoin", eip3091url = null)
-        )
-        val tokens = listOf(
-            createToken(coinUid = "eth", blockchainUid = "ethereum"),
-            createToken(coinUid = "btc", blockchainUid = "bitcoin")
-        )
-
-        val result = CoinResponseMapper.filterValidTokens(tokens, blockchains)
-
-        assertEquals(2, result.size)
-        assertEquals("eth", result[0].coinUid)
-        assertEquals("btc", result[1].coinUid)
-    }
-
-    @Test
-    fun filterValidTokens_invalidBlockchainUid_filtersOutToken() {
-        val blockchains = listOf(
-            BlockchainEntity(uid = "ethereum", name = "Ethereum", eip3091url = null)
-        )
-        val tokens = listOf(
-            createToken(coinUid = "eth", blockchainUid = "ethereum"),
-            createToken(coinUid = "canton-token", blockchainUid = "canton-network")
-        )
-
-        val result = CoinResponseMapper.filterValidTokens(tokens, blockchains)
-
-        assertEquals(1, result.size)
-        assertEquals("eth", result[0].coinUid)
-    }
-
-    @Test
-    fun filterValidTokens_emptyBlockchainEntities_filtersOutAllTokens() {
-        val blockchains = emptyList<BlockchainEntity>()
-        val tokens = listOf(
-            createToken(coinUid = "eth", blockchainUid = "ethereum"),
-            createToken(coinUid = "btc", blockchainUid = "bitcoin")
-        )
-
-        val result = CoinResponseMapper.filterValidTokens(tokens, blockchains)
-
-        assertTrue(result.isEmpty())
-    }
-
-    @Test
-    fun filterValidTokens_emptyTokens_returnsEmptyList() {
-        val blockchains = listOf(
-            BlockchainEntity(uid = "ethereum", name = "Ethereum", eip3091url = null)
-        )
-        val tokens = emptyList<TokenEntity>()
-
-        val result = CoinResponseMapper.filterValidTokens(tokens, blockchains)
-
-        assertTrue(result.isEmpty())
-    }
-
-    @Test
-    fun filterValidTokens_mixedValidAndInvalidTokens_retainsOnlyValid() {
-        val blockchains = listOf(
-            BlockchainEntity(uid = "ethereum", name = "Ethereum", eip3091url = null),
-            BlockchainEntity(uid = "binance-smart-chain", name = "BSC", eip3091url = null)
-        )
-        val tokens = listOf(
-            createToken(coinUid = "eth", blockchainUid = "ethereum"),
-            createToken(coinUid = "orphan1", blockchainUid = "canton-network"),
-            createToken(coinUid = "bnb", blockchainUid = "binance-smart-chain"),
-            createToken(coinUid = "orphan2", blockchainUid = "unknown-chain")
-        )
-
-        val result = CoinResponseMapper.filterValidTokens(tokens, blockchains)
-
-        assertEquals(2, result.size)
-        assertEquals("eth", result[0].coinUid)
-        assertEquals("bnb", result[1].coinUid)
-    }
-
-    // endregion
-
-    private fun createToken(
-        coinUid: String,
-        blockchainUid: String,
-        type: String = "native",
-        decimals: Int = 18,
-        reference: String = ""
-    ) = TokenEntity(
-        coinUid = coinUid,
-        blockchainUid = blockchainUid,
-        type = type,
-        decimals = decimals,
-        reference = reference
-    )
 }

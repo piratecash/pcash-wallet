@@ -102,6 +102,7 @@ class SwapProviderTransactionsDaoTest {
     }
 
     private suspend fun unmatchedFor(amount: Double = 0.02013) = dao.getUnmatchedSwapsByTokenOut(
+        tokenQueryId = "zcash|native",
         coinUid = COIN_UID,
         blockchainType = BLOCKCHAIN_TYPE,
         accountId = ACCOUNT_ID,

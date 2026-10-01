@@ -23,9 +23,6 @@ class CoinManager(
 
     fun coins(coinUids: List<String>) = storage.coins(coinUids)
 
-    fun getCoinGeckoIds(uids: List<String>) = storage.getCoinGeckoIds(uids)
-    fun getCoinGeckoId(uid: String) = storage.getCoinGeckoId(uid)
-
     fun fullCoin(uid: String): FullCoin? =
         storage.fullCoin(uid)
 

@@ -304,63 +304,28 @@ class AppStatusViewModel(
         return walletBlocks
     }
 
-    private fun getMarketLastSyncTimestamps(): Map<String, Any> {
+    private fun marketLastSyncLines(): List<Pair<String, String>> {
         val syncInfo = marketKit.syncInfo()
-        return buildMap {
-            put("Coins Timestamp", syncInfo.coinsTimestamp ?: "")
-            put("Blockchains Timestamp", syncInfo.blockchainsTimestamp ?: "")
-            put("Tokens Timestamp", syncInfo.tokensTimestamp ?: "")
-            syncInfo.coinsCount?.let { put("Coins Count", it) }
-            syncInfo.blockchainsCount?.let { put("Blockchains Count", it) }
-            syncInfo.tokensCount?.let { put("Tokens Count", it) }
-            syncInfo.serverAvailable?.let { put("Server Available", if (it) "Yes" else "No") }
+        return buildList {
+            add("Coins List Downloaded" to (syncInfo.listDownloadedAt?.let(::formatSyncDate) ?: ""))
+            add("Ranks Downloaded" to (syncInfo.ranksDownloadedAt?.let(::formatSyncDate) ?: ""))
+            syncInfo.coinsCount?.let { add("Coins Count" to it.toString()) }
+            syncInfo.blockchainsCount?.let { add("Blockchains Count" to it.toString()) }
+            syncInfo.tokensCount?.let { add("Tokens Count" to it.toString()) }
+            syncInfo.serverAvailable?.let { add("Server Available" to if (it) "Yes" else "No") }
         }
     }
 
-    private fun getMarketLastSyncTimestampsBlock(): AppStatusModule.BlockData {
-        val syncInfo = marketKit.syncInfo()
+    private fun formatSyncDate(timestamp: Long) = DateHelper.formatDate(Date(timestamp), "MMM d, yyyy, HH:mm")
 
-        return AppStatusModule.BlockData(
+    private fun getMarketLastSyncTimestamps(): Map<String, Any> =
+        marketLastSyncLines().toMap()
+
+    private fun getMarketLastSyncTimestampsBlock(): AppStatusModule.BlockData =
+        AppStatusModule.BlockData(
             title = "Market Sync Info",
-            content = buildList {
-                add(BlockContent.TitleValue("Coins Timestamp", syncInfo.coinsTimestamp ?: ""))
-                add(
-                    BlockContent.TitleValue(
-                        "Blockchains Timestamp",
-                        syncInfo.blockchainsTimestamp ?: ""
-                    )
-                )
-                add(BlockContent.TitleValue("Tokens Timestamp", syncInfo.tokensTimestamp ?: ""))
-                syncInfo.coinsCount?.let {
-                    add(
-                        BlockContent.TitleValue(
-                            "Coins Count",
-                            it.toString()
-                        )
-                    )
-                }
-                syncInfo.blockchainsCount?.let {
-                    add(
-                        BlockContent.TitleValue(
-                            "Blockchains Count",
-                            it.toString()
-                        )
-                    )
-                }
-                syncInfo.tokensCount?.let {
-                    add(
-                        BlockContent.TitleValue(
-                            "Tokens Count",
-                            it.toString()
-                        )
-                    )
-                }
-                syncInfo.serverAvailable?.let {
-                    add(BlockContent.TitleValue("Server Available", if (it) "Yes" else "No"))
-                }
-            }
+            content = marketLastSyncLines().map { (title, value) -> BlockContent.TitleValue(title, value) }
         )
-    }
 
     private fun getAppInfo(): Map<String, Any> {
         val appInfo = LinkedHashMap<String, Any>()

@@ -3,11 +3,8 @@ package cash.p.terminal.wallet.storage
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
-import cash.p.terminal.wallet.models.BlockchainEntity
-import cash.p.terminal.wallet.models.TokenEntity
 import io.horizontalsystems.core.entities.BlockchainType
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -24,7 +21,7 @@ class CoinStorageTokenQueryTest {
     private lateinit var database: MarketDatabase
     private lateinit var storage: CoinStorage
 
-    private val blockchain = BlockchainEntity(
+    private val blockchain = BlockchainRecord(
         uid = BlockchainType.BinanceSmartChain.uid,
         name = "BSC",
         eip3091url = null,
@@ -51,13 +48,15 @@ class CoinStorageTokenQueryTest {
         val exactCoin = coin("exact-coin", marketCapRank = 2)
         val suffixCoin = coin("suffix-coin", marketCapRank = 1)
 
-        storage.update(
-            coins = listOf(suffixCoin, exactCoin),
-            blockchainEntities = listOf(blockchain),
-            tokenEntities = listOf(
-                tokenEntity(suffixCoin, suffixReference),
-                tokenEntity(exactCoin, exactReference),
-            ),
+        storage.replaceAll(
+            CoinsData(
+                coins = listOf(suffixCoin, exactCoin),
+                blockchains = listOf(blockchain),
+                tokens = listOf(
+                    tokenRecord(suffixCoin, suffixReference),
+                    tokenRecord(exactCoin, exactReference),
+                ),
+            )
         )
 
         val token = storage.getToken(tokenQuery(exactReference))
@@ -71,10 +70,12 @@ class CoinStorageTokenQueryTest {
         val storedReference = "0xabc"
         val coin = coin("coin", marketCapRank = 1)
 
-        storage.update(
-            coins = listOf(coin),
-            blockchainEntities = listOf(blockchain),
-            tokenEntities = listOf(tokenEntity(coin, storedReference)),
+        storage.replaceAll(
+            CoinsData(
+                coins = listOf(coin),
+                blockchains = listOf(blockchain),
+                tokens = listOf(tokenRecord(coin, storedReference)),
+            )
         )
 
         val token = storage.getToken(tokenQuery(queryReference))
@@ -87,13 +88,15 @@ class CoinStorageTokenQueryTest {
         val exactCoin = coin("exact-coin", marketCapRank = 2)
         val suffixCoin = coin("suffix-coin", marketCapRank = 1)
 
-        storage.update(
-            coins = listOf(suffixCoin, exactCoin),
-            blockchainEntities = listOf(blockchain),
-            tokenEntities = listOf(
-                tokenEntity(exactCoin, "exact"),
-                tokenEntity(suffixCoin, "0xsuffix"),
-            ),
+        storage.replaceAll(
+            CoinsData(
+                coins = listOf(suffixCoin, exactCoin),
+                blockchains = listOf(blockchain),
+                tokens = listOf(
+                    tokenRecord(exactCoin, "exact"),
+                    tokenRecord(suffixCoin, "0xsuffix"),
+                ),
+            )
         )
 
         val tokens = storage.getTokens(
@@ -106,14 +109,14 @@ class CoinStorageTokenQueryTest {
         assertEquals(listOf(exactCoin.uid, suffixCoin.uid), tokens.map { it.coin.uid })
     }
 
-    private fun coin(uid: String, marketCapRank: Int) = Coin(
+    private fun coin(uid: String, marketCapRank: Int) = CoinRecord(
         uid = uid,
         name = uid,
         code = uid.uppercase(),
         marketCapRank = marketCapRank,
     )
 
-    private fun tokenEntity(coin: Coin, reference: String) = TokenEntity(
+    private fun tokenRecord(coin: CoinRecord, reference: String) = TokenRecord(
         coinUid = coin.uid,
         blockchainUid = blockchain.uid,
         type = "eip20",
