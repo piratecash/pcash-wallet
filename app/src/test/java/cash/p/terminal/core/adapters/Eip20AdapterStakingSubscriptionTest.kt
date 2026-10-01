@@ -1,6 +1,5 @@
 package cash.p.terminal.core.adapters
 
-import android.content.Context
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.managers.EvmLabelManager
 import cash.p.terminal.core.managers.StackingManager
@@ -8,7 +7,6 @@ import cash.p.terminal.data.repository.EvmTransactionRepository
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
 import io.horizontalsystems.erc20kit.core.Erc20Kit
-import io.horizontalsystems.ethereumkit.core.storage.TransactionSyncSourceStorage
 import io.horizontalsystems.ethereumkit.models.Address
 import io.mockk.every
 import io.mockk.mockk
@@ -26,7 +24,6 @@ import java.math.BigInteger
 @OptIn(ExperimentalCoroutinesApi::class)
 class Eip20AdapterStakingSubscriptionTest {
 
-    private val context = mockk<Context>(relaxed = true)
     private val evmTransactionRepository = mockk<EvmTransactionRepository>()
     private val coinManager = mockk<ICoinManager>(relaxed = true)
     private val evmLabelManager = mockk<EvmLabelManager>(relaxed = true)
@@ -39,10 +36,6 @@ class Eip20AdapterStakingSubscriptionTest {
     private val receiveAddress = "0x0000000000000000000000000000000000000001"
 
     private fun stubCommon(balanceProcessor: PublishProcessor<BigInteger>) {
-        every { evmTransactionRepository.transactionSyncSourceStorage } returns mockk<TransactionSyncSourceStorage>(
-            relaxed = true
-        )
-        every { evmTransactionRepository.buildErc20Kit(context, any()) } returns eip20Kit
         every { repositoryReceiveAddress.eip55 } returns receiveAddress
         every { evmTransactionRepository.receiveAddress } returns repositoryReceiveAddress
         every { stackingManager.unpaidFlow(any()) } returns MutableStateFlow(BigDecimal.ZERO)
@@ -54,7 +47,7 @@ class Eip20AdapterStakingSubscriptionTest {
         dispatcher: CoroutineDispatcher,
         wallet: Wallet = this.wallet,
     ) = Eip20Adapter(
-        context = context,
+        eip20Kit = eip20Kit,
         evmTransactionRepository = evmTransactionRepository,
         contractAddress = receiveAddress,
         baseToken = wallet.token,

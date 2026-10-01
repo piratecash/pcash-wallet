@@ -112,6 +112,7 @@ import io.horizontalsystems.core.logger.AppLog
 import io.horizontalsystems.core.security.KeyStoreManager
 import io.horizontalsystems.ethereumkit.core.EthereumKit
 import io.reactivex.plugins.RxJavaPlugins
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -571,7 +572,13 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
     private fun clearDeletedAccounts() {
         coroutineScope.launch {
             delay(3000)
-            getKoinInstance<DeletedAccountsCleanup>().invoke()
+            try {
+                getKoinInstance<DeletedAccountsCleanup>().invoke()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                KermitLogger.w(e) { "Failed to clear deleted accounts; retrying on next start" }
+            }
         }
     }
 

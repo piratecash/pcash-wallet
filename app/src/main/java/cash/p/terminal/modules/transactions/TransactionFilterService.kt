@@ -59,7 +59,7 @@ class TransactionFilterService(
         }
     }
 
-    fun setWallets(wallets: List<Wallet>) {
+    suspend fun setWallets(wallets: List<Wallet>) {
         uniqueId = UUID.randomUUID().toString()
 
         val filterTokens = wallets.map {
@@ -67,7 +67,7 @@ class TransactionFilterService(
         }
 
         val additionalFilterTokens = transactionAdapterManager.adaptersReadyFlow.value.flatMap { map ->
-            map.value.additionalTokenQueries.chunked(30).flatMap { chunk ->
+            map.value.additionalTokenQueries().chunked(30).flatMap { chunk ->
                 marketKitWrapper.tokens(chunk).map { token ->
                     FilterToken(token, map.key)
                 }

@@ -195,9 +195,18 @@ class AdapterFactory(
             account = wallet.account,
             blockchainType = blockchainType
         )
+        val eip20Kit = try {
+            evmTransactionRepository.buildErc20Kit(context, address)
+        } catch (error: Throwable) {
+            // No adapter will exist to unlink the EVM kit that setup() just linked.
+            withContext(NonCancellable) {
+                evmBlockchainManager.getEvmKitManager(blockchainType).unlink(wallet.account)
+            }
+            throw error
+        }
 
         return Eip20Adapter(
-            context = context,
+            eip20Kit = eip20Kit,
             evmTransactionRepository = evmTransactionRepository,
             contractAddress = address,
             baseToken = baseToken,

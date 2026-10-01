@@ -39,8 +39,7 @@ internal class EvmTransactionsAdapter(
         evmTransactionRepository,
         source,
         baseToken,
-        evmLabelManager,
-        evmKit.transactionSyncSourceStorage
+        evmLabelManager
     )
 
     override val explorerTitle: String
@@ -64,8 +63,8 @@ internal class EvmTransactionsAdapter(
             evmTransactionRepository.forwardSyncState.asFlowable().map {}
         )
 
-    override val additionalTokenQueries: List<TokenQuery>
-        get() = evmTransactionRepository.getTagTokenContractAddresses().map { address ->
+    override suspend fun additionalTokenQueries(): List<TokenQuery> =
+        evmTransactionRepository.getTagTokenContractAddresses().map { address ->
             TokenQuery.eip20(evmTransactionRepository.getBlockchainType(), address)
         }
 

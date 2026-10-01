@@ -71,57 +71,59 @@ internal class TransactionSpeedUpCancelViewModel(
     )
 
     init {
-        val fullTransaction = evmKitWrapper.evmKit
-            .getFullTransactions(listOf(transactionHash.hexStringToByteArray()))
-            .first()
+        viewModelScope.launch {
+            val fullTransaction = evmKitWrapper.evmKit
+                .getFullTransactions(listOf(transactionHash.hexStringToByteArray()))
+                .first()
 
-        fullTransaction.transaction.nonce?.let {
-            sendTransactionService.fixNonce(it)
-        }
-
-        if (fullTransaction.transaction.blockNumber != null) {
-            error = TransactionAlreadyInBlock()
-
-            emitState()
-        } else {
-            val transactionData = when (optionType) {
-                SpeedUpCancelType.SpeedUp -> {
-                    val transaction = fullTransaction.transaction
-                    TransactionData(transaction.to!!, transaction.value!!, transaction.input!!)
-                }
-
-                // MOBILE-593
-                /*SpeedUpCancelType.Cancel -> {
-                    TransactionData(
-                        evmKitWrapper.evmKit.receiveAddress,
-                        BigInteger.ZERO,
-                        byteArrayOf()
-                    )
-                }*/
+            fullTransaction.transaction.nonce?.let {
+                sendTransactionService.fixNonce(it)
             }
 
-            sectionViewItems = sendEvmTransactionViewItemFactory.getItems(
-                transactionData,
-                null,
-                sendTransactionService.decorate(transactionData)
-            )
-            emitState()
+            if (fullTransaction.transaction.blockNumber != null) {
+                error = TransactionAlreadyInBlock()
 
-            viewModelScope.launch {
-                sendTransactionService.stateFlow.collect { transactionState ->
-                    sendTransactionState = transactionState
-                    emitState()
+                emitState()
+            } else {
+                val transactionData = when (optionType) {
+                    SpeedUpCancelType.SpeedUp -> {
+                        val transaction = fullTransaction.transaction
+                        TransactionData(transaction.to!!, transaction.value!!, transaction.input!!)
+                    }
+
+                    // MOBILE-593
+                    /*SpeedUpCancelType.Cancel -> {
+                        TransactionData(
+                            evmKitWrapper.evmKit.receiveAddress,
+                            BigInteger.ZERO,
+                            byteArrayOf()
+                        )
+                    }*/
                 }
-            }
 
-            sendTransactionService.start(viewModelScope)
-            viewModelScope.launch {
-                sendTransactionService.setSendTransactionData(
-                    SendTransactionData.Evm(
-                        transactionData,
-                        null
-                    )
+                sectionViewItems = sendEvmTransactionViewItemFactory.getItems(
+                    transactionData,
+                    null,
+                    sendTransactionService.decorate(transactionData)
                 )
+                emitState()
+
+                launch {
+                    sendTransactionService.stateFlow.collect { transactionState ->
+                        sendTransactionState = transactionState
+                        emitState()
+                    }
+                }
+
+                sendTransactionService.start(this)
+                launch {
+                    sendTransactionService.setSendTransactionData(
+                        SendTransactionData.Evm(
+                            transactionData,
+                            null
+                        )
+                    )
+                }
             }
         }
     }

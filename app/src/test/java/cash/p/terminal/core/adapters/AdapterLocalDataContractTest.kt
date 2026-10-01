@@ -1,6 +1,5 @@
 package cash.p.terminal.core.adapters
 
-import android.content.Context
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.adapters.stellar.StellarAdapter
 import cash.p.terminal.core.adapters.stellar.StellarAssetAdapter
@@ -75,10 +74,9 @@ class AdapterLocalDataContractTest : ZcashAdapterTestFixture() {
     fun attachLocalData_eip20Adapter_doesNotTouchNetwork() {
         val repository = mockk<EvmTransactionRepository>(relaxed = true)
         val eip20Kit = mockk<Erc20Kit>(relaxed = true)
-        every { repository.buildErc20Kit(any(), any()) } returns eip20Kit
         val wallet = WalletFactory.previewStakingWallet()
         val adapter = Eip20Adapter(
-            context = mockk<Context>(relaxed = true),
+            eip20Kit = eip20Kit,
             evmTransactionRepository = repository,
             contractAddress = "0x0000000000000000000000000000000000000001",
             baseToken = wallet.token,

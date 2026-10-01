@@ -44,14 +44,13 @@ internal class EvmTransactionConverter(
     private val evmTransactionRepository: EvmTransactionRepository,
     private val source: TransactionSource,
     private val baseToken: Token,
-    private val evmLabelManager: EvmLabelManager,
-    private val syncSourceStorage: TransactionSyncSourceStorage
+    private val evmLabelManager: EvmLabelManager
 ) {
 
     fun transactionRecord(fullTransaction: FullTransaction): EvmTransactionRecord {
         val transaction = fullTransaction.transaction
         val isProtected = MerkleTransactionAdapter.isProtected(fullTransaction)
-        val syncSource = syncSourceStorage.getSource(transaction.hash)?.displayName
+        val syncSource = TransactionSyncSourceStorage.syncSource(fullTransaction)?.displayName
 
         val transactionRecord = when (val decoration = fullTransaction.decoration) {
             is ContractCreationDecoration -> {
