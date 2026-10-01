@@ -21,6 +21,7 @@ import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.authorizedAction
+import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
 import cash.p.terminal.modules.confirm.ConfirmTransactionScreen
 import cash.p.terminal.modules.main.MainActivity
@@ -67,7 +68,9 @@ fun TonConnectSendRequestScreen(navController: NavController) {
         TonConnectSendRequestViewModel(
             sendRequestEntity,
             App.accountManager,
-            App.tonConnectManager
+            App.tonConnectManager,
+            getKoinInstance(),
+            getKoinInstance(),
         )
     })
 
@@ -148,7 +151,11 @@ fun TonConnectSendRequestScreen(navController: NavController) {
         uiState.error?.let { error ->
             TextImportantError(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                text = error.message ?: error.javaClass.simpleName
+                text = if (error is TonConnectSendRequestError.KitUnavailable) {
+                    stringResource(R.string.unknown_error)
+                } else {
+                    error.message ?: error.javaClass.simpleName
+                }
             )
         }
 

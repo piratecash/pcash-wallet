@@ -2,7 +2,7 @@ package cash.p.terminal.modules.main
 
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.TestDispatcherProvider
-import cash.p.terminal.core.managers.DAppRequestEntityWrapper
+import cash.p.terminal.core.managers.DAppRequest
 import cash.p.terminal.core.managers.DefaultUserManager
 import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.modules.calculator.domain.CalculatorModeService
@@ -54,7 +54,7 @@ class MainActivityViewModelTest {
     private lateinit var userManager: DefaultUserManager
     private lateinit var isLockedFlow: MutableStateFlow<Boolean>
     private lateinit var sendRequestFlow: MutableSharedFlow<SignTransaction>
-    private lateinit var dappRequestFlow: MutableSharedFlow<DAppRequestEntityWrapper>
+    private lateinit var dappRequestFlow: MutableSharedFlow<DAppRequest>
 
     @Before
     fun setUp() {

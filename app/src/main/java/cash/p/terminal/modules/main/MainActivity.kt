@@ -208,7 +208,7 @@ open class MainActivity : BaseActivity() {
             if (request != null) {
                 navController.slideFromBottomForResult<TonConnectNewFragment.Result>(
                     R.id.tcNewFragment,
-                    request.dAppRequest
+                    TonConnectNewFragment.Input(request.uri)
                 ) { result ->
                     if (request.closeAppOnResult) {
                         if (result.approved) {

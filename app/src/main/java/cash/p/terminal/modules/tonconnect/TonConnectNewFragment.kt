@@ -6,16 +6,15 @@ import androidx.navigation.NavController
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.navigation.setNavigationResultX
 import cash.p.terminal.ui_compose.BaseComposeFragment
-import com.tonapps.wallet.data.tonconnect.entities.DAppRequestEntity
 import kotlinx.parcelize.Parcelize
 
 class TonConnectNewFragment : BaseComposeFragment() {
     @Composable
     override fun GetContent(navController: NavController) {
-        withInput<DAppRequestEntity>(navController) { input ->
+        withInput<Input>(navController) { input ->
             TonConnectNewScreen(
                 navController = navController,
-                requestEntity = input,
+                uri = input.uri,
                 onResult = { approved ->
                     navController.setNavigationResultX(Result(approved))
                     navController.popBackStackSafely()
@@ -23,6 +22,9 @@ class TonConnectNewFragment : BaseComposeFragment() {
             )
         }
     }
+
+    @Parcelize
+    data class Input(val uri: String) : Parcelable
 
     @Parcelize
     data class Result(val approved: Boolean) : Parcelable

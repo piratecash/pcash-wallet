@@ -2,9 +2,11 @@ package cash.p.terminal.modules.tonconnect
 
 import androidx.lifecycle.viewModelScope
 import io.horizontalsystems.core.DispatcherProvider
+import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.core.managers.toTonWalletFullAccess
 import cash.p.terminal.core.storage.HardwarePublicKeyStorage
 import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.ActiveAccountState
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.supportsTonConnect
 import com.tonapps.wallet.data.tonconnect.entities.DAppManifestEntity
@@ -13,12 +15,13 @@ import io.horizontalsystems.core.ViewModelUiState
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.tonkit.tonconnect.TonConnectKit
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
 
 class TonConnectNewViewModel(
-    private val requestEntity: DAppRequestEntity,
-    private val tonConnectKit: TonConnectKit
+    uri: String,
+    private val tonConnectManager: TonConnectManager,
 ) : ViewModelUiState<TonConnectNewUiState>() {
 
     private val hardwarePublicKeyStorage: HardwarePublicKeyStorage by inject(
@@ -35,6 +38,14 @@ class TonConnectNewViewModel(
     private var error: Throwable? = null
     private var toast: String? = null
 
+    // Comes from a QR code or deeplink, so it may be malformed.
+    private val requestEntity: DAppRequestEntity? = try {
+        TonConnectKit.readData(uri)
+    } catch (_: Exception) {
+        error = InvalidRequestError()
+        null
+    }
+
     override fun createState() = TonConnectNewUiState(
         manifest = manifest,
         accounts = accounts,
@@ -46,6 +57,15 @@ class TonConnectNewViewModel(
     )
 
     init {
+        requestEntity?.let { loadManifest(it.payload.manifestUrl) }
+
+        viewModelScope.launch {
+            accountManager.activeAccountStateFlow.first { it is ActiveAccountState.ActiveAccount }
+            selectAccount()
+        }
+    }
+
+    private fun selectAccount() {
         accounts = accountManager.accounts.filter {
             it.supportsTonConnect()
         }
@@ -58,11 +78,18 @@ class TonConnectNewViewModel(
             }
         }
 
+        if (accounts.isEmpty()) {
+            error = NoTonAccountError()
+        }
+
+        emitState()
+    }
+
+    private fun loadManifest(url: String) {
         viewModelScope.launch(dispatchers.io) {
-            val url = requestEntity.payload.manifestUrl
             for (attempt in 1..MAX_MANIFEST_RETRIES) {
                 try {
-                    manifest = tonConnectKit.getManifest(url)
+                    manifest = tonConnectManager.kit().getManifest(url)
                     if (error is NoManifestError) {
                         error = null
                     }
@@ -77,11 +104,6 @@ class TonConnectNewViewModel(
                     }
                 }
             }
-        }
-
-        if (accounts.isEmpty()) {
-            error = NoTonAccountError()
-            emitState()
         }
     }
 
@@ -98,10 +120,11 @@ class TonConnectNewViewModel(
 
         viewModelScope.launch(dispatchers.io) {
             try {
+                val requestEntity = checkNotNull(requestEntity) { "Invalid TON Connect request" }
                 val manifest = manifest ?: throw NoManifestError()
                 val account = account ?: throw IllegalArgumentException("Empty account")
 
-                tonConnectKit.connect(
+                tonConnectManager.kit().connect(
                     requestEntity,
                     manifest,
                     account.id,
@@ -139,6 +162,7 @@ private const val MANIFEST_RETRY_DELAY_MS = 1000L
 sealed class TonConnectError : Error()
 class NoManifestError(override val message: String? = null) : TonConnectError()
 class NoTonAccountError : TonConnectError()
+class InvalidRequestError : TonConnectError()
 
 data class TonConnectNewUiState(
     val manifest: DAppManifestEntity?,
