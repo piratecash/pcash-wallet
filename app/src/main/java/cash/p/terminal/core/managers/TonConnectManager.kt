@@ -3,44 +3,176 @@ package cash.p.terminal.core.managers
 import android.content.Context
 import android.net.Uri
 import cash.p.terminal.core.factories.AdapterFactory
-import com.tonapps.wallet.data.tonconnect.entities.DAppRequestEntity
+import cash.p.terminal.core.storage.AppDatabase
+import cash.p.terminal.wallet.IAccountManager
+import co.touchlab.kermit.Logger
+import com.tonapps.wallet.data.tonconnect.entities.DAppEntity
+import io.horizontalsystems.core.DispatcherProvider
+import io.horizontalsystems.sqlcipher.room.DatabaseKeyMismatchException
 import io.horizontalsystems.tonkit.core.TonKit
 import io.horizontalsystems.tonkit.models.Network
+import io.horizontalsystems.tonkit.models.SignTransaction
 import io.horizontalsystems.tonkit.tonconnect.TonConnectKit
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import timber.log.Timber
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class TonConnectManager(
-    context: Context,
+    private val context: Context,
     val adapterFactory: AdapterFactory,
-    appName: String,
-    appVersion: String,
+    private val appName: String,
+    private val appVersion: String,
+    private val databaseKeyProvider: TonConnectDatabaseKeyProvider,
+    private val accountManager: IAccountManager,
+    private val appDatabase: AppDatabase,
+    private val dispatcherProvider: DispatcherProvider,
 ) {
-    val kit = TonConnectKit.getInstance(context, appName, appVersion)
+    private val logger = Logger.withTag("TonConnectManager")
+    private val kitMutex = Mutex()
+    private val _kitState = MutableStateFlow<TonConnectKit?>(null)
+    val kitState: StateFlow<TonConnectKit?> = _kitState.asStateFlow()
+
     val transactionSigner = TonKit.getTransactionSigner(TonKit.getTonApi(Network.MainNet))
 
-    val sendRequestFlow by kit::sendRequestFlow
-    private val _dappRequestFlow = MutableSharedFlow<DAppRequestEntityWrapper>()
+    val sendRequestFlow: Flow<SignTransaction> =
+        kitState.flatMapLatest { it?.sendRequestFlow ?: emptyFlow() }
+    private val _dappRequestFlow = MutableSharedFlow<DAppRequest>()
     val dappRequestFlow
         get() = _dappRequestFlow.asSharedFlow()
 
+    fun getDApps(): Flow<List<DAppEntity>> = kitState.flatMapLatest { it?.getDApps() ?: emptyFlow() }
+
     fun start() {
+        dispatcherProvider.applicationScope.launch {
+            logFailure("initialize") { kit() }
+        }
+        dispatcherProvider.applicationScope.launch {
+            accountManager.accountsDeletedFlowable.asFlow().collect {
+                logFailure("remove dApps of deleted accounts") {
+                    kit().removeDAppsExcept(liveAccountIds())
+                }
+            }
+        }
+    }
+
+    /** Creates the kit on first use; a failure is rethrown and not cached, so the next call retries. */
+    suspend fun kit(): TonConnectKit = kitMutex.withLock {
+        _kitState.value ?: try {
+            createKit().also { _kitState.value = it }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            logger.w(e) { "TON Connect initialization failed" }
+            throw e
+        }
+    }
+
+    /** After a keystore reset: the next [kit] starts over with a new key and an empty database. */
+    fun reset() {
+        removeDatabaseKey()
+        dispatcherProvider.applicationScope.launch {
+            logFailure("drop TON Connect kit after reset") {
+                kitMutex.withLock {
+                    // A kit() in flight may have persisted a key wrapped by the old master key meanwhile.
+                    removeDatabaseKey()
+                    _kitState.value?.stop()
+                    _kitState.value = null
+                }
+            }
+        }
+    }
+
+    private fun removeDatabaseKey() {
+        try {
+            databaseKeyProvider.remove(TON_CONNECT_DATABASE_ID)
+        } catch (e: KitDatabaseKeyException) {
+            logger.w(e) { "Failed to remove TON Connect database key" }
+        }
+    }
+
+    private suspend fun createKit(): TonConnectKit {
+        val databaseKey = databaseKeyProvider.awaitDatabaseKey(TON_CONNECT_DATABASE_ID)
+        // A cancelled caller must not leave a fresh key stored over a database that was never recreated.
+        withContext(NonCancellable) { prepareDatabase(databaseKey) }
+        val kit = TonConnectKit.getInstance(context, databaseKey.bytes, appName, appVersion)
+        // Sessions of accounts deleted before this version would otherwise stay subscribed.
+        kit.removeDAppsExcept(liveAccountIds())
         kit.start()
+        return kit
+    }
+
+    private suspend fun prepareDatabase(databaseKey: DatabaseKey) {
+        try {
+            TonConnectKit.migrateDatabase(context, databaseKey.bytes)
+        } catch (e: DatabaseKeyMismatchException) {
+            // A stored key may fail to open transiently; only a just-created key proves the old database is lost.
+            if (!databaseKey.isNew) throw e
+            recreateDatabase(databaseKey.bytes)
+        }
+    }
+
+    private suspend fun recreateDatabase(databaseKey: ByteArray) {
+        try {
+            TonConnectKit.clear(context)
+            TonConnectKit.migrateDatabase(context, databaseKey)
+        } catch (e: Throwable) {
+            // The fresh key protects nothing yet; dropping it lets the next kit() discard the database again.
+            try {
+                databaseKeyProvider.remove(TON_CONNECT_DATABASE_ID)
+            } catch (removal: KitDatabaseKeyException) {
+                e.addSuppressed(removal)
+            }
+            throw e
+        }
+    }
+
+    // Every access level: accountManager.accounts holds only the current level's accounts.
+    private suspend fun liveAccountIds(): List<String> = withContext(dispatcherProvider.io) {
+        val accountsDao = appDatabase.accountsDao()
+        accountsDao.getIds() - accountsDao.getDeletedIds().toSet()
+    }
+
+    private suspend fun logFailure(action: String, block: suspend () -> Unit) {
+        try {
+            block()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            logger.w(e) { "Failed to $action" }
+        }
     }
 
     suspend fun handle(scannedText: String, closeAppOnResult: Boolean = false) {
         try {
-            val dAppRequest = kit.readData(scannedText)
-            _dappRequestFlow.emit(DAppRequestEntityWrapper(dAppRequest, closeAppOnResult))
+            TonConnectKit.readData(scannedText)
+            _dappRequestFlow.emit(DAppRequest(scannedText, closeAppOnResult))
         } catch (e: Throwable) {
-            Timber.e(e, "Failed to handle TON Connect request")
+            // The parser's message embeds the untrusted payload.
+            logger.w { "Invalid TON Connect request: ${e::class.simpleName}" }
         }
+    }
+
+    companion object {
+        const val TON_CONNECT_DATABASE_ID = "ton-connect"
     }
 }
 
-data class DAppRequestEntityWrapper(
-    val dAppRequest: DAppRequestEntity,
+data class DAppRequest(
+    val uri: String,
     val closeAppOnResult: Boolean
 )
 

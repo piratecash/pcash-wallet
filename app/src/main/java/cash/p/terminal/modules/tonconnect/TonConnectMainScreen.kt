@@ -45,10 +45,10 @@ fun TonConnectMainScreen(
 
     val uiState = viewModel.uiState
 
-    val dAppRequestEntity = uiState.dAppRequestEntity
-    LaunchedEffect(dAppRequestEntity) {
-        if (dAppRequestEntity != null) {
-            navController.slideFromBottom(R.id.tcNewFragment, dAppRequestEntity)
+    val dAppRequestUri = uiState.dAppRequestUri
+    LaunchedEffect(dAppRequestUri) {
+        if (dAppRequestUri != null) {
+            navController.slideFromBottom(R.id.tcNewFragment, TonConnectNewFragment.Input(dAppRequestUri))
             viewModel.onDappRequestHandled()
         }
     }

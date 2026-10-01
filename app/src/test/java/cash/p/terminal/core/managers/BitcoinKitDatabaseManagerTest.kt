@@ -23,14 +23,14 @@ class BitcoinKitDatabaseManagerTest {
         every { getDatabasePath(any()) } returns File("/app/databases/bitcoin-kit-path")
         every { noBackupFilesDir } returns File("/app/no-backup")
     }
-    private val keyProvider = mockk<KitDatabaseKeyProvider>()
+    private val keyProvider = mockk<BitcoinKitDatabaseKeyProvider>()
     private val operations = mockk<BitcoinKitDatabaseOperations>()
     private val connectionManager = mockk<IConnectionManager>()
     private val databaseKey = ByteArray(32) { it.toByte() }
 
     @Test
     fun prepare_concurrentCalls_migratesOnceAndReturnsEncryptedEnvironment() = runTest {
-        every { keyProvider.keyFor(ACCOUNT_ID) } returns databaseKey
+        coEvery { keyProvider.awaitKey(ACCOUNT_ID) } returns databaseKey
         coEvery { operations.migrate(any(), any(), any()) } returns Unit
         val manager = createManager()
 
@@ -47,7 +47,7 @@ class BitcoinKitDatabaseManagerTest {
 
     @Test
     fun prepare_migrationFails_retriesWithExistingKey() = runTest {
-        every { keyProvider.keyFor(ACCOUNT_ID) } returns databaseKey
+        coEvery { keyProvider.awaitKey(ACCOUNT_ID) } returns databaseKey
         coEvery { operations.migrate(any(), any(), any()) } throws
             IllegalStateException("migration failed") andThen Unit
         val manager = createManager()
@@ -55,14 +55,14 @@ class BitcoinKitDatabaseManagerTest {
         assertFailsWith<IllegalStateException> { manager.prepare(ACCOUNT_ID) }
         manager.prepare(ACCOUNT_ID)
 
-        verify(exactly = 2) { keyProvider.keyFor(ACCOUNT_ID) }
+        coVerify(exactly = 2) { keyProvider.awaitKey(ACCOUNT_ID) }
         coVerify(exactly = 2) { operations.migrate(DATA_DIR, ACCOUNT_ID, databaseKey) }
         verify(exactly = 0) { keyProvider.remove(any()) }
     }
 
     @Test
     fun prepare_migrationCancelled_retainsKeyAndCanRetry() = runTest {
-        every { keyProvider.keyFor(ACCOUNT_ID) } returns databaseKey
+        coEvery { keyProvider.awaitKey(ACCOUNT_ID) } returns databaseKey
         coEvery { operations.migrate(any(), any(), any()) } throws CancellationException() andThen Unit
         val manager = createManager()
 
@@ -71,20 +71,6 @@ class BitcoinKitDatabaseManagerTest {
 
         coVerify(exactly = 2) { operations.migrate(DATA_DIR, ACCOUNT_ID, databaseKey) }
         verify(exactly = 0) { keyProvider.remove(any()) }
-    }
-
-    @Test
-    fun prepare_databaseKeyLocked_retriesUntilAuthenticationSucceeds() = runTest {
-        every { keyProvider.keyFor(ACCOUNT_ID) } throws
-            KitDatabaseKeyLockedException(mockk()) andThen databaseKey
-        coEvery { operations.migrate(any(), any(), any()) } returns Unit
-        val manager = createManager()
-
-        val environment = manager.prepare(ACCOUNT_ID)
-
-        verify(exactly = 2) { keyProvider.keyFor(ACCOUNT_ID) }
-        coVerify(exactly = 1) { operations.migrate(DATA_DIR, ACCOUNT_ID, databaseKey) }
-        assertArrayEquals(databaseKey, environment.databaseKey)
     }
 
     @Test
@@ -124,7 +110,7 @@ class BitcoinKitDatabaseManagerTest {
 
     private fun createManager() = BitcoinKitDatabaseManager(
         context,
-        KitDatabaseKeys(keyProvider),
+        keyProvider,
         operations,
         connectionManager,
     )

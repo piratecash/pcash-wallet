@@ -5,6 +5,7 @@ import cash.p.terminal.core.managers.BeamDeletionState
 import cash.p.terminal.core.managers.BeamAccountDeletionPreflight
 import cash.p.terminal.core.managers.BeamDatabaseKeyProvider
 import cash.p.terminal.core.managers.BeamStorageLocator
+import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.wallet.AccountDeletionBlockedException
 import cash.p.terminal.wallet.AccountDeletionPreflight
 import cash.p.terminal.wallet.IEnabledWalletStorage
@@ -35,6 +36,7 @@ class KeyStoreViewModelTest {
     private val manager = mockk<IKeyStoreManager>(relaxed = true)
     private val storage = mockk<ILocalStorage>(relaxed = true)
     private val preflight = mockk<AccountDeletionPreflight>(relaxed = true)
+    private val tonConnect = mockk<TonConnectManager>(relaxed = true)
 
     @Before
     fun setUp() = Dispatchers.setMain(dispatcher)
@@ -46,7 +48,7 @@ class KeyStoreViewModelTest {
     fun init_eachBeamMarkerInAutomaticModes_requiresRecoveryWithoutResetOrKeyRemoval() = runTest(dispatcher) {
         for (mode in automaticModes) {
             for (marker in Marker.entries) {
-                val model = KeyStoreViewModel(manager, storage, beamPreflight(marker), mode)
+                val model = KeyStoreViewModel(manager, storage, beamPreflight(marker), lazy { tonConnect }, mode)
                 assertRecoveryOnly(model)
             }
         }
@@ -57,7 +59,7 @@ class KeyStoreViewModelTest {
     @Test
     fun init_noBeamInAutomaticModes_preservesResetAndWarningBehavior() = runTest(dispatcher) {
         for (mode in automaticModes) {
-            val model = KeyStoreViewModel(manager, storage, beamPreflight(null), mode)
+            val model = KeyStoreViewModel(manager, storage, beamPreflight(null), lazy { tonConnect }, mode)
             assertFalse(model.recoveryRequired)
             verify(exactly = 1) { manager.resetApp(mode.name) }
             when (mode) {
@@ -92,6 +94,7 @@ class KeyStoreViewModelTest {
         model.onCloseInvalidKeyWarning()
         assertRecoveryOnly(model)
         verify(exactly = 0) { manager.removeKey() }
+        verify(exactly = 0) { tonConnect.reset() }
     }
 
     @Test
@@ -102,6 +105,7 @@ class KeyStoreViewModelTest {
             manager.resetApp("InvalidKey")
             preflight.ensureCanReset()
             manager.removeKey()
+            tonConnect.reset()
         }
     }
 
@@ -111,10 +115,11 @@ class KeyStoreViewModelTest {
         assertTrue(model.showBiometricPrompt)
         model.onAuthenticationSuccess()
         assertTrue(model.openMainModule)
-        verify { listOf(manager, preflight) wasNot Called }
+        verify { listOf(manager, preflight, tonConnect) wasNot Called }
     }
 
-    private fun viewModel(mode: KeyStoreModule.ModeType) = KeyStoreViewModel(manager, storage, preflight, mode)
+    private fun viewModel(mode: KeyStoreModule.ModeType) =
+        KeyStoreViewModel(manager, storage, preflight, lazy { tonConnect }, mode)
 
     private fun assertRecoveryOnly(model: KeyStoreViewModel) {
         assertTrue(model.recoveryRequired)
