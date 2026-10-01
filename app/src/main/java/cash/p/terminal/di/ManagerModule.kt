@@ -63,6 +63,7 @@ import cash.p.terminal.core.notifications.polling.EvmTransactionsPoller
 import cash.p.terminal.core.notifications.polling.MoneroTransactionsPoller
 import cash.p.terminal.core.notifications.polling.SolanaTransactionsPoller
 import cash.p.terminal.core.notifications.polling.StellarTransactionsPoller
+import cash.p.terminal.core.notifications.polling.ThorchainTransactionsPoller
 import cash.p.terminal.core.notifications.polling.TonTransactionsPoller
 import cash.p.terminal.core.notifications.polling.TransactionPollingManager
 import cash.p.terminal.core.notifications.polling.TronTransactionsPoller
@@ -122,6 +123,7 @@ import cash.p.terminal.core.managers.StackingManager
 import cash.p.terminal.core.managers.StellarKitManager
 import cash.p.terminal.core.managers.SystemInfoManager
 import cash.p.terminal.core.managers.TermsManager
+import cash.p.terminal.core.managers.ThorchainKitManagers
 import cash.p.terminal.core.managers.TimePasswordProvider
 import cash.p.terminal.core.managers.TokenAutoEnableManager
 import cash.p.terminal.core.managers.TonConnectDatabaseKeyProvider
@@ -285,6 +287,7 @@ val managerModule = module {
     singleOf(::TronTransactionsPoller)
     singleOf(::SolanaTransactionsPoller)
     singleOf(::StellarTransactionsPoller)
+    singleOf(::ThorchainTransactionsPoller)
     singleOf(::BtcLikeTransactionsPoller)
     singleOf(::ZcashTransactionsPoller)
     singleOf(::BeamTransactionsPoller)
@@ -297,6 +300,7 @@ val managerModule = module {
                 get<TronTransactionsPoller>(),
                 get<SolanaTransactionsPoller>(),
                 get<StellarTransactionsPoller>(),
+                get<ThorchainTransactionsPoller>(),
                 get<BtcLikeTransactionsPoller>(),
                 get<ZcashTransactionsPoller>(),
                 get<MoneroTransactionsPoller>(),
@@ -326,6 +330,7 @@ val managerModule = module {
     singleOf(::StellarKitManager)
     singleOf(::TonKitDatabaseKeyProvider)
     singleOf(::TonConnectDatabaseKeyProvider)
+    singleOf(::ThorchainKitManagers)
     singleOf(::TonKitManager)
     singleOf(::GetTonAddressUseCaseImpl) bind GetTonAddressUseCase::class
     singleOf(::CreateRequiredTokensUseCaseImpl) bind CreateRequiredTokensUseCase::class

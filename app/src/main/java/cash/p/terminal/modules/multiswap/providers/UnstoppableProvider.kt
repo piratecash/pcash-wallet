@@ -109,7 +109,7 @@ enum class UnstoppableProvider(
 
         /**
          * Display title for a stored sub-provider [apiId] (from
-         * [cash.p.terminal.entities.SwapProviderTransaction.unstoppableSubProviderId]). Falls back to
+         * [cash.p.terminal.entities.SwapProviderTransaction.subProviderId]). Falls back to
          * the raw id if the sub-provider was later removed from this enum.
          */
         fun displayTitle(apiId: String?): String? =

@@ -9,4 +9,5 @@ enum class SwapProvider(val title: String) {
     MAYA("Maya Protocol"),
     UNSTOPPABLE("Unstoppable"),
     YIFI("YiFi"),
+    PCASH_BACKEND("P.CASH"),
 }

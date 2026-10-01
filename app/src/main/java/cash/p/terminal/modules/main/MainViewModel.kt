@@ -35,6 +35,7 @@ import io.horizontalsystems.core.IPinComponent
 import io.horizontalsystems.core.ViewModelUiState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
 import org.koin.java.KoinJavaComponent.inject
@@ -442,11 +443,15 @@ class MainViewModel(
             }
         }
 
-        val (tab, deeplinkPageData) = getNavigationDataForDeeplink(uri)
-        deeplinkPage = deeplinkPageData
-        currentMainTab = tab
-        selectedTabIndex = items.indexOf(tab)
-        syncNavigation()
+        // The parser gates on the active account, which loads asynchronously on a cold start.
+        viewModelScope.launch {
+            accountManager.activeAccountStateFlow.first { it is ActiveAccountState.ActiveAccount }
+            val (tab, deeplinkPageData) = getNavigationDataForDeeplink(uri)
+            deeplinkPage = deeplinkPageData
+            currentMainTab = tab
+            selectedTabIndex = items.indexOf(tab)
+            syncNavigation()
+        }
     }
 
     fun onSendOpened() {

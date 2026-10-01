@@ -25,3 +25,24 @@ internal val Token.isZcashUnified: Boolean
 // only via the transparent token.
 internal val Token.isZcashNonTransparent: Boolean
     get() = isZcashShielded || isZcashUnified
+
+internal enum class SwapAssetKind { NATIVE, CONTRACT }
+
+// Dispatch on the type, not on contractAddress(): it is empty for Asset, Trc10 and Mweb too.
+internal val Token.swapAssetKind: SwapAssetKind?
+    get() = when (type) {
+        TokenType.Native,
+        is TokenType.Derived,
+        is TokenType.AddressTyped,
+        is TokenType.AddressSpecTyped -> SwapAssetKind.NATIVE.takeUnless { isZcashShielded }
+
+        is TokenType.Eip20,
+        is TokenType.Spl,
+        is TokenType.Jetton -> SwapAssetKind.CONTRACT
+
+        TokenType.Mweb,
+        is TokenType.Trc10,
+        is TokenType.Asset,
+        is TokenType.ThorchainAsset,
+        is TokenType.Unsupported -> null
+    }

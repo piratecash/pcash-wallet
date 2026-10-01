@@ -34,10 +34,12 @@ fun AccountType.zcashAddressSpecs(): Set<AddressSpecType> = when (this) {
     is AccountType.EvmAddress,
     is AccountType.EvmPrivateKey,
     is AccountType.HardwareCard,
+    is AccountType.MayachainAddress,
     is AccountType.MnemonicMonero,
     is AccountType.SolanaAddress,
     is AccountType.StellarAddress,
     is AccountType.StellarSecretKey,
+    is AccountType.ThorchainAddress,
     is AccountType.TonAddress,
     is AccountType.TronAddress -> emptySet()
 }

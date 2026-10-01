@@ -32,6 +32,7 @@ class AccountCleaner(
     private val accountStorageCleaner: AccountStorageCleaner,
     private val bitcoinKitDatabaseManager: BitcoinKitDatabaseManager,
     private val tonKitManager: TonKitManager,
+    private val thorchainKitManagers: ThorchainKitManagers,
     private val deletionPreflight: AccountDeletionPreflight,
 ) : IAccountCleaner {
 
@@ -44,6 +45,8 @@ class AccountCleaner(
     }
 
     private suspend fun clearAccount(accountId: String) {
+        // Before the shared database key is removed with the bitcoin-kit data.
+        thorchainKitManagers.clear(accountId)
         bitcoinKitDatabaseManager.clear(accountId)
         EvmAdapter.clear(accountId)
         Eip20Adapter.clear(accountId)
