@@ -13,13 +13,14 @@ import org.junit.Test
 
 class TrezorModelSupportTest {
 
-    private fun features(supportsTron: Boolean) = TrezorFeatures(
+    private fun features(supportsTron: Boolean = false, supportsZcash: Boolean = false) = TrezorFeatures(
         deviceId = "device-1",
         model = "T",
         internalModel = "T3B1",
         firmwareVersion = "2.11.0",
         passphraseProtection = false,
         supportsTron = supportsTron,
+        supportsZcash = supportsZcash,
     )
 
     @Test
@@ -36,6 +37,14 @@ class TrezorModelSupportTest {
         }
     }
 
+    @Test
+    fun allModelsAndNullModel_supportZcash() {
+        TrezorModel.entries.forEach { model ->
+            assertTrue(TrezorModelSupport.isSupported(model, BlockchainType.Zcash))
+        }
+        assertTrue(TrezorModelSupport.isSupported(null, BlockchainType.Zcash))
+    }
+    
     @Test
     fun allModels_supportRobinhoodChain() {
         TrezorModel.entries.forEach { model ->
@@ -98,6 +107,18 @@ class TrezorModelSupportTest {
     }
 
     @Test
+    fun defaultQueries_convertZcashUnifiedToTransparent_andExcludeUnified() {
+        val queries = TrezorModelSupport.getDefaultTokenQueries(TrezorModel.Safe5)
+
+        assertTrue(
+            queries.contains(
+                TokenQuery(BlockchainType.Zcash, TokenType.AddressSpecTyped(TokenType.AddressSpecType.Transparent)),
+            ),
+        )
+        assertFalse(queries.contains(TokenQuery.ZcashUnified))
+    }
+
+    @Test
     fun nullModel_returnsUniversalOnly() {
         val supported = TrezorModelSupport.getSupportedBlockchains(null)
         assertTrue(supported.contains(BlockchainType.Bitcoin))
@@ -147,6 +168,31 @@ class TrezorModelSupportTest {
         )
 
         val result = TrezorModelSupport.filterByFirmwareCapabilities(queries, features(supportsTron = true))
+
+        assertEquals(queries, result)
+    }
+
+    @Test
+    fun filterByFirmwareCapabilities_noZcashCapability_dropsZcashQueries() {
+        val bitcoin = TokenQuery(BlockchainType.Bitcoin, TokenType.Native)
+        val queries = listOf(
+            bitcoin,
+            TokenQuery(BlockchainType.Zcash, TokenType.AddressSpecTyped(TokenType.AddressSpecType.Transparent)),
+        )
+
+        val result = TrezorModelSupport.filterByFirmwareCapabilities(queries, features(supportsZcash = false))
+
+        assertEquals(listOf(bitcoin), result)
+    }
+
+    @Test
+    fun filterByFirmwareCapabilities_zcashCapability_keepsZcashQueries() {
+        val queries = listOf(
+            TokenQuery(BlockchainType.Bitcoin, TokenType.Native),
+            TokenQuery(BlockchainType.Zcash, TokenType.AddressSpecTyped(TokenType.AddressSpecType.Transparent)),
+        )
+
+        val result = TrezorModelSupport.filterByFirmwareCapabilities(queries, features(supportsZcash = true))
 
         assertEquals(queries, result)
     }

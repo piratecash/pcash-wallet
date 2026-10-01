@@ -3,6 +3,7 @@ package cash.p.terminal.trezor.domain.usecase
 import cash.p.terminal.trezor.client.TrezorKeyValidationException
 import cash.p.terminal.trezor.client.TrezorPublicKeySpecs
 import cash.p.terminal.trezor.domain.TrezorAccountIdentityValidator
+import cash.p.terminal.trezor.domain.TrezorFirmwareVersionRecorder
 import cash.p.terminal.trezorkit.client.ITrezorClient
 import cash.p.terminal.trezorkit.client.TrezorClientSession
 import cash.p.terminal.trezorkit.client.TrezorFeatures
@@ -20,6 +21,7 @@ import cash.p.terminal.wallet.entities.TokenType
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -43,11 +45,13 @@ class FetchTrezorPublicKeysUseCaseImplTest {
     private val accountManager: IAccountManager = mockk(relaxed = true)
     private val hardwarePublicKeyStorage: IHardwarePublicKeyStorage = mockk(relaxed = true)
     private val identityValidator = TrezorAccountIdentityValidator(hardwarePublicKeyStorage)
+    private val firmwareVersionRecorder: TrezorFirmwareVersionRecorder = mockk(relaxed = true)
 
     private val useCase = FetchTrezorPublicKeysUseCaseImpl(
         trezorClient,
         accountManager,
         identityValidator,
+        firmwareVersionRecorder,
     )
 
     @Test
@@ -164,6 +168,36 @@ class FetchTrezorPublicKeysUseCaseImplTest {
         )
 
         coVerify(exactly = 1) { session.getFeatures() }
+    }
+
+    @Test
+    fun invoke_normalDerivation_recordsFirmwareOnceAfterDeviceCheckBeforeKeysFetched() {
+        val features = features(internalModel = "T3T1")
+
+        runFetch(
+            stored = trezorDevice(model = "T3T1"),
+            features = features,
+            tokenQueries = listOf(TokenQuery(BlockchainType.Solana, TokenType.Native)),
+        )
+
+        coVerify(exactly = 1) { firmwareVersionRecorder.record(ACCOUNT_ID, features) }
+        coVerifyOrder {
+            session.getFeatures()
+            firmwareVersionRecorder.record(ACCOUNT_ID, features)
+            session.getPublicKeys(any())
+        }
+    }
+
+    @Test
+    fun invoke_deviceIdMismatch_doesNotRecordFirmware() {
+        assertThrows(TrezorKeyValidationException::class.java) {
+            runFetch(
+                stored = trezorDevice(model = "unknown"),
+                features = features(deviceId = "other-device", internalModel = "T2B1")
+            )
+        }
+
+        coVerify(exactly = 0) { firmwareVersionRecorder.record(any(), any()) }
     }
 
     @Test

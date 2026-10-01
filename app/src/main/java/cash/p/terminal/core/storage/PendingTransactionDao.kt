@@ -34,6 +34,9 @@ interface PendingTransactionDao {
     @Query("UPDATE PendingTransaction SET balanceConfirmedAt = :confirmedAt WHERE id IN (:ids)")
     suspend fun markBalanceConfirmed(ids: List<String>, confirmedAt: Long)
 
+    @Query("UPDATE PendingTransaction SET sdkBalanceAtCreationAtomic = :atomic WHERE id IN (:ids)")
+    suspend fun rebaseSdkBalanceAtCreation(ids: List<String>, atomic: String)
+
     @Query("SELECT * FROM PendingTransaction")
     suspend fun getAllPending(): List<PendingTransactionEntity>
 

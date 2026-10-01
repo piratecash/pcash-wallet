@@ -1558,19 +1558,17 @@ private fun ButtonsRow(
                 )
             }
         } else {
-            if (!viewItem.isSendDisabled) {
-                ButtonPrimaryYellow(
-                    modifier = Modifier.weight(1f),
-                    title = stringResource(R.string.Balance_Send),
-                    onClick = {
-                        onOperationClick(sendClickAvailability(viewItem, sendEnabled)) {
-                            onSendClick()
-                        }
-                    },
-                    enabled = sendEnabled,
-                )
-                HSpacer(8.dp)
-            }
+            ButtonPrimaryYellow(
+                modifier = Modifier.weight(1f),
+                title = stringResource(R.string.Balance_Send),
+                onClick = {
+                    onOperationClick(sendClickAvailability(viewItem, sendEnabled)) {
+                        onSendClick()
+                    }
+                },
+                enabled = sendEnabled,
+            )
+            HSpacer(8.dp)
             if (!viewItem.swapVisible) {
                 ButtonPrimaryDefault(
                     modifier = Modifier.weight(1f),
@@ -1617,7 +1615,7 @@ private fun ButtonsRow(
     }
     if (isShowShieldFunds) {
         Column(
-            modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 16.dp),
+            modifier = Modifier.padding(top = 4.dp, bottom = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             ButtonPrimaryYellow(
@@ -1783,8 +1781,6 @@ private fun previewBalanceViewItem() = BalanceViewItem(
     swapAvailability = OperationAvailability.Available,
     errorMessage = null,
     isWatchAccount = false,
-    isSendDisabled = false,
-    isShowShieldFunds = false,
     warning = null,
     displayDiffOptionType = DisplayDiffOptionType.NONE,
 )

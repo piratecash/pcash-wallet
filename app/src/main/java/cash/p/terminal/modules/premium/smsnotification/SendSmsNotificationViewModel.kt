@@ -8,7 +8,8 @@ import androidx.lifecycle.viewModelScope
 import cash.p.terminal.R
 import cash.p.terminal.core.ISendZcashAdapter
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
-import cash.p.terminal.core.adapters.zcash.ZcashAddressValidator
+import cash.p.terminal.core.adapters.zcash.isTransparentZcashAddress
+import cash.p.terminal.core.adapters.zcash.isValidZcashAddress
 import cash.p.terminal.feature.logging.domain.usecase.GetZecWalletsUseCase
 import cash.p.terminal.modules.offline.OfflineOperationGate
 import cash.p.terminal.modules.offline.OperationAvailability
@@ -108,7 +109,6 @@ class SendSmsNotificationViewModel(
 
     private fun selectWallet(walletItem: WalletViewItem) {
         val adapter: ISendZcashAdapter? = adapterManager.getAdapterForWallet(walletItem.wallet)
-        // Use adapter fee if available, otherwise use default Zcash miners fee from SDK
         val fee = adapter?.fee?.value ?: ZcashAdapter.MINERS_FEE
 
         uiState = uiState.copy(
@@ -164,7 +164,7 @@ class SendSmsNotificationViewModel(
         }
 
         // First check if it's a valid Zcash address format
-        val isValid = ZcashAddressValidator.validate(address)
+        val isValid = isValidZcashAddress(address)
         if (!isValid) {
             uiState = uiState.copy(
                 addressError = Exception(Translator.getString(R.string.SwapSettings_Error_InvalidAddress))
@@ -174,7 +174,7 @@ class SendSmsNotificationViewModel(
         }
 
         // Reject transparent addresses - only shielded addresses are allowed
-        if (ZcashAddressValidator.isTransparentAddress(address)) {
+        if (isTransparentZcashAddress(address)) {
             uiState = uiState.copy(
                 addressError = Exception(Translator.getString(R.string.send_sms_transparent_address_not_allowed))
             )

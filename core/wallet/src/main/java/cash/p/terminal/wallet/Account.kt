@@ -268,6 +268,29 @@ sealed class AccountType : Parcelable {
     }
 
     @Parcelize
+    data class ZCashSaplingKey(val key: String) : AccountType() {
+        /** Fail-safe: anything that is not a spending key counts as watch-only. */
+        val isSpendingKey: Boolean
+            get() = key.startsWith(SPENDING_KEY_HRP_PREFIX)
+
+        override fun equals(other: Any?): Boolean {
+            return other is ZCashSaplingKey && key == other.key
+        }
+
+        override fun hashCode(): Int {
+            return key.hashCode()
+        }
+
+        override fun toString(): String {
+            return "ZCashSaplingKey(key='${key.toMasked()}')"
+        }
+
+        private companion object {
+            const val SPENDING_KEY_HRP_PREFIX = "secret-extended-key"
+        }
+    }
+
+    @Parcelize
     data class HardwareCard(
         val cardId: String,
         val backupCardsCount: Int,
@@ -331,6 +354,9 @@ sealed class AccountType : Parcelable {
             is StellarSecretKey -> "Stellar Secret Key"
             is EvmPrivateKey -> "EVM Private Key"
             is ZCashUfvKey -> "ZCash UFV Key"
+            is ZCashSaplingKey ->
+                if (isSpendingKey) "ZCash Sapling Key" else "ZCash Sapling Viewing Key"
+
             is HardwareCard -> "Hardware card"
             is TrezorDevice -> "Trezor Device"
             is MnemonicMonero -> "Monero Wallet"
@@ -395,6 +421,8 @@ sealed class AccountType : Parcelable {
 
     val isWatchAccountType: Boolean
         get() = when (this) {
+            is ZCashSaplingKey -> !isSpendingKey
+
             is ZCashUfvKey,
             is EvmAddress,
             is SolanaAddress,

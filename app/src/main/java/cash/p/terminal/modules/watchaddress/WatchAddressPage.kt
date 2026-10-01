@@ -19,6 +19,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.watchaddress.selectblockchains.SelectBlockchainsPage
+import cash.p.terminal.modules.zcashconfigure.ZcashConfigurePage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
@@ -66,6 +67,17 @@ fun WatchAddressScreen(navigation: HSNavigation, popUpToInclusiveId: KClass<out 
             )
             delay(300)
             navigation.removeLastUntil(popUpToInclusiveId, inclusive)
+        }
+    }
+
+    LaunchedEffect(uiState.zcashHeightRequested) {
+        if (!uiState.zcashHeightRequested) return@LaunchedEffect
+
+        viewModel.zcashHeightRequestOpened()
+        navigation.slideFromBottomForResult<ZcashConfigurePage.Result>(
+            ZcashConfigurePage(ZcashConfigurePage.Input(initialConfig = null))
+        ) { result ->
+            viewModel.onZcashHeightEntered(result.config)
         }
     }
 
@@ -134,6 +146,7 @@ fun WatchAddressScreen(navigation: HSNavigation, popUpToInclusiveId: KClass<out 
             Spacer(Modifier.height(32.dp))
             FormsInputMultiline(
                 modifier = Modifier.padding(horizontal = 16.dp),
+                initial = viewModel.enteredInput,
                 hint = stringResource(id = R.string.Watch_Address_Hint),
                 qrScannerEnabled = true,
                 navigation = navigation,

@@ -33,6 +33,11 @@ class ZcashSingleUseAddressStorage(
             dao.getAddressesWithoutBalance(accountId)
         }
 
+    suspend fun getAllAddresses(accountId: String): List<ZcashSingleUseAddress> =
+        withContext(dispatcherProvider.io) {
+            dao.getAllAddresses(accountId)
+        }
+
     suspend fun deleteAccountAddresses(accountId: String) = withContext(dispatcherProvider.io) {
         dao.deleteByAccount(accountId)
     }

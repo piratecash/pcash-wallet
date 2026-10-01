@@ -16,6 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
+import cash.p.terminal.core.utils.ZcashMemo.MAX_SIZE_BYTES
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.address.AddressParserModule
 import cash.p.terminal.modules.address.AddressParserViewModel
@@ -43,7 +44,6 @@ import cash.p.terminal.ui_compose.components.SectionUniversalLawrence
 import cash.p.terminal.ui_compose.components.SwitchWithText
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
-import cash.z.ecc.android.sdk.ext.ZcashSdk.MAX_MEMO_SIZE
 import java.math.BigDecimal
 
 @Composable
@@ -178,8 +178,8 @@ private fun SendZCashScreen(
                 memoPrefill = paymentAddressViewModel.addressInputState.memoPrefill,
                 onValueChange = viewModel::onEnterMemo,
                 visible = memoIsAllowed,
-                prefillMaxLength = MAX_MEMO_SIZE,
-                prefillMaxBytes = MAX_MEMO_SIZE,
+                prefillMaxLength = MAX_SIZE_BYTES,
+                prefillMaxBytes = MAX_SIZE_BYTES,
             )
 
             VSpacer(12.dp)

@@ -2015,12 +2015,21 @@ class TransactionViewItemFactory(
         currencyValue: CurrencyValue?,
     ): TransactionViewItem {
         val isExpired = record.isExpired
-        val subtitle = record.to?.firstOrNull()?.takeIf { it.isNotBlank() }?.let {
-            Translator.getString(R.string.Transactions_To, mapped(it, record.blockchainType))
-        } ?: "---"
+        val subtitle = if (record.isIronwoodMigration) {
+            Translator.getString(R.string.transactions_migrate_to_ironwood)
+        } else {
+            record.to?.firstOrNull()?.takeIf { it.isNotBlank() }?.let {
+                Translator.getString(R.string.Transactions_To, mapped(it, record.blockchainType))
+            } ?: "---"
+        }
 
         val secondaryValue = currencyValue?.let {
             getColoredValue(it, ColorName.Grey)
+        }
+        val amountColor = when {
+            isExpired -> ColorName.Grey
+            record.isIronwoodMigration -> ColorName.Leah
+            else -> ColorName.Lucian
         }
         return TransactionViewItem(
             uid = record.uid,
@@ -2029,15 +2038,20 @@ class TransactionViewItemFactory(
             subtitle = subtitle,
             primaryValue = getColoredValue(
                 record.mainValue,
-                if (isExpired) ColorName.Grey else ColorName.Lucian
+                amountColor,
+                hideSign = record.isIronwoodMigration
             ),
             secondaryValue = secondaryValue,
             date = Date(record.timestamp * 1000),
             formattedTime = formatTime(record.timestamp),
-            sentToSelf = false,
+            sentToSelf = record.sentToSelf,
             doubleSpend = false,
             locked = null,
-            icon = icon ?: getIconForToken(record.token.coin.uid),
+            icon = icon ?: if (record.isIronwoodMigration) {
+                TransactionViewItem.Icon.ImageResource(R.drawable.ic_migrate_24)
+            } else {
+                getIconForToken(record.token.coin.uid)
+            },
             spam = false,
             showAmount = showAmount
         )
