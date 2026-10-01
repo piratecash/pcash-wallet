@@ -53,6 +53,7 @@ import cash.p.terminal.trezor.domain.TrezorCancelledException
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
+import co.touchlab.kermit.Logger
 import com.tangem.common.core.TangemSdkError
 import com.piratecash.monero.signer.HardwareWalletOperationException
 import io.horizontalsystems.bitcoincore.managers.SendValueErrors
@@ -72,6 +73,8 @@ import timber.log.Timber
 import java.math.BigDecimal
 import java.util.UUID
 import kotlin.coroutines.cancellation.CancellationException
+
+private val logger = Logger.withTag("SwapConfirmViewModel")
 
 class SwapConfirmViewModel(
     private val request: SwapConfirmRequest,
@@ -293,7 +296,17 @@ class SwapConfirmViewModel(
         } else {
             emptyList()
         }
-        return sendTransactionState.cautions + quoteCautions + priceImpactCaution + balanceCaution
+        val criticalErrorCaution = criticalError?.let {
+            listOf(
+                HSCaution(
+                    s = TranslatableString.ResString(R.string.Error),
+                    type = HSCaution.Type.Error,
+                    description = TranslatableString.PlainString(it),
+                ).toCautionViewItem()
+            )
+        } ?: emptyList()
+        return sendTransactionState.cautions + quoteCautions + priceImpactCaution + balanceCaution +
+            criticalErrorCaution
     }
 
     private fun isSendable(cautions: List<CautionViewItem> = buildCautions()): Boolean {
@@ -393,6 +406,7 @@ class SwapConfirmViewModel(
             } catch (e: BackendExolixResponseError) {
                 setCriticalError(e.exolixCriticalError)
             } catch (e: BackendYiFiResponseError) {
+                logger.w { "YiFi final quote failed: code=${e.code}, status=${e.statusCode}" }
                 setCriticalError(e.yiFiCriticalError)
             } catch (_: YiFiDepositMemoUnsupported) {
                 setCriticalError(Translator.getString(R.string.swap_yifi_memo_unsupported))
@@ -450,9 +464,19 @@ class SwapConfirmViewModel(
             ?: Translator.getString(R.string.unexpected_error)
 
     private val BackendYiFiResponseError.yiFiCriticalError: String
-        get() = message.notBlank()
-            ?: code.notBlank()
-            ?: Translator.getString(R.string.unexpected_error)
+        get() = when (code) {
+            BackendYiFiResponseError.INVALID_RECEIVE_ADDRESS -> {
+                Translator.getString(R.string.unsupported_address)
+            }
+
+            BackendYiFiResponseError.INVALID_REFUND_ADDRESS -> {
+                Translator.getString(R.string.unsupported_refund_address)
+            }
+
+            else -> {
+                Translator.getString(R.string.swap_provider_order_failed)
+            }
+        }
 
     private fun String?.notBlank(): String? =
         takeIf { !it.isNullOrBlank() }

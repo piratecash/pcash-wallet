@@ -636,6 +636,7 @@
     <string name="unsupported_token">Токен не підтримується</string>
     <string name="zec_transparent_used">Під час створення обміну використовується тимчасова t-адреса: %s. Вона передається провайдеру обміну та потрібна для повернення коштів, якщо обмін не буде завершено. Використання t-адреси може призвести до часткової деанонімізації транзакції.</string>
     <string name="swap_yifi_memo_unsupported">Провайдер свопу вимагає memo для депозиту, яке неможливо надіслати з цієї мережі. Оберіть іншого провайдера.</string>
+    <string name="swap_provider_order_failed">Провайдер не зміг створити своп. Оновіть пропозицію або поверніться та оберіть іншого провайдера.</string>
     <!-- Swap Settings -->
     <string name="Fee_LiquidityFee">Комісія за ліквідність</string>
     <string name="SwapSettings_Title">Налаштування свапу</string>
