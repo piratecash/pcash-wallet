@@ -13,6 +13,7 @@ import cash.p.terminal.modules.multiswap.SwapFinalQuoteEvm
 import cash.p.terminal.modules.multiswap.SwapQuoteOffChain
 import cash.p.terminal.modules.multiswap.SwapRouteNotFound
 import cash.p.terminal.modules.multiswap.action.ActionCreate
+import cash.p.terminal.modules.multiswap.providers.backendswap.BackendSwapProvidersRepository
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionResult
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionSettings
 import cash.p.terminal.modules.multiswap.ui.DataFieldRecipientExtended
@@ -28,16 +29,12 @@ import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.core.DispatcherProvider
-import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.math.BigDecimal
-
-/** The order needs a deposit memo that the input network cannot carry. */
-class YiFiDepositMemoUnsupported : Throwable()
 
 class YiFiProvider(
     override val walletUseCase: WalletUseCase,
@@ -46,6 +43,7 @@ class YiFiProvider(
     accountManager: IAccountManager,
     private val dispatcherProvider: DispatcherProvider,
     private val providerSupport: OffChainSwapProviderSupport,
+    private val backendSwapProvidersRepository: BackendSwapProvidersRepository,
 ) : OffChainSwapProvider {
     override val id = "yifi"
     override val title = "YiFi"
@@ -88,19 +86,12 @@ class YiFiProvider(
         const val CACHE_PAIR_DURATION = 1000L * 60
         const val CACHE_FINAL_QUOTE_DURATION = 1000L * 60 * 5
         const val MAX_ORDER_ATTEMPTS = 4
-        val MEMO_CHAINS = setOf(
-            BlockchainType.Stellar,
-            BlockchainType.Ton,
-            BlockchainType.Thorchain,
-            BlockchainType.Mayachain,
-        )
         val RATE_ERRORS = setOf(BackendYiFiResponseError.RATE_EXPIRED, BackendYiFiResponseError.RATE_MISMATCH)
         val NO_ROUTE_ERRORS = setOf(
             BackendYiFiResponseError.NO_QUOTES_AVAILABLE,
             BackendYiFiResponseError.COIN_NOT_FOUND,
             BackendYiFiResponseError.NO_SOURCES_AVAILABLE,
         )
-        val BCH_PREFIX = Regex("^bitcoincash:", RegexOption.IGNORE_CASE)
     }
 
     // No network call here: SwapQuoteService starts providers sequentially.
@@ -166,8 +157,8 @@ class YiFiProvider(
         swapQuote: ISwapQuote
     ): ISwapFinalQuote = withContext(dispatcherProvider.io) {
         finalQuoteMutex.withLock {
-            val receiveAddress = normalizeAddress(tokenOut, walletUseCase.getReceiveAddress(tokenOut))
-            val refundAddress = normalizeAddress(tokenIn, providerSupport.getRefundAddress(tokenIn))
+            val receiveAddress = tokenOut.normalizeSwapAddress(walletUseCase.getReceiveAddress(tokenOut))
+            val refundAddress = tokenIn.normalizeSwapAddress(providerSupport.getRefundAddress(tokenIn))
             val key = FinalQuoteKey(
                 tokenInId = tokenIn.tokenQuery.id,
                 tokenOutId = tokenOut.tokenQuery.id,
@@ -223,7 +214,7 @@ class YiFiProvider(
     }
 
     private fun failWith(failure: OrderFailure?): Nothing = throw when (failure) {
-        OrderFailure.Memo -> YiFiDepositMemoUnsupported()
+        OrderFailure.Memo -> SwapDepositMemoUnsupported()
         is OrderFailure.Rate -> failure.error
         null -> SwapRouteNotFound()
     }
@@ -298,7 +289,8 @@ class YiFiProvider(
             tickerTo = assetOut.ticker,
             networkTo = assetOut.network,
             amount = amountIn,
-            excludedProviders = excludedProviders,
+            // Providers we route directly through the p.cash backend must not be reached via YiFi too.
+            excludedProviders = excludedProviders + backendSwapProvidersRepository.providers.value.map { it.name },
         )
     } catch (e: BackendYiFiResponseError) {
         if (e.statusCode == 404 && e.code in NO_ROUTE_ERRORS) null else throw e
@@ -306,10 +298,6 @@ class YiFiProvider(
 
     private suspend fun requireAsset(token: Token): YiFiAsset =
         tokenResolver.resolveAsset(token) ?: throw SwapRouteNotFound()
-
-    // YiFi's BCH address regex rejects the CashAddr prefix that bitcoin-kit includes.
-    private fun normalizeAddress(token: Token, address: String): String =
-        if (token.blockchainType == BlockchainType.BitcoinCash) address.replaceFirst(BCH_PREFIX, "") else address
 }
 
 /** Parses YiFi `estimatedTime` ("~30s", "~194m", "10-60" minutes) into seconds. */

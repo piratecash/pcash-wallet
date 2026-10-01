@@ -1,10 +1,13 @@
 package cash.p.terminal.trezor.signer
 
 import cash.p.terminal.trezor.client.TrezorDerivationPath
+import cash.p.terminal.trezor.domain.TrezorModelSupport
 import cash.p.terminal.trezor.domain.TrezorSigningException
+import cash.p.terminal.trezor.domain.model.TrezorModel
 import cash.p.terminal.trezorkit.client.ITrezorClient
 import cash.p.terminal.trezorkit.client.TrezorEvmGasFee
 import cash.p.terminal.trezorkit.client.TrezorEvmTx
+import cash.p.terminal.trezorkit.client.TrezorMessageSignature
 import cash.p.terminal.wallet.crypto.EvmSignatureRecovery
 import io.horizontalsystems.ethereumkit.core.TransactionBuilder
 import io.horizontalsystems.ethereumkit.core.TransactionSigner
@@ -20,13 +23,16 @@ import io.horizontalsystems.ethereumkit.models.RawTransaction
 import io.horizontalsystems.ethereumkit.models.Signature
 import io.horizontalsystems.ethereumkit.spv.rlp.RLP
 import io.horizontalsystems.ethereumkit.spv.rlp.RLPList
+import org.web3j.crypto.StructuredDataEncoder
 import java.math.BigInteger
 
 class TrezorEvmSigner(
     private val address: Address,
     private val chain: Chain,
     private val derivationPath: String,
-    private val trezorClient: ITrezorClient
+    private val trezorClient: ITrezorClient,
+    private val model: TrezorModel?,
+    private val firmwareVersion: String
 ) : Signer(
     transactionBuilder = TransactionBuilder(address, chain.id),
     transactionSigner = TransactionSigner(MOCK_PRIVATE_KEY, chain.id),
@@ -163,13 +169,15 @@ class TrezorEvmSigner(
      */
     suspend fun signPersonalMessage(message: ByteArray): ByteArray {
         val result = trezorClient.connect { signEthereumMessage(TrezorDerivationPath.parse(derivationPath), message) }
-        val sig = result.signature
-        if (sig.size != SIGNATURE_SIZE) {
-            throw TrezorSigningException("Unexpected Trezor signature size: ${sig.size}")
+        return result.toRsRecId(EvmSignatureRecovery.personalSignHash(message))
+    }
+
+    private fun TrezorMessageSignature.toRsRecId(hash: ByteArray): ByteArray {
+        if (signature.size != SIGNATURE_SIZE) {
+            throw TrezorSigningException("Unexpected Trezor signature size: ${signature.size}")
         }
-        val r = sig.copyOfRange(0, R_S_SIZE)
-        val s = sig.copyOfRange(R_S_SIZE, 2 * R_S_SIZE)
-        val hash = EvmSignatureRecovery.personalSignHash(message)
+        val r = signature.copyOfRange(0, R_S_SIZE)
+        val s = signature.copyOfRange(R_S_SIZE, 2 * R_S_SIZE)
         val recId = resolveRecoveryId(hash, r, s)
             ?: throw TrezorSigningException("Device signed with an unexpected account")
         return r + s + byteArrayOf(recId.toByte())
@@ -192,9 +200,36 @@ class TrezorEvmSigner(
     suspend fun signLegacyHash(hash: ByteArray): ByteArray =
         throw TrezorSigningException("eth_sign (raw hash) is not supported on Trezor")
 
-    /** Not supported: typed-data signing is not wired for Trezor. */
-    suspend fun signTypedDataMessage(rawJson: String): ByteArray =
-        throw TrezorSigningException("eth_signTypedData is not supported on Trezor")
+    /** Signs EIP-712 typed data on-device (Trezor One signs the hashes only); returns `r‖s‖recId`. */
+    suspend fun signTypedDataMessage(rawJson: String): ByteArray {
+        if (!TrezorModelSupport.supportsTypedData(model, firmwareVersion)) {
+            throw TrezorSigningException("eth_signTypedData is not supported on this Trezor firmware")
+        }
+        // Parse and hash before connecting, so malformed data fails before the device prompt.
+        val encoder = StructuredDataEncoder(rawJson)
+        // The device signs keccak(0x1901‖domainHash) for these, which our digest cannot verify.
+        if (encoder.jsonMessageObject.primaryType == EIP712_DOMAIN) {
+            throw TrezorSigningException("Domain-only typed data is not supported on Trezor")
+        }
+        val digest = EIP712Encoder().encodeTypedDataHash(rawJson)
+        val addressN = TrezorDerivationPath.parse(derivationPath)
+        val result = if (model == TrezorModel.One) {
+            val domainHash = encoder.hashDomain()
+            val messageHash = encoder.messageHash()
+            trezorClient.connect { signEthereumTypedHash(addressN, domainHash, messageHash) }
+        } else {
+            val data = encoder.jsonMessageObject.toTrezorTypedData()
+            trezorClient.connect { signEthereumTypedData(addressN, data) }
+        }
+        return result.toRsRecId(digest)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun StructuredDataEncoder.messageHash(): ByteArray {
+        val message = jsonMessageObject.message as? HashMap<String, Any>
+            ?: throw TrezorSigningException("Typed data message is not an object")
+        return hashMessage(jsonMessageObject.primaryType, message)
+    }
 }
 
 data class SignedEvmTransaction(

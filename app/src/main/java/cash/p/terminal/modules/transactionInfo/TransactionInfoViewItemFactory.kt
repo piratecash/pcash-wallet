@@ -793,7 +793,7 @@ class TransactionInfoViewItemFactory(
                         valueOut = valueOut,
                         valueIn = valueIn,
                         blockchainType = blockchainType,
-                        providerName = swapProviderDisplayTitle(provider, transactionItem.swapUnstoppableSubProviderId),
+                        providerName = swapProviderDisplayTitle(provider, transactionItem.swapSubProviderId),
                     )
                 )
             }

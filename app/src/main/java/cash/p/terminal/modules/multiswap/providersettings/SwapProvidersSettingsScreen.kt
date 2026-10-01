@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.multiswap.providersettings
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -11,7 +10,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -21,6 +19,7 @@ import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.HSpacer
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.HsDivider
+import cash.p.terminal.ui_compose.components.HsImage
 import cash.p.terminal.ui_compose.components.HsSwitch
 import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.components.RowUniversal
@@ -90,10 +89,10 @@ private fun ProviderRow(
         modifier = Modifier.padding(horizontal = 16.dp),
         onClick = if (item.mandatory) onMandatoryClick else null,
     ) {
-        Image(
+        HsImage(
+            url = item.iconUrl,
+            placeholder = item.icon,
             modifier = Modifier.size(32.dp),
-            painter = painterResource(item.icon),
-            contentDescription = null,
         )
         HSpacer(16.dp)
         if (item.enabled) {

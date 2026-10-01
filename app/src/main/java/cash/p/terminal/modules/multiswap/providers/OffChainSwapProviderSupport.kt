@@ -27,6 +27,23 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.math.BigDecimal
 
+/** The order needs a deposit memo that the input network cannot carry. */
+class SwapDepositMemoUnsupported : Throwable()
+
+/** Input networks whose deposit transaction can carry a provider memo. */
+internal val MEMO_CHAINS = setOf(
+    BlockchainType.Stellar,
+    BlockchainType.Ton,
+    BlockchainType.Thorchain,
+    BlockchainType.Mayachain,
+)
+
+private val BCH_PREFIX = Regex("^bitcoincash:", RegexOption.IGNORE_CASE)
+
+// Off-chain providers reject the CashAddr prefix that bitcoin-kit includes in BCH addresses.
+internal fun Token.normalizeSwapAddress(address: String): String =
+    if (blockchainType == BlockchainType.BitcoinCash) address.replaceFirst(BCH_PREFIX, "") else address
+
 class OffChainSwapProviderSupport(
     private val walletUseCase: WalletUseCase,
     private val accountManager: IAccountManager,
@@ -118,8 +135,11 @@ class OffChainSwapProviderSupport(
         amountIn: BigDecimal,
         amountOut: BigDecimal,
         subProviderId: String? = null,
+        externalId: String? = null,
+        walletAddress: String? = null,
     ) = swapProviderTransactionFactory.build(
-        provider, transactionId, tokenIn, tokenOut, amountIn, amountOut, subProviderId = subProviderId
+        provider, transactionId, tokenIn, tokenOut, amountIn, amountOut,
+        subProviderId = subProviderId, externalId = externalId, walletAddress = walletAddress
     )
 
     fun buildTransactionData(

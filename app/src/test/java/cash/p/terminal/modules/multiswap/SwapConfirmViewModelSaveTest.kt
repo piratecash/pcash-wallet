@@ -21,6 +21,7 @@ import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionResult
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionServiceState
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionSettings
 import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceMonero
+import cash.p.terminal.network.backendswap.data.entity.BackendSwapError
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.MarketKitWrapper
@@ -64,12 +65,16 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.coroutines.cancellation.CancellationException
@@ -88,6 +93,9 @@ import cash.p.terminal.modules.send.mockConnectivityManager
  * `fetchFinalQuote()` call complete and populate `swapProviderTransaction` before driving the public
  * `onTransactionCompleted` entry point.
  */
+// Robolectric runs the real CountDownTimer behind TimerService, so quote expiry is observable.
+@RunWith(RobolectricTestRunner::class)
+@Config(manifest = Config.NONE)
 @OptIn(ExperimentalCoroutinesApi::class)
 class SwapConfirmViewModelSaveTest {
 
@@ -510,11 +518,58 @@ class SwapConfirmViewModelSaveTest {
         assertFalse(viewModel.uiState.validQuote)
     }
 
+    @Test
+    fun fetchFinalQuote_offChainQuotePastDeadline_expiresWithoutCountdownCaption() = runTest(dispatcher) {
+        val viewModel = createViewModel(offChainProviderWithDeadline(System.currentTimeMillis() - 1_000))
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.expired)
+        assertNull(viewModel.uiState.expiresIn)
+    }
+
+    @Test
+    fun fetchFinalQuote_offChainQuoteBeforeDeadline_notExpiredAndNoCountdownCaption() = runTest(dispatcher) {
+        val viewModel = createViewModel(offChainProviderWithDeadline(System.currentTimeMillis() + 3_600_000))
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.expired)
+        assertNull(viewModel.uiState.expiresIn)
+    }
+
+    @Test
+    fun fetchFinalQuote_offChainQuoteWithoutDeadline_neverExpires() = runTest(dispatcher) {
+        val viewModel = createViewModel(offChainProviderWithDeadline(validUntilMillis = null))
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.expired)
+        assertNull(viewModel.uiState.expiresIn)
+    }
+
+    @Test
+    fun fetchFinalQuote_backendSwapError_showsBackendMessage() = runTest(dispatcher) {
+        val provider = mockk<OffChainSwapProvider>(relaxed = true) {
+            coEvery { fetchFinalQuote(any(), any(), any(), any(), any(), any()) } throws
+                BackendSwapError(statusCode = 409, message = "client request id already used")
+        }
+
+        val viewModel = createViewModel(provider)
+        advanceUntilIdle()
+
+        assertEquals("client request id already used", viewModel.uiState.criticalError)
+    }
+
+    private fun offChainProviderWithDeadline(validUntilMillis: Long?) =
+        mockk<OffChainSwapProvider>(relaxed = true) {
+            coEvery { fetchFinalQuote(any(), any(), any(), any(), any(), any()) } returns
+                finalQuote(validUntilMillis = validUntilMillis)
+        }
+
     private fun finalQuote(
         amountIn: BigDecimal = BigDecimal.ONE,
         amountOut: BigDecimal = BigDecimal.ONE,
         amountInMax: BigDecimal? = null,
         cautions: List<HSCaution> = emptyList(),
+        validUntilMillis: Long? = null,
     ): ISwapFinalQuote = SwapFinalQuoteEvm(
         tokenIn = token,
         tokenOut = token,
@@ -526,6 +581,7 @@ class SwapConfirmViewModelSaveTest {
         fields = emptyList(),
         amountInMax = amountInMax,
         cautions = cautions,
+        validUntilMillis = validUntilMillis,
     )
 
     private interface ExactOutProvider : IMultiSwapProvider, IExactOutSwapProvider

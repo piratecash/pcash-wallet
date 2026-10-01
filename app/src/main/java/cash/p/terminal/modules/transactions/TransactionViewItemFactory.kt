@@ -51,6 +51,9 @@ import java.math.BigDecimal
 import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
 
+private val TransactionRecord.mainCoinToken: Token?
+    get() = (mainValue as? TransactionValue.CoinValue)?.token
+
 class TransactionViewItemFactory(
     private val addressMetadataManager: AddressMetadataManager,
     private val balanceHiddenManager: BalanceHiddenManager,
@@ -391,7 +394,7 @@ class TransactionViewItemFactory(
         TransactionRecordType.EVM_OUTGOING ->
             tryConvertToUserSwapProviderViewItemSwap(
                 transactionItem = transactionItem,
-                token = (record.mainValue as? TransactionValue.CoinValue)?.token,
+                token = record.mainCoinToken,
                 isIncoming = false,
                 matchedSwap = matchedSwap,
                 onChainProgress = progress,
@@ -1040,7 +1043,7 @@ class TransactionViewItemFactory(
             TransactionRecordType.SOLANA_INCOMING -> {
                 tryConvertToUserSwapProviderViewItemSwap(
                     transactionItem = transactionItem,
-                    token = record.token,
+                    token = record.mainCoinToken,
                     isIncoming = true,
                     matchedSwap = matchedSwap,
                     onChainProgress = progress,
@@ -1708,7 +1711,7 @@ class TransactionViewItemFactory(
                 (providerStatus.ordinal + 1) * (1f / (TransactionStatusEnum.FINISHED.ordinal + 1))
             },
             title = Translator.getString(titleStringRes),
-            subtitle = swapProviderDisplayTitle(transaction.provider, transaction.unstoppableSubProviderId),
+            subtitle = swapProviderDisplayTitle(transaction.provider, transaction.subProviderId),
             primaryValue = primaryValue,
             secondaryValue = secondaryValue,
             showAmount = showAmount,

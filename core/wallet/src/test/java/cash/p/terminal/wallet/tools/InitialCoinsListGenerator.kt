@@ -30,7 +30,7 @@ private const val MIN_RECORD_COUNT_RATIO = 0.9
 
 /**
  * Old-uid token that must still resolve to its renamed coin after the V1 -> V2 migration
- * (see Migration_116_117): the eip20 identity is unambiguous even though the display uid changed.
+ * (see Migration_117_118): the eip20 identity is unambiguous even though the display uid changed.
  */
 private data class MigratedToken(
     val newCoinUid: String,
@@ -110,7 +110,7 @@ class InitialCoinsListGenerator {
     }
 
     /**
-     * Each of the 7 tokens Migration_116_117 re-keys by old uid must exist in the catalog
+     * Each of the 7 tokens Migration_117_118 re-keys by old uid must exist in the catalog
      * under its new coingecko_id coin, otherwise the migrated swap-record label would point
      * at a coin without that token.
      */

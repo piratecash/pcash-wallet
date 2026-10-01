@@ -6,6 +6,8 @@ import androidx.room.PrimaryKey
 import cash.p.terminal.R
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.modules.multiswap.providers.UnstoppableProvider
+import cash.p.terminal.modules.multiswap.providers.backendswap.BackendSwapBranding
+import cash.p.terminal.network.backendswap.api.BackendSwapHelper
 import cash.p.terminal.network.changenow.api.ChangeNowHelper
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.network.exolix.api.ExolixHelper
@@ -42,9 +44,12 @@ data class SwapProviderTransaction(
     // Canonical inbound (deposit/burn) tx hash. Supplies inboundTxHash to the Unstoppable /track call
     // (required for EVM sub-providers). Null for providers that track purely by their order id.
     val depositTransactionHash: String? = null,
-    // Aggregator sub-provider: Unstoppable api id (e.g. "LETSEXCHANGE") or YiFi exchanger name.
-    // Drives the per-sub-provider display name in history.
-    val unstoppableSubProviderId: String? = null,
+    // Aggregator sub-provider: Unstoppable api id (e.g. "LETSEXCHANGE"), YiFi exchanger name or
+    // p.cash backend provider name (e.g. "changelly"). Drives the per-sub-provider display name in history.
+    val subProviderId: String? = null,
+    // p.cash backend only: provider order id (track link) and the EVM address authorising status lookups.
+    val providerExternalId: String? = null,
+    val providerWalletAddress: String? = null,
     // TokenQuery.id of each side; null for the PayCore RUB side and for rows saved before it existed.
     val tokenQueryIdIn: String? = null,
     val tokenQueryIdOut: String? = null,
@@ -62,6 +67,7 @@ data class SwapProviderTransaction(
         SwapProvider.YIFI -> YiFiHelper.YIFI_URL to YiFiHelper.getViewTransactionUrl(
             transactionId, addressOut
         )
+        SwapProvider.PCASH_BACKEND -> BackendSwapHelper.trackUrl(subProviderId, providerExternalId)
         SwapProvider.THORCHAIN,
         SwapProvider.MAYA,
         SwapProvider.UNSTOPPABLE -> null
@@ -79,5 +85,6 @@ data class SwapProviderTransaction(
 fun swapProviderDisplayTitle(provider: SwapProvider, subProviderId: String?): String = when {
     provider == SwapProvider.UNSTOPPABLE -> UnstoppableProvider.displayTitle(subProviderId) ?: provider.title
     provider == SwapProvider.YIFI && !subProviderId.isNullOrBlank() -> "${provider.title} · $subProviderId"
+    provider == SwapProvider.PCASH_BACKEND -> BackendSwapBranding.title(subProviderId.orEmpty())
     else -> provider.title
 }
