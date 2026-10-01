@@ -31,9 +31,7 @@ import io.horizontalsystems.core.entities.BlockchainType
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.BalanceData
 import cash.p.terminal.wallet.entities.TokenQuery
-import cash.z.ecc.android.sdk.model.FirstClassByteArray
 import io.horizontalsystems.bitcoincore.storage.UtxoFilters
-import io.horizontalsystems.core.logger.AppLogger
 import io.horizontalsystems.hdwalletkit.Language
 import io.horizontalsystems.solanakit.models.FullTransaction
 import io.horizontalsystems.tonkit.FriendlyAddress
@@ -240,7 +238,8 @@ data class BroadcastRawTransactionResult(
 )
 
 enum class BroadcastRawTransactionStatus {
-    Submitted, Queued, AlreadyKnown, SeqnoConsumed
+    // OutcomeUnknown: the node may or may not have received the transaction.
+    Submitted, Queued, AlreadyKnown, SeqnoConsumed, OutcomeUnknown
 }
 
 sealed interface OfflineBroadcastMetadata {
@@ -353,14 +352,32 @@ data class OfflineStellarSignRequest(
     val memo: String?,
 ) : OfflineSignRequest
 
+interface SignedOfflineMemoTransaction {
+    val rawHex: String
+    val txHash: String
+    val fee: BigDecimal
+}
+
 data class SignedOfflineStellarTransaction(
-    val rawHex: String,
-    val txHash: String,
-    val fee: BigDecimal,
+    override val rawHex: String,
+    override val txHash: String,
+    override val fee: BigDecimal,
     val sourceAccountId: String,
     val sequenceNumber: Long,
     val validUntil: Long,
-)
+) : SignedOfflineMemoTransaction
+
+data class OfflineThorchainSignRequest(
+    val amount: BigDecimal,
+    val address: String,
+    val memo: String?,
+) : OfflineSignRequest
+
+data class SignedOfflineThorchainTransaction(
+    override val rawHex: String,
+    override val txHash: String,
+    override val fee: BigDecimal,
+) : SignedOfflineMemoTransaction
 
 data class OfflineMoneroSignRequest(
     val amount: BigDecimal,
@@ -401,11 +418,12 @@ interface ISendZcashAdapter : IBalanceAdapter, OfflineTransactionAdapter<SignedO
     // Start syncing the adapter
     fun start()
 
-    // Stop the adapter (closes synchronizer without erasing data)
+    // Stop the adapter (releases the session without erasing data)
     fun stop()
 
     suspend fun validate(address: String): ZcashAdapter.ZCashAddressType
-    suspend fun send(amount: BigDecimal, address: String, memo: String, logger: AppLogger?): FirstClassByteArray
+    /** Returns the txid of the broadcast transaction. */
+    suspend fun send(amount: BigDecimal, address: String, memo: String): String
     suspend fun getOwnAddresses(): List<String>
 }
 
@@ -448,8 +466,10 @@ interface ISendTonAdapter : IBalanceAdapter {
     suspend fun fetchOfflineAnchor(): TonOfflineAnchor
 }
 
-interface ISendStellarAdapter : IBalanceAdapter {
+interface ISendMemoAdapter : IBalanceAdapter {
     val sendFee: BigDecimal
+    val sendFeeUpdatedFlow: Flow<Unit>
+        get() = emptyFlow()
     fun validate(address: String)
     suspend fun getMinimumSendAmount(address: String) : BigDecimal?
     suspend fun send(amount: BigDecimal, address: String, memo: String?): String?

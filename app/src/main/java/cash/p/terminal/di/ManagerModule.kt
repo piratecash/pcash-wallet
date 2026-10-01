@@ -10,6 +10,15 @@ import cash.p.terminal.core.IRateAppManager
 import cash.p.terminal.core.ITermsManager
 import cash.p.terminal.core.ITorManager
 import cash.p.terminal.core.adapters.zcash.ZcashAddressDeriver
+import cash.p.terminal.core.adapters.zcash.ZcashIronwoodMigrationRegistry
+import cash.p.terminal.core.adapters.zcash.ZcashKeyExporter
+import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFiles
+import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProvider
+import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProviderImpl
+import cash.p.terminal.core.adapters.zcash.session.ZcashSessionManager
+import cash.p.terminal.core.adapters.zcash.session.ZcashSyncScheduler
+import cash.p.terminal.core.adapters.zcash.session.ZcashWalletOpener
+import cash.p.terminal.core.adapters.zcash.session.ZcashWalletOpenerImpl
 import cash.p.terminal.core.address.AddressCheckManager
 import cash.p.terminal.core.converters.PendingTransactionConverter
 import cash.p.terminal.core.deeplink.DeeplinkParser
@@ -33,11 +42,10 @@ import cash.p.terminal.core.managers.DeletedAccountsCleanup
 import cash.p.terminal.wallet.AccountDeletionPreflight
 import cash.p.terminal.wallet.IAccountCleaner
 import cash.p.terminal.core.managers.BitcoinKitConnectionManager
-import cash.p.terminal.core.managers.BitcoinKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.BitcoinKitDatabaseManager
 import cash.p.terminal.core.managers.BitcoinKitDatabaseOperations
 import cash.p.terminal.core.managers.BtcBlockchainManager
-import cash.p.terminal.core.managers.DefaultBitcoinKitDatabaseKeyProvider
+import cash.p.terminal.core.managers.DefaultKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.DefaultBitcoinKitDatabaseOperations
 import cash.p.terminal.core.managers.DeviceFlipDetector
 import cash.p.terminal.core.managers.EffectiveMonitoredChains
@@ -55,6 +63,7 @@ import cash.p.terminal.core.notifications.polling.EvmTransactionsPoller
 import cash.p.terminal.core.notifications.polling.MoneroTransactionsPoller
 import cash.p.terminal.core.notifications.polling.SolanaTransactionsPoller
 import cash.p.terminal.core.notifications.polling.StellarTransactionsPoller
+import cash.p.terminal.core.notifications.polling.ThorchainTransactionsPoller
 import cash.p.terminal.core.notifications.polling.TonTransactionsPoller
 import cash.p.terminal.core.notifications.polling.TransactionPollingManager
 import cash.p.terminal.core.notifications.polling.TronTransactionsPoller
@@ -75,6 +84,8 @@ import cash.p.terminal.core.managers.EvmPersonalSignerImpl
 import cash.p.terminal.core.managers.GetTonAddressUseCaseImpl
 import cash.p.terminal.core.managers.GuidesManager
 import cash.p.terminal.core.managers.KeyStoreCleaner
+import cash.p.terminal.core.managers.KitDatabaseKeyProvider
+import cash.p.terminal.core.managers.KitDatabaseKeys
 import cash.p.terminal.core.managers.LanguageManager
 import cash.p.terminal.core.managers.SystemLanguageProvider
 import cash.p.terminal.core.managers.SystemLanguageProviderImpl
@@ -114,6 +125,7 @@ import cash.p.terminal.core.managers.StackingManager
 import cash.p.terminal.core.managers.StellarKitManager
 import cash.p.terminal.core.managers.SystemInfoManager
 import cash.p.terminal.core.managers.TermsManager
+import cash.p.terminal.core.managers.ThorchainKitManagers
 import cash.p.terminal.core.managers.TimePasswordProvider
 import cash.p.terminal.core.managers.TokenAutoEnableManager
 import cash.p.terminal.core.managers.TonConnectManager
@@ -230,6 +242,12 @@ val managerModule = module {
     singleOf(::DefaultCurrencyManager) bind CurrencyManager::class
     singleOf(::SolanaRpcSourceManager)
     singleOf(::ZcashAddressDeriver)
+    singleOf(::ZcashKeyExporter)
+    singleOf(::ZcashDatabaseFiles)
+    singleOf(::ZcashDbKeyProviderImpl) bind ZcashDbKeyProvider::class
+    singleOf(::ZcashWalletOpenerImpl) bind ZcashWalletOpener::class
+    singleOf(::ZcashSyncScheduler)
+    singleOf(::ZcashSessionManager)
     singleOf(::TonFallbackAddressProvider)
     singleOf(::ZcashFallbackAddressProvider)
     single<FallbackAddressProvider> {
@@ -269,6 +287,7 @@ val managerModule = module {
     singleOf(::TronTransactionsPoller)
     singleOf(::SolanaTransactionsPoller)
     singleOf(::StellarTransactionsPoller)
+    singleOf(::ThorchainTransactionsPoller)
     singleOf(::BtcLikeTransactionsPoller)
     singleOf(::ZcashTransactionsPoller)
     singleOf(::BeamTransactionsPoller)
@@ -281,6 +300,7 @@ val managerModule = module {
                 get<TronTransactionsPoller>(),
                 get<SolanaTransactionsPoller>(),
                 get<StellarTransactionsPoller>(),
+                get<ThorchainTransactionsPoller>(),
                 get<BtcLikeTransactionsPoller>(),
                 get<ZcashTransactionsPoller>(),
                 get<MoneroTransactionsPoller>(),
@@ -296,7 +316,8 @@ val managerModule = module {
     }
     singleOf(::ConnectivityManager) bind IConnectivityManager::class
     singleOf(::BitcoinKitConnectionManager) bind IConnectionManager::class
-    singleOf(::DefaultBitcoinKitDatabaseKeyProvider) bind BitcoinKitDatabaseKeyProvider::class
+    singleOf(::DefaultKitDatabaseKeyProvider) bind KitDatabaseKeyProvider::class
+    singleOf(::KitDatabaseKeys)
     singleOf(::DefaultBitcoinKitDatabaseOperations) bind BitcoinKitDatabaseOperations::class
     singleOf(::BitcoinKitDatabaseManager)
     singleOf(::EvmSyncSourceManager)
@@ -308,6 +329,7 @@ val managerModule = module {
     singleOf(::NetworkErrorTracker)
     singleOf(::SolanaKitManager)
     singleOf(::StellarKitManager)
+    singleOf(::ThorchainKitManagers)
     singleOf(::TonKitManager)
     singleOf(::GetTonAddressUseCaseImpl) bind GetTonAddressUseCase::class
     singleOf(::CreateRequiredTokensUseCaseImpl) bind CreateRequiredTokensUseCase::class
@@ -498,4 +520,5 @@ val managerModule = module {
     singleOf(::PendingTransactionMatcher)
     singleOf(::PendingAccountProviderImpl) bind PendingAccountProvider::class
     singleOf(::PendingTransactionConverter)
+    singleOf(::ZcashIronwoodMigrationRegistry)
 }

@@ -88,7 +88,12 @@ class YiFiProvider(
         const val CACHE_PAIR_DURATION = 1000L * 60
         const val CACHE_FINAL_QUOTE_DURATION = 1000L * 60 * 5
         const val MAX_ORDER_ATTEMPTS = 4
-        val MEMO_CHAINS = setOf(BlockchainType.Stellar, BlockchainType.Ton)
+        val MEMO_CHAINS = setOf(
+            BlockchainType.Stellar,
+            BlockchainType.Ton,
+            BlockchainType.Thorchain,
+            BlockchainType.Mayachain,
+        )
         val RATE_ERRORS = setOf(BackendYiFiResponseError.RATE_EXPIRED, BackendYiFiResponseError.RATE_MISMATCH)
         val NO_ROUTE_ERRORS = setOf(
             BackendYiFiResponseError.NO_QUOTES_AVAILABLE,

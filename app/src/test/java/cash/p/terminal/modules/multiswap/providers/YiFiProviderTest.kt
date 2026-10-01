@@ -217,6 +217,29 @@ class YiFiProviderTest {
     }
 
     @Test
+    fun fetchFinalQuote_memoOnThorchainAndMaya_passedToTransactionData() = runTest(dispatcher) {
+        stubOrders(order(memo = "251398"))
+        val natives = listOf(BlockchainType.Thorchain to "RUNE", BlockchainType.Mayachain to "CACAO")
+        natives.forEach { (blockchainType, code) ->
+            val tokenIn = yiFiTestToken(blockchainType, TokenType.Native, code)
+
+            fetchFinalQuote(tokenIn = tokenIn)
+
+            verify { providerSupport.buildTransactionData(tokenIn, any(), "deposit", "251398") }
+        }
+    }
+
+    @Test
+    fun fetchFinalQuote_runeOut_paysToThorAddress() = runTest(dispatcher) {
+        val rune = yiFiTestToken(BlockchainType.Thorchain, TokenType.Native, "RUNE")
+        coEvery { walletUseCase.getReceiveAddress(rune) } returns "thor1user"
+
+        fetchFinalQuote(tokenOut = rune)
+
+        coVerify { repository.createSwap(match { it.toNetwork == "RUNE" && it.receiveAddress == "thor1user" }) }
+    }
+
+    @Test
     fun fetchFinalQuote_unifiedZecInput_sendsTransparentRefundAddress() = runTest(dispatcher) {
         val zec = yiFiTestToken(
             BlockchainType.Zcash,

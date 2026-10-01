@@ -98,11 +98,14 @@ class StellarKitManager(
                     is AccountType.EvmAddress,
                     is AccountType.EvmPrivateKey,
                     is AccountType.HdExtendedKey,
+                    is AccountType.MayachainAddress,
                     is AccountType.MnemonicMonero,
                     is AccountType.SolanaAddress,
+                    is AccountType.ThorchainAddress,
                     is AccountType.TonAddress,
                     is AccountType.TronAddress,
-                    is AccountType.ZCashUfvKey -> throw UnsupportedAccountException()
+                    is AccountType.ZCashUfvKey,
+                    is AccountType.ZCashSaplingKey -> throw UnsupportedAccountException()
                 }
                 this.stellarKitWrapper = wrapper
                 job = scope.launch {

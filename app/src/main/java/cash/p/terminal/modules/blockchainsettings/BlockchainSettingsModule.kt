@@ -34,6 +34,8 @@ object BlockchainSettingsModule {
         BlockchainType.Ton,
         BlockchainType.Monero,
         BlockchainType.Stellar,
+        BlockchainType.Thorchain,
+        BlockchainType.Mayachain,
     )
 
     data class BlockchainViewItem(

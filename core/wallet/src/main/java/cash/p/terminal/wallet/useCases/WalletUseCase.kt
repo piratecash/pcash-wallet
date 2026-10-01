@@ -14,6 +14,7 @@ import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
 import cash.p.terminal.wallet.latestAccountOr
 import cash.p.terminal.wallet.entities.TokenQuery
+import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.expandedZcashAddressSpecTokens
 import cash.p.terminal.wallet.tokenQueryId
 import io.horizontalsystems.core.entities.BlockchainType
@@ -34,17 +35,21 @@ class WalletUseCase(
         it.token == token
     }
 
-    fun getWallets(blockchainType: BlockchainType): List<Wallet> =
-        walletManager.activeWallets.filter { it.token.blockchainType == blockchainType }
-
     fun getWallet(coinUid: String, blockchainType: String): Wallet? =
         walletManager.activeWallets.find {
             it.token.coin.uid == coinUid && it.token.blockchainType.uid == blockchainType
         }
 
+    /** Any active wallet of the chain can host its adapter; the native token is preferred. */
+    fun getWalletForBlockchain(blockchainType: BlockchainType): Wallet? {
+        val wallets = walletManager.activeWallets.filter { it.token.blockchainType == blockchainType }
+        return wallets.firstOrNull { it.token.type is TokenType.Native } ?: wallets.firstOrNull()
+    }
+
     suspend fun createWallets(tokensToAdd: Set<Token>): Boolean {
         val account = accountManager.activeAccount ?: return false
-        val expandedTokensToAdd = tokensToAdd.expandedZcashAddressSpecTokens(marketKit).toSet()
+        val expandedTokensToAdd = tokensToAdd.expandedZcashAddressSpecTokens(marketKit, account.type)
+            .toSet()
         return if (account.isHardwareWalletAccount) {
             createWalletsForHardwareWallet(
                 account = account,
@@ -127,7 +132,8 @@ class WalletUseCase(
         getWallet(token) ?: if (createWallets(setOf(token))) getWallet(token) else null
 
     suspend fun awaitWallets(tokens: Set<Token>) {
-        val expandedTokens = tokens.expandedZcashAddressSpecTokens(marketKit).toSet()
+        val account = accountManager.activeAccount ?: return
+        val expandedTokens = tokens.expandedZcashAddressSpecTokens(marketKit, account.type).toSet()
         if (expandedTokens.all { getWallet(it) != null }) return
 
         walletManager.activeWalletsFlow

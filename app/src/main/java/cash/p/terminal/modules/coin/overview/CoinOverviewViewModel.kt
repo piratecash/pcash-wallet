@@ -174,6 +174,7 @@ class CoinOverviewViewModel(
 
                 when (val tokenType = token.type) {
                     is TokenType.Trc10 -> return@forEach
+                    is TokenType.ThorchainAsset -> return@forEach
 
                     is TokenType.Asset -> {
                         val inWallet =

@@ -33,6 +33,8 @@ import cash.p.terminal.core.managers.ReleaseNotesManager
 import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.SolanaRpcSourceManager
 import cash.p.terminal.core.managers.StellarAccountManager
+import cash.p.terminal.core.managers.ThorchainAccountManager
+import cash.p.terminal.core.managers.ThorchainKitManagers
 import cash.p.terminal.core.managers.TokenAutoEnableManager
 import cash.p.terminal.core.managers.TonAccountManager
 import cash.p.terminal.core.managers.TonConnectManager
@@ -49,6 +51,7 @@ import cash.p.terminal.core.storage.AppDatabase
 import cash.p.terminal.core.storage.BlockchainSettingsStorage
 import cash.p.terminal.core.storage.EvmSyncSourceStorage
 import cash.p.terminal.core.storage.NftStorage
+import cash.p.terminal.domain.usecase.ClearLegacyZcashDataUseCase
 import cash.p.terminal.modules.backuplocal.fullbackup.BackupProvider
 import cash.p.terminal.modules.balance.BalanceViewTypeManager
 import cash.p.terminal.modules.chart.ChartIndicatorManager
@@ -492,36 +495,52 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
 
     override val isSwapEnabled = true
 
+    private fun startAccountManagers() {
+        TronAccountManager(
+            accountManager = accountManager,
+            walletManager = walletManager,
+            marketKit = get(),
+            tronKitManager = tronKitManager,
+            tokenAutoEnableManager = tokenAutoEnableManager,
+            userDeletedWalletManager = get()
+        ).start()
+
+        TonAccountManager(
+            accountManager = accountManager,
+            walletManager = walletManager,
+            tonKitManager = tonKitManager,
+            tokenAutoEnableManager = tokenAutoEnableManager,
+            userDeletedWalletManager = get(),
+            marketKit = get()
+        ).start()
+
+        StellarAccountManager(
+            accountManager = accountManager,
+            walletManager = walletManager,
+            stellarKitManager = get(),
+            tokenAutoEnableManager = tokenAutoEnableManager,
+            userDeletedWalletManager = get(),
+            marketKit = get()
+        ).start()
+
+        get<ThorchainKitManagers>().all.forEach { thorchainKitManager ->
+            ThorchainAccountManager(
+                accountManager = accountManager,
+                walletManager = walletManager,
+                thorchainKitManager = thorchainKitManager,
+                tokenAutoEnableManager = tokenAutoEnableManager,
+                userDeletedWalletManager = get(),
+                marketKit = get(),
+                dispatcherProvider = get(),
+            ).start()
+        }
+    }
+
     private fun startTasks() {
         coroutineScope.launch {
             initCipherForMonero()
 
-            TronAccountManager(
-                accountManager = accountManager,
-                walletManager = walletManager,
-                marketKit = get(),
-                tronKitManager = tronKitManager,
-                tokenAutoEnableManager = tokenAutoEnableManager,
-                userDeletedWalletManager = get()
-            ).start()
-
-            TonAccountManager(
-                accountManager = accountManager,
-                walletManager = walletManager,
-                tonKitManager = tonKitManager,
-                tokenAutoEnableManager = tokenAutoEnableManager,
-                userDeletedWalletManager = get(),
-                marketKit = get()
-            ).start()
-
-            StellarAccountManager(
-                accountManager = accountManager,
-                walletManager = walletManager,
-                stellarKitManager = get(),
-                tokenAutoEnableManager = tokenAutoEnableManager,
-                userDeletedWalletManager = get(),
-                marketKit = get()
-            ).start()
+            startAccountManagers()
 
             wcWalletRequestHandler = WCWalletRequestHandler(evmBlockchainManager)
             initializeWalletConnectV2()
@@ -556,6 +575,7 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
             contactsRepository.initialize()
             evmLabelManager.sync()
             AppLog.cleanupOldLogs()
+            get<ClearLegacyZcashDataUseCase>().invoke()
         }
     }
 

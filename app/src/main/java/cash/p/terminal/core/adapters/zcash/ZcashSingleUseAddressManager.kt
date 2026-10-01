@@ -38,4 +38,9 @@ class ZcashSingleUseAddressManager(
     suspend fun getAddressesForBalanceCheck(): List<String> {
         return storage.getAddressesForBalanceCheck(accountId).map { it.address }
     }
+
+    /** Every address reserved for this account, used or not, for use as a fresh-address exclusion list. */
+    suspend fun getAllAddresses(): List<String> {
+        return storage.getAllAddresses(accountId).map { it.address }
+    }
 }

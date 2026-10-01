@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.util.Locale
 
-class SendZCashMemoService {
+class SendZCashMemoService(private val memoSupportedByAccount: Boolean) {
     val memoMaxLength = 120
 
     private var memo: String = ""
@@ -36,6 +36,8 @@ class SendZCashMemoService {
     }
 
     private fun isMemoAllowedForAddress(address: String): Boolean {
+        if (!memoSupportedByAccount) return false
+
         val lower = address.trim().lowercase(Locale.ROOT)
 
         // Sapling shielded addresses - always support memo
