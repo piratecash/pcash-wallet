@@ -210,7 +210,7 @@ private fun ColumnScope.SwapConfirmButtons(
     val moneroSpendReadiness = uiState.moneroSpendReadiness
     when {
         uiState.loading -> SwapLoadingButton()
-        uiState.criticalError != null -> RefreshSwapButton(uiState.criticalError, actions.refresh)
+        uiState.criticalError != null -> RefreshSwapButton(stringResource(R.string.Button_Refresh), actions.refresh)
         moneroSpendReadiness != null && moneroSpendReadiness != MoneroSpendReadiness.Ready ->
             MoneroSpendReadinessStatus(
                 spendReadiness = moneroSpendReadiness,
