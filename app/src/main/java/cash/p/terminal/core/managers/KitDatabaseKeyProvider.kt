@@ -3,6 +3,7 @@ package cash.p.terminal.core.managers
 import android.content.Context
 import android.security.keystore.UserNotAuthenticatedException
 import android.util.Base64
+import androidx.core.content.edit
 import io.horizontalsystems.core.IEncryptionManager
 import java.security.SecureRandom
 
@@ -17,12 +18,31 @@ class KitDatabaseKeyException(message: String, cause: Throwable? = null) :
 class KitDatabaseKeyLockedException(cause: UserNotAuthenticatedException) :
     IllegalStateException("Kit database key requires user authentication", cause)
 
-class DefaultKitDatabaseKeyProvider(
+// Legacy bitcoin-kit names: keys persisted before the provider became shared live there.
+class DefaultKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :
+    PreferencesKitDatabaseKeyProvider(
+        context,
+        encryptionManager,
+        preferencesName = "bitcoin_kit_database_keys",
+        keyPrefix = "bitcoin_kit_database_key_",
+    )
+
+class EvmKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :
+    PreferencesKitDatabaseKeyProvider(
+        context,
+        encryptionManager,
+        preferencesName = "evm_kit_database_keys",
+        keyPrefix = "evm_kit_database_key_",
+    )
+
+abstract class PreferencesKitDatabaseKeyProvider(
     context: Context,
     private val encryptionManager: IEncryptionManager,
+    preferencesName: String,
+    private val keyPrefix: String,
 ) : KitDatabaseKeyProvider {
 
-    private val preferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+    private val preferences = context.getSharedPreferences(preferencesName, Context.MODE_PRIVATE)
 
     override fun keyFor(accountId: String): ByteArray {
         val preferenceKey = accountId.preferenceKey()
@@ -34,6 +54,8 @@ class DefaultKitDatabaseKeyProvider(
         val encoded = Base64.encodeToString(key, Base64.NO_WRAP)
         val encrypted = accessKeyStore { encryptionManager.encrypt(encoded) }
         if (!preferences.edit().putString(preferenceKey, encrypted).commit()) {
+            // commit() applies the edit in memory even when the disk write fails.
+            preferences.edit(commit = true) { remove(preferenceKey) }
             throw KitDatabaseKeyException("Unable to persist kit database key")
         }
         return key
@@ -77,12 +99,9 @@ class DefaultKitDatabaseKeyProvider(
         message: String = "Stored kit database key is invalid",
     ): Nothing = throw KitDatabaseKeyException(message, cause)
 
-    private fun String.preferenceKey() = "$KEY_PREFIX$this"
+    private fun String.preferenceKey() = "$keyPrefix$this"
 
     private companion object {
-        // Legacy bitcoin-kit names: keys persisted before the provider became shared live there.
-        const val PREFERENCES_NAME = "bitcoin_kit_database_keys"
-        const val KEY_PREFIX = "bitcoin_kit_database_key_"
         const val KEY_SIZE = 32
     }
 }

@@ -44,7 +44,7 @@ object EvmSwapHelper {
         return eip20Adapter.allowance(spenderAddress, DefaultBlockParameter.Latest).await()
     }
 
-    fun actionApprove(
+    suspend fun actionApprove(
         allowance: BigDecimal?,
         amountIn: BigDecimal,
         routerAddressStr: String,
@@ -61,7 +61,7 @@ object EvmSwapHelper {
         )
     }
 
-    fun actionApprove(
+    suspend fun actionApprove(
         allowance: BigDecimal?,
         amountIn: BigDecimal,
         routerAddress: Address,
@@ -70,7 +70,7 @@ object EvmSwapHelper {
         if (allowance == null || allowance >= amountIn) return null
         val eip20Adapter = App.adapterManager.getAdapterForToken<Eip20Adapter>(token) ?: return null
 
-        val approveTransaction = eip20Adapter.pendingTransactions
+        val approveTransaction = eip20Adapter.pendingTransactions()
             .filterIsInstance<EvmTransactionRecord>()
             .filter {
                 it.transactionRecordType == TransactionRecordType.EVM_APPROVE &&

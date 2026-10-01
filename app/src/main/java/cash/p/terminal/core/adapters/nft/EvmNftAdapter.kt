@@ -30,17 +30,7 @@ class EvmNftAdapter(
         nftKit.sync()
     }
 
-    override fun nftRecord(nftUid: NftUid): NftRecord? {
-        val evm = (nftUid as? NftUid.Evm) ?: return null
-
-        val tokenId = evm.tokenId.toBigIntegerOrNull() ?: return null
-
-        val contractAddress = Address(evm.contractAddress)
-
-        val nftBalance = nftKit.nftBalance(contractAddress, tokenId) ?: return null
-
-        return record(nftBalance)
-    }
+    override fun nftRecord(nftUid: NftUid): NftRecord? = nftRecords.find { it.nftUid == nftUid }
 
     override fun transferEip721TransactionData(
         contractAddress: String,

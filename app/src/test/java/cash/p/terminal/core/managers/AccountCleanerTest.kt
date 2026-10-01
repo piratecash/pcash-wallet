@@ -1,7 +1,5 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.core.adapters.Eip20Adapter
-import cash.p.terminal.core.adapters.EvmAdapter
 import cash.p.terminal.core.adapters.SolanaAdapter
 import cash.p.terminal.core.adapters.TronAdapter
 import cash.p.terminal.core.storage.MoneroFileDao
@@ -56,6 +54,7 @@ class AccountCleanerTest {
     private lateinit var accountStorageCleaner: AccountStorageCleaner
     private lateinit var bitcoinKitDatabaseManager: BitcoinKitDatabaseManager
     private lateinit var thorchainKitManagers: ThorchainKitManagers
+    private lateinit var evmBlockchainManager: EvmBlockchainManager
     private val deletionPreflight = mockk<AccountDeletionPreflight>(relaxed = true)
 
     @Before
@@ -71,6 +70,7 @@ class AccountCleanerTest {
         accountStorageCleaner = mockk(relaxed = true)
         bitcoinKitDatabaseManager = mockk(relaxed = true)
         thorchainKitManagers = mockk(relaxed = true)
+        evmBlockchainManager = mockk(relaxed = true)
 
         coEvery { clearZCashWalletDataUseCase.invoke(any()) } returns ZcashEraseResult.ALL
         coEvery { removeMoneroWalletFilesUseCase.invoke(any<Account>()) } returns true
@@ -91,6 +91,7 @@ class AccountCleanerTest {
             accountStorageCleaner,
             bitcoinKitDatabaseManager,
             thorchainKitManagers,
+            evmBlockchainManager,
             deletionPreflight,
         )
     }
@@ -109,7 +110,7 @@ class AccountCleanerTest {
             accountCleaner.clearAccounts(ids)
         }
         verify {
-            listOf(adapterManager, bitcoinKitDatabaseManager, accountStorageCleaner,
+            listOf(adapterManager, bitcoinKitDatabaseManager, evmBlockchainManager, accountStorageCleaner,
                 removeMoneroWalletFilesUseCase, clearZCashWalletDataUseCase, smsNotificationSettings,
                 moneroFileDao, pinDbStorage) wasNot Called
         }
@@ -363,22 +364,17 @@ class AccountCleanerTest {
 
     private fun mockAdapterClears() {
         mockkObject(
-            EvmAdapter,
-            Eip20Adapter,
             SolanaAdapter,
             TronAdapter
         )
 
-        every { EvmAdapter.clear(any()) } returns Unit
-        every { Eip20Adapter.clear(any()) } returns Unit
         every { SolanaAdapter.clear(any()) } returns Unit
         every { TronAdapter.clear(any()) } returns Unit
     }
 
     private fun verifyAdapterClears(accountId: String) {
         coVerify(exactly = 1) { bitcoinKitDatabaseManager.clear(accountId) }
-        verify(exactly = 1) { EvmAdapter.clear(accountId) }
-        verify(exactly = 1) { Eip20Adapter.clear(accountId) }
+        coVerify(exactly = 1) { evmBlockchainManager.clear(accountId) }
         verify(exactly = 1) { SolanaAdapter.clear(accountId) }
         verify(exactly = 1) { TronAdapter.clear(accountId) }
     }

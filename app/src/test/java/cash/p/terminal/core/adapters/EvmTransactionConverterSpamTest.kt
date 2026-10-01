@@ -15,7 +15,6 @@ import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.erc20kit.events.TokenInfo
 import io.horizontalsystems.erc20kit.events.TransferEventInstance
-import io.horizontalsystems.ethereumkit.core.storage.TransactionSyncSourceStorage
 import io.horizontalsystems.ethereumkit.decorations.UnknownTransactionDecoration
 import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.FullTransaction
@@ -74,7 +73,6 @@ class EvmTransactionConverterSpamTest {
     private val repository: EvmTransactionRepository = mockk(relaxed = true)
     private val coinManager: ICoinManager = mockk(relaxed = true)
     private val evmLabelManager: EvmLabelManager = mockk(relaxed = true)
-    private val syncSourceStorage: TransactionSyncSourceStorage = mockk(relaxed = true)
 
     private fun createConverter(): EvmTransactionConverter {
         every { repository.receiveAddress } returns userAddress
@@ -82,15 +80,13 @@ class EvmTransactionConverterSpamTest {
         every {
             coinManager.getToken(TokenQuery.eip20(BlockchainType.BinanceSmartChain, usdtContract.hex))
         } returns usdtToken
-        every { syncSourceStorage.getSource(any()) } returns null
 
         return EvmTransactionConverter(
             coinManager = coinManager,
             evmTransactionRepository = repository,
             source = source,
             baseToken = baseToken,
-            evmLabelManager = evmLabelManager,
-            syncSourceStorage = syncSourceStorage
+            evmLabelManager = evmLabelManager
         )
     }
 

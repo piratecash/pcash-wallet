@@ -163,6 +163,7 @@ class SendTransactionServiceEvmTest : KoinTest {
             blockchainType = BlockchainType.BinanceSmartChain,
             signer = signer,
             merkleTransactionAdapter = null,
+            databaseKey = ByteArray(32),
         )
         val evmKitManager = mockk<EvmKitManager>(relaxed = true) {
             every { this@mockk.evmKitWrapper } returns evmKitWrapper

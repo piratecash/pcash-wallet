@@ -5,7 +5,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /** The only caller of [KitDatabaseKeyProvider]: its check-generate-persist is not atomic across kits. */
-class KitDatabaseKeys(private val keyProvider: KitDatabaseKeyProvider) {
+open class KitDatabaseKeys(private val keyProvider: KitDatabaseKeyProvider) {
     private val mutex = Mutex()
 
     suspend fun awaitKey(accountId: String): ByteArray = mutex.withLock {
@@ -30,3 +30,6 @@ class KitDatabaseKeys(private val keyProvider: KitDatabaseKeyProvider) {
         const val KEYSTORE_RETRY_DELAY_MS = 500L
     }
 }
+
+// A distinct type so DI keeps EVM keys apart from the shared bitcoin/THORChain store.
+class EvmKitDatabaseKeys(keyProvider: EvmKitDatabaseKeyProvider) : KitDatabaseKeys(keyProvider)

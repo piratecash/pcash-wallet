@@ -504,7 +504,7 @@ class TransactionsViewModel(
         searchScanning = searchScanning,
     )
 
-    private fun handleUpdatedWallets(wallets: List<Wallet>) {
+    private suspend fun handleUpdatedWallets(wallets: List<Wallet>) {
         transactionFilterService.setWallets(wallets)
     }
 
