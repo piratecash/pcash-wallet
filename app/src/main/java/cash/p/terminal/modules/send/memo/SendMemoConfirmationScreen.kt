@@ -1,38 +1,41 @@
-package cash.p.terminal.modules.send.stellar
+package cash.p.terminal.modules.send.memo
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.navigation.NavController
+import cash.p.terminal.modules.send.SendConfirmationData
 import cash.p.terminal.modules.send.SendConfirmationScreen
 import cash.p.terminal.modules.send.offline.OfflineSignFlowRoutes
 import cash.p.terminal.modules.send.offline.OfflineSignableConfirmationHost
+import java.math.BigDecimal
 
-private const val StellarConfirmationPage = "stellar_confirmation"
-private const val OfflineStellarSignPage = "offline_stellar_confirmation_sign"
-private const val OfflineStellarTransactionTransferPage = "offline_stellar_confirmation_transfer"
+private const val MemoConfirmationPage = "stellar_confirmation"
+private const val OfflineMemoSignPage = "offline_stellar_confirmation_sign"
+private const val OfflineMemoTransactionTransferPage = "offline_stellar_confirmation_transfer"
 
 @Composable
-fun SendStellarConfirmationScreen(
+fun SendMemoConfirmationScreen(
     navController: NavController,
-    sendViewModel: SendStellarViewModel,
+    sendViewModel: SendMemoViewModel,
     sendEntryPointDestId: Int
 ) {
     OfflineSignableConfirmationHost(
         fragmentNavController = navController,
         sendViewModel = sendViewModel,
-        confirmationRoute = StellarConfirmationPage,
+        confirmationRoute = MemoConfirmationPage,
         signFlowRoutes = OfflineSignFlowRoutes(
-            signRoute = OfflineStellarSignPage,
-            transferRoute = OfflineStellarTransactionTransferPage,
+            signRoute = OfflineMemoSignPage,
+            transferRoute = OfflineMemoTransactionTransferPage,
         ),
         sourceChangeable = false,
         onChangeSourceClick = {},
     ) { onRequestOfflineSign ->
-        StellarOnlineConfirmation(
+        MemoOnlineConfirmation(
             navController = navController,
             sendViewModel = sendViewModel,
             sendEntryPointDestId = sendEntryPointDestId,
@@ -41,25 +44,29 @@ fun SendStellarConfirmationScreen(
     }
 }
 
+// Reloaded when the live fee changes and when the screen resumes after a pause.
 @Composable
-private fun StellarOnlineConfirmation(
+internal fun rememberConfirmationData(
+    fee: BigDecimal?,
+    load: () -> SendConfirmationData,
+): SendConfirmationData {
+    var reloads by remember { mutableIntStateOf(0) }
+    var paused by remember { mutableStateOf(false) }
+    LifecycleResumeEffect(Unit) {
+        if (paused) reloads++
+        onPauseOrDispose { paused = true }
+    }
+    return remember(fee, reloads) { load() }
+}
+
+@Composable
+private fun MemoOnlineConfirmation(
     navController: NavController,
-    sendViewModel: SendStellarViewModel,
+    sendViewModel: SendMemoViewModel,
     sendEntryPointDestId: Int,
     onRequestOfflineSign: (() -> Unit)?,
 ) {
-    var confirmationData by remember { mutableStateOf(sendViewModel.getConfirmationData()) }
-    var refresh by remember { mutableStateOf(false) }
-
-    LifecycleResumeEffect(Unit) {
-        if (refresh) {
-            confirmationData = sendViewModel.getConfirmationData()
-        }
-
-        onPauseOrDispose {
-            refresh = true
-        }
-    }
+    val confirmationData = rememberConfirmationData(sendViewModel.uiState.fee, sendViewModel::getConfirmationData)
 
     SendConfirmationScreen(
         navController = navController,

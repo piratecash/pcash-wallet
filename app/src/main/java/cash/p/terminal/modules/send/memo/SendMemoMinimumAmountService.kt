@@ -1,13 +1,13 @@
-package cash.p.terminal.modules.send.stellar
+package cash.p.terminal.modules.send.memo
 
-import cash.p.terminal.core.ISendStellarAdapter
+import cash.p.terminal.core.ISendMemoAdapter
 import cash.p.terminal.core.ServiceState
 import cash.p.terminal.entities.Address
 import java.math.BigDecimal
 
-class SendStellarMinimumAmountService(
-    private val adapter: ISendStellarAdapter
-) : ServiceState<SendStellarMinimumAmountService.State>() {
+class SendMemoMinimumAmountService(
+    private val adapter: ISendMemoAdapter
+) : ServiceState<SendMemoMinimumAmountService.State>() {
 
     private var minimumAmount: BigDecimal? = null
     private var error: Throwable? = null

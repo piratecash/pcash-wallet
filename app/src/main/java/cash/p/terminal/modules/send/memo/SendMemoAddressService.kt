@@ -1,14 +1,17 @@
-package cash.p.terminal.modules.send.stellar
+package cash.p.terminal.modules.send.memo
 
+import cash.p.terminal.core.ISendMemoAdapter
 import cash.p.terminal.entities.Address
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.R
-import io.horizontalsystems.stellarkit.StellarKit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-class SendStellarAddressService {
+class SendMemoAddressService(
+    private val adapter: ISendMemoAdapter,
+    private val chain: SendMemoChain,
+) {
     private var address: Address? = null
     private var addressError: Throwable? = null
 
@@ -34,7 +37,7 @@ class SendStellarAddressService {
         val address = this.address ?: return
 
         try {
-            StellarKit.validateAddress(address.hex)
+            chain.validateAddress(address.hex, adapter)
         } catch (e: Exception) {
             addressError =
                 Throwable(Translator.getString(R.string.SwapSettings_Error_InvalidAddress))

@@ -1,4 +1,4 @@
-package cash.p.terminal.modules.send.stellar
+package cash.p.terminal.modules.send.memo
 
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -28,6 +28,7 @@ import cash.p.terminal.modules.address.AddressParserViewModel
 import cash.p.terminal.modules.address.AddressInputState
 import cash.p.terminal.modules.address.AmountUnique
 import cash.p.terminal.modules.address.HSAddressInput
+import cash.p.terminal.modules.address.MemoPrefill
 import cash.p.terminal.modules.amount.AmountInputModeViewModel
 import cash.p.terminal.modules.amount.AmountInputType
 import cash.p.terminal.modules.amount.HSAmountInput
@@ -58,10 +59,10 @@ import io.horizontalsystems.core.entities.CurrencyValue
 import java.math.BigDecimal
 
 @Composable
-fun SendStellarNavHost(
+fun SendMemoNavHost(
     title: String,
     fragmentNavController: NavController,
-    viewModel: SendStellarViewModel,
+    viewModel: SendMemoViewModel,
     amountInputModeViewModel: AmountInputModeViewModel,
     prefilledData: PrefilledData?,
     addressCheckerControl: AddressCheckerControl,
@@ -70,14 +71,14 @@ fun SendStellarNavHost(
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = SendStellarPage,
+        startDestination = SendMemoPage,
     ) {
-        composable(SendStellarPage) {
-            SendStellarScreen(
+        composable(SendMemoPage) {
+            SendMemoScreen(
                 navController = fragmentNavController,
                 prefilledData = prefilledData,
                 addressCheckerControl = addressCheckerControl,
-                state = SendStellarScreenState(
+                state = SendMemoScreenState(
                     title = title,
                     wallet = viewModel.wallet,
                     uiState = viewModel.uiState,
@@ -93,9 +94,11 @@ fun SendStellarNavHost(
                     feeSecondary = viewModel.formatFeeSecondary(viewModel.uiState.fee, viewModel.feeCoinRate),
                     insufficientFeeBalance = viewModel.isInsufficientFeeBalance(viewModel.uiState.fee),
                     offlineSignSupported = viewModel.offlineSignSupported,
+                    memoMaxLength = viewModel.memoMaxLength,
+                    memoMaxBytes = viewModel.memoMaxBytes,
                 ),
-                callbacks = SendStellarScreenCallbacks(
-                    onOfflineSignClick = { navController.navigate(OfflineStellarSignPage) },
+                callbacks = SendMemoScreenCallbacks(
+                    onOfflineSignClick = { navController.navigate(OfflineMemoSignPage) },
                     onNextClick = onNextClick,
                     onEnterAddress = viewModel::onEnterAddress,
                     onEnterAmount = viewModel::onEnterAmount,
@@ -108,8 +111,8 @@ fun SendStellarNavHost(
         }
         offlineSignFlowRoutes(
             routes = OfflineSignFlowRoutes(
-                signRoute = OfflineStellarSignPage,
-                transferRoute = OfflineStellarTransactionTransferPage,
+                signRoute = OfflineMemoSignPage,
+                transferRoute = OfflineMemoTransactionTransferPage,
             ),
             navController = navController,
             fragmentNavController = fragmentNavController,
@@ -118,23 +121,23 @@ fun SendStellarNavHost(
     }
 }
 
-private const val SendStellarPage = "send_stellar"
-private const val OfflineStellarSignPage = "offline_stellar_sign"
-private const val OfflineStellarTransactionTransferPage = "offline_stellar_transaction_transfer"
+private const val SendMemoPage = "send_stellar"
+private const val OfflineMemoSignPage = "offline_stellar_sign"
+private const val OfflineMemoTransactionTransferPage = "offline_stellar_transaction_transfer"
 
 @Composable
-private fun SendStellarScreen(
+private fun SendMemoScreen(
     navController: NavController,
     prefilledData: PrefilledData?,
     addressCheckerControl: AddressCheckerControl,
-    state: SendStellarScreenState,
-    callbacks: SendStellarScreenCallbacks,
+    state: SendMemoScreenState,
+    callbacks: SendMemoScreenCallbacks,
 ) {
     val paymentAddressViewModel: AddressParserViewModel = viewModel(
         factory = AddressParserModule.Factory(state.wallet.token, prefilledData)
     )
     ComposeAppTheme {
-        SendStellarContent(
+        SendMemoContent(
             navController = navController,
             prefilledData = prefilledData,
             addressCheckerControl = addressCheckerControl,
@@ -145,10 +148,10 @@ private fun SendStellarScreen(
     }
 }
 
-private data class SendStellarScreenState(
+private data class SendMemoScreenState(
     val title: String,
     val wallet: Wallet,
-    val uiState: SendStellarUiState,
+    val uiState: SendMemoUiState,
     val amountInputType: AmountInputType,
     val coinMaxAllowedDecimals: Int,
     val fiatMaxAllowedDecimals: Int,
@@ -161,9 +164,11 @@ private data class SendStellarScreenState(
     val feeSecondary: String,
     val insufficientFeeBalance: Boolean,
     val offlineSignSupported: Boolean,
+    val memoMaxLength: Int,
+    val memoMaxBytes: Int?,
 )
 
-private data class SendStellarScreenCallbacks(
+private data class SendMemoScreenCallbacks(
     val onOfflineSignClick: () -> Unit,
     val onNextClick: (ProceedActionData) -> Unit,
     val onEnterAddress: (Address?) -> Unit,
@@ -175,17 +180,21 @@ private data class SendStellarScreenCallbacks(
 )
 
 @Composable
-private fun SendStellarContent(
+private fun SendMemoContent(
     navController: NavController,
     prefilledData: PrefilledData?,
     addressCheckerControl: AddressCheckerControl,
-    state: SendStellarScreenState,
-    callbacks: SendStellarScreenCallbacks,
+    state: SendMemoScreenState,
+    callbacks: SendMemoScreenCallbacks,
     addressInputState: AddressInputState,
 ) {
     val focusRequester = remember { FocusRequester() }
     var percentageAmountUnique by remember { mutableStateOf<AmountUnique?>(null) }
     var coinAmount by remember { mutableStateOf<BigDecimal?>(null) }
+    val onAmountChange: (BigDecimal?) -> Unit = { amount ->
+        coinAmount = amount
+        callbacks.onEnterAmount(amount)
+    }
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -197,52 +206,44 @@ private fun SendStellarContent(
         proceedEnabled = state.uiState.canBeSend,
         onSendClick = { callbacks.onNextClick(state.uiState.proceedActionData(state.wallet)) },
         bottomOverlay = {
-            StellarSuggestionsBar(
+            MemoSuggestionsBar(
                 state = state,
                 coinAmount = coinAmount,
-                onAmountChange = { amount ->
-                    coinAmount = amount
-                    callbacks.onEnterAmount(amount)
-                },
+                onAmountChange = onAmountChange,
                 onPercentageAmountUnique = { percentageAmountUnique = it },
             )
         }
     ) {
-        StellarAddressSection(
+        MemoAddressSection(
             state = state,
             prefilledData = prefilledData,
             textPreprocessor = addressInputState.textPreprocessor,
             navController = navController,
             onValueChange = callbacks.onEnterAddress,
         )
-        StellarAmountSection(
+        MemoAmountSection(
             state = state,
             focusRequester = focusRequester,
             amountUnique = addressInputState.amountUnique,
             percentageAmountUnique = percentageAmountUnique,
-            onAmountChange = { amount ->
-                coinAmount = amount
-                callbacks.onEnterAmount(amount)
-            },
+            onAmountChange = onAmountChange,
             onToggleInputType = callbacks.onToggleAmountInputType,
         )
-        VSpacer(12.dp)
-        HSMemoInput(120, addressInputState.memoPrefill, callbacks.onEnterMemo)
-        VSpacer(12.dp)
-        StellarFeeAndRiskSections(
+        MemoInputSection(state, addressInputState.memoPrefill, callbacks.onEnterMemo)
+        MemoFeeAndRiskSections(
             state = state,
             navController = navController,
             addressCheckerControl = addressCheckerControl,
             onBalanceClick = callbacks.onToggleHideBalance,
             onRiskAcceptedChange = callbacks.onRiskAcceptedChange,
         )
-        StellarProceedButtons(state, callbacks)
+        MemoProceedButtons(state, callbacks)
     }
 }
 
 @Composable
-private fun BoxScope.StellarSuggestionsBar(
-    state: SendStellarScreenState,
+private fun BoxScope.MemoSuggestionsBar(
+    state: SendMemoScreenState,
     coinAmount: BigDecimal?,
     onAmountChange: (BigDecimal?) -> Unit,
     onPercentageAmountUnique: (AmountUnique?) -> Unit,
@@ -257,8 +258,8 @@ private fun BoxScope.StellarSuggestionsBar(
 }
 
 @Composable
-private fun StellarAddressSection(
-    state: SendStellarScreenState,
+private fun MemoAddressSection(
+    state: SendMemoScreenState,
     prefilledData: PrefilledData?,
     textPreprocessor: TextPreprocessor,
     navController: NavController,
@@ -288,8 +289,24 @@ private fun StellarAddressSection(
 }
 
 @Composable
-private fun StellarAmountSection(
-    state: SendStellarScreenState,
+private fun MemoInputSection(
+    state: SendMemoScreenState,
+    memoPrefill: MemoPrefill,
+    onEnterMemo: (String) -> Unit,
+) {
+    VSpacer(12.dp)
+    HSMemoInput(
+        maxLength = state.memoMaxLength,
+        memoPrefill = memoPrefill,
+        onValueChange = onEnterMemo,
+        prefillMaxBytes = state.memoMaxBytes,
+    )
+    VSpacer(12.dp)
+}
+
+@Composable
+private fun MemoAmountSection(
+    state: SendMemoScreenState,
     focusRequester: FocusRequester,
     amountUnique: AmountUnique?,
     percentageAmountUnique: AmountUnique?,
@@ -314,8 +331,8 @@ private fun StellarAmountSection(
 }
 
 @Composable
-private fun StellarFeeAndRiskSections(
-    state: SendStellarScreenState,
+private fun MemoFeeAndRiskSections(
+    state: SendMemoScreenState,
     navController: NavController,
     addressCheckerControl: AddressCheckerControl,
     onBalanceClick: () -> Unit,
@@ -357,9 +374,9 @@ private fun StellarFeeAndRiskSections(
 }
 
 @Composable
-private fun StellarProceedButtons(
-    state: SendStellarScreenState,
-    callbacks: SendStellarScreenCallbacks,
+private fun MemoProceedButtons(
+    state: SendMemoScreenState,
+    callbacks: SendMemoScreenCallbacks,
 ) {
     Column {
         OfflineSignActionCell(
@@ -379,7 +396,7 @@ private fun StellarProceedButtons(
     }
 }
 
-private fun SendStellarUiState.proceedActionData(wallet: Wallet) =
+private fun SendMemoUiState.proceedActionData(wallet: Wallet) =
     ProceedActionData(
         address = address?.hex,
         wallet = wallet,

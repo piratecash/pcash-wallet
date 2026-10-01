@@ -51,6 +51,8 @@ class AddressHandlerFactory(
             BlockchainType.Ton -> listOf(AddressHandlerTon())
             BlockchainType.Stellar -> listOf(AddressHandlerStellar())
             BlockchainType.Beam -> listOf(BeamRecipient)
+            BlockchainType.Thorchain,
+            BlockchainType.Mayachain -> listOf(AddressHandlerThorchain.forBlockchainType(blockchainType))
             is BlockchainType.Unsupported -> emptyList()
         }
 

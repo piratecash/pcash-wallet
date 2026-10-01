@@ -4,6 +4,7 @@ import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.FullCoin
+import cash.p.terminal.wallet.isSynthetic
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,13 +29,16 @@ class MarketDiscoveryService(
     suspend fun start() {
         recentCoins = marketKit
             .fullCoins(localStorage.marketSearchRecentCoinUids)
+            .excludeSynthetic()
             .sortedBy {
                 localStorage.marketSearchRecentCoinUids.indexOf(it.coin.uid)
             }
-        popularCoins = marketKit.fullCoins("")
+        popularCoins = marketKit.fullCoins("").excludeSynthetic()
 
         emitState()
     }
+
+    private fun List<FullCoin>.excludeSynthetic(): List<FullCoin> = filter { !it.isSynthetic }
 
     private fun emitState() {
         _stateFlow.update {

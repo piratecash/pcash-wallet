@@ -6,21 +6,21 @@ import android.util.Base64
 import io.horizontalsystems.core.IEncryptionManager
 import java.security.SecureRandom
 
-interface BitcoinKitDatabaseKeyProvider {
+interface KitDatabaseKeyProvider {
     fun keyFor(accountId: String): ByteArray
     fun remove(accountId: String)
 }
 
-class BitcoinKitDatabaseKeyException(message: String, cause: Throwable? = null) :
+class KitDatabaseKeyException(message: String, cause: Throwable? = null) :
     IllegalStateException(message, cause)
 
-class BitcoinKitDatabaseKeyLockedException(cause: UserNotAuthenticatedException) :
-    IllegalStateException("BitcoinKit database key requires user authentication", cause)
+class KitDatabaseKeyLockedException(cause: UserNotAuthenticatedException) :
+    IllegalStateException("Kit database key requires user authentication", cause)
 
-class DefaultBitcoinKitDatabaseKeyProvider(
+class DefaultKitDatabaseKeyProvider(
     context: Context,
     private val encryptionManager: IEncryptionManager,
-) : BitcoinKitDatabaseKeyProvider {
+) : KitDatabaseKeyProvider {
 
     private val preferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
 
@@ -34,14 +34,14 @@ class DefaultBitcoinKitDatabaseKeyProvider(
         val encoded = Base64.encodeToString(key, Base64.NO_WRAP)
         val encrypted = accessKeyStore { encryptionManager.encrypt(encoded) }
         if (!preferences.edit().putString(preferenceKey, encrypted).commit()) {
-            throw BitcoinKitDatabaseKeyException("Unable to persist BitcoinKit database key")
+            throw KitDatabaseKeyException("Unable to persist kit database key")
         }
         return key
     }
 
     override fun remove(accountId: String) {
         if (!preferences.edit().remove(accountId.preferenceKey()).commit()) {
-            throw BitcoinKitDatabaseKeyException("Unable to remove BitcoinKit database key")
+            throw KitDatabaseKeyException("Unable to remove kit database key")
         }
     }
 
@@ -54,14 +54,14 @@ class DefaultBitcoinKitDatabaseKeyProvider(
 
         val key = try {
             Base64.decode(accessKeyStore { encryptionManager.decrypt(encrypted) }, Base64.NO_WRAP)
-        } catch (error: BitcoinKitDatabaseKeyLockedException) {
+        } catch (error: KitDatabaseKeyLockedException) {
             throw error
         } catch (error: Exception) {
             invalidStoredKey(error)
         }
 
         if (key.size != KEY_SIZE) {
-            invalidStoredKey(message = "Stored BitcoinKit database key has invalid size")
+            invalidStoredKey(message = "Stored kit database key has invalid size")
         }
         return key
     }
@@ -69,17 +69,18 @@ class DefaultBitcoinKitDatabaseKeyProvider(
     private inline fun <T> accessKeyStore(block: () -> T): T = try {
         block()
     } catch (error: UserNotAuthenticatedException) {
-        throw BitcoinKitDatabaseKeyLockedException(error)
+        throw KitDatabaseKeyLockedException(error)
     }
 
     private fun invalidStoredKey(
         cause: Throwable? = null,
-        message: String = "Stored BitcoinKit database key is invalid",
-    ): Nothing = throw BitcoinKitDatabaseKeyException(message, cause)
+        message: String = "Stored kit database key is invalid",
+    ): Nothing = throw KitDatabaseKeyException(message, cause)
 
     private fun String.preferenceKey() = "$KEY_PREFIX$this"
 
     private companion object {
+        // Legacy bitcoin-kit names: keys persisted before the provider became shared live there.
         const val PREFERENCES_NAME = "bitcoin_kit_database_keys"
         const val KEY_PREFIX = "bitcoin_kit_database_key_"
         const val KEY_SIZE = 32

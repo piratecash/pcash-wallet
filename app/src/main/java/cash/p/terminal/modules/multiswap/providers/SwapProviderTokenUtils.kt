@@ -43,5 +43,6 @@ internal val Token.swapAssetKind: SwapAssetKind?
         TokenType.Mweb,
         is TokenType.Trc10,
         is TokenType.Asset,
+        is TokenType.ThorchainAsset,
         is TokenType.Unsupported -> null
     }

@@ -21,7 +21,7 @@ import kotlin.test.assertFailsWith
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
-class BitcoinKitDatabaseKeyProviderTest {
+class KitDatabaseKeyProviderTest {
     private lateinit var context: Context
     private lateinit var encryptionManager: IEncryptionManager
 
@@ -39,11 +39,11 @@ class BitcoinKitDatabaseKeyProviderTest {
 
     @Test
     fun keyFor_newAndExistingAccount_persistsEncryptedStableKey() {
-        val firstProvider = DefaultBitcoinKitDatabaseKeyProvider(context, encryptionManager)
+        val firstProvider = DefaultKitDatabaseKeyProvider(context, encryptionManager)
 
         val firstKey = firstProvider.keyFor(ACCOUNT_ID)
         val storedValue = preferences().getString(preferenceKey(), null)
-        val restoredKey = DefaultBitcoinKitDatabaseKeyProvider(context, encryptionManager).keyFor(ACCOUNT_ID)
+        val restoredKey = DefaultKitDatabaseKeyProvider(context, encryptionManager).keyFor(ACCOUNT_ID)
 
         assertArrayEquals(firstKey, restoredKey)
         assertTrue(firstKey.size == KEY_SIZE)
@@ -54,9 +54,9 @@ class BitcoinKitDatabaseKeyProviderTest {
     fun keyFor_presentCorruptValue_throwsWithoutReplacingIt() {
         val corruptValue = "not-encrypted"
         preferences().edit().putString(preferenceKey(), corruptValue).commit()
-        val provider = DefaultBitcoinKitDatabaseKeyProvider(context, encryptionManager)
+        val provider = DefaultKitDatabaseKeyProvider(context, encryptionManager)
 
-        assertFailsWith<BitcoinKitDatabaseKeyException> {
+        assertFailsWith<KitDatabaseKeyException> {
             provider.keyFor(ACCOUNT_ID)
         }
 
@@ -71,9 +71,9 @@ class BitcoinKitDatabaseKeyProviderTest {
         val lockedEncryptionManager = mockk<IEncryptionManager> {
             every { decrypt(any()) } throws authenticationRequired
         }
-        val provider = DefaultBitcoinKitDatabaseKeyProvider(context, lockedEncryptionManager)
+        val provider = DefaultKitDatabaseKeyProvider(context, lockedEncryptionManager)
 
-        val error = assertFailsWith<BitcoinKitDatabaseKeyLockedException> {
+        val error = assertFailsWith<KitDatabaseKeyLockedException> {
             provider.keyFor(ACCOUNT_ID)
         }
 
@@ -82,7 +82,7 @@ class BitcoinKitDatabaseKeyProviderTest {
 
     @Test
     fun remove_existingKey_removesStoredKey() {
-        val provider = DefaultBitcoinKitDatabaseKeyProvider(context, encryptionManager)
+        val provider = DefaultKitDatabaseKeyProvider(context, encryptionManager)
         provider.keyFor(ACCOUNT_ID)
 
         provider.remove(ACCOUNT_ID)

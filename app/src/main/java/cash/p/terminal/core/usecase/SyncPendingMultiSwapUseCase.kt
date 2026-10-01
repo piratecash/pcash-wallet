@@ -165,7 +165,8 @@ class SyncPendingMultiSwapUseCase(
                 adapter.getTransactions(from, wallet.token, PAGE_SIZE, FilterTransactionType.Outgoing, null)
             } ?: return false
 
-            val match = batch.firstOrNull { it.transactionHash == transactionId }
+            // The stored id comes from getRecordUid(), which is the hash, not the record uid, on some chains (Stellar).
+            val match = batch.firstOrNull { it.uid == transactionId || it.transactionHash == transactionId }
             if (match != null) return match.failed
 
             if (batch.size < PAGE_SIZE) break

@@ -63,6 +63,7 @@ import io.horizontalsystems.core.entities.Currency
 import io.horizontalsystems.ethereumkit.api.jsonrpc.JsonRpc.ResponseError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -72,6 +73,7 @@ import org.koin.java.KoinJavaComponent.inject
 import timber.log.Timber
 import java.math.BigDecimal
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.cancellation.CancellationException
 
 class SwapConfirmViewModel(
@@ -136,6 +138,8 @@ class SwapConfirmViewModel(
     private var swapRecipientAddress: String? = null
     private var isAdvancedSettingsAvailable: Boolean = sendTransactionService.hasSettings()
     private var fetchJob: Job? = null
+    // The timer tracks quote freshness, so it starts once per new quote, not on fee/balance re-emissions.
+    private val quoteAwaitingTimer = AtomicBoolean(false)
     private var moneroPreparationJob: Job? = null
     private var moneroPreparationAutoStarted = false
     private var moneroPreparationActivity = MoneroPreparationActivity.Idle
@@ -197,7 +201,7 @@ class SwapConfirmViewModel(
                 emitState()
                 prepareMoneroSpendIfNeeded(transactionState.moneroSpendReadiness, automatic = true)
 
-                if (isSendable() && needUseTimer()) {
+                if (needUseTimer() && isSendable() && quoteAwaitingTimer.compareAndSet(true, false)) {
                     timerService.start(10)
                 }
             }
@@ -384,6 +388,7 @@ class SwapConfirmViewModel(
                 fiatServiceIn.setAmount(amountIn)
                 fiatServiceOut.setAmount(amountOut)
                 fiatServiceOutMin.setAmount(amountOutMin)
+                quoteAwaitingTimer.set(true)
                 sendTransactionService.setSendTransactionData(finalQuote.sendTransactionData)
 
                 priceImpactService.setPriceImpact(finalQuote.priceImpact?.negate(), swapProvider.title)
@@ -497,10 +502,14 @@ class SwapConfirmViewModel(
         viewModelScope.launch {
             try {
                 val recipientAddress = swapRecipientAddress
-                val result = swap()
-                onSendSuccess(recipientAddress)
-                handleMultiSwapCompletion(result)
-                onTransactionCompleted(result)
+                // Leaving the screen must not drop tracking of a transaction the node may already hold.
+                val result = withContext(NonCancellable) {
+                    val sent = swap()
+                    onSendSuccess(recipientAddress)
+                    handleMultiSwapCompletion(sent)
+                    onTransactionCompleted(sent)
+                    sent
+                }
 
                 val queued = result is SendTransactionResult.Btc && result.isQueued ||
                     result is SendTransactionResult.Beam && result.result is SendResult.SentButQueued
