@@ -7,14 +7,11 @@ import cash.p.terminal.network.yifi.domain.entity.YiFiChain
 import cash.p.terminal.network.yifi.domain.entity.YiFiToken
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
-import cash.p.terminal.wallet.entities.TokenType
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 data class YiFiAsset(
@@ -32,17 +29,12 @@ class YiFiTokenResolver(
     private val marketKit: MarketKitWrapper,
     private val dispatcherProvider: DispatcherProvider,
 ) {
-    private enum class AssetKind { NATIVE, CONTRACT }
+    private val chainsCache = ExpiringCache<Unit, List<YiFiChain>>(CACHE_TTL_MS)
+    private val networkCache = ExpiringCache<BlockchainType, YiFiChain?>(CACHE_TTL_MS)
+    private val searchCache = ExpiringCache<Pair<String, String>, List<YiFiToken>>(CACHE_TTL_MS)
+    private val assetCache = ExpiringCache<String, YiFiAsset?>(CACHE_TTL_MS)
 
-    private class Cached<T>(val value: T, val timestamp: Long)
-
-    private val mutex = Mutex()
-    private val chainsCache = mutableMapOf<Unit, Cached<List<YiFiChain>>>()
-    private val networkCache = mutableMapOf<BlockchainType, Cached<YiFiChain?>>()
-    private val searchCache = mutableMapOf<Pair<String, String>, Cached<List<YiFiToken>>>()
-    private val assetCache = mutableMapOf<String, Cached<YiFiAsset?>>()
-
-    suspend fun clear() = mutex.withLock {
+    suspend fun clear() {
         chainsCache.clear()
         networkCache.clear()
         searchCache.clear()
@@ -50,12 +42,12 @@ class YiFiTokenResolver(
     }
 
     suspend fun resolveAsset(token: Token): YiFiAsset? {
-        val kind = token.assetKind ?: return null
+        val kind = token.swapAssetKind?.takeUnless { token.isMimblewimbleBeam } ?: return null
         return withContext(dispatcherProvider.io) {
             assetCache.getOrLoad("${token.coin.uid}|${token.tokenQuery.id}") {
                 when (kind) {
-                    AssetKind.NATIVE -> resolveNative(token)
-                    AssetKind.CONTRACT -> resolveContract(token.blockchainType, token.contractAddress())
+                    SwapAssetKind.NATIVE -> resolveNative(token)
+                    SwapAssetKind.CONTRACT -> resolveContract(token.blockchainType, token.contractAddress())
                 }
             }
         }
@@ -65,7 +57,7 @@ class YiFiTokenResolver(
         val chain = resolveNetwork(token.blockchainType, token.coin.code) ?: return null
         val ticker = chain.nativeToken.ifBlank { token.coin.code }
         val row = exactTickerRows(chain.id, ticker).singleOrNull() ?: return null
-        return row.takeIf { it.isContractless }?.let { YiFiAsset(it.ticker, chain.id) }
+        return row.takeIf { it.isNativeCoin(token.blockchainType) }?.let { YiFiAsset(it.ticker, chain.id) }
     }
 
     private suspend fun resolveContract(blockchainType: BlockchainType, contract: String): YiFiAsset? {
@@ -84,22 +76,25 @@ class YiFiTokenResolver(
                 val chainId = evmBlockchainManager.getChain(blockchainType).id.toLong()
                 getChains().singleOrNull { it.chainId == chainId }
             } else {
-                nativeCode?.let { findNonEvmNetwork(it) }
+                nativeCode?.let { findNonEvmNetwork(blockchainType, it) }
             }
         }
 
     // A ticker appears in the aliases of several chains (BTC on MERLIN, MEZO), but only its home
     // chain lists it as a contractless token.
-    private suspend fun findNonEvmNetwork(nativeCode: String): YiFiChain? = coroutineScope {
-        getChains()
-            .filter { it.mentions(nativeCode) }
-            .map { chain ->
-                async { chain.takeIf { exactTickerRows(chain.id, nativeCode).any { it.isContractless } } }
-            }
-            .awaitAll()
-            .filterNotNull()
-            .singleOrNull()
-    }
+    private suspend fun findNonEvmNetwork(blockchainType: BlockchainType, nativeCode: String): YiFiChain? =
+        coroutineScope {
+            getChains()
+                .filter { it.mentions(nativeCode) }
+                .map { chain ->
+                    async {
+                        chain.takeIf { exactTickerRows(chain.id, nativeCode).any { it.isNativeCoin(blockchainType) } }
+                    }
+                }
+                .awaitAll()
+                .filterNotNull()
+                .singleOrNull()
+        }
 
     private suspend fun exactTickerRows(network: String, ticker: String): List<YiFiToken> =
         searchTokens(network, ticker).filter { it.ticker.equals(ticker, ignoreCase = true) }
@@ -110,41 +105,17 @@ class YiFiTokenResolver(
     private suspend fun searchTokens(network: String, query: String): List<YiFiToken> =
         searchCache.getOrLoad(network to query) { yiFiRepository.searchTokens(network, query) }
 
-    // The load runs outside the lock; a thrown load (IO error, cancellation) stores nothing.
-    private suspend fun <K, V> MutableMap<K, Cached<V>>.getOrLoad(key: K, load: suspend () -> V): V {
-        mutex.withLock {
-            this[key]?.takeIf { System.currentTimeMillis() - it.timestamp < CACHE_TTL_MS }
-                ?.let { return it.value }
-        }
-        val value = load()
-        mutex.withLock { this[key] = Cached(value, System.currentTimeMillis()) }
-        return value
-    }
-
-    // Dispatch on the type, not on contractAddress(): it is empty for Asset, Trc10 and Mweb too.
-    private val Token.assetKind: AssetKind?
-        get() = when (type) {
-            TokenType.Native,
-            is TokenType.Derived,
-            is TokenType.AddressTyped,
-            is TokenType.AddressSpecTyped -> AssetKind.NATIVE.takeUnless { isZcashShielded || isMimblewimbleBeam }
-
-            is TokenType.Eip20,
-            is TokenType.Spl,
-            is TokenType.Jetton -> AssetKind.CONTRACT
-
-            TokenType.Mweb,
-            is TokenType.Trc10,
-            is TokenType.Asset,
-            is TokenType.Unsupported -> null
-        }
-
     // YiFi's "BEAM" network is the Beam gaming L1 (beam-2), which shares the ticker with ours.
     private val Token.isMimblewimbleBeam: Boolean
         get() = blockchainType == BlockchainType.Beam
 
-    private val YiFiToken.isContractless: Boolean
-        get() = contractAddress.isNullOrBlank()
+    // THORChain/Maya natives carry the ticker as a placeholder contract (RUNE: "rune").
+    private fun YiFiToken.isNativeCoin(blockchainType: BlockchainType): Boolean =
+        contractAddress.isNullOrBlank() ||
+            (blockchainType.hasTickerPlaceholderContract && contractAddress.equals(ticker, ignoreCase = true))
+
+    private val BlockchainType.hasTickerPlaceholderContract: Boolean
+        get() = this == BlockchainType.Thorchain || this == BlockchainType.Mayachain
 
     private fun YiFiChain.mentions(code: String): Boolean =
         id.equals(code, ignoreCase = true) ||

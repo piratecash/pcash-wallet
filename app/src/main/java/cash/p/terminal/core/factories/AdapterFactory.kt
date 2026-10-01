@@ -38,6 +38,8 @@ import cash.p.terminal.core.adapters.TronTransactionsAdapter
 import cash.p.terminal.core.adapters.stellar.StellarAdapter
 import cash.p.terminal.core.adapters.stellar.StellarAssetAdapter
 import cash.p.terminal.core.adapters.stellar.StellarTransactionsAdapter
+import cash.p.terminal.core.adapters.thorchain.ThorchainAdapter
+import cash.p.terminal.core.adapters.thorchain.ThorchainTransactionsAdapter
 import cash.p.terminal.core.adapters.zcash.TrezorZcashSigner
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
 import cash.p.terminal.core.adapters.zcash.ZcashSpendingKeySigner
@@ -67,6 +69,7 @@ import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.SolanaKitManager
 import cash.p.terminal.core.managers.StackingManager
 import cash.p.terminal.core.managers.StellarKitManager
+import cash.p.terminal.core.managers.ThorchainKitManagers
 import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TronKitManager
 import cash.p.terminal.modules.blockchainstatus.logTag
@@ -110,6 +113,7 @@ class AdapterFactory(
     private val tronKitManager: TronKitManager,
     private val tonKitManager: TonKitManager,
     private val stellarKitManager: StellarKitManager,
+    private val thorchainKitManagers: ThorchainKitManagers,
     private val moneroKitManager: MoneroKitManager,
     private val backgroundManager: BackgroundManager,
     private val restoreSettingsManager: RestoreSettingsManager,
@@ -236,6 +240,13 @@ class AdapterFactory(
         val stellarKitWrapper = stellarKitManager.getStellarKitWrapper(wallet.account)
 
         return StellarAssetAdapter(stellarKitWrapper, code, issuer)
+    }
+
+    private suspend fun getThorchainAdapter(wallet: Wallet): IAdapter {
+        val thorchainKitWrapper = thorchainKitManagers.forType(wallet.token.blockchainType)
+            .getThorchainKitWrapper(wallet.account)
+
+        return ThorchainAdapter(thorchainKitWrapper, wallet, dispatcherProvider)
     }
 
     private suspend fun getMoneroAdapter(wallet: Wallet): IAdapter {
@@ -492,6 +503,9 @@ class AdapterFactory(
                     getMoneroAdapter(wallet)
                 }
 
+                BlockchainType.Thorchain,
+                BlockchainType.Mayachain -> getThorchainAdapter(wallet)
+
                 else -> null
             }
 
@@ -507,6 +521,7 @@ class AdapterFactory(
             is TokenType.Jetton -> getJettonAdapter(wallet, tokenType.address)
             is TokenType.Asset -> getStellarAssetAdapter(wallet, tokenType.code, tokenType.issuer)
             is TokenType.Trc10 -> null
+            is TokenType.ThorchainAsset -> getThorchainAdapter(wallet)
             is TokenType.Unsupported -> null
         }
 
@@ -603,6 +618,24 @@ class AdapterFactory(
         return StellarTransactionsAdapter(stellarKitWrapper, transactionConverter)
     }
 
+    suspend fun thorchainTransactionsAdapter(source: TransactionSource): ITransactionsAdapter? {
+        val blockchainType = source.blockchain.type
+        val thorchainKitWrapper = thorchainKitManagers.forType(blockchainType)
+            .getThorchainKitWrapper(source.account)
+        val baseToken = coinManager.getToken(TokenQuery(blockchainType, TokenType.Native)) ?: return null
+        val thorchainKit = thorchainKitWrapper.thorchainKit
+
+        val transactionConverter = ThorchainTransactionConverter(
+            coinManager = coinManager,
+            source = source,
+            userAddress = thorchainKit.receiveAddress,
+            baseToken = baseToken,
+            network = thorchainKit.network,
+        )
+
+        return ThorchainTransactionsAdapter(thorchainKitWrapper, transactionConverter)
+    }
+
     suspend fun moneroTransactionsAdapter(source: TransactionSource): ITransactionsAdapter? {
         val moneroKitWrapper = moneroKitManager.getMoneroKitWrapper(source.account)
         return MoneroTransactionsAdapter(moneroKitWrapper, source)
@@ -662,6 +695,8 @@ class AdapterFactory(
             BlockchainType.Ton -> tonKitManager.unlink(account)
             BlockchainType.Monero -> moneroKitManager.unlink(account)
             BlockchainType.Stellar -> stellarKitManager.unlink(account)
+            BlockchainType.Thorchain,
+            BlockchainType.Mayachain -> thorchainKitManagers.forType(blockchainType).unlink(account)
             // TransactionAdapterManager only borrows the wallet adapter's BEAM session.
             BlockchainType.Beam -> Unit
             else -> Unit

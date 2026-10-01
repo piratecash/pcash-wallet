@@ -5,6 +5,8 @@ import cash.p.terminal.core.managers.EvmKitManager
 import cash.p.terminal.core.managers.MoneroKitManager
 import cash.p.terminal.core.managers.SolanaKitManager
 import cash.p.terminal.core.managers.StellarKitManager
+import cash.p.terminal.core.managers.ThorchainKitManager
+import cash.p.terminal.core.managers.ThorchainKitManagers
 import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TronKitManager
 import cash.p.terminal.wallet.Account
@@ -37,6 +39,12 @@ class AdapterFactoryUnlinkTest {
     private val tonKitManager = mockk<TonKitManager>(relaxed = true)
     private val moneroKitManager = mockk<MoneroKitManager>(relaxed = true)
     private val stellarKitManager = mockk<StellarKitManager>(relaxed = true)
+    private val thorchainKitManager = mockk<ThorchainKitManager>(relaxed = true)
+    private val mayaKitManager = mockk<ThorchainKitManager>(relaxed = true)
+    private val thorchainKitManagers = mockk<ThorchainKitManagers> {
+        every { forType(BlockchainType.Thorchain) } returns thorchainKitManager
+        every { forType(BlockchainType.Mayachain) } returns mayaKitManager
+    }
 
     private val factory = AdapterFactory(
         context = mockk(relaxed = true),
@@ -47,6 +55,7 @@ class AdapterFactoryUnlinkTest {
         tronKitManager = tronKitManager,
         tonKitManager = tonKitManager,
         stellarKitManager = stellarKitManager,
+        thorchainKitManagers = thorchainKitManagers,
         moneroKitManager = moneroKitManager,
         backgroundManager = mockk(relaxed = true),
         restoreSettingsManager = mockk(relaxed = true),
@@ -103,6 +112,16 @@ class AdapterFactoryUnlinkTest {
 
         factory.unlinkAdapter(transactionSource(BlockchainType.Stellar))
         coVerify(exactly = 1) { stellarKitManager.unlink(account) }
+    }
+
+    @Test
+    fun unlinkAdapter_thorchainFamily_unlinksItsNetworkKitManager() = runTest {
+        factory.unlinkAdapter(transactionSource(BlockchainType.Thorchain))
+        coVerify(exactly = 1) { thorchainKitManager.unlink(account) }
+        coVerify(exactly = 0) { mayaKitManager.unlink(any()) }
+
+        factory.unlinkAdapter(transactionSource(BlockchainType.Mayachain))
+        coVerify(exactly = 1) { mayaKitManager.unlink(account) }
     }
 
     @Test

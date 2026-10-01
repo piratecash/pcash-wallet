@@ -27,6 +27,23 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.math.BigDecimal
 
+/** The order needs a deposit memo that the input network cannot carry. */
+class SwapDepositMemoUnsupported : Throwable()
+
+/** Input networks whose deposit transaction can carry a provider memo. */
+internal val MEMO_CHAINS = setOf(
+    BlockchainType.Stellar,
+    BlockchainType.Ton,
+    BlockchainType.Thorchain,
+    BlockchainType.Mayachain,
+)
+
+private val BCH_PREFIX = Regex("^bitcoincash:", RegexOption.IGNORE_CASE)
+
+// Off-chain providers reject the CashAddr prefix that bitcoin-kit includes in BCH addresses.
+internal fun Token.normalizeSwapAddress(address: String): String =
+    if (blockchainType == BlockchainType.BitcoinCash) address.replaceFirst(BCH_PREFIX, "") else address
+
 class OffChainSwapProviderSupport(
     private val walletUseCase: WalletUseCase,
     private val accountManager: IAccountManager,
@@ -118,8 +135,11 @@ class OffChainSwapProviderSupport(
         amountIn: BigDecimal,
         amountOut: BigDecimal,
         subProviderId: String? = null,
+        externalId: String? = null,
+        walletAddress: String? = null,
     ) = swapProviderTransactionFactory.build(
-        provider, transactionId, tokenIn, tokenOut, amountIn, amountOut, subProviderId = subProviderId
+        provider, transactionId, tokenIn, tokenOut, amountIn, amountOut,
+        subProviderId = subProviderId, externalId = externalId, walletAddress = walletAddress
     )
 
     fun buildTransactionData(
@@ -129,16 +149,7 @@ class OffChainSwapProviderSupport(
         memo: String?,
     ): SendTransactionData {
         return when {
-            tokenIn.blockchainType.isEvm -> {
-                val adapter = adapterManager.getAdapterForToken<ISendEthereumAdapter>(tokenIn)
-                    ?: throw IllegalStateException("Ethereum adapter not found")
-                val transactionData = adapter.getTransactionData(
-                    amountIn,
-                    Address(depositAddress)
-                )
-
-                SendTransactionData.Evm(transactionData, null, amount = amountIn, recipientAddress = depositAddress)
-            }
+            tokenIn.blockchainType.isEvm -> buildEvmTransactionData(tokenIn, amountIn, depositAddress)
 
             tokenIn.blockchainType == BlockchainType.Tron -> {
                 SendTransactionData.Tron.Regular(
@@ -154,6 +165,10 @@ class OffChainSwapProviderSupport(
                     memo = memo.orEmpty()
                 )
             }
+
+            tokenIn.blockchainType == BlockchainType.Thorchain ||
+                    tokenIn.blockchainType == BlockchainType.Mayachain ->
+                buildThorchainTransactionData(amountIn, depositAddress, memo)
 
             tokenIn.blockchainType == BlockchainType.Solana -> {
                 SendTransactionData.Solana.Regular(
@@ -209,6 +224,33 @@ class OffChainSwapProviderSupport(
             )
         )
     }
+
+    private fun buildEvmTransactionData(
+        tokenIn: Token,
+        amountIn: BigDecimal,
+        depositAddress: String,
+    ): SendTransactionData {
+        val adapter = adapterManager.getAdapterForToken<ISendEthereumAdapter>(tokenIn)
+            ?: throw IllegalStateException("Ethereum adapter not found")
+        val transactionData = adapter.getTransactionData(
+            amountIn,
+            Address(depositAddress)
+        )
+
+        return SendTransactionData.Evm(transactionData, null, amount = amountIn, recipientAddress = depositAddress)
+    }
+
+    // The deposit address is shared by all orders: without the memo the funds are not attributed to this one.
+    private fun buildThorchainTransactionData(
+        amountIn: BigDecimal,
+        depositAddress: String,
+        memo: String?,
+    ): SendTransactionData =
+        if (memo.isNullOrBlank()) {
+            SendTransactionData.Unsupported
+        } else {
+            SendTransactionData.Thorchain.Send(address = depositAddress, amount = amountIn, memo = memo)
+        }
 
     private suspend fun getCachedZcashTransparentAddress(): String? =
         zcashAddressMutex.withLock {

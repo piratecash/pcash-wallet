@@ -7,6 +7,7 @@ import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactio
 import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceEvm
 import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceStellar
 import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceSolana
+import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceThorchain
 import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceTon
 import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceTron
 import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceMonero
@@ -101,6 +102,9 @@ object SendTransactionServiceFactory {
                     SendTransactionServiceMonero(token)
                 }
 
+                BlockchainType.Thorchain,
+                BlockchainType.Mayachain -> SendTransactionServiceThorchain(token)
+
                 BlockchainType.Beam -> {
                     SendTransactionServiceBeam(token)
                 }
@@ -118,6 +122,7 @@ object SendTransactionServiceFactory {
 
             is TokenType.Spl -> SendTransactionServiceSolana(token)
             is TokenType.Jetton -> SendTransactionServiceTon(token)
+            is TokenType.ThorchainAsset -> SendTransactionServiceThorchain(token)
 
             is TokenType.Asset,
             is TokenType.Trc10,

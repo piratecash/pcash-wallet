@@ -35,6 +35,9 @@ enum class TransactionRecordType {
     STELLAR_INCOMING,
     STELLAR_OUTGOING,
 
+    THORCHAIN_INCOMING,
+    THORCHAIN_OUTGOING,
+
     BEAM_INCOMING,
     BEAM_OUTGOING,
 }

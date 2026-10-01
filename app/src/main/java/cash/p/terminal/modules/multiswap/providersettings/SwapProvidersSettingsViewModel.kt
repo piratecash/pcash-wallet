@@ -32,6 +32,7 @@ class SwapProvidersSettingsViewModel(
                         icon = provider.icon,
                         enabled = !repository.isDisabled(provider.id),
                         mandatory = repository.isMandatory(provider.id),
+                        iconUrl = provider.iconUrl,
                     )
                 }
         )
@@ -51,4 +52,5 @@ data class SwapProviderItem(
     val icon: Int,
     val enabled: Boolean,
     val mandatory: Boolean,
+    val iconUrl: String? = null,
 )

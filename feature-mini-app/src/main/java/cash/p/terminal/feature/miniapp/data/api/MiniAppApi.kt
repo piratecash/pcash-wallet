@@ -1,6 +1,7 @@
 package cash.p.terminal.feature.miniapp.data.api
 
 import cash.p.terminal.network.data.AppHeadersProvider
+import cash.p.terminal.network.data.appHeaders
 import cash.p.terminal.network.data.setJsonBody
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -62,13 +63,7 @@ class MiniAppApi(
 
     private fun HttpRequestBuilder.authHeaders(jwt: String) {
         header(HttpHeaders.Authorization, "Bearer $jwt")
-        appHeaders()
-    }
-
-    private fun HttpRequestBuilder.appHeaders() {
-        header("App-Version", appHeadersProvider.appVersion)
-        header(HttpHeaders.AcceptLanguage, appHeadersProvider.currentLanguage)
-        appHeadersProvider.appSignature?.let { header("App-Signature", it) }
+        appHeaders(appHeadersProvider)
     }
 }
 

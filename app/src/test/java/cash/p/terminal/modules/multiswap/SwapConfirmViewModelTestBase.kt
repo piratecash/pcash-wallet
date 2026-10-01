@@ -110,6 +110,7 @@ abstract class SwapConfirmViewModelTestBase {
         direction: SwapAmountDirection = SwapAmountDirection.In,
         requestedAmountOut: BigDecimal? = null,
         serviceOverride: ISendTransactionService<*>? = null,
+        timerService: TimerService = TimerService(),
         quote: ISwapQuote = swapQuote,
         wallet: Wallet = previewWallet,
     ): SwapConfirmViewModel {
@@ -145,7 +146,7 @@ abstract class SwapConfirmViewModelTestBase {
                 outputMinimum = FiatService(assetFiatRateService),
             ),
             sendTransactionService = sendTransactionService,
-            timerService = TimerService(),
+            timerService = timerService,
             priceImpactService = PriceImpactService(),
             wallet = wallet,
             adapterManager = adapterManager,
@@ -160,6 +161,7 @@ abstract class SwapConfirmViewModelTestBase {
         amountOut: BigDecimal = BigDecimal.ONE,
         amountInMax: BigDecimal? = null,
         cautions: List<HSCaution> = emptyList(),
+        validUntilMillis: Long? = null,
     ): ISwapFinalQuote = SwapFinalQuoteEvm(
         tokenIn = token,
         tokenOut = token,
@@ -171,5 +173,6 @@ abstract class SwapConfirmViewModelTestBase {
         fields = emptyList(),
         amountInMax = amountInMax,
         cautions = cautions,
+        validUntilMillis = validUntilMillis,
     )
 }
