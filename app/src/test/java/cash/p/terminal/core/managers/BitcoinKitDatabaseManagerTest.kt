@@ -23,7 +23,7 @@ class BitcoinKitDatabaseManagerTest {
         every { getDatabasePath(any()) } returns File("/app/databases/bitcoin-kit-path")
         every { noBackupFilesDir } returns File("/app/no-backup")
     }
-    private val keyProvider = mockk<BitcoinKitDatabaseKeyProvider>()
+    private val keyProvider = mockk<KitDatabaseKeyProvider>()
     private val operations = mockk<BitcoinKitDatabaseOperations>()
     private val connectionManager = mockk<IConnectionManager>()
     private val databaseKey = ByteArray(32) { it.toByte() }
@@ -124,7 +124,7 @@ class BitcoinKitDatabaseManagerTest {
 
     private fun createManager() = BitcoinKitDatabaseManager(
         context,
-        keyProvider,
+        KitDatabaseKeys(keyProvider),
         operations,
         connectionManager,
     )

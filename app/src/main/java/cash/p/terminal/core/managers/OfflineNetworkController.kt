@@ -22,6 +22,7 @@ class OfflineNetworkController(
     private val tonKitManager: TonKitManager,
     private val stellarKitManager: StellarKitManager,
     private val moneroKitManager: MoneroKitManager,
+    private val thorchainKitManagers: ThorchainKitManagers,
 ) {
     suspend fun pause(member: Wallet) {
         val adapter = adapterManager.getAdapterForWalletOld(member)
@@ -39,6 +40,8 @@ class OfflineNetworkController(
             BlockchainType.Ton -> tonKitManager.pauseNetwork(account)
             BlockchainType.Stellar -> stellarKitManager.pauseNetwork(account)
             BlockchainType.Monero -> moneroKitManager.pauseNetwork(account)
+            BlockchainType.Thorchain,
+            BlockchainType.Mayachain -> thorchainKitManagers.forType(blockchainType).pauseNetwork(account)
             in EvmBlockchainManager.blockchainTypes ->
                 evmBlockchainManager.getEvmKitManager(blockchainType).pauseNetwork(account)
             else -> Unit
@@ -57,6 +60,8 @@ class OfflineNetworkController(
             BlockchainType.Ton -> tonKitManager.resumeNetwork(account)
             BlockchainType.Stellar -> stellarKitManager.resumeNetwork(account)
             BlockchainType.Monero -> moneroKitManager.resumeNetwork(account)
+            BlockchainType.Thorchain,
+            BlockchainType.Mayachain -> thorchainKitManagers.forType(blockchainType).resumeNetwork(account)
             in EvmBlockchainManager.blockchainTypes ->
                 evmBlockchainManager.getEvmKitManager(blockchainType).resumeNetwork(account)
             else -> Unit
@@ -88,6 +93,12 @@ class OfflineNetworkController(
                 isDisconnected(
                     moneroKitManager.currentAccount, account, moneroKitManager.moneroKitWrapper?.isNetworkOnline,
                 )
+
+            BlockchainType.Thorchain,
+            BlockchainType.Mayachain -> {
+                val kitManager = thorchainKitManagers.forType(blockchainType)
+                isDisconnected(kitManager.currentAccount, account, kitManager.thorchainKitWrapper?.networkStarted)
+            }
 
             in EvmBlockchainManager.blockchainTypes -> {
                 val kitManager = evmBlockchainManager.getEvmKitManager(blockchainType)

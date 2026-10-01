@@ -1,11 +1,14 @@
 package cash.p.terminal.core.factories
 
 import android.content.Context
+import androidx.annotation.VisibleForTesting
 import io.horizontalsystems.core.logger.AppLogger
 import timber.log.Timber
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.ITransactionsAdapter
+import cash.p.terminal.core.UnsupportedAccountException
+import cash.p.terminal.core.UnsupportedException
 import cash.p.terminal.core.adapters.BitcoinAdapter
 import cash.p.terminal.core.adapters.BeamAdapter
 import cash.p.terminal.core.adapters.BitcoinCashAdapter
@@ -35,8 +38,13 @@ import cash.p.terminal.core.adapters.TronTransactionsAdapter
 import cash.p.terminal.core.adapters.stellar.StellarAdapter
 import cash.p.terminal.core.adapters.stellar.StellarAssetAdapter
 import cash.p.terminal.core.adapters.stellar.StellarTransactionsAdapter
+import cash.p.terminal.core.adapters.thorchain.ThorchainAdapter
+import cash.p.terminal.core.adapters.thorchain.ThorchainTransactionsAdapter
+import cash.p.terminal.core.adapters.zcash.TrezorZcashSigner
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
-import cash.p.terminal.core.adapters.zcash.ZcashSingleUseAddressManager
+import cash.p.terminal.core.adapters.zcash.ZcashSpendingKeySigner
+import cash.p.terminal.core.adapters.zcash.ZcashTransactionSigner
+import cash.p.terminal.core.adapters.zcash.zcashKey
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.providers.BitcoinCashFeeRateProvider
 import cash.p.terminal.core.providers.BitcoinFeeRateProvider
@@ -61,12 +69,16 @@ import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.SolanaKitManager
 import cash.p.terminal.core.managers.StackingManager
 import cash.p.terminal.core.managers.StellarKitManager
+import cash.p.terminal.core.managers.ThorchainKitManagers
 import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TronKitManager
 import cash.p.terminal.modules.blockchainstatus.logTag
 import cash.p.terminal.data.repository.EvmTransactionRepository
 import cash.p.terminal.network.pirate.domain.repository.MasterNodesRepository
 import cash.p.terminal.premium.domain.usecase.GetBnbAddressUseCase
+import cash.p.terminal.trezor.domain.TrezorAccountIdentityValidator
+import cash.p.terminal.trezor.domain.TrezorFirmwareVersionRecorder
+import cash.p.terminal.trezorkit.client.ITrezorClient
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAdapter
 import cash.p.terminal.wallet.IReceiveAdapter
@@ -74,6 +86,7 @@ import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
 import cash.p.terminal.wallet.isStakingWallet
 import cash.p.terminal.wallet.litecoinMwebAccountIds
 import cash.p.terminal.wallet.transaction.TransactionSource
@@ -100,6 +113,7 @@ class AdapterFactory(
     private val tronKitManager: TronKitManager,
     private val tonKitManager: TonKitManager,
     private val stellarKitManager: StellarKitManager,
+    private val thorchainKitManagers: ThorchainKitManagers,
     private val moneroKitManager: MoneroKitManager,
     private val backgroundManager: BackgroundManager,
     private val restoreSettingsManager: RestoreSettingsManager,
@@ -141,6 +155,19 @@ class AdapterFactory(
 
     private suspend fun bitcoinKitEnvironment(wallet: Wallet): BitcoinKitEnvironment =
         bitcoinKitDatabaseManager.prepare(wallet.account.id)
+
+    private fun createZcashAdapter(wallet: Wallet, addressSpecTyped: AddressSpecType?) =
+        ZcashAdapter(
+            wallet = wallet,
+            addressSpecTyped = addressSpecTyped,
+            backgroundManager = backgroundManager,
+            singleUseAddressManager = getKoinInstance { parametersOf(wallet.account.id) },
+            sessionManager = getKoinInstance(),
+            ironwoodMigrations = getKoinInstance(),
+            addressDeriver = getKoinInstance(),
+            signer = buildZcashSigner(wallet),
+            dispatcherProvider = dispatcherProvider,
+        )
 
     private suspend fun getEvmAdapter(wallet: Wallet): IAdapter? {
         val blockchainType = evmBlockchainManager.getBlockchain(wallet.token)?.type ?: return null
@@ -213,6 +240,13 @@ class AdapterFactory(
         val stellarKitWrapper = stellarKitManager.getStellarKitWrapper(wallet.account)
 
         return StellarAssetAdapter(stellarKitWrapper, code, issuer)
+    }
+
+    private suspend fun getThorchainAdapter(wallet: Wallet): IAdapter {
+        val thorchainKitWrapper = thorchainKitManagers.forType(wallet.token.blockchainType)
+            .getThorchainKitWrapper(wallet.account)
+
+        return ThorchainAdapter(thorchainKitWrapper, wallet, dispatcherProvider)
     }
 
     private suspend fun getMoneroAdapter(wallet: Wallet): IAdapter {
@@ -329,25 +363,7 @@ class AdapterFactory(
 
             is TokenType.AddressSpecTyped -> {
                 when (wallet.token.blockchainType) {
-                    BlockchainType.Zcash -> {
-                        val zcashSingleUseAddressManager =
-                            getKoinInstance<ZcashSingleUseAddressManager> {
-                                parametersOf(wallet.account.id)
-                            }
-                        ZcashAdapter(
-                            context = context,
-                            wallet = wallet,
-                            restoreSettings = restoreSettingsManager.settings(
-                                wallet.account,
-                                wallet.token.blockchainType
-                            ),
-                            addressSpecTyped = tokenType.type,
-                            localStorage = localStorage,
-                            backgroundManager = backgroundManager,
-                            singleUseAddressManager = zcashSingleUseAddressManager,
-                            dispatcherProvider = getKoinInstance()
-                        )
-                    }
+                    BlockchainType.Zcash -> createZcashAdapter(wallet, tokenType.type)
 
                     else -> null
                 }
@@ -445,25 +461,7 @@ class AdapterFactory(
                     )
                 }
 
-                BlockchainType.Zcash -> {
-                    val zcashSingleUseAddressManager =
-                        getKoinInstance<ZcashSingleUseAddressManager> {
-                            parametersOf(wallet.account.id)
-                        }
-                    ZcashAdapter(
-                        context = context,
-                        wallet = wallet,
-                        restoreSettings = restoreSettingsManager.settings(
-                            wallet.account,
-                            wallet.token.blockchainType
-                        ),
-                        addressSpecTyped = null,
-                        localStorage = localStorage,
-                        backgroundManager = backgroundManager,
-                        singleUseAddressManager = zcashSingleUseAddressManager,
-                        dispatcherProvider = getKoinInstance()
-                    )
-                }
+                BlockchainType.Zcash -> createZcashAdapter(wallet, addressSpecTyped = null)
 
                 BlockchainType.Ethereum,
                 BlockchainType.BinanceSmartChain,
@@ -505,6 +503,9 @@ class AdapterFactory(
                     getMoneroAdapter(wallet)
                 }
 
+                BlockchainType.Thorchain,
+                BlockchainType.Mayachain -> getThorchainAdapter(wallet)
+
                 else -> null
             }
 
@@ -520,6 +521,7 @@ class AdapterFactory(
             is TokenType.Jetton -> getJettonAdapter(wallet, tokenType.address)
             is TokenType.Asset -> getStellarAssetAdapter(wallet, tokenType.code, tokenType.issuer)
             is TokenType.Trc10 -> null
+            is TokenType.ThorchainAsset -> getThorchainAdapter(wallet)
             is TokenType.Unsupported -> null
         }
 
@@ -616,6 +618,24 @@ class AdapterFactory(
         return StellarTransactionsAdapter(stellarKitWrapper, transactionConverter)
     }
 
+    suspend fun thorchainTransactionsAdapter(source: TransactionSource): ITransactionsAdapter? {
+        val blockchainType = source.blockchain.type
+        val thorchainKitWrapper = thorchainKitManagers.forType(blockchainType)
+            .getThorchainKitWrapper(source.account)
+        val baseToken = coinManager.getToken(TokenQuery(blockchainType, TokenType.Native)) ?: return null
+        val thorchainKit = thorchainKitWrapper.thorchainKit
+
+        val transactionConverter = ThorchainTransactionConverter(
+            coinManager = coinManager,
+            source = source,
+            userAddress = thorchainKit.receiveAddress,
+            baseToken = baseToken,
+            network = thorchainKit.network,
+        )
+
+        return ThorchainTransactionsAdapter(thorchainKitWrapper, transactionConverter)
+    }
+
     suspend fun moneroTransactionsAdapter(source: TransactionSource): ITransactionsAdapter? {
         val moneroKitWrapper = moneroKitManager.getMoneroKitWrapper(source.account)
         return MoneroTransactionsAdapter(moneroKitWrapper, source)
@@ -675,9 +695,38 @@ class AdapterFactory(
             BlockchainType.Ton -> tonKitManager.unlink(account)
             BlockchainType.Monero -> moneroKitManager.unlink(account)
             BlockchainType.Stellar -> stellarKitManager.unlink(account)
+            BlockchainType.Thorchain,
+            BlockchainType.Mayachain -> thorchainKitManagers.forType(blockchainType).unlink(account)
             // TransactionAdapterManager only borrows the wallet adapter's BEAM session.
             BlockchainType.Beam -> Unit
             else -> Unit
+        }
+    }
+
+    companion object {
+        /** A Trezor account signs on the device; anything else signs with its own spending key. */
+        @JvmStatic
+        @VisibleForTesting
+        internal fun buildZcashSigner(wallet: Wallet): ZcashTransactionSigner {
+            val accountType = wallet.account.type
+            if (accountType !is AccountType.TrezorDevice) {
+                return ZcashSpendingKeySigner(wallet.zcashKey() ?: throw UnsupportedAccountException())
+            }
+            val trezorClient: ITrezorClient by inject(ITrezorClient::class.java)
+            val identityValidator: TrezorAccountIdentityValidator
+                    by inject(TrezorAccountIdentityValidator::class.java)
+            val firmwareVersionRecorder: TrezorFirmwareVersionRecorder
+                    by inject(TrezorFirmwareVersionRecorder::class.java)
+            val hardwareKey = wallet.hardwarePublicKey
+                ?: throw UnsupportedException("Trezor does not have a key for Zcash")
+            return TrezorZcashSigner(
+                accountId = wallet.account.id,
+                deviceId = accountType.deviceId,
+                derivationPath = hardwareKey.derivationPath,
+                trezorClient = trezorClient,
+                identityValidator = identityValidator,
+                firmwareVersionRecorder = firmwareVersionRecorder,
+            )
         }
     }
 }

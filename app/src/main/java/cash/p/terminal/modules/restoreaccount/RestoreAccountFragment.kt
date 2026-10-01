@@ -30,7 +30,6 @@ import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.strings.helpers.Translator.getString
 import cash.p.terminal.ui_compose.BaseComposeFragment
 import cash.p.terminal.ui_compose.components.HudHelper
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.wallet.IAccountManager
 import io.horizontalsystems.hdwalletkit.Language
 import org.koin.compose.viewmodel.koinViewModel
@@ -47,7 +46,7 @@ class RestoreAccountFragment : BaseComposeFragment(screenshotEnabled = false) {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val input = navController.getInput<ManageAccountsModule.Input>()
+        val input = getInput<ManageAccountsModule.Input>()
         val popUpToInclusiveId = input?.popOffOnSuccess ?: R.id.restoreAccountFragment
         val inclusive = input?.popOffInclusive ?: false
         val defaultRoute = input?.defaultRoute ?: ROUTE_RESTORE_PHRASE

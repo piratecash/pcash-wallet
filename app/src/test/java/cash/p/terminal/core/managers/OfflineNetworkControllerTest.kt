@@ -43,6 +43,7 @@ class OfflineNetworkControllerTest {
     private val tonKitManager = mockk<TonKitManager>(relaxed = true)
     private val stellarKitManager = mockk<StellarKitManager>(relaxed = true)
     private val moneroKitManager = mockk<MoneroKitManager>(relaxed = true)
+    private val thorchainKitManagers = mockk<ThorchainKitManagers>(relaxed = true)
 
     private val controller = OfflineNetworkController(
         adapterManager,
@@ -52,6 +53,7 @@ class OfflineNetworkControllerTest {
         tonKitManager,
         stellarKitManager,
         moneroKitManager,
+        thorchainKitManagers,
     )
 
     private val account = zcashMnemonicAccount(ACCOUNT_ID)
@@ -76,6 +78,16 @@ class OfflineNetworkControllerTest {
     private fun setOnline(currentAccount: () -> Any?, networkStarted: () -> Boolean?) {
         every { currentAccount() } returns account
         every { networkStarted() } returns true
+    }
+
+    private fun thorchainKitManager(blockchainType: BlockchainType, networkStarted: Boolean): ThorchainKitManager {
+        val wrapper = mockk<ThorchainKitWrapper>(relaxed = true)
+        val kitManager = mockk<ThorchainKitManager>(relaxed = true)
+        every { wrapper.networkStarted } returns networkStarted
+        every { kitManager.currentAccount } returns account
+        every { kitManager.thorchainKitWrapper } returns wrapper
+        every { thorchainKitManagers.forType(blockchainType) } returns kitManager
+        return kitManager
     }
 
     private fun setOnline(kitManager: EvmKitManager) {
@@ -282,7 +294,7 @@ class OfflineNetworkControllerTest {
     }
 
     @Test
-    fun isOffline_zcashSynchronizerNotRunning_returnsTrue() {
+    fun isOffline_zcashNetworkPaused_returnsTrue() {
         val member = wallet(BlockchainType.Zcash)
         val adapter = mockk<ZcashAdapter>(relaxed = true)
         every { adapterManager.getAdapterForWalletOld(member) } returns adapter
@@ -292,7 +304,7 @@ class OfflineNetworkControllerTest {
     }
 
     @Test
-    fun isOffline_zcashSynchronizerRunning_returnsFalse() {
+    fun isOffline_zcashNetworkNotPaused_returnsFalse() {
         val member = wallet(BlockchainType.Zcash)
         val adapter = mockk<ZcashAdapter>(relaxed = true)
         every { adapterManager.getAdapterForWalletOld(member) } returns adapter
@@ -301,9 +313,9 @@ class OfflineNetworkControllerTest {
         assertFalse(controller.isOffline(member))
     }
 
-    // A sync error is not a pause: an erroring but online synchronizer must still be paused on demand.
+    // A sync error is not a pause: an erroring but online adapter must still be pausable.
     @Test
-    fun isOffline_zcashRunningWithSyncError_returnsFalse() {
+    fun isOffline_zcashNetworkNotPausedWithSyncError_returnsFalse() {
         val member = wallet(BlockchainType.Zcash)
         val adapter = mockk<ZcashAdapter>(relaxed = true)
         every { adapterManager.getAdapterForWalletOld(member) } returns adapter
@@ -345,7 +357,52 @@ class OfflineNetworkControllerTest {
         assertFalse(controller.isOffline(member))
     }
 
+    @Test
+    fun pause_thorchainFamilyMember_delegatesToItsKitManager() = runTest {
+        THORCHAIN_FAMILY.forEach { blockchainType ->
+            val member = wallet(blockchainType)
+            adapterFor(member)
+            val kitManager = thorchainKitManager(blockchainType, networkStarted = true)
+
+            controller.pause(member)
+
+            coVerify(exactly = 1) { kitManager.pauseNetwork(account) }
+        }
+    }
+
+    @Test
+    fun resume_thorchainFamilyMember_delegatesToItsKitManager() = runTest {
+        THORCHAIN_FAMILY.forEach { blockchainType ->
+            val member = wallet(blockchainType)
+            adapterFor(member)
+            val kitManager = thorchainKitManager(blockchainType, networkStarted = false)
+
+            controller.resume(member)
+
+            coVerify(exactly = 1) { kitManager.resumeNetwork(account) }
+        }
+    }
+
+    @Test
+    fun isOffline_thorchainFamilyStartedForCurrentAccount_returnsFalse() {
+        THORCHAIN_FAMILY.forEach { blockchainType ->
+            thorchainKitManager(blockchainType, networkStarted = true)
+
+            assertFalse(controller.isOffline(wallet(blockchainType)))
+        }
+    }
+
+    @Test
+    fun isOffline_thorchainFamilyPaused_returnsTrue() {
+        THORCHAIN_FAMILY.forEach { blockchainType ->
+            thorchainKitManager(blockchainType, networkStarted = false)
+
+            assertTrue(controller.isOffline(wallet(blockchainType)))
+        }
+    }
+
     private companion object {
         const val ACCOUNT_ID = "network-controller-account"
+        val THORCHAIN_FAMILY = listOf(BlockchainType.Thorchain, BlockchainType.Mayachain)
     }
 }

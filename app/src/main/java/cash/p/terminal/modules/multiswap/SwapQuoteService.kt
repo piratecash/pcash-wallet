@@ -7,6 +7,7 @@ import cash.p.terminal.core.usecase.FetchSwapQuotesUseCase
 import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
 import cash.p.terminal.modules.multiswap.providers.SwapProvidersRegistry
 import cash.p.terminal.modules.multiswap.providers.SwapProvidersRepository
+import cash.p.terminal.modules.multiswap.providers.backendswap.BackendSwapProvidersRepository
 import cash.p.terminal.wallet.Token
 import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.CoroutineScope
@@ -31,6 +32,7 @@ class SwapQuoteService(
     private val fetchSwapQuotesUseCase: FetchSwapQuotesUseCase,
     private val swapProvidersRepository: SwapProvidersRepository,
     private val swapProvidersRegistry: SwapProvidersRegistry,
+    private val backendSwapProvidersRepository: BackendSwapProvidersRepository,
     private val dispatcherProvider: DispatcherProvider,
 ) {
     private companion object {
@@ -168,6 +170,7 @@ class SwapQuoteService(
     }
 
     suspend fun start() = withContext(dispatcherProvider.io) {
+        backendSwapProvidersRepository.refresh()
         allProviders.forEach {
             try {
                 it.start()

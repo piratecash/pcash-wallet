@@ -222,7 +222,8 @@ class PendingTransactionMatcher {
             TransactionRecordType.TRON_OUTGOING,
             TransactionRecordType.SOLANA_OUTGOING,
             TransactionRecordType.MONERO_OUTGOING,
-            TransactionRecordType.STELLAR_OUTGOING -> true
+            TransactionRecordType.STELLAR_OUTGOING,
+            TransactionRecordType.THORCHAIN_OUTGOING -> true
 
             TransactionRecordType.TON -> to != null && from == null
 
@@ -243,6 +244,7 @@ class PendingTransactionMatcher {
             TransactionRecordType.TRON_INCOMING,
             TransactionRecordType.MONERO_INCOMING,
             TransactionRecordType.STELLAR_INCOMING,
+            TransactionRecordType.THORCHAIN_INCOMING,
             TransactionRecordType.BEAM_INCOMING,
             TransactionRecordType.BEAM_OUTGOING -> false
         }

@@ -68,6 +68,7 @@ class AdapterManager(
     private val tonKitManager: TonKitManager,
     private val moneroKitManager: MoneroKitManager,
     private val stellarKitManager: StellarKitManager,
+    private val thorchainKitManagers: ThorchainKitManagers,
     private val pendingBalanceCalculator: PendingBalanceCalculator,
     private val fallbackAddressProvider: FallbackAddressProvider,
     private val offlineModeManager: OfflineModeManager,
@@ -177,6 +178,9 @@ class AdapterManager(
         if (BlockchainType.Ton !in pausedChains) tonKitManager.tonKitWrapper?.tonKit?.refresh()
         if (BlockchainType.Monero !in pausedChains) moneroKitManager.moneroKitWrapper?.refresh()
         if (BlockchainType.Stellar !in pausedChains) stellarKitManager.stellarKitWrapper?.stellarKit?.refresh()
+        thorchainKitManagers.all
+            .filter { it.blockchainType !in pausedChains }
+            .forEach { it.thorchainKitWrapper?.thorchainKit?.refresh() }
         adaptersRefresh.join()
     }
 
@@ -226,9 +230,8 @@ class AdapterManager(
         // Keep reusable adapters tracked if an awaited BEAM handoff is cancelled.
         adaptersMap.putAll(reusable)
 
-        // Stop old adapters that won't be reused BEFORE creating new ones.
-        // This is critical for Zcash: its SDK forbids creating a new Synchronizer
-        // while another one with the same alias is still active.
+        // Start releasing obsolete adapters before creating replacements to limit lifecycle
+        // overlap; release is asynchronous, so session handles are serialised by ZcashSessionManager.
         withContext(NonCancellable) {
             currentAdapters.forEach { (wallet, adapter) ->
                 cancelBalanceSubscription(wallet)

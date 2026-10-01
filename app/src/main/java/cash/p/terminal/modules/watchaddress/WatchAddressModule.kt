@@ -3,9 +3,11 @@ package cash.p.terminal.modules.watchaddress
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import cash.p.terminal.core.App
+import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.modules.address.AddressHandlerFactory
 import io.horizontalsystems.core.entities.BlockchainType
+import org.koin.java.KoinJavaComponent.inject
 
 object WatchAddressModule {
 
@@ -19,13 +21,18 @@ object WatchAddressModule {
         add(BlockchainType.Dash)
         add(BlockchainType.ECash)
         add(BlockchainType.Stellar)
+        add(BlockchainType.Thorchain)
+        add(BlockchainType.Mayachain)
     }
 
     class Factory : ViewModelProvider.Factory {
+        private val restoreSettingsManager: RestoreSettingsManager by inject(RestoreSettingsManager::class.java)
+
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             val service = WatchAddressService(
-                App.accountManager, App.walletActivator, App.accountFactory, App.marketKit, App.evmBlockchainManager
+                App.accountManager, App.walletActivator, App.accountFactory, App.marketKit,
+                App.evmBlockchainManager, restoreSettingsManager
             )
             val addressHandlerFactory = AddressHandlerFactory(AppConfigProvider.udnApiKey)
             val addressParserChain = addressHandlerFactory.parserChain(

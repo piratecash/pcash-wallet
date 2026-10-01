@@ -1,7 +1,6 @@
 package cash.p.terminal.modules.multiswap.exchange
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -72,6 +71,7 @@ import cash.p.terminal.ui_compose.components.HFillSpacer
 import cash.p.terminal.ui_compose.components.HSCircularProgressIndicator
 import cash.p.terminal.ui_compose.components.HSpacer
 import cash.p.terminal.ui_compose.components.HsBackButton
+import cash.p.terminal.ui_compose.components.HsImage
 import cash.p.terminal.ui_compose.components.HsImageCircle
 import cash.p.terminal.ui_compose.components.MenuItemTimeoutIndicator
 import cash.p.terminal.ui_compose.components.TextImportantWarning
@@ -191,6 +191,7 @@ internal fun MultiSwapExchangeScreen(
                                     leg = uiState.leg1,
                                     providerName = uiState.leg1.providerName,
                                     providerIcon = uiState.leg1.providerIcon,
+                                    providerIconUrl = uiState.leg1.providerIconUrl,
                                 )
                             }
                         )
@@ -206,6 +207,7 @@ internal fun MultiSwapExchangeScreen(
                                 Leg2Header(
                                     providerName = uiState.leg2.providerName,
                                     providerIcon = uiState.leg2.providerIcon,
+                                    providerIconUrl = uiState.leg2.providerIconUrl,
                                     clickable = uiState.leg2ProviderClickable,
                                     quoting = uiState.leg2Quoting,
                                     onClickProvider = onClickProvider,
@@ -390,6 +392,7 @@ private fun LegContent(
     leg: LegUiState,
     providerName: String? = null,
     providerIcon: Int? = null,
+    providerIconUrl: String? = null,
 ) {
     // You Send
     AmountRow(
@@ -410,7 +413,7 @@ private fun LegContent(
         amountColor = ComposeAppTheme.colors.remus,
     )
     if (providerName != null && providerIcon != null) {
-        SwapProviderField(providerName, providerIcon)
+        SwapProviderField(providerName, providerIcon, providerIconUrl)
     }
     // Price
     val tokenIn = leg.tokenIn
@@ -537,6 +540,7 @@ private fun Leg2Header(
     clickable: Boolean,
     quoting: Boolean,
     onClickProvider: () -> Unit,
+    providerIconUrl: String? = null,
     riskType: ProviderRiskType? = null,
     estimationTime: Long? = null,
 ) {
@@ -559,10 +563,10 @@ private fun Leg2Header(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (providerIcon != null) {
-                Image(
+                HsImage(
+                    url = providerIconUrl,
+                    placeholder = providerIcon,
                     modifier = Modifier.size(24.dp),
-                    painter = painterResource(providerIcon),
-                    contentDescription = null
                 )
                 HSpacer(width = 8.dp)
             }

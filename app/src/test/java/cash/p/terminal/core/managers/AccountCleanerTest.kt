@@ -55,6 +55,7 @@ class AccountCleanerTest {
     private lateinit var accountStorageCleaner: AccountStorageCleaner
     private lateinit var bitcoinKitDatabaseManager: BitcoinKitDatabaseManager
     private lateinit var tronKitManager: TronKitManager
+    private lateinit var thorchainKitManagers: ThorchainKitManagers
     private val deletionPreflight = mockk<AccountDeletionPreflight>(relaxed = true)
 
     @Before
@@ -70,6 +71,7 @@ class AccountCleanerTest {
         accountStorageCleaner = mockk(relaxed = true)
         bitcoinKitDatabaseManager = mockk(relaxed = true)
         tronKitManager = mockk(relaxed = true)
+        thorchainKitManagers = mockk(relaxed = true)
 
         coEvery { clearZCashWalletDataUseCase.invoke(any()) } returns ZcashEraseResult.ALL
         coEvery { removeMoneroWalletFilesUseCase.invoke(any<Account>()) } returns true
@@ -90,6 +92,7 @@ class AccountCleanerTest {
             accountStorageCleaner,
             bitcoinKitDatabaseManager,
             tronKitManager,
+            thorchainKitManagers,
             deletionPreflight,
         )
     }
@@ -342,6 +345,20 @@ class AccountCleanerTest {
 
         coVerifyOrder {
             adapterManager.stopAdapters(listOf(accountId))
+            bitcoinKitDatabaseManager.clear(accountId)
+        }
+    }
+
+    @Test
+    fun clearAccounts_anyAccount_clearsThorchainDatabasesBeforeRemovingSharedKey() = runTest {
+        val accountId = "acc-thorchain"
+        mockAdapterClears()
+
+        accountCleaner.clearAccounts(listOf(accountId))
+
+        coVerifyOrder {
+            adapterManager.stopAdapters(listOf(accountId))
+            thorchainKitManagers.clear(accountId)
             bitcoinKitDatabaseManager.clear(accountId)
         }
     }

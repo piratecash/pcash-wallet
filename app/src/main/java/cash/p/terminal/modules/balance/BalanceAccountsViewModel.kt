@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.ActiveAccountState
 import cash.p.terminal.wallet.IAccountManager
-import cash.z.ecc.android.sdk.ext.collectWith
+import io.horizontalsystems.core.collectWith
 
 class BalanceAccountsViewModel(accountManager: IAccountManager) : ViewModel() {
 

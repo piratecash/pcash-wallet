@@ -97,7 +97,7 @@
 -keep class com.m2049r.xmrwallet.model.** { *; }
 -keep class com.m2049r.xmrwallet.ledger.** { *; }
 -keep class com.m2049r.xmrwallet.service.BluetoothService { *; }
--keep class cash.z.** { *; }
+-keep class cash.p.zcash.ZcashJni { native <methods>; }
 -keep class com.sun.jna.** { *; }
 -keep class * extends com.sun.jna.Structure { *; }
 -keep class * implements com.sun.jna.Library { *; }
@@ -109,6 +109,9 @@
 
 # Tangem uses Moshi's Kotlin reflection and looks up R.string fields by name.
 -keep class com.tangem.** { *; }
+
+# protobuf-lite resolves message fields by name at runtime (Trezor, Zcash lightwallet).
+-keep class * extends com.google.protobuf.GeneratedMessageLite { *; }
 
 # Package-relative JSON resources and their reflective configuration models.
 -keep class com.unstoppabledomains.** { *; }

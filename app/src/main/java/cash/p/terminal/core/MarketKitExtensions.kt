@@ -105,6 +105,14 @@ val TokenQuery.isSupported: Boolean
             tokenType is TokenType.Native || tokenType is TokenType.Asset
         }
 
+        BlockchainType.Thorchain -> {
+            tokenType is TokenType.Native || tokenType is TokenType.ThorchainAsset
+        }
+
+        BlockchainType.Mayachain -> {
+            tokenType is TokenType.Native
+        }
+
         is BlockchainType.Unsupported -> false
     }
 
@@ -136,6 +144,8 @@ val Blockchain.description: String
         BlockchainType.Dogecoin -> "DOGE"
         BlockchainType.Monero -> "XMR"
         BlockchainType.PirateCash -> "PirateCash"
+        BlockchainType.Thorchain -> "RUNE, TCY, RUJI, secured assets"
+        BlockchainType.Mayachain -> "CACAO"
         is BlockchainType.Unsupported -> ""
     }
 
@@ -277,7 +287,9 @@ val BlockchainType.isEvm: Boolean
         BlockchainType.Monero,
         BlockchainType.Cosanta,
         BlockchainType.Dogecoin,
-        BlockchainType.PirateCash
+        BlockchainType.PirateCash,
+        BlockchainType.Thorchain,
+        BlockchainType.Mayachain
             -> false
     }
 
@@ -311,7 +323,9 @@ val BlockchainType.isBtcLike: Boolean
         is BlockchainType.Unsupported,
         BlockchainType.Zcash,
         BlockchainType.Beam,
-        BlockchainType.Monero
+        BlockchainType.Monero,
+        BlockchainType.Thorchain,
+        BlockchainType.Mayachain
             -> false
     }
 
@@ -320,13 +334,15 @@ val BlockchainType.isUtxoBased: Boolean
 
 
 fun BlockchainType.supports(accountType: AccountType): Boolean {
+    if (this == BlockchainType.Zcash) return accountType.zcashAddressSpecs().isNotEmpty()
+
     if (this == BlockchainType.Beam) {
         return accountType.isCompatibleWith(this, TokenType.Native)
     }
 
     return when (accountType) {
-        is AccountType.ZCashUfvKey ->
-            this == BlockchainType.Zcash
+        is AccountType.ZCashUfvKey,
+        is AccountType.ZCashSaplingKey -> false
 
         is AccountType.MnemonicMonero ->
             this == BlockchainType.Monero
@@ -334,7 +350,9 @@ fun BlockchainType.supports(accountType: AccountType): Boolean {
         is AccountType.TrezorDevice ->
             TrezorModelSupport.isSupported(TrezorModel.fromInternalModel(accountType.model), this)
 
-        is AccountType.HardwareCard,
+        is AccountType.HardwareCard ->
+            this != BlockchainType.Thorchain && this != BlockchainType.Mayachain
+
         is AccountType.Mnemonic -> true
 
         is AccountType.HdExtendedKey -> {
@@ -384,6 +402,12 @@ fun BlockchainType.supports(accountType: AccountType): Boolean {
 
         is AccountType.StellarSecretKey ->
             this == BlockchainType.Stellar
+
+        is AccountType.ThorchainAddress ->
+            this == BlockchainType.Thorchain
+
+        is AccountType.MayachainAddress ->
+            this == BlockchainType.Mayachain
     }
 }
 
@@ -448,6 +472,11 @@ val FullCoin.iconPlaceholder: Int
     }
 
 fun Token.supports(accountType: AccountType): Boolean {
+    if (blockchainType == BlockchainType.Zcash) {
+        val spec = (type as? TokenType.AddressSpecTyped)?.type
+        return spec != null && spec in accountType.zcashAddressSpecs()
+    }
+
     if (blockchainType == BlockchainType.Beam) {
         return accountType.isCompatibleWith(blockchainType, type)
     }
@@ -660,6 +689,8 @@ val BlockchainType.Companion.supported: List<BlockchainType>
         BlockchainType.Beam,
         BlockchainType.Monero,
         BlockchainType.Dogecoin,
+        BlockchainType.Thorchain,
+        BlockchainType.Mayachain,
     )
 
 val CoinPrice.diffPercentage: BigDecimal?

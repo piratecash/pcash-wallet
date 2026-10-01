@@ -13,12 +13,17 @@ import cash.p.terminal.modules.walletconnect.WCSessionManager
 import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
 import cash.p.terminal.premium.domain.usecase.PremiumType
 import cash.p.terminal.shared.main.MainDestination
+import android.net.Uri
+import cash.p.terminal.R
+import cash.p.terminal.modules.multiswap.SwapDeeplinkInput
 import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.ActiveAccountState
 import cash.p.terminal.wallet.IAccountManager
 import io.horizontalsystems.core.IPinComponent
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import io.reactivex.Flowable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -36,6 +41,7 @@ import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainViewModelTest {
@@ -177,6 +183,45 @@ class MainViewModelTest {
         assertEquals(MainDestination.Market, storedMainTab)
         assertEquals(MainDestination.Market, viewModel.uiState.mainNavItems.first { it.selected }.mainNavItem)
     }
+
+    @Test
+    fun handleDeepLink_accountsNotLoaded_defersNavigationUntilActiveAccountLoaded() = runTest(dispatcher) {
+        val activeAccountState = MutableStateFlow<ActiveAccountState>(ActiveAccountState.NotLoaded)
+        every { accountManager.activeAccountStateFlow } returns activeAccountState
+        every { deeplinkParser.parse(swapUri) } returns swapPage
+        val viewModel = createViewModel()
+
+        viewModel.handleDeepLink(swapUri)
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.deeplinkPage)
+        verify(exactly = 0) { deeplinkParser.parse(any<Uri>()) }
+
+        activeAccountState.value = ActiveAccountState.ActiveAccount(mockk(relaxed = true))
+        advanceUntilIdle()
+
+        assertEquals(swapPage, viewModel.uiState.deeplinkPage)
+    }
+
+    @Test
+    fun handleDeepLink_accountsLoaded_setsDeeplinkPageImmediately() = runTest(dispatcher) {
+        every { accountManager.activeAccountStateFlow } returns
+            MutableStateFlow(ActiveAccountState.ActiveAccount(mockk(relaxed = true)))
+        every { deeplinkParser.parse(swapUri) } returns swapPage
+        val viewModel = createViewModel()
+
+        viewModel.handleDeepLink(swapUri)
+
+        assertEquals(swapPage, viewModel.uiState.deeplinkPage)
+    }
+
+    private val swapUri = mockk<Uri> {
+        every { this@mockk.toString() } returns "pcash://swap"
+        every { scheme } returns "pcash"
+        every { host } returns "swap"
+    }
+
+    private val swapPage = DeeplinkPage(R.id.multiswap, SwapDeeplinkInput(null))
 
     private fun createViewModel() = MainViewModel(
         pinComponent = pinComponent,

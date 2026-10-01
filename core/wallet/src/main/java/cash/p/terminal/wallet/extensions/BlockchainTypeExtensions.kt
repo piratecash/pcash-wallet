@@ -30,5 +30,7 @@ internal fun BlockchainType.isEvmLike(): Boolean = when (this) {
     BlockchainType.Ton,
     BlockchainType.Tron,
     BlockchainType.Zcash,
+    BlockchainType.Thorchain,
+    BlockchainType.Mayachain,
     is BlockchainType.Unsupported -> false
 }

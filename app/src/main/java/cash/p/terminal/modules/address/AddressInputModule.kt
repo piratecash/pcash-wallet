@@ -68,6 +68,11 @@ object AddressInputModule {
                     addressParserChain.addHandler(AddressHandlerStellar())
                 }
 
+                BlockchainType.Thorchain,
+                BlockchainType.Mayachain -> {
+                    addressParserChain.addHandler(AddressHandlerThorchain.forBlockchainType(tokenQuery.blockchainType))
+                }
+
                 BlockchainType.Beam -> {
                     addressParserChain.addHandler(BeamRecipient)
                 }
@@ -76,15 +81,13 @@ object AddressInputModule {
             }
 
             val addressUriParser = AddressUriParser(tokenQuery.blockchainType, tokenQuery.tokenType)
-            val addressViewModel = AddressViewModel(
+            return AddressViewModel(
                 blockchainType = tokenQuery.blockchainType,
                 contactsRepository = App.contactsRepository,
                 addressUriParser = addressUriParser,
                 addressParserChain = addressParserChain,
                 initial = initial
-            )
-
-            return addressViewModel as T
+            ) as T
         }
     }
 
@@ -126,6 +129,8 @@ object AddressInputModule {
                 BlockchainType.Ton,
                 BlockchainType.Monero,
                 BlockchainType.Stellar,
+                BlockchainType.Thorchain,
+                BlockchainType.Mayachain,
                 BlockchainType.Beam,
                 is BlockchainType.Unsupported -> Unit
 

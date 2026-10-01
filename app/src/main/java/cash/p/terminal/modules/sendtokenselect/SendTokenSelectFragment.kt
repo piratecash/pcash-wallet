@@ -22,7 +22,6 @@ import cash.p.terminal.modules.tokenselect.TokenSelectViewModel
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.ui_compose.BaseComposeFragment
 import cash.p.terminal.ui_compose.components.HudHelper
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.TokenType
 import io.horizontalsystems.core.entities.BlockchainType
@@ -33,7 +32,7 @@ class SendTokenSelectFragment : BaseComposeFragment() {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val input = navController.getInput<Input>()
+        val input = getInput<Input>()
 
         val blockchainTypes = input?.blockchainTypes
         val tokenTypes = input?.tokenTypes

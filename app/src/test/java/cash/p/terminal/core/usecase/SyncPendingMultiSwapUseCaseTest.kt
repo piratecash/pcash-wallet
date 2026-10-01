@@ -1494,4 +1494,69 @@ class SyncPendingMultiSwapUseCaseTest {
             )
         }
     }
+
+    @Test
+    fun leg1OnChain_outgoingFailedStoredAsRecordUid_marksFailed() = runTest(dispatcher) {
+        stubLeg1OutgoingRecords(outgoingRecord(uid = "H-rune", hash = "H", failed = true))
+
+        useCase()
+
+        verifyLeg1Updated(status = PendingMultiSwap.STATUS_FAILED, transactionId = "H-rune", times = 1)
+    }
+
+    @Test
+    fun leg1OnChain_outgoingFailedUidEqualsHash_marksFailed() = runTest(dispatcher) {
+        stubLeg1OutgoingRecords(
+            outgoingRecord(uid = "0xevm", hash = "0xevm", failed = true),
+            leg1TransactionId = "0xevm",
+        )
+
+        useCase()
+
+        verifyLeg1Updated(status = PendingMultiSwap.STATUS_FAILED, transactionId = "0xevm", times = 1)
+    }
+
+    @Test
+    fun leg1OnChain_failedRecordWithOtherId_doesNotMarkFailed() = runTest(dispatcher) {
+        stubLeg1OutgoingRecords(outgoingRecord(uid = "X-rune", hash = "X", failed = true))
+
+        useCase()
+
+        verifyLeg1Updated(status = PendingMultiSwap.STATUS_FAILED, transactionId = "H-rune", times = 0)
+    }
+
+    private fun outgoingRecord(uid: String, hash: String, failed: Boolean) =
+        mockk<TransactionRecord>(relaxed = true) {
+            every { this@mockk.uid } returns uid
+            every { transactionHash } returns hash
+            every { this@mockk.failed } returns failed
+        }
+
+    private fun stubLeg1OutgoingRecords(record: TransactionRecord, leg1TransactionId: String = "H-rune") {
+        val inputSource = mockk<TransactionSource>()
+        val inputWallet = mockk<Wallet>(relaxed = true) {
+            every { coin.uid } returns "binancecoin"
+            every { token.blockchainType } returns BlockchainType.fromUid("binance-smart-chain")
+            every { transactionSource } returns inputSource
+        }
+        val txAdapter = mockk<ITransactionsAdapter>(relaxed = true)
+        every { walletManager.activeWallets } returns listOf(inputWallet)
+        every { transactionAdapterManager.getAdapter(inputSource) } returns txAdapter
+        coEvery {
+            txAdapter.getTransactions(any(), any(), any(), eq(FilterTransactionType.Outgoing), any())
+        } returns listOf(record)
+        coEvery { pendingMultiSwapStorage.getAllOnceByAccountId("test-account") } returns
+            listOf(swap(leg1IsOffChain = false, leg1TransactionId = leg1TransactionId))
+    }
+
+    private fun verifyLeg1Updated(status: String, transactionId: String, times: Int) {
+        coVerify(exactly = times) {
+            pendingMultiSwapStorage.updateLeg1(
+                id = "swap-1",
+                status = status,
+                amountOut = null,
+                transactionId = transactionId,
+            )
+        }
+    }
 }

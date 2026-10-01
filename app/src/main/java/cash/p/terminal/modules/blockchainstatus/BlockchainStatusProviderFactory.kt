@@ -9,6 +9,7 @@ import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.MoneroKitManager
 import cash.p.terminal.core.managers.SolanaKitManager
 import cash.p.terminal.core.managers.StellarKitManager
+import cash.p.terminal.core.managers.ThorchainKitManagers
 import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TronKitManager
 import cash.p.terminal.wallet.IAdapterManager
@@ -68,6 +69,13 @@ internal fun rememberBlockchainStatusProvider(blockchain: Blockchain): Blockchai
         type == BlockchainType.Stellar -> {
             val stellarKitManager = koinInject<StellarKitManager>()
             remember(stellarKitManager) { StellarBlockchainStatusProvider(stellarKitManager) }
+        }
+
+        type == BlockchainType.Thorchain || type == BlockchainType.Mayachain -> {
+            val thorchainKitManagers = koinInject<ThorchainKitManagers>()
+            remember(type, thorchainKitManagers) {
+                ThorchainBlockchainStatusProvider(thorchainKitManagers.forType(type))
+            }
         }
 
         type == BlockchainType.Zcash -> {
