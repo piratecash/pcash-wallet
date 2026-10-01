@@ -226,9 +226,8 @@ class AdapterManager(
         // Keep reusable adapters tracked if an awaited BEAM handoff is cancelled.
         adaptersMap.putAll(reusable)
 
-        // Stop old adapters that won't be reused BEFORE creating new ones.
-        // This is critical for Zcash: its SDK forbids creating a new Synchronizer
-        // while another one with the same alias is still active.
+        // Start releasing obsolete adapters before creating replacements to limit lifecycle
+        // overlap; release is asynchronous, so session handles are serialised by ZcashSessionManager.
         withContext(NonCancellable) {
             currentAdapters.forEach { (wallet, adapter) ->
                 cancelBalanceSubscription(wallet)

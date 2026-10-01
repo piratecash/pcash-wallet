@@ -1565,19 +1565,17 @@ private fun ButtonsRow(
                     )
                 }
             } else {
-                if (!viewItem.isSendDisabled) {
-                    BalanceActionButton(
-                        icon = R.drawable.ic_arrow_up_right_24,
-                        label = stringResource(R.string.Balance_Send),
-                        iconRotation = -90f,
-                        onClick = {
-                            onOperationClick(sendClickAvailability(viewItem, sendEnabled)) {
-                                onSendClick()
-                            }
-                        },
-                        enabled = sendEnabled,
-                    )
-                }
+                BalanceActionButton(
+                    icon = R.drawable.ic_arrow_up_right_24,
+                    label = stringResource(R.string.Balance_Send),
+                    iconRotation = -90f,
+                    onClick = {
+                        onOperationClick(sendClickAvailability(viewItem, sendEnabled)) {
+                            onSendClick()
+                        }
+                    },
+                    enabled = sendEnabled,
+                )
                 BalanceActionButton(
                     icon = R.drawable.ic_arrow_down_left_24,
                     label = stringResource(R.string.Balance_Receive),
@@ -1610,7 +1608,7 @@ private fun ButtonsRow(
     }
     if (isShowShieldFunds) {
         Column(
-            modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 16.dp),
+            modifier = Modifier.padding(top = 4.dp, bottom = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             ButtonPrimaryYellow(
@@ -1776,8 +1774,6 @@ private fun previewBalanceViewItem() = BalanceViewItem(
     swapAvailability = OperationAvailability.Available,
     errorMessage = null,
     isWatchAccount = false,
-    isSendDisabled = false,
-    isShowShieldFunds = false,
     warning = null,
     displayDiffOptionType = DisplayDiffOptionType.NONE,
 )

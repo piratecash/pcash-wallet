@@ -4,7 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
-import cash.z.ecc.android.sdk.ext.collectWith
+import io.horizontalsystems.core.collectWith
 import cash.p.terminal.R
 import cash.p.terminal.modules.send.isHardwareWalletCancelled
 import cash.p.terminal.trezor.domain.TrezorCancelledException

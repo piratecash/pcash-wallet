@@ -33,7 +33,6 @@ import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.ui_compose.BaseComposeFragment
 import cash.p.terminal.core.Caution
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.core.navigateWithTermsAccepted
 import cash.p.terminal.navigation.openQrScanner
 import cash.p.terminal.navigation.slideFromBottom
@@ -62,7 +61,7 @@ class ImportWalletFragment : BaseComposeFragment() {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val input = navController.getInput<ManageAccountsModule.Input>()
+        val input = getInput<ManageAccountsModule.Input>()
         val popUpToInclusiveId = input?.popOffOnSuccess ?: R.id.importWalletFragment
         val inclusive = input?.popOffInclusive ?: true
 

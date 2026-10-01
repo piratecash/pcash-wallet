@@ -1,18 +1,17 @@
 package cash.p.terminal.modules.pin
 
-import android.content.Context
 import cash.p.terminal.core.ICoinManager
-import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.ISendZcashAdapter
 import cash.p.terminal.core.LocalizedException
-import cash.p.terminal.core.adapters.zcash.ZcashAdapter
-import cash.p.terminal.core.adapters.zcash.ZcashSingleUseAddressManager
+import cash.p.terminal.core.adapters.zcash.zcashErrorName
+import cash.p.terminal.core.adapters.zcash.zcashLogger
+import cash.p.terminal.core.factories.AdapterFactory
 import cash.p.terminal.core.getKoinInstance
-import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
-import cash.p.terminal.core.managers.RestoreSettingsManager
+import cash.p.terminal.core.managers.PendingTransactionRegistrar
+import cash.p.terminal.core.managers.broadcasting
 import cash.p.terminal.core.toLocalizedString
+import cash.p.terminal.modules.send.zcash.zcashPendingDraft
 import cash.p.terminal.core.usecase.OfflineModeUseCase
-import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAccountsStorage
@@ -22,22 +21,17 @@ import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
-import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.ISmsNotificationSettings
 import io.horizontalsystems.core.entities.BlockchainType
-import io.horizontalsystems.core.toHexReversed
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.channels.Channel
-import org.koin.core.parameter.parametersOf
-import timber.log.Timber
 
 /**
  * Result of sending ZEC transaction.
@@ -64,14 +58,10 @@ class SendZecOnDuressUseCase(
     private val accountsStorage: IAccountsStorage,
     private val walletManager: IWalletManager,
     private val dispatcherProvider: DispatcherProvider,
-    private val context: Context,
-    private val localStorage: ILocalStorage,
-    private val backgroundManager: BackgroundManager,
-    private val restoreSettingsManager: RestoreSettingsManager,
+    private val adapterFactory: AdapterFactory,
     private val adapterManager: IAdapterManager,
     private val coinManager: ICoinManager,
     private val walletFactory: WalletFactory,
-    private val clearZCashWalletDataUseCase: ClearZCashWalletDataUseCase,
     private val accountManager: IAccountManager,
     private val offlineModeUseCase: OfflineModeUseCase,
 ) {
@@ -85,8 +75,7 @@ class SendZecOnDuressUseCase(
      */
     private data class AdapterInfo(
         val adapter: ISendZcashAdapter,
-        val addressType: TokenType.AddressSpecType,
-        val alias: String
+        val wallet: Wallet,
     )
 
     /**
@@ -116,22 +105,22 @@ class SendZecOnDuressUseCase(
         // Use application scope to ensure transaction completes even after screen is closed
         dispatcherProvider.applicationScope.launch(
             CoroutineExceptionHandler { _, exception ->
-                Timber.e(exception, "Error sending ZEC on duress for level $previousLevel")
+                zcashLogger.e { "Duress send failed error=${exception.zcashErrorName}" }
             }
         ) {
             try {
                 val account = accountsStorage.loadAccount(accountId)
                 if (account == null) {
-                    Timber.w("Account not found for key: $accountId")
+                    zcashLogger.w { "Duress send account not found" }
                     return@launch
                 }
-                // The account may not be active and its Zcash kit may be paused/absent; temporary
+                // The account may not be active and its Zcash session may be paused or absent; temporary
                 // online keeps the send from being blocked by offline mode for the duress duration.
                 offlineModeUseCase.withTemporaryOnline(account, BlockchainType.Zcash) {
                     sendZecTransactionByAccountId(accountId, address, memo)
                 }
             } catch (e: Exception) {
-                Timber.e(e, "Failed to send ZEC on duress")
+                zcashLogger.e { "Duress send failed error=${e.zcashErrorName}" }
             }
         }
     }
@@ -153,7 +142,7 @@ class SendZecOnDuressUseCase(
         return try {
             sendZecTransactionWithWallet(wallet, address, memo)
         } catch (e: Exception) {
-            Timber.e(e, "Test transaction failed")
+            zcashLogger.e { "Test transaction failed error=${e.zcashErrorName}" }
             SendZecResult.TransactionFailed(e.message ?: "Unknown error")
         }
     }
@@ -166,7 +155,7 @@ class SendZecOnDuressUseCase(
         // Find the wallet from the specified level (where it was configured)
         val wallet = findWalletByAccountId(accountId)
         if (wallet == null) {
-            Timber.w("Wallet not found for key: $accountId")
+            zcashLogger.w { "Duress send wallet not found" }
             return SendZecResult.WalletNotFound
         }
 
@@ -193,26 +182,37 @@ class SendZecOnDuressUseCase(
         // If we have existing adapters, use them (race if both exist)
         if (existingShieldedAdapter != null && existingUnifiedAdapter != null) {
             val existingAdapters = listOf(
-                AdapterInfo(existingShieldedAdapter, TokenType.AddressSpecType.Shielded, ""),
-                AdapterInfo(existingUnifiedAdapter, TokenType.AddressSpecType.Unified, "")
+                AdapterInfo(existingShieldedAdapter, checkNotNull(shieldedWallet)),
+                AdapterInfo(existingUnifiedAdapter, checkNotNull(unifiedWallet))
             )
             return when (val result = raceAdaptersForSync(existingAdapters)) {
                 is SyncRaceResult.Winner -> {
-                    sendWithAdapter(wallet, result.adapterInfo.adapter, address, memo)
+                    sendWithAdapter(result.adapterInfo, address, memo)
                 }
 
                 is SyncRaceResult.AllSyncedInsufficientBalance -> {
-                    Timber.w("All existing adapters synced but have insufficient balance")
+                    zcashLogger.w { "Existing adapters have insufficient balance" }
                     SendZecResult.InsufficientBalance
                 }
             }
         } else if (existingShieldedAdapter != null) {
-            return sendWithAdapter(wallet, existingShieldedAdapter, address, memo)
+            return sendWithAdapter(
+                AdapterInfo(existingShieldedAdapter, checkNotNull(shieldedWallet)), address, memo
+            )
         } else if (existingUnifiedAdapter != null) {
-            return sendWithAdapter(wallet, existingUnifiedAdapter, address, memo)
+            return sendWithAdapter(
+                AdapterInfo(existingUnifiedAdapter, checkNotNull(unifiedWallet)), address, memo
+            )
         }
 
-        // No existing adapters found - create both Shielded and Unified adapters in parallel
+        return createAndRaceNewAdapters(wallet, address, memo)
+    }
+
+    private suspend fun createAndRaceNewAdapters(
+        wallet: Wallet,
+        address: String,
+        memo: String
+    ): SendZecResult {
         val createdAdapters = mutableListOf<AdapterInfo>()
 
         try {
@@ -230,18 +230,18 @@ class SendZecOnDuressUseCase(
             unifiedInfo?.let { createdAdapters.add(it) }
 
             if (createdAdapters.isEmpty()) {
-                Timber.w("Failed to create any ZEC adapters")
+                zcashLogger.w { "Duress send adapter creation failed" }
                 return SendZecResult.AdapterCreationFailed
             }
 
             // Race adapters for sync
             return when (val result = startAndRaceAdaptersForSync(createdAdapters)) {
                 is SyncRaceResult.Winner -> {
-                    sendWithAdapter(wallet, result.adapterInfo.adapter, address, memo)
+                    sendWithAdapter(result.adapterInfo, address, memo)
                 }
 
                 is SyncRaceResult.AllSyncedInsufficientBalance -> {
-                    Timber.w("All adapters synced but have insufficient balance")
+                    zcashLogger.w { "Created adapters have insufficient balance" }
                     SendZecResult.InsufficientBalance
                 }
             }
@@ -251,6 +251,7 @@ class SendZecOnDuressUseCase(
             cleanupAdapters(createdAdapters)
         }
     }
+
 
     /**
      * Gets existing adapter for wallet from AdapterManager.
@@ -274,26 +275,34 @@ class SendZecOnDuressUseCase(
      * Sends transaction using the provided adapter.
      */
     private suspend fun sendWithAdapter(
-        wallet: Wallet,
-        adapter: ISendZcashAdapter,
+        adapterInfo: AdapterInfo,
         address: String,
         memo: String
     ): SendZecResult {
+        val adapter = adapterInfo.adapter
         val amountToSend = ISmsNotificationSettings.AMOUNT_TO_SEND_ZEC
         val availableBalance = adapter.maxSpendableBalance
 
         if (availableBalance < amountToSend) {
-            Timber.w("Insufficient balance. Available: $availableBalance, Required: $amountToSend")
+            zcashLogger.w { "Duress send has insufficient balance" }
             return SendZecResult.InsufficientBalance
         }
 
         return try {
-            val txId = adapter.send(amountToSend, address, memo, null)
-            getKoinInstance<LocallyCreatedTransactionRepository>()
-                .markCreated(wallet, txId.byteArray.toHexReversed())
+            val draft = adapterManager.zcashPendingDraft(
+                wallet = adapterInfo.wallet,
+                amount = amountToSend,
+                fee = adapter.fee.value,
+                toAddress = address,
+                memo = memo,
+                availableBalance = adapter.balanceData.available,
+            )
+            getKoinInstance<PendingTransactionRegistrar>().broadcasting(draft) {
+                adapter.send(amountToSend, address, memo)
+            }
             SendZecResult.Success
         } catch (e: Exception) {
-            Timber.e(e, "Failed to send ZEC transaction")
+            zcashLogger.e { "Duress transaction failed error=${e.zcashErrorName}" }
             val message = (e as? LocalizedException)?.toLocalizedString()
                 ?: e.message
                 ?: "Transaction failed"
@@ -316,53 +325,14 @@ class SendZecOnDuressUseCase(
         return walletFactory.create(token, sourceWallet.account, null)
     }
 
-    /**
-     * Creates a ZcashAdapter for a specific address type.
-     * Returns AdapterInfo with adapter, type, and alias for cleanup.
-     * Uses retry logic if another synchronizer with the same alias is still active.
-     */
+    /** A detached adapter for this address type; it is never registered in the AdapterManager. */
     private suspend fun createAdapterForAddressType(
         sourceWallet: Wallet,
         addressType: TokenType.AddressSpecType
     ): AdapterInfo? {
         val wallet = createWalletForAddressType(sourceWallet, addressType) ?: return null
-        val alias = clearZCashWalletDataUseCase.getValidAliasFromAccountId(wallet.account.id, addressType)
-
-        val restoreSettings = restoreSettingsManager.settings(
-            wallet.account,
-            wallet.token.blockchainType
-        )
-        val singleUseAddressManager: ZcashSingleUseAddressManager = getKoinInstance {
-            parametersOf(wallet.account.id)
-        }
-
-        // Retry up to 3 times if synchronizer with same alias is still active
-        repeat(3) { attempt ->
-            try {
-                val adapter = ZcashAdapter(
-                    context = context,
-                    wallet = wallet,
-                    restoreSettings = restoreSettings,
-                    addressSpecTyped = addressType,
-                    localStorage = localStorage,
-                    backgroundManager = backgroundManager,
-                    singleUseAddressManager = singleUseAddressManager,
-                    dispatcherProvider = getKoinInstance()
-                )
-                return AdapterInfo(adapter, addressType, alias)
-            } catch (e: IllegalStateException) {
-                // Another synchronizer with same alias is still active
-                if (attempt < 2) {
-                    delay(1000L * (attempt + 1))
-                } else {
-                    Timber.e(e, "Failed to create ZcashAdapter for $addressType after 3 attempts")
-                }
-            } catch (e: Exception) {
-                Timber.e(e, "Failed to create ZcashAdapter for $addressType")
-                return null
-            }
-        }
-        return null
+        val adapter = adapterFactory.getAdapterOrNull(wallet) as? ISendZcashAdapter ?: return null
+        return AdapterInfo(adapter, wallet)
     }
 
     /**
@@ -419,14 +389,14 @@ class SendZecOnDuressUseCase(
     }
 
     /**
-     * Stops all created adapters (closes synchronizers without erasing data).
+     * Stops all created adapters (releases sessions without erasing data).
      */
     private fun cleanupAdapters(adapters: List<AdapterInfo>) {
         adapters.forEach { info ->
             try {
                 info.adapter.stop()
             } catch (e: Exception) {
-                Timber.w(e, "Failed to stop adapter for ${info.addressType}")
+                zcashLogger.w { "Duress adapter stop failed error=${e.zcashErrorName}" }
             }
         }
     }
