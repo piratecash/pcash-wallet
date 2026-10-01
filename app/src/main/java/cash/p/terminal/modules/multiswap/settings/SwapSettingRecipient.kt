@@ -1,7 +1,7 @@
 package cash.p.terminal.modules.multiswap.settings
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.multiswap.settings.ui.RecipientAddress
 import cash.p.terminal.wallet.Token
@@ -16,13 +16,13 @@ data class SwapSettingRecipient(
 
     @Composable
     override fun GetContent(
-        navController: NavController,
+        navigation: HSNavigation,
         onError: (Throwable?) -> Unit,
         onValueChange: (Any?) -> Unit
     ) {
         RecipientAddress(
             token = tokenOut,
-            navController = navController,
+            navigation = navigation,
             initial = value,
             onError = onError,
             onValueChange = onValueChange

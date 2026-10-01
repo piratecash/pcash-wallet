@@ -46,7 +46,6 @@ dependencies {
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.material)
-    implementation(libs.androidx.navigation.compose)
     debugImplementation(libs.androidx.ui.tooling)
     implementation(libs.androidx.ui.tooling.preview)
 
@@ -68,9 +67,6 @@ dependencies {
     implementation(libs.android.core.ktx)
 
     implementation(libs.androidx.fragment.ktx)
-    // Navigation component
-    api(libs.androidx.navigation.fragment.ktx)
-    api(libs.androidx.navigation.ui.ktx)
 
     implementation(libs.rxjava)
     implementation(libs.androidx.biometric)

@@ -60,7 +60,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.rx2)
     implementation(libs.timber)
 
-    implementation(libs.androidx.navigation.runtime.ktx)
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.platform.launcher)

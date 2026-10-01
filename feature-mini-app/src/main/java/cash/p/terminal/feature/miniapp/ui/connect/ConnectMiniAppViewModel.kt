@@ -3,7 +3,6 @@ package cash.p.terminal.feature.miniapp.ui.connect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.feature.miniapp.data.api.MiniAppApiException
@@ -44,7 +43,7 @@ class ConnectMiniAppViewModel(
     private val marketKitWrapper: MarketKitWrapper,
     private val balanceService: BalanceService,
     private val uniqueCodeStorage: IUniqueCodeStorage,
-    savedStateHandle: SavedStateHandle
+    input: ConnectMiniAppDeeplinkInput?
 ) : ViewModel() {
 
     private val logger = AppLogger("ConnectMiniApp")
@@ -60,7 +59,6 @@ class ConnectMiniAppViewModel(
         return if (badgeText != null) "${coin.name} $badgeText" else coin.name
     }
 
-    private val input: ConnectMiniAppDeeplinkInput? = savedStateHandle["input"]
     val jwt: String? = input?.jwt
     val endpoint: String = input?.endpoint ?: "https://p.cash/"
 
