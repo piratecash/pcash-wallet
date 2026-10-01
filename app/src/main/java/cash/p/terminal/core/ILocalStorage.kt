@@ -33,6 +33,7 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings {
 
     /** Orchard -> Ironwood migration transactions, keyed as `accountId:canonicalTransactionHash`. */
     var zcashIronwoodMigrationTxIds: Set<String>
+
     var autoLockInterval: AutoLockInterval
 
     var recipientAddressBaseCheckEnabled: Boolean

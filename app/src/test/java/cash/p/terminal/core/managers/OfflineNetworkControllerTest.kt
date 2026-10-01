@@ -294,7 +294,7 @@ class OfflineNetworkControllerTest {
     }
 
     @Test
-    fun isOffline_zcashSynchronizerNotRunning_returnsTrue() {
+    fun isOffline_zcashNetworkPaused_returnsTrue() {
         val member = wallet(BlockchainType.Zcash)
         val adapter = mockk<ZcashAdapter>(relaxed = true)
         every { adapterManager.getAdapterForWalletOld(member) } returns adapter
@@ -304,7 +304,7 @@ class OfflineNetworkControllerTest {
     }
 
     @Test
-    fun isOffline_zcashSynchronizerRunning_returnsFalse() {
+    fun isOffline_zcashNetworkNotPaused_returnsFalse() {
         val member = wallet(BlockchainType.Zcash)
         val adapter = mockk<ZcashAdapter>(relaxed = true)
         every { adapterManager.getAdapterForWalletOld(member) } returns adapter
@@ -313,9 +313,9 @@ class OfflineNetworkControllerTest {
         assertFalse(controller.isOffline(member))
     }
 
-    // A sync error is not a pause: an erroring but online synchronizer must still be paused on demand.
+    // A sync error is not a pause: an erroring but online adapter must still be pausable.
     @Test
-    fun isOffline_zcashRunningWithSyncError_returnsFalse() {
+    fun isOffline_zcashNetworkNotPausedWithSyncError_returnsFalse() {
         val member = wallet(BlockchainType.Zcash)
         val adapter = mockk<ZcashAdapter>(relaxed = true)
         every { adapterManager.getAdapterForWalletOld(member) } returns adapter

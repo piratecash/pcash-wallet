@@ -11,6 +11,7 @@ import cash.p.terminal.core.EvmError
 import cash.p.terminal.core.OfflineBroadcastMetadata
 import cash.p.terminal.core.OfflineTransactionAdapter
 import cash.p.terminal.core.managers.OfflineSignedTransactionRepository
+import cash.p.terminal.core.managers.PendingTransactionRegistrar
 import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
 import cash.p.terminal.entities.DecodedOfflineTransaction
 import cash.p.terminal.entities.OfflineBeamMetadata
@@ -81,6 +82,7 @@ class OfflineBroadcastViewModelTest {
     private val marketKit = mockk<MarketKitWrapper>(relaxed = true)
     private val tokenResolver = mockk<OfflineBroadcastTokenResolver>(relaxed = true)
     private val dispatcherProvider = mockk<DispatcherProvider>(relaxed = true)
+    private val pendingRegistrar = mockk<PendingTransactionRegistrar>(relaxed = true)
     private val beamRelay = mockk<BeamOfflineTransactionRelay>()
 
     private val bitcoin = Blockchain(BlockchainType.Bitcoin, "Bitcoin", null)
@@ -94,14 +96,7 @@ class OfflineBroadcastViewModelTest {
         tokenType = TokenType.Native,
         decimals = 18,
     )
-    private val usdtToken = token(
-        blockchain = binanceSmartChain,
-        coin = Coin(uid = "tether", name = "Tether", code = "USDT"),
-        tokenType = TokenType.Eip20("0x55d398326f99059ff775485246999027b3197955"),
-        decimals = 18,
-    )
     private val bnbWallet = wallet(bnbToken, account)
-    private val usdtWallet = wallet(usdtToken, account)
     private val solana = Blockchain(BlockchainType.Solana, "Solana", null)
     private val solanaToken = token(
         blockchain = solana,
@@ -163,8 +158,9 @@ class OfflineBroadcastViewModelTest {
     }
 
     private fun setActiveWallets(wallets: List<Wallet>) {
-        every { walletUseCase.getWallets(any()) } answers {
-            wallets.filter { it.token.blockchainType == firstArg<BlockchainType>() }
+        every { walletUseCase.getWalletForBlockchain(any()) } answers {
+            val type = firstArg<BlockchainType>()
+            wallets.firstOrNull { it.token.blockchainType == type }
         }
     }
 
@@ -192,9 +188,9 @@ class OfflineBroadcastViewModelTest {
     }
 
     @Test
-    fun prefillAndAdvance_pcashPayloadWithTokenWalletBeforeNative_savesNativeWallet() =
+    fun prefillAndAdvance_pcashPayloadForAnotherChain_savesThatChainsWallet() =
         runTest(dispatcher) {
-            setActiveWallets(listOf(usdtWallet, bnbWallet))
+            setActiveWallets(listOf(bitcoinWallet, bnbWallet))
             every { payloadEncoder.decode(any()) } returns decoded(blockchainUid = "binance-smart-chain")
             every { marketKit.blockchain("binance-smart-chain") } returns binanceSmartChain
 
@@ -203,7 +199,7 @@ class OfflineBroadcastViewModelTest {
             advanceUntilIdle()
 
             coVerify { repository.saveImported(bnbWallet, any(), any()) }
-            coVerify(exactly = 0) { repository.saveImported(usdtWallet, any(), any()) }
+            coVerify(exactly = 0) { repository.saveImported(bitcoinWallet, any(), any()) }
         }
 
     @Test
@@ -1406,6 +1402,7 @@ class OfflineBroadcastViewModelTest {
         marketKit = marketKit,
         offlineBroadcastTokenResolver = tokenResolver,
         dispatcherProvider = dispatcherProvider,
+        pendingRegistrar = pendingRegistrar,
         beamRelay = beamRelay,
     )
 

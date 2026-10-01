@@ -1,17 +1,15 @@
 package cash.p.terminal.core.managers
 
-import android.content.Context
-import cash.z.ecc.android.sdk.model.BlockHeight
-import cash.z.ecc.android.sdk.model.ZcashNetwork
-import kotlinx.coroutines.runBlocking
+/**
+ * Birthday for a ZEC wallet the user has just created. It is a shipped constant so that creating
+ * a wallet works offline; the chain tip refines it when the network happens to be up.
+ */
+class ZcashBirthdayProvider {
 
-class ZcashBirthdayProvider(
-    private val context: Context,
-) {
-    fun getLatestCheckpointBlockHeight(): Long {
-        val walletBirthday = runBlocking {
-            BlockHeight.ofLatestCheckpoint(context, ZcashNetwork.Mainnet)
-        }
-        return walletBirthday.value
+    fun getLatestCheckpointBlockHeight(): Long = LATEST_MAINNET_CHECKPOINT
+
+    private companion object {
+        /** Mainnet height at the time of the release. Raise it when cutting a new one. */
+        const val LATEST_MAINNET_CHECKPOINT = 3_424_810L
     }
 }

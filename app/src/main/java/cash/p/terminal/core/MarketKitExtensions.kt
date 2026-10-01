@@ -334,13 +334,15 @@ val BlockchainType.isUtxoBased: Boolean
 
 
 fun BlockchainType.supports(accountType: AccountType): Boolean {
+    if (this == BlockchainType.Zcash) return accountType.zcashAddressSpecs().isNotEmpty()
+
     if (this == BlockchainType.Beam) {
         return accountType.isCompatibleWith(this, TokenType.Native)
     }
 
     return when (accountType) {
-        is AccountType.ZCashUfvKey ->
-            this == BlockchainType.Zcash
+        is AccountType.ZCashUfvKey,
+        is AccountType.ZCashSaplingKey -> false
 
         is AccountType.MnemonicMonero ->
             this == BlockchainType.Monero
@@ -470,6 +472,11 @@ val FullCoin.iconPlaceholder: Int
     }
 
 fun Token.supports(accountType: AccountType): Boolean {
+    if (blockchainType == BlockchainType.Zcash) {
+        val spec = (type as? TokenType.AddressSpecTyped)?.type
+        return spec != null && spec in accountType.zcashAddressSpecs()
+    }
+
     if (blockchainType == BlockchainType.Beam) {
         return accountType.isCompatibleWith(blockchainType, type)
     }

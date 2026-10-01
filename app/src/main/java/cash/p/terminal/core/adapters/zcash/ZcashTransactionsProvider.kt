@@ -1,58 +1,68 @@
 package cash.p.terminal.core.adapters.zcash
 
 import cash.p.terminal.modules.transactions.FilterTransactionType
-import cash.z.ecc.android.sdk.SdkSynchronizer
-import cash.z.ecc.android.sdk.model.TransactionOverview
-import cash.z.ecc.android.sdk.model.TransactionRecipient
+import cash.p.zcash.Transaction
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlin.math.min
 
-class ZcashTransactionsProvider(private val synchronizer: SdkSynchronizer) {
+/** A negative value means the account spent more than it received here. */
+val Transaction.isIncoming: Boolean
+    get() = value >= 0
 
-    private var transactions = listOf<ZcashTransaction>()
-    private val newTransactionsFlow = MutableSharedFlow<List<ZcashTransaction>>(
+class ZcashTransactionsProvider {
+
+    private val mutex = Mutex()
+    private var transactions = listOf<Transaction>()
+    private val newTransactionsFlow = MutableSharedFlow<List<Transaction>>(
+        replay = 0,
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    private val reloadSignalFlow = MutableSharedFlow<Unit>(
         replay = 0,
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
-    @Synchronized
-    fun onTransactions(transactionOverviews: List<TransactionOverview>) {
-        synchronizer.coroutineScope.launch {
-            val newTransactions = transactionOverviews.filter { tx ->
-                transactions.none { it.rawId == tx.txId.value }
-            }
+    /** Emitted when a transaction is gone, which the content flow below cannot express. */
+    val transactionsReloadSignalFlow: SharedFlow<Unit> = reloadSignalFlow.asSharedFlow()
 
-            if (newTransactions.isNotEmpty()) {
-                val newZcashTransactions = newTransactions.map {
-                    val recipient = if (it.isSentTransaction) {
-                        synchronizer.getRecipients(it)
-                            .filterIsInstance<TransactionRecipient>()
-                            .firstOrNull()
-                            ?.addressValue
-                    } else {
-                        null
-                    }
-                    val memo = synchronizer.getMemos(it).firstOrNull()
-                    ZcashTransaction(confirmedTransaction = it, recipient = recipient, memo = memo)
-                }
-                transactions = (transactions + newZcashTransactions).sortedDescending()
-                newTransactionsFlow.emit(newZcashTransactions)
-            }
+    /**
+     * The session publishes its whole history, so the list is replaced rather than merged: an
+     * unconfirmed transaction that expired or got mined has to disappear. A transaction already
+     * known can come back mined, with a fee or a recipient it did not have before — such an
+     * update is republished.
+     */
+    suspend fun onTransactions(all: List<Transaction>) {
+        val (updated, removed) = mutex.withLock {
+            val known = transactions.associateBy { it.txid }
+            val updated = all.filter { known[it.txid] != it }
+            val currentIds = all.mapTo(mutableSetOf()) { it.txid }
+            val removed = known.keys.any { it !in currentIds }
+            transactions = all.sortedWith(ORDER)
+            updated to removed
+        }
+
+        if (updated.isNotEmpty()) {
+            newTransactionsFlow.emit(updated)
+        }
+        if (removed) {
+            reloadSignalFlow.emit(Unit)
         }
     }
 
     fun getNewTransactionsFlowable(
         transactionType: FilterTransactionType,
         address: String?
-    ): Flow<List<ZcashTransaction>> {
+    ): Flow<List<Transaction>> {
         val filters = getFilters(transactionType, address)
 
         return if (filters.isEmpty()) {
@@ -71,7 +81,7 @@ class ZcashTransactionsProvider(private val synchronizer: SdkSynchronizer) {
     private fun getFilters(
         transactionType: FilterTransactionType,
         address: String?,
-    ) = buildList<(ZcashTransaction) -> Boolean> {
+    ) = buildList<(Transaction) -> Boolean> {
         when (transactionType) {
             FilterTransactionType.All -> Unit
             // For Incoming, exclude change transactions - they are part of outgoing transactions
@@ -84,29 +94,33 @@ class ZcashTransactionsProvider(private val synchronizer: SdkSynchronizer) {
 
         if (address != null) {
             add {
-                it.toAddress.equals(address, ignoreCase = true)
+                it.recipient.equals(address, ignoreCase = true)
             }
         }
     }
 
     fun getTransactions(
-        from: Triple<ByteArray, Long, Int>?,
+        from: Triple<String, Long, Int>?,
         transactionType: FilterTransactionType,
         address: String?,
         limit: Int,
-    ) = try {
+    ): List<Transaction> = try {
         val filters = getFilters(transactionType, address)
         val filtered = when {
             filters.isEmpty() -> transactions
             else -> transactions.filter { tx -> filters.all { it.invoke(tx) } }
         }
 
-        val fromIndex = from?.let { (transactionHash, timestamp, transactionIndex) ->
-            filtered.indexOfFirst { it.transactionHash.contentEquals(transactionHash) && it.timestamp == timestamp && it.transactionIndex == transactionIndex } + 1
+        val fromIndex = from?.let { (txid, time, id) ->
+            filtered.indexOfFirst { it.txid == txid && it.time == time && it.id == id } + 1
         } ?: 0
 
         filtered.subList(fromIndex, min(filtered.size, fromIndex + limit))
     } catch (error: Throwable) {
         emptyList()
+    }
+
+    private companion object {
+        val ORDER = compareByDescending<Transaction> { it.time }.thenByDescending { it.id }
     }
 }

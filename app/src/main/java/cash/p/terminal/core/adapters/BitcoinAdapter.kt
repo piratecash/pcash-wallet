@@ -258,7 +258,8 @@ class BitcoinAdapter(
                 is AccountType.ThorchainAddress,
                 is AccountType.MayachainAddress,
                 is AccountType.StellarSecretKey,
-                is AccountType.ZCashUfvKey -> throw UnsupportedAccountException()
+                is AccountType.ZCashUfvKey,
+                is AccountType.ZCashSaplingKey -> throw UnsupportedAccountException()
             }
 
         }

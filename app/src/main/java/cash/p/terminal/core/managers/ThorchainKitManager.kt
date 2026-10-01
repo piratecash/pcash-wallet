@@ -284,6 +284,7 @@ internal fun AccountType.thorchainSeed(): ByteArray = when (this) {
     is AccountType.TonAddress,
     is AccountType.TrezorDevice,
     is AccountType.TronAddress,
+    is AccountType.ZCashSaplingKey,
     is AccountType.ZCashUfvKey -> throw UnsupportedAccountException()
 }
 

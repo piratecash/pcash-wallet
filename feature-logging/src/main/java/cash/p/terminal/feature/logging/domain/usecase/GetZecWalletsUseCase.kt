@@ -11,7 +11,8 @@ import io.horizontalsystems.core.entities.BlockchainType
  * Use case for retrieving wallets that have ZEC (Zcash) tokens enabled.
  * Used for SMS notification configuration where only ZEC wallets are valid options.
  *
- * Only returns wallets with Shielded or Unified address types
+ * Only returns wallets with Shielded or Unified address types.
+ * Watch-only accounts are excluded: the duress notification sends a real transaction.
  */
 class GetZecWalletsUseCase(
     private val accountManager: IAccountManager,
@@ -23,8 +24,9 @@ class GetZecWalletsUseCase(
     suspend fun getZecWallets(): List<Wallet> {
         return accountManager.accounts
             .filter { account ->
-                account.type is AccountType.Mnemonic ||
-                        account.type is AccountType.ZCashUfvKey
+                val type = account.type
+                type is AccountType.Mnemonic ||
+                        (type is AccountType.ZCashSaplingKey && type.isSpendingKey)
             }
             .flatMap { account ->
                 walletManager.getWallets(account)

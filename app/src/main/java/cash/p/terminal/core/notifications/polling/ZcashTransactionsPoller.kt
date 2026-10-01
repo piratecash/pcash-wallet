@@ -1,6 +1,7 @@
 package cash.p.terminal.core.notifications.polling
 
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
+import cash.p.terminal.core.adapters.zcash.zcashLogger
 import cash.p.terminal.core.managers.TransactionAdapterManager
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
@@ -10,7 +11,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withTimeoutOrNull
-import timber.log.Timber
 
 class ZcashTransactionsPoller(
     private val transactionAdapterManager: TransactionAdapterManager,
@@ -41,7 +41,7 @@ class ZcashTransactionsPoller(
                         zcashAdapter.stopForPolling()
                     }
                 } ?: emptyList<TransactionRecord>().also {
-                    Timber.tag("TxPoller").w("Zcash poll timed out")
+                    zcashLogger.w { "Transaction poll timed out" }
                 }
             }
         }.awaitAll().flatten()

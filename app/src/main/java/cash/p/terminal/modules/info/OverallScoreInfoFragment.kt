@@ -20,7 +20,6 @@ import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.ui_compose.BaseComposeFragment
-import cash.p.terminal.ui_compose.getInput
 import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.OverallScore
 import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.ScoreCategory
 import cash.p.terminal.modules.info.ui.InfoHeader
@@ -41,7 +40,7 @@ class OverallScoreInfoFragment : BaseComposeFragment() {
 
     @Composable
     override fun GetContent(navController: NavController) {
-        val scoreCategory = navController.getInput<ScoreCategory>()
+        val scoreCategory = getInput<ScoreCategory>()
         val categoryScores = getScores(scoreCategory)
         if (scoreCategory == null) {
             ScreenMessageWithAction(
