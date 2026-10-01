@@ -33,17 +33,18 @@ fun mapTxStatus(
     destinationAddress: String,
 ): SwapProviderTransactionStatusResult {
     val stages = txStatus.stages
-    val outboundSigned = stages?.outboundSigned?.completed == true
+    // Native RUNE/CACAO is paid in-chain: no outbound_signed stage exists, out_txs carries the payout.
+    val outboundDone = stages?.outboundSigned?.let { it.completed == true } ?: txStatus.outTxs.orEmpty().isNotEmpty()
     val isRefund = txStatus.plannedOutTxs.orEmpty().any { it.refund == true }
 
     val status = when {
-        isRefund && outboundSigned -> TransactionStatusEnum.REFUNDED
+        isRefund && outboundDone -> TransactionStatusEnum.REFUNDED
         stages?.inboundObserved?.completed != true -> TransactionStatusEnum.WAITING
         stages.inboundFinalised?.completed != true -> TransactionStatusEnum.CONFIRMING
         stages.swapFinalised?.completed != true || stages.swapStatus?.pending == true ->
             TransactionStatusEnum.EXCHANGING
 
-        !outboundSigned -> TransactionStatusEnum.SENDING
+        !outboundDone -> TransactionStatusEnum.SENDING
         else -> TransactionStatusEnum.FINISHED
     }
 
@@ -51,7 +52,8 @@ fun mapTxStatus(
     // if the response doesn't let us disambiguate.
     val outTx = txStatus.outTxs.orEmpty().firstOrNull { it.toAddress == destinationAddress }
         ?: txStatus.outTxs?.firstOrNull()
-    val amountOutReal = outTx?.coins?.firstOrNull()?.amount?.movePointLeft(8)
+    val coin = outTx?.coins?.firstOrNull()
+    val amountOutReal = coin?.amount?.movePointLeft(protocolDecimals(coin.asset))
 
     val finishedAt = if (status == TransactionStatusEnum.FINISHED || status == TransactionStatusEnum.REFUNDED) {
         System.currentTimeMillis()

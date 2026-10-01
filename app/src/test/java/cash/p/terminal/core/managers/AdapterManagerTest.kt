@@ -94,6 +94,9 @@ class AdapterManagerTest {
                 every { kitStoppedObservable } returns Observable.never()
             },
             stellarKitManager = mockk(relaxed = true),
+            thorchainKitManagers = mockk(relaxed = true) {
+                every { all } returns emptyList()
+            },
             pendingBalanceCalculator = pendingBalanceCalculator,
             fallbackAddressProvider = mockk(relaxed = true),
             offlineModeManager = offlineModeManager,

@@ -42,11 +42,10 @@ import cash.p.terminal.core.managers.DeletedAccountsCleanup
 import cash.p.terminal.wallet.AccountDeletionPreflight
 import cash.p.terminal.wallet.IAccountCleaner
 import cash.p.terminal.core.managers.BitcoinKitConnectionManager
-import cash.p.terminal.core.managers.BitcoinKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.BitcoinKitDatabaseManager
 import cash.p.terminal.core.managers.BitcoinKitDatabaseOperations
 import cash.p.terminal.core.managers.BtcBlockchainManager
-import cash.p.terminal.core.managers.DefaultBitcoinKitDatabaseKeyProvider
+import cash.p.terminal.core.managers.DefaultKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.DefaultBitcoinKitDatabaseOperations
 import cash.p.terminal.core.managers.DeviceFlipDetector
 import cash.p.terminal.core.managers.EffectiveMonitoredChains
@@ -64,6 +63,7 @@ import cash.p.terminal.core.notifications.polling.EvmTransactionsPoller
 import cash.p.terminal.core.notifications.polling.MoneroTransactionsPoller
 import cash.p.terminal.core.notifications.polling.SolanaTransactionsPoller
 import cash.p.terminal.core.notifications.polling.StellarTransactionsPoller
+import cash.p.terminal.core.notifications.polling.ThorchainTransactionsPoller
 import cash.p.terminal.core.notifications.polling.TonTransactionsPoller
 import cash.p.terminal.core.notifications.polling.TransactionPollingManager
 import cash.p.terminal.core.notifications.polling.TronTransactionsPoller
@@ -84,6 +84,8 @@ import cash.p.terminal.core.managers.EvmPersonalSignerImpl
 import cash.p.terminal.core.managers.GetTonAddressUseCaseImpl
 import cash.p.terminal.core.managers.GuidesManager
 import cash.p.terminal.core.managers.KeyStoreCleaner
+import cash.p.terminal.core.managers.KitDatabaseKeyProvider
+import cash.p.terminal.core.managers.KitDatabaseKeys
 import cash.p.terminal.core.managers.LanguageManager
 import cash.p.terminal.core.managers.SystemLanguageProvider
 import cash.p.terminal.core.managers.SystemLanguageProviderImpl
@@ -123,6 +125,7 @@ import cash.p.terminal.core.managers.StackingManager
 import cash.p.terminal.core.managers.StellarKitManager
 import cash.p.terminal.core.managers.SystemInfoManager
 import cash.p.terminal.core.managers.TermsManager
+import cash.p.terminal.core.managers.ThorchainKitManagers
 import cash.p.terminal.core.managers.TimePasswordProvider
 import cash.p.terminal.core.managers.TokenAutoEnableManager
 import cash.p.terminal.core.managers.TonConnectManager
@@ -288,6 +291,7 @@ val managerModule = module {
     singleOf(::TronTransactionsPoller)
     singleOf(::SolanaTransactionsPoller)
     singleOf(::StellarTransactionsPoller)
+    singleOf(::ThorchainTransactionsPoller)
     singleOf(::BtcLikeTransactionsPoller)
     singleOf(::ZcashTransactionsPoller)
     singleOf(::BeamTransactionsPoller)
@@ -300,6 +304,7 @@ val managerModule = module {
                 get<TronTransactionsPoller>(),
                 get<SolanaTransactionsPoller>(),
                 get<StellarTransactionsPoller>(),
+                get<ThorchainTransactionsPoller>(),
                 get<BtcLikeTransactionsPoller>(),
                 get<ZcashTransactionsPoller>(),
                 get<MoneroTransactionsPoller>(),
@@ -315,7 +320,8 @@ val managerModule = module {
     }
     singleOf(::ConnectivityManager) bind IConnectivityManager::class
     singleOf(::BitcoinKitConnectionManager) bind IConnectionManager::class
-    singleOf(::DefaultBitcoinKitDatabaseKeyProvider) bind BitcoinKitDatabaseKeyProvider::class
+    singleOf(::DefaultKitDatabaseKeyProvider) bind KitDatabaseKeyProvider::class
+    singleOf(::KitDatabaseKeys)
     singleOf(::DefaultBitcoinKitDatabaseOperations) bind BitcoinKitDatabaseOperations::class
     singleOf(::BitcoinKitDatabaseManager)
     singleOf(::EvmSyncSourceManager)
@@ -327,6 +333,7 @@ val managerModule = module {
     singleOf(::NetworkErrorTracker)
     singleOf(::SolanaKitManager)
     singleOf(::StellarKitManager)
+    singleOf(::ThorchainKitManagers)
     singleOf(::TonKitManager)
     singleOf(::GetTonAddressUseCaseImpl) bind GetTonAddressUseCase::class
     singleOf(::CreateRequiredTokensUseCaseImpl) bind CreateRequiredTokensUseCase::class

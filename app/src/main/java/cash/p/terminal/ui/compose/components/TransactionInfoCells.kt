@@ -1062,6 +1062,8 @@ private fun openTransactionOptionsModule(
         BlockchainType.Tron,
         BlockchainType.Ton,
         BlockchainType.Stellar,
+        BlockchainType.Thorchain,
+        BlockchainType.Mayachain,
         BlockchainType.Beam,
         is BlockchainType.Unsupported -> Unit
     }

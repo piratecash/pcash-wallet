@@ -92,6 +92,25 @@ sealed class SendTransactionData {
         val gasBudget: BigInteger? = null
     ) : SendTransactionData()
 
+    sealed class Thorchain : SendTransactionData() {
+        abstract val amount: BigDecimal
+        abstract val memo: String
+
+        data class Deposit(
+            val asset: String,
+            override val amount: BigDecimal,
+            override val memo: String,
+        ) : Thorchain()
+
+        data class Send(
+            val address: String,
+            override val amount: BigDecimal,
+            override val memo: String,
+        ) : Thorchain() {
+            override val recipientAddress: String = address
+        }
+    }
+
     class Monero(
         val address: String,
         val amount: BigDecimal

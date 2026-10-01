@@ -108,7 +108,7 @@ data class TransactionInfoItem(
     val swapProvider: SwapProvider? = null,
     // Unstoppable sub-provider api id, so the details screen shows the concrete provider (e.g. Near)
     // instead of the aggregator name.
-    val swapUnstoppableSubProviderId: String? = null,
+    val swapSubProviderId: String? = null,
     val swapTransactionId: String? = null,
     val swapTransactionStatus: TransactionStatusEnum? = null,
     val poisonStatus: PoisonStatus = PoisonStatus.BLOCKCHAIN,

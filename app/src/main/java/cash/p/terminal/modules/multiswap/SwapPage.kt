@@ -83,6 +83,7 @@ import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui.compose.components.SwapDirectionIndicator
 import cash.p.terminal.ui_compose.components.HSpacer
 import cash.p.terminal.ui_compose.components.HsBackButton
+import cash.p.terminal.ui_compose.components.HsImage
 import cash.p.terminal.ui_compose.components.MenuItemTimeoutIndicator
 import cash.p.terminal.ui_compose.components.TextImportantError
 import cash.p.terminal.ui_compose.components.TextImportantWarning
@@ -1036,10 +1037,10 @@ private fun ProviderField(
         verticalAlignment = Alignment.CenterVertically,
         borderBottom = true,
     ) {
-        Image(
+        HsImage(
+            url = swapProvider.iconUrl,
+            placeholder = swapProvider.icon,
             modifier = Modifier.size(32.dp),
-            painter = painterResource(swapProvider.icon),
-            contentDescription = null
         )
         HSpacer(width = 8.dp)
         Column(

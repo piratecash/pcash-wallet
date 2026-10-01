@@ -9,6 +9,8 @@ import cash.p.terminal.feature.miniapp.ui.connect.ConnectMiniAppPage
 import cash.p.terminal.modules.main.DeeplinkPage
 import cash.p.terminal.modules.multiswap.SwapPage
 import cash.p.terminal.modules.premium.about.AboutPremiumPage
+import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.canSwap
 import cash.p.terminal.wallet.entities.TokenQuery
 
 /**
@@ -17,7 +19,8 @@ import cash.p.terminal.wallet.entities.TokenQuery
  */
 class DeeplinkParser(
     private val coinManager: ICoinManager,
-    private val uniqueCodeStorage: IUniqueCodeStorage
+    private val uniqueCodeStorage: IUniqueCodeStorage,
+    private val accountManager: IAccountManager,
 ) {
     fun parse(uri: Uri): DeeplinkPage? {
         if (uri.scheme != "pcash") {
@@ -30,6 +33,7 @@ class DeeplinkParser(
             }
 
             "swap" -> {
+                if (accountManager.activeAccount?.canSwap() != true) return null
                 val toTokenParam = uri.getQueryParameter("to_token")
                 val tokenQuery = when (toTokenParam?.uppercase()) {
                     "PIRATE" -> TokenQuery.PirateCashBnb

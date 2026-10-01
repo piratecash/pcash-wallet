@@ -54,8 +54,12 @@ data class PendingMultiSwap(
             "yifi" -> SwapProvider.YIFI
             "thorchain" -> SwapProvider.THORCHAIN
             "mayachain" -> SwapProvider.MAYA
-            // Every Unstoppable sub-provider (id "u_<apiId>") tracks through the single UNSTOPPABLE backend.
-            else -> if (providerId.startsWith("u_")) SwapProvider.UNSTOPPABLE else null
+            // Aggregator sub-providers ("u_<apiId>" Unstoppable, "p_<name>" p.cash backend) track through one backend.
+            else -> when {
+                providerId.startsWith("u_") -> SwapProvider.UNSTOPPABLE
+                providerId.startsWith("p_") -> SwapProvider.PCASH_BACKEND
+                else -> null
+            }
         }
     }
 }

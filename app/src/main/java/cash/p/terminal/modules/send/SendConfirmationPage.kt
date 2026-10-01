@@ -14,12 +14,12 @@ import cash.p.terminal.modules.send.bitcoin.SendBitcoinConfirmationScreen
 import cash.p.terminal.modules.send.bitcoin.SendBitcoinViewModel
 import cash.p.terminal.modules.send.evm.SendEvmConfirmationScreen
 import cash.p.terminal.modules.send.evm.SendEvmViewModel
+import cash.p.terminal.modules.send.memo.SendMemoConfirmationScreen
+import cash.p.terminal.modules.send.memo.SendMemoViewModel
 import cash.p.terminal.modules.send.monero.SendMoneroConfirmationScreen
 import cash.p.terminal.modules.send.monero.SendMoneroViewModel
 import cash.p.terminal.modules.send.solana.SendSolanaConfirmationScreen
 import cash.p.terminal.modules.send.solana.SendSolanaViewModel
-import cash.p.terminal.modules.send.stellar.SendStellarConfirmationScreen
-import cash.p.terminal.modules.send.stellar.SendStellarViewModel
 import cash.p.terminal.modules.send.ton.SendTonConfirmationScreen
 import cash.p.terminal.modules.send.ton.SendTonViewModel
 import cash.p.terminal.modules.send.tron.SendTronConfirmationScreen
@@ -110,9 +110,9 @@ class SendConfirmationPage(
 
             Type.Stellar -> ConfirmationOrRecover(
                 navigation,
-                navigation.rememberExistingViewModel(SendPage::class, SendStellarViewModel::class)
+                navigation.rememberExistingViewModel(SendPage::class, SendMemoViewModel::class)
             ) {
-                SendStellarConfirmationScreen(navigation, it, sendEntryPoint)
+                SendMemoConfirmationScreen(navigation, it, sendEntryPoint)
             }
         }
     }

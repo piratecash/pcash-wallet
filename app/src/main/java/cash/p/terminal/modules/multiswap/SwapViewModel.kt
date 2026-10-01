@@ -522,6 +522,7 @@ private fun SwapProviderQuote.toLegUiState(
         status = LegStatus.Pending,
         providerName = provider.title,
         providerIcon = provider.icon,
+        providerIconUrl = provider.iconUrl,
         tokenIn = tokenIn,
         tokenOut = tokenOut,
         amountIn = amountIn,

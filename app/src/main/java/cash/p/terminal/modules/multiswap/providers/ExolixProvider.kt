@@ -82,6 +82,7 @@ class ExolixProvider(
             BlockchainType.Dash.uid to "DASH",
             BlockchainType.Zcash.uid to "ZEC",
             BlockchainType.Stellar.uid to "XLM",
+            BlockchainType.Thorchain.uid to "RUNE",
             BlockchainType.Ethereum.uid to "ETH",
             BlockchainType.BinanceSmartChain.uid to "BSC",
             BlockchainType.Polygon.uid to "MATIC",

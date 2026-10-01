@@ -447,7 +447,7 @@ private fun SwapQuoteSection(
                 subvalue = fiat,
             )
         }
-        provider?.let { SwapProviderField(title = it.title, iconId = it.icon) }
+        provider?.let { SwapProviderField(title = it.title, iconId = it.icon, iconUrl = it.iconUrl) }
         uiState.quoteFields.forEach { it.GetContent(navigation, true) }
     }
 }

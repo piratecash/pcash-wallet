@@ -22,7 +22,7 @@ import cash.p.terminal.core.ISendTonAdapter
 import cash.p.terminal.core.ISendZcashAdapter
 import cash.p.terminal.core.ISendSolanaAdapter
 import cash.p.terminal.core.ISendMoneroAdapter
-import cash.p.terminal.core.ISendStellarAdapter
+import cash.p.terminal.core.ISendMemoAdapter
 import cash.p.terminal.core.ISendTronAdapter
 import cash.p.terminal.core.authorizedAction
 import cash.p.terminal.entities.Address
@@ -42,6 +42,9 @@ import cash.p.terminal.modules.send.bitcoin.utxoexpert.UtxoExpertModeScreen
 import cash.p.terminal.modules.send.evm.SendEvmModule
 import cash.p.terminal.modules.send.evm.SendEvmPageContent
 import cash.p.terminal.modules.send.evm.SendEvmViewModel
+import cash.p.terminal.modules.send.memo.SendMemoModule
+import cash.p.terminal.modules.send.memo.SendMemoPageContent
+import cash.p.terminal.modules.send.memo.SendMemoViewModel
 import cash.p.terminal.modules.send.monero.SendMoneroModule
 import cash.p.terminal.modules.send.monero.SendMoneroPageContent
 import cash.p.terminal.modules.send.monero.SendMoneroViewModel
@@ -49,9 +52,6 @@ import cash.p.terminal.modules.send.securitycheck.SecurityCheckPage
 import cash.p.terminal.modules.send.solana.SendSolanaModule
 import cash.p.terminal.modules.send.solana.SendSolanaPageContent
 import cash.p.terminal.modules.send.solana.SendSolanaViewModel
-import cash.p.terminal.modules.send.stellar.SendStellarModule
-import cash.p.terminal.modules.send.stellar.SendStellarPageContent
-import cash.p.terminal.modules.send.stellar.SendStellarViewModel
 import cash.p.terminal.modules.send.ton.SendTonModule
 import cash.p.terminal.modules.send.ton.SendTonPageContent
 import cash.p.terminal.modules.send.ton.SendTonViewModel
@@ -340,8 +340,10 @@ class SendPage(val input: Input) : HSPage() {
                 }
             }
 
-            BlockchainType.Stellar -> {
-                val adapter: ISendStellarAdapter? = App.adapterManager.getAdapterForWallet(wallet)
+            BlockchainType.Stellar,
+            BlockchainType.Thorchain,
+            BlockchainType.Mayachain -> {
+                val adapter: ISendMemoAdapter? = App.adapterManager.getAdapterForWallet(wallet)
                 if (adapter == null) {
                     MissingWalletAdapterEffect(
                         navigation = navigation,
@@ -349,17 +351,17 @@ class SendPage(val input: Input) : HSPage() {
                         coinCode = wallet.coin.code,
                     )
                 } else {
-                    val factory = SendStellarModule.Factory(wallet, address, hideAddress, adapter)
-                    val sendStellarViewModel = viewModel<SendStellarViewModel>(factory = factory)
+                    val factory = SendMemoModule.Factory(wallet, address, hideAddress, adapter)
+                    val sendMemoViewModel = viewModel<SendMemoViewModel>(factory = factory)
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .systemBarsPadding()
                     ) {
-                        SendStellarPageContent(
+                        SendMemoPageContent(
                             title = title,
                             navigation = navigation,
-                            viewModel = sendStellarViewModel,
+                            viewModel = sendMemoViewModel,
                             amountInputModeViewModel = amountInputModeViewModel,
                             prefilledData = prefilledData,
                             addressCheckerControl = addressCheckerControl,

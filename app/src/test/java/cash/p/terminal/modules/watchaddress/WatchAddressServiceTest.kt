@@ -64,6 +64,22 @@ class WatchAddressServiceTest {
     fun tearDown() = unmockkAll()
 
     @Test
+    fun tokens_thorchainAddress_queriesThorchainNative() {
+        assertEquals(
+            listOf(TokenQuery(BlockchainType.Thorchain, TokenType.Native)),
+            queriedTokens(AccountType.ThorchainAddress("thor1watched")),
+        )
+    }
+
+    @Test
+    fun tokens_mayachainAddress_queriesMayachainNative() {
+        assertEquals(
+            listOf(TokenQuery(BlockchainType.Mayachain, TokenType.Native)),
+            queriedTokens(AccountType.MayachainAddress("maya1watched")),
+        )
+    }
+
+    @Test
     fun tokens_saplingKey_requestsShieldedOnly() {
         assertEquals(
             listOf(TokenType.AddressSpecType.Shielded),
@@ -135,6 +151,15 @@ class WatchAddressServiceTest {
 
         verify { walletActivator.activateTokens(account, emptyList()) }
         verify(exactly = 0) { restoreSettingsManager.save(any(), any(), any()) }
+    }
+
+    private fun queriedTokens(accountType: AccountType): List<TokenQuery> {
+        val queries = slot<List<TokenQuery>>()
+        every { marketKit.tokens(capture(queries)) } returns emptyList()
+
+        service.tokens(accountType)
+
+        return queries.captured
     }
 
     private fun zcashSpecsOf(accountType: AccountType) = service.tokens(accountType).zcashSpecs()

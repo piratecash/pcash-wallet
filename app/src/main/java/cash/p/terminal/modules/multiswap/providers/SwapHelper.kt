@@ -10,11 +10,13 @@ import cash.p.terminal.core.adapters.Trc20Adapter
 import cash.p.terminal.core.isEvm
 import cash.p.terminal.core.managers.SolanaKitManager
 import cash.p.terminal.core.managers.StellarKitManager
+import cash.p.terminal.core.managers.ThorchainKitManagers
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.modules.multiswap.action.ActionApprove
 import cash.p.terminal.modules.multiswap.action.ActionRevoke
 import cash.p.terminal.modules.multiswap.action.ISwapProviderAction
 import cash.p.terminal.strings.helpers.TranslatableString
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IReceiveAdapter
 import cash.p.terminal.wallet.NoActiveAccount
 import cash.p.terminal.wallet.Token
@@ -82,6 +84,13 @@ object SwapHelper {
                 BlockchainType.Stellar -> {
                     val stellarKitManager: StellarKitManager by inject(StellarKitManager::class.java)
                     stellarKitManager.getAddress(account)
+                }
+
+                BlockchainType.Thorchain,
+                BlockchainType.Mayachain -> {
+                    if (account.type !is AccountType.Mnemonic) throw SwapError.NoDestinationAddress()
+                    val thorchainKitManagers: ThorchainKitManagers by inject(ThorchainKitManagers::class.java)
+                    thorchainKitManagers.forType(blockchainType).getAddress(account)
                 }
 
                 BlockchainType.Solana -> {
