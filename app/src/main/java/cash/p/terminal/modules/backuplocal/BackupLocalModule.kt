@@ -4,8 +4,10 @@ import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.managers.RestoreSettingType
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.core.usecase.MoneroWalletUseCase
+import cash.p.terminal.modules.address.AddressHandlerThorchain
 import cash.p.terminal.wallet.AccountType
 import com.google.gson.annotations.SerializedName
+import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.hdwalletkit.Base58
 import io.horizontalsystems.tronkit.toBigInteger
 
@@ -90,9 +92,12 @@ object BackupLocalModule {
     private const val TRON_ADDRESS = "tron_address"
     private const val TON_ADDRESS = "ton_address"
     private const val STELLAR_ADDRESS = "stellar_address"
+    private const val THORCHAIN_ADDRESS = "thorchain_address"
+    private const val MAYACHAIN_ADDRESS = "mayachain_address"
     private const val BITCOIN_ADDRESS = "bitcoin_address"
     private const val HD_EXTENDED_KEY = "hd_extended_key"
     private const val UFVK = "ufvk"
+    private const val ZCASH_SAPLING_KEY = "zcash_sapling_key"
     private const val HARDWARE_CARD = "hardware_card"
     private const val TREZOR_DEVICE = "trezor_device"
 
@@ -154,9 +159,12 @@ object BackupLocalModule {
         is AccountType.TronAddress -> TRON_ADDRESS
         is AccountType.TonAddress -> TON_ADDRESS
         is AccountType.StellarAddress -> STELLAR_ADDRESS
+        is AccountType.ThorchainAddress -> THORCHAIN_ADDRESS
+        is AccountType.MayachainAddress -> MAYACHAIN_ADDRESS
         is AccountType.BitcoinAddress -> BITCOIN_ADDRESS
         is AccountType.HdExtendedKey -> HD_EXTENDED_KEY
         is AccountType.ZCashUfvKey -> UFVK
+        is AccountType.ZCashSaplingKey -> ZCASH_SAPLING_KEY
         is AccountType.HardwareCard -> HARDWARE_CARD
         is AccountType.TrezorDevice -> TREZOR_DEVICE
     }
@@ -195,6 +203,12 @@ object BackupLocalModule {
             TRON_ADDRESS -> AccountType.TronAddress(String(data, Charsets.UTF_8))
             TON_ADDRESS -> AccountType.TonAddress(String(data, Charsets.UTF_8))
             STELLAR_ADDRESS -> AccountType.StellarAddress(String(data, Charsets.UTF_8))
+            THORCHAIN_ADDRESS ->
+                data.thorchainAddressOrNull(BlockchainType.Thorchain)?.let(AccountType::ThorchainAddress)
+
+            MAYACHAIN_ADDRESS ->
+                data.thorchainAddressOrNull(BlockchainType.Mayachain)?.let(AccountType::MayachainAddress)
+
             BITCOIN_ADDRESS -> AccountType.BitcoinAddress.fromSerialized(
                 String(
                     data,
@@ -204,11 +218,17 @@ object BackupLocalModule {
 
             HD_EXTENDED_KEY -> AccountType.HdExtendedKey(Base58.encode(data))
             UFVK -> AccountType.ZCashUfvKey(String(data, Charsets.UTF_8))
+            ZCASH_SAPLING_KEY -> AccountType.ZCashSaplingKey(String(data, Charsets.UTF_8))
             HARDWARE_CARD -> null
 
             else -> throw IllegalStateException("Unknown account type")
         }
     }
+
+    /** Null, not a throw: an invalid entry is skipped instead of aborting the whole full-backup restore. */
+    private fun ByteArray.thorchainAddressOrNull(blockchainType: BlockchainType): String? =
+        String(this, Charsets.UTF_8)
+            .takeIf { AddressHandlerThorchain.forBlockchainType(blockchainType).isSupported(it) }
 
     fun getDataForEncryption(accountType: AccountType): ByteArray? = when (accountType) {
         is AccountType.Mnemonic -> {
@@ -236,9 +256,12 @@ object BackupLocalModule {
         is AccountType.TronAddress -> accountType.address.toByteArray(Charsets.UTF_8)
         is AccountType.TonAddress -> accountType.address.toByteArray(Charsets.UTF_8)
         is AccountType.StellarAddress -> accountType.address.toByteArray(Charsets.UTF_8)
+        is AccountType.ThorchainAddress -> accountType.address.toByteArray(Charsets.UTF_8)
+        is AccountType.MayachainAddress -> accountType.address.toByteArray(Charsets.UTF_8)
         is AccountType.BitcoinAddress -> accountType.serialized.toByteArray(Charsets.UTF_8)
         is AccountType.HdExtendedKey -> Base58.decode(accountType.keySerialized)
         is AccountType.ZCashUfvKey -> accountType.key.toByteArray(Charsets.UTF_8)
+        is AccountType.ZCashSaplingKey -> accountType.key.toByteArray(Charsets.UTF_8)
         is AccountType.HardwareCard,
         is AccountType.TrezorDevice -> null
     }

@@ -63,6 +63,8 @@ object DerivationConfigV2 : DerivationConfig() {
             BlockchainType.ECash,
             BlockchainType.Zcash,
             BlockchainType.Monero,
+            BlockchainType.Thorchain,
+            BlockchainType.Mayachain,
             BlockchainType.Beam,
             is BlockchainType.Unsupported ->
                 throw IllegalArgumentException("Unsupported blockchain type: $blockchainType")

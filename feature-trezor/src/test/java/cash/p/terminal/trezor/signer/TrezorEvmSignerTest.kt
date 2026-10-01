@@ -2,12 +2,16 @@ package cash.p.terminal.trezor.signer
 
 import cash.p.terminal.trezor.client.TrezorDerivationPath
 import cash.p.terminal.trezor.domain.TrezorSigningException
+import cash.p.terminal.trezor.domain.model.TrezorModel
 import cash.p.terminal.trezorkit.client.ITrezorClient
 import cash.p.terminal.trezorkit.client.TrezorClientSession
 import cash.p.terminal.trezorkit.client.TrezorEvmGasFee
 import cash.p.terminal.trezorkit.client.TrezorEvmTx
 import cash.p.terminal.trezorkit.client.TrezorMessageSignature
 import cash.p.terminal.trezorkit.client.TrezorSignature
+import cash.p.terminal.trezorkit.client.TrezorTypedData
+import cash.p.terminal.trezorkit.client.TrezorTypedMember
+import cash.p.terminal.trezorkit.client.TrezorTypedValue
 import cash.p.terminal.wallet.crypto.EvmSignatureRecovery
 import io.horizontalsystems.ethereumkit.crypto.CryptoUtils
 import io.horizontalsystems.ethereumkit.crypto.InternalBouncyCastleProvider
@@ -36,6 +40,13 @@ class TrezorEvmSignerTest {
     private val session: TrezorClientSession = mockk()
     private val trezorClient = object : ITrezorClient {
         override suspend fun <T> connect(block: suspend TrezorClientSession.() -> T): T = session.block()
+    }
+    private var connectCount = 0
+    private val countingClient = object : ITrezorClient {
+        override suspend fun <T> connect(block: suspend TrezorClientSession.() -> T): T {
+            connectCount++
+            return session.block()
+        }
     }
     private val txSlot = slot<TrezorEvmTx>()
 
@@ -81,6 +92,46 @@ class TrezorEvmSignerTest {
         "000000000000000000000000000000000000000000000000000000003b034361c080a0101fdd98aa2871e985499dedc" +
         "4de19810db6cbcf6fcb376fedf4cb56cf0277c5a0711751862e80fcf8e1e2dd0d387e8d0248738e6a9a92357a8f5d03" +
         "5f0c820c60"
+
+    // P.Cash CreateExchange m1 vector; signed by throwaway key 0x4c0883a6...3f362318 (ethers, v = 0x1b).
+    private val typedDataSender = "0x2c7536E3605D9C16a7a3D7b1898e529396a65c23"
+    private val m1DomainHash = "0x70e10b7ae1cd9e2a8a24d21c0f9c9e46340e5aeb20e6d0c337cd78a6fec9d068"
+    private val m1MessageHash = "0x9eb9c202dc4ecb182acf1706506b614f23e86d72d84c68e4ffcb073ce1de3b17"
+    private val m1Digest = "0x20a4727a0a4f04220791a7bce431a576fc7aa642513d8840be90ed6340b33c1a"
+    private val m1Signature = "0x9a2c1d4822237a85fcdc69f8cd656353ce0bc5f6dd87f366513ff48a1f03b8f6" +
+        "0675c8e34b8508de03f927aac931d8f386161d3489c5177b7fb85fb44f9fb6361b"
+    private val m1Json = """
+        {
+          "types": {
+            "EIP712Domain": [{"name": "name", "type": "string"}, {"name": "version", "type": "string"}],
+            "Asset": [{"name": "coinId", "type": "string"}, {"name": "blockchain", "type": "string"}],
+            "CreateExchange": [
+              {"name": "from", "type": "Asset"}, {"name": "to", "type": "Asset"},
+              {"name": "amount", "type": "string"}, {"name": "type", "type": "string"},
+              {"name": "recipient", "type": "string"}, {"name": "recipientExtraId", "type": "string"},
+              {"name": "refundAddress", "type": "string"}, {"name": "refundExtraId", "type": "string"},
+              {"name": "fromAddress", "type": "string"}, {"name": "fromExtraId", "type": "string"},
+              {"name": "provider", "type": "string"}, {"name": "clientRequestId", "type": "string"}
+            ]
+          },
+          "primaryType": "CreateExchange",
+          "domain": {"name": "P.Cash Exchange", "version": "1"},
+          "message": {
+            "from": {"coinId": "bitcoin", "blockchain": "bitcoin"},
+            "to": {"coinId": "ethereum", "blockchain": "ethereum"},
+            "amount": "0.01",
+            "type": "float",
+            "recipient": "0x1234567890abcdef1234567890abcdef12345678",
+            "recipientExtraId": "",
+            "refundAddress": "",
+            "refundExtraId": "",
+            "fromAddress": "",
+            "fromExtraId": "",
+            "provider": "changelly",
+            "clientRequestId": "8d3d9db0-7d1b-43ce-9431-fb530ce2c6ef"
+          }
+        }
+    """.trimIndent()
 
     @Test
     fun signTransaction_signedGasLimitDiffers_reconcilesToSignedGasLimit() = runBlocking {
@@ -325,11 +376,86 @@ class TrezorEvmSignerTest {
     }
 
     @Test
-    fun signTypedDataMessage_always_throwsNotSupported() {
+    fun signTypedDataMessage_safeModel_sendsConvertedTreeAndReturnsRsRecId() = runBlocking {
+        val dataSlot = slot<TrezorTypedData>()
+        coEvery { session.signEthereumTypedData(any(), capture(dataSlot)) } returns typedDataSignature(m1Signature)
+
+        val result = createSigner(typedDataSender).signTypedDataMessage(m1Json)
+
+        val data = dataSlot.captured
+        assertEquals("CreateExchange", data.primaryType)
+        assertEquals(
+            listOf(TrezorTypedMember("name", "string"), TrezorTypedMember("version", "string")),
+            data.types["EIP712Domain"]
+        )
+        assertEquals(
+            TrezorTypedValue.Struct(mapOf("name" to primitive("P.Cash Exchange"), "version" to primitive("1"))),
+            data.domain
+        )
+        assertEquals(
+            TrezorTypedValue.Struct(mapOf("coinId" to primitive("bitcoin"), "blockchain" to primitive("bitcoin"))),
+            data.message.fields["from"]
+        )
+        assertEquals(primitive(""), data.message.fields["recipientExtraId"])
+        assertArrayEquals(m1Signature.hexToBytes().copyOf(64) + byteArrayOf(0), result)
+    }
+
+    @Test
+    fun signTypedDataMessage_modelOne_sendsWeb3jHashes() = runBlocking {
+        val domainSlot = slot<ByteArray>()
+        val messageSlot = slot<ByteArray>()
+        coEvery {
+            session.signEthereumTypedHash(any(), capture(domainSlot), capture(messageSlot))
+        } returns typedDataSignature(m1Signature)
+
+        val result = createSigner(typedDataSender, TrezorModel.One).signTypedDataMessage(m1Json)
+
+        assertArrayEquals(m1DomainHash.hexToBytes(), domainSlot.captured)
+        assertArrayEquals(m1MessageHash.hexToBytes(), messageSlot.captured)
+        assertArrayEquals(m1Signature.hexToBytes().copyOf(64) + byteArrayOf(0), result)
+    }
+
+    @Test
+    fun signTypedDataMessage_signatureFromAnotherKey_throws() {
+        val ellipticSignature = CryptoUtils.ellipticSign(m1Digest.hexToBytes(), BigInteger("64".repeat(32), 16))
+        val signature = deviceSignature(ellipticSignature, ellipticSignature[64].toInt())
+        coEvery { session.signEthereumTypedData(any(), any()) } returns
+            TrezorMessageSignature(signature = signature, address = typedDataSender)
+
         assertThrows(TrezorSigningException::class.java) {
-            runBlocking { createSigner().signTypedDataMessage("{}") }
+            runBlocking { createSigner(typedDataSender).signTypedDataMessage(m1Json) }
         }
     }
+
+    @Test
+    fun signTypedDataMessage_firmwareBelowMinimum_throwsWithoutConnecting() {
+        listOf(TrezorModel.One to "1.10.4", TrezorModel.Safe5 to "2.4.2").forEach { (model, firmware) ->
+            val signer = createSigner(typedDataSender, model, firmware, countingClient)
+
+            assertThrows(TrezorSigningException::class.java) {
+                runBlocking { signer.signTypedDataMessage(m1Json) }
+            }
+        }
+        assertEquals(0, connectCount)
+    }
+
+    @Test
+    fun signTypedDataMessage_domainOnlyPayload_throwsWithoutConnecting() {
+        val domainOnlyJson = m1Json.replace("\"primaryType\": \"CreateExchange\"", "\"primaryType\": \"EIP712Domain\"")
+        listOf(TrezorModel.One, TrezorModel.Safe5).forEach { model ->
+            val signer = createSigner(typedDataSender, model, trezorClient = countingClient)
+
+            assertThrows(TrezorSigningException::class.java) {
+                runBlocking { signer.signTypedDataMessage(domainOnlyJson) }
+            }
+        }
+        assertEquals(0, connectCount)
+    }
+
+    private fun typedDataSignature(hex: String) =
+        TrezorMessageSignature(signature = hex.hexToBytes(), address = typedDataSender)
+
+    private fun primitive(value: String) = TrezorTypedValue.Primitive(value)
 
     /** Builds the 65-byte `r‖s‖v` payload Trezor returns for `EthereumSignMessage` (v = 27/28). */
     private fun deviceSignature(ellipticSignature: ByteArray, recId: Int): ByteArray =
@@ -373,11 +499,18 @@ class TrezorEvmSignerTest {
         data = data.hexToBytes()
     )
 
-    private fun createSigner(address: String = legacySender) = TrezorEvmSigner(
+    private fun createSigner(
+        address: String = legacySender,
+        model: TrezorModel? = TrezorModel.Safe5,
+        firmwareVersion: String = "2.8.10",
+        trezorClient: ITrezorClient = this.trezorClient
+    ) = TrezorEvmSigner(
         address = Address(address),
         chain = Chain.BinanceSmartChain,
         derivationPath = "m/44'/60'/0'/0/0",
-        trezorClient = trezorClient
+        trezorClient = trezorClient,
+        model = model,
+        firmwareVersion = firmwareVersion
     )
 
     /** Runs a signing call for tests that only inspect the captured [TrezorEvmTx], ignoring later reconciliation. */

@@ -1,6 +1,8 @@
 package cash.p.terminal.network.di
 
 import SolanaRpcApiImpl
+import cash.p.terminal.network.backendswap.data.repository.BackendSwapRepository
+import cash.p.terminal.network.backendswap.di.networkBackendSwapModule
 import cash.p.terminal.network.binance.api.BinanceApi
 import cash.p.terminal.network.binance.api.BinanceApiImpl
 import cash.p.terminal.network.binance.api.EthereumRpcApi
@@ -60,6 +62,9 @@ private val commonNetworkModule = module {
     single<SwapProviderTransactionStatusRepository>(named(SwapProvider.YIFI)) {
         get<YiFiRepository>()
     }
+    single<SwapProviderTransactionStatusRepository>(named(SwapProvider.PCASH_BACKEND)) {
+        get<BackendSwapRepository>()
+    }
 
     includes(
         networkPirateModule,
@@ -68,6 +73,7 @@ private val commonNetworkModule = module {
         networkExolixModule,
         networkUnstoppableModule,
         networkYiFiModule,
+        networkBackendSwapModule,
         networkPirateNewsModule,
         networkStonFiModule,
         networkZcashModule,

@@ -274,7 +274,7 @@ class BeamBlockchainStatusProvider(
     override fun getStatus(): BlockchainStatus = statusFromMap(blockchainName, adapter?.statusInfo)
 }
 
-private fun statusFromMap(title: String, statusInfo: Map<String, Any>?): BlockchainStatus {
+internal fun statusFromMap(title: String, statusInfo: Map<String, Any>?): BlockchainStatus {
     val items = statusInfo
         ?.filter { (_, value) -> value !is Map<*, *> }
         ?.map { (key, value) -> StatusItem.KeyValue(key, value.toString()) }

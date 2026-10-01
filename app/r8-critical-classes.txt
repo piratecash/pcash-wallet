@@ -33,6 +33,9 @@ cash.p.terminal.modules.paycore.PayCoreTicker
 # The class name is the SharedPreferences filename holding the selected language.
 cash.p.terminal.strings.helpers.LocaleHelper
 
+# protobuf-lite message: its fields are looked up by name, so a rename means the keep rule is gone.
+com.satoshilabs.trezor.lib.protobuf.TrezorMessageEthereum$EthereumSignTx
+
 # Bound by Moshi's reflective Kotlin adapter, which matches JSON keys to property names.
 io.tonapi.models.Account
 
@@ -42,3 +45,6 @@ cash.p.terminal.modules.backuplocal.fullbackup.FullBackup
 cash.p.terminal.wallet.models.GlobalMarketPoint
 io.horizontalsystems.tronkit.network.CreatedTransaction
 cash.p.terminal.core.managers.RestoreSettingType
+
+# zcash-sdk-kmp's native library exports Java_cash_p_zcash_ZcashJni_* symbols.
+cash.p.zcash.ZcashJni

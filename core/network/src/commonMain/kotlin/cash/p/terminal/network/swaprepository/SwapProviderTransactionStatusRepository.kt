@@ -20,6 +20,7 @@ data class SwapProviderStatusRequest(
     val transactionId: String,
     val destinationAddress: String,
     val inboundTxHash: String? = null,
+    val walletAddress: String? = null,
 )
 
 interface SwapProviderTransactionStatusRepository {

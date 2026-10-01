@@ -5,6 +5,7 @@ import cash.p.terminal.core.App
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.derivation
 import cash.p.terminal.core.managers.APIClient
+import cash.p.terminal.core.managers.thorchainNetwork
 import cash.p.terminal.core.nativeTokenQueries
 import cash.p.terminal.core.retryWhen
 import cash.p.terminal.entities.CoinValue
@@ -35,6 +36,8 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.ethereumkit.contracts.ContractMethod
 import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.TransactionData
+import io.horizontalsystems.thorchainkit.models.Asset as ThorAsset
+import io.horizontalsystems.thorchainkit.network.Network
 import org.koin.java.KoinJavaComponent.inject
 import retrofit2.HttpException
 import retrofit2.http.GET
@@ -44,10 +47,23 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.RoundingMode
 import java.util.Date
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.getValue
+import timber.log.Timber
 
 private const val QUOTE_RETRY_ATTEMPTS = 3
 private const val HTTP_SERVER_ERROR = 500
+private const val PROTOCOL_DECIMALS = 8
+
+private val settlementNetworks = listOf(BlockchainType.Thorchain, BlockchainType.Mayachain).map { it.thorchainNetwork }
+
+private val Network.settlementAsset: String
+    get() = assetResolver.assetFor(nativeDenom).toString()
+
+// Protocol amounts are 1e8 for every asset except a protocol's own settlement coin (CACAO is 1e10).
+internal fun protocolDecimals(asset: String?): Int =
+    settlementNetworks.firstOrNull { it.settlementAsset.equals(asset, ignoreCase = true) }?.decimals
+        ?: PROTOCOL_DECIMALS
 
 abstract class BaseThorChainProvider(
     baseUrl: String,
@@ -69,7 +85,11 @@ abstract class BaseThorChainProvider(
         "BASE" to BlockchainType.Base,
         "DASH" to BlockchainType.Dash,
 //        "ZEC" to BlockchainType.Zcash,
+        "THOR" to BlockchainType.Thorchain,
+        "MAYA" to BlockchainType.Mayachain,
     )
+
+    protected open val settlementBlockchainType: BlockchainType = BlockchainType.Thorchain
 
     private var assets = listOf<Asset>()
     override val mevProtectionAvailable: Boolean = false
@@ -128,12 +148,41 @@ abstract class BaseThorChainProvider(
                     assets.addAll(tokens.map { Asset(pool.asset, it) })
                 }
 
+                BlockchainType.Thorchain,
+                BlockchainType.Mayachain -> protocolAsset(pool.asset, blockchainType)?.let(assets::add)
+
                 else -> Unit
             }
         }
 
+        // The settlement coin is the other side of every pool, so /pools never lists it.
+        protocolAsset(settlementBlockchainType.thorchainNetwork.settlementAsset, settlementBlockchainType)
+            ?.let(assets::add)
+        if (settlementBlockchainType == BlockchainType.Thorchain) {
+            assets.addAll(securedAssets())
+        }
+
         this.assets = assets
     }
+
+    private fun protocolAsset(asset: String, blockchainType: BlockchainType): Asset? {
+        val network = blockchainType.thorchainNetwork
+        val denom = network.assetResolver.denomFor(ThorAsset.fromString(asset))
+        val tokenType = if (denom == network.nativeDenom) TokenType.Native else TokenType.ThorchainAsset(denom)
+        return App.marketKit.token(TokenQuery(blockchainType, tokenType))?.let { Asset(asset, it) }
+    }
+
+    // Secured assets live in THORChain's bank module, not in /pools; an outage keeps the pool-based map.
+    private suspend fun securedAssets(): List<Asset> = try {
+        thornodeAPI.securedAssets().mapNotNull { protocolAsset(it.asset, BlockchainType.Thorchain) }
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        Timber.w(e, "THORChain secured assets unavailable")
+        emptyList()
+    }
+
+    private fun asset(token: Token) = assets.first { it.token == token }.asset
 
     override suspend fun supports(token: Token): Boolean {
         // overriding fun supports(tokenFrom: Token, tokenTo: Token) makes this method redundant
@@ -188,7 +237,7 @@ abstract class BaseThorChainProvider(
         }
 
         return SwapQuoteThorChain(
-            amountOut = quoteSwap.expected_amount_out.movePointLeft(8),
+            amountOut = quoteSwap.expected_amount_out.movePointLeft(protocolDecimals(asset(tokenOut))),
             priceImpact = null,
             fields = fields,
             settings = listOf(settingRecipient, settingSlippage),
@@ -215,8 +264,8 @@ abstract class BaseThorChainProvider(
         slippage: BigDecimal?,
         recipient: cash.p.terminal.entities.Address?
     ): Response.QuoteSwap {
-        val assetIn = assets.first { it.token == tokenIn }
-        val assetOut = assets.first { it.token == tokenOut }
+        val assetIn = asset(tokenIn)
+        val assetOut = asset(tokenOut)
         val destination = recipient?.hex ?: SwapHelper.getReceiveAddressForToken(tokenOut)
 
         // Thornode is load-balanced across a pool of nodes. A node caught mid-block-switch answers
@@ -227,9 +276,9 @@ abstract class BaseThorChainProvider(
             predicate = { it is HttpException && it.code() >= HTTP_SERVER_ERROR }
         ) {
             thornodeAPI.quoteSwap(
-                fromAsset = assetIn.asset,
-                toAsset = assetOut.asset,
-                amount = amountIn.movePointRight(8).toLong(),
+                fromAsset = assetIn,
+                toAsset = assetOut,
+                amount = amountIn.movePointRight(protocolDecimals(assetIn)).toLong(),
                 destination = destination,
                 affiliate = affiliate,
                 affiliateBps = affiliateBps,
@@ -270,7 +319,7 @@ abstract class BaseThorChainProvider(
         val quoteSwap =
             quoteSwap(tokenIn, tokenOut, amountIn, finalSlippage, settingRecipient.value)
 
-        val amountOut = quoteSwap.expected_amount_out.movePointLeft(8)
+        val amountOut = quoteSwap.expected_amount_out.movePointLeft(protocolDecimals(asset(tokenOut)))
 
         val amountOutMin = finalSlippage?.let {
             amountOut.subtract(amountOut.multiply(it.movePointLeft(2)))
@@ -322,15 +371,20 @@ abstract class BaseThorChainProvider(
         quoteSwap: Response.QuoteSwap,
         tokenOut: Token,
     ): SendTransactionData {
-        val inboundAddress = quoteSwap.inbound_address
+        if (tokenIn.blockchainType == BlockchainType.Thorchain || tokenIn.blockchainType == BlockchainType.Mayachain) {
+            return protocolSendTransactionData(tokenIn, amountIn, quoteSwap)
+        }
+
+        val inboundAddress = checkNotNull(quoteSwap.inbound_address)
         val memo = quoteSwap.memo
 
         val router = quoteSwap.router
-        val recommendedGasRate = quoteSwap.recommended_gas_rate.toInt()
+        val recommendedGasRate = checkNotNull(quoteSwap.recommended_gas_rate).toInt()
         val dustThreshold = quoteSwap.dust_threshold?.toInt()
 
-        val outboundFee = CoinValue(tokenOut, quoteSwap.fees.outbound.movePointLeft(8))
-        val liquidityFee = CoinValue(tokenOut, quoteSwap.fees.liquidity.movePointLeft(8))
+        val feeDecimals = protocolDecimals(asset(tokenOut))
+        val outboundFee = CoinValue(tokenOut, quoteSwap.fees.outbound.movePointLeft(feeDecimals))
+        val liquidityFee = CoinValue(tokenOut, quoteSwap.fees.liquidity.movePointLeft(feeDecimals))
 
         val feesMap = mapOf(
             FeeType.Liquidity to liquidityFee,
@@ -410,6 +464,17 @@ abstract class BaseThorChainProvider(
         }
     }
 
+    // A protocol-native input has no inbound vault on its own chain (MsgDeposit); a vault on another
+    // protocol's chain (Maya's THORChain inbound) takes a memo transfer.
+    private fun protocolSendTransactionData(
+        tokenIn: Token,
+        amountIn: BigDecimal,
+        quoteSwap: Response.QuoteSwap,
+    ): SendTransactionData.Thorchain = when (val inboundAddress = quoteSwap.inbound_address) {
+        null -> SendTransactionData.Thorchain.Deposit(asset(tokenIn), amountIn, quoteSwap.memo)
+        else -> SendTransactionData.Thorchain.Send(inboundAddress, amountIn, quoteSwap.memo)
+    }
+
     data class Asset(val asset: String, val token: Token)
 
 }
@@ -417,6 +482,9 @@ abstract class BaseThorChainProvider(
 interface ThornodeAPI {
     @GET("pools")
     suspend fun pools(): List<Response.Pool>
+
+    @GET("securedassets")
+    suspend fun securedAssets(): List<Response.SecuredAsset>
 
     @GET("quote/swap")
     suspend fun quoteSwap(
@@ -437,7 +505,8 @@ interface ThornodeAPI {
 
     object Response {
         data class QuoteSwap(
-            val inbound_address: String,
+            // Absent for a protocol-native input (MsgDeposit, no inbound vault).
+            val inbound_address: String?,
 //  "inbound_confirmation_blocks": 1,
 //  "inbound_confirmation_seconds": 600,
 //  "outbound_delay_blocks": 179,
@@ -462,7 +531,7 @@ interface ThornodeAPI {
 //  locks or address formats (P2WSH with Bech32 address format preferred).",
             val dust_threshold: String?,
 //  "recommended_min_amount_in": "10760",
-            val recommended_gas_rate: String,
+            val recommended_gas_rate: String?,
 //  "gas_rate_units": "satsperbyte",
             val memo: String,
             val expected_amount_out: BigDecimal,
@@ -505,6 +574,8 @@ interface ThornodeAPI {
 // "loan_cr": "123456",
 // "derived_depth_bps": "123456"
         )
+
+        data class SecuredAsset(val asset: String)
 
         data class TxStatus(
             val stages: Stages?,

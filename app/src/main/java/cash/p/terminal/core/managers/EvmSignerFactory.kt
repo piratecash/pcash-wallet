@@ -3,6 +3,7 @@ package cash.p.terminal.core.managers
 import cash.p.terminal.tangem.common.CustomXPubKeyAddressParser
 import cash.p.terminal.tangem.domain.model.AddressBytesWithPublicKey
 import cash.p.terminal.tangem.signer.HardwareWalletEvmSigner
+import cash.p.terminal.trezor.domain.model.TrezorModel
 import cash.p.terminal.trezor.signer.TrezorEvmSigner
 import cash.p.terminal.trezorkit.client.ITrezorClient
 import cash.p.terminal.wallet.Account
@@ -58,7 +59,9 @@ class EvmSignerFactory(
                     address = Address(addressWithPublicKey.addressBytes),
                     chain = chain,
                     derivationPath = publicKey.derivationPath,
-                    trezorClient = trezorClient
+                    trezorClient = trezorClient,
+                    model = TrezorModel.fromInternalModel(type.model),
+                    firmwareVersion = type.firmwareVersion
                 )
             }
 

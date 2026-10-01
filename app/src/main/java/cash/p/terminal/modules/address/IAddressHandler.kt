@@ -1,7 +1,7 @@
 package cash.p.terminal.modules.address
 
 import com.unstoppabledomains.resolution.Resolution
-import cash.p.terminal.core.adapters.zcash.ZcashAddressValidator
+import cash.p.terminal.core.adapters.zcash.isValidZcashAddress
 import cash.p.terminal.entities.Address
 import cash.p.terminal.entities.BitcoinAddress
 import io.horizontalsystems.bitcoincore.network.Network
@@ -132,6 +132,8 @@ class AddressHandlerUdn(
             BlockchainType.PirateCash -> "PIRATECASH"
             BlockchainType.Monero -> "XMR"
             BlockchainType.Stellar -> "XLM"
+            BlockchainType.Thorchain,
+            BlockchainType.Mayachain,
             is BlockchainType.Unsupported -> blockchainType.uid
         }
 
@@ -274,7 +276,7 @@ class AddressHandlerZcash : IAddressHandler {
     override val blockchainType = BlockchainType.Zcash
 
     override fun isSupported(value: String): Boolean {
-        return ZcashAddressValidator.validate(value)
+        return isValidZcashAddress(value)
     }
 
     override fun parseAddress(value: String): Address {

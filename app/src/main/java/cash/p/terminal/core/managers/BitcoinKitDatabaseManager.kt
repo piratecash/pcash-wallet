@@ -14,7 +14,7 @@ data class BitcoinKitEnvironment(
 
 class BitcoinKitDatabaseManager(
     context: Context,
-    private val keyProvider: BitcoinKitDatabaseKeyProvider,
+    private val databaseKeys: KitDatabaseKeys,
     private val operations: BitcoinKitDatabaseOperations,
     private val connectionManager: IConnectionManager,
 ) {
@@ -24,7 +24,7 @@ class BitcoinKitDatabaseManager(
     private val mwebDataDir = context.noBackupFilesDir.absolutePath
 
     suspend fun prepare(accountId: String): BitcoinKitEnvironment = mutex.withLock {
-        val databaseKey = keyProvider.awaitKey(accountId)
+        val databaseKey = databaseKeys.awaitKey(accountId)
         if (accountId !in preparedAccountIds) {
             operations.migrate(dataDir, accountId, databaseKey)
             preparedAccountIds.add(accountId)
@@ -35,7 +35,7 @@ class BitcoinKitDatabaseManager(
     suspend fun clear(accountId: String) = mutex.withLock {
         preparedAccountIds.remove(accountId)
         operations.clear(dataDir, mwebDataDir, accountId)
-        keyProvider.remove(accountId)
+        databaseKeys.remove(accountId)
     }
 
     suspend fun clearMweb(accountId: String) = mutex.withLock {

@@ -17,6 +17,7 @@ private val incomingTypes = setOf(
     TransactionRecordType.TRON_INCOMING,
     TransactionRecordType.STELLAR_INCOMING,
     TransactionRecordType.MONERO_INCOMING,
+    TransactionRecordType.THORCHAIN_INCOMING,
 )
 
 fun TransactionRecord.isIncomingForAmlCheck(): Boolean {

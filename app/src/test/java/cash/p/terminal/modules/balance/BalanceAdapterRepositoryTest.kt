@@ -316,6 +316,9 @@ class BalanceAdapterRepositoryTest {
             tonKitManager = mockk(relaxed = true),
             moneroKitManager = mockk(relaxed = true) { every { kitStoppedObservable } returns Observable.never() },
             stellarKitManager = mockk(relaxed = true),
+            thorchainKitManagers = mockk(relaxed = true) {
+                every { all } returns emptyList()
+            },
             pendingBalanceCalculator = pendingBalanceCalculator,
             fallbackAddressProvider = mockk(relaxed = true),
             offlineModeManager = mockk<OfflineModeManager>(relaxed = true),

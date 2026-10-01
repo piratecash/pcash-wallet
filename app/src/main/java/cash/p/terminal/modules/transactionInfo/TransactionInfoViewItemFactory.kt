@@ -18,6 +18,7 @@ import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
 import cash.p.terminal.entities.transactionrecords.monero.MoneroTransactionRecord
 import cash.p.terminal.entities.transactionrecords.solana.SolanaTransactionRecord
 import cash.p.terminal.entities.transactionrecords.stellar.StellarTransactionRecord
+import cash.p.terminal.entities.transactionrecords.thorchain.ThorchainTransactionRecord
 import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
 import cash.p.terminal.entities.transactionrecords.tron.TronTransactionRecord
 import cash.p.terminal.modules.transactionInfo.TransactionInfoViewItem.SentToSelf
@@ -185,6 +186,40 @@ class TransactionInfoViewItemFactory(
                                     Translator.getString(R.string.Transactions_OperationType),
                                     transactionType.type
                                 )
+                            )
+                        )
+                    }
+                }
+
+                addMemoItem(transaction.memo, miscItemsSection)
+            }
+
+            is ThorchainTransactionRecord -> {
+                when (val transactionType = transaction.type) {
+                    is ThorchainTransactionRecord.Type.Incoming -> itemSections.add(
+                        TransactionViewItemFactoryHelper.getReceiveSectionItems(
+                            value = transactionType.value,
+                            fromAddress = transactionType.from,
+                            toAddress = null,
+                            coinPrice = rates[transactionType.value.coinUid],
+                            hideAmount = transactionItem.hideAmount,
+                            blockchainType = blockchainType,
+                            amlItem = amlItem.also { amlItem = null },
+                            showCopyWarning = isSuspicious,
+                        )
+                    )
+
+                    is ThorchainTransactionRecord.Type.Outgoing -> {
+                        sentToSelf = transactionType.sentToSelf
+                        itemSections.add(
+                            TransactionViewItemFactoryHelper.getSendSectionItems(
+                                value = transactionType.value,
+                                toAddress = transaction.to,
+                                coinPrice = rates[transactionType.value.coinUid],
+                                hideAmount = transactionItem.hideAmount,
+                                sentToSelf = transactionType.sentToSelf,
+                                blockchainType = blockchainType,
+                                showCopyWarning = isSuspicious,
                             )
                         )
                     }
@@ -546,15 +581,7 @@ class TransactionInfoViewItemFactory(
                     TransactionRecordType.BITCOIN_OUTGOING -> {
                         sentToSelf = transaction.sentToSelf
                         if (transaction.isIronwoodMigration) {
-                            itemSections.add(
-                                listOf(
-                                    Transaction(
-                                        Translator.getString(R.string.transactions_migrate),
-                                        Translator.getString(R.string.transactions_migrate_to_ironwood),
-                                        R.drawable.ic_migrate_24
-                                    )
-                                )
-                            )
+                            itemSections.add(ironwoodMigrationSectionItems())
                         }
                         itemSections.add(
                             TransactionViewItemFactoryHelper.getSendSectionItems(
@@ -693,6 +720,9 @@ class TransactionInfoViewItemFactory(
             }
 
             is PendingTransactionRecord -> {
+                if (transaction.isIronwoodMigration) {
+                    itemSections.add(ironwoodMigrationSectionItems())
+                }
                 val unknownRecipient = transactionItem.hasUnknownOfflineRecipient
                 itemSections.add(
                     if (unknownRecipient && transaction.amount.signum() == 0) {
@@ -700,7 +730,9 @@ class TransactionInfoViewItemFactory(
                     } else {
                         TransactionViewItemFactoryHelper.getSendSectionItems(
                             value = transaction.mainValue,
-                            toAddress = transaction.to.takeUnless { unknownRecipient },
+                            // The migration pays the account's own internal receiver, which
+                            // is not reported as a recipient once the transaction is rescanned.
+                            toAddress = transaction.to.takeUnless { unknownRecipient || transaction.isIronwoodMigration },
                             coinPrice = rates[transaction.mainValue.coinUid],
                             hideAmount = transactionItem.hideAmount,
                             sentToSelf = transaction.sentToSelf,
@@ -761,7 +793,7 @@ class TransactionInfoViewItemFactory(
                         valueOut = valueOut,
                         valueIn = valueIn,
                         blockchainType = blockchainType,
-                        providerName = swapProviderDisplayTitle(provider, transactionItem.swapUnstoppableSubProviderId),
+                        providerName = swapProviderDisplayTitle(provider, transactionItem.swapSubProviderId),
                     )
                 )
             }
@@ -858,6 +890,14 @@ private val TransactionInfoItem.hasUnknownOfflineRecipient: Boolean
         val pendingRecord = record as? PendingTransactionRecord ?: return false
         return offlineStatus != null && pendingRecord.to.orEmpty().all { it.isBlank() }
     }
+
+private fun ironwoodMigrationSectionItems() = listOf(
+    Transaction(
+        Translator.getString(R.string.transactions_migrate),
+        Translator.getString(R.string.transactions_migrate_to_ironwood),
+        R.drawable.ic_migrate_24
+    )
+)
 
 private fun getUnknownOfflineSendSectionItems(
     value: TransactionValue,

@@ -84,6 +84,7 @@ import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui.compose.components.SwapDirectionIndicator
 import cash.p.terminal.ui_compose.components.HSpacer
 import cash.p.terminal.ui_compose.components.HsBackButton
+import cash.p.terminal.ui_compose.components.HsImage
 import cash.p.terminal.ui_compose.components.MenuItemTimeoutIndicator
 import cash.p.terminal.ui_compose.components.TextImportantError
 import cash.p.terminal.ui_compose.components.TextImportantWarning
@@ -156,7 +157,7 @@ data class SwapDeeplinkInput(val tokenOut: Token?) : Parcelable
 class SwapFragment : BaseComposeFragment() {
     @Composable
     override fun GetContent(navController: NavController) {
-        val args = navController.currentBackStackEntry?.arguments
+        val args = arguments
         val tokenIn: Token? = args?.parcelable(SwapParams.TOKEN_IN)
         val tokenOut: Token? = args?.parcelable(SwapParams.TOKEN_OUT)
             ?: args?.parcelable<SwapDeeplinkInput>("input")?.tokenOut
@@ -1068,10 +1069,10 @@ private fun ProviderField(
         verticalAlignment = Alignment.CenterVertically,
         borderBottom = true,
     ) {
-        Image(
+        HsImage(
+            url = swapProvider.iconUrl,
+            placeholder = swapProvider.icon,
             modifier = Modifier.size(32.dp),
-            painter = painterResource(swapProvider.icon),
-            contentDescription = null
         )
         HSpacer(width = 8.dp)
         Column(

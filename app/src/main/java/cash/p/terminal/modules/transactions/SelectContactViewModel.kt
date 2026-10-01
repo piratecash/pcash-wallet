@@ -48,7 +48,9 @@ class SelectContactViewModel(
             EvmBlockchainManager.blockchainTypes +
                     BlockchainType.Tron +
                     BlockchainType.Ton +
-                    BlockchainType.Stellar
+                    BlockchainType.Stellar +
+                    BlockchainType.Thorchain +
+                    BlockchainType.Mayachain
 
         fun init(
             selected: Contact?,

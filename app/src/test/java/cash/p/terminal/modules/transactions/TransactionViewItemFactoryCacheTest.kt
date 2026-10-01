@@ -11,6 +11,7 @@ import cash.p.terminal.core.managers.AddressLabelManager
 import cash.p.terminal.core.managers.AddressMetadataManager
 import cash.p.terminal.core.managers.PoisonAddressManager
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
+import cash.p.terminal.core.utils.IncomingTransaction
 import cash.p.terminal.core.utils.SwapTransactionMatcher
 import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.SwapProviderTransaction
@@ -20,6 +21,7 @@ import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
 import cash.p.terminal.entities.transactionrecords.monero.MoneroTransactionRecord
+import cash.p.terminal.entities.transactionrecords.solana.SolanaTransactionRecord
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewMode
 import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.contacts.model.Contact
@@ -41,10 +43,12 @@ import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.helpers.DateHelper
 import io.horizontalsystems.ethereumkit.models.Transaction
+import io.horizontalsystems.solanakit.models.Transaction as SolanaKitTransaction
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.test.runTest
@@ -65,6 +69,8 @@ class TransactionViewItemFactoryCacheTest {
         const val TX_HASH = "0e850ae3cb3963672d2880a4940172732ccab477f0ea3fc93a8914e912c670ad"
         const val PENDING_TIMESTAMP = 1_779_766_789L
         const val BRIDGE_ADDRESS = "0x579fedB9253ccA1b3114d5e2fA44F8158d61e436"
+        const val RECIPIENT_ADDRESS = "t1Js8mMvZzCY2gUpTpKcNetJrMihqaPbSXF"
+        const val MIGRATION_SUBTITLE = "To Ironwood pool"
 
         val ZEC_AMOUNT: BigDecimal = BigDecimal("0.01285429")
     }
@@ -260,6 +266,17 @@ class TransactionViewItemFactoryCacheTest {
     }
 
     @Test
+    fun convertToViewItemCached_solanaIncomingSplTransfer_matchesSwapByReceivedToken() = runTest {
+        val record = createSolanaIncomingSplRecord()
+        val incomingTransactionSlot = slot<IncomingTransaction>()
+        every { swapTransactionMatcher.findMatchingSwap(capture(incomingTransactionSlot)) } returns null
+
+        factory.convertToViewItemCached(createTransactionItem(record))
+
+        assertEquals("usd-coin", incomingTransactionSlot.captured.coinUid)
+    }
+
+    @Test
     fun convertToViewItemCached_evmIncoming_usesAddressLabel() = runTest {
         every {
             addressLabelManager.label(BlockchainType.BinanceSmartChain, BRIDGE_ADDRESS)
@@ -414,6 +431,40 @@ class TransactionViewItemFactoryCacheTest {
                 outgoingRecordUid = any(),
             )
         }
+    }
+
+    @Test
+    fun convertToViewItemCached_pendingMigration_looksLikeAMigrationNotAnOutgoingTransfer() =
+        runTest {
+            stubNoSwapMatch()
+            every {
+                Translator.getString(R.string.transactions_migrate_to_ironwood)
+            } returns MIGRATION_SUBTITLE
+            val record = createPendingRecord(transactionHash = TX_HASH, isIronwoodMigration = true)
+
+            val viewItem = factory.convertToViewItemCached(createTransactionItem(record))
+
+            assertEquals(MIGRATION_SUBTITLE, viewItem.subtitle)
+            assertEquals(
+                TransactionViewItem.Icon.ImageResource(R.drawable.ic_migrate_24),
+                viewItem.icon,
+            )
+            assertEquals("ZEC:0.01285429", viewItem.primaryValue?.value)
+            assertEquals(ColorName.Leah, viewItem.primaryValue?.color)
+            assertTrue(viewItem.sentToSelf)
+        }
+
+    @Test
+    fun convertToViewItemCached_pendingOutgoing_showsTheSpentAmountAndTheRecipient() = runTest {
+        stubNoSwapMatch()
+        stubAddressTranslation(RECIPIENT_ADDRESS)
+        val record = createPendingRecord(transactionHash = TX_HASH)
+
+        val viewItem = factory.convertToViewItemCached(createTransactionItem(record))
+
+        assertNotEquals(MIGRATION_SUBTITLE, viewItem.subtitle)
+        assertEquals("-ZEC:0.01285429", viewItem.primaryValue?.value)
+        assertEquals(ColorName.Lucian, viewItem.primaryValue?.color)
     }
 
     @Test
@@ -606,6 +657,40 @@ class TransactionViewItemFactoryCacheTest {
         )
     }
 
+    private fun createSolanaIncomingSplRecord(): SolanaTransactionRecord {
+        val solanaBlockchain = Blockchain(BlockchainType.Solana, "Solana", null)
+        val solToken = Token(
+            coin = Coin(uid = "solana", name = "Solana", code = "SOL"),
+            blockchain = solanaBlockchain,
+            type = TokenType.Native,
+            decimals = 9,
+        )
+        val usdcToken = Token(
+            coin = Coin(uid = "usd-coin", name = "USD Coin", code = "USDC"),
+            blockchain = solanaBlockchain,
+            type = TokenType.Spl("USDC_MINT"),
+            decimals = 6,
+        )
+        return SolanaTransactionRecord(
+            to = "USER_ADDRESS",
+            from = "SENDER_ADDRESS",
+            token = solToken,
+            source = TransactionSource(
+                blockchain = solanaBlockchain,
+                account = mockk<Account>(relaxed = true),
+                meta = null,
+            ),
+            transactionRecordType = TransactionRecordType.SOLANA_INCOMING,
+            transaction = mockk<SolanaKitTransaction>(relaxed = true) {
+                every { hash } returns "solana-incoming-spl-hash"
+                every { timestamp } returns 1_700_000_000L
+                every { pending } returns false
+                every { error } returns null
+            },
+            mainValue = TransactionValue.CoinValue(usdcToken, BigDecimal("49.075306")),
+        )
+    }
+
     private fun createBscSource() = mockk<TransactionSource>(relaxed = true) {
         every { blockchain } returns mockk(relaxed = true) {
             every { type } returns BlockchainType.BinanceSmartChain
@@ -614,7 +699,8 @@ class TransactionViewItemFactoryCacheTest {
 
     private fun createPendingRecord(
         transactionHash: String,
-        toAddress: String = "t1Js8mMvZzCY2gUpTpKcNetJrMihqaPbSXF",
+        isIronwoodMigration: Boolean = false,
+        toAddress: String = RECIPIENT_ADDRESS,
     ): PendingTransactionRecord {
         val token = createZcashToken()
 
@@ -633,6 +719,7 @@ class TransactionViewItemFactoryCacheTest {
             fromAddress = "from-address",
             expiresAt = Long.MAX_VALUE,
             memo = null,
+            isIronwoodMigration = isIronwoodMigration,
         )
     }
 
@@ -679,6 +766,13 @@ class TransactionViewItemFactoryCacheTest {
                 timestamp = PENDING_TIMESTAMP * 1_000,
             )
         } returns swap
+    }
+
+    private fun stubNoSwapMatch() {
+        every { swapProviderTransactionsStorage.getByOutgoingRecordUid(any()) } returns null
+        every {
+            swapProviderTransactionsStorage.getByCoinUidIn(any(), any(), any(), any())
+        } returns null
     }
 
     private fun stubAddressTranslation(value: String) {

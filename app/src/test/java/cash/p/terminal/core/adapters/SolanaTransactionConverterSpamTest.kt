@@ -1,16 +1,8 @@
 package cash.p.terminal.core.adapters
 
 import cash.p.terminal.core.ICoinManager
-import cash.p.terminal.core.managers.SolanaKitWrapper
+import cash.p.terminal.core.adapters.SolanaTransactionConverterTestFixture.USER_ADDRESS
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
-import cash.p.terminal.wallet.Account
-import cash.p.terminal.wallet.Token
-import cash.p.terminal.wallet.entities.Coin
-import cash.p.terminal.wallet.entities.TokenType
-import cash.p.terminal.wallet.transaction.TransactionSource
-import io.horizontalsystems.core.entities.Blockchain
-import io.horizontalsystems.core.entities.BlockchainType
-import io.horizontalsystems.solanakit.SolanaKit
 import io.horizontalsystems.solanakit.models.FullTokenTransfer
 import io.horizontalsystems.solanakit.models.FullTransaction
 import io.horizontalsystems.solanakit.models.MintAccount
@@ -30,61 +22,26 @@ import java.math.BigDecimal
  */
 class SolanaTransactionConverterSpamTest {
 
-    private val userAddress = "USER_ADDRESS"
+    private val userAddress = USER_ADDRESS
     private val spammerAddress = "SPAMMER_ADDRESS"
-
-    private val solanaBlockchain = Blockchain(BlockchainType.Solana, "Solana", null)
-
-    private val baseToken = Token(
-        coin = Coin(uid = "solana", name = "Solana", code = "SOL"),
-        blockchain = solanaBlockchain,
-        type = TokenType.Native,
-        decimals = 9
-    )
-
-    private val source = TransactionSource(
-        blockchain = solanaBlockchain,
-        account = mockk<Account>(relaxed = true),
-        meta = null
-    )
 
     private val coinManager: ICoinManager = mockk(relaxed = true)
 
     private fun createConverter(): SolanaTransactionConverter {
         every { coinManager.getToken(any()) } returns null
-        val solanaKit = mockk<SolanaKit>(relaxed = true)
-        every { solanaKit.receiveAddress } returns userAddress
-        val solanaKitWrapper = mockk<SolanaKitWrapper>(relaxed = true)
-        every { solanaKitWrapper.solanaKit } returns solanaKit
-
-        return SolanaTransactionConverter(
-            coinManager = coinManager,
-            source = source,
-            baseToken = baseToken,
-            solanaKitWrapper = solanaKitWrapper
-        )
+        return SolanaTransactionConverterTestFixture.createConverter(coinManager)
     }
 
-    private fun unknownTokenTransaction(hash: String, incoming: Boolean): FullTransaction {
-        val transaction = Transaction(
+    private fun unknownTokenTransaction(hash: String, incoming: Boolean): FullTransaction =
+        SolanaTransactionConverterTestFixture.tokenTransferTransaction(
             hash = hash,
-            timestamp = 1_700_000_000L,
             from = if (incoming) spammerAddress else userAddress,
             to = if (incoming) userAddress else spammerAddress,
-            amount = null,
-            pending = false
+            mint = "SPAM_MINT",
+            incoming = incoming,
+            amount = BigDecimal.ONE,
+            decimals = 0,
         )
-        val tokenTransfer = FullTokenTransfer(
-            tokenTransfer = TokenTransfer(
-                transactionHash = hash,
-                mintAddress = "SPAM_MINT",
-                incoming = incoming,
-                amount = BigDecimal.ONE
-            ),
-            mintAccount = MintAccount(address = "SPAM_MINT", decimals = 0, isNft = false)
-        )
-        return FullTransaction(transaction, listOf(tokenTransfer))
-    }
 
     private fun mixedIncomingSolOutgoingUnknownTokenTransaction(hash: String): FullTransaction {
         val oneSolInLamports = BigDecimal("1000000000")
