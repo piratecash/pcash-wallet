@@ -54,6 +54,7 @@ import cash.p.terminal.trezor.domain.TrezorSigningException
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
+import co.touchlab.kermit.Logger
 import com.tangem.common.core.TangemSdkError
 import com.piratecash.monero.signer.HardwareWalletOperationException
 import io.horizontalsystems.bitcoincore.managers.SendValueErrors
@@ -75,6 +76,8 @@ import java.math.BigDecimal
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.cancellation.CancellationException
+
+private val logger = Logger.withTag("SwapConfirmViewModel")
 
 class SwapConfirmViewModel(
     private val request: SwapConfirmRequest,
@@ -298,7 +301,17 @@ class SwapConfirmViewModel(
         } else {
             emptyList()
         }
-        return sendTransactionState.cautions + quoteCautions + priceImpactCaution + balanceCaution
+        val criticalErrorCaution = criticalError?.let {
+            listOf(
+                HSCaution(
+                    s = TranslatableString.ResString(R.string.Error),
+                    type = HSCaution.Type.Error,
+                    description = TranslatableString.PlainString(it),
+                ).toCautionViewItem()
+            )
+        } ?: emptyList()
+        return sendTransactionState.cautions + quoteCautions + priceImpactCaution + balanceCaution +
+            criticalErrorCaution
     }
 
     private fun isSendable(cautions: List<CautionViewItem> = buildCautions()): Boolean {
@@ -400,7 +413,8 @@ class SwapConfirmViewModel(
             } catch (e: BackendExolixResponseError) {
                 setCriticalError(criticalErrorOf(e.message, e.error))
             } catch (e: BackendYiFiResponseError) {
-                setCriticalError(criticalErrorOf(e.message, e.code))
+                logger.w { "YiFi final quote failed: code=${e.code}, status=${e.statusCode}" }
+                setCriticalError(e.yiFiCriticalError)
             } catch (e: BackendSwapError) {
                 setCriticalError(criticalErrorOf(e.message, e.code))
             } catch (_: SwapDepositMemoUnsupported) {
@@ -477,6 +491,21 @@ class SwapConfirmViewModel(
 
     private fun criticalErrorOf(vararg candidates: String?): String =
         candidates.firstOrNull { !it.isNullOrBlank() } ?: Translator.getString(R.string.unexpected_error)
+
+    private val BackendYiFiResponseError.yiFiCriticalError: String
+        get() = when (code) {
+            BackendYiFiResponseError.INVALID_RECEIVE_ADDRESS -> {
+                Translator.getString(R.string.unsupported_address)
+            }
+
+            BackendYiFiResponseError.INVALID_REFUND_ADDRESS -> {
+                Translator.getString(R.string.unsupported_refund_address)
+            }
+
+            else -> {
+                Translator.getString(R.string.swap_provider_order_failed)
+            }
+        }
 
     private fun setCriticalError(error: String) {
         loading = false
