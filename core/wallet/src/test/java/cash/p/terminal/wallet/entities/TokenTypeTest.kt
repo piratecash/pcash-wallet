@@ -85,4 +85,38 @@ class TokenTypeTest {
     fun protocolType_trc10_returnsTrc10Label() {
         assertEquals("TRC10", TokenQuery.trc10("1005114").protocolType)
     }
+
+    @Test
+    fun fromType_thorchainSecuredDenom_returnsThorchainAsset() {
+        val denom = "eth-usdt-0xdac17f958d2ee523a2206206994597c13d831ec7"
+
+        assertEquals(TokenType.ThorchainAsset(denom), TokenType.fromType("thorchain", denom))
+    }
+
+    @Test
+    fun id_thorchainAsset_roundTripsThroughFromId() {
+        val denom = "eth-usdt-0xdac17f958d2ee523a2206206994597c13d831ec7"
+        val tokenType = TokenType.ThorchainAsset(denom)
+
+        assertEquals("thorchain:$denom", tokenType.id)
+        assertEquals(tokenType, TokenType.fromId(tokenType.id))
+    }
+
+    @Test
+    fun values_thorchainAsset_returnsThorchainTypeAndDenomReference() {
+        val denom = "eth-usdt-0xdac17f958d2ee523a2206206994597c13d831ec7"
+
+        assertEquals(
+            TokenType.Value(type = "thorchain", reference = denom),
+            TokenType.ThorchainAsset(denom).values,
+        )
+    }
+
+    @Test
+    fun fromType_thorchainBlankReference_returnsUnsupportedTokenType() {
+        assertEquals(
+            TokenType.Unsupported(type = "thorchain", reference = ""),
+            TokenType.fromType("thorchain"),
+        )
+    }
 }

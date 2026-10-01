@@ -11,6 +11,7 @@ import cash.p.terminal.core.managers.AddressLabelManager
 import cash.p.terminal.core.managers.AddressMetadataManager
 import cash.p.terminal.core.managers.PoisonAddressManager
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
+import cash.p.terminal.core.utils.IncomingTransaction
 import cash.p.terminal.core.utils.SwapTransactionMatcher
 import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.SwapProviderTransaction
@@ -20,6 +21,7 @@ import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
 import cash.p.terminal.entities.transactionrecords.monero.MoneroTransactionRecord
+import cash.p.terminal.entities.transactionrecords.solana.SolanaTransactionRecord
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewMode
 import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.contacts.model.Contact
@@ -41,10 +43,12 @@ import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.helpers.DateHelper
 import io.horizontalsystems.ethereumkit.models.Transaction
+import io.horizontalsystems.solanakit.models.Transaction as SolanaKitTransaction
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.test.runTest
@@ -259,6 +263,17 @@ class TransactionViewItemFactoryCacheTest {
             viewItem.progress ?: 0f,
             0.0001f,
         )
+    }
+
+    @Test
+    fun convertToViewItemCached_solanaIncomingSplTransfer_matchesSwapByReceivedToken() = runTest {
+        val record = createSolanaIncomingSplRecord()
+        val incomingTransactionSlot = slot<IncomingTransaction>()
+        every { swapTransactionMatcher.findMatchingSwap(capture(incomingTransactionSlot)) } returns null
+
+        factory.convertToViewItemCached(createTransactionItem(record))
+
+        assertEquals("usd-coin", incomingTransactionSlot.captured.coinUid)
     }
 
     @Test
@@ -639,6 +654,40 @@ class TransactionViewItemFactoryCacheTest {
             subaddressLabel = null,
             isPending = false,
             confirmations = confirmations,
+        )
+    }
+
+    private fun createSolanaIncomingSplRecord(): SolanaTransactionRecord {
+        val solanaBlockchain = Blockchain(BlockchainType.Solana, "Solana", null)
+        val solToken = Token(
+            coin = Coin(uid = "solana", name = "Solana", code = "SOL"),
+            blockchain = solanaBlockchain,
+            type = TokenType.Native,
+            decimals = 9,
+        )
+        val usdcToken = Token(
+            coin = Coin(uid = "usd-coin", name = "USD Coin", code = "USDC"),
+            blockchain = solanaBlockchain,
+            type = TokenType.Spl("USDC_MINT"),
+            decimals = 6,
+        )
+        return SolanaTransactionRecord(
+            to = "USER_ADDRESS",
+            from = "SENDER_ADDRESS",
+            token = solToken,
+            source = TransactionSource(
+                blockchain = solanaBlockchain,
+                account = mockk<Account>(relaxed = true),
+                meta = null,
+            ),
+            transactionRecordType = TransactionRecordType.SOLANA_INCOMING,
+            transaction = mockk<SolanaKitTransaction>(relaxed = true) {
+                every { hash } returns "solana-incoming-spl-hash"
+                every { timestamp } returns 1_700_000_000L
+                every { pending } returns false
+                every { error } returns null
+            },
+            mainValue = TransactionValue.CoinValue(usdcToken, BigDecimal("49.075306")),
         )
     }
 

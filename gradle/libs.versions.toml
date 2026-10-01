@@ -70,8 +70,9 @@ beam-sdk = "v0.2.1"
 piratecash-bitcoin = "v0.1.0-pcash.36"
 hd-wallet-kit = "1.0.1"
 stellar-kit = "v2.0.0-pcash.1"
-trezor-kit = "1.3.7"
-piratecash-ethereum = "v0.1.0-pcash.22"
+thorchain-kit = "1.2.0"
+trezor-kit = "1.4.0"
+piratecash-ethereum = "v0.1.0-pcash.23"
 horizontalsystems-blockchain-fee = "393cc14"
 piratecash-solana = "v1.0.0-pcash.10"
 monero-kit-android = "v0.18.3.4-pcash.17"
@@ -228,6 +229,7 @@ bitcoin-piratecash-kit = { group = "com.github.piratecash.bitcoin-kit-android", 
 bitcoin-hodler = { group = "com.github.piratecash.bitcoin-kit-android", name = "hodler", version.ref = "piratecash-bitcoin" }
 hd-wallet-kit = { group = "com.github.piratecash.hd-wallet-kit-android", name = "hd-wallet-kit-kmp", version.ref = "hd-wallet-kit" }
 stellar-kit = { group = "com.github.piratecash.stellar-kit-android", name = "stellarkit", version.ref = "stellar-kit" }
+thorchain-kit = { group = "com.github.piratecash.thorchain-kit-android", name = "thorchainkit", version.ref = "thorchain-kit" }
 trezor-kit = { group = "com.github.piratecash", name = "trezor-kit-android", version.ref = "trezor-kit" }
 solana-kit = { group = "com.github.piratecash", name = "solana-kit-android", version.ref = "piratecash-solana" }
 monero-kit = { group = "com.github.piratecash", name = "monero-kit-android", version.ref = "monero-kit-android" }
@@ -260,6 +262,7 @@ javax-inject = { group = "javax.inject", name = "javax.inject", version.ref = "j
 androidx-material3-android = { group = "androidx.compose.material3", name = "material3-android" }
 twitter-text = { module = "com.twitter.twittertext:twitter-text", version.ref = "twitterText" }
 web3j-core = { module = "org.web3j:core", version.ref = "coreVersion" }
+web3j-crypto = { module = "org.web3j:crypto", version.ref = "coreVersion" }
 zcash-sdk-kmp = { module = "com.github.piratecash.zcash-sdk-kmp:zcash-sdk", version.ref = "zcashSdkKmp" }
 junit-bom = { group = "org.junit", name = "junit-bom", version.ref = "junitJupiter" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }

@@ -14,6 +14,7 @@ import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.MoneroKitManager
 import cash.p.terminal.core.managers.SolanaKitManager
 import cash.p.terminal.core.managers.StellarKitManager
+import cash.p.terminal.core.managers.ThorchainKitManagers
 import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TronKitManager
 import cash.p.terminal.core.providers.AppConfigProvider
@@ -27,6 +28,7 @@ import cash.p.terminal.modules.blockchainstatus.SolanaBlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.StatusItem
 import cash.p.terminal.modules.blockchainstatus.StatusSection
 import cash.p.terminal.modules.blockchainstatus.StellarBlockchainStatusProvider
+import cash.p.terminal.modules.blockchainstatus.ThorchainBlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.TonBlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.TronBlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.ZcashBlockchainStatusProvider
@@ -61,6 +63,7 @@ class AppStatusViewModel(
     private val evmBlockchainManager: EvmBlockchainManager,
     private val moneroKitManager: MoneroKitManager,
     private val stellarKitManager: StellarKitManager,
+    private val thorchainKitManagers: ThorchainKitManagers,
     private val tronKitManager: TronKitManager,
     private val tonKitManager: TonKitManager,
     private val solanaKitManager: SolanaKitManager,
@@ -186,6 +189,9 @@ class AppStatusViewModel(
         collectProviderSections(TronBlockchainStatusProvider(tronKitManager), sections)
         collectProviderSections(TonBlockchainStatusProvider(tonKitManager), sections)
         collectProviderSections(StellarBlockchainStatusProvider(stellarKitManager), sections)
+        thorchainKitManagers.all.forEach { kitManager ->
+            collectProviderSections(ThorchainBlockchainStatusProvider(kitManager), sections)
+        }
         collectProviderSections(SolanaBlockchainStatusProvider(solanaKitManager), sections)
         collectProviderSections(
             ZcashBlockchainStatusProvider(walletManager, adapterManager),

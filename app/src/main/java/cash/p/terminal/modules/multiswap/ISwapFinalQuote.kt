@@ -19,6 +19,9 @@ interface ISwapFinalQuote {
     val fields: List<DataField>
     val cautions: List<HSCaution>
     val swapProviderTransaction: SwapProviderTransaction? get() = null
+
+    // Epoch millis after which an off-chain deposit order must not be funded any more.
+    val validUntilMillis: Long? get() = null
 }
 
 data class SwapFinalQuoteEvm(
@@ -35,6 +38,7 @@ data class SwapFinalQuoteEvm(
     override val amountInMax: BigDecimal? = null,
     override val cautions: List<HSCaution> = listOf(),
     override val swapProviderTransaction: SwapProviderTransaction? = null,
+    override val validUntilMillis: Long? = null,
 ) : ISwapFinalQuote
 
 data class SwapFinalQuoteThorChain(

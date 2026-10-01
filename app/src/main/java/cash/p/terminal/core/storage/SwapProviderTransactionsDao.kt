@@ -168,6 +168,8 @@ interface SwapProviderTransactionsDao {
     @Query("DELETE FROM SwapProviderTransaction WHERE transactionId = :transactionId")
     fun deleteByTransactionId(transactionId: String)
 
+    // COALESCE(amountOutReal, amountOut): match on the real out amount once known, same as
+    // getByAddressAndAmount, so a provider-reported actual that drifted from the quote still matches.
     @Query(
         """
         SELECT * FROM SwapProviderTransaction
@@ -177,9 +179,9 @@ interface SwapProviderTransactionsDao {
         AND incomingRecordUid IS NULL
         AND date >= :dateFrom
         AND date <= :dateTo
-        AND CAST(amountOut AS REAL) != 0
-        AND ABS(CAST(amountOut AS REAL) - :amount) / CAST(amountOut AS REAL) < :tolerance
-        ORDER BY ABS(CAST(amountOut AS REAL) - :amount) ASC, date ASC
+        AND CAST(COALESCE(amountOutReal, amountOut) AS REAL) != 0
+        AND ABS(CAST(COALESCE(amountOutReal, amountOut) AS REAL) - :amount) / CAST(COALESCE(amountOutReal, amountOut) AS REAL) < :tolerance
+        ORDER BY ABS(CAST(COALESCE(amountOutReal, amountOut) AS REAL) - :amount) ASC, date ASC
         LIMIT :limit
         """
     )

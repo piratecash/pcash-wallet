@@ -110,6 +110,9 @@
 # Tangem uses Moshi's Kotlin reflection and looks up R.string fields by name.
 -keep class com.tangem.** { *; }
 
+# protobuf-lite resolves message fields by name at runtime (Trezor, Zcash lightwallet).
+-keep class * extends com.google.protobuf.GeneratedMessageLite { *; }
+
 # Package-relative JSON resources and their reflective configuration models.
 -keep class com.unstoppabledomains.** { *; }
 

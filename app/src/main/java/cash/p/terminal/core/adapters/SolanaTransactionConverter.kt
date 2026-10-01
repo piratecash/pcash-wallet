@@ -82,7 +82,8 @@ class SolanaTransactionConverter(
                 incomingSolanaTransfers.add(
                     SolanaTransactionRecord.SolanaTransfer(
                         address = fullTransaction.transaction.from,
-                        addressForIncomingAddress = fullTransaction.transaction.to,
+                        // The kit fills Transaction.to for token transfers with an arbitrary account key (often the sender), not the recipient.
+                        addressForIncomingAddress = userAddress,
                         value = transactionValue
                     )
                 )

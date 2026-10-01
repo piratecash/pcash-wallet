@@ -68,6 +68,7 @@ class AdapterManager(
     private val tonKitManager: TonKitManager,
     private val moneroKitManager: MoneroKitManager,
     private val stellarKitManager: StellarKitManager,
+    private val thorchainKitManagers: ThorchainKitManagers,
     private val pendingBalanceCalculator: PendingBalanceCalculator,
     private val fallbackAddressProvider: FallbackAddressProvider,
     private val offlineModeManager: OfflineModeManager,
@@ -177,6 +178,9 @@ class AdapterManager(
         if (BlockchainType.Ton !in pausedChains) tonKitManager.tonKitWrapper?.tonKit?.refresh()
         if (BlockchainType.Monero !in pausedChains) moneroKitManager.moneroKitWrapper?.refresh()
         if (BlockchainType.Stellar !in pausedChains) stellarKitManager.stellarKitWrapper?.stellarKit?.refresh()
+        thorchainKitManagers.all
+            .filter { it.blockchainType !in pausedChains }
+            .forEach { it.thorchainKitWrapper?.thorchainKit?.refresh() }
         adaptersRefresh.join()
     }
 

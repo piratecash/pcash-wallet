@@ -4,7 +4,6 @@ import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.entities.SwapProviderTransaction
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.network.changenow.domain.entity.toStatus
-import cash.p.terminal.network.data.EncodedSecrets.getKoin
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.network.swaprepository.SwapProviderStatusRequest
 import cash.p.terminal.network.swaprepository.SwapProviderTransactionStatusRepository
@@ -16,6 +15,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.koin.core.qualifier.named
+import org.koin.java.KoinJavaComponent.getKoin
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -131,6 +131,7 @@ class UpdateSwapProviderTransactionsStatusUseCase(
                     transactionId = transaction.transactionId,
                     destinationAddress = transaction.addressOut,
                     inboundTxHash = transaction.depositTransactionHash,
+                    walletAddress = transaction.providerWalletAddress,
                 )
             )
         }
