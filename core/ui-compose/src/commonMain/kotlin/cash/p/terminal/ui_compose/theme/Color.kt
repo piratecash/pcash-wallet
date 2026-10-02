@@ -3,11 +3,8 @@ package cash.p.terminal.ui_compose.theme
 import androidx.compose.ui.graphics.Color
 
 internal val Dark = Color(0xFF13151A)
-internal val LightGrey = Color(0xFFC8C7CC)
 internal val SteelLight = Color(0xFFE1E1E5)
-internal val Steel10 = Color(0x1a6E7899)
 internal val Steel20 = Color(0x336E7899)
-internal val SwitchTrackUnchecked = Color(0xFF6E7899)
 
 internal val StatusSuccessL = Color(0xFF15A65F)
 internal val StatusSuccessD = Color(0xFF16C96F)

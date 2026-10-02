@@ -325,6 +325,7 @@ class MarketWidget : GlanceAppWidget() {
                     modifier = GlanceModifier.size(48.dp),
                     provider = ImageProvider(icon),
                     contentDescription = null,
+                    colorFilter = ColorFilter.tint(AppWidgetTheme.colors.iconSecondary),
                 )
             }
             Spacer(modifier = GlanceModifier.height(32.dp))
