@@ -479,7 +479,6 @@ dependencies {
     implementation libs.monero.kit
     implementation libs.netcipher
     implementation libs.solanakt
-    implementation libs.blockchain.fee.kit
     implementation libs.tron.kit
     // Zcash SDK
     coreLibraryDesugaring libs.desugar.jdk.libs
