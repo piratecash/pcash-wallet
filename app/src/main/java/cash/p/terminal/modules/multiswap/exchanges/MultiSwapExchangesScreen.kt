@@ -80,7 +80,7 @@ internal fun MultiSwapExchangesScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.Transactions_Swaps),
@@ -162,7 +162,7 @@ private fun ExchangeCardContent(
             .padding(horizontal = 16.dp)
             .border(1.dp, ComposeAppTheme.colors.textSecondary, cardShape)
             .clip(cardShape)
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(ComposeAppTheme.colors.surfacePrimary)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -243,7 +243,7 @@ private fun DashSeparator() {
         modifier = Modifier
             .width(12.dp)
             .height(1.dp)
-            .background(ComposeAppTheme.colors.steel20)
+            .background(ComposeAppTheme.colors.borderDivider)
     )
     HSpacer(width = 4.dp)
 }

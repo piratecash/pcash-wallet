@@ -108,7 +108,7 @@ private fun DonateHeader(navController: NavController) {
         VSpacer(24.dp)
         Icon(
             painter = painterResource(id = R.drawable.ic_heart_filled_24),
-            tint = ComposeAppTheme.colors.brand,
+            tint = ComposeAppTheme.colors.brandDefault,
             contentDescription = null,
         )
     }

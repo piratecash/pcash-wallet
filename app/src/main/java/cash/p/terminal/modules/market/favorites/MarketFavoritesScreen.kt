@@ -20,7 +20,7 @@ import cash.p.terminal.modules.coin.overview.ui.Loading
 import cash.p.terminal.modules.market.topcoins.OptionController
 import cash.p.terminal.ui_compose.components.HSSwipeRefresh
 import cash.p.terminal.ui_compose.Select
-import cash.p.terminal.ui.compose.components.AlertGroup
+import cash.p.terminal.ui_compose.components.AlertGroup
 import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
 import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
 import cash.p.terminal.ui_compose.components.ButtonSecondaryYellow
@@ -113,9 +113,12 @@ fun MarketFavoritesScreen(
                                             HSpacer(width = 12.dp)
                                             ButtonSecondaryCircle(
                                                 icon = R.drawable.ic_edit_20,
-                                                tint = if (manualOrderEnabled) ComposeAppTheme.colors.dark else
-                                                    ComposeAppTheme.colors.iconPrimary,
-                                                background = if (manualOrderEnabled) ComposeAppTheme.colors.brand
+                                                tint = if (manualOrderEnabled) {
+                                                    ComposeAppTheme.colors.buttonPrimaryBrandContent
+                                                } else {
+                                                    ComposeAppTheme.colors.iconPrimary
+                                                },
+                                                background = if (manualOrderEnabled) ComposeAppTheme.colors.brandDefault
                                                 else ComposeAppTheme.colors.buttonSecondaryFilledBackground,
                                                 border = if (manualOrderEnabled) null
                                                 else SecondaryButtonDefaults.filledBorder(),

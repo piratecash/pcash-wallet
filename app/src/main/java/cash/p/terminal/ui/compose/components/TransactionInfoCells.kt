@@ -65,6 +65,8 @@ import cash.p.terminal.ui.helpers.LinkHelper
 import cash.p.terminal.ui.helpers.TextHelper
 import cash.p.terminal.ui_compose.ColorName
 import cash.p.terminal.ui_compose.ColoredValue
+import cash.p.terminal.ui_compose.components.AppSelectorDialog
+import cash.p.terminal.ui_compose.components.AppSelectorItem
 import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
 import cash.p.terminal.ui_compose.components.ButtonSecondaryCustom
 import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
@@ -482,13 +484,13 @@ private fun SaveAddressDialog(
     onAddToNew: (() -> Unit)?,
     onDismiss: () -> Unit,
 ) {
-    SelectorDialogCompose(
+    AppSelectorDialog(
         title = stringResource(R.string.Contacts_AddAddress),
         items = ContactsModule.AddAddressAction.values().map {
-            SelectorItem(stringResource(it.title), false, it)
+            AppSelectorItem(stringResource(it.title), false, it)
         },
-        onDismissRequest = onDismiss,
-        onSelectItem = { action ->
+        onDismiss = onDismiss,
+        onSelect = { action ->
             blockchainType?.let {
                 val args = when (action) {
                     ContactsModule.AddAddressAction.AddToNewContact -> {
@@ -613,7 +615,7 @@ fun TransactionInfoStatusCell(
                 Icon(
                     painter = painterResource(id = R.drawable.ic_checkmark_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.remus
+                    tint = ComposeAppTheme.colors.statusSuccess
                 )
             }
 
@@ -621,7 +623,7 @@ fun TransactionInfoStatusCell(
                 Icon(
                     painter = painterResource(id = R.drawable.ic_attention_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.lucian
+                    tint = ComposeAppTheme.colors.statusError
                 )
             }
 
@@ -705,7 +707,7 @@ fun TransactionInfoSpeedUpCell(
         Icon(
             painter = painterResource(R.drawable.ic_arrow_medium2_up_24),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.brand
+            tint = ComposeAppTheme.colors.brandDefault
         )
         Spacer(Modifier.width(16.dp))
         body_brand(text = stringResource(R.string.TransactionInfo_SpeedUp))
@@ -735,7 +737,7 @@ fun TransactionInfoCancelCell(
         Icon(
             painter = painterResource(R.drawable.ic_outgoingraw_24),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.redL
+            tint = ComposeAppTheme.colors.statusError
         )
         Spacer(Modifier.width(16.dp))
         body_lucian(text = stringResource(R.string.TransactionInfoOptions_Cancel_Button))
@@ -985,7 +987,7 @@ fun TransactionInfoAmlCheckCell(
         Icon(
             painter = painterResource(R.drawable.ic_star_filled_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.yellow,
+            tint = ComposeAppTheme.colors.statusWarning,
             modifier = Modifier.size(20.dp)
         )
         HSpacer(16.dp)

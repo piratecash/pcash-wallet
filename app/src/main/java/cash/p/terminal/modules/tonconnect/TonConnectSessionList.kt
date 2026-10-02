@@ -147,7 +147,7 @@ fun TCSessionCell(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(shape)
-            .background(ComposeAppTheme.colors.lawrence),
+            .background(ComposeAppTheme.colors.surfacePrimary),
         contentAlignment = Alignment.Center
     ) {
         if (showDivider) {

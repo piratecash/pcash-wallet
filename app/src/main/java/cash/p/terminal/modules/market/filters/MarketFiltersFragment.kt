@@ -122,7 +122,7 @@ private fun AdvancedSearchScreen(
         },
     ) {
         Scaffold(
-            containerColor = ComposeAppTheme.colors.tyler,
+            containerColor = ComposeAppTheme.colors.backgroundBase,
             topBar = {
                 AppBar(
                     title = stringResource(R.string.Market_Filters),
@@ -513,7 +513,7 @@ private fun <ItemClass> SingleSelectBottomSheetContent(
         iconPainter = painterResource(headerIcon),
         title = stringResource(title),
         onCloseClick = onClose,
-        iconTint = ColorFilter.tint(ComposeAppTheme.colors.brand)
+        iconTint = ColorFilter.tint(ComposeAppTheme.colors.brandDefault)
     ) {
         Spacer(Modifier.height(12.dp))
         CellUniversalLawrenceSection(
@@ -548,7 +548,7 @@ private fun <ItemClass> SingleSelectBottomSheetContent(
                     Image(
                         modifier = Modifier.padding(start = 5.dp),
                         painter = painterResource(id = R.drawable.ic_checkmark_20),
-                        colorFilter = ColorFilter.tint(ComposeAppTheme.colors.brand),
+                        colorFilter = ColorFilter.tint(ComposeAppTheme.colors.brandDefault),
                         contentDescription = null
                     )
                 }

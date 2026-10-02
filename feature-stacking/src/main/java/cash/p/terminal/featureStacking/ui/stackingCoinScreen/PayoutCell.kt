@@ -55,9 +55,9 @@ internal fun PayoutCell(item: PayoutViewItem, position: SectionItemPosition) {
         }
 
         val borderModifier = if (position != SectionItemPosition.Single) {
-            Modifier.sectionItemBorder(1.dp, ComposeAppTheme.colors.steel20, 12.dp, position)
+            Modifier.sectionItemBorder(1.dp, ComposeAppTheme.colors.borderDefault, 12.dp, position)
         } else {
-            Modifier.border(1.dp, ComposeAppTheme.colors.steel20, RoundedCornerShape(12.dp))
+            Modifier.border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(12.dp))
         }
 
         RowUniversal(
@@ -96,7 +96,7 @@ internal fun PayoutCell(item: PayoutViewItem, position: SectionItemPosition) {
                 val color = if (item.payoutType == PayoutType.INCOME) {
                     ComposeAppTheme.colors.textPrimary
                 } else {
-                    ComposeAppTheme.colors.remus
+                    ComposeAppTheme.colors.statusSuccess
                 }
                 Row {
                     Text(

@@ -56,7 +56,7 @@ fun SelectContactScreen(navController: NavController, input: SelectContactFragme
     val uiState = viewModel.uiState
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = {
@@ -120,7 +120,7 @@ private fun CellContact(
             Icon(
                 painter = painterResource(id = R.drawable.icon_check_1_24),
                 contentDescription = "selected",
-                tint = ComposeAppTheme.colors.brand
+                tint = ComposeAppTheme.colors.brandDefault
             )
         }
     }

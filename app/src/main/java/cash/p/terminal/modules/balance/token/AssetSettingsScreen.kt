@@ -34,7 +34,7 @@ import cash.p.terminal.modules.offline.OfflineModeToggleUiState
 import cash.p.terminal.modules.transactions.AmlCheckInfoBottomSheet
 import cash.p.terminal.modules.transactions.AmlCheckRow
 import cash.p.terminal.navigation.slideFromRight
-import cash.p.terminal.ui.compose.components.AlertGroup
+import cash.p.terminal.ui_compose.components.AlertGroup
 import cash.p.terminal.ui_compose.Select
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HsSettingCell
@@ -83,7 +83,7 @@ fun AssetSettingsScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.Settings_Title),

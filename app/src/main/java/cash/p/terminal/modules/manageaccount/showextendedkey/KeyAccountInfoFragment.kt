@@ -31,7 +31,7 @@ class KeyAccountInfoFragment : BaseComposeFragment() {
 
 @Composable
 private fun InfoScreen(navController: NavController) {
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(
                 title = stringResource(R.string.ExtendedKey_Account),

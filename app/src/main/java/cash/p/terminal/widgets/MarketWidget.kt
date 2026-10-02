@@ -4,11 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
+import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import androidx.glance.ColorFilter
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
@@ -45,6 +47,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
+import androidx.glance.unit.ColorProvider
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import io.horizontalsystems.core.entities.Value
@@ -82,7 +85,7 @@ class MarketWidget : GlanceAppWidget() {
             Column(
                 modifier = GlanceModifier
                     .fillMaxSize()
-                    .background(ImageProvider(R.drawable.widget_background))
+                    .tintedBackground(R.drawable.widget_background, AppWidgetTheme.colors.surfacePrimary)
                     .padding(16.dp),
                 verticalAlignment = Alignment.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -90,7 +93,7 @@ class MarketWidget : GlanceAppWidget() {
                 Column(
                     modifier = GlanceModifier
                         .defaultWeight()
-                        .background(ImageProvider(R.drawable.widget_list_background))
+                        .tintedBackground(R.drawable.widget_list_background, AppWidgetTheme.colors.borderDefault)
                 ) {
                     Row(
                         modifier = GlanceModifier
@@ -139,7 +142,10 @@ class MarketWidget : GlanceAppWidget() {
                                 Box(
                                     modifier = GlanceModifier
                                         .height(60.dp)
-                                        .background(ImageProvider(R.drawable.widget_list_item_background))
+                                        .tintedBackground(
+                                            R.drawable.widget_list_item_background,
+                                            AppWidgetTheme.colors.borderDivider
+                                        )
                                         .clickable(
                                             actionRunCallback<OpenDeepLinkAction>(
                                                 actionParametersOf(
@@ -279,19 +285,23 @@ class MarketWidget : GlanceAppWidget() {
     @Composable
     private fun diffColor(value: BigDecimal) =
         if (value.signum() >= 0) {
-            AppWidgetTheme.colors.remus
+            AppWidgetTheme.colors.statusSuccess
         } else {
-            AppWidgetTheme.colors.lucian
+            AppWidgetTheme.colors.statusError
         }
 
     @Composable
     private fun Badge(text: String) {
         Text(
             modifier = GlanceModifier
-                .background(ImageProvider(R.drawable.widget_list_item_badge_background))
+                .tintedBackground(R.drawable.widget_list_item_badge_background, AppWidgetTheme.colors.badgeBackground)
                 .padding(horizontal = 4.dp, vertical = 2.dp),
             text = text,
-            style = TextStyle(color = AppWidgetTheme.colors.bran, fontSize = 10.sp, fontWeight = FontWeight.Medium),
+            style = TextStyle(
+                color = AppWidgetTheme.colors.textPrimary,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Medium
+            ),
         )
     }
 
@@ -305,7 +315,10 @@ class MarketWidget : GlanceAppWidget() {
             Box(
                 modifier = GlanceModifier
                     .size(100.dp)
-                    .background(ImageProvider(R.drawable.widget_screen_message_icon_background)),
+                    .tintedBackground(
+                        R.drawable.widget_screen_message_icon_background,
+                        AppWidgetTheme.colors.surfacePlaceholder
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Image(
@@ -324,6 +337,9 @@ class MarketWidget : GlanceAppWidget() {
     }
 
 }
+
+private fun GlanceModifier.tintedBackground(@DrawableRes mask: Int, tint: ColorProvider) =
+    background(ImageProvider(mask), colorFilter = ColorFilter.tint(tint))
 
 class UpdateMarketAction : ActionCallback {
     override suspend fun onAction(

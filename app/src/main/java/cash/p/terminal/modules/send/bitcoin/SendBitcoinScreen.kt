@@ -198,7 +198,7 @@ private fun SendBitcoinScreen(
             focusRequester.requestFocus()
         }
 
-        Column(modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+        Column(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
             AppBar(
                 title = title,
                 navigationIcon = {
@@ -209,12 +209,12 @@ private fun SendBitcoinScreen(
                         MenuItem(
                             title = TranslatableString.ResString(R.string.SendEvmSettings_Title),
                             icon = R.drawable.ic_manage_2,
-                            tint = ComposeAppTheme.colors.brand,
+                            tint = ComposeAppTheme.colors.brandDefault,
                             onClick = { composeNavController.navigate(SendBtcAdvancedSettingsPage) }
                         ),
                         MenuItem(
                             title = TranslatableString.ResString(R.string.Send_DialogProceed),
-                            tint = ComposeAppTheme.colors.brand,
+                            tint = ComposeAppTheme.colors.brandDefault,
                             enabled = proceedEnabled,
                             onClick = {
                                 onNextClick(
@@ -410,7 +410,7 @@ fun UtxoCell(
                 Icon(
                     painter = painterResource(R.drawable.ic_edit_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.brand
+                    tint = ComposeAppTheme.colors.brandDefault
                 )
             }
 

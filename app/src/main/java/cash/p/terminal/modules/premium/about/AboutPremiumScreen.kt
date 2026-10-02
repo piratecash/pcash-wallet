@@ -95,7 +95,7 @@ fun AboutPremiumScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             TitleCenteredTopBar(
                 title = stringResource(R.string.premium_title),
@@ -158,14 +158,14 @@ fun AboutPremiumScreen(
                                 brush = Brush.verticalGradient(
                                     listOf(
                                         ComposeAppTheme.colors.transparent,
-                                        ComposeAppTheme.colors.tyler
+                                        ComposeAppTheme.colors.backgroundBase
                                     )
                                 )
                             )
                     )
                     Column(
                         modifier = Modifier
-                            .background(ComposeAppTheme.colors.tyler)
+                            .background(ComposeAppTheme.colors.backgroundBase)
                             .padding(horizontal = 24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -188,7 +188,7 @@ fun AboutPremiumScreen(
 private fun DemoDaysDisplay(daysLeft: Int) {
     Subhead1(
         text = pluralStringResource(R.plurals.premium_demo_days_left, daysLeft, daysLeft),
-        color = ComposeAppTheme.colors.yellow,
+        color = ComposeAppTheme.colors.statusWarning,
         textAlign = TextAlign.Center,
         modifier = Modifier
             .fillMaxWidth()
@@ -202,7 +202,7 @@ private fun ActionText() {
         text = stringResource(R.string.premium_upgrade_text),
         textColor = ComposeAppTheme.colors.textPrimary,
         highlightPart = stringResource(R.string.premium_title),
-        highlightColor = ComposeAppTheme.colors.yellow
+        highlightColor = ComposeAppTheme.colors.statusWarning
     )
     Text(
         text = text,

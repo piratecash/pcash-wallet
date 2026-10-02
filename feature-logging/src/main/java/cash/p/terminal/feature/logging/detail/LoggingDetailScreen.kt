@@ -181,7 +181,7 @@ private fun AuthorizationDetailContent(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.authorization_information),
@@ -234,7 +234,7 @@ private fun AuthorizationDetailContent(
                             Icon(
                                 painter = painterResource(R.drawable.ic_download_24),
                                 contentDescription = stringResource(R.string.auth_detail_save_to_gallery),
-                                tint = ComposeAppTheme.colors.claude
+                                tint = ComposeAppTheme.colors.contentInverse
                             )
                         }
                     }
@@ -304,7 +304,7 @@ private fun MainImageView(
     modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = modifier.background(ComposeAppTheme.colors.steel10),
+        modifier = modifier.background(ComposeAppTheme.colors.surfacePlaceholder),
         contentAlignment = Alignment.Center
     ) {
         if (photoPath != null && File(photoPath).exists()) {
@@ -337,9 +337,9 @@ private fun ThumbnailItem(
 ) {
     val size = if (isSelected) ThumbnailSizeSelected else ThumbnailSizeDefault
     val statusColor = if (record.isSuccessful) {
-        ComposeAppTheme.colors.remus
+        ComposeAppTheme.colors.statusSuccess
     } else {
-        ComposeAppTheme.colors.lucian
+        ComposeAppTheme.colors.statusError
     }
 
     Box(
@@ -362,7 +362,7 @@ private fun ThumbnailItem(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(ComposeAppTheme.colors.steel20),
+                    .background(ComposeAppTheme.colors.surfacePlaceholder),
                 contentAlignment = Alignment.Center
             ) {
                 Image(
@@ -391,9 +391,9 @@ private fun ThumbnailItem(
                 modifier = Modifier
                     .padding(1.dp)
                     .size(10.dp)
-                    .background(ComposeAppTheme.colors.lawrence, shape = CircleShape)
+                    .background(ComposeAppTheme.colors.surfacePrimary, shape = CircleShape)
                     .align(Alignment.TopEnd),
-                tint = ComposeAppTheme.colors.brand
+                tint = ComposeAppTheme.colors.brandDefault
             )
         }
     }

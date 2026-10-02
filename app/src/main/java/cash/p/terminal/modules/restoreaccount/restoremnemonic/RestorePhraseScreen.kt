@@ -166,9 +166,9 @@ fun RestorePhrase(
     val keyboardState by observeKeyboardState()
 
     val borderColor = if (uiState.error != null) {
-        ComposeAppTheme.colors.red50
+        ComposeAppTheme.colors.statusError50
     } else {
-        ComposeAppTheme.colors.steel20
+        ComposeAppTheme.colors.borderDefault
     }
 
     val coroutineScope = rememberCoroutineScope()
@@ -203,7 +203,7 @@ fun RestorePhrase(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = if (advanced) stringResource(R.string.Restore_Advanced_Title) else stringResource(
@@ -257,7 +257,7 @@ fun RestorePhrase(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
                         .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-                        .background(ComposeAppTheme.colors.lawrence),
+                        .background(ComposeAppTheme.colors.surfacePrimary),
                 ) {
                     MnemonicLanguageCell(
                         language = uiState.language,
@@ -268,11 +268,11 @@ fun RestorePhrase(
                     )
                     HorizontalDivider(
                         thickness = 1.dp,
-                        color = ComposeAppTheme.colors.steel10
+                        color = ComposeAppTheme.colors.borderDivider
                     )
 
                     val style = SpanStyle(
-                        color = ComposeAppTheme.colors.lucian,
+                        color = ComposeAppTheme.colors.statusError,
                         fontWeight = FontWeight.Normal,
                         fontSize = 16.sp,
                         letterSpacing = 0.sp
@@ -303,7 +303,7 @@ fun RestorePhrase(
                             textStyle = ComposeAppTheme.typography.body
                         ),
                         maxLines = 6,
-                        cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
+                        cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
                         visualTransformation = {
                             try {
                                 val annotatedString = buildAnnotatedString {

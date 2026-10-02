@@ -3,7 +3,6 @@ package io.horizontalsystems.chartview.ui
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
 import cash.p.terminal.ui_compose.theme.Colors
 import io.horizontalsystems.chartview.ChartData
 import io.horizontalsystems.chartview.CurveAnimator2
@@ -35,12 +34,12 @@ class ChartHelper(
     private var macdSignalCurve: CurveAnimator2? = null
     private var macdHistogramBars: CurveAnimatorBars? = null
 
-    var mainCurveColor = colors.greenD
-    var mainCurveGradientColors = Pair(Color(0x00416BFF), Color(0x8013D670))
+    var mainCurveColor = colors.statusSuccess
+    var mainCurveGradientColors = Pair(colors.transparent, colors.statusSuccess50)
     var mainCurvePressedColor = colors.iconPrimary
     var mainCurveGradientPressedColors =
         Pair(colors.transparent, colors.textSecondaryDimmed)
-    var mainBarsColor = colors.brand
+    var mainBarsColor = colors.brandDefault
     var mainBarsPressedColor = colors.textSecondaryDimmed
 
     init {
@@ -103,18 +102,18 @@ class ChartHelper(
             }
 
             !chartData.isMovementChart -> {
-                mainCurveColor = colors.brand
-                mainCurveGradientColors = Pair(Color(0x00FFA800), Color(0x80FFA800))
+                mainCurveColor = colors.brandDefault
+                mainCurveGradientColors = Pair(colors.transparent, colors.statusWarning50)
             }
 
             chartData.diff() < BigDecimal.ZERO && !considerAlwaysPositive -> {
-                mainCurveColor = colors.redD
-                mainCurveGradientColors = Pair(Color(0x007413D6), Color(0x80FF0303))
+                mainCurveColor = colors.statusError
+                mainCurveGradientColors = Pair(colors.transparent, colors.statusError50)
             }
 
             else -> {
-                mainCurveColor = colors.greenD
-                mainCurveGradientColors = Pair(Color(0x00416BFF), Color(0x8013D670))
+                mainCurveColor = colors.statusSuccess
+                mainCurveGradientColors = Pair(colors.transparent, colors.statusSuccess50)
             }
         }
     }

@@ -112,14 +112,13 @@ internal fun HardwareWalletScreen(
                 contenView = view,
                 resId = R.string.Hud_Text_Created,
                 icon = R.drawable.icon_add_to_wallet_24,
-                iconTint = R.color.white
             )
             delay(300)
             onFinish()
         }
     }
 
-    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
         AppBar(
             title = stringResource(R.string.hardware_wallet),
             navigationIcon = {

@@ -190,7 +190,7 @@ private fun GuaranteedBonusText(
             append(prefix)
         }
         append(" ")
-        withStyle(SpanStyle(color = ComposeAppTheme.colors.yellow)) {
+        withStyle(SpanStyle(color = ComposeAppTheme.colors.statusWarning)) {
             append("$bonus PIRATE")
         }
         append(" ")

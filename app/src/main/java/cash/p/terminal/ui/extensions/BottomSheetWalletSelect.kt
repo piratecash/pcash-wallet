@@ -94,7 +94,7 @@ private fun WalletSwitchContent(
 ) {
     BottomSheetHeader(
         iconPainter = painterResource(R.drawable.icon_24_lock),
-        iconTint = ColorFilter.tint(ComposeAppTheme.colors.brand),
+        iconTint = ColorFilter.tint(ComposeAppTheme.colors.brandDefault),
         title = title,
         onCloseClick = onCloseClick,
         // Keep the sheet header below the system status bar when fully expanded.
@@ -132,7 +132,7 @@ private fun ColumnScope.PremiumWalletSwitchBody(
         selectedAccount = selectedAccount,
         premiumTypes = premiumTypes,
         onSelectListener = onSelectListener,
-        frameColor = ComposeAppTheme.colors.brand,
+        frameColor = ComposeAppTheme.colors.brandDefault,
     )
     WalletSwitchSection(
         header = {
@@ -189,7 +189,7 @@ private fun ColumnScope.LegacyWalletSwitchBody(
             items = wallets.sortedWith(comparator),
             selectedItem = selectedAccount,
             premiumTypes = emptyMap(),
-            frameColor = ComposeAppTheme.colors.steel20,
+            frameColor = ComposeAppTheme.colors.borderDefault,
             onSelectListener = onSelectListener,
         )
     }
@@ -203,7 +203,7 @@ private fun ColumnScope.LegacyWalletSwitchBody(
             items = watchingAddresses.sortedWith(comparator),
             selectedItem = selectedAccount,
             premiumTypes = emptyMap(),
-            frameColor = ComposeAppTheme.colors.steel20,
+            frameColor = ComposeAppTheme.colors.borderDefault,
             onSelectListener = onSelectListener,
         )
     }
@@ -218,7 +218,7 @@ private fun WalletSwitchSection(
     selectedAccount: Account?,
     premiumTypes: Map<String, PremiumType>,
     onSelectListener: (Account) -> Unit,
-    frameColor: Color = ComposeAppTheme.colors.steel20,
+    frameColor: Color = ComposeAppTheme.colors.borderDefault,
 ) {
     if (accounts.isEmpty()) return
     header()

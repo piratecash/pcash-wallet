@@ -125,7 +125,7 @@ private fun BackupManagerScreen(
                 title = stringResource(R.string.ImportWallet_WarningInvalidJson),
                 text = stringResource(R.string.ImportWallet_WarningInvalidJsonDescription),
                 iconPainter = painterResource(R.drawable.icon_warning_2_20),
-                iconTint = ColorFilter.tint(cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.lucian),
+                iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusError),
                 confirmText = stringResource(R.string.ImportWallet_SelectAnotherFile),
                 cautionType = Caution.Type.Warning,
                 cancelText = stringResource(R.string.Button_Cancel),
@@ -140,7 +140,7 @@ private fun BackupManagerScreen(
         }
     ) {
         Scaffold(
-            containerColor = ComposeAppTheme.colors.tyler,
+            containerColor = ComposeAppTheme.colors.backgroundBase,
             topBar = {
                 AppBar(
                     title = stringResource(R.string.BackupManager_Title),
@@ -162,7 +162,7 @@ private fun BackupManagerScreen(
                                     modifier = Modifier.padding(horizontal = 16.dp),
                                     painter = painterResource(R.drawable.ic_download_20),
                                     contentDescription = null,
-                                    tint = ComposeAppTheme.colors.brand
+                                    tint = ComposeAppTheme.colors.brandDefault
                                 )
                                 body_brand(text = stringResource(R.string.BackupManager_RestoreBackup))
                             }
@@ -174,7 +174,7 @@ private fun BackupManagerScreen(
                                     modifier = Modifier.padding(horizontal = 16.dp),
                                     painter = painterResource(R.drawable.ic_plus),
                                     contentDescription = null,
-                                    tint = ComposeAppTheme.colors.brand
+                                    tint = ComposeAppTheme.colors.brandDefault
                                 )
                                 body_brand(text = stringResource(R.string.BackupManager_CreateBackup))
                             }

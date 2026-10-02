@@ -30,7 +30,7 @@ import cash.p.terminal.modules.market.topplatforms.Platform
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.strings.helpers.TranslatableString
-import cash.p.terminal.ui.compose.components.AlertGroup
+import cash.p.terminal.ui_compose.components.AlertGroup
 import cash.p.terminal.ui.compose.components.CoinList
 import cash.p.terminal.ui.compose.components.ListErrorView
 import cash.p.terminal.ui_compose.BaseComposeFragment
@@ -100,7 +100,7 @@ private fun PlatformScreen(
                 )
             )
         },
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
             HSSwipeRefresh(
@@ -189,7 +189,7 @@ private fun HeaderContent(title: String, description: String, image: ImageSource
     Row(
         modifier = Modifier
             .padding(horizontal = 16.dp)
-            .background(ComposeAppTheme.colors.tyler)
+            .background(ComposeAppTheme.colors.backgroundBase)
     ) {
         Column(
             modifier = Modifier

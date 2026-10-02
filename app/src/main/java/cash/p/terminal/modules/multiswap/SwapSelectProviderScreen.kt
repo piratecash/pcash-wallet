@@ -46,8 +46,8 @@ import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionSettings
 import cash.p.terminal.modules.multiswap.settings.ISwapSetting
 import cash.p.terminal.modules.multiswap.ui.DataField
 import cash.p.terminal.strings.helpers.TranslatableString
-import cash.p.terminal.ui.compose.components.SelectorDialogCompose
-import cash.p.terminal.ui.compose.components.SelectorItem
+import cash.p.terminal.ui_compose.components.AppSelectorDialog
+import cash.p.terminal.ui_compose.components.AppSelectorItem
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonSecondaryWithIcon
 import cash.p.terminal.ui_compose.components.DraggableCardSimple
@@ -106,7 +106,7 @@ fun SwapSelectProviderScreen(
                 ),
             )
         },
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
     ) {
         LazyColumn(
             modifier = Modifier.padding(it),
@@ -126,9 +126,9 @@ fun SwapSelectProviderScreen(
                 val provider = viewItem.quote.provider
                 val isDisabled = provider.id in disabledProviderIds
                 val borderColor = if (provider == currentQuote?.provider) {
-                    ComposeAppTheme.colors.yellow50
+                    ComposeAppTheme.colors.statusWarning50
                 } else {
-                    ComposeAppTheme.colors.steel20
+                    ComposeAppTheme.colors.borderDefault
                 }
                 val isMandatory = provider.id in mandatoryProviderIds
 
@@ -179,7 +179,7 @@ private fun SwipableProviderItem(
                 .fillMaxHeight()
                 .align(Alignment.CenterEnd)
                 .width(72.dp)
-                .background(ComposeAppTheme.colors.tyler),
+                .background(ComposeAppTheme.colors.backgroundBase),
             onClick = onToggle,
             content = {
                 Icon(
@@ -221,7 +221,7 @@ private fun ProviderItem(
     Box(
         modifier = Modifier
             .clip(shape)
-            .background(ComposeAppTheme.colors.tyler)
+            .background(ComposeAppTheme.colors.backgroundBase)
             .clickable(enabled = !disabled) { onSelectQuote(viewItem.quote) }
             .border(1.dp, borderColor, shape)
     ) {
@@ -327,7 +327,7 @@ private fun ExchangeBlock(
         Icon(
             painter = painterResource(id = R.drawable.ic_arrow_swap3_20),
             contentDescription = "invert price",
-            tint = ComposeAppTheme.colors.brand
+            tint = ComposeAppTheme.colors.brandDefault
         )
         subhead2_grey(
             text = to
@@ -350,13 +350,13 @@ private fun ProviderSortingSelector(
     )
 
     if (showSortTypeSelectorDialog) {
-        SelectorDialogCompose(
+        AppSelectorDialog(
             title = stringResource(R.string.Balance_Sort_PopupTitle),
             items = sortTypes.map {
-                SelectorItem(stringResource(it.titleRes), it == sortType, it)
+                AppSelectorItem(stringResource(it.titleRes), it == sortType, it)
             },
-            onDismissRequest = { showSortTypeSelectorDialog = false },
-            onSelectItem = onSelectSortType
+            onDismiss = { showSortTypeSelectorDialog = false },
+            onSelect = onSelectSortType
         )
     }
 }

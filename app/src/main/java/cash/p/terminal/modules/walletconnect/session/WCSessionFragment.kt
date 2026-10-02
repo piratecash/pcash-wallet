@@ -98,7 +98,7 @@ fun WCSessionPage(
     Column(
         modifier = Modifier
             .windowInsetsPadding(windowInsets)
-            .background(color = ComposeAppTheme.colors.tyler)
+            .background(color = ComposeAppTheme.colors.backgroundBase)
     ) {
         AppBar(
             title = stringResource(R.string.WalletConnect_Title),
@@ -110,7 +110,7 @@ fun WCSessionPage(
                     onClick = { navController.popBackStackSafely() },
                     enabled = uiState.closeEnabled,
                     tint = if (uiState.closeEnabled) {
-                        ComposeAppTheme.colors.brand
+                        ComposeAppTheme.colors.brandDefault
                     } else {
                         ComposeAppTheme.colors.iconDisabled
                     }

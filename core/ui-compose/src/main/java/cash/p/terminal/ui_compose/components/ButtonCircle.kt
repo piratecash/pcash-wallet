@@ -29,10 +29,10 @@ fun ButtonPrimaryCircle(
     val resolvedBackground = if (enabled) {
         background ?: ComposeAppTheme.colors.textPrimary
     } else {
-        ComposeAppTheme.colors.steel20
+        ComposeAppTheme.colors.buttonPrimaryDisabledBackground
     }
     val resolvedTint = if (enabled) {
-        iconTint ?: ComposeAppTheme.colors.claude
+        iconTint ?: ComposeAppTheme.colors.contentInverse
     } else {
         ComposeAppTheme.colors.iconDisabled
     }
@@ -44,7 +44,7 @@ fun ButtonPrimaryCircle(
             .clip(shape)
             .background(resolvedBackground),
         enabled = enabled,
-        rippleColor = ComposeAppTheme.colors.claude
+        rippleColor = ComposeAppTheme.colors.contentInverse
     ) {
         Icon(
             painter = painterResource(id = icon),

@@ -160,7 +160,7 @@ fun ButtonPrimaryYellow(
         modifier = modifier,
         onClick = onClick,
         buttonColors = ButtonPrimaryDefaults.filledColors(
-            background = ComposeAppTheme.colors.brand,
+            background = ComposeAppTheme.colors.brandDefault,
             content = ComposeAppTheme.colors.buttonPrimaryBrandContent,
         ),
         content = {
@@ -196,7 +196,7 @@ fun ButtonPrimaryYellowWithIcon(
         modifier = modifier,
         onClick = onClick,
         buttonColors = ButtonPrimaryDefaults.filledColors(
-            background = ComposeAppTheme.colors.brand,
+            background = ComposeAppTheme.colors.brandDefault,
             content = ComposeAppTheme.colors.buttonPrimaryBrandContent,
         ),
         content = {
@@ -236,48 +236,6 @@ fun ButtonPrimaryRed(
 }
 
 @Composable
-fun ButtonPrimaryNeutral(
-    modifier: Modifier = Modifier,
-    title: String,
-    onClick: () -> Unit,
-    enabled: Boolean = true
-) {
-    ButtonPrimary(
-        modifier = modifier,
-        onClick = onClick,
-        buttonColors = ButtonPrimaryDefaults.textButtonColors(
-            backgroundColor = ComposeAppTheme.colors.steelLight,
-            contentColor = ComposeAppTheme.colors.dark,
-            disabledBackgroundColor = ComposeAppTheme.colors.steel20,
-            disabledContentColor = ComposeAppTheme.colors.textDisabled,
-        ),
-        content = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-        enabled = enabled
-    )
-}
-
-@Composable
-fun ButtonPrimaryLight(
-    modifier: Modifier = Modifier,
-    title: String,
-    onClick: () -> Unit,
-    enabled: Boolean = true
-) {
-    ButtonPrimary(
-        modifier = modifier,
-        onClick = onClick,
-        buttonColors = ButtonPrimaryDefaults.textButtonColors(
-            backgroundColor = ComposeAppTheme.colors.bran,
-            contentColor = ComposeAppTheme.colors.claude,
-            disabledBackgroundColor = ComposeAppTheme.colors.steel20,
-            disabledContentColor = ComposeAppTheme.colors.textDisabled,
-        ),
-        content = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-        enabled = enabled
-    )
-}
-
-@Composable
 fun ButtonPrimaryYellowWithSpinner(
     modifier: Modifier = Modifier,
     title: String,
@@ -290,7 +248,7 @@ fun ButtonPrimaryYellowWithSpinner(
         modifier = modifier,
         onClick = onClick,
         buttonColors = ButtonPrimaryDefaults.filledColors(
-            background = ComposeAppTheme.colors.brand,
+            background = ComposeAppTheme.colors.brandDefault,
             content = ComposeAppTheme.colors.buttonPrimaryBrandContent,
         ),
         content = {
@@ -436,7 +394,7 @@ private fun ButtonPrimaryDefaultPreview() {
     ComposeAppTheme {
         Column(
             modifier = Modifier
-                .background(ComposeAppTheme.colors.tyler)
+                .background(ComposeAppTheme.colors.backgroundBase)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -460,7 +418,7 @@ private fun ButtonPrimaryDefaultWithIconPreview() {
     ComposeAppTheme {
         Column(
             modifier = Modifier
-                .background(ComposeAppTheme.colors.tyler)
+                .background(ComposeAppTheme.colors.backgroundBase)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -472,7 +430,7 @@ private fun ButtonPrimaryDefaultWithIconPreview() {
             ButtonPrimaryDefaultWithIcon(
                 icon = R.drawable.ic_back,
                 title = "With Tinted Icon",
-                iconTint = ComposeAppTheme.colors.brand,
+                iconTint = ComposeAppTheme.colors.brandDefault,
                 onClick = {}
             )
             ButtonPrimaryDefaultWithIcon(
@@ -492,7 +450,7 @@ private fun ButtonPrimaryTransparentPreview() {
     ComposeAppTheme {
         Column(
             modifier = Modifier
-                .background(ComposeAppTheme.colors.tyler)
+                .background(ComposeAppTheme.colors.backgroundBase)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -516,7 +474,7 @@ private fun ButtonPrimaryYellowPreview() {
     ComposeAppTheme {
         Column(
             modifier = Modifier
-                .background(ComposeAppTheme.colors.tyler)
+                .background(ComposeAppTheme.colors.backgroundBase)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -545,7 +503,7 @@ private fun ButtonPrimaryYellowWithIconPreview() {
     ComposeAppTheme {
         Column(
             modifier = Modifier
-                .background(ComposeAppTheme.colors.tyler)
+                .background(ComposeAppTheme.colors.backgroundBase)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -557,7 +515,7 @@ private fun ButtonPrimaryYellowWithIconPreview() {
             ButtonPrimaryYellowWithIcon(
                 icon = R.drawable.ic_back,
                 title = "Yellow With Tint",
-                iconTint = ComposeAppTheme.colors.lucian,
+                iconTint = ComposeAppTheme.colors.statusError,
                 onClick = {}
             )
             ButtonPrimaryYellowWithIcon(
@@ -577,7 +535,7 @@ private fun ButtonPrimaryRedPreview() {
     ComposeAppTheme {
         Column(
             modifier = Modifier
-                .background(ComposeAppTheme.colors.tyler)
+                .background(ComposeAppTheme.colors.backgroundBase)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -597,35 +555,11 @@ private fun ButtonPrimaryRedPreview() {
 @Preview(name = "Light", uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun ButtonPrimaryNeutralPreview() {
-    ComposeAppTheme {
-        Column(
-            modifier = Modifier
-                .background(ComposeAppTheme.colors.tyler)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            ButtonPrimaryNeutral(
-                title = "Neutral Button",
-                onClick = {}
-            )
-            ButtonPrimaryNeutral(
-                title = "Neutral Disabled",
-                onClick = {},
-                enabled = false
-            )
-        }
-    }
-}
-
-@Preview(name = "Light", uiMode = Configuration.UI_MODE_NIGHT_NO)
-@Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
 private fun ButtonPrimaryYellowWithSpinnerPreview() {
     ComposeAppTheme {
         Column(
             modifier = Modifier
-                .background(ComposeAppTheme.colors.tyler)
+                .background(ComposeAppTheme.colors.backgroundBase)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {

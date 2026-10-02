@@ -50,7 +50,7 @@ internal fun AddressPoisoningViewScreen(
                 navigationIcon = { HsBackButton(onClick = onClose) },
             )
         },
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -103,9 +103,9 @@ private fun ModeOptionCard(
     preview: @Composable () -> Unit,
 ) {
     val borderColor = if (selected) {
-        ComposeAppTheme.colors.brand
+        ComposeAppTheme.colors.brandDefault
     } else {
-        ComposeAppTheme.colors.steel20
+        ComposeAppTheme.colors.borderDefault
     }
     Column(
         modifier = Modifier
@@ -125,7 +125,7 @@ private fun ModeOptionCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
-                .border(1.dp, ComposeAppTheme.colors.steel20, RoundedCornerShape(12.dp))
+                .border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(12.dp))
         ) {
             preview()
         }

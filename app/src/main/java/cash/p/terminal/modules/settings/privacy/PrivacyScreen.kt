@@ -48,7 +48,7 @@ fun PrivacyScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(ComposeAppTheme.colors.tyler)
+            .background(ComposeAppTheme.colors.backgroundBase)
     ) {
         AppBar(
             title = stringResource(R.string.Settings_Privacy),
@@ -91,7 +91,7 @@ fun PrivacyScreen(
         Divider(
             modifier = Modifier.fillMaxWidth(),
             thickness = 1.dp,
-            color = ComposeAppTheme.colors.steel10
+            color = ComposeAppTheme.colors.borderDivider
         )
 
         Spacer(Modifier.height(12.dp))
@@ -117,7 +117,7 @@ private fun BulletedText(@StringRes text: Int) {
         Text(
             text = "\u2022 ",
             style = ComposeAppTheme.typography.body,
-            color = ComposeAppTheme.colors.bran,
+            color = ComposeAppTheme.colors.textPrimary,
             modifier = Modifier.width(15.dp),
             textAlign = TextAlign.Center
         )
@@ -125,7 +125,7 @@ private fun BulletedText(@StringRes text: Int) {
         Text(
             text = stringResource(text),
             style = ComposeAppTheme.typography.body,
-            color = ComposeAppTheme.colors.bran,
+            color = ComposeAppTheme.colors.textPrimary,
             modifier = Modifier.padding(end = 32.dp)
         )
     }

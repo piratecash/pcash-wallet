@@ -1,218 +1,57 @@
 package cash.p.terminal.ui_compose.theme
 
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
-@Stable
-class Colors(
-    yellow: Color,
-    remus: Color,
-    lucian: Color,
-    tyler: Color,
-    bran: Color,
-    claude: Color,
-    lawrence: Color,
-    navigation: Color,
-    actionBackground: Color,
-    actionBorder: Color,
-    divider: Color,
-    buttonSecondaryFilledBackground: Color,
-    buttonSecondaryFilledBorder: Color,
-    textPrimary: Color,
-    textSecondary: Color,
-    textSecondaryDimmed: Color,
-    textDisabled: Color,
-    iconPrimary: Color,
-    iconSecondary: Color,
-    iconDisabled: Color,
-    brand: Color,
-    borderAccentSubtle: Color,
-    buttonPrimaryBrandContent: Color,
-    buttonPrimaryNeutralBackground: Color,
-    buttonPrimaryNeutralContent: Color,
-    buttonPrimaryDestructiveBackground: Color,
-    buttonPrimaryDestructiveContent: Color,
-    buttonPrimaryDisabledBackground: Color,
-    buttonPrimaryOutlineContent: Color,
-    buttonPrimaryOutlineBorder: Color,
-    jeremy: Color,
-    raina: Color,
-    blade: Color,
-    midnight: Color,
-    modalOverlay: Color
-) {
-
-    //base colors
-    val transparent = Color.Transparent
-    val dark = Dark
-    val white = Color.White
-    val black50 = Black50
-    val issykBlue = Color(0xFF3372FF)
-    val lightGrey = LightGrey
-    val steelLight = SteelLight
-    val steel10 = Steel10
-    val steel20 = Steel20
-    val yellow50 = Yellow50
-    val yellow20 = Yellow20
-    val green20 = Green20
-
-    val yellowD = YellowD
-    val greenD = GreenD
-    val green50 = Green50
-    val redD = RedD
-    val redL = RedL
-    val elenaD = Color(0xFF6E7899)
-    val red50 = Red50
-    val red20 = Red20
-
-    //themed colors
-    var yellow by mutableStateOf(yellow)
-        private set
-    var remus by mutableStateOf(remus)
-        private set
-    var lucian by mutableStateOf(lucian)
-        private set
-    var tyler by mutableStateOf(tyler)
-        private set
-    var bran by mutableStateOf(bran)
-        private set
-    var claude by mutableStateOf(claude)
-        private set
-    var lawrence by mutableStateOf(lawrence)
-        private set
-    var navigation by mutableStateOf(navigation)
-        private set
-    var actionBackground by mutableStateOf(actionBackground)
-        private set
-    var actionBorder by mutableStateOf(actionBorder)
-        private set
-    var divider by mutableStateOf(divider)
-        private set
-    var buttonSecondaryFilledBackground by mutableStateOf(buttonSecondaryFilledBackground)
-        private set
-    var buttonSecondaryFilledBorder by mutableStateOf(buttonSecondaryFilledBorder)
-        private set
-    var textPrimary by mutableStateOf(textPrimary)
-        private set
-    var textSecondary by mutableStateOf(textSecondary)
-        private set
-    var textSecondaryDimmed by mutableStateOf(textSecondaryDimmed)
-        private set
-    var textDisabled by mutableStateOf(textDisabled)
-        private set
-    var iconPrimary by mutableStateOf(iconPrimary)
-        private set
-    var iconSecondary by mutableStateOf(iconSecondary)
-        private set
-    var iconDisabled by mutableStateOf(iconDisabled)
-        private set
-    var brand by mutableStateOf(brand)
-        private set
-    var borderAccentSubtle by mutableStateOf(borderAccentSubtle)
-        private set
-    var buttonPrimaryBrandContent by mutableStateOf(buttonPrimaryBrandContent)
-        private set
-    var buttonPrimaryNeutralBackground by mutableStateOf(buttonPrimaryNeutralBackground)
-        private set
-    var buttonPrimaryNeutralContent by mutableStateOf(buttonPrimaryNeutralContent)
-        private set
-    var buttonPrimaryDestructiveBackground by mutableStateOf(buttonPrimaryDestructiveBackground)
-        private set
-    var buttonPrimaryDestructiveContent by mutableStateOf(buttonPrimaryDestructiveContent)
-        private set
-    var buttonPrimaryDisabledBackground by mutableStateOf(buttonPrimaryDisabledBackground)
-        private set
-    var buttonPrimaryOutlineContent by mutableStateOf(buttonPrimaryOutlineContent)
-        private set
-    var buttonPrimaryOutlineBorder by mutableStateOf(buttonPrimaryOutlineBorder)
-        private set
-    var jeremy by mutableStateOf(jeremy)
-        private set
-    var raina by mutableStateOf(raina)
-        private set
-    var blade by mutableStateOf(blade)
-        private set
-    var midnight by mutableStateOf(midnight)
-        private set
-    var modalOverlay by mutableStateOf(modalOverlay)
-        private set
-
-    fun update(other: Colors) {
-        yellow = other.yellow
-        remus = other.remus
-        lucian = other.lucian
-        tyler = other.tyler
-        bran = other.bran
-        claude = other.claude
-        lawrence = other.lawrence
-        navigation = other.navigation
-        actionBackground = other.actionBackground
-        actionBorder = other.actionBorder
-        divider = other.divider
-        buttonSecondaryFilledBackground = other.buttonSecondaryFilledBackground
-        buttonSecondaryFilledBorder = other.buttonSecondaryFilledBorder
-        textPrimary = other.textPrimary
-        textSecondary = other.textSecondary
-        textSecondaryDimmed = other.textSecondaryDimmed
-        textDisabled = other.textDisabled
-        iconPrimary = other.iconPrimary
-        iconSecondary = other.iconSecondary
-        iconDisabled = other.iconDisabled
-        brand = other.brand
-        borderAccentSubtle = other.borderAccentSubtle
-        buttonPrimaryBrandContent = other.buttonPrimaryBrandContent
-        buttonPrimaryNeutralBackground = other.buttonPrimaryNeutralBackground
-        buttonPrimaryNeutralContent = other.buttonPrimaryNeutralContent
-        buttonPrimaryDestructiveBackground = other.buttonPrimaryDestructiveBackground
-        buttonPrimaryDestructiveContent = other.buttonPrimaryDestructiveContent
-        buttonPrimaryDisabledBackground = other.buttonPrimaryDisabledBackground
-        buttonPrimaryOutlineContent = other.buttonPrimaryOutlineContent
-        buttonPrimaryOutlineBorder = other.buttonPrimaryOutlineBorder
-        jeremy = other.jeremy
-        raina = other.raina
-        blade = other.blade
-        midnight = other.midnight
-        modalOverlay = other.modalOverlay
-    }
-
-    fun copy(): Colors = Colors(
-        yellow = yellow,
-        remus = remus,
-        lucian = lucian,
-        tyler = tyler,
-        bran = bran,
-        claude = claude,
-        lawrence = lawrence,
-        navigation = navigation,
-        actionBackground = actionBackground,
-        actionBorder = actionBorder,
-        divider = divider,
-        buttonSecondaryFilledBackground = buttonSecondaryFilledBackground,
-        buttonSecondaryFilledBorder = buttonSecondaryFilledBorder,
-        textPrimary = textPrimary,
-        textSecondary = textSecondary,
-        textSecondaryDimmed = textSecondaryDimmed,
-        textDisabled = textDisabled,
-        iconPrimary = iconPrimary,
-        iconSecondary = iconSecondary,
-        iconDisabled = iconDisabled,
-        brand = brand,
-        borderAccentSubtle = borderAccentSubtle,
-        buttonPrimaryBrandContent = buttonPrimaryBrandContent,
-        buttonPrimaryNeutralBackground = buttonPrimaryNeutralBackground,
-        buttonPrimaryNeutralContent = buttonPrimaryNeutralContent,
-        buttonPrimaryDestructiveBackground = buttonPrimaryDestructiveBackground,
-        buttonPrimaryDestructiveContent = buttonPrimaryDestructiveContent,
-        buttonPrimaryDisabledBackground = buttonPrimaryDisabledBackground,
-        buttonPrimaryOutlineContent = buttonPrimaryOutlineContent,
-        buttonPrimaryOutlineBorder = buttonPrimaryOutlineBorder,
-        jeremy = jeremy,
-        raina = raina,
-        blade = blade,
-        midnight = midnight,
-        modalOverlay = modalOverlay
-    )
-}
+@Immutable
+data class Colors(
+    val backgroundBase: Color,
+    val backgroundNavigation: Color,
+    val backgroundOverlay: Color,
+    val surfacePrimary: Color,
+    val surfaceElevated: Color,
+    val surfacePlaceholder: Color,
+    val controlActionBackground: Color,
+    val controlActionBorder: Color,
+    val controlTrack: Color,
+    val brandDefault: Color,
+    val statusSuccess: Color,
+    val statusWarning: Color,
+    val statusError: Color,
+    val statusSuccess20: Color,
+    val statusWarning20: Color,
+    val statusError20: Color,
+    val statusSuccess50: Color,
+    val statusWarning50: Color,
+    val statusError50: Color,
+    val borderDefault: Color,
+    val borderDivider: Color,
+    val borderAccentSubtle: Color,
+    val textPrimary: Color,
+    val textSecondary: Color,
+    val textSecondaryDimmed: Color,
+    val textDisabled: Color,
+    val iconPrimary: Color,
+    val iconSecondary: Color,
+    val iconDisabled: Color,
+    val buttonPrimaryBrandContent: Color,
+    val buttonPrimaryNeutralBackground: Color,
+    val buttonPrimaryNeutralContent: Color,
+    val buttonPrimaryDestructiveBackground: Color,
+    val buttonPrimaryDestructiveContent: Color,
+    val buttonPrimaryDisabledBackground: Color,
+    val buttonPrimaryOutlineContent: Color,
+    val buttonPrimaryOutlineBorder: Color,
+    val buttonSecondaryFilledBackground: Color,
+    val buttonSecondaryFilledBorder: Color,
+    val badgeBackground: Color,
+    val contentInverse: Color,
+    val switchThumbChecked: Color,
+    val switchThumbUnchecked: Color,
+    val switchTrackUnchecked: Color,
+    val qrBackground: Color,
+    val scannerBackground: Color,
+    val snackbarNeutralBackground: Color,
+    val contentOnColor: Color,
+    val transparent: Color = Color.Transparent,
+)

@@ -60,7 +60,6 @@ import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.subhead2_lucian
 import cash.p.terminal.ui_compose.components.subhead2_remus
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
-import cash.p.terminal.ui_compose.theme.YellowL
 import cash.p.terminal.wallet.Wallet
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
@@ -103,7 +102,7 @@ fun SecurityCheckScreen(
 
     val uiState = viewModel.uiState
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.security_report),
@@ -221,7 +220,7 @@ fun AddressCheck(
                 .clip(RoundedCornerShape(12.dp))
                 .border(
                     0.5.dp,
-                    ComposeAppTheme.colors.steel20,
+                    ComposeAppTheme.colors.borderDefault,
                     RoundedCornerShape(12.dp)
                 )
         ) {
@@ -287,7 +286,7 @@ private fun CheckCell(
             Icon(
                 painter = painterResource(R.drawable.ic_star_filled_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.yellow,
+                tint = ComposeAppTheme.colors.statusWarning,
                 modifier = Modifier
                     .padding(end = 8.dp)
                     .size(20.dp)
@@ -329,11 +328,11 @@ fun CheckValue(
             }
 
             AddressCheckResult.AlphaAmlLow -> {
-                subhead2(stringResource(checkResult.title), ComposeAppTheme.colors.yellowD)
+                subhead2(stringResource(checkResult.title), ComposeAppTheme.colors.statusWarning)
             }
 
             AddressCheckResult.AlphaAmlHigh -> {
-                subhead2(stringResource(checkResult.title), YellowL)
+                subhead2(stringResource(checkResult.title), ComposeAppTheme.colors.statusWarning)
             }
 
             AddressCheckResult.AlphaAmlVeryHigh -> {

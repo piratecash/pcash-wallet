@@ -112,13 +112,13 @@ fun RestorePhraseNonStandard(
     val keyboardState by observeKeyboardState()
 
     val borderColor = if (uiState.error != null) {
-        ComposeAppTheme.colors.red50
+        ComposeAppTheme.colors.statusError50
     } else {
-        ComposeAppTheme.colors.steel20
+        ComposeAppTheme.colors.borderDefault
     }
 
     val coroutineScope = rememberCoroutineScope()
-    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
         AppBar(
             title = stringResource(R.string.Restore_NonStandardRestore),
             navigationIcon = {
@@ -154,11 +154,11 @@ fun RestorePhraseNonStandard(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
                         .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-                        .background(ComposeAppTheme.colors.lawrence),
+                        .background(ComposeAppTheme.colors.surfacePrimary),
                 ) {
 
                     val style = SpanStyle(
-                        color = ComposeAppTheme.colors.lucian,
+                        color = ComposeAppTheme.colors.statusError,
                         fontWeight = FontWeight.Normal,
                         fontSize = 16.sp,
                         letterSpacing = 0.sp
@@ -189,7 +189,7 @@ fun RestorePhraseNonStandard(
                             textStyle = ComposeAppTheme.typography.body
                         ),
                         maxLines = 6,
-                        cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
+                        cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
                         visualTransformation = {
                             try {
                                 val annotatedString = buildAnnotatedString {

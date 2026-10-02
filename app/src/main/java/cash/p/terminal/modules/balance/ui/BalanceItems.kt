@@ -1,14 +1,11 @@
 package cash.p.terminal.modules.balance.ui
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -32,7 +29,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
@@ -64,14 +60,13 @@ import cash.p.terminal.navigation.slideFromBottom
 import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.ui_compose.components.BalanceActionButton
 import cash.p.terminal.ui_compose.components.HSSwipeRefresh
-import cash.p.terminal.ui_compose.components.HsIconButton
 import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.components.RowWithArrow
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.Subhead1
 import cash.p.terminal.ui_compose.components.subhead2_grey
-import cash.p.terminal.ui_compose.components.subhead2_leah
 import cash.p.terminal.ui_compose.Select
+import cash.p.terminal.ui_compose.components.TextImportantError
+import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @Composable
@@ -81,15 +76,11 @@ fun NoteWarning(
     onClick: (() -> Unit),
     onClose: (() -> Unit)?
 ) {
-    Note(
+    TextImportantWarning(
         modifier = modifier.clickable(onClick = onClick),
         text = text,
         title = stringResource(id = R.string.AccountRecovery_Note),
         icon = R.drawable.ic_attention_20,
-        borderColor = ComposeAppTheme.colors.yellow,
-        backgroundColor = ComposeAppTheme.colors.yellow20,
-        textColor = ComposeAppTheme.colors.yellow,
-        iconColor = ComposeAppTheme.colors.yellow,
         onClose = onClose
     )
 }
@@ -100,69 +91,12 @@ fun NoteError(
     text: String,
     onClick: (() -> Unit)
 ) {
-    Note(
+    TextImportantError(
         modifier = modifier.clickable(onClick = onClick),
         text = text,
         title = stringResource(id = R.string.AccountRecovery_Note),
-        icon = R.drawable.ic_attention_20,
-        borderColor = ComposeAppTheme.colors.lucian,
-        backgroundColor = ComposeAppTheme.colors.red20,
-        textColor = ComposeAppTheme.colors.lucian,
-        iconColor = ComposeAppTheme.colors.lucian
+        icon = R.drawable.ic_attention_20
     )
-}
-
-@Composable
-fun Note(
-    modifier: Modifier = Modifier,
-    text: String,
-    title: String,
-    @DrawableRes icon: Int,
-    iconColor: Color,
-    borderColor: Color,
-    backgroundColor: Color,
-    textColor: Color,
-    onClose: (() -> Unit)? = null
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-            .background(backgroundColor)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Icon(
-                painter = painterResource(id = icon),
-                contentDescription = null,
-                tint = iconColor
-            )
-            Subhead1(
-                modifier = Modifier.weight(1f),
-                text = title,
-                color = textColor,
-            )
-            onClose?.let {
-                HsIconButton(
-                    modifier = Modifier.size(20.dp),
-                    onClick = onClose
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_close_24),
-                        tint = iconColor,
-                        contentDescription = null,
-                    )
-                }
-            }
-        }
-        if (text.isNotEmpty()) {
-            subhead2_leah(text = text)
-        }
-    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -498,7 +432,7 @@ private fun NoCoinsBlock() {
             modifier = Modifier
                 .size(100.dp)
                 .background(
-                    color = ComposeAppTheme.colors.raina,
+                    color = ComposeAppTheme.colors.surfacePlaceholder,
                     shape = CircleShape
                 ),
             contentAlignment = Alignment.Center

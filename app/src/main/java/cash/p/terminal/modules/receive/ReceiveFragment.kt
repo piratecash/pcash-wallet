@@ -32,9 +32,9 @@ import cash.p.terminal.modules.receive.ui.UsedAddressesParams
 import cash.p.terminal.modules.receive.viewmodels.ReceiveAddressViewModel
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.navigation.slideFromRight
-import cash.p.terminal.ui.compose.components.SelectorDialogCompose
-import cash.p.terminal.ui.compose.components.SelectorItem
 import cash.p.terminal.ui_compose.BaseComposeFragment
+import cash.p.terminal.ui_compose.components.AppSelectorDialog
+import cash.p.terminal.ui_compose.components.AppSelectorItem
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.body_grey
 import cash.p.terminal.ui_compose.components.body_disabled
@@ -161,7 +161,7 @@ private fun ReceiveTopContent(
             HorizontalDivider(
                 modifier = Modifier.fillMaxWidth(),
                 thickness = 1.dp,
-                color = ComposeAppTheme.colors.steel20,
+                color = ComposeAppTheme.colors.borderDivider,
             )
         }
         if (uiState.isAddressHistorySupported) {
@@ -173,7 +173,7 @@ private fun ReceiveTopContent(
             HorizontalDivider(
                 modifier = Modifier.fillMaxWidth(),
                 thickness = 1.dp,
-                color = ComposeAppTheme.colors.steel20,
+                color = ComposeAppTheme.colors.borderDivider,
             )
         }
     }
@@ -210,13 +210,13 @@ private fun BeamReceiveTypeSelector(
         Spacer(modifier = Modifier.weight(1f))
     }
     if (showSelector) {
-        SelectorDialogCompose(
+        AppSelectorDialog(
             title = stringResource(R.string.beam_send_receiver_type),
             items = BEAM_RECEIVE_ADDRESS_TYPES.map {
-                SelectorItem(stringResource(it.titleResId()), it == selected, it)
+                AppSelectorItem(stringResource(it.titleResId()), it == selected, it)
             },
-            onDismissRequest = { showSelector = false },
-            onSelectItem = onSelect,
+            onDismiss = { showSelector = false },
+            onSelect = onSelect,
         )
     }
 }

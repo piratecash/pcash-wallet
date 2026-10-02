@@ -51,7 +51,7 @@ internal fun OnboardingScreen(
     val context = LocalContext.current
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.create_wallet),
@@ -134,8 +134,8 @@ internal fun OnboardingScreen(
         ) {
             LinearProgressIndicator(
                 progress = { uiState.currentStep.progress },
-                color = ComposeAppTheme.colors.brand,
-                trackColor = ComposeAppTheme.colors.steel20,
+                color = ComposeAppTheme.colors.brandDefault,
+                trackColor = ComposeAppTheme.colors.controlTrack,
                 drawStopIndicator = {},
                 gapSize = 0.dp,
                 modifier = Modifier

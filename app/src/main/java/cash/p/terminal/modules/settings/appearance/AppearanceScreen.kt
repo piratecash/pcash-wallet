@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
 import cash.p.terminal.entities.LaunchPage
 import cash.p.terminal.modules.theme.ThemeType
-import cash.p.terminal.ui.compose.components.AlertGroup
+import cash.p.terminal.ui_compose.components.AlertGroup
 import cash.p.terminal.ui_compose.Select
 import cash.p.terminal.wallet.balance.BalanceViewType
 import cash.p.terminal.ui_compose.components.AppBar
@@ -56,7 +56,7 @@ internal fun AppearanceScreen(
     var openPriceChangeIntervalSelector by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.Settings_Appearance),

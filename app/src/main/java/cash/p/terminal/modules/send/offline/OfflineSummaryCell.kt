@@ -98,7 +98,7 @@ internal fun RawTransactionSection(rawHex: String) {
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(ComposeAppTheme.colors.surfacePrimary)
             .animateContentSize(),
     ) {
         RowUniversal(
@@ -173,7 +173,7 @@ internal fun OfflineStatusBlock(
 @Composable
 private fun OfflineStatusBlockStyle.backgroundColor(): Color =
     when (this) {
-        OfflineStatusBlockStyle.Success -> ComposeAppTheme.colors.greenD.copy(alpha = 0.1f)
-        OfflineStatusBlockStyle.Error -> ComposeAppTheme.colors.redD.copy(alpha = 0.1f)
-        OfflineStatusBlockStyle.Neutral -> ComposeAppTheme.colors.lawrence
+        OfflineStatusBlockStyle.Success -> ComposeAppTheme.colors.statusSuccess.copy(alpha = 0.1f)
+        OfflineStatusBlockStyle.Error -> ComposeAppTheme.colors.statusError.copy(alpha = 0.1f)
+        OfflineStatusBlockStyle.Neutral -> ComposeAppTheme.colors.surfacePrimary
     }

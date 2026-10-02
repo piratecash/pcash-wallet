@@ -131,7 +131,7 @@ val CustomAstBlockNodeComposer = object : AstBlockNodeComposer {
                                     .fillMaxWidth()
                                     .padding(vertical = 12.dp)
                                     .height(1.dp)
-                                    .background(ComposeAppTheme.colors.divider)
+                                    .background(ComposeAppTheme.colors.borderDivider)
                             )
                         }
                     }
@@ -146,7 +146,7 @@ val CustomAstBlockNodeComposer = object : AstBlockNodeComposer {
                                     .fillMaxWidth()
                                     .padding(vertical = 12.dp)
                                     .height(1.dp)
-                                    .background(ComposeAppTheme.colors.divider)
+                                    .background(ComposeAppTheme.colors.borderDivider)
                             )
                         }
                     }

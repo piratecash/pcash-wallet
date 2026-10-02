@@ -4,87 +4,112 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 
 
 val lightPalette = Colors(
-    yellow = YellowL,
-    remus = GreenL,
-    lucian = RedL,
-    tyler = BaseL,
-    bran = Dark,
-    claude = Color.White,
-    lawrence = Color.White,
-    navigation = NavigationL,
-    actionBackground = ActionBackgroundL,
-    actionBorder = ActionBorderL,
-    divider = DividerL,
-    buttonSecondaryFilledBackground = NavigationL,
-    buttonSecondaryFilledBorder = SecondaryFilledBorderL,
+    backgroundBase = BaseL,
+    backgroundNavigation = NavigationL,
+    backgroundOverlay = OverlayL,
+    surfacePrimary = Color.White,
+    surfaceElevated = Color.White,
+    surfacePlaceholder = Steel10,
+    controlActionBackground = ActionBackgroundL,
+    controlActionBorder = ActionBorderL,
+    controlTrack = Steel20,
+    brandDefault = BrandL,
+    statusSuccess = StatusSuccessL,
+    statusWarning = StatusWarningL,
+    statusError = StatusErrorL,
+    statusSuccess20 = StatusSuccessL.copy(alpha = 0.2f),
+    statusWarning20 = StatusWarningL.copy(alpha = 0.2f),
+    statusError20 = StatusErrorL.copy(alpha = 0.2f),
+    statusSuccess50 = StatusSuccessL.copy(alpha = 0.5f),
+    statusWarning50 = StatusWarningL.copy(alpha = 0.5f),
+    statusError50 = StatusErrorL.copy(alpha = 0.5f),
+    borderDefault = BorderDefaultL,
+    borderDivider = BorderDividerL,
+    borderAccentSubtle = BrandL.copy(alpha = 0.32f),
     textPrimary = TextPrimaryL,
     textSecondary = TextSecondaryL,
-    textSecondaryDimmed = TextSecondaryDimmedL,
+    textSecondaryDimmed = TextSecondaryL.copy(alpha = 0.5f),
     textDisabled = TextDisabledL,
     iconPrimary = TextPrimaryL,
     iconSecondary = TextSecondaryL,
     iconDisabled = TextDisabledL,
-    brand = BrandL,
-    borderAccentSubtle = BorderAccentSubtleL,
     buttonPrimaryBrandContent = TextPrimaryL,
     buttonPrimaryNeutralBackground = TextPrimaryL,
     buttonPrimaryNeutralContent = TextPrimaryD,
-    buttonPrimaryDestructiveBackground = DestructiveL,
+    buttonPrimaryDestructiveBackground = StatusErrorL,
     buttonPrimaryDestructiveContent = TextPrimaryD,
     buttonPrimaryDisabledBackground = ActionBorderL,
     buttonPrimaryOutlineContent = TextPrimaryL,
     buttonPrimaryOutlineBorder = OutlineBorderL,
-    jeremy = SteelLight,
-    raina = White50,
-    blade = Light,
-    midnight = Dark,
-    modalOverlay = Grey70
+    buttonSecondaryFilledBackground = NavigationL,
+    buttonSecondaryFilledBorder = SecondaryFilledBorderL,
+    badgeBackground = SteelLight,
+    contentInverse = Color.White,
+    switchThumbChecked = Color.White,
+    switchThumbUnchecked = LightGrey,
+    switchTrackUnchecked = SwitchTrackUnchecked,
+    qrBackground = Color.White,
+    scannerBackground = Dark,
+    snackbarNeutralBackground = TextSecondaryL,
+    contentOnColor = Color.White,
 )
 
 val darkPalette = Colors(
-    yellow = YellowD,
-    remus = GreenD,
-    lucian = RedD,
-    tyler = BaseD,
-    bran = LightGrey,
-    claude = Dark,
-    lawrence = SurfaceD,
-    navigation = NavigationD,
-    actionBackground = ActionBackgroundD,
-    actionBorder = ActionBorderD,
-    divider = DividerD,
-    buttonSecondaryFilledBackground = SecondaryFilledBackgroundD,
-    buttonSecondaryFilledBorder = SecondaryFilledBorderD,
+    backgroundBase = BaseD,
+    backgroundNavigation = NavigationD,
+    backgroundOverlay = OverlayD,
+    surfacePrimary = SurfaceD,
+    surfaceElevated = SurfaceElevatedD,
+    surfacePlaceholder = Steel10,
+    controlActionBackground = ActionBackgroundD,
+    controlActionBorder = ActionBorderD,
+    controlTrack = Steel20,
+    brandDefault = BrandD,
+    statusSuccess = StatusSuccessD,
+    statusWarning = StatusWarningD,
+    statusError = StatusErrorD,
+    statusSuccess20 = StatusSuccessD.copy(alpha = 0.2f),
+    statusWarning20 = StatusWarningD.copy(alpha = 0.2f),
+    statusError20 = StatusErrorD.copy(alpha = 0.2f),
+    statusSuccess50 = StatusSuccessD.copy(alpha = 0.5f),
+    statusWarning50 = StatusWarningD.copy(alpha = 0.5f),
+    statusError50 = StatusErrorD.copy(alpha = 0.5f),
+    borderDefault = BorderDefaultD,
+    borderDivider = BorderDividerD,
+    borderAccentSubtle = BrandD.copy(alpha = 0.32f),
     textPrimary = TextPrimaryD,
     textSecondary = TextSecondaryD,
-    textSecondaryDimmed = TextSecondaryDimmedD,
+    textSecondaryDimmed = TextSecondaryD.copy(alpha = 0.5f),
     textDisabled = TextDisabledD,
     iconPrimary = TextPrimaryD,
     iconSecondary = TextSecondaryD,
     iconDisabled = TextDisabledD,
-    brand = BrandD,
-    borderAccentSubtle = BorderAccentSubtleD,
     buttonPrimaryBrandContent = TextPrimaryL,
     buttonPrimaryNeutralBackground = TextPrimaryD,
     buttonPrimaryNeutralContent = TextPrimaryL,
-    buttonPrimaryDestructiveBackground = DestructiveD,
+    buttonPrimaryDestructiveBackground = StatusErrorD,
     buttonPrimaryDestructiveContent = TextPrimaryL,
     buttonPrimaryDisabledBackground = ActionBackgroundD,
     buttonPrimaryOutlineContent = TextPrimaryD,
     buttonPrimaryOutlineBorder = TextDisabledD,
-    jeremy = Steel20,
-    raina = Steel10,
-    blade = Carbon,
-    midnight = DarkGray,
-    modalOverlay = Black50
+    buttonSecondaryFilledBackground = SecondaryFilledBackgroundD,
+    buttonSecondaryFilledBorder = SecondaryFilledBorderD,
+    badgeBackground = Steel20,
+    contentInverse = Dark,
+    switchThumbChecked = Color.White,
+    switchThumbUnchecked = LightGrey,
+    switchTrackUnchecked = SwitchTrackUnchecked,
+    qrBackground = Color.White,
+    scannerBackground = Dark,
+    snackbarNeutralBackground = TextSecondaryD,
+    contentOnColor = Color.White,
 )
 
 @Composable
@@ -121,23 +146,17 @@ fun ProvideLocalAssets(
     content: @Composable () -> Unit
 ) {
 
-    val colorPalette = remember {
-        // Explicitly creating a new object here so we don't mutate the initial [colors]
-        // provided, and overwrite the values set in it.
-        colors.copy()
-    }
-    colorPalette.update(colors)
     val currentDensity = LocalDensity.current
     CompositionLocalProvider(
-        LocalColors provides colorPalette,
+        LocalColors provides colors,
         LocalTypography provides typography,
         LocalDensity provides Density(currentDensity.density, fontScale = 1f),
-        LocalContentColor provides colorPalette.textPrimary,
+        LocalContentColor provides colors.textPrimary,
         content = content
     )
 }
 
-val LocalColors = compositionLocalOf<Colors> {
+val LocalColors = staticCompositionLocalOf<Colors> {
     error("No Colors provided")
 }
 

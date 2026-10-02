@@ -40,7 +40,7 @@ fun NftAssetPreview(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(ComposeAppTheme.colors.surfacePrimary)
             .clickable(onClick = onClick)
     ) {
         Box(
@@ -49,7 +49,7 @@ fun NftAssetPreview(
                 .padding(start = 4.dp, top = 4.dp, end = 4.dp)
                 .height(156.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(ComposeAppTheme.colors.steel20)
+                .background(ComposeAppTheme.colors.surfacePlaceholder)
         ) {
             val painter = rememberAsyncImagePainter(imageUrl)
             val painterState by painter.state.collectAsStateWithLifecycle()

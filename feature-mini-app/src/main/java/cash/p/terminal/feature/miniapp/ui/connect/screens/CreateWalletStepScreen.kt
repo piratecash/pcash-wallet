@@ -122,14 +122,14 @@ fun WalletSelectionScreen(
                         if (item.isPremium) {
                             subhead2(
                                 text = stringResource(R.string.connect_mini_app_premium_bonus),
-                                color = ComposeAppTheme.colors.yellow,
+                                color = ComposeAppTheme.colors.statusWarning,
                             )
                         }
                     }
                     if (item.isPremium) {
                         Icon(
                             painter = painterResource(R.drawable.star_filled_yellow_16),
-                            tint = ComposeAppTheme.colors.yellow,
+                            tint = ComposeAppTheme.colors.statusWarning,
                             contentDescription = null,
                             modifier = Modifier.padding(end = 16.dp)
                         )

@@ -23,7 +23,7 @@ import cash.p.terminal.R
 import cash.p.terminal.modules.settings.main.HsSettingCell
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.navigation.slideFromRight
-import cash.p.terminal.ui.compose.components.AlertGroup
+import cash.p.terminal.ui_compose.components.AlertGroup
 import cash.p.terminal.ui_compose.Select
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
@@ -43,7 +43,7 @@ internal fun DisplayOptionsScreen(
 ) {
     var showPeriodSelector by remember { mutableStateOf(false) }
 
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(
                 title = stringResource(R.string.display_options),

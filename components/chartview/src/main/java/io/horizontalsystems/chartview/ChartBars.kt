@@ -15,7 +15,7 @@ fun ChartBars(
     chartData: ChartData,
 ) {
     val color =
-        if (chartData.disabled) ComposeAppTheme.colors.textSecondary else ComposeAppTheme.colors.brand
+        if (chartData.disabled) ComposeAppTheme.colors.textSecondary else ComposeAppTheme.colors.brandDefault
     var valueMin = chartData.minValue
     val valueMax = chartData.maxValue
     if (valueMin == valueMax) {

@@ -73,7 +73,7 @@ private fun InfoScreen(
     categoryScores: Map<OverallScore, String>,
     navController: NavController
 ) {
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(
                 navigationIcon = {
@@ -90,8 +90,8 @@ private fun InfoScreen(
                 val items = buildList<@Composable () -> Unit> {
                     categoryScores.forEach { (score, value) ->
                         val color = when (score) {
-                            OverallScore.Excellent -> Color(0xFF05C46B)
-                            OverallScore.Good -> Color(0xFFFFA800)
+                            OverallScore.Excellent -> ComposeAppTheme.colors.statusSuccess
+                            OverallScore.Good -> ComposeAppTheme.colors.statusWarning
                             OverallScore.Fair -> Color(0xFFFF7A00)
                             OverallScore.Poor -> Color(0xFFFF3D00)
                         }
@@ -133,7 +133,7 @@ private fun ScoreCategoryHeader(categoryTitle: Int, description: Int) {
         VSpacer(12.dp)
         Headline2(
             text = stringResource(categoryTitle),
-            color = ComposeAppTheme.colors.yellow,
+            color = ComposeAppTheme.colors.statusWarning,
             modifier = Modifier.padding(horizontal = 32.dp),
         )
         InfoTextBody(stringResource(description))

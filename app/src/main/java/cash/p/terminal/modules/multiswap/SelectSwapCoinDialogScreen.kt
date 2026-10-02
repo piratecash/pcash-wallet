@@ -56,7 +56,7 @@ fun SelectSwapCoinDialogScreen(
     fiatItems: List<CoinBalanceItem> = emptyList(),
     hasFiatSection: Boolean = false,
 ) {
-    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
         SearchBar(
             title = title,
             searchHintText = stringResource(R.string.ManageCoins_Search),
@@ -215,7 +215,7 @@ private fun CoinBalanceRowPreview() {
         fiatBalanceValue = null
     )
     ComposeAppTheme {
-        Column(modifier = Modifier.background(ComposeAppTheme.colors.tyler)) {
+        Column(modifier = Modifier.background(ComposeAppTheme.colors.backgroundBase)) {
             CoinBalanceRow(rubItem) {}
             CoinBalanceRow(usdtItem) {}
         }

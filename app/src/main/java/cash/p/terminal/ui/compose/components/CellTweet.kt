@@ -1,6 +1,8 @@
 package cash.p.terminal.ui.compose.components
 
 import androidx.compose.foundation.Image
+import cash.p.terminal.ui_compose.components.plateOutline
+import cash.p.terminal.ui_compose.components.plateBackground
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -62,7 +64,8 @@ fun CellTweet(tweet: TweetViewItem, onClick: (TweetViewItem) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(plateBackground())
+            .plateOutline(RoundedCornerShape(16.dp))
             .clickable {
                 onClick.invoke(tweet)
             }
@@ -106,7 +109,7 @@ private fun TweetReferencedTweet(referencedTweet: ReferencedTweetViewItem) {
     Column(Modifier
         .fillMaxWidth()
         .clip(RoundedCornerShape(8.dp))
-        .background(ComposeAppTheme.colors.steel10)
+        .background(ComposeAppTheme.colors.surfacePlaceholder)
         .padding(12.dp)
     ) {
         Text(
@@ -123,7 +126,7 @@ private fun TweetReferencedTweet(referencedTweet: ReferencedTweetViewItem) {
 private fun TweetText(text: String, entities: List<Extractor.Entity>) {
     val spanStyles = entities.map {
         AnnotatedString.Range(
-            SpanStyle(color = ComposeAppTheme.colors.brand), it.start, it.end
+            SpanStyle(color = ComposeAppTheme.colors.brandDefault), it.start, it.end
         )
     }
     Text(
@@ -188,14 +191,14 @@ private fun AttachmentVideo(attachment: Tweet.Attachment.Video) {
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .background(ComposeAppTheme.colors.black50)
+                .background(ComposeAppTheme.colors.backgroundOverlay)
         )
 
         Icon(
             modifier = Modifier.align(Alignment.Center),
             painter = painterResource(id = R.drawable.play_48),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.white,
+            tint = ComposeAppTheme.colors.contentOnColor,
         )
     }
 }
@@ -209,12 +212,12 @@ private fun AttachmentPoll(attachment: Tweet.Attachment.Poll) {
         attachment.options.forEach { option ->
             val proportion = option.votes / totalVotes.toFloat()
             val color = if (option.votes == maxVotes) {
-                ComposeAppTheme.colors.brand
+                ComposeAppTheme.colors.brandDefault
             } else {
-                ComposeAppTheme.colors.steel20
+                ComposeAppTheme.colors.surfacePlaceholder
             }
             val textColor = if (option.votes == maxVotes) {
-                ComposeAppTheme.colors.claude
+                ComposeAppTheme.colors.contentInverse
             } else {
                 ComposeAppTheme.colors.textPrimary
             }
@@ -223,7 +226,7 @@ private fun AttachmentPoll(attachment: Tweet.Attachment.Poll) {
                     .height(28.dp)
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(4.dp))
-                    .background(ComposeAppTheme.colors.steel10)
+                    .background(ComposeAppTheme.colors.controlTrack)
             ) {
                 Spacer(
                     modifier = Modifier

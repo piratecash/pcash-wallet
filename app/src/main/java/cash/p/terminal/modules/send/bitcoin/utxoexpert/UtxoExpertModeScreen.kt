@@ -60,7 +60,7 @@ fun UtxoExpertModeScreen(
 
     ComposeAppTheme {
         Scaffold(
-            containerColor = ComposeAppTheme.colors.tyler,
+            containerColor = ComposeAppTheme.colors.backgroundBase,
             topBar = {
                 AppBar(
                     title = stringResource(R.string.Send_Utxos),
@@ -101,7 +101,7 @@ fun UtxoExpertModeScreen(
                     Divider(
                         modifier = Modifier.fillMaxWidth(),
                         thickness = 1.dp,
-                        color = ComposeAppTheme.colors.steel10
+                        color = ComposeAppTheme.colors.borderDivider
                     )
                     Row(
                         modifier = Modifier
@@ -218,7 +218,7 @@ private fun UtxoCell(
     Box(
         modifier = Modifier
             .clip(shape)
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(ComposeAppTheme.colors.surfacePrimary)
     ) {
         SectionItemBorderedRowUniversalClear(
             onClick = {

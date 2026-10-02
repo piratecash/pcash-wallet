@@ -64,7 +64,7 @@ class FilterBlockchainFragment : BaseComposeFragment() {
 fun FilterBlockchainScreen(navController: NavController, viewModel: TransactionsViewModel) {
     val filterBlockchains by viewModel.filterBlockchainsLiveData.observeAsState()
 
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(
                 title = stringResource(R.string.Transactions_Filter_ChooseBlockchain),
@@ -138,7 +138,7 @@ private fun BlockchainCell(
                 Icon(
                     painter = painterResource(R.drawable.icon_20_check_1),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.brand
+                    tint = ComposeAppTheme.colors.brandDefault
                 )
             }
         }

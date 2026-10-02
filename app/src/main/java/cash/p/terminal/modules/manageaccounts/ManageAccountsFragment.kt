@@ -68,7 +68,7 @@ fun ManageAccountsScreen(navController: NavController, mode: ManageAccountsModul
 
     Column(
         modifier = Modifier
-            .background(color = ComposeAppTheme.colors.tyler)
+            .background(color = ComposeAppTheme.colors.backgroundBase)
             .navigationBarsPadding()
     ) {
         AppBar(
@@ -76,13 +76,13 @@ fun ManageAccountsScreen(navController: NavController, mode: ManageAccountsModul
             navigationIcon = { HsBackButton(onClick = { navController.popBackStackSafely() }) }
         )
 
-        LazyColumn(modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+        LazyColumn(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
             item {
                 WalletSection(
                     accounts = viewModel.premiumAccountsState,
                     onSelect = viewModel::onSelect,
                     navController = navController,
-                    frameColor = ComposeAppTheme.colors.brand,
+                    frameColor = ComposeAppTheme.colors.brandDefault,
                     header = {
                         PremiumHeader(text = stringResource(R.string.manage_accounts_premium_active))
                     }
@@ -182,7 +182,7 @@ fun ManageAccountsScreen(navController: NavController, mode: ManageAccountsModul
                             painter = painterResource(id = it.icon),
                             contentDescription = null,
                             tint = if (it.enabled) {
-                                ComposeAppTheme.colors.brand
+                                ComposeAppTheme.colors.brandDefault
                             } else {
                                 ComposeAppTheme.colors.iconDisabled
                             }
@@ -283,7 +283,7 @@ private fun AccountMoreButton(
     navController: NavController,
 ) {
     val (icon, iconTint) = if (accountViewItem.showAlertIcon) {
-        R.drawable.icon_warning_2_20 to ComposeAppTheme.colors.lucian
+        R.drawable.icon_warning_2_20 to ComposeAppTheme.colors.statusError
     } else {
         R.drawable.ic_more2_20 to ComposeAppTheme.colors.iconPrimary
     }

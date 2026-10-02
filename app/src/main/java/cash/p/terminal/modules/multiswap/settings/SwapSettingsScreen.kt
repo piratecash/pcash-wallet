@@ -86,7 +86,7 @@ fun SwapSettingsScreen(
                 )
             }
         },
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
     ) {
         Column(modifier = Modifier.padding(it)) {
             if (bankSetting?.hasBanks == true) {

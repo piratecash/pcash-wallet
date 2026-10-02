@@ -53,7 +53,7 @@ internal fun OfflineSendSyncErrorScreen(
     callbacks: OfflineSendSyncErrorCallbacks,
 ) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = state.title,
@@ -106,7 +106,7 @@ private fun OfflineSyncErrorContent(state: OfflineSendSyncErrorState) {
         }
         else -> OfflineStatusBlock(
             icon = R.drawable.ic_attention_red_24,
-            iconTint = ComposeAppTheme.colors.lucian,
+            iconTint = ComposeAppTheme.colors.statusError,
             style = OfflineStatusBlockStyle.Error,
             title = "${stringResource(R.string.BalanceSyncError_Title)} - ${state.coinCode}",
         ) {
@@ -187,12 +187,12 @@ private fun OfflineSyncProgressBlock() {
             modifier = Modifier
                 .size(100.dp)
                 .clip(CircleShape)
-                .background(ComposeAppTheme.colors.lawrence),
+                .background(ComposeAppTheme.colors.surfacePrimary),
             contentAlignment = Alignment.Center,
         ) {
             CircularProgressIndicator(
                 modifier = Modifier.size(44.dp),
-                color = ComposeAppTheme.colors.brand,
+                color = ComposeAppTheme.colors.brandDefault,
                 strokeWidth = 4.dp,
             )
         }

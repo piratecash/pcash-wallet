@@ -79,7 +79,7 @@ fun HsBackButton(onClick: () -> Unit) {
         Icon(
             painter = painterResource(id = R.drawable.ic_back),
             contentDescription = stringResource(R.string.Button_Back),
-            tint = ComposeAppTheme.colors.brand
+            tint = ComposeAppTheme.colors.brandDefault
         )
     }
 }
@@ -147,8 +147,8 @@ fun BalanceActionButton(
             modifier = Modifier
                 .size(46.dp)
                 .clip(shape)
-                .background(ComposeAppTheme.colors.actionBackground)
-                .border(1.dp, ComposeAppTheme.colors.actionBorder, shape)
+                .background(ComposeAppTheme.colors.controlActionBackground)
+                .border(1.dp, ComposeAppTheme.colors.controlActionBorder, shape)
                 .balanceSurfaceIndication(interactionSource),
             contentAlignment = Alignment.Center,
         ) {
@@ -158,7 +158,7 @@ fun BalanceActionButton(
                     .rotate(iconRotation),
                 painter = painterResource(icon),
                 contentDescription = null,
-                tint = if (enabled) ComposeAppTheme.colors.brand else ComposeAppTheme.colors.iconDisabled,
+                tint = if (enabled) ComposeAppTheme.colors.brandDefault else ComposeAppTheme.colors.iconDisabled,
             )
         }
         Spacer(Modifier.height(7.dp))
@@ -191,7 +191,7 @@ private fun BalanceActionsPreview() {
     ComposeAppTheme {
         BalanceActionsRow(
             modifier = Modifier
-                .background(ComposeAppTheme.colors.tyler)
+                .background(ComposeAppTheme.colors.backgroundBase)
                 .padding(16.dp),
         ) {
             listOf(
@@ -219,7 +219,7 @@ private fun BalanceActionsThreeButtonsPreview() {
     ComposeAppTheme {
         BalanceActionsRow(
             modifier = Modifier
-                .background(ComposeAppTheme.colors.tyler)
+                .background(ComposeAppTheme.colors.backgroundBase)
                 .padding(16.dp),
         ) {
             listOf(

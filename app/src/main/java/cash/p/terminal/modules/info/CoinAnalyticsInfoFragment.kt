@@ -44,7 +44,7 @@ private fun CoinAnalyticsInfoScreen(
     onBackPress: () -> Unit
 ) {
 
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(
                 navigationIcon = {

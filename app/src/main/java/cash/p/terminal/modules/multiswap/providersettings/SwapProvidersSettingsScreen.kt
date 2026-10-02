@@ -39,7 +39,7 @@ internal fun SwapProvidersSettingsScreen(
     val mandatoryToast = stringResource(R.string.swap_providers_mandatory_toast)
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.swap_providers_title),

@@ -1,6 +1,8 @@
 package cash.p.terminal.ui.compose.components
 
 import androidx.compose.foundation.layout.*
+import cash.p.terminal.ui_compose.components.plateOutline
+import cash.p.terminal.ui_compose.components.plateBackground
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
@@ -28,10 +30,11 @@ fun CellNews(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+            .plateOutline(RoundedCornerShape(16.dp)),
         elevation = 0.dp,
         shape = RoundedCornerShape(16.dp),
-        backgroundColor = cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.lawrence,
+        backgroundColor = plateBackground(),
         onClick = { onClick.invoke() }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {

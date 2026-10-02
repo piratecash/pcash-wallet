@@ -142,7 +142,7 @@ private fun EvmNetworkScreen(
     var revealedCardId by remember { mutableStateOf<String?>(null) }
     val view = LocalView.current
 
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(
                 title = viewModel.title,
@@ -302,7 +302,7 @@ private fun AddButton(
                 Icon(
                     painter = painterResource(R.drawable.ic_plus),
                     modifier = Modifier.size(24.dp),
-                    tint = ComposeAppTheme.colors.brand,
+                    tint = ComposeAppTheme.colors.brandDefault,
                     contentDescription = null
                 )
                 Spacer(Modifier.width(16.dp))
@@ -326,7 +326,7 @@ fun RpcCell(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(shape)
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(ComposeAppTheme.colors.surfacePrimary)
             .clickable {
                 onItemClick.invoke(item.syncSource)
             },
@@ -335,7 +335,7 @@ fun RpcCell(
         if (showDivider) {
             Divider(
                 thickness = 1.dp,
-                color = ComposeAppTheme.colors.steel10,
+                color = ComposeAppTheme.colors.borderDivider,
                 modifier = Modifier.align(Alignment.TopCenter)
             )
         }
@@ -359,7 +359,7 @@ fun RpcCell(
             if (item.selected) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_checkmark_20),
-                    tint = ComposeAppTheme.colors.brand,
+                    tint = ComposeAppTheme.colors.brandDefault,
                     contentDescription = null
                 )
             }

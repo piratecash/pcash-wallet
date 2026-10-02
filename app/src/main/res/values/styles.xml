@@ -2,7 +2,7 @@
 <resources>
 
     <style name="ToolbarStyle">
-        <item name="colorControlNormal">@color/brand</item>
+        <item name="colorControlNormal">@color/brand_default</item>
     </style>
 
     <style name="BottomDialogFullScreen" parent="Theme.AppCompat.Dialog">
@@ -29,7 +29,7 @@
     </style>
 
     <style name="SwitchTheme" parent="ThemeOverlay.AppCompat.Dark">
-        <item name="colorControlActivated">@color/remus</item>
+        <item name="colorControlActivated">@color/status_success</item>
         <item name="colorControlNormal">@color/icon_secondary</item>
         <item name="colorSwitchThumbNormal">@color/icon_secondary</item>
         <item name="android:colorForeground">@color/icon_secondary</item>

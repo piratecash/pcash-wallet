@@ -18,6 +18,7 @@ import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.HsBackButton
 import io.horizontalsystems.chartview.cell.CellBlockchainChecked
 import cash.p.terminal.ui_compose.components.SectionUniversalLawrence
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.core.entities.Blockchain
 
 const val BlockchainSelectorResult = "blockchain_selector_result_key"
@@ -39,7 +40,7 @@ fun AddTokenBlockchainSelectorScreen(
                 },
             )
         },
-        containerColor = cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.tyler
+        containerColor = ComposeAppTheme.colors.backgroundBase
     ) {
         Column(
             modifier = Modifier

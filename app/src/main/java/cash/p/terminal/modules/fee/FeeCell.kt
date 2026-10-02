@@ -74,7 +74,7 @@ fun FeeCell(
             }
             Column(horizontalAlignment = Alignment.End) {
                 val color = if (viewState is ViewState.Error) {
-                    ComposeAppTheme.colors.lucian
+                    ComposeAppTheme.colors.statusError
                 } else if (value == null) {
                     ComposeAppTheme.colors.textDisabled
                 } else {

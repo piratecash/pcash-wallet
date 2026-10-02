@@ -84,14 +84,12 @@ fun CoinOverviewScreen(
                 contenView = view,
                 resId = it.text,
                 icon = it.iconRes,
-                iconTint = R.color.white
             )
 
             HudMessageType.Success -> HudHelper.showSuccessMessage(
                 contenView = view,
                 resId = it.text,
                 icon = it.iconRes,
-                iconTint = R.color.white
             )
         }
 

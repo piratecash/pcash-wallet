@@ -78,7 +78,7 @@ fun NftHoldingsScreen(navController: NavController) {
 
     val loading = viewModel.refreshing
 
-    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
         AppBar(
             title = stringResource(R.string.Nfts_Title),
             navigationIcon = {

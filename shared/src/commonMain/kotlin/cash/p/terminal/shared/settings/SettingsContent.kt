@@ -112,7 +112,7 @@ private fun DonateAndMiniAppSections(onAction: (SettingsAction) -> Unit) {
         SettingsCell(
             title = Res.string.Settings_Donate,
             icon = Res.drawable.ic_heart_filled_24,
-            iconTint = ComposeAppTheme.colors.brand,
+            iconTint = ComposeAppTheme.colors.brandDefault,
             onClick = onAction.callbackFor(SettingsAction.Donate),
         )
     }
@@ -289,20 +289,20 @@ private fun PremiumSettingsSection(
         SettingsCell(
             title = Res.string.about_premium,
             icon = Res.drawable.ic_info_20,
-            iconTint = ComposeAppTheme.colors.brand,
+            iconTint = ComposeAppTheme.colors.brandDefault,
             onClick = onAction.callbackFor(SettingsAction.AboutPremium),
         )
         SettingsCell(
             title = Res.string.premium_settings,
             icon = Res.drawable.ic_settings,
-            iconTint = ComposeAppTheme.colors.brand,
+            iconTint = ComposeAppTheme.colors.brandDefault,
             alertPainter = alertPainter.takeIf { uiState.premiumSettingsShowAlert },
             onClick = onAction.callbackFor(SettingsAction.PremiumSettings),
         )
         SettingsCell(
             title = Res.string.advanced_security,
             icon = Res.drawable.ic_shield_24,
-            iconTint = ComposeAppTheme.colors.brand,
+            iconTint = ComposeAppTheme.colors.brandDefault,
             onClick = onAction.callbackFor(SettingsAction.AdvancedSecurity),
         )
     }
@@ -378,7 +378,7 @@ private fun SettingsFooter(
             modifier = Modifier
                 .width(100.dp)
                 .padding(top = 8.dp, bottom = 4.5.dp),
-            color = ComposeAppTheme.colors.steel20,
+            color = ComposeAppTheme.colors.borderDivider,
         )
         Text(
             text = settingsStringResource(Res.string.Settings_InfoSubtitle),

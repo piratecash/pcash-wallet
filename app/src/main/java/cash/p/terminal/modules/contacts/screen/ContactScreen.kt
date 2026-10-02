@@ -108,7 +108,7 @@ fun ContactScreen(
                         title = stringResource(R.string.Contacts_DeleteContact),
                         text = stringResource(R.string.Contacts_DeleteContact_Warning),
                         iconPainter = painterResource(R.drawable.ic_delete_20),
-                        iconTint = ColorFilter.tint(ComposeAppTheme.colors.lucian),
+                        iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusError),
                         confirmText = stringResource(R.string.Button_Delete),
                         cautionType = Caution.Type.Error,
                         cancelText = stringResource(R.string.Button_Cancel),
@@ -122,7 +122,7 @@ fun ContactScreen(
                         title = stringResource(R.string.Alert_TitleWarning),
                         text = stringResource(R.string.Contacts_DiscardChanges_Warning),
                         iconPainter = painterResource(R.drawable.icon_warning_2_20),
-                        iconTint = ColorFilter.tint(ComposeAppTheme.colors.yellow),
+                        iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
                         confirmText = stringResource(R.string.Contacts_DiscardChanges),
                         cautionType = Caution.Type.Error,
                         cancelText = stringResource(R.string.Contacts_KeepEditing),
@@ -155,7 +155,7 @@ fun ContactScreen(
         }
 
         Scaffold(
-            containerColor = ComposeAppTheme.colors.tyler,
+            containerColor = ComposeAppTheme.colors.backgroundBase,
             topBar = {
                 AppBar(
                     title = uiState.headerTitle.getString(),
@@ -312,7 +312,7 @@ private fun DeleteContactButton(onClick: () -> Unit) {
             modifier = Modifier.padding(horizontal = 16.dp),
             painter = painterResource(R.drawable.ic_delete_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.lucian
+            tint = ComposeAppTheme.colors.statusError
         )
         body_lucian(
             text = stringResource(R.string.Contacts_DeleteContact),
@@ -329,7 +329,7 @@ private fun AddAddressButton(onClick: () -> Unit) {
             modifier = Modifier.padding(horizontal = 16.dp),
             painter = painterResource(R.drawable.ic_plus),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.brand
+            tint = ComposeAppTheme.colors.brandDefault
         )
         body_brand(text = stringResource(R.string.Contacts_AddAddress))
     }
@@ -377,7 +377,11 @@ private fun ContactAddress(
         Icon(
             painter = painterResource(id = R.drawable.ic_edit_20),
             contentDescription = null,
-            tint = if (addressViewItem.edited) ComposeAppTheme.colors.brand else ComposeAppTheme.colors.iconSecondary
+            tint = if (addressViewItem.edited) {
+                ComposeAppTheme.colors.brandDefault
+            } else {
+                ComposeAppTheme.colors.iconSecondary
+            }
         )
     }
 }

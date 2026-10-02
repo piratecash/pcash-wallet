@@ -10,11 +10,11 @@ enum class ColorName {
 
     @Composable
     fun compose() = when (this) {
-        Remus -> ComposeAppTheme.colors.remus
-        Lucian -> ComposeAppTheme.colors.lucian
+        Remus -> ComposeAppTheme.colors.statusSuccess
+        Lucian -> ComposeAppTheme.colors.statusError
         Primary -> ComposeAppTheme.colors.textPrimary
         Secondary -> ComposeAppTheme.colors.textSecondary
-        Brand -> ComposeAppTheme.colors.brand
+        Brand -> ComposeAppTheme.colors.brandDefault
     }
 }
 

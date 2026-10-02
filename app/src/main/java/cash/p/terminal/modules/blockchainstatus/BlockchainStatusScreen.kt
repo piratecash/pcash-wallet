@@ -56,7 +56,7 @@ internal fun BlockchainStatusScreen(
     val context = LocalContext.current
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = "${uiState.blockchainName} ${stringResource(R.string.blockchain_status)}",

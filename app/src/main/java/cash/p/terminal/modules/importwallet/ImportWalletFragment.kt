@@ -161,7 +161,7 @@ private fun ImportWalletScreen(
                 title = stringResource(R.string.ImportWallet_WarningInvalidJson),
                 text = stringResource(R.string.ImportWallet_WarningInvalidJsonDescription),
                 iconPainter = painterResource(R.drawable.icon_warning_2_20),
-                iconTint = ColorFilter.tint(ComposeAppTheme.colors.lucian),
+                iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusError),
                 confirmText = stringResource(R.string.ImportWallet_SelectAnotherFile),
                 cautionType = Caution.Type.Warning,
                 cancelText = stringResource(R.string.Button_Cancel),
@@ -176,7 +176,7 @@ private fun ImportWalletScreen(
         }
     ) {
         Scaffold(
-            containerColor = ComposeAppTheme.colors.tyler,
+            containerColor = ComposeAppTheme.colors.backgroundBase,
             topBar = {
                 AppBar(
                     title = stringResource(R.string.ManageAccounts_ImportWallet),

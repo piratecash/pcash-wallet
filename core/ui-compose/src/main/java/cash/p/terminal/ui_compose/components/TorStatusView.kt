@@ -64,7 +64,7 @@ internal fun TorStatusView(
 
     Divider(
         thickness = 1.dp,
-        color = ComposeAppTheme.colors.steel10,
+        color = ComposeAppTheme.colors.borderDivider,
         modifier = modifier.fillMaxWidth()
     )
 
@@ -75,10 +75,10 @@ internal fun TorStatusView(
         contentAlignment = Alignment.Center
     ) {
         if (torViewState.torIsActive) {
-            val startColor = ComposeAppTheme.colors.remus
-            val endColor = ComposeAppTheme.colors.lawrence
+            val startColor = ComposeAppTheme.colors.statusSuccess
+            val endColor = ComposeAppTheme.colors.surfacePrimary
             val color = remember { Animatable(startColor) }
-            val startTextColor = ComposeAppTheme.colors.white
+            val startTextColor = ComposeAppTheme.colors.contentOnColor
             val endTextColor = ComposeAppTheme.colors.textPrimary
             val textColor = remember { Animatable(startTextColor) }
 
@@ -105,7 +105,7 @@ internal fun TorStatusView(
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(ComposeAppTheme.colors.lawrence)
+                    .background(ComposeAppTheme.colors.surfacePrimary)
                     .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -115,7 +115,7 @@ internal fun TorStatusView(
                     modifier = Modifier.weight(1f),
                     style = ComposeAppTheme.typography.subhead2,
                     color = if (torViewState.showRetryButton) {
-                        ComposeAppTheme.colors.lucian
+                        ComposeAppTheme.colors.statusError
                     } else {
                         ComposeAppTheme.colors.textPrimary
                     },

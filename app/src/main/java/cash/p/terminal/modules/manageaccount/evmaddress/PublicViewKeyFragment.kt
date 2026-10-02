@@ -54,7 +54,7 @@ class PublicViewKeyFragment : BaseComposeFragment(screenshotEnabled = false) {
 private fun PublicViewKeyScreen(input: Input, navController: NavController) {
     val view = LocalView.current
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(input.titleResId),

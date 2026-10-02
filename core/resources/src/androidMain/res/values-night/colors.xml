@@ -1,36 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!--Semantic text / icon tokens-->
-    <color name="text_primary">#F5F5F6</color>
-    <color name="text_secondary">#94949A</color>
-    <color name="text_secondary_dimmed">#8094949A</color>
-    <color name="text_disabled">#66666C</color>
+    <!--Palette bridge: kept equal to darkPalette by XmlPaletteBridgeTest-->
+    <color name="background_base">#0F0F0F</color>
+    <color name="brand_default">#4A98E9</color>
     <color name="icon_primary">#F5F5F6</color>
     <color name="icon_secondary">#94949A</color>
     <color name="icon_disabled">#66666C</color>
-    <color name="brand">#4A98E9</color>
-    <color name="divider">#242426</color>
-
-    <!--Paired Colors-->
-    <color name="yellow">@color/yellow_d</color>
-    <color name="remus">@color/green_d</color>
-    <color name="lucian">@color/red_d</color>
-    <color name="tyler">#0F0F0F</color>
-    <color name="navigation">#000000</color>
-    <color name="action_background">#2A2A2D</color>
-    <color name="action_border">#3A3A3E</color>
-    <color name="cassandra">@color/dark</color>
-    <color name="bran">@color/light_grey</color>
-
-    <color name="claude">@color/dark</color>
-    <color name="lawrence">#18181A</color>
-    <color name="lawrence_pressed">#353842</color>
-    <color name="elena">@color/steel_dark</color>
-    <color name="jeremy">@color/steel_20</color>
-
-    <color name="nina">@color/white_50</color>
-    <color name="raina">@color/steel_10</color>
-
-    <color name="tylerGradientStart">#ff0f0f0f</color>
-    <color name="tylerGradientEnd">#000f0f0f</color>
+    <color name="text_primary">#F5F5F6</color>
+    <color name="status_success">#16C96F</color>
+    <color name="status_error">#FF4D4D</color>
 </resources>

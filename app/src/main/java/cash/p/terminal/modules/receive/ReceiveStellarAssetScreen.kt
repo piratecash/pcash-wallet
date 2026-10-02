@@ -77,7 +77,7 @@ fun ReceiveStellarAssetScreen(
         sheetContent = {
             BottomSheetHeader(
                 iconPainter = painterResource(R.drawable.ic_attention_24),
-                iconTint = ColorFilter.tint(ComposeAppTheme.colors.yellow),
+                iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
                 title = stringResource(R.string.ActivationRequired_DialogTitle),
                 onCloseClick = {
                     scope.launch {

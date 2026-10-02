@@ -151,7 +151,7 @@ class ResendBitcoinFragment : BaseComposeFragment() {
             }
         }
 
-        Column(Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+        Column(Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
             AppBar(
                 title = stringResource(uiState.titleResId),
                 navigationIcon = {

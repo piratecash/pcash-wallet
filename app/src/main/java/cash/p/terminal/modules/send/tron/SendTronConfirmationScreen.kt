@@ -176,7 +176,7 @@ private fun TronOnlineConfirmation(
         }
     }
 
-    Column(Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+    Column(Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
         AppBar(
             title = stringResource(R.string.Send_Confirmation_Title),
             navigationIcon = {

@@ -25,8 +25,9 @@ fun SwitchWithText(
     enabled: Boolean = true,
     onCheckedChange: ((Boolean) -> Unit)?,
     extraIcon: (@Composable () -> Unit)? = null,
+    borderTop: Boolean = false,
 ) {
-    CellUniversal {
+    CellUniversal(borderTop = borderTop) {
         if (enabled) {
             body_leah(
                 text = text,
@@ -62,18 +63,20 @@ fun SwitchWithTextWarning(
     enabled: Boolean = true,
     showWarning: Boolean = true,
     onWarningIconClick: () -> Unit,
-    onCheckedChange: ((Boolean) -> Unit)?
+    onCheckedChange: ((Boolean) -> Unit)?,
+    borderTop: Boolean = false,
 ) {
     SwitchWithText(
         text = text,
         checked = checked,
         enabled = enabled,
+        borderTop = borderTop,
         extraIcon = if (showWarning) {
             {
                 Icon(
                     painter = painterResource(id = R.drawable.icon_24_warning_2),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.lucian,
+                    tint = ComposeAppTheme.colors.statusError,
                     modifier = Modifier
                         .padding(end = 8.dp)
                         .size(20.dp)

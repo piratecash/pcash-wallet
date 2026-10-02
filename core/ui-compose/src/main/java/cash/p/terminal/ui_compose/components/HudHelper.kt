@@ -21,10 +21,9 @@ object HudHelper {
         return showHudNotification(
             contentView = contenView,
             text = contenView.context.getString(resId),
-            backgroundColor = R.color.text_secondary,
+            variant = if (showProgressBar) AppSnackbarVariant.InProgress else AppSnackbarVariant.Message,
             duration = duration,
             gravity = gravity,
-            showProgressBar = showProgressBar
         )
     }
 
@@ -34,16 +33,14 @@ object HudHelper {
         duration: SnackbarDuration = SnackbarDuration.SHORT,
         gravity: SnackbarGravity = SnackbarGravity.BOTTOM,
         @DrawableRes icon: Int? = null,
-        iconTint: Int? = null,
     ): CustomSnackbar? {
         return showHudNotification(
             contentView = contenView,
             text = contenView.context.getString(resId),
-            backgroundColor = R.color.green_d,
+            variant = AppSnackbarVariant.Success,
             duration = duration,
             gravity = gravity,
             icon = icon,
-            iconTint = iconTint
         )
     }
 
@@ -56,7 +53,7 @@ object HudHelper {
         return showHudNotification(
             contentView = contenView,
             text = text,
-            backgroundColor = R.color.green_d,
+            variant = AppSnackbarVariant.Success,
             duration = duration,
             gravity = gravity,
         )
@@ -68,16 +65,14 @@ object HudHelper {
         duration: SnackbarDuration = SnackbarDuration.SHORT,
         gravity: SnackbarGravity = SnackbarGravity.BOTTOM,
         @DrawableRes icon: Int? = null,
-        iconTint: Int? = null,
     ): CustomSnackbar? {
         return showHudNotification(
             contentView = contentView,
             text = text,
-            backgroundColor = R.color.text_secondary,
+            variant = AppSnackbarVariant.Message,
             duration = duration,
             gravity = gravity,
             icon = icon,
-            iconTint = iconTint,
         )
     }
 
@@ -97,7 +92,7 @@ object HudHelper {
         return showHudNotification(
             contentView = contentView,
             text = text,
-            backgroundColor = R.color.red_d,
+            variant = AppSnackbarVariant.Error,
             duration = SnackbarDuration.LONG,
             gravity = gravity,
         )
@@ -109,16 +104,14 @@ object HudHelper {
         duration: SnackbarDuration = SnackbarDuration.SHORT,
         gravity: SnackbarGravity = SnackbarGravity.BOTTOM,
         @DrawableRes icon: Int? = null,
-        iconTint: Int? = null,
     ): CustomSnackbar? {
         return showHudNotification(
             contentView = contenView,
             text = contenView.context.getString(resId),
-            backgroundColor = R.color.red_d,
+            variant = AppSnackbarVariant.Error,
             duration = duration,
             gravity = gravity,
             icon = icon,
-            iconTint = iconTint
         )
     }
 
@@ -131,11 +124,10 @@ object HudHelper {
         return showHudNotification(
             contentView = contentView,
             text = contentView.context.getString(resId),
-            backgroundColor = R.color.text_secondary,
+            variant = AppSnackbarVariant.Warning,
             duration = duration,
             gravity = gravity,
             icon = R.drawable.ic_attention_24,
-            iconTint = R.color.yellow
         )
     }
 
@@ -148,7 +140,7 @@ object HudHelper {
         return showHudNotification(
             contentView = contentView,
             text = contentView.context.getString(resId),
-            backgroundColor = R.color.yellow,
+            variant = AppSnackbarVariant.Premium,
             duration = duration,
             gravity = gravity,
         )
@@ -179,23 +171,19 @@ object HudHelper {
     private fun showHudNotification(
         contentView: View,
         text: String,
-        backgroundColor: Int,
+        variant: AppSnackbarVariant,
         duration: SnackbarDuration,
         gravity: SnackbarGravity,
-        showProgressBar: Boolean = false,
         @DrawableRes icon: Int? = null,
-        iconTint: Int? = null,
     ): CustomSnackbar? {
 
         val snackbar = CustomSnackbar.make(
             contentView = contentView,
             text = text,
-            backgroundColor = backgroundColor,
+            variant = variant,
             duration = duration,
             gravity = gravity,
-            showProgressBar = showProgressBar,
             iconRes = icon,
-            iconTint = iconTint
         )
         snackbar?.show()
 

@@ -193,7 +193,7 @@ fun WCNewSignRequestScreen(
     onDecline: () -> Unit
 ) {
     Column(
-        modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)
+        modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)
             .navigationBarsPadding()
     ) {
         AppBar(

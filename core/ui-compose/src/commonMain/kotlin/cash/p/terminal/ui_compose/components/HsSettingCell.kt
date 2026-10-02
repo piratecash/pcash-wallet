@@ -101,7 +101,7 @@ private fun SettingCellNewBadge(text: String?) {
         BadgeText(
             text = it,
             modifier = Modifier.padding(horizontal = 8.dp),
-            background = ComposeAppTheme.colors.issykBlue,
+            background = ComposeAppTheme.colors.brandDefault,
         )
     }
 }

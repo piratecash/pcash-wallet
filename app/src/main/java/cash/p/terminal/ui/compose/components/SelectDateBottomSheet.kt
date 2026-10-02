@@ -1,6 +1,7 @@
 package cash.p.terminal.ui.compose.components
 
 import android.content.res.Configuration
+import cash.p.terminal.ui_compose.components.plateBackground
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -122,7 +123,7 @@ fun SelectDateBottomSheet(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun selectDateBottomSheetColors() = DatePickerDefaults.colors(
-    containerColor = ComposeAppTheme.colors.lawrence,
+    containerColor = plateBackground(),
     titleContentColor = ComposeAppTheme.colors.textSecondary,
     headlineContentColor = ComposeAppTheme.colors.textPrimary,
     weekdayContentColor = ComposeAppTheme.colors.textSecondary,
@@ -130,22 +131,22 @@ private fun selectDateBottomSheetColors() = DatePickerDefaults.colors(
     navigationContentColor = ComposeAppTheme.colors.textPrimary,
     yearContentColor = ComposeAppTheme.colors.textPrimary,
     disabledYearContentColor = ComposeAppTheme.colors.textDisabled,
-    currentYearContentColor = ComposeAppTheme.colors.brand,
-    selectedYearContentColor = ComposeAppTheme.colors.dark,
+    currentYearContentColor = ComposeAppTheme.colors.brandDefault,
+    selectedYearContentColor = ComposeAppTheme.colors.buttonPrimaryBrandContent,
     disabledSelectedYearContentColor = ComposeAppTheme.colors.textDisabled,
-    selectedYearContainerColor = ComposeAppTheme.colors.brand,
-    disabledSelectedYearContainerColor = ComposeAppTheme.colors.steel20,
+    selectedYearContainerColor = ComposeAppTheme.colors.brandDefault,
+    disabledSelectedYearContainerColor = ComposeAppTheme.colors.buttonPrimaryDisabledBackground,
     dayContentColor = ComposeAppTheme.colors.textPrimary,
     disabledDayContentColor = ComposeAppTheme.colors.textDisabled,
-    selectedDayContentColor = ComposeAppTheme.colors.dark,
+    selectedDayContentColor = ComposeAppTheme.colors.buttonPrimaryBrandContent,
     disabledSelectedDayContentColor = ComposeAppTheme.colors.textDisabled,
-    selectedDayContainerColor = ComposeAppTheme.colors.brand,
-    disabledSelectedDayContainerColor = ComposeAppTheme.colors.steel20,
-    todayContentColor = ComposeAppTheme.colors.brand,
-    todayDateBorderColor = ComposeAppTheme.colors.brand,
+    selectedDayContainerColor = ComposeAppTheme.colors.brandDefault,
+    disabledSelectedDayContainerColor = ComposeAppTheme.colors.buttonPrimaryDisabledBackground,
+    todayContentColor = ComposeAppTheme.colors.brandDefault,
+    todayDateBorderColor = ComposeAppTheme.colors.brandDefault,
     dayInSelectionRangeContentColor = ComposeAppTheme.colors.textPrimary,
-    dayInSelectionRangeContainerColor = ComposeAppTheme.colors.steel20,
-    dividerColor = ComposeAppTheme.colors.steel20,
+    dayInSelectionRangeContainerColor = ComposeAppTheme.colors.surfacePlaceholder,
+    dividerColor = ComposeAppTheme.colors.borderDivider,
 )
 
 private fun epochMillisToYear(millis: Long): Int =

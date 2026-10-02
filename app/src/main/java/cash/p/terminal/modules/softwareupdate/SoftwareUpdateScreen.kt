@@ -46,8 +46,8 @@ import cash.p.terminal.modules.softwareupdate.domain.InstallSource
 import cash.p.terminal.modules.softwareupdate.domain.UpdateCheckInterval
 import cash.p.terminal.modules.softwareupdate.domain.UpdateStatus
 import cash.p.terminal.network.github.domain.entity.AppRelease
-import cash.p.terminal.ui.compose.components.SelectorDialogCompose
-import cash.p.terminal.ui.compose.components.SelectorItem
+import cash.p.terminal.ui_compose.components.AppSelectorDialog
+import cash.p.terminal.ui_compose.components.AppSelectorItem
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
@@ -76,7 +76,7 @@ internal fun SoftwareUpdateScreen(
     onUpdateNowClick: (AppRelease?) -> Unit,
 ) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.update_screen_title),
@@ -156,17 +156,17 @@ private fun IntervalCell(
     var showDialog by remember { mutableStateOf(false) }
 
     if (showDialog) {
-        SelectorDialogCompose(
+        AppSelectorDialog(
             title = stringResource(R.string.auto_check_updates),
             items = UpdateCheckInterval.entries.map { option ->
-                SelectorItem(
+                AppSelectorItem(
                     title = stringResource(option.fullLabelRes()),
                     selected = option == interval,
                     item = option,
                 )
             },
-            onDismissRequest = { showDialog = false },
-            onSelectItem = { selected ->
+            onDismiss = { showDialog = false },
+            onSelect = { selected ->
                 onIntervalChange(selected)
                 showDialog = false
             },
@@ -219,7 +219,7 @@ private fun UpToDateBlock(version: String, onDetailsClick: (() -> Unit)?) {
             modifier = Modifier
                 .size(150.dp)
                 .clip(CircleShape)
-                .background(ComposeAppTheme.colors.steel10),
+                .background(ComposeAppTheme.colors.surfacePlaceholder),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
@@ -262,7 +262,7 @@ private fun AvailableSection(
                 .padding(horizontal = 16.dp)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
-                .border(1.dp, ComposeAppTheme.colors.steel20, RoundedCornerShape(12.dp)),
+                .border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(12.dp)),
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 AvailableCardHeader(status.release)
@@ -289,7 +289,7 @@ private fun AvailableSection(
                     )
                 }
             }
-            HorizontalDivider(thickness = 1.dp, color = ComposeAppTheme.colors.steel10)
+            HorizontalDivider(thickness = 1.dp, color = ComposeAppTheme.colors.borderDivider)
             Column(modifier = Modifier.padding(16.dp)) {
                 ButtonPrimaryYellow(
                     modifier = Modifier.fillMaxWidth(),

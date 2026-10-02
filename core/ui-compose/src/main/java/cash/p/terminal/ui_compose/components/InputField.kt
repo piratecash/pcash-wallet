@@ -42,8 +42,8 @@ fun InputField(
         Column(
             modifier = Modifier
                 .clip(RoundedCornerShape(12.dp))
-                .border(1.dp, ComposeAppTheme.colors.steel20, RoundedCornerShape(12.dp))
-                .background(ComposeAppTheme.colors.lawrence),
+                .border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(12.dp))
+                .background(plateBackground()),
         ) {
             Row(
                 modifier = Modifier
@@ -64,7 +64,7 @@ fun InputField(
                         textStyle = ComposeAppTheme.typography.headline2
                     ),
                     keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-                    cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
+                    cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
                     decorationBox = { innerTextField ->
                         Box {
                             if (value.isEmpty()) {

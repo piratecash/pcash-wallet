@@ -52,7 +52,7 @@ fun ManageAccountScreen(navController: NavController, account: Account) {
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.PublicKeys_Title),

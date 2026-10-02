@@ -382,12 +382,12 @@ private fun TitleValueHex(
 @Composable
 private fun setColorByType(type: ValueType) =
     when (type) {
-        ValueType.Regular -> ComposeAppTheme.colors.bran
+        ValueType.Regular -> ComposeAppTheme.colors.textPrimary
         ValueType.Disabled -> ComposeAppTheme.colors.textSecondary
         ValueType.Outgoing -> ComposeAppTheme.colors.textPrimary
-        ValueType.Incoming -> ComposeAppTheme.colors.remus
-        ValueType.Warning -> ComposeAppTheme.colors.yellow
-        ValueType.Forbidden -> ComposeAppTheme.colors.lucian
+        ValueType.Incoming -> ComposeAppTheme.colors.statusSuccess
+        ValueType.Warning -> ComposeAppTheme.colors.statusWarning
+        ValueType.Forbidden -> ComposeAppTheme.colors.statusError
     }
 
 @Preview

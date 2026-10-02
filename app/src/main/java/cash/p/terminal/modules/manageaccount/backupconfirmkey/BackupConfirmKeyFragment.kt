@@ -61,7 +61,6 @@ fun RecoveryPhraseVerifyScreen(navController: NavController, account: cash.p.ter
                 contenView = contenView,
                 resId = R.string.Hud_Text_Verified,
                 icon = R.drawable.icon_check_1_24,
-                iconTint = R.color.white
             )
             delay(300)
             navController.popBackStack(R.id.backupKeyFragment, true)
@@ -74,7 +73,7 @@ fun RecoveryPhraseVerifyScreen(navController: NavController, account: cash.p.ter
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.RecoveryPhraseVerify_Title),
@@ -88,15 +87,15 @@ fun RecoveryPhraseVerifyScreen(navController: NavController, account: cash.p.ter
             InfoText(text = stringResource(R.string.RecoveryPhraseVerify_Description))
             Spacer(Modifier.height(12.dp))
 
-            uiState.hiddenWordItems.forEachIndexed { index, it ->
+            uiState.hiddenWordItems.forEachIndexed { index, wordItem ->
                 if (index != 0) {
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
                 val borderColor = if (uiState.currentHiddenWordItemIndex == index) {
-                    ComposeAppTheme.colors.yellow50
+                    ComposeAppTheme.colors.statusWarning50
                 } else {
-                    ComposeAppTheme.colors.steel20
+                    ComposeAppTheme.colors.borderDefault
                 }
 
                 Row(
@@ -109,7 +108,7 @@ fun RecoveryPhraseVerifyScreen(navController: NavController, account: cash.p.ter
                         .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    body_leah(text = it.toString())
+                    body_leah(text = wordItem.toString())
                 }
             }
 

@@ -78,7 +78,7 @@ private fun PersonalSupportScreen(navController: NavController) {
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.Settings_PersonalSupport),
@@ -114,7 +114,7 @@ private fun SupportEnabled(
                 modifier = Modifier
                     .size(100.dp)
                     .background(
-                        color = ComposeAppTheme.colors.raina,
+                        color = ComposeAppTheme.colors.surfacePlaceholder,
                         shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center

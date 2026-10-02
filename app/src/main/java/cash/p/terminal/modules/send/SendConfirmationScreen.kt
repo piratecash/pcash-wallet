@@ -1,8 +1,10 @@
 package cash.p.terminal.modules.send
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -42,6 +43,7 @@ import cash.p.terminal.modules.fee.FeeInfoSection
 import cash.p.terminal.modules.send.fee.NetworkFeeWarningData
 import cash.p.terminal.modules.hodler.HSHodler
 import cash.p.terminal.ui_compose.components.AppBar
+import cash.p.terminal.ui_compose.components.AppDialog
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
@@ -53,10 +55,12 @@ import cash.p.terminal.ui.compose.components.TransactionInfoAddressCell
 import cash.p.terminal.ui.compose.components.TransactionInfoContactCell
 import cash.p.terminal.ui.compose.components.TransactionInfoRbfCell
 import cash.p.terminal.ui_compose.components.TextImportantWarning
+import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead1Italic_leah
 import cash.p.terminal.ui_compose.components.subhead1_grey
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.subhead2_leah
+import cash.p.terminal.ui_compose.components.title3_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.hodler.LockTimeInterval
 import io.horizontalsystems.core.entities.BlockchainType
@@ -125,7 +129,7 @@ fun SendConfirmationScreen(
         }
     }
 
-    Column(Modifier.windowInsetsPadding(windowInsets).background(color = ComposeAppTheme.colors.tyler)) {
+    Column(Modifier.windowInsetsPadding(windowInsets).background(color = ComposeAppTheme.colors.backgroundBase)) {
         AppBar(
             title = stringResource(R.string.Send_Confirmation_Title),
             navigationIcon = {
@@ -299,24 +303,28 @@ internal fun SendFailedOfflineSignPrompt(
     if (failedOffline != true || dismissed) return
     val action = onSignOffline ?: return
 
-    AlertDialog(
-        onDismissRequest = { dismissed = true },
-        title = { Text(stringResource(R.string.send_failed_offline_prompt_title)) },
-        text = { Text(stringResource(R.string.send_failed_offline_prompt_message)) },
-        confirmButton = {
-            TextButton(onClick = {
-                dismissed = true
-                action()
-            }) {
-                Text(stringResource(R.string.offline_transaction_sign_offline))
+    AppDialog(onDismissRequest = { dismissed = true }) {
+        Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp)) {
+            title3_leah(text = stringResource(R.string.send_failed_offline_prompt_title))
+            VSpacer(12.dp)
+            body_leah(text = stringResource(R.string.send_failed_offline_prompt_message))
+            VSpacer(24.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(onClick = { dismissed = true }) {
+                    Text(stringResource(R.string.Button_Cancel))
+                }
+                TextButton(onClick = {
+                    dismissed = true
+                    action()
+                }) {
+                    Text(stringResource(R.string.offline_transaction_sign_offline))
+                }
             }
-        },
-        dismissButton = {
-            TextButton(onClick = { dismissed = true }) {
-                Text(stringResource(R.string.Button_Cancel))
-            }
-        },
-    )
+        }
+    }
 }
 
 @Composable

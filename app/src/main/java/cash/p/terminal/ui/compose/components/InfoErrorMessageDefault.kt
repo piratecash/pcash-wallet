@@ -32,7 +32,7 @@ fun InfoErrorMessageDefault(painter: Painter, text: String) {
             modifier = Modifier
                 .size(100.dp)
                 .background(
-                    color = ComposeAppTheme.colors.raina,
+                    color = ComposeAppTheme.colors.surfacePlaceholder,
                     shape = CircleShape
                 ),
             contentAlignment = Alignment.Center

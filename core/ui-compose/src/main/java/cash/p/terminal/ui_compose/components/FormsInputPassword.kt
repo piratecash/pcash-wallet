@@ -70,19 +70,19 @@ fun FormsInputPassword(
     val borderColor = when (state) {
         is DataState.Error -> {
             if (state.error is FormsInputStateWarning) {
-                ComposeAppTheme.colors.yellow50
+                ComposeAppTheme.colors.statusWarning50
             } else {
-                ComposeAppTheme.colors.red50
+                ComposeAppTheme.colors.statusError50
             }
         }
 
-        else -> ComposeAppTheme.colors.steel20
+        else -> ComposeAppTheme.colors.borderDefault
     }
 
     val cautionColor = if (state?.errorOrNull is FormsInputStateWarning) {
-        ComposeAppTheme.colors.yellow
+        ComposeAppTheme.colors.statusWarning
     } else {
-        ComposeAppTheme.colors.lucian
+        ComposeAppTheme.colors.statusError
     }
 
     Column(modifier) {
@@ -92,7 +92,7 @@ fun FormsInputPassword(
                 .defaultMinSize(minHeight = 44.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-                .background(ComposeAppTheme.colors.lawrence),
+                .background(plateBackground()),
             verticalAlignment = Alignment.CenterVertically
         ) {
             BasicTextField(
@@ -120,7 +120,7 @@ fun FormsInputPassword(
                     textStyle = textStyle
                 ),
                 singleLine = singleLine,
-                cursorBrush = SolidColor(ComposeAppTheme.colors.brand),
+                cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
                 decorationBox = { innerTextField ->
                     if (textState.value.text.isEmpty()) {
                         Text(

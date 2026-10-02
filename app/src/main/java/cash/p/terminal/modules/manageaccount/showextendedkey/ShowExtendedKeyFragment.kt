@@ -48,8 +48,8 @@ import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.HsIconButton
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.RowUniversal
-import cash.p.terminal.ui.compose.components.SelectorDialogCompose
-import cash.p.terminal.ui.compose.components.SelectorItem
+import cash.p.terminal.ui_compose.components.AppSelectorDialog
+import cash.p.terminal.ui_compose.components.AppSelectorItem
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
@@ -131,7 +131,7 @@ private fun ShowExtendedKeyScreen(
         }
     ) {
         Scaffold(
-            containerColor = ComposeAppTheme.colors.tyler,
+            containerColor = ComposeAppTheme.colors.backgroundBase,
             topBar = {
                 AppBar(
                     title = viewModel.title.getString(),
@@ -225,43 +225,43 @@ private fun ShowExtendedKeyScreen(
                     }
 
                     if (showPurposeSelectorDialog) {
-                        SelectorDialogCompose(
+                        AppSelectorDialog(
                             title = stringResource(R.string.ExtendedKey_Purpose),
                             items = viewModel.purposes.map {
-                                SelectorItem(it.name, it == viewModel.purpose, it)
+                                AppSelectorItem(it.name, it == viewModel.purpose, it)
                             },
-                            onDismissRequest = {
+                            onDismiss = {
                                 showPurposeSelectorDialog = false
                             },
-                            onSelectItem = {
+                            onSelect = {
                                 viewModel.set(it)
                             }
                         )
                     }
                     if (showBlockchainSelectorDialog) {
-                        SelectorDialogCompose(
+                        AppSelectorDialog(
                             title = stringResource(R.string.ExtendedKey_Blockchain),
                             items = viewModel.blockchains.map {
-                                SelectorItem(it.name, it == viewModel.blockchain, it)
+                                AppSelectorItem(it.name, it == viewModel.blockchain, it)
                             },
-                            onDismissRequest = {
+                            onDismiss = {
                                 showBlockchainSelectorDialog = false
                             },
-                            onSelectItem = {
+                            onSelect = {
                                 viewModel.set(it)
                             }
                         )
                     }
                     if (showAccountSelectorDialog) {
-                        SelectorDialogCompose(
+                        AppSelectorDialog(
                             title = stringResource(R.string.ExtendedKey_Account),
                             items = viewModel.accounts.map {
-                                SelectorItem(it.toString(), it == viewModel.account, it)
+                                AppSelectorItem(it.toString(), it == viewModel.account, it)
                             },
-                            onDismissRequest = {
+                            onDismiss = {
                                 showAccountSelectorDialog = false
                             },
-                            onSelectItem = {
+                            onSelect = {
                                 viewModel.set(it)
                             }
                         )

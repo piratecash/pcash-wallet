@@ -66,7 +66,7 @@ fun SearchBarV2(
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = ComposeAppTheme.colors.tyler,
+            containerColor = ComposeAppTheme.colors.backgroundBase,
         ),
         navigationIcon = {
             HsIconButton(onClick = {
@@ -81,7 +81,7 @@ fun SearchBarV2(
                 Icon(
                     painter = painterResource(id = R.drawable.ic_back),
                     contentDescription = stringResource(R.string.Button_Back),
-                    tint = ComposeAppTheme.colors.brand
+                    tint = ComposeAppTheme.colors.brandDefault
                 )
             }
         },
@@ -110,7 +110,7 @@ fun SearchBarV2(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
                         backgroundColor = Color.Transparent,
-                        cursorColor = ComposeAppTheme.colors.brand,
+                        cursorColor = ComposeAppTheme.colors.brandDefault,
                         textColor = ComposeAppTheme.colors.textPrimary
                     ),
                     maxLines = 1,
@@ -133,7 +133,7 @@ fun SearchBarV2(
                                 Icon(
                                     painter = painterResource(R.drawable.ic_close_24),
                                     contentDescription = stringResource(R.string.Button_Cancel),
-                                    tint = ComposeAppTheme.colors.brand
+                                    tint = ComposeAppTheme.colors.brandDefault
                                 )
                             }
 
@@ -173,9 +173,9 @@ fun SearchBarV2(
                             text = menuItem.title.getString(),
                             style = ComposeAppTheme.typography.headline2,
                             color = if (menuItem.enabled) {
-                                ComposeAppTheme.colors.brand
+                                ComposeAppTheme.colors.brandDefault
                             } else {
-                                ComposeAppTheme.colors.yellow50
+                                ComposeAppTheme.colors.statusWarning50
                             }
                         )
                     }
