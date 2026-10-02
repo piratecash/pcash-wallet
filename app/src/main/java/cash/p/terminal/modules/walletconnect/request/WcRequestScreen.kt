@@ -58,7 +58,7 @@ fun WcRequestScreen(
     }
 
     Scaffold(
-        backgroundColor = ComposeAppTheme.colors.tyler,
+        backgroundColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = uiState.title.getString(),

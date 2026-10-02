@@ -31,7 +31,7 @@ import cash.p.terminal.modules.coin.overview.ui.Loading
 import cash.p.terminal.modules.market.tvl.TvlModule
 import cash.p.terminal.ui_compose.components.HSSwipeRefresh
 import cash.p.terminal.ui_compose.Select
-import cash.p.terminal.ui.compose.components.AlertGroup
+import cash.p.terminal.ui_compose.components.AlertGroup
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
 import cash.p.terminal.ui_compose.components.CellFooter
@@ -44,7 +44,7 @@ import cash.p.terminal.ui_compose.components.SectionItemBorderedRowUniversalClea
 import cash.p.terminal.ui.compose.components.SortMenu
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.subhead2_grey
-import cash.p.terminal.ui_compose.components.subhead2_jacob
+import cash.p.terminal.ui_compose.components.subhead2_brand
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 class CoinTreasuriesFragment : BaseComposeFragment() {
@@ -72,7 +72,7 @@ class CoinTreasuriesFragment : BaseComposeFragment() {
         )
 
         Scaffold(
-            containerColor = ComposeAppTheme.colors.tyler,
+            containerColor = ComposeAppTheme.colors.backgroundBase,
             topBar = {
                 AppBar(
                     title = stringResource(R.string.CoinPage_Treasuries),
@@ -199,7 +199,7 @@ class CoinTreasuriesFragment : BaseComposeFragment() {
                 maxLines = 1,
             )
             Spacer(modifier = Modifier.weight(1f))
-            subhead2_jacob(
+            subhead2_brand(
                 text = fiatAmount,
                 maxLines = 1,
             )

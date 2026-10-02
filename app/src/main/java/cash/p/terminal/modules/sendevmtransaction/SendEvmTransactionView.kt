@@ -163,7 +163,7 @@ private fun Subhead(item: ViewItem.Subhead) {
                 modifier = Modifier.padding(end = 16.dp),
                 painter = painterResource(id = it),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
         }
         headline2_leah(
@@ -214,7 +214,7 @@ private fun TitleValueMulti(item: ViewItem.ValueMulti) {
                 text = item.secondaryValue,
                 maxLines = 1,
                 style = ComposeAppTheme.typography.caption,
-                color = ComposeAppTheme.colors.grey
+                color = ComposeAppTheme.colors.textSecondary
             )
         }
     }
@@ -382,12 +382,12 @@ private fun TitleValueHex(
 @Composable
 private fun setColorByType(type: ValueType) =
     when (type) {
-        ValueType.Regular -> ComposeAppTheme.colors.bran
-        ValueType.Disabled -> ComposeAppTheme.colors.grey
-        ValueType.Outgoing -> ComposeAppTheme.colors.leah
-        ValueType.Incoming -> ComposeAppTheme.colors.remus
-        ValueType.Warning -> ComposeAppTheme.colors.jacob
-        ValueType.Forbidden -> ComposeAppTheme.colors.lucian
+        ValueType.Regular -> ComposeAppTheme.colors.textPrimary
+        ValueType.Disabled -> ComposeAppTheme.colors.textSecondary
+        ValueType.Outgoing -> ComposeAppTheme.colors.textPrimary
+        ValueType.Incoming -> ComposeAppTheme.colors.statusSuccess
+        ValueType.Warning -> ComposeAppTheme.colors.statusWarning
+        ValueType.Forbidden -> ComposeAppTheme.colors.statusError
     }
 
 @Preview

@@ -35,7 +35,7 @@ internal fun AdvancedSecurityScreen(
     onClose: () -> Unit
 ) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.advanced_security),

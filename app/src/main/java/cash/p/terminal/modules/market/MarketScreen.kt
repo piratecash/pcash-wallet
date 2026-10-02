@@ -64,7 +64,7 @@ fun MarketScreen(navController: NavController, paddingValuesParent: PaddingValue
     val tabs = viewModel.tabs
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.Market_Title),
@@ -72,7 +72,7 @@ fun MarketScreen(navController: NavController, paddingValuesParent: PaddingValue
                     MenuItem(
                         title = TranslatableString.ResString(R.string.Market_Search),
                         icon = R.drawable.icon_search,
-                        tint = ComposeAppTheme.colors.jacob,
+                        tint = ComposeAppTheme.colors.brandDefault,
                         onClick = {
                             navController.slideFromRight(R.id.marketSearchFragment)
                         },
@@ -94,13 +94,13 @@ fun MarketScreen(navController: NavController, paddingValuesParent: PaddingValue
                     top = it.calculateTopPadding(),
                     bottom = paddingValuesParent.calculateBottomPadding()
                 )
-                .background(ComposeAppTheme.colors.tyler)
+                .background(ComposeAppTheme.colors.backgroundBase)
         ) {
             Crossfade(uiState.marketGlobal, label = "") {
                 MetricsBoard(navController, it, uiState.currency)
             }
             Divider(
-                color = ComposeAppTheme.colors.steel10,
+                color = ComposeAppTheme.colors.borderDivider,
                 thickness = 1.dp
             )
             TabsSection(navController, tabs, uiState.selectedTab) { tab ->
@@ -182,7 +182,7 @@ fun MetricsBoard(
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
             .clip(RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(ComposeAppTheme.colors.surfacePrimary)
     ) {
         MarketTotalCard(
             title = stringResource(R.string.MarketGlobalMetrics_TotalMarketCap),
@@ -238,7 +238,7 @@ private fun VDivider() {
         Modifier
             .fillMaxHeight()
             .width(1.dp)
-            .background(color = ComposeAppTheme.colors.steel10)
+            .background(color = ComposeAppTheme.colors.borderDivider)
     )
 }
 

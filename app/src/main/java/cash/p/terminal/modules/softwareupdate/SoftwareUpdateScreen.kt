@@ -46,8 +46,8 @@ import cash.p.terminal.modules.softwareupdate.domain.InstallSource
 import cash.p.terminal.modules.softwareupdate.domain.UpdateCheckInterval
 import cash.p.terminal.modules.softwareupdate.domain.UpdateStatus
 import cash.p.terminal.network.github.domain.entity.AppRelease
-import cash.p.terminal.ui.compose.components.SelectorDialogCompose
-import cash.p.terminal.ui.compose.components.SelectorItem
+import cash.p.terminal.ui_compose.components.AppSelectorDialog
+import cash.p.terminal.ui_compose.components.AppSelectorItem
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
@@ -56,10 +56,10 @@ import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.headline2_leah
-import cash.p.terminal.ui_compose.components.micro_grey50
+import cash.p.terminal.ui_compose.components.micro_disabled
 import cash.p.terminal.ui_compose.components.subhead1_grey
 import cash.p.terminal.ui_compose.components.subhead2_grey
-import cash.p.terminal.ui_compose.components.subhead2_jacob
+import cash.p.terminal.ui_compose.components.subhead2_brand
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import java.text.DateFormat
 import java.time.Instant
@@ -76,7 +76,7 @@ internal fun SoftwareUpdateScreen(
     onUpdateNowClick: (AppRelease?) -> Unit,
 ) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.update_screen_title),
@@ -156,17 +156,17 @@ private fun IntervalCell(
     var showDialog by remember { mutableStateOf(false) }
 
     if (showDialog) {
-        SelectorDialogCompose(
+        AppSelectorDialog(
             title = stringResource(R.string.auto_check_updates),
             items = UpdateCheckInterval.entries.map { option ->
-                SelectorItem(
+                AppSelectorItem(
                     title = stringResource(option.fullLabelRes()),
                     selected = option == interval,
                     item = option,
                 )
             },
-            onDismissRequest = { showDialog = false },
-            onSelectItem = { selected ->
+            onDismiss = { showDialog = false },
+            onSelect = { selected ->
                 onIntervalChange(selected)
                 showDialog = false
             },
@@ -187,7 +187,7 @@ private fun IntervalCell(
                         .size(20.dp),
                     painter = painterResource(R.drawable.ic_down_24),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                 )
             }
         },
@@ -202,7 +202,7 @@ private fun CheckingBlock() {
     ) {
         CircularProgressIndicator(
             modifier = Modifier.size(40.dp),
-            color = ComposeAppTheme.colors.grey,
+            color = ComposeAppTheme.colors.textSecondary,
         )
         VSpacer(16.dp)
         subhead2_grey(text = stringResource(R.string.update_checking))
@@ -219,14 +219,14 @@ private fun UpToDateBlock(version: String, onDetailsClick: (() -> Unit)?) {
             modifier = Modifier
                 .size(150.dp)
                 .clip(CircleShape)
-                .background(ComposeAppTheme.colors.steel10),
+                .background(ComposeAppTheme.colors.surfacePlaceholder),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 modifier = Modifier.size(72.dp),
                 painter = painterResource(R.drawable.ic_checkmark_24),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey,
+                tint = ComposeAppTheme.colors.iconSecondary,
             )
         }
         VSpacer(24.dp)
@@ -235,7 +235,7 @@ private fun UpToDateBlock(version: String, onDetailsClick: (() -> Unit)?) {
         subhead2_grey(text = stringResource(R.string.update_version_label, version))
         onDetailsClick?.let {
             VSpacer(12.dp)
-            subhead2_jacob(
+            subhead2_brand(
                 modifier = Modifier
                     .clickable(onClick = it)
                     .padding(8.dp),
@@ -262,7 +262,7 @@ private fun AvailableSection(
                 .padding(horizontal = 16.dp)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
-                .border(1.dp, ComposeAppTheme.colors.steel20, RoundedCornerShape(12.dp)),
+                .border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(12.dp)),
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 AvailableCardHeader(status.release)
@@ -281,7 +281,7 @@ private fun AvailableSection(
                         },
                     )
                     VSpacer(4.dp)
-                    subhead2_jacob(
+                    subhead2_brand(
                         modifier = Modifier
                             .clickable(onClick = it)
                             .padding(vertical = 8.dp),
@@ -289,7 +289,7 @@ private fun AvailableSection(
                     )
                 }
             }
-            HorizontalDivider(thickness = 1.dp, color = ComposeAppTheme.colors.steel10)
+            HorizontalDivider(thickness = 1.dp, color = ComposeAppTheme.colors.borderDivider)
             Column(modifier = Modifier.padding(16.dp)) {
                 ButtonPrimaryYellow(
                     modifier = Modifier.fillMaxWidth(),
@@ -297,7 +297,7 @@ private fun AvailableSection(
                     onClick = onUpdateNowClick,
                 )
                 VSpacer(8.dp)
-                micro_grey50(
+                micro_disabled(
                     modifier = Modifier.fillMaxWidth(),
                     text = stringResource(R.string.update_source, stringResource(installSource.labelRes())),
                     textAlign = TextAlign.Center,

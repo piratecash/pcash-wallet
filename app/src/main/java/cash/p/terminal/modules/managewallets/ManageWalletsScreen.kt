@@ -85,7 +85,6 @@ import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
-import cash.p.terminal.ui_compose.theme.SteelLight
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
@@ -129,7 +128,7 @@ internal fun ManageWalletsScreen(
             .navigationBarsPadding()
     ) {
         Column(
-            modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)
+            modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)
         ) {
             AppBar(
                 title = stringResource(R.string.ManageCoins_title),
@@ -185,7 +184,7 @@ internal fun ManageWalletsScreen(
             } else {
                 HorizontalDivider(
                     thickness = 1.dp,
-                    color = ComposeAppTheme.colors.steel10,
+                    color = ComposeAppTheme.colors.borderDivider,
                 )
                 LazyColumn(Modifier.weight(1f)) {
                     items(
@@ -214,7 +213,7 @@ internal fun ManageWalletsScreen(
                         )
                         HorizontalDivider(
                             thickness = 1.dp,
-                            color = ComposeAppTheme.colors.steel10,
+                            color = ComposeAppTheme.colors.borderDivider,
                         )
                     }
                     item {
@@ -249,7 +248,6 @@ internal fun ManageWalletsScreen(
                     text = it,
                     duration = SnackbarDuration.LONG,
                     icon = R.drawable.ic_offline_16,
-                    iconTint = R.color.white,
                 )
                 manageWalletsCallback.onOfflineNoticeShown()
             }
@@ -284,7 +282,7 @@ private fun TotalItemsPanel(count: Int, modifier: Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .height(14.dp)
-            .background(ComposeAppTheme.colors.midnight)
+            .background(ComposeAppTheme.colors.surfacePrimary)
     ) {
         Text(
             text = pluralStringResource(
@@ -293,7 +291,7 @@ private fun TotalItemsPanel(count: Int, modifier: Modifier) {
                 count
             ),
             style = ComposeAppTheme.typography.caption,
-            color = SteelLight,
+            color = ComposeAppTheme.colors.textSecondary,
         )
     }
 }
@@ -306,7 +304,7 @@ private fun LoadingComponent() {
                 .align(Alignment.Center)
                 .size(56.dp)
                 .padding(top = 4.dp, end = 8.dp),
-            color = ComposeAppTheme.colors.grey,
+            color = ComposeAppTheme.colors.textSecondary,
             strokeWidth = 4.dp
         )
     }
@@ -414,7 +412,7 @@ private fun GroupHeader(
         Icon(
             painter = painterResource(R.drawable.ic_arrow_big_down_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey,
+            tint = ComposeAppTheme.colors.iconSecondary,
             modifier = Modifier
                 .padding(end = 2.dp)
                 .rotate(rotation)
@@ -427,7 +425,7 @@ private fun ScanToAddBlock(buttonText: String, requestScan: () -> Unit) {
     Surface(
         modifier = Modifier
             .fillMaxWidth(),
-        color = ComposeAppTheme.colors.tyler,
+        color = ComposeAppTheme.colors.backgroundBase,
     ) {
         ButtonPrimaryYellow(
             modifier = Modifier
@@ -484,7 +482,7 @@ private fun TokenRow(
                         modifier = Modifier
                             .padding(start = 6.dp)
                             .clip(RoundedCornerShape(4.dp))
-                            .background(ComposeAppTheme.colors.jeremy)
+                            .background(ComposeAppTheme.colors.badgeBackground)
                     ) {
                         Text(
                             modifier = Modifier.padding(
@@ -493,7 +491,7 @@ private fun TokenRow(
                                 bottom = 1.dp
                             ),
                             text = labelText,
-                            color = ComposeAppTheme.colors.bran,
+                            color = ComposeAppTheme.colors.textPrimary,
                             style = ComposeAppTheme.typography.microSB,
                             maxLines = 1,
                         )
@@ -512,7 +510,7 @@ private fun TokenRow(
                 Icon(
                     painter = painterResource(R.drawable.ic_info_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
             }
         }

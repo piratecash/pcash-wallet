@@ -83,7 +83,7 @@ private fun CoinMajorHoldersScreen(
     )
 ) {
 
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(
                 title = blockchain.name,
@@ -197,7 +197,7 @@ private fun SeeAllButton(onClick: () -> Unit) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_arrow_right),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
             }
         }

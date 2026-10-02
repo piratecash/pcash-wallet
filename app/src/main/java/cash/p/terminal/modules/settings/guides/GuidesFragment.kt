@@ -58,7 +58,7 @@ fun GuidesScreen(navController: NavController) {
     val selectedCategory = uiState.selectedCategory
     val expandedSections = uiState.expandedSections
 
-    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
         AppBar(
             title = stringResource(R.string.Guides_Title),
             navigationIcon = {
@@ -110,7 +110,7 @@ fun GuidesScreen(navController: NavController) {
                                     item {
                                         CellUniversal(
                                             borderTop = i != 0,
-                                            color = ComposeAppTheme.colors.lawrence,
+                                            color = ComposeAppTheme.colors.surfacePrimary,
                                             onClick = {
                                                 viewModel.toggleSection(sectionTitle, expanded)
                                             }
@@ -125,7 +125,7 @@ fun GuidesScreen(navController: NavController) {
                                             Icon(
                                                 painter = painterResource(iconId),
                                                 contentDescription = null,
-                                                tint = ComposeAppTheme.colors.grey
+                                                tint = ComposeAppTheme.colors.iconSecondary
                                             )
                                         }
                                     }
@@ -147,7 +147,7 @@ fun GuidesScreen(navController: NavController) {
                                             item {
                                                 Divider(
                                                     thickness = 1.dp,
-                                                    color = ComposeAppTheme.colors.steel10
+                                                    color = ComposeAppTheme.colors.borderDivider
                                                 )
                                             }
                                         }

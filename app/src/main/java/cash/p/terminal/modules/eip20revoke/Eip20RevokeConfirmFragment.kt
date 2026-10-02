@@ -150,7 +150,7 @@ fun Eip20RevokeScreen(navController: NavController, input: Eip20RevokeConfirmFra
                 currency = uiState.currency,
                 borderTop = false,
                 title = stringResource(R.string.Approve_YouRevoke),
-                amountColor = ComposeAppTheme.colors.leah
+                amountColor = ComposeAppTheme.colors.textPrimary
             )
 
             BoxBorderedTop {

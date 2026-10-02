@@ -37,7 +37,7 @@ import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.body_grey50
+import cash.p.terminal.ui_compose.components.body_disabled
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.title3_leah
@@ -71,7 +71,7 @@ fun ChooseContactScreen(
     val items = viewModel.items
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             var searchMode by remember { mutableStateOf(false) }
 
@@ -91,16 +91,16 @@ fun ChooseContactScreen(
                             },
                             singleLine = true,
                             textStyle = ColoredTextStyle(
-                                color = ComposeAppTheme.colors.leah,
+                                color = ComposeAppTheme.colors.textPrimary,
                                 textStyle = ComposeAppTheme.typography.body
                             ),
                             decorationBox = { innerTextField ->
                                 if (searchText.isEmpty()) {
-                                    body_grey50(stringResource(R.string.Market_Search_Hint))
+                                    body_disabled(stringResource(R.string.Market_Search_Hint))
                                 }
                                 innerTextField()
                             },
-                            cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+                            cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
                         )
                         SideEffect {
                             focusRequester.requestFocus()

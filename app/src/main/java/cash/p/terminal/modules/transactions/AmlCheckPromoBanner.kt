@@ -29,6 +29,7 @@ import cash.p.terminal.R
 import cash.p.terminal.ui_compose.components.HsIconButton
 import cash.p.terminal.ui_compose.components.HsSwitch
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.ui_compose.components.Subhead1
 
 @Composable
 fun AmlCheckPromoBanner(
@@ -43,8 +44,8 @@ fun AmlCheckPromoBanner(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, ComposeAppTheme.colors.jacob, RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence)
+            .border(1.dp, ComposeAppTheme.colors.statusWarning, RoundedCornerShape(12.dp))
+            .background(ComposeAppTheme.colors.surfacePrimary)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -54,14 +55,13 @@ fun AmlCheckPromoBanner(
             Icon(
                 painter = painterResource(id = R.drawable.ic_star_filled_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.jacob,
+                tint = ComposeAppTheme.colors.statusWarning,
                 modifier = Modifier.size(20.dp)
             )
-            Text(
-                modifier = Modifier.weight(1f),
+            Subhead1(
                 text = stringResource(R.string.premium_title),
-                color = ComposeAppTheme.colors.jacob,
-                style = ComposeAppTheme.typography.subhead1
+                color = ComposeAppTheme.colors.statusWarning,
+                modifier = Modifier.weight(1f),
             )
             HsIconButton(
                 modifier = Modifier.size(20.dp),
@@ -69,7 +69,7 @@ fun AmlCheckPromoBanner(
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_close_24),
-                    tint = ComposeAppTheme.colors.jacob,
+                    tint = ComposeAppTheme.colors.statusWarning,
                     contentDescription = null,
                 )
             }
@@ -81,18 +81,18 @@ fun AmlCheckPromoBanner(
                 .padding(start = 4.dp, end = 4.dp, bottom = 4.dp)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
-                .border(1.dp, ComposeAppTheme.colors.steel20, RoundedCornerShape(12.dp))
+                .border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(12.dp))
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
             Text(
                 text = stringResource(R.string.alpha_aml_title),
-                color = ComposeAppTheme.colors.leah,
+                color = ComposeAppTheme.colors.textPrimary,
                 style = ComposeAppTheme.typography.body
             )
             Icon(
                 painter = painterResource(id = R.drawable.ic_info_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey,
+                tint = ComposeAppTheme.colors.iconSecondary,
                 modifier = Modifier
                     .size(20.dp)
                     .clickable(

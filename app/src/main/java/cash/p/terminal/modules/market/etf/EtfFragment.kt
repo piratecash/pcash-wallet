@@ -53,7 +53,7 @@ import cash.p.terminal.ui_compose.components.ImageSource
 import cash.p.terminal.ui_compose.components.HSSwipeRefresh
 import cash.p.terminal.ui_compose.Select
 import cash.p.terminal.strings.helpers.TranslatableString
-import cash.p.terminal.ui.compose.components.AlertGroup
+import cash.p.terminal.ui_compose.components.AlertGroup
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonSecondaryWithIcon
 import cash.p.terminal.ui.compose.components.DescriptionCard
@@ -103,7 +103,7 @@ fun EtfPage(
     var openPeriodSelector by rememberSaveable { mutableStateOf(false) }
     var openSortingSelector by rememberSaveable { mutableStateOf(false) }
 
-    Column(Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+    Column(Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
         AppBar(
             menuItems = listOf(
                 MenuItem(
@@ -331,14 +331,14 @@ fun ChartEtf(loading: Boolean, etfPoints: List<EtfPoint>, currency: Currency) {
                             .padding(horizontal = 8.dp)
                     ) {
                         val color = if (isSelected) {
-                            cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.grey50
+                            ComposeAppTheme.colors.textSecondaryDimmed
                         } else {
-                            cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.remus
+                            ComposeAppTheme.colors.statusSuccess
                         }
                         val colorNegative = if (isSelected) {
-                            cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.grey50
+                            ComposeAppTheme.colors.textSecondaryDimmed
                         } else {
-                            cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.lucian
+                            ComposeAppTheme.colors.statusError
                         }
 
                         GraphicBarsWithNegative(
@@ -350,7 +350,7 @@ fun ChartEtf(loading: Boolean, etfPoints: List<EtfPoint>, currency: Currency) {
                         GraphicLine(
                             modifier = Modifier.matchParentSize(),
                             data = dataTotalInflow,
-                            color = ComposeAppTheme.colors.grey50,
+                            color = ComposeAppTheme.colors.textSecondaryDimmed,
                             selectedItemKey = selectedKey
                         )
                         GraphicPointer(
@@ -371,7 +371,7 @@ fun ChartEtf(loading: Boolean, etfPoints: List<EtfPoint>, currency: Currency) {
                     modifier = Modifier
                         .size(24.dp)
                         .align(Alignment.Center),
-                    color = ComposeAppTheme.colors.grey,
+                    color = ComposeAppTheme.colors.textSecondary,
                     strokeWidth = 2.dp
                 )
             }
@@ -388,7 +388,7 @@ private fun GraphicPointer(
     var selectedX by remember {
         mutableStateOf<Float?>(null)
     }
-    val lineColor = cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.leah
+    val lineColor = ComposeAppTheme.colors.textPrimary
     Canvas(
         modifier = modifier
             .pointerInput(Unit) {
@@ -451,7 +451,7 @@ private fun ChartLabelBottom(labelBottom: String) {
                 val pathEffect =
                     PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
                 drawLine(
-                    color = colors.steel10,
+                    color = colors.borderDivider,
                     start = Offset(0f, 0f),
                     end = Offset(size.width, 0f),
                     pathEffect = pathEffect
@@ -477,7 +477,7 @@ private fun ChartLabelTop(
             .drawBehind {
                 val pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
                 drawLine(
-                    color = colors.steel10,
+                    color = colors.borderDivider,
                     start = Offset(0f, size.height),
                     end = Offset(size.width, size.height),
                     pathEffect = pathEffect

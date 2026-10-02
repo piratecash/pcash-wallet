@@ -25,7 +25,7 @@ fun HeaderCell(
             Icon(
                 modifier = Modifier.padding(end = 16.dp),
                 painter = painter,
-                tint = ComposeAppTheme.colors.grey,
+                tint = ComposeAppTheme.colors.iconSecondary,
                 contentDescription = null,
             )
         }

@@ -101,7 +101,7 @@ fun SendBtcAdvancedSettingsScreen(
             },
         ) {
             Scaffold(
-                containerColor = ComposeAppTheme.colors.tyler,
+                containerColor = ComposeAppTheme.colors.backgroundBase,
                 topBar = {
                     AppBar(
                         title = stringResource(R.string.Send_Advanced),
@@ -291,7 +291,7 @@ private fun BottomSheetTransactionOrderSelector(
         iconPainter = painterResource(R.drawable.ic_arrow_up_right_12),
         title = stringResource(R.string.BtcBlockchainSettings_TransactionSettings),
         onCloseClick = onCloseClick,
-        iconTint = ColorFilter.tint(ComposeAppTheme.colors.grey)
+        iconTint = ColorFilter.tint(ComposeAppTheme.colors.iconSecondary)
     ) {
         Spacer(Modifier.height(12.dp))
         CellUniversalLawrenceSection(items, showFrame = true) { item ->
@@ -315,7 +315,7 @@ private fun BottomSheetTransactionOrderSelector(
                     if (item.selected) {
                         Icon(
                             painter = painterResource(R.drawable.ic_checkmark_20),
-                            tint = ComposeAppTheme.colors.jacob,
+                            tint = ComposeAppTheme.colors.brandDefault,
                             contentDescription = null,
                         )
                     }

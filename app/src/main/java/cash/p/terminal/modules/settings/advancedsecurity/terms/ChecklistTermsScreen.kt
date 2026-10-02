@@ -37,7 +37,7 @@ internal fun ChecklistTermsScreen(
     checkboxesEnabled: Boolean = true,
 ) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = title,

@@ -33,7 +33,7 @@ import cash.p.terminal.modules.market.SortingField
 import cash.p.terminal.modules.market.TimeDuration
 import cash.p.terminal.modules.nft.collection.NftCollectionFragment
 import cash.p.terminal.ui_compose.components.HSSwipeRefresh
-import cash.p.terminal.ui.compose.components.AlertGroup
+import cash.p.terminal.ui_compose.components.AlertGroup
 import cash.p.terminal.ui_compose.components.ButtonSecondaryToggle
 import cash.p.terminal.ui.compose.components.DescriptionCard
 import cash.p.terminal.ui_compose.components.HeaderSorting
@@ -88,7 +88,7 @@ fun TopNftCollectionsScreen(
     val menu = viewModel.menu
     val header = viewModel.header
 
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             TopCloseButton(onCloseButtonClick)
 

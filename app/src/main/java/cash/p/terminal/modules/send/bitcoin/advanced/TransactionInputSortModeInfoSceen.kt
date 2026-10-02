@@ -22,8 +22,8 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 fun BtcTransactionInputSortInfoScreen(
     onCloseClick: () -> Unit
 ) {
-    cash.p.terminal.ui_compose.theme.ComposeAppTheme {
-        Surface(color = ComposeAppTheme.colors.tyler) {
+    ComposeAppTheme {
+        Surface(color = ComposeAppTheme.colors.backgroundBase) {
             Column {
                 AppBar(
                     menuItems = listOf(

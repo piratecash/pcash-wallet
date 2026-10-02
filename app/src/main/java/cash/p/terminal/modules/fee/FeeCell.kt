@@ -68,17 +68,17 @@ fun FeeCell(
             if (viewState == ViewState.Loading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(16.dp),
-                    color = ComposeAppTheme.colors.grey,
+                    color = ComposeAppTheme.colors.textSecondary,
                     strokeWidth = 1.5.dp
                 )
             }
             Column(horizontalAlignment = Alignment.End) {
                 val color = if (viewState is ViewState.Error) {
-                    ComposeAppTheme.colors.lucian
+                    ComposeAppTheme.colors.statusError
                 } else if (value == null) {
-                    ComposeAppTheme.colors.grey50
+                    ComposeAppTheme.colors.textDisabled
                 } else {
-                    ComposeAppTheme.colors.leah
+                    ComposeAppTheme.colors.textPrimary
                 }
                 Text(
                     modifier = Modifier.alpha(if (viewState == ViewState.Loading) 0f else 1f),
@@ -92,7 +92,7 @@ fun FeeCell(
                     text = value?.secondary ?: stringResource(id = R.string.NotAvailable),
                     maxLines = 1,
                     style = ComposeAppTheme.typography.caption,
-                    color = ComposeAppTheme.colors.grey
+                    color = ComposeAppTheme.colors.textSecondary
                 )
             }
         }

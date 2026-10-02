@@ -53,7 +53,7 @@ internal fun OfflineSendSyncErrorScreen(
     callbacks: OfflineSendSyncErrorCallbacks,
 ) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = state.title,
@@ -92,7 +92,7 @@ private fun OfflineSyncErrorContent(state: OfflineSendSyncErrorState) {
         state.inProgress -> OfflineSyncProgressBlock()
         state.noConnection -> OfflineStatusBlock(
             icon = R.drawable.ic_not_available,
-            iconTint = ComposeAppTheme.colors.grey,
+            iconTint = ComposeAppTheme.colors.iconSecondary,
             style = OfflineStatusBlockStyle.Neutral,
             title = stringResource(R.string.Hud_Text_NoInternet),
         ) {
@@ -100,13 +100,13 @@ private fun OfflineSyncErrorContent(state: OfflineSendSyncErrorState) {
             Text(
                 text = stringResource(R.string.offline_send_no_connection_description),
                 style = ComposeAppTheme.typography.subhead1,
-                color = ComposeAppTheme.colors.grey,
+                color = ComposeAppTheme.colors.textSecondary,
                 textAlign = TextAlign.Center,
             )
         }
         else -> OfflineStatusBlock(
             icon = R.drawable.ic_attention_red_24,
-            iconTint = ComposeAppTheme.colors.lucian,
+            iconTint = ComposeAppTheme.colors.statusError,
             style = OfflineStatusBlockStyle.Error,
             title = "${stringResource(R.string.BalanceSyncError_Title)} - ${state.coinCode}",
         ) {
@@ -187,12 +187,12 @@ private fun OfflineSyncProgressBlock() {
             modifier = Modifier
                 .size(100.dp)
                 .clip(CircleShape)
-                .background(ComposeAppTheme.colors.lawrence),
+                .background(ComposeAppTheme.colors.surfacePrimary),
             contentAlignment = Alignment.Center,
         ) {
             CircularProgressIndicator(
                 modifier = Modifier.size(44.dp),
-                color = ComposeAppTheme.colors.jacob,
+                color = ComposeAppTheme.colors.brandDefault,
                 strokeWidth = 4.dp,
             )
         }
@@ -200,7 +200,7 @@ private fun OfflineSyncProgressBlock() {
         Text(
             text = stringResource(R.string.Balance_Syncing),
             style = ComposeAppTheme.typography.headline2,
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             textAlign = TextAlign.Center,
         )
     }
@@ -221,7 +221,7 @@ private fun OfflineSyncErrorDescription(description: String) {
             Text(
                 text = intro,
                 style = ComposeAppTheme.typography.subhead2,
-                color = ComposeAppTheme.colors.grey,
+                color = ComposeAppTheme.colors.textSecondary,
                 textAlign = TextAlign.Center,
             )
         }
@@ -232,7 +232,7 @@ private fun OfflineSyncErrorDescription(description: String) {
                 modifier = Modifier.fillMaxWidth(),
                 text = actions,
                 style = ComposeAppTheme.typography.subhead2,
-                color = ComposeAppTheme.colors.leah,
+                color = ComposeAppTheme.colors.textPrimary,
                 textAlign = TextAlign.Start,
             )
         }
@@ -243,7 +243,7 @@ private fun OfflineSyncErrorDescription(description: String) {
                 modifier = Modifier.fillMaxWidth(),
                 text = footer,
                 style = ComposeAppTheme.typography.subhead2,
-                color = ComposeAppTheme.colors.grey,
+                color = ComposeAppTheme.colors.textSecondary,
                 textAlign = TextAlign.Start,
             )
         }

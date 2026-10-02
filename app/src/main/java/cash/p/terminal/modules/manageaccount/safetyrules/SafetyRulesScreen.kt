@@ -47,7 +47,7 @@ fun SafetyRulesScreen(
     onCancelClick: () -> Unit,
 ) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = {
@@ -55,7 +55,7 @@ fun SafetyRulesScreen(
                         Icon(
                             painter = painterResource(R.drawable.icon_lock_48),
                             contentDescription = null,
-                            tint = ComposeAppTheme.colors.jacob,
+                            tint = ComposeAppTheme.colors.brandDefault,
                             modifier = Modifier.size(24.dp)
                         )
                         HSpacer(8.dp)

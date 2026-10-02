@@ -127,7 +127,7 @@ fun TransactionsScreen(
     var showAmlInfoSheet by remember { mutableStateOf(false) }
     val view = LocalView.current
 
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column(modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding())) {
             TransactionsAppBar(
                 uiState = uiState,
@@ -369,7 +369,7 @@ private fun OfflineSignedTransactionsTabContent(
                 title = signedTitle,
                 subtitle = if (item.metadataUnknown) UNKNOWN_VALUE else viewItem.subtitle,
                 primaryValue = if (item.metadataUnknown) {
-                    ColoredValue(UNKNOWN_VALUE, ColorName.Grey)
+                    ColoredValue(UNKNOWN_VALUE, ColorName.Secondary)
                 } else {
                     viewItem.primaryValue
                 },
@@ -471,7 +471,7 @@ fun LazyListScope.transactionsHiddenBlock(
                     modifier = Modifier
                         .size(100.dp)
                         .background(
-                            color = ComposeAppTheme.colors.raina,
+                            color = ComposeAppTheme.colors.surfacePlaceholder,
                             shape = CircleShape
                         ),
                     contentAlignment = Alignment.Center
@@ -480,7 +480,7 @@ fun LazyListScope.transactionsHiddenBlock(
                         modifier = Modifier.size(48.dp),
                         painter = painterResource(R.drawable.ic_eye_off),
                         contentDescription = "transactions hidden",
-                        tint = ComposeAppTheme.colors.grey
+                        tint = ComposeAppTheme.colors.iconSecondary
                     )
                 }
                 Spacer(Modifier.height(32.dp))
@@ -587,7 +587,7 @@ private fun HideBalanceOverlay(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(ComposeAppTheme.colors.tyler)
+            .background(ComposeAppTheme.colors.backgroundBase)
     ) {
         Row(
             modifier = Modifier
@@ -620,14 +620,14 @@ private fun HideBalanceOverlay(
                         else R.drawable.ic_eye_20
                     ),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                     modifier = Modifier.size(20.dp)
                 )
             }
         }
         HorizontalDivider(
             thickness = 1.dp,
-            color = ComposeAppTheme.colors.steel20,
+            color = ComposeAppTheme.colors.borderDivider,
         )
     }
 }
@@ -676,9 +676,9 @@ fun TransactionCell(
         }
 
         val borderModifier = if (position != SectionItemPosition.Single) {
-            Modifier.sectionItemBorder(1.dp, ComposeAppTheme.colors.steel20, 12.dp, position)
+            Modifier.sectionItemBorder(1.dp, ComposeAppTheme.colors.borderDefault, 12.dp, position)
         } else {
-            Modifier.border(1.dp, ComposeAppTheme.colors.steel20, RoundedCornerShape(12.dp))
+            Modifier.border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(12.dp))
         }
 
         Box(
@@ -732,7 +732,7 @@ fun TransactionCell(
                     VSpacer(11.dp)
                     HorizontalDivider(
                         thickness = 1.dp,
-                        color = ComposeAppTheme.colors.steel10,
+                        color = ComposeAppTheme.colors.borderDivider,
                         modifier = Modifier.padding(horizontal = 12.dp)
                     )
                     TransactionFooter(
@@ -745,7 +745,7 @@ fun TransactionCell(
                     VSpacer(11.dp)
                     HorizontalDivider(
                         thickness = 1.dp,
-                        color = ComposeAppTheme.colors.steel10,
+                        color = ComposeAppTheme.colors.borderDivider,
                         modifier = Modifier.padding(horizontal = 12.dp)
                     )
                     VSpacer(6.dp)
@@ -807,7 +807,7 @@ private fun TransactionIconBox(item: TransactionViewItem) {
             TransactionViewItem.Icon.Failed -> {
                 Icon(
                     painter = painterResource(R.drawable.ic_attention_24),
-                    tint = ComposeAppTheme.colors.lucian,
+                    tint = ComposeAppTheme.colors.statusError,
                     contentDescription = null
                 )
             }
@@ -816,7 +816,7 @@ private fun TransactionIconBox(item: TransactionViewItem) {
                 Icon(
                     modifier = Modifier.size(32.dp),
                     painter = painterResource(icon.iconRes ?: R.drawable.coin_placeholder),
-                    tint = ComposeAppTheme.colors.leah,
+                    tint = ComposeAppTheme.colors.iconPrimary,
                     contentDescription = null
                 )
             }
@@ -856,7 +856,7 @@ private fun TransactionIconBox(item: TransactionViewItem) {
                         .padding(bottom = 4.5.dp, end = 6.5.dp)
                         .size(24.dp)
                         .clip(frontShape)
-                        .background(ComposeAppTheme.colors.tyler)
+                        .background(ComposeAppTheme.colors.backgroundBase)
                 )
 
                 HsImage(
@@ -875,7 +875,7 @@ private fun TransactionIconBox(item: TransactionViewItem) {
                 Icon(
                     modifier = Modifier.size(32.dp),
                     painter = painterResource(icon.resourceId),
-                    tint = ComposeAppTheme.colors.leah,
+                    tint = ComposeAppTheme.colors.iconPrimary,
                     contentDescription = null
                 )
             }
@@ -910,7 +910,7 @@ private fun TransactionContentRow(
             Text(
                 text = if (showAmount) item.formattedTime else "*****",
                 style = ComposeAppTheme.typography.subhead2,
-                color = ComposeAppTheme.colors.grey50,
+                color = ComposeAppTheme.colors.textSecondaryDimmed,
                 maxLines = 1,
                 modifier = Modifier.clickable(
                     interactionSource = remember { MutableInteractionSource() },
@@ -1006,7 +1006,7 @@ private fun AmlLoadingIndicator() {
         CircularProgressIndicator(
             modifier = Modifier
                 .size(12.dp),
-            color = ComposeAppTheme.colors.grey,
+            color = ComposeAppTheme.colors.textSecondary,
             strokeWidth = 1.5.dp
         )
     }
@@ -1044,8 +1044,8 @@ private fun TransactionCellPreview() {
             doubleSpend = true,
             locked = true,
             sentToSelf = true,
-            primaryValue = ColoredValue("0.00123 BTC", ColorName.Leah),
-            secondaryValue = ColoredValue("$45.67", ColorName.Leah),
+            primaryValue = ColoredValue("0.00123 BTC", ColorName.Primary),
+            secondaryValue = ColoredValue("$45.67", ColorName.Primary),
             date = Date(),
             formattedTime = "12:00",
             amlStatus = AmlStatus.Low

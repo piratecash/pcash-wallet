@@ -67,7 +67,7 @@ fun ActivateSubscriptionScreen(navController: NavController) {
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.ActivateSubscription_Title),

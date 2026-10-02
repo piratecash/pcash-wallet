@@ -10,7 +10,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,11 +40,11 @@ private fun NoConnectionView(modifier: Modifier = Modifier) {
         text = stringResource(R.string.Hud_Text_NoInternet),
         style = ComposeAppTheme.typography.micro,
         textAlign = TextAlign.Center,
-        color = ComposeAppTheme.colors.lawrence,
+        color = ComposeAppTheme.colors.surfacePrimary,
         modifier = modifier
             .fillMaxWidth()
             .height(20.dp)
-            .background(colorResource(R.color.red_d))
+            .background(ComposeAppTheme.colors.statusError)
             .wrapContentHeight(Alignment.CenterVertically)
     )
 }

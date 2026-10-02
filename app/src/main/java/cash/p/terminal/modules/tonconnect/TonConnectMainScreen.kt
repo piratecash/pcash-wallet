@@ -76,7 +76,7 @@ fun TonConnectMainScreen(
                 title = stringResource(R.string.TonConnect_Title),
                 text = stringResource(R.string.TonConnect_Error_InvalidUrl),
                 iconPainter = painterResource(R.drawable.ic_ton_connect_24),
-                iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+                iconTint = ColorFilter.tint(ComposeAppTheme.colors.brandDefault),
                 confirmText = stringResource(R.string.Button_TryAgain),
                 cautionType = Caution.Type.Warning,
                 cancelText = stringResource(R.string.Button_Cancel),
@@ -98,7 +98,7 @@ fun TonConnectMainScreen(
         }
     ) {
         Scaffold(
-            containerColor = ComposeAppTheme.colors.tyler,
+            containerColor = ComposeAppTheme.colors.backgroundBase,
             topBar = {
                 AppBar(
                     title = stringResource(R.string.TonConnect_Title),

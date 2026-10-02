@@ -67,7 +67,7 @@ fun UsedAddressScreen(
     val pagerState = rememberPagerState(initialPage = selectedTab.ordinal) { tabs.size }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(id = R.string.Balance_Receive_UsedAddresses),

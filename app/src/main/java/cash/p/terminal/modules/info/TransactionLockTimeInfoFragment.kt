@@ -48,7 +48,7 @@ private fun InfoScreen(
 
     val description = stringResource(R.string.Info_LockTime_Description, lockDate)
 
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(
                 menuItems = listOf(

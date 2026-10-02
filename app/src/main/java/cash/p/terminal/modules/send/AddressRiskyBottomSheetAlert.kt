@@ -73,7 +73,7 @@ private fun RiskyAddressAlertView(
     ComposeAppTheme {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_attention_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.lucian),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusError),
             title = stringResource(R.string.Send_RiskyAddress),
             onCloseClick = onCloseClick
         ) {

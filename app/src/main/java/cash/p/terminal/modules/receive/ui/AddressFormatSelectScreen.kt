@@ -32,7 +32,7 @@ fun AddressFormatSelectScreen(
     onBackPress: () -> Unit
 ) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.Balance_Receive_AddressFormat),
@@ -93,7 +93,7 @@ fun AddressFormatCell(
             modifier = Modifier.padding(horizontal = 16.dp),
             painter = painterResource(id = R.drawable.ic_arrow_right),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey
+            tint = ComposeAppTheme.colors.iconSecondary
         )
     }
 }

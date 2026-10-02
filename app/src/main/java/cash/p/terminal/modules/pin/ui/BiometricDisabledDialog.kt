@@ -1,9 +1,7 @@
 package cash.p.terminal.modules.pin.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -13,58 +11,52 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import cash.p.terminal.R
+import cash.p.terminal.ui_compose.components.AppDialog
+import cash.p.terminal.ui_compose.components.AppDialogDefaultModifier
+import cash.p.terminal.ui_compose.components.ButtonPrimaryDefaults
 import cash.p.terminal.ui_compose.components.body_grey
 import cash.p.terminal.ui_compose.components.body_lucian
-import cash.p.terminal.ui_compose.components.headline2_jacob
+import cash.p.terminal.ui_compose.components.headline2_brand
 import cash.p.terminal.ui_compose.components.title3_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @Composable
-fun BiometricDisabledDialog(onClick: () -> Unit) {
-    Dialog(onDismissRequest = onClick) {
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(ComposeAppTheme.colors.lawrence)
-        ) {
-            Spacer(Modifier.height(24.dp))
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                title3_leah(text = stringResource(R.string.Unlock_BiometricScanner))
-                Spacer(Modifier.height(12.dp))
-                body_grey(text = stringResource(R.string.Unlock_BiometricScannerDisabled_Description))
-                Spacer(Modifier.height(44.dp))
-                Row(
-                    modifier = Modifier.padding(horizontal = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.icon_touch_id_24),
-                        contentDescription = null,
-                        tint = ComposeAppTheme.colors.lucian
-                    )
-                    Spacer(Modifier.width(24.dp))
-                    body_lucian(text = stringResource(R.string.Unlock_BiometricScannerDisabled_Info))
-                }
-            }
-            Spacer(Modifier.height(36.dp))
-            Box(
-                modifier = Modifier
-                    .align(Alignment.End)
-                    .padding(end = 8.dp, bottom = 8.dp)
-                    .height(36.dp)
-                    .clip(RoundedCornerShape(25.dp))
-                    .clickable { onClick.invoke() },
-                contentAlignment = Alignment.Center
+fun BiometricDisabledDialog(onClick: () -> Unit, modifier: Modifier = AppDialogDefaultModifier) {
+    AppDialog(onDismissRequest = onClick, modifier = modifier) {
+        Spacer(Modifier.height(24.dp))
+        Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+            title3_leah(text = stringResource(R.string.Unlock_BiometricScanner))
+            Spacer(Modifier.height(12.dp))
+            body_grey(text = stringResource(R.string.Unlock_BiometricScannerDisabled_Description))
+            Spacer(Modifier.height(44.dp))
+            Row(
+                modifier = Modifier.padding(horizontal = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                headline2_jacob(
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                    text = stringResource(R.string.Unlock_Passcode)
+                Icon(
+                    painter = painterResource(id = R.drawable.icon_touch_id_24),
+                    contentDescription = null,
+                    tint = ComposeAppTheme.colors.statusError
                 )
+                Spacer(Modifier.width(24.dp))
+                body_lucian(text = stringResource(R.string.Unlock_BiometricScannerDisabled_Info))
             }
-
+        }
+        Spacer(Modifier.height(36.dp))
+        Box(
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(end = 8.dp, bottom = 8.dp)
+                .height(36.dp)
+                .clip(ButtonPrimaryDefaults.Shape)
+                .clickable { onClick.invoke() },
+            contentAlignment = Alignment.Center
+        ) {
+            headline2_brand(
+                modifier = Modifier.padding(horizontal = 8.dp),
+                text = stringResource(R.string.Unlock_Passcode)
+            )
         }
     }
 }

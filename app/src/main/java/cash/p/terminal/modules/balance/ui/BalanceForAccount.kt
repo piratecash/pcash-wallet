@@ -103,7 +103,7 @@ fun BalanceForAccount(
     BackupAlert(navController)
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = {
@@ -234,7 +234,7 @@ private fun InvalidUrlConnectionBottomSheet(
             title = stringResource(R.string.WalletConnect_Title),
             text = stringResource(R.string.WalletConnect_Error_InvalidUrl),
             iconPainter = painterResource(R.drawable.ic_wallet_connect_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
             confirmText = stringResource(R.string.Button_TryAgain),
             cautionType = Caution.Type.Warning,
             cancelText = stringResource(R.string.Button_Cancel),
@@ -268,11 +268,11 @@ fun BalanceTitleRow(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(weight = 1f, fill = false)
         )
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(16.dp))
         Icon(
             painter = painterResource(id = R.drawable.ic_down_24),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.yellowD,
+            tint = ComposeAppTheme.colors.brandDefault,
             modifier = Modifier
                 .testTag("wallet_switcher")
                 .clickable(

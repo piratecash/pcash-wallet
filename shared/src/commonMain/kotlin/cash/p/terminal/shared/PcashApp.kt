@@ -50,7 +50,7 @@ private fun SettingsPane(uiState: MainSettingUiState, appVersion: String) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(ComposeAppTheme.colors.tyler),
+            .background(ComposeAppTheme.colors.backgroundBase),
     ) {
         Text(
             text = MainDestinationTitle(MainDestination.Settings),
@@ -59,7 +59,7 @@ private fun SettingsPane(uiState: MainSettingUiState, appVersion: String) {
                 .height(56.dp)
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             style = ComposeAppTheme.typography.title3,
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
         )
         SettingsContent(
             uiState = uiState,

@@ -14,8 +14,8 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 fun BadgeText(
     text: String,
     modifier: Modifier = Modifier,
-    background: Color = ComposeAppTheme.colors.lucian,
-    textColor: Color = ComposeAppTheme.colors.white,
+    background: Color = ComposeAppTheme.colors.statusError,
+    textColor: Color = ComposeAppTheme.colors.contentOnColor,
 ) {
     BadgeBase(
         background = background,
@@ -43,7 +43,7 @@ fun B2(
 ) {
     SettingsText(
         text = text,
-        color = ComposeAppTheme.colors.leah,
+        color = ComposeAppTheme.colors.textPrimary,
         style = ComposeAppTheme.typography.body,
         modifier = modifier,
         textAlign = textAlign,
@@ -76,7 +76,7 @@ fun C1(
 ) {
     SettingsText(
         text = text,
-        color = ComposeAppTheme.colors.grey,
+        color = ComposeAppTheme.colors.textSecondary,
         style = ComposeAppTheme.typography.subhead1,
         modifier = modifier,
         textAlign = textAlign,
@@ -109,7 +109,7 @@ fun C3(
 ) {
     SettingsText(
         text = text,
-        color = ComposeAppTheme.colors.jacob,
+        color = ComposeAppTheme.colors.brandDefault,
         style = ComposeAppTheme.typography.subhead1,
         modifier = modifier,
         textAlign = textAlign,
@@ -117,18 +117,6 @@ fun C3(
         maxLines = maxLines,
         onTextLayout = onTextLayout,
     )
-}
-
-@Composable
-fun subhead1_jacob(
-    text: String,
-    modifier: Modifier = Modifier,
-    textAlign: TextAlign? = null,
-    overflow: TextOverflow = TextOverflow.Clip,
-    maxLines: Int = Int.MAX_VALUE,
-    onTextLayout: (TextLayoutResult) -> Unit = {},
-) {
-    C3(text, modifier, textAlign, overflow, maxLines, onTextLayout)
 }
 
 @Composable
@@ -142,7 +130,7 @@ fun F1(
 ) {
     SettingsText(
         text = text,
-        color = ComposeAppTheme.colors.grey,
+        color = ComposeAppTheme.colors.textSecondary,
         style = ComposeAppTheme.typography.caption,
         modifier = modifier,
         textAlign = textAlign,

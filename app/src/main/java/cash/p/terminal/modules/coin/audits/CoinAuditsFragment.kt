@@ -68,7 +68,7 @@ private fun CoinAuditsScreen(
     val uiState = viewModel.uiState
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.SendNft_Title),

@@ -450,7 +450,7 @@ class TransactionViewItemFactoryCacheTest {
                 viewItem.icon,
             )
             assertEquals("ZEC:0.01285429", viewItem.primaryValue?.value)
-            assertEquals(ColorName.Leah, viewItem.primaryValue?.color)
+            assertEquals(ColorName.Primary, viewItem.primaryValue?.color)
             assertTrue(viewItem.sentToSelf)
         }
 
@@ -514,7 +514,7 @@ class TransactionViewItemFactoryCacheTest {
             val expectedColor = when (direction) {
                 BeamTransactionDirection.Incoming -> ColorName.Remus
                 BeamTransactionDirection.Outgoing -> ColorName.Lucian
-                BeamTransactionDirection.Self -> ColorName.Leah
+                BeamTransactionDirection.Self -> ColorName.Primary
             }
             assertEquals(expectedAmount, item.primaryValue?.value)
             assertEquals(expectedColor, item.primaryValue?.color)

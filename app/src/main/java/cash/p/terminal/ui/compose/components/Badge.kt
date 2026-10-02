@@ -25,8 +25,8 @@ fun Badge(modifier: Modifier = Modifier, text: String) {
     BadgeText(
         modifier = modifier,
         text = text,
-        background = ComposeAppTheme.colors.jeremy,
-        textColor = ComposeAppTheme.colors.bran,
+        background = ComposeAppTheme.colors.badgeBackground,
+        textColor = ComposeAppTheme.colors.textSecondary,
     )
 }
 
@@ -39,7 +39,7 @@ fun BadgeWithDiff(
     val background = if (diff != null) {
         diffColor(diff).copy(alpha = 0.1f)
     } else {
-        ComposeAppTheme.colors.jeremy
+        ComposeAppTheme.colors.badgeBackground
     }
     BadgeBase(
         modifier = modifier,
@@ -48,7 +48,7 @@ fun BadgeWithDiff(
         if (text.isNotBlank()) {
             Text(
                 text = text,
-                color = ComposeAppTheme.colors.bran,
+                color = ComposeAppTheme.colors.textPrimary,
                 style = ComposeAppTheme.typography.microSB,
                 maxLines = 1,
             )
@@ -69,8 +69,8 @@ fun BadgeWithDiff(
 fun BadgeText(
     modifier: Modifier = Modifier,
     text: String,
-    background: Color = ComposeAppTheme.colors.lucian,
-    textColor: Color = ComposeAppTheme.colors.white,
+    background: Color = ComposeAppTheme.colors.statusError,
+    textColor: Color = ComposeAppTheme.colors.contentOnColor,
 ) {
     SharedBadgeText(
         text = text,
@@ -83,7 +83,7 @@ fun BadgeText(
 /**
  * Item-level "new" indicator: a small accent dot placed next to an individual row's title.
  * The category-level counterpart is [BadgeText] with a "New" label. Matches the design spec —
- * a 6dp circle in the [ComposeAppTheme.colors.laguna] accent (#4A98E9 in dark theme).
+ * a 6dp circle in the [ComposeAppTheme.colors.brandDefault] accent (#4A98E9 in dark theme).
  */
 @Composable
 fun NewDot(modifier: Modifier = Modifier) {
@@ -91,7 +91,7 @@ fun NewDot(modifier: Modifier = Modifier) {
         modifier = modifier
             .size(6.dp)
             .clip(CircleShape)
-            .background(ComposeAppTheme.colors.laguna)
+            .background(ComposeAppTheme.colors.brandDefault)
     )
 }
 
@@ -151,8 +151,8 @@ fun BadgeCirclePreview() {
             contentAlignment = Alignment.Center
         ) {
             BadgeText(
-                background = ComposeAppTheme.colors.issykBlue,
-                textColor = ComposeAppTheme.colors.tyler,
+                background = ComposeAppTheme.colors.brandDefault,
+                textColor = ComposeAppTheme.colors.backgroundBase,
                 text = "1"
             )
         }
@@ -168,8 +168,8 @@ fun BadgeCircleSignal_Preview() {
             contentAlignment = Alignment.Center
         ) {
             BadgeText(
-                background = ComposeAppTheme.colors.red20,
-                textColor = ComposeAppTheme.colors.lucian,
+                background = ComposeAppTheme.colors.statusError20,
+                textColor = ComposeAppTheme.colors.statusError,
                 text = "Sell"
             )
         }

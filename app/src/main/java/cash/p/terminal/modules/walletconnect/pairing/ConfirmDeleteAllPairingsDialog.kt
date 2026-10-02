@@ -55,7 +55,7 @@ fun ConfirmDeleteAllScreen(navController: NavController) {
     ComposeAppTheme {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_delete_20),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.lucian),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusError),
             title = stringResource(R.string.WalletConnect_DeleteAllPairs),
             onCloseClick = {
                 navController.popBackStackSafely()

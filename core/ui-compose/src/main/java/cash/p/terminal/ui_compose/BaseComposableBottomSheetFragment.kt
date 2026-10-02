@@ -1,25 +1,26 @@
 package cash.p.terminal.ui_compose
 
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.View
 import android.widget.FrameLayout
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ModalBottomSheetDefaults
+import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.SheetState
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -29,6 +30,8 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.ui_compose.theme.appColors
+import cash.p.terminal.ui_compose.components.BottomSheetSurface
 import cash.p.terminal.ui_compose.components.HsIconButton
 import cash.p.terminal.ui_compose.components.body_grey
 import cash.p.terminal.ui_compose.components.body_leah
@@ -41,7 +44,7 @@ open class BaseComposableBottomSheetFragment : BottomSheetDialogFragment() {
         // Replace the platform black window dim with the unified themed overlay (grey in light, black in dark).
         dialog?.window?.apply {
             setDimAmount(0f)
-            setBackgroundDrawableResource(R.color.modal_overlay)
+            setBackgroundDrawable(ColorDrawable(requireContext().appColors().backgroundOverlay.toArgb()))
         }
         dialog?.setOnShowListener { dialog ->
             val d = dialog as BottomSheetDialog
@@ -70,14 +73,16 @@ open class BaseComposableBottomSheetFragment : BottomSheetDialogFragment() {
 fun TransparentModalBottomSheet(
     onDismissRequest: () -> Unit,
     sheetState: SheetState,
+    properties: ModalBottomSheetProperties = ModalBottomSheetDefaults.properties,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
+        properties = properties,
         dragHandle = null,
         sheetState = sheetState,
         containerColor = ComposeAppTheme.colors.transparent,
-        scrimColor = ComposeAppTheme.colors.modalOverlay,
+        scrimColor = ComposeAppTheme.colors.backgroundOverlay,
         // Only the top inset: it keeps a fully expanded sheet below the status bar and is consumed
         // by the sheet itself while it stays lower. The bottom one is handled by BottomSheetHeader,
         // so that the sheet background reaches under the navigation bar.
@@ -96,7 +101,7 @@ fun BottomSheetHeader(
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
     iconPainter: Painter? = null,
-    titleColor: Color = ComposeAppTheme.colors.leah,
+    titleColor: Color = ComposeAppTheme.colors.textPrimary,
     iconTint: ColorFilter? = null,
     content: @Composable() (ColumnScope.() -> Unit),
 ) {
@@ -168,42 +173,37 @@ private fun BottomSheetHeader(
     modifier: Modifier = Modifier,
     content: @Composable() (ColumnScope.() -> Unit)
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp, 24.dp, 0.dp, 0.dp))
-            .background(color = ComposeAppTheme.colors.lawrence)
-            .windowInsetsPadding(WindowInsets.navigationBars)
-            .verticalScroll(rememberScrollState())
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(start = 32.dp, top = 24.dp, end = 32.dp, bottom = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            iconPainter?.let {
-                Image(
-                    modifier = Modifier.size(24.dp),
-                    painter = iconPainter,
-                    colorFilter = iconTint,
-                    contentDescription = null
-                )
-            }
-            titleContent.invoke(this)
-            HsIconButton(
-                modifier = Modifier.size(24.dp),
-                onClick = onCloseClick
+    BottomSheetSurface(modifier = modifier) {
+        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+            Row(
+                modifier = Modifier
+                    .padding(start = 32.dp, top = 24.dp, end = 32.dp, bottom = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_close_24),
-                    tint = ComposeAppTheme.colors.grey,
-                    contentDescription = null,
-                )
+                iconPainter?.let {
+                    Image(
+                        modifier = Modifier.size(24.dp),
+                        painter = iconPainter,
+                        colorFilter = iconTint,
+                        contentDescription = null
+                    )
+                }
+                titleContent.invoke(this)
+                HsIconButton(
+                    modifier = Modifier.size(24.dp),
+                    onClick = onCloseClick
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_close_24),
+                        tint = ComposeAppTheme.colors.iconSecondary,
+                        contentDescription = null,
+                    )
+                }
             }
+            Column(
+                content = content
+            )
         }
-        Column(
-            content = content
-        )
     }
 }
 
@@ -214,7 +214,7 @@ private fun BottomSheetHeader_Preview() {
     ComposeAppTheme {
         BottomSheetHeader(
             iconPainter = iconPainter,
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.brandDefault),
             title = stringResource(R.string.ManageAccount_SwitchWallet_Title),
             onCloseClick = { },
         ) {

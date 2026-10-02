@@ -37,7 +37,7 @@ class TransactionStatusInfoFragment : BaseComposeFragment() {
 private fun InfoScreen(
     navController: NavController
 ) {
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(
                 title = stringResource(R.string.TransactionInfo_Status),

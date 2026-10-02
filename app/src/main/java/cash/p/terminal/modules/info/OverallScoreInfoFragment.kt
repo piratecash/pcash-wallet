@@ -32,9 +32,9 @@ import cash.p.terminal.ui_compose.components.InfoTextBody
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui.compose.components.ScreenMessageWithAction
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.headline2_jacob
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import java.math.BigDecimal
+import cash.p.terminal.ui_compose.components.Headline2
 
 class OverallScoreInfoFragment : BaseComposeFragment() {
 
@@ -73,7 +73,7 @@ private fun InfoScreen(
     categoryScores: Map<OverallScore, String>,
     navController: NavController
 ) {
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(
                 navigationIcon = {
@@ -86,19 +86,12 @@ private fun InfoScreen(
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
             ) {
-                InfoHeader(R.string.Coin_Analytics_OverallScore)
-                VSpacer(12.dp)
-                headline2_jacob(
-                    modifier = Modifier.padding(horizontal = 32.dp),
-                    text = stringResource(categoryTitle)
-                )
-                InfoTextBody(stringResource(description))
-                VSpacer(12.dp)
+                ScoreCategoryHeader(categoryTitle, description)
                 val items = buildList<@Composable () -> Unit> {
                     categoryScores.forEach { (score, value) ->
                         val color = when (score) {
-                            OverallScore.Excellent -> Color(0xFF05C46B)
-                            OverallScore.Good -> Color(0xFFFFA800)
+                            OverallScore.Excellent -> ComposeAppTheme.colors.statusSuccess
+                            OverallScore.Good -> ComposeAppTheme.colors.statusWarning
                             OverallScore.Fair -> Color(0xFFFF7A00)
                             OverallScore.Poor -> Color(0xFFFF3D00)
                         }
@@ -130,6 +123,21 @@ private fun InfoScreen(
                 VSpacer(24.dp)
             }
         }
+    }
+}
+
+@Composable
+private fun ScoreCategoryHeader(categoryTitle: Int, description: Int) {
+    Column {
+        InfoHeader(R.string.Coin_Analytics_OverallScore)
+        VSpacer(12.dp)
+        Headline2(
+            text = stringResource(categoryTitle),
+            color = ComposeAppTheme.colors.statusWarning,
+            modifier = Modifier.padding(horizontal = 32.dp),
+        )
+        InfoTextBody(stringResource(description))
+        VSpacer(12.dp)
     }
 }
 

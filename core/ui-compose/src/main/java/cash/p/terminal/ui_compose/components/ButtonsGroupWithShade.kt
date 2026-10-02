@@ -27,13 +27,13 @@ fun ButtonsGroupWithShade(
                 .height(24.dp)
                 .background(
                     brush = Brush.verticalGradient(
-                        listOf(ComposeAppTheme.colors.transparent, ComposeAppTheme.colors.tyler),
+                        listOf(ComposeAppTheme.colors.transparent, ComposeAppTheme.colors.backgroundBase),
                     ),
                 ),
         )
         Box(
             modifier = Modifier
-                .background(ComposeAppTheme.colors.tyler)
+                .background(ComposeAppTheme.colors.backgroundBase)
                 .padding(bottom = 8.dp),
         ) {
             buttonsContent()

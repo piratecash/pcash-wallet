@@ -50,7 +50,7 @@ internal fun AddressPoisoningViewScreen(
                 navigationIcon = { HsBackButton(onClick = onClose) },
             )
         },
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -103,9 +103,9 @@ private fun ModeOptionCard(
     preview: @Composable () -> Unit,
 ) {
     val borderColor = if (selected) {
-        ComposeAppTheme.colors.jacob
+        ComposeAppTheme.colors.brandDefault
     } else {
-        ComposeAppTheme.colors.steel20
+        ComposeAppTheme.colors.borderDefault
     }
     Column(
         modifier = Modifier
@@ -125,7 +125,7 @@ private fun ModeOptionCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
-                .border(1.dp, ComposeAppTheme.colors.steel20, RoundedCornerShape(12.dp))
+                .border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(12.dp))
         ) {
             preview()
         }
@@ -143,7 +143,7 @@ private fun AddressPoisoningViewScreenPreview() {
         title = "Sent",
         subtitle = "to xxxxxxxxxxxx...xxxx...xxxxxxxxxx",
         primaryValue = ColoredValue("-1 ETH", ColorName.Lucian),
-        secondaryValue = ColoredValue("$3,198", ColorName.Grey),
+        secondaryValue = ColoredValue("$3,198", ColorName.Secondary),
         date = Date(),
         formattedTime = "14:30",
         icon = TransactionViewItem.Icon.Failed,

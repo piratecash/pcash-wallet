@@ -81,8 +81,8 @@ import cash.p.terminal.ui_compose.components.CellSingleLineClear
 import cash.p.terminal.ui_compose.components.CellSingleLineLawrenceSection
 import cash.p.terminal.ui_compose.components.InfoText
 import cash.p.terminal.ui.compose.components.ListErrorView
-import cash.p.terminal.ui.compose.components.SelectorDialogCompose
-import cash.p.terminal.ui.compose.components.SelectorItem
+import cash.p.terminal.ui_compose.components.AppSelectorDialog
+import cash.p.terminal.ui_compose.components.AppSelectorItem
 import cash.p.terminal.ui.compose.components.SnackbarError
 import cash.p.terminal.ui.helpers.LinkHelper
 import cash.p.terminal.ui_compose.BaseComposeFragment
@@ -93,10 +93,10 @@ import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.TabItem
 import cash.p.terminal.ui_compose.components.Tabs
 import cash.p.terminal.strings.helpers.TranslatableString
-import cash.p.terminal.ui_compose.components.body_jacob
+import cash.p.terminal.ui_compose.components.body_brand
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead1_grey
-import cash.p.terminal.ui_compose.components.subhead1_jacob
+import cash.p.terminal.ui_compose.components.subhead1_brand
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import coil3.compose.AsyncImagePainter
@@ -139,7 +139,7 @@ fun NftAssetScreen(
     val viewModel = viewModel<NftAssetViewModel>(factory = NftAssetModule.Factory(collectionUid, nftUid))
     val errorMessage = viewModel.errorMessage
 
-    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
         AppBar(
             menuItems = listOf(
                 MenuItem(
@@ -284,7 +284,7 @@ private fun AssetContent(
 
                 Text(
                     text = asset.name,
-                    color = ComposeAppTheme.colors.leah,
+                    color = ComposeAppTheme.colors.textPrimary,
                     style = ComposeAppTheme.typography.headline1
                 )
 
@@ -302,12 +302,12 @@ private fun AssetContent(
                             },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        subhead1_jacob(text = asset.collectionName)
+                        subhead1_brand(text = asset.collectionName)
                         Spacer(modifier = Modifier.weight(1f))
                         Icon(
                             painter = painterResource(id = R.drawable.ic_arrow_right),
                             contentDescription = null,
-                            tint = ComposeAppTheme.colors.grey
+                            tint = ComposeAppTheme.colors.iconSecondary
                         )
                     }
                 }
@@ -535,14 +535,15 @@ private fun AssetContent(
     }
 
     if (showActionSelectorDialog) {
-        SelectorDialogCompose(
+        AppSelectorDialog(
+            title = null,
             items = NftAssetModule.NftAssetAction.values().map {
-                (SelectorItem(stringResource(it.title), false, it))
+                (AppSelectorItem(stringResource(it.title), false, it))
             },
-            onDismissRequest = {
+            onDismiss = {
                 showActionSelectorDialog = false
             },
-            onSelectItem = { selectedOption ->
+            onSelect = { selectedOption ->
                 when (selectedOption) {
                     NftAssetModule.NftAssetAction.Share -> {
                         asset.providerUrl?.second?.let {
@@ -679,7 +680,7 @@ private fun NftAssetAttribute(context: Context, trait: NftAssetViewModel.TraitVi
         modifier = Modifier
             .height(60.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(ComposeAppTheme.colors.surfacePrimary)
             .clickable(trait.searchUrl != null) {
                 LinkHelper.openLinkInAppBrowser(context, trait.searchUrl ?: "")
             }
@@ -695,12 +696,12 @@ private fun NftAssetAttribute(context: Context, trait: NftAssetViewModel.TraitVi
                         modifier = Modifier
                             .padding(start = 6.dp)
                             .clip(RoundedCornerShape(4.dp))
-                            .background(ComposeAppTheme.colors.jeremy)
+                            .background(ComposeAppTheme.colors.badgeBackground)
                     ) {
                         Text(
                             modifier = Modifier.padding(start = 4.dp, end = 4.dp, bottom = 1.dp),
                             text = percent,
-                            color = ComposeAppTheme.colors.bran,
+                            color = ComposeAppTheme.colors.textPrimary,
                             style = ComposeAppTheme.typography.microSB,
                             maxLines = 1,
                         )
@@ -793,7 +794,7 @@ private fun NftAssetPriceCell(
         body_leah(text = title)
         Spacer(modifier = Modifier.weight(1f))
         Column {
-            body_jacob(
+            body_brand(
                 modifier = Modifier.fillMaxWidth(),
                 text = price.coinValue,
                 textAlign = TextAlign.End,

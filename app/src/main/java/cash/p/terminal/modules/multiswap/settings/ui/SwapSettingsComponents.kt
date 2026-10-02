@@ -32,7 +32,7 @@ import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
 import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
 import cash.p.terminal.ui_compose.components.HeaderText
 import cash.p.terminal.ui_compose.components.InfoText
-import cash.p.terminal.ui_compose.components.body_grey50
+import cash.p.terminal.ui_compose.components.body_disabled
 import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.ui_compose.entities.FormsInputStateWarning
 import cash.p.terminal.ui_compose.theme.ColoredTextStyle
@@ -124,19 +124,19 @@ fun InputWithButtons(
     val borderColor = when (state) {
         is DataState.Error -> {
             if (state.error is FormsInputStateWarning) {
-                ComposeAppTheme.colors.yellow50
+                ComposeAppTheme.colors.statusWarning50
             } else {
-                ComposeAppTheme.colors.red50
+                ComposeAppTheme.colors.statusError50
             }
         }
 
-        else -> ComposeAppTheme.colors.steel20
+        else -> ComposeAppTheme.colors.borderDefault
     }
 
     val cautionColor = if (state?.errorOrNull is FormsInputStateWarning) {
-        ComposeAppTheme.colors.jacob
+        ComposeAppTheme.colors.statusWarning
     } else {
-        ComposeAppTheme.colors.lucian
+        ComposeAppTheme.colors.statusError
     }
 
     Column(modifier = modifier) {
@@ -145,7 +145,7 @@ fun InputWithButtons(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
                 .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-                .background(ComposeAppTheme.colors.lawrence)
+                .background(ComposeAppTheme.colors.surfacePrimary)
                 .height(44.dp)
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -170,13 +170,13 @@ fun InputWithButtons(
                     onValueChange.invoke(textValue.text)
                 },
                 textStyle = ColoredTextStyle(
-                    color = ComposeAppTheme.colors.leah,
+                    color = ComposeAppTheme.colors.textPrimary,
                     textStyle = ComposeAppTheme.typography.body
                 ),
                 maxLines = 1,
                 decorationBox = { innerTextField ->
                     if (textState.text.isEmpty()) {
-                        body_grey50(
+                        body_disabled(
                             hint ?: "",
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 1,

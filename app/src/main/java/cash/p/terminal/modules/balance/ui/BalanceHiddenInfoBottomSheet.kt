@@ -83,7 +83,7 @@ private fun BalanceHiddenInfoContent(
 ) {
     BottomSheetHeader(
         iconPainter = painterResource(R.drawable.ic_off_24),
-        iconTint = ColorFilter.tint(ComposeAppTheme.colors.grey),
+        iconTint = ColorFilter.tint(ComposeAppTheme.colors.iconSecondary),
         title = stringResource(R.string.balance_hide_on_flip_info_title),
         onCloseClick = onClose,
     ) {

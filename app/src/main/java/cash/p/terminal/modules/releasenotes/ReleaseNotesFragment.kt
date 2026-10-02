@@ -36,7 +36,7 @@ import cash.p.terminal.ui_compose.components.HsIconButton
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.body_leah
-import cash.p.terminal.ui_compose.components.caption_jacob
+import cash.p.terminal.ui_compose.components.caption_brand
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import kotlinx.parcelize.Parcelize
@@ -79,7 +79,7 @@ fun ReleaseNotesScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             if (closeablePopup) {
                 AppBar(
@@ -115,14 +115,14 @@ fun ReleaseNotesScreen(
 
             HorizontalDivider(
                 thickness = 1.dp,
-                color = ComposeAppTheme.colors.steel10,
+                color = ComposeAppTheme.colors.borderDivider,
             )
 
             ConnectionStatusView()
             RowUniversal(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(ComposeAppTheme.colors.tyler)
+                    .background(ComposeAppTheme.colors.backgroundBase)
                     .padding(horizontal = 16.dp),
                 onClick = onShowChangelogToggle,
             ) {
@@ -142,7 +142,7 @@ fun ReleaseNotesScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(ComposeAppTheme.colors.tyler)
+                    .background(ComposeAppTheme.colors.backgroundBase)
                     .padding(bottom = paddingValues.calculateBottomPadding())
                     .height(40.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -169,7 +169,7 @@ fun ReleaseNotesScreen(
 
                 Spacer(Modifier.weight(1f))
 
-                caption_jacob(
+                caption_brand(
                     modifier = Modifier.padding(end = 24.dp),
                     text = stringResource(R.string.ReleaseNotes_JoinUnstoppables)
                 )
@@ -185,7 +185,7 @@ private fun IconButton(icon: Int, url: String, description: String) {
         Icon(
             painter = painterResource(id = icon),
             contentDescription = description,
-            tint = ComposeAppTheme.colors.jacob
+            tint = ComposeAppTheme.colors.brandDefault
         )
     }
 }

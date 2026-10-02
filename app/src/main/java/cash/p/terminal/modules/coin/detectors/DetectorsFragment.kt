@@ -84,7 +84,7 @@ private fun DetectorsScreen(
     val uiState = viewModel.uiState
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = uiState.title,
@@ -143,7 +143,7 @@ fun IssueList(
             if (index > 0) {
                 Divider(
                     thickness = 1.dp,
-                    color = ComposeAppTheme.colors.steel10,
+                    color = ComposeAppTheme.colors.borderDivider,
                 )
             }
             DetectorCell(
@@ -163,30 +163,30 @@ fun DetectorCell(
     val issue = issueViewItem.issue
     val issues = issue.issues ?: emptyList()
     var iconResource = R.drawable.ic_check_24
-    var iconTint = ComposeAppTheme.colors.leah
+    var iconTint = ComposeAppTheme.colors.iconPrimary
 
     issues.firstOrNull()?.let {
         when (it.impact) {
             "Critical" -> {
                 iconResource = R.drawable.ic_warning_24
-                iconTint = ComposeAppTheme.colors.lucian
+                iconTint = ComposeAppTheme.colors.statusError
             }
 
             "High" -> {
                 iconResource = R.drawable.ic_warning_24
-                iconTint = ComposeAppTheme.colors.jacob
+                iconTint = ComposeAppTheme.colors.statusWarning
             }
 
             "Low" -> {
                 iconResource = R.drawable.ic_warning_24
-                iconTint = ComposeAppTheme.colors.remus
+                iconTint = ComposeAppTheme.colors.statusSuccess
             }
 
             "Informational",
             "Optimization" -> {
                 if (issues.isNotEmpty()) {
                     iconResource = R.drawable.ic_warning_24
-                    iconTint = ComposeAppTheme.colors.laguna
+                    iconTint = ComposeAppTheme.colors.brandDefault
                 }
             }
 
@@ -205,7 +205,7 @@ fun DetectorCell(
         RowUniversal(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(ComposeAppTheme.colors.lawrence)
+                .background(ComposeAppTheme.colors.surfacePrimary)
                 .padding(horizontal = 16.dp),
         ) {
             Icon(
@@ -250,7 +250,7 @@ fun DetectorCell(
                     modifier = Modifier.padding(start = 8.dp),
                     painter = painter,
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
             }
         }
@@ -265,7 +265,7 @@ fun DetectorCell(
                     if (index > 0) {
                         Divider(
                             thickness = 1.dp,
-                            color = ComposeAppTheme.colors.steel10,
+                            color = ComposeAppTheme.colors.borderDivider,
                         )
                     }
                     InfoText(

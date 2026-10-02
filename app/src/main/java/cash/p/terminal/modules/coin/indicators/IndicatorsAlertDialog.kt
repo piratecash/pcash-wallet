@@ -46,10 +46,10 @@ class IndicatorsAlertDialog : BaseComposableBottomSheetFragment() {
 
 @Composable
 private fun IndicatorsAlertScreen(navController: NavController) {
-    cash.p.terminal.ui_compose.theme.ComposeAppTheme {
+    ComposeAppTheme {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.icon_24_lock),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.grey),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.iconSecondary),
             title = stringResource(R.string.CoinPage_Indicators),
             onCloseClick = {
                 navController.popBackStackSafely()

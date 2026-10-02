@@ -84,14 +84,12 @@ fun CoinOverviewScreen(
                 contenView = view,
                 resId = it.text,
                 icon = it.iconRes,
-                iconTint = R.color.white
             )
 
             HudMessageType.Success -> HudHelper.showSuccessMessage(
                 contenView = view,
                 resId = it.text,
                 icon = it.iconRes,
-                iconTint = R.color.white
             )
         }
 
@@ -285,7 +283,7 @@ fun Loading(modifier: Modifier = Modifier) {
     ) {
         CircularProgressIndicator(
             modifier = Modifier.size(24.dp),
-            color = ComposeAppTheme.colors.grey,
+            color = ComposeAppTheme.colors.textSecondary,
             strokeWidth = 2.dp
         )
     }

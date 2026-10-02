@@ -50,7 +50,7 @@ internal fun OfflineModeInfoBottomSheet(onDismiss: () -> Unit) {
     ) {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_info_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.grey),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.iconSecondary),
             title = stringResource(R.string.offline_mode_info_title),
             onCloseClick = close,
         ) {
@@ -79,7 +79,7 @@ private fun OfflineChecklistRow(item: OfflineChecklistItem) {
         Icon(
             painter = painterResource(id = if (item.positive) R.drawable.ic_checkmark_20 else R.drawable.ic_close_24),
             contentDescription = null,
-            tint = if (item.positive) ComposeAppTheme.colors.remus else ComposeAppTheme.colors.lucian,
+            tint = if (item.positive) ComposeAppTheme.colors.statusSuccess else ComposeAppTheme.colors.statusError,
             modifier = Modifier.size(20.dp),
         )
         HSpacer(12.dp)

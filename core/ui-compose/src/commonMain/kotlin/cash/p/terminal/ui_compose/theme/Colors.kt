@@ -1,129 +1,58 @@
 package cash.p.terminal.ui_compose.theme
 
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
-@Stable
-class Colors(
-    jacob: Color,
-    remus: Color,
-    lucian: Color,
-    tyler: Color,
-    bran: Color,
-    leah: Color,
-    claude: Color,
-    lawrence: Color,
-    jeremy: Color,
-    laguna: Color,
-    purple: Color,
-    raina: Color,
-    andy: Color,
-    blade: Color,
-    midnight: Color,
-    modalOverlay: Color
-) {
-
-    //base colors
-    val transparent = Color.Transparent
-    val dark = Dark
-    val light = Light
-    val white = Color.White
-    val black50 = Black50
-    val issykBlue = Color(0xFF3372FF)
-    val lightGrey = LightGrey
-    val steelLight = SteelLight
-    val steelDark = SteelDark
-    val steel10 = Steel10
-    val steel20 = Steel20
-    val grey = Grey
-    val grey50 = Grey50
-    val yellow50 = Yellow50
-    val yellow20 = Yellow20
-    val green20 = Green20
-
-    val yellowD = YellowD
-    val yellowL = YellowL
-    val greenD = GreenD
-    val greenL = GreenL
-    val green50 = Green50
-    val redD = RedD
-    val redL = RedL
-    val elenaD = Color(0xFF6E7899)
-    val red50 = Red50
-    val red20 = Red20
-
-    //themed colors
-    var jacob by mutableStateOf(jacob)
-        private set
-    var remus by mutableStateOf(remus)
-        private set
-    var lucian by mutableStateOf(lucian)
-        private set
-    var tyler by mutableStateOf(tyler)
-        private set
-    var bran by mutableStateOf(bran)
-        private set
-    var leah by mutableStateOf(leah)
-        private set
-    var claude by mutableStateOf(claude)
-        private set
-    var lawrence by mutableStateOf(lawrence)
-        private set
-    var jeremy by mutableStateOf(jeremy)
-        private set
-    var laguna by mutableStateOf(laguna)
-        private set
-    var purple by mutableStateOf(purple)
-        private set
-    var raina by mutableStateOf(raina)
-        private set
-    var andy by mutableStateOf(andy)
-        private set
-    var blade by mutableStateOf(blade)
-        private set
-    var midnight by mutableStateOf(midnight)
-        private set
-    var modalOverlay by mutableStateOf(modalOverlay)
-        private set
-
-    fun update(other: Colors) {
-        jacob = other.jacob
-        remus = other.remus
-        lucian = other.lucian
-        tyler = other.tyler
-        bran = other.bran
-        leah = other.leah
-        claude = other.claude
-        lawrence = other.lawrence
-        jeremy = other.jeremy
-        laguna = other.laguna
-        purple = other.purple
-        raina = other.raina
-        andy = other.andy
-        blade = other.blade
-        midnight = other.midnight
-        modalOverlay = other.modalOverlay
-    }
-
-    fun copy(): Colors = Colors(
-        jacob = jacob,
-        remus = remus,
-        lucian = lucian,
-        tyler = tyler,
-        bran = bran,
-        leah = leah,
-        claude = claude,
-        lawrence = lawrence,
-        jeremy = jeremy,
-        laguna = laguna,
-        purple = purple,
-        raina = raina,
-        andy = andy,
-        blade = blade,
-        midnight = midnight,
-        modalOverlay = modalOverlay
-    )
-}
+@Immutable
+data class Colors(
+    val backgroundBase: Color,
+    val backgroundNavigation: Color,
+    val backgroundOverlay: Color,
+    val surfacePrimary: Color,
+    val surfaceElevated: Color,
+    val surfacePlaceholder: Color,
+    val controlActionBackground: Color,
+    val controlActionBorder: Color,
+    val controlTrack: Color,
+    val brandDefault: Color,
+    val statusSuccess: Color,
+    val statusWarning: Color,
+    val statusError: Color,
+    val statusSuccess20: Color,
+    val statusWarning20: Color,
+    val statusError20: Color,
+    val statusSuccess50: Color,
+    val statusWarning50: Color,
+    val statusError50: Color,
+    val borderDefault: Color,
+    val borderDivider: Color,
+    val borderAccentSubtle: Color,
+    val textPrimary: Color,
+    val textSecondary: Color,
+    val textSecondaryDimmed: Color,
+    val textDisabled: Color,
+    val iconPrimary: Color,
+    val iconSecondary: Color,
+    val iconDisabled: Color,
+    val buttonPrimaryBrandContent: Color,
+    val buttonPrimaryNeutralBackground: Color,
+    val buttonPrimaryNeutralContent: Color,
+    val buttonPrimaryDestructiveBackground: Color,
+    val buttonPrimaryDestructiveContent: Color,
+    val buttonPrimaryDisabledBackground: Color,
+    val buttonPrimaryOutlineContent: Color,
+    val buttonPrimaryOutlineBorder: Color,
+    val buttonSecondaryFilledBackground: Color,
+    val buttonSecondaryFilledBorder: Color,
+    val badgeBackground: Color,
+    val contentInverse: Color,
+    val switchThumbOn: Color,
+    val switchThumbOff: Color,
+    val switchTrackOn: Color,
+    val switchTrackOff: Color,
+    val qrBackground: Color,
+    val scannerBackground: Color,
+    val snackbarNeutralBackground: Color,
+    val contentOnColor: Color,
+    val transparent: Color = Color.Transparent,
+)

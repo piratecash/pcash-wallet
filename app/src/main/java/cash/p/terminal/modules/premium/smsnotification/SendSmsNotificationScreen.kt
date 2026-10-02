@@ -55,7 +55,7 @@ import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.SnackbarDuration
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.body_grey50
+import cash.p.terminal.ui_compose.components.body_disabled
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.caption_grey
 import cash.p.terminal.ui_compose.components.subhead1_grey
@@ -140,7 +140,7 @@ fun SendSmsNotificationScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.send_sms_via_zec_title),
@@ -183,7 +183,7 @@ fun SendSmsNotificationScreen(
                         Icon(
                             painter = painterResource(id = R.drawable.ic_down_arrow_20),
                             contentDescription = null,
-                            tint = ComposeAppTheme.colors.grey
+                            tint = ComposeAppTheme.colors.iconSecondary
                         )
                     }
                 }
@@ -328,8 +328,8 @@ private fun MemoInputField(
             .padding(horizontal = 16.dp)
             .defaultMinSize(minHeight = 44.dp)
             .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, ComposeAppTheme.colors.steel20, RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence),
+            .border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(12.dp))
+            .background(ComposeAppTheme.colors.surfacePrimary),
         verticalAlignment = Alignment.CenterVertically
     ) {
         BasicTextField(
@@ -339,14 +339,14 @@ private fun MemoInputField(
             value = value,
             onValueChange = onValueChange,
             textStyle = ComposeAppTheme.typography.bodyItalic.copy(
-                color = ComposeAppTheme.colors.leah
+                color = ComposeAppTheme.colors.textPrimary
             ),
-            cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+            cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
             singleLine = true,
             decorationBox = { innerTextField ->
                 Box {
                     if (value.isEmpty()) {
-                        body_grey50(text = stringResource(R.string.Send_DialogMemoHint))
+                        body_disabled(text = stringResource(R.string.Send_DialogMemoHint))
                     }
                     innerTextField()
                 }

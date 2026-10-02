@@ -32,12 +32,12 @@ import cash.p.terminal.modules.receive.ui.UsedAddressesParams
 import cash.p.terminal.modules.receive.viewmodels.ReceiveAddressViewModel
 import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.navigation.slideFromRight
-import cash.p.terminal.ui.compose.components.SelectorDialogCompose
-import cash.p.terminal.ui.compose.components.SelectorItem
 import cash.p.terminal.ui_compose.BaseComposeFragment
+import cash.p.terminal.ui_compose.components.AppSelectorDialog
+import cash.p.terminal.ui_compose.components.AppSelectorItem
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.body_grey
-import cash.p.terminal.ui_compose.components.body_grey50
+import cash.p.terminal.ui_compose.components.body_disabled
 import cash.p.terminal.ui_compose.components.subhead1_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Wallet
@@ -161,7 +161,7 @@ private fun ReceiveTopContent(
             HorizontalDivider(
                 modifier = Modifier.fillMaxWidth(),
                 thickness = 1.dp,
-                color = ComposeAppTheme.colors.steel20,
+                color = ComposeAppTheme.colors.borderDivider,
             )
         }
         if (uiState.isAddressHistorySupported) {
@@ -173,7 +173,7 @@ private fun ReceiveTopContent(
             HorizontalDivider(
                 modifier = Modifier.fillMaxWidth(),
                 thickness = 1.dp,
-                color = ComposeAppTheme.colors.steel20,
+                color = ComposeAppTheme.colors.borderDivider,
             )
         }
     }
@@ -210,13 +210,13 @@ private fun BeamReceiveTypeSelector(
         Spacer(modifier = Modifier.weight(1f))
     }
     if (showSelector) {
-        SelectorDialogCompose(
+        AppSelectorDialog(
             title = stringResource(R.string.beam_send_receiver_type),
             items = BEAM_RECEIVE_ADDRESS_TYPES.map {
-                SelectorItem(stringResource(it.titleResId()), it == selected, it)
+                AppSelectorItem(stringResource(it.titleResId()), it == selected, it)
             },
-            onDismissRequest = { showSelector = false },
-            onSelectItem = onSelect,
+            onDismiss = { showSelector = false },
+            onSelect = onSelect,
         )
     }
 }
@@ -245,7 +245,7 @@ fun UsedAddressesRow(
                 text = stringResource(R.string.Balance_Receive_UsedAddresses),
             )
         } else {
-            body_grey50(
+            body_disabled(
                 modifier = Modifier
                     .weight(1f),
                 text = stringResource(R.string.Balance_Receive_UsedAddresses),
@@ -255,7 +255,7 @@ fun UsedAddressesRow(
         Icon(
             painter = painterResource(id = R.drawable.ic_arrow_right),
             contentDescription = null,
-            tint = if (enabled) ComposeAppTheme.colors.grey else ComposeAppTheme.colors.grey50,
+            tint = if (enabled) ComposeAppTheme.colors.iconSecondary else ComposeAppTheme.colors.iconDisabled,
         )
     }
 }

@@ -29,7 +29,7 @@ import io.horizontalsystems.chartview.ui.Chart
 import cash.p.terminal.modules.coin.overview.ui.Loading
 import cash.p.terminal.modules.market.topcoins.SelectorDialogState
 import cash.p.terminal.ui_compose.components.HSSwipeRefresh
-import cash.p.terminal.ui.compose.components.AlertGroup
+import cash.p.terminal.ui_compose.components.AlertGroup
 import cash.p.terminal.ui_compose.components.ButtonSecondaryToggle
 import cash.p.terminal.ui.compose.components.CoinList
 import cash.p.terminal.ui.compose.components.DescriptionCard
@@ -78,7 +78,7 @@ fun CategoryScreen(
     val isRefreshing by viewModel.isRefreshingLiveData.observeAsState(false)
     val selectorDialogState by viewModel.selectorDialogStateLiveData.observeAsState()
 
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             TopCloseButton(onCloseButtonClick)
 

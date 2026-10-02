@@ -30,7 +30,7 @@ fun RadialBackground() {
             .onGloballyPositioned { coordinates ->
                 size = coordinates.size.toSize()
             }
-            .background(ComposeAppTheme.colors.tyler)
+            .background(ComposeAppTheme.colors.backgroundBase)
     ) {
         // 1st Radial Gradient - Yellow
         Box(

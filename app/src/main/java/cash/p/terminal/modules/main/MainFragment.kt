@@ -212,12 +212,12 @@ private fun MainScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         bottomBar = {
             Column {
                 ConnectionStatusView()
                 HsBottomNavigation(
-                    backgroundColor = ComposeAppTheme.colors.tyler,
+                    backgroundColor = ComposeAppTheme.colors.backgroundNavigation,
                     elevation = 10.dp
                 ) {
                     uiState.mainNavItems.forEach { item ->
@@ -232,9 +232,9 @@ private fun MainScreen(
                             },
                             selected = item.selected,
                             enabled = item.enabled,
-                            selectedContentColor = ComposeAppTheme.colors.jacob,
-                            unselectedContentColor = if (item.enabled) ComposeAppTheme.colors.grey else
-                                ComposeAppTheme.colors.grey50,
+                            selectedContentColor = ComposeAppTheme.colors.brandDefault,
+                            unselectedContentColor = if (item.enabled) ComposeAppTheme.colors.iconSecondary else
+                                ComposeAppTheme.colors.iconDisabled,
                             onClick = {
                                 viewModel.onSelect(item.mainNavItem)
                             },
@@ -412,7 +412,7 @@ private fun MainScreen(
 @Composable
 private fun HideContentBox(contentHidden: Boolean) {
     val backgroundModifier = if (contentHidden) {
-        Modifier.background(ComposeAppTheme.colors.tyler)
+        Modifier.background(ComposeAppTheme.colors.backgroundBase)
     } else {
         Modifier
     }
@@ -446,7 +446,7 @@ private fun BadgedIcon(
                         modifier = Modifier
                             .size(8.dp)
                             .background(
-                                ComposeAppTheme.colors.lucian,
+                                ComposeAppTheme.colors.statusError,
                                 shape = RoundedCornerShape(4.dp)
                             )
                     ) { }

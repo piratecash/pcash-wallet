@@ -67,7 +67,7 @@ private fun BaseCurrencyScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.SettingsCurrency_Title),
@@ -137,7 +137,7 @@ private fun WarningBottomSheet(
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_attention_24),
             title = stringResource(R.string.SettingsCurrency_DisclaimerTitle),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
             onCloseClick = {
                 scope.launch { sheetState.hide() }.invokeOnCompletion { onCloseClick() }
             }
@@ -211,7 +211,7 @@ private fun CurrencyCell(
             if (checked) {
                 Icon(
                     painter = painterResource(R.drawable.ic_checkmark_20),
-                    tint = ComposeAppTheme.colors.jacob,
+                    tint = ComposeAppTheme.colors.brandDefault,
                     contentDescription = null,
                 )
             }

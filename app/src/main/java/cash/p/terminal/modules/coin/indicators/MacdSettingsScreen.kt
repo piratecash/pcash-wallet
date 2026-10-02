@@ -45,7 +45,7 @@ fun MacdSettingsScreen(navController: NavController, indicatorSetting: ChartIndi
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = viewModel.name,

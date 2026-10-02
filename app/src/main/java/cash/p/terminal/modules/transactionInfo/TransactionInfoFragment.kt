@@ -199,7 +199,7 @@ private fun TransactionInfoContent(
     onAmlRiskClick: (List<String>, AmlStatus) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier.background(color = ComposeAppTheme.colors.tyler)) {
+    Column(modifier = modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
         AppBar(
             title = stringResource(R.string.TransactionInfo_Title),
             menuItems = listOf(

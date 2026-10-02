@@ -34,7 +34,7 @@ fun TopPairsBoardView(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(ComposeAppTheme.colors.surfacePrimary)
     ) {
         topMarketPairs.forEach {
             TopPairItem(item = it, borderBottom = true, onItemClick = onItemClick)
