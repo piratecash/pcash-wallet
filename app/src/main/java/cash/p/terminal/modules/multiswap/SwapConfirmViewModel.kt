@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.multiswap
 
 import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,7 +28,7 @@ import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
 import cash.p.terminal.modules.multiswap.providers.IExactOutSwapProvider
 import cash.p.terminal.modules.multiswap.providers.InsufficientAllowanceCaution
 import cash.p.terminal.modules.multiswap.providers.OffChainSwapProvider
-import cash.p.terminal.modules.multiswap.providers.YiFiDepositMemoUnsupported
+import cash.p.terminal.modules.multiswap.providers.SwapDepositMemoUnsupported
 import cash.p.terminal.modules.multiswap.providers.isOffChain
 import cash.p.terminal.modules.multiswap.providers.requiredInput
 import cash.p.terminal.modules.multiswap.sendtransaction.ISendTransactionService
@@ -43,16 +44,17 @@ import cash.p.terminal.modules.send.hardwareWalletUserMessageRes
 import cash.p.terminal.modules.send.SendModule
 import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.isHardwareWalletCancelled
-import cash.p.terminal.modules.send.userMessageRes
+import cash.p.terminal.network.backendswap.data.entity.BackendSwapError
 import cash.p.terminal.network.changenow.data.entity.BackendChangeNowResponseError
 import cash.p.terminal.network.exolix.data.entity.BackendExolixResponseError
 import cash.p.terminal.network.yifi.data.entity.BackendYiFiResponseError
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.strings.helpers.Translator
-import cash.p.terminal.trezor.domain.TrezorCancelledException
+import cash.p.terminal.trezor.domain.TrezorSigningException
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
+import co.touchlab.kermit.Logger
 import com.tangem.common.core.TangemSdkError
 import com.piratecash.monero.signer.HardwareWalletOperationException
 import io.horizontalsystems.bitcoincore.managers.SendValueErrors
@@ -62,6 +64,7 @@ import io.horizontalsystems.core.entities.Currency
 import io.horizontalsystems.ethereumkit.api.jsonrpc.JsonRpc.ResponseError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -71,7 +74,10 @@ import org.koin.java.KoinJavaComponent.inject
 import timber.log.Timber
 import java.math.BigDecimal
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.cancellation.CancellationException
+
+private val logger = Logger.withTag("SwapConfirmViewModel")
 
 class SwapConfirmViewModel(
     private val request: SwapConfirmRequest,
@@ -135,6 +141,8 @@ class SwapConfirmViewModel(
     private var swapRecipientAddress: String? = null
     private var isAdvancedSettingsAvailable: Boolean = sendTransactionService.hasSettings()
     private var fetchJob: Job? = null
+    // The timer tracks quote freshness, so it starts once per new quote, not on fee/balance re-emissions.
+    private val quoteAwaitingTimer = AtomicBoolean(false)
     private var moneroPreparationJob: Job? = null
     private var moneroPreparationAutoStarted = false
     private var moneroPreparationActivity = MoneroPreparationActivity.Idle
@@ -196,7 +204,7 @@ class SwapConfirmViewModel(
                 emitState()
                 prepareMoneroSpendIfNeeded(transactionState.moneroSpendReadiness, automatic = true)
 
-                if (isSendable() && needUseTimer()) {
+                if (needUseTimer() && isSendable() && quoteAwaitingTimer.compareAndSet(true, false)) {
                     timerService.start(10)
                 }
             }
@@ -243,7 +251,7 @@ class SwapConfirmViewModel(
         val cautions = buildCautions()
 
         return SwapConfirmUiState(
-            expiresIn = timerState.remaining,
+            expiresIn = timerState.remaining.takeIf { needUseTimer() },
             expired = timerState.timeout,
             loading = loading,
             tokenIn = tokenIn,
@@ -293,7 +301,17 @@ class SwapConfirmViewModel(
         } else {
             emptyList()
         }
-        return sendTransactionState.cautions + quoteCautions + priceImpactCaution + balanceCaution
+        val criticalErrorCaution = criticalError?.let {
+            listOf(
+                HSCaution(
+                    s = TranslatableString.ResString(R.string.Error),
+                    type = HSCaution.Type.Error,
+                    description = TranslatableString.PlainString(it),
+                ).toCautionViewItem()
+            )
+        } ?: emptyList()
+        return sendTransactionState.cautions + quoteCautions + priceImpactCaution + balanceCaution +
+            criticalErrorCaution
     }
 
     private fun isSendable(cautions: List<CautionViewItem> = buildCautions()): Boolean {
@@ -383,27 +401,54 @@ class SwapConfirmViewModel(
                 fiatServiceIn.setAmount(amountIn)
                 fiatServiceOut.setAmount(amountOut)
                 fiatServiceOutMin.setAmount(amountOutMin)
+                quoteAwaitingTimer.set(true)
                 sendTransactionService.setSendTransactionData(finalQuote.sendTransactionData)
 
                 priceImpactService.setPriceImpact(finalQuote.priceImpact?.negate(), swapProvider.title)
+                startDepositDeadlineTimer(finalQuote.validUntilMillis)
 
                 emitState()
             } catch (e: BackendChangeNowResponseError) {
                 setCriticalError(e.changeNowCriticalError)
             } catch (e: BackendExolixResponseError) {
-                setCriticalError(e.exolixCriticalError)
+                setCriticalError(criticalErrorOf(e.message, e.error))
             } catch (e: BackendYiFiResponseError) {
+                logger.w { "YiFi final quote failed: code=${e.code}, status=${e.statusCode}" }
                 setCriticalError(e.yiFiCriticalError)
-            } catch (_: YiFiDepositMemoUnsupported) {
+            } catch (e: BackendSwapError) {
+                setCriticalError(criticalErrorOf(e.message, e.code))
+            } catch (_: SwapDepositMemoUnsupported) {
                 setCriticalError(Translator.getString(R.string.swap_yifi_memo_unsupported))
             } catch (_: CancellationException) {
                 Timber.w("fetchFinalQuote was cancelled")
             } catch (t: Throwable) {
-                Timber.e(t, "fetchFinalQuote error")
-                setCriticalError(Translator.getString(R.string.unexpected_error))
+                setCriticalError(finalQuoteCriticalError(t))
             }
         }
     }
+
+    // Off-chain deposit orders expire server-side; on-chain quotes keep their own short timer.
+    private suspend fun startDepositDeadlineTimer(validUntilMillis: Long?) {
+        if (!swapProvider.isOffChain) return
+        withContext(dispatcherProvider.main) {
+            if (validUntilMillis == null) {
+                timerService.reset()
+            } else {
+                val remainingSeconds = (validUntilMillis - System.currentTimeMillis()) / 1000
+                timerService.start(remainingSeconds.coerceAtLeast(0))
+            }
+        }
+    }
+
+    private fun finalQuoteCriticalError(error: Throwable): String =
+        when (val hardwareError = error.toHardwareWalletError()) {
+            HardwareWalletError.Cancelled -> Translator.getString(R.string.Button_Refresh)
+            is HardwareWalletError.Failed -> Translator.getString(hardwareError.messageRes)
+            null -> {
+                Timber.e(error, "fetchFinalQuote error")
+                Translator.getString(R.string.unexpected_error)
+            }
+        }
 
     private suspend fun fetchFinalQuoteByExecutionMode(): ISwapFinalQuote =
         when (executionMode) {
@@ -444,18 +489,23 @@ class SwapConfirmViewModel(
             }
         }
 
-    private val BackendExolixResponseError.exolixCriticalError: String
-        get() = message.notBlank()
-            ?: error.notBlank()
-            ?: Translator.getString(R.string.unexpected_error)
+    private fun criticalErrorOf(vararg candidates: String?): String =
+        candidates.firstOrNull { !it.isNullOrBlank() } ?: Translator.getString(R.string.unexpected_error)
 
     private val BackendYiFiResponseError.yiFiCriticalError: String
-        get() = message.notBlank()
-            ?: code.notBlank()
-            ?: Translator.getString(R.string.unexpected_error)
+        get() = when (code) {
+            BackendYiFiResponseError.INVALID_RECEIVE_ADDRESS -> {
+                Translator.getString(R.string.unsupported_address)
+            }
 
-    private fun String?.notBlank(): String? =
-        takeIf { !it.isNullOrBlank() }
+            BackendYiFiResponseError.INVALID_REFUND_ADDRESS -> {
+                Translator.getString(R.string.unsupported_refund_address)
+            }
+
+            else -> {
+                Translator.getString(R.string.swap_provider_order_failed)
+            }
+        }
 
     private fun setCriticalError(error: String) {
         loading = false
@@ -481,10 +531,14 @@ class SwapConfirmViewModel(
         viewModelScope.launch {
             try {
                 val recipientAddress = swapRecipientAddress
-                val result = swap()
-                onSendSuccess(recipientAddress)
-                handleMultiSwapCompletion(result)
-                onTransactionCompleted(result)
+                // Leaving the screen must not drop tracking of a transaction the node may already hold.
+                val result = withContext(NonCancellable) {
+                    val sent = swap()
+                    onSendSuccess(recipientAddress)
+                    handleMultiSwapCompletion(sent)
+                    onTransactionCompleted(sent)
+                    sent
+                }
 
                 val queued = result is SendTransactionResult.Btc && result.isQueued ||
                     result is SendTransactionResult.Beam && result.result is SendResult.SentButQueued
@@ -493,36 +547,38 @@ class SwapConfirmViewModel(
                 } else {
                     SendResult.Sent()
                 }
-            } catch (e: TangemSdkError.UserCancelled) {
-                // User cancelled - just reset state, no error message
-                sendResult = null
-            } catch (e: TrezorCancelledException) {
-                sendResult = null
-            } catch (e: HardwareWalletOperationException) {
-                sendResult = if (e.isHardwareWalletCancelled()) {
-                    null
-                } else {
-                    SendResult.Failed(
-                        HSCaution(TranslatableString.ResString(e.userMessageRes()))
-                    )
-                }
-            } catch (e: TangemSdkError) {
-                // Other Tangem errors - reset state
-                sendResult = null
             } catch (e: ResponseError.RpcError) {
                 val caution = HSCaution(TranslatableString.PlainString(e.error.message))
                 sendResult = SendResult.Failed(caution)
             } catch (t: Throwable) {
-                val caution = if (t.cause is SendValueErrors.InsufficientUnspentOutputs) {
-                    HSCaution(
-                        TranslatableString.ResString(R.string.EthereumTransaction_Error_InsufficientBalance_Title)
-                    )
-                } else {
-                    HSCaution(TranslatableString.PlainString(t.javaClass.simpleName))
+                sendResult = when (val hardwareError = t.toHardwareWalletError()) {
+                    // A cancel on the device, or any other Tangem error, just resets the state.
+                    HardwareWalletError.Cancelled -> null
+                    is HardwareWalletError.Failed ->
+                        SendResult.Failed(HSCaution(TranslatableString.ResString(hardwareError.messageRes)))
+                    null -> SendResult.Failed(sendFailureCaution(t))
                 }
-                sendResult = SendResult.Failed(caution)
             }
         }
+    }
+
+    private fun sendFailureCaution(error: Throwable): HSCaution =
+        if (error.cause is SendValueErrors.InsufficientUnspentOutputs) {
+            HSCaution(TranslatableString.ResString(R.string.EthereumTransaction_Error_InsufficientBalance_Title))
+        } else {
+            HSCaution(TranslatableString.PlainString(error.javaClass.simpleName))
+        }
+
+    private sealed interface HardwareWalletError {
+        data object Cancelled : HardwareWalletError
+        class Failed(@StringRes val messageRes: Int) : HardwareWalletError
+    }
+
+    private fun Throwable.toHardwareWalletError(): HardwareWalletError? = when {
+        isHardwareWalletCancelled() || this is TangemSdkError -> HardwareWalletError.Cancelled
+        this is HardwareWalletOperationException || this is TrezorSigningException ->
+            HardwareWalletError.Failed(hardwareWalletUserMessageRes())
+        else -> null
     }
 
     private suspend fun handleMultiSwapCompletion(result: SendTransactionResult) {
@@ -544,11 +600,14 @@ class SwapConfirmViewModel(
             createdAt = System.currentTimeMillis(),
             coinUidIn = legInfo.coinUidIn,
             blockchainTypeIn = legInfo.blockchainTypeIn,
+            tokenQueryIdIn = legInfo.tokenQueryIdIn,
             amountIn = legInfo.amountIn,
             coinUidIntermediate = legInfo.coinUidIntermediate,
             blockchainTypeIntermediate = legInfo.blockchainTypeIntermediate,
+            tokenQueryIdIntermediate = legInfo.tokenQueryIdIntermediate,
             coinUidOut = legInfo.coinUidOut,
             blockchainTypeOut = legInfo.blockchainTypeOut,
+            tokenQueryIdOut = legInfo.tokenQueryIdOut,
             leg1ProviderId = legInfo.leg1ProviderId,
             leg1IsOffChain = swapProvider.isOffChain,
             leg1TransactionId = result.getRecordUid(),
@@ -707,11 +766,14 @@ sealed class MultiSwapLegInfo {
     data class Leg1(
         val coinUidIn: String,
         val blockchainTypeIn: String,
+        val tokenQueryIdIn: String?,
         val amountIn: BigDecimal,
         val coinUidIntermediate: String,
         val blockchainTypeIntermediate: String,
+        val tokenQueryIdIntermediate: String?,
         val coinUidOut: String,
         val blockchainTypeOut: String,
+        val tokenQueryIdOut: String?,
         val leg1ProviderId: String,
         val leg2ProviderId: String,
         val leg2IsOffChain: Boolean,

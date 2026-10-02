@@ -654,6 +654,7 @@
     <string name="unsupported_token">Токен не поддерживается</string>
     <string name="zec_transparent_used">При создании обмена используется временный t-адрес: %s. Он передаётся обменному провайдеру и нужен для возврата средств, если обмен не будет завершён. Использование t-адреса может привести к частичной деанонимизации транзакции.</string>
     <string name="swap_yifi_memo_unsupported">Провайдер свопа требует memo для депозита, которое нельзя отправить из этой сети. Выберите другого провайдера.</string>
+    <string name="swap_provider_order_failed">Провайдер не смог создать своп. Обновите предложение или вернитесь и выберите другого провайдера.</string>
     <!-- Swap Settings -->
     <string name="Fee_LiquidityFee">Комиссия за ликвидность</string>
     <string name="SwapSettings_Title">Настройки свапа</string>
@@ -1094,6 +1095,7 @@
     <string name="offline_broadcast_error_timeout">Время ожидания запроса истекло. Попробуйте позже.</string>
     <string name="offline_broadcast_error_already_sent">Эта транзакция уже известна сети.</string>
     <string name="offline_broadcast_error_seqno_consumed">Номер транзакции (seqno) уже использован. Возможно, эта транзакция уже отправлена — проверьте историю транзакций, прежде чем подписывать заново.</string>
+    <string name="offline_broadcast_error_outcome_unknown">Сеть не подтвердила получение. Возможно, транзакция уже отправлена — проверьте историю транзакций, прежде чем отправлять её повторно.</string>
     <string name="offline_broadcast_error_nonce_used">Nonce этой транзакции уже использован. Возможно, она уже отправлена или заменена.</string>
     <string name="offline_broadcast_error_low_fee">Комиссия сети слишком низкая. Создайте транзакцию с более высокой комиссией.</string>
     <string name="offline_broadcast_error_rejected">Сеть отклонила эту подписанную транзакцию.</string>

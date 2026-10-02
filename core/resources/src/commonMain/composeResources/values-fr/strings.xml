@@ -640,12 +640,13 @@
     <string name="SwapConfirm_FetchingFinalQuote">Récupération du devis final</string>
     <string name="SwapWarning_SlippageNotAvailable_Title">Sans Contrôle de Glissement</string>
     <string name="SwapWarning_SlippageNotAvailable_Description">Les opérations inter-chaînes dépendent de la liquidité de tiers et des délais, ce qui peut affecter le montant final.</string>
-    <string name="unsupported_refund_address">Unsupported refund address</string>
-    <string name="unsupported_address">Unsupported address</string>
+    <string name="unsupported_refund_address">Adresse de remboursement non prise en charge</string>
+    <string name="unsupported_address">Adresse non prise en charge</string>
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">Jeton non pris en charge</string>
     <string name="zec_transparent_used">Lors de la création de l’échange, une adresse t temporaire est utilisée : %s. Elle est transmise au fournisseur d’échange et est nécessaire pour un remboursement si l’échange n’est pas terminé. L’utilisation d’une adresse t peut entraîner une désanonymisation partielle de la transaction.</string>
     <string name="swap_yifi_memo_unsupported">Le fournisseur de swap exige un mémo de dépôt qui ne peut pas être envoyé depuis ce réseau. Choisissez un autre fournisseur.</string>
+    <string name="swap_provider_order_failed">Le fournisseur n\'a pas pu créer le swap. Actualisez le prix ou revenez en arrière et choisissez un autre fournisseur.</string>
     <!-- Swap Settings -->
     <string name="SwapSettings_Title">Paramètres de swap</string>
     <string name="SwapSettings_SlippageTitle">Effet de glissement</string>
@@ -1076,6 +1077,7 @@
     <string name="offline_broadcast_error_timeout">La requête a expiré. Réessayez plus tard.</string>
     <string name="offline_broadcast_error_already_sent">Cette transaction est déjà connue du réseau.</string>
     <string name="offline_broadcast_error_seqno_consumed">Le numéro de transaction (seqno) a déjà été utilisé. Cette transaction a peut-être déjà été envoyée — vérifiez l\'historique des transactions avant de signer à nouveau.</string>
+    <string name="offline_broadcast_error_outcome_unknown">Le réseau n\'a pas confirmé la réception. La transaction a peut-être déjà été envoyée — vérifiez l\'historique des transactions avant de la relayer à nouveau.</string>
     <string name="offline_broadcast_error_nonce_used">Le nonce de cette transaction a déjà été utilisé. Elle a peut-être été envoyée ou remplacée.</string>
     <string name="offline_broadcast_error_low_fee">Les frais réseau sont trop faibles. Créez une transaction avec des frais plus élevés.</string>
     <string name="offline_broadcast_error_rejected">Le réseau a rejeté cette transaction signée.</string>

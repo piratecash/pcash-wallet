@@ -644,12 +644,13 @@
     <string name="SwapConfirm_FetchingFinalQuote">Son teklifi alınıyor</string>
     <string name="SwapWarning_SlippageNotAvailable_Title">Kayma Kontrolü Yok</string>
     <string name="SwapWarning_SlippageNotAvailable_Description">Zincirler arası işlemler üçüncü taraf likiditesine ve gecikmelere bağlıdır, bu da nihai tutarı etkileyebilir.</string>
-    <string name="unsupported_refund_address">Unsupported refund address</string>
-    <string name="unsupported_address">Unsupported address</string>
+    <string name="unsupported_refund_address">Desteklenmeyen iade adresi</string>
+    <string name="unsupported_address">Desteklenmeyen adres</string>
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">Desteklenmeyen token</string>
     <string name="zec_transparent_used">Takas oluşturulurken geçici bir t-adresi kullanılır: %s. Bu adres, takas sağlayıcısına iletilir ve takas tamamlanmazsa geri ödeme için gereklidir. Bir t-adresinin kullanılması, işlemin kısmen anonim olmaktan çıkmasına neden olabilir.</string>
     <string name="swap_yifi_memo_unsupported">Swap sağlayıcısı, bu ağdan gönderilemeyen bir yatırma memosu gerektiriyor. Başka bir sağlayıcı seçin.</string>
+    <string name="swap_provider_order_failed">Sağlayıcı swap\'ı oluşturamadı. Teklifi yenileyin veya geri dönüp başka bir sağlayıcı seçin.</string>
     <!-- Swap Settings -->
     <string name="SwapSettings_Title">Swap Ayarları</string>
     <string name="SwapSettings_SlippageTitle">Slipaj Toleransı</string>
@@ -1080,6 +1081,7 @@
     <string name="offline_broadcast_error_timeout">İstek zaman aşımına uğradı. Daha sonra tekrar deneyin.</string>
     <string name="offline_broadcast_error_already_sent">Bu işlem ağ tarafından zaten biliniyor.</string>
     <string name="offline_broadcast_error_seqno_consumed">İşlem numarası (seqno) zaten kullanılmış. Bu işlem zaten gönderilmiş olabilir — yeniden imzalamadan önce işlem geçmişini kontrol edin.</string>
+    <string name="offline_broadcast_error_outcome_unknown">Ağ, işlemin alındığını onaylamadı. İşlem zaten gönderilmiş olabilir — yeniden iletmeden önce işlem geçmişini kontrol edin.</string>
     <string name="offline_broadcast_error_nonce_used">Bu işlemin nonce değeri zaten kullanılmış. Gönderilmiş veya değiştirilmiş olabilir.</string>
     <string name="offline_broadcast_error_low_fee">Ağ ücreti çok düşük. Daha yüksek ücretli bir işlem oluşturun.</string>
     <string name="offline_broadcast_error_rejected">Ağ bu imzalı işlemi reddetti.</string>

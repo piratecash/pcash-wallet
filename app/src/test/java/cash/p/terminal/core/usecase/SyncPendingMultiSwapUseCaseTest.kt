@@ -257,12 +257,32 @@ class SyncPendingMultiSwapUseCaseTest {
             leg1AmountOut = BigDecimal("5.0")
         )
 
-        val outputSource = mockk<TransactionSource>()
         val outputWallet = mockk<Wallet>(relaxed = true) {
             every { coin.uid } returns "the-open-network"
             every { token.blockchainType } returns BlockchainType.fromUid("the-open-network")
-            every { transactionSource } returns outputSource
         }
+
+        assertLeg1CompletedByIncomingOn(outputWallet, swap)
+    }
+
+    @Test
+    fun leg1OnChain_intermediateCoinLabelDiffersFromWalletCoin_matchesWalletByToken() = runTest(dispatcher) {
+        val swap = swap(
+            leg1IsOffChain = false,
+            leg1TransactionId = null,
+            leg1AmountOut = BigDecimal("5.0")
+        ).copy(coinUidIntermediate = "renamed-ton", tokenQueryIdIntermediate = TON_TOKEN_QUERY_ID)
+        val outputWallet = mockk<Wallet>(relaxed = true) {
+            every { coin.uid } returns "the-open-network"
+            every { token.tokenQuery.id } returns TON_TOKEN_QUERY_ID
+        }
+
+        assertLeg1CompletedByIncomingOn(outputWallet, swap)
+    }
+
+    private suspend fun assertLeg1CompletedByIncomingOn(outputWallet: Wallet, swap: PendingMultiSwap) {
+        val outputSource = mockk<TransactionSource>()
+        every { outputWallet.transactionSource } returns outputSource
         val txAdapter = mockk<ITransactionsAdapter>(relaxed = true)
         val mainValue = mockk<TransactionValue>(relaxed = true) {
             every { decimalValue } returns BigDecimal("4.8")
@@ -885,8 +905,7 @@ class SyncPendingMultiSwapUseCaseTest {
         every {
             swapProviderTransactionsStorage.getByProviderAndTokenOut(
                 provider = SwapProvider.CHANGENOW,
-                coinUidOut = "the-open-network",
-                blockchainTypeOut = "the-open-network",
+                tokenOut = intermediateWallet.token,
                 accountId = "test-account",
                 addressOut = "UQ-fallback-addr",
                 expectedAmount = BigDecimal("1.5"),
@@ -1494,4 +1513,71 @@ class SyncPendingMultiSwapUseCaseTest {
             )
         }
     }
+
+    @Test
+    fun leg1OnChain_outgoingFailedStoredAsRecordUid_marksFailed() = runTest(dispatcher) {
+        stubLeg1OutgoingRecords(outgoingRecord(uid = "H-rune", hash = "H", failed = true))
+
+        useCase()
+
+        verifyLeg1Updated(status = PendingMultiSwap.STATUS_FAILED, transactionId = "H-rune", times = 1)
+    }
+
+    @Test
+    fun leg1OnChain_outgoingFailedUidEqualsHash_marksFailed() = runTest(dispatcher) {
+        stubLeg1OutgoingRecords(
+            outgoingRecord(uid = "0xevm", hash = "0xevm", failed = true),
+            leg1TransactionId = "0xevm",
+        )
+
+        useCase()
+
+        verifyLeg1Updated(status = PendingMultiSwap.STATUS_FAILED, transactionId = "0xevm", times = 1)
+    }
+
+    @Test
+    fun leg1OnChain_failedRecordWithOtherId_doesNotMarkFailed() = runTest(dispatcher) {
+        stubLeg1OutgoingRecords(outgoingRecord(uid = "X-rune", hash = "X", failed = true))
+
+        useCase()
+
+        verifyLeg1Updated(status = PendingMultiSwap.STATUS_FAILED, transactionId = "H-rune", times = 0)
+    }
+
+    private fun outgoingRecord(uid: String, hash: String, failed: Boolean) =
+        mockk<TransactionRecord>(relaxed = true) {
+            every { this@mockk.uid } returns uid
+            every { transactionHash } returns hash
+            every { this@mockk.failed } returns failed
+        }
+
+    private fun stubLeg1OutgoingRecords(record: TransactionRecord, leg1TransactionId: String = "H-rune") {
+        val inputSource = mockk<TransactionSource>()
+        val inputWallet = mockk<Wallet>(relaxed = true) {
+            every { coin.uid } returns "binancecoin"
+            every { token.blockchainType } returns BlockchainType.fromUid("binance-smart-chain")
+            every { transactionSource } returns inputSource
+        }
+        val txAdapter = mockk<ITransactionsAdapter>(relaxed = true)
+        every { walletManager.activeWallets } returns listOf(inputWallet)
+        every { transactionAdapterManager.getAdapter(inputSource) } returns txAdapter
+        coEvery {
+            txAdapter.getTransactions(any(), any(), any(), eq(FilterTransactionType.Outgoing), any())
+        } returns listOf(record)
+        coEvery { pendingMultiSwapStorage.getAllOnceByAccountId("test-account") } returns
+            listOf(swap(leg1IsOffChain = false, leg1TransactionId = leg1TransactionId))
+    }
+
+    private fun verifyLeg1Updated(status: String, transactionId: String, times: Int) {
+        coVerify(exactly = times) {
+            pendingMultiSwapStorage.updateLeg1(
+                id = "swap-1",
+                status = status,
+                amountOut = null,
+                transactionId = transactionId,
+            )
+        }
+    }
 }
+
+private const val TON_TOKEN_QUERY_ID = "the-open-network|native"

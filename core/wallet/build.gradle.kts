@@ -97,7 +97,6 @@ android {
         unitTests {
             isIncludeAndroidResources = true
             all { test ->
-                test.systemProperty("marketApiKey", marketApiKey)
                 test.systemProperty("updateCoinsList", (project.findProperty("updateCoinsList") ?: "false").toString())
             }
         }

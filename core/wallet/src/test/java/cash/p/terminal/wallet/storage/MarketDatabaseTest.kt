@@ -28,29 +28,25 @@ class MarketDatabaseTest {
     @Test
     fun initialCoins_litecoin_containsMwebToken() {
         val file = initialCoinsFile()
-        val mwebTokenSql = "INSERT OR REPLACE INTO TokenEntity VALUES('litecoin','litecoin','mweb',8,'');"
+        // Rows are batched into multi-row INSERT statements (see DumpManager.CHUNK_SIZE), so the
+        // tuple is checked as a substring rather than expecting it to be a whole statement/line.
+        val mwebTokenTuple = "('litecoin','litecoin','mweb',8,'')"
 
-        assertTrue(file.readLines().contains(mwebTokenSql))
+        assertTrue(file.readText().contains(mwebTokenTuple))
     }
 
     @Test
     fun initialCoins_beam_keepsNativeAndGameTokensSeparate() {
-        val rows = initialCoinsFile().readLines()
-        val tokenRows = rows.filter {
-            it.startsWith("INSERT OR REPLACE INTO TokenEntity VALUES('beam',") ||
-                it.startsWith("INSERT OR REPLACE INTO TokenEntity VALUES('beam-2',")
-        }
+        val text = initialCoinsFile().readText()
+        // Rows are batched into multi-row INSERT statements, so each token is matched as a tuple.
+        val beamCoinTuples = Regex("""\('beam','[^']*','[^']*',\d*,'[^']*'\)""")
+            .findAll(text).map { it.value }.toList()
+        val gameContract = "0x62d0a8458ed7719fdaf978fe5929c6d342b0bfce"
 
-        assertEquals(
-            listOf(
-                "INSERT OR REPLACE INTO TokenEntity VALUES('beam','beam','native',8,'');",
-                "INSERT OR REPLACE INTO TokenEntity VALUES('beam-2','ethereum','eip20',18," +
-                    "'0x62d0a8458ed7719fdaf978fe5929c6d342b0bfce');",
-                "INSERT OR REPLACE INTO TokenEntity VALUES('beam-2','binance-smart-chain','eip20',18," +
-                    "'0x62d0a8458ed7719fdaf978fe5929c6d342b0bfce');"
-            ),
-            tokenRows
-        )
+        assertTrue(beamCoinTuples.contains("('beam','beam','native',8,'')"))
+        assertTrue(beamCoinTuples.none { it.contains(gameContract) })
+        assertTrue(text.contains("('beam-2','ethereum','eip20',18,'$gameContract')"))
+        assertTrue(text.contains("('beam-2','binance-smart-chain','eip20',18,'$gameContract')"))
     }
 
 }

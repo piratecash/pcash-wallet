@@ -32,6 +32,10 @@ data class PendingMultiSwap(
     val leg1ProviderTransactionId: String? = null,
     val leg2ProviderTransactionId: String? = null,
     val leg1InfoRecordUid: String? = null,
+    // TokenQuery.id of each side; null for the PayCore RUB side and for rows saved before it existed.
+    val tokenQueryIdIn: String? = null,
+    val tokenQueryIdIntermediate: String? = null,
+    val tokenQueryIdOut: String? = null,
 ) {
     fun isTerminal(): Boolean =
         leg1Status == STATUS_FAILED ||
@@ -54,8 +58,12 @@ data class PendingMultiSwap(
             "yifi" -> SwapProvider.YIFI
             "thorchain" -> SwapProvider.THORCHAIN
             "mayachain" -> SwapProvider.MAYA
-            // Every Unstoppable sub-provider (id "u_<apiId>") tracks through the single UNSTOPPABLE backend.
-            else -> if (providerId.startsWith("u_")) SwapProvider.UNSTOPPABLE else null
+            // Aggregator sub-providers ("u_<apiId>" Unstoppable, "p_<name>" p.cash backend) track through one backend.
+            else -> when {
+                providerId.startsWith("u_") -> SwapProvider.UNSTOPPABLE
+                providerId.startsWith("p_") -> SwapProvider.PCASH_BACKEND
+                else -> null
+            }
         }
     }
 }

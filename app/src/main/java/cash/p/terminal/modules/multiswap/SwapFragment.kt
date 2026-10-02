@@ -84,6 +84,7 @@ import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui.compose.components.SwapDirectionIndicator
 import cash.p.terminal.ui_compose.components.HSpacer
 import cash.p.terminal.ui_compose.components.HsBackButton
+import cash.p.terminal.ui_compose.components.HsImage
 import cash.p.terminal.ui_compose.components.MenuItemTimeoutIndicator
 import cash.p.terminal.ui_compose.components.TextImportantError
 import cash.p.terminal.ui_compose.components.TextImportantWarning
@@ -207,6 +208,7 @@ internal data class PayCorePaymentPage(
     val tokenOutUid: String,
     val blockchainTypeIn: String,
     val blockchainTypeOut: String,
+    val tokenQueryIdOut: String,
     val direction: SwapAmountDirection,
     val requestedAmountOut: String?,
 )
@@ -516,6 +518,7 @@ internal fun buildPayCorePaymentPage(uiState: SwapUiState): PayCorePaymentPage? 
         tokenOutUid = tokenOut.coin.uid,
         blockchainTypeIn = tokenIn.blockchainType.uid,
         blockchainTypeOut = tokenOut.blockchainType.uid,
+        tokenQueryIdOut = tokenOut.tokenQuery.id,
         direction = uiState.direction,
         requestedAmountOut = uiState.requestedAmountOut?.toPlainString(),
     )
@@ -529,6 +532,7 @@ internal fun PayCorePaymentPage.toPaymentParams(addressOut: String) = PayCorePay
     tokenOutUid = tokenOutUid,
     blockchainTypeIn = blockchainTypeIn,
     blockchainTypeOut = blockchainTypeOut,
+    tokenQueryIdOut = tokenQueryIdOut,
     addressOut = addressOut,
     direction = direction,
     requestedAmountOut = requestedAmountOut?.toBigDecimal(),
@@ -558,11 +562,14 @@ private fun buildMultiSwapLeg1Info(viewModel: SwapViewModel): MultiSwapLegInfo? 
     return MultiSwapLegInfo.Leg1(
         coinUidIn = tokenIn.coin.uid,
         blockchainTypeIn = tokenIn.blockchainType.uid,
+        tokenQueryIdIn = tokenIn.swapSideTokenQueryId,
         amountIn = amountIn,
         coinUidIntermediate = route.intermediateCoin.coin.uid,
         blockchainTypeIntermediate = route.intermediateCoin.blockchainType.uid,
+        tokenQueryIdIntermediate = route.intermediateCoin.swapSideTokenQueryId,
         coinUidOut = tokenOut.coin.uid,
         blockchainTypeOut = tokenOut.blockchainType.uid,
+        tokenQueryIdOut = tokenOut.swapSideTokenQueryId,
         leg1ProviderId = route.selectedLeg1Quote.provider.id,
         leg2ProviderId = leg2Provider.id,
         leg2IsOffChain = leg2Provider.isOffChain,
@@ -1068,10 +1075,10 @@ private fun ProviderField(
         verticalAlignment = Alignment.CenterVertically,
         borderBottom = true,
     ) {
-        Image(
+        HsImage(
+            url = swapProvider.iconUrl,
+            placeholder = swapProvider.icon,
             modifier = Modifier.size(32.dp),
-            painter = painterResource(swapProvider.icon),
-            contentDescription = null
         )
         HSpacer(width = 8.dp)
         Column(

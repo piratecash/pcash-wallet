@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.timber)
     implementation(libs.ethereum.kit)
+    implementation(libs.web3j.crypto)
     implementation(libs.solanakt)
     implementation(libs.stellar.kit)
     implementation(libs.tron.kit)

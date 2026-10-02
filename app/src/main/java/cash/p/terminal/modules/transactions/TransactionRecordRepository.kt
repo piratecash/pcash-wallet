@@ -149,6 +149,8 @@ class TransactionRecordRepository(
                 BlockchainType.Solana,
                 BlockchainType.Tron,
                 BlockchainType.Stellar,
+                BlockchainType.Thorchain,
+                BlockchainType.Mayachain,
                 BlockchainType.Ton -> {
                     if (mergedWallets.none { it.source == wallet.source }) {
                         mergedWallets.add(TransactionWallet(null, wallet.source, null))
@@ -630,9 +632,8 @@ class TransactionRecordRepository(
         val token = shortOutgoingTransactionRecord.token
             ?: return false
 
-        return swapProviderTransactionsStorage.getByCoinUidIn(
-            coinUid = token.coin.uid,
-            blockchainType = token.blockchainType.uid,
+        return swapProviderTransactionsStorage.getByTokenIn(
+            token = token,
             amountIn = shortOutgoingTransactionRecord.amountOut,
             timestamp = shortOutgoingTransactionRecord.timestamp
         ) != null

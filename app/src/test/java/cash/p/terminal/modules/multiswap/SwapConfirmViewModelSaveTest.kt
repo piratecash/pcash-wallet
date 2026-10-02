@@ -1,15 +1,9 @@
 package cash.p.terminal.modules.multiswap
 
-import androidx.lifecycle.ViewModelStore
-import cash.p.terminal.core.HSCaution
-import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.MoneroSpendReadiness
 import cash.p.terminal.core.ServiceStateFlow
 import cash.p.terminal.core.TestDispatcherProvider
-import cash.p.terminal.core.managers.PoisonAddressManager
 import cash.p.terminal.core.ethereum.CautionViewItem
-import cash.p.terminal.core.storage.PendingMultiSwapStorage
-import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.entities.SwapProviderTransaction
 import cash.p.terminal.modules.multiswap.providers.IExactOutSwapProvider
 import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
@@ -21,59 +15,45 @@ import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionResult
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionServiceState
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionSettings
 import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceMonero
+import cash.p.terminal.network.backendswap.data.entity.BackendSwapError
 import cash.p.terminal.network.swaprepository.SwapProvider
-import cash.p.terminal.wallet.IAdapterManager
-import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.Token
-import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
-import cash.p.terminal.wallet.managers.IBalanceHiddenManager
-import io.horizontalsystems.core.CurrencyManager
-import io.horizontalsystems.core.DispatcherProvider
-import io.horizontalsystems.core.entities.Blockchain
-import io.horizontalsystems.core.entities.BlockchainType
-import io.horizontalsystems.core.entities.Currency
 import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.FullTransaction
 import io.horizontalsystems.ethereumkit.models.Transaction
 import io.horizontalsystems.ethereumkit.models.TransactionData
+import io.horizontalsystems.core.entities.Blockchain
+import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.unmockkAll
+import io.mockk.spyk
 import io.mockk.verify
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Test
-import org.koin.core.context.startKoin
-import org.koin.core.context.stopKoin
-import org.koin.dsl.module
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.coroutines.cancellation.CancellationException
-import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.modules.send.SendResult
-import cash.p.terminal.modules.send.mockConnectivityManager
 
 /**
  * Covers the on-chain (Thorchain/Maya) completion path in [SwapConfirmViewModel.onTransactionCompleted]:
@@ -86,22 +66,11 @@ import cash.p.terminal.modules.send.mockConnectivityManager
  * `fetchFinalQuote()` call complete and populate `swapProviderTransaction` before driving the public
  * `onTransactionCompleted` entry point.
  */
+// Robolectric runs the real CountDownTimer behind TimerService, so quote expiry is observable.
+@RunWith(RobolectricTestRunner::class)
+@Config(manifest = Config.NONE)
 @OptIn(ExperimentalCoroutinesApi::class)
-class SwapConfirmViewModelSaveTest {
-
-    private val dispatcher = UnconfinedTestDispatcher()
-    private val pendingMultiSwapStorage = mockk<PendingMultiSwapStorage>(relaxed = true)
-    private val localStorage = mockk<ILocalStorage>(relaxed = true)
-    private val swapProviderTransactionsStorage = mockk<SwapProviderTransactionsStorage>(relaxed = true)
-    private val poisonAddressManager = mockk<PoisonAddressManager>(relaxed = true)
-
-    private val previewWallet = WalletFactory.previewWallet()
-    private val token: Token = previewWallet.token
-    private val swapQuote = mockk<ISwapQuote>(relaxed = true) {
-        every { tokenIn } returns token
-        every { tokenOut } returns token
-        every { amountIn } returns BigDecimal.ONE
-    }
+class SwapConfirmViewModelSaveTest : SwapConfirmViewModelTestBase() {
 
     private val testTransaction = SwapProviderTransaction(
         outgoingRecordUid = null,
@@ -117,48 +86,6 @@ class SwapConfirmViewModelSaveTest {
         amountOut = BigDecimal.ONE,
         addressOut = "address-out",
     )
-
-    private val sendTransactionServiceState = SendTransactionServiceState(
-        availableBalance = null,
-        networkFee = null,
-        cautions = emptyList(),
-        sendable = true,
-        loading = false,
-        fields = emptyList(),
-        extraFees = emptyMap(),
-    )
-
-    private val viewModelStore = ViewModelStore()
-
-    @Before
-    fun setUp() {
-        Dispatchers.setMain(dispatcher)
-        startKoin {
-            modules(module {
-                single<IConnectivityManager> { mockConnectivityManager() }
-                single<ILocalStorage> { localStorage }
-                single<PendingMultiSwapStorage> { pendingMultiSwapStorage }
-                single<SwapProviderTransactionsStorage> { swapProviderTransactionsStorage }
-                single<PoisonAddressManager> { poisonAddressManager }
-                single<MarketKitWrapper> { mockk(relaxed = true) }
-                single<IBalanceHiddenManager> {
-                    mockk(relaxed = true) {
-                        every { balanceHiddenFlow } returns MutableStateFlow(false)
-                    }
-                }
-                single<DispatcherProvider> { TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)) }
-            })
-        }
-    }
-
-    @After
-    fun tearDown() {
-        viewModelStore.clear()
-        dispatcher.scheduler.advanceUntilIdle()
-        Dispatchers.resetMain()
-        stopKoin()
-        unmockkAll()
-    }
 
     /** Stubs `fetchFinalQuote` to return a real quote carrying [transaction]. */
     private fun <T : IMultiSwapProvider> T.stubFetchFinalQuote(
@@ -213,58 +140,6 @@ class SwapConfirmViewModelSaveTest {
         verify(exactly = 0) {
             poisonAddressManager.saveKnownAddress(any(), any(), any())
         }
-    }
-
-    private fun createViewModel(
-        provider: IMultiSwapProvider,
-        transactionState: SendTransactionServiceState = sendTransactionServiceState,
-        executionMode: SwapExecutionMode = SwapExecutionMode.ExactIn,
-        direction: SwapAmountDirection = SwapAmountDirection.In,
-        requestedAmountOut: BigDecimal? = null,
-        serviceOverride: ISendTransactionService<*>? = null,
-        quote: ISwapQuote = swapQuote,
-        wallet: Wallet = previewWallet,
-    ): SwapConfirmViewModel {
-        val sendTransactionService = serviceOverride ?: mockk<ISendTransactionService<Nothing>>(relaxed = true) {
-            every { hasSettings() } returns false
-            every { mevProtectionAvailable } returns false
-            every { stateFlow } returns ServiceStateFlow(
-                MutableSharedFlow<SendTransactionServiceState>(
-                    replay = 1,
-                    onBufferOverflow = BufferOverflow.DROP_OLDEST
-                ).also { it.tryEmit(transactionState) }.asSharedFlow()
-            )
-            every { sendTransactionSettingsFlow } returns MutableStateFlow(SendTransactionSettings.Common)
-        }
-        val adapterManager = mockk<IAdapterManager>(relaxed = true)
-        val assetFiatRateService = mockk<AssetFiatRateService>(relaxed = true)
-        val currencyManager = mockk<CurrencyManager> {
-            every { baseCurrency } returns Currency("USD", "$", 2, 0)
-        }
-        val vm = SwapConfirmViewModel(
-            request = SwapConfirmRequest(
-                provider = provider,
-                quote = quote,
-                settings = emptyMap(),
-                executionMode = executionMode,
-                direction = direction,
-                requestedAmountOut = requestedAmountOut,
-            ),
-            currencyManager = currencyManager,
-            fiatServices = SwapConfirmFiatServices(
-                input = FiatService(assetFiatRateService),
-                output = FiatService(assetFiatRateService),
-                outputMinimum = FiatService(assetFiatRateService),
-            ),
-            sendTransactionService = sendTransactionService,
-            timerService = TimerService(),
-            priceImpactService = PriceImpactService(),
-            wallet = wallet,
-            adapterManager = adapterManager,
-            dispatcherProvider = TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)),
-        )
-        viewModelStore.put("test-vm", vm)
-        return vm
     }
 
     @Test
@@ -507,23 +382,51 @@ class SwapConfirmViewModelSaveTest {
         assertFalse(viewModel.uiState.validQuote)
     }
 
-    private fun finalQuote(
-        amountIn: BigDecimal = BigDecimal.ONE,
-        amountOut: BigDecimal = BigDecimal.ONE,
-        amountInMax: BigDecimal? = null,
-        cautions: List<HSCaution> = emptyList(),
-    ): ISwapFinalQuote = SwapFinalQuoteEvm(
-        tokenIn = token,
-        tokenOut = token,
-        amountIn = amountIn,
-        amountOut = amountOut,
-        amountOutMin = amountOut,
-        sendTransactionData = SendTransactionData.Unsupported,
-        priceImpact = null,
-        fields = emptyList(),
-        amountInMax = amountInMax,
-        cautions = cautions,
-    )
+    @Test
+    fun fetchFinalQuote_offChainQuotePastDeadline_expiresWithoutCountdownCaption() = runTest(dispatcher) {
+        val viewModel = createViewModel(offChainProviderWithDeadline(System.currentTimeMillis() - 1_000))
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.expired)
+        assertNull(viewModel.uiState.expiresIn)
+    }
+
+    @Test
+    fun fetchFinalQuote_offChainQuoteBeforeDeadline_notExpiredAndNoCountdownCaption() = runTest(dispatcher) {
+        val viewModel = createViewModel(offChainProviderWithDeadline(System.currentTimeMillis() + 3_600_000))
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.expired)
+        assertNull(viewModel.uiState.expiresIn)
+    }
+
+    @Test
+    fun fetchFinalQuote_offChainQuoteWithoutDeadline_neverExpires() = runTest(dispatcher) {
+        val viewModel = createViewModel(offChainProviderWithDeadline(validUntilMillis = null))
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.expired)
+        assertNull(viewModel.uiState.expiresIn)
+    }
+
+    @Test
+    fun fetchFinalQuote_backendSwapError_showsBackendMessage() = runTest(dispatcher) {
+        val provider = mockk<OffChainSwapProvider>(relaxed = true) {
+            coEvery { fetchFinalQuote(any(), any(), any(), any(), any(), any()) } throws
+                BackendSwapError(statusCode = 409, message = "client request id already used")
+        }
+
+        val viewModel = createViewModel(provider)
+        advanceUntilIdle()
+
+        assertEquals("client request id already used", viewModel.uiState.criticalError)
+    }
+
+    private fun offChainProviderWithDeadline(validUntilMillis: Long?) =
+        mockk<OffChainSwapProvider>(relaxed = true) {
+            coEvery { fetchFinalQuote(any(), any(), any(), any(), any(), any()) } returns
+                finalQuote(validUntilMillis = validUntilMillis)
+        }
 
     private interface ExactOutProvider : IMultiSwapProvider, IExactOutSwapProvider
 
@@ -586,6 +489,24 @@ class SwapConfirmViewModelSaveTest {
         executeSwap(provider, sendService)
 
         verifyNoKnownAddressSaved()
+    }
+
+    @Test
+    fun executeSwap_scopeCancelledWhileSending_stillPersistsTracking() = runTest(dispatcher) {
+        val provider = mockk<IMultiSwapProvider>(relaxed = true).stubFetchFinalQuote(testTransaction)
+        val sendResult = CompletableDeferred<SendTransactionResult>()
+        val sendService = createSuccessfulSendService().also {
+            coEvery { it.send(any()) } coAnswers { sendResult.await() }
+        }
+        executeSwap(provider, sendService)
+
+        viewModelStore.clear()
+        sendResult.complete(SendTransactionResult.Btc(uid = "btc-uid", canonicalHashReversedHex = "btc-hash"))
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) {
+            swapProviderTransactionsStorage.save(match { it.transactionId == "btc-hash" })
+        }
     }
 
     @Test
@@ -653,5 +574,57 @@ class SwapConfirmViewModelSaveTest {
 
         viewModelStore.clear()
         advanceUntilIdle()
+    }
+
+    @Test
+    fun stateFlow_sendableReemissionWithSameQuote_doesNotRestartTimer() = runTest(dispatcher) {
+        val (state, timerService) = createTimedViewModel(sendTransactionServiceState)
+
+        state.emit(sendTransactionServiceState.copy(availableBalance = BigDecimal.TEN))
+        advanceUntilIdle()
+
+        verify(exactly = 1) { timerService.start(any()) }
+    }
+
+    @Test
+    fun refresh_newQuoteBecomesSendable_restartsTimer() = runTest(dispatcher) {
+        val (_, timerService, viewModel) = createTimedViewModel(sendTransactionServiceState)
+
+        viewModel.refresh()
+        advanceUntilIdle()
+
+        verify(exactly = 2) { timerService.start(any()) }
+    }
+
+    @Test
+    fun stateFlow_quoteSendableOnlyAfterDelayedEmission_startsTimerOnce() = runTest(dispatcher) {
+        val (state, timerService) = createTimedViewModel(sendTransactionServiceState.copy(sendable = false))
+        verify(exactly = 0) { timerService.start(any()) }
+
+        state.emit(sendTransactionServiceState)
+        advanceUntilIdle()
+
+        verify(exactly = 1) { timerService.start(any()) }
+    }
+
+    private data class TimedViewModel(
+        val state: MutableSharedFlow<SendTransactionServiceState>,
+        val timerService: TimerService,
+        val viewModel: SwapConfirmViewModel,
+    )
+
+    /** The service re-emits its state whenever quote data is handed to it, as the real services do. */
+    private fun createTimedViewModel(stateAfterQuote: SendTransactionServiceState): TimedViewModel {
+        val state = MutableSharedFlow<SendTransactionServiceState>(replay = 1)
+        state.tryEmit(sendTransactionServiceState.copy(sendable = false))
+        val service = createSuccessfulSendService().also {
+            every { it.stateFlow } returns ServiceStateFlow(state.asSharedFlow())
+            coEvery { it.setSendTransactionData(any()) } answers { state.tryEmit(stateAfterQuote) }
+        }
+        val timerService = spyk(TimerService())
+        val provider = mockk<IMultiSwapProvider>(relaxed = true).stubFetchFinalQuote(testTransaction)
+        val viewModel = createViewModel(provider, serviceOverride = service, timerService = timerService)
+        dispatcher.scheduler.advanceUntilIdle()
+        return TimedViewModel(state, timerService, viewModel)
     }
 }

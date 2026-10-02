@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.multiswap.providers
 
 import cash.p.terminal.entities.SwapProviderTransaction
+import cash.p.terminal.modules.multiswap.swapSideTokenQueryId
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.wallet.IAccountManager
@@ -26,6 +27,8 @@ class SwapProviderTransactionFactory(
         amountOut: BigDecimal,
         recipientAddressOut: String? = null,
         subProviderId: String? = null,
+        externalId: String? = null,
+        walletAddress: String? = null,
     ) = SwapProviderTransaction(
         date = System.currentTimeMillis(),
         outgoingRecordUid = null,
@@ -41,6 +44,10 @@ class SwapProviderTransactionFactory(
         amountOut = amountOut,
         addressOut = recipientAddressOut ?: walletUseCase.getReceiveAddress(tokenOut),
         accountId = accountManager.activeAccount?.id.orEmpty(),
-        unstoppableSubProviderId = subProviderId,
+        subProviderId = subProviderId,
+        providerExternalId = externalId,
+        providerWalletAddress = walletAddress,
+        tokenQueryIdIn = tokenIn.swapSideTokenQueryId,
+        tokenQueryIdOut = tokenOut.swapSideTokenQueryId,
     )
 }

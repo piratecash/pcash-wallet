@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.multiswap
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -54,6 +53,7 @@ import cash.p.terminal.ui_compose.components.DraggableCardSimple
 import cash.p.terminal.ui_compose.components.HFillSpacer
 import cash.p.terminal.ui_compose.components.HSpacer
 import cash.p.terminal.ui_compose.components.HsIconButton
+import cash.p.terminal.ui_compose.components.HsImage
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.VSpacer
@@ -231,10 +231,10 @@ private fun ProviderItem(
                 .padding(horizontal = 16.dp),
         ) {
             val provider = viewItem.quote.provider
-            Image(
+            HsImage(
+                url = provider.iconUrl,
+                placeholder = provider.icon,
                 modifier = Modifier.size(32.dp),
-                painter = painterResource(provider.icon),
-                contentDescription = null
             )
             HSpacer(width = 16.dp)
             Column(

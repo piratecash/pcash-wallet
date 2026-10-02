@@ -204,7 +204,6 @@ private fun CoinBalanceRowPreview() {
                 name = "Tether",
                 code = "USDT",
                 marketCapRank = null,
-                coinGeckoId = null,
                 image = null
             ),
             blockchain = Blockchain(BlockchainType.Ethereum, "Ethereum", null),

@@ -3,9 +3,6 @@ package cash.p.terminal.wallet.storage
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import cash.p.terminal.wallet.entities.Coin
-import cash.p.terminal.wallet.models.BlockchainEntity
-import cash.p.terminal.wallet.models.TokenEntity
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -41,19 +38,19 @@ class CoinDaoRelationRaceTest {
 
     @Test
     fun getTokens_concurrentWriterReplacesCoins_doesNotThrowRelationNonNullError() {
-        val blockchain = BlockchainEntity(uid = "binance-smart-chain", name = "BSC", eip3091url = null)
+        val blockchain = BlockchainRecord(uid = "binance-smart-chain", name = "BSC", eip3091url = null)
         val reference = "0xabcdef0000000000000000000000000000000001"
 
-        val coinA = Coin(uid = "coin-a", name = "Coin A", code = "AAA")
-        val coinB = Coin(uid = "coin-b", name = "Coin B", code = "BBB")
-        val tokenForA = TokenEntity(
+        val coinA = CoinRecord(uid = "coin-a", name = "Coin A", code = "AAA")
+        val coinB = CoinRecord(uid = "coin-b", name = "Coin B", code = "BBB")
+        val tokenForA = TokenRecord(
             coinUid = coinA.uid,
             blockchainUid = blockchain.uid,
             type = "eip20",
             decimals = 18,
             reference = reference,
         )
-        val tokenForB = TokenEntity(
+        val tokenForB = TokenRecord(
             coinUid = coinB.uid,
             blockchainUid = blockchain.uid,
             type = "eip20",
@@ -61,7 +58,7 @@ class CoinDaoRelationRaceTest {
             reference = reference,
         )
 
-        storage.update(listOf(coinA), listOf(blockchain), listOf(tokenForA))
+        storage.replaceAll(CoinsData(listOf(coinA), listOf(blockchain), listOf(tokenForA)))
 
         val stop = AtomicBoolean(false)
         val failure = AtomicReference<Throwable?>(null)
@@ -75,7 +72,7 @@ class CoinDaoRelationRaceTest {
                 val coin = if (pickA) coinA else coinB
                 val token = if (pickA) tokenForA else tokenForB
                 try {
-                    storage.update(listOf(coin), listOf(blockchain), listOf(token))
+                    storage.replaceAll(CoinsData(listOf(coin), listOf(blockchain), listOf(token)))
                 } catch (t: Throwable) {
                     failure.compareAndSet(null, t)
                     return@thread

@@ -1066,6 +1066,44 @@ class PoisonAddressManagerTest {
     }
 
     @Test
+    fun isAddressSuspicious_thorchainSharesPrefixAndOneChar_returnsFalse() {
+        // THORChain addresses start with a constant "thor1"; only one significant char after it matches.
+        val knownAddress = "thor1ab1middle000000000000000000000000xyz"
+        val candidate = "thor1ac2middle000000000000000000000000xyz"
+        stubKnownAddress(knownAddress, BlockchainType.Thorchain)
+
+        assertFalse(manager.isAddressSuspicious(candidate, BlockchainType.Thorchain, accountId))
+    }
+
+    @Test
+    fun isAddressSuspicious_thorchainSharesPrefixAndTwoChars_returnsTrue() {
+        val knownAddress = "thor1ab1middle000000000000000000000000xyz"
+        val candidate = "thor1ab2middle000000000000000000000000xyz"
+        stubKnownAddress(knownAddress, BlockchainType.Thorchain)
+
+        assertTrue(manager.isAddressSuspicious(candidate, BlockchainType.Thorchain, accountId))
+    }
+
+    @Test
+    fun isAddressSuspicious_mayachainSharesPrefixAndOneChar_returnsFalse() {
+        // Maya addresses start with a constant "maya1"; only one significant char after it matches.
+        val knownAddress = "maya1ab1middle000000000000000000000000xyz"
+        val candidate = "maya1ac2middle000000000000000000000000xyz"
+        stubKnownAddress(knownAddress, BlockchainType.Mayachain)
+
+        assertFalse(manager.isAddressSuspicious(candidate, BlockchainType.Mayachain, accountId))
+    }
+
+    @Test
+    fun isAddressSuspicious_mayachainSharesPrefixAndTwoChars_returnsTrue() {
+        val knownAddress = "maya1ab1middle000000000000000000000000xyz"
+        val candidate = "maya1ab2middle000000000000000000000000xyz"
+        stubKnownAddress(knownAddress, BlockchainType.Mayachain)
+
+        assertTrue(manager.isAddressSuspicious(candidate, BlockchainType.Mayachain, accountId))
+    }
+
+    @Test
     fun determinePoisonStatus_dashSharesFirstTwoAndLastThree_returnsSuspicious() {
         val knownAddress = "XntyX4i2Y11111111111111111111g6gR"
         val candidate = "XnG7MQhu622222222222222222222g6gR"

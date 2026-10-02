@@ -213,7 +213,7 @@ private fun ColumnScope.SwapConfirmButtons(
     val moneroSpendReadiness = uiState.moneroSpendReadiness
     when {
         uiState.loading -> SwapLoadingButton()
-        uiState.criticalError != null -> RefreshSwapButton(uiState.criticalError, actions.refresh)
+        uiState.criticalError != null -> RefreshSwapButton(stringResource(R.string.Button_Refresh), actions.refresh)
         moneroSpendReadiness != null && moneroSpendReadiness != MoneroSpendReadiness.Ready ->
             MoneroSpendReadinessStatus(
                 spendReadiness = moneroSpendReadiness,
@@ -450,7 +450,7 @@ private fun SwapQuoteSection(
                 subvalue = fiat,
             )
         }
-        provider?.let { SwapProviderField(title = it.title, iconId = it.icon) }
+        provider?.let { SwapProviderField(title = it.title, iconId = it.icon, iconUrl = it.iconUrl) }
         uiState.quoteFields.forEach { it.GetContent(navController, true) }
     }
 }

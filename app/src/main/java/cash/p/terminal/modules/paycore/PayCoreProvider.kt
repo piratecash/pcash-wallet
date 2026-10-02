@@ -11,6 +11,7 @@ import cash.p.terminal.modules.multiswap.ISwapQuote
 import cash.p.terminal.modules.multiswap.SwapAmountAccuracy
 import cash.p.terminal.modules.multiswap.SwapAmountDirection
 import cash.p.terminal.modules.multiswap.SwapAmountOutOfRange
+import cash.p.terminal.modules.multiswap.swapSideTokenQueryId
 import cash.p.terminal.modules.multiswap.action.ISwapProviderAction
 import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
 import cash.p.terminal.modules.multiswap.providers.IExactOutSwapProvider
@@ -251,6 +252,8 @@ class PayCoreProvider(
             amountOut = amountOut,
             addressOut = tryOrNull { walletUseCase.getReceiveAddress(tokenOut) }.orEmpty(),
             accountId = accountManager.activeAccount?.id.orEmpty(),
+            tokenQueryIdIn = tokenIn.swapSideTokenQueryId,
+            tokenQueryIdOut = tokenOut.swapSideTokenQueryId,
         )
 
         return PayCoreFinalQuote(

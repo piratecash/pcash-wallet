@@ -33,6 +33,8 @@ import cash.p.terminal.core.managers.ReleaseNotesManager
 import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.SolanaRpcSourceManager
 import cash.p.terminal.core.managers.StellarAccountManager
+import cash.p.terminal.core.managers.ThorchainAccountManager
+import cash.p.terminal.core.managers.ThorchainKitManagers
 import cash.p.terminal.core.managers.TokenAutoEnableManager
 import cash.p.terminal.core.managers.TonAccountManager
 import cash.p.terminal.core.managers.TonConnectManager
@@ -76,6 +78,7 @@ import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
+import cash.p.terminal.wallet.storage.MarketDatabase
 import cash.p.terminal.widgets.MarketWidgetManager
 import cash.p.terminal.widgets.MarketWidgetRepository
 import cash.p.terminal.widgets.MarketWidgetWorker
@@ -101,6 +104,7 @@ import com.reown.android.relay.ConnectionType
 import com.reown.walletkit.client.Wallet
 import com.reown.walletkit.client.WalletKit
 import io.horizontalsystems.bitcoincore.core.BitcoinCoreContextInitializer
+import io.horizontalsystems.core.BackgroundManagerState
 import io.horizontalsystems.core.CoreApp
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.IAppNumberFormatter
@@ -114,6 +118,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import org.koin.android.ext.android.get
@@ -271,6 +277,8 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
             androidContext(this@App)
             modules(appModule)
         }
+        // The first open creates the catalog and loads the bundled coin list; keep it off the main thread.
+        coroutineScope.launch { get<MarketDatabase>() }
 
         if (!BuildConfig.DIAGNOSTIC_LOGGING) {
             //Disable logging for lower levels in Release build
@@ -487,36 +495,52 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
 
     override val isSwapEnabled = true
 
+    private fun startAccountManagers() {
+        TronAccountManager(
+            accountManager = accountManager,
+            walletManager = walletManager,
+            marketKit = get(),
+            tronKitManager = tronKitManager,
+            tokenAutoEnableManager = tokenAutoEnableManager,
+            userDeletedWalletManager = get()
+        ).start()
+
+        TonAccountManager(
+            accountManager = accountManager,
+            walletManager = walletManager,
+            tonKitManager = tonKitManager,
+            tokenAutoEnableManager = tokenAutoEnableManager,
+            userDeletedWalletManager = get(),
+            marketKit = get()
+        ).start()
+
+        StellarAccountManager(
+            accountManager = accountManager,
+            walletManager = walletManager,
+            stellarKitManager = get(),
+            tokenAutoEnableManager = tokenAutoEnableManager,
+            userDeletedWalletManager = get(),
+            marketKit = get()
+        ).start()
+
+        get<ThorchainKitManagers>().all.forEach { thorchainKitManager ->
+            ThorchainAccountManager(
+                accountManager = accountManager,
+                walletManager = walletManager,
+                thorchainKitManager = thorchainKitManager,
+                tokenAutoEnableManager = tokenAutoEnableManager,
+                userDeletedWalletManager = get(),
+                marketKit = get(),
+                dispatcherProvider = get(),
+            ).start()
+        }
+    }
+
     private fun startTasks() {
         coroutineScope.launch {
             initCipherForMonero()
 
-            TronAccountManager(
-                accountManager = accountManager,
-                walletManager = walletManager,
-                marketKit = get(),
-                tronKitManager = tronKitManager,
-                tokenAutoEnableManager = tokenAutoEnableManager,
-                userDeletedWalletManager = get()
-            ).start()
-
-            TonAccountManager(
-                accountManager = accountManager,
-                walletManager = walletManager,
-                tonKitManager = tonKitManager,
-                tokenAutoEnableManager = tokenAutoEnableManager,
-                userDeletedWalletManager = get(),
-                marketKit = get()
-            ).start()
-
-            StellarAccountManager(
-                accountManager = accountManager,
-                walletManager = walletManager,
-                stellarKitManager = get(),
-                tokenAutoEnableManager = tokenAutoEnableManager,
-                userDeletedWalletManager = get(),
-                marketKit = get()
-            ).start()
+            startAccountManagers()
 
             wcWalletRequestHandler = WCWalletRequestHandler(evmBlockchainManager)
             initializeWalletConnectV2()
@@ -524,7 +548,12 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
 
             EthereumKit.init()
             adapterManager.startAdapterManager()
-            marketKit.sync(needForceUpdateCoins())
+            launch {
+                backgroundManager.stateFlow
+                    .filter { it == BackgroundManagerState.EnterForeground }
+                    // An exception escaping collectLatest would end this collector for good.
+                    .collectLatest { marketKit.sync(tryOrNull { needForceUpdateCoins() } ?: false) }
+            }
             rateAppManager.onAppLaunch()
             nftMetadataSyncer.start()
             if (!pinComponent.isPinSet) {

@@ -639,12 +639,13 @@
     <string name="SwapConfirm_FetchingFinalQuote">Recuperando la comilla final</string>
     <string name="SwapWarning_SlippageNotAvailable_Title">Sin Control de Deslizamiento</string>
     <string name="SwapWarning_SlippageNotAvailable_Description">Las operaciones entre cadenas dependen de la liquidez de terceros y los retrasos, lo que puede afectar el monto final.</string>
-    <string name="unsupported_refund_address">Unsupported refund address</string>
-    <string name="unsupported_address">Unsupported address</string>
+    <string name="unsupported_refund_address">Dirección de reembolso no admitida</string>
+    <string name="unsupported_address">Dirección no admitida</string>
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">Token no compatible</string>
     <string name="zec_transparent_used">Al crear el intercambio se utiliza una dirección t temporal: %s. Se proporciona al proveedor del intercambio y es necesaria para el reembolso en caso de que el intercambio no se complete. El uso de una dirección t puede provocar una desanonimización parcial de la transacción.</string>
     <string name="swap_yifi_memo_unsupported">El proveedor del swap requiere un memo de depósito que no se puede enviar desde esta red. Elige otro proveedor.</string>
+    <string name="swap_provider_order_failed">El proveedor no pudo crear el swap. Actualiza la cotización o vuelve atrás y elige otro proveedor.</string>
     <!-- Swap Settings -->
     <string name="SwapSettings_Title">Ajustes de swap</string>
     <string name="SwapSettings_SlippageTitle">Tolerancia de deslizamiento</string>
@@ -1075,6 +1076,7 @@
     <string name="offline_broadcast_error_timeout">La solicitud agotó el tiempo de espera. Inténtalo de nuevo más tarde.</string>
     <string name="offline_broadcast_error_already_sent">Esta transacción ya es conocida por la red.</string>
     <string name="offline_broadcast_error_seqno_consumed">El número de transacción (seqno) ya se ha utilizado. Es posible que esta transacción ya se haya enviado; revisa el historial de transacciones antes de volver a firmar.</string>
+    <string name="offline_broadcast_error_outcome_unknown">La red no confirmó la recepción. Es posible que la transacción ya se haya enviado; revisa el historial de transacciones antes de retransmitirla.</string>
     <string name="offline_broadcast_error_nonce_used">El nonce de esta transacción ya se ha utilizado. Puede que ya se haya enviado o reemplazado.</string>
     <string name="offline_broadcast_error_low_fee">La comisión de red es demasiado baja. Crea una transacción con una comisión más alta.</string>
     <string name="offline_broadcast_error_rejected">La red rechazó esta transacción firmada.</string>

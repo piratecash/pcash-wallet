@@ -863,6 +863,7 @@ Proceed only if you\'re sure.</string>
     <string name="Fee_LiquidityFee">Liquidity Fee</string>
     <string name="zec_transparent_used">A temporary t-address is used when creating the exchange: %s. It is provided to the exchange provider and required for a refund if the exchange is not completed. Using a t-address may lead to partial deanonymization of the transaction.</string>
     <string name="swap_yifi_memo_unsupported">The swap provider requires a deposit memo that can\'t be sent from this network. Choose another provider.</string>
+    <string name="swap_provider_order_failed">The provider couldn\'t create the swap. Refresh the quote or go back and choose another provider.</string>
 
     <!-- Swap Settings -->
     <string name="SwapSettings_Title">Swap Settings</string>
@@ -1418,6 +1419,7 @@ Proceed only if you\'re sure.</string>
     <string name="offline_broadcast_error_timeout">Request timed out. Try again later.</string>
     <string name="offline_broadcast_error_already_sent">This transaction is already known to the network.</string>
     <string name="offline_broadcast_error_seqno_consumed">The transaction number (seqno) has already been used. This transaction may have already been sent — check the transaction history before signing again.</string>
+    <string name="offline_broadcast_error_outcome_unknown">The network did not confirm receipt. The transaction may already have been sent — check the transaction history before relaying it again.</string>
     <string name="offline_broadcast_error_nonce_used">This transaction nonce has already been used. It may have been sent or replaced.</string>
     <string name="offline_broadcast_error_low_fee">The network fee is too low. Create a transaction with a higher fee.</string>
     <string name="offline_broadcast_error_rejected">The network rejected this signed transaction.</string>

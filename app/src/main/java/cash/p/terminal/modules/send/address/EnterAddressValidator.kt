@@ -3,7 +3,7 @@ package cash.p.terminal.modules.send.address
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.ISendBitcoinAdapter
-import cash.p.terminal.core.ISendStellarAdapter
+import cash.p.terminal.core.ISendMemoAdapter
 import cash.p.terminal.core.ISendTronAdapter
 import cash.p.terminal.core.ISendZcashAdapter
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
@@ -57,10 +57,10 @@ class TonAddressValidator :
     }
 }
 
-class StellarAddressValidator(private val token: Token) :
+class MemoAddressValidator(private val token: Token) :
     EnterAddressValidator {
     private val sendAdapter by lazy {
-        App.adapterManager.getAdapterForToken<ISendStellarAdapter>(
+        App.adapterManager.getAdapterForToken<ISendMemoAdapter>(
             token
         )
     }

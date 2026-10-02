@@ -1,24 +1,14 @@
 package cash.p.terminal.wallet.entities
 
 import android.os.Parcelable
-import androidx.room.Entity
-import androidx.room.Index
-import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-@Entity(
-    indices = [
-        Index(value = arrayOf("uid"))
-    ]
-)
 data class Coin(
-    @PrimaryKey
     val uid: String,
     val name: String,
     val code: String,
     val marketCapRank: Int? = null,
-    val coinGeckoId: String? = null,
     val image: String? = null,
     val priority: Int? = null
 ) : Parcelable {
@@ -32,6 +22,6 @@ data class Coin(
 
     override fun toString(): String {
         return "Coin [uid: $uid; name: $name; code: $code; marketCapRank: $marketCapRank; " +
-                "coinGeckoId: $coinGeckoId; priority: $priority]"
+                "priority: $priority]"
     }
 }

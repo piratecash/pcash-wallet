@@ -2,7 +2,7 @@
 
 ## Русский
 
-Актуальные release notes для ветки `0.60.x` остаются в основных файлах changelog:
+Актуальные release notes для ветки `0.61.x` остаются в основных файлах changelog:
 
 - Русский: [changelog_ru.md](../changelog_ru.md)
 - Английский: [changelog_en.md](../changelog_en.md)
@@ -14,6 +14,7 @@
 
 | Ветка релизов | Русский | Английский |
 | --- | --- | --- |
+| `0.60.x` | [ru/0.60.x.md](./ru/0.60.x.md) | [en/0.60.x.md](./en/0.60.x.md) |
 | `0.59.x` | [ru/0.59.x.md](./ru/0.59.x.md) | [en/0.59.x.md](./en/0.59.x.md) |
 | `0.58.x` | [ru/0.58.x.md](./ru/0.58.x.md) | [en/0.58.x.md](./en/0.58.x.md) |
 | `0.57.x` | [ru/0.57.x.md](./ru/0.57.x.md) | [en/0.57.x.md](./en/0.57.x.md) |
@@ -35,7 +36,7 @@
 
 ## English
 
-Current `0.60.x` release notes remain in the root changelog files:
+Current `0.61.x` release notes remain in the root changelog files:
 
 - Russian: [changelog_ru.md](../changelog_ru.md)
 - English: [changelog_en.md](../changelog_en.md)
@@ -47,6 +48,7 @@ The `x` suffix is used to group all release notes that belong to the same branch
 
 | Release branch | Russian | English |
 | --- | --- | --- |
+| `0.60.x` | [ru/0.60.x.md](./ru/0.60.x.md) | [en/0.60.x.md](./en/0.60.x.md) |
 | `0.59.x` | [ru/0.59.x.md](./ru/0.59.x.md) | [en/0.59.x.md](./en/0.59.x.md) |
 | `0.58.x` | [ru/0.58.x.md](./ru/0.58.x.md) | [en/0.58.x.md](./en/0.58.x.md) |
 | `0.57.x` | [ru/0.57.x.md](./ru/0.57.x.md) | [en/0.57.x.md](./en/0.57.x.md) |
@@ -77,7 +79,7 @@ The `x` suffix is used to group all release notes that belong to the same branch
 5. Обновите вводный текст в этом файле, если изменилась текущая активная ветка релизов.
 6. Используйте то же соглашение по именованию: `0.xx.x.md` означает ветку релизов, а не обязательное наличие каждой patch-версии внутри файла.
 
-Пример: когда ветка `0.60.x` станет архивной, её нужно вынести в `release-notes/ru/0.60.x.md` и `release-notes/en/0.60.x.md`, затем добавить `0.60.x` в таблицу архива.
+Пример: когда ветка `0.61.x` станет архивной, её нужно вынести в `release-notes/ru/0.61.x.md` и `release-notes/en/0.61.x.md`, затем добавить `0.61.x` в таблицу архива.
 
 ## How to archive the next release branch
 
@@ -90,4 +92,4 @@ When the current release branch is no longer the active one, follow these steps:
 5. Update the introductory text in this file if the current active release branch has changed.
 6. Keep the same naming convention: `0.xx.x.md` represents a release branch, not a requirement that every patch version exists in that file.
 
-Example: when `0.60.x` becomes archival, move it to `release-notes/ru/0.60.x.md` and `release-notes/en/0.60.x.md`, then add `0.60.x` to the archive table.
+Example: when `0.61.x` becomes archival, move it to `release-notes/ru/0.61.x.md` and `release-notes/en/0.61.x.md`, then add `0.61.x` to the archive table.
