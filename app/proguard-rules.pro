@@ -81,7 +81,6 @@
 -keep class io.horizontalsystems.piratecashkit.** { *; }
 -keep class io.horizontalsystems.hodler.** { *; }
 -keep class io.horizontalsystems.hdwalletkit.** { *; }
--keep class io.horizontalsystems.feeratekit.** { *; }
 -keep class org.stellar.sdk.** { *; }
 -keep class com.solana.** { *; }
 -keep class org.sol4k.** { *; }
