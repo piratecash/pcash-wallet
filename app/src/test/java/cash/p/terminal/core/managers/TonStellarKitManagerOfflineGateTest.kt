@@ -241,6 +241,7 @@ class StellarKitManagerOfflineGateTest {
             backgroundKeepAliveManager = mockk(relaxed = true),
             networkErrorTracker = mockk(relaxed = true),
             offlineModeManager = offlineModeManager,
+            stellarKitDatabaseKeyProvider = mockk(relaxed = true),
         )
         setField(manager, "stellarKitWrapper", StellarKitWrapper(mockStellarKit))
         setField(manager, "currentAccount", account)
@@ -328,7 +329,7 @@ class StellarKitManagerOfflineGateTest {
         cleanupGate.complete(Unit)
         advanceUntilIdle()
 
-        verify(exactly = 1) { mockStellarKit.destroy() }
+        coVerify(exactly = 1) { mockStellarKit.destroy() }
         assertFalse(resumedAfterStop)
     }
 

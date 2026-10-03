@@ -59,7 +59,14 @@
     <string name="trezor_not_initialized_description">این Trezor هنوز راه‌اندازی نشده است. راه‌اندازی را روی دستگاه کامل کنید و دوباره آن را وصل کنید.</string>
     <string name="trezor_not_initialized_cta">راهنمای راه‌اندازی</string>
     <string name="trezor_connect_failed">اتصال به Trezor برقرار نشد.</string>
-    <string name="Button_Activate">Activate</string>
+    <string name="Button_Activate">فعال‌سازی</string>
+    <string name="activation_required_dialog_description">برای دریافت %s باید توکن را فعال کنید. شبکه Stellar برای هر توکن به ایجاد خط اعتماد (trustline) نیاز دارد. بدون آن، کیف پول شما نمی‌تواند %s را دریافت کند — تراکنش رد می‌شود و وجوه تحویل داده نمی‌شوند.</string>
+    <string name="activate_you_activate">شما فعال می‌کنید</string>
+    <string name="activate_activating">در حال فعال‌سازی</string>
+    <string name="activate_already_active_title">از قبل فعال است</string>
+    <string name="activate_already_active_description">این توکن از قبل فعال است.</string>
+    <string name="activate_insufficient_balance_title">موجودی ناکافی</string>
+    <string name="activate_insufficient_balance_description">موجودی XLM شما برای فعال‌سازی این توکن کافی نیست.</string>
     <string name="Button_Sign">نشانه</string>
     <string name="Button_TryAgain">Try Again</string>
     <string name="Button_Share">Share</string>

@@ -2,6 +2,7 @@ package cash.p.terminal.modules.multiswap
 
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.usecase.FetchSwapQuotesUseCase
+import cash.p.terminal.modules.multiswap.action.ISwapProviderAction
 import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
 import cash.p.terminal.modules.multiswap.providers.SwapProvidersRegistry
 import cash.p.terminal.modules.multiswap.providers.SwapProvidersRepository
@@ -17,6 +18,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -29,11 +31,13 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withContext
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -878,6 +882,87 @@ class SwapQuoteServiceExactOutTest : SwapQuoteServiceTestFixture() {
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
+class SwapQuoteServiceTokenOutActionTest : SwapQuoteServiceTestFixture() {
+    private val action = mockk<ISwapProviderAction>()
+
+    @Test
+    fun runQuotation_resolverReturnsAction_stateCarriesTokenOutAction() = runTest {
+        coEvery { stellarTrustlineActionResolver.resolve(any(), any()) } returns action
+        val service = createService(listOf(mockProvider("provider")), testScheduler)
+
+        quoteOne(service)
+
+        assertSame(action, service.stateFlow.value.tokenOutAction)
+        assertFalse(service.stateFlow.value.quoting)
+    }
+
+    @Test
+    fun runQuotation_noQuote_tokenOutActionNull() = runTest {
+        val service = createService(listOf(unsupportedDirectProvider()), testScheduler)
+
+        quoteOne(service)
+
+        assertNull(service.stateFlow.value.tokenOutAction)
+        coVerify(exactly = 0) { stellarTrustlineActionResolver.resolve(any(), any()) }
+    }
+
+    @Test
+    fun onActionCompleted_trustlineEstablished_tokenOutActionCleared() = runTest {
+        coEvery { stellarTrustlineActionResolver.resolve(any(), any()) } returnsMany listOf(action, null)
+        val service = createService(listOf(mockProvider("provider")), testScheduler)
+        quoteOne(service)
+        assertSame(action, service.stateFlow.value.tokenOutAction)
+
+        service.onActionCompleted()
+        advanceUntilIdle()
+
+        assertNull(service.stateFlow.value.tokenOutAction)
+    }
+
+    @Test
+    fun runQuotation_tokenOutChangedWhileResolving_staleActionNotPublished() = runTest {
+        val tokenB = mockk<Token> {
+            every { blockchainType } returns BlockchainType.Ethereum
+            every { type } returns TokenType.Eip20("0x2")
+        }
+        val provider = mockk<IMultiSwapProvider>(relaxed = true) {
+            every { id } returns "provider"
+            coEvery { supports(any(), any()) } returns true
+            coEvery { fetchQuote(any(), any(), any(), any()) } returns mockk(relaxed = true) {
+                every { amountOut } returns BigDecimal.ONE
+                every { amountIn } returns BigDecimal.ONE
+            }
+        }
+        val gateA = CompletableDeferred<Unit>()
+        // Models a blocking HTTP call that does not observe cancellation
+        coEvery { stellarTrustlineActionResolver.resolve(any(), tokenOut) } coAnswers {
+            withContext(NonCancellable) { gateA.await() }
+            action
+        }
+        coEvery { stellarTrustlineActionResolver.resolve(any(), tokenB) } returns null
+        val service = createService(listOf(provider), testScheduler)
+
+        quoteOne(service)
+        service.setTokenOut(tokenB)
+        advanceUntilIdle()
+        gateA.complete(Unit)
+        advanceUntilIdle()
+
+        val state = service.stateFlow.value
+        assertEquals(tokenB, state.tokenOut)
+        assertNull(state.tokenOutAction)
+        assertFalse(state.quoting)
+    }
+
+    private fun TestScope.quoteOne(service: SwapQuoteService) {
+        service.setTokenIn(tokenIn)
+        service.setTokenOut(tokenOut)
+        service.setAmount(BigDecimal.ONE, SwapAmountDirection.In)
+        advanceUntilIdle()
+    }
+}
+
+@OptIn(ExperimentalCoroutinesApi::class)
 abstract class SwapQuoteServiceTestFixture {
 
     private val mainDispatcher = UnconfinedTestDispatcher()
@@ -972,6 +1057,10 @@ abstract class SwapQuoteServiceTestFixture {
         coEvery { supports(tokenIn, tokenOut) } returns false
     }
 
+    protected val stellarTrustlineActionResolver = mockk<StellarTrustlineActionResolver> {
+        coEvery { resolve(any(), any()) } returns null
+    }
+
     protected fun createService(
         providers: List<IMultiSwapProvider>,
         scheduler: TestCoroutineScheduler,
@@ -1017,6 +1106,7 @@ abstract class SwapQuoteServiceTestFixture {
             registry,
             mockk(relaxed = true),
             TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)),
+            stellarTrustlineActionResolver,
         )
     }
 }

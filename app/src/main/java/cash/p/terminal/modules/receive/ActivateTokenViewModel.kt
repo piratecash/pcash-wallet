@@ -5,7 +5,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.core.App
 import cash.p.terminal.core.adapters.stellar.StellarAssetAdapter
+import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.entities.CoinValue
+import cash.p.terminal.modules.offline.OfflineOperationGate
 import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Token
@@ -16,42 +18,58 @@ import io.horizontalsystems.core.ViewModelUiState
 import io.horizontalsystems.core.entities.Currency
 import io.horizontalsystems.core.entities.CurrencyValue
 import io.horizontalsystems.stellarkit.EnablingAssetError
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class ActivateTokenViewModel(
-    wallet: Wallet,
+    private val wallet: Wallet,
     feeToken: Token,
     adapterManager: IAdapterManager,
     xRateService: XRateService,
+    private val offlineOperationGate: OfflineOperationGate,
 ) : ViewModelUiState<ActivateTokenUiState>() {
     private val token = wallet.token
     private val adapter = adapterManager.getAdapterForWallet<StellarAssetAdapter>(wallet)
     private var activateEnabled = false
     private var error: ActivateTokenError? = null
+    private var offline = offlineOperationGate.isBlocked(wallet)
     private val feeAmount = adapter?.activationFee
     private var feeCoinValue: CoinValue? = null
     private var feeFiatValue: CurrencyValue? = null
 
     init {
+        viewModelScope.launch {
+            offlineOperationGate.blockedFlow(wallet).collect {
+                offline = it
+                emitState()
+            }
+        }
         viewModelScope.launch(Dispatchers.Default) {
             val tmpAdapter = adapter
 
             if (tmpAdapter == null) {
                 activateEnabled = false
                 error = ActivateTokenError.NullAdapter()
-            } else if (tmpAdapter.isTrustlineEstablished()) {
-                activateEnabled = false
-                error = ActivateTokenError.AlreadyActive()
             } else try {
-                tmpAdapter.validateActivation()
+                if (tmpAdapter.isTrustlineEstablished()) {
+                    activateEnabled = false
+                    error = ActivateTokenError.AlreadyActive()
+                } else {
+                    tmpAdapter.validateActivation()
 
-                activateEnabled = true
-                error = null
+                    activateEnabled = true
+                    error = null
+                }
             } catch (e: EnablingAssetError.InsufficientBalance) {
                 activateEnabled = false
                 error = ActivateTokenError.InsufficientBalance()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                activateEnabled = false
+                error = ActivateTokenError.NullAdapter()
             }
 
             feeAmount?.let { feeAmount ->
@@ -68,13 +86,14 @@ class ActivateTokenViewModel(
     override fun createState() = ActivateTokenUiState(
         token = token,
         currency = App.currencyManager.baseCurrency,
-        activateEnabled = activateEnabled,
-        error = error,
+        activateEnabled = activateEnabled && !offline,
+        error = if (offline) ActivateTokenError.Offline() else error,
         feeCoinValue = feeCoinValue,
         feeFiatValue = feeFiatValue
     )
 
     suspend fun activate() = withContext(Dispatchers.Default) {
+        offlineOperationGate.requireOnline(wallet)
         adapter?.activate()
     }
 
@@ -91,7 +110,8 @@ class ActivateTokenViewModel(
                 wallet,
                 feeToken,
                 App.adapterManager,
-                xRateService
+                xRateService,
+                getKoinInstance(),
             ) as T
         }
     }
@@ -101,6 +121,7 @@ sealed class ActivateTokenError : Throwable() {
     class NullAdapter : ActivateTokenError()
     class AlreadyActive : ActivateTokenError()
     class InsufficientBalance : ActivateTokenError()
+    class Offline : ActivateTokenError()
 }
 
 data class ActivateTokenUiState(

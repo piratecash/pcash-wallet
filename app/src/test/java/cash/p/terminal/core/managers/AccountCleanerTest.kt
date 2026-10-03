@@ -55,6 +55,7 @@ class AccountCleanerTest {
     private lateinit var pinDbStorage: PinDbStorage
     private lateinit var accountStorageCleaner: AccountStorageCleaner
     private lateinit var bitcoinKitDatabaseManager: BitcoinKitDatabaseManager
+    private lateinit var stellarKitManager: StellarKitManager
     private lateinit var thorchainKitManagers: ThorchainKitManagers
     private val deletionPreflight = mockk<AccountDeletionPreflight>(relaxed = true)
 
@@ -70,6 +71,7 @@ class AccountCleanerTest {
         pinDbStorage = mockk(relaxed = true)
         accountStorageCleaner = mockk(relaxed = true)
         bitcoinKitDatabaseManager = mockk(relaxed = true)
+        stellarKitManager = mockk(relaxed = true)
         thorchainKitManagers = mockk(relaxed = true)
 
         coEvery { clearZCashWalletDataUseCase.invoke(any()) } returns ZcashEraseResult.ALL
@@ -90,6 +92,7 @@ class AccountCleanerTest {
             pinDbStorage,
             accountStorageCleaner,
             bitcoinKitDatabaseManager,
+            stellarKitManager,
             thorchainKitManagers,
             deletionPreflight,
         )
@@ -381,6 +384,7 @@ class AccountCleanerTest {
         verify(exactly = 1) { Eip20Adapter.clear(accountId) }
         verify(exactly = 1) { SolanaAdapter.clear(accountId) }
         verify(exactly = 1) { TronAdapter.clear(accountId) }
+        coVerify(exactly = 1) { stellarKitManager.clear(accountId) }
     }
 
     private fun account(id: String) = Account(

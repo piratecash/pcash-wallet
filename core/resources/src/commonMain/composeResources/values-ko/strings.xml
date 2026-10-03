@@ -60,6 +60,13 @@
     <string name="trezor_not_initialized_cta">설정 가이드</string>
     <string name="trezor_connect_failed">Trezor에 연결하지 못했습니다.</string>
     <string name="Button_Activate">활성화</string>
+    <string name="activation_required_dialog_description">%s을(를) 받으려면 토큰을 활성화해야 합니다. Stellar 네트워크는 각 토큰마다 신뢰선(trustline) 설정을 요구합니다. 신뢰선이 없으면 지갑에서 %s을(를) 받을 수 없으며, 트랜잭션이 거부되어 자금이 전달되지 않습니다.</string>
+    <string name="activate_you_activate">활성화할 토큰</string>
+    <string name="activate_activating">활성화 중</string>
+    <string name="activate_already_active_title">이미 활성화됨</string>
+    <string name="activate_already_active_description">토큰이 이미 활성화되어 있습니다.</string>
+    <string name="activate_insufficient_balance_title">잔액 부족</string>
+    <string name="activate_insufficient_balance_description">이 토큰을 활성화하기에 XLM 잔액이 부족합니다.</string>
     <string name="Button_Sign">가입</string>
     <string name="Button_TryAgain">다시 시도하십시오.</string>
     <string name="Button_Share">공유</string>

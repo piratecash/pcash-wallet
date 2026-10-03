@@ -60,6 +60,13 @@
     <string name="Button_Delete">Supprimer</string>
     <string name="Button_LearnMore">En savoir plus</string>
     <string name="Button_Activate">Activer</string>
+    <string name="activation_required_dialog_description">Pour recevoir %s, vous devez activer le jeton. Le réseau Stellar exige l’établissement d’une ligne de confiance (trustline) pour chaque jeton. Sans elle, votre portefeuille ne peut pas recevoir %s : la transaction sera rejetée et les fonds ne seront pas livrés.</string>
+    <string name="activate_you_activate">Vous activez</string>
+    <string name="activate_activating">Activation en cours</string>
+    <string name="activate_already_active_title">Déjà actif</string>
+    <string name="activate_already_active_description">Le jeton est déjà actif.</string>
+    <string name="activate_insufficient_balance_title">Solde insuffisant</string>
+    <string name="activate_insufficient_balance_description">Votre solde XLM est insuffisant pour activer ce jeton.</string>
     <string name="Button_Sign">Signer</string>
     <string name="Button_TryAgain">Veuillez Réessayer</string>
     <string name="Button_Share">Partager</string>

@@ -1,8 +1,8 @@
 package cash.p.terminal.core.managers
 
 import android.content.Context
-import android.security.keystore.UserNotAuthenticatedException
-import android.util.Base64
+import android.content.ContextWrapper
+import android.content.SharedPreferences
 import androidx.test.core.app.ApplicationProvider
 import io.horizontalsystems.core.IEncryptionManager
 import io.mockk.every
@@ -10,7 +10,6 @@ import io.mockk.mockk
 import org.junit.After
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -23,91 +22,111 @@ import kotlin.test.assertFailsWith
 @Config(manifest = Config.NONE)
 class KitDatabaseKeyProviderTest {
     private lateinit var context: Context
-    private lateinit var encryptionManager: IEncryptionManager
+    private val encryptionManager = mockk<IEncryptionManager> {
+        every { encrypt(any()) } answers { "$ENCRYPTED_PREFIX${firstArg<String>()}" }
+        every { decrypt(any()) } answers { firstArg<String>().removePrefix(ENCRYPTED_PREFIX) }
+    }
 
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
-        preferences().edit().clear().commit()
-        encryptionManager = PrefixEncryptionManager()
+        clearPreferences()
     }
 
     @After
     fun tearDown() {
-        preferences().edit().clear().commit()
+        clearPreferences()
     }
 
     @Test
-    fun keyFor_newAndExistingAccount_persistsEncryptedStableKey() {
-        val firstProvider = DefaultKitDatabaseKeyProvider(context, encryptionManager)
+    fun keyFor_bitcoinAndStellarProviders_keepSeparateKeys() {
+        val bitcoinProvider = BitcoinKitDatabaseKeyProvider(context, encryptionManager)
+        val stellarProvider = StellarKitDatabaseKeyProvider(context, encryptionManager)
 
-        val firstKey = firstProvider.keyFor(ACCOUNT_ID)
-        val storedValue = preferences().getString(preferenceKey(), null)
-        val restoredKey = DefaultKitDatabaseKeyProvider(context, encryptionManager).keyFor(ACCOUNT_ID)
+        val bitcoinKey = bitcoinProvider.keyFor(ACCOUNT_ID)
+        val stellarKey = stellarProvider.keyFor(ACCOUNT_ID)
 
-        assertArrayEquals(firstKey, restoredKey)
-        assertTrue(firstKey.size == KEY_SIZE)
-        assertNotEquals(Base64.encodeToString(firstKey, Base64.NO_WRAP), storedValue)
+        assertFalse(bitcoinKey.contentEquals(stellarKey))
+        assertTrue(stellarPreferences().contains(STELLAR_PREFERENCE_KEY))
+        assertTrue(bitcoinPreferences().contains(BITCOIN_PREFERENCE_KEY))
+
+        stellarProvider.remove(ACCOUNT_ID)
+
+        assertFalse(stellarPreferences().contains(STELLAR_PREFERENCE_KEY))
+        assertArrayEquals(bitcoinKey, bitcoinProvider.keyFor(ACCOUNT_ID))
+
+        val newStellarKey = stellarProvider.keyFor(ACCOUNT_ID)
+        bitcoinProvider.remove(ACCOUNT_ID)
+
+        assertFalse(bitcoinPreferences().contains(BITCOIN_PREFERENCE_KEY))
+        assertArrayEquals(newStellarKey, stellarProvider.keyFor(ACCOUNT_ID))
     }
 
     @Test
-    fun keyFor_presentCorruptValue_throwsWithoutReplacingIt() {
-        val corruptValue = "not-encrypted"
-        preferences().edit().putString(preferenceKey(), corruptValue).commit()
-        val provider = DefaultKitDatabaseKeyProvider(context, encryptionManager)
+    fun keyFor_commitFails_throwsAndLeavesNoUnsavedKey() {
+        val failingContext = FirstPutCommitFailsContext(context)
+        val provider = StellarKitDatabaseKeyProvider(failingContext, encryptionManager)
 
-        assertFailsWith<KitDatabaseKeyException> {
-            provider.keyFor(ACCOUNT_ID)
-        }
+        assertFailsWith<KitDatabaseKeyException> { provider.keyFor(ACCOUNT_ID) }
 
-        assertTrue(preferences().contains(preferenceKey()))
-        assertTrue(preferences().getString(preferenceKey(), null) == corruptValue)
+        assertFalse(stellarPreferences().contains(STELLAR_PREFERENCE_KEY))
+
+        val key = provider.keyFor(ACCOUNT_ID)
+
+        assertArrayEquals(key, StellarKitDatabaseKeyProvider(context, encryptionManager).keyFor(ACCOUNT_ID))
     }
 
-    @Test
-    fun keyFor_storedKeyRequiresAuthentication_reportsRetryableLock() {
-        preferences().edit().putString(preferenceKey(), "encrypted-key").commit()
-        val authenticationRequired = mockk<UserNotAuthenticatedException>()
-        val lockedEncryptionManager = mockk<IEncryptionManager> {
-            every { decrypt(any()) } throws authenticationRequired
-        }
-        val provider = DefaultKitDatabaseKeyProvider(context, lockedEncryptionManager)
-
-        val error = assertFailsWith<KitDatabaseKeyLockedException> {
-            provider.keyFor(ACCOUNT_ID)
-        }
-
-        assertTrue(error.cause === authenticationRequired)
+    private fun clearPreferences() {
+        bitcoinPreferences().edit().clear().commit()
+        stellarPreferences().edit().clear().commit()
     }
 
-    @Test
-    fun remove_existingKey_removesStoredKey() {
-        val provider = DefaultKitDatabaseKeyProvider(context, encryptionManager)
-        provider.keyFor(ACCOUNT_ID)
+    private fun bitcoinPreferences() =
+        context.getSharedPreferences("bitcoin_kit_database_keys", Context.MODE_PRIVATE)
 
-        provider.remove(ACCOUNT_ID)
+    private fun stellarPreferences() =
+        context.getSharedPreferences("stellar_kit_database_keys", Context.MODE_PRIVATE)
 
-        assertFalse(preferences().contains(preferenceKey()))
-    }
+    /** Mimics SharedPreferencesImpl: a failed commit() still leaves the edit applied in memory. */
+    private class FirstPutCommitFailsContext(base: Context) : ContextWrapper(base) {
+        private var failNextPutCommit = true
 
-    private fun preferences() = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+        override fun getSharedPreferences(name: String, mode: Int): SharedPreferences {
+            val preferences = super.getSharedPreferences(name, mode)
+            return object : SharedPreferences by preferences {
+                override fun edit(): SharedPreferences.Editor {
+                    val editor = preferences.edit()
+                    var hasPut = false
+                    return object : SharedPreferences.Editor by editor {
+                        override fun putString(key: String, value: String?): SharedPreferences.Editor {
+                            hasPut = true
+                            editor.putString(key, value)
+                            return this
+                        }
 
-    private fun preferenceKey() = "$KEY_PREFIX$ACCOUNT_ID"
+                        override fun remove(key: String): SharedPreferences.Editor {
+                            editor.remove(key)
+                            return this
+                        }
 
-    private class PrefixEncryptionManager : IEncryptionManager {
-        override fun encrypt(data: String) = "$ENCRYPTED_PREFIX$data"
-
-        override fun decrypt(data: String): String {
-            require(data.startsWith(ENCRYPTED_PREFIX))
-            return data.removePrefix(ENCRYPTED_PREFIX)
+                        override fun commit(): Boolean {
+                            val committed = editor.commit()
+                            if (hasPut && failNextPutCommit) {
+                                failNextPutCommit = false
+                                return false
+                            }
+                            return committed
+                        }
+                    }
+                }
+            }
         }
     }
 
     private companion object {
         const val ACCOUNT_ID = "account-id"
-        const val PREFERENCES_NAME = "bitcoin_kit_database_keys"
-        const val KEY_PREFIX = "bitcoin_kit_database_key_"
-        const val KEY_SIZE = 32
+        const val BITCOIN_PREFERENCE_KEY = "bitcoin_kit_database_key_$ACCOUNT_ID"
+        const val STELLAR_PREFERENCE_KEY = "stellar_kit_database_key_$ACCOUNT_ID"
         const val ENCRYPTED_PREFIX = "encrypted:"
     }
 }

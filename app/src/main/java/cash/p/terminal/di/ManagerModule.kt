@@ -42,10 +42,10 @@ import cash.p.terminal.core.managers.DeletedAccountsCleanup
 import cash.p.terminal.wallet.AccountDeletionPreflight
 import cash.p.terminal.wallet.IAccountCleaner
 import cash.p.terminal.core.managers.BitcoinKitConnectionManager
+import cash.p.terminal.core.managers.BitcoinKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.BitcoinKitDatabaseManager
 import cash.p.terminal.core.managers.BitcoinKitDatabaseOperations
 import cash.p.terminal.core.managers.BtcBlockchainManager
-import cash.p.terminal.core.managers.DefaultKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.DefaultBitcoinKitDatabaseOperations
 import cash.p.terminal.core.managers.DeviceFlipDetector
 import cash.p.terminal.core.managers.EffectiveMonitoredChains
@@ -122,6 +122,7 @@ import cash.p.terminal.core.managers.SolanaRpcSourceManager
 import cash.p.terminal.core.managers.SolanaWalletManager
 import cash.p.terminal.core.managers.SpamManager
 import cash.p.terminal.core.managers.StackingManager
+import cash.p.terminal.core.managers.StellarKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.StellarKitManager
 import cash.p.terminal.core.managers.SystemInfoManager
 import cash.p.terminal.core.managers.TermsManager
@@ -316,7 +317,7 @@ val managerModule = module {
     }
     singleOf(::ConnectivityManager) bind IConnectivityManager::class
     singleOf(::BitcoinKitConnectionManager) bind IConnectionManager::class
-    singleOf(::DefaultKitDatabaseKeyProvider) bind KitDatabaseKeyProvider::class
+    singleOf(::BitcoinKitDatabaseKeyProvider) bind KitDatabaseKeyProvider::class
     singleOf(::KitDatabaseKeys)
     singleOf(::DefaultBitcoinKitDatabaseOperations) bind BitcoinKitDatabaseOperations::class
     singleOf(::BitcoinKitDatabaseManager)
@@ -328,6 +329,7 @@ val managerModule = module {
     singleOf(::OfflineBroadcastTokenResolver)
     singleOf(::NetworkErrorTracker)
     singleOf(::SolanaKitManager)
+    singleOf(::StellarKitDatabaseKeyProvider)
     singleOf(::StellarKitManager)
     singleOf(::ThorchainKitManagers)
     singleOf(::TonKitManager)
