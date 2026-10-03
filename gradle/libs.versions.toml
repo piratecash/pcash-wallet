@@ -75,7 +75,7 @@ trezor-kit = "1.4.0"
 piratecash-ethereum = "v0.1.0-pcash.23"
 horizontalsystems-blockchain-fee = "393cc14"
 piratecash-solana = "v1.0.0-pcash.10"
-monero-kit-android = "v0.18.3.4-pcash.17"
+monero-kit-android = "v0.18.3.4-pcash.20"
 netcipher = "2.1.0"
 solanakt = "864ec19"
 piratecash-tron = "v1.0.0-pcash.6"
@@ -232,7 +232,7 @@ stellar-kit = { group = "com.github.piratecash", name = "stellar-kit-android", v
 thorchain-kit = { group = "com.github.piratecash.thorchain-kit-android", name = "thorchainkit", version.ref = "thorchain-kit" }
 trezor-kit = { group = "com.github.piratecash", name = "trezor-kit-android", version.ref = "trezor-kit" }
 solana-kit = { group = "com.github.piratecash", name = "solana-kit-android", version.ref = "piratecash-solana" }
-monero-kit = { group = "com.github.piratecash", name = "monero-kit-android", version.ref = "monero-kit-android" }
+monero-kit = { group = "com.github.piratecash.monero-kit-android", name = "monerokit", version.ref = "monero-kit-android" }
 netcipher = { group = "info.guardianproject.netcipher", name = "netcipher", version.ref = "netcipher" }
 solanakt = { module = "com.github.piratecash:SolanaKT", version.ref = "solanakt" }
 ethereum-kit = { group = "com.github.piratecash", name = "ethereum-kit-android", version.ref = "piratecash-ethereum" }
