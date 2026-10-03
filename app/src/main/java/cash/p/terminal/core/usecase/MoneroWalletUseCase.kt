@@ -8,8 +8,8 @@ import cash.p.terminal.wallet.AccountType
 import com.m2049r.xmrwallet.model.Wallet
 import com.m2049r.xmrwallet.model.WalletManager
 import com.m2049r.xmrwallet.service.MoneroWalletService
-import com.m2049r.xmrwallet.util.Helper
 import com.m2049r.xmrwallet.util.KeyStoreHelper
+import com.piratecash.monero.MoneroWalletFiles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -26,7 +26,7 @@ class MoneroWalletUseCase(
         val walletInnerName = generateMoneroWalletUseCase() ?: return@withContext null
 
         // check if the wallet we want to create already exists
-        val walletFolder: File = Helper.getWalletRoot(appContext)
+        val walletFolder: File = MoneroWalletFiles.root(appContext)
         if (!walletFolder.isDirectory()) {
             Timber.e("Wallet dir " + walletFolder.absolutePath + "is not a directory")
             return@withContext null
@@ -82,7 +82,7 @@ class MoneroWalletUseCase(
         withContext(Dispatchers.IO) {
             val newWalletInnerName = generateMoneroWalletUseCase() ?: return@withContext null
 
-            val walletFolder: File = Helper.getWalletRoot(appContext)
+            val walletFolder: File = MoneroWalletFiles.root(appContext)
             if (!walletFolder.isDirectory()) {
                 Timber.e("Wallet dir " + walletFolder.absolutePath + "is not a directory")
                 return@withContext null
@@ -155,7 +155,7 @@ class MoneroWalletUseCase(
                 walletInnerNameExisting ?: generateMoneroWalletUseCase() ?: return@withContext null
 
             val crazyPass = crazyPassExisting ?: KeyStoreHelper.getCrazyPass(appContext, "")
-            val walletFolder: File = Helper.getWalletRoot(appContext)
+            val walletFolder: File = MoneroWalletFiles.root(appContext)
             val newWalletFile = File(walletFolder, walletInnerName)
             closeOpenedWallet()
             val newWallet = WalletManager.getInstance()

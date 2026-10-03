@@ -53,6 +53,7 @@ import org.koin.test.verify.definition
 import org.koin.test.verify.injectedParameters
 import org.koin.test.verify.verify
 import org.junit.Test
+import java.io.File
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.KVisibility
@@ -76,6 +77,7 @@ class KoinGraphTest : KoinTest {
             listOf(
                 Application::class,
                 Context::class,
+                File::class,
                 HttpClientEngine::class,
                 TimerService::class,
                 XRateService::class,

@@ -202,6 +202,7 @@ import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import cash.p.terminal.wallet.managers.ITransactionHiddenManager
 import cash.p.terminal.wallet.managers.UserManager
 import com.m2049r.xmrwallet.service.MoneroWalletService
+import com.piratecash.monero.MoneroWalletFiles
 import io.horizontalsystems.bitcoincore.core.IConnectionManager
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.CurrencyManager
@@ -383,7 +384,7 @@ val managerModule = module {
     singleOf(::DefaultMoneroDeviceWalletNative) bind MoneroDeviceWalletNative::class
     single { MoneroDeviceWalletFileStore.create(get()) }
     singleOf(::MoneroDeviceWalletProvisioner)
-    singleOf(::MoneroWalletService)
+    single { MoneroWalletService(MoneroWalletFiles.root(get())) }
     singleOf(::SilentCameraManager) bind ISilentPhotoCapture::class
     singleOf(::CurrentDateProvider) bind ICurrentDateProvider::class
     singleOf(::UptimeProvider)

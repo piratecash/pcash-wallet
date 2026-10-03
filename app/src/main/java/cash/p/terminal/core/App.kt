@@ -98,6 +98,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.m2049r.levin.util.NetCipherHelper
 import com.m2049r.levin.util.NetCipherHelper.OnStatusChangedListener
 import com.m2049r.xmrwallet.model.WalletManager
+import com.piratecash.monero.net.MoneroProxy
 import com.reown.android.Core
 import com.reown.android.CoreClient
 import com.reown.android.relay.ConnectionType
@@ -379,17 +380,17 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
         NetCipherHelper.register(object : OnStatusChangedListener {
             override fun connected() {
                 Timber.tag(cipherTag).d("CONNECTED")
-                tryOrNull { WalletManager.getInstance().setProxy(NetCipherHelper.getProxy()) }
+                applyMoneroProxy()
             }
 
             override fun disconnected() {
                 Timber.tag(cipherTag).d("DISCONNECTED")
-                tryOrNull { WalletManager.getInstance().setProxy("") }
+                applyMoneroProxy()
             }
 
             override fun notInstalled() {
                 Timber.tag(cipherTag).d("NOT INSTALLED")
-                tryOrNull { WalletManager.getInstance().setProxy("") }
+                applyMoneroProxy()
             }
 
             override fun notEnabled() {
@@ -398,6 +399,10 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
             }
         })
 
+    }
+
+    private fun applyMoneroProxy() {
+        tryOrNull { WalletManager.getInstance().setProxy(MoneroProxy.current()) }
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader {
