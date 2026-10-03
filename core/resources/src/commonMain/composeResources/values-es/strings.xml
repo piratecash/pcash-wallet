@@ -60,6 +60,13 @@
     <string name="trezor_not_initialized_cta">Guía de configuración</string>
     <string name="trezor_connect_failed">No se pudo conectar con Trezor.</string>
     <string name="Button_Activate">Activar</string>
+    <string name="activation_required_dialog_description">Para recibir %s, debe activar el token. La red Stellar requiere establecer una línea de confianza (trustline) para cada token. Sin ella, su monedero no podrá recibir %s: la transacción será rechazada y los fondos no serán entregados.</string>
+    <string name="activate_you_activate">Usted activa</string>
+    <string name="activate_activating">Activando</string>
+    <string name="activate_already_active_title">Ya está activo</string>
+    <string name="activate_already_active_description">El token ya está activo.</string>
+    <string name="activate_insufficient_balance_title">Saldo insuficiente</string>
+    <string name="activate_insufficient_balance_description">No tiene saldo de XLM suficiente para activar este token.</string>
     <string name="Button_Sign">Firma</string>
     <string name="Button_TryAgain">Inténtalo de nuevo</string>
     <string name="Button_Share">Compartir</string>

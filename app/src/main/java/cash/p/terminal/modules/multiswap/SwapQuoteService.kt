@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cash.p.terminal.core.usecase.FetchSwapQuotesUseCase
+import cash.p.terminal.modules.multiswap.action.ISwapProviderAction
 import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
 import cash.p.terminal.modules.multiswap.providers.SwapProvidersRegistry
 import cash.p.terminal.modules.multiswap.providers.SwapProvidersRepository
@@ -16,6 +17,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.drop
@@ -34,6 +36,7 @@ class SwapQuoteService(
     private val swapProvidersRegistry: SwapProvidersRegistry,
     private val backendSwapProvidersRepository: BackendSwapProvidersRepository,
     private val dispatcherProvider: DispatcherProvider,
+    private val stellarTrustlineActionResolver: StellarTrustlineActionResolver,
 ) {
     private companion object {
         const val DEBOUNCE_INPUT_IN_MSEC = 300L
@@ -66,6 +69,7 @@ class SwapQuoteService(
     private var error by mutableStateOf<Throwable?>(null)
     private var quote: SwapProviderQuote? = null
     private var multiSwapRoute: MultiSwapRoute? = null
+    private var tokenOutAction: ISwapProviderAction? = null
 
     private val _stateFlow = MutableStateFlow(
         State(
@@ -81,6 +85,7 @@ class SwapQuoteService(
             direction = direction,
             requestedAmountOut = null,
             amountInMax = null,
+            tokenOutAction = tokenOutAction,
         )
     )
     val stateFlow = _stateFlow.asStateFlow()
@@ -165,6 +170,7 @@ class SwapQuoteService(
                 direction = direction,
                 requestedAmountOut = amount.takeIf { direction == SwapAmountDirection.Out },
                 amountInMax = quote?.amountInMax,
+                tokenOutAction = tokenOutAction,
             )
         }
     }
@@ -187,6 +193,7 @@ class SwapQuoteService(
             quotes = listOf()
             quote = null
             multiSwapRoute = null
+            tokenOutAction = null
         }
         error = null
 
@@ -272,6 +279,16 @@ class SwapQuoteService(
                         preferredProvider = null
                     }
 
+                    val action = quote?.let { stellarTrustlineActionResolver.resolve(it.provider, tokenOut) }
+                    ensureActive()
+                    if (tokenOut != this@SwapQuoteService.tokenOut ||
+                        amount != this@SwapQuoteService.amount ||
+                        direction != this@SwapQuoteService.direction
+                    ) {
+                        return@launch // the resolver may outlive cancellation, never publish its stale result
+                    }
+                    tokenOutAction = action
+
                     quoting = false
                     emitState()
                 } else {
@@ -279,6 +296,7 @@ class SwapQuoteService(
                     quotes = listOf()
                     quote = null
                     multiSwapRoute = null
+                    tokenOutAction = null
                     emitState()
                 }
             }
@@ -287,6 +305,7 @@ class SwapQuoteService(
             quotes = listOf()
             quote = null
             multiSwapRoute = null
+            tokenOutAction = null
             emitState()
         }
     }
@@ -477,5 +496,6 @@ class SwapQuoteService(
         val direction: SwapAmountDirection,
         val requestedAmountOut: BigDecimal?,
         val amountInMax: BigDecimal?,
+        val tokenOutAction: ISwapProviderAction? = null,
     )
 }

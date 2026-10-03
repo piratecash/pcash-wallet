@@ -22,6 +22,7 @@ import cash.p.terminal.R
 import cash.p.terminal.core.iconPlaceholder
 import cash.p.terminal.modules.confirm.ConfirmTransactionScreen
 import cash.p.terminal.modules.fee.DataFieldFee
+import cash.p.terminal.modules.offline.OfflineOperationBlockedException
 import cash.p.terminal.modules.receive.ActivateTokenError
 import cash.p.terminal.modules.receive.ActivateTokenViewModel
 import cash.p.terminal.navigation.popBackStackSafely
@@ -89,7 +90,7 @@ fun ActivateTokenScreen(
                         buttonEnabled = false
                         HudHelper.showInProcessMessage(
                             view,
-                            R.string.Activate_Activating,
+                            R.string.activate_activating,
                             SnackbarDuration.INDEFINITE
                         )
 
@@ -98,6 +99,9 @@ fun ActivateTokenScreen(
 
                             HudHelper.showSuccessMessage(view, R.string.Hud_Text_Done)
                             ActivateTokenFragment.Result(true)
+                        } catch (e: OfflineOperationBlockedException) {
+                            HudHelper.showErrorMessage(view, e.message.orEmpty())
+                            ActivateTokenFragment.Result(false)
                         } catch (t: Throwable) {
                             HudHelper.showErrorMessage(view, t.javaClass.simpleName)
                             ActivateTokenFragment.Result(false)
@@ -128,7 +132,7 @@ fun ActivateTokenScreen(
                 )
                 HSpacer(width = 16.dp)
                 Column {
-                    subhead2_leah(text = stringResource(R.string.Activate_YouActivate))
+                    subhead2_leah(text = stringResource(R.string.activate_you_activate))
                     VSpacer(height = 1.dp)
                     caption_grey(
                         text = token.badge ?: stringResource(id = R.string.CoinPlatforms_Native)
@@ -159,8 +163,8 @@ fun ActivateTokenScreen(
                 is ActivateTokenError.AlreadyActive -> {
                     TextImportantError(
                         modifier = modifier,
-                        text = stringResource(R.string.Activate_AlreadyActive_Description),
-                        title = stringResource(R.string.Activate_AlreadyActive_Title),
+                        text = stringResource(R.string.activate_already_active_description),
+                        title = stringResource(R.string.activate_already_active_title),
                         icon = R.drawable.ic_attention_20
                     )
                 }
@@ -177,8 +181,20 @@ fun ActivateTokenScreen(
                 is ActivateTokenError.InsufficientBalance -> {
                     TextImportantError(
                         modifier = modifier,
-                        title = stringResource(R.string.Activate_InsufficientBalance_Title),
-                        text = stringResource(R.string.Activate_InsufficientBalance_Description),
+                        title = stringResource(R.string.activate_insufficient_balance_title),
+                        text = stringResource(R.string.activate_insufficient_balance_description),
+                        icon = R.drawable.ic_attention_20
+                    )
+                }
+
+                is ActivateTokenError.Offline -> {
+                    TextImportantError(
+                        modifier = modifier,
+                        text = stringResource(
+                            R.string.offline_mode_operation_blocked,
+                            token.blockchain.name
+                        ),
+                        title = null,
                         icon = R.drawable.ic_attention_20
                     )
                 }

@@ -59,7 +59,14 @@
     <string name="trezor_not_initialized_description">Bu Trezor henüz kurulmadı. Kurulumu cihazda tamamlayın ve yeniden bağlayın.</string>
     <string name="trezor_not_initialized_cta">Kurulum kılavuzu</string>
     <string name="trezor_connect_failed">Trezor\'a bağlanılamadı.</string>
-    <string name="Button_Activate">Activate</string>
+    <string name="Button_Activate">Etkinleştir</string>
+    <string name="activation_required_dialog_description">%s almak için tokeni etkinleştirmeniz gerekir. Stellar ağı her token için bir güven hattı (trustline) kurulmasını gerektirir. Bu olmadan cüzdanınız %s alamaz — işlem reddedilir ve fonlar teslim edilmez.</string>
+    <string name="activate_you_activate">Etkinleştirdiğiniz</string>
+    <string name="activate_activating">Etkinleştiriliyor</string>
+    <string name="activate_already_active_title">Zaten etkin</string>
+    <string name="activate_already_active_description">Token zaten etkin.</string>
+    <string name="activate_insufficient_balance_title">Yetersiz bakiye</string>
+    <string name="activate_insufficient_balance_description">Bu tokeni etkinleştirmek için yeterli XLM bakiyeniz yok.</string>
     <string name="Button_Sign">kaydol</string>
     <string name="Button_TryAgain">Tekrar deneyin</string>
     <string name="Button_Share">Paylaş</string>
