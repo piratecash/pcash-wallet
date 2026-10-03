@@ -210,6 +210,13 @@ class AdapterFactory(
 
     private suspend fun getSplAdapter(wallet: Wallet, address: String): IAdapter? {
         val solanaKitWrapper = solanaKitManager.getSolanaKitWrapper(wallet.account)
+        try {
+            solanaKitWrapper.solanaKit.addTokenAccount(address, wallet.decimal)
+        } catch (e: Throwable) {
+            // No adapter will own the reference taken above, so nothing else would release it.
+            withContext(NonCancellable) { solanaKitManager.unlink(wallet.account) }
+            throw e
+        }
 
         return SplAdapter(solanaKitWrapper, wallet, address)
     }

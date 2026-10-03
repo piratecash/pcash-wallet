@@ -32,6 +32,13 @@ internal object SolanaTransactionConverterTestFixture {
         decimals = 9
     )
 
+    val usdcToken = Token(
+        coin = Coin(uid = "usd-coin", name = "USD Coin", code = "USDC"),
+        blockchain = solanaBlockchain,
+        type = TokenType.Spl("USDC_MINT"),
+        decimals = 6
+    )
+
     val source = TransactionSource(
         blockchain = solanaBlockchain,
         account = mockk<Account>(relaxed = true),

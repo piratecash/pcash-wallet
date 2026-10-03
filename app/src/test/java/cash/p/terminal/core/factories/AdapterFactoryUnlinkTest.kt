@@ -1,9 +1,11 @@
 package cash.p.terminal.core.factories
 
+import cash.p.terminal.core.adapters.SplAdapter
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.EvmKitManager
 import cash.p.terminal.core.managers.MoneroKitManager
 import cash.p.terminal.core.managers.SolanaKitManager
+import cash.p.terminal.core.managers.SolanaKitWrapper
 import cash.p.terminal.core.managers.StellarKitManager
 import cash.p.terminal.core.managers.ThorchainKitManager
 import cash.p.terminal.core.managers.ThorchainKitManagers
@@ -12,15 +14,23 @@ import cash.p.terminal.core.managers.TronKitManager
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
+import cash.p.terminal.wallet.entities.Coin
+import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.transaction.TransactionSource
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.solanakit.SolanaKit
+import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AdapterFactoryUnlinkTest {
@@ -32,6 +42,8 @@ class AdapterFactoryUnlinkTest {
         origin = AccountOrigin.Created,
         level = 0,
     )
+
+    private val solanaAccount = account.copy(type = AccountType.SolanaAddress(SOLANA_ADDRESS))
 
     private val evmBlockchainManager = mockk<EvmBlockchainManager>()
     private val solanaKitManager = mockk<SolanaKitManager>(relaxed = true)
@@ -115,6 +127,38 @@ class AdapterFactoryUnlinkTest {
     }
 
     @Test
+    fun getAdapterOrNull_splWallet_registersTokenAccountBeforeBuildingAdapter() = runTest {
+        val solanaKit = mockk<SolanaKit>(relaxed = true)
+        // A mocked wrapper turns the adapter's own reads of it into verifiable calls.
+        val wrapper = mockk<SolanaKitWrapper> {
+            every { this@mockk.solanaKit } returns solanaKit
+            every { signer } returns null
+        }
+        coEvery { solanaKitManager.getSolanaKitWrapper(any()) } returns wrapper
+
+        val adapter = factory.getAdapterOrNull(splWallet())
+
+        assertTrue(adapter is SplAdapter)
+        coVerifyOrder {
+            solanaKit.addTokenAccount(MINT_ADDRESS, SPL_DECIMALS)
+            wrapper.signer
+        }
+    }
+
+    @Test
+    fun getAdapterOrNull_splRegistrationCancelled_releasesKitReference() = runTest {
+        val solanaKit = mockk<SolanaKit> {
+            coEvery { addTokenAccount(any(), any()) } throws CancellationException()
+        }
+        val wrapper = mockk<SolanaKitWrapper> { every { this@mockk.solanaKit } returns solanaKit }
+        coEvery { solanaKitManager.getSolanaKitWrapper(any()) } returns wrapper
+
+        factory.getAdapterOrNull(splWallet())
+
+        coVerify(exactly = 1) { solanaKitManager.unlink(solanaAccount) }
+    }
+
+    @Test
     fun unlinkAdapter_thorchainFamily_unlinksItsNetworkKitManager() = runTest {
         factory.unlinkAdapter(transactionSource(BlockchainType.Thorchain))
         coVerify(exactly = 1) { thorchainKitManager.unlink(account) }
@@ -137,4 +181,25 @@ class AdapterFactoryUnlinkTest {
         account = account,
         meta = null,
     )
+
+    private fun splWallet(): Wallet {
+        val splToken = Token(
+            coin = Coin("Tether", "USDT", "tether"),
+            blockchain = Blockchain(BlockchainType.Solana, "Solana", null),
+            type = TokenType.Spl(MINT_ADDRESS),
+            decimals = SPL_DECIMALS,
+        )
+        return mockk {
+            every { token } returns splToken
+            every { this@mockk.account } returns solanaAccount
+            every { decimal } returns SPL_DECIMALS
+            every { coin } returns splToken.coin
+        }
+    }
+
+    private companion object {
+        const val MINT_ADDRESS = "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"
+        const val SOLANA_ADDRESS = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+        const val SPL_DECIMALS = 6
+    }
 }

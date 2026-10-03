@@ -2,7 +2,6 @@ package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.adapters.Eip20Adapter
 import cash.p.terminal.core.adapters.EvmAdapter
-import cash.p.terminal.core.adapters.SolanaAdapter
 import cash.p.terminal.core.adapters.TronAdapter
 import cash.p.terminal.core.storage.MoneroFileDao
 import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
@@ -57,6 +56,7 @@ class AccountCleanerTest {
     private lateinit var bitcoinKitDatabaseManager: BitcoinKitDatabaseManager
     private lateinit var thorchainKitManagers: ThorchainKitManagers
     private val deletionPreflight = mockk<AccountDeletionPreflight>(relaxed = true)
+    private val solanaKitManager = mockk<SolanaKitManager>(relaxed = true)
 
     @Before
     fun setUp() {
@@ -90,6 +90,7 @@ class AccountCleanerTest {
             pinDbStorage,
             accountStorageCleaner,
             bitcoinKitDatabaseManager,
+            solanaKitManager,
             thorchainKitManagers,
             deletionPreflight,
         )
@@ -365,13 +366,11 @@ class AccountCleanerTest {
         mockkObject(
             EvmAdapter,
             Eip20Adapter,
-            SolanaAdapter,
             TronAdapter
         )
 
         every { EvmAdapter.clear(any()) } returns Unit
         every { Eip20Adapter.clear(any()) } returns Unit
-        every { SolanaAdapter.clear(any()) } returns Unit
         every { TronAdapter.clear(any()) } returns Unit
     }
 
@@ -379,7 +378,7 @@ class AccountCleanerTest {
         coVerify(exactly = 1) { bitcoinKitDatabaseManager.clear(accountId) }
         verify(exactly = 1) { EvmAdapter.clear(accountId) }
         verify(exactly = 1) { Eip20Adapter.clear(accountId) }
-        verify(exactly = 1) { SolanaAdapter.clear(accountId) }
+        coVerify(exactly = 1) { solanaKitManager.clear(accountId) }
         verify(exactly = 1) { TronAdapter.clear(accountId) }
     }
 
