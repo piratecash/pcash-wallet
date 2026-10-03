@@ -14,6 +14,7 @@ import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.transaction.TransactionSource
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.solanakit.models.FullTransaction
+import io.horizontalsystems.solanakit.models.TokenTransfer
 import java.math.BigDecimal
 
 class SolanaTransactionConverter(
@@ -62,20 +63,18 @@ class SolanaTransactionConverter(
             val query = TokenQuery(BlockchainType.Solana, TokenType.Spl(tokenTransfer.mintAddress))
             val token = coinManager.getToken(query)
 
+            val amount = tokenTransfer.signedAmount
             val transactionValue = when {
-                token != null -> TransactionValue.CoinValue(
-                    token,
-                    tokenTransfer.amount.movePointLeft(token.decimals)
-                )
+                token != null -> TransactionValue.CoinValue(token, amount.movePointLeft(token.decimals))
 
                 mintAccount.isNft -> TransactionValue.NftValue(
                     NftUid.Solana(mintAccount.address),
-                    tokenTransfer.amount,
+                    amount,
                     mintAccount.name,
                     mintAccount.symbol
                 )
 
-                else -> TransactionValue.RawValue(value = tokenTransfer.amount.toBigInteger())
+                else -> TransactionValue.RawValue(value = amount.toBigInteger())
             }
 
             if (tokenTransfer.incoming) {
@@ -147,5 +146,9 @@ class SolanaTransactionConverter(
         }
         return SpamManager.isSpam(events)
     }
+
+    // Synced transfers store a magnitude, local sends a negative amount: normalise by direction.
+    private val TokenTransfer.signedAmount: BigDecimal
+        get() = if (incoming) amount.abs() else amount.abs().negate()
 
 }

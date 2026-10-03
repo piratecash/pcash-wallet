@@ -94,6 +94,9 @@ class SolanaTransactionsAdapter(
         else -> emptyFlow()
     }
 
+    override fun getTransactionsReloadSignalFlow(): Flow<Unit> =
+        kit.allTransactionsFlow(null).map { }
+
     private fun getTransactionRecordsFlowable(
         token: Token?, transactionType: FilterTransactionType
     ): Flowable<List<TransactionRecord>> {
