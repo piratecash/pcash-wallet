@@ -35,6 +35,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.job
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -82,8 +84,7 @@ class ResetUseCaseTest {
 
         assertEquals(emptyList(), favorites.getAll())
         assertEquals(emptyList(), favorites.manualSortingOrder.first())
-        favoritesScopes.forEach { it.cancel() }
-        favoritesScopes.clear()
+        releaseFavoriteStores()
         assertEquals(emptyList(), favoritesManager(file).getAll())
     }
 
@@ -125,11 +126,16 @@ class ResetUseCaseTest {
         reset(favorites)()
         favorites.add("bitcoin")
 
-        favoritesScopes.forEach { it.cancel() }
-        favoritesScopes.clear()
+        releaseFavoriteStores()
         val restarted = favoritesManager(file, listOf(legacyMigration()))
         assertEquals(listOf("bitcoin"), restarted.getAll())
         assertEquals(listOf("bitcoin"), restarted.manualSortingOrder.first())
+    }
+
+    // DataStore frees its file only once the owning scope completes; reopening before that throws.
+    private suspend fun releaseFavoriteStores() {
+        favoritesScopes.forEach { it.coroutineContext.job.cancelAndJoin() }
+        favoritesScopes.clear()
     }
 
     private fun legacyMigration() =

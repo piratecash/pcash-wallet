@@ -10,9 +10,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runCurrent
@@ -148,8 +150,9 @@ class MarketFavoritesManagerTest {
 
     private fun favoritesFile() = File(temporaryFolder.root, "market_favorites.preferences_pb")
 
-    private fun closeScopes() {
-        scopes.forEach { it.cancel() }
+    // DataStore frees its file only once the owning scope completes; reopening before that throws.
+    private suspend fun closeScopes() {
+        scopes.forEach { it.coroutineContext.job.cancelAndJoin() }
         scopes.clear()
     }
 
