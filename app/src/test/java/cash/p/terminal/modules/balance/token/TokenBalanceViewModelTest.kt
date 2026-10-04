@@ -171,6 +171,7 @@ class TokenBalanceViewModelTest : KoinTest {
     private lateinit var recordsLoadFailedFlow: MutableStateFlow<Boolean>
     private lateinit var searchScanStateFlow: MutableStateFlow<SearchScanState>
     private lateinit var nativeBalanceUpdatedFlow: MutableSharedFlow<Unit>
+    private val accountsFlow = MutableSharedFlow<List<Account>>(extraBufferCapacity = 1)
     private var nativeBalanceData = BalanceData(available = BigDecimal.ZERO)
 
     private lateinit var testWallet: Wallet
@@ -219,6 +220,8 @@ class TokenBalanceViewModelTest : KoinTest {
         nativeBalanceData = BalanceData(available = BigDecimal.ZERO)
 
         testWallet = createTestWallet()
+        every { accountManager.accountsFlow } returns accountsFlow
+        every { accountManager.account(any()) } returns null
 
         every { transactionHiddenManager.transactionHiddenFlow } returns transactionHiddenFlow
         every { transactionHiddenManager.showAllTransactions(any()) } returns Unit
@@ -530,7 +533,7 @@ class TokenBalanceViewModelTest : KoinTest {
     }
 
     @Test
-    fun balanceItemFlowEmits_nonBackedUpAccount_hidesSwap() = runTest(dispatcher) {
+    fun balanceItemFlowEmits_nonBackedUpAccount_showsSwapAndRequiresBackup() = runTest(dispatcher) {
         every { CoreApp.instance.isSwapEnabled } returns true
         testWallet = createTestWallet(account = createAccount(hasAnyBackup = false))
 
@@ -544,7 +547,53 @@ class TokenBalanceViewModelTest : KoinTest {
         balanceItemFlow.value = balanceItem
         advanceUntilIdle()
 
-        assertEquals(false, viewModel.uiState.balanceViewItem?.swapVisible)
+        assertEquals(true, viewModel.uiState.balanceViewItem?.swapVisible)
+        assertEquals(true, viewModel.uiState.backupRequired)
+    }
+
+    @Test
+    fun balanceItemFlowEmits_backedUpAccount_backupNotRequired() = runTest(dispatcher) {
+        every { CoreApp.instance.isSwapEnabled } returns true
+        testWallet = createTestWallet(account = createAccount(hasAnyBackup = true))
+
+        val balanceItem = createBalanceItem(wallet = testWallet)
+        every { balanceService.balanceItem } returns balanceItem
+        every { balanceViewItemFactory.viewItem(any(), any(), any(), any(), any(), any(), any()) } answers {
+            createBalanceViewItem(swapVisible = args[5] as Boolean)
+        }
+
+        val viewModel = createViewModel()
+        balanceItemFlow.value = balanceItem
+        advanceUntilIdle()
+
+        assertEquals(false, viewModel.uiState.backupRequired)
+    }
+
+    @Test
+    fun accountsFlowEmits_accountBackedUpWhileScreenOpen_requiresBackupClearsAndSwapShown() = runTest(dispatcher) {
+        every { CoreApp.instance.isSwapEnabled } returns true
+        val unbackedAccount = createAccount(hasAnyBackup = false)
+        val backedUpAccount = createAccount(hasAnyBackup = true)
+        testWallet = createTestWallet(account = unbackedAccount)
+        every { accountManager.account(any()) } returns unbackedAccount
+
+        val balanceItem = createBalanceItem(wallet = testWallet)
+        every { balanceService.balanceItem } returns balanceItem
+        every { balanceViewItemFactory.viewItem(any(), any(), any(), any(), any(), any(), any()) } answers {
+            createBalanceViewItem(swapVisible = args[5] as Boolean)
+        }
+
+        val viewModel = createViewModel()
+        balanceItemFlow.value = balanceItem
+        advanceUntilIdle()
+        assertEquals(true, viewModel.uiState.backupRequired)
+
+        every { accountManager.account(any()) } returns backedUpAccount
+        accountsFlow.tryEmit(listOf(backedUpAccount))
+        advanceUntilIdle()
+
+        assertEquals(false, viewModel.uiState.backupRequired)
+        assertEquals(true, viewModel.uiState.balanceViewItem?.swapVisible)
     }
 
     @Test

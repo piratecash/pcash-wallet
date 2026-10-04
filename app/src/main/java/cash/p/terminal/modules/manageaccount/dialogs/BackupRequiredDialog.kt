@@ -56,6 +56,10 @@ class BackupRequiredDialog : BaseComposableBottomSheetFragment() {
     data class Input(val account: Account, val text: String) : Parcelable
 }
 
+fun NavController.showBackupRequiredDialog(account: Account, text: String) {
+    slideFromBottom(R.id.backupRequiredDialog, BackupRequiredDialog.Input(account, text))
+}
+
 @Composable
 fun BackupRequiredScreen(navController: NavController, account: Account, text: String) {
     ComposeAppTheme {

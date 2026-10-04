@@ -161,6 +161,7 @@ class TokenBalanceModule {
         val moneroKeyImageSyncInProgress: Boolean = false,
         @StringRes val moneroKeyImageSyncError: Int? = null,
         val moneroFullWalletRecoveryAvailable: Boolean = false,
+        val backupRequired: Boolean = false,
     ) {
         val moneroKeyImageSyncRequired: Boolean
             get() =

@@ -36,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.annotation.StringRes
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.navigation.NavController
 import cash.p.terminal.MainGraphDirections
@@ -47,9 +48,9 @@ import cash.p.terminal.modules.balance.BalanceUiState
 import cash.p.terminal.modules.balance.BalanceViewItem2
 import cash.p.terminal.modules.balance.BalanceViewModel
 import cash.p.terminal.modules.balance.HeaderNote
-import cash.p.terminal.modules.balance.ReceiveAllowedState
+import cash.p.terminal.modules.balance.BackupRequirementState
 import cash.p.terminal.modules.balance.TotalUIState
-import cash.p.terminal.modules.manageaccount.dialogs.BackupRequiredDialog
+import cash.p.terminal.modules.manageaccount.dialogs.showBackupRequiredDialog
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.multiswap.exchanges.MultiSwapExchangesFragment
 import cash.p.terminal.modules.rateapp.RateAppViewModel
@@ -68,6 +69,7 @@ import cash.p.terminal.ui_compose.Select
 import cash.p.terminal.ui_compose.components.TextImportantError
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.strings.helpers.Translator
 
 @Composable
 fun NoteWarning(
@@ -203,30 +205,16 @@ fun BalanceItems(
                                 BalanceActionButton(
                                     icon = R.drawable.ic_arrow_down_left_24,
                                     label = stringResource(R.string.Balance_Receive),
+                                    dimmed = viewModel.isBackupRequired,
                                     onClick = {
-                                        when (val receiveAllowedState =
-                                            viewModel.getReceiveAllowedState()) {
-                                            ReceiveAllowedState.Allowed -> {
-                                                viewModel.getSingleWalletForReceive()
-                                                navController.slideFromRight(
-                                                    R.id.receiveChooseCoinFragment
-                                                )
-                                            }
-
-                                            is ReceiveAllowedState.BackupRequired -> {
-                                                val account = receiveAllowedState.account
-                                                val text =
-                                                    cash.p.terminal.strings.helpers.Translator.getString(
-                                                        R.string.Balance_Receive_BackupRequired_Description,
-                                                        account.name
-                                                    )
-                                                navController.slideFromBottom(
-                                                    R.id.backupRequiredDialog,
-                                                    BackupRequiredDialog.Input(account, text)
-                                                )
-                                            }
-
-                                            null -> Unit
+                                        navController.openIfBackedUp(
+                                            viewModel.getBackupRequirementState(),
+                                            R.string.Balance_Receive_BackupRequired_Description,
+                                        ) {
+                                            viewModel.getSingleWalletForReceive()
+                                            navController.slideFromRight(
+                                                R.id.receiveChooseCoinFragment
+                                            )
                                         }
                                     },
                                 )
@@ -234,8 +222,14 @@ fun BalanceItems(
                                     BalanceActionButton(
                                         icon = R.drawable.ic_swap_24,
                                         label = stringResource(R.string.Swap),
+                                        dimmed = viewModel.isBackupRequired,
                                         onClick = {
-                                            navController.slideFromRight(R.id.multiswap)
+                                            navController.openIfBackedUp(
+                                                viewModel.getBackupRequirementState(),
+                                                R.string.balance_swap_backup_required_description,
+                                            ) {
+                                                navController.slideFromRight(R.id.multiswap)
+                                            }
                                         },
                                     )
                                 }
@@ -418,6 +412,22 @@ fun BalanceItems(
             )
         )
         viewModel.onOfflineBroadcastOpened()
+    }
+}
+
+private fun NavController.openIfBackedUp(
+    state: BackupRequirementState?,
+    @StringRes backupText: Int,
+    open: () -> Unit,
+) {
+    when (state) {
+        BackupRequirementState.Allowed -> open()
+        is BackupRequirementState.BackupRequired -> showBackupRequiredDialog(
+            state.account,
+            Translator.getString(backupText, state.account.name)
+        )
+
+        null -> Unit
     }
 }
 

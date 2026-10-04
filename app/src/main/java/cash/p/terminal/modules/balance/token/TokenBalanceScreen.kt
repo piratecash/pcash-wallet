@@ -84,7 +84,7 @@ import cash.p.terminal.modules.balance.SyncingProgress
 import cash.p.terminal.modules.balance.ui.FlipHiddenBalanceInfoHost
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusButton
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
-import cash.p.terminal.modules.manageaccount.dialogs.BackupRequiredDialog
+import cash.p.terminal.modules.manageaccount.dialogs.showBackupRequiredDialog
 import cash.p.terminal.modules.offline.OfflineBlockedBottomSheet
 import cash.p.terminal.modules.offline.OperationAvailability
 import cash.p.terminal.modules.receive.ReceiveFragment
@@ -148,6 +148,7 @@ import cash.p.terminal.ui_compose.components.subhead2
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.subhead2_brand
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
 import cash.p.terminal.wallet.balance.DeemedValue
@@ -250,6 +251,10 @@ fun TokenBalanceScreen(
             }
         },
         onReceiveClick = { onReceiveClicked(viewModel, navController) },
+        onSwapClick = swapClick@{
+            val token = viewModel.uiState.balanceViewItem?.wallet?.token ?: return@swapClick
+            onSwapClicked(viewModel, navController, token)
+        },
         onShieldClick = viewModel::proposeShielding,
         onSyncErrorClick = { onSyncErrorClicked(it, viewModel, navController) },
         onStackingClicked = onStackingClicked,
@@ -297,6 +302,7 @@ private fun TokenBalanceScreenContent(
     onDismissNetworkFeeWarning: () -> Unit,
     onSendClick: () -> Unit,
     onReceiveClick: () -> Unit,
+    onSwapClick: () -> Unit,
     onShieldClick: () -> Unit,
     onSyncErrorClick: (BalanceViewItem) -> Unit,
     onStackingClicked: () -> Unit,
@@ -503,7 +509,6 @@ private fun TokenBalanceScreenContent(
                         uiState.balanceViewItem?.let {
                             TokenBalanceHeader(
                                 balanceViewItem = it,
-                                navController = navController,
                                 uiState = uiState,
                                 secondaryValue = secondaryValue,
                                 onStackingClicked = onStackingClicked,
@@ -511,6 +516,7 @@ private fun TokenBalanceScreenContent(
                                 onToggleBalanceVisibility = onToggleBalanceVisibility,
                                 onSendClick = onSendClick,
                                 onReceiveClick = onReceiveClick,
+                                onSwapClick = onSwapClick,
                                 onShieldClick = onShieldClick,
                                 onSyncErrorClick = onSyncErrorClick,
                                 onDismissNetworkFeeWarning = onDismissNetworkFeeWarning,
@@ -826,7 +832,6 @@ private fun NavController.openSend(wallet: Wallet) {
 @Composable
 private fun TokenBalanceHeader(
     balanceViewItem: BalanceViewItem,
-    navController: NavController,
     uiState: TokenBalanceModule.TokenBalanceUiState,
     secondaryValue: DeemedValue<String>,
     onStackingClicked: () -> Unit,
@@ -834,6 +839,7 @@ private fun TokenBalanceHeader(
     onToggleBalanceVisibility: () -> Unit,
     onSendClick: () -> Unit,
     onReceiveClick: () -> Unit,
+    onSwapClick: () -> Unit,
     onShieldClick: () -> Unit,
     onSyncErrorClick: (BalanceViewItem) -> Unit,
     onDismissNetworkFeeWarning: () -> Unit,
@@ -1036,13 +1042,14 @@ private fun TokenBalanceHeader(
         VSpacer(height = 12.dp)
         ButtonsRow(
             viewItem = balanceViewItem,
-            navController = navController,
             sendEnabled = uiState.sendEntryEnabled,
             onSendClick = onSendClick,
             onReceiveClick = onReceiveClick,
             onShieldClick = onShieldClick,
             onStackingClicked = onStackingClicked,
-            isShowShieldFunds = isShowShieldFunds
+            isShowShieldFunds = isShowShieldFunds,
+            backupRequired = uiState.backupRequired,
+            onSwapClick = onSwapClick,
         )
         uiState.zcashMigrationRequiredAmount?.let { amount ->
             ZcashMigrationRequiredSection(
@@ -1390,10 +1397,24 @@ private fun onReceiveClicked(
             e.account.name,
             e.coinTitle
         )
-        navController.slideFromBottom(
-            R.id.backupRequiredDialog,
-            BackupRequiredDialog.Input(e.account, text)
+        navController.showBackupRequiredDialog(e.account, text)
+    }
+}
+
+private fun onSwapClicked(
+    viewModel: TokenBalanceViewModel,
+    navController: NavController,
+    token: Token,
+) {
+    val backupRequiredAccount = viewModel.backupRequiredAccount()
+    if (backupRequiredAccount != null) {
+        val text = Translator.getString(
+            R.string.balance_swap_backup_required_description,
+            backupRequiredAccount.name
         )
+        navController.showBackupRequiredDialog(backupRequiredAccount, text)
+    } else {
+        navController.slideFromRight(R.id.multiswap, SwapParams.TOKEN_IN to token)
     }
 }
 
@@ -1537,13 +1558,14 @@ private fun MoneroSendPreparationBottomSheetPreview() {
 @Composable
 private fun ButtonsRow(
     viewItem: BalanceViewItem,
-    navController: NavController,
     sendEnabled: Boolean,
     onSendClick: () -> Unit,
     onReceiveClick: () -> Unit,
     onShieldClick: () -> Unit,
     onStackingClicked: () -> Unit,
-    isShowShieldFunds: Boolean
+    isShowShieldFunds: Boolean,
+    backupRequired: Boolean,
+    onSwapClick: () -> Unit,
 ) {
     var pendingAction by remember { mutableStateOf<(() -> Unit)?>(null) }
     val onOperationClick = { availability: OperationAvailability, action: () -> Unit ->
@@ -1580,21 +1602,22 @@ private fun ButtonsRow(
                 BalanceActionButton(
                     icon = R.drawable.ic_arrow_down_left_24,
                     label = stringResource(R.string.Balance_Receive),
+                    dimmed = backupRequired,
                     onClick = onReceiveClick,
                 )
                 if (viewItem.swapVisible) {
                     BalanceActionButton(
                         icon = R.drawable.ic_swap_24,
                         label = stringResource(R.string.Swap),
+                        dimmed = backupRequired,
                         onClick = {
-                            onOperationClick(viewItem.swapAvailability) {
-                                navController.slideFromRight(
-                                    R.id.multiswap,
-                                    SwapParams.TOKEN_IN to viewItem.wallet.token
-                                )
+                            if (backupRequired) {
+                                onSwapClick()
+                            } else {
+                                onOperationClick(viewItem.swapAvailability) { onSwapClick() }
                             }
                         },
-                        enabled = viewItem.swapAvailability.clickable,
+                        enabled = backupRequired || viewItem.swapAvailability.clickable,
                     )
                 }
                 if (viewItem.wallet.isStakingWallet()) {
@@ -1721,6 +1744,7 @@ private fun PreviewTokenBalanceScreenContent(
             onDismissNetworkFeeWarning = {},
             onSendClick = {},
             onReceiveClick = {},
+            onSwapClick = {},
             onShieldClick = {},
             onSyncErrorClick = {},
             onStackingClicked = {},

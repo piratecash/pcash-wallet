@@ -103,6 +103,9 @@ fun Account.isBackedUpOrNotRequired(): Boolean = hasAnyBackup || !supportsBackup
 
 fun Account.canSwap(): Boolean = !isWatchAccount && isBackedUpOrNotRequired()
 
+fun Account.requiresBackupForActions(): Boolean =
+    !isWatchAccount && type !is AccountType.MnemonicMonero && !isBackedUpOrNotRequired()
+
 fun Account.eligibleForPremium(): Boolean =
     premiumEligibility() == PremiumAccountEligibility.ELIGIBLE
 

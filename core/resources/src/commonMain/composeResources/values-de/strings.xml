@@ -1259,6 +1259,7 @@
     <string name="ManageAccount_WatchAddresses">Watch-Adresse</string>
     <string name="ManageAccount_DeleteWarning">Möchten Sie die Beobachtung dieser Wallet-Adresse beenden?</string>
     <string name="Balance_Receive_BackupRequired_Description">Sie müssen %1$s sichern</string>
+    <string name="balance_swap_backup_required_description">Tauschen ist verfügbar, sobald Sie %1$s gesichert haben</string>
     <!--Network Settings-->
     <string name="NetworkSettings_SwithesAutomatically">wechselt automatisch</string>
     <!-- Show Key -->

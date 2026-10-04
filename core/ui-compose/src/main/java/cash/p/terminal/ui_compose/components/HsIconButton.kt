@@ -128,9 +128,11 @@ fun BalanceActionButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     iconRotation: Float = 0f,
+    dimmed: Boolean = false,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val shape = RoundedCornerShape(12.dp)
+    val highlighted = enabled && !dimmed
     Column(
         modifier = modifier
             .width(46.dp)
@@ -158,13 +160,13 @@ fun BalanceActionButton(
                     .rotate(iconRotation),
                 painter = painterResource(icon),
                 contentDescription = null,
-                tint = if (enabled) ComposeAppTheme.colors.brandDefault else ComposeAppTheme.colors.iconDisabled,
+                tint = if (highlighted) ComposeAppTheme.colors.brandDefault else ComposeAppTheme.colors.iconDisabled,
             )
         }
         Spacer(Modifier.height(7.dp))
         Caption(
             text = label,
-            color = if (enabled) ComposeAppTheme.colors.textSecondary else ComposeAppTheme.colors.textDisabled,
+            color = if (highlighted) ComposeAppTheme.colors.textSecondary else ComposeAppTheme.colors.textDisabled,
             modifier = Modifier.wrapContentWidth(unbounded = true),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
