@@ -79,8 +79,13 @@ class AccountCapabilitiesTest {
     }
 
     @Test
-    fun requiresBackupForActions_notBackedUpMonero_false() {
-        assertFalse(accountOf(moneroMnemonicType()).requiresBackupForActions())
+    fun requiresBackupForActions_notBackedUpMonero_true() {
+        assertTrue(accountOf(moneroMnemonicType()).requiresBackupForActions())
+    }
+
+    @Test
+    fun requiresBackupForActions_backedUpMonero_false() {
+        assertFalse(accountOf(moneroMnemonicType(), isBackedUp = true).requiresBackupForActions())
     }
 
     @Test

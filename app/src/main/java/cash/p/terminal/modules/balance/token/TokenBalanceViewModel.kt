@@ -80,6 +80,7 @@ import cash.p.terminal.wallet.balance.DeemedValue
 import cash.p.terminal.wallet.canSwap
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.isBackedUpOrNotRequired
 import cash.p.terminal.wallet.isCosanta
@@ -435,7 +436,9 @@ class TokenBalanceViewModel(
 
     private fun isSwappable() =
         App.instance.isSwapEnabled &&
-                currentAccount().let { it.canSwap() || it.requiresBackupForActions() }
+                currentAccount().let {
+                    it.canSwap() || (it.requiresBackupForActions() && it.type !is AccountType.MnemonicMonero)
+                }
 
     fun backupRequiredAccount(): Account? =
         currentAccount().takeIf { it.requiresBackupForActions() }

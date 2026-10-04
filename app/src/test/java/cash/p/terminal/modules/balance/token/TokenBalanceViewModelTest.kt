@@ -552,6 +552,31 @@ class TokenBalanceViewModelTest : KoinTest {
     }
 
     @Test
+    fun balanceItemFlowEmits_nonBackedUpMoneroAccount_hidesSwapAndRequiresBackup() = runTest(dispatcher) {
+        every { CoreApp.instance.isSwapEnabled } returns true
+        val moneroType = AccountType.MnemonicMonero(
+            words = List(25) { "word$it" },
+            password = "",
+            height = 0,
+            walletInnerName = "wallet"
+        )
+        testWallet = createTestWallet(account = createAccount(hasAnyBackup = false, type = moneroType))
+
+        val balanceItem = createBalanceItem(wallet = testWallet)
+        every { balanceService.balanceItem } returns balanceItem
+        every { balanceViewItemFactory.viewItem(any(), any(), any(), any(), any(), any(), any()) } answers {
+            createBalanceViewItem(swapVisible = args[5] as Boolean)
+        }
+
+        val viewModel = createViewModel()
+        balanceItemFlow.value = balanceItem
+        advanceUntilIdle()
+
+        assertEquals(false, viewModel.uiState.balanceViewItem?.swapVisible)
+        assertEquals(true, viewModel.uiState.backupRequired)
+    }
+
+    @Test
     fun balanceItemFlowEmits_backedUpAccount_backupNotRequired() = runTest(dispatcher) {
         every { CoreApp.instance.isSwapEnabled } returns true
         testWallet = createTestWallet(account = createAccount(hasAnyBackup = true))
@@ -2131,10 +2156,14 @@ class TokenBalanceViewModelTest : KoinTest {
         isWatchAccount: Boolean = false,
         supportsBackup: Boolean = true,
         hasAnyBackup: Boolean = true,
+        type: AccountType? = null,
     ) = mockk<Account>(relaxed = true) {
         every { this@mockk.isWatchAccount } returns isWatchAccount
         every { this@mockk.supportsBackup } returns supportsBackup
         every { this@mockk.hasAnyBackup } returns hasAnyBackup
+        if (type != null) {
+            every { this@mockk.type } returns type
+        }
     }
 
     private fun createTransactionItem(uid: String): TransactionItem {
