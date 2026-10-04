@@ -2,12 +2,12 @@ package cash.p.terminal.modules.market.category
 
 import cash.p.terminal.core.imageUrl
 import cash.p.terminal.core.managers.LanguageManager
-import cash.p.terminal.core.managers.MarketFavoritesManager
 import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.modules.market.MarketItem
 import cash.p.terminal.modules.market.SortingField
 import cash.p.terminal.modules.market.TopMarket
 import io.horizontalsystems.core.CurrencyManager
+import cash.p.terminal.wallet.favorites.MarketFavoritesManager
 import cash.p.terminal.wallet.models.CoinCategory
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.coroutines.CoroutineScope
@@ -15,7 +15,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx2.asFlow
 import kotlinx.coroutines.rx2.await
 
 class MarketCategoryService(
@@ -74,15 +73,15 @@ class MarketCategoryService(
         }
     }
 
-    private fun syncItems() {
-        val favorites = favoritesManager.getAll().map { it.coinUid }
+    private suspend fun syncItems() {
+        val favorites = favoritesManager.getAll()
         val items = marketItems.map { MarketItemWrapper(it, favorites.contains(it.fullCoin.coin.uid)) }
         stateObservable.onNext(DataState.Success(items))
     }
 
     fun start() {
         coroutineScope.launch {
-            favoritesManager.dataUpdatedAsync.asFlow().collect {
+            favoritesManager.dataUpdatedFlow.collect {
                 syncItems()
             }
         }
@@ -99,10 +98,10 @@ class MarketCategoryService(
     }
 
     fun addFavorite(coinUid: String) {
-        favoritesManager.add(coinUid)
+        coroutineScope.launch { favoritesManager.add(coinUid) }
     }
 
     fun removeFavorite(coinUid: String) {
-        favoritesManager.remove(coinUid)
+        coroutineScope.launch { favoritesManager.remove(coinUid) }
     }
 }

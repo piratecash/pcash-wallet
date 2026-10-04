@@ -72,7 +72,7 @@ import cash.p.terminal.core.managers.CreateRequiredTokensUseCaseImpl
 import cash.p.terminal.core.managers.DefaultCurrencyManager
 import cash.p.terminal.core.managers.DefaultUserManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
-import cash.p.terminal.core.managers.MarketFavoritesManager
+import cash.p.terminal.core.managers.MarketFavoritesDataMigration
 import cash.p.terminal.core.managers.DefaultMoneroDeviceWalletNative
 import cash.p.terminal.core.managers.DefaultMoneroNativeWalletRuntime
 import cash.p.terminal.core.managers.EvmLabelManager
@@ -188,7 +188,12 @@ import cash.p.terminal.modules.pin.hiddenwallet.HiddenWalletPinPolicy
 import cash.p.terminal.modules.transactions.CheckAmlIncomingTransactionUseCase
 import cash.p.terminal.modules.transactions.TransactionSyncStateRepository
 import cash.p.terminal.modules.walletconnect.WCManager
+import cash.p.terminal.wallet.favorites.MarketFavoritesChangeListener
+import cash.p.terminal.wallet.favorites.MarketFavoritesMigration
+import cash.p.terminal.widgets.MarketWatchlistResetCleaner
 import cash.p.terminal.widgets.MarketWidgetManager
+import cash.p.terminal.widgets.WidgetMarketFavoritesChangeListener
+import cash.p.terminal.core.storage.AppDatabase
 import cash.p.terminal.modules.walletconnect.WCSessionManager
 import cash.p.terminal.modules.walletconnect.handler.WCHandlerEvm
 import cash.p.terminal.modules.walletconnect.stellar.WCHandlerStellar
@@ -395,6 +400,7 @@ val managerModule = module {
     singleOf(::LockoutManager) bind ILockoutManager::class
     factoryOf(::OneTimeTimer)
     singleOf(::GlanceAppWidgetManager)
+    singleOf(::MarketWatchlistResetCleaner)
     singleOf(::AppIconService)
     singleOf(::CalculatorModeService)
     single { CalculatorPinAttemptThrottle(get(), get()) }
@@ -501,7 +507,10 @@ val managerModule = module {
     // Market favorites
     singleOf(::MarketWidgetManager)
     singleOf(::PriceManager)
-    singleOf(::MarketFavoritesManager)
+    singleOf(::WidgetMarketFavoritesChangeListener) bind MarketFavoritesChangeListener::class
+    single<MarketFavoritesMigration> {
+        MarketFavoritesDataMigration(get<AppDatabase>().marketFavoritesDao(), get())
+    }
     singleOf(::MarketFavoritesRepository)
     singleOf(::MarketFavoritesMenuService)
     factoryOf(::MarketFavoritesService)

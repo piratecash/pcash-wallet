@@ -5,28 +5,21 @@ plugins {
     id(libs.plugins.devtools.ksp.get().pluginId)
 }
 
-val marketApiKey = "IQf1uAjkthZp1i2pYzkXFDom"
-
 android {
     namespace = "cash.p.terminal.wallet"
     compileSdk = rootProject.ext.get("compile_sdk_version") as Int
 
     defaultConfig {
         consumerProguardFiles("consumer-rules.pro")
-        buildConfigField("String", "PIRATE_CONTRACT", "\"0xaFCC12e4040615E7Afe9fb4330eB3D9120acAC05\"")
-        buildConfigField("String", "COSANTA_CONTRACT", "\"0x5F980533B994c93631A639dEdA7892fC49995839\"")
-        buildConfigField("String", "PIRATE_JETTON_ADDRESS", "\"EQDCb2loMIB8YS53GEo2r2ggS9AW1Dz-zX_as4DtxXV1u8XY\"")
         minSdk = 27
     }
 
     buildTypes {
         debug {
             resValue("string", "marketApiBaseUrl", "https://api-dev.blocksdecoded.com")
-            resValue("string", "marketApiKey", marketApiKey)
         }
         release {
             resValue("string", "marketApiBaseUrl", "https://api.blocksdecoded.com")
-            resValue("string", "marketApiKey", marketApiKey)
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -36,9 +29,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
-    }
-    buildFeatures {
-        buildConfig = true
     }
 }
 
@@ -81,6 +71,7 @@ dependencies {
 
     implementation(project(":core:strings"))
     implementation(project(":core:core"))
+    api(project(":core:market"))
     implementation(project(":core:network"))
     implementation(project(":core:navigation"))
 
@@ -97,9 +88,6 @@ android {
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
-            all { test ->
-                test.systemProperty("updateCoinsList", (project.findProperty("updateCoinsList") ?: "false").toString())
-            }
         }
     }
 }

@@ -87,7 +87,6 @@ class LocalStorageManager(
     private val MARKET_FAVORITES_SORTING = "market_favorites_sorting"
     private val MARKET_FAVORITES_SHOW_SIGNALS = "market_favorites_show_signals"
     private val MARKET_FAVORITES_TIME_DURATION = "market_favorites_time_duration"
-    private val MARKET_FAVORITES_MANUAL_SORTING_ORDER = "market_favorites_manual_sorting_order"
     private val RELAUNCH_BY_SETTING_CHANGE = "relaunch_by_setting_change"
     private val MARKETS_TAB_ENABLED = "markets_tab_enabled"
     private val BALANCE_AUTO_HIDE_ENABLED = "balance_auto_hide_enabled"
@@ -607,14 +606,6 @@ class LocalStorageManager(
         get() = preferences.getBoolean(MARKET_FAVORITES_SHOW_SIGNALS, false)
         set(value) {
             preferences.edit().putBoolean(MARKET_FAVORITES_SHOW_SIGNALS, value).apply()
-        }
-
-    override var marketFavoritesManualSortingOrder: List<String>
-        get() = preferences.getString(MARKET_FAVORITES_MANUAL_SORTING_ORDER, null)?.split(",")
-            ?: listOf()
-        set(value) {
-            preferences.edit()
-                .putString(MARKET_FAVORITES_MANUAL_SORTING_ORDER, value.joinToString(",")).apply()
         }
 
     override var marketFavoritesPeriod: TimeDuration?

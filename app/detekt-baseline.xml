@@ -445,7 +445,7 @@
     <ID>LongMethod:BackupKeyPage.kt$@Composable fun RecoveryPhraseScreen( navigation: HSNavigation, accountId: String )</ID>
     <ID>LongMethod:BackupLocalPassword.kt$@Composable fun LocalBackupPasswordScreen( backupType: BackupType, navigation: HSNavigation, onBackClick: () -&gt; Unit, onFinish: () -&gt; Unit )</ID>
     <ID>LongMethod:BackupManagerPage.kt$@OptIn(ExperimentalMaterialApi::class) @Composable private fun BackupManagerScreen( onBackClick: () -&gt; Unit, onRestoreBackup: (backupFilePath: String, fileName: String?) -&gt; Unit, onCreateBackup: () -&gt; Unit, )</ID>
-    <ID>LongMethod:BackupProvider.kt$BackupProvider$@Throws fun createFullBackup(accountIds: List&lt;String&gt;, passphrase: String): String</ID>
+    <ID>LongMethod:BackupProvider.kt$BackupProvider$@Throws suspend fun createFullBackup(accountIds: List&lt;String&gt;, passphrase: String): String</ID>
     <ID>LongMethod:BackupV4DecryptionTest.kt$BackupV4DecryptionTest$@Test fun `backup with hardware_card type is parsed correctly`()</ID>
     <ID>LongMethod:BalanceCard.kt$@Composable fun BalanceCardInner( viewItem: BalanceViewItem2, type: BalanceCardSubtitleType, onClickSyncError: (() -&gt; Unit)? = null, onBalanceClick: (() -&gt; Unit)? = null, )</ID>
     <ID>LongMethod:BalanceForAccount.kt$@Composable fun BalanceForAccount( navigation: HSNavigation, accountViewItem: AccountViewItem, paddingValuesParent: PaddingValues, onOpenTransactionInfo: (TransactionItem) -&gt; Unit, )</ID>

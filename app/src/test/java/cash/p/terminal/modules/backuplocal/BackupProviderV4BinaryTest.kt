@@ -35,7 +35,7 @@ internal class BackupProviderV4BinaryTest : BackupProviderRestoreTestFixture() {
     // region V4 Binary Backup Creation with Retry
 
     @Test
-    fun createFullBackupV4Binary_emptyWalletLists_succeeds() {
+    fun createFullBackupV4Binary_emptyWalletLists_succeeds() = runTest {
         val result = backupProvider.createFullBackupV4Binary(
             accountIds1 = emptyList(),
             passphrase1 = "mainPassword",
@@ -100,7 +100,7 @@ internal class BackupProviderV4BinaryTest : BackupProviderRestoreTestFixture() {
     }
 
     @Test
-    fun createFullBackupV4Binary_dualPasswords_succeedsViaRetryMechanism() {
+    fun createFullBackupV4Binary_dualPasswords_succeedsViaRetryMechanism() = runTest {
         // This test verifies the retry mechanism works in BackupProvider
         // Even if passwords derive colliding offsets, retry with new salt should succeed
 
@@ -127,7 +127,7 @@ internal class BackupProviderV4BinaryTest : BackupProviderRestoreTestFixture() {
     }
 
     @Test
-    fun createFullBackupV4Binary_retryMechanism_handlesPotentialCollisions() {
+    fun createFullBackupV4Binary_retryMechanism_handlesPotentialCollisions() = runTest {
         // Run multiple times to ensure retry mechanism is robust
         repeat(5) { iteration ->
             val result = backupProvider.createFullBackupV4Binary(

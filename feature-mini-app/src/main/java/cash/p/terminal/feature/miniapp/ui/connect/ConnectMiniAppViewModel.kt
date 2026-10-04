@@ -18,7 +18,7 @@ import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
 import cash.p.terminal.strings.R
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.wallet.Account
-import cash.p.terminal.wallet.BuildConfig
+import cash.p.terminal.wallet.PirateContracts
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
@@ -303,8 +303,8 @@ class ConnectMiniAppViewModel(
 
     suspend fun getTokenForSwap(): Token? {
         val contractAddress = when (uiState.selectedCoinTab) {
-            CoinType.PIRATE -> BuildConfig.PIRATE_CONTRACT
-            CoinType.COSA -> BuildConfig.COSANTA_CONTRACT
+            CoinType.PIRATE -> PirateContracts.PIRATE_CONTRACT
+            CoinType.COSA -> PirateContracts.COSANTA_CONTRACT
         }
 
         val tokenQuery = TokenQuery.eip20(BlockchainType.BinanceSmartChain, contractAddress)

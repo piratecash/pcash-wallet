@@ -5,8 +5,8 @@ import cash.p.terminal.core.App
 import cash.p.terminal.wallet.alternativeImageUrl
 import cash.p.terminal.core.iconUrl
 import cash.p.terminal.wallet.imageUrl
-import cash.p.terminal.core.managers.MarketFavoritesManager
 import cash.p.terminal.wallet.MarketKitWrapper
+import cash.p.terminal.wallet.favorites.MarketFavoritesManager
 import cash.p.terminal.modules.market.MarketItem
 import cash.p.terminal.modules.market.SortingField
 import cash.p.terminal.modules.market.TimeDuration
@@ -18,6 +18,7 @@ import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsReposit
 import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsViewItemFactory
 import cash.p.terminal.modules.market.topplatforms.TopPlatformsRepository
 import io.horizontalsystems.core.CurrencyManager
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.rx2.await
 
 class MarketWidgetRepository(
@@ -42,7 +43,7 @@ class MarketWidgetRepository(
             MarketWidgetType.Watchlist -> {
                 getWatchlist(
                     favoritesMenuService.listSorting,
-                    favoritesMenuService.manualSortOrder,
+                    favoritesManager.manualSortingOrder.first(),
                     favoritesMenuService.timeDuration
                 )
             }
@@ -131,11 +132,10 @@ class MarketWidgetRepository(
         manualSortOrder: List<String>,
         timeDuration: TimeDuration
     ): List<MarketWidgetItem> {
-        val favoriteCoins = favoritesManager.getAll()
+        val favoriteCoinUids = favoritesManager.getAll()
         var marketItems = listOf<MarketItem>()
 
-        if (favoriteCoins.isNotEmpty()) {
-            val favoriteCoinUids = favoriteCoins.map { it.coinUid }
+        if (favoriteCoinUids.isNotEmpty()) {
             marketItems = marketKit.marketInfosSingle(favoriteCoinUids, currency.code)
                 .await()
                 .map { marketInfo ->

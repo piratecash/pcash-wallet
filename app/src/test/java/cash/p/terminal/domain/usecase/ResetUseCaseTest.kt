@@ -1,18 +1,27 @@
 package cash.p.terminal.domain.usecase
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.managers.KeyStoreCleaner
+import cash.p.terminal.core.managers.MarketFavoritesDataMigration
 import cash.p.terminal.core.storage.AppDatabase
+import cash.p.terminal.core.storage.MarketFavoritesDao
 import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.settings.appearance.AppIconService
 import cash.p.terminal.modules.walletconnect.WCDelegate
 import cash.p.terminal.wallet.AccountDeletionBlockedException
 import cash.p.terminal.wallet.AccountDeletionPreflight
+import cash.p.terminal.wallet.favorites.MarketFavoritesChangeListener
+import cash.p.terminal.wallet.favorites.MarketFavoritesManager
+import cash.p.terminal.widgets.MarketWatchlistResetCleaner
 import cash.p.terminal.widgets.MarketWidgetWorker
 import cash.p.terminal.widgets.MarketWidget
+import androidx.datastore.core.DataMigration
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
 import io.mockk.Called
 import io.mockk.coEvery
 import io.mockk.coVerifyOrder
@@ -22,6 +31,11 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import io.mockk.verify
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -30,7 +44,9 @@ import org.junit.After
 import org.junit.Test
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
+import java.io.File
 import java.io.IOException
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class ResetUseCaseTest {
@@ -43,9 +59,96 @@ class ResetUseCaseTest {
     private val icons = mockk<AppIconService>(relaxed = true)
     private val preflight = mockk<AccountDeletionPreflight>(relaxed = true)
     private val keyStoreCleaner = mockk<KeyStoreCleaner>(relaxed = true)
+    private val marketFavorites = mockk<MarketFavoritesManager>(relaxed = true)
+    private val favoritesListener = mockk<MarketFavoritesChangeListener>(relaxed = true)
+    private val legacyFavoritesDao = mockk<MarketFavoritesDao>(relaxed = true)
+    private val legacyPreferences = mockk<SharedPreferences>(relaxed = true)
+    private val favoritesScopes = mutableListOf<CoroutineScope>()
 
     @After
-    fun tearDown() = unmockkAll()
+    fun tearDown() {
+        favoritesScopes.forEach { it.cancel() }
+        unmockkAll()
+    }
+
+    @Test
+    fun invoke_favoritesPresent_leavesFavoritesAndManualOrderEmpty() = runTest {
+        prepareFilePurge()
+        val file = File(temporaryFolder.newFolder("favorites"), "favorites.preferences_pb")
+        val favorites = favoritesManager(file)
+        favorites.add("bitcoin")
+
+        reset(favorites)()
+
+        assertEquals(emptyList(), favorites.getAll())
+        assertEquals(emptyList(), favorites.manualSortingOrder.first())
+        favoritesScopes.forEach { it.cancel() }
+        favoritesScopes.clear()
+        assertEquals(emptyList(), favoritesManager(file).getAll())
+    }
+
+    @Test
+    fun invoke_cleanupComplete_clearsFavoritesAfterDatabaseAndPreferencesPurge() = runTest {
+        prepareFilePurge()
+
+        reset()()
+
+        coVerifyOrder {
+            keyStoreCleaner.cleanExplicitReset()
+            database.clearAllTables()
+            marketFavorites.clear()
+        }
+    }
+
+    @Test
+    fun invoke_favoritesClearFails_stillPurgesSensitiveFilesAndFinishes() = runTest {
+        prepareFilePurge()
+        coEvery { marketFavorites.clear() } throws IOException("favorites")
+
+        reset()()
+
+        coVerify { contacts.clear() }
+        coVerify { preflight.finishExplicitReset() }
+    }
+
+    // The reset returns to the same running process, so a favorite added right after it must not be
+    // re-migrated away from the legacy stores the reset has just emptied.
+    @Test
+    fun invoke_favoriteAddedAfterReset_survivesNewInstanceWithLegacyMigration() = runTest {
+        prepareFilePurge()
+        every { legacyFavoritesDao.getAll() } returns emptyList()
+        every { legacyPreferences.getString(any(), any()) } returns null
+        val file = File(temporaryFolder.newFolder("favorites"), "favorites.preferences_pb")
+        val favorites = favoritesManager(file, listOf(legacyMigration()))
+        favorites.getAll()
+
+        reset(favorites)()
+        favorites.add("bitcoin")
+
+        favoritesScopes.forEach { it.cancel() }
+        favoritesScopes.clear()
+        val restarted = favoritesManager(file, listOf(legacyMigration()))
+        assertEquals(listOf("bitcoin"), restarted.getAll())
+        assertEquals(listOf("bitcoin"), restarted.manualSortingOrder.first())
+    }
+
+    private fun legacyMigration() =
+        MarketFavoritesDataMigration(legacyFavoritesDao, legacyPreferences)
+
+    private fun favoritesManager(
+        file: File,
+        migrations: List<DataMigration<Preferences>> = emptyList(),
+    ): MarketFavoritesManager {
+        val scope = CoroutineScope(Dispatchers.IO + Job()).also(favoritesScopes::add)
+        return MarketFavoritesManager(
+            dataStore = PreferenceDataStoreFactory.create(
+                migrations = migrations,
+                scope = scope,
+                produceFile = { file },
+            ),
+            listener = favoritesListener,
+        )
+    }
 
     @Test
     fun invoke_intentOrBeamCleanupFails_hasNoGlobalDestructiveEffects() = runTest {
@@ -171,9 +274,10 @@ class ResetUseCaseTest {
         coEvery { glance.getGlanceIds(MarketWidget::class.java) } returns emptyList()
     }
 
-    private fun TestScope.reset() = ResetUseCase(
+    private fun TestScope.reset(favorites: MarketFavoritesManager = marketFavorites) = ResetUseCase(
         context, localStorage, database, contacts,
         TestDispatcherProvider(StandardTestDispatcher(testScheduler), backgroundScope),
-        glance, icons, preflight, keyStoreCleaner,
+        MarketWatchlistResetCleaner(context, glance, favorites),
+        icons, preflight, keyStoreCleaner,
     )
 }
