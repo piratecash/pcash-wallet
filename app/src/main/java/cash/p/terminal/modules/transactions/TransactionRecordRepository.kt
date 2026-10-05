@@ -190,7 +190,9 @@ class TransactionRecordRepository(
         transactionWallets: List<TransactionWallet>,
         contact: Contact?,
     ): Boolean {
-        if (this.transactionWallets == transactionWallets && adaptersMap.isNotEmpty()) return false
+        if (this.transactionWallets == transactionWallets && adaptersMap.isNotEmpty() &&
+            !hasNewlyAvailableAdapter()
+        ) return false
 
         this.transactionWallets = transactionWallets
         walletSetVersion++
@@ -198,6 +200,11 @@ class TransactionRecordRepository(
         adaptersMap = rebuildAdapters(adaptersMap, selectedFilterTransactionType, contact)
         buildExtraSwapAdapters(contact)
         return true
+    }
+
+    private fun hasNewlyAvailableAdapter(): Boolean {
+        val snapshot = adaptersMap
+        return activeTransactionWallets().any { it !in snapshot && adapterManager.getAdapter(it.source) != null }
     }
 
     private fun updateSelectedFilters(
