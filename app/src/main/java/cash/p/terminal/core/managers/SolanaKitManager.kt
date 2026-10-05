@@ -7,6 +7,7 @@ import cash.p.terminal.core.UnsupportedException
 import cash.p.terminal.core.hexToByteArray
 import cash.p.terminal.core.onPollingStartedSuspend
 import cash.p.terminal.core.onPollingStoppedSuspend
+import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.core.storage.HardwarePublicKeyStorage
 import cash.p.terminal.tangem.signer.HardwareWalletSolanaAccountSigner
 import cash.p.terminal.trezorkit.client.ITrezorClient
@@ -51,9 +52,6 @@ class SolanaKitManager(
 ) {
 
     private companion object {
-        // Temporary limits to avoid too many requests problem in solan sdk
-        const val limitFirstTimeTransactionCount: Int = 2
-        const val limitTimeTransactionCount: Int = 2
         const val FRESH_SYNC_TIMEOUT_MS = 20_000L
     }
 
@@ -315,8 +313,7 @@ class SolanaKitManager(
             rpcSource = rpcSourceManager.rpcSource,
             walletId = walletId,
             databaseKey = databaseKey,
-            limitFirstTimeTransactionCount = limitFirstTimeTransactionCount,
-            limitTimeTransactionCount = limitTimeTransactionCount,
+            rpcApiKeys = AppConfigProvider.alchemySolanaApiKeys,
             networkErrorListener = { error ->
                 networkErrorTracker.record(BlockchainType.Solana, walletId, error.toNetworkErrorInfo())
             }

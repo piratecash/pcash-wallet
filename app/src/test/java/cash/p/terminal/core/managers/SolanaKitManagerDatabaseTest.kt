@@ -1,6 +1,7 @@
 package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.UnsupportedAccountException
+import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -14,12 +15,14 @@ import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.runTest
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Before
@@ -38,7 +41,8 @@ class SolanaKitManagerDatabaseTest {
     @Before
     fun setUp() {
         CoreApp.instance = mockk(relaxed = true)
-        mockkObject(SolanaKit.Companion)
+        mockkObject(SolanaKit.Companion, AppConfigProvider)
+        every { AppConfigProvider.alchemySolanaApiKeys } returns RPC_API_KEYS
         coEvery { SolanaKit.migrateDatabase(any(), any(), any()) } returns DatabaseMigrationResult(0, 2)
         every { SolanaKit.clear(any(), any()) } returns Unit
         coEvery {
@@ -48,8 +52,7 @@ class SolanaKitManagerDatabaseTest {
                 rpcSource = any(),
                 walletId = any(),
                 databaseKey = any(),
-                limitFirstTimeTransactionCount = any(),
-                limitTimeTransactionCount = any(),
+                rpcApiKeys = any(),
                 networkErrorListener = any(),
             )
         } returns solanaKit
@@ -81,11 +84,30 @@ class SolanaKitManagerDatabaseTest {
                 rpcSource = any(),
                 walletId = ACCOUNT_ID,
                 databaseKey = databaseKey,
-                limitFirstTimeTransactionCount = any(),
-                limitTimeTransactionCount = any(),
+                rpcApiKeys = any(),
                 networkErrorListener = any(),
             )
         }
+    }
+
+    @Test
+    fun getSolanaKitWrapper_watchAccount_passesAlchemyKeysToKit() = runTest {
+        val rpcApiKeys = slot<List<String>>()
+        coEvery {
+            SolanaKit.getInstance(
+                context = any(),
+                addressString = any(),
+                rpcSource = any(),
+                walletId = any(),
+                databaseKey = any(),
+                rpcApiKeys = capture(rpcApiKeys),
+                networkErrorListener = any(),
+            )
+        } returns solanaKit
+
+        createManager().getSolanaKitWrapper(account)
+
+        assertEquals(RPC_API_KEYS, rpcApiKeys.captured)
     }
 
     @Test
@@ -166,8 +188,7 @@ class SolanaKitManagerDatabaseTest {
                 rpcSource = any(),
                 walletId = any(),
                 databaseKey = any(),
-                limitFirstTimeTransactionCount = any(),
-                limitTimeTransactionCount = any(),
+                rpcApiKeys = any(),
                 networkErrorListener = any(),
             )
         }
@@ -195,5 +216,6 @@ class SolanaKitManagerDatabaseTest {
 
     private companion object {
         const val ACCOUNT_ID = "account-id"
+        val RPC_API_KEYS = listOf("sentinel-key-1", "sentinel-key-2")
     }
 }
