@@ -12,13 +12,16 @@ import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionServiceS
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionSettings
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.entities.TokenType
 import io.horizontalsystems.stellarkit.StellarKit
+import io.horizontalsystems.stellarkit.room.StellarAsset
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.koin.java.KoinJavaComponent.inject
+import org.stellar.sdk.responses.TransactionResponse
 import java.math.BigDecimal
 
 class SendTransactionServiceStellar(account: Account, token: Token) :
@@ -73,13 +76,23 @@ class SendTransactionServiceStellar(account: Account, token: Token) :
         } else if (recipient != null && amount != null && memo != null) {
             val recipient = requireNotNull(recipient)
             val amount = requireNotNull(amount)
-            stellarKit.sendNative(recipient, amount, memo)
+            sendPayment(recipient, amount, memo?.ifBlank { null })
         } else {
             throw IllegalStateException("Transaction data not set")
         }
         markTransactionCreated(response.hash)
         return SendTransactionResult.Stellar(response)
     }
+
+    private suspend fun sendPayment(recipient: String, amount: BigDecimal, memo: String?): TransactionResponse =
+        when (val type = token.type) {
+            TokenType.Native -> stellarKit.sendNative(recipient, amount, memo)
+            is TokenType.Asset -> {
+                val assetId = StellarAsset.Asset(type.code, type.issuer).id
+                stellarKit.sendAsset(assetId, recipient, amount, memo)
+            }
+            else -> error("Unsupported Stellar token type: $type")
+        }
 
     override fun createState(): SendTransactionServiceState {
         val adjustedBalance = adapterManager.getAdjustedBalanceData(wallet)?.available
