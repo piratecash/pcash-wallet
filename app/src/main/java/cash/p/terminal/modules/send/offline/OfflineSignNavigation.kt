@@ -3,25 +3,24 @@ package cash.p.terminal.modules.send.offline
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
-import cash.p.terminal.R
-import cash.p.terminal.core.composablePage
+import androidx.lifecycle.ViewModel
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.entities.OfflineSignedTransaction
 import cash.p.terminal.modules.send.SendConfirmationData
+import cash.p.terminal.modules.send.SendPage
 import cash.p.terminal.modules.send.SendResult
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.modules.send.rememberExistingViewModel
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.navigateUpFrom
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.entities.CurrencyValue
 import kotlinx.coroutines.delay
 import org.koin.compose.koinInject
+import kotlin.reflect.KClass
 
 private const val RetryProgressMinVisibleMillis = 1200L
-private const val OfflineTransactionTransferFormatArgument = "format"
 
 internal data class OfflineSignRouteState(
     val confirmationData: SendConfirmationData,
@@ -30,12 +29,6 @@ internal data class OfflineSignRouteState(
     val feeCoinMaxAllowedDecimals: Int,
     val rate: CurrencyValue?,
     val signState: OfflineSignState,
-)
-
-internal data class OfflineSignFlowRoutes(
-    val signRoute: String,
-    val transferRoute: String,
-    val transferFormatArgument: String = OfflineTransactionTransferFormatArgument,
 )
 
 internal interface OfflineSignCapableViewModel {
@@ -79,38 +72,6 @@ internal interface OfflineSignCapableViewModel {
     fun onOfflineTransferClosed() = offlineSigningController.closeTransfer()
 }
 
-internal fun NavGraphBuilder.offlineSignFlowRoutes(
-    routes: OfflineSignFlowRoutes,
-    navController: NavHostController,
-    fragmentNavController: NavController,
-    sendViewModel: OfflineSignCapableViewModel,
-) {
-    offlineSignRoute(
-        route = routes.signRoute,
-        navController = navController,
-        stateProvider = { sendViewModel.offlineSignRouteState() },
-        onLeave = {
-            sendViewModel.resetOfflineSignState()
-            navController.popBackStackSafely()
-        },
-        onSignClick = sendViewModel::onClickSignOffline,
-        onSignStateConsumed = sendViewModel::resetOfflineSignState,
-        onSigned = { format ->
-            navController.navigate(offlineTransactionTransferRoute(routes.transferRoute, format))
-        },
-    )
-    offlineTransactionTransferRoute(
-        route = routes.transferRoute,
-        formatArgument = routes.transferFormatArgument,
-        navController = navController,
-        transactionProvider = { sendViewModel.offlineSignedTransaction },
-        onDoneClick = {
-            sendViewModel.onOfflineTransferClosed()
-            fragmentNavController.popBackStack(R.id.sendXFragment, true)
-        },
-    )
-}
-
 private fun OfflineSignCapableViewModel.offlineSignRouteState(): OfflineSignRouteState? =
     tryOrNull { getConfirmationData() }?.let { confirmationData ->
         OfflineSignRouteState(
@@ -123,76 +84,94 @@ private fun OfflineSignCapableViewModel.offlineSignRouteState(): OfflineSignRout
         )
     }
 
-internal fun NavGraphBuilder.offlineSignRoute(
-    route: String,
-    navController: NavHostController,
-    stateProvider: () -> OfflineSignRouteState?,
-    onLeave: () -> Unit,
-    onSignClick: (OfflineTransactionFormat) -> Unit,
-    onSignStateConsumed: () -> Unit,
-    onSigned: (OfflineTransactionFormat) -> Unit,
-) {
-    composablePage(route) {
-        val state = stateProvider()
-        if (state == null) {
-            LaunchedEffect(Unit) {
-                navController.popBackStack()
-            }
-            return@composablePage
-        }
+class OfflineSignPage(val sendViewModel: KClass<out ViewModel>) : HSPage() {
 
-        OfflineSignScreen(
-            confirmationData = state.confirmationData,
-            blockchainName = state.blockchainName,
-            coinMaxAllowedDecimals = state.coinMaxAllowedDecimals,
-            feeCoinMaxAllowedDecimals = state.feeCoinMaxAllowedDecimals,
-            rate = state.rate,
-            signState = state.signState,
+    @Composable
+    override fun GetContent(navigation: HSNavigation) {
+        val viewModel = navigation.rememberOfflineSignViewModel(sendViewModel) ?: return
+        val onLeave: () -> Unit = {
+            viewModel.resetOfflineSignState()
+            navigation.navigateUpSafely()
+        }
+        OfflineSignPageContent(
+            page = this,
+            navigation = navigation,
+            state = viewModel.offlineSignRouteState(),
             callbacks = OfflineSignCallbacks(
                 onBackClick = onLeave,
                 onCancelClick = onLeave,
-                onSignClick = onSignClick,
-                onSignStateConsumed = onSignStateConsumed,
-                onSigned = onSigned,
+                onSignClick = viewModel::onClickSignOffline,
+                onSignStateConsumed = viewModel::resetOfflineSignState,
+                onSigned = { format ->
+                    navigation.slideFromRight(OfflineTransactionTransferPage(sendViewModel, format))
+                },
             ),
         )
     }
 }
 
-internal fun NavGraphBuilder.offlineTransactionTransferRoute(
-    route: String,
-    formatArgument: String,
-    navController: NavHostController,
-    transactionProvider: () -> OfflineSignedTransaction?,
-    onDoneClick: () -> Unit,
-) {
-    composablePage(
-        route = "$route/{$formatArgument}",
-        arguments = listOf(
-            navArgument(formatArgument) {
-                type = NavType.StringType
-            }
-        )
-    ) { backStackEntry ->
-        val qrCodeSaver: OfflineQrCodeSaver = koinInject()
-        val initialFormat = backStackEntry.arguments
-            ?.getString(formatArgument)
-            .toOfflineTransactionFormat()
-        OfflineTransactionTransferScreen(
-            transaction = transactionProvider(),
-            selectedFormat = initialFormat,
-            qrCodeSaver = qrCodeSaver,
-            onBackClick = navController::popBackStackSafely,
-            onDoneClick = onDoneClick,
-        )
+class OfflineTransactionTransferPage(
+    val sendViewModel: KClass<out ViewModel>,
+    val format: OfflineTransactionFormat,
+) : HSPage() {
+
+    @Composable
+    override fun GetContent(navigation: HSNavigation) {
+        val viewModel = navigation.rememberOfflineSignViewModel(sendViewModel) ?: return
+        OfflineTransactionTransferPageContent(navigation, viewModel.offlineSignedTransaction, format) {
+            viewModel.onOfflineTransferClosed()
+            navigation.removeLastUntil(SendPage::class, true)
+        }
     }
 }
 
-internal fun offlineTransactionTransferRoute(route: String, format: OfflineTransactionFormat): String =
-    "$route/${format.name}"
+@Composable
+internal fun OfflineSignPageContent(
+    page: HSPage,
+    navigation: HSNavigation,
+    state: OfflineSignRouteState?,
+    callbacks: OfflineSignCallbacks,
+) {
+    if (state == null) {
+        LaunchedEffect(Unit) {
+            navigation.navigateUpFrom(page)
+        }
+        return
+    }
 
-private fun String?.toOfflineTransactionFormat(): OfflineTransactionFormat =
-    OfflineTransactionFormat.entries.firstOrNull { it.name == this } ?: OfflineTransactionFormat.Pcash
+    OfflineSignScreen(
+        confirmationData = state.confirmationData,
+        blockchainName = state.blockchainName,
+        coinMaxAllowedDecimals = state.coinMaxAllowedDecimals,
+        feeCoinMaxAllowedDecimals = state.feeCoinMaxAllowedDecimals,
+        rate = state.rate,
+        signState = state.signState,
+        callbacks = callbacks,
+    )
+}
+
+@Composable
+internal fun OfflineTransactionTransferPageContent(
+    navigation: HSNavigation,
+    transaction: OfflineSignedTransaction?,
+    format: OfflineTransactionFormat,
+    onDoneClick: () -> Unit,
+) {
+    val qrCodeSaver: OfflineQrCodeSaver = koinInject()
+    OfflineTransactionTransferScreen(
+        transaction = transaction,
+        selectedFormat = format,
+        qrCodeSaver = qrCodeSaver,
+        onBackClick = navigation::navigateUpSafely,
+        onDoneClick = onDoneClick,
+    )
+}
+
+@Composable
+private fun HSNavigation.rememberOfflineSignViewModel(
+    sendViewModel: KClass<out ViewModel>
+): OfflineSignCapableViewModel? =
+    rememberExistingViewModel(SendPage::class, sendViewModel) as? OfflineSignCapableViewModel
 
 @Composable
 internal fun OfflineSyncRetryProgressEffect(

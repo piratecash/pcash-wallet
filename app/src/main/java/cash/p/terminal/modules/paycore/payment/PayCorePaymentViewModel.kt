@@ -35,6 +35,7 @@ data class PayCorePaymentParams(
     val tokenOutUid: String,
     val blockchainTypeIn: String,
     val blockchainTypeOut: String,
+    val tokenQueryIdOut: String,
     val addressOut: String,
     val direction: SwapAmountDirection = SwapAmountDirection.In,
     val requestedAmountOut: BigDecimal? = null,
@@ -294,6 +295,7 @@ class PayCorePaymentViewModel(
                     amountOut = amountOut,
                     addressOut = params.addressOut,
                     accountId = accountId,
+                    tokenQueryIdOut = params.tokenQueryIdOut,
                 )
             )
             savedPaymentId = paymentId

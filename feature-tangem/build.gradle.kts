@@ -61,7 +61,6 @@ dependencies {
     implementation(libs.stellar.kit)
     implementation(libs.stellar.sdk)
 
-    implementation(libs.androidx.navigation.runtime.ktx)
     debugImplementation(libs.androidx.ui.tooling)
     implementation(libs.androidx.ui.tooling.preview)
 

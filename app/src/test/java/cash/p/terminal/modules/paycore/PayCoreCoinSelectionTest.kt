@@ -118,7 +118,7 @@ class PayCoreCoinSelectionTest {
     private fun makeToken(coinUid: String, coinCode: String, blockchainType: BlockchainType): Token {
         return Token(
             coin = Coin(
-                uid = coinUid, name = coinCode, code = coinCode, marketCapRank = null, coinGeckoId = null, image = null
+                uid = coinUid, name = coinCode, code = coinCode, marketCapRank = null, image = null
             ),
             blockchain = Blockchain(blockchainType, blockchainType.uid, null),
             type = TokenType.Native,

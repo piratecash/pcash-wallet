@@ -644,12 +644,13 @@
     <string name="SwapConfirm_FetchingFinalQuote">최종 견적을 가져오는 중</string>
     <string name="SwapWarning_SlippageNotAvailable_Title">슬리피지 제어 없음</string>
     <string name="SwapWarning_SlippageNotAvailable_Description">크로스체인 작업은 제3자 유동성과 지연에 의존하므로 최종 금액에 영향을 줄 수 있습니다.</string>
-    <string name="unsupported_refund_address">Unsupported refund address</string>
-    <string name="unsupported_address">Unsupported address</string>
+    <string name="unsupported_refund_address">지원되지 않는 환불 주소</string>
+    <string name="unsupported_address">지원되지 않는 주소</string>
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">지원되지 않는 토큰</string>
     <string name="zec_transparent_used">교환을 생성할 때 임시 t-주소가 사용됩니다: %s. 이 주소는 교환 제공자에게 전달되며, 교환이 완료되지 않을 경우 환불을 위해 필요합니다. t-주소를 사용하면 거래가 부분적으로 익명 해제될 수 있습니다.</string>
     <string name="swap_yifi_memo_unsupported">스왑 제공자가 이 네트워크에서 보낼 수 없는 입금 메모(memo)를 요구합니다. 다른 제공자를 선택하세요.</string>
+    <string name="swap_provider_order_failed">제공자가 스왑을 생성하지 못했습니다. 견적을 새로고침하거나 뒤로 가서 다른 제공자를 선택하세요.</string>
     <!-- Swap Settings -->
     <string name="SwapSettings_Title">스왑 설정</string>
     <string name="SwapSettings_SlippageTitle">토큰 범위 설정</string>

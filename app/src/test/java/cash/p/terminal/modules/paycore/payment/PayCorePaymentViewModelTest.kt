@@ -187,6 +187,8 @@ class PayCorePaymentViewModelTest {
         assertEquals(0, transactionSlot.captured.amountIn.compareTo(BigDecimal("2")))
         assertEquals(0, transactionSlot.captured.amountOut.compareTo(BigDecimal("20")))
         assertEquals(TransactionStatusEnum.WAITING.name.lowercase(), transactionSlot.captured.status)
+        assertNull(transactionSlot.captured.tokenQueryIdIn)
+        assertEquals(TETHER_TRON_TOKEN_QUERY_ID, transactionSlot.captured.tokenQueryIdOut)
     }
 
     @Test
@@ -536,9 +538,12 @@ class PayCorePaymentViewModelTest {
             tokenOutUid = "tether",
             blockchainTypeIn = "unsupported",
             blockchainTypeOut = "tron",
+            tokenQueryIdOut = TETHER_TRON_TOKEN_QUERY_ID,
             addressOut = "TUserUsdtAddress",
             direction = direction,
             requestedAmountOut = requestedAmountOut,
         )
     )
 }
+
+private const val TETHER_TRON_TOKEN_QUERY_ID = "tron|eip20:TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"

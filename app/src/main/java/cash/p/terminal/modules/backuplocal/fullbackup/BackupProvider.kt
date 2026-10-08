@@ -14,7 +14,6 @@ import cash.p.terminal.core.managers.EncryptDecryptManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.EvmSyncSourceManager
 import cash.p.terminal.core.managers.LanguageManager
-import cash.p.terminal.core.managers.MarketFavoritesManager
 import cash.p.terminal.core.managers.RestoreSettings
 import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.RestoreSettingType
@@ -47,6 +46,7 @@ import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IEnabledWalletStorage
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.MarketKitWrapper
+import cash.p.terminal.wallet.favorites.MarketFavoritesManager
 import cash.p.terminal.wallet.balance.BalanceViewType
 import cash.p.terminal.wallet.entities.TokenQuery
 import com.google.gson.Gson
@@ -653,10 +653,10 @@ class BackupProvider(
         )
     }
 
-    fun fullBackupItems() =
+    suspend fun fullBackupItems() =
         fullBackupItems(
             accounts = accountManager.accounts,
-            watchlist = marketFavoritesManager.getAll().map { it.coinUid },
+            watchlist = marketFavoritesManager.getAll(),
             contacts = contactsRepository.contacts,
             customRpcsCount = evmSyncSourceStorage.getAll().ifEmpty { null }?.size
         )
@@ -687,7 +687,7 @@ class BackupProvider(
     }
 
     @Throws
-    fun createFullBackup(accountIds: List<String>, passphrase: String): String {
+    suspend fun createFullBackup(accountIds: List<String>, passphrase: String): String {
         // Derive key once and reuse for all encryptions
         val cachedKey = deriveBackupKey(passphrase)
 
@@ -700,7 +700,7 @@ class BackupProvider(
                 WalletBackup2(it.name, accountBackup)
             }
 
-        val watchlist = marketFavoritesManager.getAll().map { it.coinUid }
+        val watchlist = marketFavoritesManager.getAll()
 
         val btcModes = btcBlockchainManager.allBlockchains.map { blockchain ->
             val restoreMode = btcBlockchainManager.restoreMode(blockchain.type)
@@ -786,7 +786,7 @@ class BackupProvider(
      * retries
      */
     @Throws(DeniableEncryptionManager.PasswordCollisionException::class)
-    fun createFullBackupV4Binary(
+    suspend fun createFullBackupV4Binary(
         accountIds1: List<String>,
         passphrase1: String,
         accountIds2: List<String>?,
@@ -880,7 +880,7 @@ class BackupProvider(
      * Builds FullBackup object for given account IDs.
      * Used internally by createFullBackupV4Binary to create separate backups for each password.
      */
-    private fun buildFullBackupJson(
+    private suspend fun buildFullBackupJson(
         accountIds: List<String>,
         passphrase: String,
         includeWatchAccounts: Boolean
@@ -895,7 +895,7 @@ class BackupProvider(
                 WalletBackup2(it.name, accountBackup)
             }
 
-        val watchlist = marketFavoritesManager.getAll().map { it.coinUid }
+        val watchlist = marketFavoritesManager.getAll()
 
         val contacts = if (contactsRepository.contacts.isNotEmpty())
             encryptedWithKey(contactsRepository.asJsonString, cachedKey, passphrase)

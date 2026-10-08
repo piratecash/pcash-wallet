@@ -9,14 +9,17 @@ import cash.p.terminal.entities.SwapProviderTransaction
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
 import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
+import cash.p.terminal.modules.multiswap.SwapSide
+import cash.p.terminal.modules.multiswap.findBySwapSide
+import cash.p.terminal.modules.multiswap.sideIn
+import cash.p.terminal.modules.multiswap.sideIntermediate
+import cash.p.terminal.modules.multiswap.sideOut
 import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.modules.transactions.TransactionStatus
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IWalletManager
-import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.DispatcherProvider
-import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.coroutines.withContext
 import java.math.BigDecimal
 
@@ -61,8 +64,7 @@ class SyncPendingMultiSwapUseCase(
         providerTransactionId: String?,
         transactionId: String?,
         providerId: String,
-        coinUidOut: String,
-        blockchainTypeOut: String,
+        sideOut: SwapSide,
         amountOut: BigDecimal?,
         accountId: String,
         legStartTime: Long,
@@ -72,8 +74,7 @@ class SyncPendingMultiSwapUseCase(
             providerTransactionId = providerTransactionId,
             transactionId = transactionId,
             providerId = providerId,
-            coinUidOut = coinUidOut,
-            blockchainTypeOut = blockchainTypeOut,
+            sideOut = sideOut,
             amountOut = amountOut,
             accountId = accountId,
             legStartTime = legStartTime,
@@ -87,8 +88,7 @@ class SyncPendingMultiSwapUseCase(
         providerTransactionId: String?,
         transactionId: String?,
         providerId: String,
-        coinUidOut: String,
-        blockchainTypeOut: String,
+        sideOut: SwapSide,
         amountOut: BigDecimal?,
         accountId: String,
         legStartTime: Long,
@@ -102,11 +102,11 @@ class SyncPendingMultiSwapUseCase(
         }
 
         val swapProvider = PendingMultiSwap.mapProviderIdToSwapProvider(providerId) ?: return null
-        val receiveAddress = findReceiveAddress(coinUidOut, blockchainTypeOut) ?: return null
+        val walletOut = walletManager.activeWallets.findBySwapSide(sideOut) ?: return null
+        val receiveAddress = adapterManager.getReceiveAddressForWallet(walletOut) ?: return null
         return swapProviderTransactionsStorage.getByProviderAndTokenOut(
             provider = swapProvider,
-            coinUidOut = coinUidOut,
-            blockchainTypeOut = blockchainTypeOut,
+            tokenOut = walletOut.token,
             accountId = accountId,
             addressOut = receiveAddress,
             expectedAmount = amountOut ?: return null,
@@ -129,21 +129,19 @@ class SyncPendingMultiSwapUseCase(
 
     private suspend fun syncLegOnChain(
         transactionId: String?,
-        coinUidIn: String,
-        blockchainTypeIn: String,
-        coinUidOut: String,
-        blockchainTypeOut: String,
+        sideIn: SwapSide,
+        sideOut: SwapSide,
         amountOut: BigDecimal?,
         legStartTime: Long,
         updateLeg: suspend (String, BigDecimal?) -> Unit,
         onIncomingMatch: (suspend (IncomingMatch) -> Unit)? = null,
     ) {
-        if (checkOutgoingFailed(transactionId, coinUidIn, blockchainTypeIn)) {
+        if (checkOutgoingFailed(transactionId, sideIn)) {
             updateLeg(PendingMultiSwap.STATUS_FAILED, null)
             return
         }
 
-        val match = scanIncoming(coinUidOut, blockchainTypeOut, amountOut, legStartTime)
+        val match = scanIncoming(sideOut, amountOut, legStartTime)
         if (match != null) {
             updateLeg(PendingMultiSwap.STATUS_COMPLETED, match.amount)
             onIncomingMatch?.invoke(match)
@@ -152,11 +150,10 @@ class SyncPendingMultiSwapUseCase(
 
     private suspend fun checkOutgoingFailed(
         transactionId: String?,
-        coinUidIn: String,
-        blockchainTypeIn: String,
+        sideIn: SwapSide,
     ): Boolean {
         if (transactionId == null) return false
-        val wallet = findWallet(coinUidIn, blockchainTypeIn) ?: return false
+        val wallet = walletManager.activeWallets.findBySwapSide(sideIn) ?: return false
         val adapter = transactionAdapterManager.getAdapter(wallet.transactionSource) ?: return false
 
         var from: TransactionRecord? = null
@@ -176,12 +173,11 @@ class SyncPendingMultiSwapUseCase(
     }
 
     private suspend fun scanIncoming(
-        coinUidOut: String,
-        blockchainTypeOut: String,
+        sideOut: SwapSide,
         expectedAmount: BigDecimal?,
         legStartTime: Long,
     ): IncomingMatch? {
-        val wallet = findWallet(coinUidOut, blockchainTypeOut) ?: return null
+        val wallet = walletManager.activeWallets.findBySwapSide(sideOut) ?: return null
         val adapter = transactionAdapterManager.getAdapter(wallet.transactionSource) ?: return null
         val startTimeSec = legStartTime / 1000 - START_TIME_BUFFER_SEC
         val lastBlockHeight = adapter.lastBlockInfo?.height
@@ -279,8 +275,7 @@ class SyncPendingMultiSwapUseCase(
                 providerTransactionId = swap.leg1ProviderTransactionId,
                 transactionId = swap.leg1TransactionId,
                 providerId = swap.leg1ProviderId,
-                coinUidOut = swap.coinUidIntermediate,
-                blockchainTypeOut = swap.blockchainTypeIntermediate,
+                sideOut = swap.sideIntermediate,
                 amountOut = swap.leg1AmountOut,
                 accountId = swap.accountId,
                 legStartTime = swap.createdAt,
@@ -289,10 +284,8 @@ class SyncPendingMultiSwapUseCase(
         } else {
             syncLegOnChain(
                 transactionId = swap.leg1TransactionId,
-                coinUidIn = swap.coinUidIn,
-                blockchainTypeIn = swap.blockchainTypeIn,
-                coinUidOut = swap.coinUidIntermediate,
-                blockchainTypeOut = swap.blockchainTypeIntermediate,
+                sideIn = swap.sideIn,
+                sideOut = swap.sideIntermediate,
                 amountOut = swap.leg1AmountOut,
                 legStartTime = swap.createdAt,
                 updateLeg = updateLeg,
@@ -315,8 +308,7 @@ class SyncPendingMultiSwapUseCase(
             providerTransactionId = swap.leg1ProviderTransactionId,
             transactionId = swap.leg1TransactionId,
             providerId = swap.leg1ProviderId,
-            coinUidOut = swap.coinUidIntermediate,
-            blockchainTypeOut = swap.blockchainTypeIntermediate,
+            sideOut = swap.sideIntermediate,
             amountOut = swap.leg1AmountOut,
             accountId = swap.accountId,
             legStartTime = swap.createdAt,
@@ -327,8 +319,7 @@ class SyncPendingMultiSwapUseCase(
 
     private suspend fun backfillLeg1InfoRecordUidOnChain(swap: PendingMultiSwap) {
         val match = scanIncoming(
-            coinUidOut = swap.coinUidIntermediate,
-            blockchainTypeOut = swap.blockchainTypeIntermediate,
+            sideOut = swap.sideIntermediate,
             expectedAmount = swap.leg1AmountOut,
             legStartTime = swap.createdAt,
         ) ?: return
@@ -354,8 +345,7 @@ class SyncPendingMultiSwapUseCase(
                 providerTransactionId = swap.leg2ProviderTransactionId,
                 transactionId = swap.leg2TransactionId,
                 providerId = swap.leg2ProviderId ?: return,
-                coinUidOut = swap.coinUidOut,
-                blockchainTypeOut = swap.blockchainTypeOut,
+                sideOut = swap.sideOut,
                 amountOut = swap.leg2AmountOut,
                 accountId = swap.accountId,
                 legStartTime = swap.leg2StartTime(),
@@ -364,10 +354,8 @@ class SyncPendingMultiSwapUseCase(
         } else {
             syncLegOnChain(
                 transactionId = swap.leg2TransactionId,
-                coinUidIn = swap.coinUidIntermediate,
-                blockchainTypeIn = swap.blockchainTypeIntermediate,
-                coinUidOut = swap.coinUidOut,
-                blockchainTypeOut = swap.blockchainTypeOut,
+                sideIn = swap.sideIntermediate,
+                sideOut = swap.sideOut,
                 amountOut = swap.leg2AmountOut,
                 legStartTime = swap.leg2StartTime(),
                 updateLeg = updateLeg,
@@ -385,18 +373,6 @@ class SyncPendingMultiSwapUseCase(
                 pendingMultiSwapStorage.delete(swap.id)
             }
         }
-    }
-
-    // --- helpers ---
-
-    private fun findWallet(coinUid: String, blockchainTypeUid: String): Wallet? =
-        walletManager.activeWallets.firstOrNull {
-            it.coin.uid == coinUid && it.token.blockchainType == BlockchainType.fromUid(blockchainTypeUid)
-        }
-
-    private suspend fun findReceiveAddress(coinUid: String, blockchainTypeUid: String): String? {
-        val wallet = findWallet(coinUid, blockchainTypeUid) ?: return null
-        return adapterManager.getReceiveAddressForWallet(wallet)
     }
 
     private companion object {

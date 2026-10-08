@@ -6,14 +6,19 @@ if [ -x /usr/libexec/java_home ]; then
     export JAVA_HOME=$(/usr/libexec/java_home -v 21)
 fi
 
-ASSET=core/wallet/src/main/assets/initial_coins_list
-count() { grep -c "INSERT OR REPLACE INTO $1 " "$ASSET" || true; }
+ASSET=core/market/src/androidMain/assets/initial_coins_list
 
-before_blockchains=$(count BlockchainEntity)
+# Row count for table $1 via a throwaway in-memory DB (awk adds the trailing ';' sqlite3 needs).
+count() {
+    { awk '{ if ($0 !~ /;[[:space:]]*$/) print $0 ";"; else print }' "$ASSET"; echo "SELECT COUNT(*) FROM $1;"; } \
+        | sqlite3 :memory:
+}
+
+before_blockchains=$(count Blockchain)
 before_coins=$(count Coin)
-before_tokens=$(count TokenEntity)
+before_tokens=$(count Token)
 
-./gradlew :core:wallet:testDebugUnitTest \
+./gradlew :core:market:testAndroidHostTest \
     --tests "cash.p.terminal.wallet.tools.InitialCoinsListGenerator" \
     -PupdateCoinsList=true --rerun
 
@@ -24,7 +29,7 @@ report() {
     [ "$delta" -ge 0 ] && sign="+"
     echo "$1: $2 → $after ($sign$delta)"
 }
-report BlockchainEntity "$before_blockchains"
+report Blockchain "$before_blockchains"
 report Coin "$before_coins"
-report TokenEntity "$before_tokens"
+report Token "$before_tokens"
 git diff --stat "$ASSET"

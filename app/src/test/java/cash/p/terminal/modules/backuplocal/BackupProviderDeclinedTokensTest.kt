@@ -74,7 +74,7 @@ internal class BackupProviderDeclinedTokensTest : BackupProviderRestoreTestFixtu
         coVerify(exactly = 0) { accountManager.import(any()) }
         coVerify(exactly = 0) { walletManager.saveEnabledWallets(any()) }
         verify(exactly = 0) { restoreSettingsManager.save(any(), any(), any()) }
-        verify(exactly = 0) { marketFavoritesManager.addAll(any()) }
+        coVerify(exactly = 0) { marketFavoritesManager.addAll(any()) }
         verify(exactly = 0) { contactsRepository.restore(any<List<Contact>>()) }
         verify(exactly = 0) { balanceViewTypeManager.setViewType(any()) }
         verify(exactly = 0) { evmSyncSourceManager.saveSyncSource(any(), any(), any()) }

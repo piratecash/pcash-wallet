@@ -1,11 +1,17 @@
 package cash.p.terminal.modules.coin
 
 import cash.p.terminal.wallet.Clearable
-import cash.p.terminal.core.managers.MarketFavoritesManager
 import cash.p.terminal.wallet.entities.FullCoin
+import cash.p.terminal.wallet.favorites.MarketFavoritesManager
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.BehaviorSubject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 class CoinService(
     val fullCoin: FullCoin,
@@ -17,28 +23,27 @@ class CoinService(
         get() = _isFavorite
 
     private val disposables = CompositeDisposable()
+    private val coroutineScope = CoroutineScope(Dispatchers.Default)
 
     init {
-        emitIsFavorite()
+        coroutineScope.launch {
+            marketFavoritesManager.favoriteCoinUids
+                .map { fullCoin.coin.uid in it }
+                .distinctUntilChanged()
+                .collect(_isFavorite::onNext)
+        }
     }
 
     override fun clear() {
         disposables.clear()
+        coroutineScope.cancel()
     }
 
     fun favorite() {
-        marketFavoritesManager.add(fullCoin.coin.uid)
-
-        emitIsFavorite()
+        coroutineScope.launch { marketFavoritesManager.add(fullCoin.coin.uid) }
     }
 
     fun unfavorite() {
-        marketFavoritesManager.remove(fullCoin.coin.uid)
-
-        emitIsFavorite()
-    }
-
-    private fun emitIsFavorite() {
-        _isFavorite.onNext(marketFavoritesManager.isCoinInFavorites(fullCoin.coin.uid))
+        coroutineScope.launch { marketFavoritesManager.remove(fullCoin.coin.uid) }
     }
 }

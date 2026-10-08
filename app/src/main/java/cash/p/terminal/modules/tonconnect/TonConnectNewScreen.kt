@@ -26,14 +26,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.authorizedAction
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
 import cash.p.terminal.modules.walletconnect.session.ui.DropDownCell
 import cash.p.terminal.modules.walletconnect.session.ui.TitleValueCell
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.SelectorDialogCompose
 import cash.p.terminal.ui.compose.components.SelectorItem
@@ -50,7 +50,7 @@ import com.tonapps.wallet.data.tonconnect.entities.DAppRequestEntity
 
 @Composable
 fun TonConnectNewScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     requestEntity: DAppRequestEntity,
     onResult: (Boolean) -> Unit,
 ) {
@@ -87,7 +87,7 @@ fun TonConnectNewScreen(
                         title = TranslatableString.ResString(R.string.Button_Close),
                         icon = R.drawable.ic_close_24,
                         enabled = !uiState.connecting,
-                        onClick = { navController.popBackStackSafely() }
+                        onClick = { navigation.navigateUpSafely() }
                     )
                 )
             )
@@ -186,7 +186,7 @@ fun TonConnectNewScreen(
                             stringResource(R.string.Button_Connect)
                         },
                         onClick = {
-                            navController.authorizedAction {
+                            navigation.authorizedAction {
                                 viewModel.connect()
                             }
                         },

@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.HSCaution
@@ -54,6 +54,7 @@ import cash.p.terminal.trezor.domain.TrezorSigningException
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
+import co.touchlab.kermit.Logger
 import com.tangem.common.core.TangemSdkError
 import com.piratecash.monero.signer.HardwareWalletOperationException
 import io.horizontalsystems.bitcoincore.managers.SendValueErrors
@@ -75,6 +76,8 @@ import java.math.BigDecimal
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.cancellation.CancellationException
+
+private val logger = Logger.withTag("SwapConfirmViewModel")
 
 class SwapConfirmViewModel(
     private val request: SwapConfirmRequest,
@@ -298,7 +301,17 @@ class SwapConfirmViewModel(
         } else {
             emptyList()
         }
-        return sendTransactionState.cautions + quoteCautions + priceImpactCaution + balanceCaution
+        val criticalErrorCaution = criticalError?.let {
+            listOf(
+                HSCaution(
+                    s = TranslatableString.ResString(R.string.Error),
+                    type = HSCaution.Type.Error,
+                    description = TranslatableString.PlainString(it),
+                ).toCautionViewItem()
+            )
+        } ?: emptyList()
+        return sendTransactionState.cautions + quoteCautions + priceImpactCaution + balanceCaution +
+            criticalErrorCaution
     }
 
     private fun isSendable(cautions: List<CautionViewItem> = buildCautions()): Boolean {
@@ -400,7 +413,8 @@ class SwapConfirmViewModel(
             } catch (e: BackendExolixResponseError) {
                 setCriticalError(criticalErrorOf(e.message, e.error))
             } catch (e: BackendYiFiResponseError) {
-                setCriticalError(criticalErrorOf(e.message, e.code))
+                logger.w { "YiFi final quote failed: code=${e.code}, status=${e.statusCode}" }
+                setCriticalError(e.yiFiCriticalError)
             } catch (e: BackendSwapError) {
                 setCriticalError(criticalErrorOf(e.message, e.code))
             } catch (_: SwapDepositMemoUnsupported) {
@@ -477,6 +491,21 @@ class SwapConfirmViewModel(
 
     private fun criticalErrorOf(vararg candidates: String?): String =
         candidates.firstOrNull { !it.isNullOrBlank() } ?: Translator.getString(R.string.unexpected_error)
+
+    private val BackendYiFiResponseError.yiFiCriticalError: String
+        get() = when (code) {
+            BackendYiFiResponseError.INVALID_RECEIVE_ADDRESS -> {
+                Translator.getString(R.string.unsupported_address)
+            }
+
+            BackendYiFiResponseError.INVALID_REFUND_ADDRESS -> {
+                Translator.getString(R.string.unsupported_refund_address)
+            }
+
+            else -> {
+                Translator.getString(R.string.swap_provider_order_failed)
+            }
+        }
 
     private fun setCriticalError(error: String) {
         loading = false
@@ -571,11 +600,14 @@ class SwapConfirmViewModel(
             createdAt = System.currentTimeMillis(),
             coinUidIn = legInfo.coinUidIn,
             blockchainTypeIn = legInfo.blockchainTypeIn,
+            tokenQueryIdIn = legInfo.tokenQueryIdIn,
             amountIn = legInfo.amountIn,
             coinUidIntermediate = legInfo.coinUidIntermediate,
             blockchainTypeIntermediate = legInfo.blockchainTypeIntermediate,
+            tokenQueryIdIntermediate = legInfo.tokenQueryIdIntermediate,
             coinUidOut = legInfo.coinUidOut,
             blockchainTypeOut = legInfo.blockchainTypeOut,
+            tokenQueryIdOut = legInfo.tokenQueryIdOut,
             leg1ProviderId = legInfo.leg1ProviderId,
             leg1IsOffChain = swapProvider.isOffChain,
             leg1TransactionId = result.getRecordUid(),
@@ -626,7 +658,7 @@ class SwapConfirmViewModel(
         fun provideFactory(
             quote: SwapProviderQuote,
             settings: Map<String, Any?>,
-            navController: NavController,
+            navigation: SwapConfirmNavigation,
             direction: SwapAmountDirection = SwapAmountDirection.In,
             requestedAmountOut: BigDecimal? = null,
             multiSwapLegInfo: MultiSwapLegInfo? = null,
@@ -638,7 +670,7 @@ class SwapConfirmViewModel(
             ): T {
                 val wallet = App.walletManager.activeWallets
                     .find { it.token == quote.tokenIn }
-                val sendTransactionService = createSendTransactionService(quote, wallet, navController)
+                val sendTransactionService = createSendTransactionService(quote, wallet, navigation)
 
                 // When wallet is null the dummy service above (sendable=false)
                 // prevents any swap execution while the screen navigates back.
@@ -673,13 +705,13 @@ class SwapConfirmViewModel(
         private fun createSendTransactionService(
             quote: SwapProviderQuote,
             wallet: Wallet?,
-            navController: NavController,
+            navigation: SwapConfirmNavigation,
         ): ISendTransactionService<*> = try {
             checkNotNull(wallet) { "Wallet not found for ${quote.tokenIn}" }
             SwapTransactionServiceFactory.create(quote.tokenIn, quote.provider)
         } catch (e: Exception) {
             Toast.makeText(App.instance, R.string.unsupported_token, Toast.LENGTH_SHORT).show()
-            navController.popBackStack()
+            navigation.exitFlow()
             unavailableSendTransactionService(quote.tokenIn)
         }
 
@@ -692,7 +724,7 @@ class SwapConfirmViewModel(
                 override fun hasSettings(): Boolean = false
 
                 @Composable
-                override fun GetSettingsContent(navController: NavController) = Unit
+                override fun GetSettingsContent(navigation: HSNavigation) = Unit
 
                 override suspend fun sendTransaction(
                     mevProtectionEnabled: Boolean,
@@ -734,11 +766,14 @@ sealed class MultiSwapLegInfo {
     data class Leg1(
         val coinUidIn: String,
         val blockchainTypeIn: String,
+        val tokenQueryIdIn: String?,
         val amountIn: BigDecimal,
         val coinUidIntermediate: String,
         val blockchainTypeIntermediate: String,
+        val tokenQueryIdIntermediate: String?,
         val coinUidOut: String,
         val blockchainTypeOut: String,
+        val tokenQueryIdOut: String?,
         val leg1ProviderId: String,
         val leg2ProviderId: String,
         val leg2IsOffChain: Boolean,
