@@ -39,53 +39,53 @@ class KitDatabaseKeyProviderTest {
     }
 
     @Test
-    fun keyFor_bitcoinAndStellarProviders_keepSeparateKeys() {
+    fun keyFor_bitcoinAndTronProviders_keepSeparateKeys() {
         val bitcoinProvider = BitcoinKitDatabaseKeyProvider(context, encryptionManager)
-        val stellarProvider = StellarKitDatabaseKeyProvider(context, encryptionManager)
+        val tronProvider = TronKitDatabaseKeyProvider(context, encryptionManager)
 
         val bitcoinKey = bitcoinProvider.keyFor(ACCOUNT_ID)
-        val stellarKey = stellarProvider.keyFor(ACCOUNT_ID)
+        val tronKey = tronProvider.keyFor(ACCOUNT_ID)
 
-        assertFalse(bitcoinKey.contentEquals(stellarKey))
-        assertTrue(stellarPreferences().contains(STELLAR_PREFERENCE_KEY))
+        assertFalse(bitcoinKey.contentEquals(tronKey))
+        assertTrue(tronPreferences().contains(TRON_PREFERENCE_KEY))
         assertTrue(bitcoinPreferences().contains(BITCOIN_PREFERENCE_KEY))
 
-        stellarProvider.remove(ACCOUNT_ID)
+        tronProvider.remove(ACCOUNT_ID)
 
-        assertFalse(stellarPreferences().contains(STELLAR_PREFERENCE_KEY))
+        assertFalse(tronPreferences().contains(TRON_PREFERENCE_KEY))
         assertArrayEquals(bitcoinKey, bitcoinProvider.keyFor(ACCOUNT_ID))
 
-        val newStellarKey = stellarProvider.keyFor(ACCOUNT_ID)
+        val newTronKey = tronProvider.keyFor(ACCOUNT_ID)
         bitcoinProvider.remove(ACCOUNT_ID)
 
         assertFalse(bitcoinPreferences().contains(BITCOIN_PREFERENCE_KEY))
-        assertArrayEquals(newStellarKey, stellarProvider.keyFor(ACCOUNT_ID))
+        assertArrayEquals(newTronKey, tronProvider.keyFor(ACCOUNT_ID))
     }
 
     @Test
     fun keyFor_commitFails_throwsAndLeavesNoUnsavedKey() {
         val failingContext = FirstPutCommitFailsContext(context)
-        val provider = StellarKitDatabaseKeyProvider(failingContext, encryptionManager)
+        val provider = TronKitDatabaseKeyProvider(failingContext, encryptionManager)
 
         assertFailsWith<KitDatabaseKeyException> { provider.keyFor(ACCOUNT_ID) }
 
-        assertFalse(stellarPreferences().contains(STELLAR_PREFERENCE_KEY))
+        assertFalse(tronPreferences().contains(TRON_PREFERENCE_KEY))
 
         val key = provider.keyFor(ACCOUNT_ID)
 
-        assertArrayEquals(key, StellarKitDatabaseKeyProvider(context, encryptionManager).keyFor(ACCOUNT_ID))
+        assertArrayEquals(key, TronKitDatabaseKeyProvider(context, encryptionManager).keyFor(ACCOUNT_ID))
     }
 
     private fun clearPreferences() {
         bitcoinPreferences().edit().clear().commit()
-        stellarPreferences().edit().clear().commit()
+        tronPreferences().edit().clear().commit()
     }
 
     private fun bitcoinPreferences() =
         context.getSharedPreferences("bitcoin_kit_database_keys", Context.MODE_PRIVATE)
 
-    private fun stellarPreferences() =
-        context.getSharedPreferences("stellar_kit_database_keys", Context.MODE_PRIVATE)
+    private fun tronPreferences() =
+        context.getSharedPreferences("tron_kit_database_keys", Context.MODE_PRIVATE)
 
     /** Mimics SharedPreferencesImpl: a failed commit() still leaves the edit applied in memory. */
     private class FirstPutCommitFailsContext(base: Context) : ContextWrapper(base) {
@@ -126,7 +126,7 @@ class KitDatabaseKeyProviderTest {
     private companion object {
         const val ACCOUNT_ID = "account-id"
         const val BITCOIN_PREFERENCE_KEY = "bitcoin_kit_database_key_$ACCOUNT_ID"
-        const val STELLAR_PREFERENCE_KEY = "stellar_kit_database_key_$ACCOUNT_ID"
+        const val TRON_PREFERENCE_KEY = "tron_kit_database_key_$ACCOUNT_ID"
         const val ENCRYPTED_PREFIX = "encrypted:"
     }
 }

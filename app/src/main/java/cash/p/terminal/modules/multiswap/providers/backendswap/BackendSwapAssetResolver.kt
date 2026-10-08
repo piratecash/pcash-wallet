@@ -26,7 +26,7 @@ class BackendSwapAssetResolver(
         val network = token.blockchainType.backendSwapNetwork ?: return null
         val row = when (kind) {
             SwapAssetKind.NATIVE -> {
-                val coinId = token.coin.coinGeckoId ?: return null
+                val coinId = token.coin.uid
                 currencies(providerName)
                     .singleOrNull { it.blockchain == network && it.coinId == coinId }
                     ?.takeIf { it.contractAddress.isNullOrBlank() }

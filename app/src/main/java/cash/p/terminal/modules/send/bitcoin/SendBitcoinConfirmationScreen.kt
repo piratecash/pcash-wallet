@@ -8,45 +8,36 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import cash.p.terminal.R
+import cash.p.terminal.modules.btcblockchainsettings.BtcBlockchainSettingsPage
 import cash.p.terminal.modules.send.SendConfirmationScreen
-import cash.p.terminal.modules.send.offline.OfflineSignFlowRoutes
 import cash.p.terminal.modules.send.offline.OfflineSignableConfirmationHost
 import cash.p.terminal.modules.syncerror.SyncErrorModule
 import cash.p.terminal.modules.syncerror.SyncErrorViewModel
-import cash.p.terminal.navigation.slideFromBottom
-
-private const val BitcoinConfirmationPage = "bitcoin_confirmation"
-private const val OfflineBitcoinSignPage = "offline_bitcoin_sign"
-private const val OfflineTransactionTransferPage = "offline_transaction_transfer"
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
+import kotlin.reflect.KClass
 
 @Composable
 fun SendBitcoinConfirmationScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     sendViewModel: SendBitcoinViewModel,
-    sendEntryPointDestId: Int
+    sendEntryPoint: KClass<out HSPage>?
 ) {
     val syncErrorViewModel = viewModel<SyncErrorViewModel>(
         factory = SyncErrorModule.Factory(sendViewModel.wallet)
     )
     OfflineSignableConfirmationHost(
-        fragmentNavController = navController,
+        navigation = navigation,
         sendViewModel = sendViewModel,
-        confirmationRoute = BitcoinConfirmationPage,
-        signFlowRoutes = OfflineSignFlowRoutes(
-            signRoute = OfflineBitcoinSignPage,
-            transferRoute = OfflineTransactionTransferPage,
-        ),
         sourceChangeable = syncErrorViewModel.sourceChangeable,
         onChangeSourceClick = {
-            navController.openBitcoinSourceSettings(syncErrorViewModel.blockchainWrapper)
+            navigation.openBitcoinSourceSettings(syncErrorViewModel.blockchainWrapper)
         },
     ) { onRequestOfflineSign ->
         BitcoinOnlineConfirmation(
-            navController = navController,
+            navigation = navigation,
             sendViewModel = sendViewModel,
-            sendEntryPointDestId = sendEntryPointDestId,
+            sendEntryPoint = sendEntryPoint,
             onRequestOfflineSign = onRequestOfflineSign,
         )
     }
@@ -54,9 +45,9 @@ fun SendBitcoinConfirmationScreen(
 
 @Composable
 private fun BitcoinOnlineConfirmation(
-    navController: NavController,
+    navigation: HSNavigation,
     sendViewModel: SendBitcoinViewModel,
-    sendEntryPointDestId: Int,
+    sendEntryPoint: KClass<out HSPage>?,
     onRequestOfflineSign: (() -> Unit)?,
 ) {
     var confirmationData by remember { mutableStateOf(sendViewModel.getConfirmationData()) }
@@ -79,7 +70,7 @@ private fun BitcoinOnlineConfirmation(
     }
 
     SendConfirmationScreen(
-        navController = navController,
+        navigation = navigation,
         coinMaxAllowedDecimals = sendViewModel.coinMaxAllowedDecimals,
         feeCoinMaxAllowedDecimals = sendViewModel.coinMaxAllowedDecimals,
         rate = sendViewModel.coinRate,
@@ -96,7 +87,7 @@ private fun BitcoinOnlineConfirmation(
         memo = confirmationData.memo,
         rbfEnabled = confirmationData.rbfEnabled,
         onClickSend = sendViewModel::onClickSend,
-        sendEntryPointDestId = sendEntryPointDestId,
+        sendEntryPoint = sendEntryPoint,
         isSynced = sendViewModel.isSynced,
         hasAdapterError = sendViewModel.hasAdapterError,
         onRetrySync = sendViewModel::retryAdapterSync,
@@ -112,13 +103,10 @@ private fun BitcoinOnlineConfirmation(
     )
 }
 
-private fun NavController.openBitcoinSourceSettings(
+private fun HSNavigation.openBitcoinSourceSettings(
     blockchainWrapper: SyncErrorModule.BlockchainWrapper?,
 ) {
     if (blockchainWrapper?.type != SyncErrorModule.BlockchainWrapper.Type.Bitcoin) return
 
-    slideFromBottom(
-        R.id.btcBlockchainSettingsFragment,
-        blockchainWrapper.blockchain
-    )
+    slideFromBottom(BtcBlockchainSettingsPage(blockchainWrapper.blockchain))
 }

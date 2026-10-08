@@ -6,16 +6,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import cash.p.terminal.R
 import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.modules.send.SendResult
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import org.koin.compose.koinInject
 
 /**
@@ -57,59 +54,22 @@ internal fun isOfflineRetryInProgress(
 ): Boolean = retrying || (syncRetrying && isConnected && !hasAdapterError)
 
 /**
- * Shared confirmation host used by every send chain. It owns the inner NavHost and the
- * offline-sign flow routes, and gates the online confirmation ([onlineContent]) behind
- * the offline blocker whenever [shouldShowOfflineSyncBlocker] holds. This is the single
- * algorithm all chains follow; only [onlineContent] and the per-chain route ids differ.
+ * Shared confirmation host used by every send chain. It gates the online confirmation
+ * ([onlineContent]) behind the offline blocker whenever [shouldShowOfflineSyncBlocker] holds
+ * and opens the offline-sign flow. This is the single algorithm all chains follow; only
+ * [onlineContent] differs.
  *
  * [sourceChangeable]/[onChangeSourceClick] carry Bitcoin's "Change Source" capability;
  * other chains pass `false` / `{}`.
  */
 @Composable
-internal fun OfflineSignableConfirmationHost(
-    fragmentNavController: NavController,
-    sendViewModel: OfflineSignCapableViewModel,
-    confirmationRoute: String,
-    signFlowRoutes: OfflineSignFlowRoutes,
+internal fun <T> OfflineSignableConfirmationHost(
+    navigation: HSNavigation,
+    sendViewModel: T,
     sourceChangeable: Boolean,
     onChangeSourceClick: () -> Unit,
     onlineContent: @Composable (onRequestOfflineSign: (() -> Unit)?) -> Unit,
-) {
-    val composeNavController = rememberNavController()
-    NavHost(
-        navController = composeNavController,
-        startDestination = confirmationRoute,
-    ) {
-        composable(confirmationRoute) {
-            OfflineSignableConfirmationContent(
-                fragmentNavController = fragmentNavController,
-                composeNavController = composeNavController,
-                sendViewModel = sendViewModel,
-                signRoute = signFlowRoutes.signRoute,
-                sourceChangeable = sourceChangeable,
-                onChangeSourceClick = onChangeSourceClick,
-                onlineContent = onlineContent,
-            )
-        }
-        offlineSignFlowRoutes(
-            routes = signFlowRoutes,
-            navController = composeNavController,
-            fragmentNavController = fragmentNavController,
-            sendViewModel = sendViewModel,
-        )
-    }
-}
-
-@Composable
-private fun OfflineSignableConfirmationContent(
-    fragmentNavController: NavController,
-    composeNavController: NavHostController,
-    sendViewModel: OfflineSignCapableViewModel,
-    signRoute: String,
-    sourceChangeable: Boolean,
-    onChangeSourceClick: () -> Unit,
-    onlineContent: @Composable (onRequestOfflineSign: (() -> Unit)?) -> Unit,
-) {
+) where T : ViewModel, T : OfflineSignCapableViewModel {
     val connectivityManager = koinInject<IConnectivityManager>()
     val isConnected by connectivityManager.isConnected.collectAsStateWithLifecycle()
     var retrying by remember { mutableStateOf(false) }
@@ -145,13 +105,13 @@ private fun OfflineSignableConfirmationContent(
                 sourceChangeable = sourceChangeable,
             ),
             callbacks = OfflineSendSyncErrorCallbacks(
-                onBackClick = fragmentNavController::popBackStackSafely,
+                onBackClick = navigation::navigateUpSafely,
                 onRetryClick = {
                     retrying = true
                     sendViewModel.retryAdapterSync()
                 },
                 onChangeSourceClick = onChangeSourceClick,
-                onSignOfflineClick = { composeNavController.navigate(signRoute) },
+                onSignOfflineClick = { navigation.slideFromRight(OfflineSignPage(sendViewModel::class)) },
             ),
         )
         return
@@ -160,7 +120,7 @@ private fun OfflineSignableConfirmationContent(
     // Only offer offline signing after a send failure that happened while offline — a balance /
     // validation / RPC failure (network present) is not solved by offline signing.
     val onRequestOfflineSign: (() -> Unit)? = if (sendViewModel.offlineSignSupported && !isConnected) {
-        { composeNavController.navigate(signRoute) }
+        { navigation.slideFromRight(OfflineSignPage(sendViewModel::class)) }
     } else {
         null
     }

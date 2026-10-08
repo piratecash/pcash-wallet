@@ -10,7 +10,7 @@ import cash.p.terminal.core.description
 import cash.p.terminal.core.title
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.ui_compose.components.ImageSource
-import cash.p.terminal.ui.extensions.BottomSheetSelectorMultipleDialog
+import cash.p.terminal.ui.extensions.BottomSheetSelectorMultipleSheet
 import cash.p.terminal.ui.extensions.BottomSheetSelectorViewItem
 import cash.p.terminal.wallet.title
 import io.horizontalsystems.core.imageUrl
@@ -24,7 +24,7 @@ class BlockchainTokensViewModel(
     var showBottomSheetDialog by mutableStateOf(false)
         private set
 
-    var config: BottomSheetSelectorMultipleDialog.Config? = null
+    var config: BottomSheetSelectorMultipleSheet.Config? = null
         private set
     var currentRequest: BlockchainTokensService.Request? = null
         private set
@@ -42,7 +42,7 @@ class BlockchainTokensViewModel(
         val blockchain = request.blockchain
         val selectedTokenIndexes = request.enabledTokens.map { request.tokens.indexOf(it) }
 
-        val config = BottomSheetSelectorMultipleDialog.Config(
+        val config = BottomSheetSelectorMultipleSheet.Config(
             icon = ImageSource.Remote(blockchain.type.imageUrl, R.drawable.ic_platform_placeholder_32),
             title = blockchain.name,
             description = Translator.getString(R.string.AddressFormatSettings_Description),

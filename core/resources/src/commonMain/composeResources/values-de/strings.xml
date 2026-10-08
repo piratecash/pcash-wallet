@@ -645,12 +645,13 @@
     <string name="SwapConfirm_FetchingFinalQuote">Abrufen des endgültigen Angebots</string>
     <string name="SwapWarning_SlippageNotAvailable_Title">Keine Slippage-Kontrolle</string>
     <string name="SwapWarning_SlippageNotAvailable_Description">Cross-Chain-Operationen hängen von Drittanbieter-Liquidität und Verzögerungen ab, was den Endbetrag beeinflussen kann.</string>
-    <string name="unsupported_refund_address">Unsupported refund address</string>
-    <string name="unsupported_address">Unsupported address</string>
+    <string name="unsupported_refund_address">Nicht unterstützte Rückerstattungsadresse</string>
+    <string name="unsupported_address">Nicht unterstützte Adresse</string>
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">Nicht unterstützter Token</string>
     <string name="zec_transparent_used">Beim Erstellen des Austauschs wird eine temporäre t-Adresse verwendet: %s. Sie wird an den Austauschdienst übermittelt und ist erforderlich für eine Rückerstattung, falls der Austausch nicht abgeschlossen wird. Die Verwendung einer t-Adresse kann zu einer teilweisen Deanonymisierung der Transaktion führen.</string>
     <string name="swap_yifi_memo_unsupported">Der Swap-Anbieter benötigt ein Einzahlungs-Memo, das aus diesem Netzwerk nicht gesendet werden kann. Wählen Sie einen anderen Anbieter.</string>
+    <string name="swap_provider_order_failed">Der Anbieter konnte den Swap nicht erstellen. Aktualisieren Sie das Angebot oder gehen Sie zurück und wählen Sie einen anderen Anbieter.</string>
     <!-- Swap Settings -->
     <string name="SwapSettings_Title">Swap-Einstellungen</string>
     <string name="SwapSettings_SlippageTitle">Slippage-Toleranz</string>

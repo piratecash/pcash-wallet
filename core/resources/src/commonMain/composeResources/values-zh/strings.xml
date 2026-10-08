@@ -647,12 +647,13 @@
     <string name="SwapConfirm_FetchingFinalQuote">正在获取最终报价</string>
     <string name="SwapWarning_SlippageNotAvailable_Title">无滑点控制</string>
     <string name="SwapWarning_SlippageNotAvailable_Description">跨链操作依赖于第三方流动性和延迟，这可能会影响最终金额。</string>
-    <string name="unsupported_refund_address">Unsupported refund address</string>
-    <string name="unsupported_address">Unsupported address</string>
+    <string name="unsupported_refund_address">不支持的退款地址</string>
+    <string name="unsupported_address">不支持的地址</string>
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">不支持的代币</string>
     <string name="zec_transparent_used">在创建兑换时会使用临时 t 地址：%s。该地址会提供给兑换服务提供商，如果兑换未完成，则需要用于退款。使用 t 地址可能会导致交易部分去匿名化。</string>
     <string name="swap_yifi_memo_unsupported">兑换提供商要求提供存款备注（memo），但该备注无法从此网络发送。请选择其他提供商。</string>
+    <string name="swap_provider_order_failed">提供商未能创建兑换。请刷新报价，或返回选择其他提供商。</string>
     <!-- Swap Settings -->
     <string name="SwapSettings_Title">Swap 设置</string>
     <string name="SwapSettings_SlippageTitle">无效滑点</string>

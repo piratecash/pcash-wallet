@@ -6,6 +6,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import cash.p.terminal.modules.activatetoken.ActivateTokenPage
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui_compose.components.AppModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
@@ -19,9 +23,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import cash.p.terminal.modules.activatetoken.ActivateTokenFragment
-import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.R
 import cash.p.terminal.modules.receive.ui.ReceiveAddressScreen
@@ -37,14 +38,14 @@ import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.subhead1_jacob
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
-import cash.p.terminal.navigation.slideFromBottomForResult
 import kotlinx.coroutines.launch
+import kotlin.reflect.KClass
 
 @Composable
 fun ReceiveStellarAssetScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     wallet: Wallet,
-    receiveEntryPointDestId: Int
+    receiveEntryPoint: KClass<out HSPage>?
 ) {
     val viewModel = viewModel<ReceiveStellarAssetViewModel>(
         factory = ReceiveStellarAssetViewModel.Factory(wallet)
@@ -55,10 +56,7 @@ fun ReceiveStellarAssetScreen(
     val scope = rememberCoroutineScope()
 
     val runActivation = {
-        navController.slideFromBottomForResult<ActivateTokenFragment.Result>(
-            R.id.activateTokenFragment,
-            wallet
-        ) {
+        navigation.slideFromBottomForResult<ActivateTokenPage.Result>(ActivateTokenPage(wallet)) {
             scope.launch {
                 viewModel.onActivationResult(it.activated)
                 sheetState.hide()
@@ -157,14 +155,8 @@ fun ReceiveStellarAssetScreen(
                     }
                 }
             },
-            onBackPress = { navController.popBackStackSafely() },
-            closeModule = {
-                if (receiveEntryPointDestId == 0) {
-                    navController.popBackStackSafely()
-                } else {
-                    navController.popBackStack(receiveEntryPointDestId, true)
-                }
-            }
+            onBackPress = navigation::navigateUpSafely,
+            closeModule = { navigation.closeReceiveModule(receiveEntryPoint) }
         )
     }
 }

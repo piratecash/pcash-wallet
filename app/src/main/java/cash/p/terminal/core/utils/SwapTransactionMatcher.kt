@@ -2,6 +2,7 @@ package cash.p.terminal.core.utils
 
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.entities.SwapProviderTransaction
+import cash.p.terminal.wallet.Token
 import java.math.BigDecimal
 
 /**
@@ -11,8 +12,7 @@ data class IncomingTransaction(
     val uid: String,
     val amount: BigDecimal?,
     val timestamp: Long,  // in milliseconds
-    val coinUid: String,
-    val blockchainType: String,
+    val token: Token,
     val addresses: List<String>?,
     val accountId: String
 )
@@ -54,8 +54,7 @@ class SwapTransactionMatcher(
             addresses.firstNotNullOfOrNull { address ->
                 storage.getByAddressAndAmount(
                     address = address,
-                    blockchainType = transaction.blockchainType,
-                    coinUid = transaction.coinUid,
+                    token = transaction.token,
                     accountId = transaction.accountId,
                     amount = amount,
                     timestamp = transaction.timestamp
@@ -71,8 +70,7 @@ class SwapTransactionMatcher(
             // 3. Amount + timestamp matching (no addresses)
             // Query returns results ordered by closest amount match, then by date
             storage.getUnmatchedSwapsByTokenOut(
-                coinUid = transaction.coinUid,
-                blockchainType = transaction.blockchainType,
+                token = transaction.token,
                 fromTimestamp = transaction.timestamp - TIME_WINDOW_MS,
                 toTimestamp = transaction.timestamp,
                 amount = amount,
@@ -91,8 +89,7 @@ class SwapTransactionMatcher(
 
         // 4. Fallback to timestamp-only matching
         return matchedSwap ?: storage.getByTokenOut(
-            coinUid = transaction.coinUid,
-            blockchainType = transaction.blockchainType,
+            token = transaction.token,
             timestamp = transaction.timestamp,
             accountId = transaction.accountId
         )

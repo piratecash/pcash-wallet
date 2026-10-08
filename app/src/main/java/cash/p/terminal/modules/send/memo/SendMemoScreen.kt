@@ -17,10 +17,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import cash.p.terminal.R
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.address.AddressParserModule
@@ -34,17 +30,17 @@ import cash.p.terminal.modules.amount.AmountInputType
 import cash.p.terminal.modules.amount.HSAmountInput
 import cash.p.terminal.modules.fee.FeeInfoSection
 import cash.p.terminal.modules.memo.HSMemoInput
-import cash.p.terminal.modules.send.SendConfirmationFragment
-import cash.p.terminal.modules.send.SendFragment.ProceedActionData
+import cash.p.terminal.modules.send.SendConfirmationPage
+import cash.p.terminal.modules.send.SendPage.ProceedActionData
 import cash.p.terminal.modules.send.SendScreen
 import cash.p.terminal.modules.send.SendSuggestionsBar
 import cash.p.terminal.modules.send.address.AddressCheckerControl
 import cash.p.terminal.modules.send.address.SmartContractCheckSection
 import cash.p.terminal.modules.send.offline.OfflineSignActionCell
-import cash.p.terminal.modules.send.offline.OfflineSignFlowRoutes
-import cash.p.terminal.modules.send.offline.offlineSignFlowRoutes
+import cash.p.terminal.modules.send.offline.OfflineSignPage
 import cash.p.terminal.modules.sendtokenselect.PrefilledData
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui.compose.components.PoisonAddressRiskSection
 import cash.p.terminal.ui.compose.components.PoisonWarningCell
 import cash.p.terminal.ui.compose.components.TextPreprocessor
@@ -59,75 +55,54 @@ import io.horizontalsystems.core.entities.CurrencyValue
 import java.math.BigDecimal
 
 @Composable
-fun SendMemoNavHost(
+fun SendMemoPageContent(
     title: String,
-    fragmentNavController: NavController,
+    navigation: HSNavigation,
     viewModel: SendMemoViewModel,
     amountInputModeViewModel: AmountInputModeViewModel,
     prefilledData: PrefilledData?,
     addressCheckerControl: AddressCheckerControl,
     onNextClick: (ProceedActionData) -> Unit,
 ) {
-    val navController = rememberNavController()
-    NavHost(
-        navController = navController,
-        startDestination = SendMemoPage,
-    ) {
-        composable(SendMemoPage) {
-            SendMemoScreen(
-                navController = fragmentNavController,
-                prefilledData = prefilledData,
-                addressCheckerControl = addressCheckerControl,
-                state = SendMemoScreenState(
-                    title = title,
-                    wallet = viewModel.wallet,
-                    uiState = viewModel.uiState,
-                    amountInputType = amountInputModeViewModel.inputType,
-                    coinMaxAllowedDecimals = viewModel.coinMaxAllowedDecimals,
-                    fiatMaxAllowedDecimals = viewModel.fiatMaxAllowedDecimals,
-                    coinRate = viewModel.coinRate,
-                    displayBalance = viewModel.displayBalance,
-                    balanceHidden = viewModel.balanceHidden,
-                    feeToken = viewModel.feeToken,
-                    feeCoinBalance = viewModel.feeCoinBalance,
-                    feePrimary = viewModel.formatFeePrimary(viewModel.uiState.fee),
-                    feeSecondary = viewModel.formatFeeSecondary(viewModel.uiState.fee, viewModel.feeCoinRate),
-                    insufficientFeeBalance = viewModel.isInsufficientFeeBalance(viewModel.uiState.fee),
-                    offlineSignSupported = viewModel.offlineSignSupported,
-                    memoMaxLength = viewModel.memoMaxLength,
-                    memoMaxBytes = viewModel.memoMaxBytes,
-                ),
-                callbacks = SendMemoScreenCallbacks(
-                    onOfflineSignClick = { navController.navigate(OfflineMemoSignPage) },
-                    onNextClick = onNextClick,
-                    onEnterAddress = viewModel::onEnterAddress,
-                    onEnterAmount = viewModel::onEnterAmount,
-                    onEnterMemo = viewModel::onEnterMemo,
-                    onToggleAmountInputType = amountInputModeViewModel::onToggleInputType,
-                    onToggleHideBalance = viewModel::toggleHideBalance,
-                    onRiskAcceptedChange = viewModel::onRiskAcceptedChange,
-                ),
-            )
-        }
-        offlineSignFlowRoutes(
-            routes = OfflineSignFlowRoutes(
-                signRoute = OfflineMemoSignPage,
-                transferRoute = OfflineMemoTransactionTransferPage,
-            ),
-            navController = navController,
-            fragmentNavController = fragmentNavController,
-            sendViewModel = viewModel,
-        )
-    }
+    SendMemoScreen(
+        navigation = navigation,
+        prefilledData = prefilledData,
+        addressCheckerControl = addressCheckerControl,
+        state = SendMemoScreenState(
+            title = title,
+            wallet = viewModel.wallet,
+            uiState = viewModel.uiState,
+            amountInputType = amountInputModeViewModel.inputType,
+            coinMaxAllowedDecimals = viewModel.coinMaxAllowedDecimals,
+            fiatMaxAllowedDecimals = viewModel.fiatMaxAllowedDecimals,
+            coinRate = viewModel.coinRate,
+            displayBalance = viewModel.displayBalance,
+            balanceHidden = viewModel.balanceHidden,
+            feeToken = viewModel.feeToken,
+            feeCoinBalance = viewModel.feeCoinBalance,
+            feePrimary = viewModel.formatFeePrimary(viewModel.uiState.fee),
+            feeSecondary = viewModel.formatFeeSecondary(viewModel.uiState.fee, viewModel.feeCoinRate),
+            insufficientFeeBalance = viewModel.isInsufficientFeeBalance(viewModel.uiState.fee),
+            offlineSignSupported = viewModel.offlineSignSupported,
+            memoMaxLength = viewModel.memoMaxLength,
+            memoMaxBytes = viewModel.memoMaxBytes,
+        ),
+        callbacks = SendMemoScreenCallbacks(
+            onOfflineSignClick = { navigation.slideFromRight(OfflineSignPage(SendMemoViewModel::class)) },
+            onNextClick = onNextClick,
+            onEnterAddress = viewModel::onEnterAddress,
+            onEnterAmount = viewModel::onEnterAmount,
+            onEnterMemo = viewModel::onEnterMemo,
+            onToggleAmountInputType = amountInputModeViewModel::onToggleInputType,
+            onToggleHideBalance = viewModel::toggleHideBalance,
+            onRiskAcceptedChange = viewModel::onRiskAcceptedChange,
+        ),
+    )
 }
-
-private const val SendMemoPage = "send_stellar"
-private const val OfflineMemoSignPage = "offline_stellar_sign"
-private const val OfflineMemoTransactionTransferPage = "offline_stellar_transaction_transfer"
 
 @Composable
 private fun SendMemoScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     prefilledData: PrefilledData?,
     addressCheckerControl: AddressCheckerControl,
     state: SendMemoScreenState,
@@ -138,7 +113,7 @@ private fun SendMemoScreen(
     )
     ComposeAppTheme {
         SendMemoContent(
-            navController = navController,
+            navigation = navigation,
             prefilledData = prefilledData,
             addressCheckerControl = addressCheckerControl,
             state = state,
@@ -181,7 +156,7 @@ private data class SendMemoScreenCallbacks(
 
 @Composable
 private fun SendMemoContent(
-    navController: NavController,
+    navigation: HSNavigation,
     prefilledData: PrefilledData?,
     addressCheckerControl: AddressCheckerControl,
     state: SendMemoScreenState,
@@ -202,7 +177,7 @@ private fun SendMemoContent(
 
     SendScreen(
         title = state.title,
-        onCloseClick = { navController.popBackStackSafely() },
+        onCloseClick = { navigation.navigateUpSafely() },
         proceedEnabled = state.uiState.canBeSend,
         onSendClick = { callbacks.onNextClick(state.uiState.proceedActionData(state.wallet)) },
         bottomOverlay = {
@@ -218,7 +193,7 @@ private fun SendMemoContent(
             state = state,
             prefilledData = prefilledData,
             textPreprocessor = addressInputState.textPreprocessor,
-            navController = navController,
+            navigation = navigation,
             onValueChange = callbacks.onEnterAddress,
         )
         MemoAmountSection(
@@ -232,7 +207,7 @@ private fun SendMemoContent(
         MemoInputSection(state, addressInputState.memoPrefill, callbacks.onEnterMemo)
         MemoFeeAndRiskSections(
             state = state,
-            navController = navController,
+            navigation = navigation,
             addressCheckerControl = addressCheckerControl,
             onBalanceClick = callbacks.onToggleHideBalance,
             onRiskAcceptedChange = callbacks.onRiskAcceptedChange,
@@ -262,7 +237,7 @@ private fun MemoAddressSection(
     state: SendMemoScreenState,
     prefilledData: PrefilledData?,
     textPreprocessor: TextPreprocessor,
-    navController: NavController,
+    navigation: HSNavigation,
     onValueChange: (Address?) -> Unit,
 ) {
     Column {
@@ -279,7 +254,7 @@ private fun MemoAddressSection(
                 coinCode = state.wallet.coin.code,
                 error = state.uiState.addressError,
                 textPreprocessor = textPreprocessor,
-                navController = navController,
+                navigation = navigation,
                 isPoisonAddress = state.uiState.isPoisonAddress,
                 onValueChange = onValueChange,
             )
@@ -333,7 +308,7 @@ private fun MemoAmountSection(
 @Composable
 private fun MemoFeeAndRiskSections(
     state: SendMemoScreenState,
-    navController: NavController,
+    navigation: HSNavigation,
     addressCheckerControl: AddressCheckerControl,
     onBalanceClick: () -> Unit,
     onRiskAcceptedChange: (Boolean) -> Unit,
@@ -361,7 +336,7 @@ private fun MemoFeeAndRiskSections(
         }
         SmartContractCheckSection(
             token = state.wallet.token,
-            navController = navController,
+            navigation = navigation,
             addressCheckerControl = addressCheckerControl,
             modifier = Modifier.padding(top = 8.dp)
         )
@@ -400,5 +375,5 @@ private fun SendMemoUiState.proceedActionData(wallet: Wallet) =
     ProceedActionData(
         address = address?.hex,
         wallet = wallet,
-        type = SendConfirmationFragment.Type.Stellar,
+        type = SendConfirmationPage.Type.Stellar,
     )

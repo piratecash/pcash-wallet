@@ -646,12 +646,13 @@
     <string name="SwapConfirm_FetchingFinalQuote">Recuperando la comilla final</string>
     <string name="SwapWarning_SlippageNotAvailable_Title">Sin Control de Deslizamiento</string>
     <string name="SwapWarning_SlippageNotAvailable_Description">Las operaciones entre cadenas dependen de la liquidez de terceros y los retrasos, lo que puede afectar el monto final.</string>
-    <string name="unsupported_refund_address">Unsupported refund address</string>
-    <string name="unsupported_address">Unsupported address</string>
+    <string name="unsupported_refund_address">Dirección de reembolso no admitida</string>
+    <string name="unsupported_address">Dirección no admitida</string>
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">Token no compatible</string>
     <string name="zec_transparent_used">Al crear el intercambio se utiliza una dirección t temporal: %s. Se proporciona al proveedor del intercambio y es necesaria para el reembolso en caso de que el intercambio no se complete. El uso de una dirección t puede provocar una desanonimización parcial de la transacción.</string>
     <string name="swap_yifi_memo_unsupported">El proveedor del swap requiere un memo de depósito que no se puede enviar desde esta red. Elige otro proveedor.</string>
+    <string name="swap_provider_order_failed">El proveedor no pudo crear el swap. Actualiza la cotización o vuelve atrás y elige otro proveedor.</string>
     <!-- Swap Settings -->
     <string name="SwapSettings_Title">Ajustes de swap</string>
     <string name="SwapSettings_SlippageTitle">Tolerancia de deslizamiento</string>

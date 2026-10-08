@@ -41,6 +41,7 @@ class SwapProviderTransactionsStorage(
         statusesExcluded: List<String>,
         limit: Int
     ) = dao.getAll(
+        tokenQueryId = token.tokenQuery.id,
         coinUid = token.coin.uid,
         blockchainType = token.blockchainType.uid,
         address = address,
@@ -63,6 +64,7 @@ class SwapProviderTransactionsStorage(
         address: String,
         limit: Int = 50
     ): Flow<List<SwapProviderTransaction>> = dao.observeByToken(
+        tokenQueryId = token.tokenQuery.id,
         coinUid = token.coin.uid,
         blockchainType = token.blockchainType.uid,
         address = address,
@@ -96,15 +98,15 @@ class SwapProviderTransactionsStorage(
             dao.getByDate(date)
         }
 
-    fun getByCoinUidIn(
-        coinUid: String,
-        blockchainType: String,
+    fun getByTokenIn(
+        token: Token,
         amountIn: BigDecimal?,
         timestamp: Long
     ) = dao.getByTokenIn(
-        coinUid = coinUid,
+        tokenQueryId = token.tokenQuery.id,
+        coinUid = token.coin.uid,
+        blockchainType = token.blockchainType.uid,
         amountIn = amountIn,
-        blockchainType = blockchainType,
         dateFrom = timestamp - THRESHOLD_MSEC,
         dateTo = timestamp + THRESHOLD_MSEC
     )
@@ -122,13 +124,13 @@ class SwapProviderTransactionsStorage(
     )
 
     fun getByTokenOut(
-        coinUid: String,
-        blockchainType: String,
+        token: Token,
         timestamp: Long,
         accountId: String
     ) = dao.getByTokenOut(
-        coinUid = coinUid,
-        blockchainType = blockchainType,
+        tokenQueryId = token.tokenQuery.id,
+        coinUid = token.coin.uid,
+        blockchainType = token.blockchainType.uid,
         accountId = accountId,
         dateFrom = timestamp - THRESHOLD_MSEC,
         dateTo = timestamp + THRESHOLD_MSEC
@@ -136,15 +138,15 @@ class SwapProviderTransactionsStorage(
 
     fun getByAddressAndAmount(
         address: String,
-        blockchainType: String,
-        coinUid: String,
+        token: Token,
         accountId: String,
         amount: BigDecimal,
         timestamp: Long
     ): SwapProviderTransaction? = dao.getByAddressAndAmount(
         address = address,
-        blockchainType = blockchainType,
-        coinUid = coinUid,
+        tokenQueryId = token.tokenQuery.id,
+        coinUid = token.coin.uid,
+        blockchainType = token.blockchainType.uid,
         accountId = accountId,
         amount = amount.toDouble(),
         tolerance = AMOUNT_TOLERANCE,
@@ -172,16 +174,16 @@ class SwapProviderTransactionsStorage(
 
     fun getByProviderAndTokenOut(
         provider: SwapProvider,
-        coinUidOut: String,
-        blockchainTypeOut: String,
+        tokenOut: Token,
         accountId: String,
         addressOut: String,
         expectedAmount: BigDecimal,
         legStartTime: Long,
     ): SwapProviderTransaction? = dao.getByProviderAndTokenOut(
         provider = provider.name,
-        coinUidOut = coinUidOut,
-        blockchainTypeOut = blockchainTypeOut,
+        tokenQueryId = tokenOut.tokenQuery.id,
+        coinUid = tokenOut.coin.uid,
+        blockchainType = tokenOut.blockchainType.uid,
         accountId = accountId,
         addressOut = addressOut,
         expectedAmount = expectedAmount.toDouble(),
@@ -191,8 +193,7 @@ class SwapProviderTransactionsStorage(
     )
 
     fun getUnmatchedSwapsByTokenOut(
-        coinUid: String,
-        blockchainType: String,
+        token: Token,
         fromTimestamp: Long,
         toTimestamp: Long,
         amount: BigDecimal,
@@ -200,8 +201,9 @@ class SwapProviderTransactionsStorage(
         accountId: String,
         limit: Int = 100
     ): List<SwapProviderTransaction> = dao.getUnmatchedSwapsByTokenOut(
-        coinUid = coinUid,
-        blockchainType = blockchainType,
+        tokenQueryId = token.tokenQuery.id,
+        coinUid = token.coin.uid,
+        blockchainType = token.blockchainType.uid,
         accountId = accountId,
         dateFrom = fromTimestamp,
         dateTo = toTimestamp,

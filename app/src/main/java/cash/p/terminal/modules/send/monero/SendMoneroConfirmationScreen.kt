@@ -6,36 +6,28 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.LifecycleResumeEffect
-import androidx.navigation.NavController
 import cash.p.terminal.modules.send.SendConfirmationScreen
-import cash.p.terminal.modules.send.offline.OfflineSignFlowRoutes
 import cash.p.terminal.modules.send.offline.OfflineSignableConfirmationHost
-
-private const val MoneroConfirmationPage = "monero_confirmation"
-private const val OfflineMoneroSignPage = "offline_monero_confirmation_sign"
-private const val OfflineMoneroTransactionTransferPage = "offline_monero_confirmation_transfer"
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
+import kotlin.reflect.KClass
 
 @Composable
 fun SendMoneroConfirmationScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     sendViewModel: SendMoneroViewModel,
-    sendEntryPointDestId: Int
+    sendEntryPoint: KClass<out HSPage>?
 ) {
     OfflineSignableConfirmationHost(
-        fragmentNavController = navController,
+        navigation = navigation,
         sendViewModel = sendViewModel,
-        confirmationRoute = MoneroConfirmationPage,
-        signFlowRoutes = OfflineSignFlowRoutes(
-            signRoute = OfflineMoneroSignPage,
-            transferRoute = OfflineMoneroTransactionTransferPage,
-        ),
         sourceChangeable = false,
         onChangeSourceClick = {},
     ) { onRequestOfflineSign ->
         MoneroOnlineConfirmation(
-            navController = navController,
+            navigation = navigation,
             sendViewModel = sendViewModel,
-            sendEntryPointDestId = sendEntryPointDestId,
+            sendEntryPoint = sendEntryPoint,
             onRequestOfflineSign = onRequestOfflineSign,
         )
     }
@@ -43,9 +35,9 @@ fun SendMoneroConfirmationScreen(
 
 @Composable
 private fun MoneroOnlineConfirmation(
-    navController: NavController,
+    navigation: HSNavigation,
     sendViewModel: SendMoneroViewModel,
-    sendEntryPointDestId: Int,
+    sendEntryPoint: KClass<out HSPage>?,
     onRequestOfflineSign: (() -> Unit)?,
 ) {
     var confirmationData by remember { mutableStateOf(sendViewModel.getConfirmationData()) }
@@ -62,7 +54,7 @@ private fun MoneroOnlineConfirmation(
     }
 
     SendConfirmationScreen(
-        navController = navController,
+        navigation = navigation,
         coinMaxAllowedDecimals = sendViewModel.coinMaxAllowedDecimals,
         feeCoinMaxAllowedDecimals = sendViewModel.feeTokenMaxAllowedDecimals,
         rate = sendViewModel.coinRate,
@@ -81,7 +73,7 @@ private fun MoneroOnlineConfirmation(
         memo = confirmationData.memo,
         rbfEnabled = confirmationData.rbfEnabled,
         onClickSend = sendViewModel::onClickSend,
-        sendEntryPointDestId = sendEntryPointDestId,
+        sendEntryPoint = sendEntryPoint,
         isSynced = sendViewModel.isSynced,
         hasAdapterError = sendViewModel.hasAdapterError,
         onRetrySync = sendViewModel::retryAdapterSync,

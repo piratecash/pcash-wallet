@@ -1588,9 +1588,8 @@ class TransactionViewItemFactory(
         } else {
             val outgoingRecordUid = outgoingRecordUidForSwapMatching(transactionItem)
             outgoingRecordUid?.let(swapProviderTransactionsStorage::getByOutgoingRecordUid)
-                ?: swapProviderTransactionsStorage.getByCoinUidIn(
-                    coinUid = transactionItem.record.mainValue?.coinUid ?: token.coin.uid,
-                    blockchainType = token.blockchainType.uid,
+                ?: swapProviderTransactionsStorage.getByTokenIn(
+                    token = (transactionItem.record.mainValue as? TransactionValue.CoinValue)?.token ?: token,
                     amountIn = transactionItem.record.mainValue?.decimalValue?.abs(),
                     timestamp = transactionItem.record.timestamp * 1000
                 )?.also { foundSwap ->
@@ -1632,8 +1631,7 @@ class TransactionViewItemFactory(
             uid = recordUid,
             amount = amount?.abs(),
             timestamp = timestamp * 1000,
-            coinUid = token.coin.uid,
-            blockchainType = token.blockchainType.uid,
+            token = token,
             addresses = addressesTo,
             accountId = accountManager.activeAccount?.id.orEmpty()
         )

@@ -11,7 +11,7 @@ import org.koin.java.KoinJavaComponent.inject
 object RecoveryPhraseModule {
     class Factory(
         private val account: Account,
-        private val recoveryPhraseType: RecoveryPhraseFragment.RecoveryPhraseType
+        private val recoveryPhraseType: RecoveryPhrasePage.RecoveryPhraseType
     ) : ViewModelProvider.Factory {
         private val seedPhraseQrCrypto: SeedPhraseQrCrypto by inject(SeedPhraseQrCrypto::class.java)
         private val localStorage: ILocalStorage by inject(ILocalStorage::class.java)

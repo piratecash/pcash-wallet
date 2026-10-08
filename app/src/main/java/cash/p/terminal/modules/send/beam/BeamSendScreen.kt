@@ -21,11 +21,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import cash.p.terminal.R
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.utils.AddressUriParser
@@ -37,17 +32,22 @@ import cash.p.terminal.modules.amount.AmountInputType
 import cash.p.terminal.modules.amount.HSAmountInput
 import cash.p.terminal.modules.fee.FeeInfoSection
 import cash.p.terminal.modules.send.SendConfirmationScreen
-import cash.p.terminal.modules.send.SendFragment.ProceedActionData
+import cash.p.terminal.modules.send.SendPage
+import cash.p.terminal.modules.send.SendPage.ProceedActionData
 import cash.p.terminal.modules.send.SendScreen
 import cash.p.terminal.modules.send.SendSuggestionsBar
 import cash.p.terminal.modules.send.fee.feePrimaryText
 import cash.p.terminal.modules.send.fee.feeSecondaryText
 import cash.p.terminal.modules.send.offline.OfflineSignActionCell
+import cash.p.terminal.modules.send.offline.OfflineSignCallbacks
+import cash.p.terminal.modules.send.offline.OfflineSignPageContent
 import cash.p.terminal.modules.send.offline.OfflineSignRouteState
-import cash.p.terminal.modules.send.offline.offlineSignRoute
-import cash.p.terminal.modules.send.offline.offlineTransactionTransferRoute
+import cash.p.terminal.modules.send.offline.OfflineTransactionFormat
+import cash.p.terminal.modules.send.offline.OfflineTransactionTransferPageContent
+import cash.p.terminal.modules.send.rememberExistingViewModel
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
-import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.HudHelper
@@ -56,11 +56,9 @@ import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenType
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.entities.CurrencyValue
+import kotlinx.coroutines.flow.Flow
 import java.math.BigDecimal
-
-private const val BeamSendFormPage = "beam_send_form"
-private const val BeamOfflineSignPage = "beam_offline_sign"
-private const val BeamOfflineTransferPage = "beam_offline_transfer"
+import kotlin.reflect.KClass
 
 // No recipient-check step: AddressCheckManager refuses every screening type for BEAM on purpose
 // ("BEAM receiver tokens are opaque payment data and must not reach address screening providers",
@@ -71,18 +69,12 @@ private const val BeamOfflineTransferPage = "beam_offline_transfer"
 internal fun BeamSendScreen(
     title: String,
     viewModel: BeamSendViewModel,
-    navController: NavController,
+    navigation: HSNavigation,
     inputType: AmountInputType,
     onToggleInputType: () -> Unit,
     onNext: (ProceedActionData) -> Unit,
 ) {
-    val localNav = rememberNavController()
-    val view = LocalView.current
-    val context = LocalContext.current
     val currentOnNext by rememberUpdatedState(onNext)
-    // Shared by the shared route's onLeave and the system BackHandler below: a bare pop would skip
-    // the abort + network release leaveOfflineSign() does.
-    val onLeaveSign = { if (viewModel.leaveOfflineSign()) localNav.popBackStackSafely() }
     val formActions = remember(viewModel) { viewModel.formActions() }
 
     LaunchedEffect(Unit) {
@@ -91,54 +83,71 @@ internal fun BeamSendScreen(
         viewModel.proceedRequests.collect { currentOnNext(it) }
     }
     LaunchedEffect(Unit) {
-        viewModel.offlineSignRequests.collect { localNav.navigate(BeamOfflineSignPage) }
+        viewModel.offlineSignRequests.collect { navigation.slideFromRight(BeamOfflineSignPage()) }
     }
+    BeamErrorEventsEffect(viewModel.errorEvents)
+
+    val balanceHidden by viewModel.balanceHidden.collectAsStateWithLifecycle()
+    BeamSendForm(
+        title = title,
+        state = viewModel.formState(balanceHidden),
+        actions = formActions,
+        navigation = navigation,
+        inputType = inputType,
+        onToggleInputType = onToggleInputType,
+    )
+}
+
+// Each page collects on its own: the form leaves composition while the sign page is on top.
+@Composable
+private fun BeamErrorEventsEffect(errorEvents: Flow<Int>) {
+    val view = LocalView.current
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
-        viewModel.errorEvents.collect { HudHelper.showErrorMessage(view, context.getString(it)) }
+        errorEvents.collect { HudHelper.showErrorMessage(view, context.getString(it)) }
     }
+}
 
-    NavHost(localNav, startDestination = BeamSendFormPage) {
-        composable(BeamSendFormPage) {
-            val balanceHidden by viewModel.balanceHidden.collectAsStateWithLifecycle()
-            BeamSendForm(
-                title = title,
-                state = viewModel.formState(balanceHidden),
-                actions = formActions,
-                navController = navController,
-                inputType = inputType,
-                onToggleInputType = onToggleInputType,
-            )
+internal class BeamOfflineSignPage : HSPage() {
+
+    @Composable
+    override fun GetContent(navigation: HSNavigation) {
+        val viewModel = navigation.rememberExistingViewModel(SendPage::class, BeamSendViewModel::class) ?: return
+        // Shared by the buttons and system Back: a bare pop would skip the abort + network release
+        // leaveOfflineSign() does.
+        val onLeave = { if (viewModel.leaveOfflineSign()) navigation.navigateUpSafely() }
+        BackHandler(onBack = onLeave)
+        BeamErrorEventsEffect(viewModel.errorEvents)
+        OfflineSignPageContent(
+            page = this,
+            navigation = navigation,
+            state = viewModel.reviewedQuote?.let {
+                OfflineSignRouteState(
+                    viewModel.confirmationData(), viewModel.wallet.token.blockchain.name,
+                    BeamAmount.DECIMALS, BeamAmount.DECIMALS, viewModel.coinRate, viewModel.signing.signState,
+                )
+            },
+            callbacks = OfflineSignCallbacks(
+                onBackClick = onLeave,
+                onCancelClick = onLeave,
+                onSignClick = viewModel::onClickSignOffline,
+                onSignStateConsumed = viewModel.signing::resetSignState,
+                onSigned = { navigation.slideFromRight(BeamOfflineTransferPage(it)) },
+            ),
+        )
+    }
+}
+
+internal class BeamOfflineTransferPage(private val format: OfflineTransactionFormat) : HSPage() {
+
+    @Composable
+    override fun GetContent(navigation: HSNavigation) {
+        val viewModel = navigation.rememberExistingViewModel(SendPage::class, BeamSendViewModel::class) ?: return
+        OfflineTransactionTransferPageContent(navigation, viewModel.signing.signedTransaction, format) {
+            viewModel.signing.closeTransfer()
+            if (!navigation.removeLastUntil(SendPage::class, true)) navigation.navigateUp()
         }
-        offlineSignRoute(
-            route = BeamOfflineSignPage,
-            navController = localNav,
-            stateProvider = {
-                viewModel.reviewedQuote?.let {
-                    OfflineSignRouteState(
-                        viewModel.confirmationData(), viewModel.wallet.token.blockchain.name,
-                        BeamAmount.DECIMALS, BeamAmount.DECIMALS, viewModel.coinRate, viewModel.signing.signState,
-                    )
-                }
-            },
-            onLeave = onLeaveSign,
-            onSignClick = viewModel::onClickSignOffline,
-            onSignStateConsumed = viewModel.signing::resetSignState,
-            onSigned = { localNav.navigate(offlineTransactionTransferRoute(BeamOfflineTransferPage, it)) },
-        )
-        offlineTransactionTransferRoute(
-            route = BeamOfflineTransferPage,
-            formatArgument = "format",
-            navController = localNav,
-            transactionProvider = { viewModel.signing.signedTransaction },
-            onDoneClick = {
-                viewModel.signing.closeTransfer()
-                if (!navController.popBackStack(R.id.sendXFragment, true)) navController.navigateUp()
-            },
-        )
     }
-
-    val entry by localNav.currentBackStackEntryAsState()
-    BackHandler(enabled = entry?.destination?.route == BeamOfflineSignPage, onBack = onLeaveSign)
 }
 
 // What the form reads from BeamSendViewModel, captured once per composition so the form and its
@@ -204,7 +213,7 @@ private fun BeamSendForm(
     title: String,
     state: BeamSendFormState,
     actions: BeamSendFormActions,
-    navController: NavController,
+    navigation: HSNavigation,
     inputType: AmountInputType,
     onToggleInputType: () -> Unit,
 ) {
@@ -219,13 +228,13 @@ private fun BeamSendForm(
         if (state.editable) focusRequester.requestFocus()
     }
 
-    // The shared SendScreen does not inset itself; every other send screen is hosted by a fragment
-    // that does. BEAM's form is composed directly, so the inset belongs here.
+    // The shared SendScreen does not inset itself; SendPage insets every other send screen around
+    // its call. BEAM's form is composed directly, so the inset belongs here.
     Box(Modifier.fillMaxSize().systemBarsPadding()) {
         SendScreen(
             title = title,
             proceedEnabled = state.canProceed,
-            onCloseClick = navController::navigateUpSafely,
+            onCloseClick = navigation::navigateUpSafely,
             onSendClick = actions.proceed,
             proceedTitle = TranslatableString.ResString(R.string.Button_Next),
             bottomOverlay = {
@@ -240,7 +249,7 @@ private fun BeamSendForm(
             },
         ) {
             if (state.editable) {
-                if (!state.hideAddress) BeamAddressSection(state, actions.onRecipientChange, navController)
+                if (!state.hideAddress) BeamAddressSection(state, actions.onRecipientChange, navigation)
                 BeamAmountSection(state, actions, inputType, onToggleInputType, focusRequester, percentageAmountUnique)
             }
             VSpacer(12.dp)
@@ -310,7 +319,7 @@ private fun BeamFeeSection(state: BeamSendFormState, onBalanceClick: () -> Unit)
 private fun BeamAddressSection(
     state: BeamSendFormState,
     onRecipientChange: (String) -> Unit,
-    navController: NavController,
+    navigation: HSNavigation,
 ) {
     val addressViewModel: AddressViewModel = viewModel {
         AddressViewModel(
@@ -327,29 +336,29 @@ private fun BeamAddressSection(
     HSAddressInput(
         modifier = Modifier.padding(horizontal = 16.dp),
         viewModel = addressViewModel, inputState = inputState, address = address, value = value,
-        navController = navController,
+        navigation = navigation,
     )
     VSpacer(12.dp)
 }
 
 @Composable
 internal fun BeamSendConfirmationScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     viewModel: BeamSendViewModel,
-    sendEntryPointDestId: Int,
+    sendEntryPoint: KClass<out HSPage>?,
 ) {
     if (viewModel.reviewedQuote == null) {
         // Not reachable after Phase 1 (Next always snapshots a quote first); kept as the same
-        // recovery SendConfirmationFragment uses for a missing VM.
+        // recovery SendConfirmationPage uses for a missing VM.
         LaunchedEffect(Unit) {
-            if (!navController.popBackStack(R.id.sendXFragment, false)) navController.navigateUp()
+            if (!navigation.removeLastUntil(SendPage::class, false)) navigation.navigateUp()
         }
         return
     }
 
     val data = viewModel.confirmationData()
     SendConfirmationScreen(
-        navController = navController,
+        navigation = navigation,
         coinMaxAllowedDecimals = BeamAmount.DECIMALS,
         feeCoinMaxAllowedDecimals = BeamAmount.DECIMALS,
         rate = viewModel.coinRate,
@@ -370,8 +379,8 @@ internal fun BeamSendConfirmationScreen(
         lockTimeInterval = null,
         memo = null,
         rbfEnabled = null,
-        onClickSend = { beamDispatchConfirmation(navController, viewModel, sendEntryPointDestId) },
-        sendEntryPointDestId = sendEntryPointDestId,
+        onClickSend = { beamDispatchConfirmation(navigation, viewModel, sendEntryPoint) },
+        sendEntryPoint = sendEntryPoint,
         isSynced = viewModel.ready,
         hasAdapterError = false,
         onRetrySync = {},
@@ -381,11 +390,14 @@ internal fun BeamSendConfirmationScreen(
     )
 }
 
-private fun beamDispatchConfirmation(navController: NavController, viewModel: BeamSendViewModel, entryPoint: Int) {
+private fun beamDispatchConfirmation(
+    navigation: HSNavigation,
+    viewModel: BeamSendViewModel,
+    entryPoint: KClass<out HSPage>?,
+) {
     when (viewModel.confirmationCommand()) {
         BeamConfirmationCommand.Finish -> {
-            val destination = entryPoint.takeUnless { it == 0 } ?: R.id.sendXFragment
-            if (!navController.popBackStack(destination, true)) navController.navigateUp()
+            if (!navigation.removeLastUntil(entryPoint ?: SendPage::class, true)) navigation.navigateUp()
         }
         BeamConfirmationCommand.Retry -> viewModel.retry()
         BeamConfirmationCommand.Confirm -> viewModel.confirm()

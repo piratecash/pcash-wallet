@@ -28,7 +28,6 @@ class SwapPayCoreNavigationTest {
             name = "Tether",
             code = "USDT",
             marketCapRank = null,
-            coinGeckoId = null,
             image = null,
         ),
         blockchain = Blockchain(BlockchainType.Ethereum, "Ethereum", null),
@@ -51,7 +50,7 @@ class SwapPayCoreNavigationTest {
             ),
         )
 
-        val params = page.toPaymentParams("0xReceiveAddress")
+        val params = page.input.toPaymentParams("0xReceiveAddress")
 
         assertEquals(SwapAmountDirection.Out, params.direction)
         assertEquals(0, targetAmount.compareTo(requireNotNull(params.requestedAmountOut)))

@@ -2,10 +2,9 @@ package cash.p.terminal.modules.multiswap.action
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavController
 import cash.p.terminal.R
-import cash.p.terminal.modules.activatetoken.ActivateTokenFragment
-import cash.p.terminal.navigation.slideFromBottomForResult
+import cash.p.terminal.modules.activatetoken.ActivateTokenPage
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.wallet.Wallet
 
 class ActionActivateStellarAsset(
@@ -26,11 +25,8 @@ class ActionActivateStellarAsset(
         wallet.coin.code,
     )
 
-    override fun execute(navController: NavController, onActionCompleted: () -> Unit) {
-        navController.slideFromBottomForResult<ActivateTokenFragment.Result>(
-            R.id.activateTokenFragment,
-            wallet,
-        ) {
+    override fun execute(navigation: HSNavigation, onActionCompleted: () -> Unit) {
+        navigation.slideFromBottomForResult<ActivateTokenPage.Result>(ActivateTokenPage(wallet)) {
             if (it.activated) onActionCompleted()
         }
     }

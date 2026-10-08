@@ -1,7 +1,6 @@
 package cash.p.terminal.modules.multiswap.sendtransaction.services
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
 import cash.p.terminal.core.adapters.thorchain.ThorchainAdapter
 import cash.p.terminal.core.ethereum.CautionViewItem
 import cash.p.terminal.entities.CoinValue
@@ -10,6 +9,7 @@ import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionData
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionResult
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionServiceState
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionSettings
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.getMaxSendableBalance
 import kotlinx.coroutines.CoroutineScope
@@ -37,7 +37,7 @@ class SendTransactionServiceThorchain(token: Token) : ISendTransactionService<Th
     override fun hasSettings() = false
 
     @Composable
-    override fun GetSettingsContent(navController: NavController) = Unit
+    override fun GetSettingsContent(navigation: HSNavigation) = Unit
 
     override suspend fun setSendTransactionData(data: SendTransactionData) {
         check(data is SendTransactionData.Thorchain)

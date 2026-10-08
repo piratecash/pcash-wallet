@@ -6,36 +6,28 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.LifecycleResumeEffect
-import androidx.navigation.NavController
 import cash.p.terminal.modules.send.SendConfirmationScreen
-import cash.p.terminal.modules.send.offline.OfflineSignFlowRoutes
 import cash.p.terminal.modules.send.offline.OfflineSignableConfirmationHost
-
-private const val ZCashConfirmationPage = "zcash_confirmation"
-private const val OfflineZCashSignPage = "offline_zcash_confirmation_sign"
-private const val OfflineZCashTransactionTransferPage = "offline_zcash_confirmation_transfer"
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
+import kotlin.reflect.KClass
 
 @Composable
 fun SendZCashConfirmationScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     sendViewModel: SendZCashViewModel,
-    sendEntryPointDestId: Int
+    sendEntryPoint: KClass<out HSPage>?
 ) {
     OfflineSignableConfirmationHost(
-        fragmentNavController = navController,
+        navigation = navigation,
         sendViewModel = sendViewModel,
-        confirmationRoute = ZCashConfirmationPage,
-        signFlowRoutes = OfflineSignFlowRoutes(
-            signRoute = OfflineZCashSignPage,
-            transferRoute = OfflineZCashTransactionTransferPage,
-        ),
         sourceChangeable = false,
         onChangeSourceClick = {},
     ) { onRequestOfflineSign ->
         ZCashOnlineConfirmation(
-            navController = navController,
+            navigation = navigation,
             sendViewModel = sendViewModel,
-            sendEntryPointDestId = sendEntryPointDestId,
+            sendEntryPoint = sendEntryPoint,
             onRequestOfflineSign = onRequestOfflineSign,
         )
     }
@@ -43,9 +35,9 @@ fun SendZCashConfirmationScreen(
 
 @Composable
 private fun ZCashOnlineConfirmation(
-    navController: NavController,
+    navigation: HSNavigation,
     sendViewModel: SendZCashViewModel,
-    sendEntryPointDestId: Int,
+    sendEntryPoint: KClass<out HSPage>?,
     onRequestOfflineSign: (() -> Unit)?,
 ) {
     var confirmationData by remember { mutableStateOf(sendViewModel.getConfirmationData()) }
@@ -62,7 +54,7 @@ private fun ZCashOnlineConfirmation(
     }
 
     SendConfirmationScreen(
-        navController = navController,
+        navigation = navigation,
         coinMaxAllowedDecimals = sendViewModel.coinMaxAllowedDecimals,
         feeCoinMaxAllowedDecimals = sendViewModel.coinMaxAllowedDecimals,
         rate = sendViewModel.coinRate,
@@ -79,7 +71,7 @@ private fun ZCashOnlineConfirmation(
         memo = confirmationData.memo,
         rbfEnabled = confirmationData.rbfEnabled,
         onClickSend = sendViewModel::onClickSend,
-        sendEntryPointDestId = sendEntryPointDestId,
+        sendEntryPoint = sendEntryPoint,
         isSynced = sendViewModel.isSynced,
         hasAdapterError = sendViewModel.hasAdapterError,
         onRetrySync = sendViewModel::retryAdapterSync,

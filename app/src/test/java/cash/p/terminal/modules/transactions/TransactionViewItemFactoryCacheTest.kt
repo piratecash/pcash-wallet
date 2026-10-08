@@ -273,7 +273,7 @@ class TransactionViewItemFactoryCacheTest {
 
         factory.convertToViewItemCached(createTransactionItem(record))
 
-        assertEquals("usd-coin", incomingTransactionSlot.captured.coinUid)
+        assertEquals("usd-coin", incomingTransactionSlot.captured.token.coin.uid)
     }
 
     @Test
@@ -471,7 +471,7 @@ class TransactionViewItemFactoryCacheTest {
     fun convertToViewItemCached_pendingWithoutRecipient_showsPlaceholderSubtitle() = runTest {
         val record = createPendingRecord(transactionHash = TX_HASH, toAddress = "")
         every { swapProviderTransactionsStorage.getByOutgoingRecordUid(any()) } returns null
-        every { swapProviderTransactionsStorage.getByCoinUidIn(any(), any(), any(), any()) } returns null
+        every { swapProviderTransactionsStorage.getByTokenIn(any(), any(), any()) } returns null
 
         val viewItem = factory.convertToViewItemCached(createTransactionItem(record))
 
@@ -759,9 +759,8 @@ class TransactionViewItemFactoryCacheTest {
 
     private fun stubOutgoingFallback(swap: SwapProviderTransaction) {
         every {
-            swapProviderTransactionsStorage.getByCoinUidIn(
-                coinUid = "zcash",
-                blockchainType = BlockchainType.Zcash.uid,
+            swapProviderTransactionsStorage.getByTokenIn(
+                token = match { it.coin.uid == "zcash" && it.blockchainType == BlockchainType.Zcash },
                 amountIn = ZEC_AMOUNT,
                 timestamp = PENDING_TIMESTAMP * 1_000,
             )
@@ -771,7 +770,7 @@ class TransactionViewItemFactoryCacheTest {
     private fun stubNoSwapMatch() {
         every { swapProviderTransactionsStorage.getByOutgoingRecordUid(any()) } returns null
         every {
-            swapProviderTransactionsStorage.getByCoinUidIn(any(), any(), any(), any())
+            swapProviderTransactionsStorage.getByTokenIn(any(), any(), any())
         } returns null
     }
 

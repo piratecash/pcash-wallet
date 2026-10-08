@@ -2,8 +2,9 @@ package cash.p.terminal.core.di
 
 import android.app.Application
 import android.content.Context
-import androidx.lifecycle.SavedStateHandle
+import cash.p.terminal.feature.miniapp.ui.connect.ConnectMiniAppDeeplinkInput
 import cash.p.terminal.feature.miniapp.ui.connect.ConnectMiniAppViewModel
+import cash.p.terminal.featureStacking.ui.staking.StackingType
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusViewModel
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewModel
@@ -30,7 +31,7 @@ import cash.p.terminal.modules.settings.advancedsecurity.terms.HiddenWalletTerms
 import cash.p.terminal.modules.softwareupdate.changelog.VersionChangelogViewModel
 import cash.p.terminal.modules.softwareupdate.domain.ChangelogRequest
 import cash.p.terminal.core.notifications.polling.TransactionPollingManager
-import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedDialog
+import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedSheet
 import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedViewModel
 import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.wallet.Token
@@ -79,9 +80,10 @@ class KoinGraphTest : KoinTest {
                 HttpClientEngine::class,
                 TimerService::class,
                 XRateService::class,
+                StackingType::class,
             )
         val injections = injectedParameters(
-            definition<AccountTypeNotSupportedViewModel>(AccountTypeNotSupportedDialog.Input::class),
+            definition<AccountTypeNotSupportedViewModel>(AccountTypeNotSupportedSheet.Input::class),
             definition<HiddenWalletPinPolicy>(IPinComponent::class),
             definition<AdvancedSecurityViewModel>(IPinComponent::class),
             definition<SecureResetTermsViewModel>(Array<String>::class),
@@ -91,7 +93,7 @@ class KoinGraphTest : KoinTest {
             definition<ConfiguredTokenInfoViewModel>(Token::class),
             definition<SafetyRulesViewModel>(SafetyRulesModule.SafetyRulesMode::class, List::class),
             definition<ManageAccountsViewModel>(ManageAccountsModule.Mode::class),
-            definition<ConnectMiniAppViewModel>(SavedStateHandle::class),
+            definition<ConnectMiniAppViewModel>(ConnectMiniAppDeeplinkInput::class),
             definition<BlockchainStatusViewModel>(BlockchainStatusProvider::class),
             definition<SwapSelectCoinViewModel>(Token::class, Account::class),
             definition<AddressPoisoningViewModel>(String::class, Boolean::class, BlockchainType::class),
