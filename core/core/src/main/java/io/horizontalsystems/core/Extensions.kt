@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import androidx.navigation.NavController
 import cash.p.terminal.ui_compose.parcelable
 import io.horizontalsystems.core.entities.BlockchainType
 import java.io.File
@@ -26,25 +25,6 @@ val BlockchainType.imageUrl: String
 fun View.hideKeyboard(context: Context) {
     val imm = context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
     imm.hideSoftInputFromWindow(windowToken, 0)
-}
-
-fun NavController.setNavigationResult(key: String, bundle: Bundle, destinationId: Int? = null) {
-    val backStackEntry = when (destinationId) {
-        null -> previousBackStackEntry
-        else -> currentBackStack.value.findLast { it.destination.id == destinationId }
-    }
-
-    backStackEntry?.savedStateHandle?.set(key, bundle)
-}
-
-fun NavController.getNavigationResult(keyResult: String, onResult: (Bundle) -> Unit) {
-    currentBackStackEntry?.let { backStackEntry ->
-        backStackEntry.savedStateHandle.getLiveData<Bundle>(keyResult).observe(backStackEntry) {
-            onResult.invoke(it)
-
-            backStackEntry.savedStateHandle.remove<Bundle>(keyResult)
-        }
-    }
 }
 
 //  String

@@ -3,8 +3,8 @@ package cash.p.terminal.modules.send.beam
 import cash.p.terminal.core.adapters.BeamAdapter
 import cash.p.terminal.core.managers.BeamNetwork
 import cash.p.terminal.core.managers.BeamSessionOwner
-import cash.p.terminal.modules.send.SendConfirmationFragment.Type
-import cash.p.terminal.modules.send.SendFragment.ProceedActionData
+import cash.p.terminal.modules.send.SendConfirmationPage.Type
+import cash.p.terminal.modules.send.SendPage.ProceedActionData
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.TokenType

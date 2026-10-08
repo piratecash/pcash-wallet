@@ -166,7 +166,7 @@ internal class Eip20ApproveViewModel(
         sendTransactionService.start(viewModelScope)
     }
 
-    private fun createInput() = Eip20ApproveFragment.Input(
+    private fun createInput() = Eip20ApprovePage.Input(
         token = token,
         requiredAllowance = requiredAllowance,
         spenderAddress = spenderAddress,
@@ -174,7 +174,7 @@ internal class Eip20ApproveViewModel(
     )
 
     sealed class Event {
-        data class NavigateToConfirm(val input: Eip20ApproveFragment.Input) : Event()
+        data class NavigateToConfirm(val input: Eip20ApprovePage.Input) : Event()
         data class ShowError(val message: String) : Event()
     }
 
@@ -183,7 +183,7 @@ internal class Eip20ApproveViewModel(
             .send()
     }
 
-    class Factory(private val input: Eip20ApproveFragment.Input) : ViewModelProvider.Factory {
+    class Factory(private val input: Eip20ApprovePage.Input) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             val dispatcherProvider: DispatcherProvider by inject(DispatcherProvider::class.java)

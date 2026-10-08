@@ -5,10 +5,12 @@ import cash.p.terminal.modules.restoreaccount.restoremenu.RestoreMenuModule.Rest
 import cash.p.terminal.modules.restoreaccount.restoremenu.RestoreMenuViewModel
 import cash.p.terminal.modules.restoreaccount.restoremnemonic.RestorePhrase
 import cash.p.terminal.modules.restoreaccount.restoreprivatekey.RestorePrivateKey
+import cash.p.terminal.navigation.HSNavigation
 import io.horizontalsystems.hdwalletkit.Language
 
 @Composable
 fun AdvancedRestoreScreen(
+    navigation: HSNavigation,
     restoreMenuViewModel: RestoreMenuViewModel,
     mainViewModel: RestoreViewModel,
     openSelectCoinsScreen: () -> Unit,
@@ -23,6 +25,7 @@ fun AdvancedRestoreScreen(
     when (restoreMenuViewModel.restoreOption) {
         RestoreOption.RecoveryPhrase -> {
             RestorePhrase(
+                navigation = navigation,
                 advanced = true,
                 restoreMenuViewModel = restoreMenuViewModel,
                 mainViewModel = mainViewModel,
@@ -38,6 +41,7 @@ fun AdvancedRestoreScreen(
         }
         RestoreOption.PrivateKey -> {
             RestorePrivateKey(
+                navigation = navigation,
                 restoreMenuViewModel = restoreMenuViewModel,
                 mainViewModel = mainViewModel,
                 openSelectCoinsScreen = openSelectCoinsScreen,
