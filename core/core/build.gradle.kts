@@ -43,6 +43,7 @@ kotlin {
 }
 
 dependencies {
+    api(project(":core:common"))
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.material)

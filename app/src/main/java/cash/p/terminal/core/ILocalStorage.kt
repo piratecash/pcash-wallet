@@ -99,7 +99,6 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings {
     var mainTab: MainDestination?
     var marketFavoritesSorting: WatchlistSorting?
     var marketFavoritesShowSignals: Boolean
-    var marketFavoritesManualSortingOrder: List<String>
     var marketFavoritesPeriod: TimeDuration?
     var relaunchBySettingChange: Boolean
     var marketsTabEnabled: Boolean
