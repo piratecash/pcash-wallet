@@ -1,19 +1,18 @@
 package cash.p.terminal.modules.market.filtersresult
 
-import cash.p.terminal.core.managers.MarketFavoritesManager
 import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.modules.market.MarketItem
 import cash.p.terminal.modules.market.SortingField
 import cash.p.terminal.modules.market.category.MarketItemWrapper
 import cash.p.terminal.modules.market.filters.IMarketListFetcher
 import cash.p.terminal.modules.market.sort
+import cash.p.terminal.wallet.favorites.MarketFavoritesManager
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx2.asFlow
 import kotlinx.coroutines.rx2.await
 
 class MarketFiltersResultService(
@@ -39,7 +38,7 @@ class MarketFiltersResultService(
 
     fun start() {
         coroutineScope.launch {
-            favoritesManager.dataUpdatedAsync.asFlow().collect {
+            favoritesManager.dataUpdatedFlow.collect {
                 syncItems()
             }
         }
@@ -57,15 +56,15 @@ class MarketFiltersResultService(
 
     fun updateSortingField(sortingField: SortingField) {
         this.sortingField = sortingField
-        syncItems()
+        coroutineScope.launch { syncItems() }
     }
 
     fun addFavorite(coinUid: String) {
-        favoritesManager.add(coinUid)
+        coroutineScope.launch { favoritesManager.add(coinUid) }
     }
 
     fun removeFavorite(coinUid: String) {
-        favoritesManager.remove(coinUid)
+        coroutineScope.launch { favoritesManager.remove(coinUid) }
     }
 
     private fun fetch() {
@@ -81,8 +80,8 @@ class MarketFiltersResultService(
         }
     }
 
-    private fun syncItems() {
-        val favorites = favoritesManager.getAll().map { it.coinUid }
+    private suspend fun syncItems() {
+        val favorites = favoritesManager.getAll()
 
         val items = marketItems
             .sort(sortingField)

@@ -7,36 +7,28 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.LifecycleResumeEffect
-import androidx.navigation.NavController
 import cash.p.terminal.modules.send.SendConfirmationScreen
-import cash.p.terminal.modules.send.offline.OfflineSignFlowRoutes
 import cash.p.terminal.modules.send.offline.OfflineSignableConfirmationHost
-
-private const val EvmConfirmationPage = "evm_confirmation"
-private const val OfflineEvmSignPage = "offline_evm_sign"
-private const val OfflineEvmTransactionTransferPage = "offline_evm_transaction_transfer"
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
+import kotlin.reflect.KClass
 
 @Composable
 internal fun SendEvmConfirmationScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     sendViewModel: SendEvmViewModel,
-    sendEntryPointDestId: Int
+    sendEntryPoint: KClass<out HSPage>?
 ) {
     OfflineSignableConfirmationHost(
-        fragmentNavController = navController,
+        navigation = navigation,
         sendViewModel = sendViewModel,
-        confirmationRoute = EvmConfirmationPage,
-        signFlowRoutes = OfflineSignFlowRoutes(
-            signRoute = OfflineEvmSignPage,
-            transferRoute = OfflineEvmTransactionTransferPage,
-        ),
         sourceChangeable = false,
         onChangeSourceClick = {},
     ) { onRequestOfflineSign ->
         EvmOnlineConfirmation(
-            navController = navController,
+            navigation = navigation,
             sendViewModel = sendViewModel,
-            sendEntryPointDestId = sendEntryPointDestId,
+            sendEntryPoint = sendEntryPoint,
             onRequestOfflineSign = onRequestOfflineSign,
         )
     }
@@ -44,9 +36,9 @@ internal fun SendEvmConfirmationScreen(
 
 @Composable
 private fun EvmOnlineConfirmation(
-    navController: NavController,
+    navigation: HSNavigation,
     sendViewModel: SendEvmViewModel,
-    sendEntryPointDestId: Int,
+    sendEntryPoint: KClass<out HSPage>?,
     onRequestOfflineSign: (() -> Unit)?,
 ) {
     var confirmationData by remember { mutableStateOf(sendViewModel.getConfirmationData()) }
@@ -69,7 +61,7 @@ private fun EvmOnlineConfirmation(
     }
 
     SendConfirmationScreen(
-        navController = navController,
+        navigation = navigation,
         coinMaxAllowedDecimals = sendViewModel.coinMaxAllowedDecimals,
         feeCoinMaxAllowedDecimals = sendViewModel.feeTokenMaxAllowedDecimals,
         rate = sendViewModel.coinRate,
@@ -86,7 +78,7 @@ private fun EvmOnlineConfirmation(
         memo = confirmationData.memo,
         rbfEnabled = confirmationData.rbfEnabled,
         onClickSend = sendViewModel::onClickSend,
-        sendEntryPointDestId = sendEntryPointDestId,
+        sendEntryPoint = sendEntryPoint,
         isSynced = sendViewModel.isSynced,
         hasAdapterError = sendViewModel.hasAdapterError,
         onRetrySync = sendViewModel::retryAdapterSync,

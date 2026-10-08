@@ -2,10 +2,10 @@ package cash.p.terminal.modules.multiswap.sendtransaction.services
 
 import cash.p.terminal.core.App
 import cash.p.terminal.core.ISendZcashAdapter
+import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
 import cash.p.terminal.core.managers.PendingTransactionRegistrar
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionData
-import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionServiceState
 import cash.p.terminal.modules.offline.OfflineOperationGate
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.MarketKitWrapper
@@ -16,6 +16,7 @@ import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.bitcoincore.storage.UtxoFilters
 import io.horizontalsystems.core.CurrencyManager
+import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
@@ -26,12 +27,12 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -45,13 +46,6 @@ import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import java.math.BigDecimal
 
-/**
- * `setSendTransactionData` dispatches address validation onto the base class's real-IO
- * `coroutineScope` field (not the `coroutineScope` param of `start()`), so unlike its siblings
- * this service cannot be driven deterministically with `runTest`/`advanceUntilIdle()`. These
- * tests run for real (`runBlocking`) and poll [SendTransactionServiceZCash.stateFlow] with a
- * bounded timeout instead.
- */
 class SendTransactionServiceZCashTest : KoinTest {
 
     private lateinit var pendingRegistrar: PendingTransactionRegistrar
@@ -61,6 +55,8 @@ class SendTransactionServiceZCashTest : KoinTest {
     private lateinit var marketKit: MarketKitWrapper
     private lateinit var numberFormatter: IAppNumberFormatter
     private lateinit var currencyManager: CurrencyManager
+
+    private val dispatcher = UnconfinedTestDispatcher()
 
     private lateinit var testToken: Token
     private lateinit var testWallet: Wallet
@@ -76,6 +72,7 @@ class SendTransactionServiceZCashTest : KoinTest {
                 single<IAppNumberFormatter> { numberFormatter }
                 single<CurrencyManager> { currencyManager }
                 single<OfflineOperationGate> { mockk(relaxed = true) }
+                single<DispatcherProvider> { TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)) }
             }
         )
     }
@@ -124,49 +121,37 @@ class SendTransactionServiceZCashTest : KoinTest {
     }
 
     @Test
-    fun sendable_addressInvalidAndAmountValid_isFalse() = runBlocking {
-        coEvery { adapter.validate(any()) } coAnswers { throw IllegalArgumentException("bad address") }
+    fun sendable_addressInvalidAndAmountValid_isFalse() = runTest(dispatcher) {
+        coEvery { adapter.validate(any()) } throws IllegalArgumentException("bad address")
 
-        val service = createService()
-        service.start(CoroutineScope(Dispatchers.Default))
-        service.setSendTransactionData(sendData(amount = BigDecimal("1"), address = "invalid"))
-        service.awaitState { it.cautions.isNotEmpty() }
+        val service = startedService(address = "invalid")
 
         assertFalse(service.stateFlow.value.sendable)
     }
 
     @Test
-    fun sendable_addressAndAmountBothValid_isTrue() = runBlocking {
-        coEvery { adapter.validate(any()) } coAnswers { ZcashAdapter.ZCashAddressType.Transparent }
+    fun sendable_addressAndAmountBothValid_isTrue() = runTest(dispatcher) {
+        coEvery { adapter.validate(any()) } returns ZcashAdapter.ZCashAddressType.Transparent
 
-        val service = createService()
-        service.start(CoroutineScope(Dispatchers.Default))
-        service.setSendTransactionData(sendData(amount = BigDecimal("1"), address = "t1valid"))
-        service.awaitState { it.sendable }
+        val service = startedService(address = "t1valid")
 
         assertTrue(service.stateFlow.value.sendable)
     }
 
     @Test
-    fun cautions_addressInvalid_surfacesTheAddressError() = runBlocking {
-        coEvery { adapter.validate(any()) } coAnswers { throw IllegalArgumentException("bad address") }
+    fun cautions_addressInvalid_surfacesTheAddressError() = runTest(dispatcher) {
+        coEvery { adapter.validate(any()) } throws IllegalArgumentException("bad address")
 
-        val service = createService()
-        service.start(CoroutineScope(Dispatchers.Default))
-        service.setSendTransactionData(sendData(amount = BigDecimal("1"), address = "invalid"))
-        service.awaitState { it.cautions.isNotEmpty() }
+        val service = startedService(address = "invalid")
 
         assertEquals("bad address", service.stateFlow.value.cautions.single().title)
     }
 
     @Test
-    fun cautions_addressValid_areEmpty() = runBlocking {
-        coEvery { adapter.validate(any()) } coAnswers { ZcashAdapter.ZCashAddressType.Transparent }
+    fun cautions_addressValid_areEmpty() = runTest(dispatcher) {
+        coEvery { adapter.validate(any()) } returns ZcashAdapter.ZCashAddressType.Transparent
 
-        val service = createService()
-        service.start(CoroutineScope(Dispatchers.Default))
-        service.setSendTransactionData(sendData(amount = BigDecimal("1"), address = "t1valid"))
-        service.awaitState { it.sendable }
+        val service = startedService(address = "t1valid")
 
         assertTrue(service.stateFlow.value.cautions.isEmpty())
     }
@@ -184,8 +169,9 @@ class SendTransactionServiceZCashTest : KoinTest {
         feesMap = emptyMap()
     )
 
-    /** Address validation runs on the service's own IO scope, so wait for its outcome in [stateFlow]. */
-    private suspend fun SendTransactionServiceZCash.awaitState(predicate: (SendTransactionServiceState) -> Boolean) {
-        withTimeout(3_000) { stateFlow.first(predicate) }
+    private suspend fun TestScope.startedService(address: String) = createService().apply {
+        start(backgroundScope)
+        setSendTransactionData(sendData(amount = BigDecimal("1"), address = address))
+        advanceUntilIdle()
     }
 }

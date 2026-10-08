@@ -32,9 +32,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.R
+import cash.p.terminal.navigation.AppPages
+import cash.p.terminal.navigation.BackupKeyInput
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.QrScannerInput
 import cash.p.terminal.navigation.openQrScanner
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.offline.OperationAvailability
@@ -70,7 +74,8 @@ import java.math.BigDecimal
 
 @Composable
 fun SendSmsNotificationScreen(
-    navController: NavController,
+    navigation: HSNavigation,
+    appPages: AppPages,
     uiState: SendSmsNotificationUiState,
     onAccountSelected: (Account) -> Unit,
     onAddressChanged: (String) -> Unit,
@@ -208,11 +213,11 @@ fun SendSmsNotificationScreen(
                     uiState.address.isNotBlank() -> DataState.Success(Address(uiState.address))
                     else -> null
                 },
-                navController = navController,
+                navigation = navigation,
                 chooseContactEnable = false,
                 blockchainType = BlockchainType.Zcash,
                 onQrScanClick = {
-                    navController.openQrScanner(scannerTitle) { scannedText ->
+                    navigation.openQrScanner(appPages, scannerTitle) { scannedText ->
                         onAddressChanged(scannedText)
                     }
                 },
@@ -363,12 +368,21 @@ private fun formatAmount(amount: BigDecimal): String {
     }
 }
 
+private val previewAppPages = object : AppPages {
+    override fun coin(coinUid: String): HSPage = error("preview")
+    override fun createAccount(): HSPage = error("preview")
+    override fun restoreAccount(): HSPage = error("preview")
+    override fun backupKey(input: BackupKeyInput): HSPage = error("preview")
+    override fun qrScanner(input: QrScannerInput): HSPage = error("preview")
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun SendSmsNotificationScreenEmptyPreview() {
     ComposeAppTheme {
         SendSmsNotificationScreen(
-            navController = rememberNavController(),
+            navigation = HSNavigation(NavBackStack()),
+            appPages = previewAppPages,
             uiState = SendSmsNotificationUiState(),
             onAccountSelected = {},
             onAddressChanged = {},
@@ -388,7 +402,8 @@ private fun SendSmsNotificationScreenEmptyPreview() {
 private fun SendSmsNotificationScreenWithAddressPreview() {
     ComposeAppTheme {
         SendSmsNotificationScreen(
-            navController = rememberNavController(),
+            navigation = HSNavigation(NavBackStack()),
+            appPages = previewAppPages,
             uiState = SendSmsNotificationUiState(
                 address = "zs1example1234567890abcdefghijklmnop",
                 memo = "Emergency notification",
@@ -415,7 +430,8 @@ private fun SendSmsNotificationScreenWithAddressPreview() {
 private fun SendSmsNotificationScreenWithErrorPreview() {
     ComposeAppTheme {
         SendSmsNotificationScreen(
-            navController = rememberNavController(),
+            navigation = HSNavigation(NavBackStack()),
+            appPages = previewAppPages,
             uiState = SendSmsNotificationUiState(
                 address = "invalid_address",
                 addressError = Exception("Invalid Zcash address"),

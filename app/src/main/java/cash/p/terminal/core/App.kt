@@ -24,7 +24,6 @@ import cash.p.terminal.core.managers.EvmLabelManager
 import cash.p.terminal.core.managers.EvmSyncSourceManager
 import cash.p.terminal.core.managers.LanguageManager
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
-import cash.p.terminal.core.managers.MarketFavoritesManager
 import cash.p.terminal.core.managers.NftAdapterManager
 import cash.p.terminal.core.managers.NftMetadataManager
 import cash.p.terminal.core.managers.NftMetadataSyncer
@@ -77,6 +76,7 @@ import cash.p.terminal.wallet.SubscriptionManager
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
+import cash.p.terminal.wallet.favorites.MarketFavoritesManager
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import cash.p.terminal.wallet.storage.MarketDatabase
 import cash.p.terminal.widgets.MarketWidgetManager
@@ -115,6 +115,7 @@ import io.horizontalsystems.core.logger.AppLog
 import io.horizontalsystems.core.security.KeyStoreManager
 import io.horizontalsystems.ethereumkit.core.EthereumKit
 import io.reactivex.plugins.RxJavaPlugins
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -587,7 +588,13 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
     private fun clearDeletedAccounts() {
         coroutineScope.launch {
             delay(3000)
-            getKoinInstance<DeletedAccountsCleanup>().invoke()
+            try {
+                getKoinInstance<DeletedAccountsCleanup>().invoke()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                KermitLogger.w(e) { "Failed to clear deleted accounts; retrying on next start" }
+            }
         }
     }
 

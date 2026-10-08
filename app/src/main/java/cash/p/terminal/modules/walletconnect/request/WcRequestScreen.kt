@@ -16,8 +16,8 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import com.reown.walletkit.client.Wallet
 import cash.p.terminal.R
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
@@ -33,7 +33,7 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @Composable
 fun WcRequestScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     sessionRequest: Wallet.Model.SessionRequest,
     wcAction: AbstractWCAction
 ) {
@@ -53,7 +53,7 @@ fun WcRequestScreen(
 
     LaunchedEffect(uiState.finish) {
         if (uiState.finish) {
-            navController.popBackStack()
+            navigation.navigateUp()
         }
     }
 
@@ -66,7 +66,7 @@ fun WcRequestScreen(
                     MenuItem(
                         title = TranslatableString.ResString(R.string.Button_Close),
                         icon = R.drawable.ic_close_24,
-                        onClick = { navController.popBackStackSafely() }
+                        onClick = { navigation.navigateUpSafely() }
                     )
                 )
             )
@@ -101,7 +101,7 @@ fun WcRequestScreen(
             uiState.contentItems.forEach { sectionViewItem ->
                 SectionView(
                     sectionViewItem.viewItems,
-                    navController
+                    navigation
                 )
                 Spacer(Modifier.height(16.dp))
             }

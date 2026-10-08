@@ -11,6 +11,7 @@ import cash.p.terminal.modules.market.sort
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
+import cash.p.terminal.wallet.favorites.MarketFavoritesManager
 import cash.p.terminal.wallet.models.Analytics
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
@@ -20,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.rx2.asFlow
 import kotlinx.coroutines.rx2.await
 
@@ -37,7 +39,8 @@ class MarketFavoritesService(
     private val menuService: MarketFavoritesMenuService,
     private val currencyManager: CurrencyManager,
     private val backgroundManager: BackgroundManager,
-    private val priceManager: PriceManager
+    private val priceManager: PriceManager,
+    private val favoritesManager: MarketFavoritesManager,
 ) {
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
     private var favoritesJob: Job? = null
@@ -82,10 +85,10 @@ class MarketFavoritesService(
         }
     }
 
-    private fun updateItems() {
+    private suspend fun updateItems() {
         val sorting = watchlistSorting
         if (sorting == WatchlistSorting.Manual) {
-            val manualSortOrder = menuService.manualSortOrder
+            val manualSortOrder = favoritesManager.manualSortingOrder.first()
             marketItems = marketItems.sortedBy {
                 manualSortOrder.indexOf(it.fullCoin.coin.uid)
             }
@@ -122,7 +125,7 @@ class MarketFavoritesService(
     }
 
     fun removeFavorite(uid: String) {
-        repository.removeFavorite(uid)
+        coroutineScope.launch { repository.removeFavorite(uid) }
     }
 
     fun refresh() {
@@ -148,7 +151,7 @@ class MarketFavoritesService(
         }
 
         coroutineScope.launch {
-            repository.dataUpdatedObservable.asFlow().collect {
+            repository.dataUpdatedFlow.collect {
                 fetch()
             }
         }
@@ -189,9 +192,9 @@ class MarketFavoritesService(
         if (to < 0 || to >= marketItems.size) return
         coroutineScope.launch {
             val order = marketItems.map { it.fullCoin.coin.uid }
-            menuService.manualSortOrder = order.toMutableList().apply {
-                add(to, removeAt(from))
-            }
+            favoritesManager.setManualSortingOrder(
+                order.toMutableList().apply { add(to, removeAt(from)) }
+            )
             updateItems()
         }
     }
