@@ -34,8 +34,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import cash.p.terminal.MainGraphDirections
 import cash.p.terminal.R
 import cash.p.terminal.core.Caution
 import cash.p.terminal.core.getKoinInstance
@@ -46,13 +44,16 @@ import cash.p.terminal.modules.balance.BalanceModule
 import cash.p.terminal.modules.balance.BalanceViewItem2
 import cash.p.terminal.modules.balance.BalanceViewModel
 import cash.p.terminal.modules.balance.TotalUIState
+import cash.p.terminal.modules.balance.token.TokenBalancePage
 import cash.p.terminal.modules.contacts.screen.ConfirmationBottomSheet
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
+import cash.p.terminal.modules.manageaccounts.ManageAccountsPage
+import cash.p.terminal.modules.managewallets.ManageWalletsPage
 import cash.p.terminal.modules.transactions.TransactionItem
 import cash.p.terminal.modules.walletconnect.list.WalletConnectListViewModel
 import cash.p.terminal.modules.zcashmigration.ZcashMigrationFlow
-import cash.p.terminal.navigation.slideFromBottom
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.navigation.AppPages
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.TransparentModalBottomSheet
 import cash.p.terminal.ui_compose.components.AppBar
@@ -64,10 +65,11 @@ import cash.p.terminal.ui_compose.rememberDebouncedAction
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.core.IPinComponent
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 @Composable
 fun BalanceForAccount(
-    navController: NavController,
+    navigation: HSNavigation,
     accountViewItem: AccountViewItem,
     paddingValuesParent: PaddingValues,
     onOpenTransactionInfo: (TransactionItem) -> Unit,
@@ -78,6 +80,7 @@ fun BalanceForAccount(
         viewModel.onResume()
     }
 
+    val appPages: AppPages = koinInject()
     val scannerTitle = stringResource(R.string.qr_scanner_title_smart_scan)
     var showInvalidUrlSheet by rememberSaveable { mutableStateOf(false) }
 
@@ -100,7 +103,7 @@ fun BalanceForAccount(
     val pinComponent = remember { getKoinInstance<IPinComponent>() }
     val isLocked by pinComponent.isLockedFlow.collectAsStateWithLifecycle()
 
-    BackupAlert(navController)
+    BackupAlert(navigation)
 
     Scaffold(
         containerColor = ComposeAppTheme.colors.tyler,
@@ -112,7 +115,7 @@ fun BalanceForAccount(
                     } else {
                         accountViewItem.name
                     }
-                    BalanceTitleRow(navController, walletName)
+                    BalanceTitleRow(navigation, walletName)
                 },
                 menuItems = buildList {
                     if (accountViewItem.isCoinManagerEnabled) {
@@ -121,7 +124,7 @@ fun BalanceForAccount(
                                 title = TranslatableString.ResString(R.string.display_options),
                                 icon = R.drawable.ic_search,
                                 onClick = {
-                                    navController.slideFromRight(R.id.manageWalletsFragment)
+                                    navigation.slideFromRight(ManageWalletsPage())
                                 })
                         )
                     }
@@ -131,7 +134,8 @@ fun BalanceForAccount(
                                 title = TranslatableString.ResString(R.string.WalletConnect_NewConnect),
                                 icon = R.drawable.ic_qr_scan_20,
                                 onClick = {
-                                    navController.openQrScanner(
+                                    navigation.openQrScanner(
+                                        appPages = appPages,
                                         title = scannerTitle,
                                         showPasteButton = true
                                     ) { scannedText ->
@@ -148,9 +152,7 @@ fun BalanceForAccount(
         val uiState = viewModel.uiState
 
         val navigateToTokenBalance: (BalanceViewItem2) -> Unit = rememberDebouncedAction { item ->
-            navController.navigate(
-                MainGraphDirections.actionToTokenBalance(item.wallet)
-            )
+            navigation.slideFromRight(TokenBalancePage(item.wallet))
         }
 
         Crossfade(
@@ -172,7 +174,7 @@ fun BalanceForAccount(
                         onItemClick = navigateToTokenBalance,
                         onBalanceClick = viewModel::onBalanceClick,
                         accountViewItem = accountViewItem,
-                        navController = navController,
+                        navigation = navigation,
                         uiState = uiState,
                         totalState = viewModel.totalUiState,
                         onOpenTransactionInfo = onOpenTransactionInfo,
@@ -191,7 +193,8 @@ fun BalanceForAccount(
         InvalidUrlConnectionBottomSheet(
             onRetry = {
                 showInvalidUrlSheet = false
-                navController.openQrScanner(
+                navigation.openQrScanner(
+                    appPages = appPages,
                     title = scannerTitle,
                     showPasteButton = true
                 ) { scannedText ->
@@ -256,7 +259,7 @@ private fun InvalidUrlConnectionBottomSheet(
 
 @Composable
 fun BalanceTitleRow(
-    navController: NavController,
+    navigation: HSNavigation,
     title: String
 ) {
     Row(
@@ -279,10 +282,7 @@ fun BalanceTitleRow(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
                 ) {
-                    navController.slideFromBottom(
-                        R.id.manageAccountsFragment,
-                        ManageAccountsModule.Mode.Switcher
-                    )
+                    navigation.slideFromBottom(ManageAccountsPage(ManageAccountsModule.Mode.Switcher))
                 },
         )
     }

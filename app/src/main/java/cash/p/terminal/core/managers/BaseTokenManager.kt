@@ -2,7 +2,7 @@ package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.ILocalStorage
-import cash.p.terminal.wallet.BuildConfig
+import cash.p.terminal.wallet.PirateContracts
 import cash.p.terminal.wallet.Token
 import io.horizontalsystems.core.entities.BlockchainType
 import cash.p.terminal.wallet.entities.TokenQuery
@@ -21,8 +21,8 @@ class BaseTokenManager(
         listOf(
             TokenQuery(BlockchainType.Bitcoin, TokenType.Derived(TokenType.Derivation.Bip84)),
             TokenQuery(BlockchainType.Ethereum, TokenType.Native),
-            TokenQuery.eip20(BlockchainType.BinanceSmartChain, BuildConfig.PIRATE_CONTRACT),
-            TokenQuery.eip20(BlockchainType.BinanceSmartChain, BuildConfig.COSANTA_CONTRACT),
+            TokenQuery.eip20(BlockchainType.BinanceSmartChain, PirateContracts.PIRATE_CONTRACT),
+            TokenQuery.eip20(BlockchainType.BinanceSmartChain, PirateContracts.COSANTA_CONTRACT),
             TokenQuery(BlockchainType.Zcash, TokenType.AddressSpecTyped(AddressSpecType.Shielded)),
         ).mapNotNull {
             coinManager.getToken(it)

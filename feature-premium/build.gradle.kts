@@ -54,7 +54,6 @@ dependencies {
     implementation(libs.android.core.ktx)
     implementation(libs.appcompat)
     implementation(libs.material)
-    implementation(libs.androidx.navigation.runtime.ktx)
 
     // Network dependencies
     implementation(libs.ktor.client.core)

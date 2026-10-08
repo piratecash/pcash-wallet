@@ -16,7 +16,7 @@ import cash.p.beam.BeamWalletState
 import cash.p.terminal.R
 import cash.p.terminal.core.managers.BeamSendCoordinator
 import cash.p.terminal.entities.OfflineSignedTransaction
-import cash.p.terminal.modules.send.SendFragment.ProceedActionData
+import cash.p.terminal.modules.send.SendPage.ProceedActionData
 import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.offline.OfflineSignState
 import cash.p.terminal.modules.send.offline.OfflineTransactionFormat

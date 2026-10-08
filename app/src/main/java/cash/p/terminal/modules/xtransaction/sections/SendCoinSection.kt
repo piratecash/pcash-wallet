@@ -2,12 +2,12 @@ package cash.p.terminal.modules.xtransaction.sections
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.modules.xtransaction.cells.AmountColor
 import cash.p.terminal.modules.xtransaction.cells.AmountSign
 import cash.p.terminal.modules.xtransaction.helpers.TransactionInfoHelper
+import cash.p.terminal.navigation.HSNavigation
 import io.horizontalsystems.core.entities.BlockchainType
 
 @Composable
@@ -16,7 +16,7 @@ fun SendCoinSection(
     address: String,
     comment: String?,
     sentToSelf: Boolean,
-    navController: NavController,
+    navigation: HSNavigation,
     transactionInfoHelper: TransactionInfoHelper,
     blockchainType: BlockchainType
 ) {
@@ -28,7 +28,7 @@ fun SendCoinSection(
         addressTitle = stringResource(R.string.TransactionInfo_To),
         address = address,
         comment = comment,
-        navController = navController,
+        navigation = navigation,
         transactionInfoHelper = transactionInfoHelper,
         blockchainType = blockchainType,
     )

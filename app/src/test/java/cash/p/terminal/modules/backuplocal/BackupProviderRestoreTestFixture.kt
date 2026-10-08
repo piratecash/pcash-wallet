@@ -10,7 +10,6 @@ import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.EvmSyncSourceManager
 import cash.p.terminal.core.managers.LanguageManager
-import cash.p.terminal.core.managers.MarketFavoritesManager
 import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.RestoreSettingType
 import cash.p.terminal.core.managers.SolanaRpcSourceManager
@@ -46,6 +45,7 @@ import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.EnabledWallet
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.favorites.MarketFavoritesManager
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
@@ -116,7 +116,7 @@ internal abstract class BackupProviderRestoreTestFixture {
         }
 
         every { accountManager.accounts } returns emptyList()
-        every { marketFavoritesManager.getAll() } returns emptyList()
+        coEvery { marketFavoritesManager.getAll() } returns emptyList()
         every { btcBlockchainManager.allBlockchains } returns emptyList()
         every { evmBlockchainManager.allBlockchains } returns emptyList()
         every { contactsRepository.contacts } returns emptyList()

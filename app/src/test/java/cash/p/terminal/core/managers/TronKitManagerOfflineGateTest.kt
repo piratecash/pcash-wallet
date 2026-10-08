@@ -63,6 +63,7 @@ class TronKitManagerOfflineGateTest {
             networkErrorTracker = mockk(relaxed = true),
             trezorClient = mockk(relaxed = true),
             offlineModeManager = offlineModeManager,
+            tronKitDatabaseKeyProvider = mockk(relaxed = true),
         )
         setField(manager, "tronKitWrapper", TronKitWrapper(mockTronKit, null))
         setField(manager, "currentAccount", account)

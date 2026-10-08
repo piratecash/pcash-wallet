@@ -1,9 +1,9 @@
 package cash.p.terminal.modules.market.favorites
 
-import cash.p.terminal.core.managers.MarketFavoritesManager
 import cash.p.terminal.modules.market.MarketItem
 import cash.p.terminal.modules.market.filters.TimePeriod
 import cash.p.terminal.wallet.MarketKitWrapper
+import cash.p.terminal.wallet.favorites.MarketFavoritesManager
 import cash.p.terminal.wallet.models.CoinPrice
 import io.horizontalsystems.core.entities.Currency
 import io.horizontalsystems.core.entities.CurrencyValue
@@ -14,16 +14,15 @@ class MarketFavoritesRepository(
     private val marketKit: MarketKitWrapper,
     private val manager: MarketFavoritesManager
 ) {
-    val dataUpdatedObservable by manager::dataUpdatedAsync
+    val dataUpdatedFlow by manager::dataUpdatedFlow
 
     private suspend fun getFavorites(
         currency: Currency,
         period: TimePeriod
     ): List<MarketItem> {
-        val favoriteCoins = manager.getAll()
-        if (favoriteCoins.isEmpty()) return listOf()
+        val favoriteCoinUids = manager.getAll()
+        if (favoriteCoinUids.isEmpty()) return listOf()
 
-        val favoriteCoinUids = favoriteCoins.map { it.coinUid }
         val favoriteUidSet = favoriteCoinUids.toSet()
         val marketInfoList = marketKit
             .marketInfosSingle(favoriteCoinUids, currency.code).await()
@@ -81,7 +80,7 @@ class MarketFavoritesRepository(
         return getFavorites(currency, period)
     }
 
-    fun removeFavorite(uid: String) {
+    suspend fun removeFavorite(uid: String) {
         manager.remove(uid)
     }
 }

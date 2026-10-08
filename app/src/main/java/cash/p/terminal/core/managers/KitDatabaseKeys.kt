@@ -4,7 +4,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-/** The only caller of [KitDatabaseKeyProvider]: its check-generate-persist is not atomic across kits. */
+/** The only caller of the shared Bitcoin/THORChain key: its check-generate-persist is not atomic across kits. */
 class KitDatabaseKeys(private val keyProvider: KitDatabaseKeyProvider) {
     private val mutex = Mutex()
 

@@ -6,7 +6,7 @@ if [ -x /usr/libexec/java_home ]; then
     export JAVA_HOME=$(/usr/libexec/java_home -v 21)
 fi
 
-ASSET=core/wallet/src/main/assets/initial_coins_list
+ASSET=core/market/src/androidMain/assets/initial_coins_list
 
 # Row count for table $1 via a throwaway in-memory DB (awk adds the trailing ';' sqlite3 needs).
 count() {
@@ -18,7 +18,7 @@ before_blockchains=$(count Blockchain)
 before_coins=$(count Coin)
 before_tokens=$(count Token)
 
-./gradlew :core:wallet:testDebugUnitTest \
+./gradlew :core:market:testAndroidHostTest \
     --tests "cash.p.terminal.wallet.tools.InitialCoinsListGenerator" \
     -PupdateCoinsList=true --rerun
 

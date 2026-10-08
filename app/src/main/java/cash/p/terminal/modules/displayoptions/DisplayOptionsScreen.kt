@@ -17,12 +17,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.R
+import cash.p.terminal.modules.managewallets.ManageWalletsPage
 import cash.p.terminal.modules.settings.main.HsSettingCell
-import cash.p.terminal.navigation.popBackStackSafely
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui.compose.components.AlertGroup
 import cash.p.terminal.ui_compose.Select
 import cash.p.terminal.ui_compose.components.AppBar
@@ -34,7 +34,7 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @Composable
 internal fun DisplayOptionsScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     uiState: DisplayOptionsUiState,
     onPricePeriodChanged: (DisplayPricePeriod) -> Unit,
     onPercentChangeToggled: (Boolean) -> Unit,
@@ -48,7 +48,7 @@ internal fun DisplayOptionsScreen(
             AppBar(
                 title = stringResource(R.string.display_options),
                 navigationIcon = {
-                    HsBackButton(onClick = navController::popBackStackSafely)
+                    HsBackButton(onClick = navigation::navigateUpSafely)
                 }
             )
 
@@ -64,7 +64,7 @@ internal fun DisplayOptionsScreen(
                             HsSettingCell(
                                 title = R.string.ManageCoins_title,
                                 onClick = {
-                                    navController.slideFromRight(R.id.manageWalletsFragment)
+                                    navigation.slideFromRight(ManageWalletsPage())
                                 }
                             )
                         }
@@ -157,7 +157,7 @@ fun PriceParametersSection(
 private fun DisplayOptionsScreenPreview() {
     ComposeAppTheme {
         DisplayOptionsScreen(
-            navController = rememberNavController(),
+            navigation = HSNavigation(NavBackStack()),
             uiState = DisplayOptionsUiState(
                 isCoinManagerEnabled = true,
                 isRoundingAmountMainPage = true,

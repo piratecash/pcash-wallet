@@ -18,14 +18,14 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.Caution
 import cash.p.terminal.modules.contacts.screen.ConfirmationBottomSheet
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
+import cash.p.terminal.navigation.AppPages
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.navigation.openQrScanner
-import cash.p.terminal.navigation.popBackStackSafely
-import cash.p.terminal.navigation.slideFromBottom
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui.compose.components.ListEmptyView
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
@@ -33,11 +33,12 @@ import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 @Composable
 fun TonConnectMainScreen(
     viewModel: TonConnectListViewModel,
-    navController: NavController, deepLinkUri: String?,
+    navigation: HSNavigation, deepLinkUri: String?,
     windowInsets: WindowInsets = NavigationBarDefaults.windowInsets,
 ) {
     val invalidUrlBottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
@@ -48,7 +49,7 @@ fun TonConnectMainScreen(
     val dAppRequestEntity = uiState.dAppRequestEntity
     LaunchedEffect(dAppRequestEntity) {
         if (dAppRequestEntity != null) {
-            navController.slideFromBottom(R.id.tcNewFragment, dAppRequestEntity)
+            navigation.slideFromBottom(TonConnectNewPage(dAppRequestEntity))
             viewModel.onDappRequestHandled()
         }
     }
@@ -68,6 +69,7 @@ fun TonConnectMainScreen(
     }
 
     val scannerTitle = stringResource(R.string.TonConnect_Title)
+    val appPages: AppPages = koinInject()
 
     AppModalBottomSheetLayout(
         sheetState = invalidUrlBottomSheetState,
@@ -83,7 +85,8 @@ fun TonConnectMainScreen(
                 onConfirm = {
                     coroutineScope.launch {
                         invalidUrlBottomSheetState.hide()
-                        navController.openQrScanner(
+                        navigation.openQrScanner(
+                            appPages = appPages,
                             title = scannerTitle,
                             showPasteButton = true
                         ) { scannedText ->
@@ -103,7 +106,7 @@ fun TonConnectMainScreen(
                 AppBar(
                     title = stringResource(R.string.TonConnect_Title),
                     navigationIcon = {
-                        HsBackButton(onClick = { navController.popBackStackSafely() })
+                        HsBackButton(onClick = { navigation.navigateUpSafely() })
                     }
                 )
             }
@@ -134,7 +137,8 @@ fun TonConnectMainScreen(
                             .fillMaxWidth(),
                         title = stringResource(R.string.TonConnect_NewConnect),
                         onClick = {
-                            navController.openQrScanner(
+                            navigation.openQrScanner(
+                                appPages = appPages,
                                 title = scannerTitle,
                                 showPasteButton = true
                             ) { scannedText ->

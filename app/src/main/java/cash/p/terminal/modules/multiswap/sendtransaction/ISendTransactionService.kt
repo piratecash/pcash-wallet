@@ -1,7 +1,7 @@
 package cash.p.terminal.modules.multiswap.sendtransaction
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.EvmError
@@ -28,10 +28,10 @@ import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import com.piratecash.monero.signer.HardwareWalletOperationException
 import io.horizontalsystems.core.CurrencyManager
+import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.entities.CurrencyValue
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 import org.koin.java.KoinJavaComponent.inject
@@ -74,14 +74,15 @@ abstract class ISendTransactionService<T>(protected val token: Token) :
     protected val feeToken: Token
         get() = marketKit.token(TokenQuery(token.blockchainType, TokenType.Native)) ?: token
 
-    protected val coroutineScope = CoroutineScope(Dispatchers.IO)
+    private val dispatcherProvider: DispatcherProvider by inject(DispatcherProvider::class.java)
+    protected val coroutineScope by lazy { CoroutineScope(dispatcherProvider.io) }
 
     abstract fun hasSettings(): Boolean
     abstract fun start(coroutineScope: CoroutineScope)
     abstract suspend fun setSendTransactionData(data: SendTransactionData)
 
     @Composable
-    abstract fun GetSettingsContent(navController: NavController)
+    abstract fun GetSettingsContent(navigation: HSNavigation)
 
     /**
      * The last cancellable point before an irreversible signature or broadcast: a flow opened online

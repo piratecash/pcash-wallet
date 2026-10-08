@@ -16,9 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import cash.p.terminal.R
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.modules.coin.CoinPage
+import cash.p.terminal.navigation.HSNavigation
 
 import cash.p.terminal.ui_compose.CoinFragmentInput
 import cash.p.terminal.modules.market.MarketModule
@@ -34,16 +33,13 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 @Composable
 fun BoardsView(
     boards: List<MarketOverviewModule.Board>,
-    navController: NavController,
+    navigation: HSNavigation,
     onClickSeeAll: (MarketModule.ListType) -> Unit,
     onSelectTopMarket: (TopMarket, MarketModule.ListType) -> Unit
 ) {
     val onItemClick: (MarketViewItem) -> Unit = remember {
         {
-            navController.slideFromRight(
-                R.id.coinFragment,
-                CoinFragmentInput(it.coinUid)
-            )
+            navigation.slideFromRight(CoinPage(CoinFragmentInput(it.coinUid)))
         }
     }
 
