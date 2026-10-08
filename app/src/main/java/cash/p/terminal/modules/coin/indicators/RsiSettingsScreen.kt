@@ -14,9 +14,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import cash.p.terminal.R
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.modules.chart.ChartIndicatorSetting
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
@@ -32,7 +32,7 @@ import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @Composable
-fun RsiSettingsScreen(navController: NavController, indicatorSetting: ChartIndicatorSetting) {
+fun RsiSettingsScreen(navigation: HSNavigation, indicatorSetting: ChartIndicatorSetting) {
     val viewModel = viewModel<RsiSettingViewModel>(
         factory = RsiSettingViewModel.Factory(indicatorSetting)
     )
@@ -40,7 +40,7 @@ fun RsiSettingsScreen(navController: NavController, indicatorSetting: ChartIndic
 
     if (uiState.finish) {
         LaunchedEffect(uiState.finish) {
-            navController.popBackStack()
+            navigation.navigateUp()
         }
     }
 
@@ -50,7 +50,7 @@ fun RsiSettingsScreen(navController: NavController, indicatorSetting: ChartIndic
             AppBar(
                 title = viewModel.name,
                 navigationIcon = {
-                    HsBackButton(onClick = { navController.popBackStackSafely() })
+                    HsBackButton(onClick = { navigation.navigateUpSafely() })
                 },
                 menuItems = listOf(
                     MenuItem(

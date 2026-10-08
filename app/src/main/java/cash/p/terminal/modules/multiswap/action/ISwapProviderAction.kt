@@ -1,7 +1,7 @@
 package cash.p.terminal.modules.multiswap.action
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
 
 interface ISwapProviderAction {
     val inProgress: Boolean
@@ -15,5 +15,5 @@ interface ISwapProviderAction {
     @Composable
     fun getDescription() : String? = null
 
-    fun execute(navController: NavController, onActionCompleted: () -> Unit)
+    fun execute(navigation: HSNavigation, onActionCompleted: () -> Unit)
 }

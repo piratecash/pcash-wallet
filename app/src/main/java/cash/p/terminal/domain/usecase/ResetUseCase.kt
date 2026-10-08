@@ -1,7 +1,6 @@
 package cash.p.terminal.domain.usecase
 
 import android.content.Context
-import androidx.glance.appwidget.GlanceAppWidgetManager
 import cash.p.terminal.core.managers.KeyStoreCleaner
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.storage.AppDatabase
@@ -11,9 +10,7 @@ import cash.p.terminal.modules.settings.appearance.AppIconService
 import cash.p.terminal.modules.walletconnect.WCDelegate
 import cash.p.terminal.strings.helpers.LocaleHelper
 import cash.p.terminal.wallet.AccountDeletionPreflight
-import cash.p.terminal.widgets.MarketWidget
-import cash.p.terminal.widgets.MarketWidgetStateDefinition
-import cash.p.terminal.widgets.MarketWidgetWorker
+import cash.p.terminal.widgets.MarketWatchlistResetCleaner
 import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
@@ -26,7 +23,7 @@ class ResetUseCase(
     private val appDatabase: AppDatabase,
     private val contactsRepository: ContactsRepository,
     private val dispatcherProvider: DispatcherProvider,
-    private val glanceManager: GlanceAppWidgetManager,
+    private val watchlistResetCleaner: MarketWatchlistResetCleaner,
     private val appIconService: AppIconService,
     private val deletionPreflight: AccountDeletionPreflight,
     private val keyStoreCleaner: KeyStoreCleaner,
@@ -40,6 +37,9 @@ class ResetUseCase(
             clearKeystoreLinkage()
 
             purgeDatabases()
+            // The watchlist reset runs after the database and preference purge: an interrupted reset
+            // must not be able to re-migrate favorites from sources that are already empty.
+            watchlistResetCleaner.clear()
             purgeLocalePreferences()
             purgeFilesAndCaches()
             finishResetMarker()
@@ -102,9 +102,6 @@ class ResetUseCase(
             File(context.filesDir, CONTACTS_FILE_NAME).delete()
         }.onFailure { Timber.w(it, "Failed clearing contacts") }
 
-        runCatching { clearWidgetState() }
-            .onFailure { Timber.w(it, "Failed clearing widget state") }
-
         runCatching {
             context.getDir(TorConstants.DIRECTORY_TOR_DATA, Context.MODE_PRIVATE)
                 .deleteRecursively()
@@ -113,22 +110,6 @@ class ResetUseCase(
         runCatching {
             File(context.filesDir, PHOTOS_DIR_NAME).deleteRecursively()
         }.onFailure { Timber.w(it, "Failed clearing login photos") }
-    }
-
-    private suspend fun clearWidgetState() {
-        val glanceIds = runCatching { glanceManager.getGlanceIds(MarketWidget::class.java) }
-            .getOrElse { emptyList() }
-
-        glanceIds.forEach { glanceId ->
-            runCatching {
-                val file = MarketWidgetStateDefinition.getLocation(context, glanceId.toString())
-                if (file.exists()) {
-                    file.delete()
-                }
-            }.onFailure { Timber.w(it, "Failed deleting widget state for $glanceId") }
-        }
-
-        MarketWidgetWorker.cancel(context)
     }
 
     companion object {

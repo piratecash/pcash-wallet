@@ -2,7 +2,7 @@ package cash.p.terminal.modules.multiswap.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.R
 import cash.p.terminal.modules.fee.QuoteInfoRow
 import cash.p.terminal.ui_compose.components.subhead2_grey
@@ -10,7 +10,7 @@ import cash.p.terminal.ui_compose.components.subhead2_leah
 
 data class DataFieldNonce(val nonce: Long) : DataField {
     @Composable
-    override fun GetContent(navController: NavController, borderTop: Boolean) {
+    override fun GetContent(navigation: HSNavigation, borderTop: Boolean) {
         QuoteInfoRow(
             borderTop = borderTop,
             title = {

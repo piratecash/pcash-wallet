@@ -37,11 +37,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.koin.compose.viewmodel.koinViewModel
-import androidx.navigation.NavController
-import cash.p.terminal.MainGraphDirections
 import cash.p.terminal.R
 import cash.p.terminal.core.managers.FaqManager
 import cash.p.terminal.core.usecase.PayCoreNavigationTarget
+import cash.p.terminal.featureStacking.ui.staking.StackingPage
 import cash.p.terminal.modules.balance.AccountViewItem
 import cash.p.terminal.modules.balance.BalanceUiState
 import cash.p.terminal.modules.balance.BalanceViewItem2
@@ -49,15 +48,19 @@ import cash.p.terminal.modules.balance.BalanceViewModel
 import cash.p.terminal.modules.balance.HeaderNote
 import cash.p.terminal.modules.balance.ReceiveAllowedState
 import cash.p.terminal.modules.balance.TotalUIState
-import cash.p.terminal.modules.manageaccount.dialogs.BackupRequiredDialog
+import cash.p.terminal.modules.displayoptions.DisplayOptionsPage
+import cash.p.terminal.modules.manageaccount.dialogs.BackupRequiredSheet
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
-import cash.p.terminal.modules.multiswap.exchanges.MultiSwapExchangesFragment
+import cash.p.terminal.modules.main.MainPage
+import cash.p.terminal.modules.multiswap.SwapPage
+import cash.p.terminal.modules.multiswap.exchanges.MultiSwapExchangesPage
 import cash.p.terminal.modules.rateapp.RateAppViewModel
-import cash.p.terminal.modules.send.offline.OfflineBroadcastFragment
-import cash.p.terminal.modules.sendtokenselect.SendTokenSelectFragment
+import cash.p.terminal.modules.receive.ui.ReceiveChooseCoinPage
+import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
+import cash.p.terminal.modules.send.offline.OfflineBroadcastPage
+import cash.p.terminal.modules.sendtokenselect.SendTokenSelectPage
 import cash.p.terminal.modules.transactions.TransactionItem
-import cash.p.terminal.navigation.slideFromBottom
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui_compose.components.BalanceActionButton
 import cash.p.terminal.ui_compose.components.HSSwipeRefresh
 import cash.p.terminal.ui_compose.components.HudHelper
@@ -107,7 +110,7 @@ fun BalanceItems(
     onItemClick: (BalanceViewItem2) -> Unit,
     onBalanceClick: (BalanceViewItem2) -> Unit,
     accountViewItem: AccountViewItem,
-    navController: NavController,
+    navigation: HSNavigation,
     uiState: BalanceUiState,
     totalState: TotalUIState,
     onOpenTransactionInfo: (TransactionItem) -> Unit,
@@ -126,10 +129,7 @@ fun BalanceItems(
                 is PayCoreNavigationTarget.OpenTransactionInfo ->
                     onOpenTransactionInfo(event.transactionItem)
                 is PayCoreNavigationTarget.OpenPayCoreDetail ->
-                    navController.slideFromRight(
-                        R.id.multiSwapExchanges,
-                        MultiSwapExchangesFragment.ARG_PAYCORE_DATE to event.date,
-                    )
+                    navigation.slideFromRight(MultiSwapExchangesPage(payCoreDate = event.date))
             }
         }
     }
@@ -143,7 +143,7 @@ fun BalanceItems(
             onSyncErrorClicked(
                 it,
                 viewModel,
-                navController,
+                navigation,
                 view
             )
         }
@@ -197,7 +197,7 @@ fun BalanceItems(
                                     label = stringResource(R.string.Balance_Send),
                                     iconRotation = -90f,
                                     onClick = {
-                                        navController.slideFromRight(R.id.sendTokenSelectFragment)
+                                        navigation.slideFromRight(SendTokenSelectPage(null))
                                     },
                                 )
                                 BalanceActionButton(
@@ -208,9 +208,7 @@ fun BalanceItems(
                                             viewModel.getReceiveAllowedState()) {
                                             ReceiveAllowedState.Allowed -> {
                                                 viewModel.getSingleWalletForReceive()
-                                                navController.slideFromRight(
-                                                    R.id.receiveChooseCoinFragment
-                                                )
+                                                navigation.slideFromRight(ReceiveChooseCoinPage())
                                             }
 
                                             is ReceiveAllowedState.BackupRequired -> {
@@ -220,9 +218,8 @@ fun BalanceItems(
                                                         R.string.Balance_Receive_BackupRequired_Description,
                                                         account.name
                                                     )
-                                                navController.slideFromBottom(
-                                                    R.id.backupRequiredDialog,
-                                                    BackupRequiredDialog.Input(account, text)
+                                                navigation.slideFromBottom(
+                                                    BackupRequiredSheet(BackupRequiredSheet.Input(account, text))
                                                 )
                                             }
 
@@ -235,7 +232,7 @@ fun BalanceItems(
                                         icon = R.drawable.ic_swap_24,
                                         label = stringResource(R.string.Swap),
                                         onClick = {
-                                            navController.slideFromRight(R.id.multiswap)
+                                            navigation.slideFromRight(SwapPage())
                                         },
                                     )
                                 }
@@ -244,7 +241,7 @@ fun BalanceItems(
                                         icon = R.drawable.ic_coins_stacking,
                                         label = stringResource(R.string.stacking),
                                         onClick = {
-                                            navController.slideFromRight(R.id.stacking)
+                                            navigation.slideFromRight(StackingPage(null))
                                         },
                                     )
                                 }
@@ -257,7 +254,7 @@ fun BalanceItems(
                                     icon = R.drawable.ic_coins_stacking,
                                     label = stringResource(R.string.staking_details),
                                     onClick = {
-                                        navController.slideFromRight(R.id.stacking)
+                                        navigation.slideFromRight(StackingPage(null))
                                     },
                                 )
                             }
@@ -277,7 +274,7 @@ fun BalanceItems(
                     onSelectSortType = viewModel::setSortType,
                     onDisplayPricePeriod = viewModel::setDisplayPricePeriod,
                     onSettingsClick = {
-                        navController.slideFromBottom(R.id.displayOptionsFragment)
+                        navigation.slideFromBottom(DisplayOptionsPage())
                     },
                 )
             }
@@ -332,14 +329,13 @@ fun BalanceItems(
                                 val swapId = uiState.singlePendingSwapId
                                 when {
                                     payCoreDate != null -> viewModel.onSinglePayCoreSwapClick()
-                                    swapId != null -> navController.slideFromRight(
-                                        R.id.multiSwapExchanges,
-                                        MultiSwapExchangesFragment.ARG_PENDING_MULTI_SWAP_ID to swapId,
+                                    swapId != null -> navigation.slideFromRight(
+                                        MultiSwapExchangesPage(pendingMultiSwapId = swapId)
                                     )
-                                    else -> navController.slideFromRight(R.id.multiSwapExchanges)
+                                    else -> navigation.slideFromRight(MultiSwapExchangesPage())
                                 }
                             } else {
-                                navController.slideFromRight(R.id.multiSwapExchanges)
+                                navigation.slideFromRight(MultiSwapExchangesPage())
                             }
                         }
                     )
@@ -387,36 +383,34 @@ fun BalanceItems(
         }
     }
     uiState.openSend?.let { openSend ->
-        navController.slideFromRight(
-            R.id.sendTokenSelectFragment,
-            SendTokenSelectFragment.Input(
-                openSend.blockchainTypes,
-                openSend.tokenTypes,
-                openSend.prefilledData
+        navigation.slideFromRight(
+            SendTokenSelectPage(
+                SendTokenSelectPage.Input(
+                    openSend.blockchainTypes,
+                    openSend.tokenTypes,
+                    openSend.prefilledData
+                )
             )
         )
         viewModel.onSendOpened()
     }
     uiState.openRestoreFromQr?.let { restore ->
-        navController.slideFromRight(
-            R.id.restoreAccountFragment,
-            ManageAccountsModule.Input(
-                popOffOnSuccess = R.id.mainFragment,
-                popOffInclusive = false,
-                prefillWords = restore.words,
-                prefillPassphrase = restore.passphrase,
-                prefillMoneroHeight = restore.moneroHeight,
-                prefillMnemonicLanguageName = restore.language?.name
+        navigation.slideFromRight(
+            RestoreAccountPage(
+                ManageAccountsModule.Input(
+                    popOffOnSuccess = MainPage::class,
+                    popOffInclusive = false,
+                    prefillWords = restore.words,
+                    prefillPassphrase = restore.passphrase,
+                    prefillMoneroHeight = restore.moneroHeight,
+                    prefillMnemonicLanguageName = restore.language?.name
+                )
             )
         )
         viewModel.onRestoreFromQrOpened()
     }
     uiState.openOfflineBroadcast?.let { input ->
-        navController.slideFromRight(
-            MainGraphDirections.actionGlobalToOfflineBroadcastFragment(
-                OfflineBroadcastFragment.Input(initialInput = input)
-            )
-        )
+        navigation.slideFromRight(OfflineBroadcastPage(OfflineBroadcastPage.Input(initialInput = input)))
         viewModel.onOfflineBroadcastOpened()
     }
 }

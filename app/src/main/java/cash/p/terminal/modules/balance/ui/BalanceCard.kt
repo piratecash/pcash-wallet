@@ -29,7 +29,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.modules.balance.BalanceViewItem2
 import cash.p.terminal.modules.balance.BalanceViewModel
@@ -37,6 +36,7 @@ import cash.p.terminal.modules.balance.SyncingProgress
 import cash.p.terminal.modules.balance.SyncingProgressType
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.syncerror.showSyncErrorDialog
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui_compose.components.DraggableCardSimple
 import cash.p.terminal.ui.compose.components.Badge
 import cash.p.terminal.ui.compose.components.CoinIconWithSyncProgress
@@ -412,7 +412,7 @@ private fun WalletIcon(
 fun onSyncErrorClicked(
     viewItem: BalanceViewItem2,
     viewModel: BalanceViewModel,
-    navController: NavController,
+    navigation: HSNavigation,
     view: View
 ) {
     when (val syncErrorDetails = viewModel.getSyncErrorDetails(viewItem)) {
@@ -420,7 +420,7 @@ fun onSyncErrorClicked(
             val wallet = syncErrorDetails.wallet
             val errorMessage = syncErrorDetails.errorMessage
 
-            navController.showSyncErrorDialog(wallet, errorMessage)
+            navigation.showSyncErrorDialog(wallet, errorMessage)
         }
 
         is BalanceViewModel.SyncError.NetworkNotAvailable -> {

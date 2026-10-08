@@ -16,12 +16,12 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
 import cash.p.terminal.modules.multiswap.SwapViewModel
 import cash.p.terminal.modules.paycore.selectbank.PayCoreBankSwapSetting
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
@@ -33,8 +33,7 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @Composable
 fun SwapSettingsScreen(
-    settingsNavController: NavController,
-    appNavController: NavController,
+    navigation: HSNavigation,
     swapViewModel: SwapViewModel
 ) {
     val viewModel =
@@ -50,7 +49,7 @@ fun SwapSettingsScreen(
     val applySettings: () -> Unit = {
         keyboardController?.hide()
         swapViewModel.onUpdateSettings(viewModel.getSettings())
-        settingsNavController.popBackStackSafely()
+        navigation.navigateUpSafely()
     }
 
     Scaffold(
@@ -58,7 +57,7 @@ fun SwapSettingsScreen(
             AppBar(
                 title = stringResource(customTitle ?: R.string.SwapSettings_Title),
                 navigationIcon = {
-                    HsBackButton(onClick = settingsNavController::popBackStackSafely)
+                    HsBackButton(onClick = navigation::navigateUpSafely)
                 },
                 menuItems = if (bankSetting != null) {
                     listOf(
@@ -118,7 +117,7 @@ fun SwapSettingsScreen(
                     } else {
                         with(setting) {
                             addContentItems(
-                                navController = appNavController,
+                                navigation = navigation,
                                 value = uiState.settings[settingId],
                                 onError = onError,
                                 onValueChange = onValueChange,

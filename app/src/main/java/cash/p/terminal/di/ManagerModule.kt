@@ -42,10 +42,10 @@ import cash.p.terminal.core.managers.DeletedAccountsCleanup
 import cash.p.terminal.wallet.AccountDeletionPreflight
 import cash.p.terminal.wallet.IAccountCleaner
 import cash.p.terminal.core.managers.BitcoinKitConnectionManager
+import cash.p.terminal.core.managers.BitcoinKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.BitcoinKitDatabaseManager
 import cash.p.terminal.core.managers.BitcoinKitDatabaseOperations
 import cash.p.terminal.core.managers.BtcBlockchainManager
-import cash.p.terminal.core.managers.DefaultKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.DefaultBitcoinKitDatabaseOperations
 import cash.p.terminal.core.managers.DeviceFlipDetector
 import cash.p.terminal.core.managers.EffectiveMonitoredChains
@@ -72,7 +72,7 @@ import cash.p.terminal.core.managers.CreateRequiredTokensUseCaseImpl
 import cash.p.terminal.core.managers.DefaultCurrencyManager
 import cash.p.terminal.core.managers.DefaultUserManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
-import cash.p.terminal.core.managers.MarketFavoritesManager
+import cash.p.terminal.core.managers.MarketFavoritesDataMigration
 import cash.p.terminal.core.managers.DefaultMoneroDeviceWalletNative
 import cash.p.terminal.core.managers.DefaultMoneroNativeWalletRuntime
 import cash.p.terminal.core.managers.EvmLabelManager
@@ -133,6 +133,7 @@ import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TorManager
 import cash.p.terminal.core.managers.TransactionAdapterManager
 import cash.p.terminal.core.managers.TransactionHiddenManager
+import cash.p.terminal.core.managers.TronKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.TronKitManager
 import cash.p.terminal.core.managers.WalletActivator
 import cash.p.terminal.core.managers.WordsManager
@@ -162,6 +163,7 @@ import cash.p.terminal.feature.miniapp.domain.usecase.EvmPersonalSigner
 import cash.p.terminal.feature.miniapp.domain.usecase.GetTonAddressUseCase
 import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.modules.addtoken.AddTokenService
+import cash.p.terminal.modules.main.AppPagesImpl
 import cash.p.terminal.modules.market.favorites.MarketFavoritesMenuService
 import cash.p.terminal.modules.market.favorites.MarketFavoritesRepository
 import cash.p.terminal.modules.market.favorites.MarketFavoritesService
@@ -187,7 +189,12 @@ import cash.p.terminal.modules.pin.hiddenwallet.HiddenWalletPinPolicy
 import cash.p.terminal.modules.transactions.CheckAmlIncomingTransactionUseCase
 import cash.p.terminal.modules.transactions.TransactionSyncStateRepository
 import cash.p.terminal.modules.walletconnect.WCManager
+import cash.p.terminal.wallet.favorites.MarketFavoritesChangeListener
+import cash.p.terminal.wallet.favorites.MarketFavoritesMigration
+import cash.p.terminal.widgets.MarketWatchlistResetCleaner
 import cash.p.terminal.widgets.MarketWidgetManager
+import cash.p.terminal.widgets.WidgetMarketFavoritesChangeListener
+import cash.p.terminal.core.storage.AppDatabase
 import cash.p.terminal.modules.walletconnect.WCSessionManager
 import cash.p.terminal.modules.walletconnect.handler.WCHandlerEvm
 import cash.p.terminal.modules.walletconnect.stellar.WCHandlerStellar
@@ -197,10 +204,12 @@ import cash.p.terminal.network.alphaaml.api.AlphaAmlApi
 import cash.p.terminal.network.data.AppHeadersProvider
 import cash.p.terminal.network.pirate.di.PREMIUM_API_BASE_URL_QUALIFIER
 import cash.p.terminal.premium.di.PREMIUM_IS_DEBUG_QUALIFIER
+import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import cash.p.terminal.wallet.managers.ITransactionHiddenManager
 import cash.p.terminal.wallet.managers.UserManager
+import cash.p.terminal.wallet.navigation.WalletPages
 import com.m2049r.xmrwallet.service.MoneroWalletService
 import io.horizontalsystems.bitcoincore.core.IConnectionManager
 import io.horizontalsystems.core.BackgroundManager
@@ -230,6 +239,7 @@ import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.bind
+import org.koin.dsl.binds
 import org.koin.dsl.module
 
 val managerModule = module {
@@ -316,7 +326,7 @@ val managerModule = module {
     }
     singleOf(::ConnectivityManager) bind IConnectivityManager::class
     singleOf(::BitcoinKitConnectionManager) bind IConnectionManager::class
-    singleOf(::DefaultKitDatabaseKeyProvider) bind KitDatabaseKeyProvider::class
+    singleOf(::BitcoinKitDatabaseKeyProvider) bind KitDatabaseKeyProvider::class
     singleOf(::KitDatabaseKeys)
     singleOf(::DefaultBitcoinKitDatabaseOperations) bind BitcoinKitDatabaseOperations::class
     singleOf(::BitcoinKitDatabaseManager)
@@ -334,6 +344,7 @@ val managerModule = module {
     singleOf(::GetTonAddressUseCaseImpl) bind GetTonAddressUseCase::class
     singleOf(::CreateRequiredTokensUseCaseImpl) bind CreateRequiredTokensUseCase::class
     singleOf(::EvmPersonalSignerImpl) bind EvmPersonalSigner::class
+    singleOf(::TronKitDatabaseKeyProvider)
     singleOf(::TronKitManager)
     singleOf(::StackingManager)
     singleOf(::RestoreSettingsManager)
@@ -391,6 +402,7 @@ val managerModule = module {
     singleOf(::LockoutManager) bind ILockoutManager::class
     factoryOf(::OneTimeTimer)
     singleOf(::GlanceAppWidgetManager)
+    singleOf(::MarketWatchlistResetCleaner)
     singleOf(::AppIconService)
     singleOf(::CalculatorModeService)
     single { CalculatorPinAttemptThrottle(get(), get()) }
@@ -401,6 +413,7 @@ val managerModule = module {
     singleOf(::PoisonAddressManager)
     singleOf(::AddressCheckManager)
     singleOf(::DeeplinkParser)
+    singleOf(::AppPagesImpl) binds arrayOf(AppPages::class, WalletPages::class)
     singleOf(::CheckAmlIncomingTransactionUseCase)
     singleOf(::TransactionAdapterManager)
     // Per-screen: the token screen owns its repository and clear()s it, so a shared instance
@@ -496,7 +509,10 @@ val managerModule = module {
     // Market favorites
     singleOf(::MarketWidgetManager)
     singleOf(::PriceManager)
-    singleOf(::MarketFavoritesManager)
+    singleOf(::WidgetMarketFavoritesChangeListener) bind MarketFavoritesChangeListener::class
+    single<MarketFavoritesMigration> {
+        MarketFavoritesDataMigration(get<AppDatabase>().marketFavoritesDao(), get())
+    }
     singleOf(::MarketFavoritesRepository)
     singleOf(::MarketFavoritesMenuService)
     factoryOf(::MarketFavoritesService)

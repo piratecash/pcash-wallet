@@ -8,6 +8,7 @@ import cash.p.terminal.network.pirate.di.PREMIUM_API_BASE_URL_QUALIFIER
 import cash.p.terminal.shared.PcashApp
 import cash.p.terminal.shared.settings.MainSettingUiState
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.wallet.di.marketModule
 import java.util.Locale
 import org.koin.core.context.startKoin
 import org.koin.core.qualifier.named
@@ -19,7 +20,7 @@ private const val APPLICATION_VERSION = "desktop"
 fun main() {
     val settingsUiState = desktopSettingsState(Locale.getDefault())
     startKoin {
-        modules(networkModule, desktopModule)
+        modules(networkModule, marketModule, desktopModule)
     }
     application {
         Window(

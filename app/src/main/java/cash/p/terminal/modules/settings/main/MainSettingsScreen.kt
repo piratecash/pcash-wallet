@@ -22,22 +22,41 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
-import androidx.navigation.NavController
-import cash.p.terminal.MainGraphDirections
 import cash.p.terminal.R
 import cash.p.terminal.core.managers.RateAppManager
-import cash.p.terminal.modules.contacts.ContactsFragment
+import cash.p.terminal.feature.miniapp.ui.miniapp.MiniAppPage
+import cash.p.terminal.modules.backuplocal.fullbackup.BackupManagerPage
+import cash.p.terminal.modules.basecurrency.BaseCurrencySettingsPage
+import cash.p.terminal.modules.blockchainsettings.BlockchainSettingsPage
+import cash.p.terminal.modules.contacts.ContactsPage
 import cash.p.terminal.modules.contacts.Mode
-import cash.p.terminal.modules.manageaccount.dialogs.BackupRequiredDialog
+import cash.p.terminal.modules.manageaccount.dialogs.BackupRequiredSheet
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
-import cash.p.terminal.modules.send.offline.OfflineBroadcastFragment
-import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedDialog
+import cash.p.terminal.modules.manageaccounts.ManageAccountsPage
+import cash.p.terminal.modules.multiswap.providersettings.SwapProvidersSettingsPage
+import cash.p.terminal.modules.premium.about.AboutPremiumPage
+import cash.p.terminal.modules.premium.settings.PremiumSettingsPage
+import cash.p.terminal.modules.send.offline.OfflineBroadcastPage
+import cash.p.terminal.modules.settings.about.AboutPage
+import cash.p.terminal.modules.settings.about.ContactOptionsSheet
+import cash.p.terminal.modules.settings.about.ContactUsPage
+import cash.p.terminal.modules.settings.addresschecker.AddressCheckerPage
+import cash.p.terminal.modules.settings.advancedsecurity.AdvancedSecurityPage
+import cash.p.terminal.modules.settings.appearance.AppearancePage
+import cash.p.terminal.modules.settings.donate.DonateTokenSelectPage
+import cash.p.terminal.modules.settings.language.LanguageSettingsPage
+import cash.p.terminal.modules.settings.security.SecuritySettingsPage
+import cash.p.terminal.modules.softwareupdate.SoftwareUpdatePage
+import cash.p.terminal.modules.tonconnect.TonConnectMainPage
+import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedSheet
+import cash.p.terminal.modules.walletconnect.WCErrorNoAccountSheet
 import cash.p.terminal.modules.walletconnect.WCManager
+import cash.p.terminal.modules.walletconnect.list.WCListPage
+import cash.p.terminal.navigation.AppPages
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.PageResumeEffect
 import cash.p.terminal.navigation.openQrScanner
-import cash.p.terminal.navigation.slideFromBottom
-import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.shared.settings.SettingsAction
 import cash.p.terminal.shared.settings.SettingsContent
@@ -52,33 +71,32 @@ import io.horizontalsystems.core.launchExternalActivity
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
-private val slideFromRightDestinations = mapOf(
-    SettingsAction.Donate to R.id.donateTokenSelectFragment,
-    SettingsAction.MiniApp to R.id.miniAppFragment,
-    SettingsAction.BlockchainSettings to R.id.blockchainSettingsFragment,
-    SettingsAction.BackupManager to R.id.backupManagerFragment,
-    SettingsAction.SecurityCenter to R.id.securitySettingsFragment,
-    SettingsAction.Appearance to R.id.appearanceFragment,
-    SettingsAction.BaseCurrency to R.id.baseCurrencySettingsFragment,
-    SettingsAction.Language to R.id.languageSettingsFragment,
-    SettingsAction.AddressChecker to R.id.addressCheckerFragment,
-    SettingsAction.SwapProviders to R.id.swapProvidersSettingsFragment,
-    SettingsAction.PremiumSettings to R.id.premiumSettingsFragment,
-    SettingsAction.AdvancedSecurity to R.id.advancedSecurityFragment,
-    SettingsAction.SoftwareUpdate to R.id.softwareUpdateFragment,
-    SettingsAction.AboutApp to R.id.aboutAppFragment,
+private val slideFromRightDestinations: Map<SettingsAction, () -> HSPage> = mapOf(
+    SettingsAction.Donate to ::DonateTokenSelectPage,
+    SettingsAction.MiniApp to ::MiniAppPage,
+    SettingsAction.BlockchainSettings to ::BlockchainSettingsPage,
+    SettingsAction.BackupManager to ::BackupManagerPage,
+    SettingsAction.SecurityCenter to ::SecuritySettingsPage,
+    SettingsAction.Appearance to ::AppearancePage,
+    SettingsAction.BaseCurrency to ::BaseCurrencySettingsPage,
+    SettingsAction.Language to ::LanguageSettingsPage,
+    SettingsAction.AddressChecker to ::AddressCheckerPage,
+    SettingsAction.SwapProviders to ::SwapProvidersSettingsPage,
+    SettingsAction.PremiumSettings to ::PremiumSettingsPage,
+    SettingsAction.AdvancedSecurity to ::AdvancedSecurityPage,
+    SettingsAction.SoftwareUpdate to ::SoftwareUpdatePage,
+    SettingsAction.AboutApp to ::AboutPage,
 )
 
 @Composable
 fun SettingsScreen(
-    fragmentNavController: NavController,
+    navigation: HSNavigation,
     paddingValues: PaddingValues,
     viewModel: MainSettingsViewModel = koinViewModel(),
 ) {
-    LifecycleEventEffect(event = Lifecycle.Event.ON_RESUME) {
-        viewModel.refresh()
-    }
+    PageResumeEffect(onResume = viewModel::refresh, onPause = {})
     val context = LocalContext.current
+    val appPages: AppPages = koinInject()
     val view = LocalView.current
     val pinComponent: IPinComponent = koinInject()
     val rawTxScanTitle = stringResource(R.string.offline_broadcast_title)
@@ -88,10 +106,8 @@ fun SettingsScreen(
         ActivityResultContracts.OpenDocument()
     ) { uri ->
         uri?.let {
-            fragmentNavController.slideFromRight(
-                MainGraphDirections.actionGlobalToOfflineBroadcastFragment(
-                    OfflineBroadcastFragment.Input(fileUri = it.toString())
-                )
+            navigation.slideFromRight(
+                OfflineBroadcastPage(OfflineBroadcastPage.Input(fileUri = it.toString()))
             )
         }
     }
@@ -114,7 +130,8 @@ fun SettingsScreen(
                 onAction = { action ->
                     handleSettingsAction(
                         action = action,
-                        navController = fragmentNavController,
+                        navigation = navigation,
+                        appPages = appPages,
                         viewModel = viewModel,
                         context = context,
                         rawTxScanTitle = rawTxScanTitle,
@@ -132,7 +149,8 @@ fun SettingsScreen(
 
 internal fun handleSettingsAction(
     action: SettingsAction,
-    navController: NavController,
+    navigation: HSNavigation,
+    appPages: AppPages,
     viewModel: MainSettingsViewModel,
     context: Context,
     rawTxScanTitle: String,
@@ -141,60 +159,55 @@ internal fun handleSettingsAction(
     importTransactionFile: () -> Unit,
 ) {
     slideFromRightDestinations[action]?.let { destination ->
-        navController.slideFromRight(destination)
+        navigation.slideFromRight(destination())
         return
     }
 
     when (action) {
-        SettingsAction.ManageWallets -> navController.slideFromRight(
-            R.id.manageAccountsFragment,
-            ManageAccountsModule.Mode.Manage,
+        SettingsAction.ManageWallets -> navigation.slideFromRight(
+            ManageAccountsPage(ManageAccountsModule.Mode.Manage)
         )
         SettingsAction.WalletConnect -> openWalletConnect(
-            navController,
+            navigation,
             viewModel.walletConnectSupportState,
             walletConnectTitle,
         )
         SettingsAction.TonConnect -> openTonConnect(
-            navController,
+            navigation,
             viewModel.currentAccountSupportsTonConnect,
             tonConnectTitle,
         )
-        SettingsAction.Contacts -> navController.slideFromRight(
-            R.id.contactsFragment,
-            ContactsFragment.Input(Mode.Full),
-        )
-        SettingsAction.OfflineBroadcast -> openOfflineBroadcastScanner(navController, rawTxScanTitle)
+        SettingsAction.Contacts -> navigation.slideFromRight(ContactsPage(ContactsPage.Input(Mode.Full)))
+        SettingsAction.OfflineBroadcast -> openOfflineBroadcastScanner(navigation, appPages, rawTxScanTitle)
         SettingsAction.ImportTransactionFile -> importTransactionFile()
-        SettingsAction.AboutPremium -> navController.slideFromBottom(R.id.aboutPremiumFragment)
+        SettingsAction.AboutPremium -> navigation.slideFromBottom(AboutPremiumPage(null))
         SettingsAction.RateApp -> RateAppManager.openPlayMarket(context)
         SettingsAction.ShareApp -> shareAppLink(viewModel.uiState.appWebPageLink, context)
-        is SettingsAction.Contact -> navController.slideFromContact(action.isPayCoreEnabled)
+        is SettingsAction.Contact -> navigation.slideFromContact(action.isPayCoreEnabled)
         SettingsAction.CompanyWebsite -> LinkHelper.openLinkInAppBrowser(context, viewModel.companyWebPage)
         else -> Unit
     }
 }
 
 private fun openWalletConnect(
-    navController: NavController,
+    navigation: HSNavigation,
     supportState: WCManager.SupportState,
     walletConnectTitle: String,
 ) {
     when (supportState) {
-        WCManager.SupportState.Supported -> navController.slideFromRight(R.id.wcListFragment)
+        WCManager.SupportState.Supported -> navigation.slideFromRight(WCListPage(null))
         WCManager.SupportState.NotSupportedDueToNoActiveAccount -> {
-            navController.slideFromBottom(R.id.wcErrorNoAccountFragment)
+            navigation.slideFromBottom(WCErrorNoAccountSheet())
         }
         is WCManager.SupportState.NotSupportedDueToNonBackedUpAccount -> {
             val text = Translator.getString(R.string.WalletConnect_Error_NeedBackup)
-            navController.slideFromBottom(
-                R.id.backupRequiredDialog,
-                BackupRequiredDialog.Input(supportState.account, text),
+            navigation.slideFromBottom(
+                BackupRequiredSheet(BackupRequiredSheet.Input(supportState.account, text))
             )
         }
-        is WCManager.SupportState.NotSupported -> navController.slideFromBottom(
-            MainGraphDirections.actionGlobalToAccountTypeNotSupportedDialog(
-                AccountTypeNotSupportedDialog.Input(
+        is WCManager.SupportState.NotSupported -> navigation.slideFromBottom(
+            AccountTypeNotSupportedSheet(
+                AccountTypeNotSupportedSheet.Input(
                     iconResId = R.drawable.ic_wallet_connect_24,
                     titleResId = R.string.WalletConnect_Title,
                     connectionLabel = walletConnectTitle,
@@ -205,16 +218,16 @@ private fun openWalletConnect(
 }
 
 private fun openTonConnect(
-    navController: NavController,
+    navigation: HSNavigation,
     supported: Boolean,
     tonConnectTitle: String,
 ) {
     if (supported) {
-        navController.slideFromRight(R.id.tcListFragment)
+        navigation.slideFromRight(TonConnectMainPage(null))
     } else {
-        navController.slideFromBottom(
-            MainGraphDirections.actionGlobalToAccountTypeNotSupportedDialog(
-                AccountTypeNotSupportedDialog.Input(
+        navigation.slideFromBottom(
+            AccountTypeNotSupportedSheet(
+                AccountTypeNotSupportedSheet.Input(
                     iconResId = R.drawable.ic_ton_connect_24,
                     titleResId = R.string.TonConnect_Title,
                     connectionLabel = tonConnectTitle,
@@ -224,24 +237,27 @@ private fun openTonConnect(
     }
 }
 
-private fun openOfflineBroadcastScanner(navController: NavController, rawTxScanTitle: String) {
-    navController.openQrScanner(
+private fun openOfflineBroadcastScanner(
+    navigation: HSNavigation,
+    appPages: AppPages,
+    rawTxScanTitle: String,
+) {
+    navigation.openQrScanner(
+        appPages = appPages,
         title = rawTxScanTitle,
         showPasteButton = true,
     ) { scannedText ->
-        navController.slideFromRight(
-            MainGraphDirections.actionGlobalToOfflineBroadcastFragment(
-                OfflineBroadcastFragment.Input(initialInput = scannedText)
-            )
+        navigation.slideFromRight(
+            OfflineBroadcastPage(OfflineBroadcastPage.Input(initialInput = scannedText))
         )
     }
 }
 
-private fun NavController.slideFromContact(isPayCoreEnabled: Boolean) {
+private fun HSNavigation.slideFromContact(isPayCoreEnabled: Boolean) {
     if (isPayCoreEnabled) {
-        slideFromRight(R.id.contactUsFragment)
+        slideFromRight(ContactUsPage())
     } else {
-        slideFromBottom(R.id.contactOptionsDialog)
+        slideFromBottom(ContactOptionsSheet(null))
     }
 }
 

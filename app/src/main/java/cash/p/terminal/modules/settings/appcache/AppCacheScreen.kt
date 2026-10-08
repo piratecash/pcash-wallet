@@ -16,12 +16,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.modules.settings.appcache.AppCacheModule.CacheItemViewItem
 import cash.p.terminal.modules.settings.appcache.AppCacheModule.CacheType
 import cash.p.terminal.modules.settings.appcache.AppCacheModule.UiState
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryRed
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
@@ -38,14 +38,14 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun AppCacheScreen(navController: NavController) {
+fun AppCacheScreen(navigation: HSNavigation) {
     val viewModel = koinViewModel<AppCacheViewModel>()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val localView = LocalView.current
 
     AppCacheContent(
         uiState = uiState,
-        onBackClick = { navController.popBackStackSafely() },
+        onBackClick = navigation::navigateUpSafely,
         onClearAllClick = {
             viewModel.clearAllCaches()
             HudHelper.showSuccessMessage(localView, R.string.settings_app_cache_cleared)

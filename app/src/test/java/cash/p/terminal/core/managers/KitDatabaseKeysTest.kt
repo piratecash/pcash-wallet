@@ -1,5 +1,7 @@
 package cash.p.terminal.core.managers
 
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -19,7 +21,7 @@ class KitDatabaseKeysTest {
     @Test
     fun awaitKey_concurrentCallsForFreshAccount_returnSameKeyAndPersistOnce() = runBlocking {
         val keyProvider = CheckThenPersistKeyProvider()
-        val keys = KitDatabaseKeys(keyProvider)
+        val keys = KitDatabaseKeys(keyProvider.provider)
         val dispatcher = Executors.newFixedThreadPool(2).asCoroutineDispatcher()
 
         val results = dispatcher.use {
@@ -32,12 +34,15 @@ class KitDatabaseKeysTest {
 
     // Same non-atomic check-generate-persist as the real provider, with the window held open until
     // both callers have passed the check (or the timeout elapses when calls are serialized).
-    private class CheckThenPersistKeyProvider : KitDatabaseKeyProvider {
+    private class CheckThenPersistKeyProvider {
         private val stored = ConcurrentHashMap<String, ByteArray>()
         private val bothChecked = CountDownLatch(2)
         val persistCount = AtomicInteger()
+        val provider = mockk<KitDatabaseKeyProvider> {
+            every { keyFor(any()) } answers { checkThenPersist(firstArg()) }
+        }
 
-        override fun keyFor(accountId: String): ByteArray {
+        private fun checkThenPersist(accountId: String): ByteArray {
             stored[accountId]?.let { return it.copyOf() }
             bothChecked.countDown()
             bothChecked.await(RACE_WINDOW_MS, TimeUnit.MILLISECONDS)
@@ -45,10 +50,6 @@ class KitDatabaseKeysTest {
             stored[accountId] = key
             persistCount.incrementAndGet()
             return key.copyOf()
-        }
-
-        override fun remove(accountId: String) {
-            stored.remove(accountId)
         }
     }
 

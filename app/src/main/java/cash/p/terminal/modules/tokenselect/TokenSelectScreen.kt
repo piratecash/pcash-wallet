@@ -15,12 +15,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.modules.balance.BalanceViewItem2
 import cash.p.terminal.modules.balance.ui.BalanceCardInner
 import cash.p.terminal.modules.balance.ui.BalanceCardSubtitleType
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui.compose.components.ListEmptyView
 import cash.p.terminal.ui.compose.components.SearchBarV2
 import cash.p.terminal.ui_compose.components.SectionUniversalItem
@@ -30,7 +30,7 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 internal fun TokenSelectScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     title: String,
     uiState: TokenSelectUiState,
     searchHintText: String = "",
@@ -48,7 +48,7 @@ internal fun TokenSelectScreen(
                 title = title,
                 searchHintText = searchHintText,
                 menuItems = listOf(),
-                onClose = { navController.popBackStackSafely() },
+                onClose = { navigation.navigateUpSafely() },
                 onSearchTextChanged = updateFilter
             )
         }
