@@ -10,12 +10,11 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import cash.p.terminal.R
-import cash.p.terminal.modules.contacts.ContactsFragment
 import cash.p.terminal.modules.contacts.ContactsModule
+import cash.p.terminal.modules.contacts.ContactsPage
 import cash.p.terminal.modules.contacts.Mode
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui_compose.components.AppSelectorDialog
 import cash.p.terminal.ui_compose.components.AppSelectorItem
 import cash.p.terminal.ui.helpers.TextHelper
@@ -33,7 +32,7 @@ fun AddressCell(
     value: String,
     showAddContactButton: Boolean,
     blockchainType: BlockchainType?,
-    navController: NavController? = null,
+    navigation: HSNavigation? = null,
     borderTop: Boolean = true
 ) {
     val view = LocalView.current
@@ -77,26 +76,22 @@ fun AddressCell(
             },
             onSelect = { action ->
                 blockchainType?.let {
-                    val args = when (action) {
+                    val mode = when (action) {
                         ContactsModule.AddAddressAction.AddToNewContact -> {
-                            ContactsFragment.Input(
-                                Mode.AddAddressToNewContact(
-                                    blockchainType,
-                                    value
-                                )
+                            Mode.AddAddressToNewContact(
+                                blockchainType,
+                                value
                             )
                         }
 
                         ContactsModule.AddAddressAction.AddToExistingContact -> {
-                            ContactsFragment.Input(
-                                Mode.AddAddressToExistingContact(
-                                    blockchainType,
-                                    value
-                                )
+                            Mode.AddAddressToExistingContact(
+                                blockchainType,
+                                value
                             )
                         }
                     }
-                    navController?.slideFromRight(R.id.contactsFragment, args)
+                    navigation?.slideFromRight(ContactsPage(ContactsPage.Input(mode)))
                 }
             })
     }

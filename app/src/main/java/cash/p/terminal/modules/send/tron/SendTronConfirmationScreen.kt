@@ -29,7 +29,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.HSCaution
@@ -40,11 +39,13 @@ import cash.p.terminal.modules.fee.HSFeeRaw
 import cash.p.terminal.modules.send.ConfirmAmountCell
 import cash.p.terminal.modules.send.MemoCell
 import cash.p.terminal.modules.send.SendFailedOfflineSignPrompt
+import cash.p.terminal.modules.send.SendPage
 import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.fee.NetworkFeeWarningOverlay
-import cash.p.terminal.modules.send.offline.OfflineSignFlowRoutes
 import cash.p.terminal.modules.send.offline.OfflineSignableConfirmationHost
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui.compose.components.SectionTitleCell
 import cash.p.terminal.ui.compose.components.TransactionInfoAddressCell
 import cash.p.terminal.ui.compose.components.TransactionInfoContactCell
@@ -66,34 +67,26 @@ import cash.p.terminal.ui_compose.components.subhead1_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import kotlinx.coroutines.delay
-
-private const val TronConfirmationPage = "tron_confirmation"
-private const val OfflineTronSignPage = "offline_tron_confirmation_sign"
-private const val OfflineTronTransactionTransferPage = "offline_tron_confirmation_transfer"
+import kotlin.reflect.KClass
 
 @Composable
 fun SendTronConfirmationScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     sendViewModel: SendTronViewModel,
     amountInputModeViewModel: AmountInputModeViewModel,
-    sendEntryPointDestId: Int
+    sendEntryPoint: KClass<out HSPage>?
 ) {
     OfflineSignableConfirmationHost(
-        fragmentNavController = navController,
+        navigation = navigation,
         sendViewModel = sendViewModel,
-        confirmationRoute = TronConfirmationPage,
-        signFlowRoutes = OfflineSignFlowRoutes(
-            signRoute = OfflineTronSignPage,
-            transferRoute = OfflineTronTransactionTransferPage,
-        ),
         sourceChangeable = false,
         onChangeSourceClick = {},
     ) { onRequestOfflineSign ->
         TronOnlineConfirmation(
-            navController = navController,
+            navigation = navigation,
             sendViewModel = sendViewModel,
             amountInputModeViewModel = amountInputModeViewModel,
-            sendEntryPointDestId = sendEntryPointDestId,
+            sendEntryPoint = sendEntryPoint,
             onRequestOfflineSign = onRequestOfflineSign,
         )
     }
@@ -101,17 +94,13 @@ fun SendTronConfirmationScreen(
 
 @Composable
 private fun TronOnlineConfirmation(
-    navController: NavController,
+    navigation: HSNavigation,
     sendViewModel: SendTronViewModel,
     amountInputModeViewModel: AmountInputModeViewModel,
-    sendEntryPointDestId: Int,
+    sendEntryPoint: KClass<out HSPage>?,
     onRequestOfflineSign: (() -> Unit)?,
 ) {
-    val closeUntilDestId = if (sendEntryPointDestId == 0) {
-        R.id.sendXFragment
-    } else {
-        sendEntryPointDestId
-    }
+    val closeUntil = sendEntryPoint ?: SendPage::class
     val confirmationData = sendViewModel.confirmationData ?: return
 
     val uiState = sendViewModel.uiState
@@ -165,14 +154,14 @@ private fun TronOnlineConfirmation(
     LaunchedEffect(sendResult) {
         if (sendResult is SendResult.Sent) {
             delay(1200)
-            navController.popBackStack(closeUntilDestId, true)
+            navigation.removeLastUntil(closeUntil, true)
         }
     }
 
     LifecycleEventEffect(event = Lifecycle.Event.ON_RESUME) {
         //additional close for cases when user closes app immediately after sending
         if (sendResult is SendResult.Sent) {
-            navController.popBackStack(closeUntilDestId, true)
+            navigation.removeLastUntil(closeUntil, true)
         }
     }
 
@@ -180,7 +169,7 @@ private fun TronOnlineConfirmation(
         AppBar(
             title = stringResource(R.string.Send_Confirmation_Title),
             navigationIcon = {
-                HsBackButton(onClick = { navController.popBackStackSafely() })
+                HsBackButton(onClick = navigation::navigateUpSafely)
             },
             menuItems = listOf()
         )
@@ -221,7 +210,7 @@ private fun TronOnlineConfirmation(
                             value = address.hex,
                             showAdd = contact == null,
                             blockchainType = blockchainType,
-                            navController = navController,
+                            navigation = navigation,
                             onCopy = {
                             },
                             onAddToExisting = {
@@ -277,7 +266,7 @@ private fun TronOnlineConfirmation(
                                 fee = it,
                                 amountInputType = amountInputType,
                                 rate = feeCoinRate,
-                                navController = navController
+                                navigation = navigation
                             )
                         }
                     }

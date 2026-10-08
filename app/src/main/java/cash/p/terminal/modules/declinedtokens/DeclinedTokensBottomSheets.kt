@@ -23,7 +23,7 @@ import cash.p.terminal.core.managers.normalizedTokenLabel
 import cash.p.terminal.modules.backuplocal.fullbackup.WalletDeclinedTokens
 import cash.p.terminal.strings.helpers.shorten
 import cash.p.terminal.ui.extensions.BottomSheetSelectorMultiple
-import cash.p.terminal.ui.extensions.BottomSheetSelectorMultipleDialog
+import cash.p.terminal.ui.extensions.BottomSheetSelectorMultipleSheet
 import cash.p.terminal.ui.extensions.BottomSheetSelectorViewItem
 import cash.p.terminal.ui_compose.BottomSheetHeader
 import cash.p.terminal.ui_compose.TransparentModalBottomSheet
@@ -139,7 +139,7 @@ private fun DeclinedTokensInfoBottomSheet(
 private fun rememberDeclinedTokensSelectorConfig(
     wallets: List<WalletDeclinedTokens>,
     selectedIndexes: List<Int>,
-): BottomSheetSelectorMultipleDialog.Config {
+): BottomSheetSelectorMultipleSheet.Config {
     val title = stringResource(R.string.declined_tokens_select_title)
     val description = stringResource(R.string.declined_tokens_warning)
     val decimalsLabel = stringResource(R.string.AddToken_Decimals)
@@ -147,7 +147,7 @@ private fun rememberDeclinedTokensSelectorConfig(
 
     return remember(wallets) {
         val flatTokens = wallets.flatTokens()
-        BottomSheetSelectorMultipleDialog.Config(
+        BottomSheetSelectorMultipleSheet.Config(
             icon = ImageSource.Local(R.drawable.ic_attention_24),
             title = title,
             selectedIndexes = selectedIndexes,

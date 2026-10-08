@@ -2,7 +2,6 @@ package cash.p.terminal.modules.xtransaction.sections
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.modules.xtransaction.cells.AddressCell
@@ -11,6 +10,7 @@ import cash.p.terminal.modules.xtransaction.cells.AmountColor
 import cash.p.terminal.modules.xtransaction.cells.AmountSign
 import cash.p.terminal.modules.xtransaction.cells.TitleAndValueCell
 import cash.p.terminal.modules.xtransaction.helpers.TransactionInfoHelper
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui_compose.components.SectionUniversalLawrence
 import io.horizontalsystems.core.entities.BlockchainType
 
@@ -23,7 +23,7 @@ fun TransferCoinSection(
     addressTitle: String,
     address: String,
     comment: String?,
-    navController: NavController,
+    navigation: HSNavigation,
     transactionInfoHelper: TransactionInfoHelper,
     blockchainType: BlockchainType,
 ) {
@@ -34,7 +34,7 @@ fun TransferCoinSection(
             coinAmountColor = coinAmountColor,
             coinAmountSign = coinAmountSign,
             transactionInfoHelper = transactionInfoHelper,
-            navController = navController,
+            navigation = navigation,
             borderTop = false
         )
 
@@ -45,7 +45,7 @@ fun TransferCoinSection(
             value = address,
             showAddContactButton = contact == null,
             blockchainType = blockchainType,
-            navController = navController
+            navigation = navigation
         )
         contact?.let {
             TitleAndValueCell(

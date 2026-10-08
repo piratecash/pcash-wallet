@@ -24,9 +24,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import cash.p.terminal.R
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.modules.market.platform.MarketPlatformPage
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.modules.coin.overview.ui.Loading
 import cash.p.terminal.modules.market.MarketDataValue
@@ -50,7 +50,7 @@ import java.math.BigDecimal
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TopPlatforms(
-    navController: NavController,
+    navigation: HSNavigation,
     viewModel: TopPlatformsViewModel = viewModel(
         factory = TopPlatformsModule.Factory(null)
     ),
@@ -86,10 +86,7 @@ fun TopPlatforms(
                                 sortingField = uiState.sortingField,
                                 timeDuration = uiState.timePeriod,
                                 onItemClick = {
-                                    navController.slideFromRight(
-                                        R.id.marketPlatformFragment,
-                                        it
-                                    )
+                                    navigation.slideFromRight(MarketPlatformPage(it))
                                 },
                                 preItems = {
                                     stickyHeader {

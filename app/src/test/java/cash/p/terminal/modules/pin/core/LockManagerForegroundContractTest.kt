@@ -9,6 +9,12 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import cash.p.terminal.ui_compose.ScreenSecurityState
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -212,5 +218,22 @@ class LockManagerForegroundContractTest {
 
     companion object {
         private const val KEY_LAST_BACKGROUND_TIME = "last_background_time"
+    }
+
+    @Test
+    fun onUnlockAndLock_isLockedEmits_screenSecurityStateAlreadyMatches() = runTest(UnconfinedTestDispatcher()) {
+        every { pinManager.isPinSet } returns true
+        val lockManager = LockManager(pinManager, localStorage, context)
+        val seenOnEmission = mutableListOf<Pair<Boolean, Boolean>>()
+        backgroundScope.launch {
+            lockManager.isLocked.drop(1).collect { locked ->
+                seenOnEmission += locked to ScreenSecurityState.isAppLocked
+            }
+        }
+
+        lockManager.onUnlock()
+        lockManager.lock()
+
+        assertEquals(listOf(false to false, true to true), seenOnEmission)
     }
 }

@@ -2,13 +2,20 @@ package cash.p.terminal.screenshots
 
 import android.app.Application
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.navigation3.runtime.NavBackStack
 import androidx.compose.ui.graphics.toArgb
 import androidx.test.core.app.ApplicationProvider
-import androidx.navigation.NavController
 import cash.p.terminal.R
+import cash.p.terminal.modules.main.PlainTestPage
 import cash.p.terminal.modules.settings.main.MainSettingsViewModel
 import cash.p.terminal.modules.settings.main.SettingsScreen
 import cash.p.terminal.modules.settings.main.settingsContentTestState
+import cash.p.terminal.navigation.AppPages
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.LocalHostLifecycleOwner
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.ui_compose.theme.darkPalette
 import cash.p.terminal.ui_compose.theme.lightPalette
@@ -43,11 +50,18 @@ class SettingsScreenScreenshotTest {
         every { appVersion } returns "1.2.3"
         every { companyWebPage } returns "https://example.com"
     }
-    private val navController = mockk<NavController>(relaxed = true)
+    private val navigation = HSNavigation(NavBackStack<HSPage>(PlainTestPage()))
 
     @Before
     fun setUp() {
-        startKoin { modules(module { single { mockk<IPinComponent>(relaxed = true) } }) }
+        startKoin {
+            modules(
+                module {
+                    single { mockk<AppPages>() }
+                    single { mockk<IPinComponent>(relaxed = true) }
+                }
+            )
+        }
     }
 
     @After
@@ -84,12 +98,14 @@ class SettingsScreenScreenshotTest {
         val outputDirectory = System.getenv("MOBILE812_SNAPSHOT_DIR")
             ?: "build/tmp/mobile812/current"
         captureRoboImage(filePath = "$outputDirectory/$name.png") {
-            ComposeAppTheme(darkTheme = darkTheme) {
-                SettingsScreen(
-                    fragmentNavController = navController,
-                    paddingValues = PaddingValues(),
-                    viewModel = viewModel,
-                )
+            CompositionLocalProvider(LocalHostLifecycleOwner provides LocalLifecycleOwner.current) {
+                ComposeAppTheme(darkTheme = darkTheme) {
+                    SettingsScreen(
+                        navigation = navigation,
+                        paddingValues = PaddingValues(),
+                        viewModel = viewModel,
+                    )
+                }
             }
         }
     }

@@ -67,10 +67,11 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.navigation.NavController
+import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.R
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.premiumAction
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui.helpers.TextHelper
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefaultWithIcon
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefaults
@@ -101,7 +102,7 @@ import androidx.compose.ui.tooling.preview.Preview as ComposePreview
 fun QRScannerScreen(
     uiState: QRScannerUiState,
     title: String,
-    navController: NavController,
+    navigation: HSNavigation,
     showPasteButton: Boolean,
     onScan: (String) -> Unit,
     onPaste: (String) -> Unit,
@@ -218,7 +219,7 @@ fun QRScannerScreen(
                         title = stringResource(R.string.choose_from_photos),
                         enabled = !uiState.isDecodingFromImage,
                         onClick = {
-                            navController.premiumAction(openGallery)
+                            navigation.premiumAction(openGallery)
                         }
                     )
                 }
@@ -613,7 +614,7 @@ private fun ScannerOverlayPreview() {
         QRScannerScreen(
             uiState = QRScannerUiState(),
             title = "SMART SCAN",
-            navController = NavController(LocalContext.current),
+            navigation = HSNavigation(NavBackStack()),
             showPasteButton = true,
             onScan = {},
             onPaste = {},

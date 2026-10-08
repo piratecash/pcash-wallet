@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui_compose.components.AppModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material3.Scaffold
@@ -26,8 +27,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import cash.p.terminal.R
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.entities.TransactionDataSortMode
@@ -36,8 +35,8 @@ import cash.p.terminal.modules.evmfee.EvmSettingsInput
 import cash.p.terminal.modules.fee.HSFeeRaw
 import cash.p.terminal.modules.hodler.HSHodlerInput
 import cash.p.terminal.modules.send.bitcoin.SendBitcoinViewModel
-import cash.p.terminal.modules.send.bitcoin.TransactionInputsSortInfoPage
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.modules.send.TransactionInputsSortInfoPage
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.ButtonSecondaryWithIcon
 import cash.p.terminal.ui_compose.components.HsSwitch
@@ -60,8 +59,7 @@ import java.math.BigDecimal
 
 @Composable
 fun SendBtcAdvancedSettingsScreen(
-    fragmentNavController: NavController,
-    navController: NavHostController,
+    navigation: HSNavigation,
     sendBitcoinViewModel: SendBitcoinViewModel,
     amountInputType: AmountInputType,
 ) {
@@ -106,7 +104,7 @@ fun SendBtcAdvancedSettingsScreen(
                     AppBar(
                         title = stringResource(R.string.Send_Advanced),
                         navigationIcon = {
-                            HsBackButton(onClick = { navController.popBackStackSafely() })
+                            HsBackButton(onClick = { navigation.navigateUpSafely() })
                         },
                         menuItems = listOf(
                             MenuItem(
@@ -135,7 +133,7 @@ fun SendBtcAdvancedSettingsScreen(
                                 fee = sendUiState.fee,
                                 amountInputType = amountInputType,
                                 rate = rate,
-                                navController = fragmentNavController
+                                navigation = navigation
                             )
                         }
                     )
@@ -148,7 +146,7 @@ fun SendBtcAdvancedSettingsScreen(
                             value = feeRate?.toBigDecimal() ?: BigDecimal.ZERO,
                             decimals = 0,
                             caution = feeRateCaution,
-                            navController = fragmentNavController,
+                            navigation = navigation,
                             onValueChange = {
                                 sendBitcoinViewModel.updateFeeRate(it.toInt())
                             },
@@ -166,7 +164,7 @@ fun SendBtcAdvancedSettingsScreen(
 
                     VSpacer(24.dp)
                     TransactionDataSortSettings(
-                        navController,
+                        navigation,
                         viewModel.uiState.transactionSortTitle,
                     ) {
                         coroutineScope.launch {
@@ -328,14 +326,14 @@ private fun BottomSheetTransactionOrderSelector(
 
 @Composable
 private fun TransactionDataSortSettings(
-    navController: NavController,
+    navigation: HSNavigation,
     valueTitle: String,
     onClick: () -> Unit
 ) {
     HeaderText(
         text = stringResource(R.string.BtcBlockchainSettings_TransactionSettings),
         onInfoClick = {
-            navController.navigate(TransactionInputsSortInfoPage)
+            navigation.slideFromBottom(TransactionInputsSortInfoPage())
         })
     CellUniversalLawrenceSection(
         listOf {

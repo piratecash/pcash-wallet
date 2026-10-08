@@ -59,21 +59,21 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.koin.compose.viewmodel.koinViewModel
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.premiumAction
 import cash.p.terminal.modules.balance.BalanceAccountsViewModel
 import cash.p.terminal.modules.balance.BalanceScreenState
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewMode
+import cash.p.terminal.modules.premium.settings.PremiumSettingsPage
 import cash.p.terminal.modules.send.offline.OfflineSignedTransactionViewItem
 import cash.p.terminal.modules.send.offline.OfflineSignedTransactionsUiState
 import cash.p.terminal.modules.send.offline.OfflineSignedTransactionsViewModel
+import cash.p.terminal.modules.transactionInfo.TransactionInfoPage
 import cash.p.terminal.modules.transactions.poison_status.PoisonStatus
 import cash.p.terminal.modules.transactions.poison_status.PoisonStatusBadge
 import cash.p.terminal.modules.transactions.poison_status.TransactionStatusesInfoSheet
-import cash.p.terminal.navigation.slideFromBottom
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.ListEmptyView
 import cash.p.terminal.ui_compose.ColorName
@@ -104,7 +104,7 @@ import java.util.Date
 
 @Composable
 fun TransactionsScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     paddingValues: PaddingValues,
     viewModel: TransactionsViewModel,
     onShowAllTransactionsClicked: () -> Unit
@@ -137,7 +137,7 @@ fun TransactionsScreen(
                 onSearchClose = viewModel::onSearchClose,
                 onSearchQueryChange = viewModel::onSearchQueryChange,
                 onFilterClick = {
-                    navController.slideFromRight(R.id.transactionFilterFragment)
+                    navigation.slideFromRight(TransactionsFilterPage())
                 },
             )
             filterTypes?.let { filterTypes ->
@@ -164,7 +164,7 @@ fun TransactionsScreen(
                         onOfflineSignedTransactionClick(
                             item = item,
                             transactionsViewModel = viewModel,
-                            navController = navController,
+                            navigation = navigation,
                         )
                     },
                     onToggleBalanceVisibility = {
@@ -206,7 +206,7 @@ fun TransactionsScreen(
                                     TransactionListContent(
                                         uiState = uiState,
                                         accountViewItemId = accountViewItemId,
-                                        onClickTransaction = { onTransactionClick(it, viewModel, navController) },
+                                        onClickTransaction = { onTransactionClick(it, viewModel, navigation) },
                                         onClickSensitiveValue = {
                                             HudHelper.vibrate(App.instance)
                                             viewModel.toggleTransactionInfoHidden(it.uid)
@@ -223,7 +223,7 @@ fun TransactionsScreen(
                                             amlCheckEnabled = uiState.amlCheckEnabled,
                                             onToggleChange = { enabled ->
                                                 if (enabled) {
-                                                    navController.premiumAction {
+                                                    navigation.premiumAction {
                                                         viewModel.setAmlCheckEnabled(true)
                                                     }
                                                 } else {
@@ -259,9 +259,7 @@ fun TransactionsScreen(
         AmlCheckInfoBottomSheet(
             onPremiumSettingsClick = {
                 showAmlInfoSheet = false
-                navController.slideFromRight(
-                    R.id.premiumSettingsFragment
-                )
+                navigation.slideFromRight(PremiumSettingsPage())
             },
             onLaterClick = { showAmlInfoSheet = false },
             onDismiss = { showAmlInfoSheet = false }
@@ -316,22 +314,22 @@ private fun TransactionsAppBar(
 private fun onTransactionClick(
     transactionViewItem: TransactionViewItem,
     viewModel: TransactionsViewModel,
-    navController: NavController
+    navigation: HSNavigation
 ) {
     val transactionItem = viewModel.getTransactionItem(transactionViewItem) ?: return
 
     viewModel.tmpItemToShow = transactionItem
 
-    navController.slideFromBottom(R.id.transactionInfoFragment)
+    navigation.slideFromBottom(TransactionInfoPage())
 }
 
 private fun onOfflineSignedTransactionClick(
     item: OfflineSignedTransactionViewItem,
     transactionsViewModel: TransactionsViewModel,
-    navController: NavController,
+    navigation: HSNavigation,
 ) {
     transactionsViewModel.tmpItemToShow = item.transactionItem
-    navController.slideFromBottom(R.id.transactionInfoFragment)
+    navigation.slideFromBottom(TransactionInfoPage())
 }
 
 @Composable

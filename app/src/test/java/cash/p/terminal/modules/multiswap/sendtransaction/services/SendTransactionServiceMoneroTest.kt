@@ -3,6 +3,7 @@ package cash.p.terminal.modules.multiswap.sendtransaction.services
 import cash.p.terminal.core.App
 import cash.p.terminal.core.ISendMoneroAdapter
 import cash.p.terminal.core.MoneroSpendReadiness
+import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.managers.PendingTransactionRegistrar
 import cash.p.terminal.modules.send.monero.SendMoneroFeeService
 import cash.p.terminal.modules.send.ton.FeeStatus
@@ -16,6 +17,7 @@ import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.core.CurrencyManager
+import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
@@ -26,7 +28,9 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -52,6 +56,7 @@ class SendTransactionServiceMoneroTest : KoinTest {
     private lateinit var wallet: Wallet
     private lateinit var token: Token
     private lateinit var spendReadiness: MutableStateFlow<MoneroSpendReadiness>
+    private val dispatcher = UnconfinedTestDispatcher()
 
     @get:Rule
     val koinRule = KoinTestRule.create {
@@ -64,6 +69,7 @@ class SendTransactionServiceMoneroTest : KoinTest {
                 single<IAppNumberFormatter> { mockk(relaxed = true) }
                 single<CurrencyManager> { currencyManager }
                 single<IAccountManager> { mockk(relaxed = true) }
+                single<DispatcherProvider> { TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)) }
             },
         )
     }

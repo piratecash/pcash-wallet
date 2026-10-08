@@ -2,35 +2,24 @@ package cash.p.terminal.modules.backupalert
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import cash.p.terminal.MainGraphDirections
-import cash.p.terminal.navigation.slideFromBottom
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.PageResumeEffect
 import kotlinx.coroutines.delay
 
 @Composable
-fun BackupAlert(navController: NavController) {
+fun BackupAlert(navigation: HSNavigation) {
     val viewModel = viewModel<BackupAlertViewModel>()
 
-    LifecycleResumeEffect(viewModel) {
-        viewModel.resume()
-
-        onPauseOrDispose {
-            viewModel.pause()
-        }
-    }
+    // Not LifecycleResumeEffect: the page must stay resumed under a bottom sheet, as the fragment did.
+    PageResumeEffect(onResume = viewModel::resume, onPause = viewModel::pause)
 
     val account = viewModel.account
     if (account != null && account.supportsBackup) {
         LaunchedEffect(account) {
             delay(300)
             viewModel.onHandled()
-            navController.slideFromBottom(
-                MainGraphDirections.actionGlobalToBackupRecoveryPhraseDialog(
-                    account
-                )
-            )
+            navigation.slideFromBottom(BackupRecoveryPhraseSheet(account))
         }
     }
 }

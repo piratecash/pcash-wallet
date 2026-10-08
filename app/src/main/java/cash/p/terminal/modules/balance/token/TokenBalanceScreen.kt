@@ -69,9 +69,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import cash.p.terminal.MainGraphDirections
+import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.MoneroSpendReadiness
@@ -83,15 +81,20 @@ import cash.p.terminal.modules.balance.BalanceViewModel
 import cash.p.terminal.modules.balance.SyncingProgress
 import cash.p.terminal.modules.balance.ui.FlipHiddenBalanceInfoHost
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusButton
+import cash.p.terminal.modules.blockchainstatus.BlockchainStatusPage
+import cash.p.terminal.modules.coin.CoinPage
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.manageaccount.dialogs.showBackupRequiredDialog
+import cash.p.terminal.modules.multiswap.SwapPage
 import cash.p.terminal.modules.offline.OfflineBlockedBottomSheet
 import cash.p.terminal.modules.offline.OperationAvailability
-import cash.p.terminal.modules.receive.ReceiveFragment
-import cash.p.terminal.modules.send.SendFragment
+import cash.p.terminal.modules.premium.settings.PremiumSettingsPage
+import cash.p.terminal.modules.receive.ReceivePage
+import cash.p.terminal.modules.send.SendPage
 import cash.p.terminal.modules.sendtokenselect.PrefilledData
 import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.syncerror.showSyncErrorDialog
+import cash.p.terminal.modules.transactionInfo.TransactionInfoPage
 import cash.p.terminal.modules.transactions.AmlCheckInfoBottomSheet
 import cash.p.terminal.modules.transactions.AmlCheckPromoBanner
 import cash.p.terminal.modules.transactions.Filter
@@ -104,11 +107,9 @@ import cash.p.terminal.modules.transactions.TransactionViewItem
 import cash.p.terminal.modules.transactions.TransactionsViewModel
 import cash.p.terminal.modules.transactions.transactionList
 import cash.p.terminal.modules.transactions.transactionsHiddenBlock
-import cash.p.terminal.navigation.entity.SwapParams
 import cash.p.terminal.modules.zcashmigration.ZcashMigrationFlow
-import cash.p.terminal.navigation.popBackStackSafely
-import cash.p.terminal.navigation.slideFromBottom
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.ui.compose.components.Badge
@@ -168,7 +169,7 @@ fun TokenBalanceScreen(
     viewModel: TokenBalanceViewModel,
     transactionsViewModel: TransactionsViewModel,
     sendResult: SendResult? = viewModel.sendResult,
-    navController: NavController,
+    navigation: HSNavigation,
     refreshing: Boolean,
     onStackingClicked: () -> Unit,
     onShowAllTransactionsClicked: () -> Unit,
@@ -185,7 +186,7 @@ fun TokenBalanceScreen(
             when (event) {
                 is TokenBalanceModule.Event.OpenSend -> {
                     showMoneroSendPreparation = false
-                    navController.openSend(event.wallet)
+                    navigation.openSend(event.wallet)
                 }
             }
         }
@@ -205,7 +206,7 @@ fun TokenBalanceScreen(
         uiState = viewModel.uiState,
         secondaryValue = viewModel.secondaryValue,
         sendResult = sendResult,
-        navController = navController,
+        navigation = navigation,
         refreshing = refreshing,
         onToggleFavorite = viewModel::toggleFavorite,
         onToggleBalanceVisibility = viewModel::toggleBalanceVisibility,
@@ -215,7 +216,7 @@ fun TokenBalanceScreen(
         onSetTransactionType = viewModel::setTransactionType,
         onWillShow = viewModel::willShow,
         onTransactionClick = {
-            onTransactionClick(it, viewModel, transactionsViewModel, navController)
+            onTransactionClick(it, viewModel, transactionsViewModel, navigation)
         },
         onSensitiveTransactionClick = {
             HudHelper.vibrate(App.instance)
@@ -224,7 +225,7 @@ fun TokenBalanceScreen(
         onBottomReached = viewModel::onBottomReached,
         onSetAmlCheckEnabled = { enabled ->
             if (enabled) {
-                navController.premiumAction { viewModel.setAmlCheckEnabled(true) }
+                navigation.premiumAction { viewModel.setAmlCheckEnabled(true) }
             } else {
                 viewModel.setAmlCheckEnabled(false)
             }
@@ -247,16 +248,16 @@ fun TokenBalanceScreen(
                 showMoneroSendPreparation = true
                 viewModel.prepareMoneroSend()
             } else {
-                navController.openSend(wallet)
+                navigation.openSend(wallet)
             }
         },
-        onReceiveClick = { onReceiveClicked(viewModel, navController) },
+        onReceiveClick = { onReceiveClicked(viewModel, navigation) },
         onSwapClick = swapClick@{
             val token = viewModel.uiState.balanceViewItem?.wallet?.token ?: return@swapClick
-            onSwapClicked(viewModel, navController, token)
+            onSwapClicked(viewModel, navigation, token)
         },
         onShieldClick = viewModel::proposeShielding,
-        onSyncErrorClick = { onSyncErrorClicked(it, viewModel, navController) },
+        onSyncErrorClick = { onSyncErrorClicked(it, viewModel, navigation) },
         onStackingClicked = onStackingClicked,
         onShowAllTransactionsClicked = onShowAllTransactionsClicked,
         onClickSubtitle = onClickSubtitle,
@@ -285,7 +286,7 @@ private fun TokenBalanceScreenContent(
     uiState: TokenBalanceModule.TokenBalanceUiState,
     secondaryValue: DeemedValue<String>,
     sendResult: SendResult?,
-    navController: NavController,
+    navigation: HSNavigation,
     refreshing: Boolean,
     onToggleFavorite: () -> Unit,
     onToggleBalanceVisibility: () -> Unit,
@@ -336,7 +337,7 @@ private fun TokenBalanceScreenContent(
             AppBar(
                 title = uiState.title,
                 navigationIcon = {
-                    HsBackButton(onClick = { navController.popBackStackSafely() })
+                    HsBackButton(onClick = navigation::navigateUpSafely)
                 },
                 menuItems = buildList {
                     add(
@@ -362,7 +363,7 @@ private fun TokenBalanceScreenContent(
                                     val coinUid = uiState.balanceViewItem?.wallet?.coin?.uid
                                         ?: return@MenuItem
                                     val arguments = CoinFragmentInput(coinUid)
-                                    navController.slideFromRight(R.id.coinFragment, arguments)
+                                    navigation.slideFromRight(CoinPage(arguments))
                                 }
                             )
                         )
@@ -530,10 +531,7 @@ private fun TokenBalanceScreenContent(
                             TokenNotSyncedSection(
                                 onBlockchainStatusClick = {
                                     uiState.balanceViewItem?.wallet?.token?.blockchain?.let { blockchain ->
-                                        navController.slideFromRight(
-                                            R.id.blockchainStatusFragment,
-                                            blockchain
-                                        )
+                                        navigation.slideFromRight(BlockchainStatusPage(blockchain))
                                     }
                                 },
                                 onRetry = onRefresh,
@@ -708,9 +706,7 @@ private fun TokenBalanceScreenContent(
         AmlCheckInfoBottomSheet(
             onPremiumSettingsClick = {
                 showAmlInfoSheet = false
-                navController.slideFromRight(
-                    R.id.premiumSettingsFragment
-                )
+                navigation.slideFromRight(PremiumSettingsPage())
             },
             onLaterClick = { showAmlInfoSheet = false },
             onDismiss = { showAmlInfoSheet = false }
@@ -804,25 +800,25 @@ private fun onTransactionClick(
     transactionViewItem: TransactionViewItem,
     tokenBalanceViewModel: TokenBalanceViewModel,
     transactionsViewModel: TransactionsViewModel,
-    navController: NavController
+    navigation: HSNavigation
 ) {
     val transactionItem = tokenBalanceViewModel.getTransactionItem(transactionViewItem) ?: return
     transactionsViewModel.tmpItemToShow = transactionItem
 
-    navController.slideFromBottom(R.id.transactionInfoFragment)
+    navigation.slideFromBottom(TransactionInfoPage())
 }
 
-private fun NavController.openSend(wallet: Wallet) {
+private fun HSNavigation.openSend(wallet: Wallet) {
     val sendTitle = Translator.getString(
         R.string.Send_Title,
         wallet.token.fullCoin.coin.code,
     )
-    navigate(
-        MainGraphDirections.actionGlobalToSendFragment(
-            SendFragment.Input(
+    slideFromRight(
+        SendPage(
+            SendPage.Input(
                 wallet = wallet,
                 title = sendTitle,
-                sendEntryPointDestId = R.id.tokenBalanceFragment,
+                sendEntryPoint = TokenBalancePage::class,
                 prefilledData = PrefilledData(null),
             )
         )
@@ -1370,14 +1366,14 @@ internal fun transactionsPlaceholder(
 private fun onSyncErrorClicked(
     viewItem: BalanceViewItem,
     viewModel: TokenBalanceViewModel,
-    navController: NavController
+    navigation: HSNavigation
 ) {
     when (val syncErrorDetails = viewModel.getSyncErrorDetails(viewItem)) {
         is BalanceViewModel.SyncError.Dialog -> {
             val wallet = syncErrorDetails.wallet
             val errorMessage = syncErrorDetails.errorMessage
 
-            navController.showSyncErrorDialog(wallet, errorMessage)
+            navigation.showSyncErrorDialog(wallet, errorMessage)
         }
 
         is BalanceViewModel.SyncError.NetworkNotAvailable -> Unit // We already show this at bottom panel
@@ -1386,24 +1382,24 @@ private fun onSyncErrorClicked(
 
 private fun onReceiveClicked(
     viewModel: TokenBalanceViewModel,
-    navController: NavController
+    navigation: HSNavigation
 ) {
     try {
         val wallet = viewModel.getWalletForReceive()
-        navController.slideFromRight(R.id.receiveFragment, ReceiveFragment.Input(wallet))
+        navigation.slideFromRight(ReceivePage(ReceivePage.Input(wallet)))
     } catch (e: BackupRequiredError) {
         val text = Translator.getString(
             R.string.ManageAccount_BackupRequired_Description,
             e.account.name,
             e.coinTitle
         )
-        navController.showBackupRequiredDialog(e.account, text)
+        navigation.showBackupRequiredDialog(e.account, text)
     }
 }
 
 private fun onSwapClicked(
     viewModel: TokenBalanceViewModel,
-    navController: NavController,
+    navigation: HSNavigation,
     token: Token,
 ) {
     val backupRequiredAccount = viewModel.backupRequiredAccount()
@@ -1412,9 +1408,9 @@ private fun onSwapClicked(
             R.string.balance_swap_backup_required_description,
             backupRequiredAccount.name
         )
-        navController.showBackupRequiredDialog(backupRequiredAccount, text)
+        navigation.showBackupRequiredDialog(backupRequiredAccount, text)
     } else {
-        navController.slideFromRight(R.id.multiswap, SwapParams.TOKEN_IN to token)
+        navigation.slideFromRight(SwapPage(tokenIn = token))
     }
 }
 
@@ -1727,7 +1723,7 @@ private fun PreviewTokenBalanceScreenContent(
             uiState = uiState,
             secondaryValue = DeemedValue("$1,234.56"),
             sendResult = null,
-            navController = rememberNavController(),
+            navigation = HSNavigation(NavBackStack()),
             refreshing = false,
             onToggleFavorite = {},
             onToggleBalanceVisibility = {},

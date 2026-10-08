@@ -36,7 +36,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.R
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.wallet.Warning
@@ -180,7 +180,7 @@ fun EvmSettingsInput(
     value: BigDecimal,
     decimals: Int,
     caution: HSCaution?,
-    navController: NavController,
+    navigation: HSNavigation,
     onValueChange: (BigDecimal) -> Unit,
     onClickIncrement: () -> Unit,
     onClickDecrement: () -> Unit

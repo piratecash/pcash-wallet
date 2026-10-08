@@ -6,7 +6,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.AppPages
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.R
 import cash.p.terminal.navigation.openQrScanner
 import cash.p.terminal.entities.Address
@@ -16,6 +17,7 @@ import cash.p.terminal.ui.compose.components.TextPreprocessor
 import cash.p.terminal.ui.compose.components.TextPreprocessorImpl
 import cash.p.terminal.wallet.title
 import cash.p.terminal.wallet.entities.TokenQuery
+import org.koin.compose.koinInject
 
 @Composable
 fun HSAddressInput(
@@ -25,7 +27,7 @@ fun HSAddressInput(
     coinCode: String,
     error: Throwable? = null,
     textPreprocessor: TextPreprocessor = TextPreprocessorImpl,
-    navController: NavController,
+    navigation: HSNavigation,
     onError: ((Throwable?) -> Unit)? = null,
     onValueChange: ((Address?) -> Unit)? = null,
     isPoisonAddress: Boolean = false,
@@ -43,7 +45,7 @@ fun HSAddressInput(
         value = viewModel.value.collectAsStateWithLifecycle().value,
         error = error,
         textPreprocessor = textPreprocessor,
-        navController = navController,
+        navigation = navigation,
         onError = onError,
         onValueChange = onValueChange,
         isPoisonAddress = isPoisonAddress,
@@ -59,7 +61,7 @@ fun HSAddressInput(
     value: String,
     error: Throwable? = null,
     textPreprocessor: TextPreprocessor = TextPreprocessorImpl,
-    navController: NavController,
+    navigation: HSNavigation,
     onError: ((Throwable?) -> Unit)? = null,
     onValueChange: ((Address?) -> Unit)? = null,
     isPoisonAddress: Boolean = false,
@@ -77,6 +79,7 @@ fun HSAddressInput(
     }
 
     val scannerTitle = stringResource(R.string.qr_scanner_title_address, viewModel.blockchainType.title)
+    val appPages: AppPages = koinInject()
 
     FormsInputAddress(
         modifier = modifier,
@@ -84,11 +87,11 @@ fun HSAddressInput(
         hint = stringResource(id = R.string.Send_Hint_Address),
         state = inputState,
         textPreprocessor = textPreprocessor,
-        navController = navController,
+        navigation = navigation,
         chooseContactEnable = viewModel.hasContacts(),
         blockchainType = viewModel.blockchainType,
         onQrScanClick = {
-            navController.openQrScanner(scannerTitle) { scannedText ->
+            navigation.openQrScanner(appPages, scannerTitle) { scannedText ->
                 val textProcessed = textPreprocessor.process(scannedText)
                 viewModel.parseText(textProcessed)
             }

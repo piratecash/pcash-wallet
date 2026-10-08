@@ -7,7 +7,6 @@ import cash.p.terminal.core.App
 import cash.p.terminal.core.MoneroSpendReadiness
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.managers.AdapterManager
-import cash.p.terminal.core.managers.MarketFavoritesManager
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.StackingManager
 import cash.p.terminal.core.managers.PendingBalanceCalculator
@@ -31,6 +30,7 @@ import cash.p.terminal.modules.transactions.TransactionViewItem
 import cash.p.terminal.modules.transactions.TransactionsRateRepository
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Wallet
+import cash.p.terminal.wallet.favorites.MarketFavoritesManager
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import io.horizontalsystems.core.IAppNumberFormatter
 import org.koin.java.KoinJavaComponent.inject

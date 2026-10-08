@@ -12,14 +12,14 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.entities.TransactionValue
+import cash.p.terminal.modules.coin.CoinPage
 import cash.p.terminal.modules.xtransaction.helpers.TransactionInfoHelper
 import cash.p.terminal.modules.xtransaction.helpers.coinAmountString
 import cash.p.terminal.modules.xtransaction.helpers.coinIconPainter
 import cash.p.terminal.modules.xtransaction.helpers.fiatAmountString
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui_compose.CoinFragmentInput
 import cash.p.terminal.ui_compose.components.HFillSpacer
 import cash.p.terminal.ui_compose.components.HSpacer
@@ -82,7 +82,7 @@ fun AmountCellTV(
     coinAmountColor: AmountColor,
     coinAmountSign: AmountSign,
     transactionInfoHelper: TransactionInfoHelper,
-    navController: NavController,
+    navigation: HSNavigation,
     borderTop: Boolean = true
 ) {
     AmountCell(
@@ -110,10 +110,7 @@ fun AmountCellTV(
             fiatSymbol = transactionInfoHelper.getCurrencySymbol()
         ),
         onClick = {
-            navController.slideFromRight(
-                R.id.coinFragment,
-                CoinFragmentInput(transactionValue.coinUid)
-            )
+            navigation.slideFromRight(CoinPage(CoinFragmentInput(transactionValue.coinUid)))
         },
         borderTop = borderTop,
     )

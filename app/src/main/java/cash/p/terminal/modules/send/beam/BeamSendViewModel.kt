@@ -28,8 +28,8 @@ import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.address.AmountUnique
 import cash.p.terminal.modules.send.SendConfirmationData
-import cash.p.terminal.modules.send.SendConfirmationFragment.Type
-import cash.p.terminal.modules.send.SendFragment.ProceedActionData
+import cash.p.terminal.modules.send.SendConfirmationPage.Type
+import cash.p.terminal.modules.send.SendPage.ProceedActionData
 import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.toggleWalletBalanceWithFeedback
 import cash.p.terminal.modules.send.offline.OfflineSignState
@@ -575,7 +575,7 @@ internal class BeamSendViewModel(
             val rates = XRateService(getKoinInstance(), getKoinInstance<CurrencyManager>().baseCurrency)
             val viewModel = BeamSendViewModel(wallet, access, getKoinInstance(), getKoinInstance(),
                 getKoinInstance(), getKoinInstance(), rates)
-            // Initialize at construction time, before the ViewModel is returned to navGraphViewModels:
+            // Initialize at construction time, before the ViewModel is returned to viewModel():
             // the address input's own ViewModel and hideAddress are read in the very first composition,
             // so recipient/hideAddress must already be set before that composition runs.
             viewModel.initialize(prefill, hideAddress)

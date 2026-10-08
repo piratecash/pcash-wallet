@@ -15,12 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavController
-import androidx.navigation.fragment.NavHostFragment
-import cash.p.terminal.MainGraphDirections
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.BaseActivity
@@ -30,25 +25,26 @@ import cash.p.terminal.core.notifications.TransactionNotificationManager
 import cash.p.terminal.modules.calculator.lockscreen.CalculatorLockScreen
 import cash.p.terminal.modules.calculator.lockscreen.CalculatorLockScreenActions
 import cash.p.terminal.modules.calculator.lockscreen.CalculatorLockScreenViewModel
-import cash.p.terminal.modules.createaccount.CreateAccountFragment
+import cash.p.terminal.modules.createaccount.CreateAccountPage
 import cash.p.terminal.modules.intro.IntroActivity
 import cash.p.terminal.modules.keystore.KeyStoreActivity
 import cash.p.terminal.modules.pin.ui.PinUnlock
 import cash.p.terminal.modules.settings.appearance.AppIconService
 import cash.p.terminal.modules.softwareupdate.AppUpdateChecker
-import cash.p.terminal.modules.tonconnect.TonConnectNewFragment
-import cash.p.terminal.navigation.slideFromBottom
-import cash.p.terminal.navigation.slideFromBottomForResult
-import cash.p.terminal.navigation.slideFromRightClearingBackStack
+import cash.p.terminal.modules.tonconnect.TonConnectNewPage
+import cash.p.terminal.modules.tonconnect.TonConnectSendRequestPage
+import cash.p.terminal.modules.walletconnect.request.WCRequestPage
+import cash.p.terminal.modules.walletconnect.session.WCSessionPage
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.tangem.domain.sdk.CardSdkProvider
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import com.reown.walletkit.client.Wallet
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.IPinComponent
-import io.horizontalsystems.core.hideKeyboard
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 internal enum class CalculatorPauseProtection {
@@ -76,7 +72,8 @@ internal fun shouldLockOnCreate(
 
 open class MainActivity : BaseActivity() {
 
-    val viewModel: MainActivityViewModel by inject()
+    val viewModel: MainActivityViewModel by viewModel()
+    val navigation: HSNavigation by lazy { HSNavigation(viewModel.navBackStack) }
     private val cardSdkProvider: CardSdkProvider by inject()
     private val appIconService: AppIconService by inject()
     private val localStorage: ILocalStorage by inject()
@@ -84,7 +81,8 @@ open class MainActivity : BaseActivity() {
     private val backgroundManager: BackgroundManager by inject()
     private val appUpdateChecker: AppUpdateChecker by inject()
     private var pinLockComposeView: ComposeView? = null
-    private var showPinLockScreen by mutableStateOf(false)
+    private val pinLockScreenState = mutableStateOf(false)
+    private var showPinLockScreen by pinLockScreenState
     private var externalActivitySnapshotSecured = false
 
     override fun onResume() {
@@ -107,7 +105,7 @@ open class MainActivity : BaseActivity() {
             // Locked on return: a dialog left open in the background lives in its own
             // Window and would surface above the calculator/PIN disguise. The collect in
             // observeLockState reacts asynchronously, so close synchronously here too.
-            closeWindowsAboveLockScreen()
+            closeWindowsAboveLockScreen(navigation, cardSdkProvider)
         }
         validate()
         appUpdateChecker.checkIfNeeded()
@@ -126,13 +124,8 @@ open class MainActivity : BaseActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        val isDeepLink = intent.data != null && intent.action == Intent.ACTION_VIEW
-        val isNotificationTap = intent.hasExtra(TransactionNotificationManager.EXTRA_RECORD_UID)
-        if (isDeepLink || isNotificationTap) {
-            val navHost =
-                supportFragmentManager.findFragmentById(R.id.fragmentContainerView) as NavHostFragment
-            val navController = navHost.navController
-            navController.popBackStack(navController.graph.startDestinationId, false)
+        if (intent.isDeepLinkOrNotificationTap()) {
+            navigation.removeLastUntil(MainPage::class, inclusive = false)
         }
         viewModel.setIntent(intent)
     }
@@ -159,19 +152,13 @@ open class MainActivity : BaseActivity() {
 
         setContentView(R.layout.activity_main)
 
-        val navHost =
-            supportFragmentManager.findFragmentById(R.id.fragmentContainerView) as NavHostFragment
-        val navController = navHost.navController
-
-        navController.setGraph(R.navigation.main_graph, intent.extras)
-
-        navController.addOnDestinationChangedListener { _, _, _ ->
-            currentFocus?.hideKeyboard(this)
+        findViewById<ComposeView>(R.id.navHostComposeView).setContent {
+            Nav3Host(navigation, isLocked = pinLockScreenState)
         }
 
         viewModel.navigateToMainLiveData.observe(this) {
             if (it) {
-                navController.popBackStack(navController.graph.startDestinationId, false)
+                navigation.removeLastUntil(MainPage::class, inclusive = false)
                 viewModel.onNavigatedToMain()
             }
         }
@@ -180,13 +167,11 @@ open class MainActivity : BaseActivity() {
             if (wcEvent != null) {
                 when (wcEvent) {
                     is Wallet.Model.SessionRequest -> {
-                        navController.slideFromBottom(R.id.wcRequestFragment)
+                        navigation.slideFromBottom(WCRequestPage())
                     }
 
                     is Wallet.Model.SessionProposal -> {
-                        navController.slideFromBottom(
-                            MainGraphDirections.actionGlobalToWcSessionFragment(null)
-                        )
+                        navigation.slideFromBottom(WCSessionPage(null))
                     }
 
                     else -> {}
@@ -199,16 +184,15 @@ open class MainActivity : BaseActivity() {
         lifecycleScope.launch {
             viewModel.tcSendRequest.collect { tcEvent ->
                 if (tcEvent != null) {
-                    navController.slideFromBottom(R.id.tcSendRequestFragment)
+                    navigation.slideFromBottom(TonConnectSendRequestPage())
                 }
             }
         }
 
         viewModel.tcDappRequest.observe(this) { request ->
             if (request != null) {
-                navController.slideFromBottomForResult<TonConnectNewFragment.Result>(
-                    R.id.tcNewFragment,
-                    request.dAppRequest
+                navigation.slideFromBottomForResult<TonConnectNewPage.Result>(
+                    TonConnectNewPage(request.dAppRequest)
                 ) { result ->
                     if (request.closeAppOnResult) {
                         if (result.approved) {
@@ -224,12 +208,8 @@ open class MainActivity : BaseActivity() {
         }
 
         // Handle deeplink or notification tap on cold start (only on fresh launch, not on recreation)
-        if (savedInstanceState == null) {
-            val isDeepLink = intent.data != null && intent.action == Intent.ACTION_VIEW
-            val isNotificationTap = intent.hasExtra(TransactionNotificationManager.EXTRA_RECORD_UID)
-            if (isDeepLink || isNotificationTap) {
-                viewModel.setIntent(intent)
-            }
+        if (savedInstanceState == null && intent.isDeepLinkOrNotificationTap()) {
+            viewModel.setIntent(intent)
         }
 
         val composeView = findViewById<ComposeView>(R.id.pinLockComposeView)
@@ -320,34 +300,8 @@ open class MainActivity : BaseActivity() {
         applyTaskDescription(calculatorMode)
         applyLockWindowFlags(isLocked, calculatorMode)
         if (isLocked) {
-            closeWindowsAboveLockScreen()
+            closeWindowsAboveLockScreen(navigation, cardSdkProvider)
         }
-    }
-
-    // Tangem NFC reader and DialogFragments live in separate Window instances,
-    // so they can render above the in-activity lock/calculator screen.
-    private fun closeWindowsAboveLockScreen() {
-        cardSdkProvider.cancelSession()
-        dismissOpenDialogFragments()
-    }
-
-    private fun dismissOpenDialogFragments() {
-        collectDialogFragments(supportFragmentManager).forEach {
-            it.dismissAllowingStateLoss()
-        }
-    }
-
-    private fun collectDialogFragments(fm: FragmentManager): List<DialogFragment> {
-        val result = mutableListOf<DialogFragment>()
-        fm.fragments.forEach { fragment ->
-            if (fragment is DialogFragment) {
-                result += fragment
-            }
-            if (fragment != null && fragment.isAdded) {
-                result += collectDialogFragments(fragment.childFragmentManager)
-            }
-        }
-        return result
     }
 
     private fun protectCalculatorScreenOnPause() {
@@ -384,10 +338,8 @@ open class MainActivity : BaseActivity() {
                 window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
             }
         } else {
-            window.clearFlags(
-                WindowManager.LayoutParams.FLAG_SECURE or
-                        WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
-            )
+            // FLAG_SECURE is left to Nav3Host: a page with screenshots disabled may be on screen.
+            window.clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
         }
     }
 
@@ -398,25 +350,31 @@ open class MainActivity : BaseActivity() {
         setTaskDescription(ActivityManager.TaskDescription(getString(labelRes)))
     }
 
-    private fun findNavController(): NavController {
-        val navHost =
-            supportFragmentManager.findFragmentById(R.id.fragmentContainerView) as NavHostFragment
-        return navHost.navController
-    }
-
     fun openCreateNewWallet() {
         viewModel.selectBalanceTabOnNextLaunch()
         // Set flag to select Balance tab when returning to main screen
         // Open create wallet screen after PIN is created, clearing back stack to main screen
-        findNavController().navigateWithTermsAccepted {
-            findNavController().slideFromRightClearingBackStack(
-                resId = R.id.createAccountFragment,
-                popUpToId = R.id.mainFragment,
-                input = CreateAccountFragment.Input(
-                    popOffOnSuccess = R.id.mainFragment,
-                    popOffInclusive = false
-                )
+        navigation.navigateWithTermsAccepted {
+            navigation.slideFromRightClearingBackStack(
+                page = CreateAccountPage(
+                    CreateAccountPage.Input(
+                        popOffOnSuccess = MainPage::class,
+                        popOffInclusive = false
+                    )
+                ),
+                popUpTo = MainPage::class
             )
         }
     }
+}
+
+internal fun Intent.isDeepLinkOrNotificationTap(): Boolean =
+    (data != null && action == Intent.ACTION_VIEW) ||
+        hasExtra(TransactionNotificationManager.EXTRA_RECORD_UID)
+
+// The Tangem NFC reader and bottom sheets live in their own windows, so they can render above
+// the in-activity lock/calculator screen.
+internal fun closeWindowsAboveLockScreen(navigation: HSNavigation, cardSdkProvider: CardSdkProvider) {
+    cardSdkProvider.cancelSession()
+    navigation.removeTrailingBottomSheets()
 }

@@ -40,26 +40,25 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import cash.p.terminal.R
-import cash.p.terminal.modules.contacts.ContactsFragment
 import cash.p.terminal.modules.contacts.ContactsModule
+import cash.p.terminal.modules.contacts.ContactsPage
 import cash.p.terminal.modules.contacts.Mode
-import cash.p.terminal.modules.info.TransactionDoubleSpendInfoFragment
-import cash.p.terminal.modules.info.TransactionLockTimeInfoFragment
+import cash.p.terminal.modules.info.TransactionDoubleSpendInfoPage
+import cash.p.terminal.modules.info.TransactionLockTimeInfoPage
+import cash.p.terminal.modules.info.TransactionStatusInfoPage
 import cash.p.terminal.modules.offline.OperationAvailability
 import cash.p.terminal.modules.offline.rememberOfflineGatedAction
 import cash.p.terminal.modules.transactionInfo.AmountType
 import cash.p.terminal.modules.transactionInfo.TransactionInfoViewItem
 import cash.p.terminal.modules.transactionInfo.options.SpeedUpCancelType
-import cash.p.terminal.modules.transactionInfo.options.TransactionSpeedUpCancelFragment
-import cash.p.terminal.modules.transactionInfo.resendbitcoin.ResendBitcoinFragment
+import cash.p.terminal.modules.transactionInfo.options.TransactionSpeedUpCancelPage
+import cash.p.terminal.modules.transactionInfo.resendbitcoin.ResendBitcoinPage
 import cash.p.terminal.modules.transactions.AmlStatus
 import cash.p.terminal.modules.transactions.TransactionStatus
 import cash.p.terminal.modules.transactions.riskColor
 import cash.p.terminal.modules.transactions.riskTextRes
-import cash.p.terminal.navigation.slideFromBottom
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.strings.helpers.shorten
 import cash.p.terminal.ui.helpers.LinkHelper
 import cash.p.terminal.ui.helpers.TextHelper
@@ -340,7 +339,7 @@ fun TransactionInfoAddressCell(
     showAdd: Boolean,
     blockchainType: BlockchainType?,
     textAlign: TextAlign = TextAlign.End,
-    navController: NavController? = null,
+    navigation: HSNavigation? = null,
     onCopy: (() -> Unit)? = null,
     onAddToExisting: (() -> Unit)? = null,
     onAddToNew: (() -> Unit)? = null,
@@ -392,7 +391,7 @@ fun TransactionInfoAddressCell(
         SaveAddressDialog(
             value = value,
             blockchainType = blockchainType,
-            navController = navController,
+            navigation = navigation,
             onAddToExisting = onAddToExisting,
             onAddToNew = onAddToNew,
             onDismiss = { dialogState = AddressDialogState.Hidden },
@@ -479,7 +478,7 @@ private fun TransactionInfoAddressDialogs(
 private fun SaveAddressDialog(
     value: String,
     blockchainType: BlockchainType?,
-    navController: NavController?,
+    navigation: HSNavigation?,
     onAddToExisting: (() -> Unit)?,
     onAddToNew: (() -> Unit)?,
     onDismiss: () -> Unit,
@@ -492,22 +491,18 @@ private fun SaveAddressDialog(
         onDismiss = onDismiss,
         onSelect = { action ->
             blockchainType?.let {
-                val args = when (action) {
+                val mode = when (action) {
                     ContactsModule.AddAddressAction.AddToNewContact -> {
                         onAddToNew?.invoke()
-                        ContactsFragment.Input(
-                            Mode.AddAddressToNewContact(blockchainType, value)
-                        )
+                        Mode.AddAddressToNewContact(blockchainType, value)
                     }
 
                     ContactsModule.AddAddressAction.AddToExistingContact -> {
                         onAddToExisting?.invoke()
-                        ContactsFragment.Input(
-                            Mode.AddAddressToExistingContact(blockchainType, value)
-                        )
+                        Mode.AddAddressToExistingContact(blockchainType, value)
                     }
                 }
-                navController?.slideFromRight(R.id.contactsFragment, args)
+                navigation?.slideFromRight(ContactsPage(ContactsPage.Input(mode)))
             }
         },
     )
@@ -571,7 +566,7 @@ fun TransactionInfoContactCell(name: String) {
 @Composable
 fun TransactionInfoStatusCell(
     status: TransactionStatus,
-    navController: NavController,
+    navigation: HSNavigation,
     onPendingTap: (() -> Unit)? = null
 ) {
     RowUniversal(
@@ -584,7 +579,7 @@ fun TransactionInfoStatusCell(
         HsIconButton(
             modifier = Modifier.size(20.dp),
             onClick = {
-                navController.slideFromBottom(R.id.statusInfoDialog)
+                navigation.slideFromBottom(TransactionStatusInfoPage())
             }
         ) {
             Image(
@@ -641,7 +636,7 @@ fun TransactionInfoStatusCell(
 @Composable
 fun TransactionInfoOfflineStatusCell(
     status: ColoredValue,
-    navController: NavController,
+    navigation: HSNavigation,
     modifier: Modifier = Modifier,
 ) {
     RowUniversal(
@@ -654,7 +649,7 @@ fun TransactionInfoOfflineStatusCell(
         HsIconButton(
             modifier = Modifier.size(20.dp),
             onClick = {
-                navController.slideFromBottom(R.id.statusInfoDialog)
+                navigation.slideFromBottom(TransactionStatusInfoPage())
             }
         ) {
             Image(
@@ -687,7 +682,7 @@ fun TransactionInfoSpeedUpCell(
     blockchainType: BlockchainType,
     availability: OperationAvailability,
     wallet: Wallet?,
-    navController: NavController
+    navigation: HSNavigation
 ) {
     val offlineGatedAction = rememberOfflineGatedAction(wallet)
 
@@ -699,7 +694,7 @@ fun TransactionInfoSpeedUpCell(
                     SpeedUpCancelType.SpeedUp,
                     transactionHash,
                     blockchainType,
-                    navController
+                    navigation
                 )
             }
         }
@@ -866,7 +861,7 @@ fun TransactionInfoRawTransaction(rawTransaction: () -> String?) {
 @Composable
 fun TransactionInfoBtcLockCell(
     lockState: TransactionInfoViewItem.LockState,
-    navController: NavController
+    navigation: HSNavigation
 ) {
     RowUniversal(
         modifier = Modifier.padding(horizontal = 16.dp),
@@ -885,9 +880,8 @@ fun TransactionInfoBtcLockCell(
                 onClick = {
                     val lockTime = DateHelper.getFullDate(lockState.date)
 
-                    navController.slideFromBottom(
-                        R.id.transactionLockTimeInfoFragment,
-                        TransactionLockTimeInfoFragment.Input(lockTime)
+                    navigation.slideFromBottom(
+                        TransactionLockTimeInfoPage(TransactionLockTimeInfoPage.Input(lockTime))
                     )
                 }
             ) {
@@ -905,7 +899,7 @@ fun TransactionInfoBtcLockCell(
 fun TransactionInfoDoubleSpendCell(
     transactionHash: String,
     conflictingHash: String,
-    navController: NavController
+    navigation: HSNavigation
 ) {
     RowUniversal(
         modifier = Modifier.padding(horizontal = 16.dp),
@@ -924,11 +918,12 @@ fun TransactionInfoDoubleSpendCell(
         HsIconButton(
             modifier = Modifier.size(20.dp),
             onClick = {
-                navController.slideFromBottom(
-                    R.id.transactionDoubleSpendInfoFragment,
-                    TransactionDoubleSpendInfoFragment.Input(
-                        transactionHash,
-                        conflictingHash
+                navigation.slideFromBottom(
+                    TransactionDoubleSpendInfoPage(
+                        TransactionDoubleSpendInfoPage.Input(
+                            transactionHash,
+                            conflictingHash
+                        )
                     )
                 )
             }
@@ -1029,7 +1024,7 @@ private fun openTransactionOptionsModule(
     type: SpeedUpCancelType,
     transactionHash: String,
     blockchainType: BlockchainType,
-    navController: NavController
+    navigation: HSNavigation
 ) {
     when (blockchainType) {
         BlockchainType.Bitcoin,
@@ -1040,9 +1035,8 @@ private fun openTransactionOptionsModule(
         BlockchainType.Cosanta,
         BlockchainType.PirateCash,
         BlockchainType.Dash -> {
-            navController.slideFromRight(
-                R.id.resendBitcoinFragment,
-                ResendBitcoinFragment.Input(type)
+            navigation.slideFromRight(
+                ResendBitcoinPage(ResendBitcoinPage.Input(type))
             )
         }
 
@@ -1054,9 +1048,10 @@ private fun openTransactionOptionsModule(
         BlockchainType.Base,
         BlockchainType.ZkSync,
         BlockchainType.ArbitrumOne -> {
-            navController.slideFromRight(
-                R.id.transactionSpeedUpCancelFragment,
-                TransactionSpeedUpCancelFragment.Input(blockchainType, type, transactionHash)
+            navigation.slideFromRight(
+                TransactionSpeedUpCancelPage(
+                    TransactionSpeedUpCancelPage.Input(blockchainType, type, transactionHash)
+                )
             )
         }
 
