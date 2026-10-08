@@ -33,7 +33,6 @@ val appModule = module {
         payCoreModule,
         contractValidatorModule,
         useCaseModule,
-        appUpdateModule,
         featurePremiumModule,
         featureLoggingModule,
         featureMiniAppModule
