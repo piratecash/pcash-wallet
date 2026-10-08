@@ -73,7 +73,6 @@ class SettingsContentTest {
             R.string.advanced_security to SettingsAction.AdvancedSecurity,
             R.string.software_update_title to SettingsAction.SoftwareUpdate,
             R.string.SettingsAboutApp_Title to SettingsAction.AboutApp,
-            R.string.Settings_RateUs to SettingsAction.RateApp,
             R.string.Settings_ShareThisWallet to SettingsAction.ShareApp,
             R.string.SettingsContact_Title to SettingsAction.Contact(true),
         )
@@ -82,8 +81,8 @@ class SettingsContentTest {
             compose.onNodeWithText(application.getString(title)).performScrollTo().performClick()
         }
         val clickableNodes = compose.onAllNodes(hasClickAction())
-        assertEquals(25, clickableNodes.fetchSemanticsNodes().size)
-        clickableNodes[24].performScrollTo().performClick()
+        assertEquals(24, clickableNodes.fetchSemanticsNodes().size)
+        clickableNodes[23].performScrollTo().performClick()
 
         assertEquals(expectedRows.map { it.second } + SettingsAction.CompanyWebsite, emitted)
     }
