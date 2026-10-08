@@ -67,7 +67,7 @@ secp256k1 = "0.24.0"
 tonKotlin = "0.5.0" # updated for ktor 3.x compatibility
 piratecash-ton = "v1.0.0-pcash.6"
 beam-sdk = "v0.2.1"
-piratecash-bitcoin = "v0.1.0-pcash.35"
+piratecash-bitcoin = "v0.1.0-pcash.36"
 hd-wallet-kit = "1.0.1"
 stellar-kit = "v1.0.0-pcash.3"
 thorchain-kit = "1.2.0"
@@ -78,7 +78,7 @@ piratecash-solana = "v1.0.0-pcash.10"
 monero-kit-android = "v0.18.3.4-pcash.17"
 netcipher = "2.1.0"
 solanakt = "864ec19"
-piratecash-tron = "v1.0.0-pcash.6"
+piratecash-tron = "v2.0.0-pcash.1"
 tangem-sdk = "3.9.2-pcash.3"
 gson = "2.13.2"
 retrofit = "3.0.0"
@@ -237,7 +237,7 @@ netcipher = { group = "info.guardianproject.netcipher", name = "netcipher", vers
 solanakt = { module = "com.github.piratecash:SolanaKT", version.ref = "solanakt" }
 ethereum-kit = { group = "com.github.piratecash", name = "ethereum-kit-android", version.ref = "piratecash-ethereum" }
 blockchain-fee-kit = { group = "com.github.horizontalsystems", name = "blockchain-fee-rate-kit-android", version.ref = "horizontalsystems-blockchain-fee" }
-tron-kit = { group = "com.github.piratecash", name = "tron-kit-android", version.ref = "piratecash-tron" }
+tron-kit = { group = "com.github.piratecash.tron-kit-android", name = "tronkit", version.ref = "piratecash-tron" }
 tangem-sdk = { group = "com.github.piratecash", name = "tangem-sdk-android", version.ref = "tangem-sdk" }
 
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
