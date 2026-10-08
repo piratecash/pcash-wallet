@@ -24,7 +24,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
-import cash.p.terminal.core.managers.RateAppManager
 import cash.p.terminal.feature.miniapp.ui.miniapp.MiniAppPage
 import cash.p.terminal.modules.backuplocal.fullbackup.BackupManagerPage
 import cash.p.terminal.modules.basecurrency.BaseCurrencySettingsPage
@@ -187,7 +186,6 @@ internal fun handleSettingsAction(
         SettingsAction.OfflineBroadcast -> openOfflineBroadcastScanner(navigation, appPages, rawTxScanTitle)
         SettingsAction.ImportTransactionFile -> importTransactionFile()
         SettingsAction.AboutPremium -> navigation.slideFromBottom(AboutPremiumPage(null))
-        SettingsAction.RateApp -> RateAppManager.openPlayMarket(context)
         SettingsAction.ShareApp -> shareAppLink(viewModel.uiState.appWebPageLink, context)
         is SettingsAction.Contact -> navigation.slideFromContact(action.isPayCoreEnabled)
         SettingsAction.CompanyWebsite -> LinkHelper.openLinkInAppBrowser(context, viewModel.companyWebPage)

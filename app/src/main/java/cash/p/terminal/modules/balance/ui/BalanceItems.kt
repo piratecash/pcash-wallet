@@ -19,7 +19,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,7 +54,6 @@ import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.main.MainPage
 import cash.p.terminal.modules.multiswap.SwapPage
 import cash.p.terminal.modules.multiswap.exchanges.MultiSwapExchangesPage
-import cash.p.terminal.modules.rateapp.RateAppViewModel
 import cash.p.terminal.modules.receive.ui.ReceiveChooseCoinPage
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
 import cash.p.terminal.modules.send.offline.OfflineBroadcastPage
@@ -123,14 +121,6 @@ fun BalanceItems(
     totalState: TotalUIState,
     onOpenTransactionInfo: (TransactionItem) -> Unit,
 ) {
-    val rateAppViewModel = koinViewModel<RateAppViewModel>()
-    DisposableEffect(true) {
-        rateAppViewModel.onBalancePageActive()
-        onDispose {
-            rateAppViewModel.onBalancePageInactive()
-        }
-    }
-
     LaunchedEffect(viewModel) {
         viewModel.payCoreNavigationEvents.collect { event ->
             when (event) {

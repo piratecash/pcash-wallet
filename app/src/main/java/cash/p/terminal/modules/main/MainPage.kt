@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
 import cash.p.terminal.core.authorizedAction
-import cash.p.terminal.core.managers.RateAppManager
 import cash.p.terminal.core.notifications.TransactionNotificationManager
 import cash.p.terminal.core.usecase.ResolveTransactionItemUseCase
 import cash.p.terminal.modules.balance.ui.BalanceScreen
@@ -41,7 +40,6 @@ import cash.p.terminal.modules.manageaccount.dialogs.BackupRequiredSheet
 import cash.p.terminal.modules.market.MarketScreen
 import cash.p.terminal.modules.pin.ConfirmPinPage
 import cash.p.terminal.modules.pin.PinType
-import cash.p.terminal.modules.rateapp.RateApp
 import cash.p.terminal.modules.releasenotes.ReleaseNotesPage
 import cash.p.terminal.modules.rooteddevice.RootedDeviceModule
 import cash.p.terminal.modules.rooteddevice.RootedDeviceScreen
@@ -286,17 +284,6 @@ private fun MainScreen(
             navigation.slideFromBottom(ReleaseNotesPage(ReleaseNotesPage.Input(true)))
             viewModel.whatsNewShown()
         }
-    }
-
-    if (uiState.showRateAppDialog) {
-        val context = LocalContext.current
-        RateApp(
-            onRateClick = {
-                RateAppManager.openPlayMarket(context)
-                viewModel.closeRateDialog()
-            },
-            onCancelClick = { viewModel.closeRateDialog() }
-        )
     }
 
     if (uiState.wcSupportState != null) {
