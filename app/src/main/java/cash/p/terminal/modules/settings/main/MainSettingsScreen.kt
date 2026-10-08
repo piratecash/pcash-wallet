@@ -27,7 +27,6 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.navigation.NavController
 import cash.p.terminal.MainGraphDirections
 import cash.p.terminal.R
-import cash.p.terminal.core.managers.RateAppManager
 import cash.p.terminal.modules.contacts.ContactsFragment
 import cash.p.terminal.modules.contacts.Mode
 import cash.p.terminal.modules.manageaccount.dialogs.BackupRequiredDialog
@@ -167,7 +166,6 @@ internal fun handleSettingsAction(
         SettingsAction.OfflineBroadcast -> openOfflineBroadcastScanner(navController, rawTxScanTitle)
         SettingsAction.ImportTransactionFile -> importTransactionFile()
         SettingsAction.AboutPremium -> navController.slideFromBottom(R.id.aboutPremiumFragment)
-        SettingsAction.RateApp -> RateAppManager.openPlayMarket(context)
         SettingsAction.ShareApp -> shareAppLink(viewModel.uiState.appWebPageLink, context)
         is SettingsAction.Contact -> navController.slideFromContact(action.isPayCoreEnabled)
         SettingsAction.CompanyWebsite -> LinkHelper.openLinkInAppBrowser(context, viewModel.companyWebPage)

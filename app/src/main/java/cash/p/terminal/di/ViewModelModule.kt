@@ -54,7 +54,6 @@ import cash.p.terminal.modules.settings.appstatus.AppStatusViewModel
 import cash.p.terminal.modules.settings.displaytransactions.DisplayTransactionsViewModel
 import cash.p.terminal.modules.settings.guides.GuidesViewModel
 import cash.p.terminal.modules.balance.BalanceAccountsViewModel
-import cash.p.terminal.modules.rateapp.RateAppViewModel
 import cash.p.terminal.modules.subscription.ActivateSubscriptionViewModel
 import cash.p.terminal.modules.manageaccount.zcashkeys.ZcashKeysViewModel
 import cash.p.terminal.modules.walletconnect.request.WCRequestEvmViewModel
@@ -102,7 +101,6 @@ val viewModelModule = module {
     viewModelOf(::GuidesViewModel)
     viewModelOf(::ActivateSubscriptionViewModel)
     viewModelOf(::WCRequestEvmViewModel)
-    viewModelOf(::RateAppViewModel)
     viewModelOf(::BalanceAccountsViewModel)
     viewModelOf(::PrivacyViewModel)
     viewModelOf(::HardwareWalletViewModel)
