@@ -25,14 +25,14 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.navigation.findNavController
 import cash.p.terminal.R
 import cash.p.terminal.entities.Address
+import cash.p.terminal.navigation.AppPages
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.openQrScanner
 import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
 import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
@@ -41,20 +41,22 @@ import cash.p.terminal.ui_compose.entities.FormsInputStateWarning
 import cash.p.terminal.ui_compose.theme.ColoredTextStyle
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.core.launchAfterClearingFocus
+import org.koin.compose.koinInject
 
 @Composable
 fun CheckAddressInput(
     modifier: Modifier = Modifier,
     value: String,
     hint: String,
+    navigation: HSNavigation,
     state: DataState<Address>? = null,
     onValueChange: (String) -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
-    val view = LocalView.current
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
     val scannerTitle = stringResource(R.string.qr_scanner_title_smart_scan)
+    val appPages: AppPages = koinInject()
 
     val borderColor = when (state) {
         is DataState.Error -> {
@@ -127,7 +129,7 @@ fun CheckAddressInput(
                     icon = R.drawable.ic_qr_scan_20,
                     onClick = {
                         coroutineScope.launchAfterClearingFocus(focusManager) {
-                            view.findNavController().openQrScanner(scannerTitle) { scannedText ->
+                            navigation.openQrScanner(appPages, scannerTitle) { scannedText ->
                                 onValueChange.invoke(scannedText)
                             }
                         }

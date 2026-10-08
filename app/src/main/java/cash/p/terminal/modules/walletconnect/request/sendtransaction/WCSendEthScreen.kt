@@ -11,13 +11,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
-import cash.p.terminal.core.rememberViewModelFromGraph
 import cash.p.terminal.modules.confirm.ConfirmTransactionScreen
 import cash.p.terminal.modules.sendevmtransaction.SendEvmTransactionView
-import cash.p.terminal.navigation.popBackStackSafely
-import cash.p.terminal.navigation.slideFromBottom
+import cash.p.terminal.modules.walletconnect.request.WCEvmTransactionSettingsPage
+import cash.p.terminal.modules.walletconnect.request.WCRequestPage
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.viewModelStoreOwnerForPage
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.HudHelper
@@ -30,27 +32,26 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun WCSendEthRequestScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     logger: AppLogger,
     blockchainType: BlockchainType,
     transaction: WalletConnectTransaction,
     peerName: String,
 ) {
-    val viewModel = rememberViewModelFromGraph<WCSendEthereumTransactionRequestViewModel>(
-        navController,
-        R.id.wcRequestFragment,
-        WCSendEthereumTransactionRequestViewModel.Factory(
+    val viewModel = viewModel<WCSendEthereumTransactionRequestViewModel>(
+        viewModelStoreOwner = navigation.viewModelStoreOwnerForPage(WCRequestPage::class),
+        factory = WCSendEthereumTransactionRequestViewModel.Factory(
             blockchainType = blockchainType,
             transaction = transaction,
             peerName = peerName
         )
-    ) ?: return
+    )
     val uiState = viewModel.uiState
 
     ConfirmTransactionScreen(
-        onClickBack = navController::popBackStackSafely,
+        onClickBack = navigation::navigateUpSafely,
         onClickSettings = {
-            navController.slideFromBottom(R.id.wcSendEvmTransactionSettings)
+            navigation.slideFromBottom(WCEvmTransactionSettingsPage())
         },
         onClickClose = null,
         buttonsSlot = {
@@ -85,7 +86,7 @@ fun WCSendEthRequestScreen(
                         }
 
                         buttonEnabled = true
-                        navController.popBackStack()
+                        navigation.navigateUp()
                     }
                 }
             )
@@ -95,13 +96,13 @@ fun WCSendEthRequestScreen(
                 title = stringResource(R.string.Button_Reject),
                 onClick = {
                     viewModel.reject()
-                    navController.popBackStackSafely()
+                    navigation.navigateUpSafely()
                 }
             )
         }
     ) {
         SendEvmTransactionView(
-            navController,
+            navigation,
             uiState.sectionViewItems,
             uiState.cautions,
             uiState.transactionFields,

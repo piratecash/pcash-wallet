@@ -1,7 +1,6 @@
 package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.adapters.SolanaAdapter
-import cash.p.terminal.core.adapters.TronAdapter
 import cash.p.terminal.core.storage.MoneroFileDao
 import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
 import cash.p.terminal.domain.usecase.ZcashEraseResult
@@ -53,6 +52,7 @@ class AccountCleanerTest {
     private lateinit var pinDbStorage: PinDbStorage
     private lateinit var accountStorageCleaner: AccountStorageCleaner
     private lateinit var bitcoinKitDatabaseManager: BitcoinKitDatabaseManager
+    private lateinit var tronKitManager: TronKitManager
     private lateinit var thorchainKitManagers: ThorchainKitManagers
     private lateinit var evmBlockchainManager: EvmBlockchainManager
     private val deletionPreflight = mockk<AccountDeletionPreflight>(relaxed = true)
@@ -69,6 +69,7 @@ class AccountCleanerTest {
         pinDbStorage = mockk(relaxed = true)
         accountStorageCleaner = mockk(relaxed = true)
         bitcoinKitDatabaseManager = mockk(relaxed = true)
+        tronKitManager = mockk(relaxed = true)
         thorchainKitManagers = mockk(relaxed = true)
         evmBlockchainManager = mockk(relaxed = true)
 
@@ -90,6 +91,7 @@ class AccountCleanerTest {
             pinDbStorage,
             accountStorageCleaner,
             bitcoinKitDatabaseManager,
+            tronKitManager,
             thorchainKitManagers,
             evmBlockchainManager,
             deletionPreflight,
@@ -365,18 +367,16 @@ class AccountCleanerTest {
     private fun mockAdapterClears() {
         mockkObject(
             SolanaAdapter,
-            TronAdapter
         )
 
         every { SolanaAdapter.clear(any()) } returns Unit
-        every { TronAdapter.clear(any()) } returns Unit
     }
 
     private fun verifyAdapterClears(accountId: String) {
         coVerify(exactly = 1) { bitcoinKitDatabaseManager.clear(accountId) }
         coVerify(exactly = 1) { evmBlockchainManager.clear(accountId) }
         verify(exactly = 1) { SolanaAdapter.clear(accountId) }
-        verify(exactly = 1) { TronAdapter.clear(accountId) }
+        coVerify(exactly = 1) { tronKitManager.clear(accountId) }
     }
 
     private fun account(id: String) = Account(

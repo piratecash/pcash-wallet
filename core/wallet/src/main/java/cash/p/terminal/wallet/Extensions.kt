@@ -147,12 +147,6 @@ val BlockchainType.title: String
         is BlockchainType.Unsupported -> this.uid
     }
 
-val TokenQuery.Companion.customCoinPrefix: String
-    get() = "custom-"
-
-val TokenQuery.customCoinUid: String
-    get() = "${TokenQuery.customCoinPrefix}${id}"
-
 val TokenType.meta: String?
     get() = when (this) {
         TokenType.Mweb -> "MWEB"
@@ -162,12 +156,12 @@ val TokenType.meta: String?
         else -> null
     }
 
-fun Wallet.isPirateCash() = (token.type == TokenType.Eip20(BuildConfig.PIRATE_CONTRACT) ||
-        token.type == TokenType.Eip20(BuildConfig.PIRATE_CONTRACT.lowercase())) &&
+fun Wallet.isPirateCash() = (token.type == TokenType.Eip20(PirateContracts.PIRATE_CONTRACT) ||
+        token.type == TokenType.Eip20(PirateContracts.PIRATE_CONTRACT.lowercase())) &&
         token.blockchainType == BlockchainType.BinanceSmartChain
 
-fun Wallet.isCosanta() = (token.type == TokenType.Eip20(BuildConfig.COSANTA_CONTRACT) ||
-        token.type == TokenType.Eip20(BuildConfig.COSANTA_CONTRACT.lowercase())) &&
+fun Wallet.isCosanta() = (token.type == TokenType.Eip20(PirateContracts.COSANTA_CONTRACT) ||
+        token.type == TokenType.Eip20(PirateContracts.COSANTA_CONTRACT.lowercase())) &&
         token.blockchainType == BlockchainType.BinanceSmartChain
 
 fun Wallet.isStakingWallet() = isPirateCash() || isCosanta()

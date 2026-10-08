@@ -93,7 +93,7 @@ class EvmKitDatabaseKeyProviderTest {
     private fun evmKeys(context: Context) =
         EvmKitDatabaseKeys(EvmKitDatabaseKeyProvider(context, encryptionManager))
 
-    private fun bitcoinKeys() = KitDatabaseKeys(DefaultKitDatabaseKeyProvider(context, encryptionManager))
+    private fun bitcoinKeys() = KitDatabaseKeys(BitcoinKitDatabaseKeyProvider(context, encryptionManager))
 
     private fun preferences(name: String) = context.getSharedPreferences(name, Context.MODE_PRIVATE)
 

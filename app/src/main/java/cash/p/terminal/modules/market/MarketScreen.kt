@@ -28,18 +28,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.App
-import cash.p.terminal.navigation.slideFromBottom
+import cash.p.terminal.modules.coin.CoinPage
 import cash.p.terminal.modules.market.MarketModule.Tab
+import cash.p.terminal.modules.market.etf.EtfPage
 import cash.p.terminal.modules.market.favorites.MarketFavoritesScreen
+import cash.p.terminal.modules.market.filters.MarketFiltersPage
+import cash.p.terminal.modules.market.metricspage.MetricsPage
 import cash.p.terminal.modules.market.posts.MarketPostsScreen
+import cash.p.terminal.modules.market.search.MarketSearchPage
 import cash.p.terminal.modules.market.topcoins.TopCoins
 import cash.p.terminal.modules.market.toppairs.TopPairsScreen
 import cash.p.terminal.modules.market.topplatforms.TopPlatforms
+import cash.p.terminal.modules.market.tvl.TvlPage
 import cash.p.terminal.modules.metricchart.MetricsType
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.CoinFragmentInput
 import cash.p.terminal.ui_compose.components.AppBar
@@ -58,7 +62,7 @@ import io.horizontalsystems.core.entities.Currency
 import java.math.BigDecimal
 
 @Composable
-fun MarketScreen(navController: NavController, paddingValuesParent: PaddingValues) {
+fun MarketScreen(navigation: HSNavigation, paddingValuesParent: PaddingValues) {
     val viewModel = viewModel<MarketViewModel>(factory = MarketModule.Factory())
     val uiState = viewModel.uiState
     val tabs = viewModel.tabs
@@ -74,14 +78,14 @@ fun MarketScreen(navController: NavController, paddingValuesParent: PaddingValue
                         icon = R.drawable.icon_search,
                         tint = ComposeAppTheme.colors.jacob,
                         onClick = {
-                            navController.slideFromRight(R.id.marketSearchFragment)
+                            navigation.slideFromRight(MarketSearchPage())
                         },
                     ),
                     MenuItem(
                         title = TranslatableString.ResString(R.string.Market_Filters),
                         icon = R.drawable.ic_manage_2_24,
                         onClick = {
-                            navController.slideFromRight(R.id.marketAdvancedSearchFragment)
+                            navigation.slideFromRight(MarketFiltersPage())
                         },
                     ),
                 )
@@ -97,13 +101,13 @@ fun MarketScreen(navController: NavController, paddingValuesParent: PaddingValue
                 .background(ComposeAppTheme.colors.tyler)
         ) {
             Crossfade(uiState.marketGlobal, label = "") {
-                MetricsBoard(navController, it, uiState.currency)
+                MetricsBoard(navigation, it, uiState.currency)
             }
             Divider(
                 color = ComposeAppTheme.colors.steel10,
                 thickness = 1.dp
             )
-            TabsSection(navController, tabs, uiState.selectedTab) { tab ->
+            TabsSection(navigation, tabs, uiState.selectedTab) { tab ->
                 viewModel.onSelect(tab)
             }
         }
@@ -113,7 +117,7 @@ fun MarketScreen(navController: NavController, paddingValuesParent: PaddingValue
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TabsSection(
-    navController: NavController,
+    navigation: HSNavigation,
     tabs: Array<Tab>,
     selectedTab: Tab,
     onTabClick: (Tab) -> Unit
@@ -137,11 +141,11 @@ fun TabsSection(
     ) { page ->
         when (tabs[page]) {
             Tab.Coins -> {
-                TopCoins(onCoinClick = { onCoinClick(it, navController) })
+                TopCoins(onCoinClick = { onCoinClick(it, navigation) })
             }
 
             Tab.Watchlist -> {
-                MarketFavoritesScreen(navController)
+                MarketFavoritesScreen(navigation)
             }
 
             Tab.Posts -> {
@@ -149,7 +153,7 @@ fun TabsSection(
             }
 
             Tab.Platform -> {
-                TopPlatforms(navController)
+                TopPlatforms(navigation)
             }
 
             Tab.Pairs -> {
@@ -172,7 +176,7 @@ private fun getDiff(it: BigDecimal): String {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MetricsBoard(
-    navController: NavController,
+    navigation: HSNavigation,
     marketGlobal: MarketGlobal?,
     currency: Currency
 ) {
@@ -190,7 +194,7 @@ fun MetricsBoard(
             change = marketGlobal?.marketCapChange,
             currency = currency,
             onClick = {
-                openMetricsPage(MetricsType.TotalMarketCap, navController)
+                openMetricsPage(MetricsType.TotalMarketCap, navigation)
             }
         )
 
@@ -202,7 +206,7 @@ fun MetricsBoard(
             change = marketGlobal?.volumeChange,
             currency = currency,
             onClick = {
-                openMetricsPage(MetricsType.Volume24h, navController)
+                openMetricsPage(MetricsType.Volume24h, navigation)
             }
         )
 
@@ -214,7 +218,7 @@ fun MetricsBoard(
             change = marketGlobal?.tvlChange,
             currency = currency,
             onClick = {
-                openMetricsPage(MetricsType.TvlInDefi, navController)
+                openMetricsPage(MetricsType.TvlInDefi, navigation)
             }
         )
 
@@ -226,7 +230,7 @@ fun MetricsBoard(
             change = marketGlobal?.etfDailyInflow,
             currency = currency,
             onClick = {
-                openMetricsPage(MetricsType.Etf, navController)
+                openMetricsPage(MetricsType.Etf, navigation)
             }
         )
     }
@@ -292,24 +296,22 @@ private fun RowScope.MarketTotalCard(
     }
 }
 
-private fun openMetricsPage(metricsType: MetricsType, navController: NavController) {
+private fun openMetricsPage(metricsType: MetricsType, navigation: HSNavigation) {
     when (metricsType) {
         MetricsType.TvlInDefi -> {
-            navController.slideFromBottom(R.id.tvlFragment)
+            navigation.slideFromBottom(TvlPage())
         }
 
         MetricsType.Etf -> {
-            navController.slideFromBottom(R.id.etfFragment)
+            navigation.slideFromBottom(EtfPage())
         }
 
         else -> {
-            navController.slideFromBottom(R.id.metricsPageFragment, metricsType)
+            navigation.slideFromBottom(MetricsPage(metricsType))
         }
     }
 }
 
-private fun onCoinClick(coinUid: String, navController: NavController) {
-    val arguments = CoinFragmentInput(coinUid)
-
-    navController.slideFromRight(R.id.coinFragment, arguments)
+private fun onCoinClick(coinUid: String, navigation: HSNavigation) {
+    navigation.slideFromRight(CoinPage(CoinFragmentInput(coinUid)))
 }

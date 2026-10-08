@@ -12,7 +12,8 @@ ksp = "2.3.10"
 lifecycleExtensions = "2.2.0"
 lifecycleLivedataKtx = "2.10.0"
 lifecycleCommonJava8 = "2.10.0"
-navigation = "2.10.1"
+navigation3 = "1.1.2"
+classgraph = "4.8.181"
 portmapper = "2.0.6"
 preferenceKtx = "1.2.1"
 qrose = "1.1.2"
@@ -56,6 +57,7 @@ kotlinx-coroutines-android = "1.10.2"
 kotlinx-coroutines-test = "1.10.2"
 room = "2.8.4"
 sqlite = "2.7.0"
+datastore = "1.2.1"
 paging = "3.4.2"
 javax-inject = "1"
 appcompat = "1.7.1"
@@ -78,7 +80,7 @@ piratecash-solana = "v1.0.0-pcash.10"
 monero-kit-android = "v0.18.3.4-pcash.17"
 netcipher = "2.1.0"
 solanakt = "864ec19"
-piratecash-tron = "v1.0.0-pcash.6"
+piratecash-tron = "v2.0.0-pcash.1"
 tangem-sdk = "3.9.2-pcash.3"
 gson = "2.13.2"
 retrofit = "3.0.0"
@@ -104,7 +106,6 @@ androidxTestCore = "1.7.0"
 espressoCore = "3.7.0"
 camerax = "1.6.0"
 zxing = "3.5.4"
-accompanist = "0.36.0"
 accompanist-permissions = "0.37.3"
 lint = "32.1.0"
 
@@ -137,11 +138,8 @@ qrose = { module = "io.github.alexzhirkevich:qrose", version.ref = "qrose" }
 relinker = { module = "com.getkeepsafe.relinker:relinker", version.ref = "relinker" }
 reown-core = { module = "com.reown:android-core" }
 reown-walletkit = { module = "com.reown:walletkit" }
-androidx-navigation-safe-args-gradle-plugin = { module = "androidx.navigation:navigation-safe-args-gradle-plugin", version.ref = "navigation" }
 
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
-androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation" }
-androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigation" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 androidx-room-rxjava2 = { module = "androidx.room:room-rxjava2", version.ref = "roomRxjava2" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
@@ -160,6 +158,9 @@ koin-test-junit4 = { module = "io.insert-koin:koin-test-junit4"}
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
 compose-material = { module = "androidx.compose.material:material" }
 compose-animation = { module = "androidx.compose.animation:animation" }
+compose-runtime = { module = "androidx.compose.runtime:runtime" }
+compose-ui = { module = "androidx.compose.ui:ui" }
+compose-foundation = { module = "androidx.compose.foundation:foundation" }
 compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 compose-multiplatform-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
 compose-multiplatform-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
@@ -181,8 +182,8 @@ lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-ru
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "androidx-fragment-ktx" }
-androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigation" }
-androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigation" }
+androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
+androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
 powermock-api-mockito2 = { module = "org.powermock:powermock-api-mockito2", version.ref = "powermockApiMockito2" }
 powermock-module-junit4 = { module = "org.powermock:powermock-module-junit4", version.ref = "powermockModuleJunit4" }
@@ -195,6 +196,7 @@ rxandroid = { module = "io.reactivex.rxjava2:rxandroid", version.ref = "rxandroi
 rxjava = { group = "io.reactivex.rxjava2", name = "rxjava", version.ref = "rxjava" }
 kotlinx-coroutines-rx2 = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-rx2", version.ref = "kotlinx-coroutines-android" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines-android" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines-android" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidx-constraintlayout" }
 bitcoinj = { module = "org.bitcoinj:bitcoinj-core", version.ref = "bitcoinj" }
@@ -204,6 +206,7 @@ room-compiler = { group = "androidx.room", name = "room-compiler", version.ref =
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-paging = { group = "androidx.room", name = "room-paging", version.ref = "room" }
 sqlite-bundled = { group = "androidx.sqlite", name = "sqlite-bundled", version.ref = "sqlite" }
+datastore-preferences-core = { group = "androidx.datastore", name = "datastore-preferences-core", version.ref = "datastore" }
 
 paging-runtime = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "paging" }
 paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
@@ -242,7 +245,7 @@ ethereum-kit-oneinch = { group = "com.github.piratecash.ethereum-kit-android", n
 ethereum-kit-nft = { group = "com.github.piratecash.ethereum-kit-android", name = "nftkit", version.ref = "piratecash-ethereum" }
 ethereum-kit-merkleio = { group = "com.github.piratecash.ethereum-kit-android", name = "merkleiokit", version.ref = "piratecash-ethereum" }
 blockchain-fee-kit = { group = "com.github.horizontalsystems", name = "blockchain-fee-rate-kit-android", version.ref = "horizontalsystems-blockchain-fee" }
-tron-kit = { group = "com.github.piratecash", name = "tron-kit-android", version.ref = "piratecash-tron" }
+tron-kit = { group = "com.github.piratecash.tron-kit-android", name = "tronkit", version.ref = "piratecash-tron" }
 tangem-sdk = { group = "com.github.piratecash", name = "tangem-sdk-android", version.ref = "tangem-sdk" }
 
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
@@ -280,6 +283,7 @@ androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "j
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+classgraph = { group = "io.github.classgraph", name = "classgraph", version.ref = "classgraph" }
 roborazzi = { group = "io.github.takahirom.roborazzi", name = "roborazzi", version.ref = "roborazzi" }
 roborazzi-compose = { group = "io.github.takahirom.roborazzi", name = "roborazzi-compose", version.ref = "roborazzi" }
 roborazzi-preview-scanner-support = { group = "io.github.takahirom.roborazzi", name = "roborazzi-compose-preview-scanner-support", version.ref = "roborazzi" }
@@ -300,7 +304,6 @@ zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" 
 
 # Accompanist
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist-permissions" }
-accompanist-navigation-animation = { group = "com.google.accompanist", name = "accompanist-navigation-animation", version.ref = "accompanist" }
 
 # Lint
 lint-api = { group = "com.android.tools.lint", name = "lint-api", version.ref = "lint" }

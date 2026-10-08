@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
 import cash.p.terminal.core.Caution
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.modules.contacts.model.ContactAddress
 import cash.p.terminal.modules.contacts.viewmodel.AddressViewModel
 import cash.p.terminal.strings.helpers.TranslatableString
@@ -40,6 +41,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun AddressScreen(
+    navigation: HSNavigation,
     viewModel: AddressViewModel,
     onNavigateToBlockchainSelector: () -> Unit,
     onDone: (ContactAddress) -> Unit,
@@ -135,6 +137,7 @@ fun AddressScreen(
                     hint = stringResource(R.string.Contacts_AddressHint),
                     state = uiState.addressState,
                     qrScannerEnabled = true,
+                    navigation = navigation,
                     qrScannerTitle = stringResource(R.string.qr_scanner_title_address, uiState.blockchain.name),
                 ) {
                     viewModel.onEnterAddress(it)

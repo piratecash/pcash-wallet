@@ -1,39 +1,38 @@
 package cash.p.terminal.modules.restoreaccount
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
 import cash.p.terminal.R
-import cash.p.terminal.core.composablePopup
 import cash.p.terminal.core.title
 import cash.p.terminal.modules.enablecoin.restoresettings.TokenConfig
 import cash.p.terminal.modules.moneroconfigure.MoneroConfigureRoute
 import cash.p.terminal.modules.moneroconfigure.MoneroConfigureViewModel
 import cash.p.terminal.modules.mwebconfigure.MwebConfigureViewModel
 import cash.p.terminal.modules.zcashconfigure.ZcashConfigureScreen
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.navigateUpFrom
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.isLitecoinMweb
 import io.horizontalsystems.core.entities.BlockchainType
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.reflect.KClass
 
-private const val ROUTE_ZCASH_CONFIGURE = "zcash_configure"
-private const val ROUTE_MONERO_CONFIGURE = "monero_configure"
-private const val ROUTE_MWEB_CONFIGURE = "mweb_configure"
-
-internal fun NavController.openRestoreTokenConfigure(
+internal fun HSNavigation.openRestoreTokenConfigure(
     token: Token,
     initialConfig: TokenConfig?,
     mainViewModel: RestoreViewModel,
+    owner: KClass<out HSPage>,
 ) {
     mainViewModel.setTokenInitialConfig(initialConfig)
     when (token.blockchainType) {
-        BlockchainType.Zcash -> navigate(ROUTE_ZCASH_CONFIGURE)
-        BlockchainType.Monero -> navigate(ROUTE_MONERO_CONFIGURE)
+        BlockchainType.Zcash -> slideFromBottom(RestoreZcashConfigurePage(owner))
+        BlockchainType.Monero -> slideFromBottom(RestoreMoneroConfigurePage(owner))
         BlockchainType.Litecoin -> {
             if (token.isLitecoinMweb) {
-                navigate(ROUTE_MWEB_CONFIGURE)
+                slideFromBottom(RestoreMwebConfigurePage(owner))
             }
         }
 
@@ -41,37 +40,31 @@ internal fun NavController.openRestoreTokenConfigure(
     }
 }
 
-internal fun NavGraphBuilder.addRestoreTokenConfigureRoutes(
-    navController: NavController,
-    mainViewModel: RestoreViewModel,
-) {
-    composablePopup(ROUTE_ZCASH_CONFIGURE) {
+class RestoreZcashConfigurePage(val owner: KClass<out HSPage>) : HSPage(screenshotEnabled = false) {
+
+    @Composable
+    override fun GetContent(navigation: HSNavigation) {
+        val mainViewModel = navigation.restoreViewModel(owner)
         ZcashConfigureScreen(
             initialConfig = mainViewModel.tokenInitialConfig,
-            onCloseWithResult = { config ->
-                mainViewModel.setTokenConfig(config)
-                navController.popBackStackSafely()
-            },
-            onCloseClick = {
-                mainViewModel.cancelTokenConfig()
-                navController.popBackStackSafely()
-            }
+            onCloseWithResult = { config -> navigation.closeWithTokenConfig(this, mainViewModel, config) },
+            onCloseClick = { navigation.cancelTokenConfig(mainViewModel) }
         )
     }
-    composablePopup(ROUTE_MONERO_CONFIGURE) {
+}
+
+class RestoreMoneroConfigurePage(val owner: KClass<out HSPage>) : HSPage(screenshotEnabled = false) {
+
+    @Composable
+    override fun GetContent(navigation: HSNavigation) {
+        val mainViewModel = navigation.restoreViewModel(owner)
         val viewModel: MoneroConfigureViewModel = koinViewModel()
         LaunchedEffect(mainViewModel.tokenInitialConfig) {
             viewModel.setInitialConfig(mainViewModel.tokenInitialConfig)
         }
         MoneroConfigureRoute(
-            onCloseWithResult = {
-                mainViewModel.setTokenConfig(it)
-                navController.popBackStackSafely()
-            },
-            onCloseClick = {
-                mainViewModel.cancelTokenConfig()
-                navController.popBackStackSafely()
-            },
+            onCloseWithResult = { navigation.closeWithTokenConfig(this, mainViewModel, it) },
+            onCloseClick = { navigation.cancelTokenConfig(mainViewModel) },
             onModeSelect = viewModel::onModeSelect,
             onSetBirthdayHeight = viewModel::setBirthdayHeight,
             onDatePick = viewModel::onDatePicked,
@@ -79,7 +72,13 @@ internal fun NavGraphBuilder.addRestoreTokenConfigureRoutes(
             uiState = viewModel.uiState,
         )
     }
-    composablePopup(ROUTE_MWEB_CONFIGURE) {
+}
+
+class RestoreMwebConfigurePage(val owner: KClass<out HSPage>) : HSPage(screenshotEnabled = false) {
+
+    @Composable
+    override fun GetContent(navigation: HSNavigation) {
+        val mainViewModel = navigation.restoreViewModel(owner)
         val viewModel: MwebConfigureViewModel = koinViewModel()
         LaunchedEffect(mainViewModel.tokenInitialConfig) {
             viewModel.setInitialConfig(mainViewModel.tokenInitialConfig)
@@ -88,18 +87,23 @@ internal fun NavGraphBuilder.addRestoreTokenConfigureRoutes(
             title = TokenType.Mweb.title,
             blockchainType = BlockchainType.Litecoin,
             heightHintRes = R.string.restoreheight_hint_block_only,
-            onCloseWithResult = {
-                mainViewModel.setTokenConfig(it)
-                navController.popBackStackSafely()
-            },
-            onCloseClick = {
-                mainViewModel.cancelTokenConfig()
-                navController.popBackStackSafely()
-            },
+            onCloseWithResult = { navigation.closeWithTokenConfig(this, mainViewModel, it) },
+            onCloseClick = { navigation.cancelTokenConfig(mainViewModel) },
             onModeSelect = viewModel::onModeSelect,
             onSetBirthdayHeight = viewModel::setBirthdayHeight,
             onDoneClick = viewModel::onDoneClick,
             uiState = viewModel.uiState,
         )
     }
+}
+
+// Raised by a LaunchedEffect, so it must not pop the page beneath once this one is gone.
+private fun HSNavigation.closeWithTokenConfig(page: HSPage, mainViewModel: RestoreViewModel, config: TokenConfig) {
+    mainViewModel.setTokenConfig(config)
+    navigateUpFrom(page)
+}
+
+private fun HSNavigation.cancelTokenConfig(mainViewModel: RestoreViewModel) {
+    mainViewModel.cancelTokenConfig()
+    navigateUpSafely()
 }

@@ -1,7 +1,6 @@
 package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.adapters.SolanaAdapter
-import cash.p.terminal.core.adapters.TronAdapter
 import cash.p.terminal.core.storage.MoneroFileDao
 import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
 import cash.p.terminal.modules.pin.core.PinDbStorage
@@ -29,6 +28,7 @@ class AccountCleaner(
     private val pinDbStorage: PinDbStorage,
     private val accountStorageCleaner: AccountStorageCleaner,
     private val bitcoinKitDatabaseManager: BitcoinKitDatabaseManager,
+    private val tronKitManager: TronKitManager,
     private val thorchainKitManagers: ThorchainKitManagers,
     private val evmBlockchainManager: EvmBlockchainManager,
     private val deletionPreflight: AccountDeletionPreflight,
@@ -50,7 +50,7 @@ class AccountCleaner(
         clearWalletDataForBlockchainIfInactive(accountId, BlockchainType.Monero)
         clearWalletDataForBlockchainIfInactive(accountId, BlockchainType.Zcash)
         SolanaAdapter.clear(accountId)
-        TronAdapter.clear(accountId)
+        tronKitManager.clear(accountId)
         clearSmsNotificationSettings(accountId)
     }
 

@@ -76,7 +76,7 @@ class BitcoinKitDatabaseManagerTest {
     @Test
     fun prepare_databaseKeyLocked_retriesUntilAuthenticationSucceeds() = runTest {
         every { keyProvider.keyFor(ACCOUNT_ID) } throws
-            KitDatabaseKeyLockedException(mockk()) andThen databaseKey
+            KitDatabaseKeyLockedException("BitcoinKit", mockk()) andThen databaseKey
         coEvery { operations.migrate(any(), any(), any()) } returns Unit
         val manager = createManager()
 

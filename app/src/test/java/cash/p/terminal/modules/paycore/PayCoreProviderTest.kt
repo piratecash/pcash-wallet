@@ -65,7 +65,7 @@ class PayCoreProviderTest {
 
     private val usdtToken = Token(
         coin = Coin(
-            uid = "tether", name = "Tether", code = "USDT", marketCapRank = null, coinGeckoId = null, image = null
+            uid = "tether", name = "Tether", code = "USDT", marketCapRank = null, image = null
         ),
         blockchain = Blockchain(BlockchainType.Ethereum, "Ethereum", null),
         type = TokenType.Eip20("0xdac17f958d2ee523a2206206994597c13d831ec7"),
@@ -143,7 +143,7 @@ class PayCoreProviderTest {
     fun supports_bscUsdToRub_returnsFalse() = runTest {
         val bscUsdToken = Token(
             coin = Coin(
-                uid = "tether", name = "BSC-USD", code = "BSC-USD", marketCapRank = null, coinGeckoId = null,
+                uid = "tether", name = "BSC-USD", code = "BSC-USD", marketCapRank = null,
                 image = null
             ),
             blockchain = Blockchain(BlockchainType.BinanceSmartChain, "BNB Smart Chain", null),

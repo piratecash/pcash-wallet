@@ -17,6 +17,8 @@ class BackendYiFiResponseError(
         const val COIN_NOT_FOUND = "COIN_NOT_FOUND"
         const val NO_SOURCES_AVAILABLE = "NO_SOURCES_AVAILABLE"
         const val NO_QUOTES_AVAILABLE = "NO_QUOTES_AVAILABLE"
+        const val INVALID_RECEIVE_ADDRESS = "INVALID_RECEIVE_ADDRESS"
+        const val INVALID_REFUND_ADDRESS = "INVALID_REFUND_ADDRESS"
     }
 }
 

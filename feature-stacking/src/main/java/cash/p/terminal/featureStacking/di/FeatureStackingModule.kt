@@ -14,7 +14,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val featureStackingModule = module {
-    viewModelOf(::StackingViewModel)
+    viewModel { params -> StackingViewModel(params.getOrNull()) }
     viewModel {
         PirateCoinViewModel(
             walletManager = get(),

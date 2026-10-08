@@ -7,6 +7,7 @@ import cash.p.terminal.core.onPollingStarted
 import cash.p.terminal.core.onPollingStopped
 import cash.p.terminal.core.UnsupportedAccountException
 import cash.p.terminal.core.UnsupportedException
+import cash.p.terminal.core.adapters.TronAdapter
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.core.storage.HardwarePublicKeyStorage
 import cash.p.terminal.core.utils.TronAddressParser
@@ -42,6 +43,7 @@ class TronKitManager(
     private val networkErrorTracker: NetworkErrorTracker,
     private val trezorClient: ITrezorClient,
     private val offlineModeManager: OfflineModeManager,
+    private val tronKitDatabaseKeyProvider: TronKitDatabaseKeyProvider,
 ) {
 
     private val lifecycleMutex = Mutex()
@@ -77,20 +79,22 @@ class TronKitManager(
 
         if (this.tronKitWrapper == null) {
             val accountType = account.type
+            val databaseKey = tronKitDatabaseKeyProvider.awaitKey(account.id)
+            TronKit.migrateDatabase(App.instance, network, account.id, databaseKey)
             this.tronKitWrapper = when (accountType) {
                 is AccountType.Mnemonic -> {
-                    createKitInstance(accountType, account)
+                    createKitInstance(accountType, account, databaseKey)
                 }
 
                 is AccountType.TronAddress -> {
-                    createWatchOnlyKitInstance(accountType.address, account)
+                    createWatchOnlyKitInstance(accountType.address, account, databaseKey)
                 }
 
                 is AccountType.HardwareCard ->
-                    createKitInstance(account)
+                    createKitInstance(account, databaseKey)
 
                 is AccountType.TrezorDevice ->
-                    createTrezorKitInstance(account)
+                    createTrezorKitInstance(account, databaseKey)
 
                 else -> throw UnsupportedAccountException()
             }
@@ -108,7 +112,8 @@ class TronKitManager(
 
     private fun createKitInstance(
         accountType: AccountType.Mnemonic,
-        account: Account
+        account: Account,
+        databaseKey: ByteArray,
     ): TronKitWrapper {
         val seed = accountType.seed
         val signer = Signer.getInstance(seed, network)
@@ -119,6 +124,7 @@ class TronKitManager(
             seed = seed,
             network = network,
             tronGridApiKeys = AppConfigProvider.trongridApiKeys,
+            databaseKey = databaseKey,
             eventListenerFactory = eventListenerFactory(account)
         )
 
@@ -127,11 +133,13 @@ class TronKitManager(
 
     private fun createWatchOnlyKitInstance(
         address: String,
-        account: Account
-    ): TronKitWrapper = createAddressKitInstance(Address.fromBase58(address), account, signer = null)
+        account: Account,
+        databaseKey: ByteArray,
+    ): TronKitWrapper = createAddressKitInstance(Address.fromBase58(address), account, signer = null, databaseKey)
 
     private fun createKitInstance(
-        account: Account
+        account: Account,
+        databaseKey: ByteArray,
     ): TronKitWrapper {
         val hardwarePublicKey = getHardwareKey(account, "Hardware card does not have a public key for Tron")
         val addressAndPublicKey = TronAddressParser.parseXpubToTronAddress(hardwarePublicKey.key.value)
@@ -139,10 +147,10 @@ class TronKitManager(
             hardwarePublicKey = hardwarePublicKey,
             expectedPublicKeyBytes = addressAndPublicKey.publicKey
         )
-        return createAddressKitInstance(addressAndPublicKey.address, account, signer)
+        return createAddressKitInstance(addressAndPublicKey.address, account, signer, databaseKey)
     }
 
-    private fun createTrezorKitInstance(account: Account): TronKitWrapper {
+    private fun createTrezorKitInstance(account: Account, databaseKey: ByteArray): TronKitWrapper {
         val key = getHardwareKey(account, "Trezor does not have a key for Tron")
         val address = key.key.value
         val signer = TrezorTronSigner(
@@ -150,7 +158,7 @@ class TronKitManager(
             derivationPath = key.derivationPath,
             trezorClient = trezorClient
         )
-        return createAddressKitInstance(Address.fromBase58(address), account, signer)
+        return createAddressKitInstance(Address.fromBase58(address), account, signer, databaseKey)
     }
 
     private fun getHardwareKey(account: Account, missingKeyMessage: String) = runBlocking {
@@ -160,7 +168,8 @@ class TronKitManager(
     private fun createAddressKitInstance(
         address: Address,
         account: Account,
-        signer: Signer?
+        signer: Signer?,
+        databaseKey: ByteArray,
     ): TronKitWrapper {
         val kit = TronKit.getInstance(
             application = App.instance,
@@ -168,10 +177,16 @@ class TronKitManager(
             network = network,
             walletId = account.id,
             tronGridApiKeys = AppConfigProvider.trongridApiKeys,
+            databaseKey = databaseKey,
             eventListenerFactory = eventListenerFactory(account)
         )
 
         return TronKitWrapper(kit, signer)
+    }
+
+    suspend fun clear(accountId: String) = lifecycleMutex.withLock {
+        TronAdapter.clear(accountId)
+        tronKitDatabaseKeyProvider.remove(accountId)
     }
 
     suspend fun unlink(account: Account) = lifecycleMutex.withLock {

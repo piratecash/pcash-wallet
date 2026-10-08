@@ -29,15 +29,15 @@ class BackendSwapAssetResolverTest {
         dispatcherProvider = TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)),
     )
 
-    private val btc = yiFiTestToken(BlockchainType.Bitcoin, TokenType.Native, "BTC", coinGeckoId = "bitcoin")
+    private val btc = yiFiTestToken(BlockchainType.Bitcoin, TokenType.Native, "BTC", coinUid = "bitcoin")
     private val bnb = yiFiTestToken(
-        BlockchainType.BinanceSmartChain, TokenType.Native, "BNB", coinGeckoId = "binancecoin"
+        BlockchainType.BinanceSmartChain, TokenType.Native, "BNB", coinUid = "binancecoin"
     )
     private val usdt = yiFiTestToken(
-        BlockchainType.Ethereum, TokenType.Eip20(USDT_CONTRACT), "USDT", coinGeckoId = "tether"
+        BlockchainType.Ethereum, TokenType.Eip20(USDT_CONTRACT), "USDT", coinUid = "tether"
     )
     private val stellarUsdc = yiFiTestToken(
-        BlockchainType.Stellar, TokenType.Asset("USDC", STELLAR_USDC_ISSUER), "USDC", coinGeckoId = "usd-coin"
+        BlockchainType.Stellar, TokenType.Asset("USDC", STELLAR_USDC_ISSUER), "USDC", coinUid = "usd-coin"
     )
 
     @Test
@@ -72,15 +72,8 @@ class BackendSwapAssetResolverTest {
     }
 
     @Test
-    fun resolve_missingCoinGeckoId_returnsNull() = runTest(dispatcher) {
-        stubCurrencies(currency("btc", "bitcoin"))
-
-        assertNull(resolve(yiFiTestToken(BlockchainType.Bitcoin, TokenType.Native, "BTC")))
-    }
-
-    @Test
     fun resolve_unmappedChain_returnsNullWithoutLoading() = runTest(dispatcher) {
-        val xdai = yiFiTestToken(BlockchainType.Gnosis, TokenType.Native, "XDAI", coinGeckoId = "xdai")
+        val xdai = yiFiTestToken(BlockchainType.Gnosis, TokenType.Native, "XDAI", coinUid = "xdai")
 
         assertNull(resolve(xdai))
         coVerify(exactly = 0) { repository.getCurrencies(any()) }
@@ -114,7 +107,7 @@ class BackendSwapAssetResolverTest {
             BlockchainType.BinanceSmartChain,
             TokenType.Eip20(BSC_USDT_CONTRACT),
             "USDT",
-            coinGeckoId = "binance-bridged-usdt-bnb-smart-chain",
+            coinUid = "binance-bridged-usdt-bnb-smart-chain",
         )
 
         assertEquals(BackendSwapAsset("tether", "binance_smart_chain"), resolve(bscUsdt))
@@ -149,7 +142,7 @@ class BackendSwapAssetResolverTest {
     fun resolve_stellarAssetSharingNativeCoinId_returnsNull() = runTest(dispatcher) {
         stubCurrencies(currency("stellar", "stellar"))
         val stellarAsset = yiFiTestToken(
-            BlockchainType.Stellar, TokenType.Asset("USDC", "GISSUER"), "USDC", coinGeckoId = "stellar"
+            BlockchainType.Stellar, TokenType.Asset("USDC", "GISSUER"), "USDC", coinUid = "stellar"
         )
 
         assertNull(resolve(stellarAsset))
@@ -173,7 +166,7 @@ class BackendSwapAssetResolverTest {
     fun resolve_splContractInOtherCase_returnsNull() = runTest(dispatcher) {
         stubCurrencies(currency("usd-coin", "solana", SOLANA_USDC_MINT.lowercase()))
         val solanaUsdc = yiFiTestToken(
-            BlockchainType.Solana, TokenType.Spl(SOLANA_USDC_MINT), "USDC", coinGeckoId = "usd-coin"
+            BlockchainType.Solana, TokenType.Spl(SOLANA_USDC_MINT), "USDC", coinUid = "usd-coin"
         )
 
         assertNull(resolve(solanaUsdc))

@@ -5,46 +5,26 @@ import android.security.keystore.UserNotAuthenticatedException
 import android.util.Base64
 import androidx.core.content.edit
 import io.horizontalsystems.core.IEncryptionManager
+import kotlinx.coroutines.delay
 import java.security.SecureRandom
-
-interface KitDatabaseKeyProvider {
-    fun keyFor(accountId: String): ByteArray
-    fun remove(accountId: String)
-}
 
 class KitDatabaseKeyException(message: String, cause: Throwable? = null) :
     IllegalStateException(message, cause)
 
-class KitDatabaseKeyLockedException(cause: UserNotAuthenticatedException) :
-    IllegalStateException("Kit database key requires user authentication", cause)
+class KitDatabaseKeyLockedException(kitName: String, cause: UserNotAuthenticatedException) :
+    IllegalStateException("$kitName database key requires user authentication", cause)
 
-// Legacy bitcoin-kit names: keys persisted before the provider became shared live there.
-class DefaultKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :
-    PreferencesKitDatabaseKeyProvider(
-        context,
-        encryptionManager,
-        preferencesName = "bitcoin_kit_database_keys",
-        keyPrefix = "bitcoin_kit_database_key_",
-    )
-
-class EvmKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :
-    PreferencesKitDatabaseKeyProvider(
-        context,
-        encryptionManager,
-        preferencesName = "evm_kit_database_keys",
-        keyPrefix = "evm_kit_database_key_",
-    )
-
-abstract class PreferencesKitDatabaseKeyProvider(
+open class KitDatabaseKeyProvider(
     context: Context,
     private val encryptionManager: IEncryptionManager,
     preferencesName: String,
     private val keyPrefix: String,
-) : KitDatabaseKeyProvider {
+    private val kitName: String,
+) {
 
     private val preferences = context.getSharedPreferences(preferencesName, Context.MODE_PRIVATE)
 
-    override fun keyFor(accountId: String): ByteArray {
+    fun keyFor(accountId: String): ByteArray {
         val preferenceKey = accountId.preferenceKey()
         if (preferences.contains(preferenceKey)) {
             return storedKey(preferenceKey)
@@ -56,14 +36,14 @@ abstract class PreferencesKitDatabaseKeyProvider(
         if (!preferences.edit().putString(preferenceKey, encrypted).commit()) {
             // commit() applies the edit in memory even when the disk write fails.
             preferences.edit(commit = true) { remove(preferenceKey) }
-            throw KitDatabaseKeyException("Unable to persist kit database key")
+            throw KitDatabaseKeyException("Unable to persist $kitName database key")
         }
         return key
     }
 
-    override fun remove(accountId: String) {
+    fun remove(accountId: String) {
         if (!preferences.edit().remove(accountId.preferenceKey()).commit()) {
-            throw KitDatabaseKeyException("Unable to remove kit database key")
+            throw KitDatabaseKeyException("Unable to remove $kitName database key")
         }
     }
 
@@ -83,7 +63,7 @@ abstract class PreferencesKitDatabaseKeyProvider(
         }
 
         if (key.size != KEY_SIZE) {
-            invalidStoredKey(message = "Stored kit database key has invalid size")
+            invalidStoredKey(message = "Stored $kitName database key has invalid size")
         }
         return key
     }
@@ -91,12 +71,12 @@ abstract class PreferencesKitDatabaseKeyProvider(
     private inline fun <T> accessKeyStore(block: () -> T): T = try {
         block()
     } catch (error: UserNotAuthenticatedException) {
-        throw KitDatabaseKeyLockedException(error)
+        throw KitDatabaseKeyLockedException(kitName, error)
     }
 
     private fun invalidStoredKey(
         cause: Throwable? = null,
-        message: String = "Stored kit database key is invalid",
+        message: String = "Stored $kitName database key is invalid",
     ): Nothing = throw KitDatabaseKeyException(message, cause)
 
     private fun String.preferenceKey() = "$keyPrefix$this"
@@ -105,3 +85,42 @@ abstract class PreferencesKitDatabaseKeyProvider(
         const val KEY_SIZE = 32
     }
 }
+
+suspend fun KitDatabaseKeyProvider.awaitKey(accountId: String): ByteArray {
+    while (true) {
+        try {
+            return keyFor(accountId)
+        } catch (_: KitDatabaseKeyLockedException) {
+            delay(KEYSTORE_RETRY_DELAY_MS)
+        }
+    }
+}
+
+private const val KEYSTORE_RETRY_DELAY_MS = 500L
+
+class BitcoinKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :
+    KitDatabaseKeyProvider(
+        context,
+        encryptionManager,
+        preferencesName = "bitcoin_kit_database_keys",
+        keyPrefix = "bitcoin_kit_database_key_",
+        kitName = "BitcoinKit",
+    )
+
+class TronKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :
+    KitDatabaseKeyProvider(
+        context,
+        encryptionManager,
+        preferencesName = "tron_kit_database_keys",
+        keyPrefix = "tron_kit_database_key_",
+        kitName = "TronKit",
+    )
+
+class EvmKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :
+    KitDatabaseKeyProvider(
+        context,
+        encryptionManager,
+        preferencesName = "evm_kit_database_keys",
+        keyPrefix = "evm_kit_database_key_",
+        kitName = "EvmKit",
+    )

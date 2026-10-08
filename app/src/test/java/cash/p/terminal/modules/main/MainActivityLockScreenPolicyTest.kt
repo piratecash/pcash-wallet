@@ -1,5 +1,11 @@
 package cash.p.terminal.modules.main
 
+import androidx.navigation3.runtime.NavBackStack
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.tangem.domain.sdk.CardSdkProvider
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -106,5 +112,23 @@ class MainActivityLockScreenPolicyTest {
                 externalActivityLaunching = true,
             )
         )
+    }
+
+    @Test
+    fun closeWindowsAboveLockScreen_sheetsOnTop_removesOnlySheetsAndCancelsTangem() {
+        val root = PlainTestPage()
+        val page = PlainTestPage()
+        val bottomPushedPage = PlainTestPage()
+        val navigation = HSNavigation(NavBackStack<HSPage>(root))
+        navigation.slideFromRight(page)
+        navigation.slideFromBottom(bottomPushedPage)
+        navigation.slideFromBottom(TestSheet())
+        navigation.slideFromBottom(TestSheet())
+        val cardSdkProvider = mockk<CardSdkProvider>(relaxed = true)
+
+        closeWindowsAboveLockScreen(navigation, cardSdkProvider)
+
+        assertEquals(listOf<HSPage>(root, page, bottomPushedPage), navigation.backStack.toList())
+        verify { cardSdkProvider.cancelSession() }
     }
 }
