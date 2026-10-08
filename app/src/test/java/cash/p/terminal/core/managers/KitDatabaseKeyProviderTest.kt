@@ -39,53 +39,53 @@ class KitDatabaseKeyProviderTest {
     }
 
     @Test
-    fun keyFor_bitcoinAndSolanaProviders_keepSeparateKeys() {
+    fun keyFor_bitcoinAndTronProviders_keepSeparateKeys() {
         val bitcoinProvider = BitcoinKitDatabaseKeyProvider(context, encryptionManager)
-        val solanaProvider = SolanaKitDatabaseKeyProvider(context, encryptionManager)
+        val tronProvider = TronKitDatabaseKeyProvider(context, encryptionManager)
 
         val bitcoinKey = bitcoinProvider.keyFor(ACCOUNT_ID)
-        val solanaKey = solanaProvider.keyFor(ACCOUNT_ID)
+        val tronKey = tronProvider.keyFor(ACCOUNT_ID)
 
-        assertFalse(bitcoinKey.contentEquals(solanaKey))
-        assertTrue(solanaPreferences().contains(SOLANA_PREFERENCE_KEY))
+        assertFalse(bitcoinKey.contentEquals(tronKey))
+        assertTrue(tronPreferences().contains(TRON_PREFERENCE_KEY))
         assertTrue(bitcoinPreferences().contains(BITCOIN_PREFERENCE_KEY))
 
-        solanaProvider.remove(ACCOUNT_ID)
+        tronProvider.remove(ACCOUNT_ID)
 
-        assertFalse(solanaPreferences().contains(SOLANA_PREFERENCE_KEY))
+        assertFalse(tronPreferences().contains(TRON_PREFERENCE_KEY))
         assertArrayEquals(bitcoinKey, bitcoinProvider.keyFor(ACCOUNT_ID))
 
-        val newSolanaKey = solanaProvider.keyFor(ACCOUNT_ID)
+        val newTronKey = tronProvider.keyFor(ACCOUNT_ID)
         bitcoinProvider.remove(ACCOUNT_ID)
 
         assertFalse(bitcoinPreferences().contains(BITCOIN_PREFERENCE_KEY))
-        assertArrayEquals(newSolanaKey, solanaProvider.keyFor(ACCOUNT_ID))
+        assertArrayEquals(newTronKey, tronProvider.keyFor(ACCOUNT_ID))
     }
 
     @Test
     fun keyFor_commitFails_throwsAndLeavesNoUnsavedKey() {
         val failingContext = FirstPutCommitFailsContext(context)
-        val provider = SolanaKitDatabaseKeyProvider(failingContext, encryptionManager)
+        val provider = TronKitDatabaseKeyProvider(failingContext, encryptionManager)
 
         assertFailsWith<KitDatabaseKeyException> { provider.keyFor(ACCOUNT_ID) }
 
-        assertFalse(solanaPreferences().contains(SOLANA_PREFERENCE_KEY))
+        assertFalse(tronPreferences().contains(TRON_PREFERENCE_KEY))
 
         val key = provider.keyFor(ACCOUNT_ID)
 
-        assertArrayEquals(key, SolanaKitDatabaseKeyProvider(context, encryptionManager).keyFor(ACCOUNT_ID))
+        assertArrayEquals(key, TronKitDatabaseKeyProvider(context, encryptionManager).keyFor(ACCOUNT_ID))
     }
 
     private fun clearPreferences() {
         bitcoinPreferences().edit().clear().commit()
-        solanaPreferences().edit().clear().commit()
+        tronPreferences().edit().clear().commit()
     }
 
     private fun bitcoinPreferences() =
         context.getSharedPreferences("bitcoin_kit_database_keys", Context.MODE_PRIVATE)
 
-    private fun solanaPreferences() =
-        context.getSharedPreferences("solana_kit_database_keys", Context.MODE_PRIVATE)
+    private fun tronPreferences() =
+        context.getSharedPreferences("tron_kit_database_keys", Context.MODE_PRIVATE)
 
     /** Mimics SharedPreferencesImpl: a failed commit() still leaves the edit applied in memory. */
     private class FirstPutCommitFailsContext(base: Context) : ContextWrapper(base) {
@@ -126,7 +126,7 @@ class KitDatabaseKeyProviderTest {
     private companion object {
         const val ACCOUNT_ID = "account-id"
         const val BITCOIN_PREFERENCE_KEY = "bitcoin_kit_database_key_$ACCOUNT_ID"
-        const val SOLANA_PREFERENCE_KEY = "solana_kit_database_key_$ACCOUNT_ID"
+        const val TRON_PREFERENCE_KEY = "tron_kit_database_key_$ACCOUNT_ID"
         const val ENCRYPTED_PREFIX = "encrypted:"
     }
 }

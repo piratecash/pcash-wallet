@@ -50,6 +50,9 @@ data class SwapProviderTransaction(
     // p.cash backend only: provider order id (track link) and the EVM address authorising status lookups.
     val providerExternalId: String? = null,
     val providerWalletAddress: String? = null,
+    // TokenQuery.id of each side; null for the PayCore RUB side and for rows saved before it existed.
+    val tokenQueryIdIn: String? = null,
+    val tokenQueryIdOut: String? = null,
 ) {
     fun isFinished() = status in FINISHED_STATUSES
 

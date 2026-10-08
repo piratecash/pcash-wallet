@@ -53,8 +53,7 @@ class MultiSwapOnChainMonitorTest {
         var balanceIncreased = false
 
         val started = monitor.observeBalanceIncrease(
-            coinUid = "zcash",
-            blockchainType = BlockchainType.Zcash,
+            side = SwapSide(tokenQueryId = null, coinUid = "zcash", blockchainTypeUid = BlockchainType.Zcash.uid),
             scope = this,
         ) {
             balanceIncreased = true

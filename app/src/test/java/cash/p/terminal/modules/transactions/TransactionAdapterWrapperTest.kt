@@ -236,6 +236,32 @@ class TransactionAdapterWrapperTest {
     }
 
     @Test
+    fun get_pendingCoinUidDiffersFromWalletCoin_pendingRemainsVisible() = runTest {
+        val scenario = createBitcoinPendingScenario(
+            realTimestamp = 1_715_000_020,
+            realAmount = BigDecimal("-0.00000703"),
+        )
+        val pendingRecords = listOf(scenario.pendingRecord)
+
+        val wrapper = createWrapper(
+            transactionWallet = scenario.transactionWallet,
+            realRecords = listOf(scenario.realRecord),
+            pendingRecords = pendingRecords,
+            pendingRepository = createPendingRepository(pendingRecords) {
+                createPendingEntity(it).copy(coinUid = "renamed-bitcoin")
+            },
+        )
+
+        val records = wrapper.get(
+            limit = 20,
+            requestedFilterType = FilterTransactionType.All,
+            requestedContact = null,
+        )
+
+        assertEquals(listOf(scenario.realRecord.uid, scenario.pendingRecord.uid), records.map { it.uid })
+    }
+
+    @Test
     fun get_litecoinMwebPegInPublicRecordMatchesPendingWithDifferentAmount_pendingIsFilteredOut() = runTest {
         val token = createLitecoinToken()
         val source = createSource(blockchain = token.blockchain)
@@ -1079,11 +1105,12 @@ class TransactionAdapterWrapperTest {
     }
 
     private fun createPendingRepository(
-        pendingRecords: List<PendingTransactionRecord>
+        pendingRecords: List<PendingTransactionRecord>,
+        toEntity: (PendingTransactionRecord) -> PendingTransactionEntity = ::createPendingEntity,
     ): PendingTransactionRepository {
         return mockk {
             every { getActivePendingFlow(any()) } returns emptyFlow()
-            coEvery { getPendingForWallet(any()) } returns pendingRecords.map(::createPendingEntity)
+            coEvery { getPendingForWallet(any()) } returns pendingRecords.map(toEntity)
             coEvery { deleteByIds(any()) } returns Unit
         }
     }

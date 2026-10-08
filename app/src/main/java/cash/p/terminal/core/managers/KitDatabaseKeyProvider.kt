@@ -107,6 +107,15 @@ class BitcoinKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryp
         kitName = "BitcoinKit",
     )
 
+class TronKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :
+    KitDatabaseKeyProvider(
+        context,
+        encryptionManager,
+        preferencesName = "tron_kit_database_keys",
+        keyPrefix = "tron_kit_database_key_",
+        kitName = "TronKit",
+    )
+
 class SolanaKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :
     KitDatabaseKeyProvider(
         context,

@@ -18,30 +18,31 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import cash.p.terminal.navigation.popBackStackSafely
 import coil3.compose.rememberAsyncImagePainter
 import cash.p.terminal.R
 import cash.p.terminal.modules.address.AddressParserViewModel
 import cash.p.terminal.modules.address.AddressViewModel
 import cash.p.terminal.modules.address.HSAddressInput
 import cash.p.terminal.modules.offline.rememberOfflineGatedAction
-import cash.p.terminal.modules.send.evm.confirmation.SendEvmConfirmationFragment
-import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.modules.send.evm.confirmation.SendEvmConfirmationPage
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.headline1_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import kotlin.reflect.KClass
 
 @Composable
 fun SendEip721Screen(
-    navController: NavController,
+    navigation: HSNavigation,
     viewModel: SendEip721ViewModel,
     addressViewModel: AddressViewModel,
     addressParserViewModel: AddressParserViewModel,
-    sendEntryPointDestId: Int,
+    sendEntryPoint: KClass<out HSPage>,
 ) {
     val offlineGatedAction = rememberOfflineGatedAction(viewModel.wallet)
 
@@ -54,7 +55,7 @@ fun SendEip721Screen(
                     MenuItem(
                         title = TranslatableString.ResString(R.string.Button_Close),
                         icon = R.drawable.ic_close_24,
-                        onClick = { navController.popBackStackSafely() }
+                        onClick = { navigation.navigateUpSafely() }
                     )
                 )
             )
@@ -92,7 +93,7 @@ fun SendEip721Screen(
                     value = addressViewModel.value.collectAsStateWithLifecycle().value,
                     error = viewModel.uiState.addressError,
                     textPreprocessor = addressParserViewModel,
-                    navController = navController,
+                    navigation = navigation,
                     onValueChange = { address ->
                         viewModel.onEnterAddress(address)
                     },
@@ -107,13 +108,13 @@ fun SendEip721Screen(
                         offlineGatedAction.onClick(viewModel.uiState.availability) {
                             val sendData = viewModel.getSendData() ?: return@onClick
 
-                            navController.slideFromRight(
-                                R.id.sendEvmConfirmationFragment,
-                                SendEvmConfirmationFragment.Input(
-                                    sendData = sendData,
-                                    blockchainType = viewModel.getBlockchainType(),
-                                    sendEntryPointDestId = sendEntryPointDestId
-
+                            navigation.slideFromRight(
+                                SendEvmConfirmationPage(
+                                    SendEvmConfirmationPage.Input(
+                                        sendData = sendData,
+                                        blockchainType = viewModel.getBlockchainType(),
+                                        sendEntryPoint = sendEntryPoint
+                                    )
                                 )
                             )
                         }

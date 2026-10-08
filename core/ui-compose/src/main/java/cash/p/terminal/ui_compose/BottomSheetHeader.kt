@@ -1,0 +1,163 @@
+package cash.p.terminal.ui_compose
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.ui_compose.components.HsIconButton
+import cash.p.terminal.ui_compose.components.body_grey
+import cash.p.terminal.ui_compose.components.body_leah
+import cash.p.terminal.ui_compose.components.subhead2_grey
+
+@Composable
+fun BottomSheetHeader(
+    title: String,
+    onCloseClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    iconPainter: Painter? = null,
+    titleColor: Color = ComposeAppTheme.colors.leah,
+    iconTint: ColorFilter? = null,
+    content: @Composable() (ColumnScope.() -> Unit),
+) {
+    BottomSheetHeader(
+        iconPainter = iconPainter,
+        titleContent = {
+            Text(
+                text = title,
+                modifier = Modifier
+                    .padding(
+                        start = if (iconPainter != null) 16.dp else 0.dp,
+                        end = 16.dp
+                    )
+                    .weight(1f)
+                    .align(Alignment.CenterVertically),
+                maxLines = 1,
+                style = ComposeAppTheme.typography.headline2,
+                color = titleColor,
+            )
+        },
+        onCloseClick = onCloseClick,
+        iconTint = iconTint,
+        modifier = modifier,
+        content = content
+    )
+}
+
+@Composable
+fun BottomSheetHeaderMultiline(
+    iconPainter: Painter,
+    title: String,
+    subtitle: String,
+    onCloseClick: () -> Unit,
+    iconTint: ColorFilter? = null,
+    content: @Composable() (ColumnScope.() -> Unit),
+) {
+    BottomSheetHeader(
+        iconPainter = iconPainter,
+        titleContent = {
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .weight(1f)
+                    .align(Alignment.CenterVertically),
+            ) {
+                body_leah(
+                    text = title,
+                    maxLines = 1,
+                )
+                Spacer(modifier = Modifier.height(1.dp))
+                subhead2_grey(
+                    text = subtitle,
+                    maxLines = 1,
+                )
+            }
+        },
+        onCloseClick = onCloseClick,
+        iconTint = iconTint,
+        content = content
+    )
+}
+
+@Composable
+private fun BottomSheetHeader(
+    iconPainter: Painter? ,
+    titleContent: @Composable() (RowScope.() -> Unit),
+    onCloseClick: () -> Unit,
+    iconTint: ColorFilter?,
+    modifier: Modifier = Modifier,
+    content: @Composable() (ColumnScope.() -> Unit)
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp, 24.dp, 0.dp, 0.dp))
+            .background(color = ComposeAppTheme.colors.lawrence)
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .verticalScroll(rememberScrollState())
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(start = 32.dp, top = 24.dp, end = 32.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            iconPainter?.let {
+                Image(
+                    modifier = Modifier.size(24.dp),
+                    painter = iconPainter,
+                    colorFilter = iconTint,
+                    contentDescription = null
+                )
+            }
+            titleContent.invoke(this)
+            HsIconButton(
+                modifier = Modifier.size(24.dp),
+                onClick = onCloseClick
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_close_24),
+                    tint = ComposeAppTheme.colors.grey,
+                    contentDescription = null,
+                )
+            }
+        }
+        Column(
+            content = content
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun BottomSheetHeader_Preview() {
+    val iconPainter = painterResource(R.drawable.icon_24_lock)
+    ComposeAppTheme {
+        BottomSheetHeader(
+            iconPainter = iconPainter,
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+            title = stringResource(R.string.ManageAccount_SwitchWallet_Title),
+            onCloseClick = { },
+        ) {
+            body_grey(
+                modifier = Modifier.padding(horizontal = 24.dp),
+                text = "Bottom sheet content",
+                maxLines = 1,
+            )
+        }
+    }
+}

@@ -56,16 +56,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.R
+import cash.p.terminal.modules.addtoken.AddTokenPage
 import cash.p.terminal.modules.enablecoin.restoresettings.IRestoreSettingsUi
 import cash.p.terminal.modules.enablecoin.restoresettings.TokenConfig
 import cash.p.terminal.modules.enablecoin.restoresettings.openRestoreSettingsDialog
+import cash.p.terminal.modules.main.MainPage
 import cash.p.terminal.modules.restoreaccount.restoreblockchains.CoinViewItem
-import cash.p.terminal.modules.addtoken.AddTokenFragment
-import cash.p.terminal.navigation.slideFromRightForResult
 import cash.p.terminal.modules.configuredtoken.ConfiguredTokenInfoBottomSheet
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.ListEmptyView
 import cash.p.terminal.ui_compose.awaitImeHidden
@@ -97,7 +97,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 internal fun ManageWalletsScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     manageWalletsCallback: ManageWalletsCallback,
     onBackPressed: () -> Unit,
     requestScan: () -> Unit,
@@ -118,7 +118,7 @@ internal fun ManageWalletsScreen(
         }
     }
 
-    navController.openRestoreSettingsDialog(
+    navigation.openRestoreSettingsDialog(
         token = restoreSettingsViewModel.openTokenConfigure,
         restoreSettingsViewModel = restoreSettingsViewModel
     )
@@ -142,8 +142,8 @@ internal fun ManageWalletsScreen(
                             title = TranslatableString.ResString(R.string.ManageCoins_AddToken),
                             icon = R.drawable.ic_add_yellow,
                             onClick = {
-                                navController.slideFromRightForResult<AddTokenFragment.Result>(
-                                    R.id.addTokenFragment
+                                navigation.slideFromRightForResult<AddTokenPage.Result>(
+                                    AddTokenPage()
                                 ) { result ->
                                     val tokenToEnable = result.tokenToEnable
                                     if (tokenToEnable != null) {
@@ -151,7 +151,7 @@ internal fun ManageWalletsScreen(
                                         // (shows "Scan card to add") and stay on this screen.
                                         manageWalletsCallback.enable(tokenToEnable)
                                     } else if (result.success) {
-                                        navController.popBackStack(R.id.mainFragment, false)
+                                        navigation.removeLastUntil(MainPage::class, false)
                                     }
                                 }
                             }
@@ -257,7 +257,7 @@ internal fun ManageWalletsScreen(
 
         LaunchedEffect(manageWalletsCallback.closeScreen) {
             if (manageWalletsCallback.closeScreen) {
-                navController.popBackStack()
+                navigation.navigateUp()
             }
         }
         val totalItems = remember(groupsList) { groupsList.sumOf { it.items.size } }
@@ -587,7 +587,7 @@ private fun ManageWalletsScreenPreview() {
         )
 
         ManageWalletsScreen(
-            navController = rememberNavController(),
+            navigation = HSNavigation(NavBackStack()),
             manageWalletsCallback = object : ManageWalletsCallback {
                 override val groupsList = MutableStateFlow(groups)
                 override val addTokenEnabled = true

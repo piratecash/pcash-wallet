@@ -64,7 +64,6 @@ import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.findNavController
 import cash.p.terminal.R
 import cash.p.terminal.core.launchAfterClearingFocus
 import cash.p.terminal.core.utils.Utils
@@ -74,6 +73,8 @@ import cash.p.terminal.modules.mnemonic.MnemonicLanguageSelectorDialog
 import cash.p.terminal.modules.restoreaccount.RestoreViewModel
 import cash.p.terminal.modules.restoreaccount.restoremenu.RestoreByMenu
 import cash.p.terminal.modules.restoreaccount.restoremenu.RestoreMenuViewModel
+import cash.p.terminal.navigation.AppPages
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.openQrScanner
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.Keyboard
@@ -112,17 +113,19 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.hdwalletkit.Language
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun RestorePhrase(
-    advanced: Boolean,
+    navigation: HSNavigation,
     restoreMenuViewModel: RestoreMenuViewModel,
     mainViewModel: RestoreViewModel,
     openSelectCoins: () -> Unit,
     openNonStandardRestore: () -> Unit,
     onBackClick: () -> Unit,
     onFinish: () -> Unit,
+    advanced: Boolean = false,
     openRestoreAdvanced: (() -> Unit)? = null,
     prefillWords: List<String>? = null,
     prefillPassphrase: String? = null,
@@ -130,6 +133,7 @@ fun RestorePhrase(
     prefillMnemonicLanguage: Language? = null
 ) {
     val viewModel = koinViewModel<RestoreMnemonicViewModel>()
+    val appPages: AppPages = koinInject()
     val uiState = viewModel.uiState
     val context = LocalContext.current
     val view = LocalView.current
@@ -353,7 +357,7 @@ fun RestorePhrase(
                                 icon = R.drawable.ic_qr_scan_20,
                                 onClick = {
                                     coroutineScope.launchAfterClearingFocus(focusManager) {
-                                        view.findNavController().openQrScanner(scannerTitle) { scannedText ->
+                                        navigation.openQrScanner(appPages, scannerTitle) { scannedText ->
                                             when (val result = viewModel.handleScannedQrData(scannedText)) {
                                                 is RestoreMnemonicModule.QrScanResult.Success -> {
                                                     val wordsText = result.words.joinToString(" ")

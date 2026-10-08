@@ -16,12 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import cash.p.terminal.R
-import cash.p.terminal.navigation.slideFromBottom
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.modules.coin.overview.ui.Loading
 import cash.p.terminal.modules.nft.asset.NftAssetModule
+import cash.p.terminal.modules.nft.asset.NftAssetPage
 import cash.p.terminal.modules.nft.holdings.NftAssetViewItem
 import cash.p.terminal.modules.nft.ui.NftAssetPreview
 import cash.p.terminal.ui_compose.components.HSSwipeRefresh
@@ -31,7 +31,7 @@ import cash.p.terminal.ui.compose.components.ListErrorView
 import io.horizontalsystems.core.entities.BlockchainType
 
 @Composable
-fun NftCollectionAssetsScreen(navController: NavController, blockchainType: BlockchainType, collectionUid: String) {
+fun NftCollectionAssetsScreen(navigation: HSNavigation, blockchainType: BlockchainType, collectionUid: String) {
     val viewModel = viewModel<NftCollectionAssetsViewModel>(
         factory = NftCollectionAssetsModule.Factory(blockchainType, collectionUid)
     )
@@ -53,7 +53,7 @@ fun NftCollectionAssetsScreen(navController: NavController, blockchainType: Bloc
                 }
 
                 ViewState.Success -> {
-                    NftAssets(navController, viewModel.assets, viewModel::onBottomReached, viewModel.loadingMore)
+                    NftAssets(navigation, viewModel.assets, viewModel::onBottomReached, viewModel.loadingMore)
                 }
             }
         }
@@ -62,7 +62,7 @@ fun NftCollectionAssetsScreen(navController: NavController, blockchainType: Bloc
 
 @Composable
 private fun NftAssets(
-    navController: NavController,
+    navigation: HSNavigation,
     assets: List<NftAssetViewItem>?,
     onBottomReached: () -> Unit, loadingMore: Boolean
 ) {
@@ -87,9 +87,8 @@ private fun NftAssets(
                                 coinPrice = asset.price,
                                 currencyPrice = asset.priceInFiat
                             ) {
-                                navController.slideFromBottom(
-                                    R.id.nftAssetFragment,
-                                    NftAssetModule.Input(asset.collectionUid, asset.nftUid)
+                                navigation.slideFromBottom(
+                                    NftAssetPage(NftAssetModule.Input(asset.collectionUid, asset.nftUid))
                                 )
                             }
                         }

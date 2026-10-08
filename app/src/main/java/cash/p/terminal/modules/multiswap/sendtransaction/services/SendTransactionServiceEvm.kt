@@ -15,7 +15,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.OfflineEvmSignRequest
@@ -53,7 +54,6 @@ import cash.p.terminal.modules.send.evm.settings.SendEvmNonceViewModel
 import cash.p.terminal.modules.send.evm.settings.SendEvmSettingsModule
 import cash.p.terminal.modules.send.evm.settings.SendEvmSettingsService
 import cash.p.terminal.modules.send.evm.settings.SendEvmSettingsViewModel
-import cash.p.terminal.navigation.popBackStackSafely
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.HsIconButton
@@ -339,7 +339,7 @@ internal class SendTransactionServiceEvm(
     override fun hasSettings() = true
 
     @Composable
-    override fun GetSettingsContent(navController: NavController) {
+    override fun GetSettingsContent(navigation: HSNavigation) {
         val nonceViewModel = viewModel<SendEvmNonceViewModel>(initializer = {
             SendEvmNonceViewModel(nonceService)
         })
@@ -358,7 +358,7 @@ internal class SendTransactionServiceEvm(
             viewModel = sendSettingsViewModel,
             feeSettingsViewModel = feeSettingsViewModel,
             nonceViewModel = nonceViewModel,
-            navController = navController
+            navigation = navigation
         )
     }
 }
@@ -368,7 +368,7 @@ fun SendEvmFeeSettingsScreen(
     viewModel: SendEvmSettingsViewModel,
     feeSettingsViewModel: ViewModel,
     nonceViewModel: SendEvmNonceViewModel,
-    navController: NavController
+    navigation: HSNavigation
 ) {
     Column(
         modifier = Modifier
@@ -379,7 +379,7 @@ fun SendEvmFeeSettingsScreen(
         AppBar(
             title = stringResource(R.string.SendEvmSettings_Title),
             navigationIcon = {
-                HsIconButton(onClick = { navController.popBackStackSafely() }) {
+                HsIconButton(onClick = { navigation.navigateUpSafely() }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_back),
                         contentDescription = "back button",

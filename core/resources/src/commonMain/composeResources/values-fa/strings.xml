@@ -644,12 +644,13 @@
     <string name="SwapConfirm_FetchingFinalQuote">Fetching final quote</string>
     <string name="SwapWarning_SlippageNotAvailable_Title">بدون کنترل لغزش</string>
     <string name="SwapWarning_SlippageNotAvailable_Description">عملیات زنجیره‌ای متقابل به نقدینگی اشخاص ثالث و تاخیرات بستگی دارد که ممکن است بر مبلغ نهایی تأثیر بگذارد.</string>
-    <string name="unsupported_refund_address">Unsupported refund address</string>
-    <string name="unsupported_address">Unsupported address</string>
+    <string name="unsupported_refund_address">آدرس بازگشت پشتیبانی نمی‌شود</string>
+    <string name="unsupported_address">آدرس پشتیبانی نمی‌شود</string>
     <string name="unexpected_error">Unexpected error</string>
     <string name="unsupported_token">توکن پشتیبانی نمی‌شود</string>
     <string name="zec_transparent_used">در هنگام ایجاد مبادله از آدرس t موقت استفاده می‌شود: ‎%s‎. این آدرس به ارائه‌دهنده مبادله ارسال می‌شود و در صورت عدم تکمیل مبادله برای بازپرداخت وجه مورد نیاز است. استفاده از آدرس t ممکن است منجر به ناشناس‌زدایی جزئی تراکنش شود.</string>
     <string name="swap_yifi_memo_unsupported">ارائه‌دهنده سواپ به یک یادداشت (memo) واریز نیاز دارد که نمی‌توان آن را از این شبکه ارسال کرد. ارائه‌دهنده دیگری را انتخاب کنید.</string>
+    <string name="swap_provider_order_failed">ارائه‌دهنده نتوانست سواپ را ایجاد کند. پیشنهاد قیمت را به‌روزرسانی کنید یا بازگردید و ارائه‌دهنده دیگری را انتخاب کنید.</string>
     <!-- Swap Settings -->
     <string name="SwapSettings_Title">تنظیمات سواپ</string>
     <string name="SwapSettings_SlippageTitle">تحمل لغزش</string>

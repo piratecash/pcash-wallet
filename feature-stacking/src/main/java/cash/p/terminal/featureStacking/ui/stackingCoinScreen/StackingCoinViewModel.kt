@@ -18,7 +18,7 @@ import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
 import cash.p.terminal.premium.domain.usecase.PremiumType
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.wallet.AdapterState
-import cash.p.terminal.wallet.BuildConfig
+import cash.p.terminal.wallet.PirateContracts
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IWalletManager
@@ -211,9 +211,9 @@ internal abstract class StackingCoinViewModel(
 
     private fun getContract(): String =
         if (stackingType == StackingType.PCASH) {
-            BuildConfig.PIRATE_CONTRACT
+            PirateContracts.PIRATE_CONTRACT
         } else {
-            BuildConfig.COSANTA_CONTRACT
+            PirateContracts.COSANTA_CONTRACT
         }
 
     private suspend fun loadBalance() {

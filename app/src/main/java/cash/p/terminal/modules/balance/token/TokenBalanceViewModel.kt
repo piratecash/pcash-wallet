@@ -23,7 +23,6 @@ import cash.p.terminal.core.managers.AmlStatusManager
 import cash.p.terminal.core.managers.AddressLabelManager
 import cash.p.terminal.core.managers.ConnectivityManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
-import cash.p.terminal.core.managers.MarketFavoritesManager
 import cash.p.terminal.core.managers.OfflineKey
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.PendingTransactionRegistrar
@@ -84,6 +83,7 @@ import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.isBackedUpOrNotRequired
 import cash.p.terminal.wallet.isCosanta
 import cash.p.terminal.wallet.isPirateCash
+import cash.p.terminal.wallet.favorites.MarketFavoritesManager
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import cash.p.terminal.wallet.managers.TransactionDisplayLevel
 import cash.p.terminal.wallet.tokenQueryId
@@ -198,7 +198,7 @@ class TokenBalanceViewModel(
         private set
 
     private var showCurrencyAsSecondary = true
-    private var isFavorite = marketFavoritesManager.isCoinInFavorites(wallet.coin.uid)
+    private var isFavorite = false
     private var stakingStatus: StakingStatus? = null
     private var stakingUnpaid: String? = null
     private var nextAccrualAt: Instant? = null
@@ -217,6 +217,13 @@ class TokenBalanceViewModel(
 
     init {
         observeMoneroAdapter()
+
+        viewModelScope.launch {
+            marketFavoritesManager.favoriteCoinUids.collect { uids ->
+                isFavorite = wallet.coin.uid in uids
+                emitState()
+            }
+        }
 
         viewModelScope.launch {
             balanceService.start()
@@ -922,13 +929,13 @@ class TokenBalanceViewModel(
 
     fun toggleFavorite() {
         val coinUid = wallet.coin.uid
-        if (isFavorite) {
-            marketFavoritesManager.remove(coinUid)
-        } else {
-            marketFavoritesManager.add(coinUid)
+        viewModelScope.launch {
+            if (isFavorite) {
+                marketFavoritesManager.remove(coinUid)
+            } else {
+                marketFavoritesManager.add(coinUid)
+            }
         }
-        isFavorite = !isFavorite
-        emitState()
     }
 
     fun getSyncErrorDetails(viewItem: BalanceViewItem): BalanceViewModel.SyncError = when {

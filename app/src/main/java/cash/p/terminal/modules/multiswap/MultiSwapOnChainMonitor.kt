@@ -4,7 +4,6 @@ import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.DispatcherProvider
-import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -26,12 +25,11 @@ class MultiSwapOnChainMonitor(
      * Returns true if monitoring started, false if wallet/balance not found.
      */
     fun observeBalanceIncrease(
-        coinUid: String,
-        blockchainType: BlockchainType,
+        side: SwapSide,
         scope: CoroutineScope,
         onBalanceIncreased: () -> Unit,
     ): Boolean {
-        val wallet = findWallet(coinUid, blockchainType) ?: return false
+        val wallet = walletManager.activeWallets.findBySwapSide(side) ?: return false
         val initialBalance = currentBalance(wallet) ?: return false
         val completed = AtomicBoolean(false)
 
@@ -91,11 +89,6 @@ class MultiSwapOnChainMonitor(
         }
         return false
     }
-
-    private fun findWallet(coinUid: String, blockchainType: BlockchainType): Wallet? =
-        walletManager.activeWallets.firstOrNull {
-            it.coin.uid == coinUid && it.token.blockchainType == blockchainType
-        }
 
     private fun currentBalance(wallet: Wallet): BigDecimal? =
         adapterManager.getBalanceAdapterForWallet(wallet)?.balanceData?.total
