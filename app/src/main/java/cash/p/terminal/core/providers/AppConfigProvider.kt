@@ -3,6 +3,7 @@ package cash.p.terminal.core.providers
 import cash.p.terminal.BuildConfig
 import cash.p.terminal.R
 import cash.p.terminal.network.data.EncodedSecrets
+import cash.p.terminal.wallet.MarketApiConfig
 import io.horizontalsystems.core.entities.Currency
 import cash.p.terminal.strings.helpers.Translator
 import io.horizontalsystems.core.entities.BlockchainType
@@ -82,9 +83,7 @@ object AppConfigProvider {
         Translator.getString(R.string.marketApiBaseUrl)
     }
 
-    val marketApiKey by lazy {
-        Translator.getString(R.string.marketApiKey)
-    }
+    val marketApiKey = MarketApiConfig.API_KEY
 
     val openSeaApiKey by lazy {
         EncodedSecrets.OPEN_SEA_API_KEY

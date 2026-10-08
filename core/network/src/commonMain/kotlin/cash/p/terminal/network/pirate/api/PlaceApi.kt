@@ -22,13 +22,15 @@ import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
 import java.util.Locale
 
+internal const val PCASH_BASE_URL = "https://p.cash"
+
 internal class PlaceApi(
     private val httpClient: HttpClient,
     private val appHeadersProvider: AppHeadersProvider,
     private val premiumApiBaseUrl: String,
 ) {
     private companion object {
-        const val PIRATE_BASE_PLACE_URL = "https://p.cash/api/"
+        const val PIRATE_BASE_PLACE_URL = "$PCASH_BASE_URL/api/"
     }
 
     suspend fun getCoinInfo(coinGeckoUid: String): PiratePlaceCoinDto {

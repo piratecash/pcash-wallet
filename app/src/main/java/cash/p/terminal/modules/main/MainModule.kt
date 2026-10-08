@@ -5,11 +5,12 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Parcelable
 import cash.p.terminal.core.App
 import cash.p.terminal.modules.balance.OpenSendTokenSelect
 import cash.p.terminal.modules.settings.appearance.AppIcon
 import cash.p.terminal.modules.walletconnect.WCManager
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.premium.domain.usecase.PremiumType
 import cash.p.terminal.shared.main.MainDestination
 import cash.p.terminal.wallet.Account
@@ -70,6 +71,14 @@ object MainModule {
 }
 
 data class DeeplinkPage(
-    val navigationId: Int,
-    val input: Parcelable?
+    val page: HSPage,
+    val fromBottom: Boolean
 )
+
+fun HSNavigation.open(deeplinkPage: DeeplinkPage) {
+    if (deeplinkPage.fromBottom) {
+        slideFromBottom(deeplinkPage.page)
+    } else {
+        slideFromRight(deeplinkPage.page)
+    }
+}

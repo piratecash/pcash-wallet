@@ -19,10 +19,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import cash.p.terminal.R
 import cash.p.terminal.core.MoneroSpendReadiness
 import cash.p.terminal.core.requiresTrezorPreparation
@@ -41,20 +37,20 @@ import cash.p.terminal.modules.evmfee.Cautions
 import cash.p.terminal.modules.fee.FeeInfoSection
 import cash.p.terminal.modules.memo.HSMemoInput
 import cash.p.terminal.modules.balance.token.MoneroSendPreparationBottomSheet
-import cash.p.terminal.modules.send.SendConfirmationFragment
-import cash.p.terminal.modules.send.SendFragment.ProceedActionData
+import cash.p.terminal.modules.send.SendConfirmationPage
+import cash.p.terminal.modules.send.SendPage.ProceedActionData
 import cash.p.terminal.modules.send.SendScreen
 import cash.p.terminal.modules.send.SendSuggestionsBar
 import cash.p.terminal.modules.send.SendUiState
 import cash.p.terminal.modules.send.address.AddressCheckerControl
 import cash.p.terminal.modules.send.address.SmartContractCheckSection
 import cash.p.terminal.modules.send.offline.OfflineSignActionCell
-import cash.p.terminal.modules.send.offline.OfflineSignFlowRoutes
-import cash.p.terminal.modules.send.offline.offlineSignFlowRoutes
+import cash.p.terminal.modules.send.offline.OfflineSignPage
 import cash.p.terminal.modules.sendtokenselect.PrefilledData
 import cash.p.terminal.modules.send.hardwareWalletUserMessageRes
 import cash.p.terminal.modules.send.isHardwareWalletCancelled
-import cash.p.terminal.navigation.popBackStackSafely
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.ui.compose.components.PoisonAddressRiskSection
 import cash.p.terminal.ui.compose.components.PoisonWarningCell
 import cash.p.terminal.ui.compose.components.TextPreprocessor
@@ -74,76 +70,55 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @Composable
-fun SendMoneroNavHost(
+fun SendMoneroPageContent(
     title: String,
-    fragmentNavController: NavController,
+    navigation: HSNavigation,
     viewModel: SendMoneroViewModel,
     amountInputModeViewModel: AmountInputModeViewModel,
     prefilledData: PrefilledData?,
     addressCheckerControl: AddressCheckerControl,
     onNextClick: (ProceedActionData) -> Unit,
 ) {
-    val navController = rememberNavController()
     val spendReadiness by viewModel.adapter.spendReadiness.collectAsStateWithLifecycle()
-    NavHost(
-        navController = navController,
-        startDestination = SendMoneroPage,
-    ) {
-        composable(SendMoneroPage) {
-            SendMoneroScreen(
-                navController = fragmentNavController,
-                prefilledData = prefilledData,
-                addressCheckerControl = addressCheckerControl,
-                state = SendMoneroScreenState(
-                    title = title,
-                    wallet = viewModel.wallet,
-                    uiState = viewModel.uiState,
-                    amountInputType = amountInputModeViewModel.inputType,
-                    coinMaxAllowedDecimals = viewModel.coinMaxAllowedDecimals,
-                    fiatMaxAllowedDecimals = viewModel.fiatMaxAllowedDecimals,
-                    coinRate = viewModel.coinRate,
-                    displayBalance = viewModel.displayBalance,
-                    balanceHidden = viewModel.balanceHidden,
-                    feeToken = viewModel.feeToken,
-                    feeCoinBalance = viewModel.feeCoinBalance,
-                    feePrimary = viewModel.formatFeePrimary(viewModel.fee),
-                    feeSecondary = viewModel.formatFeeSecondary(viewModel.fee, viewModel.feeCoinRate),
-                    insufficientFeeBalance = viewModel.isInsufficientFeeBalance(viewModel.fee),
-                    offlineSignSupported = viewModel.offlineSignSupported,
-                    spendReadiness = spendReadiness,
-                    adapter = viewModel.adapter,
-                ),
-                callbacks = SendMoneroScreenCallbacks(
-                    onOfflineSignClick = { navController.navigate(OfflineMoneroSignPage) },
-                    onNextClick = onNextClick,
-                    onEnterAddress = viewModel::onEnterAddress,
-                    onEnterAmount = viewModel::onEnterAmount,
-                    onEnterMemo = viewModel::onEnterMemo,
-                    onToggleAmountInputType = amountInputModeViewModel::onToggleInputType,
-                    onToggleHideBalance = viewModel::toggleHideBalance,
-                    onRiskAcceptedChange = viewModel::onRiskAcceptedChange,
-                ),
-            )
-        }
-        offlineSignFlowRoutes(
-            routes = OfflineSignFlowRoutes(
-                signRoute = OfflineMoneroSignPage,
-                transferRoute = OfflineMoneroTransactionTransferPage,
-            ),
-            navController = navController,
-            fragmentNavController = fragmentNavController,
-            sendViewModel = viewModel,
-        )
-    }
+    SendMoneroScreen(
+        navigation = navigation,
+        prefilledData = prefilledData,
+        addressCheckerControl = addressCheckerControl,
+        state = SendMoneroScreenState(
+            title = title,
+            wallet = viewModel.wallet,
+            uiState = viewModel.uiState,
+            amountInputType = amountInputModeViewModel.inputType,
+            coinMaxAllowedDecimals = viewModel.coinMaxAllowedDecimals,
+            fiatMaxAllowedDecimals = viewModel.fiatMaxAllowedDecimals,
+            coinRate = viewModel.coinRate,
+            displayBalance = viewModel.displayBalance,
+            balanceHidden = viewModel.balanceHidden,
+            feeToken = viewModel.feeToken,
+            feeCoinBalance = viewModel.feeCoinBalance,
+            feePrimary = viewModel.formatFeePrimary(viewModel.fee),
+            feeSecondary = viewModel.formatFeeSecondary(viewModel.fee, viewModel.feeCoinRate),
+            insufficientFeeBalance = viewModel.isInsufficientFeeBalance(viewModel.fee),
+            offlineSignSupported = viewModel.offlineSignSupported,
+            spendReadiness = spendReadiness,
+            adapter = viewModel.adapter,
+        ),
+        callbacks = SendMoneroScreenCallbacks(
+            onOfflineSignClick = { navigation.slideFromRight(OfflineSignPage(SendMoneroViewModel::class)) },
+            onNextClick = onNextClick,
+            onEnterAddress = viewModel::onEnterAddress,
+            onEnterAmount = viewModel::onEnterAmount,
+            onEnterMemo = viewModel::onEnterMemo,
+            onToggleAmountInputType = amountInputModeViewModel::onToggleInputType,
+            onToggleHideBalance = viewModel::toggleHideBalance,
+            onRiskAcceptedChange = viewModel::onRiskAcceptedChange,
+        ),
+    )
 }
-
-private const val SendMoneroPage = "send_monero"
-private const val OfflineMoneroSignPage = "offline_monero_sign"
-private const val OfflineMoneroTransactionTransferPage = "offline_monero_transaction_transfer"
 
 @Composable
 private fun SendMoneroScreen(
-    navController: NavController,
+    navigation: HSNavigation,
     prefilledData: PrefilledData?,
     addressCheckerControl: AddressCheckerControl,
     state: SendMoneroScreenState,
@@ -154,7 +129,7 @@ private fun SendMoneroScreen(
     )
     ComposeAppTheme {
         SendMoneroContent(
-            navController = navController,
+            navigation = navigation,
             prefilledData = prefilledData,
             addressCheckerControl = addressCheckerControl,
             state = state,
@@ -166,7 +141,7 @@ private fun SendMoneroScreen(
 
 @Composable
 private fun SendMoneroContent(
-    navController: NavController,
+    navigation: HSNavigation,
     prefilledData: PrefilledData?,
     addressCheckerControl: AddressCheckerControl,
     state: SendMoneroScreenState,
@@ -182,7 +157,7 @@ private fun SendMoneroContent(
 
     SendScreen(
         title = state.title,
-        onCloseClick = { navController.popBackStackSafely() },
+        onCloseClick = { navigation.navigateUpSafely() },
         proceedEnabled = state.uiState.canBeSend,
         onSendClick = onProceed,
         bottomOverlay = {
@@ -201,7 +176,7 @@ private fun SendMoneroContent(
             state = state,
             prefilledData = prefilledData,
             textPreprocessor = addressInputState.textPreprocessor,
-            navController = navController,
+            navigation = navigation,
             onValueChange = callbacks.onEnterAddress,
         )
         MoneroAmountSection(
@@ -220,7 +195,7 @@ private fun SendMoneroContent(
         VSpacer(12.dp)
         MoneroFeeAndRiskSections(
             state = state,
-            navController = navController,
+            navigation = navigation,
             addressCheckerControl = addressCheckerControl,
             onBalanceClick = callbacks.onToggleHideBalance,
             onRiskAcceptedChange = callbacks.onRiskAcceptedChange,
@@ -281,7 +256,7 @@ private fun MoneroAddressSection(
     state: SendMoneroScreenState,
     prefilledData: PrefilledData?,
     textPreprocessor: TextPreprocessor,
-    navController: NavController,
+    navigation: HSNavigation,
     onValueChange: (Address?) -> Unit,
 ) {
     Column {
@@ -298,7 +273,7 @@ private fun MoneroAddressSection(
                 coinCode = state.wallet.coin.code,
                 error = state.uiState.addressError,
                 textPreprocessor = textPreprocessor,
-                navController = navController,
+                navigation = navigation,
                 isPoisonAddress = state.uiState.isPoisonAddress,
                 onValueChange = onValueChange,
             )
@@ -336,7 +311,7 @@ private fun MoneroAmountSection(
 @Composable
 private fun MoneroFeeAndRiskSections(
     state: SendMoneroScreenState,
-    navController: NavController,
+    navigation: HSNavigation,
     addressCheckerControl: AddressCheckerControl,
     onBalanceClick: () -> Unit,
     onRiskAcceptedChange: (Boolean) -> Unit,
@@ -364,7 +339,7 @@ private fun MoneroFeeAndRiskSections(
         }
         SmartContractCheckSection(
             token = state.wallet.token,
-            navController = navController,
+            navigation = navigation,
             addressCheckerControl = addressCheckerControl,
             modifier = Modifier.padding(top = 8.dp)
         )
@@ -496,5 +471,5 @@ private fun SendUiState.proceedActionData(wallet: Wallet) =
     ProceedActionData(
         address = address?.hex,
         wallet = wallet,
-        type = SendConfirmationFragment.Type.Monero,
+        type = SendConfirmationPage.Type.Monero,
     )

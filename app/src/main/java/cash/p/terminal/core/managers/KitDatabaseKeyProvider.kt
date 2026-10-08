@@ -134,3 +134,12 @@ class TonConnectDatabaseKeyProvider(context: Context, encryptionManager: IEncryp
         keyPrefix = "ton_connect_database_key_",
         kitName = "TonConnectKit",
     )
+
+class TronKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :
+    KitDatabaseKeyProvider(
+        context,
+        encryptionManager,
+        preferencesName = "tron_kit_database_keys",
+        keyPrefix = "tron_kit_database_key_",
+        kitName = "TronKit",
+    )

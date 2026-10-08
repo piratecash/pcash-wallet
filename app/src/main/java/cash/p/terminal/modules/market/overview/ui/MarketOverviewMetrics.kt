@@ -19,12 +19,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.doOnLayout
-import androidx.navigation.NavController
 import cash.p.terminal.R
 import cash.p.terminal.core.App
-import cash.p.terminal.navigation.slideFromBottom
+import cash.p.terminal.modules.market.metricspage.MetricsPage
 import cash.p.terminal.modules.market.overview.MarketOverviewModule
+import cash.p.terminal.modules.market.tvl.TvlPage
 import cash.p.terminal.modules.metricchart.MetricsType
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui.extensions.MetricData
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.chartview.ChartMinimal
@@ -32,20 +33,20 @@ import java.math.BigDecimal
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MetricChartsView(marketMetrics: MarketOverviewModule.MarketMetrics, navController: NavController) {
+fun MetricChartsView(marketMetrics: MarketOverviewModule.MarketMetrics, navigation: HSNavigation) {
     MarketsHorizontalCards(4) { page ->
-        ChartView(marketMetrics[page], navController)
+        ChartView(marketMetrics[page], navigation)
     }
 }
 
 @Composable
-private fun ChartView(metricsData: MetricData, navController: NavController) {
+private fun ChartView(metricsData: MetricData, navigation: HSNavigation) {
     Card(
         modifier = Modifier
             .height(105.dp)
             .clip(RoundedCornerShape(12.dp))
             .clickable {
-                openMetricsPage(metricsData.type, navController)
+                openMetricsPage(metricsData.type, navigation)
             },
         shape = RoundedCornerShape(12.dp),
         elevation = 0.dp,
@@ -108,10 +109,10 @@ private fun ChartView(metricsData: MetricData, navController: NavController) {
     }
 }
 
-private fun openMetricsPage(metricsType: MetricsType, navController: NavController) {
+private fun openMetricsPage(metricsType: MetricsType, navigation: HSNavigation) {
     if (metricsType == MetricsType.TvlInDefi) {
-        navController.slideFromBottom(R.id.tvlFragment)
+        navigation.slideFromBottom(TvlPage())
     } else {
-        navController.slideFromBottom(R.id.metricsPageFragment, metricsType)
+        navigation.slideFromBottom(MetricsPage(metricsType))
     }
 }

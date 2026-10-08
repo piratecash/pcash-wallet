@@ -2,32 +2,58 @@ package cash.p.terminal.modules.settings.main
 
 import android.app.Application
 import android.content.Context
-import android.os.Bundle
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
-import androidx.navigation.NavController
-import androidx.navigation.NavDirections
-import androidx.navigation.NavOptions
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.navigation3.runtime.NavBackStack
 import androidx.test.core.app.ApplicationProvider
 import cash.p.terminal.R
-import cash.p.terminal.modules.manageaccount.dialogs.BackupRequiredDialog
+import cash.p.terminal.feature.miniapp.ui.miniapp.MiniAppPage
+import cash.p.terminal.modules.backuplocal.fullbackup.BackupManagerPage
+import cash.p.terminal.modules.basecurrency.BaseCurrencySettingsPage
+import cash.p.terminal.modules.blockchainsettings.BlockchainSettingsPage
+import cash.p.terminal.modules.main.PlainTestPage
+import cash.p.terminal.modules.manageaccount.dialogs.BackupRequiredSheet
+import cash.p.terminal.modules.multiswap.providersettings.SwapProvidersSettingsPage
+import cash.p.terminal.modules.premium.settings.PremiumSettingsPage
+import cash.p.terminal.modules.settings.about.AboutPage
+import cash.p.terminal.modules.settings.about.ContactOptionsSheet
+import cash.p.terminal.modules.settings.about.ContactUsPage
+import cash.p.terminal.modules.settings.addresschecker.AddressCheckerPage
+import cash.p.terminal.modules.settings.advancedsecurity.AdvancedSecurityPage
+import cash.p.terminal.modules.settings.appearance.AppearancePage
+import cash.p.terminal.modules.settings.donate.DonateTokenSelectPage
+import cash.p.terminal.modules.settings.language.LanguageSettingsPage
+import cash.p.terminal.modules.settings.security.SecuritySettingsPage
+import cash.p.terminal.modules.softwareupdate.SoftwareUpdatePage
+import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedSheet
+import cash.p.terminal.modules.walletconnect.WCErrorNoAccountSheet
 import cash.p.terminal.modules.walletconnect.WCManager
+import cash.p.terminal.modules.walletconnect.list.WCListPage
+import cash.p.terminal.navigation.AppPages
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.LocalHostLifecycleOwner
+import cash.p.terminal.navigation.NavigationType
 import cash.p.terminal.navigation.QrScannerInput
 import cash.p.terminal.shared.settings.SettingsAction
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
-import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.horizontalsystems.core.IPinComponent
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -37,6 +63,7 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlin.reflect.KClass
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = Application::class)
@@ -45,7 +72,9 @@ class SettingsActionHandlerTest {
     @get:Rule
     val compose = createComposeRule()
 
-    private val navController = mockk<NavController>(relaxed = true)
+    private val navigation = HSNavigation(NavBackStack<HSPage>(PlainTestPage()))
+    private val scannerPage = PlainTestPage()
+    private val appPages = mockk<AppPages> { every { qrScanner(any()) } returns scannerPage }
     private val context = mockk<Context>(relaxed = true)
     private var walletConnectSupport: WCManager.SupportState = WCManager.SupportState.Supported
     private var tonConnectSupported = true
@@ -60,7 +89,14 @@ class SettingsActionHandlerTest {
 
     @Before
     fun setUp() {
-        startKoin { modules(module { single { mockk<IPinComponent>(relaxed = true) } }) }
+        startKoin {
+            modules(
+                module {
+                    single { mockk<IPinComponent>(relaxed = true) }
+                    single { appPages }
+                }
+            )
+        }
     }
 
     @After
@@ -73,14 +109,16 @@ class SettingsActionHandlerTest {
         handle(SettingsAction.ImportTransactionFile)
 
         assertEquals(1, importTransactionFileCalls)
-        verify(exactly = 0) { navController.navigate(any<Int>(), any(), any()) }
+        assertTrue(openedPages().isEmpty())
     }
 
     @Test
     fun settingsScreen_supportChangesBeforeClick_usesLatestConnectionSupport() {
         compose.setContent {
-            ComposeAppTheme {
-                SettingsScreen(navController, PaddingValues(), viewModel)
+            CompositionLocalProvider(LocalHostLifecycleOwner provides LocalLifecycleOwner.current) {
+                ComposeAppTheme {
+                    SettingsScreen(navigation, PaddingValues(), viewModel)
+                }
             }
         }
 
@@ -92,11 +130,10 @@ class SettingsActionHandlerTest {
             .performScrollTo()
             .performClick()
 
-        verify { navController.navigate(R.id.wcErrorNoAccountFragment, null, any()) }
-        verify(exactly = 0) { navController.navigate(R.id.wcListFragment, isNull(), any()) }
-        verify { navController.navigate(match<NavDirections> {
-            it.actionId == R.id.actionGlobalToAccountTypeNotSupportedDialog
-        }, any<NavOptions>()) }
+        assertEquals(
+            listOf(WCErrorNoAccountSheet::class, AccountTypeNotSupportedSheet::class),
+            openedPages().map { it::class },
+        )
     }
 
     @Test
@@ -117,60 +154,53 @@ class SettingsActionHandlerTest {
         walletConnectSupport = WCManager.SupportState.NotSupported
         handle(SettingsAction.WalletConnect)
 
-        verify { navController.navigate(R.id.wcListFragment, null, any()) }
-        verify { navController.navigate(R.id.wcErrorNoAccountFragment, null, any()) }
-        verify { navController.navigate(
-            R.id.backupRequiredDialog,
-            match<Bundle> { it.getParcelable("input", BackupRequiredDialog.Input::class.java)?.account == account },
-            any(),
-        ) }
-        verify { navController.navigate(match<NavDirections> {
-            it.actionId == R.id.actionGlobalToAccountTypeNotSupportedDialog
-        }, any<NavOptions>()) }
+        val pages = openedPages()
+        assertEquals(
+            listOf(
+                WCListPage::class,
+                WCErrorNoAccountSheet::class,
+                BackupRequiredSheet::class,
+                AccountTypeNotSupportedSheet::class,
+            ),
+            pages.map { it::class },
+        )
+        assertNull((pages[0] as WCListPage).input)
+        assertEquals(account, (pages[2] as BackupRequiredSheet).input.account)
     }
 
     @Test
     fun handleSettingsAction_offlineBroadcast_opensQrScannerWithTitleAndPaste() {
         handle(SettingsAction.OfflineBroadcast)
 
-        verify { navController.navigate(
-            R.id.qrScannerFragment,
-            match<Bundle> { bundle ->
-                bundle.getParcelable("input", QrScannerInput::class.java) ==
-                        QrScannerInput("Raw transaction", showPasteButton = true)
-            },
-            any(),
-        ) }
+        verify { appPages.qrScanner(QrScannerInput("Raw transaction", showPasteButton = true)) }
+        assertSame(scannerPage, openedPages().single())
+        assertEquals(NavigationType.SlideFromBottom, scannerPage.navType)
     }
 
     @Test
     fun handleSettingsAction_simpleActions_opensDestinationsWithRightSlide() {
-        val destinations = listOf(
-            SettingsAction.Donate to R.id.donateTokenSelectFragment,
-            SettingsAction.MiniApp to R.id.miniAppFragment,
-            SettingsAction.BlockchainSettings to R.id.blockchainSettingsFragment,
-            SettingsAction.BackupManager to R.id.backupManagerFragment,
-            SettingsAction.SecurityCenter to R.id.securitySettingsFragment,
-            SettingsAction.Appearance to R.id.appearanceFragment,
-            SettingsAction.BaseCurrency to R.id.baseCurrencySettingsFragment,
-            SettingsAction.Language to R.id.languageSettingsFragment,
-            SettingsAction.AddressChecker to R.id.addressCheckerFragment,
-            SettingsAction.SwapProviders to R.id.swapProvidersSettingsFragment,
-            SettingsAction.PremiumSettings to R.id.premiumSettingsFragment,
-            SettingsAction.AdvancedSecurity to R.id.advancedSecurityFragment,
-            SettingsAction.SoftwareUpdate to R.id.softwareUpdateFragment,
-            SettingsAction.AboutApp to R.id.aboutAppFragment,
+        val destinations: List<Pair<SettingsAction, KClass<out HSPage>>> = listOf(
+            SettingsAction.Donate to DonateTokenSelectPage::class,
+            SettingsAction.MiniApp to MiniAppPage::class,
+            SettingsAction.BlockchainSettings to BlockchainSettingsPage::class,
+            SettingsAction.BackupManager to BackupManagerPage::class,
+            SettingsAction.SecurityCenter to SecuritySettingsPage::class,
+            SettingsAction.Appearance to AppearancePage::class,
+            SettingsAction.BaseCurrency to BaseCurrencySettingsPage::class,
+            SettingsAction.Language to LanguageSettingsPage::class,
+            SettingsAction.AddressChecker to AddressCheckerPage::class,
+            SettingsAction.SwapProviders to SwapProvidersSettingsPage::class,
+            SettingsAction.PremiumSettings to PremiumSettingsPage::class,
+            SettingsAction.AdvancedSecurity to AdvancedSecurityPage::class,
+            SettingsAction.SoftwareUpdate to SoftwareUpdatePage::class,
+            SettingsAction.AboutApp to AboutPage::class,
         )
 
-        destinations.forEach { (action, destination) ->
-            clearMocks(navController, answers = false)
-            handle(action)
-            verify { navController.navigate(
-                destination,
-                null,
-                match<NavOptions> { it.enterAnim == R.anim.slide_from_right },
-            ) }
-        }
+        destinations.forEach { (action, _) -> handle(action) }
+
+        val pages = openedPages()
+        assertEquals(destinations.map { it.second }, pages.map { it::class })
+        assertTrue(pages.all { it.navType == NavigationType.SlideFromRight })
     }
 
     @Test
@@ -178,14 +208,18 @@ class SettingsActionHandlerTest {
         handle(SettingsAction.Contact(true))
         handle(SettingsAction.Contact(false))
 
-        verify { navController.navigate(R.id.contactUsFragment, null, any()) }
-        verify { navController.navigate(R.id.contactOptionsDialog, null, any()) }
+        val pages = openedPages()
+        assertEquals(listOf(ContactUsPage::class, ContactOptionsSheet::class), pages.map { it::class })
+        assertNull((pages[1] as ContactOptionsSheet).input)
     }
+
+    private fun openedPages(): List<HSPage> = navigation.backStack.drop(1)
 
     private fun handle(action: SettingsAction) {
         handleSettingsAction(
             action,
-            navController,
+            navigation,
+            appPages,
             viewModel,
             context,
             rawTxScanTitle = "Raw transaction",

@@ -24,7 +24,6 @@ import cash.p.terminal.core.managers.EvmLabelManager
 import cash.p.terminal.core.managers.EvmSyncSourceManager
 import cash.p.terminal.core.managers.LanguageManager
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
-import cash.p.terminal.core.managers.MarketFavoritesManager
 import cash.p.terminal.core.managers.NftAdapterManager
 import cash.p.terminal.core.managers.NftMetadataManager
 import cash.p.terminal.core.managers.NftMetadataSyncer
@@ -77,7 +76,9 @@ import cash.p.terminal.wallet.SubscriptionManager
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
+import cash.p.terminal.wallet.favorites.MarketFavoritesManager
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
+import cash.p.terminal.wallet.storage.MarketDatabase
 import cash.p.terminal.widgets.MarketWidgetManager
 import cash.p.terminal.widgets.MarketWidgetRepository
 import cash.p.terminal.widgets.MarketWidgetWorker
@@ -103,6 +104,7 @@ import com.reown.android.relay.ConnectionType
 import com.reown.walletkit.client.Wallet
 import com.reown.walletkit.client.WalletKit
 import io.horizontalsystems.bitcoincore.core.BitcoinCoreContextInitializer
+import io.horizontalsystems.core.BackgroundManagerState
 import io.horizontalsystems.core.CoreApp
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.IAppNumberFormatter
@@ -117,6 +119,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import org.koin.android.ext.android.get
@@ -274,6 +278,8 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
             androidContext(this@App)
             modules(appModule)
         }
+        // The first open creates the catalog and loads the bundled coin list; keep it off the main thread.
+        coroutineScope.launch { get<MarketDatabase>() }
 
         if (!BuildConfig.DIAGNOSTIC_LOGGING) {
             //Disable logging for lower levels in Release build
@@ -543,7 +549,12 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
 
             EthereumKit.init()
             adapterManager.startAdapterManager()
-            marketKit.sync(needForceUpdateCoins())
+            launch {
+                backgroundManager.stateFlow
+                    .filter { it == BackgroundManagerState.EnterForeground }
+                    // An exception escaping collectLatest would end this collector for good.
+                    .collectLatest { marketKit.sync(tryOrNull { needForceUpdateCoins() } ?: false) }
+            }
             rateAppManager.onAppLaunch()
             nftMetadataSyncer.start()
             if (!pinComponent.isPinSet) {

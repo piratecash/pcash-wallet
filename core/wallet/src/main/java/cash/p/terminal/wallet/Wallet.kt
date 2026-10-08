@@ -84,7 +84,7 @@ class WalletFactory(
             coinUid = "pirate-cash",
             blockchainType = BlockchainType.BinanceSmartChain,
             blockchainName = "BNB Smart Chain",
-            tokenType = TokenType.Eip20(BuildConfig.PIRATE_CONTRACT),
+            tokenType = TokenType.Eip20(PirateContracts.PIRATE_CONTRACT),
         )
 
         private fun previewWallet(

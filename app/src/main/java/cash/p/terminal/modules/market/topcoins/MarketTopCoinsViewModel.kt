@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.core.App
 import io.horizontalsystems.core.ViewModelUiState
-import cash.p.terminal.core.managers.MarketFavoritesManager
 import cash.p.terminal.wallet.MarketKitWrapper
+import cash.p.terminal.wallet.favorites.MarketFavoritesManager
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.modules.market.MarketItem
 import cash.p.terminal.modules.market.MarketViewItem
@@ -19,7 +19,6 @@ import io.horizontalsystems.core.CurrencyManager
 import cash.p.terminal.wallet.models.MarketInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx2.asFlow
 import kotlinx.coroutines.rx2.await
 import kotlin.enums.EnumEntries
 import kotlin.math.min
@@ -82,7 +81,7 @@ class MarketTopCoinsViewModel(
         }
 
         viewModelScope.launch(Dispatchers.Default) {
-            favoritesManager.dataUpdatedAsync.asFlow().collect {
+            favoritesManager.dataUpdatedFlow.collect {
                 refreshFavoriteCoinUids()
                 refreshViewItems()
 
@@ -114,8 +113,8 @@ class MarketTopCoinsViewModel(
         refreshViewItems()
     }
 
-    private fun refreshFavoriteCoinUids() {
-        favoriteCoinUids = favoritesManager.getAll().map { it.coinUid }
+    private suspend fun refreshFavoriteCoinUids() {
+        favoriteCoinUids = favoritesManager.getAll()
     }
 
     private suspend fun fetchMarketInfoList() {

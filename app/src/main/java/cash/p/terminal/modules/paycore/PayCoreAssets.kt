@@ -15,7 +15,6 @@ object PayCoreAssets {
         name = "Russian Ruble",
         code = "RUB",
         marketCapRank = null,
-        coinGeckoId = null,
         image = null
     )
 

@@ -1,7 +1,6 @@
 package cash.p.terminal.modules.multiswap.sendtransaction.services
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
 import cash.p.beam.BeamQuoteRequest
 import cash.p.beam.BeamSendAmount
 import cash.p.beam.BeamSendContext
@@ -31,6 +30,7 @@ import cash.p.terminal.modules.send.beam.BeamRecipient
 import cash.p.terminal.modules.send.beam.BeamSendSession
 import cash.p.terminal.modules.send.beam.beamSendErrorMessage
 import cash.p.terminal.modules.send.beam.isNativeBeamSendWallet
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.wallet.Token
 import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.CancellationException
@@ -73,7 +73,7 @@ class SendTransactionServiceBeam(token: Token) : ISendTransactionService<BeamAda
     override fun hasSettings() = false
 
     @Composable
-    override fun GetSettingsContent(navController: NavController) = Unit
+    override fun GetSettingsContent(navigation: HSNavigation) = Unit
 
     override suspend fun setSendTransactionData(data: SendTransactionData) = mutex.withLock {
         // ChangeNow's out-of-range reply carries a placeholder of another chain: nothing to send, not an error.

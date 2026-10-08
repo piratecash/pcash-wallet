@@ -18,7 +18,6 @@ import cash.p.terminal.core.managers.PendingTransactionRegistrar
 import cash.p.terminal.core.managers.PoisonAddressManager
 import cash.p.terminal.core.usecase.UpdateSwapProviderTransactionsStatusUseCase
 import cash.p.terminal.modules.contacts.ContactsRepository
-import cash.p.terminal.core.managers.MarketFavoritesManager
 import cash.p.terminal.core.managers.PriceManager
 import cash.p.terminal.core.managers.StackingInfo
 import cash.p.terminal.core.managers.StackingManager
@@ -51,6 +50,7 @@ import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.entities.BalanceData
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.favorites.MarketFavoritesManager
 import cash.p.terminal.wallet.balance.BalanceItem
 import cash.p.terminal.wallet.balance.DeemedValue
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
@@ -62,6 +62,7 @@ import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IReceiveAdapter
 import cash.p.terminal.wallet.MarketKitWrapper
+import cash.p.terminal.wallet.PirateContracts
 import cash.p.terminal.wallet.WalletFactory
 import cash.p.terminal.wallet.tokenQueryId
 import cash.p.terminal.wallet.zcashTransparentWallet
@@ -2146,7 +2147,7 @@ class TokenBalanceViewModelTest : KoinTest {
                 name = "BNB Smart Chain",
                 eip3091url = null
             ),
-            type = TokenType.Eip20(cash.p.terminal.wallet.BuildConfig.PIRATE_CONTRACT),
+            type = TokenType.Eip20(PirateContracts.PIRATE_CONTRACT),
             decimals = 18
         )
         val account = mockk<Account>(relaxed = true)

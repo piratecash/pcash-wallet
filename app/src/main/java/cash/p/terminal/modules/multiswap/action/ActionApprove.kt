@@ -2,11 +2,10 @@ package cash.p.terminal.modules.multiswap.action
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavController
 import cash.p.terminal.R
-import cash.p.terminal.navigation.slideFromBottomForResult
-import cash.p.terminal.modules.eip20approve.Eip20ApproveConfirmFragment
-import cash.p.terminal.modules.eip20approve.Eip20ApproveFragment
+import cash.p.terminal.modules.eip20approve.Eip20ApproveConfirmPage
+import cash.p.terminal.modules.eip20approve.Eip20ApprovePage
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.wallet.Token
 import java.math.BigDecimal
 
@@ -23,16 +22,15 @@ class ActionApprove(
     @Composable
     override fun getTitleInProgress() = stringResource(R.string.Swap_Unlocking)
 
-    override fun execute(navController: NavController, onActionCompleted: () -> Unit) {
-        val approveData = Eip20ApproveFragment.Input(
+    override fun execute(navigation: HSNavigation, onActionCompleted: () -> Unit) {
+        val approveData = Eip20ApprovePage.Input(
             tokenIn,
             requiredAllowance,
             spenderAddress
         )
 
-        navController.slideFromBottomForResult<Eip20ApproveConfirmFragment.Result>(
-            R.id.eip20ApproveFragment,
-            approveData
+        navigation.slideFromBottomForResult<Eip20ApproveConfirmPage.Result>(
+            Eip20ApprovePage(approveData)
         ) {
             onActionCompleted.invoke()
         }

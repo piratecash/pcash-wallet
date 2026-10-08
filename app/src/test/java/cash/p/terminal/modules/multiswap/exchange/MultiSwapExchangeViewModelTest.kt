@@ -978,8 +978,7 @@ class MultiSwapExchangeViewModelTest {
         var capturedCallback: (() -> Unit)? = null
         every {
             onChainMonitor.observeBalanceIncrease(
-                coinUid = "tether",
-                blockchainType = any(),
+                side = match { it.coinUid == "tether" },
                 scope = any(),
                 onBalanceIncreased = captureLambda(),
             )
@@ -1011,8 +1010,7 @@ class MultiSwapExchangeViewModelTest {
         var observeCallCount = 0
         every {
             onChainMonitor.observeBalanceIncrease(
-                coinUid = "tether",
-                blockchainType = any(),
+                side = match { it.coinUid == "tether" },
                 scope = any(),
                 onBalanceIncreased = any(),
             )
@@ -1034,8 +1032,7 @@ class MultiSwapExchangeViewModelTest {
         val callbacks = mutableListOf<() -> Unit>()
         verify {
             onChainMonitor.observeBalanceIncrease(
-                coinUid = "tether",
-                blockchainType = any(),
+                side = match { it.coinUid == "tether" },
                 scope = any(),
                 onBalanceIncreased = capture(callbacks),
             )

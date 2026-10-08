@@ -3,7 +3,13 @@ package cash.p.terminal.ui_compose
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+
+val LocalConnectionPanelState = compositionLocalOf {
+    mutableStateOf(true)
+}
 
 @Composable
 fun ScreenWithoutConnectionPanel(

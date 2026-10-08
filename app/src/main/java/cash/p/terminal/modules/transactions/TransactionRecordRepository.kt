@@ -632,9 +632,8 @@ class TransactionRecordRepository(
         val token = shortOutgoingTransactionRecord.token
             ?: return false
 
-        return swapProviderTransactionsStorage.getByCoinUidIn(
-            coinUid = token.coin.uid,
-            blockchainType = token.blockchainType.uid,
+        return swapProviderTransactionsStorage.getByTokenIn(
+            token = token,
             amountIn = shortOutgoingTransactionRecord.amountOut,
             timestamp = shortOutgoingTransactionRecord.timestamp
         ) != null

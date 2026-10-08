@@ -20,6 +20,9 @@ interface MarketFavoritesDao {
     @Query("SELECT COUNT(*) FROM FavoriteCoin WHERE coinUid = :coinUid")
     fun getCount(coinUid: String): Int
 
+    @Query("DELETE FROM FavoriteCoin")
+    fun deleteAll()
+
 }
 
 @Entity

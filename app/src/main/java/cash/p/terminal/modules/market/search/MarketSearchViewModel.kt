@@ -5,12 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cash.p.terminal.core.managers.MarketFavoritesManager
-
 import cash.p.terminal.wallet.entities.Coin
+import cash.p.terminal.wallet.favorites.MarketFavoritesManager
 import cash.p.terminal.wallet.entities.FullCoin
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx2.asFlow
 
 class MarketSearchViewModel(
     private val marketFavoritesManager: MarketFavoritesManager,
@@ -20,6 +18,7 @@ class MarketSearchViewModel(
     private var searchState = marketSearchService.stateFlow.value
     private var discoveryState = marketDiscoveryService.stateFlow.value
     private var listId: String = ""
+    private var favoriteCoinUids: Set<String> = emptySet()
     private var page: Page = Page.Discovery(
         recent = coinItems(discoveryState.recent),
         popular = coinItems(discoveryState.popular),
@@ -40,7 +39,8 @@ class MarketSearchViewModel(
             }
         }
         viewModelScope.launch {
-            marketFavoritesManager.dataUpdatedAsync.asFlow().collect {
+            marketFavoritesManager.favoriteCoinUids.collect {
+                favoriteCoinUids = it
                 emitState()
             }
         }
@@ -72,7 +72,7 @@ class MarketSearchViewModel(
         fullCoins.map {
             MarketSearchModule.CoinItem(
                 it,
-                marketFavoritesManager.isCoinInFavorites(it.coin.uid)
+                it.coin.uid in favoriteCoinUids
             )
         }
 
@@ -94,10 +94,12 @@ class MarketSearchViewModel(
     }
 
     fun onFavoriteClick(favourited: Boolean, coinUid: String) {
-        if (favourited) {
-            marketFavoritesManager.remove(coinUid)
-        } else {
-            marketFavoritesManager.add(coinUid)
+        viewModelScope.launch {
+            if (favourited) {
+                marketFavoritesManager.remove(coinUid)
+            } else {
+                marketFavoritesManager.add(coinUid)
+            }
         }
     }
 
