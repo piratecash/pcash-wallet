@@ -152,3 +152,12 @@ class EvmKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryption
         keyPrefix = "evm_kit_database_key_",
         kitName = "EvmKit",
     )
+
+class StellarKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :
+    KitDatabaseKeyProvider(
+        context,
+        encryptionManager,
+        preferencesName = "stellar_kit_database_keys",
+        keyPrefix = "stellar_kit_database_key_",
+        kitName = "StellarKit",
+    )

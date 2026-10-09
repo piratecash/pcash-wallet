@@ -895,14 +895,14 @@ Proceed only if you\'re sure.</string>
 
     <!-- Swap Confirmation -->
     <string name="ActivationRequired_DialogTitle">Activate Token</string>
-    <string name="ActivationRequired_DialogDescription">To receive %s, you need to activate the token. The Stellar network requires a trustline to be established for each token. Without it, your wallet cannot receive %s — the transaction will be rejected and the funds will not be delivered.</string>
+    <string name="activation_required_dialog_description">To receive %s, you need to activate the token. The Stellar network requires a trustline to be established for each token. Without it, your wallet cannot receive %s — the transaction will be rejected and the funds will not be delivered.</string>
 
-    <string name="Activate_YouActivate">You Activate</string>
-    <string name="Activate_Activating">Activating</string>
-    <string name="Activate_AlreadyActive_Title">Already Active</string>
-    <string name="Activate_AlreadyActive_Description">The token is already active.</string>
-    <string name="Activate_InsufficientBalance_Title">Insufficient Balance</string>
-    <string name="Activate_InsufficientBalance_Description">You don\’t have enough XLM balance to activate this token.</string>
+    <string name="activate_you_activate">You Activate</string>
+    <string name="activate_activating">Activating</string>
+    <string name="activate_already_active_title">Already Active</string>
+    <string name="activate_already_active_description">The token is already active.</string>
+    <string name="activate_insufficient_balance_title">Insufficient Balance</string>
+    <string name="activate_insufficient_balance_description">You don\’t have enough XLM balance to activate this token.</string>
 
     <!--Approve-->
     <string name="Approve_RevokeAndApproveInfo">You can exchange %s, or you need to revoke and approve the new amount</string>

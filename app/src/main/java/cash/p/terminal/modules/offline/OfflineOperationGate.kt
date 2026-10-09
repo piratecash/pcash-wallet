@@ -7,6 +7,9 @@ import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.entities.BlockchainType
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 
 /**
  * Availability of a user operation. Offline is kept apart from plain unavailability so the UI can
@@ -43,6 +46,9 @@ class OfflineOperationGate(private val offlineModeManager: OfflineModeManager) {
 
     fun isBlocked(accountId: String, blockchainType: BlockchainType): Boolean =
         offlineModeManager.isNetworkPaused(accountId, blockchainType)
+
+    fun blockedFlow(wallet: Wallet): Flow<Boolean> =
+        offlineModeManager.effectiveFlow.map { isBlocked(wallet) }.distinctUntilChanged()
 
     fun availability(wallet: Wallet, enabled: Boolean): OperationAvailability =
         availability(enabled, isBlocked(wallet))

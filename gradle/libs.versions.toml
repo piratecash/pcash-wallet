@@ -71,7 +71,7 @@ piratecash-ton = "v2.0.0-pcash.9"
 beam-sdk = "v0.2.1"
 piratecash-bitcoin = "v0.1.0-pcash.36"
 hd-wallet-kit = "1.0.1"
-stellar-kit = "v1.0.0-pcash.3"
+stellar-kit = "v2.0.0-pcash.1"
 thorchain-kit = "1.2.0"
 trezor-kit = "1.4.0"
 piratecash-ethereum = "v1.0.0-pcash.1"
@@ -230,7 +230,7 @@ bitcoin-cosanta-kit = { group = "com.github.piratecash.bitcoin-kit-android", nam
 bitcoin-piratecash-kit = { group = "com.github.piratecash.bitcoin-kit-android", name = "piratecashkit", version.ref = "piratecash-bitcoin" }
 bitcoin-hodler = { group = "com.github.piratecash.bitcoin-kit-android", name = "hodler", version.ref = "piratecash-bitcoin" }
 hd-wallet-kit = { group = "com.github.piratecash.hd-wallet-kit-android", name = "hd-wallet-kit-kmp", version.ref = "hd-wallet-kit" }
-stellar-kit = { group = "com.github.piratecash", name = "stellar-kit-android", version.ref = "stellar-kit" }
+stellar-kit = { group = "com.github.piratecash.stellar-kit-android", name = "stellarkit", version.ref = "stellar-kit" }
 thorchain-kit = { group = "com.github.piratecash.thorchain-kit-android", name = "thorchainkit", version.ref = "thorchain-kit" }
 trezor-kit = { group = "com.github.piratecash", name = "trezor-kit-android", version.ref = "trezor-kit" }
 solana-kit = { group = "com.github.piratecash", name = "solana-kit-android", version.ref = "piratecash-solana" }

@@ -2,6 +2,7 @@ package cash.p.terminal.di
 
 import cash.p.terminal.modules.multiswap.MultiSwapOnChainMonitor
 import cash.p.terminal.modules.multiswap.MultiSwapRouteResolver
+import cash.p.terminal.modules.multiswap.StellarTrustlineActionResolver
 import cash.p.terminal.modules.multiswap.SwapQuoteService
 import cash.p.terminal.modules.multiswap.providers.ChangeNowProvider
 import cash.p.terminal.modules.multiswap.providers.ExolixProvider
@@ -56,5 +57,6 @@ val swapProvidersModule = module {
     singleOf(::SwapProvidersRegistry)
     singleOf(::MultiSwapOnChainMonitor)
     singleOf(::MultiSwapRouteResolver)
+    singleOf(::StellarTrustlineActionResolver)
     singleOf(::SwapProvidersRepository)
 }

@@ -121,6 +121,7 @@ import cash.p.terminal.core.managers.SolanaRpcSourceManager
 import cash.p.terminal.core.managers.SolanaWalletManager
 import cash.p.terminal.core.managers.SpamManager
 import cash.p.terminal.core.managers.StackingManager
+import cash.p.terminal.core.managers.StellarKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.StellarKitManager
 import cash.p.terminal.core.managers.SystemInfoManager
 import cash.p.terminal.core.managers.TermsManager
@@ -340,6 +341,7 @@ val managerModule = module {
     singleOf(::OfflineBroadcastTokenResolver)
     singleOf(::NetworkErrorTracker)
     singleOf(::SolanaKitManager)
+    singleOf(::StellarKitDatabaseKeyProvider)
     singleOf(::StellarKitManager)
     singleOf(::TonKitDatabaseKeyProvider)
     singleOf(::TonConnectDatabaseKeyProvider)
