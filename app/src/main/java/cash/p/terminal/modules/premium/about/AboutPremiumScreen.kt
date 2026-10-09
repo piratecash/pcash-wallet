@@ -42,6 +42,7 @@ import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import cash.p.terminal.ui_compose.components.Subhead1
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,7 +95,7 @@ fun AboutPremiumScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             TitleCenteredTopBar(
                 title = stringResource(R.string.premium_title),
@@ -157,14 +158,14 @@ fun AboutPremiumScreen(
                                 brush = Brush.verticalGradient(
                                     listOf(
                                         ComposeAppTheme.colors.transparent,
-                                        ComposeAppTheme.colors.tyler
+                                        ComposeAppTheme.colors.backgroundBase
                                     )
                                 )
                             )
                     )
                     Column(
                         modifier = Modifier
-                            .background(ComposeAppTheme.colors.tyler)
+                            .background(ComposeAppTheme.colors.backgroundBase)
                             .padding(horizontal = 24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -185,10 +186,9 @@ fun AboutPremiumScreen(
 
 @Composable
 private fun DemoDaysDisplay(daysLeft: Int) {
-    Text(
+    Subhead1(
         text = pluralStringResource(R.plurals.premium_demo_days_left, daysLeft, daysLeft),
-        style = ComposeAppTheme.typography.subhead1,
-        color = ComposeAppTheme.colors.jacob,
+        color = ComposeAppTheme.colors.statusWarning,
         textAlign = TextAlign.Center,
         modifier = Modifier
             .fillMaxWidth()
@@ -200,14 +200,14 @@ private fun DemoDaysDisplay(daysLeft: Int) {
 private fun ActionText() {
     val text = highlightText(
         text = stringResource(R.string.premium_upgrade_text),
-        textColor = ComposeAppTheme.colors.leah,
+        textColor = ComposeAppTheme.colors.textPrimary,
         highlightPart = stringResource(R.string.premium_title),
-        highlightColor = ComposeAppTheme.colors.jacob
+        highlightColor = ComposeAppTheme.colors.statusWarning
     )
     Text(
         text = text,
         style = ComposeAppTheme.typography.headline1,
-        color = ComposeAppTheme.colors.leah,
+        color = ComposeAppTheme.colors.textPrimary,
         textAlign = TextAlign.Center,
         modifier = Modifier
             .fillMaxWidth()

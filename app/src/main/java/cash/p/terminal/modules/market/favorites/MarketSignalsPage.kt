@@ -65,7 +65,7 @@ fun MarketSignalsScreen(navigation: HSNavigation) {
                 ),
             )
         },
-        containerColor = ComposeAppTheme.colors.tyler
+        containerColor = ComposeAppTheme.colors.backgroundBase
     ) {
         Column(modifier = Modifier.padding(it)) {
             LazyColumn(
@@ -99,7 +99,7 @@ fun MarketSignalsScreen(navigation: HSNavigation) {
                                     .fillMaxSize()
                                     .then(
                                         Modifier.sectionItemBorder(
-                                            1.dp, ComposeAppTheme.colors.steel20, 12.dp, position
+                                            1.dp, ComposeAppTheme.colors.borderDefault, 12.dp, position
                                         )
                                     ),
                             ) {

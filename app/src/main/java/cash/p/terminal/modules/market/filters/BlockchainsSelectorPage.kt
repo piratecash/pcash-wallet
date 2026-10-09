@@ -62,7 +62,7 @@ private fun FilterByBlockchainsScreen(
                 }
             )
         },
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
     ) {
         Column(
             modifier = Modifier
@@ -114,7 +114,7 @@ private fun AnyCell(
         )
         Icon(
             painter = painterResource(R.drawable.ic_checkmark_20),
-            tint = ComposeAppTheme.colors.jacob,
+            tint = ComposeAppTheme.colors.brandDefault,
             contentDescription = null,
             modifier = Modifier.alpha(if (checked) 1f else 0f)
         )

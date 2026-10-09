@@ -64,13 +64,13 @@ fun TokenMissingScreen(
                     modifier = Modifier
                         .size(100.dp)
                         .clip(CircleShape)
-                        .background(ComposeAppTheme.colors.steel10),
+                        .background(ComposeAppTheme.colors.surfacePlaceholder),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         painter = painterResource(ResourcesR.drawable.ic_sync_error),
                         contentDescription = null,
-                        tint = ComposeAppTheme.colors.grey,
+                        tint = ComposeAppTheme.colors.iconSecondary,
                         modifier = Modifier.size(48.dp)
                     )
                 }

@@ -35,8 +35,8 @@ import cash.p.terminal.modules.walletconnect.session.ui.TitleValueCell
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.strings.helpers.TranslatableString
-import cash.p.terminal.ui.compose.components.SelectorDialogCompose
-import cash.p.terminal.ui.compose.components.SelectorItem
+import cash.p.terminal.ui_compose.components.AppSelectorDialog
+import cash.p.terminal.ui_compose.components.AppSelectorItem
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
@@ -78,7 +78,7 @@ fun TonConnectNewScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.TonConnect_Title),
@@ -116,25 +116,25 @@ fun TonConnectNewScreen(
                     modifier = Modifier.padding(start = 16.dp),
                     text = uiState.manifest?.name ?: "",
                     style = ComposeAppTheme.typography.headline1,
-                    color = ComposeAppTheme.colors.leah
+                    color = ComposeAppTheme.colors.textPrimary
                 )
             }
 
             var showSortTypeSelectorDialog by remember { mutableStateOf(false) }
             if (showSortTypeSelectorDialog) {
-                SelectorDialogCompose(
+                AppSelectorDialog(
                     title = stringResource(R.string.TonConnect_ChooseWallet),
                     items = uiState.accounts.map { account ->
-                        SelectorItem(
+                        AppSelectorItem(
                             title = account.name,
                             selected = account == uiState.account,
                             item = account,
                         )
                     },
-                    onDismissRequest = {
+                    onDismiss = {
                         showSortTypeSelectorDialog = false
                     },
-                    onSelectItem = viewModel::onSelectAccount
+                    onSelect = viewModel::onSelectAccount
                 )
             }
 

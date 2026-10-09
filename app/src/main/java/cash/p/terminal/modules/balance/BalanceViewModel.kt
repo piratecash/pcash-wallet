@@ -49,6 +49,7 @@ import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.canSwap
 import cash.p.terminal.wallet.isBackedUpOrNotRequired
+import cash.p.terminal.wallet.requiresBackupForActions
 import cash.p.terminal.wallet.isStakingWallet
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import cash.p.terminal.wallet.tokenQueryId
@@ -140,6 +141,8 @@ class BalanceViewModel(
     var isSwapEnabled by mutableStateOf(true)
         private set
     var isStackingEnabled by mutableStateOf(true)
+        private set
+    var isBackupRequired by mutableStateOf(false)
         private set
 
     var connectionResult by mutableStateOf<WalletConnectListViewModel.ConnectionResult?>(null)
@@ -250,7 +253,9 @@ class BalanceViewModel(
         val activeAccount = accountManager.activeAccount
         val isMoneroAccount = activeAccount?.type is AccountType.MnemonicMonero
         isStackingEnabled = !isMoneroAccount
-        isSwapEnabled = !isMoneroAccount && App.instance.isSwapEnabled && (activeAccount?.canSwap() == true)
+        isBackupRequired = activeAccount?.requiresBackupForActions() == true
+        isSwapEnabled = !isMoneroAccount && App.instance.isSwapEnabled &&
+                (activeAccount?.canSwap() == true || isBackupRequired)
     }
 
     override fun createState() = BalanceUiState(
@@ -475,11 +480,11 @@ class BalanceViewModel(
         else -> SyncError.NetworkNotAvailable()
     }
 
-    fun getReceiveAllowedState(): ReceiveAllowedState? {
+    fun getBackupRequirementState(): BackupRequirementState? {
         val tmpAccount = service.account ?: return null
         return when {
-            tmpAccount.isBackedUpOrNotRequired() -> ReceiveAllowedState.Allowed
-            else -> ReceiveAllowedState.BackupRequired(tmpAccount)
+            tmpAccount.isBackedUpOrNotRequired() -> BackupRequirementState.Allowed
+            else -> BackupRequirementState.BackupRequired(tmpAccount)
         }
     }
 
@@ -644,9 +649,9 @@ class BalanceViewModel(
     }
 }
 
-sealed class ReceiveAllowedState {
-    object Allowed : ReceiveAllowedState()
-    data class BackupRequired(val account: Account) : ReceiveAllowedState()
+sealed class BackupRequirementState {
+    object Allowed : BackupRequirementState()
+    data class BackupRequired(val account: Account) : BackupRequirementState()
 }
 
 class BackupRequiredError(val account: Account, val coinTitle: String) : Error("Backup Required")

@@ -25,7 +25,7 @@ import cash.p.terminal.modules.market.filters.MarketFiltersModule
 import cash.p.terminal.modules.market.filters.MarketFiltersPage
 import cash.p.terminal.modules.market.filters.MarketFiltersViewModel
 import cash.p.terminal.modules.market.topcoins.OptionController
-import cash.p.terminal.ui.compose.components.AlertGroup
+import cash.p.terminal.ui_compose.components.AlertGroup
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui.compose.components.CoinList
 import cash.p.terminal.ui_compose.components.HSpacer
@@ -62,7 +62,7 @@ private fun SearchResultsScreen(
     var scrollToTopAfterUpdate by rememberSaveable { mutableStateOf(false) }
     var openSortingSelector by rememberSaveable { mutableStateOf(false) }
 
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(
                 title = stringResource(R.string.Market_AdvancedSearch_Results),

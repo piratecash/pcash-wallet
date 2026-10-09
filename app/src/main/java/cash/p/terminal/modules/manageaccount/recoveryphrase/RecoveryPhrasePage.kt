@@ -122,7 +122,7 @@ private fun RecoveryPhraseScreen(
         viewModel.onQrGenerationErrorShown()
     }
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(titleResId),

@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.zcashmigration
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,6 +27,7 @@ import cash.p.terminal.modules.send.SendButton
 import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.ui.compose.components.SectionTitleCell
 import cash.p.terminal.ui_compose.components.AppBar
+import cash.p.terminal.ui_compose.components.BottomSheetSurface
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.HudHelper
@@ -51,11 +51,7 @@ internal fun ZcashMigrationConfirmScreen(
 ) {
     SendResultHandler(uiState.sendResult, onClose)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(ComposeAppTheme.colors.tyler)
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
         AppBar(
             title = stringResource(R.string.zcash_migration_confirm_title),
             navigationIcon = { HsBackButton(onClick = onClose) },
@@ -169,19 +165,21 @@ private val HSCaution.displayText: String
 @Composable
 private fun ZcashMigrationConfirmScreenPreview() {
     ComposeAppTheme {
-        ZcashMigrationConfirmScreen(
-            uiState = ZcashMigrationUiState(
-                amount = "1.2345 ZEC",
-                amountFiat = "$123.45",
-                fee = "0.0002 ZEC",
-                feeFiat = "$0.02",
-                migrateEnabled = true,
-                sendResult = null,
-                error = null,
-            ),
-            coin = Coin(uid = "zcash", name = "Zcash", code = "ZEC"),
-            onMigrateClick = {},
-            onClose = {},
-        )
+        BottomSheetSurface {
+            ZcashMigrationConfirmScreen(
+                uiState = ZcashMigrationUiState(
+                    amount = "1.2345 ZEC",
+                    amountFiat = "$123.45",
+                    fee = "0.0002 ZEC",
+                    feeFiat = "$0.02",
+                    migrateEnabled = true,
+                    sendResult = null,
+                    error = null,
+                ),
+                coin = Coin(uid = "zcash", name = "Zcash", code = "ZEC"),
+                onMigrateClick = {},
+                onClose = {},
+            )
+        }
     }
 }

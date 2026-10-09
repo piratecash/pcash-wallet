@@ -590,7 +590,7 @@ class TransactionViewItemFactory(
         val color = when (record.direction) {
             BeamTransactionDirection.Incoming -> ColorName.Remus
             BeamTransactionDirection.Outgoing -> ColorName.Lucian
-            BeamTransactionDirection.Self -> ColorName.Leah
+            BeamTransactionDirection.Self -> ColorName.Primary
         }
         return TransactionViewItem(
             uid = record.uid,
@@ -615,7 +615,7 @@ class TransactionViewItemFactory(
                 color,
                 hideSign = record.sentToSelf,
             ),
-            secondaryValue = currencyValue?.let { getColoredValue(it, ColorName.Grey) },
+            secondaryValue = currencyValue?.let { getColoredValue(it, ColorName.Secondary) },
             showAmount = showAmount,
             date = Date(record.timestamp * 1000),
             formattedTime = formatTime(record.timestamp),
@@ -660,7 +660,7 @@ class TransactionViewItemFactory(
     ): TransactionViewItem {
         val primaryValue = getColoredValue(record.mainValue, ColorName.Remus)
         val secondaryValue = currencyValue?.let {
-            getColoredValue(it, ColorName.Grey)
+            getColoredValue(it, ColorName.Secondary)
         }
 
         val subtitle = record.from?.let { from ->
@@ -692,13 +692,13 @@ class TransactionViewItemFactory(
         icon: TransactionViewItem.Icon?
     ): TransactionViewItem {
         val primaryValue = if (record.sentToSelf) {
-            ColoredValue(getCoinString(record.mainValue, true), ColorName.Leah)
+            ColoredValue(getCoinString(record.mainValue, true), ColorName.Primary)
         } else {
             getColoredValue(record.mainValue, ColorName.Lucian)
         }
 
         val secondaryValue = currencyValue?.let {
-            getColoredValue(it, ColorName.Grey)
+            getColoredValue(it, ColorName.Secondary)
         }
 
         val subtitle = record.to?.let { to ->
@@ -733,7 +733,7 @@ class TransactionViewItemFactory(
         val subtitle: String?
         val primaryValue: ColoredValue?
         var secondaryValue = currencyValue?.let {
-            getColoredValue(it, ColorName.Grey)
+            getColoredValue(it, ColorName.Secondary)
         }
 
         val iconX: TransactionViewItem.Icon
@@ -848,7 +848,7 @@ class TransactionViewItemFactory(
         val subtitle: String
         val primaryValue: ColoredValue?
         var secondaryValue = currencyValue?.let {
-            getColoredValue(it, ColorName.Grey)
+            getColoredValue(it, ColorName.Secondary)
         }
         var sentToSelf = false
 
@@ -863,7 +863,7 @@ class TransactionViewItemFactory(
                 sentToSelf = recordType.sentToSelf
 
                 primaryValue = if (sentToSelf) {
-                    ColoredValue(getCoinString(recordType.value, true), ColorName.Grey)
+                    ColoredValue(getCoinString(recordType.value, true), ColorName.Secondary)
                 } else {
                     getColoredValue(recordType.value, getAmountColorForSend(icon))
                 }
@@ -886,7 +886,7 @@ class TransactionViewItemFactory(
             is StellarTransactionRecord.Type.ChangeTrust -> {
                 title = Translator.getString(R.string.Transactions_ChangeTrust)
                 subtitle = recordType.trustee.shorten()
-                primaryValue = getColoredValue(recordType.value, ColorName.Leah, true)
+                primaryValue = getColoredValue(recordType.value, ColorName.Primary, true)
                 iconX = singleValueIconType(recordType.value)
             }
 
@@ -938,7 +938,7 @@ class TransactionViewItemFactory(
                     Translator.getString(R.string.Transactions_To, mapped(it, record.blockchainType))
                 } ?: "---"
                 primaryValue = if (type.sentToSelf) {
-                    ColoredValue(getCoinString(type.value, true), ColorName.Grey)
+                    ColoredValue(getCoinString(type.value, true), ColorName.Secondary)
                 } else {
                     getColoredValue(type.value, getAmountColorForSend(icon))
                 }
@@ -951,7 +951,7 @@ class TransactionViewItemFactory(
             title = title,
             subtitle = subtitle,
             primaryValue = primaryValue,
-            secondaryValue = currencyValue?.let { getColoredValue(it, ColorName.Grey) },
+            secondaryValue = currencyValue?.let { getColoredValue(it, ColorName.Secondary) },
             showAmount = showAmount,
             sentToSelf = record.sentToSelf,
             date = Date(record.timestamp * 1000),
@@ -1004,7 +1004,7 @@ class TransactionViewItemFactory(
         nftMetadata: Map<NftUid, NftAssetBriefMetadata>
     ): TransactionViewItem {
         val primaryValue = if (record.sentToSelf) {
-            ColoredValue(getCoinString(record.mainValue!!, true), ColorName.Leah)
+            ColoredValue(getCoinString(record.mainValue!!, true), ColorName.Primary)
         } else {
             getColoredValue(record.mainValue!!, ColorName.Lucian)
         }
@@ -1228,7 +1228,7 @@ class TransactionViewItemFactory(
         nftMetadata: Map<NftUid, NftAssetBriefMetadata>
     ): TransactionViewItem {
         val primaryValue = if (sentToSelf) {
-            ColoredValue(getCoinString(value, true), ColorName.Leah)
+            ColoredValue(getCoinString(value, true), ColorName.Primary)
         } else {
             getColoredValue(value, ColorName.Lucian)
         }
@@ -1253,8 +1253,8 @@ class TransactionViewItemFactory(
 
     private fun getAmountColorForSend(icon: TransactionViewItem.Icon?): ColorName {
         return when (icon) {
-            is TransactionViewItem.Icon.Failed -> ColorName.Grey
-            else -> ColorName.Leah
+            is TransactionViewItem.Icon.Failed -> ColorName.Secondary
+            else -> ColorName.Primary
         }
     }
 
@@ -1269,12 +1269,12 @@ class TransactionViewItemFactory(
         when (value) {
             is TransactionValue -> ColoredValue(
                 value = getCoinString(value, hideSign),
-                color = if (value.zeroValue) ColorName.Leah else color
+                color = if (value.zeroValue) ColorName.Primary else color
             )
 
             is CurrencyValue -> ColoredValue(
                 getCurrencyString(value),
-                if (value.value.compareTo(BigDecimal.ZERO) == 0) ColorName.Grey else color
+                if (value.value.compareTo(BigDecimal.ZERO) == 0) ColorName.Secondary else color
             )
 
             else -> ColoredValue(value.toString(), color)
@@ -1293,7 +1293,7 @@ class TransactionViewItemFactory(
     ): TransactionViewItem {
         val primaryValue = getColoredValue(value, ColorName.Remus)
         val secondaryValue = currencyValue?.let {
-            getColoredValue(it, ColorName.Grey)
+            getColoredValue(it, ColorName.Secondary)
         }
 
         return TransactionViewItem(
@@ -1478,13 +1478,13 @@ class TransactionViewItemFactory(
         }
 
         val primaryValue = if (record.sentToSelf || record.isIronwoodMigration) {
-            ColoredValue(getCoinString(record.mainValue, true), ColorName.Leah)
+            ColoredValue(getCoinString(record.mainValue, true), ColorName.Primary)
         } else {
             getColoredValue(record.mainValue, ColorName.Lucian)
         }
 
         val secondaryValue = currencyValue?.let {
-            getColoredValue(it, ColorName.Grey)
+            getColoredValue(it, ColorName.Secondary)
         }
 
         val lockState = record.lockState(lastBlockTimestamp)
@@ -1538,7 +1538,7 @@ class TransactionViewItemFactory(
 
         val primaryValue = getColoredValue(record.mainValue, ColorName.Remus)
         val secondaryValue = currencyValue?.let {
-            getColoredValue(it, ColorName.Grey)
+            getColoredValue(it, ColorName.Secondary)
         }
 
         val lockState = record.lockState(lastBlockTimestamp)
@@ -1923,8 +1923,8 @@ class TransactionViewItemFactory(
             secondaryValueText = currencyValue?.let { getCurrencyString(it) }
         }
 
-        val primaryValue = ColoredValue(primaryValueText, ColorName.Leah)
-        val secondaryValue = secondaryValueText?.let { ColoredValue(it, ColorName.Grey) }
+        val primaryValue = ColoredValue(primaryValueText, ColorName.Primary)
+        val secondaryValue = secondaryValueText?.let { ColoredValue(it, ColorName.Secondary) }
 
         return TransactionViewItem(
             uid = uid,
@@ -1951,14 +1951,14 @@ class TransactionViewItemFactory(
                 val text = nftMetadata[value.nftUid]?.name
                     ?: value.tokenName?.let { "$it #${value.nftUid.tokenId}" }
                     ?: "#${value.nftUid.tokenId}"
-                getColoredValue(text, ColorName.Grey)
+                getColoredValue(text, ColorName.Secondary)
             }
 
             is TransactionValue.CoinValue,
             is TransactionValue.RawValue,
             is TransactionValue.JettonValue,
             is TransactionValue.TokenValue -> {
-                currencyValue?.let { getColoredValue(it, ColorName.Grey) }
+                currencyValue?.let { getColoredValue(it, ColorName.Secondary) }
             }
         }
 
@@ -2005,7 +2005,7 @@ class TransactionViewItemFactory(
                 )
                 secondaryValue = getColoredValue(
                     Translator.getString(R.string.Transactions_Multiple),
-                    ColorName.Grey
+                    ColorName.Secondary
                 )
             }
 
@@ -2018,7 +2018,7 @@ class TransactionViewItemFactory(
                 )
                 secondaryValue = getColoredValue(
                     Translator.getString(R.string.Transactions_Multiple),
-                    ColorName.Grey
+                    ColorName.Secondary
                 )
             }
 
@@ -2088,11 +2088,11 @@ class TransactionViewItemFactory(
         }
 
         val secondaryValue = currencyValue?.let {
-            getColoredValue(it, ColorName.Grey)
+            getColoredValue(it, ColorName.Secondary)
         }
         val amountColor = when {
-            isExpired -> ColorName.Grey
-            record.isIronwoodMigration -> ColorName.Leah
+            isExpired -> ColorName.Secondary
+            record.isIronwoodMigration -> ColorName.Primary
             else -> ColorName.Lucian
         }
         return TransactionViewItem(

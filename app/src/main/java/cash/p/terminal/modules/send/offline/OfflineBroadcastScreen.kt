@@ -80,7 +80,7 @@ internal fun OfflineBroadcastScreen(
     BackHandler(onBack = onBack)
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(titleResId(uiState.step)),
@@ -163,7 +163,7 @@ private fun NetworkRow(confirm: OfflineBroadcastConfirm, onPickNetwork: () -> Un
                 Icon(
                     painter = painterResource(R.drawable.ic_blocks_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                 )
                 HSpacer(16.dp)
                 body_leah(text = stringResource(R.string.offline_broadcast_blockchain))
@@ -174,7 +174,7 @@ private fun NetworkRow(confirm: OfflineBroadcastConfirm, onPickNetwork: () -> Un
                 Icon(
                     painter = painterResource(R.drawable.ic_arrow_big_down_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                 )
             }
         } else {
@@ -206,7 +206,7 @@ private fun BlockchainPicker(
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
                     .clip(getShape(blockchains.size, index))
-                    .background(ComposeAppTheme.colors.lawrence),
+                    .background(ComposeAppTheme.colors.surfacePrimary),
             ) {
                 SectionUniversalItem(borderTop = index != 0) {
                     BlockchainCell(
@@ -252,7 +252,7 @@ private fun BlockchainCell(
             Icon(
                 painter = painterResource(R.drawable.ic_checkmark_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.jacob,
+                tint = ComposeAppTheme.colors.brandDefault,
             )
         }
     }
@@ -282,7 +282,7 @@ private fun SuccessResult(result: OfflineBroadcastResult.Success) {
     VSpacer(44.dp)
     OfflineStatusBlock(
         icon = if (result.queued) R.drawable.ic_info_20 else R.drawable.ic_checkmark_20,
-        iconTint = if (result.queued) ComposeAppTheme.colors.jacob else ComposeAppTheme.colors.remus,
+        iconTint = if (result.queued) ComposeAppTheme.colors.brandDefault else ComposeAppTheme.colors.statusSuccess,
         style = if (result.queued) OfflineStatusBlockStyle.Neutral else OfflineStatusBlockStyle.Success,
         title = stringResource(titleRes),
     ) {
@@ -313,7 +313,7 @@ private fun ErrorResult(result: OfflineBroadcastResult.Error) {
     VSpacer(44.dp)
     OfflineStatusBlock(
         icon = R.drawable.ic_close_24,
-        iconTint = ComposeAppTheme.colors.lucian,
+        iconTint = ComposeAppTheme.colors.statusError,
         style = OfflineStatusBlockStyle.Error,
         title = stringResource(
             if (result.acceptanceUnknown) R.string.offline_signed_status_unknown
@@ -392,7 +392,7 @@ private fun ExplorerCell(url: String) {
         Icon(
             painter = painterResource(R.drawable.ic_globe_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey,
+            tint = ComposeAppTheme.colors.iconSecondary,
         )
         HSpacer(16.dp)
         body_leah(
@@ -404,7 +404,7 @@ private fun ExplorerCell(url: String) {
         Icon(
             painter = painterResource(R.drawable.ic_big_forward_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey,
+            tint = ComposeAppTheme.colors.iconSecondary,
         )
     }
 }

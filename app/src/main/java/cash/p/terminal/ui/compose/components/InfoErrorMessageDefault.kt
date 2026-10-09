@@ -32,7 +32,7 @@ fun InfoErrorMessageDefault(painter: Painter, text: String) {
             modifier = Modifier
                 .size(100.dp)
                 .background(
-                    color = ComposeAppTheme.colors.raina,
+                    color = ComposeAppTheme.colors.surfacePlaceholder,
                     shape = CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -41,7 +41,7 @@ fun InfoErrorMessageDefault(painter: Painter, text: String) {
                 modifier = Modifier.size(48.dp),
                 painter = painter,
                 contentDescription = "",
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
         }
         VSpacer(height = 32.dp)

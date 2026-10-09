@@ -21,7 +21,7 @@ fun BoxTyler44(
     Box44(
         borderTop = borderTop,
         borderBottom = borderBottom,
-        color = ComposeAppTheme.colors.tyler,
+        color = ComposeAppTheme.colors.backgroundBase,
         content = content
     )
 }
@@ -46,7 +46,7 @@ fun Box44(
         if (borderTop) {
             Divider(
                 thickness = 1.dp,
-                color = ComposeAppTheme.colors.steel10,
+                color = ComposeAppTheme.colors.borderDivider,
                 modifier = Modifier.align(Alignment.TopCenter)
             )
         }
@@ -54,7 +54,7 @@ fun Box44(
         if (borderBottom) {
             Divider(
                 thickness = 1.dp,
-                color = ComposeAppTheme.colors.steel10,
+                color = ComposeAppTheme.colors.borderDivider,
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
         }

@@ -103,7 +103,7 @@ private fun CalculatorPinSettingsContent(
 ) {
     Scaffold(
         modifier = modifier,
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.calculator_pin_settings_title),
@@ -169,7 +169,7 @@ private fun SettingsSection(
                         modifier = Modifier.size(24.dp),
                         painter = painterResource(R.drawable.ic_calculator),
                         contentDescription = null,
-                        tint = ComposeAppTheme.colors.grey,
+                        tint = ComposeAppTheme.colors.iconSecondary,
                     )
                     body_leah(
                         modifier = Modifier.padding(start = 16.dp, end = 16.dp),

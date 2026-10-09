@@ -26,7 +26,7 @@ fun HSAddressCell(
     onClick: () -> Unit
 ) {
     val borderColor = if (riskyAddress) {
-        ComposeAppTheme.colors.red50
+        ComposeAppTheme.colors.statusError50
     } else {
         ComposeAppTheme.colors.transparent
     }
@@ -36,7 +36,7 @@ fun HSAddressCell(
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
             .border(0.5.dp, borderColor, RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence),
+            .background(ComposeAppTheme.colors.surfacePrimary),
         content = {
             CellUniversal(
                 borderTop = false,
@@ -54,7 +54,7 @@ fun HSAddressCell(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_attention_20),
                         contentDescription = null,
-                        tint = ComposeAppTheme.colors.lucian
+                        tint = ComposeAppTheme.colors.statusError
                     )
                 }
 
@@ -62,7 +62,7 @@ fun HSAddressCell(
                 Icon(
                     painter = painterResource(id = R.drawable.ic_down_arrow_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
             }
         }

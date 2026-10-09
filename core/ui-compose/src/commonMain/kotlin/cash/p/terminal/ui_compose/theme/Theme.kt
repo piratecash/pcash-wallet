@@ -4,49 +4,114 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 
 
 val lightPalette = Colors(
-    jacob = YellowL,
-    remus = GreenL,
-    lucian = RedL,
-    tyler = Light,
-    bran = Dark,
-    leah = SteelDark,
-    claude = Color.White,
-    lawrence = Color.White,
-    jeremy = SteelLight,
-    laguna = LagunaL,
-    purple = PurpleL,
-    raina = White50,
-    andy = Steel,
-    blade = Light,
-    midnight = Dark,
-    modalOverlay = Grey70
+    backgroundBase = BaseL,
+    backgroundNavigation = NavigationL,
+    backgroundOverlay = OverlayL,
+    surfacePrimary = Color.White,
+    surfaceElevated = Color.White,
+    surfacePlaceholder = BorderDividerL,
+    controlActionBackground = ActionBackgroundL,
+    controlActionBorder = ActionBorderL,
+    controlTrack = Steel20,
+    brandDefault = BrandL,
+    statusSuccess = StatusSuccessL,
+    statusWarning = StatusWarningL,
+    statusError = StatusErrorL,
+    statusSuccess20 = StatusSuccessL.copy(alpha = 0.2f),
+    statusWarning20 = StatusWarningL.copy(alpha = 0.2f),
+    statusError20 = StatusErrorL.copy(alpha = 0.2f),
+    statusSuccess50 = StatusSuccessL.copy(alpha = 0.5f),
+    statusWarning50 = StatusWarningL.copy(alpha = 0.5f),
+    statusError50 = StatusErrorL.copy(alpha = 0.5f),
+    borderDefault = BorderDefaultL,
+    borderDivider = BorderDividerL,
+    borderAccentSubtle = BrandL.copy(alpha = 0.32f),
+    textPrimary = TextPrimaryL,
+    textSecondary = TextSecondaryL,
+    textSecondaryDimmed = TextSecondaryL.copy(alpha = 0.5f),
+    textDisabled = TextDisabledL,
+    iconPrimary = TextPrimaryL,
+    iconSecondary = TextSecondaryL,
+    iconDisabled = TextDisabledL,
+    buttonPrimaryBrandContent = TextPrimaryL,
+    buttonPrimaryNeutralBackground = TextPrimaryL,
+    buttonPrimaryNeutralContent = TextPrimaryD,
+    buttonPrimaryDestructiveBackground = StatusErrorL,
+    buttonPrimaryDestructiveContent = TextPrimaryD,
+    buttonPrimaryDisabledBackground = ActionBorderL,
+    buttonPrimaryOutlineContent = TextPrimaryL,
+    buttonPrimaryOutlineBorder = OutlineBorderL,
+    buttonSecondaryFilledBackground = NavigationL,
+    buttonSecondaryFilledBorder = SecondaryFilledBorderL,
+    badgeBackground = SteelLight,
+    contentInverse = Color.White,
+    switchThumbOn = Color.White,
+    switchThumbOff = Color.White,
+    switchTrackOn = BrandL,
+    switchTrackOff = TextDisabledL,
+    qrBackground = Color.White,
+    scannerBackground = Dark,
+    snackbarNeutralBackground = TextSecondaryL,
+    contentOnColor = Color.White,
 )
 
 val darkPalette = Colors(
-    jacob = YellowD,
-    remus = GreenD,
-    lucian = RedD,
-    tyler = Dark,
-    bran = LightGrey,
-    leah = SteelLight,
-    claude = Dark,
-    lawrence = SteelDark,
-    jeremy = Steel20,
-    laguna = LagunaD,
-    purple = PurpleD,
-    raina = Steel10,
-    andy = Smoke,
-    blade = Carbon,
-    midnight = DarkGray,
-    modalOverlay = Black50
+    backgroundBase = BaseD,
+    backgroundNavigation = NavigationD,
+    backgroundOverlay = OverlayD,
+    surfacePrimary = SurfaceD,
+    surfaceElevated = SurfaceElevatedD,
+    surfacePlaceholder = BorderDividerD,
+    controlActionBackground = ActionBackgroundD,
+    controlActionBorder = ActionBorderD,
+    controlTrack = Steel20,
+    brandDefault = BrandD,
+    statusSuccess = StatusSuccessD,
+    statusWarning = StatusWarningD,
+    statusError = StatusErrorD,
+    statusSuccess20 = StatusSuccessD.copy(alpha = 0.2f),
+    statusWarning20 = StatusWarningD.copy(alpha = 0.2f),
+    statusError20 = StatusErrorD.copy(alpha = 0.2f),
+    statusSuccess50 = StatusSuccessD.copy(alpha = 0.5f),
+    statusWarning50 = StatusWarningD.copy(alpha = 0.5f),
+    statusError50 = StatusErrorD.copy(alpha = 0.5f),
+    borderDefault = BorderDefaultD,
+    borderDivider = BorderDividerD,
+    borderAccentSubtle = BrandD.copy(alpha = 0.32f),
+    textPrimary = TextPrimaryD,
+    textSecondary = TextSecondaryD,
+    textSecondaryDimmed = TextSecondaryD.copy(alpha = 0.5f),
+    textDisabled = TextDisabledD,
+    iconPrimary = TextPrimaryD,
+    iconSecondary = TextSecondaryD,
+    iconDisabled = TextDisabledD,
+    buttonPrimaryBrandContent = TextPrimaryL,
+    buttonPrimaryNeutralBackground = TextPrimaryD,
+    buttonPrimaryNeutralContent = TextPrimaryL,
+    buttonPrimaryDestructiveBackground = StatusErrorD,
+    buttonPrimaryDestructiveContent = TextPrimaryL,
+    buttonPrimaryDisabledBackground = ActionBackgroundD,
+    buttonPrimaryOutlineContent = TextPrimaryD,
+    buttonPrimaryOutlineBorder = TextDisabledD,
+    buttonSecondaryFilledBackground = SecondaryFilledBackgroundD,
+    buttonSecondaryFilledBorder = SecondaryFilledBorderD,
+    badgeBackground = Steel20,
+    contentInverse = Dark,
+    switchThumbOn = TextPrimaryL,
+    switchThumbOff = TextPrimaryD,
+    switchTrackOn = BrandD,
+    switchTrackOff = TextDisabledD,
+    qrBackground = Color.White,
+    scannerBackground = Dark,
+    snackbarNeutralBackground = TextSecondaryD,
+    contentOnColor = Color.White,
 )
 
 @Composable
@@ -83,23 +148,17 @@ fun ProvideLocalAssets(
     content: @Composable () -> Unit
 ) {
 
-    val colorPalette = remember {
-        // Explicitly creating a new object here so we don't mutate the initial [colors]
-        // provided, and overwrite the values set in it.
-        colors.copy()
-    }
-    colorPalette.update(colors)
     val currentDensity = LocalDensity.current
     CompositionLocalProvider(
-        LocalColors provides colorPalette,
+        LocalColors provides colors,
         LocalTypography provides typography,
         LocalDensity provides Density(currentDensity.density, fontScale = 1f),
-        LocalContentColor provides colorPalette.leah,
+        LocalContentColor provides colors.textPrimary,
         content = content
     )
 }
 
-val LocalColors = compositionLocalOf<Colors> {
+val LocalColors = staticCompositionLocalOf<Colors> {
     error("No Colors provided")
 }
 

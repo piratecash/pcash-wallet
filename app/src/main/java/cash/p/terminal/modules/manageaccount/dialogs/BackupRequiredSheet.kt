@@ -36,12 +36,16 @@ class BackupRequiredSheet(val input: Input) : HSBottomSheet() {
     data class Input(val account: Account, val text: String) : Parcelable
 }
 
+fun HSNavigation.showBackupRequiredDialog(account: Account, text: String) {
+    slideFromBottom(BackupRequiredSheet(BackupRequiredSheet.Input(account, text)))
+}
+
 @Composable
 fun BackupRequiredScreen(navigation: HSNavigation, account: Account, text: String) {
     ComposeAppTheme {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_attention_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
             title = stringResource(R.string.ManageAccount_BackupRequired_Title),
             onCloseClick = {
                 navigation.navigateUpSafely()

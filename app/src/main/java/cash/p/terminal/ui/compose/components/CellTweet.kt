@@ -1,6 +1,8 @@
 package cash.p.terminal.ui.compose.components
 
 import androidx.compose.foundation.Image
+import cash.p.terminal.ui_compose.components.plateOutline
+import cash.p.terminal.ui_compose.components.plateBackground
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -62,7 +64,8 @@ fun CellTweet(tweet: TweetViewItem, onClick: (TweetViewItem) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(plateBackground())
+            .plateOutline(RoundedCornerShape(16.dp))
             .clickable {
                 onClick.invoke(tweet)
             }
@@ -96,7 +99,7 @@ fun CellTweet(tweet: TweetViewItem, onClick: (TweetViewItem) -> Unit) {
 private fun TweetDate(tweet: TweetViewItem) {
     Text(
         text = tweet.date,
-        color = ComposeAppTheme.colors.grey,
+        color = ComposeAppTheme.colors.textSecondary,
         style = ComposeAppTheme.typography.micro
     )
 }
@@ -106,12 +109,12 @@ private fun TweetReferencedTweet(referencedTweet: ReferencedTweetViewItem) {
     Column(Modifier
         .fillMaxWidth()
         .clip(RoundedCornerShape(8.dp))
-        .background(ComposeAppTheme.colors.steel10)
+        .background(ComposeAppTheme.colors.surfacePlaceholder)
         .padding(12.dp)
     ) {
         Text(
             text = referencedTweet.title.getString(),
-            color = ComposeAppTheme.colors.grey,
+            color = ComposeAppTheme.colors.textSecondary,
             style = ComposeAppTheme.typography.micro
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -123,7 +126,7 @@ private fun TweetReferencedTweet(referencedTweet: ReferencedTweetViewItem) {
 private fun TweetText(text: String, entities: List<Extractor.Entity>) {
     val spanStyles = entities.map {
         AnnotatedString.Range(
-            SpanStyle(color = ComposeAppTheme.colors.laguna), it.start, it.end
+            SpanStyle(color = ComposeAppTheme.colors.brandDefault), it.start, it.end
         )
     }
     Text(
@@ -131,7 +134,7 @@ private fun TweetText(text: String, entities: List<Extractor.Entity>) {
             text = text,
             spanStyles = spanStyles,
         ),
-        color = ComposeAppTheme.colors.leah,
+        color = ComposeAppTheme.colors.textPrimary,
         style = ComposeAppTheme.typography.subhead2
     )
 }
@@ -188,14 +191,14 @@ private fun AttachmentVideo(attachment: Tweet.Attachment.Video) {
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .background(ComposeAppTheme.colors.black50)
+                .background(ComposeAppTheme.colors.backgroundOverlay)
         )
 
         Icon(
             modifier = Modifier.align(Alignment.Center),
             painter = painterResource(id = R.drawable.play_48),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.white,
+            tint = ComposeAppTheme.colors.contentOnColor,
         )
     }
 }
@@ -209,21 +212,21 @@ private fun AttachmentPoll(attachment: Tweet.Attachment.Poll) {
         attachment.options.forEach { option ->
             val proportion = option.votes / totalVotes.toFloat()
             val color = if (option.votes == maxVotes) {
-                cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.laguna
+                ComposeAppTheme.colors.brandDefault
             } else {
-                cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.steel20
+                ComposeAppTheme.colors.surfacePlaceholder
             }
             val textColor = if (option.votes == maxVotes) {
-                cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.claude
+                ComposeAppTheme.colors.contentInverse
             } else {
-                cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.leah
+                ComposeAppTheme.colors.textPrimary
             }
             Box(
                 modifier = Modifier
                     .height(28.dp)
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(4.dp))
-                    .background(ComposeAppTheme.colors.steel10)
+                    .background(ComposeAppTheme.colors.controlTrack)
             ) {
                 Spacer(
                     modifier = Modifier

@@ -71,7 +71,7 @@ internal fun GeneralTermsContent(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = title,
@@ -210,7 +210,7 @@ internal fun GeneralTermsDialog(
         Column(
             Modifier
                 .fillMaxSize()
-                .background(ComposeAppTheme.colors.tyler)
+                .background(ComposeAppTheme.colors.backgroundBase)
         ) {
             GeneralTermsContent(
                 termsStrings = terms,

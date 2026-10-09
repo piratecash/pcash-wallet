@@ -23,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -38,7 +37,6 @@ import cash.p.terminal.network.pirate.domain.enity.PeriodType
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.InputField
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
-import cash.p.terminal.ui_compose.theme.GreenL
 
 @Composable
 internal fun CalculatorScreen(
@@ -55,7 +53,7 @@ internal fun CalculatorScreen(
             Text(
                 text = stringResource(R.string.pos_calculator),
                 style = ComposeAppTheme.typography.body,
-                color = ComposeAppTheme.colors.leah,
+                color = ComposeAppTheme.colors.textPrimary,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
                 modifier = Modifier.weight(1f)
@@ -71,7 +69,7 @@ internal fun CalculatorScreen(
                         indication = null,
                         onClick = onDoneClicked
                     ),
-                tint = colorResource(R.color.grey)
+                tint = ComposeAppTheme.colors.iconSecondary
             )
         }
         val descriptionRes = if (uiState.stackingType == StackingType.PCASH) {
@@ -82,7 +80,7 @@ internal fun CalculatorScreen(
         Text(
             text = stringResource(descriptionRes),
             style = ComposeAppTheme.typography.body,
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
         )
         InputField(
@@ -97,7 +95,7 @@ internal fun CalculatorScreen(
         Text(
             text = uiState.coinExchange,
             style = ComposeAppTheme.typography.body,
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
@@ -117,7 +115,7 @@ internal fun CalculatorTable(uiState: CalculatorUIState, modifier: Modifier = Mo
     Column(
         modifier = modifier.border(
             width = 1.dp,
-            color = ComposeAppTheme.colors.steel20,
+            color = ComposeAppTheme.colors.borderDefault,
             shape = RoundedCornerShape(12.dp)
         )
     ) {
@@ -136,7 +134,7 @@ internal fun CalculatorTable(uiState: CalculatorUIState, modifier: Modifier = Mo
                 PeriodType.UNKNOWN -> return@forEach
             }
             HorizontalDivider(
-                color = ComposeAppTheme.colors.steel20,
+                color = ComposeAppTheme.colors.borderDivider,
                 thickness = 1.dp
             )
             CalculatorItemRow(
@@ -158,7 +156,7 @@ internal fun CalculatorItemHeader(period: String, coin: String, coinSecondary: S
         Text(
             text = period,
             style = ComposeAppTheme.typography.subhead1,
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
@@ -166,14 +164,14 @@ internal fun CalculatorItemHeader(period: String, coin: String, coinSecondary: S
         )
         Spacer(
             modifier = Modifier
-                .background(ComposeAppTheme.colors.steel20)
+                .background(ComposeAppTheme.colors.borderDivider)
                 .height(dimensionResource(R.dimen.min_calculator_row_height))
                 .width(1.dp)
         )
         Text(
             text = coin,
             style = ComposeAppTheme.typography.subhead1,
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
@@ -181,14 +179,14 @@ internal fun CalculatorItemHeader(period: String, coin: String, coinSecondary: S
         )
         Spacer(
             modifier = Modifier
-                .background(ComposeAppTheme.colors.steel20)
+                .background(ComposeAppTheme.colors.borderDivider)
                 .height(dimensionResource(R.dimen.min_calculator_row_height))
                 .width(1.dp)
         )
         Text(
             text = coinSecondary,
             style = ComposeAppTheme.typography.subhead1,
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
@@ -214,7 +212,7 @@ internal fun CalculatorItemRow(
             style = ComposeAppTheme.typography.captionSB.copy(
                 fontWeight = FontWeight.Medium,
             ),
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
@@ -222,14 +220,14 @@ internal fun CalculatorItemRow(
         )
         Spacer(
             modifier = Modifier
-                .background(ComposeAppTheme.colors.steel20)
+                .background(ComposeAppTheme.colors.borderDivider)
                 .height(dimensionResource(R.dimen.min_calculator_row_height))
                 .width(1.dp)
         )
         Text(
             text = coin,
             style = ComposeAppTheme.typography.caption,
-            color = GreenL,
+            color = ComposeAppTheme.colors.statusSuccess,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
@@ -237,14 +235,14 @@ internal fun CalculatorItemRow(
         )
         Spacer(
             modifier = Modifier
-                .background(ComposeAppTheme.colors.steel20)
+                .background(ComposeAppTheme.colors.borderDivider)
                 .height(dimensionResource(R.dimen.min_calculator_row_height))
                 .width(1.dp)
         )
         Text(
             text = coinSecondary,
             style = ComposeAppTheme.typography.caption,
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,

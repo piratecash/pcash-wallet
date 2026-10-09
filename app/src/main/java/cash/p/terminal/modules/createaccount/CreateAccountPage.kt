@@ -129,7 +129,6 @@ private fun CreateAccountIntroScreen(
                 contenView = view,
                 resId = R.string.Hud_Text_Created,
                 icon = R.drawable.icon_add_to_wallet_24,
-                iconTint = R.color.white
             )
             delay(300)
 
@@ -145,7 +144,7 @@ private fun CreateAccountIntroScreen(
         }
     }
 
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column(Modifier.fillMaxSize()) {
             AppBar(
                 title = stringResource(R.string.ManageAccounts_CreateNewWallet),

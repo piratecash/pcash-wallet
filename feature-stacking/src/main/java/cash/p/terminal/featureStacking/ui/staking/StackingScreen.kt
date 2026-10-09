@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -25,7 +24,9 @@ import cash.p.terminal.featureStacking.ui.cosantaCoinScreen.CosantaCoinViewModel
 import cash.p.terminal.featureStacking.ui.pirateCoinScreen.PirateCoinChartViewModel
 import cash.p.terminal.featureStacking.ui.pirateCoinScreen.PirateCoinViewModel
 import cash.p.terminal.featureStacking.ui.stackingCoinScreen.StackingCoinScreen
+import cash.p.terminal.ui_compose.TransparentModalBottomSheet
 import cash.p.terminal.ui_compose.components.AppBar
+import cash.p.terminal.ui_compose.components.BottomSheetSurface
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.TabItem
 import cash.p.terminal.ui_compose.components.Tabs
@@ -52,24 +53,24 @@ internal fun StackingScreen(
     var showBottomSheet by remember { mutableStateOf(false) }
 
     if (showBottomSheet) {
-        ModalBottomSheet(
+        TransparentModalBottomSheet(
             sheetState = modalBottomSheetState,
-            dragHandle = null,
-            containerColor = ComposeAppTheme.colors.lawrence,
             onDismissRequest = {
                 showBottomSheet = false
             }
         ) {
-            CalculatorScreen(
-                uiState = calculatorUIState,
-                onValueChanged = onCalculatorValueChanged,
-                onDoneClicked = {
-                    coroutineScope.launch { modalBottomSheetState.hide() }.invokeOnCompletion {
-                        if (!modalBottomSheetState.isVisible) {
-                            showBottomSheet = false
+            BottomSheetSurface {
+                CalculatorScreen(
+                    uiState = calculatorUIState,
+                    onValueChanged = onCalculatorValueChanged,
+                    onDoneClicked = {
+                        coroutineScope.launch { modalBottomSheetState.hide() }.invokeOnCompletion {
+                            if (!modalBottomSheetState.isVisible) {
+                                showBottomSheet = false
+                            }
                         }
-                    }
-                })
+                    })
+            }
         }
     }
     Scaffold(
@@ -81,7 +82,7 @@ internal fun StackingScreen(
                 }
             )
         },
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
     ) {
         Column(Modifier.padding(it)) {
             val pagerState =

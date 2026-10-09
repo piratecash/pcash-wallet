@@ -186,19 +186,19 @@ private fun GuaranteedBonusText(
     val suffix = stringResource(R.string.connect_mini_app_bonus_text_suffix)
 
     val annotatedText = buildAnnotatedString {
-        withStyle(SpanStyle(color = ComposeAppTheme.colors.leah)) {
+        withStyle(SpanStyle(color = ComposeAppTheme.colors.textPrimary)) {
             append(prefix)
         }
         append(" ")
-        withStyle(SpanStyle(color = ComposeAppTheme.colors.jacob)) {
+        withStyle(SpanStyle(color = ComposeAppTheme.colors.statusWarning)) {
             append("$bonus PIRATE")
         }
         append(" ")
-        withStyle(SpanStyle(color = ComposeAppTheme.colors.grey)) {
+        withStyle(SpanStyle(color = ComposeAppTheme.colors.textSecondary)) {
             append("($bonusFiat)")
         }
         append(" ")
-        withStyle(SpanStyle(color = ComposeAppTheme.colors.leah)) {
+        withStyle(SpanStyle(color = ComposeAppTheme.colors.textPrimary)) {
             append(suffix)
         }
     }

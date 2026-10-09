@@ -48,7 +48,7 @@ private fun AutoLockIntervalsScreen(
     )
 ) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.Settings_AutoLock),
@@ -101,7 +101,7 @@ private fun IntervalCell(
             if (checked) {
                 Icon(
                     painter = painterResource(R.drawable.ic_checkmark_20),
-                    tint = ComposeAppTheme.colors.jacob,
+                    tint = ComposeAppTheme.colors.brandDefault,
                     contentDescription = null,
                 )
             }

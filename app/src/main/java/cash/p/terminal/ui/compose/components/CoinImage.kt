@@ -98,8 +98,8 @@ fun CoinIconWithSyncProgress(
 
     val progress = syncingProgress.progress
     val iconAlpha = if (syncingProgress.type == null) 1f else 0.3f
-    val leah = ComposeAppTheme.colors.leah
-    val circleColor = ComposeAppTheme.colors.steel10
+    val ringColor = ComposeAppTheme.colors.iconPrimary
+    val circleColor = ComposeAppTheme.colors.surfacePlaceholder
 
     Box(
         modifier = Modifier
@@ -120,7 +120,7 @@ fun CoinIconWithSyncProgress(
                             )
                             rotate(degrees = -90f) {
                                 drawArc(
-                                    color = leah,
+                                    color = ringColor,
                                     startAngle = 0f,
                                     sweepAngle = angle,
                                     useCenter = false,
@@ -141,7 +141,7 @@ fun CoinIconWithSyncProgress(
                             )
                             rotate(degrees = rotate) {
                                 drawArc(
-                                    color = leah,
+                                    color = ringColor,
                                     startAngle = 0f,
                                     sweepAngle = -120f,
                                     useCenter = false,
@@ -178,7 +178,7 @@ fun CoinIconWithSyncProgress(
                     .then(clickableModifier),
                 painter = painterResource(id = R.drawable.ic_attention_24),
                 contentDescription = "coin icon",
-                colorFilter = ColorFilter.tint(ComposeAppTheme.colors.lucian)
+                colorFilter = ColorFilter.tint(ComposeAppTheme.colors.statusError)
             )
         } else {
             CoinImage(
@@ -202,7 +202,7 @@ private fun SyncProgressText(text: String) {
     BasicText(
         text = text,
         style = ComposeAppTheme.typography.subhead2.copy(
-            color = ComposeAppTheme.colors.leah
+            color = ComposeAppTheme.colors.textPrimary
         ),
         maxLines = 1,
         autoSize = TextAutoSize.StepBased(
@@ -222,8 +222,8 @@ private fun SyncProgressTextPreview() {
                 val syncingProgress = SyncingProgress(SyncingProgressType.ProgressWithRing, progress)
                 val progressF = (progress.coerceAtLeast(10.0) / 100.0).toFloat()
                 val angle = 360f * progressF
-                val leah = ComposeAppTheme.colors.leah
-                val circleColor = ComposeAppTheme.colors.steel10
+                val ringColor = ComposeAppTheme.colors.iconPrimary
+                val circleColor = ComposeAppTheme.colors.surfacePlaceholder
 
                 Box(
                     modifier = Modifier
@@ -239,7 +239,7 @@ private fun SyncProgressTextPreview() {
                                 )
                                 rotate(degrees = -90f) {
                                     drawArc(
-                                        color = leah,
+                                        color = ringColor,
                                         startAngle = 0f,
                                         sweepAngle = angle,
                                         useCenter = false,

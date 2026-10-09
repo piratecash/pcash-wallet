@@ -20,7 +20,7 @@ fun AdditionalDataCell2(content: @Composable() (RowScope.() -> Unit)) {
             .height(36.dp)
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, ComposeAppTheme.colors.steel20, RoundedCornerShape(12.dp))
+            .border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(12.dp))
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         content = content

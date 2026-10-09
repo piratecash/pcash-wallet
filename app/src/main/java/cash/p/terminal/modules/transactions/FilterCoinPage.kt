@@ -61,7 +61,7 @@ class FilterCoinPage : HSPage() {
 fun FilterCoinScreen(navigation: HSNavigation, viewModel: TransactionsViewModel) {
     val filterCoins by viewModel.filterTokensLiveData.observeAsState()
 
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(
                 title = stringResource(R.string.Transactions_Filter_ChooseCoin),
@@ -124,7 +124,7 @@ fun FilterCoinScreen(navigation: HSNavigation, viewModel: TransactionsViewModel)
                                     Icon(
                                         painter = painterResource(R.drawable.icon_20_check_1),
                                         contentDescription = null,
-                                        tint = ComposeAppTheme.colors.jacob
+                                        tint = ComposeAppTheme.colors.brandDefault
                                     )
                                 }
                             }

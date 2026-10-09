@@ -39,24 +39,24 @@ fun AmlCheckRow(
             .padding(horizontal = 16.dp)
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, ComposeAppTheme.colors.jacob, RoundedCornerShape(12.dp))
+            .border(1.dp, ComposeAppTheme.colors.statusWarning, RoundedCornerShape(12.dp))
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Icon(
             painter = painterResource(id = R.drawable.ic_star_filled_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.jacob,
+            tint = ComposeAppTheme.colors.statusWarning,
             modifier = Modifier.size(20.dp)
         )
         Text(
             text = stringResource(R.string.alpha_aml_title),
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             style = ComposeAppTheme.typography.body
         )
         Icon(
             painter = painterResource(id = R.drawable.ic_info_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey,
+            tint = ComposeAppTheme.colors.iconSecondary,
             modifier = Modifier
                 .size(20.dp)
                 .clickable(

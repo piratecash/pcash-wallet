@@ -61,12 +61,12 @@ fun CheckAddressInput(
     val borderColor = when (state) {
         is DataState.Error -> {
             if (state.error is FormsInputStateWarning) {
-                ComposeAppTheme.colors.yellow50
+                ComposeAppTheme.colors.statusWarning50
             } else {
-                ComposeAppTheme.colors.red50
+                ComposeAppTheme.colors.statusError50
             }
         }
-        else -> ComposeAppTheme.colors.blade
+        else -> ComposeAppTheme.colors.borderDefault
     }
 
     Column(modifier) {
@@ -76,7 +76,7 @@ fun CheckAddressInput(
                 .defaultMinSize(minHeight = 44.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .border(0.5.dp, borderColor, RoundedCornerShape(12.dp))
-                .background(ComposeAppTheme.colors.lawrence),
+                .background(ComposeAppTheme.colors.surfacePrimary),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
@@ -91,18 +91,18 @@ fun CheckAddressInput(
                     onValueChange.invoke(value.trim())
                 },
                 textStyle = ColoredTextStyle(
-                    color = ComposeAppTheme.colors.leah,
+                    color = ComposeAppTheme.colors.textPrimary,
                     textStyle = ComposeAppTheme.typography.body
                 ),
                 singleLine = false,
-                cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+                cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
                 decorationBox = { innerTextField ->
                     if (value.isEmpty()) {
                         Text(
                             hint,
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 1,
-                            color = ComposeAppTheme.colors.andy,
+                            color = ComposeAppTheme.colors.textSecondary,
                             style = ComposeAppTheme.typography.body
                         )
                     }

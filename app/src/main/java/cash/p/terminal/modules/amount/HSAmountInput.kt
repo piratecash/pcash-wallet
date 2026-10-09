@@ -50,7 +50,7 @@ import cash.p.terminal.modules.address.AmountUnique
 import cash.p.terminal.ui.compose.animations.shake
 import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
 import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
-import cash.p.terminal.ui_compose.components.body_grey50
+import cash.p.terminal.ui_compose.components.body_disabled
 import cash.p.terminal.ui_compose.withLeadingZeroIfDecimal
 import cash.p.terminal.ui_compose.theme.ColoredTextStyle
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
@@ -103,9 +103,9 @@ fun HSAmountInput(
     }
 
     val borderColor = when (caution?.type) {
-        HSCaution.Type.Error -> ComposeAppTheme.colors.red50
-        HSCaution.Type.Warning -> ComposeAppTheme.colors.yellow50
-        else -> ComposeAppTheme.colors.steel20
+        HSCaution.Type.Error -> ComposeAppTheme.colors.statusError50
+        HSCaution.Type.Warning -> ComposeAppTheme.colors.statusWarning50
+        else -> ComposeAppTheme.colors.borderDefault
     }
 
     var textState by rememberSaveable(stateSaver = TextFieldValue.Saver) {
@@ -152,13 +152,13 @@ fun HSAmountInput(
 
     when (inputType) {
         AmountInputType.COIN -> {
-            inputTextColor = ComposeAppTheme.colors.leah
-            hintTextColor = ComposeAppTheme.colors.jacob
+            inputTextColor = ComposeAppTheme.colors.textPrimary
+            hintTextColor = ComposeAppTheme.colors.brandDefault
         }
 
         AmountInputType.CURRENCY -> {
-            inputTextColor = ComposeAppTheme.colors.jacob
-            hintTextColor = ComposeAppTheme.colors.leah
+            inputTextColor = ComposeAppTheme.colors.brandDefault
+            hintTextColor = ComposeAppTheme.colors.textPrimary
         }
     }
 
@@ -167,7 +167,7 @@ fun HSAmountInput(
             modifier = Modifier
                 .clip(RoundedCornerShape(12.dp))
                 .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-                .background(ComposeAppTheme.colors.lawrence),
+                .background(ComposeAppTheme.colors.surfacePrimary),
         ) {
             Row(
                 modifier = Modifier
@@ -208,7 +208,7 @@ fun HSAmountInput(
                         textStyle = ComposeAppTheme.typography.headline2
                     ),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+                    cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
                     decorationBox = { innerTextField ->
                         Row {
                             viewModel.inputPrefix?.let {
@@ -221,7 +221,7 @@ fun HSAmountInput(
                             }
                             Box {
                                 if (textState.text.isEmpty()) {
-                                    body_grey50(
+                                    body_disabled(
                                         "0",
                                         overflow = TextOverflow.Ellipsis,
                                         maxLines = 1
@@ -291,7 +291,7 @@ fun HSAmountInput(
 
             Divider(
                 modifier = Modifier.padding(horizontal = 8.dp),
-                color = ComposeAppTheme.colors.steel10
+                color = ComposeAppTheme.colors.borderDivider
             )
 
             Row(
@@ -312,7 +312,7 @@ fun HSAmountInput(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     text = hint ?: stringResource(R.string.NotAvailable),
                     style = ComposeAppTheme.typography.subhead2,
-                    color = if (hint == null) ComposeAppTheme.colors.grey50 else hintTextColor,
+                    color = if (hint == null) ComposeAppTheme.colors.textDisabled else hintTextColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -321,8 +321,8 @@ fun HSAmountInput(
 
         caution?.let { caution ->
             val color: Color = when (caution.type) {
-                HSCaution.Type.Error -> ComposeAppTheme.colors.redD
-                HSCaution.Type.Warning -> ComposeAppTheme.colors.yellowD
+                HSCaution.Type.Error -> ComposeAppTheme.colors.statusError
+                HSCaution.Type.Warning -> ComposeAppTheme.colors.statusWarning
             }
             Text(
                 modifier = Modifier.padding(start = 8.dp, top = 8.dp, end = 8.dp),

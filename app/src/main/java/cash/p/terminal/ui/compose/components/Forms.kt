@@ -1,6 +1,7 @@
 package cash.p.terminal.ui.compose.components
 
 import androidx.compose.foundation.background
+import cash.p.terminal.ui_compose.components.plateBackground
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -65,9 +66,9 @@ fun FormsInput(
     initial: String? = null,
     hint: String,
     prefix: String? = null,
-    textColor: Color = ComposeAppTheme.colors.leah,
+    textColor: Color = ComposeAppTheme.colors.textPrimary,
     textStyle: TextStyle = ComposeAppTheme.typography.body,
-    hintColor: Color = ComposeAppTheme.colors.grey50,
+    hintColor: Color = ComposeAppTheme.colors.textDisabled,
     hintStyle: TextStyle = ComposeAppTheme.typography.body,
     singleLine: Boolean = false,
     state: DataState<Any>? = null,
@@ -92,19 +93,19 @@ fun FormsInput(
     val borderColor = when (state) {
         is DataState.Error -> {
             if (state.error is FormsInputStateWarning) {
-                ComposeAppTheme.colors.yellow50
+                ComposeAppTheme.colors.statusWarning50
             } else {
-                ComposeAppTheme.colors.red50
+                ComposeAppTheme.colors.statusError50
             }
         }
 
-        else -> ComposeAppTheme.colors.steel20
+        else -> ComposeAppTheme.colors.borderDefault
     }
 
     val cautionColor = if (state?.errorOrNull is FormsInputStateWarning) {
-        ComposeAppTheme.colors.jacob
+        ComposeAppTheme.colors.statusWarning
     } else {
-        ComposeAppTheme.colors.lucian
+        ComposeAppTheme.colors.statusError
     }
 
     Column(modifier) {
@@ -114,7 +115,7 @@ fun FormsInput(
                 .defaultMinSize(minHeight = 44.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-                .background(ComposeAppTheme.colors.lawrence),
+                .background(plateBackground()),
             verticalAlignment = Alignment.CenterVertically
         ) {
             var textState by rememberSaveable(stateSaver = TextFieldValue.Saver) {
@@ -165,7 +166,7 @@ fun FormsInput(
                     textStyle = textStyle
                 ),
                 singleLine = singleLine,
-                cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+                cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
                 decorationBox = { innerTextField ->
                     if (textState.text.isEmpty()) {
                         Text(
@@ -201,7 +202,7 @@ fun FormsInput(
                         modifier = Modifier.padding(end = 8.dp),
                         painter = painterResource(id = R.drawable.ic_check_20),
                         contentDescription = null,
-                        tint = ComposeAppTheme.colors.remus
+                        tint = ComposeAppTheme.colors.statusSuccess
                     )
                 }
 
@@ -301,9 +302,9 @@ fun FormsInputMultiline(
     initial: String? = null,
     enabled: Boolean = true,
     hint: String,
-    textColor: Color = ComposeAppTheme.colors.leah,
+    textColor: Color = ComposeAppTheme.colors.textPrimary,
     textStyle: TextStyle = ComposeAppTheme.typography.body,
-    hintColor: Color = ComposeAppTheme.colors.grey50,
+    hintColor: Color = ComposeAppTheme.colors.textDisabled,
     hintStyle: TextStyle = ComposeAppTheme.typography.body,
     state: DataState<Any>? = null,
     pasteEnabled: Boolean = true,
@@ -326,19 +327,19 @@ fun FormsInputMultiline(
     val borderColor = when (state) {
         is DataState.Error -> {
             if (state.error is FormsInputStateWarning) {
-                ComposeAppTheme.colors.yellow50
+                ComposeAppTheme.colors.statusWarning50
             } else {
-                ComposeAppTheme.colors.red50
+                ComposeAppTheme.colors.statusError50
             }
         }
 
-        else -> ComposeAppTheme.colors.steel20
+        else -> ComposeAppTheme.colors.borderDefault
     }
 
     val cautionColor = if (state?.errorOrNull is FormsInputStateWarning) {
-        ComposeAppTheme.colors.jacob
+        ComposeAppTheme.colors.statusWarning
     } else {
-        ComposeAppTheme.colors.lucian
+        ComposeAppTheme.colors.statusError
     }
 
     Column(modifier) {
@@ -347,7 +348,7 @@ fun FormsInputMultiline(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
                 .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-                .background(ComposeAppTheme.colors.lawrence),
+                .background(plateBackground()),
         ) {
             var textState by rememberSaveable(stateSaver = TextFieldValue.Saver) {
                 mutableStateOf(TextFieldValue(initial ?: ""))
@@ -391,7 +392,7 @@ fun FormsInputMultiline(
                     color = textColor,
                     textStyle = textStyle
                 ),
-                cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+                cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
                 decorationBox = { innerTextField ->
                     if (textState.text.isEmpty()) {
                         Text(
@@ -433,7 +434,7 @@ fun FormsInputMultiline(
                             modifier = Modifier.padding(end = 8.dp),
                             painter = painterResource(id = R.drawable.ic_check_20),
                             contentDescription = null,
-                            tint = ComposeAppTheme.colors.remus
+                            tint = ComposeAppTheme.colors.statusSuccess
                         )
                     }
 

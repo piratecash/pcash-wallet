@@ -83,7 +83,7 @@ private fun CoinRankScreen(
     val viewItems = viewModel.uiState.rankViewItems
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 menuItems = listOf(
@@ -170,7 +170,7 @@ private fun LazyListScope.coinRankList(
     item {
         Divider(
             thickness = 1.dp,
-            color = ComposeAppTheme.colors.steel10,
+            color = ComposeAppTheme.colors.borderDivider,
         )
     }
     items(items) { item ->
@@ -243,7 +243,7 @@ private fun CoinRankCell(
         }
         Divider(
             thickness = 1.dp,
-            color = ComposeAppTheme.colors.steel10,
+            color = ComposeAppTheme.colors.borderDivider,
         )
     }
 }

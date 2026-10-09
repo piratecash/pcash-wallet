@@ -50,7 +50,7 @@ import cash.p.terminal.ui_compose.components.SwitchWithTextWarning
 import cash.p.terminal.ui_compose.components.TextImportantError
 import cash.p.terminal.ui_compose.components.VFillSpacer
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.body_grey
+import cash.p.terminal.ui_compose.components.body_disabled
 import cash.p.terminal.ui_compose.components.body_lucian
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -100,7 +100,7 @@ fun LoggingSettingsScreen(
     val noCameraPermissions = cameraPermissionState?.status != PermissionStatus.Granted
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.login_logging_title),
@@ -111,7 +111,7 @@ fun LoggingSettingsScreen(
                     MenuItem(
                         title = TranslatableString.ResString(R.string.button_info),
                         icon = R.drawable.ic_info_20,
-                        tint = ComposeAppTheme.colors.grey,
+                        tint = ComposeAppTheme.colors.iconSecondary,
                         onClick = { showInfoSheet = true }
                     )
                 )
@@ -156,6 +156,7 @@ fun LoggingSettingsScreen(
                 animatedContent = {
                     SwitchWithTextWarning(
                         text = stringResource(R.string.login_logging_selfie_on_successful_login),
+                        borderTop = true,
                         checked = uiState.selfieOnSuccessfulLoginEnabled,
                         showWarning = noCameraPermissions && uiState.selfieOnSuccessfulLoginEnabled,
                         onWarningIconClick = { showCameraPermissionDeniedDialog = true },
@@ -198,6 +199,7 @@ fun LoggingSettingsScreen(
                 animatedContent = {
                     SwitchWithTextWarning(
                         text = stringResource(R.string.login_logging_selfie_on_unsuccessful_login),
+                        borderTop = true,
                         checked = uiState.selfieOnUnsuccessfulLoginEnabled,
                         showWarning = noCameraPermissions && uiState.selfieOnUnsuccessfulLoginEnabled,
                         onWarningIconClick = { showCameraPermissionDeniedDialog = true },
@@ -242,6 +244,7 @@ fun LoggingSettingsScreen(
                 animatedContent = {
                     SwitchWithTextWarning(
                         text = stringResource(R.string.login_logging_selfie_on_duress_login),
+                        borderTop = true,
                         checked = uiState.selfieOnDuressLoginEnabled,
                         showWarning = noCameraPermissions && uiState.selfieOnDuressLoginEnabled,
                         onWarningIconClick = { showCameraPermissionDeniedDialog = true },
@@ -272,12 +275,13 @@ fun LoggingSettingsScreen(
                     Column {
                         SwitchWithText(
                             text = stringResource(R.string.delete_all_contacts),
+                            borderTop = true,
                             checked = uiState.deleteContactsPasscodeEnabled,
                             onCheckedChange = onDeleteAllContactsPasscodeToggle
                         )
                         HorizontalDivider(
                             thickness = 1.dp,
-                            color = ComposeAppTheme.colors.steel10,
+                            color = ComposeAppTheme.colors.borderDivider,
                         )
                         RowWithArrow(
                             text = stringResource(R.string.login_logging_send_notification),
@@ -338,9 +342,9 @@ fun LoggingSettingsScreen(
                         } else null
                     ) {
                         val tintColor = if (uiState.deleteButtonEnabled) {
-                            ComposeAppTheme.colors.lucian
+                            ComposeAppTheme.colors.statusError
                         } else {
-                            ComposeAppTheme.colors.grey
+                            ComposeAppTheme.colors.iconDisabled
                         }
                         Icon(
                             painter = painterResource(id = R.drawable.ic_delete_20),
@@ -351,7 +355,7 @@ fun LoggingSettingsScreen(
                         if (uiState.deleteButtonEnabled) {
                             body_lucian(text = stringResource(id = R.string.login_logging_delete_all))
                         } else {
-                            body_grey(text = stringResource(id = R.string.login_logging_delete_all))
+                            body_disabled(text = stringResource(id = R.string.login_logging_delete_all))
                         }
                     }
                 }
