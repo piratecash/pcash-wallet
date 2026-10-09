@@ -1,8 +1,12 @@
 package cash.p.terminal.tangem.domain.sdk
 
+import android.app.PendingIntent
+import android.content.Intent
+import android.nfc.NfcAdapter
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import co.touchlab.kermit.Logger
 import com.tangem.Log
 import com.tangem.TangemSdk
 import com.tangem.common.authentication.AuthenticationManager
@@ -41,6 +45,13 @@ class CardSdkProvider(
         activity.lifecycle.addObserver(observer)
 
         Log.info { "Tangem SDK owner registered" }
+    }
+
+    /** Foreground-dispatch fallback: the OS re-applies reader mode around this delivery, so the tag itself is not used. */
+    fun consumeNfcIntent(intent: Intent): Boolean {
+        if (intent.action !in NFC_ACTIONS) return false
+        logger.i { "NFC tag reached foreground dispatch: reader mode was dropped and is re-applied on resume" }
+        return true
     }
 
     fun cancelSession() {
@@ -111,6 +122,28 @@ class CardSdkProvider(
 
     inner class Observer : DefaultLifecycleObserver {
 
+        override fun onResume(owner: LifecycleOwner) {
+            val activity = holder?.activity ?: return
+            if (activity !== owner) return
+
+            // Bare intent and FLAG_MUTABLE: the system fills in the NFC action and data.
+            val pendingIntent = PendingIntent.getActivity(
+                activity,
+                0,
+                Intent(activity, activity.javaClass).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+                PendingIntent.FLAG_MUTABLE
+            )
+            NfcAdapter.getDefaultAdapter(activity)
+                ?.enableForegroundDispatch(activity, pendingIntent, null, null)
+        }
+
+        override fun onPause(owner: LifecycleOwner) {
+            val activity = holder?.activity ?: return
+            if (activity !== owner) return
+
+            NfcAdapter.getDefaultAdapter(activity)?.disableForegroundDispatch(activity)
+        }
+
         override fun onDestroy(owner: LifecycleOwner) {
             Log.info { "Tangem SDK owner destroyed" }
 
@@ -120,6 +153,15 @@ class CardSdkProvider(
             currentHolder.activity.lifecycle.removeObserver(observer)
             holder = null
         }
+    }
+
+    private companion object {
+        val NFC_ACTIONS = setOf(
+            NfcAdapter.ACTION_NDEF_DISCOVERED,
+            NfcAdapter.ACTION_TECH_DISCOVERED,
+            NfcAdapter.ACTION_TAG_DISCOVERED,
+        )
+        val logger = Logger.withTag("CardSdkProvider")
     }
 
     data class Holder(

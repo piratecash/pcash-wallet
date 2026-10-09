@@ -1,5 +1,9 @@
 package cash.p.terminal.tangem.domain.sdk
 
+import android.app.Application
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.nfc.NfcAdapter
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
@@ -18,8 +22,21 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.Robolectric
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.Config
 
+@RunWith(RobolectricTestRunner::class)
+@Config(application = Application::class)
 class CardSdkProviderTest {
 
     private val backgroundManager: BackgroundManager = mockk(relaxed = true)
@@ -28,6 +45,8 @@ class CardSdkProviderTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(Dispatchers.Unconfined)
+        shadowOf(RuntimeEnvironment.getApplication().packageManager)
+            .setSystemFeature(PackageManager.FEATURE_NFC, true)
     }
 
     @After
@@ -87,6 +106,53 @@ class CardSdkProviderTest {
         cardSdkObserver.onDestroy(activity)
 
         verify(exactly = 0) { lifecycle.removeObserver(components.nfcManager) }
+    }
+
+    @Test
+    fun consumeNfcIntent_nfcDiscoveryActions_returnsTrue() {
+        val provider = CardSdkProvider(backgroundManager, sdkInitializer)
+
+        listOf(
+            NfcAdapter.ACTION_NDEF_DISCOVERED,
+            NfcAdapter.ACTION_TECH_DISCOVERED,
+            NfcAdapter.ACTION_TAG_DISCOVERED,
+        ).forEach { action ->
+            assertTrue(action, provider.consumeNfcIntent(Intent(action)))
+        }
+    }
+
+    @Test
+    fun consumeNfcIntent_viewIntent_returnsFalse() {
+        val provider = CardSdkProvider(backgroundManager, sdkInitializer)
+
+        assertFalse(provider.consumeNfcIntent(Intent(Intent.ACTION_VIEW)))
+    }
+
+    @Test
+    fun observerOnResume_registeredResumedActivity_enablesForegroundDispatch() {
+        val activity = Robolectric.buildActivity(FragmentActivity::class.java).setup().get()
+        every { sdkInitializer.create(activity) } returns mockComponents()
+
+        CardSdkProvider(backgroundManager, sdkInitializer).register(activity)
+
+        val shadow = shadowOf(NfcAdapter.getDefaultAdapter(activity))
+        assertSame(activity, shadow.enabledActivity)
+        assertNotNull(shadow.intent)
+        assertNull(shadow.filters)
+        assertNull(shadow.techLists)
+    }
+
+    @Test
+    fun observerOnPause_registeredActivity_disablesForegroundDispatch() {
+        val controller = Robolectric.buildActivity(FragmentActivity::class.java).setup()
+        val activity = controller.get()
+        every { sdkInitializer.create(activity) } returns mockComponents()
+        CardSdkProvider(backgroundManager, sdkInitializer).register(activity)
+
+        controller.pause()
+
+        val shadow = shadowOf(NfcAdapter.getDefaultAdapter(activity))
+        assertSame(activity, shadow.disabledActivity)
     }
 
     private fun mockActivity(): FragmentActivity {

@@ -123,6 +123,7 @@ open class MainActivity : BaseActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        if (cardSdkProvider.consumeNfcIntent(intent)) return
         setIntent(intent)
         if (intent.isDeepLinkOrNotificationTap()) {
             navigation.removeLastUntil(MainPage::class, inclusive = false)
