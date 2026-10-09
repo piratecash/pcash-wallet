@@ -190,6 +190,7 @@ class SwapViewModel(
             amountInMax = quoteState.amountInMax,
             amountOutAccuracy = quoteState.quote?.amountOutAccuracy ?: SwapAmountAccuracy.Exact,
             quoteCautions = quoteState.quote?.cautions.orEmpty(),
+            tokenOutAction = quoteState.tokenOutAction,
         )
     }
 
@@ -288,6 +289,7 @@ class SwapViewModel(
         quoting = quoteState.quoting,
         timeout = timerState.timeout,
         route = quoteState.multiSwapRoute,
+        tokenOutAction = quoteState.tokenOutAction,
     )
 
     fun refreshExpiredMultiSwapRoute() {
@@ -336,7 +338,7 @@ class SwapViewModel(
         multiSwapRouteRefreshState == MultiSwapRouteRefreshState.Failed -> ButtonState.Refresh
         multiSwapRouteRefreshState == MultiSwapRouteRefreshState.Refreshing || uiState.quoting || uiState.timeout ->
             ButtonState.Quoting
-        isMultiSwapRouteReady(uiState.quoting, uiState.timeout, route) -> ButtonState.Enabled
+        isMultiSwapRouteReady(uiState.quoting, uiState.timeout, route, uiState.tokenOutAction) -> ButtonState.Enabled
         else -> ButtonState.Disabled
     }
 
@@ -501,9 +503,11 @@ internal fun isMultiSwapRouteReady(
     quoting: Boolean,
     timeout: Boolean,
     route: MultiSwapRoute?,
+    tokenOutAction: ISwapProviderAction?,
 ): Boolean {
     val settledRoute = settledMultiSwapRoute(quoting, route)
-    return !timeout && settledRoute != null && settledRoute.leg1Quotes.contains(settledRoute.selectedLeg1Quote)
+    return !timeout && tokenOutAction == null && settledRoute != null &&
+        settledRoute.leg1Quotes.contains(settledRoute.selectedLeg1Quote)
         && settledRoute.leg2Quotes.contains(settledRoute.selectedLeg2Quote)
 }
 
@@ -581,6 +585,7 @@ data class SwapUiState(
     val amountInMax: BigDecimal?,
     val amountOutAccuracy: SwapAmountAccuracy,
     val quoteCautions: List<HSCaution>,
+    val tokenOutAction: ISwapProviderAction? = null,
 ) {
     private val requestedAmount: BigDecimal?
         get() = when (direction) {
@@ -601,6 +606,7 @@ data class SwapUiState(
                 quoting || quote == null -> SwapStep.Quoting
                 quote.actionRequired != null ->
                     SwapStep.ActionRequired(requireNotNull(quote.actionRequired))
+                tokenOutAction != null -> SwapStep.ActionRequired(tokenOutAction)
                 else -> SwapStep.Proceed
             }
         }

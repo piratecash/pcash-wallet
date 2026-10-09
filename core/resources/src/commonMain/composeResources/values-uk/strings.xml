@@ -663,7 +663,7 @@
     <string name="swap_reapprove_action">Схвалити оновлений ліміт</string>
     <string name="swap_no_providers_for_this_amount">Немає провайдерів для цієї суми</string>
     <!-- Swap Confirmation -->
-    <string name="Activate_InsufficientBalance_Description">У вас недостатньо балансу XLM для активації цього токена.</string>
+    <string name="activate_insufficient_balance_description">У вас недостатньо балансу XLM для активації цього токена.</string>
     <!--Approve-->
     <string name="Approve_RevokeAndApproveInfo">Ви можете обміняти %s, або ви повинні скасувати і схвалити нову суму</string>
     <string name="Approve_Spender">Покупець</string>
@@ -1993,12 +1993,12 @@
     <string name="SwapWarning_SlippageNotApplicable_Title">Прослизання не застосовується.</string>
     <string name="Fee_OutboundFee">Комісія за виведення</string>
     <string name="ActivationRequired_DialogTitle">Активувати токен</string>
-    <string name="ActivationRequired_DialogDescription">Щоб отримати %s, необхідно активувати токен. Мережа Stellar вимагає встановлення довірчої лінії (trustline) для кожного токена. Без неї ваш гаманець не зможе прийняти %s — транзакція буде відхилена, і кошти не будуть доставлені.</string>
-    <string name="Activate_YouActivate">Ви активуєте</string>
-    <string name="Activate_Activating">Активація</string>
-    <string name="Activate_AlreadyActive_Title">Вже активовано</string>
-    <string name="Activate_AlreadyActive_Description">Токен вже активовано.</string>
-    <string name="Activate_InsufficientBalance_Title">Недостатньо коштів</string>
+    <string name="activation_required_dialog_description">Щоб отримати %s, необхідно активувати токен. Мережа Stellar вимагає встановлення довірчої лінії (trustline) для кожного токена. Без неї ваш гаманець не зможе прийняти %s — транзакція буде відхилена, і кошти не будуть доставлені.</string>
+    <string name="activate_you_activate">Ви активуєте</string>
+    <string name="activate_activating">Активація</string>
+    <string name="activate_already_active_title">Вже активовано</string>
+    <string name="activate_already_active_description">Токен вже активовано.</string>
+    <string name="activate_insufficient_balance_title">Недостатньо коштів</string>
     <string name="Transactions_OperationType">Тип операції</string>
     <string name="Transactions_OperationType_ChangeTrust">Зміна довірчої лінії</string>
     <string name="Info_Reserved_Description">Мережа Stellar блокує 1 XLM для активації гаманця та 0.5 XLM як резерв за кожен токен, активований у вашому гаманці.</string>

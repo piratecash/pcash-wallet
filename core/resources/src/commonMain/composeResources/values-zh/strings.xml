@@ -60,6 +60,13 @@
     <string name="trezor_not_initialized_cta">设置指南</string>
     <string name="trezor_connect_failed">无法连接到 Trezor。</string>
     <string name="Button_Activate">激活</string>
+    <string name="activation_required_dialog_description">要接收 %s，您需要激活该代币。Stellar 网络要求为每个代币建立信任线（trustline）。没有信任线，您的钱包将无法接收 %s——交易会被拒绝，资金也不会到账。</string>
+    <string name="activate_you_activate">您将激活</string>
+    <string name="activate_activating">正在激活</string>
+    <string name="activate_already_active_title">已激活</string>
+    <string name="activate_already_active_description">该代币已激活。</string>
+    <string name="activate_insufficient_balance_title">余额不足</string>
+    <string name="activate_insufficient_balance_description">您的 XLM 余额不足以激活此代币。</string>
     <string name="Button_Sign">签名</string>
     <string name="Button_TryAgain">再试一次</string>
     <string name="Button_Share">分享</string>

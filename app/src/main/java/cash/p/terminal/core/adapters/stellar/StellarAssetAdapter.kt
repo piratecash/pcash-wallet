@@ -125,7 +125,7 @@ class StellarAssetAdapter(
         stellarKit.enableAsset(stellarAsset.id, null)
     }
 
-    fun validateActivation() {
+    suspend fun validateActivation() {
         stellarKit.validateEnablingAsset()
     }
 
