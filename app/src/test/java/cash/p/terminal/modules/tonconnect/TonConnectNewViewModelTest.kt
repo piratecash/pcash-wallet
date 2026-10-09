@@ -8,6 +8,7 @@ import cash.p.terminal.core.storage.HardwarePublicKeyStorage
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.ActiveAccountState
 import cash.p.terminal.wallet.IAccountManager
 import com.tonapps.wallet.data.tonconnect.entities.DAppManifestEntity
 import com.tonapps.wallet.data.tonconnect.entities.DAppPayloadEntity
@@ -18,10 +19,13 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.mockkStatic
+import io.mockk.unmockkAll
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -73,8 +77,10 @@ class TonConnectNewViewModelTest {
             )
         }
 
-        every { tonConnectManager.kit } returns tonConnectKit
+        coEvery { tonConnectManager.kit() } returns tonConnectKit
         request = requestStub("https://ton.dapp/manifest.json")
+        mockkObject(TonConnectKit.Companion)
+        every { TonConnectKit.readData(URI) } returns request
 
         Dispatchers.setMain(dispatcher)
     }
@@ -83,6 +89,43 @@ class TonConnectNewViewModelTest {
     fun tearDown() {
         stopKoin()
         Dispatchers.resetMain()
+        unmockkAll()
+    }
+
+    @Test
+    fun init_malformedUri_exposesInvalidRequestErrorWithoutLoadingManifest() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-malformed")
+        setAccounts(listOf(tonAccount), tonAccount)
+        every { TonConnectKit.readData(MALFORMED_URI) } throws IllegalArgumentException("id is required")
+
+        val viewModel = TonConnectNewViewModel(MALFORMED_URI, tonConnectManager)
+        advanceUntilIdle()
+
+        assertIs<InvalidRequestError>(viewModel.uiState.error)
+        assertFalse(viewModel.uiState.connectEnabled)
+        coVerify(exactly = 0) { tonConnectManager.kit() }
+    }
+
+    @Test
+    fun connect_kitUnavailable_surfacesToastAndResetsConnecting() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-no-kit")
+        setAccounts(listOf(tonAccount), tonAccount)
+        mockkStatic("cash.p.terminal.core.managers.TonKitManagerKt")
+        every {
+            any<Account>().toTonWalletFullAccess(any(), any())
+        } returns mockk(relaxed = true)
+        coEvery { tonConnectKit.getManifest(request.payload.manifestUrl) } returns manifest()
+
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
+        advanceUntilIdle()
+        coEvery { tonConnectManager.kit() } throws IllegalStateException("kit unavailable")
+
+        viewModel.connect()
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.finish)
+        assertFalse(viewModel.uiState.connecting)
+        assertEquals("kit unavailable", viewModel.uiState.toast)
     }
 
     @Test
@@ -95,7 +138,7 @@ class TonConnectNewViewModelTest {
         val manifest = manifest()
         coEvery { tonConnectKit.getManifest(request.payload.manifestUrl) } returns manifest
 
-        val viewModel = TonConnectNewViewModel(request, tonConnectKit)
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
         advanceUntilIdle()
 
         val state = viewModel.uiState
@@ -114,7 +157,7 @@ class TonConnectNewViewModelTest {
         setAccounts(listOf(tonAccount, unsupported, hardwareAccount), tonAccount)
         coEvery { tonConnectKit.getManifest(request.payload.manifestUrl) } returns manifest()
 
-        val viewModel = TonConnectNewViewModel(request, tonConnectKit)
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
         advanceUntilIdle()
 
         val state = viewModel.uiState
@@ -130,7 +173,7 @@ class TonConnectNewViewModelTest {
         setAccounts(listOf(activeUnsupported, fallback, secondary), activeUnsupported)
         coEvery { tonConnectKit.getManifest(request.payload.manifestUrl) } returns manifest()
 
-        val viewModel = TonConnectNewViewModel(request, tonConnectKit)
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
         advanceUntilIdle()
 
         val state = viewModel.uiState
@@ -144,13 +187,42 @@ class TonConnectNewViewModelTest {
         setAccounts(listOf(watchAccount), watchAccount)
         coEvery { tonConnectKit.getManifest(request.payload.manifestUrl) } returns manifest()
 
-        val viewModel = TonConnectNewViewModel(request, tonConnectKit)
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
         advanceUntilIdle()
 
         val state = viewModel.uiState
         assertIs<NoTonAccountError>(state.error)
         assertTrue(state.accounts.isEmpty())
         assertFalse(state.connectEnabled)
+    }
+
+    @Test
+    fun init_accountsNotLoadedYet_selectsAccountOnceLoaded() = runTest(dispatcher) {
+        val activeAccountStateFlow = MutableStateFlow<ActiveAccountState>(ActiveAccountState.NotLoaded)
+        every { accountManager.accounts } returns emptyList()
+        every { accountManager.activeAccount } returns null
+        every { accountManager.activeAccountStateFlow } returns activeAccountStateFlow
+        coEvery { tonConnectKit.getManifest(request.payload.manifestUrl) } returns manifest()
+
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
+        advanceUntilIdle()
+
+        var state = viewModel.uiState
+        assertNull(state.error)
+        assertNull(state.account)
+        assertFalse(state.connectEnabled)
+
+        val tonAccount = tonAccount("ton-late")
+        every { accountManager.accounts } returns listOf(tonAccount)
+        every { accountManager.activeAccount } returns tonAccount
+        activeAccountStateFlow.value = ActiveAccountState.ActiveAccount(tonAccount)
+        advanceUntilIdle()
+
+        state = viewModel.uiState
+        assertEquals(tonAccount, state.account)
+        assertEquals(listOf(tonAccount), state.accounts)
+        assertNull(state.error)
+        assertTrue(state.connectEnabled)
     }
 
     @Test
@@ -166,7 +238,7 @@ class TonConnectNewViewModelTest {
         coEvery { tonConnectKit.getManifest(request.payload.manifestUrl) } returns manifest
         coEvery { tonConnectKit.connect(any(), any(), any(), any()) } returns mockk(relaxed = true)
 
-        val viewModel = TonConnectNewViewModel(request, tonConnectKit)
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
         advanceUntilIdle()
 
         viewModel.connect()
@@ -196,7 +268,7 @@ class TonConnectNewViewModelTest {
             mockk(relaxed = true)
         }
 
-        val viewModel = TonConnectNewViewModel(request, tonConnectKit)
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
         advanceUntilIdle()
 
         viewModel.connect()
@@ -223,7 +295,7 @@ class TonConnectNewViewModelTest {
             tonConnectKit.connect(any(), any(), any(), any())
         } throws IllegalStateException("fail")
 
-        val viewModel = TonConnectNewViewModel(request, tonConnectKit)
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
         advanceUntilIdle()
 
         viewModel.connect()
@@ -253,7 +325,7 @@ class TonConnectNewViewModelTest {
             )
         } throws IllegalStateException("boom")
 
-        val viewModel = TonConnectNewViewModel(request, tonConnectKit)
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
         advanceUntilIdle()
 
         viewModel.connect()
@@ -272,6 +344,8 @@ class TonConnectNewViewModelTest {
     private fun setAccounts(accounts: List<Account>, active: Account?) {
         every { accountManager.accounts } returns accounts
         every { accountManager.activeAccount } returns active
+        every { accountManager.activeAccountStateFlow } returns
+            MutableStateFlow<ActiveAccountState>(ActiveAccountState.ActiveAccount(active))
     }
 
     private fun tonAccount(id: String) = Account(
@@ -327,7 +401,7 @@ class TonConnectNewViewModelTest {
             tonConnectKit.getManifest(request.payload.manifestUrl)
         } throws RuntimeException("timeout") andThen manifest
 
-        val viewModel = TonConnectNewViewModel(request, tonConnectKit)
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
         advanceUntilIdle()
 
         val state = viewModel.uiState
@@ -346,7 +420,7 @@ class TonConnectNewViewModelTest {
             tonConnectKit.getManifest(request.payload.manifestUrl)
         } throws RuntimeException("timeout")
 
-        val viewModel = TonConnectNewViewModel(request, tonConnectKit)
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
         advanceUntilIdle()
 
         val state = viewModel.uiState
@@ -361,7 +435,7 @@ class TonConnectNewViewModelTest {
         setAccounts(listOf(watchAccount), watchAccount)
         coEvery { tonConnectKit.getManifest(request.payload.manifestUrl) } returns manifest()
 
-        val viewModel = TonConnectNewViewModel(request, tonConnectKit)
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
         advanceUntilIdle()
 
         val state = viewModel.uiState
@@ -375,7 +449,7 @@ class TonConnectNewViewModelTest {
         setAccounts(listOf(tonAccount), tonAccount)
         coEvery { tonConnectKit.getManifest(request.payload.manifestUrl) } returns manifest()
 
-        val viewModel = TonConnectNewViewModel(request, tonConnectKit)
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
         advanceUntilIdle()
 
         viewModel.reject()
@@ -396,7 +470,7 @@ class TonConnectNewViewModelTest {
             manifest()
         }
 
-        val viewModel = TonConnectNewViewModel(request, tonConnectKit)
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
 
         val state = viewModel.uiState
         assertNull(state.manifest)
@@ -407,4 +481,9 @@ class TonConnectNewViewModelTest {
         "abandon", "ability", "able", "about", "above", "absent",
         "absorb", "abstract", "absurd", "abuse", "access", "accident"
     )
+
+    private companion object {
+        const val URI = "tc://?v=2&id=request-id&r=%7B%7D"
+        const val MALFORMED_URI = "tc://?v=2"
+    }
 }

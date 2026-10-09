@@ -84,8 +84,6 @@ import cash.p.terminal.core.managers.EvmPersonalSignerImpl
 import cash.p.terminal.core.managers.GetTonAddressUseCaseImpl
 import cash.p.terminal.core.managers.GuidesManager
 import cash.p.terminal.core.managers.KeyStoreCleaner
-import cash.p.terminal.core.managers.KitDatabaseKeyProvider
-import cash.p.terminal.core.managers.KitDatabaseKeys
 import cash.p.terminal.core.managers.LanguageManager
 import cash.p.terminal.core.managers.SystemLanguageProvider
 import cash.p.terminal.core.managers.SystemLanguageProviderImpl
@@ -128,7 +126,9 @@ import cash.p.terminal.core.managers.TermsManager
 import cash.p.terminal.core.managers.ThorchainKitManagers
 import cash.p.terminal.core.managers.TimePasswordProvider
 import cash.p.terminal.core.managers.TokenAutoEnableManager
+import cash.p.terminal.core.managers.TonConnectDatabaseKeyProvider
 import cash.p.terminal.core.managers.TonConnectManager
+import cash.p.terminal.core.managers.TonKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TorManager
 import cash.p.terminal.core.managers.TransactionAdapterManager
@@ -327,8 +327,7 @@ val managerModule = module {
     }
     singleOf(::ConnectivityManager) bind IConnectivityManager::class
     singleOf(::BitcoinKitConnectionManager) bind IConnectionManager::class
-    singleOf(::BitcoinKitDatabaseKeyProvider) bind KitDatabaseKeyProvider::class
-    singleOf(::KitDatabaseKeys)
+    singleOf(::BitcoinKitDatabaseKeyProvider)
     singleOf(::DefaultBitcoinKitDatabaseOperations) bind BitcoinKitDatabaseOperations::class
     singleOf(::BitcoinKitDatabaseManager)
     singleOf(::EvmSyncSourceManager)
@@ -340,6 +339,8 @@ val managerModule = module {
     singleOf(::NetworkErrorTracker)
     singleOf(::SolanaKitManager)
     singleOf(::StellarKitManager)
+    singleOf(::TonKitDatabaseKeyProvider)
+    singleOf(::TonConnectDatabaseKeyProvider)
     singleOf(::ThorchainKitManagers)
     singleOf(::TonKitManager)
     singleOf(::GetTonAddressUseCaseImpl) bind GetTonAddressUseCase::class
@@ -427,7 +428,7 @@ val managerModule = module {
     singleOf(::TorManager) bind ITorManager::class
     singleOf(::PredefinedBlockchainSettingsProvider)
     single {
-        KeyStoreCleaner(get(), get(), get(), get(), lazy { get<IAccountCleaner>() })
+        KeyStoreCleaner(get(), get(), get(), get(), lazy { get<IAccountCleaner>() }, lazy { get<TonConnectManager>() })
     } bind IKeyStoreCleaner::class
     single<KeyStoreManager.Logger> { AppLogger("key-store") }
     single {
@@ -472,7 +473,11 @@ val managerModule = module {
             context = get(),
             adapterFactory = get(),
             appName = "P.cash Wallet",
-            appVersion = AppConfigProvider.appVersion
+            appVersion = AppConfigProvider.appVersion,
+            databaseKeyProvider = get(),
+            accountManager = get(),
+            appDatabase = get(),
+            dispatcherProvider = get(),
         ).also { it.start() }
     }
     factory { (pinComponent: IPinComponent) ->

@@ -46,10 +46,10 @@ fun TonConnectMainScreen(
 
     val uiState = viewModel.uiState
 
-    val dAppRequestEntity = uiState.dAppRequestEntity
-    LaunchedEffect(dAppRequestEntity) {
-        if (dAppRequestEntity != null) {
-            navigation.slideFromBottom(TonConnectNewPage(dAppRequestEntity))
+    val dAppRequestUri = uiState.dAppRequestUri
+    LaunchedEffect(dAppRequestUri) {
+        if (dAppRequestUri != null) {
+            navigation.slideFromBottom(TonConnectNewPage(dAppRequestUri))
             viewModel.onDappRequestHandled()
         }
     }

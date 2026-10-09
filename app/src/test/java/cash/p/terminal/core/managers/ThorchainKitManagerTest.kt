@@ -62,7 +62,7 @@ import kotlin.test.assertFailsWith
 class ThorchainKitManagerTest {
 
     private val context = mockk<Context>()
-    private val kitDatabaseKeys = mockk<KitDatabaseKeys>()
+    private val kitDatabaseKeys = mockk<BitcoinKitDatabaseKeyProvider>()
     private val offlineModeManager = mockk<OfflineModeManager>(relaxed = true)
     private val databaseKey = ByteArray(KEY_SIZE) { 1 }
     private val kit = mockk<ThorchainKit>(relaxed = true)
