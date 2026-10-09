@@ -6,7 +6,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.ui_compose.R
-import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @Composable
 fun BackupButtons(
@@ -18,7 +17,6 @@ fun BackupButtons(
         modifier = modifier.fillMaxWidth(),
         title = stringResource(R.string.BackupRecoveryPhrase_ManualBackup),
         icon = R.drawable.ic_edit_24,
-        iconTint = ComposeAppTheme.colors.dark,
         onClick = onManualBackupClick
     )
 
@@ -28,7 +26,6 @@ fun BackupButtons(
         modifier = modifier.fillMaxWidth(),
         title = stringResource(R.string.BackupRecoveryPhrase_LocalBackup),
         icon = R.drawable.ic_file_24,
-        iconTint = ComposeAppTheme.colors.claude,
         onClick = onLocalBackupClick
     )
 }

@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.feature.miniapp.R
-import cash.p.terminal.ui_compose.components.ButtonPrimaryLight
+import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
@@ -33,14 +33,14 @@ fun LinkExpiredContent(modifier: Modifier = Modifier) {
         Box(
             modifier = Modifier
                 .size(100.dp)
-                .background(ComposeAppTheme.colors.raina, CircleShape),
+                .background(ComposeAppTheme.colors.surfacePlaceholder, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 modifier = Modifier.size(48.dp),
                 painter = painterResource(R.drawable.ic_not_found_48),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
         }
         Spacer(Modifier.height(32.dp))
@@ -69,7 +69,7 @@ fun JwtExpiredStepContent(
         stepIndicatorState = stepIndicatorState,
         modifier = modifier,
         bottomContent = {
-            ButtonPrimaryLight(
+            ButtonPrimaryDefault(
                 modifier = Modifier.fillMaxWidth(),
                 title = stringResource(R.string.connect_mini_app_open_mini_app),
                 onClick = onOpenMiniAppClick

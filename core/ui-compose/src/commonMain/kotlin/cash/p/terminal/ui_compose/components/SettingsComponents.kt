@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -74,7 +75,8 @@ fun CellUniversalLawrenceSection(
         modifier = modifier
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence),
+            .background(plateBackground())
+            .plateOutline(RoundedCornerShape(12.dp)),
     ) {
         composableItems.forEachIndexed { index, composable ->
             SectionUniversalItem(borderTop = index != 0, content = composable)
@@ -92,14 +94,14 @@ fun SectionUniversalItem(
         if (borderTop) {
             HsDivider(
                 modifier = Modifier.align(Alignment.TopCenter),
-                color = ComposeAppTheme.colors.steel10,
+                color = ComposeAppTheme.colors.borderDivider,
                 thickness = 1.dp,
             )
         }
         if (borderBottom) {
             HsDivider(
                 modifier = Modifier.align(Alignment.BottomCenter),
-                color = ComposeAppTheme.colors.steel10,
+                color = ComposeAppTheme.colors.borderDivider,
                 thickness = 1.dp,
             )
         }
@@ -114,14 +116,14 @@ fun SectionPremiumUniversalLawrence(
 ) {
     val brush = Brush.horizontalGradient(
         0f to Color(0xFFFFD000),
-        1f to Color(0xFFFFA800),
+        1f to ComposeAppTheme.colors.statusWarning,
     )
     Column(
         modifier = modifier
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
             .border(0.5.dp, brush, RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence),
+            .background(plateBackground()),
         content = content,
     )
 }
@@ -135,7 +137,8 @@ fun SectionUniversalLawrence(
         modifier = modifier
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence),
+            .background(plateBackground())
+            .plateOutline(RoundedCornerShape(12.dp)),
         content = content,
     )
 }
@@ -143,7 +146,7 @@ fun SectionUniversalLawrence(
 @Composable
 fun HsDivider(
     modifier: Modifier = Modifier,
-    color: Color = ComposeAppTheme.colors.blade,
+    color: Color = ComposeAppTheme.colors.borderDivider,
     thickness: Dp = 0.5.dp,
 ) {
     Box(
@@ -211,9 +214,14 @@ fun PremiumHeader(
                 .padding(end = 10.dp)
                 .size(16.dp),
             painter = starPainter,
-            tint = ComposeAppTheme.colors.jacob,
+            tint = ComposeAppTheme.colors.statusWarning,
             contentDescription = null,
         )
-        subhead1_jacob(text = text, maxLines = 1)
+        Text(
+            text = text,
+            style = ComposeAppTheme.typography.subhead1,
+            color = ComposeAppTheme.colors.statusWarning,
+            maxLines = 1,
+        )
     }
 }

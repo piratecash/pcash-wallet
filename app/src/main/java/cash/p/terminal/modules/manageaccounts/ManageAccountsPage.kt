@@ -37,8 +37,8 @@ import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.PremiumHeader
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.SectionHeaderWithIcon
-import cash.p.terminal.ui_compose.components.body_grey
-import cash.p.terminal.ui_compose.components.body_jacob
+import cash.p.terminal.ui_compose.components.body_brand
+import cash.p.terminal.ui_compose.components.body_disabled
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.subhead2_lucian
@@ -68,7 +68,7 @@ fun ManageAccountsScreen(navigation: HSNavigation, mode: ManageAccountsModule.Mo
 
     Column(
         modifier = Modifier
-            .background(color = ComposeAppTheme.colors.tyler)
+            .background(color = ComposeAppTheme.colors.backgroundBase)
             .navigationBarsPadding()
     ) {
         AppBar(
@@ -76,13 +76,13 @@ fun ManageAccountsScreen(navigation: HSNavigation, mode: ManageAccountsModule.Mo
             navigationIcon = { HsBackButton(onClick = { navigation.navigateUpSafely() }) }
         )
 
-        LazyColumn(modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+        LazyColumn(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
             item {
                 WalletSection(
                     accounts = viewModel.premiumAccountsState,
                     onSelect = viewModel::onSelect,
                     navigation = navigation,
-                    frameColor = ComposeAppTheme.colors.jacob,
+                    frameColor = ComposeAppTheme.colors.brandDefault,
                     header = {
                         PremiumHeader(text = stringResource(R.string.manage_accounts_premium_active))
                     }
@@ -183,15 +183,15 @@ fun ManageAccountsScreen(navigation: HSNavigation, mode: ManageAccountsModule.Mo
                             painter = painterResource(id = it.icon),
                             contentDescription = null,
                             tint = if (it.enabled) {
-                                ComposeAppTheme.colors.jacob
+                                ComposeAppTheme.colors.brandDefault
                             } else {
-                                ComposeAppTheme.colors.grey
+                                ComposeAppTheme.colors.iconDisabled
                             }
                         )
                         if (it.enabled) {
-                            body_jacob(text = stringResource(id = it.title))
+                            body_brand(text = stringResource(id = it.title))
                         } else {
-                            body_grey(text = stringResource(id = it.title))
+                            body_disabled(text = stringResource(id = it.title))
                         }
                     }
                 }
@@ -284,9 +284,9 @@ private fun AccountMoreButton(
     navigation: HSNavigation,
 ) {
     val (icon, iconTint) = if (accountViewItem.showAlertIcon) {
-        R.drawable.icon_warning_2_20 to ComposeAppTheme.colors.lucian
+        R.drawable.icon_warning_2_20 to ComposeAppTheme.colors.statusError
     } else {
-        R.drawable.ic_more2_20 to ComposeAppTheme.colors.leah
+        R.drawable.ic_more2_20 to ComposeAppTheme.colors.iconPrimary
     }
     ButtonSecondaryCircle(
         modifier = Modifier.padding(horizontal = 16.dp),

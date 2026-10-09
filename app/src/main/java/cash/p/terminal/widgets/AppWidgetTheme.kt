@@ -4,34 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import androidx.glance.color.ColorProvider
 import androidx.glance.text.FontWeight
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import cash.p.terminal.ui_compose.theme.Black50
-import cash.p.terminal.ui_compose.theme.Dark
-import cash.p.terminal.ui_compose.theme.Green50
-import cash.p.terminal.ui_compose.theme.GreenD
-import cash.p.terminal.ui_compose.theme.GreenL
-import cash.p.terminal.ui_compose.theme.Grey
-import cash.p.terminal.ui_compose.theme.Grey50
-import cash.p.terminal.ui_compose.theme.Light
-import cash.p.terminal.ui_compose.theme.LightGrey
-import cash.p.terminal.ui_compose.theme.Red20
-import cash.p.terminal.ui_compose.theme.Red50
-import cash.p.terminal.ui_compose.theme.RedD
-import cash.p.terminal.ui_compose.theme.RedL
-import cash.p.terminal.ui_compose.theme.Steel10
-import cash.p.terminal.ui_compose.theme.Steel20
-import cash.p.terminal.ui_compose.theme.SteelDark
-import cash.p.terminal.ui_compose.theme.SteelLight
-import cash.p.terminal.ui_compose.theme.Yellow20
-import cash.p.terminal.ui_compose.theme.Yellow50
-import cash.p.terminal.ui_compose.theme.YellowD
-import cash.p.terminal.ui_compose.theme.YellowL
 import cash.p.terminal.ui_compose.theme.darkPalette
 import cash.p.terminal.ui_compose.theme.lightPalette
 
@@ -48,7 +26,7 @@ class TextStyles {
     @Composable
     fun c3(textAlign: TextAlign = TextAlign.Start) =
         TextStyle(
-            color = AppWidgetTheme.colors.jacob,
+            color = AppWidgetTheme.colors.brandDefault,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             textAlign = textAlign
@@ -57,7 +35,7 @@ class TextStyles {
     @Composable
     fun d1(textAlign: TextAlign = TextAlign.Start) =
         TextStyle(
-            color = AppWidgetTheme.colors.grey,
+            color = AppWidgetTheme.colors.textSecondary,
             fontSize = 14.sp,
             fontWeight = FontWeight.Normal,
             textAlign = textAlign
@@ -66,7 +44,7 @@ class TextStyles {
     @Composable
     fun d3(textAlign: TextAlign = TextAlign.Start) =
         TextStyle(
-            color = AppWidgetTheme.colors.jacob,
+            color = AppWidgetTheme.colors.brandDefault,
             fontSize = 14.sp,
             fontWeight = FontWeight.Normal,
             textAlign = textAlign
@@ -75,7 +53,7 @@ class TextStyles {
     @Composable
     fun micro(textAlign: TextAlign = TextAlign.Start) =
         TextStyle(
-            color = AppWidgetTheme.colors.grey,
+            color = AppWidgetTheme.colors.textSecondary,
             fontSize = 10.sp,
             fontWeight = FontWeight.Normal,
             textAlign = textAlign
@@ -91,62 +69,32 @@ fun AppWidgetTheme(colors: ColorProviders = AppWidgetTheme.colors, content: @Com
 
 internal val LocalColorProviders = staticCompositionLocalOf {
     ColorProviders(
-        jacob = ColorProvider(lightPalette.jacob, darkPalette.jacob),
-        remus = ColorProvider(lightPalette.remus, darkPalette.remus),
-        lucian = ColorProvider(lightPalette.lucian, darkPalette.lucian),
-        tyler = ColorProvider(lightPalette.tyler, darkPalette.tyler),
-        bran = ColorProvider(lightPalette.bran, darkPalette.bran),
-        leah = ColorProvider(lightPalette.leah, darkPalette.leah),
-        claude = ColorProvider(lightPalette.claude, darkPalette.claude),
-        lawrence = ColorProvider(lightPalette.lawrence, darkPalette.lawrence),
-        jeremy = ColorProvider(lightPalette.jeremy, darkPalette.jeremy),
-        laguna = ColorProvider(lightPalette.laguna, darkPalette.laguna),
-        raina = ColorProvider(lightPalette.raina, darkPalette.raina),
+        brandDefault = ColorProvider(lightPalette.brandDefault, darkPalette.brandDefault),
+        statusSuccess = ColorProvider(lightPalette.statusSuccess, darkPalette.statusSuccess),
+        statusError = ColorProvider(lightPalette.statusError, darkPalette.statusError),
+        backgroundBase = ColorProvider(lightPalette.backgroundBase, darkPalette.backgroundBase),
+        surfacePrimary = ColorProvider(lightPalette.surfacePrimary, darkPalette.surfacePrimary),
+        surfacePlaceholder = ColorProvider(lightPalette.surfacePlaceholder, darkPalette.surfacePlaceholder),
+        borderDefault = ColorProvider(lightPalette.borderDefault, darkPalette.borderDefault),
+        borderDivider = ColorProvider(lightPalette.borderDivider, darkPalette.borderDivider),
+        badgeBackground = ColorProvider(lightPalette.badgeBackground, darkPalette.badgeBackground),
+        textPrimary = ColorProvider(lightPalette.textPrimary, darkPalette.textPrimary),
+        textSecondary = ColorProvider(lightPalette.textSecondary, darkPalette.textSecondary),
+        iconSecondary = ColorProvider(lightPalette.iconSecondary, darkPalette.iconSecondary),
     )
 }
 
 data class ColorProviders(
-    val jacob: ColorProvider,
-    val remus: ColorProvider,
-    val lucian: ColorProvider,
-    val tyler: ColorProvider,
-    val bran: ColorProvider,
-    val leah: ColorProvider,
-    val claude: ColorProvider,
-    val lawrence: ColorProvider,
-    val jeremy: ColorProvider,
-    val laguna: ColorProvider,
-    val raina: ColorProvider,
-
-    //base colors
-    val grey: ColorProvider = ColorProvider(Grey)
+    val brandDefault: ColorProvider,
+    val statusSuccess: ColorProvider,
+    val statusError: ColorProvider,
+    val backgroundBase: ColorProvider,
+    val surfacePrimary: ColorProvider,
+    val surfacePlaceholder: ColorProvider,
+    val borderDefault: ColorProvider,
+    val borderDivider: ColorProvider,
+    val badgeBackground: ColorProvider,
+    val textPrimary: ColorProvider,
+    val textSecondary: ColorProvider,
+    val iconSecondary: ColorProvider,
 )
-
-//base colors
-val transparent = Color.Transparent
-val dark = Dark
-val light = Light
-val white = Color.White
-val black50 = Black50
-val issykBlue = Color(0xFF3372FF)
-val lightGrey = LightGrey
-val steelLight = SteelLight
-val steelDark = SteelDark
-val steel10 = Steel10
-val steel20 = Steel20
-val grey = Grey
-val grey50 = Grey50
-val yellow50 = Yellow50
-val yellow20 = Yellow20
-
-val yellowD = YellowD
-val yellowL = YellowL
-val greenD = GreenD
-val greenL = GreenL
-val green50 = Green50
-val redD = RedD
-val redL = RedL
-val elenaD = Color(0xFF6E7899)
-val red50 = Red50
-val red20 = Red20
-

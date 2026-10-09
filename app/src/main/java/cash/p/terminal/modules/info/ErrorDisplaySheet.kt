@@ -44,7 +44,7 @@ private fun ErrorDisplayScreen(
     ComposeAppTheme {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.icon_24_warning_2),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.lucian),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusError),
             title = title,
             onCloseClick = onClose
         ) {

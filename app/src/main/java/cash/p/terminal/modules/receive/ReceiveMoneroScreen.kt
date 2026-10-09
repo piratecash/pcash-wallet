@@ -108,7 +108,7 @@ private fun MoneroTopContent(
     HorizontalDivider(
         modifier = Modifier.fillMaxWidth(),
         thickness = 1.dp,
-        color = ComposeAppTheme.colors.steel20,
+        color = ComposeAppTheme.colors.borderDivider,
     )
 }
 
@@ -120,9 +120,9 @@ private fun MoneroAddressBadge(badge: AddressBadge) {
         AddressBadge.UNUSED -> stringResource(R.string.receive_address_badge_unused)
     }
     val badgeColor = when (badge) {
-        AddressBadge.NEW -> ComposeAppTheme.colors.remus
-        AddressBadge.USED -> ComposeAppTheme.colors.jacob
-        AddressBadge.UNUSED -> ComposeAppTheme.colors.grey
+        AddressBadge.NEW -> ComposeAppTheme.colors.statusSuccess
+        AddressBadge.USED -> ComposeAppTheme.colors.brandDefault
+        AddressBadge.UNUSED -> ComposeAppTheme.colors.textSecondary
     }
     VSpacer(12.dp)
     Row(
@@ -230,7 +230,7 @@ private fun ConfirmNewAddressSheetContent(
 ) {
     BottomSheetHeader(
         iconPainter = painterResource(R.drawable.ic_attention_24),
-        iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+        iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
         title = stringResource(R.string.receive_create_another_address_title),
         onCloseClick = onDismiss,
     ) {
@@ -244,7 +244,7 @@ private fun ConfirmNewAddressSheetContent(
         RowUniversal(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
-                .border(1.dp, ComposeAppTheme.colors.steel20, RoundedCornerShape(12.dp)),
+                .border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(12.dp)),
             onClick = { onDontAskAgainChange(!dontAskAgain) },
         ) {
             HsRadioButton(

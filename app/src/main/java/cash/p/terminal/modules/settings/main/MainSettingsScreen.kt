@@ -121,7 +121,7 @@ fun SettingsScreen(
         }
     }
 
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(stringResource(R.string.Settings_Title))
             SettingsContent(

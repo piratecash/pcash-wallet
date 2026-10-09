@@ -14,13 +14,14 @@ import cash.p.terminal.entities.CoinValue
 import cash.p.terminal.modules.send.fee.NetworkFeeWarningData
 import cash.p.terminal.ui.compose.components.CardsSwapInfo
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.caption_jacob
 import cash.p.terminal.ui_compose.components.caption_lucian
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.subhead2_leah
 import cash.p.terminal.ui_compose.components.subhead2_lucian
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Token
 import java.math.BigDecimal
+import cash.p.terminal.ui_compose.components.Caption
 
 @Composable
 fun FeeInfoSection(
@@ -87,9 +88,10 @@ fun FeeInfoSection(
         )
     } else if (feeWarningText != null) {
         VSpacer(height = 8.dp)
-        caption_jacob(
+        Caption(
             text = feeWarningText,
-            modifier = Modifier.padding(horizontal = 32.dp)
+            color = ComposeAppTheme.colors.statusWarning,
+            modifier = Modifier.padding(horizontal = 32.dp),
         )
     }
 }

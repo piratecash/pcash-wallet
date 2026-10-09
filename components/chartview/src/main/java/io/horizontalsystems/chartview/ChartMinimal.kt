@@ -15,7 +15,7 @@ class ChartMinimal @JvmOverloads constructor(
 
     private val binding = ViewChartMinimalBinding.inflate(LayoutInflater.from(context), this)
 
-    private val config = ChartConfig(context, attrs)
+    private val config = ChartConfig(context)
 
     private val mainCurve = ChartCurve2(config)
 

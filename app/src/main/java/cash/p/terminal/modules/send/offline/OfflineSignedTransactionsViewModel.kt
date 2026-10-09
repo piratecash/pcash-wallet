@@ -124,7 +124,7 @@ class OfflineSignedTransactionsViewModel(
         val status = if (observedProofHeight > 0) {
             ColoredValue(Translator.getString(R.string.StatusInfo_Confirmed), ColorName.Remus)
         } else {
-            ColoredValue(Translator.getString(R.string.offline_signed_status_unknown), ColorName.Grey)
+            ColoredValue(Translator.getString(R.string.offline_signed_status_unknown), ColorName.Secondary)
         }
         val uid = "beam-offline:$operationId"
         val hash = mainKernelId.orEmpty()
@@ -429,12 +429,12 @@ class OfflineSignedTransactionsViewModel(
         when (this) {
             OfflineSignedTransactionDisplayStatus.Pending -> ColoredValue(
                 Translator.getString(R.string.offline_signed_status_pending),
-                ColorName.Jacob,
+                ColorName.Brand,
             )
 
             OfflineSignedTransactionDisplayStatus.Unknown -> ColoredValue(
                 Translator.getString(R.string.offline_signed_status_unknown),
-                ColorName.Grey,
+                ColorName.Secondary,
             )
 
             OfflineSignedTransactionDisplayStatus.Broadcasted -> ColoredValue(
@@ -447,12 +447,12 @@ class OfflineSignedTransactionsViewModel(
         when (this) {
             OfflineSignedTransactionDisplayStatus.Pending -> ColoredValue(
                 Translator.getString(R.string.offline_signed_status_pending),
-                ColorName.Jacob,
+                ColorName.Brand,
             )
 
             OfflineSignedTransactionDisplayStatus.Unknown -> ColoredValue(
                 Translator.getString(R.string.offline_signed_status_unknown),
-                ColorName.Grey,
+                ColorName.Secondary,
             )
 
             OfflineSignedTransactionDisplayStatus.Broadcasted -> ColoredValue(

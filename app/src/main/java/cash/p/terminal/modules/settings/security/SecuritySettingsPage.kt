@@ -264,7 +264,7 @@ private fun SecurityCenterScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.Settings_SecurityCenter),
@@ -292,7 +292,7 @@ private fun SecurityCenterScreen(
                     start = {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_off_24),
-                            tint = ComposeAppTheme.colors.grey,
+                            tint = ComposeAppTheme.colors.iconSecondary,
                             modifier = Modifier.size(24.dp),
                             contentDescription = null
                         )
@@ -324,7 +324,7 @@ private fun SecurityCenterScreen(
                     start = {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_off_24),
-                            tint = ComposeAppTheme.colors.grey,
+                            tint = ComposeAppTheme.colors.iconSecondary,
                             modifier = Modifier.size(24.dp),
                             contentDescription = null
                         )
@@ -490,7 +490,7 @@ private fun SecurityFlipRowPreview() {
                 start = {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_off_24),
-                        tint = ComposeAppTheme.colors.grey,
+                        tint = ComposeAppTheme.colors.iconSecondary,
                         modifier = Modifier.size(24.dp),
                         contentDescription = null
                     )

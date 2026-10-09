@@ -101,9 +101,9 @@ import cash.p.terminal.ui_compose.components.InfoText
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.TextImportantWarning
-import cash.p.terminal.ui_compose.components.body_grey50
+import cash.p.terminal.ui_compose.components.body_disabled
 import cash.p.terminal.ui_compose.components.body_leah
-import cash.p.terminal.ui_compose.components.captionSB_leah
+import cash.p.terminal.ui_compose.components.subhead2_leah
 import cash.p.terminal.ui_compose.components.caption_lucian
 import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.ui_compose.theme.ColoredTextStyle
@@ -170,9 +170,9 @@ fun RestorePhrase(
     val keyboardState by observeKeyboardState()
 
     val borderColor = if (uiState.error != null) {
-        ComposeAppTheme.colors.red50
+        ComposeAppTheme.colors.statusError50
     } else {
-        ComposeAppTheme.colors.steel20
+        ComposeAppTheme.colors.borderDefault
     }
 
     val coroutineScope = rememberCoroutineScope()
@@ -207,7 +207,7 @@ fun RestorePhrase(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = if (advanced) stringResource(R.string.Restore_Advanced_Title) else stringResource(
@@ -261,7 +261,7 @@ fun RestorePhrase(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
                         .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-                        .background(ComposeAppTheme.colors.lawrence),
+                        .background(ComposeAppTheme.colors.surfacePrimary),
                 ) {
                     MnemonicLanguageCell(
                         language = uiState.language,
@@ -272,11 +272,11 @@ fun RestorePhrase(
                     )
                     HorizontalDivider(
                         thickness = 1.dp,
-                        color = ComposeAppTheme.colors.steel10
+                        color = ComposeAppTheme.colors.borderDivider
                     )
 
                     val style = SpanStyle(
-                        color = ComposeAppTheme.colors.lucian,
+                        color = ComposeAppTheme.colors.statusError,
                         fontWeight = FontWeight.Normal,
                         fontSize = 16.sp,
                         letterSpacing = 0.sp
@@ -303,11 +303,11 @@ fun RestorePhrase(
                                 )
                         },
                         textStyle = ColoredTextStyle(
-                            color = ComposeAppTheme.colors.leah,
+                            color = ComposeAppTheme.colors.textPrimary,
                             textStyle = ComposeAppTheme.typography.body
                         ),
                         maxLines = 6,
-                        cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+                        cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
                         visualTransformation = {
                             try {
                                 val annotatedString = buildAnnotatedString {
@@ -326,7 +326,7 @@ fun RestorePhrase(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         decorationBox = { innerTextField ->
                             if (textState.text.isEmpty()) {
-                                body_grey50(
+                                body_disabled(
                                     stringResource(R.string.Restore_PhraseHint),
                                     overflow = TextOverflow.Ellipsis,
                                 )
@@ -630,7 +630,7 @@ fun SuggestionsBar(
                                 onClick.invoke(wordItem, suggestion)
                             }
                         ) {
-                            captionSB_leah(text = suggestion)
+                            subhead2_leah(text = suggestion)
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                     }
@@ -639,7 +639,7 @@ fun SuggestionsBar(
                 Icon(
                     modifier = Modifier.align(Alignment.Center),
                     painter = painterResource(R.drawable.ic_more_24),
-                    tint = ComposeAppTheme.colors.grey,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                     contentDescription = null
                 )
             }

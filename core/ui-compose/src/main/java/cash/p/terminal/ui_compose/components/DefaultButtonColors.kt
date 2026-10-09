@@ -26,10 +26,10 @@ class HsButtonColors(
 
         if (other !is HsButtonColors) return false
 
-        return backgroundColor != other.backgroundColor
-                && contentColor != other.contentColor
-                && disabledBackgroundColor != other.disabledBackgroundColor
-                && disabledContentColor != other.disabledContentColor
+        return backgroundColor == other.backgroundColor
+                && contentColor == other.contentColor
+                && disabledBackgroundColor == other.disabledBackgroundColor
+                && disabledContentColor == other.disabledContentColor
     }
 
     override fun hashCode(): Int {

@@ -71,7 +71,7 @@ private fun PayCoreBankCell(
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .clip(getShape(itemsCount, index))
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(ComposeAppTheme.colors.surfacePrimary)
     ) {
         SectionUniversalItem(
             borderTop = showDivider(itemsCount, index),

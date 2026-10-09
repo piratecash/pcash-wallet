@@ -78,7 +78,7 @@ private fun PersonalSupportScreen(navigation: HSNavigation) {
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.Settings_PersonalSupport),
@@ -114,7 +114,7 @@ private fun SupportEnabled(
                 modifier = Modifier
                     .size(100.dp)
                     .background(
-                        color = ComposeAppTheme.colors.raina,
+                        color = ComposeAppTheme.colors.surfacePlaceholder,
                         shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center
@@ -123,7 +123,7 @@ private fun SupportEnabled(
                     modifier = Modifier.size(48.dp),
                     painter = painterResource(R.drawable.ic_support_24),
                     contentDescription = "",
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
             }
             Spacer(Modifier.height(32.dp))

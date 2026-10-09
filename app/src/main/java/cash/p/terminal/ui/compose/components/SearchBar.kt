@@ -37,7 +37,7 @@ import cash.p.terminal.R
 import cash.p.terminal.ui_compose.components.AppBarMenuButton
 import cash.p.terminal.ui_compose.components.HsIconButton
 import cash.p.terminal.ui_compose.components.MenuItem
-import cash.p.terminal.ui_compose.components.body_grey50
+import cash.p.terminal.ui_compose.components.body_disabled
 import cash.p.terminal.ui_compose.components.title3_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
@@ -71,7 +71,7 @@ fun SearchBar(
                 overflow = TextOverflow.Ellipsis
             )
         },
-        backgroundColor = ComposeAppTheme.colors.tyler,
+        backgroundColor = ComposeAppTheme.colors.backgroundBase,
         elevation = 0.dp,
         navigationIcon = {
             HsIconButton(onClick = {
@@ -86,7 +86,7 @@ fun SearchBar(
                 Icon(
                     painter = painterResource(id = R.drawable.ic_back),
                     contentDescription = stringResource(R.string.Button_Back),
-                    tint = ComposeAppTheme.colors.jacob
+                    tint = ComposeAppTheme.colors.brandDefault
                 )
             }
         },
@@ -104,7 +104,7 @@ fun SearchBar(
                         showClearButton = it.isNotEmpty()
                     },
                     placeholder = {
-                        body_grey50(
+                        body_disabled(
                             text = searchHintText,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
@@ -115,8 +115,8 @@ fun SearchBar(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
                         backgroundColor = Color.Transparent,
-                        cursorColor = ComposeAppTheme.colors.jacob,
-                        textColor = ComposeAppTheme.colors.leah
+                        cursorColor = ComposeAppTheme.colors.brandDefault,
+                        textColor = ComposeAppTheme.colors.textPrimary
                     ),
                     maxLines = 1,
                     singleLine = true,
@@ -138,7 +138,7 @@ fun SearchBar(
                                 Icon(
                                     painter = painterResource(R.drawable.ic_close_24),
                                     contentDescription = stringResource(R.string.Button_Cancel),
-                                    tint = ComposeAppTheme.colors.jacob
+                                    tint = ComposeAppTheme.colors.brandDefault
                                 )
                             }
 
@@ -178,9 +178,9 @@ fun SearchBar(
                             text = menuItem.title.getString(),
                             style = ComposeAppTheme.typography.headline2,
                             color = if (menuItem.enabled) {
-                                ComposeAppTheme.colors.jacob
+                                ComposeAppTheme.colors.brandDefault
                             } else {
-                                ComposeAppTheme.colors.yellow50
+                                ComposeAppTheme.colors.statusWarning50
                             }
                         )
                     }

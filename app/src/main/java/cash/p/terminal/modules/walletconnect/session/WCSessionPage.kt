@@ -105,7 +105,7 @@ fun WCSessionScreen(
     Column(
         modifier = Modifier
             .windowInsetsPadding(windowInsets)
-            .background(color = ComposeAppTheme.colors.tyler)
+            .background(color = ComposeAppTheme.colors.backgroundBase)
     ) {
         AppBar(
             title = stringResource(R.string.WalletConnect_Title),
@@ -116,7 +116,11 @@ fun WCSessionScreen(
                     icon = R.drawable.ic_close_24,
                     onClick = { navigation.navigateUpSafely() },
                     enabled = uiState.closeEnabled,
-                    tint = if (uiState.closeEnabled) ComposeAppTheme.colors.jacob else ComposeAppTheme.colors.grey50
+                    tint = if (uiState.closeEnabled) {
+                        ComposeAppTheme.colors.brandDefault
+                    } else {
+                        ComposeAppTheme.colors.iconDisabled
+                    }
                 )
             )
         )
@@ -163,7 +167,7 @@ private fun ColumnScope.WCSessionListContent(
                 modifier = Modifier.padding(start = 16.dp),
                 text = uiState.peerMeta?.name ?: "",
                 style = ComposeAppTheme.typography.headline1,
-                color = ComposeAppTheme.colors.leah
+                color = ComposeAppTheme.colors.textPrimary
             )
         }
         val composableItems = mutableListOf<@Composable () -> Unit>().apply {
@@ -266,14 +270,14 @@ fun RequestCell(
             Text(
                 text = viewItem.title,
                 style = ComposeAppTheme.typography.body,
-                color = ComposeAppTheme.colors.leah,
+                color = ComposeAppTheme.colors.textPrimary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = viewItem.subtitle,
                 style = ComposeAppTheme.typography.subhead2,
-                color = ComposeAppTheme.colors.grey,
+                color = ComposeAppTheme.colors.textSecondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )

@@ -54,6 +54,41 @@ class AccountCapabilitiesTest {
     }
 
     @Test
+    fun requiresBackupForActions_notBackedUpMnemonic_true() {
+        assertTrue(accountOf(mnemonicType()).requiresBackupForActions())
+    }
+
+    @Test
+    fun requiresBackupForActions_phraseBackedUpMnemonic_false() {
+        assertFalse(accountOf(mnemonicType(), isBackedUp = true).requiresBackupForActions())
+    }
+
+    @Test
+    fun requiresBackupForActions_fileBackedUpMnemonic_false() {
+        assertFalse(accountOf(mnemonicType(), isFileBackedUp = true).requiresBackupForActions())
+    }
+
+    @Test
+    fun requiresBackupForActions_watchAccount_false() {
+        assertFalse(accountOf(TonAddress("ton1")).requiresBackupForActions())
+    }
+
+    @Test
+    fun requiresBackupForActions_hardwareAccount_false() {
+        assertFalse(accountOf(hardwareType()).requiresBackupForActions())
+    }
+
+    @Test
+    fun requiresBackupForActions_notBackedUpMonero_true() {
+        assertTrue(accountOf(moneroMnemonicType()).requiresBackupForActions())
+    }
+
+    @Test
+    fun requiresBackupForActions_backedUpMonero_false() {
+        assertFalse(accountOf(moneroMnemonicType(), isBackedUp = true).requiresBackupForActions())
+    }
+
+    @Test
     fun isWatchAccountType_zcashSaplingKey_followsTheKeyHrp() {
         assertFalse(saplingSpendingKey.isWatchAccountType)
         assertTrue(saplingViewingKey.isWatchAccountType)
@@ -73,12 +108,18 @@ class AccountCapabilitiesTest {
         }
     }
 
-    private fun accountOf(type: AccountType) = Account(
+    private fun accountOf(
+        type: AccountType,
+        isBackedUp: Boolean = false,
+        isFileBackedUp: Boolean = false,
+    ) = Account(
         id = type::class.simpleName ?: "account",
         name = "Account",
         type = type,
         origin = AccountOrigin.Created,
-        level = 0
+        level = 0,
+        isBackedUp = isBackedUp,
+        isFileBackedUp = isFileBackedUp,
     )
 
     private fun mnemonicType() = Mnemonic(validMnemonicWords, passphrase = "")

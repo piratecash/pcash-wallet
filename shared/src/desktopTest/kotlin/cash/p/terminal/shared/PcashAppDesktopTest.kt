@@ -83,10 +83,10 @@ class PcashAppDesktopTest {
         onNodeWithText("Donate").assertExists()
         val narrowCenters = destinationCenters()
         assertTrue(axisSpread(narrowCenters, vertical = false) > axisSpread(narrowCenters, vertical = true))
-        assertTrue(rootCornerColor() == darkPalette.tyler)
+        assertTrue(rootCornerColor() == darkPalette.backgroundBase)
 
         runOnIdle { darkTheme = false }
-        assertTrue(rootCornerColor() == lightPalette.tyler)
+        assertTrue(rootCornerColor() == lightPalette.backgroundBase)
     }
 
     private fun ComposeUiTest.destinationCenters(): List<Offset> =

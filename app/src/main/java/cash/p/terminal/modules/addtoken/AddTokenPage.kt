@@ -84,7 +84,7 @@ private fun AddTokenScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.AddToken_Title),
@@ -138,7 +138,7 @@ private fun AddTokenScreen(
                         Icon(
                             painter = painterResource(id = R.drawable.ic_down_arrow_20),
                             contentDescription = null,
-                            tint = ComposeAppTheme.colors.grey
+                            tint = ComposeAppTheme.colors.iconSecondary
                         )
                     }
                 }

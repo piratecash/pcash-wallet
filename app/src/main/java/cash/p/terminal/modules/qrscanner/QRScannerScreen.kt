@@ -37,7 +37,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Surface
@@ -51,7 +50,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -65,7 +63,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -78,7 +75,8 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui.helpers.TextHelper
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefaultWithIcon
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefaults
-import cash.p.terminal.ui_compose.components.ButtonPrimaryNeutral
+import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
+import cash.p.terminal.ui_compose.components.AppDialog
 import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.HudHelper
@@ -86,8 +84,6 @@ import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.title3_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
-import cash.p.terminal.ui_compose.theme.SteelLight
-import cash.p.terminal.ui_compose.theme.YellowD
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
@@ -160,7 +156,7 @@ fun QRScannerScreen(
             Modifier
                 .fillMaxSize()
                 .windowInsetsPadding(windowInsets)
-                .background(color = ComposeAppTheme.colors.tyler),
+                .background(color = ComposeAppTheme.colors.backgroundBase),
             contentAlignment = Alignment.Center
         ) {
             if (cameraPermissionState.status == PermissionStatus.Granted) {
@@ -169,7 +165,7 @@ fun QRScannerScreen(
                 Spacer(
                     Modifier
                         .fillMaxSize()
-                        .background(color = ComposeAppTheme.colors.dark)
+                        .background(color = ComposeAppTheme.colors.scannerBackground)
                 )
                 GoToSettingsBox(onCameraPermissionSettingsClick)
             }
@@ -181,7 +177,7 @@ fun QRScannerScreen(
                         .padding(top = 50.dp, start = 16.dp, end = 16.dp)
                         .align(Alignment.TopCenter),
                     style = ComposeAppTheme.typography.headline1,
-                    color = ComposeAppTheme.colors.white
+                    color = ComposeAppTheme.colors.contentOnColor
                 )
             }
 
@@ -205,7 +201,7 @@ fun QRScannerScreen(
                 }
 
                 if (allowGalleryWithoutPremium) {
-                    ButtonPrimaryNeutral(
+                    ButtonPrimaryDefault(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 8.dp),
@@ -216,7 +212,7 @@ fun QRScannerScreen(
                 } else {
                     ButtonPrimaryDefaultWithIcon(
                         icon = R.drawable.star_filled_yellow_16,
-                        iconTint = YellowD,
+                        iconTint = ComposeAppTheme.colors.statusWarning,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 8.dp),
@@ -228,7 +224,7 @@ fun QRScannerScreen(
                     )
                 }
 
-                ButtonPrimaryNeutral(
+                ButtonPrimaryDefault(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp),
@@ -251,12 +247,12 @@ private fun LoadingOverlay() {
     Box(
         Modifier
             .fillMaxSize()
-            .background(ComposeAppTheme.colors.tyler.copy(alpha = 0.7f)),
+            .background(ComposeAppTheme.colors.backgroundBase.copy(alpha = 0.7f)),
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(
             modifier = Modifier.size(48.dp),
-            color = ComposeAppTheme.colors.leah
+            color = ComposeAppTheme.colors.textPrimary
         )
     }
 }
@@ -397,7 +393,7 @@ private fun CameraErrorOverlay(errorMessage: String) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(ComposeAppTheme.colors.dark),
+            .background(ComposeAppTheme.colors.scannerBackground),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -418,7 +414,7 @@ private fun ScannerOverlay() {
     val scanWindowSize = with(density) { 250.dp.toPx() }
     val cornerLength = with(density) { 30.dp.toPx() }
     val strokeWidth = with(density) { 4.dp.toPx() }
-    val cornerColor = ComposeAppTheme.colors.yellowD
+    val cornerColor = ComposeAppTheme.colors.brandDefault
 
     // Animated scan line
     val infiniteTransition = rememberInfiniteTransition(label = "scanLine")
@@ -544,7 +540,7 @@ private fun TextPrimaryButton(
 
     Surface(
         color = ComposeAppTheme.colors.transparent,
-        contentColor = SteelLight,
+        contentColor = ComposeAppTheme.colors.contentOnColor,
     ) {
         Row(
             Modifier
@@ -578,13 +574,8 @@ private fun PermissionNeededDialog(
     onCancelClick: () -> Unit,
 ) {
     ComposeAppTheme {
-        Dialog(onDismissRequest = onCancelClick) {
-            Column(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(color = ComposeAppTheme.colors.lawrence)
-                    .padding(horizontal = 24.dp, vertical = 20.dp)
-            ) {
+        AppDialog(onDismissRequest = onCancelClick) {
+            Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp)) {
                 title3_leah(text = stringResource(R.string.ScanQr_CameraPermission_Title))
                 Spacer(Modifier.height(12.dp))
                 body_leah(text = stringResource(R.string.ScanQr_PleaseGrantCameraPermission))

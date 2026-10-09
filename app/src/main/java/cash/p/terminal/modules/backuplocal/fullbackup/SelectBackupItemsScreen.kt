@@ -30,6 +30,7 @@ import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead1_grey
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.subhead2_lucian
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @Composable
 fun SelectBackupItemsScreen(
@@ -42,7 +43,7 @@ fun SelectBackupItemsScreen(
     val uiState = viewModel.uiState
 
     Scaffold(
-        containerColor = cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.BackupManager_BаckupFile),

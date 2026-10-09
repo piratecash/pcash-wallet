@@ -56,7 +56,7 @@ class SolanaKitManagerDatabaseTest {
                 networkErrorListener = any(),
             )
         } returns solanaKit
-        every { keyProvider.keyFor(any()) } returns databaseKey
+        coEvery { keyProvider.awaitKey(any()) } returns databaseKey
         every { keyProvider.remove(any()) } returns Unit
     }
 
@@ -111,18 +111,6 @@ class SolanaKitManagerDatabaseTest {
     }
 
     @Test
-    fun getSolanaKitWrapper_databaseKeyLocked_retriesThenCreatesKit() = runTest {
-        every { keyProvider.keyFor(ACCOUNT_ID) } throws
-            KitDatabaseKeyLockedException("SolanaKit", mockk()) andThen databaseKey
-
-        val wrapper = createManager().getSolanaKitWrapper(account)
-
-        assertSame(solanaKit, wrapper.solanaKit)
-        verify(exactly = 2) { keyProvider.keyFor(ACCOUNT_ID) }
-        coVerify(exactly = 1) { SolanaKit.migrateDatabase(any(), ACCOUNT_ID, databaseKey) }
-    }
-
-    @Test
     fun getSolanaKitWrapper_migrationFails_propagatesWithoutCreatingKit() = runTest {
         coEvery { SolanaKit.migrateDatabase(any(), any(), any()) } throws
             DatabaseMigrationConflictException("migration conflict")
@@ -143,7 +131,7 @@ class SolanaKitManagerDatabaseTest {
 
         assertFailsWith<UnsupportedAccountException> { createManager().getSolanaKitWrapper(tonAccount) }
 
-        verify(exactly = 0) { keyProvider.keyFor(any()) }
+        coVerify(exactly = 0) { keyProvider.awaitKey(any()) }
         coVerify(exactly = 0) { SolanaKit.migrateDatabase(any(), any(), any()) }
     }
 

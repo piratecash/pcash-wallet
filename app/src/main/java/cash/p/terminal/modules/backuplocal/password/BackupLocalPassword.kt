@@ -83,7 +83,6 @@ fun LocalBackupPasswordScreen(
                                 resId = R.string.LocalBackup_BackupSaved,
                                 duration = SnackbarDuration.SHORT,
                                 icon = R.drawable.ic_download_24,
-                                iconTint = R.color.white
                             )
 
                             viewModel.backupFinished()
@@ -120,7 +119,7 @@ fun LocalBackupPasswordScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.LocalBackup_SetPassword),
@@ -264,7 +263,7 @@ private fun DuressBackupToggle(
                     modifier = Modifier.size(20.dp),
                     painter = painterResource(R.drawable.ic_info_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
             }
             HFillSpacer(minWidth = 4.dp)

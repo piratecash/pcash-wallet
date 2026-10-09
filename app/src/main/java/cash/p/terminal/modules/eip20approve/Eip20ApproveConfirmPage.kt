@@ -204,7 +204,7 @@ private fun Eip20ApproveTokenSection(
                     currency = uiState.currency,
                     borderTop = false,
                     title = stringResource(R.string.Approve_YouApprove),
-                    amountColor = ComposeAppTheme.colors.leah
+                    amountColor = ComposeAppTheme.colors.textPrimary
                 )
             }
 
@@ -213,7 +213,7 @@ private fun Eip20ApproveTokenSection(
                     token = uiState.token,
                     borderTop = false,
                     title = stringResource(R.string.Approve_YouApprove),
-                    amountColor = ComposeAppTheme.colors.leah
+                    amountColor = ComposeAppTheme.colors.textPrimary
                 )
             }
         }

@@ -55,7 +55,7 @@ fun SelectContactScreen(navigation: HSNavigation, page: SelectContactPage, input
     val uiState = viewModel.uiState
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = {
@@ -110,7 +110,7 @@ private fun CellContact(
                 painterResource(id = R.drawable.ic_user_24)
             },
             contentDescription = "",
-            tint = ComposeAppTheme.colors.grey
+            tint = ComposeAppTheme.colors.iconSecondary
         )
         HSpacer(width = 16.dp)
         body_leah(text = contact?.name ?: stringResource(id = R.string.SelectContacts_All))
@@ -119,7 +119,7 @@ private fun CellContact(
             Icon(
                 painter = painterResource(id = R.drawable.icon_check_1_24),
                 contentDescription = "selected",
-                tint = ComposeAppTheme.colors.jacob
+                tint = ComposeAppTheme.colors.brandDefault
             )
         }
     }

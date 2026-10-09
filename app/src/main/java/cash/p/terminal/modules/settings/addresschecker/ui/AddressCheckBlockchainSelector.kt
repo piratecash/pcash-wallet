@@ -57,7 +57,7 @@ fun AddressCheckBlockchainSelectorScreen(
                 }
             )
         },
-        containerColor = ComposeAppTheme.colors.tyler
+        containerColor = ComposeAppTheme.colors.backgroundBase
     ) {
         Column(
             modifier = Modifier
@@ -110,7 +110,7 @@ private fun BlockchainCell(
         if (checked) {
             Icon(
                 painter = painterResource(R.drawable.ic_checkmark_20),
-                tint = ComposeAppTheme.colors.jacob,
+                tint = ComposeAppTheme.colors.brandDefault,
                 contentDescription = null,
             )
         }

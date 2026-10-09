@@ -44,7 +44,7 @@ fun MoneroUsedAddressesScreen(
 ) {
     Scaffold(
         modifier = modifier,
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.Balance_Receive_UsedAddresses),
@@ -88,10 +88,10 @@ private fun MoneroAddressRow(item: MoneroSubaddressParcelable) {
 
     if (item.receivedAmount > 0) {
         badgeText = stringResource(R.string.receive_address_badge_used)
-        badgeColor = ComposeAppTheme.colors.jacob
+        badgeColor = ComposeAppTheme.colors.brandDefault
     } else {
         badgeText = stringResource(R.string.receive_address_badge_unused)
-        badgeColor = ComposeAppTheme.colors.grey
+        badgeColor = ComposeAppTheme.colors.iconSecondary
     }
 
     RowUniversal(

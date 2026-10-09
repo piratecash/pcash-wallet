@@ -59,7 +59,7 @@ fun TopPairsScreen() {
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
     ) {
         Column(modifier = Modifier.padding(it)) {
             HSSwipeRefresh(
@@ -143,7 +143,7 @@ fun TopPairItem(
 
             val targetCoinModifier = Modifier
                 .size(32.dp)
-                .background(ComposeAppTheme.colors.tyler)
+                .background(ComposeAppTheme.colors.backgroundBase)
                 .clip(CircleShape)
                 .align(Alignment.TopEnd)
 
@@ -163,7 +163,7 @@ fun TopPairItem(
             val baseCoinModifier = Modifier
                 .size(32.dp)
                 .clip(CircleShape)
-                .background(ComposeAppTheme.colors.tyler)
+                .background(ComposeAppTheme.colors.backgroundBase)
                 .align(Alignment.TopStart)
 
             if (item.baseCoin != null) {

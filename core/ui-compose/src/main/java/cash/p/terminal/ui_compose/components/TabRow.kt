@@ -37,12 +37,12 @@ fun <T> Tabs(tabs: List<TabItem<T>>, modifier: Modifier = Modifier, onClick: (T)
 
     Box(
         modifier = modifier
-            .background(ComposeAppTheme.colors.tyler)
+            .background(ComposeAppTheme.colors.backgroundBase)
             .height(44.dp)
     ) {
         Divider(
             thickness = 1.dp,
-            color = ComposeAppTheme.colors.steel10,
+            color = ComposeAppTheme.colors.borderDivider,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
 
@@ -52,13 +52,13 @@ fun <T> Tabs(tabs: List<TabItem<T>>, modifier: Modifier = Modifier, onClick: (T)
                 .height(44.dp),
             selectedTabIndex = selectedIndex,
             backgroundColor = ComposeAppTheme.colors.transparent,
-            contentColor = ComposeAppTheme.colors.tyler,
+            contentColor = ComposeAppTheme.colors.backgroundBase,
             indicator = @Composable { tabPositions ->
                 TabRowDefaults.Indicator(
                     modifier = Modifier
                         .tabIndicatorOffset(tabPositions[selectedIndex])
                         .clip(RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp)),
-                    color = ComposeAppTheme.colors.jacob
+                    color = ComposeAppTheme.colors.brandDefault
                 )
             }
         ) {
@@ -78,9 +78,9 @@ fun <T> Tabs(tabs: List<TabItem<T>>, modifier: Modifier = Modifier, onClick: (T)
                             Text(
                                 text = tab.title,
                                 color = if (selectedIndex == index) {
-                                    ComposeAppTheme.colors.leah
+                                    ComposeAppTheme.colors.textPrimary
                                 } else {
-                                    ComposeAppTheme.colors.grey
+                                    ComposeAppTheme.colors.textSecondary
                                 },
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -98,26 +98,26 @@ fun <T> ScrollableTabs(tabs: List<TabItem<T>>, onClick: (T) -> Unit) {
 
     Box(
         modifier = Modifier
-            .background(ComposeAppTheme.colors.tyler)
+            .background(ComposeAppTheme.colors.backgroundBase)
             .height(44.dp)
     ) {
         Divider(
             modifier = Modifier.align(Alignment.BottomCenter),
             thickness = 1.dp,
-            color = ComposeAppTheme.colors.steel10,
+            color = ComposeAppTheme.colors.borderDivider,
         )
 
         ScrollableTabRow(
             selectedTabIndex = selectedIndex,
             backgroundColor = ComposeAppTheme.colors.transparent,
-            contentColor = ComposeAppTheme.colors.tyler,
+            contentColor = ComposeAppTheme.colors.backgroundBase,
             edgePadding = 16.dp,
             indicator = @Composable { tabPositions ->
                 TabRowDefaults.Indicator(
                     modifier = Modifier
                         .tabIndicatorOffset(tabPositions[selectedIndex])
                         .clip(RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp)),
-                    color = ComposeAppTheme.colors.jacob
+                    color = ComposeAppTheme.colors.brandDefault
                 )
             }
         ) {
@@ -136,7 +136,11 @@ fun <T> ScrollableTabs(tabs: List<TabItem<T>>, onClick: (T) -> Unit) {
                         ) {
                             Text(
                                 text = tab.title,
-                                color = if (tab.selected) ComposeAppTheme.colors.leah else ComposeAppTheme.colors.grey
+                                color = if (tab.selected) {
+                                    ComposeAppTheme.colors.textPrimary
+                                } else {
+                                    ComposeAppTheme.colors.textSecondary
+                                }
                             )
                         }
                     }

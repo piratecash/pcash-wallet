@@ -36,7 +36,7 @@ internal fun TransferPasscodeBlock(
                     start = {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_off_24),
-                            tint = ComposeAppTheme.colors.grey,
+                            tint = ComposeAppTheme.colors.iconSecondary,
                             modifier = Modifier.size(24.dp),
                             contentDescription = null
                         )

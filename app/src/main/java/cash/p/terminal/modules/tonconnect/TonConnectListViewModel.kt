@@ -1,36 +1,40 @@
 package cash.p.terminal.modules.tonconnect
 
 import androidx.lifecycle.viewModelScope
-import cash.p.terminal.core.App
+import co.touchlab.kermit.Logger
+import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.wallet.IAccountManager
 import com.tonapps.wallet.data.tonconnect.entities.DAppEntity
-import com.tonapps.wallet.data.tonconnect.entities.DAppRequestEntity
 import io.horizontalsystems.core.ViewModelUiState
+import io.horizontalsystems.tonkit.tonconnect.TonConnectKit
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class TonConnectListViewModel(
-    accountManager: IAccountManager
+    accountManager: IAccountManager,
+    private val tonConnectManager: TonConnectManager,
 ) : ViewModelUiState<TonConnectListUiState>() {
 
-    private val tonConnectKit = App.tonConnectManager.kit
-
     private var dapps: Map<String, List<DAppEntity>> = emptyMap()
-    private var dAppRequestEntity: DAppRequestEntity? = null
+    private var dAppRequestUri: String? = null
     private var error: Throwable? = null
+
+    private val logger = Logger.withTag("TonConnectListViewModel")
 
     private val accountNamesById = accountManager.accounts.associate { it.id to it.name }
 
     override fun createState() = TonConnectListUiState(
         dapps = dapps,
-        dAppRequestEntity = dAppRequestEntity,
+        dAppRequestUri = dAppRequestUri,
         error = error
     )
 
     init {
         viewModelScope.launch {
-            tonConnectKit.getDApps().collect {
+            launch { requestKit() }
+            tonConnectManager.getDApps().collect {
                 dapps = it.groupBy { entity ->
                     accountNamesById.getOrDefault(
                         entity.walletId,
@@ -42,11 +46,23 @@ class TonConnectListViewModel(
         }
     }
 
+    // The manager builds the kit lazily; without a request here a failed startup attempt is never retried.
+    private suspend fun requestKit() {
+        try {
+            tonConnectManager.kit()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            logger.w(e) { "TON Connect kit initialization failed" }
+        }
+    }
+
     fun setConnectionUri(v: String) {
         error = null
 
         try {
-            dAppRequestEntity = tonConnectKit.readData(v)
+            TonConnectKit.readData(v)
+            dAppRequestUri = v
         } catch (e: Throwable) {
             error = e
         }
@@ -54,7 +70,7 @@ class TonConnectListViewModel(
     }
 
     fun onDappRequestHandled() {
-        dAppRequestEntity = null
+        dAppRequestUri = null
         emitState()
     }
 
@@ -68,7 +84,7 @@ class TonConnectListViewModel(
             this.error = error
             emitState()
         }) {
-            tonConnectKit.disconnect(dapp)
+            tonConnectManager.kit().disconnect(dapp)
         }
     }
 
@@ -77,6 +93,6 @@ class TonConnectListViewModel(
 
 data class TonConnectListUiState(
     val dapps: Map<String, List<DAppEntity>>,
-    val dAppRequestEntity: DAppRequestEntity?,
+    val dAppRequestUri: String?,
     val error: Throwable?
 )

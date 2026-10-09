@@ -26,7 +26,7 @@ fun AppModalBottomSheetLayout(
     ModalBottomSheetLayout(
         sheetState = sheetState,
         sheetBackgroundColor = ComposeAppTheme.colors.transparent,
-        scrimColor = ComposeAppTheme.colors.modalOverlay,
+        scrimColor = ComposeAppTheme.colors.backgroundOverlay,
         sheetContent = sheetContent,
         content = content,
     )

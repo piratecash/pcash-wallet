@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.offline
 
 import androidx.compose.foundation.background
+import cash.p.terminal.ui_compose.components.plateBackground
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -63,7 +64,7 @@ internal fun OfflineModeConfirmationBottomSheet(
     ) {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.icon_warning_2_20),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
             title = stringResource(R.string.offline_mode_confirm_title),
             onCloseClick = close,
         ) {
@@ -115,8 +116,8 @@ private fun OfflineMemberRow(member: OfflineModeAssetItem) {
             .fillMaxWidth()
             .padding(horizontal = 32.dp, vertical = 4.dp)
             .clip(shape)
-            .background(ComposeAppTheme.colors.lawrence)
-            .border(1.dp, ComposeAppTheme.colors.steel20, shape)
+            .background(plateBackground())
+            .border(1.dp, ComposeAppTheme.colors.borderDefault, shape)
             .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

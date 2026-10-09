@@ -63,7 +63,6 @@ import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
-import cash.p.terminal.ui_compose.theme.YellowL
 import cash.p.terminal.wallet.imageUrl
 import coil3.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.launch
@@ -89,7 +88,7 @@ fun UnifiedAddressCheckScreen(
     val uiState = viewModel.uiState
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.Send_EnterAddress),
@@ -304,8 +303,8 @@ fun SecurityCheckCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        backgroundColor = ComposeAppTheme.colors.tyler,
-        border = BorderStroke(0.5.dp, ComposeAppTheme.colors.andy),
+        backgroundColor = ComposeAppTheme.colors.backgroundBase,
+        border = BorderStroke(0.5.dp, ComposeAppTheme.colors.borderDivider),
         shape = RoundedCornerShape(12.dp),
         elevation = 0.dp
     ) {
@@ -333,7 +332,7 @@ fun SecurityCheckCard(
                     Column {
                         Text(
                             text = title,
-                            color = ComposeAppTheme.colors.leah,
+                            color = ComposeAppTheme.colors.textPrimary,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -355,7 +354,7 @@ fun SecurityCheckCard(
             }
 
             HsDivider(
-                color = ComposeAppTheme.colors.andy,
+                color = ComposeAppTheme.colors.borderDivider,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -383,7 +382,7 @@ fun NetworkItem(
     ) {
         Text(
             text = title,
-            color = ComposeAppTheme.colors.bran,
+            color = ComposeAppTheme.colors.textPrimary,
             fontSize = 14.sp
         )
 
@@ -393,7 +392,7 @@ fun NetworkItem(
                     CircularProgressIndicator(
                         modifier = Modifier.size(16.dp),
                         strokeWidth = 2.dp,
-                        color = ComposeAppTheme.colors.grey
+                        color = ComposeAppTheme.colors.textSecondary
                     )
                 }
 
@@ -401,20 +400,20 @@ fun NetworkItem(
                     Icon(
                         painter = painterResource(R.drawable.ic_lock_20),
                         contentDescription = null,
-                        tint = ComposeAppTheme.colors.andy,
+                        tint = ComposeAppTheme.colors.iconSecondary,
                         modifier = Modifier.size(16.dp),
                     )
                 }
 
                 else -> {
                     val color = when (status) {
-                        CheckState.Clear -> ComposeAppTheme.colors.remus
-                        CheckState.Detected -> ComposeAppTheme.colors.lucian
-                        CheckState.AlphaAmlVeryLow -> ComposeAppTheme.colors.remus
-                        CheckState.AlphaAmlLow -> ComposeAppTheme.colors.yellowD
-                        CheckState.AlphaAmlHigh -> YellowL
-                        CheckState.AlphaAmlVeryHigh -> ComposeAppTheme.colors.lucian
-                        else -> ComposeAppTheme.colors.grey
+                        CheckState.Clear -> ComposeAppTheme.colors.statusSuccess
+                        CheckState.Detected -> ComposeAppTheme.colors.statusError
+                        CheckState.AlphaAmlVeryLow -> ComposeAppTheme.colors.statusSuccess
+                        CheckState.AlphaAmlLow -> ComposeAppTheme.colors.statusWarning
+                        CheckState.AlphaAmlHigh -> ComposeAppTheme.colors.statusWarning
+                        CheckState.AlphaAmlVeryHigh -> ComposeAppTheme.colors.statusError
+                        else -> ComposeAppTheme.colors.textSecondary
                     }
                     Text(
                         text = stringResource(status.title),
@@ -442,9 +441,9 @@ fun CheckInfoBottomSheet(
     ) {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_info_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.grey),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.iconSecondary),
             title = title,
-            titleColor = ComposeAppTheme.colors.leah,
+            titleColor = ComposeAppTheme.colors.textPrimary,
             onCloseClick = hideBottomSheet
         ) {
             Column(

@@ -18,6 +18,8 @@ import cash.p.terminal.network.data.NetworkEnvironment
 import cash.p.terminal.network.data.buildNetworkClient
 import cash.p.terminal.network.exolix.data.repository.ExolixRepositoryImpl
 import cash.p.terminal.network.exolix.di.networkExolixModule
+import cash.p.terminal.network.feerate.api.FeeRateApi
+import cash.p.terminal.network.feerate.api.FeeRateApiImpl
 import cash.p.terminal.network.github.di.networkGithubModule
 import cash.p.terminal.network.pirate.di.networkPirateModule
 import cash.p.terminal.network.piratenews.di.networkPirateNewsModule
@@ -46,6 +48,7 @@ private val commonNetworkModule = module {
     factoryOf(::SolanaRpcApiImpl) bind SolanaRpcApi::class
     factoryOf(::TronRpcApiImpl) bind TronRpcApi::class
     factoryOf(::TonRpcApiImpl) bind TonRpcApi::class
+    factoryOf(::FeeRateApiImpl) bind FeeRateApi::class
 
     single<SwapProviderTransactionStatusRepository>(named(SwapProvider.CHANGENOW)) {
         get<ChangeNowRepositoryImpl>()

@@ -59,6 +59,7 @@ class TonKitManager(
     private val backgroundKeepAliveManager: BackgroundKeepAliveManager,
     private val networkErrorTracker: NetworkErrorTracker,
     private val offlineModeManager: OfflineModeManager,
+    private val tonKitDatabaseKeyProvider: TonKitDatabaseKeyProvider,
 ) {
     private val lifecycleMutex = Mutex()
     private val pollingSessionCount = AtomicInteger(0)
@@ -120,20 +121,24 @@ class TonKitManager(
         blockchainType,
     )
 
-    fun getNonActiveTonKitWrapper(
+    // Under the lifecycle lock so it cannot interleave with clear() of the same account.
+    suspend fun getNonActiveTonKitWrapper(
         account: Account,
         blockchainType: BlockchainType?,
-    ) = createKitInstance(
-        getTonWallet(
-            account,
-            blockchainType,
-        ), account
-    )
+    ) = lifecycleMutex.withLock {
+        createKitInstance(
+            getTonWallet(
+                account,
+                blockchainType,
+            ), account
+        )
+    }
 
     private fun eventListenerFactory(account: Account): NetworkErrorEventListener.Factory =
         NetworkErrorEventListener.Factory(BlockchainType.Ton, account.id, networkErrorTracker)
 
-    private fun createKitInstance(
+    // Takes a TonWallet, so only supported account types reach the database key.
+    private suspend fun createKitInstance(
         tonWallet: TonWallet,
         account: Account,
     ): TonKitWrapper {
@@ -143,10 +148,25 @@ class TonKitManager(
                 Network.MainNet,
                 App.instance,
                 account.id,
+                databaseKey = prepareDatabase(account),
                 eventListenerFactory = eventListenerFactory(account),
             ),
             tonWallet
         )
+    }
+
+    private suspend fun prepareDatabase(account: Account): ByteArray {
+        val databaseKey = tonKitDatabaseKeyProvider.awaitKey(account.id)
+        TonKit.migrateDatabase(App.instance, Network.MainNet, account.id, databaseKey)
+        return databaseKey
+    }
+
+    suspend fun clear(accountId: String) = lifecycleMutex.withLock {
+        if (currentAccount?.id == accountId) {
+            stop()
+        }
+        Network.entries.forEach { TonKit.clear(App.instance, it, accountId) }
+        tonKitDatabaseKeyProvider.remove(accountId)
     }
 
     suspend fun unlink(account: Account) = lifecycleMutex.withLock {
@@ -164,9 +184,8 @@ class TonKitManager(
             val account = currentAccount
             if (account == null || !isNetworkPaused(account)) {
                 tonKitWrapper?.let { wrapper ->
-                    wrapper.tonKit.start()
+                    wrapper.startNetwork()
                     wrapper.tonKit.refresh()
-                    wrapper.networkStarted = true
                 }
             }
         }
@@ -174,10 +193,7 @@ class TonKitManager(
 
     suspend fun stopForPolling() = lifecycleMutex.withLock {
         pollingSessionCount.onPollingStopped(backgroundManager) {
-            tonKitWrapper?.let { wrapper ->
-                wrapper.tonKit.stop()
-                wrapper.networkStarted = false
-            }
+            tonKitWrapper?.stopNetwork()
         }
     }
 
@@ -185,16 +201,15 @@ class TonKitManager(
         if (account != currentAccount) return@withLock
         val wrapper = tonKitWrapper ?: return@withLock
         if (!wrapper.networkStarted) return@withLock
-        wrapper.tonKit.stop()
-        wrapper.networkStarted = false
+        wrapper.stopNetwork()
     }
 
     suspend fun resumeNetwork(account: Account) = lifecycleMutex.withLock {
         if (account != currentAccount) return@withLock
         val wrapper = tonKitWrapper ?: return@withLock
         if (wrapper.networkStarted) return@withLock
-        wrapper.tonKit.start()
-        wrapper.networkStarted = true
+        wrapper.startNetwork()
+        wrapper.tonKit.refresh()
     }
 
     // Ownership is invalidated before the suspending teardown, so a cancellation here cannot leave a
@@ -216,6 +231,17 @@ class TonKitManager(
         currentCoroutineContext().ensureActive()
     }
 
+    // Callers hold lifecycleMutex to keep networkStarted consistent with the kit's listener state.
+    private suspend fun TonKitWrapper.startNetwork() {
+        tonKit.startListener()
+        networkStarted = true
+    }
+
+    private suspend fun TonKitWrapper.stopNetwork() = withContext(NonCancellable) {
+        tonKit.stop()
+        networkStarted = false
+    }
+
     private fun isNetworkPaused(account: Account): Boolean =
         offlineModeManager.isNetworkPaused(account, BlockchainType.Ton)
 
@@ -225,8 +251,8 @@ class TonKitManager(
         Timber.d("TonKitManager start")
         val kit = wrapper.tonKit
         if (!isNetworkPaused(account)) {
-            kit.start()
-            wrapper.networkStarted = true
+            lifecycleMutex.withLock { wrapper.startNetwork() }
+            kit.refresh()
         }
         backgroundManager.stateFlow.collect { state ->
             if (state == BackgroundManagerState.EnterForeground) {
@@ -237,8 +263,7 @@ class TonKitManager(
                 }
             } else if (state == BackgroundManagerState.EnterBackground) {
                 if (pollingSessionCount.get() == 0 && !backgroundKeepAliveManager.isKeepAlive(BlockchainType.Ton)) {
-                    kit.stop()
-                    wrapper.networkStarted = false
+                    lifecycleMutex.withLock { wrapper.stopNetwork() }
                 } else {
                     Timber.tag("TxPoller").d("TonKit staying alive")
                 }
@@ -374,7 +399,7 @@ object TonHelper {
 }
 
 class TonKitWrapper(val tonKit: TonKit, val tonWallet: TonWallet) {
-    /** True once [TonKit.start] has been called and no matching [TonKit.stop] followed it. */
+    /** True once [TonKit.startListener] has been called and no matching [TonKit.stop] followed it. */
     var networkStarted: Boolean = false
 }
 

@@ -29,7 +29,7 @@ fun RootedDeviceScreen(
     onIgnoreWarningClicked: () -> Unit
 ) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler
+        containerColor = ComposeAppTheme.colors.backgroundBase
     ) { paddingValues ->
         Column(
             Modifier.padding(paddingValues)

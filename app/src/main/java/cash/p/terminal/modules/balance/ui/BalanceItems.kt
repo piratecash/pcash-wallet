@@ -1,16 +1,11 @@
 package cash.p.terminal.modules.balance.ui
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -22,7 +17,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Text
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -35,7 +29,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
@@ -43,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.annotation.StringRes
 import org.koin.compose.viewmodel.koinViewModel
 import cash.p.terminal.R
 import cash.p.terminal.core.managers.FaqManager
@@ -53,12 +47,10 @@ import cash.p.terminal.modules.balance.BalanceUiState
 import cash.p.terminal.modules.balance.BalanceViewItem2
 import cash.p.terminal.modules.balance.BalanceViewModel
 import cash.p.terminal.modules.balance.HeaderNote
-import cash.p.terminal.modules.balance.ReceiveAllowedState
+import cash.p.terminal.modules.balance.BackupRequirementState
 import cash.p.terminal.modules.balance.TotalUIState
-import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.displayoptions.DisplayOptionsPage
-import cash.p.terminal.modules.displayoptions.DisplayPricePeriod
-import cash.p.terminal.modules.manageaccount.dialogs.BackupRequiredSheet
+import cash.p.terminal.modules.manageaccount.dialogs.showBackupRequiredDialog
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.main.MainPage
 import cash.p.terminal.modules.multiswap.SwapPage
@@ -70,28 +62,17 @@ import cash.p.terminal.modules.send.offline.OfflineBroadcastPage
 import cash.p.terminal.modules.sendtokenselect.SendTokenSelectPage
 import cash.p.terminal.modules.transactions.TransactionItem
 import cash.p.terminal.navigation.HSNavigation
-import cash.p.terminal.ui.compose.components.AlertGroup
-import cash.p.terminal.ui.compose.components.DoubleText
-import cash.p.terminal.ui.compose.components.SelectorDialogCompose
-import cash.p.terminal.ui.compose.components.SelectorItem
-import cash.p.terminal.ui_compose.Select
-import cash.p.terminal.ui_compose.components.ButtonPrimaryCircle
-import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
-import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
-import cash.p.terminal.ui_compose.components.ButtonPrimaryYellowWithIcon
-import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
-import cash.p.terminal.ui_compose.components.ButtonSecondaryWithIcon
+import cash.p.terminal.ui_compose.components.BalanceActionButton
 import cash.p.terminal.ui_compose.components.HSSwipeRefresh
-import cash.p.terminal.ui_compose.components.HSpacer
-import cash.p.terminal.ui_compose.components.HeaderSorting
-import cash.p.terminal.ui_compose.components.HsIconButton
 import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.components.RowWithArrow
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.subhead2_grey
-import cash.p.terminal.ui_compose.components.subhead2_leah
+import cash.p.terminal.ui_compose.Select
+import cash.p.terminal.ui_compose.components.TextImportantError
+import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
-import cash.p.terminal.wallet.BalanceSortType
+import cash.p.terminal.strings.helpers.Translator
 
 @Composable
 fun NoteWarning(
@@ -100,15 +81,11 @@ fun NoteWarning(
     onClick: (() -> Unit),
     onClose: (() -> Unit)?
 ) {
-    Note(
+    TextImportantWarning(
         modifier = modifier.clickable(onClick = onClick),
         text = text,
         title = stringResource(id = R.string.AccountRecovery_Note),
         icon = R.drawable.ic_attention_20,
-        borderColor = ComposeAppTheme.colors.jacob,
-        backgroundColor = ComposeAppTheme.colors.yellow20,
-        textColor = ComposeAppTheme.colors.jacob,
-        iconColor = ComposeAppTheme.colors.jacob,
         onClose = onClose
     )
 }
@@ -119,70 +96,12 @@ fun NoteError(
     text: String,
     onClick: (() -> Unit)
 ) {
-    Note(
+    TextImportantError(
         modifier = modifier.clickable(onClick = onClick),
         text = text,
         title = stringResource(id = R.string.AccountRecovery_Note),
-        icon = R.drawable.ic_attention_20,
-        borderColor = ComposeAppTheme.colors.lucian,
-        backgroundColor = ComposeAppTheme.colors.red20,
-        textColor = ComposeAppTheme.colors.lucian,
-        iconColor = ComposeAppTheme.colors.lucian
+        icon = R.drawable.ic_attention_20
     )
-}
-
-@Composable
-fun Note(
-    modifier: Modifier = Modifier,
-    text: String,
-    title: String,
-    @DrawableRes icon: Int,
-    iconColor: Color,
-    borderColor: Color,
-    backgroundColor: Color,
-    textColor: Color,
-    onClose: (() -> Unit)? = null
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-            .background(backgroundColor)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Icon(
-                painter = painterResource(id = icon),
-                contentDescription = null,
-                tint = iconColor
-            )
-            Text(
-                modifier = Modifier.weight(1f),
-                text = title,
-                color = textColor,
-                style = ComposeAppTheme.typography.subhead1
-            )
-            onClose?.let {
-                HsIconButton(
-                    modifier = Modifier.size(20.dp),
-                    onClick = onClose
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_close_24),
-                        tint = iconColor,
-                        contentDescription = null,
-                    )
-                }
-            }
-        }
-        if (text.isNotEmpty()) {
-            subhead2_leah(text = text)
-        }
-    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -253,145 +172,106 @@ fun BalanceItems(
             }
         ) {
             item {
-                TotalBalanceRow(
+                val standardActionsVisible =
+                    uiState.balanceTabButtonsEnabled && !accountViewItem.isWatchAccount
+                val watchStakingVisible =
+                    uiState.showStackingForWatchAccount && accountViewItem.isWatchAccount
+                BalanceSummary(
+                    modifier = Modifier.padding(vertical = 12.dp),
                     totalState = totalState,
-                    onClickTitle = remember {
+                    onToggleVisibility = remember {
                         {
                             viewModel.toggleBalanceVisibility()
                             HudHelper.vibrate(context)
                         }
                     },
-                    onClickSubtitle = remember {
+                    onToggleTotalType = remember {
                         {
                             viewModel.toggleTotalType()
                             HudHelper.vibrate(context)
                         }
-                    }
+                    },
+                    actions = when {
+                        standardActionsVisible -> {
+                            {
+                                BalanceActionButton(
+                                    icon = R.drawable.ic_arrow_up_right_24,
+                                    label = stringResource(R.string.Balance_Send),
+                                    iconRotation = -90f,
+                                    onClick = {
+                                        navigation.slideFromRight(SendTokenSelectPage(null))
+                                    },
+                                )
+                                BalanceActionButton(
+                                    icon = R.drawable.ic_arrow_down_left_24,
+                                    label = stringResource(R.string.Balance_Receive),
+                                    dimmed = viewModel.isBackupRequired,
+                                    onClick = {
+                                        navigation.openIfBackedUp(
+                                            viewModel.getBackupRequirementState(),
+                                            R.string.Balance_Receive_BackupRequired_Description,
+                                        ) {
+                                            viewModel.getSingleWalletForReceive()
+                                            navigation.slideFromRight(ReceiveChooseCoinPage())
+                                        }
+                                    },
+                                )
+                                if (viewModel.isSwapEnabled) {
+                                    BalanceActionButton(
+                                        icon = R.drawable.ic_swap_24,
+                                        label = stringResource(R.string.Swap),
+                                        dimmed = viewModel.isBackupRequired,
+                                        onClick = {
+                                            navigation.openIfBackedUp(
+                                                viewModel.getBackupRequirementState(),
+                                                R.string.balance_swap_backup_required_description,
+                                            ) {
+                                                navigation.slideFromRight(SwapPage())
+                                            }
+                                        },
+                                    )
+                                }
+                                if (viewModel.isStackingEnabled) {
+                                    BalanceActionButton(
+                                        icon = R.drawable.ic_coins_stacking,
+                                        label = stringResource(R.string.stacking),
+                                        onClick = {
+                                            navigation.slideFromRight(StackingPage(null))
+                                        },
+                                    )
+                                }
+                            }
+                        }
+
+                        watchStakingVisible -> {
+                            {
+                                BalanceActionButton(
+                                    icon = R.drawable.ic_coins_stacking,
+                                    label = stringResource(R.string.staking_details),
+                                    onClick = {
+                                        navigation.slideFromRight(StackingPage(null))
+                                    },
+                                )
+                            }
+                        }
+
+                        else -> null
+                    },
                 )
             }
 
-            if (uiState.balanceTabButtonsEnabled && !accountViewItem.isWatchAccount) {
-                item {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        ButtonPrimaryYellow(
-                            modifier = Modifier.weight(1f),
-                            title = stringResource(R.string.Balance_Send),
-                            onClick = {
-                                navigation.slideFromRight(SendTokenSelectPage(null))
-                            }
-                        )
-                        ButtonPrimaryDefault(
-                            modifier = Modifier.weight(1f),
-                            title = stringResource(R.string.Balance_Receive),
-                            onClick = {
-                                when (val receiveAllowedState =
-                                    viewModel.getReceiveAllowedState()) {
-                                    ReceiveAllowedState.Allowed -> {
-                                        val wallet = viewModel.getSingleWalletForReceive()
-                                        navigation.slideFromRight(ReceiveChooseCoinPage())
-                                    }
-
-                                    is ReceiveAllowedState.BackupRequired -> {
-                                        val account = receiveAllowedState.account
-                                        val text =
-                                            cash.p.terminal.strings.helpers.Translator.getString(
-                                                R.string.Balance_Receive_BackupRequired_Description,
-                                                account.name
-                                            )
-                                        navigation.slideFromBottom(
-                                            BackupRequiredSheet(BackupRequiredSheet.Input(account, text))
-                                        )
-                                    }
-
-                                    null -> Unit
-                                }
-                            }
-                        )
-                        if (viewModel.isSwapEnabled) {
-                            ButtonPrimaryCircle(
-                                icon = R.drawable.ic_swap_24,
-                                contentDescription = stringResource(R.string.Swap),
-                                onClick = {
-                                    navigation.slideFromRight(SwapPage())
-                                }
-                            )
-                        }
-                        if (viewModel.isStackingEnabled) {
-                            ButtonPrimaryCircle(
-                                icon = R.drawable.ic_coins_stacking,
-                                contentDescription = stringResource(R.string.stacking),
-                                onClick = {
-                                    navigation.slideFromRight(StackingPage(null))
-                                }
-                            )
-                        }
-                    }
-                    VSpacer(12.dp)
-                }
-            } else if (uiState.showStackingForWatchAccount && accountViewItem.isWatchAccount) {
-                item {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        ButtonPrimaryYellowWithIcon(
-                            title = stringResource(R.string.staking_details),
-                            onClick = {
-                                navigation.slideFromRight(StackingPage(null))
-                            },
-                            icon = R.drawable.ic_coins_stacking,
-                            modifier = Modifier
-                                .weight(1f)
-                        )
-                    }
-                    VSpacer(12.dp)
-                }
-            }
-
             stickyHeader {
-                HeaderSorting {
-                    HSpacer(16.dp)
-                    BalanceSortingSelector(
-                        sortType = uiState.sortType,
-                        sortTypes = uiState.sortTypes
-                    ) {
-                        viewModel.setSortType(it)
-                    }
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    if (accountViewItem.isWatchAccount) {
-                        Image(
-                            painter = painterResource(R.drawable.icon_binocule_24),
-                            contentDescription = "binoculars icon"
-                        )
-                        HSpacer(8.dp)
-                    }
-
-                    if (uiState.displayDiffOptionType != DisplayDiffOptionType.NONE) {
-                        PricePeriodSelector(
-                            displayPricePeriod = uiState.displayPricePeriod,
-                        ) {
-                            viewModel.setDisplayPricePeriod(it)
-                        }
-                        HSpacer(8.dp)
-                    }
-
-                    ButtonSecondaryCircle(
-                        icon = R.drawable.ic_manage_2,
-                        contentDescription = stringResource(R.string.ManageCoins_title),
-                        onClick = {
-                            navigation.slideFromBottom(DisplayOptionsPage())
-                        }
-                    )
-
-                    HSpacer(16.dp)
-                }
+                BalanceFilters(
+                    sort = Select(uiState.sortType, uiState.sortTypes),
+                    displayDiffOptionType = uiState.displayDiffOptionType,
+                    displayPricePeriod = uiState.displayPricePeriod,
+                    isWatchAccount = accountViewItem.isWatchAccount,
+                    onSelectSortType = viewModel::setSortType,
+                    onDisplayPricePeriod = viewModel::setDisplayPricePeriod,
+                    onSettingsClick = {
+                        navigation.slideFromBottom(DisplayOptionsPage())
+                    },
+                )
             }
 
             item {
@@ -530,6 +410,22 @@ fun BalanceItems(
     }
 }
 
+private fun HSNavigation.openIfBackedUp(
+    state: BackupRequirementState?,
+    @StringRes backupText: Int,
+    open: () -> Unit,
+) {
+    when (state) {
+        BackupRequirementState.Allowed -> open()
+        is BackupRequirementState.BackupRequired -> showBackupRequiredDialog(
+            state.account,
+            Translator.getString(backupText, state.account.name)
+        )
+
+        null -> Unit
+    }
+}
+
 @Composable
 private fun NoCoinsBlock() {
     Column(
@@ -541,7 +437,7 @@ private fun NoCoinsBlock() {
             modifier = Modifier
                 .size(100.dp)
                 .background(
-                    color = ComposeAppTheme.colors.raina,
+                    color = ComposeAppTheme.colors.surfacePlaceholder,
                     shape = CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -550,7 +446,7 @@ private fun NoCoinsBlock() {
                 modifier = Modifier.size(48.dp),
                 painter = painterResource(R.drawable.ic_empty_wallet),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
         }
         VSpacer(32.dp)
@@ -561,94 +457,6 @@ private fun NoCoinsBlock() {
             overflow = TextOverflow.Ellipsis,
         )
         VSpacer(height = 32.dp)
-    }
-}
-
-@Composable
-fun BalanceSortingSelector(
-    sortType: BalanceSortType,
-    sortTypes: List<BalanceSortType>,
-    onSelectSortType: (BalanceSortType) -> Unit
-) {
-    var showSortTypeSelectorDialog by remember { mutableStateOf(false) }
-
-    ButtonSecondaryWithIcon(
-        title = stringResource(sortType.getTitleRes()),
-        iconRight = painterResource(R.drawable.ic_down_arrow_20),
-        onClick = {
-            showSortTypeSelectorDialog = true
-        }
-    )
-
-    if (showSortTypeSelectorDialog) {
-        SelectorDialogCompose(
-            title = stringResource(R.string.Balance_Sort_PopupTitle),
-            items = sortTypes.map {
-                SelectorItem(stringResource(it.getTitleRes()), it == sortType, it)
-            },
-            onDismissRequest = {
-                showSortTypeSelectorDialog = false
-            },
-            onSelectItem = onSelectSortType
-        )
-    }
-}
-
-@Composable
-fun PricePeriodSelector(
-    displayPricePeriod: DisplayPricePeriod,
-    onDisplayPricePeriod: (DisplayPricePeriod) -> Unit
-) {
-    var showDisplayPricePeriodDialog by remember { mutableStateOf(false) }
-
-    ButtonSecondaryWithIcon(
-        title = displayPricePeriod.shortForm.getString(),
-        iconRight = painterResource(R.drawable.ic_down_arrow_20),
-        onClick = {
-            showDisplayPricePeriodDialog = true
-        }
-    )
-
-    if (showDisplayPricePeriodDialog) {
-        AlertGroup(
-            title = R.string.display_options_price_period,
-            select = Select(displayPricePeriod, DisplayPricePeriod.entries),
-            onSelect = { selected ->
-                onDisplayPricePeriod(selected)
-                showDisplayPricePeriodDialog = false
-            },
-            onDismiss = { showDisplayPricePeriodDialog = false }
-        )
-    }
-}
-
-
-@Composable
-fun TotalBalanceRow(
-    totalState: TotalUIState,
-    onClickTitle: () -> Unit,
-    onClickSubtitle: () -> Unit
-) {
-    when (totalState) {
-        TotalUIState.Hidden -> {
-            DoubleText(
-                title = "*****",
-                body = "*****",
-                dimmed = false,
-                onClickTitle = onClickTitle,
-                onClickSubtitle = onClickSubtitle
-            )
-        }
-
-        is TotalUIState.Visible -> {
-            DoubleText(
-                title = totalState.primaryAmountStr,
-                body = totalState.secondaryAmountStr,
-                dimmed = totalState.dimmed,
-                onClickTitle = onClickTitle,
-                onClickSubtitle = onClickSubtitle,
-            )
-        }
     }
 }
 
@@ -664,7 +472,7 @@ private fun PendingSwapBanner(
         modifier = modifier
             .fillMaxWidth()
             .clip(shape)
-            .border(1.dp, ComposeAppTheme.colors.grey, shape)
+            .border(1.dp, ComposeAppTheme.colors.textSecondary, shape)
     ) {
         RowWithArrow(
             text = if (count == 1) {
@@ -683,15 +491,5 @@ fun <T> LazyListScope.wallets(
     key: ((item: T) -> Any)? = null,
     itemContent: @Composable (LazyItemScope.(item: T) -> Unit),
 ) {
-    item {
-        VSpacer(height = 8.dp)
-    }
-    items(items = items, key = key, itemContent = {
-        Row(modifier = Modifier.padding(bottom = 8.dp)) {
-            itemContent(it)
-        }
-    })
-    item {
-        VSpacer(height = 10.dp)
-    }
+    items(items = items, key = key, itemContent = itemContent)
 }

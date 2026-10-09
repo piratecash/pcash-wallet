@@ -10,21 +10,23 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import cash.p.terminal.R
 import cash.p.terminal.strings.helpers.TranslatableString
+import cash.p.terminal.ui_compose.TransparentModalBottomSheet
 import cash.p.terminal.ui_compose.annotatedStringResource
 import cash.p.terminal.ui_compose.components.AppBar
+import cash.p.terminal.ui_compose.components.BottomSheetSurface
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_grey
@@ -41,7 +43,7 @@ fun AddressPoisoningInfoScreen(
     onClose: () -> Unit,
 ) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.transparent,
         topBar = {
             AppBar(
                 menuItems = listOf(
@@ -64,12 +66,12 @@ fun AddressPoisoningInfoScreen(
             VSpacer(12.dp)
             title2_leah(stringResource(R.string.address_poisoning_info_title))
             VSpacer(24.dp)
-            HorizontalDivider(color = ComposeAppTheme.colors.steel20)
+            HorizontalDivider(color = ComposeAppTheme.colors.borderDivider)
             VSpacer(24.dp)
             Text(
                 text = annotatedStringResource(R.string.address_poisoning_info_description),
                 style = ComposeAppTheme.typography.body,
-                color = ComposeAppTheme.colors.leah,
+                color = ComposeAppTheme.colors.textPrimary,
             )
             VSpacer(16.dp)
             body_leah(text = stringResource(R.string.address_poisoning_info_goal))
@@ -120,13 +122,16 @@ private fun StatusInfoEntry(status: PoisonStatus) {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddressPoisoningInfoDialog(onDismiss: () -> Unit) {
-    Dialog(
+    TransparentModalBottomSheet(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false),
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     ) {
-        AddressPoisoningInfoScreen(onClose = onDismiss)
+        BottomSheetSurface {
+            AddressPoisoningInfoScreen(onClose = onDismiss)
+        }
     }
 }
 

@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.coin.majorholders
 
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.R
 import io.horizontalsystems.core.ViewModelUiState
@@ -90,10 +89,10 @@ class CoinMajorHoldersViewModel(
 
     private fun getChartData(top10ShareFloat: Float, blockchain: Blockchain): List<StackBarSlice> {
         val remaining = 100f - top10ShareFloat
-        val color = blockchain.type.brandColor ?: Color(0xFFFFA800)
+        val color = blockchain.type.brandColor
         return listOf(
             StackBarSlice(value = top10ShareFloat, color = color),
-            StackBarSlice(value = remaining, color = color.copy(alpha = 0.5f)),
+            StackBarSlice(value = remaining, color = color?.copy(alpha = 0.5f), dimmed = true),
         )
     }
 

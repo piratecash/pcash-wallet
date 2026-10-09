@@ -62,7 +62,7 @@ internal fun BtcBlockchainSettingsScreen(
         navigation.navigateUp()
     }
 
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column(modifier = Modifier.windowInsetsPadding(windowInsets)) {
             AppBar(
                 title = uiState.title,
@@ -222,7 +222,7 @@ internal fun BlockchainSettingCell(
             if (checked) {
                 Icon(
                     painter = painterResource(R.drawable.ic_checkmark_20),
-                    tint = ComposeAppTheme.colors.jacob,
+                    tint = ComposeAppTheme.colors.brandDefault,
                     contentDescription = null,
                 )
             }

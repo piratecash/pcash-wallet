@@ -69,9 +69,9 @@ fun StatusCell(connectionStatus: Status?) {
         Spacer(Modifier.weight(1f))
         connectionStatus?.let { status ->
             val color = when (status) {
-                Status.OFFLINE -> ComposeAppTheme.colors.lucian
-                Status.CONNECTING -> ComposeAppTheme.colors.leah
-                Status.ONLINE -> ComposeAppTheme.colors.remus
+                Status.OFFLINE -> ComposeAppTheme.colors.statusError
+                Status.CONNECTING -> ComposeAppTheme.colors.textPrimary
+                Status.ONLINE -> ComposeAppTheme.colors.statusSuccess
             }
             Text(
                 text = stringResource(status.value),
@@ -114,7 +114,7 @@ fun DropDownCell(
                 Icon(
                     painter = painterResource(id = R.drawable.ic_down_arrow_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
             }
         }

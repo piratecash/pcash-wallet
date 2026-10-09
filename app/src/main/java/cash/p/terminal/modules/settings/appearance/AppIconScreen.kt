@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,7 +44,6 @@ import cash.p.terminal.ui_compose.components.HeaderText
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.PremiumHeader
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.subhead1_jacob
 import cash.p.terminal.ui_compose.components.subhead1_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import kotlinx.coroutines.launch
@@ -73,7 +73,7 @@ internal fun AppIconScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.Appearance_AppIcon),
@@ -142,7 +142,7 @@ private fun AppIconCard(
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(ComposeAppTheme.colors.surfacePrimary)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -207,7 +207,7 @@ private fun IconBox(
                     if (selected) {
                         Modifier
                             .clip(iconCornerShape)
-                            .border(2.dp, ComposeAppTheme.colors.jacob, iconCornerShape)
+                            .border(2.dp, ComposeAppTheme.colors.brandDefault, iconCornerShape)
                     } else {
                         Modifier
                     }
@@ -229,7 +229,11 @@ private fun IconBox(
 
         Box(Modifier.height(6.dp))
         if (selected || premium) {
-            subhead1_jacob(name)
+            Text(
+                text = name,
+                color = if (premium) ComposeAppTheme.colors.statusWarning else ComposeAppTheme.colors.brandDefault,
+                style = ComposeAppTheme.typography.subhead1,
+            )
         } else {
             subhead1_leah(name)
         }

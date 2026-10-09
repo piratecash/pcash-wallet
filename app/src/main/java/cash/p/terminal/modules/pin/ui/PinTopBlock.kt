@@ -26,7 +26,7 @@ import cash.p.terminal.modules.pin.PinModule
 import cash.p.terminal.modules.pin.unlock.PinUnlockModule.InputState
 import cash.p.terminal.ui.compose.animations.shake
 import cash.p.terminal.ui_compose.components.subhead2_grey
-import cash.p.terminal.ui_compose.components.subhead2_jacob
+import cash.p.terminal.ui_compose.components.subhead2
 import cash.p.terminal.ui_compose.components.subhead2_lucian
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
@@ -80,8 +80,9 @@ fun PinTopBlock(
                             subhead2_lucian(text = error)
                         }
                         inputState.attemptsLeft != null -> {
-                            subhead2_jacob(
-                                text = stringResource(R.string.Unlock_AttemptsLeft, inputState.attemptsLeft)
+                            subhead2(
+                                text = stringResource(R.string.Unlock_AttemptsLeft, inputState.attemptsLeft),
+                                color = ComposeAppTheme.colors.statusWarning,
                             )
                         }
                     }
@@ -114,7 +115,7 @@ fun PinTopBlock(
 
 @Composable
 private fun IndicatorCircle(active: Boolean) {
-    val color = if (active) cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.jacob else cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.steel20
+    val color = if (active) ComposeAppTheme.colors.brandDefault else ComposeAppTheme.colors.controlTrack
     Box(
         modifier = Modifier
             .size(12.dp)
@@ -126,10 +127,10 @@ private fun IndicatorCircle(active: Boolean) {
 @Preview
 @Composable
 fun Preview_PinTopBlockEnabled() {
-    cash.p.terminal.ui_compose.theme.ComposeAppTheme {
+    ComposeAppTheme {
         Column(
             modifier = Modifier
-                .background(color = ComposeAppTheme.colors.tyler)
+                .background(color = ComposeAppTheme.colors.backgroundBase)
         ) {
             PinTopBlock(
                 title = "text",
@@ -143,10 +144,10 @@ fun Preview_PinTopBlockEnabled() {
 @Preview
 @Composable
 fun Preview_PinTopBlockLocked() {
-    cash.p.terminal.ui_compose.theme.ComposeAppTheme {
+    ComposeAppTheme {
         Column(
             modifier = Modifier
-                .background(color = ComposeAppTheme.colors.tyler)
+                .background(color = ComposeAppTheme.colors.backgroundBase)
         ) {
             PinTopBlock(
                 title = "text",
