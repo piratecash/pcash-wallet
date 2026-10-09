@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.multiswap
 
+import cash.p.terminal.modules.multiswap.action.ISwapProviderAction
 import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
 import cash.p.terminal.modules.paycore.PayCoreAssets
 import cash.p.terminal.modules.paycore.PayCoreQuote
@@ -84,13 +85,53 @@ class SwapPayCoreNavigationTest {
     fun isMultiSwapRouteReady_requotingRoute_cannotContinue() {
         val routeState = stateWithRoute()
 
-        assertFalse(isMultiSwapRouteReady(quoting = true, timeout = false, route = routeState.multiSwapRoute))
-        assertTrue(isMultiSwapRouteReady(quoting = false, timeout = false, route = routeState.multiSwapRoute))
+        assertFalse(isMultiSwapRouteReady(true, false, routeState.multiSwapRoute, tokenOutAction = null))
+        assertTrue(isMultiSwapRouteReady(false, false, routeState.multiSwapRoute, tokenOutAction = null))
+    }
+
+    @Test
+    fun isMultiSwapRouteReady_tokenOutActionPending_cannotContinue() {
+        assertFalse(
+            isMultiSwapRouteReady(
+                quoting = false,
+                timeout = false,
+                route = multiSwapRouteFixture(),
+                tokenOutAction = mockk<ISwapProviderAction>(),
+            )
+        )
+    }
+
+    @Test
+    fun currentStep_tokenOutActionPending_blocksProceed() {
+        val action = mockk<ISwapProviderAction>()
+
+        val step = exactOutState(BigDecimal.ONE).copy(tokenOutAction = action).currentStep
+
+        assertEquals(SwapStep.ActionRequired(action), step)
+    }
+
+    @Test
+    fun currentStep_providerAndTokenOutActions_providerActionWins() {
+        val providerAction = mockk<ISwapProviderAction>()
+        val state = exactOutState(BigDecimal.ONE)
+        val quote = requireNotNull(state.quote)
+        val quoteWithAction = quote.copy(
+            swapQuote = mockk(relaxed = true) { every { actionRequired } returns providerAction },
+        )
+
+        val step = state.copy(quote = quoteWithAction, tokenOutAction = mockk()).currentStep
+
+        assertEquals(SwapStep.ActionRequired(providerAction), step)
+    }
+
+    @Test
+    fun currentStep_noActions_proceeds() {
+        assertEquals(SwapStep.Proceed, exactOutState(BigDecimal.ONE).currentStep)
     }
 
     @Test
     fun isMultiSwapRouteReady_expiredRoute_cannotContinue() {
-        assertFalse(isMultiSwapRouteReady(quoting = false, timeout = true, route = multiSwapRouteFixture()))
+        assertFalse(isMultiSwapRouteReady(false, true, multiSwapRouteFixture(), tokenOutAction = null))
     }
 
     @Test

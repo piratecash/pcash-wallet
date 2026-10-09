@@ -88,11 +88,7 @@ object SendTransactionServiceFactory {
                     SendTransactionServiceTron(token)
                 }
 
-                BlockchainType.Stellar -> {
-                    val accountManager: IAccountManager by inject(IAccountManager::class.java)
-                    val activeAccount = accountManager.activeAccount ?: throw IllegalStateException("No active account")
-                    SendTransactionServiceStellar(account = activeAccount, token = token)
-                }
+                BlockchainType.Stellar -> stellarService(token)
 
                 BlockchainType.Ton -> {
                     SendTransactionServiceTon(token)
@@ -124,12 +120,19 @@ object SendTransactionServiceFactory {
             is TokenType.Jetton -> SendTransactionServiceTon(token)
             is TokenType.ThorchainAsset -> SendTransactionServiceThorchain(token)
 
-            is TokenType.Asset,
+            is TokenType.Asset -> stellarService(token)
+
             is TokenType.Trc10,
             is TokenType.Unsupported -> throw UnsupportedException("Unsupported token type: $tokenType")
         }
     } catch (e: Exception) {
         e.printStackTrace()
         throw UnsupportedException(e.message ?: "")
+    }
+
+    private fun stellarService(token: Token): SendTransactionServiceStellar {
+        val accountManager: IAccountManager by inject(IAccountManager::class.java)
+        val activeAccount = accountManager.activeAccount ?: throw IllegalStateException("No active account")
+        return SendTransactionServiceStellar(account = activeAccount, token = token)
     }
 }

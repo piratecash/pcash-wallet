@@ -152,3 +152,12 @@ class SolanaKitDatabaseKeyProvider(context: Context, encryptionManager: IEncrypt
         keyPrefix = "solana_kit_database_key_",
         kitName = "SolanaKit",
     )
+
+class StellarKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :
+    KitDatabaseKeyProvider(
+        context,
+        encryptionManager,
+        preferencesName = "stellar_kit_database_keys",
+        keyPrefix = "stellar_kit_database_key_",
+        kitName = "StellarKit",
+    )

@@ -28,6 +28,7 @@ import org.stellar.sdk.MemoId
 import org.stellar.sdk.MemoReturnHash
 import org.stellar.sdk.MemoText
 import org.stellar.sdk.Network
+import org.stellar.sdk.SignerKey
 import org.stellar.sdk.TimeBounds
 import org.stellar.sdk.Transaction
 import org.stellar.sdk.TransactionBuilder
@@ -216,7 +217,7 @@ class TrezorStellarSignerTest {
 
     @Test
     fun signTransaction_extraSignersPrecondition_throws() {
-        val extraSigner = KeyPair.random().xdrSignerKey
+        val extraSigner = SignerKey.fromEd25519PublicKey(KeyPair.random().accountId)
         assertPreconditionRejected { it.extraSigners(listOf(extraSigner)) }
     }
 

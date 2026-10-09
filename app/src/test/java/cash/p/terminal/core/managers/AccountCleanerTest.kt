@@ -53,6 +53,7 @@ class AccountCleanerTest {
     private lateinit var pinDbStorage: PinDbStorage
     private lateinit var accountStorageCleaner: AccountStorageCleaner
     private lateinit var bitcoinKitDatabaseManager: BitcoinKitDatabaseManager
+    private lateinit var stellarKitManager: StellarKitManager
     private lateinit var tronKitManager: TronKitManager
     private lateinit var thorchainKitManagers: ThorchainKitManagers
     private val deletionPreflight = mockk<AccountDeletionPreflight>(relaxed = true)
@@ -71,6 +72,7 @@ class AccountCleanerTest {
         pinDbStorage = mockk(relaxed = true)
         accountStorageCleaner = mockk(relaxed = true)
         bitcoinKitDatabaseManager = mockk(relaxed = true)
+        stellarKitManager = mockk(relaxed = true)
         tronKitManager = mockk(relaxed = true)
         thorchainKitManagers = mockk(relaxed = true)
 
@@ -93,6 +95,7 @@ class AccountCleanerTest {
             accountStorageCleaner,
             bitcoinKitDatabaseManager,
             solanaKitManager,
+            stellarKitManager,
             tonKitManager,
             tronKitManager,
             thorchainKitManagers,
@@ -393,6 +396,7 @@ class AccountCleanerTest {
         verify(exactly = 1) { Eip20Adapter.clear(accountId) }
         coVerify(exactly = 1) { solanaKitManager.clear(accountId) }
         coVerify(exactly = 1) { tronKitManager.clear(accountId) }
+        coVerify(exactly = 1) { stellarKitManager.clear(accountId) }
         coVerify(exactly = 1) { tonKitManager.clear(accountId) }
     }
 

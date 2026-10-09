@@ -86,7 +86,7 @@ fun ReceiveStellarAssetScreen(
                 TextImportantWarning(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     text = stringResource(
-                        R.string.ActivationRequired_DialogDescription,
+                        R.string.activation_required_dialog_description,
                         uiState.coinCode,
                         uiState.coinCode
                     )
