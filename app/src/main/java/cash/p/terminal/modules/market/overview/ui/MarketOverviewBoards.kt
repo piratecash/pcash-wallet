@@ -57,7 +57,7 @@ fun BoardsView(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(ComposeAppTheme.colors.lawrence)
+                .background(ComposeAppTheme.colors.surfacePrimary)
         ){
             boardItem.marketViewItems.forEach { coin ->
                 MarketCoinWithBackground(coin) {

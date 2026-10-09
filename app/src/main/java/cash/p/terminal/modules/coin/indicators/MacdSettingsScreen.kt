@@ -45,7 +45,7 @@ fun MacdSettingsScreen(navigation: HSNavigation, indicatorSetting: ChartIndicato
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = viewModel.name,

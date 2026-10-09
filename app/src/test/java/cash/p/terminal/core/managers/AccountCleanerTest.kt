@@ -56,6 +56,7 @@ class AccountCleanerTest {
     private lateinit var thorchainKitManagers: ThorchainKitManagers
     private lateinit var evmBlockchainManager: EvmBlockchainManager
     private val deletionPreflight = mockk<AccountDeletionPreflight>(relaxed = true)
+    private val tonKitManager = mockk<TonKitManager>(relaxed = true)
 
     @Before
     fun setUp() {
@@ -91,6 +92,7 @@ class AccountCleanerTest {
             pinDbStorage,
             accountStorageCleaner,
             bitcoinKitDatabaseManager,
+            tonKitManager,
             tronKitManager,
             thorchainKitManagers,
             evmBlockchainManager,
@@ -114,8 +116,19 @@ class AccountCleanerTest {
         verify {
             listOf(adapterManager, bitcoinKitDatabaseManager, evmBlockchainManager, accountStorageCleaner,
                 removeMoneroWalletFilesUseCase, clearZCashWalletDataUseCase, smsNotificationSettings,
-                moneroFileDao, pinDbStorage) wasNot Called
+                moneroFileDao, pinDbStorage, tonKitManager) wasNot Called
         }
+    }
+
+    @Test
+    fun clearAccounts_tonClearFails_propagatesAndKeepsStorageRows() = runTest {
+        val accountId = "acc-ton"
+        mockAdapterClears()
+        coEvery { tonKitManager.clear(accountId) } throws KitDatabaseKeyException("remove failed")
+
+        assertFailsWith<KitDatabaseKeyException> { accountCleaner.clearAccounts(listOf(accountId)) }
+
+        coVerify(exactly = 0) { accountStorageCleaner.clearAccounts(any()) }
     }
 
     @Test
@@ -377,6 +390,7 @@ class AccountCleanerTest {
         coVerify(exactly = 1) { evmBlockchainManager.clear(accountId) }
         verify(exactly = 1) { SolanaAdapter.clear(accountId) }
         coVerify(exactly = 1) { tronKitManager.clear(accountId) }
+        coVerify(exactly = 1) { tonKitManager.clear(accountId) }
     }
 
     private fun account(id: String) = Account(

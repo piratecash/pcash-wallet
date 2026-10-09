@@ -15,8 +15,8 @@ import cash.p.terminal.modules.contacts.ContactsModule
 import cash.p.terminal.modules.contacts.ContactsPage
 import cash.p.terminal.modules.contacts.Mode
 import cash.p.terminal.navigation.HSNavigation
-import cash.p.terminal.ui.compose.components.SelectorDialogCompose
-import cash.p.terminal.ui.compose.components.SelectorItem
+import cash.p.terminal.ui_compose.components.AppSelectorDialog
+import cash.p.terminal.ui_compose.components.AppSelectorItem
 import cash.p.terminal.ui.helpers.TextHelper
 import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
 import cash.p.terminal.ui_compose.components.HSpacer
@@ -66,15 +66,15 @@ fun AddressCell(
     }
 
     if (showSaveAddressDialog) {
-        SelectorDialogCompose(
+        AppSelectorDialog(
             title = stringResource(R.string.Contacts_AddAddress),
             items = ContactsModule.AddAddressAction.entries.map {
-                SelectorItem(stringResource(it.title), false, it)
+                AppSelectorItem(stringResource(it.title), false, it)
             },
-            onDismissRequest = {
+            onDismiss = {
                 showSaveAddressDialog = false
             },
-            onSelectItem = { action ->
+            onSelect = { action ->
                 blockchainType?.let {
                     val mode = when (action) {
                         ContactsModule.AddAddressAction.AddToNewContact -> {

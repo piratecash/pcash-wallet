@@ -22,7 +22,6 @@ import cash.p.terminal.wallet.data.MnemonicKind
 import cash.p.terminal.wallet.entities.SecretString
 import cash.p.terminal.wallet.useCases.IGetMoneroWalletFilesNameUseCase
 import cash.p.terminal.wallet.useCases.RemoveMoneroWalletFilesUseCase
-import com.m2049r.levin.util.NetCipherHelper
 import com.m2049r.xmrwallet.data.DefaultNodes
 import com.m2049r.xmrwallet.data.NodeInfo
 import com.m2049r.xmrwallet.data.TxData
@@ -38,10 +37,11 @@ import com.m2049r.xmrwallet.service.DaemonConnectResult
 import com.m2049r.xmrwallet.service.LocalOpenResult
 import com.m2049r.xmrwallet.service.MoneroWalletService
 import com.m2049r.xmrwallet.service.WalletCorruptedException
+import com.piratecash.monero.MoneroWalletFiles
+import com.piratecash.monero.net.MoneroHttpClient
 import com.piratecash.monero.signer.HardwareWalletErrorCode
 import com.piratecash.monero.signer.HardwareKeyImageRefreshResult
 import com.piratecash.monero.signer.HardwareWalletOperationException
-import com.m2049r.xmrwallet.util.Helper
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
 import io.horizontalsystems.core.DispatcherProvider
@@ -95,7 +95,7 @@ class MoneroKitManager(
     private val offlineModeManager: OfflineModeManager,
 ) {
     // Serializes account-lifecycle mutations (activate / unlink / stop) so the process-global
-    // NetCipherHelper observer factory is set/cleared without racing a concurrent teardown.
+    // MoneroHttpClient observer factory is set/cleared without racing a concurrent teardown.
     private val accountMutex = Mutex()
     private val pollingSessionCount = AtomicInteger(0)
     private val coroutineScope =
@@ -147,9 +147,8 @@ class MoneroKitManager(
             }
             // Install the passive network observer for THIS account before startKit triggers
             // node-selection pings, so transport errors are attributed to the active account.
-            NetCipherHelper.setEventListenerFactory(
+            MoneroHttpClient.eventListenerFactory =
                 NetworkErrorEventListener.Factory(BlockchainType.Monero, account.id, networkErrorTracker)
-            )
             var retryOnLifecycleEvent = false
             try {
                 startKit()
@@ -171,7 +170,7 @@ class MoneroKitManager(
                         e.isRetryableTrezorStartupFailure()
                 if (cleanupSucceeded && !retryOnLifecycleEvent) {
                     moneroKitWrapper = null
-                    NetCipherHelper.setEventListenerFactory(null)
+                    MoneroHttpClient.eventListenerFactory = null
                 }
                 if (!retryOnLifecycleEvent) throw e
             }
@@ -273,7 +272,7 @@ class MoneroKitManager(
         }
         currentAccount = null
         moneroKitWrapper = null
-        NetCipherHelper.setEventListenerFactory(null)
+        MoneroHttpClient.eventListenerFactory = null
     }
 
     private suspend fun startKit() {
@@ -807,7 +806,7 @@ class MoneroKitWrapper(
                             .setDaemon(NodeInfo.fromString(DefaultNodes.entries.first().uri))
                     }
 
-                    /*val walletFolder: File = Helper.getWalletRoot(App.instance)
+                    /*val walletFolder: File = MoneroWalletFiles.root(App.instance)
                     val walletKeyFile = File(walletFolder, "$walletFileName.keys")
                     fixCorruptedWalletFile(walletKeyFile.absolutePath, walletPassword)*/
 
@@ -864,7 +863,7 @@ class MoneroKitWrapper(
         accountType: AccountType.MnemonicMonero,
     ): MoneroWalletCredentials {
         logger.info("start: using AccountType.MnemonicMonero")
-        if (!Helper.getWalletFile(App.instance, accountType.walletInnerName).exists()) {
+        if (!MoneroWalletFiles.file(App.instance, accountType.walletInnerName).exists()) {
             Timber.d("Restoring Monero wallet from mnemonic...")
             logger.info("start: wallet file does not exist, restoring from mnemonic")
             moneroWalletUseCase.restore(
@@ -2087,7 +2086,7 @@ class MoneroKitWrapper(
     }
 
     private fun getCacheFile(): File? {
-        return walletFileNameForStatus?.let { Helper.getWalletFile(App.instance, it) }
+        return walletFileNameForStatus?.let { MoneroWalletFiles.file(App.instance, it) }
     }
 
     // Add methods for balance, transactions, etc.

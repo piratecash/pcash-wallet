@@ -6,10 +6,14 @@ import android.util.Base64
 import androidx.core.content.edit
 import io.horizontalsystems.core.IEncryptionManager
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.security.SecureRandom
 
 class KitDatabaseKeyException(message: String, cause: Throwable? = null) :
     IllegalStateException(message, cause)
+
+class DatabaseKey(val bytes: ByteArray, val isNew: Boolean)
 
 class KitDatabaseKeyLockedException(kitName: String, cause: UserNotAuthenticatedException) :
     IllegalStateException("$kitName database key requires user authentication", cause)
@@ -24,10 +28,26 @@ open class KitDatabaseKeyProvider(
 
     private val preferences = context.getSharedPreferences(preferencesName, Context.MODE_PRIVATE)
 
-    fun keyFor(accountId: String): ByteArray {
+    // Concurrent first calls would otherwise each create and persist a different key.
+    private val keyMutex = Mutex()
+
+    suspend fun awaitKey(accountId: String): ByteArray = awaitDatabaseKey(accountId).bytes
+
+    /** [DatabaseKey.isNew] is true when this call created and stored the key. */
+    suspend fun awaitDatabaseKey(accountId: String): DatabaseKey {
+        while (true) {
+            try {
+                return keyMutex.withLock { keyFor(accountId) }
+            } catch (_: KitDatabaseKeyLockedException) {
+                delay(KEYSTORE_RETRY_DELAY_MS)
+            }
+        }
+    }
+
+    private fun keyFor(accountId: String): DatabaseKey {
         val preferenceKey = accountId.preferenceKey()
         if (preferences.contains(preferenceKey)) {
-            return storedKey(preferenceKey)
+            return DatabaseKey(storedKey(preferenceKey), isNew = false)
         }
 
         val key = ByteArray(KEY_SIZE).also(SecureRandom()::nextBytes)
@@ -38,7 +58,7 @@ open class KitDatabaseKeyProvider(
             preferences.edit(commit = true) { remove(preferenceKey) }
             throw KitDatabaseKeyException("Unable to persist $kitName database key")
         }
-        return key
+        return DatabaseKey(key, isNew = true)
     }
 
     fun remove(accountId: String) {
@@ -86,16 +106,6 @@ open class KitDatabaseKeyProvider(
     }
 }
 
-suspend fun KitDatabaseKeyProvider.awaitKey(accountId: String): ByteArray {
-    while (true) {
-        try {
-            return keyFor(accountId)
-        } catch (_: KitDatabaseKeyLockedException) {
-            delay(KEYSTORE_RETRY_DELAY_MS)
-        }
-    }
-}
-
 private const val KEYSTORE_RETRY_DELAY_MS = 500L
 
 class BitcoinKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :
@@ -105,6 +115,24 @@ class BitcoinKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryp
         preferencesName = "bitcoin_kit_database_keys",
         keyPrefix = "bitcoin_kit_database_key_",
         kitName = "BitcoinKit",
+    )
+
+class TonKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :
+    KitDatabaseKeyProvider(
+        context,
+        encryptionManager,
+        preferencesName = "ton_kit_database_keys",
+        keyPrefix = "ton_kit_database_key_",
+        kitName = "TonKit",
+    )
+
+class TonConnectDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :
+    KitDatabaseKeyProvider(
+        context,
+        encryptionManager,
+        preferencesName = "ton_connect_database_keys",
+        keyPrefix = "ton_connect_database_key_",
+        kitName = "TonConnectKit",
     )
 
 class TronKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :

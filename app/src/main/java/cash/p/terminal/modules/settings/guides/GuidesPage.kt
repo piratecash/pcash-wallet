@@ -57,7 +57,7 @@ fun GuidesScreen(navigation: HSNavigation) {
     val selectedCategory = uiState.selectedCategory
     val expandedSections = uiState.expandedSections
 
-    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
         AppBar(
             title = stringResource(R.string.Guides_Title),
             navigationIcon = {
@@ -109,7 +109,7 @@ fun GuidesScreen(navigation: HSNavigation) {
                                     item {
                                         CellUniversal(
                                             borderTop = i != 0,
-                                            color = ComposeAppTheme.colors.lawrence,
+                                            color = ComposeAppTheme.colors.surfacePrimary,
                                             onClick = {
                                                 viewModel.toggleSection(sectionTitle, expanded)
                                             }
@@ -124,7 +124,7 @@ fun GuidesScreen(navigation: HSNavigation) {
                                             Icon(
                                                 painter = painterResource(iconId),
                                                 contentDescription = null,
-                                                tint = ComposeAppTheme.colors.grey
+                                                tint = ComposeAppTheme.colors.iconSecondary
                                             )
                                         }
                                     }
@@ -145,7 +145,7 @@ fun GuidesScreen(navigation: HSNavigation) {
                                             item {
                                                 Divider(
                                                     thickness = 1.dp,
-                                                    color = ComposeAppTheme.colors.steel10
+                                                    color = ComposeAppTheme.colors.borderDivider
                                                 )
                                             }
                                         }

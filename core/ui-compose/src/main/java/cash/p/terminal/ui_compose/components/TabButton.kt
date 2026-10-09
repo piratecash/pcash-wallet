@@ -108,7 +108,7 @@ fun TabBox(
             // style property.
             CompositionLocalProvider(LocalContentAlpha provides contentColor.alpha) {
                 ProvideTextStyle(
-                    value = ComposeAppTheme.typography.captionSB
+                    value = ComposeAppTheme.typography.subhead2
                 ) {
                     Row(
                         Modifier
@@ -455,10 +455,10 @@ object TabDefaults {
     @Composable
     fun textButtonColors(
         backgroundColor: Color = ComposeAppTheme.colors.transparent,
-        contentColor: Color = ComposeAppTheme.colors.leah,
-        selectedBackgroundColor: Color = ComposeAppTheme.colors.yellowD,
-        selectedContentColor: Color = ComposeAppTheme.colors.dark,
-        disabledContentColor: Color = ComposeAppTheme.colors.grey50,
+        contentColor: Color = ComposeAppTheme.colors.textSecondary,
+        selectedBackgroundColor: Color = ComposeAppTheme.colors.brandDefault,
+        selectedContentColor: Color = ComposeAppTheme.colors.buttonPrimaryBrandContent,
+        disabledContentColor: Color = ComposeAppTheme.colors.textDisabled,
     ): DefaultTabColors = DefaultTabColors(
         backgroundColor = backgroundColor,
         contentColor = contentColor,

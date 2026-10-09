@@ -34,7 +34,7 @@ class TransactionStatusInfoPage : HSPage() {
 private fun InfoScreen(
     onClose: () -> Unit
 ) {
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(
                 title = stringResource(R.string.TransactionInfo_Status),

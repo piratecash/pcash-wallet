@@ -37,7 +37,7 @@ fun SystemPinBlock(
                 Icon(
                     modifier = Modifier.size(24.dp),
                     painter = painterResource(R.drawable.ic_passcode),
-                    tint = ComposeAppTheme.colors.grey,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                     contentDescription = null,
                 )
             },

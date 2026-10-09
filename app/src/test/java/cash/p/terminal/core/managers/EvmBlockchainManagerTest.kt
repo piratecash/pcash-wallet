@@ -39,7 +39,7 @@ class EvmBlockchainManagerTest {
 
     private val accountManagerFactory = mockk<EvmAccountManagerFactory>(relaxed = true)
     private val mockEvmKit = mockk<EthereumKit>(relaxed = true)
-    private val databaseKeys = mockk<EvmKitDatabaseKeys>(relaxed = true)
+    private val databaseKeys = mockk<EvmKitDatabaseKeyProvider>(relaxed = true)
     private val context = mockk<Context>()
 
     private val manager = EvmBlockchainManager(

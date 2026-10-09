@@ -57,7 +57,7 @@ private fun SubscriptionInfoScreen(
     onClickHavePremium: () -> Unit,
     onClose: () -> Unit
 ) {
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(
                 menuItems = listOf(

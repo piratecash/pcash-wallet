@@ -9,8 +9,8 @@ import java.math.BigDecimal
 fun diffColor(value: BigDecimal?) : Color {
     val diff = value ?: BigDecimal.ZERO
     return when {
-        diff.signum() == 0 -> ComposeAppTheme.colors.grey
-        diff.signum() >= 0 -> ComposeAppTheme.colors.remus
-        else -> ComposeAppTheme.colors.lucian
+        diff.signum() == 0 -> ComposeAppTheme.colors.textSecondary
+        diff.signum() >= 0 -> ComposeAppTheme.colors.statusSuccess
+        else -> ComposeAppTheme.colors.statusError
     }
 }

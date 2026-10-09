@@ -63,7 +63,7 @@ fun PayCoreWebViewScreen(
 
     Scaffold(
         modifier = modifier,
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = title,
@@ -79,6 +79,8 @@ fun PayCoreWebViewScreen(
             if (loadingProgress < 100) {
                 LinearProgressIndicator(
                     progress = { loadingProgress / 100f },
+                    color = ComposeAppTheme.colors.brandDefault,
+                    trackColor = ComposeAppTheme.colors.controlTrack,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }

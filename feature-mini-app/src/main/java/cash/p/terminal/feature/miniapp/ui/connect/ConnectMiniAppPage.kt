@@ -72,7 +72,7 @@ private fun ConnectMiniAppContent(
     val uiState = viewModel.uiState
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.connect_mini_app_title),

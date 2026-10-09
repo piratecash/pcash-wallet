@@ -82,7 +82,7 @@ class TronKitManagerDatabaseTest {
 
     @Test
     fun getTronKitWrapper_watchAccount_migratesBeforeCreatingKitWithSameKey() = runTest {
-        every { keyProvider.keyFor(ACCOUNT_ID) } returns databaseKey
+        coEvery { keyProvider.awaitKey(ACCOUNT_ID) } returns databaseKey
 
         val wrapper = createManager().getTronKitWrapper(account)
 
@@ -102,20 +102,8 @@ class TronKitManagerDatabaseTest {
     }
 
     @Test
-    fun getTronKitWrapper_databaseKeyLocked_retriesThenCreatesKit() = runTest {
-        every { keyProvider.keyFor(ACCOUNT_ID) } throws
-            KitDatabaseKeyLockedException("TronKit", mockk()) andThen databaseKey
-
-        val wrapper = createManager().getTronKitWrapper(account)
-
-        assertSame(tronKit, wrapper.tronKit)
-        verify(exactly = 2) { keyProvider.keyFor(ACCOUNT_ID) }
-        coVerify(exactly = 1) { TronKit.migrateDatabase(any(), Network.Mainnet, ACCOUNT_ID, databaseKey) }
-    }
-
-    @Test
     fun getTronKitWrapper_migrationFails_propagatesWithoutCreatingKit() = runTest {
-        every { keyProvider.keyFor(ACCOUNT_ID) } returns databaseKey
+        coEvery { keyProvider.awaitKey(ACCOUNT_ID) } returns databaseKey
         coEvery { TronKit.migrateDatabase(any(), any(), any(), any()) } throws
             DatabaseMigrationConflictException("migration conflict")
         val manager = createManager()

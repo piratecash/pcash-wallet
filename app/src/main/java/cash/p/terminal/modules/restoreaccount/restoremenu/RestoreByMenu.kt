@@ -17,8 +17,8 @@ import cash.p.terminal.R
 import cash.p.terminal.ui_compose.components.B2
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.RowUniversal
-import cash.p.terminal.ui.compose.components.SelectorDialogCompose
-import cash.p.terminal.ui.compose.components.SelectorItem
+import cash.p.terminal.ui_compose.components.AppSelectorDialog
+import cash.p.terminal.ui_compose.components.AppSelectorItem
 import cash.p.terminal.ui_compose.components.subhead1_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
@@ -31,7 +31,7 @@ fun RestoreByMenu(
         menuValue = stringResource(viewModel.restoreOption.titleRes),
         selectorDialogTitle = stringResource(R.string.Restore_RestoreBy),
         selectorItems = viewModel.restoreOptions.map {
-            SelectorItem(
+            AppSelectorItem(
                 stringResource(it.titleRes),
                 it == viewModel.restoreOption,
                 it
@@ -48,19 +48,19 @@ fun <T> ByMenu(
     menuTitle: String,
     menuValue: String,
     selectorDialogTitle: String,
-    selectorItems: List<SelectorItem<T>>,
+    selectorItems: List<AppSelectorItem<T>>,
     onSelectItem: (T) -> Unit
 ) {
     var showSelectorDialog by remember { mutableStateOf(false) }
 
     if (showSelectorDialog) {
-        SelectorDialogCompose(
+        AppSelectorDialog(
             title = selectorDialogTitle,
             items = selectorItems,
-            onDismissRequest = {
+            onDismiss = {
                 showSelectorDialog = false
             },
-            onSelectItem = onSelectItem
+            onSelect = onSelectItem
         )
     }
 
@@ -78,7 +78,7 @@ fun <T> ByMenu(
                         modifier = Modifier.padding(start = 4.dp),
                         painter = painterResource(id = R.drawable.ic_down_arrow_20),
                         contentDescription = null,
-                        tint = ComposeAppTheme.colors.grey
+                        tint = ComposeAppTheme.colors.iconSecondary
                     )
                 }
             }

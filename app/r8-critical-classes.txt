@@ -48,3 +48,20 @@ cash.p.terminal.core.managers.RestoreSettingType
 
 # zcash-sdk-kmp's native library exports Java_cash_p_zcash_ZcashJni_* symbols.
 cash.p.zcash.ZcashJni
+
+# monero-kit's native library binds Java_com_m2049r_* / signer symbols and looks these classes up by name.
+com.m2049r.xmrwallet.model.Wallet
+com.m2049r.xmrwallet.model.Wallet$Status
+com.m2049r.xmrwallet.model.WalletManager
+com.m2049r.xmrwallet.model.WalletListener
+com.m2049r.xmrwallet.model.TransactionInfo
+com.m2049r.xmrwallet.model.Transfer
+com.m2049r.xmrwallet.model.CoinsInfo
+com.m2049r.xmrwallet.model.PendingTransaction
+com.m2049r.xmrwallet.model.UnsignedTransaction
+com.m2049r.xmrwallet.model.TransactionHistory
+com.m2049r.xmrwallet.model.Coins
+com.m2049r.xmrwallet.util.KeyStoreHelper
+com.piratecash.monero.signer.ExternalSignerNativeBridge
+com.piratecash.monero.signer.ExternalSignerException
+com.piratecash.monero.signer.HardwareWalletErrorCode

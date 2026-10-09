@@ -1,27 +1,23 @@
 package cash.p.terminal.modules.send.fee
 
-import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheetProperties
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,11 +36,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.isNative
+import cash.p.terminal.ui_compose.TransparentModalBottomSheet
+import cash.p.terminal.ui_compose.components.BottomSheetSurface
 import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.HsIconButton
@@ -53,6 +49,8 @@ import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.SectionUniversalItem
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
+import cash.p.terminal.ui_compose.components.plateBackground
+import cash.p.terminal.ui_compose.components.plateOutline
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Token
@@ -121,50 +119,49 @@ fun buildNetworkFeeWarningData(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NetworkFeeWarningOverlay(
     feeWarningData: NetworkFeeWarningData?,
     onConfirm: () -> Unit,
     onCancel: () -> Unit,
 ) {
+    // Kept after the caller clears it, so the sheet can slide out instead of vanishing.
     var currentData by remember { mutableStateOf(feeWarningData) }
-
-    if (feeWarningData != null) {
-        currentData = feeWarningData
-    }
-
+    if (feeWarningData != null) currentData = feeWarningData
     val data = currentData ?: return
 
-    val visibleState = remember { MutableTransitionState(false) }
-    visibleState.targetState = feeWarningData != null
-
-    if (visibleState.isIdle && !visibleState.currentState) {
-        currentData = null
-        return
+    // Like the former dialog: only Back or the buttons close it, never a stray tap or swipe.
+    val hideAllowed = remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true,
+        confirmValueChange = remember { { value: SheetValue -> value != SheetValue.Hidden || hideAllowed.value } },
+    )
+    // While the sheet slides out, a second tap must not confirm the send again.
+    val active = feeWarningData != null
+    val confirm = { if (active) onConfirm() }
+    val cancel = { if (active) onCancel() }
+    LaunchedEffect(feeWarningData == null) {
+        hideAllowed.value = feeWarningData == null
+        if (feeWarningData == null) {
+            sheetState.hide()
+            currentData = null
+        }
     }
 
-    Dialog(
-        onDismissRequest = { },
-        properties = DialogProperties(
-            dismissOnBackPress = false,
-            dismissOnClickOutside = false,
-            usePlatformDefaultWidth = false,
-            decorFitsSystemWindows = false,
-        )
+    TransparentModalBottomSheet(
+        onDismissRequest = cancel,
+        sheetState = sheetState,
+        properties = ModalBottomSheetProperties(shouldDismissOnClickOutside = false),
     ) {
-        BackHandler(onBack = onCancel)
-        AnimatedVisibility(
-            visibleState = visibleState,
-            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
-        ) {
+        BottomSheetSurface {
             NetworkFeeWarningContent(
                 networkName = data.networkName,
                 feeAmount = data.feeAmount,
                 balanceThreshold = data.balanceThreshold,
                 feeCoinCode = data.feeCoinCode,
-                onConfirm = onConfirm,
-                onCancel = onCancel,
+                onConfirm = confirm,
+                onCancel = cancel,
             )
         }
     }
@@ -181,13 +178,7 @@ private fun NetworkFeeWarningContent(
 ) {
     var accepted by rememberSaveable { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-            .clip(RoundedCornerShape(24.dp, 24.dp, 0.dp, 0.dp))
-            .background(color = ComposeAppTheme.colors.tyler)
-    ) {
+    Column {
         Row(
             modifier = Modifier
                 .padding(start = 32.dp, top = 24.dp, end = 32.dp, bottom = 12.dp),
@@ -196,7 +187,7 @@ private fun NetworkFeeWarningContent(
             Image(
                 modifier = Modifier.size(24.dp),
                 painter = painterResource(R.drawable.ic_attention_24),
-                colorFilter = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+                colorFilter = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
                 contentDescription = null
             )
             Text(
@@ -206,7 +197,7 @@ private fun NetworkFeeWarningContent(
                     .weight(1f),
                 maxLines = 1,
                 style = ComposeAppTheme.typography.headline2,
-                color = ComposeAppTheme.colors.leah,
+                color = ComposeAppTheme.colors.textPrimary,
             )
             HsIconButton(
                 modifier = Modifier.size(24.dp),
@@ -214,7 +205,7 @@ private fun NetworkFeeWarningContent(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_close_24),
-                    tint = ComposeAppTheme.colors.jacob,
+                    tint = ComposeAppTheme.colors.statusWarning,
                     contentDescription = null,
                 )
             }
@@ -222,7 +213,7 @@ private fun NetworkFeeWarningContent(
 
         Column(
             modifier = Modifier
-                .weight(1f)
+                .weight(1f, fill = false)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
         ) {
@@ -242,7 +233,8 @@ private fun NetworkFeeWarningContent(
             Column(
                 modifier = Modifier
                     .clip(RoundedCornerShape(12.dp))
-                    .background(ComposeAppTheme.colors.lawrence)
+                    .background(plateBackground())
+                    .plateOutline(RoundedCornerShape(12.dp))
             ) {
                 SectionUniversalItem {
                     RowUniversal(
@@ -286,14 +278,16 @@ private fun NetworkFeeWarningContent(
 @Composable
 private fun NetworkFeeWarningContentPreview() {
     ComposeAppTheme {
-        NetworkFeeWarningContent(
-            networkName = "TRON",
-            feeAmount = "13.3735 TRX",
-            balanceThreshold = "50 TRX",
-            feeCoinCode = "TRX",
-            onConfirm = {},
-            onCancel = {},
-        )
+        BottomSheetSurface {
+            NetworkFeeWarningContent(
+                networkName = "TRON",
+                feeAmount = "13.3735 TRX",
+                balanceThreshold = "50 TRX",
+                feeCoinCode = "TRX",
+                onConfirm = {},
+                onCancel = {},
+            )
+        }
     }
 }
 

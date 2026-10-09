@@ -55,7 +55,7 @@ fun Nav3Host(navigation: HSNavigation, isLocked: State<Boolean>) {
             val screenshotFlag = rememberScreenshotFlagController(activity.window, isLocked)
             val colors = BottomSheetColors(
                 container = ComposeAppTheme.colors.transparent,
-                scrim = ComposeAppTheme.colors.modalOverlay,
+                scrim = ComposeAppTheme.colors.backgroundOverlay,
             )
             val sheetStrategy = remember(colors, isLocked) {
                 BottomSheetSceneStrategy<HSPage>(colors, isLocked)

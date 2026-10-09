@@ -90,7 +90,6 @@ private fun SelectBlockchainsScreen(
                 contenView = view,
                 resId = R.string.Hud_Text_AddressAdded,
                 icon = R.drawable.icon_binocule_24,
-                iconTint = R.color.white
             )
             delay(300)
             navigation.removeLastUntil(popUpToInclusiveId, inclusive)
@@ -98,7 +97,7 @@ private fun SelectBlockchainsScreen(
     }
 
     Column(
-        modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)
+        modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)
     ) {
         AppBar(
             title = stringResource(title),
@@ -123,7 +122,7 @@ private fun SelectBlockchainsScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 Divider(
                     thickness = 1.dp,
-                    color = ComposeAppTheme.colors.steel10,
+                    color = ComposeAppTheme.colors.borderDivider,
                 )
             }
             items(blockchainViewItems) { viewItem ->
@@ -155,7 +154,7 @@ private fun SelectBlockchainsScreen(
                                         modifier = Modifier
                                             .padding(start = 6.dp)
                                             .clip(RoundedCornerShape(4.dp))
-                                            .background(ComposeAppTheme.colors.jeremy)
+                                            .background(ComposeAppTheme.colors.badgeBackground)
                                     ) {
                                         Text(
                                             modifier = Modifier.padding(
@@ -164,7 +163,7 @@ private fun SelectBlockchainsScreen(
                                                 bottom = 1.dp
                                             ),
                                             text = labelText,
-                                            color = ComposeAppTheme.colors.bran,
+                                            color = ComposeAppTheme.colors.textPrimary,
                                             style = ComposeAppTheme.typography.microSB,
                                             maxLines = 1,
                                         )

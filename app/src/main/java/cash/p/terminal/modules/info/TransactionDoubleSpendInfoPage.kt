@@ -64,7 +64,7 @@ private fun InfoScreen(
     onBackClick: () -> Unit
 ) {
 
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(
                 menuItems = listOf(
@@ -105,7 +105,7 @@ fun ConflictingTransactions(transactionHash: String, conflictingHash: String) {
         Divider(
             modifier = Modifier.fillMaxWidth(),
             thickness = 1.dp,
-            color = ComposeAppTheme.colors.steel10
+            color = ComposeAppTheme.colors.borderDivider
         )
         TransactionHashCell(R.string.Info_DoubleSpend_ConflictingTx, conflictingHash)
     }

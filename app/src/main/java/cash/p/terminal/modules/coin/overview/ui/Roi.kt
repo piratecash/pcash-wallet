@@ -39,14 +39,14 @@ fun Roi(roi: List<RoiViewItem>) {
                             modifier = Modifier
                                 .fillMaxHeight()
                                 .width(1.dp)
-                                .background(ComposeAppTheme.colors.steel10)
+                                .background(ComposeAppTheme.colors.borderDivider)
                         )
                         Text(
                             modifier = Modifier.weight(1f),
                             text = period.periodNameStringResId?.let { stringResource(id = it) }
                                 ?: "",
                             style = ComposeAppTheme.typography.caption,
-                            color = ComposeAppTheme.colors.bran,
+                            color = ComposeAppTheme.colors.textPrimary,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -63,7 +63,7 @@ fun Roi(roi: List<RoiViewItem>) {
                             modifier = Modifier
                                 .fillMaxHeight()
                                 .width(1.dp)
-                                .background(ComposeAppTheme.colors.steel10)
+                                .background(ComposeAppTheme.colors.borderDivider)
                         )
                         val text: String
                         val color: Color
@@ -71,14 +71,14 @@ fun Roi(roi: List<RoiViewItem>) {
                             val sign = if (value >= BigDecimal.ZERO) "+" else "-"
                             text = App.numberFormatter.format(value.abs(), 0, 2, sign, "%")
                             color = if (value >= BigDecimal.ZERO) {
-                                ComposeAppTheme.colors.remus
+                                ComposeAppTheme.colors.statusSuccess
                             } else {
-                                ComposeAppTheme.colors.lucian
+                                ComposeAppTheme.colors.statusError
                             }
 
                         } else {
                             text = "---"
-                            color = ComposeAppTheme.colors.grey
+                            color = ComposeAppTheme.colors.textSecondary
                         }
 
                         Text(

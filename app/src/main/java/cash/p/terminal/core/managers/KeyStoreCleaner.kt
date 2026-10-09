@@ -16,6 +16,7 @@ class KeyStoreCleaner(
     private val walletManager: IWalletManager,
     private val deletionPreflight: AccountDeletionPreflight,
     private val accountCleaner: Lazy<IAccountCleaner>,
+    private val tonConnectManager: Lazy<TonConnectManager>,
 )
     : IKeyStoreCleaner {
 
@@ -48,6 +49,8 @@ class KeyStoreCleaner(
     }
 
     private fun clearApp() {
+        // Before accountManager.clear(): its deletion event makes TON Connect reopen its database.
+        tonConnectManager.value.reset()
         accountManager.clear()
         walletManager.clear()
         localStorage.clear()

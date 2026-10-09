@@ -100,7 +100,7 @@ fun TrezorSetupScreen(
         return
     }
 
-    Column(modifier = modifier.background(color = ComposeAppTheme.colors.tyler)) {
+    Column(modifier = modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
         AppBar(
             title = stringResource(R.string.trezor_wallet),
             navigationIcon = {

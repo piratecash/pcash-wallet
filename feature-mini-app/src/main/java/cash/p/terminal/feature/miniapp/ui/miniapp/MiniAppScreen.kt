@@ -47,7 +47,7 @@ fun MiniAppScreen(
     onClose: () -> Unit
 ) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.mini_app_title),
@@ -118,8 +118,8 @@ private fun NftBannerCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, ComposeAppTheme.colors.jacob, RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence)
+            .border(1.dp, ComposeAppTheme.colors.brandDefault, RoundedCornerShape(12.dp))
+            .background(ComposeAppTheme.colors.surfacePrimary)
             .padding(12.dp)
     ) {
         Row(
@@ -167,13 +167,13 @@ private fun GamepadIcon(
         modifier = modifier
             .size(100.dp)
             .clip(CircleShape)
-            .background(ComposeAppTheme.colors.steel20),
+            .background(ComposeAppTheme.colors.surfacePlaceholder),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             painter = painterResource(R.drawable.ic_gamepad_48),
             contentDescription = null,
-            tint = if (connected) ComposeAppTheme.colors.jacob else ComposeAppTheme.colors.grey,
+            tint = if (connected) ComposeAppTheme.colors.brandDefault else ComposeAppTheme.colors.iconSecondary,
             modifier = Modifier.size(48.dp)
         )
     }

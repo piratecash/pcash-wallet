@@ -63,7 +63,7 @@ private fun CoinReportsScreen(
     val reportViewItems by viewModel.reportViewItemsLiveData.observeAsState()
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.CoinPage_Reports),

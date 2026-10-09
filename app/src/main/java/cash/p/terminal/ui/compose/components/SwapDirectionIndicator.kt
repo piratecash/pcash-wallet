@@ -1,6 +1,7 @@
 package cash.p.terminal.ui.compose.components
 
 import androidx.compose.animation.animateContentSize
+import cash.p.terminal.ui_compose.components.plateBackground
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -56,8 +57,8 @@ private fun SwapDirectionIndicatorContent(
     intermediateToken: Token?,
     onClick: () -> Unit,
 ) {
-    val backgroundColor = ComposeAppTheme.colors.steel20
-        .compositeOver(ComposeAppTheme.colors.lawrence)
+    val backgroundColor = ComposeAppTheme.colors.surfacePlaceholder
+        .compositeOver(plateBackground())
 
     Row(
         modifier = modifier
@@ -72,7 +73,7 @@ private fun SwapDirectionIndicatorContent(
                 indication = ripple(
                     bounded = false,
                     radius = 24.dp,
-                    color = ComposeAppTheme.colors.leah
+                    color = ComposeAppTheme.colors.textPrimary
                 )
             )
             .animateContentSize(animationSpec = tween(300)),
@@ -85,7 +86,7 @@ private fun SwapDirectionIndicatorContent(
         Icon(
             painter = painterResource(R.drawable.ic_arrow_down_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.leah,
+            tint = ComposeAppTheme.colors.iconPrimary,
             modifier = Modifier.size(20.dp)
         )
         if (expanded) {

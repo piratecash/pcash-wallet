@@ -92,7 +92,7 @@ class EvmKitManagerLifecycleTest {
 
     @Test
     fun getEvmKitWrapper_watchAccount_migratesEveryDatabaseBeforeOpeningWithSameKey() = runTest {
-        val databaseKeys = mockk<EvmKitDatabaseKeys> {
+        val databaseKeys = mockk<EvmKitDatabaseKeyProvider> {
             coEvery { awaitKey(ACCOUNT_ID) } returns databaseKey
         }
         val manager = createManager(databaseKeys)
@@ -141,7 +141,7 @@ class EvmKitManagerLifecycleTest {
             every { decrypt(encrypted) } throws mockk<UserNotAuthenticatedException>() andThen
                 plainEncryption.decrypt(encrypted)
         }
-        val manager = createManager(EvmKitDatabaseKeys(EvmKitDatabaseKeyProvider(context, lockedEncryption)))
+        val manager = createManager(EvmKitDatabaseKeyProvider(context, lockedEncryption))
         val openedKey = slot<ByteArray>()
         coEvery {
             EthereumKit.getInstance(
@@ -233,7 +233,7 @@ class EvmKitManagerLifecycleTest {
         every { OneInchKit.addDecorators(any()) } just Runs
     }
 
-    private fun createManager(databaseKeys: EvmKitDatabaseKeys): EvmKitManager {
+    private fun createManager(databaseKeys: EvmKitDatabaseKeyProvider): EvmKitManager {
         val syncSourceManager = mockk<EvmSyncSourceManager>(relaxed = true) {
             every { syncSourceObservable } returns PublishSubject.create()
         }

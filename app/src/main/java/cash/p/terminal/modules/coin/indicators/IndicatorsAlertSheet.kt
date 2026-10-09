@@ -31,7 +31,7 @@ private fun IndicatorsAlertScreen(onCloseClick: () -> Unit) {
     ComposeAppTheme {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.icon_24_lock),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.grey),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.iconSecondary),
             title = stringResource(R.string.CoinPage_Indicators),
             onCloseClick = onCloseClick
         ) {

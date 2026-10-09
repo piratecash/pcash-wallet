@@ -5,15 +5,14 @@ import androidx.compose.runtime.Composable
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
-import com.tonapps.wallet.data.tonconnect.entities.DAppRequestEntity
 import kotlinx.parcelize.Parcelize
 
-class TonConnectNewPage(val input: DAppRequestEntity) : HSPage() {
+class TonConnectNewPage(val uri: String) : HSPage() {
     @Composable
     override fun GetContent(navigation: HSNavigation) {
         TonConnectNewScreen(
             navigation = navigation,
-            requestEntity = input,
+            uri = uri,
             onResult = { approved ->
                 navigation.setResult(this, Result(approved))
                 navigation.navigateUpSafely()

@@ -60,7 +60,6 @@ import cash.p.terminal.ui_compose.components.TitleAndTwoValuesCell
 import cash.p.terminal.ui_compose.components.TitleAndValueCell
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.entities.ViewState
-import cash.p.terminal.ui_compose.theme.ColorDivider
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.alternativeImageUrl
@@ -197,14 +196,14 @@ private fun NoCoins(
             style = ComposeAppTheme.typography.body.copy(
                 fontWeight = FontWeight.Medium
             ),
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             text = stringResource(id = R.string.no_active_stacking),
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 12.dp)
         )
         Text(
             style = ComposeAppTheme.typography.subhead2,
-            color = ComposeAppTheme.colors.bran.copy(alpha = 0.6f),
+            color = ComposeAppTheme.colors.textSecondary,
             text = stringResource(id = stringResId)
                 .replace("_annual_interest_", uiState.annualInterest)
                 .toSpanned()
@@ -225,7 +224,7 @@ private fun NoCoins(
             )
             Text(
                 style = ComposeAppTheme.typography.subhead2,
-                color = ComposeAppTheme.colors.bran.copy(alpha = 0.6f),
+                color = ComposeAppTheme.colors.textSecondary,
                 text = buyPremiumStringResId,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = 16.dp)
@@ -309,11 +308,11 @@ private fun PirateCoinScreenWithGraph(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(ColorDivider)
+                    .background(ComposeAppTheme.colors.borderDivider)
             )
             Text(
                 style = ComposeAppTheme.typography.body,
-                color = ComposeAppTheme.colors.leah,
+                color = ComposeAppTheme.colors.textPrimary,
                 text = stringResource(id = R.string.how_my_income_grows),
                 modifier = Modifier.padding(vertical = 14.dp, horizontal = 16.dp)
             )
@@ -329,7 +328,7 @@ private fun PirateCoinScreenWithGraph(
                     .padding(top = 24.dp)
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(ColorDivider)
+                    .background(ComposeAppTheme.colors.borderDivider)
             )
         }
         payoutList(
@@ -506,7 +505,7 @@ private fun StackingInfoActionButton(
         Icon(
             painter = painterResource(id = R.drawable.ic_info_20),
             contentDescription = contentDescription,
-            tint = ComposeAppTheme.colors.grey,
+            tint = ComposeAppTheme.colors.iconSecondary,
         )
     }
 }
@@ -567,7 +566,7 @@ private fun CoinBalanceBlock(
         VSpacer(height = 26.dp)
         Text(
             text = stringResource(R.string.total_balance),
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             style = ComposeAppTheme.typography.body,
             textAlign = TextAlign.Center,
         )
@@ -592,14 +591,14 @@ private fun CoinBalanceBlock(
                     }
                 ),
             text = if (visible) balanceWithCoinCode else "*****",
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             style = ComposeAppTheme.typography.title2R,
             textAlign = TextAlign.Center,
         )
         VSpacer(height = 6.dp)
         Text(
             text = if (visible) secondaryAmount else "*****",
-            color = ComposeAppTheme.colors.grey,
+            color = ComposeAppTheme.colors.textSecondary,
             style = ComposeAppTheme.typography.body,
             maxLines = 1,
         )

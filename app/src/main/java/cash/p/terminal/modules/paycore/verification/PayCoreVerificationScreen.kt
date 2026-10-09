@@ -128,7 +128,7 @@ internal fun PayCoreVerificationScreenContent(
     onRetry: () -> Unit
 ) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.paycore_verification_title),
@@ -280,11 +280,11 @@ private fun SupportLine() {
         text = AnnotatedString.fromHtml(
             htmlString = stringResource(R.string.paycore_verification_support_line),
             linkStyles = TextLinkStyles(
-                style = SpanStyle(color = ComposeAppTheme.colors.jacob)
+                style = SpanStyle(color = ComposeAppTheme.colors.brandDefault)
             )
         ),
         style = ComposeAppTheme.typography.subhead2,
-        color = ComposeAppTheme.colors.grey,
+        color = ComposeAppTheme.colors.textSecondary,
         textAlign = TextAlign.Center,
         modifier = Modifier
             .fillMaxWidth()
@@ -331,9 +331,9 @@ private fun PhoneInputField(
     onChangeDigits: (String) -> Unit
 ) {
     val borderColor = if (isError) {
-        ComposeAppTheme.colors.lucian
+        ComposeAppTheme.colors.statusError
     } else {
-        ComposeAppTheme.colors.steel20
+        ComposeAppTheme.colors.borderDefault
     }
 
     Row(
@@ -345,7 +345,7 @@ private fun PhoneInputField(
                 borderColor,
                 RoundedCornerShape(12.dp)
             )
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(ComposeAppTheme.colors.surfacePrimary)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -356,10 +356,10 @@ private fun PhoneInputField(
             modifier = Modifier.weight(1f),
             enabled = enabled,
             textStyle = ComposeAppTheme.typography.body.copy(
-                color = ComposeAppTheme.colors.leah
+                color = ComposeAppTheme.colors.textPrimary
             ),
             singleLine = true,
-            cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+            cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
             visualTransformation = RussianPhoneVisualTransformation,
             decorationBox = { inner ->
@@ -467,7 +467,7 @@ private fun LargeCircleWithSpinner() {
         modifier = Modifier
             .size(100.dp)
             .clip(CircleShape)
-            .background(ComposeAppTheme.colors.steel20),
+            .background(ComposeAppTheme.colors.surfacePlaceholder),
         contentAlignment = Alignment.Center
     ) {
         HSCircularProgressIndicator()
@@ -480,13 +480,13 @@ private fun LargeCircleWithExclamation() {
         modifier = Modifier
             .size(100.dp)
             .clip(CircleShape)
-            .background(ComposeAppTheme.colors.steel20),
+            .background(ComposeAppTheme.colors.surfacePlaceholder),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             painter = painterResource(R.drawable.ic_sync_error),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey,
+            tint = ComposeAppTheme.colors.iconSecondary,
             modifier = Modifier.size(48.dp)
         )
     }

@@ -3,24 +3,18 @@ package cash.p.terminal.ui.compose.components
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
-import cash.p.terminal.ui_compose.components.HsCheckbox
 import cash.p.terminal.ui_compose.components.headline2_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
-import cash.p.terminal.ui_compose.components.subhead2_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @Composable
@@ -35,7 +29,7 @@ fun BottomSheetsElementsButtons(
     ) {
         Divider(
             thickness = 1.dp,
-            color = ComposeAppTheme.colors.steel10,
+            color = ComposeAppTheme.colors.borderDivider,
         )
         Spacer(modifier = Modifier.height(15.dp))
         ButtonPrimaryYellow(
@@ -60,24 +54,11 @@ fun BottomSheetsElementsButtons(
 }
 
 @Composable
-fun BottomSheetsElementsInput(onValueChange: (String) -> Unit) {
-    Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-        FormsInput(
-            hint = stringResource(R.string.Restore_ZCash_Birthday_Hint),
-            pasteEnabled = false,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            textPreprocessor = DigitsOnlyTextPreprocessor,
-            onValueChange = onValueChange
-        )
-    }
-}
-
-@Composable
 fun BottomSheetsElementsText(text: String) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Divider(
             thickness = 1.dp,
-            color = ComposeAppTheme.colors.steel10,
+            color = ComposeAppTheme.colors.borderDivider,
         )
 
         subhead2_grey(
@@ -118,36 +99,7 @@ fun BottomSheetsElementsHeader(
                 .clickable(onClick = onClickClose),
             painter = painterResource(R.drawable.icon_24_close_3),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey
+            tint = ComposeAppTheme.colors.iconSecondary
         )
-    }
-}
-
-@Composable
-fun BottomSheetsElementsCheckbox(
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Divider(
-            thickness = 1.dp,
-            color = ComposeAppTheme.colors.steel10,
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 14.dp, horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            var checked by remember { mutableStateOf(false) }
-            HsCheckbox(
-                checked = checked,
-                onCheckedChange = {
-                    checked = it
-                    onCheckedChange.invoke(it)
-                }
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            subhead2_leah(text = stringResource(R.string.Restore_ZCash_RestoreAsNew))
-        }
     }
 }

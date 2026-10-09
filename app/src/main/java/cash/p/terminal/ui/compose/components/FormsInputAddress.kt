@@ -1,6 +1,7 @@
 package cash.p.terminal.ui.compose.components
 
 import androidx.compose.foundation.background
+import cash.p.terminal.ui_compose.components.plateBackground
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -70,19 +71,19 @@ fun FormsInputAddress(
     val borderColor = when (state) {
         is DataState.Error -> {
             if (state.error is FormsInputStateWarning) {
-                ComposeAppTheme.colors.yellow50
+                ComposeAppTheme.colors.statusWarning50
             } else {
-                ComposeAppTheme.colors.red50
+                ComposeAppTheme.colors.statusError50
             }
         }
 
-        else -> ComposeAppTheme.colors.steel20
+        else -> ComposeAppTheme.colors.borderDefault
     }
 
     val cautionColor = if (state?.errorOrNull is FormsInputStateWarning) {
-        ComposeAppTheme.colors.jacob
+        ComposeAppTheme.colors.statusWarning
     } else {
-        ComposeAppTheme.colors.lucian
+        ComposeAppTheme.colors.statusError
     }
 
     Column(modifier) {
@@ -92,7 +93,7 @@ fun FormsInputAddress(
                 .defaultMinSize(minHeight = 44.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-                .background(ComposeAppTheme.colors.lawrence),
+                .background(plateBackground()),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
@@ -108,21 +109,21 @@ fun FormsInputAddress(
                     onValueChange.invoke(text)
                 },
                 textStyle = ColoredTextStyle(
-                    color = ComposeAppTheme.colors.leah,
+                    color = ComposeAppTheme.colors.textPrimary,
                     textStyle = ComposeAppTheme.typography.body
                 ),
                 singleLine = false,
                 // Five lines fit long addresses (Monero ~95-106 chars, Zcash Unified 140+) without
                 // scrolling; BEAM's offline tokens run into the thousands and scroll inside the field.
                 maxLines = ADDRESS_INPUT_MAX_LINES,
-                cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+                cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
                 decorationBox = { innerTextField ->
                     if (value.isEmpty()) {
                         Text(
                             hint,
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 1,
-                            color = ComposeAppTheme.colors.grey50,
+                            color = ComposeAppTheme.colors.textDisabled,
                             style = ComposeAppTheme.typography.body
                         )
                     }
@@ -164,7 +165,7 @@ fun FormsInputAddress(
                                 modifier = Modifier.padding(end = 8.dp),
                                 painter = painterResource(id = R.drawable.ic_check_20),
                                 contentDescription = null,
-                                tint = ComposeAppTheme.colors.remus
+                                tint = ComposeAppTheme.colors.statusSuccess
                             )
                         }
                     } else {

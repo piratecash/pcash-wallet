@@ -44,7 +44,7 @@ import cash.p.terminal.modules.market.tvl.TvlModule.TvlDiffType
 import cash.p.terminal.ui_compose.components.HSSwipeRefresh
 import cash.p.terminal.ui_compose.Select
 import cash.p.terminal.strings.helpers.TranslatableString
-import cash.p.terminal.ui.compose.components.AlertGroup
+import cash.p.terminal.ui_compose.components.AlertGroup
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
 import cash.p.terminal.ui_compose.components.ButtonSecondaryWithIcon
@@ -101,7 +101,7 @@ private fun TvlScreen(
         SelectorDialogState.Closed
     )
 
-    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
         AppBar(
             menuItems = listOf(
                 MenuItem(

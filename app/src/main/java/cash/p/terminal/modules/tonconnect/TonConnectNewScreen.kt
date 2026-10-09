@@ -27,16 +27,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
-import cash.p.terminal.core.App
 import cash.p.terminal.core.authorizedAction
+import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
 import cash.p.terminal.modules.walletconnect.session.ui.DropDownCell
 import cash.p.terminal.modules.walletconnect.session.ui.TitleValueCell
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.strings.helpers.TranslatableString
-import cash.p.terminal.ui.compose.components.SelectorDialogCompose
-import cash.p.terminal.ui.compose.components.SelectorItem
+import cash.p.terminal.ui_compose.components.AppSelectorDialog
+import cash.p.terminal.ui_compose.components.AppSelectorItem
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
@@ -46,18 +46,17 @@ import cash.p.terminal.ui_compose.components.TextImportantError
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
-import com.tonapps.wallet.data.tonconnect.entities.DAppRequestEntity
 
 @Composable
 fun TonConnectNewScreen(
     navigation: HSNavigation,
-    requestEntity: DAppRequestEntity,
+    uri: String,
     onResult: (Boolean) -> Unit,
 ) {
     val viewModel = viewModel<TonConnectNewViewModel>(initializer = {
         TonConnectNewViewModel(
-            requestEntity = requestEntity,
-            tonConnectKit = App.tonConnectManager.kit
+            uri = uri,
+            tonConnectManager = getKoinInstance()
         )
     })
 
@@ -78,7 +77,7 @@ fun TonConnectNewScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.TonConnect_Title),
@@ -116,25 +115,25 @@ fun TonConnectNewScreen(
                     modifier = Modifier.padding(start = 16.dp),
                     text = uiState.manifest?.name ?: "",
                     style = ComposeAppTheme.typography.headline1,
-                    color = ComposeAppTheme.colors.leah
+                    color = ComposeAppTheme.colors.textPrimary
                 )
             }
 
             var showSortTypeSelectorDialog by remember { mutableStateOf(false) }
             if (showSortTypeSelectorDialog) {
-                SelectorDialogCompose(
+                AppSelectorDialog(
                     title = stringResource(R.string.TonConnect_ChooseWallet),
                     items = uiState.accounts.map { account ->
-                        SelectorItem(
+                        AppSelectorItem(
                             title = account.name,
                             selected = account == uiState.account,
                             item = account,
                         )
                     },
-                    onDismissRequest = {
+                    onDismiss = {
                         showSortTypeSelectorDialog = false
                     },
-                    onSelectItem = viewModel::onSelectAccount
+                    onSelect = viewModel::onSelectAccount
                 )
             }
 
@@ -164,8 +163,11 @@ fun TonConnectNewScreen(
             if (uiState.error != null) {
                 TextImportantError(
                     modifier = Modifier.padding(horizontal = 16.dp),
-                    text = uiState.error.message?.nullIfBlank()
-                        ?: uiState.error.javaClass.simpleName
+                    text = when (uiState.error) {
+                        is InvalidRequestError -> stringResource(R.string.TonConnect_Error_InvalidUrl)
+                        is NoTonAccountError -> stringResource(R.string.WalletConnect_Error_NoSuitableAccount)
+                        else -> uiState.error.message?.nullIfBlank() ?: uiState.error.javaClass.simpleName
+                    }
                 )
             } else {
                 TextImportantWarning(

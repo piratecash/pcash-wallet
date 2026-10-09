@@ -1,24 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!--Paired Colors-->
-    <color name="jacob">@color/yellow_d</color>
-    <color name="remus">@color/green_d</color>
-    <color name="lucian">@color/red_d</color>
-    <color name="tyler">@color/dark</color>
-    <color name="cassandra">@color/dark</color>
-    <color name="bran">@color/light_grey</color>
-
-    <color name="claude">@color/dark</color>
-    <color name="leah">@color/steel_light</color>
-    <color name="lawrence">@color/steel_dark</color>
-    <color name="lawrence_pressed">#353842</color>
-    <color name="elena">@color/steel_dark</color>
-    <color name="jeremy">@color/steel_20</color>
-
-    <color name="andy">@color/black_50</color>
-    <color name="nina">@color/white_50</color>
-    <color name="raina">@color/steel_10</color>
-
-    <color name="tylerGradientStart">#ff13151a</color>
-    <color name="tylerGradientEnd">#0013151a</color>
+    <!--Palette bridge: kept equal to darkPalette by XmlPaletteBridgeTest-->
+    <color name="background_base">#0F0F0F</color>
+    <color name="brand_default">#4A98E9</color>
+    <color name="icon_primary">#F5F5F6</color>
+    <color name="icon_secondary">#94949A</color>
+    <color name="icon_disabled">#66666C</color>
+    <color name="text_primary">#F5F5F6</color>
+    <color name="status_success">#16C96F</color>
+    <color name="status_error">#FF4D4D</color>
 </resources>

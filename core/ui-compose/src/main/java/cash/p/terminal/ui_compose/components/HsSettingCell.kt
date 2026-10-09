@@ -26,8 +26,13 @@ fun HsSettingCell(
     onClick: (() -> Unit)? = null,
     enabled: Boolean = true,
 ) {
-    val primaryColor = if (enabled) ComposeAppTheme.colors.leah else ComposeAppTheme.colors.grey50
-    val secondaryColor = if (enabled) ComposeAppTheme.colors.grey else ComposeAppTheme.colors.grey50
+    val primaryColor = if (enabled) ComposeAppTheme.colors.textPrimary else ComposeAppTheme.colors.textDisabled
+    val secondaryColor = if (enabled) ComposeAppTheme.colors.textSecondary else ComposeAppTheme.colors.textDisabled
+    val iconColor = if (enabled) {
+        iconTint ?: ComposeAppTheme.colors.iconSecondary
+    } else {
+        ComposeAppTheme.colors.iconDisabled
+    }
 
     RowUniversal(
         modifier = Modifier.padding(horizontal = 16.dp),
@@ -39,7 +44,7 @@ fun HsSettingCell(
                 modifier = Modifier.size(24.dp),
                 painter = painterResource(id = icon),
                 contentDescription = null,
-                tint = if (enabled) iconTint ?: secondaryColor else secondaryColor,
+                tint = iconColor,
             )
         }
         Text(
@@ -69,7 +74,7 @@ fun HsSettingCell(
                 modifier = Modifier.size(20.dp),
                 painter = painterResource(id = R.drawable.ic_arrow_right),
                 contentDescription = null,
-                tint = secondaryColor,
+                tint = iconColor,
             )
         }
     }

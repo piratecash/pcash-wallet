@@ -40,12 +40,11 @@ fun SuggestionsBar(
                     ) {
                         Text(
                             text = "$percent%",
-                            modifier = modifier,
-                            style = ComposeAppTheme.typography.captionSB,
+                            style = ComposeAppTheme.typography.subhead2,
                             color = if (selectEnabled) {
-                                ComposeAppTheme.colors.leah
+                                ComposeAppTheme.colors.textPrimary
                             } else {
-                                ComposeAppTheme.colors.grey50
+                                ComposeAppTheme.colors.textDisabled
                             },
                         )
                     }
@@ -54,9 +53,9 @@ fun SuggestionsBar(
                     icon = R.drawable.ic_delete_20,
                     enabled = deleteEnabled,
                     tint = if (deleteEnabled) {
-                        ComposeAppTheme.colors.leah
+                        ComposeAppTheme.colors.iconPrimary
                     } else {
-                        ComposeAppTheme.colors.grey50
+                        ComposeAppTheme.colors.iconDisabled
                     },
                     onClick = onDelete
                 )

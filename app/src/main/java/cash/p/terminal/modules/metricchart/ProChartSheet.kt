@@ -31,7 +31,7 @@ class ProChartSheet(val input: Input) : HSBottomSheet() {
         ComposeAppTheme {
             BottomSheetHeader(
                 iconPainter = painterResource(R.drawable.ic_chart_24),
-                iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+                iconTint = ColorFilter.tint(ComposeAppTheme.colors.brandDefault),
                 title = input.title,
                 onCloseClick = { navigation.navigateUpSafely() }
             ) {

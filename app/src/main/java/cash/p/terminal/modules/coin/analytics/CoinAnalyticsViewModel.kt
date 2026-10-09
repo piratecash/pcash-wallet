@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.coin.analytics
 
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.R
 import cash.p.terminal.strings.helpers.Translator
@@ -353,7 +352,7 @@ class CoinAnalyticsViewModel(
                     chartSlices.add(
                         StackBarSlice(
                             value = percent.toFloat(),
-                            color = blockchain.type.brandColor ?: Color(0xFFFFA800)
+                            color = blockchain.type.brandColor
                         )
                     )
                     footerItems.add(

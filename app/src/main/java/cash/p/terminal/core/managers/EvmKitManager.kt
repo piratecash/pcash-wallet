@@ -55,7 +55,7 @@ class EvmKitManager(
     private val backgroundKeepAliveManager: BackgroundKeepAliveManager,
     private val networkErrorTracker: NetworkErrorTracker,
     private val offlineModeManager: OfflineModeManager,
-    private val databaseKeys: EvmKitDatabaseKeys,
+    private val databaseKeys: EvmKitDatabaseKeyProvider,
     private val context: Context,
 ) {
     private val evmSignerFactory: EvmSignerFactory
