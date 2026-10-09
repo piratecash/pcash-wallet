@@ -30,7 +30,7 @@ fun SendScreen(
     bottomOverlay: @Composable (BoxScope.() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
         AppBar(
             title = title,
             navigationIcon = {
@@ -39,7 +39,7 @@ fun SendScreen(
             menuItems = listOf(
                 MenuItem(
                     title = proceedTitle,
-                    tint = ComposeAppTheme.colors.jacob,
+                    tint = ComposeAppTheme.colors.brandDefault,
                     enabled = proceedEnabled,
                     onClick = onSendClick
                 )

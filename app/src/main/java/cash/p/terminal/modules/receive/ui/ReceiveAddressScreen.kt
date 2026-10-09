@@ -1,6 +1,8 @@
 package cash.p.terminal.modules.receive.ui
 
 import android.content.Intent
+import cash.p.terminal.ui_compose.components.plateOutline
+import cash.p.terminal.ui_compose.components.plateBackground
 import android.content.res.Configuration
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
@@ -57,7 +59,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import cash.p.terminal.R
 import cash.p.beam.BeamAddressType
 import cash.p.terminal.modules.coin.overview.ui.Loading
@@ -76,6 +77,8 @@ import cash.p.terminal.ui.helpers.TextHelper
 import cash.p.terminal.ui_compose.BottomSheetHeader
 import cash.p.terminal.ui_compose.TransparentModalBottomSheet
 import cash.p.terminal.ui_compose.components.AppBar
+import cash.p.terminal.ui_compose.components.AppDialog
+import cash.p.terminal.ui_compose.components.AppDialogDefaultModifier
 import cash.p.terminal.ui_compose.components.ButtonPrimaryCircle
 import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
@@ -91,10 +94,10 @@ import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.TextImportantError
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.body_grey50
-import cash.p.terminal.ui_compose.components.body_jacob
+import cash.p.terminal.ui_compose.components.body_disabled
+import cash.p.terminal.ui_compose.components.body_brand
 import cash.p.terminal.ui_compose.components.caption_grey
-import cash.p.terminal.ui_compose.components.subhead1_jacob
+import cash.p.terminal.ui_compose.components.Subhead1
 import cash.p.terminal.ui_compose.components.subhead1_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.subhead2_leah
@@ -145,7 +148,7 @@ fun ReceiveAddressScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = title,
@@ -156,7 +159,7 @@ fun ReceiveAddressScreen(
                     MenuItem(
                         title = TranslatableString.ResString(R.string.Button_Done),
                         onClick = closeModule,
-                        tint = ComposeAppTheme.colors.jacob
+                        tint = ComposeAppTheme.colors.brandDefault
                     )
                 )
             )
@@ -291,7 +294,8 @@ private fun ColumnScope.ReceiveAddressCard(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
                 .clip(RoundedCornerShape(24.dp))
-                .background(ComposeAppTheme.colors.lawrence),
+                .background(plateBackground())
+                .plateOutline(RoundedCornerShape(24.dp)),
         ) {
             topContent()
             Column(
@@ -319,7 +323,7 @@ private fun ColumnScope.ReceiveAddressCard(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(ComposeAppTheme.colors.white)
+                            .background(ComposeAppTheme.colors.qrBackground)
                             .size(PcashQrCodeDefaults.Size)
                             .testTag(QrPanelTestTag),
                         contentAlignment = Alignment.Center
@@ -407,7 +411,7 @@ private fun ColumnScope.ReceiveAddressCard(
 private fun QrCodePlaceholder() {
     CircularProgressIndicator(
         modifier = Modifier.size(24.dp),
-        color = ComposeAppTheme.colors.grey,
+        color = ComposeAppTheme.colors.textSecondary,
         strokeWidth = 2.dp,
     )
 }
@@ -606,8 +610,9 @@ private fun AdditionalDataSection(
                             contentDescription = null
                         )
                     }
-                    subhead1_jacob(
+                    Subhead1(
                         text = stringResource(R.string.Balance_Receive_NotActive),
+                        color = ComposeAppTheme.colors.statusWarning,
                         textAlign = TextAlign.End,
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
@@ -649,76 +654,66 @@ private fun ReceiveActionButton(
 fun AmountInputDialog(
     initialAmount: BigDecimal? = null,
     onDismissRequest: () -> Unit,
-    onAmountConfirm: (BigDecimal?) -> Unit
+    onAmountConfirm: (BigDecimal?) -> Unit,
+    modifier: Modifier = AppDialogDefaultModifier,
 ) {
-    val textState =
-        remember { mutableStateOf(TextFieldValue(text = initialAmount?.toString() ?: "")) }
+    val textState = remember { mutableStateOf(TextFieldValue(text = initialAmount?.toString() ?: "")) }
     val focusRequester = remember { FocusRequester() }
-    Dialog(onDismissRequest = onDismissRequest) {
-        Column(
-            Modifier
-                .clip(RoundedCornerShape(16.dp))
-                .background(ComposeAppTheme.colors.lawrence)
+    AppDialog(onDismissRequest = onDismissRequest, modifier = modifier) {
+        VSpacer(24.dp)
+        title3_leah(
+            modifier = Modifier
+                .padding(horizontal = 24.dp)
+                .fillMaxWidth(),
+            text = stringResource(R.string.Balance_Receive_SetAmount),
+        )
+        VSpacer(16.dp)
+
+        BasicTextField(
+            modifier = Modifier
+                .padding(horizontal = 24.dp)
+                .fillMaxWidth()
+                .padding(16.dp)
+                .focusRequester(focusRequester),
+            value = textState.value,
+            onValueChange = { textState.value = it },
+            singleLine = true,
+            textStyle = ColoredTextStyle(
+                color = ComposeAppTheme.colors.textPrimary,
+                textStyle = ComposeAppTheme.typography.body
+            ),
+            decorationBox = { innerTextField ->
+                if (textState.value.text.isEmpty()) {
+                    body_disabled("0")
+                }
+                innerTextField()
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
+        )
+        SideEffect {
+            focusRequester.requestFocus()
+            textState.value = textState.value.copy(
+                selection = TextRange(textState.value.text.length)
+            )
+        }
+
+        HsDivider(modifier = Modifier.padding(horizontal = 24.dp))
+
+        Row(
+            modifier = Modifier
+                .padding(all = 24.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
         ) {
-            VSpacer(24.dp)
-            title3_leah(
-                modifier = Modifier
-                    .padding(horizontal = 24.dp)
-                    .fillMaxWidth(),
-                text = stringResource(R.string.Balance_Receive_SetAmount),
-            )
-            VSpacer(16.dp)
-
-            BasicTextField(
-                modifier = Modifier
-                    .padding(horizontal = 24.dp)
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .focusRequester(focusRequester),
-                value = textState.value,
-                onValueChange = { value ->
-                    textState.value = value
-                },
-                singleLine = true,
-                textStyle = ColoredTextStyle(
-                    color = ComposeAppTheme.colors.leah,
-                    textStyle = ComposeAppTheme.typography.body
-                ),
-                decorationBox = { innerTextField ->
-                    if (textState.value.text.isEmpty()) {
-                        body_grey50("0")
-                    }
-                    innerTextField()
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
-            )
-            SideEffect {
-                focusRequester.requestFocus()
-                textState.value = textState.value.copy(
-                    selection = TextRange(textState.value.text.length)
-                )
+            HsTextButton(onClick = onDismissRequest) {
+                body_brand(stringResource(R.string.Button_Cancel).uppercase())
             }
-
-            HsDivider(modifier = Modifier.padding(horizontal = 24.dp))
-
-            Row(
-                modifier = Modifier
-                    .padding(all = 24.dp)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+            HSpacer(8.dp)
+            HsTextButton(
+                onClick = { onAmountConfirm.invoke(textState.value.text.toBigDecimalOrNull()) }
             ) {
-                HsTextButton(
-                    onClick = onDismissRequest
-                ) {
-                    body_jacob(stringResource(R.string.Button_Cancel).uppercase())
-                }
-                HSpacer(8.dp)
-                HsTextButton(
-                    onClick = { onAmountConfirm.invoke(textState.value.text.toBigDecimalOrNull()) }
-                ) {
-                    body_jacob(stringResource(R.string.Button_Confirm).uppercase())
-                }
+                body_brand(stringResource(R.string.Button_Confirm).uppercase())
             }
         }
     }
@@ -738,7 +733,7 @@ private fun TronAlertBottomSheet(
     ) {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_attention_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
             title = title,
             onCloseClick = hideBottomSheet
         ) {
@@ -774,7 +769,7 @@ private fun TronInfoBottomSheet(
     ) {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_info_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.grey),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.iconSecondary),
             title = title,
             onCloseClick = hideBottomSheet
         ) {
@@ -830,7 +825,7 @@ private fun ReceiveAddressScreenPreview() {
                 HorizontalDivider(
                     modifier = Modifier.fillMaxWidth(),
                     thickness = 1.dp,
-                    color = ComposeAppTheme.colors.steel20,
+                    color = ComposeAppTheme.colors.borderDivider,
                 )
             },
             addressBadge = {
@@ -840,9 +835,9 @@ private fun ReceiveAddressScreenPreview() {
                     AddressBadge.UNUSED -> stringResource(R.string.receive_address_badge_unused)
                 }
                 val badgeColor = when (addressBadge) {
-                    AddressBadge.NEW -> ComposeAppTheme.colors.remus
-                    AddressBadge.USED -> ComposeAppTheme.colors.jacob
-                    AddressBadge.UNUSED -> ComposeAppTheme.colors.grey
+                    AddressBadge.NEW -> ComposeAppTheme.colors.statusSuccess
+                    AddressBadge.USED -> ComposeAppTheme.colors.statusWarning
+                    AddressBadge.UNUSED -> ComposeAppTheme.colors.textSecondary
                 }
                 VSpacer(12.dp)
                 Row(

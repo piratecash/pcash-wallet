@@ -32,7 +32,7 @@ import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.InfoText
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.subhead1_jacob
+import cash.p.terminal.ui_compose.components.subhead1_brand
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 class AboutPage : HSPage() {
@@ -53,7 +53,7 @@ private fun AboutScreen(
     onBackPress: () -> Unit,
     aboutViewModel: AboutViewModel = viewModel(factory = AboutModule.Factory()),
 ) {
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(
                 title = stringResource(R.string.SettingsAboutApp_Title),
@@ -155,7 +155,7 @@ private fun SettingSections(
             .height(32.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        subhead1_jacob(text = stringResource(id = R.string.Settings_JoinUs).uppercase())
+        subhead1_brand(text = stringResource(id = R.string.Settings_JoinUs).uppercase())
     }
     CellUniversalLawrenceSection(
         listOf({

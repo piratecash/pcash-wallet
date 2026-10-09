@@ -63,7 +63,7 @@ private fun NftCollectionScreen(navigation: HSNavigation, viewModel: NftCollecti
     val view = LocalView.current
     val context = LocalContext.current
 
-    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
         AppBar(
             menuItems = listOf(
                 MenuItem(

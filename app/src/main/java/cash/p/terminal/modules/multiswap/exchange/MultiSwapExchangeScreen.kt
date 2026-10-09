@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.multiswap.exchange
 
 import androidx.compose.foundation.Canvas
+import cash.p.terminal.ui_compose.components.plateBackground
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -113,7 +114,7 @@ internal fun MultiSwapExchangeScreen(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(
@@ -174,7 +175,7 @@ internal fun MultiSwapExchangeScreen(
                         )
                         LegCard(
                             leg = uiState.leg1,
-                            borderColor = ComposeAppTheme.colors.grey,
+                            borderColor = ComposeAppTheme.colors.borderDivider,
                             modifier = Modifier.onSizeChanged { leg1CardHeight = it.height },
                             content = {
 
@@ -202,7 +203,7 @@ internal fun MultiSwapExchangeScreen(
                         )
                         LegCard(
                             leg = uiState.leg2,
-                            borderColor = ComposeAppTheme.colors.steel20,
+                            borderColor = ComposeAppTheme.colors.borderDefault,
                             content = {
                                 Leg2Header(
                                     providerName = uiState.leg2.providerName,
@@ -348,7 +349,7 @@ private fun StatusDot(status: LegStatus, modifier: Modifier = Modifier) {
 
 @Composable
 private fun VerticalLine(isDotted: Boolean, modifier: Modifier = Modifier) {
-    val color = ComposeAppTheme.colors.grey
+    val color = ComposeAppTheme.colors.textSecondary
     if (isDotted) {
         Canvas(modifier = modifier.width(1.dp)) {
             val pathEffect = PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 4.dp.toPx()))
@@ -381,7 +382,7 @@ private fun LegCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(plateBackground())
     ) {
         content()
     }
@@ -401,7 +402,7 @@ private fun LegContent(
         amountFormatted = leg.amountInFormatted?.let { "$it ${leg.coinIn}" },
         fiatAmount = leg.fiatAmountIn,
         currency = leg.currency,
-        amountColor = ComposeAppTheme.colors.leah,
+        amountColor = ComposeAppTheme.colors.textPrimary,
     )
     // You Get
     AmountRow(
@@ -410,7 +411,7 @@ private fun LegContent(
         amountFormatted = leg.amountOutFormatted?.let { "$it ${leg.coinOut}" },
         fiatAmount = leg.fiatAmountOut,
         currency = leg.currency,
-        amountColor = ComposeAppTheme.colors.remus,
+        amountColor = ComposeAppTheme.colors.statusSuccess,
     )
     if (providerName != null && providerIcon != null) {
         SwapProviderField(providerName, providerIcon, providerIconUrl)
@@ -508,7 +509,7 @@ private fun Leg1Header(
                     .padding(bottom = 4.5.dp, end = 6.5.dp)
                     .size(24.dp)
                     .clip(CircleShape)
-                    .background(ComposeAppTheme.colors.tyler)
+                    .background(ComposeAppTheme.colors.backgroundBase)
             )
             HsImageCircle(
                 modifier = Modifier
@@ -584,7 +585,7 @@ private fun Leg2Header(
                 Icon(
                     painter = painterResource(R.drawable.ic_arrow_right),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                 )
             }
         }
@@ -631,7 +632,7 @@ private fun BottomButtons(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
                     title = stringResource(R.string.Button_Cancel),
-                    textColor = ComposeAppTheme.colors.lucian,
+                    textColor = ComposeAppTheme.colors.statusError,
                     onClick = onDeleteAndClose,
                 )
             }
@@ -697,7 +698,7 @@ internal fun CancelSwapBottomSheet(
 
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_attention_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.lucian),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusError),
             title = stringResource(R.string.multi_swap_cancel_swap),
             onCloseClick = {
                 scope.launch { sheetState.hide() }.invokeOnCompletion { onDismiss() }
@@ -746,7 +747,7 @@ internal fun PayCoreDeleteRestrictedBottomSheet(
     ) {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_attention_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
             title = stringResource(R.string.Alert_TitleWarning),
             onCloseClick = { dismiss() },
         ) {
@@ -788,10 +789,10 @@ internal fun PayCoreDeleteRestrictedBottomSheet(
 
 @Composable
 private fun statusDotColor(status: LegStatus) = when (status) {
-    LegStatus.Pending -> ComposeAppTheme.colors.grey
-    LegStatus.Executing -> ComposeAppTheme.colors.jacob
-    LegStatus.Completed -> ComposeAppTheme.colors.remus
-    LegStatus.Failed -> ComposeAppTheme.colors.lucian
+    LegStatus.Pending -> ComposeAppTheme.colors.textSecondary
+    LegStatus.Executing -> ComposeAppTheme.colors.brandDefault
+    LegStatus.Completed -> ComposeAppTheme.colors.statusSuccess
+    LegStatus.Failed -> ComposeAppTheme.colors.statusError
 }
 
 @Preview

@@ -40,7 +40,7 @@ fun TransactionStatusesInfoSheet(
     ) {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_info_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.grey),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.iconSecondary),
             title = stringResource(R.string.transaction_statuses_title),
             onCloseClick = {
                 scope.launch { sheetState.hide() }.invokeOnCompletion {

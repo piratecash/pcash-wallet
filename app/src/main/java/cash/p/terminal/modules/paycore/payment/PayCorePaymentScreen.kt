@@ -86,7 +86,7 @@ fun PayCorePaymentScreen(
 
     Scaffold(
         modifier = modifier,
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.Swap_Confirm_Title),
@@ -152,7 +152,7 @@ private fun SwapInfoCards(displayParams: PayCorePaymentDisplayParams) {
             borderTop = false,
             currency = displayParams.currency,
             title = stringResource(R.string.Swap_YouPay),
-            amountColor = ComposeAppTheme.colors.lucian,
+            amountColor = ComposeAppTheme.colors.statusError,
             imageUrl = displayParams.tokenIn.coin.imageUrl,
             alternativeImageUrl = displayParams.tokenIn.coin.alternativeImageUrl,
             imagePlaceholder = null,
@@ -164,7 +164,7 @@ private fun SwapInfoCards(displayParams: PayCorePaymentDisplayParams) {
             borderTop = true,
             currency = displayParams.currency,
             title = stringResource(R.string.Swap_YouGet),
-            amountColor = ComposeAppTheme.colors.remus,
+            amountColor = ComposeAppTheme.colors.statusSuccess,
             imageUrl = displayParams.tokenOut.coin.imageUrl,
             alternativeImageUrl = displayParams.tokenOut.coin.alternativeImageUrl,
             imagePlaceholder = null,
@@ -210,12 +210,12 @@ private fun PayCorePaymentScreenPreview() {
     // PriceField uses App.numberFormatter (Koin) which is unavailable in Preview.
     // Preview only the static parts: token rows, service info, button.
     ComposeAppTheme {
-        Column(modifier = Modifier.background(ComposeAppTheme.colors.tyler)) {
+        Column(modifier = Modifier.background(ComposeAppTheme.colors.backgroundBase)) {
             TokenRowPure(
                 fiatAmount = null,
                 currency = Currency("USD", "$", 2, 0),
                 title = stringResource(R.string.Send_Confirmation_YouSend),
-                amountColor = ComposeAppTheme.colors.lucian,
+                amountColor = ComposeAppTheme.colors.statusError,
                 imageUrl = "https://p.cash/storage/coins/rub/image.png",
                 alternativeImageUrl = null,
                 imagePlaceholder = null,
@@ -227,7 +227,7 @@ private fun PayCorePaymentScreenPreview() {
                 borderTop = true,
                 currency = Currency("USD", "$", 2, 0),
                 title = stringResource(R.string.Swap_ToAmountTitle),
-                amountColor = ComposeAppTheme.colors.remus,
+                amountColor = ComposeAppTheme.colors.statusSuccess,
                 imageUrl = null,
                 alternativeImageUrl = null,
                 imagePlaceholder = null,

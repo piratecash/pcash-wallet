@@ -37,12 +37,12 @@ fun HeaderStick(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(ComposeAppTheme.colors.tyler)
+            .background(ComposeAppTheme.colors.backgroundBase)
     ) {
         if (borderTop) {
             Divider(
                 thickness = 1.dp,
-                color = ComposeAppTheme.colors.steel10,
+                color = ComposeAppTheme.colors.borderDivider,
                 modifier = Modifier.align(Alignment.TopCenter)
             )
         }
@@ -89,7 +89,7 @@ fun HeaderText(
                         indication = null,
                     ),
                 painter = painterResource(R.drawable.ic_info_20),
-                tint = ComposeAppTheme.colors.grey,
+                tint = ComposeAppTheme.colors.iconSecondary,
                 contentDescription = stringResource(R.string.Info_Title),
             )
         }
@@ -106,12 +106,12 @@ fun HeaderSorting(
         modifier = Modifier
             .fillMaxWidth()
             .height(44.dp)
-            .background(ComposeAppTheme.colors.tyler)
+            .background(ComposeAppTheme.colors.backgroundBase)
     ) {
         if (borderTop) {
             Divider(
                 thickness = 1.dp,
-                color = ComposeAppTheme.colors.steel10,
+                color = ComposeAppTheme.colors.borderDivider,
                 modifier = Modifier.align(Alignment.TopCenter)
             )
         }
@@ -119,7 +119,7 @@ fun HeaderSorting(
         if (borderBottom) {
             Divider(
                 thickness = 1.dp,
-                color = ComposeAppTheme.colors.steel10,
+                color = ComposeAppTheme.colors.borderDivider,
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
         }
@@ -163,7 +163,7 @@ fun SectionHeaderWithIcon(
                 .padding(end = 10.dp)
                 .size(16.dp),
             painter = painterResource(iconRes),
-            tint = ComposeAppTheme.colors.grey,
+            tint = ComposeAppTheme.colors.iconSecondary,
             contentDescription = null,
         )
         subhead1_grey(

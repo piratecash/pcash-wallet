@@ -1265,6 +1265,7 @@
     <string name="ManageAccount_WatchAddresses">Adresse à suivre</string>
     <string name="ManageAccount_DeleteWarning">Voulez-vous arrêter de surveiller cette adresse de portefeuille ?</string>
     <string name="Balance_Receive_BackupRequired_Description">Vous devez sauvegarder %1$s</string>
+    <string name="balance_swap_backup_required_description">L\'échange sera disponible une fois %1$s sauvegardé</string>
     <!--Network Settings-->
     <string name="NetworkSettings_SwithesAutomatically">bacsule automatiquement</string>
     <!-- Show Key -->

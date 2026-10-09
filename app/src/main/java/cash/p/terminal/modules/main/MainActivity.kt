@@ -192,7 +192,7 @@ open class MainActivity : BaseActivity() {
         viewModel.tcDappRequest.observe(this) { request ->
             if (request != null) {
                 navigation.slideFromBottomForResult<TonConnectNewPage.Result>(
-                    TonConnectNewPage(request.dAppRequest)
+                    TonConnectNewPage(request.uri)
                 ) { result ->
                     if (request.closeAppOnResult) {
                         if (result.approved) {

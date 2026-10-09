@@ -70,7 +70,7 @@ private fun MetricsPageScreen(
 ) {
     val uiState = viewModel.uiState
 
-    Column(Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+    Column(Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
         AppBar(
             menuItems = listOf(
                 MenuItem(

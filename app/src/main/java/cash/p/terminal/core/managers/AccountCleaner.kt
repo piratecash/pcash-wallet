@@ -30,6 +30,7 @@ class AccountCleaner(
     private val accountStorageCleaner: AccountStorageCleaner,
     private val bitcoinKitDatabaseManager: BitcoinKitDatabaseManager,
     private val solanaKitManager: SolanaKitManager,
+    private val tonKitManager: TonKitManager,
     private val tronKitManager: TronKitManager,
     private val thorchainKitManagers: ThorchainKitManagers,
     private val deletionPreflight: AccountDeletionPreflight,
@@ -53,6 +54,7 @@ class AccountCleaner(
         clearWalletDataForBlockchainIfInactive(accountId, BlockchainType.Zcash)
         solanaKitManager.clear(accountId)
         tronKitManager.clear(accountId)
+        tonKitManager.clear(accountId)
         clearSmsNotificationSettings(accountId)
     }
 

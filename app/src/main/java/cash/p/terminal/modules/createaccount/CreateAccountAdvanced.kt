@@ -33,8 +33,8 @@ import cash.p.terminal.modules.mnemonic.MnemonicLanguageCell
 import cash.p.terminal.modules.mnemonic.MnemonicLanguageSelectorDialog
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.FormsInput
-import cash.p.terminal.ui.compose.components.SelectorDialogCompose
-import cash.p.terminal.ui.compose.components.SelectorItem
+import cash.p.terminal.ui_compose.components.AppSelectorDialog
+import cash.p.terminal.ui_compose.components.AppSelectorItem
 import cash.p.terminal.ui_compose.blockClicksBehind
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.B2
@@ -77,7 +77,6 @@ fun CreateAccountAdvancedScreen(
                 contenView = view,
                 resId = R.string.Hud_Text_Created,
                 icon = R.drawable.icon_add_to_wallet_24,
-                iconTint = R.color.white
             )
             delay(300)
             onFinish.invoke()
@@ -95,17 +94,17 @@ fun CreateAccountAdvancedScreen(
     var showMnemonicSizeSelectorDialog by remember { mutableStateOf(false) }
     var showLanguageSelectorDialog by remember { mutableStateOf(false) }
 
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         if (showMnemonicSizeSelectorDialog) {
-            SelectorDialogCompose(
+            AppSelectorDialog(
                 title = stringResource(R.string.CreateWallet_Mnemonic),
                 items = viewModel.mnemonicKinds.map {
-                    SelectorItem(it.titleLong, it == viewModel.selectedKind, it)
+                    AppSelectorItem(it.titleLong, it == viewModel.selectedKind, it)
                 },
-                onDismissRequest = {
+                onDismiss = {
                     showMnemonicSizeSelectorDialog = false
                 },
-                onSelectItem = {
+                onSelect = {
                     viewModel.setMnemonicKind(it)
                 }
             )
@@ -248,7 +247,7 @@ fun CreateAccountAdvancedScreen(
                 if (viewModel.loading) {
                     Loading(
                         modifier = Modifier
-                            .background(color = ComposeAppTheme.colors.tyler.copy(0.5f))
+                            .background(color = ComposeAppTheme.colors.backgroundBase.copy(0.5f))
                             .blockClicksBehind()
                     )
                 }
@@ -271,7 +270,7 @@ private fun MnemonicNumberCell(
             modifier = Modifier.padding(vertical = 12.dp),
             painter = painterResource(id = R.drawable.ic_key_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey
+            tint = ComposeAppTheme.colors.iconSecondary
         )
         B2(
             text = stringResource(R.string.CreateWallet_Mnemonic),
@@ -285,7 +284,7 @@ private fun MnemonicNumberCell(
             modifier = Modifier.padding(start = 4.dp),
             painter = painterResource(id = R.drawable.ic_down_arrow_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey
+            tint = ComposeAppTheme.colors.iconSecondary
         )
     }
 }
@@ -299,7 +298,7 @@ fun PassphraseCell(enabled: Boolean, onCheckedChange: (Boolean) -> Unit) {
         Icon(
             painter = painterResource(id = R.drawable.ic_key_phrase_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey
+            tint = ComposeAppTheme.colors.iconSecondary
         )
         body_leah(
             text = stringResource(R.string.Passphrase),

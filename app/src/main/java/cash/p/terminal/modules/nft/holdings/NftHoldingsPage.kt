@@ -78,7 +78,7 @@ fun NftHoldingsScreen(navigation: HSNavigation) {
 
     val loading = viewModel.refreshing
 
-    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
         AppBar(
             title = stringResource(R.string.Nfts_Title),
             navigationIcon = {
@@ -229,7 +229,7 @@ fun LazyListScope.nftsCollectionSection(
                 modifier = Modifier.padding(start = 8.dp),
                 painter = painter,
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
         }
     }

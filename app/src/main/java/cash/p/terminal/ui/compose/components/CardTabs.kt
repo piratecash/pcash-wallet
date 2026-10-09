@@ -1,6 +1,8 @@
 package cash.p.terminal.ui.compose.components
 
 import androidx.compose.foundation.Image
+import cash.p.terminal.ui_compose.components.plateOutline
+import cash.p.terminal.ui_compose.components.plateBackground
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -48,7 +50,7 @@ fun <T> CardTabs(
                 val border = if (selected) {
                     Modifier.border(
                         1.dp,
-                        ComposeAppTheme.colors.jacob,
+                        ComposeAppTheme.colors.brandDefault,
                         RoundedCornerShape(12.dp)
                     )
                 } else {
@@ -61,7 +63,8 @@ fun <T> CardTabs(
                         .then(border)
                         .fillMaxHeight()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(ComposeAppTheme.colors.lawrence),
+                        .background(plateBackground())
+                        .then(if (selected) Modifier else Modifier.plateOutline(RoundedCornerShape(12.dp))),
                     selected = selected,
                     onClick = {
                         onClick(if (selected) null else tabItem.item)

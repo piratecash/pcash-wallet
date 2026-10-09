@@ -49,9 +49,9 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 fun FormsInputPassword(
     modifier: Modifier = Modifier,
     hint: String,
-    textColor: Color = ComposeAppTheme.colors.leah,
+    textColor: Color = ComposeAppTheme.colors.textPrimary,
     textStyle: TextStyle = ComposeAppTheme.typography.body,
-    hintColor: Color = ComposeAppTheme.colors.grey50,
+    hintColor: Color = ComposeAppTheme.colors.textDisabled,
     hintStyle: TextStyle = ComposeAppTheme.typography.body,
     singleLine: Boolean = true,
     state: DataState<Any>? = null,
@@ -70,19 +70,19 @@ fun FormsInputPassword(
     val borderColor = when (state) {
         is DataState.Error -> {
             if (state.error is FormsInputStateWarning) {
-                ComposeAppTheme.colors.yellow50
+                ComposeAppTheme.colors.statusWarning50
             } else {
-                ComposeAppTheme.colors.red50
+                ComposeAppTheme.colors.statusError50
             }
         }
 
-        else -> ComposeAppTheme.colors.steel20
+        else -> ComposeAppTheme.colors.borderDefault
     }
 
     val cautionColor = if (state?.errorOrNull is FormsInputStateWarning) {
-        ComposeAppTheme.colors.jacob
+        ComposeAppTheme.colors.statusWarning
     } else {
-        ComposeAppTheme.colors.lucian
+        ComposeAppTheme.colors.statusError
     }
 
     Column(modifier) {
@@ -92,7 +92,7 @@ fun FormsInputPassword(
                 .defaultMinSize(minHeight = 44.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-                .background(ComposeAppTheme.colors.lawrence),
+                .background(plateBackground()),
             verticalAlignment = Alignment.CenterVertically
         ) {
             BasicTextField(
@@ -120,7 +120,7 @@ fun FormsInputPassword(
                     textStyle = textStyle
                 ),
                 singleLine = singleLine,
-                cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+                cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
                 decorationBox = { innerTextField ->
                     if (textState.value.text.isEmpty()) {
                         Text(
@@ -164,7 +164,7 @@ fun FormsInputPassword(
                     ),
                 painter = painterResource(id = if (hide) R.drawable.ic_eye_off_20 else R.drawable.ic_eye_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
             Spacer(Modifier.width(16.dp))
         }

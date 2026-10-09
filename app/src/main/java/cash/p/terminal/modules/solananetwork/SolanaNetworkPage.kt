@@ -64,7 +64,7 @@ private fun SolanaNetworkScreen(
         navigation.navigateUp()
     }
 
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(
                 title = viewModel.title,
@@ -165,7 +165,7 @@ private fun NetworkSettingCell(
             if (checked) {
                 Icon(
                     painter = painterResource(R.drawable.ic_checkmark_20),
-                    tint = ComposeAppTheme.colors.jacob,
+                    tint = ComposeAppTheme.colors.brandDefault,
                     contentDescription = null,
                 )
             }

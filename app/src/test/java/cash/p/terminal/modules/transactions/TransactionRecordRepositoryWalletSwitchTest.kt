@@ -1123,6 +1123,50 @@ class TransactionRecordRepositoryWalletSwitchTest {
     }
 
     @Test
+    fun set_adapterReadyAfterFirstSetWithSameWallets_loadsItsRecords() = runTest {
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+        startKoinForTests()
+
+        val source1 = createSource("account-1", Blockchain(BlockchainType.Ethereum, "Ethereum", null))
+        val source2 = createSource("account-1", Blockchain(BlockchainType.Monero, "Monero", null))
+        val wallets = listOf(source1, source2).map { TransactionWallet(token = null, source = it, badge = null) }
+        fun record(uid: String, recordSource: TransactionSource, time: Long) =
+            mockk<TransactionRecord>(relaxed = true) {
+                every { this@mockk.uid } returns uid
+                every { source } returns recordSource
+                every { timestamp } returns time
+                every { spam } returns false
+                every { compareTo(any()) } returns 0
+            }
+
+        val lateAdapter = AtomicReference<ITransactionsAdapter?>(null)
+        val adapterManager = mockk<TransactionAdapterManager>(relaxed = true) {
+            every { getAdapter(source1) } returns simpleAdapter(listOf(record("record-1", source1, 1000L)))
+            every { getAdapter(source2) } answers { lateAdapter.get() }
+        }
+        val repository = createRepository(adapterManager, testDispatcher, this)
+
+        val (emissions, collectorJob) = collectRecordUids(repository, testDispatcher)
+
+        repository.setAndReload(wallets, null, FilterTransactionType.All, null, null, null)
+        advanceUntilIdle()
+
+        lateAdapter.set(simpleAdapter(listOf(record("record-2", source2, 2000L))))
+        repository.setAndReload(wallets, null, FilterTransactionType.All, null, null, null)
+        advanceUntilIdle()
+
+        val lastBatch = emissions.last()
+        assertTrue(
+            "a source whose adapter became ready after the first set() must be loaded, " +
+                "but the last batch was: $lastBatch",
+            lastBatch.containsAll(listOf("record-2", "record-1"))
+        )
+
+        collectorJob.cancel()
+        repository.clear()
+    }
+
+    @Test
     fun reload_swapFilterExtraAdapterTimesOut_batchIsMarkedFailed() = runTest {
         val testDispatcher = UnconfinedTestDispatcher(testScheduler)
         startKoinForTests()

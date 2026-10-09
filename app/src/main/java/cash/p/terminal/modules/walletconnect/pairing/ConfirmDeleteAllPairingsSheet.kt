@@ -43,7 +43,7 @@ fun ConfirmDeleteAllScreen(navigation: HSNavigation, onDeleteClick: () -> Unit) 
     ComposeAppTheme {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_delete_20),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.lucian),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusError),
             title = stringResource(R.string.WalletConnect_DeleteAllPairs),
             onCloseClick = {
                 navigation.navigateUpSafely()

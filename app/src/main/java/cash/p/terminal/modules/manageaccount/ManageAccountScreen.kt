@@ -67,13 +67,13 @@ import cash.p.terminal.ui_compose.components.InfoText
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.VSpacer
-import cash.p.terminal.ui_compose.components.body_jacob
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.body_lucian
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.ui_compose.components.Body
 import cash.p.terminal.navigation.navigateUpSafely
 
 @Composable
@@ -95,7 +95,7 @@ internal fun ManageAccountScreen(
         }
     }
 
-    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)) {
+    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
         AppBar(
             title = viewState.title,
             navigationIcon = {
@@ -268,7 +268,7 @@ private fun KeyActions(
                     AccountActionItem(
                         title = stringResource(id = R.string.RecoveryPhrase_monero_Title),
                         icon = painterResource(id = R.drawable.icon_paper_contract_20),
-                        iconTint = ComposeAppTheme.colors.jacob
+                        iconTint = ComposeAppTheme.colors.statusWarning
                     ) {
                         navigation.authorizedAction {
                             navigation.premiumAction {
@@ -463,7 +463,7 @@ private fun RedActionItem(
                 .size(24.dp),
             painter = icon,
             contentDescription = null,
-            tint = ComposeAppTheme.colors.lucian
+            tint = ComposeAppTheme.colors.statusError
         )
 
         body_lucian(
@@ -493,7 +493,7 @@ private fun AccountActionItem(
                     .size(24.dp),
                 painter = icon,
                 contentDescription = null,
-                tint = iconTint ?: ComposeAppTheme.colors.grey
+                tint = iconTint ?: ComposeAppTheme.colors.iconSecondary
             )
         }
 
@@ -517,7 +517,7 @@ private fun AccountActionItem(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 painter = painterResource(id = R.drawable.ic_attention_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.lucian
+                tint = ComposeAppTheme.colors.statusError
             )
             Spacer(modifier = Modifier.width(6.dp))
         }
@@ -540,7 +540,7 @@ private fun AccountActionItem(
             Icon(
                 painter = painterResource(id = R.drawable.ic_arrow_right),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
             HSpacer(16.dp)
         }
@@ -565,7 +565,7 @@ private fun AccountActionWithInfoItem(
                     .size(24.dp),
                 painter = icon,
                 contentDescription = null,
-                tint = iconTint ?: ComposeAppTheme.colors.grey
+                tint = iconTint ?: ComposeAppTheme.colors.iconSecondary
             )
         }
 
@@ -584,14 +584,14 @@ private fun AccountActionWithInfoItem(
                 ),
             painter = painterResource(id = R.drawable.ic_info_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey,
+            tint = ComposeAppTheme.colors.iconSecondary,
         )
 
         onClick?.let {
             Icon(
                 painter = painterResource(id = R.drawable.ic_arrow_right),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
             HSpacer(16.dp)
         }
@@ -617,13 +617,14 @@ private fun YellowActionItem(
                     .size(24.dp),
                 painter = icon,
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.jacob
+                tint = ComposeAppTheme.colors.statusWarning
             )
         }
 
-        body_jacob(
-            modifier = Modifier.weight(1f),
+        Body(
             text = title,
+            color = ComposeAppTheme.colors.statusWarning,
+            modifier = Modifier.weight(1f),
         )
 
         if (attention) {
@@ -631,7 +632,7 @@ private fun YellowActionItem(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 painter = painterResource(id = R.drawable.ic_attention_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.lucian
+                tint = ComposeAppTheme.colors.statusError
             )
             HSpacer(6.dp)
         } else if (completed) {
@@ -639,7 +640,7 @@ private fun YellowActionItem(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 painter = painterResource(id = R.drawable.ic_checkmark_20),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.remus
+                tint = ComposeAppTheme.colors.statusSuccess
             )
             HSpacer(6.dp)
         }

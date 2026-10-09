@@ -55,7 +55,7 @@ private fun BlockchainSettingsScreen(
     viewModel: BlockchainSettingsViewModel = viewModel(factory = BlockchainSettingsModule.Factory()),
 ) {
 
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(
                 title = stringResource(R.string.BlockchainSettings_Title),
@@ -161,7 +161,7 @@ private fun BlockchainSettingCell(
             modifier = Modifier.padding(horizontal = 16.dp),
             painter = painterResource(id = R.drawable.ic_arrow_right),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey
+            tint = ComposeAppTheme.colors.iconSecondary
         )
     }
 }

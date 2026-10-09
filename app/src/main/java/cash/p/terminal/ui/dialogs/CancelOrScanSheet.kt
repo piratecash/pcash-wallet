@@ -67,7 +67,7 @@ private fun CancelOrScanScreen(
 
     ComposeAppTheme {
         BottomSheetHeader(
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.lucian),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusError),
             title = stringResource(R.string.adding_tokens),
             onCloseClick = onClose
         ) {

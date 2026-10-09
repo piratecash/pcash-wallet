@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.core.ILocalStorage
+import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.wallet.AccountDeletionBlockedException
 import cash.p.terminal.wallet.AccountDeletionPreflight
 import io.horizontalsystems.core.IKeyStoreManager
@@ -15,6 +16,7 @@ class KeyStoreViewModel(
     private val keyStoreManager: IKeyStoreManager,
     private val localStorage: ILocalStorage,
     private val deletionPreflight: AccountDeletionPreflight,
+    private val tonConnectManager: Lazy<TonConnectManager>,
     mode: KeyStoreModule.ModeType
 ) : ViewModel() {
 
@@ -62,6 +64,8 @@ class KeyStoreViewModel(
         if (!showInvalidKeyWarning || recoveryRequired) return
         withResetPreflight {
             keyStoreManager.removeKey()
+            // A TON Connect key wrapped by the master key just removed could never be read again.
+            tonConnectManager.value.reset()
             showInvalidKeyWarning = false
             openMainModule = true
         }

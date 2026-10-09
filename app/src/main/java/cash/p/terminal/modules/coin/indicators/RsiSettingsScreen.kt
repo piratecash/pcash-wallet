@@ -45,7 +45,7 @@ fun RsiSettingsScreen(navigation: HSNavigation, indicatorSetting: ChartIndicator
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = viewModel.name,

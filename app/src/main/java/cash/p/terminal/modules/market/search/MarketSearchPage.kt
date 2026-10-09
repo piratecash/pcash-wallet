@@ -177,9 +177,9 @@ fun MarketSearchResults(
                                 .fillMaxHeight()
                                 .background(
                                     if (item.favourited) {
-                                        ComposeAppTheme.colors.lucian
+                                        ComposeAppTheme.colors.statusError
                                     } else {
-                                        ComposeAppTheme.colors.jacob
+                                        ComposeAppTheme.colors.brandDefault
                                     }
                                 )
                                 .align(Alignment.CenterEnd)
@@ -201,7 +201,7 @@ fun MarketSearchResults(
                                 painter = painterResource(
                                     id = if (item.favourited) R.drawable.ic_star_off_24 else R.drawable.ic_star_24
                                 ),
-                                tint = ComposeAppTheme.colors.claude,
+                                tint = ComposeAppTheme.colors.contentInverse,
                                 contentDescription = stringResource(
                                     if (item.favourited) R.string.CoinPage_Unfavorite else R.string.CoinPage_Favorite
                                 ),
@@ -221,7 +221,7 @@ fun MarketSearchResults(
                                 revealedCardId = null
                             },
                             content = {
-                                Box(modifier = Modifier.background(ComposeAppTheme.colors.tyler)) {
+                                Box(modifier = Modifier.background(ComposeAppTheme.colors.backgroundBase)) {
                                     MarketCoin(
                                         coinCode = coin.code,
                                         coinName = coin.name,
@@ -240,7 +240,7 @@ fun MarketSearchResults(
             item {
                 Divider(
                     thickness = 1.dp,
-                    color = ComposeAppTheme.colors.steel10,
+                    color = ComposeAppTheme.colors.borderDivider,
                 )
             }
             item {

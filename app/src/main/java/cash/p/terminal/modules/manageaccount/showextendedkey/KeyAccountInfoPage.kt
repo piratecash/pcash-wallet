@@ -31,7 +31,7 @@ class KeyAccountInfoPage : HSPage() {
 
 @Composable
 private fun InfoScreen(navigation: HSNavigation) {
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
             AppBar(
                 title = stringResource(R.string.ExtendedKey_Account),

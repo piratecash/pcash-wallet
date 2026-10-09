@@ -51,7 +51,7 @@ internal fun PayCoreExchangeDetailScreen(
     onBack: () -> Unit,
 ) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.Swap),
@@ -158,7 +158,7 @@ private fun PriceRow(
                 Icon(
                     painter = painterResource(R.drawable.ic_arrow_swap3_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey,
+                    tint = ComposeAppTheme.colors.iconSecondary,
                 )
             }
         }
@@ -185,7 +185,7 @@ private fun StatusRow(status: TransactionStatusEnum) {
                     Icon(
                         painter = painterResource(R.drawable.ic_checkmark_20),
                         contentDescription = null,
-                        tint = ComposeAppTheme.colors.remus,
+                        tint = ComposeAppTheme.colors.statusSuccess,
                     )
                     HSpacer(width = 4.dp)
                     subhead2_remus(text = stringResource(R.string.multi_swap_completed))
@@ -194,7 +194,7 @@ private fun StatusRow(status: TransactionStatusEnum) {
                     Icon(
                         painter = painterResource(R.drawable.ic_close),
                         contentDescription = null,
-                        tint = ComposeAppTheme.colors.lucian,
+                        tint = ComposeAppTheme.colors.statusError,
                     )
                     HSpacer(width = 4.dp)
                     subhead2_lucian(text = stringResource(R.string.Transactions_Failed))
@@ -245,7 +245,7 @@ private fun SupportRow(url: String) {
         Icon(
             painter = painterResource(R.drawable.ic_support_24),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.jacob,
+            tint = ComposeAppTheme.colors.brandDefault,
         )
         HSpacer(width = 16.dp)
         body_leah(
@@ -256,7 +256,7 @@ private fun SupportRow(url: String) {
         Icon(
             painter = painterResource(R.drawable.ic_arrow_right),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.grey,
+            tint = ComposeAppTheme.colors.iconSecondary,
         )
     }
 }

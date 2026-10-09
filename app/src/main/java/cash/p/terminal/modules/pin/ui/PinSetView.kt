@@ -33,7 +33,7 @@ fun PinSet(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = title,
@@ -47,7 +47,7 @@ fun PinSet(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(color = ComposeAppTheme.colors.tyler)
+                    .background(color = ComposeAppTheme.colors.backgroundBase)
             ) {
                 CrossSlide(
                     targetState = viewModel.uiState.stage,

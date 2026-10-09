@@ -2,8 +2,8 @@ package cash.p.terminal.wallet.useCases
 
 import android.content.Context
 import cash.p.terminal.wallet.Account
-import com.m2049r.xmrwallet.util.Helper
 import com.m2049r.xmrwallet.util.KeyStoreHelper
+import com.piratecash.monero.MoneroWalletFiles as MoneroKitWalletFiles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -22,7 +22,7 @@ class RemoveMoneroWalletFilesUseCase(
     }
 
     suspend operator fun invoke(walletInnerName: String): Boolean = withContext(Dispatchers.IO) {
-        val file = Helper.getWalletFile(appContext, walletInnerName)
+        val file = MoneroKitWalletFiles.file(appContext, walletInnerName)
         deleteWallet(file)
     }
 

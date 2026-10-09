@@ -110,7 +110,7 @@ private fun LazyListScope.TCSection(
                         content = {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_circle_minus_24),
-                                tint = ComposeAppTheme.colors.grey,
+                                tint = ComposeAppTheme.colors.iconSecondary,
                                 contentDescription = "delete",
                             )
                         }
@@ -147,7 +147,7 @@ fun TCSessionCell(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(shape)
-            .background(ComposeAppTheme.colors.lawrence),
+            .background(ComposeAppTheme.colors.surfacePrimary),
         contentAlignment = Alignment.Center
     ) {
         if (showDivider) {
