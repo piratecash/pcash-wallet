@@ -6,8 +6,8 @@ import cash.p.terminal.wallet.entities.HardwarePublicKey
 import com.tangem.common.CompletionResult
 import com.tangem.common.core.TangemSdkError
 import com.tangem.operations.sign.SignHashResponse
+import io.horizontalsystems.ethereumkit.core.EthereumKit
 import io.horizontalsystems.ethereumkit.crypto.CryptoUtils
-import io.horizontalsystems.ethereumkit.crypto.InternalBouncyCastleProvider
 import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.Chain
 import io.horizontalsystems.ethereumkit.models.GasPrice
@@ -28,7 +28,6 @@ import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import java.math.BigInteger
-import java.security.Security
 
 class HardwareWalletEvmSignerTest {
 
@@ -36,7 +35,7 @@ class HardwareWalletEvmSignerTest {
 
     @Before
     fun setUp() {
-        Security.addProvider(InternalBouncyCastleProvider.getInstance())
+        EthereumKit.init()
         startKoin {
             modules(module { single { signOneHashTransactionUseCase } })
         }
