@@ -41,7 +41,7 @@ class ThorchainKitManager(
     val blockchainType: BlockchainType,
     private val thornodeUrls: List<URL>,
     private val context: Context,
-    private val kitDatabaseKeys: KitDatabaseKeys,
+    private val kitDatabaseKeys: BitcoinKitDatabaseKeyProvider,
     private val backgroundManager: BackgroundManager,
     private val backgroundKeepAliveManager: BackgroundKeepAliveManager,
     private val networkErrorTracker: NetworkErrorTracker,

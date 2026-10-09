@@ -69,7 +69,7 @@ fun LoggingListScreen(
     var revealedCardId by remember { mutableStateOf<Long?>(null) }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.authorization_information),
@@ -163,7 +163,7 @@ private fun EmptyState() {
             modifier = Modifier
                 .size(100.dp)
                 .background(
-                    color = ComposeAppTheme.colors.raina,
+                    color = ComposeAppTheme.colors.surfacePlaceholder,
                     shape = CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -172,7 +172,7 @@ private fun EmptyState() {
                 modifier = Modifier.size(48.dp),
                 painter = painterResource(R.drawable.ic_user_24),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
         }
         VSpacer(32.dp)
@@ -209,7 +209,7 @@ private fun SwipableLoginRecordItem(
                 Icon(
                     modifier = Modifier.size(24.dp),
                     painter = painterResource(id = R.drawable.ic_delete_20),
-                    tint = ComposeAppTheme.colors.lucian,
+                    tint = ComposeAppTheme.colors.statusError,
                     contentDescription = "delete",
                 )
             }
@@ -239,7 +239,7 @@ private fun LoginRecordItemContent(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(ComposeAppTheme.colors.surfacePrimary)
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 22.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -254,9 +254,9 @@ private fun LoginRecordItemContent(
         Column(modifier = Modifier.weight(1f)) {
             // Status with different colors for status and duress mode
             val statusColor = if (item.isSuccessful) {
-                ComposeAppTheme.colors.remus
+                ComposeAppTheme.colors.statusSuccess
             } else {
-                ComposeAppTheme.colors.lucian
+                ComposeAppTheme.colors.statusError
             }
             val statusText = if (item.isSuccessful) {
                 stringResource(R.string.auth_info_successful)
@@ -271,7 +271,7 @@ private fun LoginRecordItemContent(
                         append(statusText)
                     }
                     if (item.isDuressMode) {
-                        withStyle(SpanStyle(color = ComposeAppTheme.colors.grey)) {
+                        withStyle(SpanStyle(color = ComposeAppTheme.colors.textSecondary)) {
                             append(" ")
                             append(duressText)
                         }

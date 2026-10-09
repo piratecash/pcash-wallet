@@ -20,10 +20,12 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonColors
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.Icon
+import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.ProvideTextStyle
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,11 +55,12 @@ fun ButtonSecondaryDefault(
         modifier = modifier,
         onClick = onClick,
         content = {
-            if (enabled) {
-                captionSB_leah(text = title, maxLines = 1, overflow = overflow)
-            } else {
-                captionSB_grey50(text = title, maxLines = 1, overflow = overflow)
-            }
+            D1(
+                text = title,
+                maxLines = 1,
+                overflow = overflow,
+                textColor = if (enabled) ComposeAppTheme.colors.textPrimary else ComposeAppTheme.colors.textDisabled,
+            )
         },
         enabled = enabled
     )
@@ -75,15 +78,11 @@ fun ButtonSecondaryCustom(
         modifier = modifier,
         onClick = onClick,
         content = {
-            if (enabled) {
-                E2(
-                    text = title,
-                    maxLines = 1,
-                    color = textColor
-                )
-            } else {
-                captionSB_grey50(text = title, maxLines = 1)
-            }
+            D1(
+                text = title,
+                maxLines = 1,
+                textColor = if (enabled) textColor else ComposeAppTheme.colors.textDisabled,
+            )
         },
         enabled = enabled
     )
@@ -99,17 +98,18 @@ fun ButtonSecondaryYellow(
     ButtonSecondary(
         modifier = modifier,
         onClick = onClick,
+        border = null,
         buttonColors = ButtonPrimaryDefaults.textButtonColors(
-            backgroundColor = ComposeAppTheme.colors.yellowD,
-            contentColor = ComposeAppTheme.colors.dark,
-            disabledBackgroundColor = ComposeAppTheme.colors.steel20,
-            disabledContentColor = ComposeAppTheme.colors.grey50,
+            backgroundColor = ComposeAppTheme.colors.brandDefault,
+            contentColor = ComposeAppTheme.colors.buttonPrimaryBrandContent,
+            disabledBackgroundColor = ComposeAppTheme.colors.buttonPrimaryDisabledBackground,
+            disabledContentColor = ComposeAppTheme.colors.textDisabled,
         ),
         content = {
             Text(
                 title,
                 maxLines = 1,
-                style = ComposeAppTheme.typography.captionSB,
+                style = ComposeAppTheme.typography.subhead2,
                 overflow = TextOverflow.Ellipsis,
             )
         },
@@ -136,16 +136,21 @@ fun ButtonSecondaryWithIcon(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                captionSB_leah(
+                D1(
                     text = title,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    textColor = if (enabled) ComposeAppTheme.colors.textPrimary else ComposeAppTheme.colors.textDisabled,
                 )
                 Icon(
                     modifier = Modifier.padding(start = 2.dp),
                     painter = iconRight,
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey
+                    tint = if (enabled) {
+                        ComposeAppTheme.colors.iconPrimary
+                    } else {
+                        ComposeAppTheme.colors.iconDisabled
+                    }
                 )
             }
         },
@@ -165,11 +170,12 @@ fun ButtonSecondaryTransparent(
     ButtonSecondary(
         modifier = modifier,
         onClick = onClick,
+        border = null,
         buttonColors = buttonColors(
             backgroundColor = ComposeAppTheme.colors.transparent,
-            contentColor = ComposeAppTheme.colors.leah,
+            contentColor = ComposeAppTheme.colors.textSecondary,
             disabledBackgroundColor = ComposeAppTheme.colors.transparent,
-            disabledContentColor = ComposeAppTheme.colors.grey50,
+            disabledContentColor = ComposeAppTheme.colors.textDisabled,
         ),
         content = {
             if (iconRight != null) {
@@ -179,21 +185,23 @@ fun ButtonSecondaryTransparent(
                     Text(
                         text = title,
                         maxLines = 1,
-                        style = ComposeAppTheme.typography.captionSB,
                         overflow = TextOverflow.Ellipsis,
                     )
                     Icon(
                         modifier = Modifier.padding(start = 4.dp),
                         painter = painterResource(id = iconRight),
                         contentDescription = null,
-                        tint = ComposeAppTheme.colors.grey
+                        tint = if (enabled) {
+                            ComposeAppTheme.colors.iconSecondary
+                        } else {
+                            ComposeAppTheme.colors.iconDisabled
+                        }
                     )
                 }
             } else {
                 Text(
                     text = title,
                     maxLines = 1,
-                    style = ComposeAppTheme.typography.captionSB,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
@@ -227,7 +235,6 @@ fun <T : WithTranslatableTitle> ButtonSecondaryToggle(
                 Text(
                     text = select.selected.title.getString(),
                     maxLines = 1,
-                    style = ComposeAppTheme.typography.captionSB,
                     overflow = TextOverflow.Ellipsis
                 )
                 Column(
@@ -243,9 +250,9 @@ fun <T : WithTranslatableTitle> ButtonSecondaryToggle(
                                 .clip(CircleShape)
                                 .background(
                                     if (select.selected == it) {
-                                        ComposeAppTheme.colors.jacob
+                                        ComposeAppTheme.colors.brandDefault
                                     } else {
-                                        ComposeAppTheme.colors.grey
+                                        ComposeAppTheme.colors.textSecondary
                                     }
                                 )
                         )
@@ -265,34 +272,36 @@ fun ButtonSecondary(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     shape: Shape = RoundedCornerShape(14.dp),
-    border: BorderStroke? = null,
+    border: BorderStroke? = SecondaryButtonDefaults.filledBorder(),
     buttonColors: ButtonColors = buttonColors(),
     contentPadding: PaddingValues = SecondaryButtonDefaults.ContentPadding,
     content: @Composable RowScope.() -> Unit
 ) {
+    val contentColor = buttonColors.contentColor(enabled).value
     Surface(
         modifier = modifier,
         shape = shape,
         color = buttonColors.backgroundColor(enabled).value,
-        contentColor = buttonColors.contentColor(enabled).value,
+        contentColor = contentColor,
         border = border,
         onClick = onClick,
         enabled = enabled,
     ) {
-        ProvideTextStyle(
-            value = ComposeAppTheme.typography.captionSB
-        ) {
-            Row(
-                Modifier
-                    .defaultMinSize(
-                        minWidth = SecondaryButtonDefaults.MinWidth,
-                        minHeight = SecondaryButtonDefaults.MinHeight
-                    )
-                    .padding(contentPadding),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-                content = content
-            )
+        // Surface leaves the inherited 0.87 alpha, which would dim implicitly colored text off its token.
+        CompositionLocalProvider(LocalContentAlpha provides contentColor.alpha) {
+            ProvideTextStyle(value = ComposeAppTheme.typography.subhead2) {
+                Row(
+                    Modifier
+                        .defaultMinSize(
+                            minWidth = SecondaryButtonDefaults.MinWidth,
+                            minHeight = SecondaryButtonDefaults.MinHeight
+                        )
+                        .padding(contentPadding),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    content = content
+                )
+            }
         }
     }
 }
@@ -319,11 +328,15 @@ object SecondaryButtonDefaults {
     val MinHeight = 28.dp
 
     @Composable
+    fun filledBorder(): BorderStroke =
+        BorderStroke(1.dp, ComposeAppTheme.colors.buttonSecondaryFilledBorder)
+
+    @Composable
     fun buttonColors(
-        backgroundColor: Color = ComposeAppTheme.colors.steel20,
-        contentColor: Color = ComposeAppTheme.colors.leah,
-        disabledBackgroundColor: Color = ComposeAppTheme.colors.steel20,
-        disabledContentColor: Color = ComposeAppTheme.colors.grey50,
+        backgroundColor: Color = ComposeAppTheme.colors.buttonSecondaryFilledBackground,
+        contentColor: Color = ComposeAppTheme.colors.textPrimary,
+        disabledBackgroundColor: Color = ComposeAppTheme.colors.buttonSecondaryFilledBackground,
+        disabledContentColor: Color = ComposeAppTheme.colors.textDisabled,
     ): ButtonColors = HsButtonColors(
         backgroundColor = backgroundColor,
         contentColor = contentColor,
@@ -365,17 +378,17 @@ private fun ButtonSecondaryCustomPreview() {
         ) {
             ButtonSecondaryCustom(
                 title = "Custom Color",
-                textColor = ComposeAppTheme.colors.jacob,
+                textColor = ComposeAppTheme.colors.brandDefault,
                 onClick = {}
             )
             ButtonSecondaryCustom(
                 title = "Custom Red",
-                textColor = ComposeAppTheme.colors.lucian,
+                textColor = ComposeAppTheme.colors.statusError,
                 onClick = {}
             )
             ButtonSecondaryCustom(
                 title = "Custom Disabled",
-                textColor = ComposeAppTheme.colors.jacob,
+                textColor = ComposeAppTheme.colors.brandDefault,
                 onClick = {},
                 enabled = false
             )

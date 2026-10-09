@@ -67,7 +67,7 @@ fun SetDuressPinSelectAccountsScreen(
     val selected = remember { mutableStateListOf<String>() }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.DuressPinSelectAccounts_Title),

@@ -59,7 +59,7 @@ fun CoinMarketsScreen(
     val viewItemState by viewModel.viewStateLiveData.observeAsState()
     val viewItems by viewModel.viewItemsLiveData.observeAsState()
 
-    Surface(color = ComposeAppTheme.colors.tyler) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Crossfade(viewItemState, label = "") { viewItemState ->
             when (viewItemState) {
                 ViewState.Loading -> {

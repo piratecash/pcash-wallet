@@ -58,7 +58,7 @@ fun AppStatusScreen(
     val context = LocalContext.current
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.Settings_AppStatus),
@@ -77,7 +77,7 @@ fun AppStatusScreen(
             ) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(32.dp),
-                    color = ComposeAppTheme.colors.grey,
+                    color = ComposeAppTheme.colors.textSecondary,
                     strokeWidth = 4.dp
                 )
             }

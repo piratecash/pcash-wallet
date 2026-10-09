@@ -1,6 +1,9 @@
 package cash.p.terminal.shared.main
 
 import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.NavigationRailItemDefaults
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,6 +16,7 @@ import cash.p.terminal.resources.ic_market_24
 import cash.p.terminal.resources.ic_settings
 import cash.p.terminal.resources.ic_transactions
 import cash.p.terminal.resources.ic_wallet_24
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
@@ -70,8 +74,23 @@ fun MainNavigation(
     modifier: Modifier = Modifier,
     content: @Composable (MainDestination) -> Unit = {},
 ) {
+    val colors = ComposeAppTheme.colors
+    val itemColors = NavigationSuiteDefaults.itemColors(
+        navigationBarItemColors = NavigationBarItemDefaults.colors(
+            selectedIconColor = colors.brandDefault,
+            unselectedIconColor = colors.iconSecondary,
+        ),
+        navigationRailItemColors = NavigationRailItemDefaults.colors(
+            selectedIconColor = colors.brandDefault,
+            unselectedIconColor = colors.iconSecondary,
+        ),
+    )
     NavigationSuiteScaffold(
         modifier = modifier,
+        navigationSuiteColors = NavigationSuiteDefaults.colors(
+            navigationBarContainerColor = colors.backgroundNavigation,
+            navigationRailContainerColor = colors.backgroundNavigation,
+        ),
         navigationSuiteItems = {
             MainDestination.entries.forEach { destination ->
                 item(
@@ -80,6 +99,7 @@ fun MainNavigation(
                     icon = {
                         MainDestinationIcon(destination, MainDestinationTitle(destination))
                     },
+                    colors = itemColors,
                 )
             }
         },

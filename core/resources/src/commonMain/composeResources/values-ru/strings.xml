@@ -1292,6 +1292,7 @@
     <string name="ManageAccount_DeleteWarning">Вы хотите приостановить просмотр этого адреса кошелька?</string>
     <string name="ManageAccount_Delete_hardware_wallet_warning">Вы хотите удалить этот аппаратный кошелёк?</string>
     <string name="Balance_Receive_BackupRequired_Description">Вам нужно сделать резервную копию %1$s</string>
+    <string name="balance_swap_backup_required_description">Обмен станет доступен после резервного копирования %1$s</string>
     <!--Network Settings-->
     <string name="NetworkSettings_SwithesAutomatically">переходит автоматически</string>
     <!-- Show Key -->

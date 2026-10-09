@@ -156,9 +156,9 @@ fun EvmSettingsInput(
     onClickDecrement: () -> Unit
 ) {
     val borderColor = when {
-        errors.isNotEmpty() -> ComposeAppTheme.colors.red50
-        warnings.isNotEmpty() -> ComposeAppTheme.colors.yellow50
-        else -> ComposeAppTheme.colors.steel20
+        errors.isNotEmpty() -> ComposeAppTheme.colors.statusError50
+        warnings.isNotEmpty() -> ComposeAppTheme.colors.statusWarning50
+        else -> ComposeAppTheme.colors.borderDefault
     }
 
     EvmSettingsInput(
@@ -186,9 +186,9 @@ fun EvmSettingsInput(
     onClickDecrement: () -> Unit
 ) {
     val borderColor = when (caution?.type) {
-        HSCaution.Type.Error -> ComposeAppTheme.colors.red50
-        HSCaution.Type.Warning -> ComposeAppTheme.colors.yellow50
-        else -> ComposeAppTheme.colors.steel20
+        HSCaution.Type.Error -> ComposeAppTheme.colors.statusError50
+        HSCaution.Type.Warning -> ComposeAppTheme.colors.statusWarning50
+        else -> ComposeAppTheme.colors.borderDefault
     }
 
     EvmSettingsInput(
@@ -257,7 +257,7 @@ private fun NumberInputWithButtons(
             .defaultMinSize(minHeight = 44.dp)
             .clip(RoundedCornerShape(12.dp))
             .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence),
+            .background(ComposeAppTheme.colors.surfacePrimary),
         verticalAlignment = Alignment.CenterVertically
     ) {
 
@@ -283,11 +283,11 @@ private fun NumberInputWithButtons(
                 }
             },
             textStyle = ColoredTextStyle(
-                color = ComposeAppTheme.colors.leah,
+                color = ComposeAppTheme.colors.textPrimary,
                 textStyle = ComposeAppTheme.typography.body
             ),
             singleLine = true,
-            cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+            cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         )
 

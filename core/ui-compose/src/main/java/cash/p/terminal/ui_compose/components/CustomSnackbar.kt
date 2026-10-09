@@ -1,18 +1,18 @@
 package cash.p.terminal.ui_compose.components
 
-import android.content.res.ColorStateList
-import android.view.LayoutInflater
+import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.ProgressBar
-import android.widget.TextView
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.content.ContextCompat
-import cash.p.terminal.ui_compose.R
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 
@@ -39,12 +39,7 @@ class CustomSnackbar(
 ) : BaseTransientBottomBar<CustomSnackbar?>(parent, content, contentViewCallback) {
 
     init {
-        getView().setBackgroundColor(
-            ContextCompat.getColor(
-                view.context,
-                R.color.transparent
-            )
-        )
+        getView().setBackgroundColor(Color.TRANSPARENT)
         getView().setPadding(0, 0, 0, 0)
     }
 
@@ -56,53 +51,36 @@ class CustomSnackbar(
     }
 
     companion object {
+        // TODO: deliver snackbars through a Compose snackbar host once the redesign and Nav3 are in master
         fun make(
             contentView: View,
             text: String,
-            backgroundColor: Int,
+            variant: AppSnackbarVariant,
             duration: SnackbarDuration,
             gravity: SnackbarGravity,
-            showProgressBar: Boolean,
             @DrawableRes iconRes: Int?,
-            iconTint: Int?
         ): CustomSnackbar? {
             val parentViewGroup = contentView.findSuitableParent() ?: return null
-            val context = contentView.context
-            val inflater = LayoutInflater.from(context)
-            val view = inflater.inflate(R.layout.view_custom_snackbar, parentViewGroup, false)
+            val composeView = ComposeView(contentView.context).apply {
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+                setContent {
+                    ComposeAppTheme {
+                        AppSnackbar(
+                            text = text,
+                            variant = variant,
+                            icon = iconRes?.let { painterResource(it) },
+                            modifier = Modifier.padding(8.dp),
+                        )
+                    }
+                }
+            }
 
-            val callback = ContentViewCallback(view)
-            val customSnackbar = CustomSnackbar(parentViewGroup, view, callback)
-
-            val snackbarText = view.findViewById<TextView>(R.id.snackbarText)
-            val contentLayout = view.findViewById<LinearLayout>(R.id.snackbarContentLayout)
-
-            snackbarText.text = text
+            val customSnackbar = CustomSnackbar(parentViewGroup, composeView, ContentViewCallback(composeView))
             customSnackbar.duration = duration.value
             customSnackbar.animationMode = ANIMATION_MODE_FADE
 
-            if (showProgressBar) {
-                val progressbar = view.findViewById<ProgressBar>(R.id.snackbarProgressbar)
-                progressbar.visibility = View.VISIBLE
-            }
-
-            iconRes?.let {
-                val icon = view.findViewById<ImageView>(R.id.icon)
-                icon.setImageResource(iconRes)
-                iconTint?.let {
-                    icon.imageTintList = ColorStateList.valueOf(
-                        ContextCompat.getColor(context, iconTint)
-                    )
-                }
-
-                icon.visibility = View.VISIBLE
-            }
-
-            contentLayout.background.setTint(ContextCompat.getColor(context, backgroundColor))
-
             if (gravity == SnackbarGravity.TOP_OF_VIEW)
                 customSnackbar.anchorView = contentView
-
 
             return customSnackbar
         }

@@ -93,12 +93,12 @@ fun Contracts(
                                     modifier = Modifier
                                         .padding(start = 8.dp)
                                         .clip(RoundedCornerShape(4.dp))
-                                        .background(ComposeAppTheme.colors.jeremy)
+                                        .background(ComposeAppTheme.colors.badgeBackground)
                                 ) {
                                     Text(
                                         modifier = Modifier.padding(start = 4.dp, end = 4.dp, bottom = 1.dp),
                                         text = labelText,
-                                        color = ComposeAppTheme.colors.bran,
+                                        color = ComposeAppTheme.colors.textPrimary,
                                         style = ComposeAppTheme.typography.microSB,
                                         maxLines = 1,
                                     )

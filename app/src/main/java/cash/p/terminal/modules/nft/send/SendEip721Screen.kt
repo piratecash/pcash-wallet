@@ -47,7 +47,7 @@ fun SendEip721Screen(
     val offlineGatedAction = rememberOfflineGatedAction(viewModel.wallet)
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.SendNft_Title),

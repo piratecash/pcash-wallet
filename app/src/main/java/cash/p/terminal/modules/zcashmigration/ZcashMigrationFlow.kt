@@ -12,14 +12,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cash.p.terminal.R
 import cash.p.terminal.core.Caution
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.modules.contacts.screen.ConfirmationBottomSheet
 import cash.p.terminal.ui_compose.TransparentModalBottomSheet
+import cash.p.terminal.ui_compose.components.BottomSheetSurface
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.tokenQueryId
@@ -41,7 +40,7 @@ internal fun ZcashMigrationFlow(
     // forgetting this one would re-offer a migration whose send is already running.
     var confirming by remember { mutableStateOf(false) }
 
-    // Both the sheet and the dialog render in their own windows above the in-activity lock
+    // Both sheets render in their own windows above the in-activity lock
     // overlay, which only dismisses DialogFragments. Without this gate the balance and the
     // Migrate button would stay visible and tappable over the PIN screen.
     val pinComponent = remember { getKoinInstance<IPinComponent>() }
@@ -49,25 +48,7 @@ internal fun ZcashMigrationFlow(
     if (isLocked) return
 
     if (confirming) {
-        Dialog(
-            onDismissRequest = onClose,
-            properties = DialogProperties(usePlatformDefaultWidth = false)
-        ) {
-            // The view model store belongs to the enclosing fragment, so an unkeyed view model
-            // would keep the wallet and adapter of whichever account opened the screen first.
-            val viewModel = koinViewModel<ZcashMigrationViewModel>(
-                key = "${wallet.account.id}:${wallet.tokenQueryId}"
-            ) { parametersOf(wallet) }
-            // The view model outlives the dialog, so a reopened screen would otherwise show the
-            // proposal and the send result of the previous attempt.
-            LaunchedEffect(viewModel) { viewModel.prepare() }
-            ZcashMigrationConfirmScreen(
-                uiState = viewModel.uiState,
-                coin = wallet.coin,
-                onMigrateClick = viewModel::onClickMigrate,
-                onClose = onClose,
-            )
-        }
+        ZcashMigrationConfirmSheet(wallet = wallet, onClose = onClose)
     } else {
         ZcashMigrationOfferSheet(
             onMigrate = { confirming = true },
@@ -93,7 +74,7 @@ private fun ZcashMigrationOfferSheet(
             title = stringResource(R.string.balance_zcash_migration_title),
             text = stringResource(R.string.balance_zcash_migration_description),
             iconPainter = painterResource(R.drawable.ic_migrate_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
             confirmText = stringResource(R.string.balance_zcash_migration_migrate),
             cautionType = Caution.Type.Warning,
             cancelText = stringResource(R.string.Button_Cancel),
@@ -110,5 +91,34 @@ private fun ZcashMigrationOfferSheet(
                 }
             }
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ZcashMigrationConfirmSheet(
+    wallet: Wallet,
+    onClose: () -> Unit,
+) {
+    TransparentModalBottomSheet(
+        onDismissRequest = onClose,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+    ) {
+        BottomSheetSurface {
+            // The view model store belongs to the enclosing fragment, so an unkeyed view model
+            // would keep the wallet and adapter of whichever account opened the screen first.
+            val viewModel = koinViewModel<ZcashMigrationViewModel>(
+                key = "${wallet.account.id}:${wallet.tokenQueryId}"
+            ) { parametersOf(wallet) }
+            // The view model outlives the sheet, so a reopened screen would otherwise show the
+            // proposal and the send result of the previous attempt.
+            LaunchedEffect(viewModel) { viewModel.prepare() }
+            ZcashMigrationConfirmScreen(
+                uiState = viewModel.uiState,
+                coin = wallet.coin,
+                onMigrateClick = viewModel::onClickMigrate,
+                onClose = onClose,
+            )
+        }
     }
 }

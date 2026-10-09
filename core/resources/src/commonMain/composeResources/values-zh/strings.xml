@@ -1267,6 +1267,7 @@
     <string name="ManageAccount_WatchAddresses">观察地址</string>
     <string name="ManageAccount_DeleteWarning">您要停止监视这个钱包地址吗？</string>
     <string name="Balance_Receive_BackupRequired_Description">您需要备份 %1$s</string>
+    <string name="balance_swap_backup_required_description">备份 %1$s 后即可使用互兑交易</string>
     <!--Network Settings-->
     <string name="NetworkSettings_SwithesAutomatically">自动切换</string>
     <!-- Show Key -->

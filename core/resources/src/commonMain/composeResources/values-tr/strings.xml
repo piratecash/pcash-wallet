@@ -1276,6 +1276,7 @@
     <string name="ManageAccount_WatchAddresses">Adresi İzle</string>
     <string name="ManageAccount_DeleteWarning">Bu cüzdan adresini izlemeyi bırakmak istiyor musunuz?</string>
     <string name="Balance_Receive_BackupRequired_Description">%1$s yedeğini almanız gerekiyor</string>
+    <string name="balance_swap_backup_required_description">%1$s yedeğini aldıktan sonra takas kullanılabilir olacak</string>
     <!--Network Settings-->
     <string name="NetworkSettings_SwithesAutomatically">otomatik olarak değişir</string>
     <!-- Show Key -->

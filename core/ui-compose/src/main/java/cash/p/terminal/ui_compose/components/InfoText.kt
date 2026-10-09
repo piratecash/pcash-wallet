@@ -34,6 +34,6 @@ fun InfoTextBody(text: AnnotatedString) {
         modifier = Modifier.padding(horizontal = 32.dp, vertical = 12.dp),
         text = text,
         style = ComposeAppTheme.typography.body,
-        color = ComposeAppTheme.colors.bran
+        color = ComposeAppTheme.colors.textPrimary
     )
 }

@@ -67,7 +67,7 @@ class StellarKitManagerDatabaseTest {
                 eventListenerFactory = any(),
             )
         } returns stellarKit
-        every { keyProvider.keyFor(any()) } returns databaseKey
+        coEvery { keyProvider.awaitKey(any()) } returns databaseKey
         every { keyProvider.remove(any()) } returns Unit
     }
 
@@ -101,18 +101,6 @@ class StellarKitManagerDatabaseTest {
     }
 
     @Test
-    fun getStellarKitWrapper_databaseKeyLocked_retriesThenCreatesKit() = runTest {
-        every { keyProvider.keyFor(ACCOUNT_ID) } throws
-            KitDatabaseKeyLockedException("StellarKit", mockk()) andThen databaseKey
-
-        val wrapper = createManager().getStellarKitWrapper(account)
-
-        assertSame(stellarKit, wrapper.stellarKit)
-        verify(exactly = 2) { keyProvider.keyFor(ACCOUNT_ID) }
-        coVerify(exactly = 1) { StellarKit.migrateDatabase(any(), Network.MainNet, ACCOUNT_ID, databaseKey) }
-    }
-
-    @Test
     fun getStellarKitWrapper_migrationFails_propagatesWithoutCreatingKit() = runTest {
         coEvery { StellarKit.migrateDatabase(any(), any(), any(), any()) } throws
             DatabaseMigrationConflictException("migration conflict")
@@ -131,7 +119,7 @@ class StellarKitManagerDatabaseTest {
 
         assertFailsWith<UnsupportedAccountException> { createManager().getStellarKitWrapper(tonAccount) }
 
-        verify(exactly = 0) { keyProvider.keyFor(any()) }
+        coVerify(exactly = 0) { keyProvider.awaitKey(any()) }
         coVerify(exactly = 0) { StellarKit.migrateDatabase(any(), any(), any(), any()) }
     }
 

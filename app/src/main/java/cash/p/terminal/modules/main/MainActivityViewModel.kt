@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.core.ILocalStorage
-import cash.p.terminal.core.managers.DAppRequestEntityWrapper
+import cash.p.terminal.core.managers.DAppRequest
 import cash.p.terminal.core.managers.DefaultUserManager
 import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.modules.calculator.domain.CalculatorModeService
@@ -64,7 +64,7 @@ class MainActivityViewModel(
     val tcSendRequest: SharedFlow<SignTransaction?> = _tcSendRequest.asSharedFlow()
 
 
-    val tcDappRequest = MutableLiveData<DAppRequestEntityWrapper?>()
+    val tcDappRequest = MutableLiveData<DAppRequest?>()
     val intentLiveData = MutableLiveData<Intent?>()
 
     init {

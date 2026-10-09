@@ -42,10 +42,10 @@ fun TextImportantWarning(
         text = text,
         title = title,
         icon = icon,
-        borderColor = ComposeAppTheme.colors.jacob,
-        backgroundColor = ComposeAppTheme.colors.yellow20,
-        textColor = ComposeAppTheme.colors.jacob,
-        iconColor = ComposeAppTheme.colors.jacob,
+        borderColor = ComposeAppTheme.colors.statusWarning,
+        backgroundColor = ComposeAppTheme.colors.statusWarning20,
+        textColor = ComposeAppTheme.colors.statusWarning,
+        iconColor = ComposeAppTheme.colors.statusWarning,
         onClose = onClose
     )
 }
@@ -63,10 +63,10 @@ fun TextImportantWarning(
         text = text,
         title = title,
         icon = icon,
-        borderColor = ComposeAppTheme.colors.jacob,
-        backgroundColor = ComposeAppTheme.colors.yellow20,
-        textColor = ComposeAppTheme.colors.jacob,
-        iconColor = ComposeAppTheme.colors.jacob,
+        borderColor = ComposeAppTheme.colors.statusWarning,
+        backgroundColor = ComposeAppTheme.colors.statusWarning20,
+        textColor = ComposeAppTheme.colors.statusWarning,
+        iconColor = ComposeAppTheme.colors.statusWarning,
         onClose = onClose
     )
 }
@@ -83,10 +83,10 @@ fun TextImportantWarning(
         modifier = modifier,
         title = title,
         icon = icon,
-        borderColor = ComposeAppTheme.colors.jacob,
-        backgroundColor = ComposeAppTheme.colors.yellow20,
-        textColor = ComposeAppTheme.colors.jacob,
-        iconColor = ComposeAppTheme.colors.jacob,
+        borderColor = ComposeAppTheme.colors.statusWarning,
+        backgroundColor = ComposeAppTheme.colors.statusWarning20,
+        textColor = ComposeAppTheme.colors.statusWarning,
+        iconColor = ComposeAppTheme.colors.statusWarning,
         onClose = onClose,
         alignTrailingToEndWhenNoTitle = true,
         content = content
@@ -106,10 +106,10 @@ fun TextImportantError(
         text = text,
         title = title,
         icon = icon,
-        borderColor = ComposeAppTheme.colors.lucian,
-        backgroundColor = ComposeAppTheme.colors.red20,
-        textColor = ComposeAppTheme.colors.lucian,
-        iconColor = ComposeAppTheme.colors.lucian,
+        borderColor = ComposeAppTheme.colors.statusError,
+        backgroundColor = ComposeAppTheme.colors.statusError20,
+        textColor = ComposeAppTheme.colors.statusError,
+        iconColor = ComposeAppTheme.colors.statusError,
         onInfoClick = onInfoClick,
     )
 }
@@ -257,7 +257,7 @@ private fun TextImportantContainer(
                         Icon(
                             painter = painterResource(id = R.drawable.ic_info_20),
                             contentDescription = null,
-                            tint = ComposeAppTheme.colors.grey
+                            tint = ComposeAppTheme.colors.iconSecondary
                         )
                     }
                 }
@@ -266,7 +266,7 @@ private fun TextImportantContainer(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_close_24),
                         contentDescription = null,
-                        tint = ComposeAppTheme.colors.grey,
+                        tint = ComposeAppTheme.colors.iconSecondary,
                         modifier = Modifier
                             .size(20.dp)
                             .clickable(

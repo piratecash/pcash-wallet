@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ModalBottomSheetDefaults
+import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.SheetState
 import androidx.compose.runtime.Composable
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
@@ -16,14 +18,16 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 fun TransparentModalBottomSheet(
     onDismissRequest: () -> Unit,
     sheetState: SheetState,
+    properties: ModalBottomSheetProperties = ModalBottomSheetDefaults.properties,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
+        properties = properties,
         dragHandle = null,
         sheetState = sheetState,
         containerColor = ComposeAppTheme.colors.transparent,
-        scrimColor = ComposeAppTheme.colors.modalOverlay,
+        scrimColor = ComposeAppTheme.colors.backgroundOverlay,
         // Only the top inset: it keeps a fully expanded sheet below the status bar and is consumed
         // by the sheet itself while it stays lower. The bottom one is handled by BottomSheetHeader,
         // so that the sheet background reaches under the navigation bar.

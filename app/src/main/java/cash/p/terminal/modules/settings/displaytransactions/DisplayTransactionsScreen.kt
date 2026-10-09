@@ -34,7 +34,7 @@ internal fun DisplayTransactionsScreen(
     onBackPressed: () -> Unit
 ) {
     Column(
-        modifier = Modifier.background(color = ComposeAppTheme.colors.tyler)
+        modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)
     ) {
         AppBar(
             title = stringResource(R.string.settings_display_transactions),
@@ -92,7 +92,7 @@ private fun DisplayItemCell(
             if (checked) {
                 Icon(
                     painter = painterResource(R.drawable.ic_checkmark_20),
-                    tint = ComposeAppTheme.colors.jacob,
+                    tint = ComposeAppTheme.colors.brandDefault,
                     contentDescription = null,
                 )
             }

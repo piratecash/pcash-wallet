@@ -50,7 +50,6 @@ dependencies {
     implementation(libs.ton.kit)
     implementation(libs.hd.wallet.kit)
     implementation(libs.ethereum.kit)
-    implementation(libs.blockchain.fee.kit)
     implementation(libs.tron.kit)
     implementation(libs.monero.kit)
     implementation(libs.stellar.kit)

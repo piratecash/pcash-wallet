@@ -39,7 +39,7 @@ fun TopNftCollectionsBoardView(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence)
+            .background(ComposeAppTheme.colors.surfacePrimary)
     ) {
         board.collections.forEach { collection ->
             TopNftCollectionView(collection) {

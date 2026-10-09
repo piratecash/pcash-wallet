@@ -1274,6 +1274,7 @@
     <string name="ManageAccount_WatchAddresses">Observar endereços</string>
     <string name="ManageAccount_DeleteWarning">Você quer parar de acompanhar este endereço da carteira?</string>
     <string name="Balance_Receive_BackupRequired_Description">Você precisa fazer backup de %1$s</string>
+    <string name="balance_swap_backup_required_description">A troca ficará disponível depois que você fizer backup de %1$s</string>
     <!--Network Settings-->
     <string name="NetworkSettings_SwithesAutomatically">muda automaticamente</string>
     <!-- Show Key -->

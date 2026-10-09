@@ -52,7 +52,7 @@ class PublicViewKeyPage(val input: Input) : HSPage(screenshotEnabled = false) {
 private fun PublicViewKeyScreen(input: Input, navigation: HSNavigation) {
     val view = LocalView.current
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(input.titleResId),

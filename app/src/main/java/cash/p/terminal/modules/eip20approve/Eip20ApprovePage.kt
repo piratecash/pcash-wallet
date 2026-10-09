@@ -87,7 +87,7 @@ fun Eip20ApproveScreen(navigation: HSNavigation, input: Eip20ApprovePage.Input) 
                 )
             )
         },
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
     ) {
         Column(
             modifier = Modifier

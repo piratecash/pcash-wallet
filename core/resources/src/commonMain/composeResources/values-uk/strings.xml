@@ -1272,6 +1272,7 @@
     <string name="ManageAccount_DeleteWarning">Ви хочете призупинити перегляд цієї адреси гаманця?</string>
     <string name="ManageAccount_Delete_hardware_wallet_warning">Ви хочете видалити цей апаратний гаманець?</string>
     <string name="Balance_Receive_BackupRequired_Description">Вам потрібно зробити резервну копію %1$s</string>
+    <string name="balance_swap_backup_required_description">Обмін стане доступним після резервного копіювання %1$s</string>
     <!--Network Settings-->
     <string name="NetworkSettings_SwithesAutomatically">переходить автоматично</string>
     <!-- Show Key -->

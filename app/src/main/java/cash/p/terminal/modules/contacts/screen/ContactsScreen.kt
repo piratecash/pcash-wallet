@@ -80,7 +80,7 @@ fun ContactsScreen(
                         title = stringResource(R.string.Alert_TitleWarning),
                         text = warningMessage ?: "",
                         iconPainter = painterResource(R.drawable.icon_warning_2_20),
-                        iconTint = ColorFilter.tint(cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors.jacob),
+                        iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
                         confirmText = stringResource(R.string.Contacts_AddAddress_Replace),
                         cautionType = Caution.Type.Warning,
                         cancelText = stringResource(R.string.Button_Cancel),
@@ -103,7 +103,7 @@ fun ContactsScreen(
         }
     ) {
         Scaffold(
-            containerColor = ComposeAppTheme.colors.tyler,
+            containerColor = ComposeAppTheme.colors.backgroundBase,
             topBar = {
                 SearchBar(
                     title = stringResource(R.string.Contacts),
@@ -114,7 +114,7 @@ fun ContactsScreen(
                                 MenuItem(
                                     title = TranslatableString.ResString(R.string.Contacts_NewContact),
                                     icon = R.drawable.icon_user_plus,
-                                    tint = ComposeAppTheme.colors.jacob,
+                                    tint = ComposeAppTheme.colors.brandDefault,
                                     onClick = onNavigateToCreateContact
                                 )
                             )
@@ -124,7 +124,7 @@ fun ContactsScreen(
                                 MenuItem(
                                     title = TranslatableString.ResString(R.string.Settings_Title),
                                     icon = R.drawable.ic_manage_2,
-                                    tint = ComposeAppTheme.colors.jacob,
+                                    tint = ComposeAppTheme.colors.brandDefault,
                                     enabled = true,
                                     onClick = onNavigateToSettings
                                 )

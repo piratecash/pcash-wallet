@@ -9,7 +9,9 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.stellarkit.StellarKit
 import io.horizontalsystems.tonkit.core.TonKit
 import io.horizontalsystems.tonkit.core.TonWallet
+import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -41,7 +43,7 @@ import kotlin.reflect.jvm.isAccessible
  * (account, blockchain) pair must skip the kit's network calls while the polling-session
  * counter still increments, keeping it symmetric with stopForPolling()'s decrement.
  *
- * TonKit's start()/refresh() are suspend functions, unlike Solana/Tron, so this uses
+ * TonKit's stop()/refresh() are suspend functions, unlike Solana/Tron, so this uses
  * coEvery/coVerify instead of the plain every/verify used by the non-suspend kits.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -85,6 +87,7 @@ class TonKitManagerOfflineGateTest {
             backgroundKeepAliveManager = mockk(relaxed = true),
             networkErrorTracker = mockk(relaxed = true),
             offlineModeManager = offlineModeManager,
+            tonKitDatabaseKeyProvider = mockk(relaxed = true),
         )
         setField(manager, "tonKitWrapper", TonKitWrapper(mockTonKit, mockk<TonWallet>(relaxed = true)))
         setField(manager, "currentAccount", account)
@@ -111,7 +114,7 @@ class TonKitManagerOfflineGateTest {
         manager.startForPolling()
         advanceUntilIdle()
 
-        coVerify(exactly = 0) { mockTonKit.start() }
+        coVerify(exactly = 0) { mockTonKit.startListener() }
         coVerify(exactly = 0) { mockTonKit.refresh() }
         assertEquals(1, pollingSessionCount(manager))
     }
@@ -124,9 +127,31 @@ class TonKitManagerOfflineGateTest {
         manager.startForPolling()
         advanceUntilIdle()
 
-        coVerify(exactly = 1) { mockTonKit.start() }
+        coVerify(exactly = 1) { mockTonKit.startListener() }
         coVerify(exactly = 1) { mockTonKit.refresh() }
         assertEquals(1, pollingSessionCount(manager))
+    }
+
+    @Test
+    fun resumeNetwork_pauseCallerCancelledDuringStop_startsListenerOnlyAfterStopCompletes() = testScope.runTest {
+        val manager = createManager()
+        manager.tonKitWrapper?.networkStarted = true
+        val stopGate = CompletableDeferred<Unit>()
+        coEvery { mockTonKit.stop() } coAnswers { stopGate.await() }
+
+        val pause = launch { manager.pauseNetwork(account) }
+        launch { manager.resumeNetwork(account) }
+        pause.cancel()
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { mockTonKit.startListener() }
+        stopGate.complete(Unit)
+        advanceUntilIdle()
+
+        coVerifyOrder {
+            mockTonKit.stop()
+            mockTonKit.startListener()
+        }
     }
 
     @Test
@@ -143,8 +168,8 @@ class TonKitManagerOfflineGateTest {
         backgroundStateFlow.value = BackgroundManagerState.EnterBackground
         advanceUntilIdle()
 
-        verify(exactly = 1) { mockTonKit.stop() }
-        verify(exactly = 0) { nextKit.stop() }
+        coVerify(exactly = 1) { mockTonKit.stop() }
+        coVerify(exactly = 0) { nextKit.stop() }
         startJob.cancel()
     }
 
@@ -174,7 +199,7 @@ class TonKitManagerOfflineGateTest {
         cleanupGate.complete(Unit)
         advanceUntilIdle()
 
-        verify(exactly = 1) { mockTonKit.stop() }
+        coVerify(exactly = 1) { mockTonKit.stop() }
         assertFalse(resumedAfterStop)
     }
 

@@ -51,7 +51,7 @@ fun SetDuressPinIntroScreen(navigation: HSNavigation) {
     val viewModel = viewModel<SetDuressPinIntroViewModel>(factory = SetDuressPinIntroViewModel.Factory())
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.DuressPin_Title),
@@ -76,7 +76,7 @@ fun SetDuressPinIntroScreen(navigation: HSNavigation) {
             Column(
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
-                    .border(1.dp, ComposeAppTheme.colors.steel10, RoundedCornerShape(12.dp))
+                    .border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(12.dp))
             ) {
                 if (viewModel.biometricAuthSupported) {
                     NotesCell(
@@ -125,7 +125,7 @@ private fun NotesCell(icon: Painter, title: String, description: String, borderT
         if (borderTop) {
             Divider(
                 thickness = 1.dp,
-                color = ComposeAppTheme.colors.steel10,
+                color = ComposeAppTheme.colors.borderDivider,
                 modifier = Modifier.align(Alignment.TopCenter)
             )
         }
@@ -136,7 +136,7 @@ private fun NotesCell(icon: Painter, title: String, description: String, borderT
             Icon(
                 modifier = Modifier.size(24.dp),
                 painter = icon,
-                tint = ComposeAppTheme.colors.jacob,
+                tint = ComposeAppTheme.colors.brandDefault,
                 contentDescription = null,
             )
             HSpacer(width = 16.dp)

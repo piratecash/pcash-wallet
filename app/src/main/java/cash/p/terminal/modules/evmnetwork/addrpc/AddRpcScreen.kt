@@ -51,7 +51,7 @@ fun AddRpcScreen(
         modifier = Modifier
             .fillMaxSize()
             .windowInsetsPadding(windowInsets)
-            .background(ComposeAppTheme.colors.tyler)
+            .background(ComposeAppTheme.colors.backgroundBase)
     ) {
         AppBar(
             title = stringResource(R.string.AddEvmSyncSource_AddRPCSource),

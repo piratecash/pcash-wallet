@@ -79,13 +79,16 @@ import cash.p.terminal.wallet.balance.DeemedValue
 import cash.p.terminal.wallet.canSwap
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.isBackedUpOrNotRequired
 import cash.p.terminal.wallet.isCosanta
 import cash.p.terminal.wallet.isPirateCash
 import cash.p.terminal.wallet.favorites.MarketFavoritesManager
+import cash.p.terminal.wallet.latestAccountOr
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import cash.p.terminal.wallet.managers.TransactionDisplayLevel
+import cash.p.terminal.wallet.requiresBackupForActions
 import cash.p.terminal.wallet.tokenQueryId
 import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.ViewModelUiState
@@ -285,6 +288,15 @@ class TokenBalanceViewModel(
             }
         }
 
+        // A backup completed from the dialog repaints the buttons without reopening the screen.
+        viewModelScope.launch {
+            accountManager.accountsFlow.collect {
+                balanceService.balanceItem
+                    ?.let { updateBalanceViewItem(balanceItem = it, isSwappable = isSwappable()) }
+                    ?: emitState()
+            }
+        }
+
         viewModelScope.launch {
             merge(
                 priceManager.displayPricePeriodFlow.map {},
@@ -427,8 +439,16 @@ class TokenBalanceViewModel(
         secondaryValue = oldBalanceViewItem.secondaryValue.copy(value = updatedValue)
     }
 
+    private fun currentAccount() = accountManager.latestAccountOr(wallet.account)
+
     private fun isSwappable() =
-        App.instance.isSwapEnabled && wallet.account.canSwap()
+        App.instance.isSwapEnabled &&
+                currentAccount().let {
+                    it.canSwap() || (it.requiresBackupForActions() && it.type !is AccountType.MnemonicMonero)
+                }
+
+    fun backupRequiredAccount(): Account? =
+        currentAccount().takeIf { it.requiresBackupForActions() }
 
     fun showAllTransactions(show: Boolean) = transactionHiddenManager.showAllTransactions(show)
 
@@ -540,6 +560,7 @@ class TokenBalanceViewModel(
         moneroKeyImageSyncInProgress = moneroKeyImageSyncInProgress,
         moneroKeyImageSyncError = moneroKeyImageSyncError,
         moneroFullWalletRecoveryAvailable = moneroFullWalletRecoveryAvailable,
+        backupRequired = currentAccount().requiresBackupForActions(),
     )
 
     private fun observeMoneroAdapter() {

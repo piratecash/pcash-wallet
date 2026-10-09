@@ -3,6 +3,7 @@
 package cash.p.terminal.modules.balance.token
 
 import androidx.annotation.StringRes
+import cash.p.terminal.ui_compose.components.plateBackground
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -50,7 +51,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
@@ -84,7 +84,7 @@ import cash.p.terminal.modules.blockchainstatus.BlockchainStatusButton
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusPage
 import cash.p.terminal.modules.coin.CoinPage
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
-import cash.p.terminal.modules.manageaccount.dialogs.BackupRequiredSheet
+import cash.p.terminal.modules.manageaccount.dialogs.showBackupRequiredDialog
 import cash.p.terminal.modules.multiswap.SwapPage
 import cash.p.terminal.modules.offline.OfflineBlockedBottomSheet
 import cash.p.terminal.modules.offline.OperationAvailability
@@ -121,8 +121,8 @@ import cash.p.terminal.ui_compose.BottomSheetHeader
 import cash.p.terminal.ui_compose.ScreenSecurityState
 import cash.p.terminal.ui_compose.TransparentModalBottomSheet
 import cash.p.terminal.ui_compose.components.AppBar
-import cash.p.terminal.ui_compose.components.ButtonPrimaryCircle
-import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
+import cash.p.terminal.ui_compose.components.BalanceActionButton
+import cash.p.terminal.ui_compose.components.BalanceActionsRow
 import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.ButtonSecondary
@@ -145,9 +145,11 @@ import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.body_grey
 import cash.p.terminal.ui_compose.components.diffColor
 import cash.p.terminal.ui_compose.components.subhead1_leah
+import cash.p.terminal.ui_compose.components.subhead2
 import cash.p.terminal.ui_compose.components.subhead2_grey
-import cash.p.terminal.ui_compose.components.subhead2_jacob
+import cash.p.terminal.ui_compose.components.subhead2_brand
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
 import cash.p.terminal.wallet.balance.DeemedValue
@@ -250,6 +252,10 @@ fun TokenBalanceScreen(
             }
         },
         onReceiveClick = { onReceiveClicked(viewModel, navigation) },
+        onSwapClick = swapClick@{
+            val token = viewModel.uiState.balanceViewItem?.wallet?.token ?: return@swapClick
+            onSwapClicked(viewModel, navigation, token)
+        },
         onShieldClick = viewModel::proposeShielding,
         onSyncErrorClick = { onSyncErrorClicked(it, viewModel, navigation) },
         onStackingClicked = onStackingClicked,
@@ -297,6 +303,7 @@ private fun TokenBalanceScreenContent(
     onDismissNetworkFeeWarning: () -> Unit,
     onSendClick: () -> Unit,
     onReceiveClick: () -> Unit,
+    onSwapClick: () -> Unit,
     onShieldClick: () -> Unit,
     onSyncErrorClick: (BalanceViewItem) -> Unit,
     onStackingClicked: () -> Unit,
@@ -325,7 +332,7 @@ private fun TokenBalanceScreenContent(
     }
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = uiState.title,
@@ -340,9 +347,9 @@ private fun TokenBalanceScreenContent(
                             ),
                             icon = if (uiState.isFavorite) R.drawable.ic_star_filled_20 else R.drawable.ic_star_20,
                             tint = if (uiState.isFavorite) {
-                                ComposeAppTheme.colors.jacob
+                                ComposeAppTheme.colors.brandDefault
                             } else {
-                                ComposeAppTheme.colors.grey
+                                ComposeAppTheme.colors.iconSecondary
                             },
                             onClick = onToggleFavorite
                         )
@@ -373,7 +380,7 @@ private fun TokenBalanceScreenContent(
                             MenuItem(
                                 title = TranslatableString.ResString(R.string.BalanceSyncError_Title),
                                 icon = R.drawable.ic_attention_red_24,
-                                tint = ComposeAppTheme.colors.lucian,
+                                tint = ComposeAppTheme.colors.statusError,
                                 onClick = {
                                     uiState.balanceViewItem?.let(onSyncErrorClick)
                                 }
@@ -503,7 +510,6 @@ private fun TokenBalanceScreenContent(
                         uiState.balanceViewItem?.let {
                             TokenBalanceHeader(
                                 balanceViewItem = it,
-                                navigation = navigation,
                                 uiState = uiState,
                                 secondaryValue = secondaryValue,
                                 onStackingClicked = onStackingClicked,
@@ -511,6 +517,7 @@ private fun TokenBalanceScreenContent(
                                 onToggleBalanceVisibility = onToggleBalanceVisibility,
                                 onSendClick = onSendClick,
                                 onReceiveClick = onReceiveClick,
+                                onSwapClick = onSwapClick,
                                 onShieldClick = onShieldClick,
                                 onSyncErrorClick = onSyncErrorClick,
                                 onDismissNetworkFeeWarning = onDismissNetworkFeeWarning,
@@ -572,7 +579,7 @@ private fun TokenBalanceScreenContent(
                                 // header. FilterTypeTabs paints its own background, but the search
                                 // row / HideBalanceSearchRow do not, so without this the list would
                                 // bleed through the pinned header.
-                                .background(ComposeAppTheme.colors.tyler)
+                                .background(ComposeAppTheme.colors.backgroundBase)
                                 .onSizeChanged { headerHeightPx = it.height }
                         ) {
                             if (showFilterTabs) {
@@ -604,7 +611,7 @@ private fun TokenBalanceScreenContent(
                             }
                             HorizontalDivider(
                                 thickness = 1.dp,
-                                color = ComposeAppTheme.colors.steel20,
+                                color = ComposeAppTheme.colors.borderDivider,
                             )
                         }
                     }
@@ -774,7 +781,7 @@ private fun HideBalanceSearchRow(
                     if (hideBalance) R.drawable.ic_eye_off else R.drawable.ic_eye_20
                 ),
                 contentDescription = null,
-                tint = ComposeAppTheme.colors.grey,
+                tint = ComposeAppTheme.colors.iconSecondary,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -783,7 +790,7 @@ private fun HideBalanceSearchRow(
             Icon(
                 painter = painterResource(R.drawable.ic_search),
                 contentDescription = stringResource(R.string.Button_Search),
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
         }
     }
@@ -821,7 +828,6 @@ private fun HSNavigation.openSend(wallet: Wallet) {
 @Composable
 private fun TokenBalanceHeader(
     balanceViewItem: BalanceViewItem,
-    navigation: HSNavigation,
     uiState: TokenBalanceModule.TokenBalanceUiState,
     secondaryValue: DeemedValue<String>,
     onStackingClicked: () -> Unit,
@@ -829,6 +835,7 @@ private fun TokenBalanceHeader(
     onToggleBalanceVisibility: () -> Unit,
     onSendClick: () -> Unit,
     onReceiveClick: () -> Unit,
+    onSwapClick: () -> Unit,
     onShieldClick: () -> Unit,
     onSyncErrorClick: (BalanceViewItem) -> Unit,
     onDismissNetworkFeeWarning: () -> Unit,
@@ -867,7 +874,7 @@ private fun TokenBalanceHeader(
             ) {
                 Text(
                     text = uiState.coinCode,
-                    color = ComposeAppTheme.colors.grey,
+                    color = ComposeAppTheme.colors.textSecondary,
                     style = ComposeAppTheme.typography.subhead1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -898,9 +905,9 @@ private fun TokenBalanceHeader(
             ),
             text = if (balanceViewItem.primaryValue.visible) balanceViewItem.primaryValue.value else "*****",
             color = if (balanceViewItem.primaryValue.dimmed) {
-                ComposeAppTheme.colors.grey
+                ComposeAppTheme.colors.textSecondary
             } else {
-                ComposeAppTheme.colors.leah
+                ComposeAppTheme.colors.textPrimary
             },
             style = ComposeAppTheme.typography.title2R,
             textAlign = TextAlign.Start,
@@ -918,9 +925,9 @@ private fun TokenBalanceHeader(
             Text(
                 text = if (balanceViewItem.secondaryValue.visible) secondaryValue.value else "*****",
                 color = if (balanceViewItem.secondaryValue.dimmed) {
-                    ComposeAppTheme.colors.grey50
+                    ComposeAppTheme.colors.textSecondaryDimmed
                 } else {
-                    ComposeAppTheme.colors.grey
+                    ComposeAppTheme.colors.textSecondary
                 },
                 style = ComposeAppTheme.typography.body,
                 maxLines = 1,
@@ -942,7 +949,7 @@ private fun TokenBalanceHeader(
             Row {
                 Text(
                     text = "1${uiState.coinCode} = ${balanceViewItem.exchangeValue.value}",
-                    color = ComposeAppTheme.colors.grey,
+                    color = ComposeAppTheme.colors.textSecondary,
                     style = ComposeAppTheme.typography.subhead2,
                 )
                 if (balanceViewItem.displayDiffOptionType != DisplayDiffOptionType.NONE) {
@@ -963,7 +970,7 @@ private fun TokenBalanceHeader(
         var showInfoSheet by rememberSaveable { mutableStateOf(false) }
         uiState.stackingType?.let { stackingType ->
             VSpacer(height = 21.dp)
-            HorizontalDivider(color = ComposeAppTheme.colors.steel20, thickness = 1.dp)
+            HorizontalDivider(color = ComposeAppTheme.colors.borderDivider, thickness = 1.dp)
 
             VSpacer(height = 12.dp)
             RowUniversal(verticalPadding = 0.dp) {
@@ -980,21 +987,21 @@ private fun TokenBalanceHeader(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_info_20),
                         contentDescription = stringResource(R.string.staking_unpaid_info_title),
-                        tint = ComposeAppTheme.colors.grey
+                        tint = ComposeAppTheme.colors.iconSecondary
                     )
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 uiState.stakingUnpaid?.let { unpaid ->
                     Text(
                         text = if (balanceViewItem.primaryValue.visible) unpaid else "*****",
-                        color = if (balanceViewItem.primaryValue.dimmed) ComposeAppTheme.colors.grey50 else
-                            ComposeAppTheme.colors.leah,
+                        color = if (balanceViewItem.primaryValue.dimmed) ComposeAppTheme.colors.textSecondary else
+                            ComposeAppTheme.colors.textPrimary,
                         style = ComposeAppTheme.typography.subhead2,
                         maxLines = 1,
                     )
                 } ?: Text(
                     text = "—",
-                    color = ComposeAppTheme.colors.grey50,
+                    color = ComposeAppTheme.colors.textDisabled,
                     style = ComposeAppTheme.typography.subhead2,
                 )
             }
@@ -1006,7 +1013,7 @@ private fun TokenBalanceHeader(
                 exit = shrinkVertically() + fadeOut(),
             ) {
                 val hours = nextAccrualHours ?: return@AnimatedVisibility
-                subhead2_jacob(
+                subhead2_brand(
                     text = pluralStringResource(
                         R.plurals.staking_next_accrual_in_hours,
                         hours,
@@ -1031,13 +1038,14 @@ private fun TokenBalanceHeader(
         VSpacer(height = 12.dp)
         ButtonsRow(
             viewItem = balanceViewItem,
-            navigation = navigation,
             sendEnabled = uiState.sendEntryEnabled,
             onSendClick = onSendClick,
             onReceiveClick = onReceiveClick,
             onShieldClick = onShieldClick,
             onStackingClicked = onStackingClicked,
-            isShowShieldFunds = isShowShieldFunds
+            isShowShieldFunds = isShowShieldFunds,
+            backupRequired = uiState.backupRequired,
+            onSwapClick = onSwapClick,
         )
         uiState.zcashMigrationRequiredAmount?.let { amount ->
             ZcashMigrationRequiredSection(
@@ -1061,7 +1069,7 @@ private fun TokenBalanceHeader(
                 val balanceStart = warningData.body.indexOf(warningData.formattedBalance)
                 if (balanceStart >= 0) {
                     append(warningData.body.substring(0, balanceStart))
-                    withStyle(SpanStyle(color = ComposeAppTheme.colors.jacob)) {
+                    withStyle(SpanStyle(color = ComposeAppTheme.colors.statusWarning)) {
                         append(warningData.formattedBalance)
                     }
                     append(warningData.body.substring(balanceStart + warningData.formattedBalance.length))
@@ -1092,25 +1100,27 @@ private fun ZcashMigrationRequiredSection(
     RowUniversal(
         modifier = Modifier
             .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, ComposeAppTheme.colors.jacob, RoundedCornerShape(12.dp))
+            .border(1.dp, ComposeAppTheme.colors.statusWarning, RoundedCornerShape(12.dp))
             .padding(horizontal = 16.dp),
         onClick = { migrating = true }
     ) {
         Icon(
             painter = painterResource(R.drawable.ic_attention_20),
             contentDescription = null,
-            tint = ComposeAppTheme.colors.jacob
+            tint = ComposeAppTheme.colors.statusWarning
         )
         HSpacer(8.dp)
-        subhead2_jacob(
+        subhead2(
             text = stringResource(R.string.balance_zcash_migration_required),
+            color = ComposeAppTheme.colors.statusWarning,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
         Spacer(Modifier.weight(1f))
-        subhead2_jacob(
+        subhead2(
             modifier = Modifier.padding(start = 6.dp),
             text = if (amountVisible) amount else "*****",
+            color = ComposeAppTheme.colors.statusWarning,
             maxLines = 1
         )
     }
@@ -1126,7 +1136,7 @@ private fun LockedBalanceSection(balanceViewItem: BalanceViewItem) {
         Column(
             modifier = Modifier
                 .clip(RoundedCornerShape(12.dp))
-                .border(1.dp, ComposeAppTheme.colors.steel20, RoundedCornerShape(12.dp))
+                .border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(12.dp))
         ) {
             balanceViewItem.lockedValues.forEach { lockedValue ->
                 LockedBalanceCell(
@@ -1166,14 +1176,18 @@ private fun LockedBalanceCell(
             Icon(
                 painter = painterResource(id = R.drawable.ic_info_20),
                 contentDescription = "info button",
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
         }
         Spacer(Modifier.weight(1f))
         Text(
             modifier = Modifier.padding(start = 6.dp),
             text = if (lockedAmount.visible) lockedAmount.value else "*****",
-            color = if (lockedAmount.dimmed) ComposeAppTheme.colors.grey50 else ComposeAppTheme.colors.leah,
+            color = if (lockedAmount.dimmed) {
+                ComposeAppTheme.colors.textSecondary
+            } else {
+                ComposeAppTheme.colors.textPrimary
+            },
             style = ComposeAppTheme.typography.subhead2,
             maxLines = 1,
         )
@@ -1201,10 +1215,10 @@ internal fun TokenNotSyncedSection(
             modifier = Modifier.padding(horizontal = 16.dp),
             title = stringResource(R.string.token_not_synced_title),
             icon = R.drawable.ic_attention_24,
-            borderColor = ComposeAppTheme.colors.steel20,
-            backgroundColor = ComposeAppTheme.colors.lawrence,
-            textColor = ComposeAppTheme.colors.leah,
-            iconColor = ComposeAppTheme.colors.grey,
+            borderColor = ComposeAppTheme.colors.borderDefault,
+            backgroundColor = plateBackground(),
+            textColor = ComposeAppTheme.colors.textPrimary,
+            iconColor = ComposeAppTheme.colors.iconSecondary,
         ) {
             subhead2_grey(text = stringResource(R.string.token_not_synced_description))
             if (showRetry) {
@@ -1219,7 +1233,7 @@ private fun TokenNotSyncedRetryButton(onRetry: () -> Unit) {
     ButtonSecondary(
         modifier = Modifier.fillMaxWidth(),
         onClick = onRetry,
-        border = BorderStroke(1.dp, ComposeAppTheme.colors.steel20),
+        border = BorderStroke(1.dp, ComposeAppTheme.colors.borderDefault),
         buttonColors = SecondaryButtonDefaults.buttonColors(
             backgroundColor = ComposeAppTheme.colors.transparent,
         ),
@@ -1233,7 +1247,7 @@ private fun TokenNotSyncedRetryButton(onRetry: () -> Unit) {
                     modifier = Modifier.size(20.dp),
                     painter = painterResource(R.drawable.ic_refresh_20),
                     contentDescription = null,
-                    tint = ComposeAppTheme.colors.grey
+                    tint = ComposeAppTheme.colors.iconSecondary
                 )
                 HSpacer(8.dp)
                 subhead1_leah(text = stringResource(R.string.token_not_synced_retry))
@@ -1275,10 +1289,10 @@ private fun TokenOfflineSection(
         modifier = Modifier.padding(horizontal = 16.dp),
         title = stringResource(R.string.offline_mode_active_title),
         icon = R.drawable.ic_attention_24,
-        borderColor = ComposeAppTheme.colors.steel20,
-        backgroundColor = ComposeAppTheme.colors.lawrence,
-        textColor = ComposeAppTheme.colors.leah,
-        iconColor = ComposeAppTheme.colors.grey,
+        borderColor = ComposeAppTheme.colors.borderDefault,
+        backgroundColor = plateBackground(),
+        textColor = ComposeAppTheme.colors.textPrimary,
+        iconColor = ComposeAppTheme.colors.iconSecondary,
     ) {
         subhead2_grey(
             text = stringResource(
@@ -1289,7 +1303,7 @@ private fun TokenOfflineSection(
         ButtonSecondary(
             modifier = Modifier.fillMaxWidth(),
             onClick = onGoOnline,
-            border = BorderStroke(1.dp, ComposeAppTheme.colors.steel20),
+            border = BorderStroke(1.dp, ComposeAppTheme.colors.borderDefault),
             buttonColors = SecondaryButtonDefaults.buttonColors(
                 backgroundColor = ComposeAppTheme.colors.transparent,
             ),
@@ -1379,7 +1393,24 @@ private fun onReceiveClicked(
             e.account.name,
             e.coinTitle
         )
-        navigation.slideFromBottom(BackupRequiredSheet(BackupRequiredSheet.Input(e.account, text)))
+        navigation.showBackupRequiredDialog(e.account, text)
+    }
+}
+
+private fun onSwapClicked(
+    viewModel: TokenBalanceViewModel,
+    navigation: HSNavigation,
+    token: Token,
+) {
+    val backupRequiredAccount = viewModel.backupRequiredAccount()
+    if (backupRequiredAccount != null) {
+        val text = Translator.getString(
+            R.string.balance_swap_backup_required_description,
+            backupRequiredAccount.name
+        )
+        navigation.showBackupRequiredDialog(backupRequiredAccount, text)
+    } else {
+        navigation.slideFromRight(SwapPage(tokenIn = token))
     }
 }
 
@@ -1401,7 +1432,7 @@ internal fun MoneroSendPreparationBottomSheet(
     ) {
         BottomSheetHeader(
             iconPainter = painterResource(R.drawable.ic_attention_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.jacob),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
             title = stringResource(R.string.monero_prepare_trezor_title),
             onCloseClick = onDismiss,
         ) {
@@ -1523,93 +1554,75 @@ private fun MoneroSendPreparationBottomSheetPreview() {
 @Composable
 private fun ButtonsRow(
     viewItem: BalanceViewItem,
-    navigation: HSNavigation,
     sendEnabled: Boolean,
     onSendClick: () -> Unit,
     onReceiveClick: () -> Unit,
     onShieldClick: () -> Unit,
     onStackingClicked: () -> Unit,
-    isShowShieldFunds: Boolean
+    isShowShieldFunds: Boolean,
+    backupRequired: Boolean,
+    onSwapClick: () -> Unit,
 ) {
     var pendingAction by remember { mutableStateOf<(() -> Unit)?>(null) }
     val onOperationClick = { availability: OperationAvailability, action: () -> Unit ->
         if (availability == OperationAvailability.BlockedOffline) pendingAction = action else action()
     }
 
-    Row(
-        modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
-    ) {
-        if (viewItem.isWatchAccount) {
-            ButtonPrimaryDefault(
-                modifier = Modifier.weight(1f),
-                title = stringResource(R.string.Balance_Address),
-                onClick = onReceiveClick,
-            )
-            if (viewItem.wallet.isStakingWallet()) {
-                HSpacer(8.dp)
-                ButtonPrimaryCircle(
-                    icon = R.drawable.ic_coins_stacking,
-                    contentDescription = stringResource(R.string.stacking),
-                    onClick = {
-                        onStackingClicked()
-                    },
-                    iconTint = Color.Black,
-                    background = Color.White,
-                )
-            }
-        } else {
-            ButtonPrimaryYellow(
-                modifier = Modifier.weight(1f),
-                title = stringResource(R.string.Balance_Send),
-                onClick = {
-                    onOperationClick(sendClickAvailability(viewItem, sendEnabled)) {
-                        onSendClick()
-                    }
-                },
-                enabled = sendEnabled,
-            )
-            HSpacer(8.dp)
-            if (!viewItem.swapVisible) {
-                ButtonPrimaryDefault(
-                    modifier = Modifier.weight(1f),
-                    title = stringResource(R.string.Balance_Receive),
-                    onClick = onReceiveClick,
-                )
-            } else {
-                ButtonPrimaryCircle(
+    Box(modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)) {
+        BalanceActionsRow {
+            if (viewItem.isWatchAccount) {
+                BalanceActionButton(
                     icon = R.drawable.ic_arrow_down_left_24,
-                    contentDescription = stringResource(R.string.Balance_Receive),
+                    label = stringResource(R.string.Balance_Address),
                     onClick = onReceiveClick,
-                    iconTint = Color.Black,
-                    background = Color.White,
                 )
-            }
-            if (viewItem.swapVisible) {
-                HSpacer(8.dp)
-                ButtonPrimaryCircle(
-                    icon = R.drawable.ic_swap_24,
-                    contentDescription = stringResource(R.string.Swap),
+                if (viewItem.wallet.isStakingWallet()) {
+                    BalanceActionButton(
+                        icon = R.drawable.ic_coins_stacking,
+                        label = stringResource(R.string.stacking),
+                        onClick = onStackingClicked,
+                    )
+                }
+            } else {
+                BalanceActionButton(
+                    icon = R.drawable.ic_arrow_up_right_24,
+                    label = stringResource(R.string.Balance_Send),
+                    iconRotation = -90f,
                     onClick = {
-                        onOperationClick(viewItem.swapAvailability) {
-                            navigation.slideFromRight(SwapPage(tokenIn = viewItem.wallet.token))
+                        onOperationClick(sendClickAvailability(viewItem, sendEnabled)) {
+                            onSendClick()
                         }
                     },
-                    enabled = viewItem.swapAvailability.clickable,
-                    iconTint = Color.Black,
-                    background = Color.White,
+                    enabled = sendEnabled,
                 )
-            }
-            if (viewItem.wallet.isStakingWallet()) {
-                HSpacer(8.dp)
-                ButtonPrimaryCircle(
-                    icon = R.drawable.ic_coins_stacking,
-                    contentDescription = stringResource(R.string.stacking),
-                    onClick = {
-                        onStackingClicked()
-                    },
-                    iconTint = Color.Black,
-                    background = Color.White,
+                BalanceActionButton(
+                    icon = R.drawable.ic_arrow_down_left_24,
+                    label = stringResource(R.string.Balance_Receive),
+                    dimmed = backupRequired,
+                    onClick = onReceiveClick,
                 )
+                if (viewItem.swapVisible) {
+                    BalanceActionButton(
+                        icon = R.drawable.ic_swap_24,
+                        label = stringResource(R.string.Swap),
+                        dimmed = backupRequired,
+                        onClick = {
+                            if (backupRequired) {
+                                onSwapClick()
+                            } else {
+                                onOperationClick(viewItem.swapAvailability) { onSwapClick() }
+                            }
+                        },
+                        enabled = backupRequired || viewItem.swapAvailability.clickable,
+                    )
+                }
+                if (viewItem.wallet.isStakingWallet()) {
+                    BalanceActionButton(
+                        icon = R.drawable.ic_coins_stacking,
+                        label = stringResource(R.string.stacking),
+                        onClick = onStackingClicked,
+                    )
+                }
             }
         }
     }
@@ -1648,10 +1661,10 @@ internal fun sendClickAvailability(viewItem: BalanceViewItem, enabled: Boolean) 
 private fun StakingStatusBadge(status: TokenBalanceModule.StakingStatus) {
     val (textRes, color) = when (status) {
         TokenBalanceModule.StakingStatus.ACTIVE ->
-            R.string.staking_active to ComposeAppTheme.colors.remus
+            R.string.staking_active to ComposeAppTheme.colors.statusSuccess
 
         TokenBalanceModule.StakingStatus.INACTIVE ->
-            R.string.staking_inactive to ComposeAppTheme.colors.lucian
+            R.string.staking_inactive to ComposeAppTheme.colors.statusError
     }
     val text = stringResource(textRes)
     val statusCd = stringResource(R.string.staking_status_cd, text)
@@ -1727,6 +1740,7 @@ private fun PreviewTokenBalanceScreenContent(
             onDismissNetworkFeeWarning = {},
             onSendClick = {},
             onReceiveClick = {},
+            onSwapClick = {},
             onShieldClick = {},
             onSyncErrorClick = {},
             onStackingClicked = {},

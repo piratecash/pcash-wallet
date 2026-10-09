@@ -17,7 +17,7 @@ val BlockchainType.thorchainNetwork: Network
 
 class ThorchainKitManagers(
     context: Context,
-    kitDatabaseKeys: KitDatabaseKeys,
+    kitDatabaseKeys: BitcoinKitDatabaseKeyProvider,
     backgroundManager: BackgroundManager,
     backgroundKeepAliveManager: BackgroundKeepAliveManager,
     networkErrorTracker: NetworkErrorTracker,

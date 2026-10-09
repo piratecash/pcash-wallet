@@ -67,7 +67,7 @@ fun SendEip1155Screen(
     val offlineGatedAction = rememberOfflineGatedAction(viewModel.wallet)
 
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.SendNft_Title),
@@ -176,8 +176,8 @@ private fun ItemCountInput(
     onValueChange: (Int) -> Unit,
 ) {
     val borderColor = when (state) {
-        is DataState.Error -> ComposeAppTheme.colors.red50
-        else -> ComposeAppTheme.colors.steel20
+        is DataState.Error -> ComposeAppTheme.colors.statusError50
+        else -> ComposeAppTheme.colors.borderDefault
     }
 
     Row(
@@ -187,7 +187,7 @@ private fun ItemCountInput(
             .defaultMinSize(minHeight = 44.dp)
             .clip(RoundedCornerShape(12.dp))
             .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-            .background(ComposeAppTheme.colors.lawrence),
+            .background(ComposeAppTheme.colors.surfacePrimary),
         verticalAlignment = Alignment.CenterVertically
     ) {
         var textState by rememberSaveable(stateSaver = TextFieldValue.Saver) {
@@ -205,7 +205,7 @@ private fun ItemCountInput(
                 onValueChange.invoke(filtered.toIntOrNull() ?: 0)
             },
             singleLine = true,
-            cursorBrush = SolidColor(ComposeAppTheme.colors.jacob),
+            cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         )
 

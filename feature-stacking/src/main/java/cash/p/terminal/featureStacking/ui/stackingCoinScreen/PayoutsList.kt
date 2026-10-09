@@ -30,7 +30,7 @@ internal fun LazyListScope.payoutList(
     item {
         Text(
             style = ComposeAppTheme.typography.body,
-            color = ComposeAppTheme.colors.leah,
+            color = ComposeAppTheme.colors.textPrimary,
             text = stringResource(id = R.string.payouts_history),
             modifier = Modifier.padding(vertical = 14.dp, horizontal = 16.dp)
         )

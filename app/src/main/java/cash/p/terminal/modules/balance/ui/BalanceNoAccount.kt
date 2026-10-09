@@ -51,7 +51,7 @@ fun BalanceNoAccount(
             modifier = Modifier
                 .size(100.dp)
                 .background(
-                    color = ComposeAppTheme.colors.raina,
+                    color = ComposeAppTheme.colors.surfacePlaceholder,
                     shape = CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -60,7 +60,7 @@ fun BalanceNoAccount(
                 modifier = Modifier.size(48.dp),
                 painter = painterResource(R.drawable.icon_add_to_wallet_24),
                 contentDescription = "",
-                tint = ComposeAppTheme.colors.grey
+                tint = ComposeAppTheme.colors.iconSecondary
             )
         }
         Spacer(Modifier.height(32.dp))

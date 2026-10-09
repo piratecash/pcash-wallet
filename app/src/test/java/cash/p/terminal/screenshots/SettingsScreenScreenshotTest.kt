@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation3.runtime.NavBackStack
+import androidx.compose.ui.graphics.toArgb
 import androidx.test.core.app.ApplicationProvider
 import cash.p.terminal.R
 import cash.p.terminal.modules.main.PlainTestPage
@@ -16,6 +17,8 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.LocalHostLifecycleOwner
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.ui_compose.theme.darkPalette
+import cash.p.terminal.ui_compose.theme.lightPalette
 import com.github.takahirom.roborazzi.captureRoboImage
 import io.mockk.every
 import io.mockk.mockk
@@ -82,13 +85,13 @@ class SettingsScreenScreenshotTest {
 
     @Test
     fun alertIcon_dayTheme_usesLightTint() {
-        assertEquals(0xFFFF3D43.toInt(), alertIconTint())
+        assertEquals(lightPalette.statusError.toArgb(), alertIconTint())
     }
 
     @Test
     @Config(qualifiers = "en-w393dp-h2400dp-night-xxhdpi")
     fun alertIcon_nightTheme_usesDarkTint() {
-        assertEquals(0xFFF43A4F.toInt(), alertIconTint())
+        assertEquals(darkPalette.statusError.toArgb(), alertIconTint())
     }
 
     private fun capture(name: String, darkTheme: Boolean) {
@@ -119,7 +122,7 @@ class SettingsScreenScreenshotTest {
             0,
         )
         parser.close()
-        assertEquals(R.color.lucian, tint)
+        assertEquals(R.color.status_error, tint)
         return context.getColor(tint)
     }
 }

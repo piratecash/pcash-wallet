@@ -5,8 +5,8 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.useCases.MoneroWalletFiles
 import com.m2049r.xmrwallet.model.Wallet
 import com.m2049r.xmrwallet.model.WalletManager
-import com.m2049r.xmrwallet.util.Helper
 import com.m2049r.xmrwallet.util.KeyStoreHelper
+import com.piratecash.monero.MoneroWalletFiles as MoneroKitWalletFiles
 import com.piratecash.monero.signer.HardwareWalletErrorCode
 import com.piratecash.monero.signer.HardwareWalletOperationException
 import java.io.File
@@ -177,7 +177,7 @@ internal class MoneroDeviceWalletFileStore private constructor(
 
     companion object {
         fun create(context: Context) = MoneroDeviceWalletFileStore(
-            root = Helper.getWalletRoot(context),
+            root = MoneroKitWalletFiles.root(context),
             passwordProvider = { KeyStoreHelper.getCrazyPass(context, "") },
         )
 

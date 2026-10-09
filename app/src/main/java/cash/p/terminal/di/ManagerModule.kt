@@ -84,8 +84,6 @@ import cash.p.terminal.core.managers.EvmPersonalSignerImpl
 import cash.p.terminal.core.managers.GetTonAddressUseCaseImpl
 import cash.p.terminal.core.managers.GuidesManager
 import cash.p.terminal.core.managers.KeyStoreCleaner
-import cash.p.terminal.core.managers.KitDatabaseKeyProvider
-import cash.p.terminal.core.managers.KitDatabaseKeys
 import cash.p.terminal.core.managers.LanguageManager
 import cash.p.terminal.core.managers.SystemLanguageProvider
 import cash.p.terminal.core.managers.SystemLanguageProviderImpl
@@ -129,7 +127,9 @@ import cash.p.terminal.core.managers.TermsManager
 import cash.p.terminal.core.managers.ThorchainKitManagers
 import cash.p.terminal.core.managers.TimePasswordProvider
 import cash.p.terminal.core.managers.TokenAutoEnableManager
+import cash.p.terminal.core.managers.TonConnectDatabaseKeyProvider
 import cash.p.terminal.core.managers.TonConnectManager
+import cash.p.terminal.core.managers.TonKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TorManager
 import cash.p.terminal.core.managers.TransactionAdapterManager
@@ -212,6 +212,7 @@ import cash.p.terminal.wallet.managers.ITransactionHiddenManager
 import cash.p.terminal.wallet.managers.UserManager
 import cash.p.terminal.wallet.navigation.WalletPages
 import com.m2049r.xmrwallet.service.MoneroWalletService
+import com.piratecash.monero.MoneroWalletFiles
 import io.horizontalsystems.bitcoincore.core.IConnectionManager
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.CurrencyManager
@@ -327,8 +328,7 @@ val managerModule = module {
     }
     singleOf(::ConnectivityManager) bind IConnectivityManager::class
     singleOf(::BitcoinKitConnectionManager) bind IConnectionManager::class
-    singleOf(::BitcoinKitDatabaseKeyProvider) bind KitDatabaseKeyProvider::class
-    singleOf(::KitDatabaseKeys)
+    singleOf(::BitcoinKitDatabaseKeyProvider)
     singleOf(::DefaultBitcoinKitDatabaseOperations) bind BitcoinKitDatabaseOperations::class
     singleOf(::BitcoinKitDatabaseManager)
     singleOf(::EvmSyncSourceManager)
@@ -341,6 +341,8 @@ val managerModule = module {
     singleOf(::SolanaKitManager)
     singleOf(::StellarKitDatabaseKeyProvider)
     singleOf(::StellarKitManager)
+    singleOf(::TonKitDatabaseKeyProvider)
+    singleOf(::TonConnectDatabaseKeyProvider)
     singleOf(::ThorchainKitManagers)
     singleOf(::TonKitManager)
     singleOf(::GetTonAddressUseCaseImpl) bind GetTonAddressUseCase::class
@@ -396,7 +398,7 @@ val managerModule = module {
     singleOf(::DefaultMoneroDeviceWalletNative) bind MoneroDeviceWalletNative::class
     single { MoneroDeviceWalletFileStore.create(get()) }
     singleOf(::MoneroDeviceWalletProvisioner)
-    singleOf(::MoneroWalletService)
+    single { MoneroWalletService(MoneroWalletFiles.root(get())) }
     singleOf(::SilentCameraManager) bind ISilentPhotoCapture::class
     singleOf(::CurrentDateProvider) bind ICurrentDateProvider::class
     singleOf(::UptimeProvider)
@@ -428,7 +430,7 @@ val managerModule = module {
     singleOf(::TorManager) bind ITorManager::class
     singleOf(::PredefinedBlockchainSettingsProvider)
     single {
-        KeyStoreCleaner(get(), get(), get(), get(), lazy { get<IAccountCleaner>() })
+        KeyStoreCleaner(get(), get(), get(), get(), lazy { get<IAccountCleaner>() }, lazy { get<TonConnectManager>() })
     } bind IKeyStoreCleaner::class
     single<KeyStoreManager.Logger> { AppLogger("key-store") }
     single {
@@ -473,7 +475,11 @@ val managerModule = module {
             context = get(),
             adapterFactory = get(),
             appName = "P.cash Wallet",
-            appVersion = AppConfigProvider.appVersion
+            appVersion = AppConfigProvider.appVersion,
+            databaseKeyProvider = get(),
+            accountManager = get(),
+            appDatabase = get(),
+            dispatcherProvider = get(),
         ).also { it.start() }
     }
     factory { (pinComponent: IPinComponent) ->

@@ -110,7 +110,7 @@ internal fun OfflineSignScreen(
                 text = annotatedHtmlStringResource(
                     id = format.infoDescriptionRes,
                     linkStyle = SpanStyle(
-                        color = ComposeAppTheme.colors.jacob,
+                        color = ComposeAppTheme.colors.brandDefault,
                         textDecoration = TextDecoration.Underline,
                     ),
                 ),
@@ -199,7 +199,7 @@ private fun OfflineSignLayout(
     windowInsets: WindowInsets,
 ) {
     Scaffold(
-        containerColor = ComposeAppTheme.colors.tyler,
+        containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
                 title = stringResource(R.string.offline_transaction_sign_title),
@@ -367,7 +367,7 @@ private fun OfflineFormatCell(
                 modifier = Modifier.size(20.dp),
                 painter = painterResource(R.drawable.ic_info_20),
                 contentDescription = stringResource(R.string.Info_Title),
-                tint = ComposeAppTheme.colors.grey,
+                tint = ComposeAppTheme.colors.iconSecondary,
             )
         }
     }
