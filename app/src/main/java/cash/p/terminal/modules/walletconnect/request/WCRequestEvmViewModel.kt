@@ -1,7 +1,11 @@
 package cash.p.terminal.modules.walletconnect.request
 
 import android.os.Parcelable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.core.managers.EvmMessageSigning
@@ -15,7 +19,9 @@ import com.reown.walletkit.client.Wallet
 import io.horizontalsystems.ethereumkit.core.hexStringToByteArray
 import kotlinx.parcelize.Parcelize
 import org.json.JSONArray
-import kotlinx.coroutines.runBlocking
+import co.touchlab.kermit.Logger
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -26,6 +32,8 @@ private const val TYPED_DATA_METHOD_V4 = "eth_signTypedData_v4"
 private const val ETH_SIGN_METHOD = "eth_sign"
 private const val SEND_TRANSACTION_METHOD = "eth_sendTransaction"
 private const val SIGN_TRANSACTION_METHOD = "eth_signTransaction"
+
+private val logger = Logger.withTag("WCRequestEvmViewModel")
 
 class WCRequestEvmViewModel(
     private val accountManager: IAccountManager,
@@ -42,9 +50,30 @@ class WCRequestEvmViewModel(
     private val chainName = chainData?.name
     private val chainAddress = chainData?.address
 
-    private val evmKitWrapper: EvmKitWrapper? = getEthereumKitWrapper()
-    var sessionRequestUi: SessionRequestUI = generateSessionRequestUI()
+    private var evmKitWrapper: EvmKitWrapper? = null
+    var sessionRequestUi: SessionRequestUI by mutableStateOf(SessionRequestUI.Loading)
+        private set
 
+    init {
+        viewModelScope.launch {
+            evmKitWrapper = getEthereumKitWrapper()
+            sessionRequestUi = generateSessionRequestUI()
+        }
+    }
+
+    // Claimed synchronously before any suspension, so a second Allow/Reject finds nothing to answer.
+    private fun claimPendingRequest(): SessionRequestUI.Content? {
+        val request = (sessionRequestUi as? SessionRequestUI.Content)
+            ?.takeIf { it.status == RequestStatus.Pending } ?: return null
+        sessionRequestUi = request.copy(status = RequestStatus.Responding)
+        return request
+    }
+
+    private fun markResponded(request: SessionRequestUI.Content) {
+        sessionRequestUi = request.copy(status = RequestStatus.Responded)
+    }
+
+    // The screen stays open after a failed response, so drop the actions it can no longer perform.
     private fun clearSessionRequest() {
         sessionRequestUi = SessionRequestUI.Initial
     }
@@ -52,7 +81,6 @@ class WCRequestEvmViewModel(
     private fun generateSessionRequestUI(): SessionRequestUI {
         return sessionRequestEvent?.let { sessionRequest ->
             if (evmKitWrapper == null) {
-                clearSessionRequest()
                 return@let SessionRequestUI.Initial
             }
 
@@ -69,6 +97,7 @@ class WCRequestEvmViewModel(
                 method = sessionRequest.request.method,
                 chainName = chainName,
                 chainAddress = chainAddress,
+                status = RequestStatus.Pending,
             )
         } ?: SessionRequestUI.Initial
     }
@@ -128,18 +157,25 @@ class WCRequestEvmViewModel(
         }
     }
 
-    private fun getEthereumKitWrapper(): EvmKitWrapper? {
+    private suspend fun getEthereumKitWrapper(): EvmKitWrapper? {
         val blockchainType = blockchainType ?: return null
         val account = accountManager.activeAccount ?: return null
         val evmKitManager = evmBlockchainManager.getEvmKitManager(blockchainType)
 
-        return runBlocking { evmKitManager.getEvmKitWrapper(account, blockchainType) }
+        return try {
+            evmKitManager.getEvmKitWrapper(account, blockchainType)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            logger.w(e) { "Failed to create EVM kit for WalletConnect request" }
+            null
+        }
     }
 
     suspend fun allow() {
         val evmKit = evmKitWrapper ?: throw WCSessionManager.RequestDataError.NoSuitableEvmKit
         val signer = evmKit.signer ?: throw WCSessionManager.RequestDataError.NoSigner
-        val content = sessionRequestUi as? SessionRequestUI.Content ?: return
+        val content = claimPendingRequest() ?: return
 
         val result = try {
             when (content.method) {
@@ -189,8 +225,8 @@ class WCRequestEvmViewModel(
                 content.topic,
                 result.to0xHexString().normalizeSignature(),
                 onSuccessResult = {
+                    markResponded(content)
                     continuation.resume(Unit)
-                    clearSessionRequest()
                 },
                 onErrorResult = {
                     continuation.resumeWithException(it)
@@ -214,28 +250,28 @@ class WCRequestEvmViewModel(
     }
 
     suspend fun reject() {
+        val sessionRequest = claimPendingRequest() ?: return
         return suspendCoroutine { continuation ->
-            val sessionRequest = sessionRequestUi as? SessionRequestUI.Content
-            if (sessionRequest != null) {
-                WCDelegate.rejectRequest(
-                    sessionRequest.topic,
-                    sessionRequest.requestId,
-                    onSuccessResult = {
-                        clearSessionRequest()
-                        continuation.resume(Unit)
-                    },
-                    onErrorResult = {
-                        clearSessionRequest()
-                        continuation.resumeWithException(it)
-                    }
-                )
-            }
+            WCDelegate.rejectRequest(
+                sessionRequest.topic,
+                sessionRequest.requestId,
+                onSuccessResult = {
+                    markResponded(sessionRequest)
+                    continuation.resume(Unit)
+                },
+                onErrorResult = {
+                    clearSessionRequest()
+                    continuation.resumeWithException(it)
+                }
+            )
         }
     }
 
 }
 
 sealed class SessionRequestUI {
+    object Loading : SessionRequestUI()
+
     object Initial : SessionRequestUI()
 
     data class Content(
@@ -246,8 +282,11 @@ sealed class SessionRequestUI {
         val method: String,
         val chainName: String?,
         val chainAddress: String?,
+        val status: RequestStatus,
     ) : SessionRequestUI()
 }
+
+enum class RequestStatus { Pending, Responding, Responded }
 
 @Parcelize
 data class WCChainData(

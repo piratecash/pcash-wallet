@@ -1,8 +1,5 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.core.adapters.Eip20Adapter
-import cash.p.terminal.core.adapters.EvmAdapter
-import cash.p.terminal.core.adapters.SolanaAdapter
 import cash.p.terminal.core.storage.MoneroFileDao
 import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
 import cash.p.terminal.domain.usecase.ZcashEraseResult
@@ -28,7 +25,6 @@ import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -57,7 +53,9 @@ class AccountCleanerTest {
     private lateinit var stellarKitManager: StellarKitManager
     private lateinit var tronKitManager: TronKitManager
     private lateinit var thorchainKitManagers: ThorchainKitManagers
+    private lateinit var evmBlockchainManager: EvmBlockchainManager
     private val deletionPreflight = mockk<AccountDeletionPreflight>(relaxed = true)
+    private val solanaKitManager = mockk<SolanaKitManager>(relaxed = true)
     private val tonKitManager = mockk<TonKitManager>(relaxed = true)
 
     @Before
@@ -75,6 +73,7 @@ class AccountCleanerTest {
         stellarKitManager = mockk(relaxed = true)
         tronKitManager = mockk(relaxed = true)
         thorchainKitManagers = mockk(relaxed = true)
+        evmBlockchainManager = mockk(relaxed = true)
 
         coEvery { clearZCashWalletDataUseCase.invoke(any()) } returns ZcashEraseResult.ALL
         coEvery { removeMoneroWalletFilesUseCase.invoke(any<Account>()) } returns true
@@ -94,10 +93,12 @@ class AccountCleanerTest {
             pinDbStorage,
             accountStorageCleaner,
             bitcoinKitDatabaseManager,
+            solanaKitManager,
             stellarKitManager,
             tonKitManager,
             tronKitManager,
             thorchainKitManagers,
+            evmBlockchainManager,
             deletionPreflight,
         )
     }
@@ -116,7 +117,7 @@ class AccountCleanerTest {
             accountCleaner.clearAccounts(ids)
         }
         verify {
-            listOf(adapterManager, bitcoinKitDatabaseManager, accountStorageCleaner,
+            listOf(adapterManager, bitcoinKitDatabaseManager, evmBlockchainManager, accountStorageCleaner,
                 removeMoneroWalletFilesUseCase, clearZCashWalletDataUseCase, smsNotificationSettings,
                 moneroFileDao, pinDbStorage, tonKitManager) wasNot Called
         }
@@ -125,7 +126,6 @@ class AccountCleanerTest {
     @Test
     fun clearAccounts_tonClearFails_propagatesAndKeepsStorageRows() = runTest {
         val accountId = "acc-ton"
-        mockAdapterClears()
         coEvery { tonKitManager.clear(accountId) } throws KitDatabaseKeyException("remove failed")
 
         assertFailsWith<KitDatabaseKeyException> { accountCleaner.clearAccounts(listOf(accountId)) }
@@ -273,7 +273,6 @@ class AccountCleanerTest {
         val accountId = "acc-full"
         val account = account(accountId)
 
-        mockAdapterClears()
         every { walletManager.activeWallets } returns emptyList()
         every { accountManager.account(accountId) } returns account
 
@@ -289,8 +288,6 @@ class AccountCleanerTest {
     fun clearAccounts_severalAccounts_stopsOnceAndDelegatesSameIdsToStorageCleaner() = runTest {
         val accountIds = listOf("acc-a", "acc-b")
 
-        mockAdapterClears()
-
         accountCleaner.clearAccounts(accountIds)
 
         coVerify(exactly = 1) { adapterManager.stopAdapters(accountIds) }
@@ -302,7 +299,6 @@ class AccountCleanerTest {
     fun clearAccounts_storageCleanerFails_stillWipesAdapterData() = runTest {
         val accountId = "acc-a"
 
-        mockAdapterClears()
         coEvery { accountStorageCleaner.clearAccounts(any()) } throws IOException("disk full")
 
         var thrown: Throwable? = null
@@ -321,7 +317,6 @@ class AccountCleanerTest {
     fun clearAccounts_smsNotificationConfigured_clearsSmsSettings() = runTest {
         val accountId = "acc-sms"
 
-        mockAdapterClears()
         every { pinDbStorage.getAllLevels() } returns listOf(0, 1, 2)
         every { smsNotificationSettings.getSmsNotificationAccountId(0) } returns "other-account"
         every { smsNotificationSettings.getSmsNotificationAccountId(1) } returns accountId
@@ -341,7 +336,6 @@ class AccountCleanerTest {
     fun clearAccounts_noSmsNotification_doesNotClearSettings() = runTest {
         val accountId = "acc-no-sms"
 
-        mockAdapterClears()
         every { pinDbStorage.getAllLevels() } returns listOf(0, 1)
         every { smsNotificationSettings.getSmsNotificationAccountId(any()) } returns "other-account"
 
@@ -355,7 +349,6 @@ class AccountCleanerTest {
     @Test
     fun clearAccounts_anyAccount_stopsAdaptersBeforeClearingBitcoinDatabases() = runTest {
         val accountId = "acc-order"
-        mockAdapterClears()
 
         accountCleaner.clearAccounts(listOf(accountId))
 
@@ -368,7 +361,6 @@ class AccountCleanerTest {
     @Test
     fun clearAccounts_anyAccount_clearsThorchainDatabasesBeforeRemovingSharedKey() = runTest {
         val accountId = "acc-thorchain"
-        mockAdapterClears()
 
         accountCleaner.clearAccounts(listOf(accountId))
 
@@ -379,23 +371,10 @@ class AccountCleanerTest {
         }
     }
 
-    private fun mockAdapterClears() {
-        mockkObject(
-            EvmAdapter,
-            Eip20Adapter,
-            SolanaAdapter,
-        )
-
-        every { EvmAdapter.clear(any()) } returns Unit
-        every { Eip20Adapter.clear(any()) } returns Unit
-        every { SolanaAdapter.clear(any()) } returns Unit
-    }
-
     private fun verifyAdapterClears(accountId: String) {
         coVerify(exactly = 1) { bitcoinKitDatabaseManager.clear(accountId) }
-        verify(exactly = 1) { EvmAdapter.clear(accountId) }
-        verify(exactly = 1) { Eip20Adapter.clear(accountId) }
-        verify(exactly = 1) { SolanaAdapter.clear(accountId) }
+        coVerify(exactly = 1) { evmBlockchainManager.clear(accountId) }
+        coVerify(exactly = 1) { solanaKitManager.clear(accountId) }
         coVerify(exactly = 1) { tronKitManager.clear(accountId) }
         coVerify(exactly = 1) { stellarKitManager.clear(accountId) }
         coVerify(exactly = 1) { tonKitManager.clear(accountId) }

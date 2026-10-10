@@ -72,6 +72,7 @@ import cash.p.terminal.core.managers.CreateRequiredTokensUseCaseImpl
 import cash.p.terminal.core.managers.DefaultCurrencyManager
 import cash.p.terminal.core.managers.DefaultUserManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
+import cash.p.terminal.core.managers.EvmKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.MarketFavoritesDataMigration
 import cash.p.terminal.core.managers.DefaultMoneroDeviceWalletNative
 import cash.p.terminal.core.managers.DefaultMoneroNativeWalletRuntime
@@ -116,6 +117,7 @@ import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.SeedPhraseQrCrypto
 import cash.p.terminal.core.managers.SilentCameraManager
 import cash.p.terminal.core.managers.NetworkErrorTracker
+import cash.p.terminal.core.managers.SolanaKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.SolanaKitManager
 import cash.p.terminal.core.managers.SolanaRpcSourceManager
 import cash.p.terminal.core.managers.SolanaWalletManager
@@ -335,11 +337,13 @@ val managerModule = module {
     singleOf(::BitcoinKitDatabaseManager)
     singleOf(::EvmSyncSourceManager)
     singleOf(::TokenAutoEnableManager)
+    singleOf(::EvmKitDatabaseKeyProvider)
     singleOf(::EvmBlockchainManager)
     singleOf(::EvmSignerFactory)
     singleOf(::BtcBlockchainManager)
     singleOf(::OfflineBroadcastTokenResolver)
     singleOf(::NetworkErrorTracker)
+    singleOf(::SolanaKitDatabaseKeyProvider)
     singleOf(::SolanaKitManager)
     singleOf(::StellarKitDatabaseKeyProvider)
     singleOf(::StellarKitManager)

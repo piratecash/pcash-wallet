@@ -7,6 +7,7 @@ import cash.p.terminal.core.UnsupportedException
 import cash.p.terminal.core.hexToByteArray
 import cash.p.terminal.core.onPollingStartedSuspend
 import cash.p.terminal.core.onPollingStoppedSuspend
+import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.core.storage.HardwarePublicKeyStorage
 import cash.p.terminal.tangem.signer.HardwareWalletSolanaAccountSigner
 import cash.p.terminal.trezorkit.client.ITrezorClient
@@ -47,12 +48,10 @@ class SolanaKitManager(
     private val backgroundKeepAliveManager: BackgroundKeepAliveManager,
     private val networkErrorTracker: NetworkErrorTracker,
     private val offlineModeManager: OfflineModeManager,
+    private val solanaKitDatabaseKeyProvider: SolanaKitDatabaseKeyProvider,
 ) {
 
     private companion object {
-        // Temporary limits to avoid too many requests problem in solan sdk
-        const val limitFirstTimeTransactionCount: Int = 2
-        const val limitTimeTransactionCount: Int = 2
         const val FRESH_SYNC_TIMEOUT_MS = 20_000L
     }
 
@@ -155,7 +154,7 @@ class SolanaKitManager(
         return@withLock newWrapper
     }
 
-    private fun createKitInstance(
+    private suspend fun createKitInstance(
         accountType: AccountType.Mnemonic,
         account: Account
     ): SolanaKitWrapper {
@@ -165,7 +164,7 @@ class SolanaKitManager(
         return SolanaKitWrapper(createKit(address, account.id), signer)
     }
 
-    private fun createKitInstance(
+    private suspend fun createKitInstance(
         accountType: AccountType.SolanaAddress,
         account: Account
     ): SolanaKitWrapper {
@@ -196,7 +195,7 @@ class SolanaKitManager(
         return createHardwareKitInstance(accountId, hardwarePublicKey, account)
     }
 
-    private fun createHardwareKitInstance(
+    private suspend fun createHardwareKitInstance(
         accountId: String,
         hardwarePublicKey: HardwarePublicKey,
         account: com.solana.core.Account
@@ -206,6 +205,14 @@ class SolanaKitManager(
             createKit(Base58.encode(hardwarePublicKey.key.value.hexToByteArray()), accountId),
             signer
         )
+    }
+
+    suspend fun clear(accountId: String) = mutex.withLock {
+        if (currentAccount?.id == accountId) {
+            stopKit()
+        }
+        SolanaKit.clear(App.instance, accountId)
+        solanaKitDatabaseKeyProvider.remove(accountId)
     }
 
     suspend fun unlink(account: Account) = mutex.withLock {
@@ -297,18 +304,21 @@ class SolanaKitManager(
         }
     }
 
-    private fun createKit(address: String, walletId: String): SolanaKit =
-        SolanaKit.getInstance(
-            application = App.instance,
+    private suspend fun createKit(address: String, walletId: String): SolanaKit {
+        val databaseKey = solanaKitDatabaseKeyProvider.awaitKey(walletId)
+        SolanaKit.migrateDatabase(App.instance, walletId, databaseKey)
+        return SolanaKit.getInstance(
+            context = App.instance,
             addressString = address,
             rpcSource = rpcSourceManager.rpcSource,
             walletId = walletId,
-            limitFirstTimeTransactionCount = limitFirstTimeTransactionCount,
-            limitTimeTransactionCount = limitTimeTransactionCount,
+            databaseKey = databaseKey,
+            rpcApiKeys = AppConfigProvider.alchemySolanaApiKeys,
             networkErrorListener = { error ->
                 networkErrorTracker.record(BlockchainType.Solana, walletId, error.toNetworkErrorInfo())
             }
         )
+    }
 
     private fun subscribeToEvents(account: Account) {
         backgroundEventListenerJob = coroutineScope.launch {

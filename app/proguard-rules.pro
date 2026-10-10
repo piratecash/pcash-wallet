@@ -69,6 +69,7 @@
 # TonAPI models ship inside the TON kit and are bound by Moshi's reflective Kotlin adapter.
 -keep class io.tonapi.** { *; }
 -keep class io.horizontalsystems.solanakit.** { *; }
+-keep class io.horizontalsystems.sqlcipher.room.** { *; }
 -keep class io.horizontalsystems.bitcoincore.** { *; }
 -keep class io.horizontalsystems.sqlcipher.room.** { *; }
 -keep class io.horizontalsystems.bitcoinkit.** { *; }

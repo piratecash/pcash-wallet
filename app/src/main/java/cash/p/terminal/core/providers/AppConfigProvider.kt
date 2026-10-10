@@ -56,13 +56,13 @@ object AppConfigProvider {
         EncodedSecrets.TWITTER_BEARER_TOKEN
     }
     val etherscanApiKey by lazy {
-        EncodedSecrets.ETHERSCAN_KEY.split(",").map { it.trim() }
+        EncodedSecrets.ETHERSCAN_KEY.toKeyList()
     }
     val blockscoutApiKey by lazy {
-        EncodedSecrets.BLOCKSCOUT_KEY.split(",").map { it.trim() }
+        EncodedSecrets.BLOCKSCOUT_KEY.toKeyList()
     }
     val bscscanApiKey by lazy {
-        EncodedSecrets.BSCSCAN_KEY.split(",").map { it.trim() }
+        EncodedSecrets.BSCSCAN_KEY.toKeyList()
     }
     val guidesUrl by lazy {
         Translator.getString(R.string.guidesUrl)
@@ -92,7 +92,11 @@ object AppConfigProvider {
     }
 
     val trongridApiKeys: List<String> by lazy {
-        EncodedSecrets.TRONGRID_API_KEYS.split(",").map { it.trim() }
+        EncodedSecrets.TRONGRID_API_KEYS.toKeyList()
+    }
+
+    val alchemySolanaApiKeys: List<String> by lazy {
+        EncodedSecrets.ALCHEMY_SOLANA_API_KEYS.toKeyList()
     }
 
     val udnApiKey by lazy {
@@ -187,4 +191,6 @@ object AppConfigProvider {
             BlockchainType.Stellar to "GAZXDMWYHMPM2WF6FCWEBIMJITKKTU6MLHYLCFRVB3WMXTNPVEHBOXRE"
         ).toList().sortedBy { it.first.uid }.toMap()
     }
+
+    private fun String.toKeyList(): List<String> = split(",").map { it.trim() }
 }

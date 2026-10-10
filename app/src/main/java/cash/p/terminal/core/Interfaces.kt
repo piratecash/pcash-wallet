@@ -120,7 +120,7 @@ interface ITransactionsAdapter {
 
     val lastBlockInfo: LastBlockInfo?
     val lastBlockUpdatedFlowable: Flowable<Unit>
-    val additionalTokenQueries: List<TokenQuery> get() = listOf()
+    suspend fun additionalTokenQueries(): List<TokenQuery> = emptyList()
 
     suspend fun getTransactions(
         from: TransactionRecord?,

@@ -74,11 +74,11 @@ hd-wallet-kit = "1.0.1"
 stellar-kit = "v2.0.0-pcash.1"
 thorchain-kit = "1.2.0"
 trezor-kit = "1.4.0"
-piratecash-ethereum = "v0.1.0-pcash.23"
-piratecash-solana = "v1.0.0-pcash.10"
+piratecash-ethereum = "v1.0.0-pcash.1"
+piratecash-solana = "v2.0.0-pcash.6"
 monero-kit-android = "v0.18.3.4-pcash.20"
 netcipher = "2.1.0"
-solanakt = "864ec19"
+solanakt = "v1.0.0-pcash.5"
 piratecash-tron = "v2.0.0-pcash.1"
 tangem-sdk = "3.9.2-pcash.3"
 gson = "2.13.2"
@@ -233,11 +233,16 @@ hd-wallet-kit = { group = "com.github.piratecash.hd-wallet-kit-android", name = 
 stellar-kit = { group = "com.github.piratecash.stellar-kit-android", name = "stellarkit", version.ref = "stellar-kit" }
 thorchain-kit = { group = "com.github.piratecash.thorchain-kit-android", name = "thorchainkit", version.ref = "thorchain-kit" }
 trezor-kit = { group = "com.github.piratecash", name = "trezor-kit-android", version.ref = "trezor-kit" }
-solana-kit = { group = "com.github.piratecash", name = "solana-kit-android", version.ref = "piratecash-solana" }
+solana-kit = { group = "com.github.piratecash.solana-kit-android", name = "solanakit", version.ref = "piratecash-solana" }
 monero-kit = { group = "com.github.piratecash.monero-kit-android", name = "monerokit", version.ref = "monero-kit-android" }
 netcipher = { group = "info.guardianproject.netcipher", name = "netcipher", version.ref = "netcipher" }
 solanakt = { module = "com.github.piratecash:SolanaKT", version.ref = "solanakt" }
-ethereum-kit = { group = "com.github.piratecash", name = "ethereum-kit-android", version.ref = "piratecash-ethereum" }
+ethereum-kit = { group = "com.github.piratecash.ethereum-kit-android", name = "ethereumkit", version.ref = "piratecash-ethereum" }
+ethereum-kit-erc20 = { group = "com.github.piratecash.ethereum-kit-android", name = "erc20kit", version.ref = "piratecash-ethereum" }
+ethereum-kit-uniswap = { group = "com.github.piratecash.ethereum-kit-android", name = "uniswapkit", version.ref = "piratecash-ethereum" }
+ethereum-kit-oneinch = { group = "com.github.piratecash.ethereum-kit-android", name = "oneinchkit", version.ref = "piratecash-ethereum" }
+ethereum-kit-nft = { group = "com.github.piratecash.ethereum-kit-android", name = "nftkit", version.ref = "piratecash-ethereum" }
+ethereum-kit-merkleio = { group = "com.github.piratecash.ethereum-kit-android", name = "merkleiokit", version.ref = "piratecash-ethereum" }
 tron-kit = { group = "com.github.piratecash.tron-kit-android", name = "tronkit", version.ref = "piratecash-tron" }
 tangem-sdk = { group = "com.github.piratecash", name = "tangem-sdk-android", version.ref = "tangem-sdk" }
 

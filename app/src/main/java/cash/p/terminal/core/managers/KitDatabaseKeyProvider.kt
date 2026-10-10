@@ -144,6 +144,24 @@ class TronKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptio
         kitName = "TronKit",
     )
 
+class EvmKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :
+    KitDatabaseKeyProvider(
+        context,
+        encryptionManager,
+        preferencesName = "evm_kit_database_keys",
+        keyPrefix = "evm_kit_database_key_",
+        kitName = "EvmKit",
+    )
+
+class SolanaKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :
+    KitDatabaseKeyProvider(
+        context,
+        encryptionManager,
+        preferencesName = "solana_kit_database_keys",
+        keyPrefix = "solana_kit_database_key_",
+        kitName = "SolanaKit",
+    )
+
 class StellarKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :
     KitDatabaseKeyProvider(
         context,

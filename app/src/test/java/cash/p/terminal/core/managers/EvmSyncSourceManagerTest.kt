@@ -89,6 +89,8 @@ class EvmSyncSourceManagerTest {
             backgroundKeepAliveManager = mockk(),
             networkErrorTracker = mockk(),
             offlineModeManager = mockk(),
+            databaseKeys = mockk(),
+            context = mockk(),
         )
 
         assertSame(Chain.RobinhoodChain, blockchainManager.getChain(BlockchainType.RobinhoodChain))

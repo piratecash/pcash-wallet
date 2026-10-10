@@ -75,9 +75,6 @@ internal class EvmTransactionRepository(
     val accountStateFlowable: Flowable<AccountState>
         get() = evmKit.accountStateFlowable
 
-    val transactionSyncSourceStorage
-        get() = evmKit.transactionSyncSourceStorage
-
     fun debugInfo(): String = evmKit.debugInfo()
 
     fun statusInfo(): Map<String, Any> = evmKit.statusInfo()
@@ -92,14 +89,19 @@ internal class EvmTransactionRepository(
             .also { evmKitWrapper = it }
     }
 
-    fun buildErc20Kit(
+    suspend fun buildErc20Kit(
         context: Context,
-        contractAddress: Address
-    ): Erc20Kit = Erc20Kit.getInstance(context, evmKit, contractAddress)
+        contractAddress: String
+    ): Erc20Kit = Erc20Kit.getInstance(
+        context,
+        evmKit,
+        Address(contractAddress),
+        requireNotNull(evmKitWrapper).databaseKey
+    )
 
     fun getBlockchainType(): BlockchainType = requireNotNull(_blockchainType)
 
-    fun getTagTokenContractAddresses(): List<String> = evmKit.getTagTokenContractAddresses()
+    suspend fun getTagTokenContractAddresses(): List<String> = evmKit.getTagTokenContractAddresses()
 
     suspend fun signedRawTransaction(
         transactionData: TransactionData,

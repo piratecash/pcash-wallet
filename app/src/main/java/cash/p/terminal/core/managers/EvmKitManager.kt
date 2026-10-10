@@ -1,8 +1,6 @@
 package cash.p.terminal.core.managers
 
-import android.os.Handler
-import android.os.Looper
-import cash.p.terminal.core.App
+import android.content.Context
 import cash.p.terminal.core.onPollingStarted
 import cash.p.terminal.core.onPollingStopped
 import cash.p.terminal.core.UnsupportedAccountException
@@ -36,16 +34,16 @@ import io.horizontalsystems.uniswapkit.UniswapV3Kit
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
+import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.rx2.asFlow
 import kotlinx.coroutines.rx2.await
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import timber.log.Timber
 import org.koin.java.KoinJavaComponent.inject
 import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
@@ -57,6 +55,8 @@ class EvmKitManager(
     private val backgroundKeepAliveManager: BackgroundKeepAliveManager,
     private val networkErrorTracker: NetworkErrorTracker,
     private val offlineModeManager: OfflineModeManager,
+    private val databaseKeys: EvmKitDatabaseKeyProvider,
+    private val context: Context,
 ) {
     private val evmSignerFactory: EvmSignerFactory
             by inject(EvmSignerFactory::class.java)
@@ -128,26 +128,30 @@ class EvmKitManager(
         requireNotNull(this.evmKitWrapper)
     }
 
-    private fun createKitInstance(
+    private suspend fun createKitInstance(
         account: Account,
         blockchainType: BlockchainType
     ): EvmKitWrapper {
         val syncSource = syncSourceManager.getSyncSource(blockchainType)
 
-        val address = runBlocking { evmSignerFactory.resolveAddress(account, blockchainType, chain) }
+        val address = evmSignerFactory.resolveAddress(account, blockchainType, chain)
             ?: throw UnsupportedAccountException()
-        val signer = runBlocking { evmSignerFactory.createSigner(account, blockchainType, chain) }
+        val signer = evmSignerFactory.createSigner(account, blockchainType, chain)
+
+        val databaseKey = databaseKeys.awaitKey(account.id)
+        migrateDatabases(account.id, databaseKey)
 
         val eventListenerFactory =
             NetworkErrorEventListener.Factory(blockchainType, account.id, networkErrorTracker, recordHttpErrors = true)
 
         val evmKit = EthereumKit.getInstance(
-            application = App.instance,
+            application = context,
             address = address,
             chain = chain,
             rpcSource = syncSource.rpcSource,
             transactionSource = syncSource.transactionSource,
             walletId = account.id,
+            databaseKey = databaseKey,
             scanHistoricalEip20 = account.origin == AccountOrigin.Restored,
             eventListenerFactory = eventListenerFactory
         )
@@ -183,17 +187,24 @@ class EvmKitManager(
 //            nftKit = nftKitInstance
 //        }
 
-        val merkleTransactionAdapter = MerkleTransactionAdapter.getInstance(
-            merkleIoPubKey = AppConfigProvider.merkleIoKey,
-            address = address,
-            chain = chain,
-            context = App.instance,
-            walletId = account.id,
-            transactionManager = evmKit.transactionManager,
-            sourceTag = "pcash-wallet-android",
-            transactionSyncSourceStorage = evmKit.transactionSyncSourceStorage,
-            eventListenerFactory = eventListenerFactory
-        )
+        val merkleTransactionAdapter = try {
+            MerkleTransactionAdapter.getInstance(
+                merkleIoPubKey = AppConfigProvider.merkleIoKey,
+                address = address,
+                chain = chain,
+                context = context,
+                walletId = account.id,
+                databaseKey = databaseKey,
+                transactionManager = evmKit.transactionManager,
+                sourceTag = "pcash-wallet-android",
+                transactionSyncSourceStorage = evmKit.transactionSyncSourceStorage,
+                eventListenerFactory = eventListenerFactory
+            )
+        } catch (error: Throwable) {
+            // Not in evmKitWrapper yet, so neither unlink() nor stopFor() would ever stop it.
+            evmKit.stop()
+            throw error
+        }
         merkleTransactionAdapter?.registerInKit(evmKit)
 
         if (!offlineModeManager.isNetworkPaused(account.id, blockchainType)) {
@@ -205,8 +216,23 @@ class EvmKitManager(
             nftKit = nftKit,
             blockchainType = blockchainType,
             signer = signer,
-            merkleTransactionAdapter = merkleTransactionAdapter
+            merkleTransactionAdapter = merkleTransactionAdapter,
+            databaseKey = databaseKey,
         )
+    }
+
+    /** The kit refuses plaintext files, so every database must be encrypted before it opens. */
+    private suspend fun migrateDatabases(walletId: String, databaseKey: ByteArray) {
+        EthereumKit.migrateDatabase(context, chain, walletId, databaseKey)
+        Erc20Kit.migrateDatabases(context, chain, walletId, databaseKey)
+        MerkleTransactionAdapter.migrateDatabase(context, chain, walletId, databaseKey)
+        NftKit.migrateDatabase(context, chain, walletId, databaseKey)
+    }
+
+    suspend fun stopFor(accountId: String) = lifecycleMutex.withLock {
+        if (currentAccount?.id == accountId) {
+            stopEvmKit()
+        }
     }
 
     suspend fun unlink(account: Account) = lifecycleMutex.withLock {
@@ -256,7 +282,8 @@ class EvmKitManager(
             backgroundManager.stateFlow.collect { state ->
                 if (state == BackgroundManagerState.EnterForeground) {
                     evmKitWrapper?.let { wrapper ->
-                        Handler(Looper.getMainLooper()).postDelayed({
+                        launch {
+                            delay(FOREGROUND_RESTART_DELAY_MS)
                             val account = currentAccount
                             if (account != null &&
                                 offlineModeManager.isNetworkPaused(account.id, wrapper.blockchainType)
@@ -266,7 +293,7 @@ class EvmKitManager(
                                 wrapper.evmKit.start()
                                 wrapper.evmKit.refresh()
                             }
-                        }, 1000)
+                        }
                     }
                 } else if (state == BackgroundManagerState.EnterBackground) {
                     val wrapper = evmKitWrapper ?: return@collect
@@ -276,7 +303,7 @@ class EvmKitManager(
                     ) {
                         wrapper.evmKit.stop()
                     } else {
-                        Timber.tag("TxPoller").d("EvmKit(%s) staying alive", wrapper.blockchainType.uid)
+                        txPollerLogger.d { "EvmKit(${wrapper.blockchainType.uid}) staying alive" }
                     }
                 }
             }
@@ -293,6 +320,11 @@ class EvmKitManager(
     fun refresh() {
         evmKitWrapper?.evmKit?.refresh()
     }
+
+    private companion object {
+        const val FOREGROUND_RESTART_DELAY_MS = 1000L
+        val txPollerLogger = Logger.withTag("TxPoller")
+    }
 }
 
 val RpcSource.uris: List<URI>
@@ -306,7 +338,8 @@ class EvmKitWrapper(
     val nftKit: NftKit?,
     val blockchainType: BlockchainType,
     val signer: Signer?,
-    val merkleTransactionAdapter: MerkleTransactionAdapter?
+    val merkleTransactionAdapter: MerkleTransactionAdapter?,
+    val databaseKey: ByteArray,
 ) {
 
     /** Signs without sending, so callers can record the final hash before the network call. */

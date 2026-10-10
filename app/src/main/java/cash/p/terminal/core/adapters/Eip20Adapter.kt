@@ -1,7 +1,5 @@
 package cash.p.terminal.core.adapters
 
-import android.content.Context
-import cash.p.terminal.core.App
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.INativeBalanceProvider
 import cash.p.terminal.core.managers.EvmLabelManager
@@ -16,7 +14,6 @@ import cash.p.terminal.wallet.isStakingWallet
 import io.horizontalsystems.erc20kit.core.Erc20Kit
 import io.horizontalsystems.ethereumkit.core.EthereumKit.SyncState
 import io.horizontalsystems.ethereumkit.models.Address
-import io.horizontalsystems.ethereumkit.models.Chain
 import io.horizontalsystems.ethereumkit.models.DefaultBlockParameter
 import io.horizontalsystems.ethereumkit.models.TransactionData
 import io.reactivex.Single
@@ -37,7 +34,7 @@ import java.math.BigDecimal
 import java.math.BigInteger
 
 internal class Eip20Adapter(
-    context: Context,
+    private val eip20Kit: Erc20Kit,
     evmTransactionRepository: EvmTransactionRepository,
     contractAddress: String,
     baseToken: Token,
@@ -53,15 +50,13 @@ internal class Eip20Adapter(
         evmTransactionRepository = evmTransactionRepository,
         source = wallet.transactionSource,
         baseToken = baseToken,
-        evmLabelManager = evmLabelManager,
-        syncSourceStorage = evmTransactionRepository.transactionSyncSourceStorage
+        evmLabelManager = evmLabelManager
     )
 
     private val contractAddress: Address = Address(contractAddress)
-    private val eip20Kit: Erc20Kit = evmTransactionRepository.buildErc20Kit(context, this.contractAddress)
 
-    val pendingTransactions: List<TransactionRecord>
-        get() = eip20Kit.getPendingTransactions().map { transactionConverter.transactionRecord(it) }
+    suspend fun pendingTransactions(): List<TransactionRecord> =
+        eip20Kit.getPendingTransactions().map { transactionConverter.transactionRecord(it) }
 
     private val scope = CoroutineScope(SupervisorJob() + coroutineDispatcher)
     private var balanceSubscriptionJob: Job? = null
@@ -173,24 +168,6 @@ internal class Eip20Adapter(
     fun buildApproveUnlimitedTransactionData(spenderAddress: Address): TransactionData {
         val max = BigInteger.ONE.shiftLeft(256).subtract(BigInteger.ONE)
         return eip20Kit.buildApproveTransactionData(spenderAddress, max)
-    }
-
-    companion object {
-        fun clear(walletId: String) {
-            val networkTypes = listOf(
-                Chain.Ethereum,
-                Chain.BinanceSmartChain,
-                Chain.Polygon,
-                Chain.Avalanche,
-                Chain.Optimism,
-                Chain.ArbitrumOne,
-                Chain.Gnosis,
-            )
-
-            networkTypes.forEach {
-                Erc20Kit.clear(App.instance, it, walletId)
-            }
-        }
     }
 
 }

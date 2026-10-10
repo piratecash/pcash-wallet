@@ -2,10 +2,8 @@ package cash.p.terminal.core.adapters
 
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.adapters.SolanaTransactionConverterTestFixture.USER_ADDRESS
+import cash.p.terminal.core.adapters.SolanaTransactionConverterTestFixture.usdcToken
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
-import cash.p.terminal.wallet.Token
-import cash.p.terminal.wallet.entities.Coin
-import cash.p.terminal.wallet.entities.TokenType
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
@@ -21,13 +19,6 @@ class SolanaTransactionConverterRecipientTest {
     private val userAddress = USER_ADDRESS
     private val senderAddress = "SENDER_ADDRESS"
     private val foreignTo = "SENDER_OWNER"
-
-    private val usdcToken = Token(
-        coin = Coin(uid = "usd-coin", name = "USD Coin", code = "USDC"),
-        blockchain = SolanaTransactionConverterTestFixture.solanaBlockchain,
-        type = TokenType.Spl("USDC_MINT"),
-        decimals = 6
-    )
 
     private val coinManager: ICoinManager = mockk(relaxed = true)
 

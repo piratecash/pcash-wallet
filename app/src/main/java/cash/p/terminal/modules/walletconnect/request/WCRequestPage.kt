@@ -9,14 +9,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
 import cash.p.terminal.core.isEvm
+import cash.p.terminal.modules.coin.overview.ui.Loading
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
 import cash.p.terminal.modules.sendevmtransaction.TitleValue
 import cash.p.terminal.modules.sendevmtransaction.ValueType
@@ -27,6 +30,7 @@ import cash.p.terminal.modules.walletconnect.request.signtransaction.WCSignEther
 import cash.p.terminal.modules.walletconnect.session.ui.BlockchainCell
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.navigateUpFrom
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.MessageToSign
@@ -80,6 +84,12 @@ class WCRequestPage : HSPage() {
         val wcRequestEvmViewModel = koinViewModel<WCRequestEvmViewModel>()
         val composableScope = rememberCoroutineScope()
         val view = LocalView.current
+        val responded = (wcRequestEvmViewModel.sessionRequestUi as? SessionRequestUI.Content)
+            ?.status == RequestStatus.Responded
+        // By the time the request is answered, Close/Back or a newer request may have changed the top entry.
+        LaunchedEffect(responded) {
+            if (responded) navigation.navigateUpFrom(this@WCRequestPage)
+        }
         when (val sessionRequestUI = wcRequestEvmViewModel.sessionRequestUi) {
             is SessionRequestUI.Content -> {
                 if (sessionRequestUI.method == "eth_sendTransaction") {
@@ -130,7 +140,6 @@ class WCRequestPage : HSPage() {
                             composableScope.launch {
                                 try {
                                     wcRequestEvmViewModel.allow()
-                                    navigation.navigateUp()
                                 } catch (e: Throwable) {
                                     showError(view, e)
                                 }
@@ -141,7 +150,6 @@ class WCRequestPage : HSPage() {
                             composableScope.launch {
                                 try {
                                     wcRequestEvmViewModel.reject()
-                                    navigation.navigateUp()
                                 } catch (e: Throwable) {
                                     showError(view, e)
                                 }
@@ -151,6 +159,8 @@ class WCRequestPage : HSPage() {
                     )
                 }
             }
+
+            is SessionRequestUI.Loading -> Loading()
 
             is SessionRequestUI.Initial -> {
                 ScreenMessageWithAction(
@@ -227,7 +237,8 @@ fun WCNewSignRequestScreen(
 
         ActionButtons(
             onDecline = onDecline,
-            onAllow = onAllow
+            onAllow = onAllow,
+            enabled = sessionRequestUI.status == RequestStatus.Pending,
         )
 
     }
@@ -237,7 +248,8 @@ fun WCNewSignRequestScreen(
 @Composable
 fun ActionButtons(
     onDecline: () -> Unit = {},
-    onAllow: () -> Unit = {}
+    onAllow: () -> Unit = {},
+    enabled: Boolean = true,
 ) {
     ButtonsGroupWithShade {
         Column(Modifier.padding(horizontal = 24.dp)) {
@@ -245,14 +257,24 @@ fun ActionButtons(
                 modifier = Modifier.fillMaxWidth(),
                 title = stringResource(R.string.WalletConnect_SignMessageRequest_ButtonSign),
                 onClick = onAllow,
+                enabled = enabled,
             )
             VSpacer(16.dp)
             ButtonPrimaryDefault(
                 modifier = Modifier.fillMaxWidth(),
                 title = stringResource(R.string.Button_Reject),
-                onClick = onDecline
+                onClick = onDecline,
+                enabled = enabled,
             )
         }
+    }
+}
+
+@Preview
+@Composable
+private fun ActionButtonsRespondingPreview() {
+    ComposeAppTheme {
+        ActionButtons(enabled = false)
     }
 }
 

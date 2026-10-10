@@ -3,10 +3,12 @@ package cash.p.terminal.core.managers
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.logger.AppLog
 import io.horizontalsystems.core.logger.AppLogger
+import io.horizontalsystems.solanakit.network.SolanaNetworkError
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.mockkObject
+import io.mockk.slot
 import io.mockk.unmockkObject
 import io.mockk.verify
 import org.junit.After
@@ -15,6 +17,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.io.FileNotFoundException
 
 class NetworkErrorTrackerTest {
 
@@ -48,6 +51,30 @@ class NetworkErrorTrackerTest {
         verify(exactly = 1) { AppLog.warning(any(), any<String>()) }
         // recentByKey (status screen) still reflects the latest occurrence despite the dedup.
         assertTrue(tracker.errorInfo(BlockchainType.Ethereum, accountId)?.isNotEmpty() == true)
+    }
+
+    @Test
+    fun record_solanaAlchemyUrlWithKey_redactsKey() {
+        val keyedUrl = "https://solana-mainnet.g.alchemy.com/v2/$SENTINEL_KEY"
+        val appLogMessage = slot<String>()
+        every { AppLog.warning(any(), capture(appLogMessage)) } returns Unit
+        val error = SolanaNetworkError(
+            source = "solana-mainnet.g.alchemy.com",
+            method = "getSignaturesForAddress",
+            url = keyedUrl,
+            host = "solana-mainnet.g.alchemy.com",
+            resolvedIps = emptyList(),
+            throwable = FileNotFoundException(keyedUrl),
+        ).toNetworkErrorInfo()
+
+        val tracker = NetworkErrorTracker()
+
+        tracker.record(BlockchainType.Solana, "account-1", error)
+
+        val info = tracker.errorInfo(BlockchainType.Solana, "account-1").orEmpty()
+        assertEquals("https://solana-mainnet.g.alchemy.com/v2/redacted", info["Recent Network Error URL"])
+        assertFalse(info.values.any { it.contains(SENTINEL_KEY) })
+        assertFalse(appLogMessage.captured.contains(SENTINEL_KEY))
     }
 
     @Test
@@ -149,5 +176,9 @@ class NetworkErrorTrackerTest {
         assertTrue(message.contains("[redacted]"))
         assertFalse(message.contains("uview1qqqabc"))
         assertFalse(written.captured.contains("uview1qqqabc"))
+    }
+
+    private companion object {
+        const val SENTINEL_KEY = "SENTINEL_ALCHEMY_KEY"
     }
 }
