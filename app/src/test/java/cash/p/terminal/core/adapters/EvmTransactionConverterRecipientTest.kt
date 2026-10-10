@@ -11,7 +11,6 @@ import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.transaction.TransactionSource
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
-import io.horizontalsystems.ethereumkit.core.storage.TransactionSyncSourceStorage
 import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.FullTransaction
 import io.horizontalsystems.ethereumkit.models.Transaction
@@ -58,20 +57,17 @@ class EvmTransactionConverterRecipientTest {
     private val repository: EvmTransactionRepository = mockk(relaxed = true)
     private val coinManager: ICoinManager = mockk(relaxed = true)
     private val evmLabelManager: EvmLabelManager = mockk(relaxed = true)
-    private val syncSourceStorage: TransactionSyncSourceStorage = mockk(relaxed = true)
 
     private fun createConverter(): EvmTransactionConverter {
         every { repository.receiveAddress } returns userAddress
         every { repository.getBlockchainType() } returns BlockchainType.BinanceSmartChain
-        every { syncSourceStorage.getSource(any()) } returns null
 
         return EvmTransactionConverter(
             coinManager = coinManager,
             evmTransactionRepository = repository,
             source = source,
             baseToken = baseToken,
-            evmLabelManager = evmLabelManager,
-            syncSourceStorage = syncSourceStorage
+            evmLabelManager = evmLabelManager
         )
     }
 

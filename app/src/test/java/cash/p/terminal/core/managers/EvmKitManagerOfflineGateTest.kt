@@ -69,6 +69,8 @@ class EvmKitManagerOfflineGateTest {
             backgroundKeepAliveManager = mockk(relaxed = true),
             networkErrorTracker = mockk(relaxed = true),
             offlineModeManager = offlineModeManager,
+            databaseKeys = mockk(),
+            context = mockk(),
         )
         setField(
             manager, "evmKitWrapper", EvmKitWrapper(
@@ -77,6 +79,7 @@ class EvmKitManagerOfflineGateTest {
                 blockchainType = blockchainType,
                 signer = null,
                 merkleTransactionAdapter = null,
+                databaseKey = ByteArray(32),
             )
         )
         setField(manager, "currentAccount", account)

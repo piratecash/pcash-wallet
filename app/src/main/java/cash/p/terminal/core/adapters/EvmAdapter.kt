@@ -1,6 +1,5 @@
 package cash.p.terminal.core.adapters
 
-import cash.p.terminal.core.App
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.data.repository.EvmTransactionRepository
@@ -8,7 +7,6 @@ import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.entities.BalanceData
 import io.horizontalsystems.ethereumkit.core.EthereumKit
 import io.horizontalsystems.ethereumkit.models.Address
-import io.horizontalsystems.ethereumkit.models.Chain
 import io.horizontalsystems.ethereumkit.models.TransactionData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -102,21 +100,6 @@ internal class EvmAdapter(evmTransactionRepository: EvmTransactionRepository, co
 
     companion object {
         const val decimal = 18
-
-        fun clear(walletId: String) {
-            val networkTypes = listOf(
-                Chain.Ethereum,
-                Chain.BinanceSmartChain,
-                Chain.Polygon,
-                Chain.Avalanche,
-                Chain.Optimism,
-                Chain.ArbitrumOne,
-                Chain.Gnosis,
-            )
-            networkTypes.forEach {
-                EthereumKit.clear(App.instance, it, walletId)
-            }
-        }
     }
 
 }

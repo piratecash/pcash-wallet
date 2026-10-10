@@ -1,7 +1,5 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.core.adapters.Eip20Adapter
-import cash.p.terminal.core.adapters.EvmAdapter
 import cash.p.terminal.core.storage.MoneroFileDao
 import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
 import cash.p.terminal.modules.pin.core.PinDbStorage
@@ -34,6 +32,7 @@ class AccountCleaner(
     private val tonKitManager: TonKitManager,
     private val tronKitManager: TronKitManager,
     private val thorchainKitManagers: ThorchainKitManagers,
+    private val evmBlockchainManager: EvmBlockchainManager,
     private val deletionPreflight: AccountDeletionPreflight,
 ) : IAccountCleaner {
 
@@ -49,8 +48,7 @@ class AccountCleaner(
         // Before the shared database key is removed with the bitcoin-kit data.
         thorchainKitManagers.clear(accountId)
         bitcoinKitDatabaseManager.clear(accountId)
-        EvmAdapter.clear(accountId)
-        Eip20Adapter.clear(accountId)
+        evmBlockchainManager.clear(accountId)
         clearWalletDataForBlockchainIfInactive(accountId, BlockchainType.Monero)
         clearWalletDataForBlockchainIfInactive(accountId, BlockchainType.Zcash)
         solanaKitManager.clear(accountId)

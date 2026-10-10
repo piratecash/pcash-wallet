@@ -1,6 +1,5 @@
 package cash.p.terminal.core.adapters
 
-import android.content.Context
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.managers.EvmLabelManager
 import cash.p.terminal.core.managers.StackingManager
@@ -14,7 +13,6 @@ import io.horizontalsystems.ethereumkit.core.EthereumKit.ForwardSyncState
 import io.horizontalsystems.ethereumkit.core.EthereumKit.HistoricalSyncState
 import io.horizontalsystems.ethereumkit.core.EthereumKit.SyncError
 import io.horizontalsystems.ethereumkit.core.EthereumKit.SyncState
-import io.horizontalsystems.ethereumkit.models.Address
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +25,6 @@ import java.math.BigDecimal
 // independently of ERC-20 history sync.
 class Eip20AdapterSyncStateTest {
 
-    private val context: Context = mockk(relaxed = true)
     private val repository: EvmTransactionRepository = mockk(relaxed = true)
     private val coinManager: ICoinManager = mockk(relaxed = true)
     private val baseToken: Token = mockk(relaxed = true)
@@ -45,7 +42,6 @@ class Eip20AdapterSyncStateTest {
     ): Eip20Adapter {
         every { wallet.decimal } returns 18
         every { erc20Kit.syncState } returns eip20SyncState
-        every { repository.buildErc20Kit(any(), any<Address>()) } returns erc20Kit
         every { repository.historicalSyncState } returns MutableStateFlow(historicalSyncState)
         every { repository.forwardSyncState } returns MutableStateFlow(forwardSyncState)
         every { repository.transactionsSyncState } returns evmTxSyncState
@@ -53,7 +49,7 @@ class Eip20AdapterSyncStateTest {
         every { stackingManager.unpaidFlow(any()) } returns MutableStateFlow(BigDecimal.ZERO)
 
         return Eip20Adapter(
-            context = context,
+            eip20Kit = erc20Kit,
             evmTransactionRepository = repository,
             contractAddress = "0x0000000000000000000000000000000000000001",
             baseToken = baseToken,
