@@ -2,6 +2,7 @@ package cash.p.terminal.modules.blockchainstatus
 
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import androidx.compose.runtime.Immutable
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
@@ -10,6 +11,7 @@ import cash.p.terminal.BuildConfig
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import io.horizontalsystems.core.DispatcherProvider
+import io.horizontalsystems.core.ISystemInfoManager
 import io.horizontalsystems.core.helpers.DateHelper
 import io.horizontalsystems.core.logger.AppLog
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,11 +33,13 @@ internal fun reportBuildInfo(appVersion: String, gitBranch: String): Map<String,
             App.instance.getString(R.string.com_google_firebase_crashlytics_mapping_file_id)
                 .takeUnless { id -> id.all { it == '0' } } ?: "None"
         ),
+        "Native ABI" to nativeAbiLabel(App.instance.applicationInfo.nativeLibraryDir, Build.SUPPORTED_ABIS.toList()),
     )
 
 class BlockchainStatusViewModel(
     private val provider: BlockchainStatusProvider,
-    dispatcherProvider: DispatcherProvider
+    dispatcherProvider: DispatcherProvider,
+    private val systemInfoManager: ISystemInfoManager,
 ) : ViewModel() {
 
     @Volatile
@@ -116,6 +120,9 @@ class BlockchainStatusViewModel(
         reportBuildInfo(BuildConfig.VERSION_NAME, BuildConfig.GIT_BRANCH).forEach { (title, value) ->
             appendLine("$title: $value")
         }
+        appendLine("Device Model: ${systemInfoManager.deviceModel}")
+        appendLine("OS Version: ${systemInfoManager.osVersion}")
+        appendLine("Device ABIs: ${Build.SUPPORTED_ABIS.joinToString()}")
         appendLine("Kit Version: ${provider.kitVersion}")
         appendLine("Kit Started: ${if (provider.kitStarted) "Yes" else "No"}")
         appendLine()

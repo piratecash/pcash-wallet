@@ -2,6 +2,7 @@ package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.adapters.BeamAdapter
+import cash.p.terminal.core.adapters.zcash.session.ZcashSessionManager
 import cash.p.terminal.core.factories.AdapterFactory
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AdapterState
@@ -62,6 +63,11 @@ class AdapterManagerTest {
     private lateinit var restoreModeUpdatedSubject: PublishSubject<BlockchainType>
     private lateinit var adapterManager: AdapterManager
     private val pendingBalanceCalculator = mockk<PendingBalanceCalculator>(relaxed = true)
+    private val serverSelected = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    private val zcashServerManager = mockk<ZcashServerManager> {
+        every { serverSelectedFlow } returns serverSelected
+    }
+    private val zcashSessionManager = mockk<ZcashSessionManager>(relaxed = true)
 
     @Before
     fun setUp() {
@@ -100,6 +106,8 @@ class AdapterManagerTest {
             pendingBalanceCalculator = pendingBalanceCalculator,
             fallbackAddressProvider = mockk(relaxed = true),
             offlineModeManager = offlineModeManager,
+            zcashServerManager = zcashServerManager,
+            zcashSessionManager = zcashSessionManager,
             dispatcherProvider = TestDispatcherProvider(testDispatcher, testScope)
         )
     }
@@ -715,6 +723,67 @@ class AdapterManagerTest {
             offlineModeManager.onSubscribed(zcashWallet, newAdapter, AdapterState.Connecting)
         }
         assertSame(newAdapter, adapterManager.getAdapterForWallet<IAdapter>(zcashWallet))
+    }
+
+    @Test
+    fun serverSelected_stopsZcashAdaptersThenClosesSessionsThenReconstructs() = testScope.runTest {
+        val zcashWallet = wallet("account", BlockchainType.Zcash, TokenType.Native)
+        val oldAdapter = mockk<IAdapter>(relaxed = true)
+        val newAdapter = mockk<IAdapter>(relaxed = true)
+        coEvery { adapterFactory.getAdapterOrNull(zcashWallet, any()) } returnsMany listOf(oldAdapter, newAdapter)
+        activeWalletsFlow.value = listOf(zcashWallet)
+        adapterManager.startAdapterManager()
+        advanceUntilIdle()
+
+        serverSelected.emit(Unit)
+        advanceUntilIdle()
+
+        coVerifyOrder {
+            oldAdapter.stop()
+            zcashSessionManager.closeStaleSessions()
+            adapterFactory.getAdapterOrNull(zcashWallet, any())
+            newAdapter.start()
+        }
+        assertSame(newAdapter, adapterManager.getAdapterForWallet<IAdapter>(zcashWallet))
+    }
+
+    @Test
+    fun serverSelected_noZcashAdapters_stillClosesStaleSessions() = testScope.runTest {
+        val bitcoinWallet = wallet("account")
+        val bitcoinAdapter = mockk<IAdapter>(relaxed = true)
+        coEvery { adapterFactory.getAdapterOrNull(bitcoinWallet, any()) } returns bitcoinAdapter
+        activeWalletsFlow.value = listOf(bitcoinWallet)
+        adapterManager.startAdapterManager()
+        advanceUntilIdle()
+
+        serverSelected.emit(Unit)
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { zcashSessionManager.closeStaleSessions() }
+        verify(exactly = 0) { bitcoinAdapter.stop() }
+        assertSame(bitcoinAdapter, adapterManager.getAdapterForWallet<IAdapter>(bitcoinWallet))
+    }
+
+    @Test
+    fun serverSelected_holdsMutexAcrossTheClose() = testScope.runTest {
+        val zcashWallet = wallet("account", BlockchainType.Zcash, TokenType.Native)
+        val bitcoinWallet = wallet("account")
+        val allowClose = CompletableDeferred<Unit>()
+        coEvery { zcashSessionManager.closeStaleSessions() } coAnswers { allowClose.await() }
+        coEvery { adapterFactory.getAdapterOrNull(any(), any()) } answers { mockk<IAdapter>(relaxed = true) }
+        activeWalletsFlow.value = listOf(zcashWallet)
+        adapterManager.startAdapterManager()
+        advanceUntilIdle()
+        serverSelected.emit(Unit)
+        advanceUntilIdle()
+
+        activeWalletsFlow.value = listOf(zcashWallet, bitcoinWallet)
+        advanceUntilIdle()
+        coVerify(exactly = 0) { adapterFactory.getAdapterOrNull(bitcoinWallet, any()) }
+
+        allowClose.complete(Unit)
+        advanceUntilIdle()
+        coVerify(exactly = 1) { adapterFactory.getAdapterOrNull(bitcoinWallet, any()) }
     }
 
     @Test

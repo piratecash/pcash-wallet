@@ -2,14 +2,19 @@ package cash.p.terminal.core.adapters.zcash.session
 
 import android.content.Context
 import cash.p.terminal.core.ILocalStorage
+import cash.p.terminal.core.adapters.zcash.CapturedAppLog
 import cash.p.terminal.core.managers.RestoreSettings
 import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.ZcashBirthdayProvider
+import cash.p.terminal.core.managers.ZcashServer
+import cash.p.terminal.core.managers.ZcashServerManager
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.Wallet
 import cash.p.zcash.AccountInfo
+import cash.p.zcash.ServerConfig
+import cash.p.zcash.Transport
 import cash.p.zcash.ZcashSdk
 import cash.p.zcash.ZcashWallet
 import io.mockk.coEvery
@@ -42,6 +47,10 @@ class ZcashWalletOpenerImplTest {
     private val birthdayProvider = mockk<ZcashBirthdayProvider>(relaxed = true)
     private val dbKeyProvider = mockk<ZcashDbKeyProvider>(relaxed = true)
     private val zcashWallet = mockk<ZcashWallet>(relaxed = true)
+    private val serverManager = mockk<ZcashServerManager> {
+        every { current } returns ZcashServer("zec.rocks", "https://zec.rocks:443", isCustom = false)
+        every { transportFor(any(), any()) } returns Transport.DIRECT
+    }
 
     @Before
     fun setUp() {
@@ -157,19 +166,75 @@ class ZcashWalletOpenerImplTest {
         assertFalse(opened.deepSweepRequired)
     }
 
+    @Test
+    fun open_usesTheSelectedServer() = runTest {
+        every { serverManager.current } returns ZcashServer("mine", "https://my.node.io:443", isCustom = true)
+        every { serverManager.transportFor("https://my.node.io:443", true) } returns Transport.TOR
+        every { localStorage.torEnabled } returns true
+
+        opener().open(wallet())
+
+        coVerify(exactly = 1) {
+            ZcashWallet.open(
+                any(), any(), ServerConfig(url = "https://my.node.io:443", transport = Transport.TOR), any(),
+            )
+        }
+    }
+
+    @Test
+    fun open_writesOneLinePerStep() = runTest {
+        val appLog = CapturedAppLog()
+        every { dbKeyProvider.keyFor(ACCOUNT_ID) } returns
+            ZcashDbKey(ByteArray(32) { 0xAB.toByte() }, newlyGenerated = false)
+
+        opener().open(wallet(words = listOf("zebra", "quartz", "nimbus")))
+        appLog.awaitEntry { it.message.startsWith("open: done") }
+
+        val lines = appLog.messages
+        val opening = "open: db=absent key=stored deepSweep=true legacyDir=absent " +
+            "server=https://zec.rocks:443 transport=DIRECT"
+        assertTrue(lines.any { it.startsWith(opening) })
+        assertTrue(lines.contains("restore: birthSource=setting birth=$BIRTHDAY"))
+        assertTrue(lines.any { it.startsWith("open: done dbAccountId=$DB_ACCOUNT_ID accounts=0 elapsed=") })
+        val forbidden = listOf("zebra", "quartz", "nimbus", "abababab")
+        assertTrue(lines.none { line -> forbidden.any { it in line } })
+    }
+
+    @Test
+    fun open_logsServerWithoutUserInfo() = runTest {
+        val appLog = CapturedAppLog()
+        every { serverManager.current } returns ZcashServer("mine", "https://user:pw@host.io:443", isCustom = true)
+
+        opener().open(wallet())
+        val line = appLog.awaitEntry { it.message.startsWith("open: db=") }.message
+
+        assertTrue(line.contains("server=https://host.io:443"))
+        assertFalse(line.contains("user"))
+        assertFalse(line.contains("pw"))
+    }
+
+    @Test
+    fun open_selectedServer_reportsItsUrl() = runTest {
+        assertEquals("https://zec.rocks:443", opener().open(wallet()).serverUrl)
+    }
+
     private fun opener() = ZcashWalletOpenerImpl(
         databaseFiles = databaseFiles,
         localStorage = localStorage,
         restoreSettingsManager = restoreSettingsManager,
         birthdayProvider = birthdayProvider,
         dbKeyProvider = dbKeyProvider,
+        serverManager = serverManager,
     )
 
-    private fun wallet(passphrase: String = "") = mockk<Wallet>(relaxed = true) {
+    private fun wallet(
+        passphrase: String = "",
+        words: List<String> = listOf("one", "two", "three"),
+    ) = mockk<Wallet>(relaxed = true) {
         every { account } returns Account(
             id = ACCOUNT_ID,
             name = "Zcash",
-            type = AccountType.Mnemonic(listOf("one", "two", "three"), passphrase),
+            type = AccountType.Mnemonic(words, passphrase),
             origin = AccountOrigin.Restored,
             level = 0,
         )

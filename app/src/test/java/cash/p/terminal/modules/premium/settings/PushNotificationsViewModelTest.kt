@@ -66,6 +66,7 @@ class PushNotificationsViewModelTest {
         every { evmBlockchainManager.allBlockchains } returns emptyList()
         every { solanaRpcSourceManager.blockchain } returns null
         every { marketKit.blockchains(any()) } returns emptyList()
+        every { marketKit.blockchain(any()) } returns null
 
         stopKoin()
         startKoin {

@@ -9,6 +9,8 @@ import cash.p.terminal.core.adapters.zcash.session.ZcashSessionResult
 import cash.p.terminal.core.adapters.zcash.session.ZcashSessionState
 import cash.p.terminal.core.managers.BackgroundKeepAliveManager
 import cash.p.terminal.core.managers.OfflineModeManager
+import cash.p.terminal.core.managers.RestoreSettingsManager
+import cash.p.terminal.core.managers.ZcashServerManager
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -29,6 +31,9 @@ import cash.p.zcash.ZcashWallet
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
 import io.horizontalsystems.core.CoreApp
+import io.horizontalsystems.core.logger.AppLog
+import io.horizontalsystems.core.storage.LogEntry
+import io.horizontalsystems.core.storage.LogsDao
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -48,6 +53,7 @@ import org.junit.Before
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * Shared harness for [ZcashAdapter] tests: a real adapter on top of a mocked session.
@@ -74,6 +80,8 @@ abstract class ZcashAdapterTestFixture {
     protected val offlineModeManager = mockk<OfflineModeManager>(relaxed = true)
     protected val addressDeriver = mockk<ZcashAddressDeriver>()
     protected val accountManager = mockk<IAccountManager>(relaxed = true)
+    protected val restoreSettingsManager = mockk<RestoreSettingsManager>(relaxed = true)
+    protected val serverManager = mockk<ZcashServerManager>(relaxed = true)
 
     /** In-memory stand-in for the persisted set, so a restart can be simulated. */
     protected var migrationTxIds = emptySet<String>()
@@ -103,6 +111,8 @@ abstract class ZcashAdapterTestFixture {
                 single { backgroundKeepAliveManager }
                 single { offlineModeManager }
                 single { accountManager }
+                single { restoreSettingsManager }
+                single { serverManager }
             })
         }
 
@@ -221,7 +231,12 @@ abstract class ZcashAdapterTestFixture {
             coEvery { withOperation(any<suspend (ZcashWallet) -> Any?>()) } coAnswers {
                 ZcashSessionResult.Success(firstArg<suspend (ZcashWallet) -> Any?>()(zcashWallet))
             }
-            coEvery { reserveForBroadcast(any(), any()) } returns ZcashSessionResult.Success(Unit)
+            // The reservation is the session's own concern; the adapter only sees the node's verdict.
+            coEvery { broadcastReserved(any(), any(), any()) } coAnswers {
+                ZcashSessionResult.Success(
+                    zcashWallet.broadcast(DB_ACCOUNT_ID, firstArg(), secondArg(), thirdArg())
+                )
+            }
             coEvery { refresh() } returns ZcashSessionResult.Success(Unit)
         }
         coEvery { sessionManager.acquire(any()) } returns session
@@ -300,5 +315,27 @@ abstract class ZcashAdapterTestFixture {
         const val ACCOUNT_ID = "test-account-id"
         const val DB_ACCOUNT_ID = 0
         const val BIRTHDAY = 2_000_000
+    }
+}
+
+/** Replaces [AppLog]'s DAO; the log is written from its own thread, so reads wait for the entry. */
+internal class CapturedAppLog {
+    private val entries = CopyOnWriteArrayList<LogEntry>()
+
+    init {
+        AppLog.logsDao = mockk<LogsDao>(relaxed = true).also { dao ->
+            every { dao.insert(any()) } answers { entries += firstArg<LogEntry>() }
+        }
+    }
+
+    val messages: List<String> get() = entries.map { it.message }
+
+    fun awaitEntry(timeoutMs: Long = 5_000, predicate: (LogEntry) -> Boolean): LogEntry {
+        val deadline = System.currentTimeMillis() + timeoutMs
+        while (System.currentTimeMillis() < deadline) {
+            entries.firstOrNull(predicate)?.let { return it }
+            Thread.sleep(10)
+        }
+        error("No matching App Log entry within ${timeoutMs}ms, got: ${messages}")
     }
 }

@@ -25,6 +25,7 @@ import cash.p.terminal.modules.blockchainstatus.BlockchainStatusPage
 import cash.p.terminal.modules.btcblockchainsettings.BtcBlockchainSettingsPage
 import cash.p.terminal.modules.evmnetwork.EvmNetworkPage
 import cash.p.terminal.modules.solananetwork.SolanaNetworkPage
+import cash.p.terminal.modules.zcashnetwork.ZcashNetworkPage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
@@ -127,6 +128,10 @@ private fun onClick(
 
         is BlockchainSettingsModule.BlockchainItem.Solana -> {
             navigation.slideFromBottom(SolanaNetworkPage())
+        }
+
+        is BlockchainSettingsModule.BlockchainItem.Zcash -> {
+            navigation.slideFromBottom(ZcashNetworkPage(item.blockchainItem.blockchain))
         }
 
         is BlockchainSettingsModule.BlockchainItem.StatusOnly -> {

@@ -19,7 +19,7 @@ import cash.p.zcash.ZcashSdk
 import cash.p.zcash.deriveSpendingKey
 import cash.p.zcash.transactionId
 import io.mockk.coEvery
-import io.mockk.coVerifyOrder
+import io.mockk.coVerify
 import io.mockk.mockkStatic
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
@@ -158,10 +158,7 @@ class ZcashAdapterSourcePoolsTest : ZcashAdapterTestFixture() {
 
         adapter.send(AMOUNT, RECIPIENT, memo = "")
 
-        coVerifyOrder {
-            session.reserveForBroadcast(any(), requireOwnInputs = true)
-            zcashWallet.broadcast(DB_ACCOUNT_ID, any(), HEIGHT, requireOwnInputs = true)
-        }
+        coVerify(exactly = 1) { session.broadcastReserved(any(), HEIGHT, requireOwnInputs = true) }
     }
 
     @Test

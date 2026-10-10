@@ -95,6 +95,8 @@
 # JNI callbacks and constructors are resolved by name from native libraries.
 -keep class com.m2049r.xmrwallet.model.** { *; }
 -keep class cash.p.zcash.ZcashJni { native <methods>; }
+# The status screen renders ZcashException's simple name.
+-keepnames class cash.p.zcash.ZcashException
 -keep class com.sun.jna.** { *; }
 -keep class * extends com.sun.jna.Structure { *; }
 -keep class * implements com.sun.jna.Library { *; }

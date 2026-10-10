@@ -13,6 +13,7 @@ import cash.p.terminal.core.toLocalizedString
 import cash.p.terminal.modules.send.zcash.zcashPendingDraft
 import cash.p.terminal.core.usecase.OfflineModeUseCase
 import cash.p.terminal.wallet.AdapterState
+import cash.p.terminal.wallet.isAdapterStopped
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAccountsStorage
 import cash.p.terminal.wallet.IAdapterManager
@@ -28,6 +29,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.cancelChildren
@@ -350,9 +352,8 @@ class SendZecOnDuressUseCase(
 
         adapters.forEach { info ->
             launch {
-                waitForSync(info.adapter)
-                val hasSufficientBalance = info.adapter.maxSpendableBalance >= amountToSend
-                resultChannel.send(if (hasSufficientBalance) info else null)
+                val eligible = waitForSync(info.adapter) && info.adapter.maxSpendableBalance >= amountToSend
+                resultChannel.send(if (eligible) info else null)
             }
         }
 
@@ -379,14 +380,12 @@ class SendZecOnDuressUseCase(
         return raceAdaptersForSync(adapters)
     }
 
-    /**
-     * Waits for an adapter to reach Synced state.
-     */
-    private suspend fun waitForSync(adapter: ISendZcashAdapter) {
+    /** True once the adapter is synced; false if it was stopped first, since it will never sync. */
+    private suspend fun waitForSync(adapter: ISendZcashAdapter): Boolean =
         adapter.balanceStateUpdatedFlow
             .onStart { emit(Unit) }
-            .first { adapter.balanceState is AdapterState.Synced }
-    }
+            .map { adapter.balanceState }
+            .first { it is AdapterState.Synced || it.isAdapterStopped } is AdapterState.Synced
 
     /**
      * Stops all created adapters (releases sessions without erasing data).

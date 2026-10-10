@@ -4,6 +4,7 @@ import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.EvmSyncSourceManager
 import cash.p.terminal.core.managers.SolanaRpcSourceManager
+import cash.p.terminal.core.managers.ZcashServerManager
 import cash.p.terminal.modules.blockchainsettings.BlockchainSettingsModule.BlockchainItem
 import cash.p.terminal.wallet.MarketKitWrapper
 import io.reactivex.Observable
@@ -20,6 +21,7 @@ class BlockchainSettingsService(
     private val evmSyncSourceManager: EvmSyncSourceManager,
     private val solanaRpcSourceManager: SolanaRpcSourceManager,
     private val marketKit: MarketKitWrapper,
+    private val zcashServerManager: ZcashServerManager,
 ) {
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
@@ -56,6 +58,12 @@ class BlockchainSettingsService(
             }
         }
 
+        coroutineScope.launch {
+            zcashServerManager.serverSelectedFlow.collect {
+                syncBlockchainItems()
+            }
+        }
+
         syncBlockchainItems()
     }
 
@@ -85,12 +93,17 @@ class BlockchainSettingsService(
             BlockchainItem.Solana(blockchain, solanaRpcSourceManager.rpcSource)
         }
 
+        val zcashBlockchainItems = supportedBlockchains.zcashBlockchains.map { blockchain ->
+            BlockchainItem.Zcash(blockchain, zcashServerManager.current)
+        }
+
         val statusOnlyItems = supportedBlockchains.statusOnlyBlockchains.map {
             BlockchainItem.StatusOnly(it)
         }
 
-        blockchainItems =
-            (btcBlockchainItems + evmBlockchainItems + solanaBlockchainItems + statusOnlyItems).sortedBy { it.order }
+        blockchainItems = (
+            btcBlockchainItems + evmBlockchainItems + solanaBlockchainItems + zcashBlockchainItems + statusOnlyItems
+            ).sortedBy { it.order }
     }
 
 }

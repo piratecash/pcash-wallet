@@ -1,10 +1,16 @@
 package cash.p.terminal.core.adapters.zcash.session
 
+import cash.p.terminal.core.adapters.zcash.SyncProgressLog
+import cash.p.terminal.core.adapters.zcash.ZcashSessionDiagnostics
 import cash.p.terminal.core.adapters.zcash.pools
 import cash.p.terminal.core.adapters.zcash.zcashRestartDelayFor
 import cash.p.terminal.core.adapters.zcash.zcashErrorName
 import cash.p.terminal.core.adapters.zcash.zcashLogger
+import cash.p.terminal.core.managers.NotBroadcastException
+import cash.p.terminal.core.managers.warningSanitized
+import cash.p.terminal.wallet.AdapterStoppedException
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.zcash.BroadcastResult
 import cash.p.zcash.MempoolEvent
 import cash.p.zcash.PoolBalance
 import cash.p.zcash.PoolSet
@@ -106,6 +112,7 @@ class ZcashSession internal constructor(
      */
     private val deepSweepRequired: Boolean,
     internal val discovery: ZcashDiscoveryState,
+    private val diagnostics: ZcashSessionDiagnostics,
 ) {
     private enum class Phase { ACTIVE, DRAINING, CLOSED }
 
@@ -118,6 +125,8 @@ class ZcashSession internal constructor(
     )
 
     private val scope = CoroutineScope(SupervisorJob() + dispatcherProvider.io)
+    private val logger = diagnostics.logger
+    val serverUrl: String get() = diagnostics.serverUrl
     private val gate = Mutex()
     private val syncCancelGate = Mutex()
     private var phase = Phase.ACTIVE
@@ -200,12 +209,14 @@ class ZcashSession internal constructor(
     }
 
     private suspend fun collectSync(generation: Int) {
+        logger.info("sync: start gen=$generation")
+        val progress = SyncProgressLog(logger)
         try {
-            wallet.sync(listOf(dbAccountId)).collect { onSyncState(it, generation) }
+            wallet.sync(listOf(dbAccountId)).collect { onSyncState(it, generation, progress) }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
-            publishSyncState(SyncState.Failed(e), generation)
+            onSyncState(SyncState.Failed(e), generation, progress)
         }
     }
 
@@ -214,11 +225,27 @@ class ZcashSession internal constructor(
         publishLocalState(readLocalState())
     }
 
-    suspend fun reserveForBroadcast(
+    /**
+     * One operation, so a drain cannot split the committed reservation from the broadcast. Only a failed
+     * reservation is marked [NotBroadcastException]: past it, the bytes may already be out.
+     */
+    suspend fun broadcastReserved(
         rawTransaction: ByteArray,
-        requireOwnInputs: Boolean = true,
-    ): ZcashSessionResult<Unit> =
-        withOperation { wallet.reserveForBroadcast(dbAccountId, rawTransaction, requireOwnInputs) }
+        height: Int,
+        requireOwnInputs: Boolean,
+    ): ZcashSessionResult<BroadcastResult> = withOperation {
+        reserveOrNotBroadcast(rawTransaction, requireOwnInputs)
+        publishLocalState(readLocalState())
+        wallet.broadcast(dbAccountId, rawTransaction, height, requireOwnInputs)
+    }
+
+    private suspend fun reserveOrNotBroadcast(rawTransaction: ByteArray, requireOwnInputs: Boolean) = try {
+        wallet.reserveForBroadcast(dbAccountId, rawTransaction, requireOwnInputs)
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Throwable) {
+        throw NotBroadcastException(e)
+    }
 
     /**
      * Ensures the account's transparent address space has been walked for [epoch]. Two callers
@@ -279,6 +306,7 @@ class ZcashSession internal constructor(
 
     private suspend fun runDiscovery(epoch: Int, deep: Boolean): Boolean {
         zcashLogger.i { "Transparent discovery started deep=$deep epoch=$epoch" }
+        logger.info("discovery: start deep=$deep epoch=$epoch")
         val started = TimeSource.Monotonic.markNow()
         var succeeded = false
         var added = -1
@@ -305,10 +333,10 @@ class ZcashSession internal constructor(
         } finally {
             // A re-arm that bought nothing is given back, so the retry cadence can spend it again.
             if (!succeeded) revalidatedTrim = -1
-            zcashLogger.i {
-                "Transparent discovery finished deep=$deep succeeded=$succeeded " +
-                    "elapsed=${started.elapsedNow().inWholeMilliseconds}ms added=$added"
-            }
+            val summary = "deep=$deep succeeded=$succeeded " +
+                "elapsed=${started.elapsedNow().inWholeMilliseconds}ms added=$added"
+            zcashLogger.i { "Transparent discovery finished $summary" }
+            logger.info("discovery: finish $summary")
         }
     }
 
@@ -325,7 +353,8 @@ class ZcashSession internal constructor(
             if (phase == Phase.CLOSED) return true
             phase = Phase.DRAINING
             syncGeneration++
-            _state.update { it.copy(syncState = SyncState.Stopped) }
+            // Not Stopped: a holder still observing a draining session must see it go away.
+            _state.update { it.copy(syncState = SyncState.Failed(AdapterStoppedException())) }
         }
         stopSync(invalidateState = false)
         val drained = withTimeoutOrNull(timeoutMs) {
@@ -376,6 +405,7 @@ class ZcashSession internal constructor(
             syncCollector
         }
         if (collector != null) {
+            logger.info("sync: cancelled")
             collector.cancel()
             withContext(NonCancellable) { wallet.cancelSync() }
         }
@@ -403,16 +433,23 @@ class ZcashSession internal constructor(
         scope.launch { mempoolGate.withLock { startMempool() } }
     }
 
-    private suspend fun onSyncState(state: SyncState, generation: Int) {
+    private suspend fun onSyncState(state: SyncState, generation: Int, progress: SyncProgressLog) {
         if (!isCurrentSync(generation)) return
         when (state) {
-            is SyncState.Syncing -> publishState(generation) {
-                it.copy(syncState = state, latestHeight = state.target)
+            is SyncState.Syncing -> {
+                progress.onSyncing(state)
+                publishState(generation) { it.copy(syncState = state, latestHeight = state.target) }
             }
 
             SyncState.Synced -> {
                 val localState = readLocalState()
+                progress.onSynced()
                 publishState(generation) { it.withLocalState(localState).copy(syncState = state) }
+            }
+
+            is SyncState.Failed -> {
+                diagnostics.syncFailed(state.error)
+                publishState(generation) { it.copy(syncState = state) }
             }
 
             else -> publishState(generation) { it.copy(syncState = state) }
@@ -421,10 +458,6 @@ class ZcashSession internal constructor(
 
     private suspend fun isCurrentSync(generation: Int): Boolean =
         gate.withLock { syncGeneration == generation }
-
-    private suspend fun publishSyncState(state: SyncState, generation: Int) {
-        publishState(generation) { it.copy(syncState = state) }
-    }
 
     private suspend fun publishState(
         generation: Int,
@@ -477,6 +510,7 @@ class ZcashSession internal constructor(
                     val errorName = e.zcashErrorName
                     if (reportedMempoolErrors.add(errorName)) {
                         zcashLogger.e { "Mempool subscription failed error=$errorName" }
+                        logger.warningSanitized("Mempool subscription failed", e)
                     }
                     true
                 }

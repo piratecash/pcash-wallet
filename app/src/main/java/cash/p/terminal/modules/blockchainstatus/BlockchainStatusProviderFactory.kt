@@ -7,6 +7,7 @@ import cash.p.terminal.core.isEvm
 import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.MoneroKitManager
+import cash.p.terminal.core.managers.NetworkErrorTracker
 import cash.p.terminal.core.managers.SolanaKitManager
 import cash.p.terminal.core.managers.StellarKitManager
 import cash.p.terminal.core.managers.ThorchainKitManagers
@@ -81,8 +82,9 @@ internal fun rememberBlockchainStatusProvider(blockchain: Blockchain): Blockchai
         type == BlockchainType.Zcash -> {
             val walletManager = koinInject<IWalletManager>()
             val adapterManager = koinInject<IAdapterManager>()
-            remember(walletManager, adapterManager) {
-                ZcashBlockchainStatusProvider(walletManager, adapterManager)
+            val networkErrorTracker = koinInject<NetworkErrorTracker>()
+            remember(walletManager, adapterManager, networkErrorTracker) {
+                ZcashBlockchainStatusProvider(walletManager, adapterManager, networkErrorTracker)
             }
         }
 

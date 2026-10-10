@@ -1,6 +1,10 @@
 package cash.p.terminal.core.adapters.zcash.session
 
+import cash.p.terminal.core.adapters.zcash.ZcashSessionDiagnostics
+import cash.p.terminal.core.adapters.zcash.zcashAppLogger
+import cash.p.terminal.core.managers.NetworkErrorTracker
 import cash.p.terminal.core.managers.OfflineModeManager
+import cash.p.terminal.core.managers.ZcashServerManager
 import cash.p.terminal.core.managers.isNetworkPaused
 import cash.p.terminal.core.zcashAddressSpecs
 import cash.p.terminal.wallet.Wallet
@@ -22,6 +26,8 @@ class ZcashSessionManager(
     private val scheduler: ZcashSyncScheduler,
     private val offlineModeManager: OfflineModeManager,
     private val dispatcherProvider: DispatcherProvider,
+    private val networkErrorTracker: NetworkErrorTracker,
+    private val serverManager: ZcashServerManager,
 ) {
     private class Entry(val session: ZcashSession, var refCount: Int)
 
@@ -80,6 +86,9 @@ class ZcashSessionManager(
             supportsTransparent = supportsTransparent,
             deepSweepRequired = opened.deepSweepRequired,
             discovery = discoveryState(wallet),
+            diagnostics = ZcashSessionDiagnostics(
+                zcashAppLogger(accountId), networkErrorTracker, accountId, opened.serverUrl
+            ),
         ).also { session -> mutex.withLock { sessions[accountId] = Entry(session, 1) } }
     }
 
@@ -126,6 +135,20 @@ class ZcashSessionManager(
     }
 
     /**
+     * Closes every session on a server other than the current one, whoever holds it, never putting one back:
+     * the SDK's network deadlines bound the wait. An [acquire] meanwhile waits and opens on the current server.
+     */
+    suspend fun closeStaleSessions() = closeGate.withLock {
+        val currentUrl = serverManager.current.url
+        while (true) {
+            val entry = mutex.withLock {
+                sessions.values.firstOrNull { it.session.serverUrl != currentUrl }?.let(::takeForClose)
+            } ?: break
+            close(entry, untilDrained = true)
+        }
+    }
+
+    /**
      * The move out of [sessions] and into [closing] is one critical section: a release that took
      * [mutex] in between would find the entry in neither and lose its decrement.
      * Callers must hold [mutex] and [closeGate].
@@ -142,11 +165,11 @@ class ZcashSessionManager(
      * absent entry is what tells the eraser the session is gone, so it may not be observable
      * while a close is still draining.
      */
-    private suspend fun close(entry: Entry): Boolean = withContext(NonCancellable) {
+    private suspend fun close(entry: Entry, untilDrained: Boolean = false): Boolean = withContext(NonCancellable) {
         val session = entry.session
         try {
             scheduler.remove(session)
-            if (session.drain(DRAIN_TIMEOUT_MS, reactivateOnTimeout = false)) {
+            if (drain(session, untilDrained)) {
                 session.close()
                 true
             } else {
@@ -162,6 +185,14 @@ class ZcashSessionManager(
         } finally {
             mutex.withLock { if (closing === entry) closing = null }
         }
+    }
+
+    private suspend fun drain(session: ZcashSession, untilDrained: Boolean): Boolean {
+        while (!session.drain(DRAIN_TIMEOUT_MS, reactivateOnTimeout = false)) {
+            if (!untilDrained) return false
+            zcashAppLogger(session.accountId).warning("server switch: still draining")
+        }
+        return true
     }
 
     /** Callers must hold [mutex]. */

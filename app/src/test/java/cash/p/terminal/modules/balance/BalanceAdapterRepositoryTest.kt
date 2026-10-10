@@ -322,6 +322,8 @@ class BalanceAdapterRepositoryTest {
             pendingBalanceCalculator = pendingBalanceCalculator,
             fallbackAddressProvider = mockk(relaxed = true),
             offlineModeManager = mockk<OfflineModeManager>(relaxed = true),
+            zcashServerManager = mockk { every { serverSelectedFlow } returns MutableSharedFlow() },
+            zcashSessionManager = mockk(relaxed = true),
             dispatcherProvider = TestDispatcherProvider(dispatcher, testScope),
         )
         return manager

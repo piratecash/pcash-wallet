@@ -1,7 +1,9 @@
 package cash.p.terminal.core.adapters.zcash
 
+import android.util.Log
 import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.wallet.AdapterState
+import cash.p.terminal.wallet.AdapterStoppedException
 import cash.p.zcash.Balance
 import cash.p.zcash.Pool
 import cash.p.zcash.PoolBalance
@@ -21,6 +23,8 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.IOException
 
@@ -47,6 +51,32 @@ class ZcashAdapterLifecycleTest : ZcashAdapterTestFixture() {
         advanceUntilIdle()
 
         coVerify(exactly = 1) { sessionManager.acquire(wallet) }
+    }
+
+    @Test
+    fun stop_publishesNotSyncedWithAdapterStopped() = runTest(dispatcher) {
+        startAdapter()
+        emitSessionSyncState(SyncState.Synced)
+        advanceUntilIdle()
+
+        adapter.stop()
+
+        val state = adapter.balanceState
+        assertTrue("$state", (state as? AdapterState.NotSynced)?.error is AdapterStoppedException)
+    }
+
+    @Test
+    fun stop_lateSessionStateEmission_cannotOverwriteStoppedState() = runTest(dispatcher) {
+        startAdapter()
+        // Lands stop() inside the collector, after its last suspension point and before the sync-state write.
+        val subscription = adapter.lastBlockUpdatedFlowable.subscribe { adapter.stop() }
+
+        emitSessionState(SyncState.Synced, PoolBalance(emptyMap()), emptyList(), TARGET_HEIGHT)
+        advanceUntilIdle()
+
+        val state = adapter.balanceState
+        assertTrue("$state", (state as? AdapterState.NotSynced)?.error is AdapterStoppedException)
+        subscription.dispose()
     }
 
     @Test
@@ -118,6 +148,32 @@ class ZcashAdapterLifecycleTest : ZcashAdapterTestFixture() {
         emitSessionSyncState(SyncState.Synced)
         advanceUntilIdle()
         assertEquals(AdapterState.Synced, adapter.balanceState)
+    }
+
+    @Test
+    fun acquireSession_openThrows_writesAWarningToAppLog() = runTest(dispatcher) {
+        val appLog = CapturedAppLog()
+        coEvery { sessionManager.acquire(wallet) } throws IOException("open failed")
+
+        startAdapter()
+
+        val entry = appLog.awaitEntry {
+            it.level == Log.WARN && it.message.startsWith("acquire session failed: java.io.IOException: open failed")
+        }
+        assertEquals("zcash-kit:$ACCOUNT_ID", entry.actionId)
+    }
+
+    @Test
+    fun acquireSession_openThrowsWithCredentialsInMessage_logsSanitizedText() = runTest(dispatcher) {
+        val appLog = CapturedAppLog()
+        coEvery { sessionManager.acquire(wallet) } throws
+            IOException("open failed: https://user:secret@upstream.example/v2/abcdef?token=sekrit")
+
+        startAdapter()
+
+        val message = appLog.awaitEntry { it.message.startsWith("acquire session failed") }.message
+        assertTrue(message, "upstream.example" in message)
+        listOf("user:secret", "sekrit", "abcdef").forEach { assertFalse(message, it in message) }
     }
 
     // --- sync state mapping ---

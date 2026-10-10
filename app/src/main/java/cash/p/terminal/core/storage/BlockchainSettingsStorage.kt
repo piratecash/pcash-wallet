@@ -11,6 +11,8 @@ class BlockchainSettingsStorage(appDatabase: AppDatabase) {
         const val keyBtcRestore: String = "btc-restore"
         const val keyBtcTransactionSort: String = "btc-transaction-sort"
         const val keyEvmSyncSourceUrl: String = "evm-sync-source-url"
+        const val keyZcashServerUrl: String = "zcash-server-url"
+        const val keyZcashCustomServers: String = "zcash-custom-servers"
     }
 
     private val dao by lazy { appDatabase.blockchainSettingDao() }
@@ -62,4 +64,20 @@ class BlockchainSettingsStorage(appDatabase: AppDatabase) {
         )
     }
 
+    fun zcashServerUrl(): String? = zcashSetting(keyZcashServerUrl)
+
+    fun saveZcashServerUrl(url: String) = saveZcashSetting(keyZcashServerUrl, url)
+
+    fun zcashCustomServers(): List<String> =
+        zcashSetting(keyZcashCustomServers)?.lines()?.filter { it.isNotBlank() }.orEmpty()
+
+    fun saveZcashCustomServers(urls: List<String>) =
+        saveZcashSetting(keyZcashCustomServers, urls.joinToString("\n"))
+
+    private fun zcashSetting(key: String): String? =
+        dao.getBlockchainSetting(BlockchainType.Zcash.uid, key)?.value
+
+    private fun saveZcashSetting(key: String, value: String) {
+        dao.insert(BlockchainSettingRecord(BlockchainType.Zcash.uid, key, value))
+    }
 }

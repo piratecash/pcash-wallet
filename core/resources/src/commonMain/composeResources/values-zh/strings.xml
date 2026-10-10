@@ -1020,6 +1020,11 @@
     <!--Evm Network-->
     <string name="EvmNetwork_AddNew">添加新的</string>
     <string name="EvmNetwork_Added">已添加</string>
+    <string name="zcash_network_description">应用同步 Zcash 所用的 Lightwalletd 服务器。更改后将重新开始 Zcash 同步。</string>
+    <string name="zcash_network_add_server">添加服务器</string>
+    <string name="zcash_network_server_url">服务器 URL</string>
+    <string name="zcash_network_invalid_url">请输入 https://host:port（Tor 请使用 http://…onion）——不含登录信息、路径或参数</string>
+    <string name="zcash_network_default_servers">默认</string>
     <!--Add RPC Source-->
     <string name="AddEvmSyncSource_RpcUrl">RPC Url</string>
     <string name="AddEvmSyncSource_AddRPCSource">添加 RPC 源</string>

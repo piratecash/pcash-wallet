@@ -24,7 +24,11 @@ import cash.p.terminal.core.managers.BackgroundKeepAliveManager
 import cash.p.terminal.core.managers.NotBroadcastException
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
+import cash.p.terminal.core.managers.RestoreSettingsManager
+import cash.p.terminal.core.managers.ZcashServerManager
+import cash.p.terminal.core.managers.sanitizeNetworkUrl
 import cash.p.terminal.core.managers.isNetworkPaused
+import cash.p.terminal.core.managers.warningSanitized
 import cash.p.terminal.core.onPollingStarted
 import cash.p.terminal.core.onPollingStopped
 import cash.p.terminal.core.providers.AppConfigProvider
@@ -41,6 +45,8 @@ import cash.p.terminal.trezor.domain.TrezorZcashAdmissionPolicy
 import cash.p.terminal.trezor.domain.model.TrezorModel
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.AdapterState
+import cash.p.terminal.wallet.AdapterStoppedException
+import cash.p.terminal.wallet.isAdapterStopped
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapter
 import cash.p.terminal.wallet.IBalanceAdapter
@@ -98,6 +104,7 @@ import kotlinx.coroutines.sync.withLock
 import org.koin.java.KoinJavaComponent.inject
 import java.math.BigDecimal
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 
 class ZcashAdapter(
     private val wallet: Wallet,
@@ -116,9 +123,12 @@ class ZcashAdapter(
     private val isTrezorAccount = wallet.account.type is AccountType.TrezorDevice
 
     private val scope = CoroutineScope(SupervisorJob() + dispatcherProvider.io)
+    private val logger = zcashAppLogger(wallet.account.id)
     private val transactionsProvider = ZcashTransactionsProvider()
     private val pollingSessionCount = AtomicInteger(0)
 
+    private val restoreSettingsManager: RestoreSettingsManager by inject(RestoreSettingsManager::class.java)
+    private val serverManager: ZcashServerManager by inject(ZcashServerManager::class.java)
     private val backgroundKeepAliveManager: BackgroundKeepAliveManager by inject(
         BackgroundKeepAliveManager::class.java
     )
@@ -235,7 +245,7 @@ class ZcashAdapter(
     private var latestHeight: Int = 0
 
     @Volatile
-    private var accountBirthday: Int = 0
+    private var accountBirthday: Int? = null
 
     /** Kept for the diagnostic line: only [SyncState.Syncing] carries the scan heights. */
     @Volatile
@@ -249,13 +259,9 @@ class ZcashAdapter(
     val poolName: String
         get() = poolLabel(addressSpecTyped)
 
-    private var syncState: AdapterState = AdapterState.Connecting
-        set(value) {
-            if (value != field) {
-                field = value
-                adapterStateUpdatedSubject.onNext(Unit)
-            }
-        }
+    private val syncStateRef = AtomicReference<AdapterState>(AdapterState.Connecting)
+    private val syncState: AdapterState
+        get() = syncStateRef.get()
 
     /** A payment from this wallet spends from these pools only; shielding always spends transparent. */
     private val sourcePools: PoolSet = addressSpecTyped.pools()
@@ -281,6 +287,7 @@ class ZcashAdapter(
 
     override fun resumeNetwork() {
         scope.launch {
+            logger.info("resumeNetwork")
             acquireSession()
             session?.resumeMempool()
         }
@@ -292,6 +299,7 @@ class ZcashAdapter(
 
     /** Only the network work stops: the session stays open so balances and history are readable. */
     suspend fun pauseNetworkAndAwait() {
+        logger.info("pauseNetwork")
         session?.cancelSync()
         session?.pauseMempool()
     }
@@ -301,6 +309,7 @@ class ZcashAdapter(
 
     override fun stop() {
         stopped = true
+        publishSyncState(AdapterState.NotSynced(AdapterStoppedException()), terminal = true)
         scope.launch {
             releaseSession()
             scope.cancel()
@@ -328,7 +337,10 @@ class ZcashAdapter(
             when (state) {
                 BackgroundManagerState.EnterForeground -> acquireSession()
                 BackgroundManagerState.EnterBackground ->
-                    if (!hasActiveBackgroundSession()) releaseSession()
+                    if (!hasActiveBackgroundSession()) {
+                        logger.info("background release")
+                        releaseSession()
+                    }
 
                 BackgroundManagerState.Unknown,
                 BackgroundManagerState.AllActivitiesDestroyed -> Unit
@@ -362,7 +374,8 @@ class ZcashAdapter(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
-            syncState = AdapterState.NotSynced(e)
+            logger.warningSanitized("acquire session failed", e)
+            publishSyncState(AdapterState.NotSynced(e))
             return
         }
         // Opening the wallet takes seconds, and a pause that arrived meanwhile found no session to
@@ -374,11 +387,13 @@ class ZcashAdapter(
         val released = sessionMutex.withLock {
             val current = session ?: return
             session = null
+            accountBirthday = null
             bindJob?.cancel()
             bindJob = null
             feeGeneration++
             current
         }
+        logger.info("release session")
         sessionManager.release(released)
     }
 
@@ -389,7 +404,7 @@ class ZcashAdapter(
 
         accountBirthday = walletOrNull { zcash, id ->
             zcash.accounts().firstOrNull { it.id == id }?.birthHeight
-        } ?: 0
+        }
         // A session may never sync — offline, or an account the scheduler is skipping — so the
         // local database is published once on bind, otherwise every screen stays empty.
         session.refresh()
@@ -445,8 +460,15 @@ class ZcashAdapter(
     private fun onSyncState(state: SyncState) {
         lastSyncing = state as? SyncState.Syncing
         if (state !is SyncState.Syncing) syncAnchor = null
-        syncState = state.toAdapterState()
+        publishSyncState(state.toAdapterState())
         logDiag()
+    }
+
+    /** Only [stop] may replace a stopped state: a session callback can still land after it. */
+    private fun publishSyncState(state: AdapterState, terminal: Boolean = false) {
+        val next = { current: AdapterState -> if (!terminal && current.isAdapterStopped) current else state }
+        val previous = syncStateRef.getAndUpdate(next)
+        if (next(previous) != previous) adapterStateUpdatedSubject.onNext(Unit)
     }
 
     private fun SyncState.toAdapterState(): AdapterState = when {
@@ -556,7 +578,11 @@ class ZcashAdapter(
         get() = linkedMapOf(
             "Last Block Info" to (lastBlockInfo ?: ""),
             "Sync State" to safeSyncStateLabel(syncState),
-            "Birthday Height" to accountBirthday,
+            "Server" to sanitizeNetworkUrl(session?.serverUrl ?: serverManager.current.url),
+            "Birthday Height" to birthdayLabel(
+                configured = restoreSettingsManager.settings(wallet.account, BlockchainType.Zcash).birthdayHeight,
+                wallet = accountBirthday,
+            ),
             "Transparent discovery" to transparentDiscoveryLabel(),
         )
 
@@ -711,8 +737,7 @@ class ZcashAdapter(
                 zcash.extract(signer.sign(zcash, id, prepared)) to height
             }
         }
-        reserveBeforeBroadcast(raw)
-        val result = requireWallet { zcash, id -> zcash.broadcast(id, raw, height) }
+        val result = broadcastReserved(raw, height, requireOwnInputs = true)
         check(result.accepted) { "Broadcast rejected (${result.errorCode}): ${result.message}" }
         return result.message
     }
@@ -739,20 +764,11 @@ class ZcashAdapter(
         throw e as? NotBroadcastException ?: NotBroadcastException(e)
     }
 
-    private suspend fun reserveBeforeBroadcast(raw: ByteArray, requireOwnInputs: Boolean = true) {
-        val current = session ?: throw NotBroadcastException(
-            IllegalStateException("Zcash wallet session is unavailable")
-        )
-        when (beforeBroadcast { current.reserveForBroadcast(raw, requireOwnInputs) }) {
-            is ZcashSessionResult.Success -> Unit
-            ZcashSessionResult.Unavailable -> throw NotBroadcastException(
-                IllegalStateException("Zcash wallet session is unavailable")
-            )
-        }
-        when (current.refresh()) {
-            is ZcashSessionResult.Success -> Unit
-            ZcashSessionResult.Unavailable -> error("Zcash wallet session became unavailable")
-        }
+    /** An unavailable session never started the operation, so nothing was reserved or sent. */
+    private suspend fun broadcastReserved(raw: ByteArray, height: Int, requireOwnInputs: Boolean): BroadcastResult {
+        val result = session?.broadcastReserved(raw, height, requireOwnInputs)
+        return (result as? ZcashSessionResult.Success)?.value
+            ?: throw NotBroadcastException(IllegalStateException("Zcash wallet session is unavailable"))
     }
 
     override suspend fun signOffline(request: OfflineSignRequest): SignedOfflineZcashTransaction {
@@ -788,9 +804,7 @@ class ZcashAdapter(
                 ?: ZcashSdk.transactionId(rawBytes)
             Triple(hash, rawBytes, requireWallet { zcash, _ -> zcash.latestHeight() })
         }
-        reserveBeforeBroadcast(raw, requireOwnInputs = false)
-        return requireWallet { zcash, id -> zcash.broadcast(id, raw, height, requireOwnInputs = false) }
-            .toBroadcastResult(txHash)
+        return broadcastReserved(raw, height, requireOwnInputs = false).toBroadcastResult(txHash)
     }
 
     private fun recipient(amount: BigDecimal, address: String, memo: String): Recipient {

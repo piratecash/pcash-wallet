@@ -3,6 +3,8 @@ package cash.p.terminal.modules.blockchainsettings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import cash.p.terminal.core.App
+import cash.p.terminal.core.getKoinInstance
+import cash.p.terminal.core.managers.ZcashServer
 import cash.p.terminal.core.order
 import cash.p.terminal.entities.BtcRestoreMode
 import cash.p.terminal.entities.EvmSyncSource
@@ -21,7 +23,8 @@ object BlockchainSettingsModule {
                     App.evmBlockchainManager,
                     App.evmSyncSourceManager,
                     App.solanaRpcSourceManager,
-                    App.marketKit
+                    App.marketKit,
+                    getKoinInstance()
                 )
             return BlockchainSettingsViewModel(service) as T
         }
@@ -29,7 +32,6 @@ object BlockchainSettingsModule {
 
     val statusOnlyBlockchainTypes = listOf(
         BlockchainType.Beam,
-        BlockchainType.Zcash,
         BlockchainType.Tron,
         BlockchainType.Ton,
         BlockchainType.Monero,
@@ -61,6 +63,11 @@ object BlockchainSettingsModule {
         class Solana(
             override val blockchain: Blockchain,
             val rpcSource: RpcSource
+        ) : BlockchainItem()
+
+        class Zcash(
+            override val blockchain: Blockchain,
+            val server: ZcashServer
         ) : BlockchainItem()
 
         class StatusOnly(

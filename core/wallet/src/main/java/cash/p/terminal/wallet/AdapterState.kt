@@ -2,6 +2,12 @@ package cash.p.terminal.wallet
 
 import java.util.Date
 
+/** The adapter, or the session behind it, is gone for good: nothing will bring this instance back. */
+class AdapterStoppedException : IllegalStateException("adapter stopped")
+
+val AdapterState.isAdapterStopped: Boolean
+    get() = this is AdapterState.NotSynced && error is AdapterStoppedException
+
 sealed class AdapterState {
     object Synced : AdapterState()
     object Connecting : AdapterState()

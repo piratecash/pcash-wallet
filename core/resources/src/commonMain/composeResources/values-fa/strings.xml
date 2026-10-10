@@ -1023,6 +1023,11 @@
     <!--Evm Network-->
     <string name="EvmNetwork_AddNew">Add New</string>
     <string name="EvmNetwork_Added">Added</string>
+    <string name="zcash_network_description">سرور Lightwalletd که برنامه Zcash را از طریق آن همگام‌سازی می‌کند. تغییر آن همگام‌سازی Zcash را از نو آغاز می‌کند.</string>
+    <string name="zcash_network_add_server">افزودن سرور</string>
+    <string name="zcash_network_server_url">نشانی سرور</string>
+    <string name="zcash_network_invalid_url">https://host:port را وارد کنید (یا http://…onion برای Tor) — بدون نام کاربری، مسیر یا پارامتر</string>
+    <string name="zcash_network_default_servers">پیش‌فرض</string>
     <!--Add RPC Source-->
     <string name="AddEvmSyncSource_RpcUrl">RPC Url</string>
     <string name="AddEvmSyncSource_AddRPCSource">Add RPC Source</string>

@@ -9,8 +9,10 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.AdapterState
+import cash.p.terminal.wallet.AdapterStoppedException
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAccountsStorage
+import cash.p.terminal.wallet.IAdapter
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.Token
@@ -393,6 +395,27 @@ class SendZecOnDuressUseCaseTest {
         assert(shieldedCalled xor unifiedCalled) { "Exactly one adapter should be used to send" }
     }
 
+    @Test
+    fun waitForSync_adapterStopped_raceFailsAndCleansUp() = runTest {
+        val account = createTestAccount()
+        val wallet = createTestWallet(account)
+        val shieldedAdapter = createMockAdapter(synced = false)
+        val unifiedAdapter = createMockAdapter(synced = false)
+        listOf(shieldedAdapter, unifiedAdapter).forEach {
+            every { it.balanceState } returns AdapterState.NotSynced(AdapterStoppedException())
+        }
+        stubWalletLookupForTestTransaction(account, wallet)
+        stubCreatedAdapters(wallet, shieldedAdapter, unifiedAdapter)
+
+        val result = useCase.sendTestTransaction(wallet, "z1address", "memo")
+
+        assertEquals(SendZecResult.InsufficientBalance, result)
+        listOf(shieldedAdapter, unifiedAdapter).forEach {
+            verify(exactly = 1) { it.stop() }
+            coVerify(exactly = 0) { it.send(any(), any(), any()) }
+        }
+    }
+
     // ==================== Cleanup Tests ====================
 
     @Test
@@ -458,7 +481,8 @@ class SendZecOnDuressUseCaseTest {
     ): ISendZcashAdapter {
         val syncFlow = MutableSharedFlow<Unit>(replay = 1)
         val feeFlow = MutableStateFlow(BigDecimal("0.0001"))
-        return mockk<ISendZcashAdapter> {
+        // Also an IAdapter, so the factory can hand it out as a detached adapter.
+        return mockk<ISendZcashAdapter>(moreInterfaces = arrayOf(IAdapter::class)) {
             every { maxSpendableBalance } returns balance
             every { balanceData } returns BalanceData(available = balance)
             every { balanceState } returns if (synced) AdapterState.Synced else AdapterState.Syncing()
@@ -578,6 +602,21 @@ class SendZecOnDuressUseCaseTest {
             every { adapterManager.getAdapterForWallet<ISendZcashAdapter>(unifiedWallet) } returns adapter
             coEvery { adapterManager.awaitAdapterForWallet<ISendZcashAdapter>(shieldedWallet, any()) } returns null
             coEvery { adapterManager.awaitAdapterForWallet<ISendZcashAdapter>(unifiedWallet, any()) } returns adapter
+        }
+    }
+
+    /** No adapter is registered, so the use case creates detached ones through the factory. */
+    private fun stubCreatedAdapters(
+        wallet: Wallet,
+        shieldedAdapter: ISendZcashAdapter,
+        unifiedAdapter: ISendZcashAdapter
+    ) {
+        stubBothExistingAdapters(wallet, shieldedAdapter, unifiedAdapter)
+        every { adapterManager.getAdapterForWallet<ISendZcashAdapter>(any()) } returns null
+        coEvery { adapterManager.awaitAdapterForWallet<ISendZcashAdapter>(any(), any()) } returns null
+        coEvery { adapterFactory.getAdapterOrNull(any(), any()) } answers {
+            val type = (firstArg<Wallet>().token.type as TokenType.AddressSpecTyped).type
+            (if (type == TokenType.AddressSpecType.Shielded) shieldedAdapter else unifiedAdapter) as IAdapter
         }
     }
 

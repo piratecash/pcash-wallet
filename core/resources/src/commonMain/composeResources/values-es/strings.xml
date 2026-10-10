@@ -1019,6 +1019,11 @@
     <!--Evm Network-->
     <string name="EvmNetwork_AddNew">Añadir Nuevo</string>
     <string name="EvmNetwork_Added">Añadido</string>
+    <string name="zcash_network_description">Servidor Lightwalletd con el que la aplicación sincroniza Zcash. Al cambiarlo se reinicia la sincronización de Zcash.</string>
+    <string name="zcash_network_add_server">Añadir servidor</string>
+    <string name="zcash_network_server_url">URL del servidor</string>
+    <string name="zcash_network_invalid_url">Introduce https://host:port (o http://…onion para Tor), sin usuario, ruta ni parámetros</string>
+    <string name="zcash_network_default_servers">Predeterminados</string>
     <!--Add RPC Source-->
     <string name="AddEvmSyncSource_RpcUrl">Url RPC</string>
     <string name="AddEvmSyncSource_AddRPCSource">Añadir fuente RPC</string>

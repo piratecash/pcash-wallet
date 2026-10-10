@@ -80,6 +80,7 @@ import cash.p.terminal.core.managers.AddressLabelManager
 import cash.p.terminal.core.managers.AddressMetadataManager
 import cash.p.terminal.core.managers.EvmSignerFactory
 import cash.p.terminal.core.managers.EvmSyncSourceManager
+import cash.p.terminal.core.managers.ZcashServerManager
 import cash.p.terminal.core.managers.EvmPersonalSignerImpl
 import cash.p.terminal.core.managers.GetTonAddressUseCaseImpl
 import cash.p.terminal.core.managers.GuidesManager
@@ -258,6 +259,7 @@ val managerModule = module {
     singleOf(::ZcashDatabaseFiles)
     singleOf(::ZcashDbKeyProviderImpl) bind ZcashDbKeyProvider::class
     singleOf(::ZcashWalletOpenerImpl) bind ZcashWalletOpener::class
+    singleOf(::ZcashServerManager)
     singleOf(::ZcashSyncScheduler)
     singleOf(::ZcashSessionManager)
     singleOf(::TonFallbackAddressProvider)

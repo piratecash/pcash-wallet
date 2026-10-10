@@ -1023,6 +1023,11 @@
     <!--Evm Network-->
     <string name="EvmNetwork_AddNew">신규로 추가</string>
     <string name="EvmNetwork_Added">추가됨</string>
+    <string name="zcash_network_description">앱이 Zcash를 동기화하는 Lightwalletd 서버입니다. 변경하면 Zcash 동기화가 다시 시작됩니다.</string>
+    <string name="zcash_network_add_server">서버 추가</string>
+    <string name="zcash_network_server_url">서버 URL</string>
+    <string name="zcash_network_invalid_url">https://host:port를 입력하세요(Tor는 http://…onion) — 로그인, 경로, 매개변수는 제외</string>
+    <string name="zcash_network_default_servers">기본</string>
     <!--Add RPC Source-->
     <string name="AddEvmSyncSource_RpcUrl">RPC Url</string>
     <string name="AddEvmSyncSource_AddRPCSource">RPC 소스 추가</string>

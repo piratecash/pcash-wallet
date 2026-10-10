@@ -6,6 +6,7 @@ import cash.p.terminal.core.managers.SolanaRpcSourceManager
 import cash.p.terminal.core.order
 import cash.p.terminal.wallet.MarketKitWrapper
 import io.horizontalsystems.core.entities.Blockchain
+import io.horizontalsystems.core.entities.BlockchainType
 
 internal object SupportedBlockchainsFactory {
 
@@ -16,6 +17,7 @@ internal object SupportedBlockchainsFactory {
         marketKit: MarketKitWrapper,
     ): SupportedBlockchains {
         val solanaBlockchains = listOfNotNull(solanaRpcSourceManager.blockchain)
+        val zcashBlockchains = listOfNotNull(marketKit.blockchain(BlockchainType.Zcash.uid))
         val statusOnlyBlockchains = marketKit.blockchains(
             BlockchainSettingsModule.statusOnlyBlockchainTypes.map { it.uid }
         )
@@ -24,6 +26,7 @@ internal object SupportedBlockchainsFactory {
             btcBlockchains = btcBlockchainManager.allBlockchains,
             evmBlockchains = evmBlockchainManager.allBlockchains,
             solanaBlockchains = solanaBlockchains,
+            zcashBlockchains = zcashBlockchains,
             statusOnlyBlockchains = statusOnlyBlockchains,
         )
     }
@@ -33,6 +36,7 @@ internal data class SupportedBlockchains(
     val btcBlockchains: List<Blockchain>,
     val evmBlockchains: List<Blockchain>,
     val solanaBlockchains: List<Blockchain>,
+    val zcashBlockchains: List<Blockchain>,
     val statusOnlyBlockchains: List<Blockchain>,
 ) {
     val all: List<Blockchain>
@@ -40,6 +44,7 @@ internal data class SupportedBlockchains(
             btcBlockchains +
                 evmBlockchains +
                 solanaBlockchains +
+                zcashBlockchains +
                 statusOnlyBlockchains
             )
             .distinctBy { it.uid }

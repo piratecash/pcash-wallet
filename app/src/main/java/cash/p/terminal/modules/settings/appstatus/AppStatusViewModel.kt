@@ -12,6 +12,7 @@ import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.MoneroKitManager
+import cash.p.terminal.core.managers.NetworkErrorTracker
 import cash.p.terminal.core.managers.SolanaKitManager
 import cash.p.terminal.core.managers.StellarKitManager
 import cash.p.terminal.core.managers.ThorchainKitManagers
@@ -68,7 +69,8 @@ class AppStatusViewModel(
     private val tonKitManager: TonKitManager,
     private val solanaKitManager: SolanaKitManager,
     private val btcBlockchainManager: BtcBlockchainManager,
-    private val checkPremiumUseCase: CheckPremiumUseCase
+    private val checkPremiumUseCase: CheckPremiumUseCase,
+    private val networkErrorTracker: NetworkErrorTracker,
 ) : ViewModel() {
 
     private var appLogs: Map<String, Any> = emptyMap()
@@ -194,7 +196,7 @@ class AppStatusViewModel(
         }
         collectProviderSections(SolanaBlockchainStatusProvider(solanaKitManager), sections)
         collectProviderSections(
-            ZcashBlockchainStatusProvider(walletManager, adapterManager),
+            ZcashBlockchainStatusProvider(walletManager, adapterManager, networkErrorTracker),
             sections
         )
         collectProviderSections(MoneroBlockchainStatusProvider(moneroKitManager), sections)

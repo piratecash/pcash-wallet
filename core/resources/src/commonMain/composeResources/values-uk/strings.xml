@@ -1011,6 +1011,11 @@
     <!--Evm Network-->
     <string name="EvmNetwork_AddNew">Додати новий</string>
     <string name="EvmNetwork_Added">Додано</string>
+    <string name="zcash_network_description">Сервер Lightwalletd, через який застосунок синхронізує Zcash. Після зміни синхронізація Zcash перезапускається.</string>
+    <string name="zcash_network_add_server">Додати сервер</string>
+    <string name="zcash_network_server_url">URL сервера</string>
+    <string name="zcash_network_invalid_url">Введіть https://host:port (або http://…onion для Tor) — без логіна, шляху та параметрів</string>
+    <string name="zcash_network_default_servers">За замовчуванням</string>
     <!--Add RPC Source-->
     <string name="AddEvmSyncSource_RpcUrl">URL-адреса RPC</string>
     <string name="AddEvmSyncSource_AddRPCSource">Додати джерело RPC</string>

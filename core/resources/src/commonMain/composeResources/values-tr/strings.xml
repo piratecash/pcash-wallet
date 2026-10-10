@@ -1024,6 +1024,11 @@
     <!--Evm Network-->
     <string name="EvmNetwork_AddNew">Yeni ekle</string>
     <string name="EvmNetwork_Added">Eklendi</string>
+    <string name="zcash_network_description">Uygulamanın Zcash\'i senkronize ettiği Lightwalletd sunucusu. Değiştirmek Zcash senkronizasyonunu yeniden başlatır.</string>
+    <string name="zcash_network_add_server">Sunucu ekle</string>
+    <string name="zcash_network_server_url">Sunucu URL\'si</string>
+    <string name="zcash_network_invalid_url">https://host:port girin (Tor için http://…onion) — oturum bilgisi, yol veya parametre olmadan</string>
+    <string name="zcash_network_default_servers">Varsayılan</string>
     <!--Add RPC Source-->
     <string name="AddEvmSyncSource_RpcUrl">RPC Url</string>
     <string name="AddEvmSyncSource_AddRPCSource">RPC Kaynağı Ekle</string>

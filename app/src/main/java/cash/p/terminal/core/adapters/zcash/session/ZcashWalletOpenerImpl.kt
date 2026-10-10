@@ -3,18 +3,22 @@ package cash.p.terminal.core.adapters.zcash.session
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.UnsupportedAccountException
 import cash.p.terminal.core.adapters.zcash.ZcashKey
+import cash.p.terminal.core.adapters.zcash.zcashAppLogger
 import cash.p.terminal.core.adapters.zcash.zcashKey
 import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.ZcashBirthdayProvider
+import cash.p.terminal.core.managers.ZcashServerManager
+import cash.p.terminal.core.managers.sanitizeNetworkUrl
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.Wallet
 import cash.p.zcash.ServerConfig
-import cash.p.zcash.Transport
 import cash.p.zcash.ZcashNetwork
 import cash.p.zcash.ZcashSdk
 import cash.p.zcash.ZcashWallet
 import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.core.logger.AppLogger
+import kotlin.time.TimeSource
 
 class ZcashWalletOpenerImpl(
     private val databaseFiles: ZcashDatabaseFiles,
@@ -22,15 +26,23 @@ class ZcashWalletOpenerImpl(
     private val restoreSettingsManager: RestoreSettingsManager,
     private val birthdayProvider: ZcashBirthdayProvider,
     private val dbKeyProvider: ZcashDbKeyProvider,
+    private val serverManager: ZcashServerManager,
 ) : ZcashWalletOpener {
 
+    private class Birth(val source: BirthSource, val height: Int)
+
+    private enum class BirthSource { SETTING, CHECKPOINT, NONE }
+
     override suspend fun open(wallet: Wallet): OpenedZcashWallet {
+        val started = TimeSource.Monotonic.markNow()
+        val accountId = wallet.account.id
+        val logger = zcashAppLogger(accountId)
         databaseFiles.dataDir.mkdirs()
         ZcashSdk.initialize(databaseFiles.dataDir.absolutePath, databaseFiles.legacyDir.absolutePath)
 
-        val accountId = wallet.account.id
         val dbKey = dbKeyProvider.keyFor(accountId)
-        if (dbKey.newlyGenerated && databaseFiles.databaseFile(accountId).exists()) {
+        val dbExists = databaseFiles.databaseFile(accountId).exists()
+        if (dbKey.newlyGenerated && dbExists) {
             // Deletes the coverage record with the file it lives in: the freshly-opened wallet
             // reads back an absent record, so its first discovery walk is a deep one. The pristine
             // mark goes with the rows that made the account pristine.
@@ -38,15 +50,31 @@ class ZcashWalletOpenerImpl(
         }
         val deepSweepRequired = !databaseFiles.isPristine(accountId)
 
-        val dbFile = databaseFiles.databaseFile(accountId)
-        val zcashWallet = ZcashWallet.open(dbFile.path, ZcashNetwork.MAIN, serverConfig(), dbKey.bytes)
-        val dbAccountId = zcashWallet.accounts().firstOrNull()?.id ?: restore(zcashWallet, wallet)
-        return OpenedZcashWallet(zcashWallet, dbAccountId, deepSweepRequired)
+        val server = serverConfig()
+        logger.info(
+            "open: db=${if (dbExists) "exists" else "absent"} " +
+                "key=${if (dbKey.newlyGenerated) "new" else "stored"} " +
+                "deepSweep=$deepSweepRequired " +
+                "legacyDir=${if (databaseFiles.legacyDir.exists()) "present" else "absent"} " +
+                "server=${sanitizeNetworkUrl(server.url)} transport=${server.transport} " +
+                "accountType=${wallet.account.type::class.simpleName}"
+        )
+        val dbPath = databaseFiles.databaseFile(accountId).path
+        val zcashWallet = ZcashWallet.open(dbPath, ZcashNetwork.MAIN, server, dbKey.bytes)
+        val existing = zcashWallet.accounts()
+        val dbAccountId = existing.firstOrNull()?.id ?: restore(zcashWallet, wallet, logger)
+        logger.info(
+            "open: done dbAccountId=$dbAccountId accounts=${existing.size} " +
+                "elapsed=${started.elapsedNow().inWholeMilliseconds}ms"
+        )
+        return OpenedZcashWallet(zcashWallet, dbAccountId, deepSweepRequired, server.url)
     }
 
-    private suspend fun restore(zcashWallet: ZcashWallet, wallet: Wallet): Int {
+    private suspend fun restore(zcashWallet: ZcashWallet, wallet: Wallet, logger: AppLogger): Int {
         val account = wallet.account
         val key = wallet.zcashKey() ?: throw UnsupportedAccountException()
+        val birth = birth(account)
+        logger.info("restore: birthSource=${birth.source.name.lowercase()} birth=${birth.height}")
 
         return zcashWallet.restoreAccount(
             name = account.name,
@@ -54,31 +82,27 @@ class ZcashWalletOpenerImpl(
                 is ZcashKey.Phrase -> key.words.joinToString(" ")
                 is ZcashKey.Standalone -> key.key
             },
-            birthHeight = birthHeight(account),
+            birthHeight = birth.height,
             passphrase = (key as? ZcashKey.Phrase)?.passphrase,
         )
     }
 
     /** Zero lets the SDK clamp each pool to its own activation height. */
-    private fun birthHeight(account: Account): Int {
+    private fun birth(account: Account): Birth {
         val stored = restoreSettingsManager.settings(account, BlockchainType.Zcash).birthdayHeight
         return when {
-            stored != null && stored > 0 -> stored.toInt()
+            stored != null && stored > 0 -> Birth(BirthSource.SETTING, stored.toInt())
             account.origin == AccountOrigin.Created ->
                 // Birthday persistence predates the P.CASH fork, so a missing value cannot
                 // identify a migrated P.CASH wallet. Avoid a full scan for incomplete setup data.
-                birthdayProvider.getLatestCheckpointBlockHeight().toInt()
+                Birth(BirthSource.CHECKPOINT, birthdayProvider.getLatestCheckpointBlockHeight().toInt())
 
-            else -> 0
+            else -> Birth(BirthSource.NONE, 0)
         }
     }
 
-    private fun serverConfig() = ServerConfig(
-        url = SERVER_URL,
-        transport = if (localStorage.torEnabled) Transport.TOR else Transport.DIRECT,
-    )
-
-    private companion object {
-        const val SERVER_URL = "https://zec.rocks:443"
+    private fun serverConfig(): ServerConfig {
+        val url = serverManager.current.url
+        return ServerConfig(url = url, transport = serverManager.transportFor(url, localStorage.torEnabled))
     }
 }

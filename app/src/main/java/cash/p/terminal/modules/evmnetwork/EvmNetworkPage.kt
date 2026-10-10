@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.evmnetwork
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,7 +40,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
-import cash.p.terminal.entities.EvmSyncSource
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusButton
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusPage
 import cash.p.terminal.modules.btcblockchainsettings.BlockchainSettingCell
@@ -147,9 +147,10 @@ private fun EvmNetworkScreen(
                 if (viewModel.viewState.customItems.isNotEmpty()) {
                     CustomRpcListSection(
                         viewModel.viewState.customItems,
+                        EvmNetworkViewModel.ViewItem::toRpcRow,
                         revealedCardId,
-                        onClick = { syncSource ->
-                            viewModel.onSelectSyncSource(syncSource)
+                        onClick = { item ->
+                            viewModel.onSelectSyncSource(item.syncSource)
                         },
                         onReveal = { id ->
                             if (revealedCardId != id) {
@@ -160,16 +161,14 @@ private fun EvmNetworkScreen(
                             revealedCardId = null
                         }
                     ) {
-                        viewModel.onRemoveCustomRpc(it)
+                        viewModel.onRemoveCustomRpc(it.syncSource)
                         HudHelper.showErrorMessage(view, R.string.Hud_Removed)
                     }
                 }
 
                 item {
                     Spacer(Modifier.height(32.dp))
-                    AddButton {
-                        navigation.slideFromBottom(AddRpcPage(blockchain))
-                    }
+                    AddButton(onClick = { navigation.slideFromBottom(AddRpcPage(blockchain)) })
                 }
 
                 item {
@@ -184,13 +183,18 @@ private fun EvmNetworkScreen(
     }
 }
 
-private fun LazyListScope.CustomRpcListSection(
-    items: List<EvmNetworkViewModel.ViewItem>,
+internal data class RpcRowItem(val id: String, val name: String, val url: String, val selected: Boolean)
+
+private fun EvmNetworkViewModel.ViewItem.toRpcRow() = RpcRowItem(id, name, url, selected)
+
+internal fun <T> LazyListScope.CustomRpcListSection(
+    items: List<T>,
+    toRow: (T) -> RpcRowItem,
     revealedCardId: String?,
-    onClick: (EvmSyncSource) -> Unit,
+    onClick: (T) -> Unit,
     onReveal: (String) -> Unit,
     onConceal: () -> Unit,
-    onDelete: (EvmSyncSource) -> Unit
+    onDelete: (T) -> Unit
 ) {
     item {
         Spacer(Modifier.height(32.dp))
@@ -198,7 +202,8 @@ private fun LazyListScope.CustomRpcListSection(
             stringResource(R.string.EvmNetwork_Added),
         )
     }
-    itemsIndexed(items, key = { _, item -> item.id }) { index, item ->
+    itemsIndexed(items, key = { _, item -> toRow(item).id }) { index, item ->
+        val row = toRow(item)
         val showDivider = showDivider(items.size, index)
         val shape = getShape(items.size, index)
         Box(
@@ -211,7 +216,7 @@ private fun LazyListScope.CustomRpcListSection(
                         modifier = Modifier
                             .fillMaxHeight()
                             .width(88.dp),
-                        onClick = { onDelete(item.syncSource) },
+                        onClick = { onDelete(item) },
                         content = {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_circle_minus_24),
@@ -223,17 +228,17 @@ private fun LazyListScope.CustomRpcListSection(
                 },
             )
             DraggableCardSimple(
-                key = item.id,
-                isRevealed = revealedCardId == item.id,
+                key = row.id,
+                isRevealed = revealedCardId == row.id,
                 cardOffset = 72f,
-                onReveal = { onReveal(item.id) },
+                onReveal = { onReveal(row.id) },
                 onConceal = onConceal,
                 content = {
                     RpcCell(
                         shape = shape,
                         showDivider = showDivider,
-                        item = item,
-                        onItemClick = onClick
+                        item = row,
+                        onItemClick = { onClick(item) }
                     )
                 }
             )
@@ -242,8 +247,9 @@ private fun LazyListScope.CustomRpcListSection(
 }
 
 @Composable
-private fun AddButton(
-    onClick: () -> Unit
+internal fun AddButton(
+    onClick: () -> Unit,
+    @StringRes titleRes: Int = R.string.EvmNetwork_AddNew,
 ) {
     CellUniversalLawrenceSection(
         listOf {
@@ -259,7 +265,7 @@ private fun AddButton(
                 )
                 Spacer(Modifier.width(16.dp))
                 body_brand(
-                    text = stringResource(R.string.EvmNetwork_AddNew)
+                    text = stringResource(titleRes)
                 )
             }
         }
@@ -267,11 +273,11 @@ private fun AddButton(
 }
 
 @Composable
-fun RpcCell(
+internal fun RpcCell(
     shape: Shape,
     showDivider: Boolean = false,
-    item: EvmNetworkViewModel.ViewItem,
-    onItemClick: (EvmSyncSource) -> Unit
+    item: RpcRowItem,
+    onItemClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -280,7 +286,7 @@ fun RpcCell(
             .clip(shape)
             .background(ComposeAppTheme.colors.surfacePrimary)
             .clickable {
-                onItemClick.invoke(item.syncSource)
+                onItemClick()
             },
         contentAlignment = Alignment.Center
     ) {

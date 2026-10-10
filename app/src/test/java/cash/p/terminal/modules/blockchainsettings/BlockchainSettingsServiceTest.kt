@@ -4,6 +4,8 @@ import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.EvmSyncSourceManager
 import cash.p.terminal.core.managers.SolanaRpcSourceManager
+import cash.p.terminal.core.managers.ZcashServer
+import cash.p.terminal.core.managers.ZcashServerManager
 import cash.p.terminal.entities.BtcRestoreMode
 import cash.p.terminal.entities.EvmSyncSource
 import cash.p.terminal.modules.blockchainsettings.BlockchainSettingsModule.BlockchainItem
@@ -16,6 +18,7 @@ import io.mockk.mockk
 import io.mockk.unmockkAll
 import io.mockk.verify
 import io.reactivex.subjects.PublishSubject
+import kotlinx.coroutines.flow.MutableSharedFlow
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -29,6 +32,9 @@ class BlockchainSettingsServiceTest {
     private val evmSyncSourceManager = mockk<EvmSyncSourceManager>()
     private val solanaRpcSourceManager = mockk<SolanaRpcSourceManager>()
     private val marketKit = mockk<MarketKitWrapper>()
+    private val zcashServerManager = mockk<ZcashServerManager>()
+    private val zcashServerSelected = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    private val zcashServer = ZcashServer("zec.rocks (global)", "https://zec.rocks:443", isCustom = false)
 
     private var service: BlockchainSettingsService? = null
 
@@ -38,6 +44,9 @@ class BlockchainSettingsServiceTest {
         every { btcBlockchainManager.transactionSortModeUpdatedObservable } returns PublishSubject.create()
         every { evmSyncSourceManager.syncSourceObservable } returns PublishSubject.create()
         every { solanaRpcSourceManager.rpcSourceUpdateObservable } returns PublishSubject.create()
+        every { zcashServerManager.serverSelectedFlow } returns zcashServerSelected
+        every { zcashServerManager.current } returns zcashServer
+        every { marketKit.blockchain(BlockchainType.Zcash.uid) } returns null
     }
 
     @After
@@ -167,6 +176,25 @@ class BlockchainSettingsServiceTest {
         )
     }
 
+    @Test
+    fun start_zcashBlockchainAvailable_buildsZcashItemWithCurrentServer() {
+        val zcash = blockchain(BlockchainType.Zcash)
+
+        every { btcBlockchainManager.allBlockchains } returns emptyList()
+        every { evmBlockchainManager.allBlockchains } returns emptyList()
+        every { solanaRpcSourceManager.blockchain } returns null
+        every { marketKit.blockchains(any()) } returns emptyList()
+        every { marketKit.blockchain(BlockchainType.Zcash.uid) } returns zcash
+
+        val service = createService()
+
+        service.start()
+
+        val zcashItem = service.blockchainItems.single() as BlockchainItem.Zcash
+        assertEquals(zcash, zcashItem.blockchain)
+        assertEquals(zcashServer, zcashItem.server)
+    }
+
     private fun createService(): BlockchainSettingsService {
         return BlockchainSettingsService(
             btcBlockchainManager = btcBlockchainManager,
@@ -174,6 +202,7 @@ class BlockchainSettingsServiceTest {
             evmSyncSourceManager = evmSyncSourceManager,
             solanaRpcSourceManager = solanaRpcSourceManager,
             marketKit = marketKit,
+            zcashServerManager = zcashServerManager,
         ).also {
             service = it
         }

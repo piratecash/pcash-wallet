@@ -1,5 +1,6 @@
 package cash.p.terminal.core.adapters.zcash
 
+import cash.p.terminal.core.managers.sanitizeNetworkUrl
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
 import java.math.BigDecimal
@@ -77,14 +78,31 @@ internal fun coarseBalance(
 private fun positiveFlag(amount: BigDecimal?): String =
     amount?.let { (it.signum() > 0).toString() } ?: UNKNOWN
 
+internal const val MAX_ERROR_LABEL = 200
+
+private val ZCASH_KEY_TOKEN =
+    Regex("(?:uview|zxview|zview|zxsk|secret-extended-key-)[0-9a-z]+", RegexOption.IGNORE_CASE)
+
+private fun String.redactZcashKeys(): String = replace(ZCASH_KEY_TOKEN, "[redacted]")
+
 /**
- * Safe label for the exported "Sync State" line. [AdapterState.NotSynced]'s `toString()` embeds the
- * raw `Throwable.message`, which for a failed UFVK import contains the full viewing key — so a failed
- * state is rendered as its state plus exception class only, never the message or cause.
+ * Label for the exported "Sync State" line. With the current SDK the key-failure messages are fixed
+ * texts without key material, so the first message line is shown with URL credentials and key material redacted; the class name is the fallback.
  */
 internal fun safeSyncStateLabel(state: AdapterState): String = when (state) {
-    is AdapterState.NotSynced -> "NotSynced ${state.error.javaClass.simpleName}"
+    is AdapterState.NotSynced -> {
+        val message = state.error.message?.lineSequence()?.first()
+            ?.let(::sanitizeNetworkUrl)?.redactZcashKeys()?.take(MAX_ERROR_LABEL)
+        "NotSynced ${message?.takeIf { it.isNotBlank() } ?: state.error.zcashErrorName}"
+    }
     else -> state.toString()
+}
+
+internal fun birthdayLabel(configured: Long?, wallet: Int?): String = when {
+    wallet == null && configured == null -> "not set (wallet not opened)"
+    wallet == null -> "$configured (configured, wallet not opened)"
+    configured == null || configured == wallet.toLong() -> wallet.toString()
+    else -> "$wallet (configured $configured)"
 }
 
 /** Non-overlapping ZEC-amount bucketer; boundary values 0.1/1/10/100 fall into the upper interval. */

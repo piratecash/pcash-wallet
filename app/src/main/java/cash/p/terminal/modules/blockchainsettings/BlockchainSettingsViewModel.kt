@@ -70,6 +70,14 @@ class BlockchainSettingsViewModel(
                             blockchainItem = item
                         )
 
+                        is BlockchainSettingsModule.BlockchainItem.Zcash ->
+                            BlockchainSettingsModule.BlockchainViewItem(
+                                title = item.blockchain.name,
+                                subtitle = item.server.name,
+                                imageUrl = item.blockchain.type.imageUrl,
+                                blockchainItem = item
+                            )
+
                         else -> null
                     }
                 }

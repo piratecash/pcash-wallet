@@ -1,6 +1,7 @@
 package cash.p.terminal.core.adapters.zcash.session
 
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.adapters.zcash.ZcashSessionDiagnostics
 import cash.p.terminal.core.managers.OfflineKey
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.modules.pin.core.UptimeProvider
@@ -358,6 +359,12 @@ class ZcashSyncSchedulerTest {
             supportsTransparent = true,
             deepSweepRequired = true,
             discovery = ZcashDiscoveryState(),
+            diagnostics = ZcashSessionDiagnostics(
+                logger = mockk(relaxed = true),
+                networkErrorTracker = mockk(relaxed = true),
+                accountId = "account",
+                serverUrl = "https://zec.rocks:443",
+            ),
         )
         val scheduler = scheduler()
 

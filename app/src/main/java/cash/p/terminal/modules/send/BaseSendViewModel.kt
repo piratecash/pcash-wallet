@@ -14,6 +14,7 @@ import cash.p.terminal.modules.send.fee.buildNetworkFeeWarningData
 import cash.p.terminal.modules.send.fee.feePrimaryText
 import cash.p.terminal.modules.send.fee.feeSecondaryText
 import cash.p.terminal.wallet.AdapterState
+import cash.p.terminal.wallet.isAdapterStopped
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.MarketKitWrapper
@@ -115,6 +116,15 @@ abstract class BaseSendViewModel<T>(
                 syncGraceActive = false
             }
         }
+    }
+
+    /** The grace bridges blips; an adapter that is gone must not be bridged, now or on a later reconnect. */
+    private fun forgetGoodState() {
+        graceTimerJob?.cancel()
+        graceTimerJob = null
+        syncGraceActive = false
+        wasGood = false
+        lastGoodElapsed = null
     }
 
     open val feeToken: Token? by lazy {
@@ -228,6 +238,7 @@ abstract class BaseSendViewModel<T>(
             }
             is AdapterState.NotSynced -> {
                 syncRetrying = false
+                if (state.isAdapterStopped) forgetGoodState()
                 if (!autoRetried) {
                     autoRetried = true
                     _adapterManager.refreshByWallet(wallet)

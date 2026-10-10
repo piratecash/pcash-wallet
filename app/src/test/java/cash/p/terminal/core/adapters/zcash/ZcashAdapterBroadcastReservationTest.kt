@@ -6,7 +6,7 @@ import cash.p.zcash.BroadcastResult
 import cash.p.zcash.ZcashSdk
 import cash.p.zcash.transactionId
 import io.mockk.coEvery
-import io.mockk.coVerifyOrder
+import io.mockk.coVerify
 import io.mockk.mockkStatic
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
@@ -19,24 +19,19 @@ import org.junit.Test
 class ZcashAdapterBroadcastReservationTest : ZcashAdapterTestFixture() {
 
     @Test
-    fun broadcastRawTransaction_validPayload_reservesAndRefreshesBeforeNetworkBroadcast() =
+    fun broadcastRawTransaction_validPayload_broadcastsThroughOneReservedSessionOperation() =
         runTest(dispatcher) {
-            coEvery { zcashWallet.latestHeight() } returns HEIGHT
             coEvery { zcashWallet.broadcast(DB_ACCOUNT_ID, any(), HEIGHT, any()) } returns
                 BroadcastResult(errorCode = 0, message = TX_ID)
-            adapter = createAdapter()
-            adapter.start()
-            advanceUntilIdle()
+            startAdapter()
 
             adapter.broadcastRawTransaction(
                 RAW_HEX,
                 OfflineBroadcastMetadata.Zcash(txHash = TX_ID),
             )
 
-            coVerifyOrder {
-                session.reserveForBroadcast(match { it.contentEquals(RAW) }, any())
-                session.refresh()
-                zcashWallet.broadcast(DB_ACCOUNT_ID, match { it.contentEquals(RAW) }, HEIGHT, any())
+            coVerify(exactly = 1) {
+                session.broadcastReserved(match { it.contentEquals(RAW) }, HEIGHT, any())
             }
         }
 
@@ -50,10 +45,8 @@ class ZcashAdapterBroadcastReservationTest : ZcashAdapterTestFixture() {
 
             adapter.broadcastRawTransaction(RAW_HEX, metadata = null)
 
-            coVerifyOrder {
-                session.reserveForBroadcast(match { it.contentEquals(RAW) }, any())
-                session.refresh()
-                zcashWallet.broadcast(DB_ACCOUNT_ID, match { it.contentEquals(RAW) }, HEIGHT, any())
+            coVerify(exactly = 1) {
+                session.broadcastReserved(match { it.contentEquals(RAW) }, HEIGHT, any())
             }
         }
 
@@ -61,22 +54,16 @@ class ZcashAdapterBroadcastReservationTest : ZcashAdapterTestFixture() {
     @Test
     fun broadcastRawTransaction_foreignTransaction_doesNotRequireOwnInputs() =
         runTest(dispatcher) {
-            coEvery { zcashWallet.latestHeight() } returns HEIGHT
             coEvery { zcashWallet.broadcast(DB_ACCOUNT_ID, any(), HEIGHT, any()) } returns
                 BroadcastResult(errorCode = 0, message = TX_ID)
-            adapter = createAdapter()
-            adapter.start()
-            advanceUntilIdle()
+            startAdapter()
 
             adapter.broadcastRawTransaction(
                 RAW_HEX,
                 OfflineBroadcastMetadata.Zcash(txHash = TX_ID),
             )
 
-            coVerifyOrder {
-                session.reserveForBroadcast(any(), requireOwnInputs = false)
-                zcashWallet.broadcast(DB_ACCOUNT_ID, any(), HEIGHT, requireOwnInputs = false)
-            }
+            coVerify(exactly = 1) { session.broadcastReserved(any(), HEIGHT, requireOwnInputs = false) }
         }
 
     /** The only branch where the requested hash reaches the result: on acceptance the node names it. */

@@ -4,6 +4,7 @@ import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.math.BigDecimal
 
@@ -125,17 +126,89 @@ class ZcashDiagTest {
         assertEquals("0", fields["changePendingBucket"])
     }
 
-    // ---- safeSyncStateLabel (never exports a raw Throwable message) ----
+    // ---- safeSyncStateLabel ----
 
     @Test
-    fun safeSyncStateLabel_notSyncedWithSecretMessage_omitsMessageAndCause() {
-        val secret = "uview1exampleviewingkeymaterialthatmustneverleak"
+    fun safeSyncStateLabel_notSyncedWithMessage_showsMessage() {
+        val state = AdapterState.NotSynced(RuntimeException("Key import failed"))
+        assertEquals("NotSynced Key import failed", safeSyncStateLabel(state))
+    }
+
+    @Test
+    fun safeSyncStateLabel_multilineMessage_showsFirstLineOnly() {
+        val state = AdapterState.NotSynced(RuntimeException("first line\nsecond line"))
+        assertEquals("NotSynced first line", safeSyncStateLabel(state))
+    }
+
+    @Test
+    fun safeSyncStateLabel_longMessage_truncatedToLimit() {
+        val state = AdapterState.NotSynced(RuntimeException("x".repeat(MAX_ERROR_LABEL + 50)))
+        assertEquals("NotSynced " + "x".repeat(MAX_ERROR_LABEL), safeSyncStateLabel(state))
+    }
+
+    @Test
+    fun safeSyncStateLabel_nullOrBlankMessage_showsClassName() {
+        assertEquals(
+            "NotSynced IllegalStateException",
+            safeSyncStateLabel(AdapterState.NotSynced(IllegalStateException()))
+        )
+        assertEquals(
+            "NotSynced IllegalStateException",
+            safeSyncStateLabel(AdapterState.NotSynced(IllegalStateException("  ")))
+        )
+    }
+
+    @Test
+    fun safeSyncStateLabel_messageWithCredentialUrl_redactsSecrets() {
         val state = AdapterState.NotSynced(
-            RuntimeException("Value \"$secret\" did not decode as a valid UFVK")
+            RuntimeException("connection failed: https://user:secret@upstream.example/v3/abcdef?token=sekrit")
         )
         val label = safeSyncStateLabel(state)
-        assertEquals("NotSynced RuntimeException", label)
-        assertFalse(label.contains(secret))
+        assertTrue(label.contains("NotSynced"))
+        assertTrue(label.contains("upstream.example"))
+        listOf("user:secret", "abcdef", "sekrit").forEach { assertFalse(label, label.contains(it)) }
+    }
+
+    @Test
+    fun safeSyncStateLabel_messageWithViewingKey_redactsTheKey() {
+        val key = "uview1" + "q".repeat(70)
+        val label = safeSyncStateLabel(AdapterState.NotSynced(RuntimeException("Invalid key: $key")))
+        assertTrue(label.contains("NotSynced"))
+        assertTrue(label.contains("Invalid key"))
+        assertFalse(label, label.contains(key))
+        assertFalse(label, label.contains("qqqq"))
+    }
+
+    @Test
+    fun safeSyncStateLabel_messageWithSpendingKey_redactsTheKey() {
+        val key = "secret-extended-key-main1" + "q".repeat(70)
+        val label = safeSyncStateLabel(AdapterState.NotSynced(RuntimeException("Bad $key end")))
+        assertTrue(label.contains("Bad"))
+        assertFalse(label, label.contains("qqqq"))
+        assertFalse(label, label.contains("secret-extended-key"))
+    }
+
+    // ---- birthdayLabel ----
+
+    @Test
+    fun birthdayLabel_walletNotOpenedNothingConfigured_notSet() {
+        assertEquals("not set (wallet not opened)", birthdayLabel(configured = null, wallet = null))
+    }
+
+    @Test
+    fun birthdayLabel_walletNotOpenedConfigured_showsConfigured() {
+        assertEquals("100 (configured, wallet not opened)", birthdayLabel(configured = 100L, wallet = null))
+    }
+
+    @Test
+    fun birthdayLabel_walletOpenedMatchingOrUnconfigured_showsWalletOnly() {
+        assertEquals("100", birthdayLabel(configured = 100L, wallet = 100))
+        assertEquals("100", birthdayLabel(configured = null, wallet = 100))
+    }
+
+    @Test
+    fun birthdayLabel_walletDiffersFromConfigured_showsBoth() {
+        assertEquals("100 (configured 90)", birthdayLabel(configured = 90L, wallet = 100))
     }
 
     @Test

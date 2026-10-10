@@ -2,6 +2,7 @@ package cash.p.terminal.modules.send
 
 import cash.p.terminal.modules.offline.OfflineOperationGate
 import cash.p.terminal.wallet.AdapterState
+import cash.p.terminal.wallet.AdapterStoppedException
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.Wallet
@@ -259,6 +260,35 @@ class BaseSendViewModelAdapterSyncTest {
 
         // The full grace window still expires via the reactive timer.
         advanceUntilIdle()
+        assertFalse(vm.syncGraceActive)
+        assertFalse(vm.isEffectivelySynced)
+    }
+
+    @Test
+    fun notSynced_adapterStopped_endsGraceImmediately() = runTest(dispatcher) {
+        currentAdapterState = AdapterState.Synced
+        connectivityFlow.value = true
+        val vm = createViewModel()
+        advanceUntilIdle()
+        assertTrue(vm.syncGraceActive)
+
+        emitAdapterState(AdapterState.NotSynced(AdapterStoppedException()))
+
+        assertFalse(vm.syncGraceActive)
+        assertFalse(vm.isEffectivelySynced)
+    }
+
+    @Test
+    fun notSynced_adapterStopped_connectivityChangeDoesNotRestoreGrace() = runTest(dispatcher) {
+        currentAdapterState = AdapterState.Synced
+        connectivityFlow.value = true
+        val vm = createViewModel()
+        advanceUntilIdle()
+        emitAdapterState(AdapterState.NotSynced(AdapterStoppedException()))
+
+        connectivityFlow.value = false
+        connectivityFlow.value = true
+
         assertFalse(vm.syncGraceActive)
         assertFalse(vm.isEffectivelySynced)
     }

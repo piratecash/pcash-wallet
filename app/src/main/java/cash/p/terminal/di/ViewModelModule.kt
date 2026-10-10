@@ -67,6 +67,8 @@ import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedSheet
 import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedViewModel
 import cash.p.terminal.modules.solananetwork.SolanaNetworkService
 import cash.p.terminal.modules.solananetwork.SolanaNetworkViewModel
+import cash.p.terminal.modules.zcashnetwork.ZcashNetworkViewModel
+import cash.p.terminal.modules.zcashnetwork.addserver.AddZcashServerViewModel
 import cash.p.terminal.modules.zcashconfigure.ZcashConfigureViewModel
 import cash.p.terminal.modules.zcashmigration.ZcashMigrationViewModel
 import cash.p.terminal.modules.multiswap.SwapSelectCoinViewModel
@@ -116,7 +118,9 @@ val viewModelModule = module {
     viewModelOf(::AppStatusViewModel)
     viewModel { params -> AddressPoisoningViewModel(params[0], params[1], params[2], get(), get(), get(), get()) }
     viewModel { params -> CreationBlockViewModel(params[0], get(), get(), get(), get(), get()) }
-    viewModel { params -> BlockchainStatusViewModel(provider = params.get(), dispatcherProvider = get()) }
+    viewModel { params ->
+        BlockchainStatusViewModel(provider = params.get(), dispatcherProvider = get(), systemInfoManager = get())
+    }
     viewModelOf(::AppCacheViewModel)
     viewModelOf(::MoneroConfigureViewModel)
     viewModelOf(::MwebConfigureViewModel)
@@ -129,6 +133,8 @@ val viewModelModule = module {
     viewModelOf(::ZcashConfigureViewModel)
     factoryOf(::SolanaNetworkService)
     viewModelOf(::SolanaNetworkViewModel)
+    viewModelOf(::ZcashNetworkViewModel)
+    viewModelOf(::AddZcashServerViewModel)
     viewModelOf(::QRScannerViewModel)
     viewModelOf(::AddTokenViewModel)
     viewModelOf(::PinUnlockViewModel)

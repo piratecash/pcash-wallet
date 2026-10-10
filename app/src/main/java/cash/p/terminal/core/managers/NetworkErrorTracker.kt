@@ -56,8 +56,7 @@ class NetworkErrorTracker {
         // throwable still reaches logcat (Timber) — device-local, not shared.
         // Persist a BOUNDED trace only: the full throwable would bypass AppLog's 5-frame limit and,
         // during prolonged connectivity failures, bloat the 90-day-retained app log with multi-KB rows.
-        val sanitizedStackTrace = sanitizeNetworkUrl(error.throwable.boundedStackTraceToString())
-        AppLogger(blockchainType.logTag).getScoped("network").warning("$message\n$sanitizedStackTrace")
+        AppLogger(blockchainType.logTag).getScoped("network").warningSanitized(message, error.throwable, "\n")
         Timber.tag("NetworkError").e(error.throwable, message)
     }
 
@@ -175,6 +174,10 @@ private val SECRET_PATH_SEGMENT = Regex("/[A-Za-z0-9_-]{20,}")
 // The segment following a version prefix (`/v2/<key>`, `/v3/<key>`) is redacted regardless of
 // length — short custom-RPC keys would slip past the long-token rule otherwise.
 private val VERSION_PREFIXED_SEGMENT = Regex("/(v\\d+)/[^/?#\\s]+", RegexOption.IGNORE_CASE)
+
+/** The App Log is exported in reports, so the throwable text is redacted like a URL before it is persisted. */
+fun AppLogger.warningSanitized(message: String, error: Throwable, separator: String = ": ") =
+    warning(message + separator + sanitizeNetworkUrl(error.boundedStackTraceToString()))
 
 /**
  * Redacts credentials that can appear in network URLs before they are stored/logged/reported:

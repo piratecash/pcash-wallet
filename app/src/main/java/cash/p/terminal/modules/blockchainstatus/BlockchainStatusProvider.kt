@@ -4,6 +4,8 @@ import cash.p.terminal.BuildConfig
 import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.MoneroKitManager
+import cash.p.terminal.core.managers.NetworkErrorTracker
+import cash.p.terminal.core.managers.mergedStatusInfo
 import cash.p.terminal.core.managers.SolanaKitManager
 import cash.p.terminal.core.managers.StellarKitManager
 import cash.p.terminal.core.managers.TonKitManager
@@ -232,7 +234,8 @@ class StellarBlockchainStatusProvider(
 
 class ZcashBlockchainStatusProvider(
     private val walletManager: IWalletManager,
-    private val adapterManager: IAdapterManager
+    private val adapterManager: IAdapterManager,
+    private val networkErrorTracker: NetworkErrorTracker,
 ) : BlockchainStatusProvider {
 
     override val blockchainName: String = "Zcash"
@@ -248,11 +251,14 @@ class ZcashBlockchainStatusProvider(
             }
 
     override fun getStatus(): BlockchainStatus {
-        val adapter = walletManager.activeWallets
+        val wallet = walletManager.activeWallets
             .firstOrNull { it.token.blockchainType == BlockchainType.Zcash }
-            ?.let { adapterManager.getAdapterForWallet<ZcashAdapter>(it) }
+        val adapter = wallet?.let { adapterManager.getAdapterForWallet<ZcashAdapter>(it) }
+        val statusInfo = networkErrorTracker.mergedStatusInfo(
+            adapter?.statusInfo, BlockchainType.Zcash, wallet?.account?.id
+        )
 
-        return statusFromMap(blockchainName, adapter?.statusInfo)
+        return statusFromMap(blockchainName, statusInfo)
     }
 }
 
