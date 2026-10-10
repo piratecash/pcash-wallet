@@ -4,7 +4,10 @@ import androidx.lifecycle.ViewModelStore
 import cash.p.beam.BeamAddress
 import cash.p.beam.BeamAddressType
 import cash.p.beam.BeamNetwork
+import cash.p.terminal.R
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.modules.receive.ReceiveModule
+import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -135,6 +138,17 @@ class ReceiveAddressViewModelTest {
         advanceUntilIdle()
 
         assertTrue(viewModel.uiState.viewState is ViewState.Error)
+    }
+
+    @Test
+    fun init_watchAccount_leavesAlertTextToTheScreen() = runTest(dispatcher) {
+        every { account.isWatchAccount } returns true
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        assertEquals(true, viewModel.uiState.watchAccount)
+        assertEquals(null, viewModel.uiState.alertText)
     }
 
     @Test
@@ -491,28 +505,33 @@ class ReceiveAddressViewModelTest {
     }
 
     @Test
-    fun init_beamBeforeSync_requestsPublicOfflineAddress() = runTest(dispatcher) {
+    fun init_beamBeforeSync_requestsRegularAddress() = runTest(dispatcher) {
         every { token.blockchainType } returns BlockchainType.Beam
         val provider = beamProvider()
         coEvery {
-            provider.receiveAddress(account, BeamAddressType.PublicOffline)
-        } returns beamAddress(PUBLIC_ADDRESS, BeamAddressType.PublicOffline)
+            provider.receiveAddress(account, BeamAddressType.Regular)
+        } returns beamAddress(REGULAR_ADDRESS, BeamAddressType.Regular)
 
         val viewModel = createViewModel(beamAddressProvider = provider)
         advanceUntilIdle()
 
-        assertEquals(BeamAddressType.PublicOffline, viewModel.uiState.beamAddressType)
-        assertEquals(PUBLIC_ADDRESS, viewModel.uiState.address)
+        assertEquals(BeamAddressType.Regular, viewModel.uiState.beamAddressType)
+        assertEquals(REGULAR_ADDRESS, viewModel.uiState.address)
         assertEquals(ViewState.Success, viewModel.uiState.viewState)
+        val alertText = viewModel.uiState.alertText as? ReceiveModule.AlertText.Normal
+        assertEquals(
+            Translator.getString(R.string.beam_receive_regular_alert),
+            alertText?.content,
+        )
     }
 
     @Test
     fun init_beamSessionInvalidatedBeforePublication_doesNotExposeToken() = runTest(dispatcher) {
         every { token.blockchainType } returns BlockchainType.Beam
         val provider = beamProvider()
-        coEvery { provider.receiveAddress(account, BeamAddressType.PublicOffline) } returns
+        coEvery { provider.receiveAddress(account, BeamAddressType.Regular) } returns
             BeamReceiveAddress(
-                BeamAddress(PUBLIC_ADDRESS, BeamAddressType.PublicOffline, BeamNetwork.Mainnet)
+                BeamAddress(REGULAR_ADDRESS, BeamAddressType.Regular, BeamNetwork.Mainnet)
             ) { false }
 
         val viewModel = createViewModel(beamAddressProvider = provider)
@@ -526,12 +545,12 @@ class ReceiveAddressViewModelTest {
     @Test
     fun onBeamAddressTypeSelect_staleCompletion_keepsSelectedTypeAddress() = runTest(dispatcher) {
         every { token.blockchainType } returns BlockchainType.Beam
-        val publicResult = CompletableDeferred<BeamReceiveAddress>()
+        val regularResult = CompletableDeferred<BeamReceiveAddress>()
         val offlineResult = CompletableDeferred<BeamReceiveAddress>()
         val provider = beamProvider()
         coEvery {
-            provider.receiveAddress(account, BeamAddressType.PublicOffline)
-        } coAnswers { publicResult.await() }
+            provider.receiveAddress(account, BeamAddressType.Regular)
+        } coAnswers { regularResult.await() }
         coEvery {
             provider.receiveAddress(account, BeamAddressType.Offline)
         } coAnswers { offlineResult.await() }
@@ -544,7 +563,7 @@ class ReceiveAddressViewModelTest {
 
         offlineResult.complete(beamAddress(OFFLINE_ADDRESS, BeamAddressType.Offline))
         advanceUntilIdle()
-        publicResult.complete(beamAddress(PUBLIC_ADDRESS, BeamAddressType.PublicOffline))
+        regularResult.complete(beamAddress(REGULAR_ADDRESS, BeamAddressType.Regular))
         advanceUntilIdle()
 
         assertEquals(BeamAddressType.Offline, viewModel.uiState.beamAddressType)
@@ -557,8 +576,8 @@ class ReceiveAddressViewModelTest {
         every { token.blockchainType } returns BlockchainType.Beam
         val provider = beamProvider()
         coEvery {
-            provider.receiveAddress(account, BeamAddressType.PublicOffline)
-        } returns beamAddress(PUBLIC_ADDRESS, BeamAddressType.PublicOffline)
+            provider.receiveAddress(account, BeamAddressType.Regular)
+        } returns beamAddress(REGULAR_ADDRESS, BeamAddressType.Regular)
         coEvery {
             provider.receiveAddress(account, BeamAddressType.MaxPrivacy)
         } throws CancellationException("BEAM account request was superseded")
@@ -592,9 +611,9 @@ class ReceiveAddressViewModelTest {
         val secondAccount = account("second-account", mnemonic)
         val provider = beamProvider()
         coEvery {
-            provider.receiveAddress(any(), BeamAddressType.PublicOffline)
+            provider.receiveAddress(any(), BeamAddressType.Regular)
         } coAnswers {
-            beamAddress("${firstArg<Account>().id}-address", BeamAddressType.PublicOffline)
+            beamAddress("${firstArg<Account>().id}-address", BeamAddressType.Regular)
         }
 
         val first = createViewModel(walletFor(firstAccount), provider)
@@ -604,10 +623,10 @@ class ReceiveAddressViewModelTest {
         assertEquals("first-account-address", first.uiState.address)
         assertEquals("second-account-address", second.uiState.address)
         coVerify(exactly = 1) {
-            provider.receiveAddress(firstAccount, BeamAddressType.PublicOffline)
+            provider.receiveAddress(firstAccount, BeamAddressType.Regular)
         }
         coVerify(exactly = 1) {
-            provider.receiveAddress(secondAccount, BeamAddressType.PublicOffline)
+            provider.receiveAddress(secondAccount, BeamAddressType.Regular)
         }
     }
 
@@ -617,13 +636,13 @@ class ReceiveAddressViewModelTest {
         val result = CompletableDeferred<BeamReceiveAddress>()
         val provider = beamProvider()
         coEvery {
-            provider.receiveAddress(account, BeamAddressType.PublicOffline)
+            provider.receiveAddress(account, BeamAddressType.Regular)
         } coAnswers { result.await() }
         val viewModel = createViewModel(beamAddressProvider = provider)
         val store = ViewModelStore().also { it.put("beam-receive", viewModel) }
 
         store.clear()
-        result.complete(beamAddress(PUBLIC_ADDRESS, BeamAddressType.PublicOffline))
+        result.complete(beamAddress(REGULAR_ADDRESS, BeamAddressType.Regular))
         advanceUntilIdle()
 
         assertEquals("", viewModel.uiState.address)
@@ -656,7 +675,7 @@ class ReceiveAddressViewModelTest {
         const val FALLBACK_ADDRESS = "u1fallbackaddress"
         const val VERIFIED_ADDRESS = "t1verified"
         const val DERIVED_ADDRESS = "t1derived"
-        const val PUBLIC_ADDRESS = "public-offline-address"
+        const val REGULAR_ADDRESS = "regular-address"
         const val OFFLINE_ADDRESS = "offline-address"
         const val MAX_PRIVACY_ADDRESS = "max-privacy-address"
     }

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -17,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -45,6 +47,7 @@ import cash.p.terminal.ui.compose.components.PriceWithToggleCell
 import cash.p.terminal.ui.compose.components.SectionTitleCell
 import cash.p.terminal.ui.compose.components.TransactionAmountCell
 import cash.p.terminal.ui.compose.components.TransactionInfoAddressCell
+import cash.p.terminal.ui.compose.components.TransactionInfoBeamCancelCell
 import cash.p.terminal.ui.compose.components.TransactionInfoBtcLockCell
 import cash.p.terminal.ui.compose.components.TransactionInfoContactCell
 import cash.p.terminal.ui.compose.components.TransactionInfoDoubleSpendCell
@@ -72,6 +75,7 @@ import cash.p.terminal.ui_compose.components.TitleAndValueClickableCell
 import cash.p.terminal.ui_compose.components.TitleAndValueColoredCell
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import androidx.activity.compose.LocalActivity
+import io.horizontalsystems.core.ui.dialogs.ConfirmationDialogSheet
 
 class TransactionInfoPage : HSPage() {
 
@@ -92,6 +96,14 @@ class TransactionInfoPage : HSPage() {
 
         BalanceHideOnFlipHandling()
 
+        val view = LocalView.current
+        LaunchedEffect(viewModel.beamCancelMessage) {
+            viewModel.beamCancelMessage?.let {
+                HudHelper.showErrorMessage(view, it)
+                viewModel.onBeamCancelMessageShown()
+            }
+        }
+
         TransactionInfoScreen(
             state = TransactionInfoScreenState(
                 viewItems = viewModel.viewItems,
@@ -103,6 +115,7 @@ class TransactionInfoPage : HSPage() {
                 onDeletePendingTransaction = viewModel::deletePendingTransaction,
                 onToggleBalanceVisibility = viewModel::toggleBalanceVisibility,
                 getRawTransaction = viewModel::getRawTransaction,
+                onBeamCancel = viewModel::cancelBeamTransaction,
             ),
             navigation = navigation,
         )
@@ -120,6 +133,7 @@ private class TransactionInfoScreenActions(
     val onDeletePendingTransaction: () -> Unit,
     val onToggleBalanceVisibility: () -> Unit,
     val getRawTransaction: () -> String?,
+    val onBeamCancel: (String) -> Unit,
 )
 
 @Composable
@@ -279,6 +293,15 @@ private fun TransactionInfo(
         contentPadding = PaddingValues(top = 12.dp, bottom = 32.dp)
     ) {
         items(state.viewItems) { section ->
+            // The cancel row is the only one that acts on the ViewModel, so it is rendered here,
+            // where the screen actions are in scope.
+            val beamCancel = section.firstNotNullOfOrNull { it as? TransactionInfoViewItem.BeamCancel }
+            if (beamCancel != null) {
+                CellUniversalLawrenceSection {
+                    BeamCancelCell(beamCancel, navigation, actions.onBeamCancel)
+                }
+                return@items
+            }
             TransactionInfoSection(
                 section = section,
                 navigation = navigation,
@@ -294,6 +317,38 @@ private fun TransactionInfo(
             )
         }
     }
+}
+
+@Composable
+private fun BeamCancelCell(
+    viewItem: TransactionInfoViewItem.BeamCancel,
+    navigation: HSNavigation,
+    onBeamCancel: (String) -> Unit,
+) {
+    val title = stringResource(R.string.beam_cancel_transaction)
+    val warning = stringResource(R.string.beam_cancel_confirmation)
+    val confirmTitle = stringResource(R.string.Button_Confirm)
+    val closeTitle = stringResource(R.string.Button_Close)
+
+    TransactionInfoBeamCancelCell(
+        availability = viewItem.availability,
+        wallet = viewItem.wallet,
+        onCancel = {
+            navigation.slideFromBottom(
+                ConfirmationDialogSheet(
+                    title = title,
+                    icon = null,
+                    warningTitle = null,
+                    warningText = warning,
+                    actionButtonTitle = confirmTitle,
+                    transparentButtonTitle = closeTitle,
+                    listener = object : ConfirmationDialogSheet.Listener {
+                        override fun onActionButtonClick() = onBeamCancel(viewItem.transactionHash)
+                    },
+                )
+            )
+        },
+    )
 }
 
 @Composable

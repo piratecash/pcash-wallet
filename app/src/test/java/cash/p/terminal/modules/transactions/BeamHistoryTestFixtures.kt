@@ -38,3 +38,12 @@ internal fun beamHistoryRecord(
         fee = BigDecimal("0.000001"),
     )
 }
+
+internal fun beamInteractiveHistoryRecord(
+    direction: BeamTransactionDirection = BeamTransactionDirection.Outgoing,
+    failureReason: String? = null,
+): BeamTransactionRecord = beamHistoryRecord(
+    direction = direction,
+    status = BeamTransactionStatus.InProgress,
+    failureReason = failureReason,
+)

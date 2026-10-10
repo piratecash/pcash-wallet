@@ -11,8 +11,12 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.hasProgressBarRangeInfo
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.test.core.app.ApplicationProvider
 import cash.p.beam.BeamAddressType
+import cash.p.terminal.R
 import cash.p.terminal.modules.receive.ReceiveModule
 import cash.p.terminal.modules.receive.viewmodels.ReceiveMoneroUiState
 import cash.p.terminal.ui_compose.entities.ViewState
@@ -37,6 +41,10 @@ class ReceiveAddressCardLayoutTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    private val watchAlertText
+        get() = ApplicationProvider.getApplicationContext<Application>()
+            .getString(R.string.Balance_Receive_WatchAddressAlert)
 
     @Test
     fun beamPublicOffline_loadingReservesTheSettledQrHeight() {
@@ -167,6 +175,34 @@ class ReceiveAddressCardLayoutTest {
             hasProgressBarRangeInfo(ProgressBarRangeInfo.Indeterminate),
             useUnmergedTree = true,
         ).assertExists()
+    }
+
+    @Test
+    fun beamRegularState_rendersTheRegularAlertText() {
+        val state = beamState(ViewState.Success, BeamAddressType.PublicOffline, SHORT_TOKEN)
+            .copy(alertText = ReceiveModule.AlertText.Normal("keep the app open"))
+        beamScreen(state)
+
+        composeTestRule.onNodeWithText("keep the app open").assertExists()
+    }
+
+    @Test
+    fun watchAccountState_rendersTheWatchAlertExactlyOnce() {
+        val state = beamState(ViewState.Success, beamAddressType = null, uri = SHORT_TOKEN)
+            .copy(watchAccount = true, alertText = null)
+        beamScreen(state)
+
+        composeTestRule.onAllNodesWithText(watchAlertText).assertCountEquals(1)
+    }
+
+    @Test
+    fun watchAccountState_withRegularAlert_rendersBothWarnings() {
+        val state = beamState(ViewState.Success, beamAddressType = null, uri = SHORT_TOKEN)
+            .copy(watchAccount = true, alertText = ReceiveModule.AlertText.Normal("keep the app open"))
+        beamScreen(state)
+
+        composeTestRule.onAllNodesWithText(watchAlertText).assertCountEquals(1)
+        composeTestRule.onNodeWithText("keep the app open").assertExists()
     }
 
     @Test

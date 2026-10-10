@@ -77,6 +77,7 @@ open class BeamSendTestFixture {
         sdk.core.clear()
         sdk.prepares.clear()
         sdk.commits.clear()
+        sdk.cancels.clear()
         sdk.registrations = 0
         sdk.allocatedTransactionIds = 0
         restart()
@@ -119,6 +120,8 @@ open class BeamSendTestFixture {
         val core = linkedMapOf<String, BeamTransaction>()
         val prepares = mutableListOf<String>()
         val commits = mutableListOf<String>()
+        val cancels = mutableListOf<String>()
+        var beforeCancel: suspend () -> Unit = {}
         val pages = mutableListOf<Int>()
         var registrations = 0
         var stops = 0
@@ -223,6 +226,21 @@ open class BeamSendTestFixture {
 
         override suspend fun abortPrepared(operationId: String): Boolean =
             error("Coordinator must not abort ambiguous sends")
+
+        /** Minimal fixture semantics: cancels a still-unresolved record, mirroring Core's own gate. */
+        override suspend fun cancelTransaction(transactionId: String): Boolean {
+            beforeCancel()
+            cancels.add(transactionId)
+            val (operationId, resolution) = resolutions.entries.firstOrNull {
+                it.value.transactionId() == transactionId
+            } ?: return false
+            if (resolution !is BeamSendResolution.Prepared && resolution !is BeamSendResolution.Committing &&
+                resolution !is BeamSendResolution.Submitted
+            ) return false
+            resolutions[operationId] = BeamSendResolution.Terminal(transactionId, BeamTransactionStatus.Canceled)
+            core[transactionId] = transaction(transactionId, status = BeamTransactionStatus.Canceled)
+            return true
+        }
 
         override suspend fun transactionPage(offset: Int, limit: Int): BeamTransactionPage {
             pages.add(offset)

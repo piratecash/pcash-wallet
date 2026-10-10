@@ -9,11 +9,14 @@ import cash.p.beam.BeamRestorePhase
 import cash.p.beam.BeamRestoreProgress
 import cash.p.beam.BeamWalletSession
 import cash.p.beam.BeamWalletState
+import cash.p.terminal.core.managers.BeamLifecycleCoordinator
+import cash.p.terminal.core.managers.BeamSendCoordinator
 import cash.p.terminal.core.managers.BeamSessionOwner
 import cash.p.terminal.R
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.entities.BalanceData
+import io.horizontalsystems.core.BackgroundManagerState
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -600,7 +603,73 @@ class BeamAdapterTest {
         coVerify(exactly = 0) { owner.close() }
     }
 
+    @Test
+    fun cancelTransaction_runnableNetwork_cancelsAndReconcilesTheSendInventory() = runTest {
+        var reconciliations = 0
+        val coordinator = mockk<BeamSendCoordinator> {
+            coEvery { cancel(session, TRANSACTION_ID) } returns true
+            coEvery { reconcile(session, true) } answers { reconciliations++; emptyList() }
+        }
+        val adapter = sendingAdapter(StandardTestDispatcher(testScheduler), coordinator)
+        try {
+            sdkState.value = BeamWalletState.Ready(100)
+            adapter.start()
+            runCurrent()
+            val settled = reconciliations
+
+            assertTrue(adapter.cancelTransaction(TRANSACTION_ID))
+
+            runCurrent()
+            coVerify(exactly = 1) { coordinator.cancel(session, TRANSACTION_ID) }
+            coVerify(atLeast = 1) { owner.start(session) }
+            assertEquals(settled + 1, reconciliations)
+        } finally {
+            adapter.close()
+        }
+    }
+
+    @Test
+    fun cancelTransaction_pausedNetwork_refusesWithoutReachingTheCoordinator() = runTest {
+        val coordinator = mockk<BeamSendCoordinator>(relaxed = true)
+        val adapter = sendingAdapter(StandardTestDispatcher(testScheduler), coordinator)
+        try {
+            sdkState.value = BeamWalletState.Ready(100)
+            adapter.start()
+            runCurrent()
+            adapter.pauseNetworkAndAwait()
+
+            assertFailsWith<IllegalStateException> { adapter.cancelTransaction(TRANSACTION_ID) }
+
+            coVerify(exactly = 0) { coordinator.cancel(any(), any()) }
+        } finally {
+            adapter.close()
+        }
+    }
+
     private fun adapter(dispatcher: CoroutineDispatcher) = testBeamAdapter(owner, session, dispatcher)
+
+    // Like [testBeamAdapter], but owning a send coordinator, as AdapterFactory wires the sending adapter.
+    private fun sendingAdapter(dispatcher: CoroutineDispatcher, coordinator: BeamSendCoordinator) = BeamAdapter(
+        owner,
+        session,
+        mockk { every { io } returns dispatcher },
+        mockk(relaxed = true),
+        BeamLifecycleCoordinator(
+            mockk { every { stateFlow } returns MutableStateFlow(BackgroundManagerState.EnterForeground) },
+            mockk { every { keepAliveBlockchains } returns MutableStateFlow(emptySet()) },
+            mockk {
+                every { isConnected } returns MutableStateFlow(true)
+                every { acquireMonitoringLease() } returns AutoCloseable { }
+                coEvery { refreshAndAwaitValidation() } returns true
+            },
+            mockk {
+                every { effectiveFlow } returns MutableStateFlow(emptySet())
+                every { stateFlow } returns MutableStateFlow(emptyMap())
+                every { isNetworkPaused(any()) } returns false
+            },
+        ),
+        coordinator,
+    )
 
     private fun deferStop() = CompletableDeferred<Unit>().also { stopGate ->
         coEvery { owner.stop(session) } coAnswers { withContext(NonCancellable) { stopGate.await() } }
@@ -608,5 +677,6 @@ class BeamAdapterTest {
 
     private companion object {
         const val NETWORK_ERROR = "BEAM connection failed. Please try again."
+        const val TRANSACTION_ID = "11111111111111111111111111111111"
     }
 }

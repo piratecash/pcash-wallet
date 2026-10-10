@@ -142,8 +142,9 @@ internal class BeamSendViewModel(
     private val canQuoteMax get() = signable && ready
     val canQuote get() = canQuoteMax && amountValid
     val canProceed get() = !busy && !offline && access.current && (quote != null || signable && amountValid)
-    val offlineSignSupported get() = access.canSign
-    val canSignOffline get() = !busy && signable && amountValid
+    // Regular recipients negotiate online, so no offline-signed payment can ever reach them.
+    val offlineSignSupported get() = access.canSign && receiverType != BeamAddressType.Regular
+    val canSignOffline get() = !busy && signable && amountValid && receiverType != BeamAddressType.Regular
 
     /** The SDK's fee-aware Max when it has one, otherwise the local balance less the fixed send fee. */
     val availableToSend: BigDecimal
@@ -535,7 +536,7 @@ internal class BeamSendViewModel(
                     outcome.operation.resolution is BeamSendResolution.Terminal
                 message = if (recorded) R.string.beam_send_recorded else R.string.beam_send_uncertain
             }
-            Outcome.RetryLater -> message = R.string.beam_send_uncertain
+            Outcome.RetryLater -> message = R.string.beam_send_recovery_in_progress
         }
     }
 

@@ -11,5 +11,6 @@ internal fun beamSendErrorMessage(error: Throwable, attempted: Boolean): Int =
         Reason.InsufficientFunds -> R.string.Swap_ErrorInsufficientBalance
         Reason.NotReady, Reason.SessionMismatch -> R.string.beam_send_not_ready
         Reason.QuoteChanged -> R.string.beam_send_quote_changed
+        Reason.OnlineOnlyReceiver -> R.string.beam_send_regular_online_only
         else -> if (attempted) R.string.beam_send_uncertain else R.string.beam_send_preview_error
     }

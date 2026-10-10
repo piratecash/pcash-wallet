@@ -3,6 +3,7 @@ package cash.p.terminal.modules.transactionInfo
 import cash.p.terminal.R
 import cash.p.beam.BeamTransactionDirection
 import cash.p.terminal.entities.transactionrecords.beam.BeamTransactionRecord
+import cash.p.terminal.modules.transactions.failureReasonText
 import cash.p.terminal.modules.transactions.statusTitle
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.isCustom
@@ -645,7 +646,7 @@ object TransactionViewItemFactoryHelper {
         }
         listOf(
             R.string.beam_history_kernel_id to transaction.kernelId,
-            R.string.beam_history_failure_reason to transaction.failureReason,
+            R.string.beam_history_failure_reason to transaction.failureReasonText,
         ).forEach { (title, value) ->
             value?.takeIf { it.isNotBlank() }?.let {
                 add(TransactionInfoViewItem.Value(Translator.getString(title), it.orHide(hideSensitiveInfo)))

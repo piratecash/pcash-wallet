@@ -90,6 +90,12 @@ sealed class TransactionInfoViewItem {
         val wallet: Wallet?,
     ) : TransactionInfoViewItem()
 
+    class BeamCancel(
+        val transactionHash: String,
+        val wallet: Wallet?,
+        val availability: OperationAvailability,
+    ) : TransactionInfoViewItem()
+
     class WarningMessage(val message: String) : TransactionInfoViewItem()
 
     object PoisonWarning : TransactionInfoViewItem()

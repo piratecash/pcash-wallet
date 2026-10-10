@@ -2,6 +2,7 @@ package cash.p.terminal.modules.transactionInfo
 
 import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.TransactionExplorerData
+import cash.p.terminal.core.adapters.BeamAdapter
 import cash.p.terminal.core.managers.AmlStatusManager
 import cash.p.terminal.core.managers.PendingTransactionMatcher
 import cash.p.terminal.core.managers.PoisonAddressManager
@@ -308,6 +309,10 @@ class TransactionInfoService(
 
     suspend fun updateRecord(newRecord: TransactionRecord) {
         handleRecordUpdate(newRecord)
+    }
+
+    suspend fun cancelBeam(transactionId: String): Boolean = withContext(dispatcherProvider.io) {
+        checkNotNull(adapter as? BeamAdapter) { "BEAM adapter unavailable" }.cancelTransaction(transactionId)
     }
 
     suspend fun start() = withContext(dispatcherProvider.io) {

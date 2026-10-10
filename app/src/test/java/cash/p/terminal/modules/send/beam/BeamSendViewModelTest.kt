@@ -93,6 +93,23 @@ class BeamSendViewModelTest : BeamSendTestFixture() {
     }
 
     @Test
+    fun recipientChanged_regularAddress_offlineSignIsNotOffered() {
+        model.onRecipientChanged("Regular")
+        assertEquals(BeamAddressType.Regular, model.receiverType)
+        assertFalse(model.offlineSignSupported)
+        assertFalse(model.canSignOffline)
+    }
+
+    @Test
+    fun proceed_regularAddress_navigatesLikeAnyOtherRecipient() = runTest(dispatcher) {
+        model.onRecipientChanged("Regular")
+        advanceUntilIdle()
+        val navigations = recordNavigations()
+        model.proceed()
+        assertEquals(1, navigations.size)
+    }
+
+    @Test
     fun recipientEntered_readyWallet_prefetchesSdkMaxAsAvailableBalance() = runTest(dispatcher) {
         advanceUntilIdle()
         coVerify { access.quote(match { it.amount == BeamSendAmount.Max && it.context == BeamSendContext.Online }) }
@@ -355,12 +372,12 @@ class BeamSendViewModelTest : BeamSendTestFixture() {
         model.confirm()
         assertTrue(model.attempted)
         assertFalse(model.recorded)
-        assertEquals(R.string.beam_send_uncertain, model.message)
+        assertEquals(R.string.beam_send_recovery_in_progress, model.message)
         val result = model.sendResult
         assertTrue(result is SendResult.Failed)
         val caution = (result as SendResult.Failed).caution.s
         assertTrue(caution is TranslatableString.ResString)
-        assertEquals(R.string.beam_send_uncertain, (caution as TranslatableString.ResString).id)
+        assertEquals(R.string.beam_send_recovery_in_progress, (caution as TranslatableString.ResString).id)
     }
 
     @Test

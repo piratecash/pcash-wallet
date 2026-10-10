@@ -122,10 +122,11 @@ class SendTransactionServiceBeamTest : BeamSendTestFixture(), KoinTest {
         stopKoin()
     }
 
-    private suspend fun quotedService(memo: String? = null) = SendTransactionServiceBeam(token).also {
-        openSession()
-        it.setSendTransactionData(SendTransactionData.Beam("deposit", BigDecimal("0.000001"), memo))
-    }
+    private suspend fun quotedService(memo: String? = null, address: String = "deposit") =
+        SendTransactionServiceBeam(token).also {
+            openSession()
+            it.setSendTransactionData(SendTransactionData.Beam(address, BigDecimal("0.000001"), memo))
+        }
 
     private fun uid(transactionId: String) = "beam:7:account:$transactionId"
 
@@ -136,6 +137,16 @@ class SendTransactionServiceBeamTest : BeamSendTestFixture(), KoinTest {
         assertTrue(state.sendable)
         assertFalse(state.loading)
         assertEquals(BigDecimal("0.00000010"), state.networkFee?.primary?.value)
+    }
+
+    @Test
+    fun regularDepositAddress_quotesAndSendsOnline() = runTest(dispatcher) {
+        val service = quotedService(address = "regular-deposit-address")
+
+        assertTrue(service.stateFlow.value.sendable)
+        val result = service.send()
+
+        assertEquals(SendTransactionResult.Beam(SendResult.Sent(uid(TX_ID)), TX_ID), result)
     }
 
     @Test
