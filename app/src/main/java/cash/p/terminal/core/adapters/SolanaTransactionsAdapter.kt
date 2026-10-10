@@ -1,7 +1,6 @@
 package cash.p.terminal.core.adapters
 
 import cash.p.terminal.wallet.AdapterState
-import cash.p.terminal.core.App
 import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.managers.SolanaKitWrapper
 import cash.p.terminal.entities.LastBlockInfo
@@ -95,6 +94,9 @@ class SolanaTransactionsAdapter(
         else -> emptyFlow()
     }
 
+    override fun getTransactionsReloadSignalFlow(): Flow<Unit> =
+        kit.allTransactionsFlow(null).map { }
+
     private fun getTransactionRecordsFlowable(
         token: Token?, transactionType: FilterTransactionType
     ): Flowable<List<TransactionRecord>> {
@@ -126,9 +128,5 @@ class SolanaTransactionsAdapter(
 
     companion object {
         const val decimal = 9
-
-        fun clear(walletId: String) {
-            SolanaKit.clear(App.instance, walletId)
-        }
     }
 }

@@ -65,6 +65,7 @@ class SolanaKitManagerOfflineGateTest {
             backgroundKeepAliveManager = mockk(relaxed = true),
             networkErrorTracker = mockk(relaxed = true),
             offlineModeManager = offlineModeManager,
+            solanaKitDatabaseKeyProvider = mockk(relaxed = true),
         )
         manager.solanaKitWrapper = SolanaKitWrapper(mockSolanaKit, null)
         setField(manager, "currentAccount", account)

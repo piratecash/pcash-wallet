@@ -153,6 +153,15 @@ class EvmKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryption
         kitName = "EvmKit",
     )
 
+class SolanaKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :
+    KitDatabaseKeyProvider(
+        context,
+        encryptionManager,
+        preferencesName = "solana_kit_database_keys",
+        keyPrefix = "solana_kit_database_key_",
+        kitName = "SolanaKit",
+    )
+
 class StellarKitDatabaseKeyProvider(context: Context, encryptionManager: IEncryptionManager) :
     KitDatabaseKeyProvider(
         context,

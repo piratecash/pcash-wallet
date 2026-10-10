@@ -26,10 +26,6 @@ class SplAdapter(
 
     private val mintAddress = Address(mintAddressString)
 
-    init {
-        solanaKit.addTokenAccount(mintAddressString, wallet.decimal)
-    }
-
     // IAdapter
 
     override fun attachLocalData() {

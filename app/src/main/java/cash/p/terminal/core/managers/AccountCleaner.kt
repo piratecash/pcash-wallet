@@ -1,6 +1,5 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.core.adapters.SolanaAdapter
 import cash.p.terminal.core.storage.MoneroFileDao
 import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
 import cash.p.terminal.modules.pin.core.PinDbStorage
@@ -28,6 +27,7 @@ class AccountCleaner(
     private val pinDbStorage: PinDbStorage,
     private val accountStorageCleaner: AccountStorageCleaner,
     private val bitcoinKitDatabaseManager: BitcoinKitDatabaseManager,
+    private val solanaKitManager: SolanaKitManager,
     private val stellarKitManager: StellarKitManager,
     private val tonKitManager: TonKitManager,
     private val tronKitManager: TronKitManager,
@@ -51,7 +51,7 @@ class AccountCleaner(
         evmBlockchainManager.clear(accountId)
         clearWalletDataForBlockchainIfInactive(accountId, BlockchainType.Monero)
         clearWalletDataForBlockchainIfInactive(accountId, BlockchainType.Zcash)
-        SolanaAdapter.clear(accountId)
+        solanaKitManager.clear(accountId)
         tronKitManager.clear(accountId)
         stellarKitManager.clear(accountId)
         tonKitManager.clear(accountId)
