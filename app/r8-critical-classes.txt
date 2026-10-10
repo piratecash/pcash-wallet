@@ -65,3 +65,12 @@ com.m2049r.xmrwallet.util.KeyStoreHelper
 com.piratecash.monero.signer.ExternalSignerNativeBridge
 com.piratecash.monero.signer.ExternalSignerException
 com.piratecash.monero.signer.HardwareWalletErrorCode
+
+# Tangem SDK requests these SpongyCastle ("SC") services by name; the provider loads them by class name.
+org.spongycastle.jcajce.provider.asymmetric.EC$Mappings
+org.spongycastle.jcajce.provider.asymmetric.ec.SignatureSpi$ecDSA256
+org.spongycastle.jcajce.provider.asymmetric.ec.KeyFactorySpi$EC
+org.spongycastle.jcajce.provider.asymmetric.ec.KeyPairGeneratorSpi$ECDH
+org.spongycastle.jcajce.provider.asymmetric.ec.KeyAgreementSpi$DH
+org.spongycastle.jcajce.provider.symmetric.AES$Mappings
+org.spongycastle.jcajce.provider.symmetric.AES$ECB
