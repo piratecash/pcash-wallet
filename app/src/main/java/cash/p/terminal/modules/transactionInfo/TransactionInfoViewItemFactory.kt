@@ -2,6 +2,8 @@ package cash.p.terminal.modules.transactionInfo
 
 import cash.p.terminal.R
 import cash.p.beam.BeamTransactionDirection
+import cash.p.beam.BeamTransactionStatus
+import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.beam.BeamTransactionRecord
 import cash.p.terminal.core.managers.TonHelper
 import cash.p.terminal.ui_compose.ColoredValue
@@ -847,6 +849,7 @@ class TransactionInfoViewItemFactory(
                 )
             }
         }
+        itemSections.addAll(beamCancelSections(transaction))
         if (transactionItem.record.transactionHash.isNotEmpty() && transactionItem.explorerData.isNotEmpty()) {
             val explorerItems = TransactionViewItemFactoryHelper.getExplorerSectionItems(transactionItem.explorerData)
             if (explorerItems.isNotEmpty()) {
@@ -871,6 +874,21 @@ class TransactionInfoViewItemFactory(
         }
 
         return itemSections
+    }
+
+    /** BEAM core cancels only an own transfer that is still waiting for its peer. */
+    private fun beamCancelSections(transaction: TransactionRecord): List<List<TransactionInfoViewItem>> {
+        val record = transaction as? BeamTransactionRecord ?: return emptyList()
+        if (record.direction == BeamTransactionDirection.Incoming) return emptyList()
+        if (record.sdkStatus !in CANCELLABLE_BEAM_STATUSES) return emptyList()
+        val availability = offlineOperationGate.availabilityFor(wallet, true)
+        if (!availability.clickable) return emptyList()
+        return listOf(
+            listOf(TransactionInfoViewItem.BeamCancel(record.transactionHash, wallet, availability)),
+            listOf(
+                TransactionInfoViewItem.Description(Translator.getString(R.string.beam_cancel_description))
+            ),
+        )
     }
 
     private fun addMemoItem(
@@ -937,3 +955,6 @@ private fun List<TransactionInfoViewItem>.withOfflineStatus(
     }
 
 private const val UNKNOWN_VALUE = "---"
+
+private val CANCELLABLE_BEAM_STATUSES =
+    setOf(BeamTransactionStatus.Pending, BeamTransactionStatus.InProgress)

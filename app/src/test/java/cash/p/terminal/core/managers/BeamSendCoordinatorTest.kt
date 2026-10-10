@@ -8,6 +8,7 @@ import cash.p.beam.BeamSendContext.Online
 import cash.p.beam.BeamSendRequest
 import cash.p.beam.BeamSendPreview
 import cash.p.beam.BeamSendResolution
+import cash.p.beam.BeamTransactionStatus
 import cash.p.beam.BeamWalletState
 import cash.p.terminal.core.managers.BeamSendCoordinator.Outcome
 import cash.p.terminal.core.managers.BeamSendCoordinator.Reason
@@ -279,6 +280,20 @@ class BeamSendCoordinatorTest : BeamSendTestFixture() {
     }
 
     @Test
+    fun confirm_onlineOnlyFailure_mapsToOnlineOnlyReceiver() = runTest {
+        val confirmation = preview()
+        sdk.beforeInventory = { throw BeamFailure.OnlineOnly("Interactive receiver requires an online send") }
+        expect(Reason.OnlineOnlyReceiver) { coordinator.confirm(confirmation) }
+    }
+
+    @Test
+    fun confirm_unsupportedFailure_stillMapsToExternalFailure() = runTest {
+        val confirmation = preview()
+        sdk.beforeInventory = { throw BeamFailure.Unsupported("Unsupported Beam address") }
+        expect(Reason.ExternalFailure) { coordinator.confirm(confirmation) }
+    }
+
+    @Test
     fun confirm_corruptInventory_failsClosedBeforePrepareOrRecovery() = runTest {
         val confirmation = preview()
         sdk.beforeInventory = { throw secretFailure() }
@@ -386,6 +401,48 @@ class BeamSendCoordinatorTest : BeamSendTestFixture() {
         assertEquals("BEAM send cancelled", error.message)
         assertNull(error.cause)
         assertTrue(error.suppressed.isEmpty())
+    }
+
+    @Test
+    fun cancel_waitingTransfer_cancelsWithoutReplayingTheOperation() = runTest {
+        val confirmation = submitted()
+
+        assertTrue(coordinator.cancel(session, TX_ID))
+
+        assertEquals(BeamTransactionStatus.Canceled, sdk.core.getValue(TX_ID).status)
+        assertEquals(listOf(confirmation.operationId), sdk.prepares)
+        assertEquals(listOf(confirmation.operationId), sdk.commits)
+        assertEquals(1, sdk.registrations)
+    }
+
+    @Test
+    fun cancel_resolvedTransfer_reportsRefusalWithoutFailing() = runTest {
+        terminal()
+        assertFalse(coordinator.cancel(session, TX_ID))
+    }
+
+    @Test
+    fun cancel_sessionNotReady_failsWithoutReachingTheWallet() = runTest {
+        openSession()
+        sdk.state.value = BeamWalletState.Stopped
+        expect(Reason.NotReady) { coordinator.cancel(session, TX_ID) }
+        assertTrue(sdk.cancels.isEmpty())
+    }
+
+    @Test
+    fun cancel_replacedSession_failsWithoutReachingTheWallet() = runTest {
+        openSession()
+        val stale = session
+        openSession("replacement")
+        expect(Reason.SessionMismatch) { coordinator.cancel(stale, TX_ID) }
+        assertTrue(sdk.cancels.isEmpty())
+    }
+
+    @Test
+    fun cancel_walletRejectsTheId_stripsTheFailureDetails() = runTest {
+        openSession()
+        sdk.beforeCancel = { throw IllegalArgumentException(request.receiverToken) }
+        expect(Reason.ExternalFailure) { coordinator.cancel(session, "not-a-transaction-id") }
     }
 
     @Test

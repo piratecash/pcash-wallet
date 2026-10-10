@@ -197,6 +197,7 @@ fun BeamAddressType.titleResId(): Int = when (this) {
     BeamAddressType.Offline -> R.string.beam_send_offline
     BeamAddressType.PublicOffline -> R.string.beam_send_public_offline
     BeamAddressType.MaxPrivacy -> R.string.beam_send_max_privacy
+    BeamAddressType.Regular -> R.string.beam_address_type_regular
 }
 
 suspend fun <T> retryWhen(

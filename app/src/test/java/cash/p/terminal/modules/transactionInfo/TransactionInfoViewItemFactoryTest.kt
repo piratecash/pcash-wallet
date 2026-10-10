@@ -7,6 +7,7 @@ import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.transactions.TransactionStatus
 import cash.p.terminal.modules.transactions.beamHistoryRecord
+import cash.p.terminal.modules.transactions.beamInteractiveHistoryRecord
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.core.managers.AddressLabelManager
 import cash.p.terminal.core.managers.AddressMetadataManager
@@ -16,10 +17,12 @@ import cash.p.terminal.entities.transactionrecords.thorchain.ThorchainTransactio
 import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.contacts.model.Contact
 import cash.p.terminal.modules.offline.OfflineOperationGate
+import cash.p.terminal.modules.offline.OperationAvailability
 import cash.p.terminal.ui_compose.ColorName
 import cash.p.terminal.ui_compose.ColoredValue
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.transaction.TransactionSource
@@ -53,6 +56,7 @@ class TransactionInfoViewItemFactoryTest {
     private val addressLabelManager = mockk<AddressLabelManager>(relaxed = true)
     private val contactsRepository = mockk<ContactsRepository>(relaxed = true)
     private val numberFormatter = mockk<IAppNumberFormatter>(relaxed = true)
+    private val beamWallet = mockk<Wallet>(relaxed = true)
 
     @Before
     fun setUp() {
@@ -394,9 +398,10 @@ class TransactionInfoViewItemFactoryTest {
 
     @Test
     fun getViewItemSections_beamStatusesWithOldProofHeight_preservesSdkState() {
+        // Default direction is Outgoing; InProgress for Outgoing is covered separately below.
         val titles = mapOf(
             BeamTransactionStatus.Pending to R.string.Transactions_Pending,
-            BeamTransactionStatus.InProgress to R.string.beam_history_in_progress,
+            BeamTransactionStatus.InProgress to R.string.beam_history_waiting_for_receiver,
             BeamTransactionStatus.Registering to R.string.beam_history_registering,
             BeamTransactionStatus.Confirming to R.string.transaction_swap_status_confirming,
             BeamTransactionStatus.Completed to R.string.Transactions_Completed,
@@ -412,6 +417,51 @@ class TransactionInfoViewItemFactoryTest {
             }
             assertEquals(Translator.getString(title), statusItem.value)
             assertEquals(false, items.any { it is TransactionInfoViewItem.Status })
+        }
+    }
+
+    @Test
+    fun getViewItemSections_beamInProgressByDirection_showsWaitingForCounterparty() {
+        val titles = mapOf(
+            BeamTransactionDirection.Outgoing to R.string.beam_history_waiting_for_receiver,
+            BeamTransactionDirection.Incoming to R.string.beam_history_waiting_for_sender,
+            BeamTransactionDirection.Self to R.string.beam_history_in_progress,
+        )
+        titles.forEach { (direction, title) ->
+            val items = beamItems(beamHistoryRecord(direction = direction, status = BeamTransactionStatus.InProgress))
+            val statusItem = items.filterIsInstance<TransactionInfoViewItem.Value>().single {
+                it.title == Translator.getString(R.string.TransactionInfo_Status)
+            }
+            assertEquals(Translator.getString(title), statusItem.value)
+        }
+    }
+
+    @Test
+    fun getViewItemSections_beamFailedWithTransactionExpired_showsExpiredStatusAndReason() {
+        val items = beamItems(beamHistoryRecord(
+            status = BeamTransactionStatus.Failed, failureReason = "TransactionExpired"
+        )).filterIsInstance<TransactionInfoViewItem.Value>()
+        val statusItem = items.single { it.title == Translator.getString(R.string.TransactionInfo_Status) }
+        assertEquals(Translator.getString(R.string.beam_history_expired), statusItem.value)
+        assertEquals(Translator.getString(R.string.beam_history_expired), items.single {
+            it.title == Translator.getString(R.string.beam_history_failure_reason)
+        }.value)
+    }
+
+    @Test
+    fun getViewItemSections_beamFailedWithKnownReasons_mapsReasonToFriendlyText() {
+        val reasons = mapOf(
+            "Canceled" to R.string.beam_history_canceled,
+            "ExpiredAddressProvided" to R.string.beam_history_address_expired,
+            "NoInputs" to R.string.Swap_ErrorInsufficientBalance,
+        )
+        reasons.forEach { (failureReason, title) ->
+            val items = beamItems(beamHistoryRecord(
+                status = BeamTransactionStatus.Failed, failureReason = failureReason
+            )).filterIsInstance<TransactionInfoViewItem.Value>()
+            assertEquals(Translator.getString(title), items.single {
+                it.title == Translator.getString(R.string.beam_history_failure_reason)
+            }.value)
         }
     }
 
@@ -442,11 +492,78 @@ class TransactionInfoViewItemFactoryTest {
         assertEquals(true, sensitiveValues.all { it.value == "*****" })
     }
 
+    @Test
+    fun getViewItemSections_beamOwnWaitingTransfer_offersCancelWithItsDescription() {
+        val statuses = listOf(BeamTransactionStatus.Pending, BeamTransactionStatus.InProgress)
+        statuses.forEach { status ->
+            val items = beamCancellableItems(beamHistoryRecord(status = status))
+            val cancel = items.filterIsInstance<TransactionInfoViewItem.BeamCancel>().single()
+            assertEquals("transaction-id", cancel.transactionHash)
+            assertEquals(OperationAvailability.Available, cancel.availability)
+            assertEquals(beamWallet, cancel.wallet)
+            assertEquals(
+                Translator.getString(R.string.beam_cancel_description),
+                items.filterIsInstance<TransactionInfoViewItem.Description>().single().text,
+            )
+        }
+    }
+
+    @Test
+    fun getViewItemSections_beamTransferCoreCannotCancel_omitsTheCancelRow() {
+        val records = listOf(
+            beamHistoryRecord(direction = BeamTransactionDirection.Incoming, status = BeamTransactionStatus.InProgress),
+            beamHistoryRecord(status = BeamTransactionStatus.Registering),
+            beamHistoryRecord(status = BeamTransactionStatus.Confirming),
+            beamHistoryRecord(status = BeamTransactionStatus.Completed),
+            beamHistoryRecord(status = BeamTransactionStatus.Canceled),
+        )
+        records.forEach { record ->
+            assertEquals(
+                emptyList<TransactionInfoViewItem.BeamCancel>(),
+                beamCancellableItems(record).filterIsInstance<TransactionInfoViewItem.BeamCancel>(),
+            )
+        }
+    }
+
+    // Offline mode keeps the row clickable: the tap opens the recovery sheet instead of cancelling.
+    @Test
+    fun getViewItemSections_beamWaitingTransferOffline_keepsTheCancelRowBlocked() {
+        val items = beamCancellableItems(
+            beamInteractiveHistoryRecord(), operationAvailability = OperationAvailability.BlockedOffline
+        )
+        assertEquals(
+            OperationAvailability.BlockedOffline,
+            items.filterIsInstance<TransactionInfoViewItem.BeamCancel>().single().availability,
+        )
+    }
+
+    @Test
+    fun getViewItemSections_beamWaitingTransferWithoutWallet_omitsTheCancelRow() {
+        val items = beamItems(beamInteractiveHistoryRecord())
+        assertEquals(
+            emptyList<TransactionInfoViewItem.BeamCancel>(),
+            items.filterIsInstance<TransactionInfoViewItem.BeamCancel>(),
+        )
+    }
+
+    private fun beamCancellableItems(
+        record: TransactionRecord,
+        operationAvailability: OperationAvailability = OperationAvailability.Available,
+    ): List<TransactionInfoViewItem> = beamItems(
+        record = record,
+        wallet = beamWallet,
+        offlineOperationGate = mockk {
+            every { availability(beamWallet, true) } returns operationAvailability
+        },
+    )
+
     private fun beamItems(
         record: TransactionRecord,
         hideAmount: Boolean = false,
+        wallet: Wallet? = null,
+        offlineOperationGate: OfflineOperationGate = mockk(relaxed = true),
     ): List<TransactionInfoViewItem> = TransactionInfoViewItemFactory(
-        offlineOperationGate = mockk(relaxed = true), wallet = null, blockchainType = BlockchainType.Beam
+        offlineOperationGate = offlineOperationGate, wallet = wallet, blockchainType = BlockchainType.Beam
     ).getViewItemSections(transactionInfoItem(record).copy(
         lastBlockInfo = LastBlockInfo(height = 1_000), hideAmount = hideAmount,
     )).flatten()

@@ -68,7 +68,7 @@ secp256k1 = "0.24.0"
 
 tonKotlin = "0.5.0" # updated for ktor 3.x compatibility
 piratecash-ton = "v2.0.0-pcash.9"
-beam-sdk = "v0.2.1"
+beam-sdk = "v0.3.0"
 piratecash-bitcoin = "v0.1.0-pcash.36"
 hd-wallet-kit = "1.0.1"
 stellar-kit = "v2.0.0-pcash.1"

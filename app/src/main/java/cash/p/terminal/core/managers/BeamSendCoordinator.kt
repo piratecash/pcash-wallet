@@ -81,6 +81,13 @@ class BeamSendCoordinator(
             wallet.abortPrepared(operationId)
         }
 
+    /** Cancels an own waiting send; the journal is untouched, so no operation is replayed afterwards. */
+    suspend fun cancel(session: BeamSessionOwner.Session, transactionId: String): Boolean =
+        serialized(session) { wallet ->
+            ensureReady(session, wallet)
+            wallet.cancelTransaction(transactionId)
+        }
+
     sealed interface Outcome {
         data class Recorded(val operation: BeamSendOperation) : Outcome
         data object RetryLater : Outcome
@@ -247,6 +254,8 @@ class BeamSendCoordinator(
         fail(Reason.QuoteChanged)
     } catch (_: BeamFailure.InsufficientFunds) {
         fail(Reason.InsufficientFunds)
+    } catch (_: BeamFailure.OnlineOnly) {
+        fail(Reason.OnlineOnlyReceiver)
     } catch (_: Exception) {
         fail(Reason.ExternalFailure)
     }
@@ -254,6 +263,7 @@ class BeamSendCoordinator(
     enum class Reason {
         SessionMismatch, NotReady, ConfirmationConsumed, MissingOperation, QuoteChanged,
         IdentityChanged, RetryLater, ExternalFailure, ContextUnavailable, InsufficientFunds,
+        OnlineOnlyReceiver,
     }
 
     class SendException internal constructor(val reason: Reason) : Exception("BEAM send: ${reason.name}")

@@ -85,6 +85,7 @@ import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_brand
 import cash.p.terminal.ui_compose.components.body_leah
+import cash.p.terminal.ui_compose.components.body_lucian
 import cash.p.terminal.ui_compose.components.caption_grey
 import cash.p.terminal.ui_compose.components.subhead1_grey
 import cash.p.terminal.ui_compose.components.subhead1_brand
@@ -711,23 +712,18 @@ fun TransactionInfoSpeedUpCell(
     offlineGatedAction.Sheet()
 }
 
-// MOBILE-593
-/*@Composable
-fun TransactionInfoCancelCell(
-    transactionHash: String,
-    blockchainType: BlockchainType,
-    navController: NavController
+@Composable
+fun TransactionInfoBeamCancelCell(
+    availability: OperationAvailability,
+    wallet: Wallet?,
+    onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
+    val offlineGatedAction = rememberOfflineGatedAction(wallet)
+
     RowUniversal(
-        modifier = Modifier.padding(horizontal = 16.dp),
-        onClick = {
-            openTransactionOptionsModule(
-                SpeedUpCancelType.Cancel,
-                transactionHash,
-                blockchainType,
-                navController
-            )
-        }
+        modifier = modifier.padding(horizontal = 16.dp),
+        onClick = { offlineGatedAction.onClick(availability, onCancel) }
     ) {
         Icon(
             painter = painterResource(R.drawable.ic_outgoingraw_24),
@@ -735,9 +731,11 @@ fun TransactionInfoCancelCell(
             tint = ComposeAppTheme.colors.statusError
         )
         Spacer(Modifier.width(16.dp))
-        body_lucian(text = stringResource(R.string.TransactionInfoOptions_Cancel_Button))
+        body_lucian(text = stringResource(R.string.beam_cancel_transaction))
     }
-}*/
+
+    offlineGatedAction.Sheet()
+}
 
 @Composable
 fun TransactionInfoRbfCell(
@@ -1142,6 +1140,19 @@ private fun TransactionInfoTransactionHashCellPreview() {
                 TransactionInfoTransactionHashCell("0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef")
             }
         }
+    }
+}
+
+@Suppress("UnusedPrivateMember")
+@Composable
+@Preview(showBackground = true)
+private fun TransactionInfoBeamCancelCellPreview() {
+    ComposeAppTheme {
+        TransactionInfoBeamCancelCell(
+            availability = OperationAvailability.Available,
+            wallet = null,
+            onCancel = {},
+        )
     }
 }
 

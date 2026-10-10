@@ -217,6 +217,7 @@ private fun BeamReceiveTypeSelector(
 }
 
 private val BEAM_RECEIVE_ADDRESS_TYPES = listOf(
+    BeamAddressType.Regular,
     BeamAddressType.PublicOffline,
     BeamAddressType.Offline,
     BeamAddressType.MaxPrivacy,

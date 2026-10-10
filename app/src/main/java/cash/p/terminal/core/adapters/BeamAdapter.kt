@@ -367,6 +367,12 @@ class BeamAdapter(
         }
     }
 
+    suspend fun cancelTransaction(transactionId: String): Boolean {
+        val coordinator = checkNotNull(sendCoordinator) { "BEAM send coordinator unavailable" }
+        return withCriticalOperation { coordinator.cancel(session, transactionId) }
+            .also { requestReconciliation() }
+    }
+
     suspend fun pollTransactions(): List<TransactionRecord> {
         val policy = lifecycle ?: return emptyList()
         if (!isCurrent || session.wallet.state.value is BeamWalletState.Restoring) return emptyList()

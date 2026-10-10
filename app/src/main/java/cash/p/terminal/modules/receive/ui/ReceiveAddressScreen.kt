@@ -478,7 +478,12 @@ private fun WarningTextView(
             )
         }
 
-        is ReceiveModule.AlertText.Normal -> Unit
+        is ReceiveModule.AlertText.Normal -> {
+            TextImportantWarning(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                text = alertText.content,
+            )
+        }
     }
 }
 

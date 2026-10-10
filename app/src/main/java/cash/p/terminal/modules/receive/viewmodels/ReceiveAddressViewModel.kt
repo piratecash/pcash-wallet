@@ -57,13 +57,13 @@ class ReceiveAddressViewModel internal constructor(
 
     /** The address and what must be published with it; replaced whole, so no frame can mix two answers. */
     private data class Shown(
-        val alertText: ReceiveModule.AlertText?,
+        val alertText: ReceiveModule.AlertText? = null,
         val address: String = "",
         val accountActive: Boolean = true,
     )
 
     @Volatile
-    private var shown = Shown(alertText = getAlertText(watchAccount))
+    private var shown = Shown()
 
     /** Confined to the collector below: it is the only writer, so a plain field is enough. */
     private var freshAddressJob: Job? = null
@@ -76,7 +76,7 @@ class ReceiveAddressViewModel internal constructor(
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
-    private var beamAddressType = beamAddressProvider?.let { BeamAddressType.PublicOffline }
+    private var beamAddressType = beamAddressProvider?.let { BeamAddressType.Regular }
     private var beamRequestGeneration = 0L
     private var beamRequest: Job? = null
 
@@ -153,12 +153,12 @@ class ReceiveAddressViewModel internal constructor(
         emitState()
     }
 
-    private fun getAlertText(watchAccount: Boolean): ReceiveModule.AlertText? {
-        return if (watchAccount) ReceiveModule.AlertText.Normal(
-            Translator.getString(R.string.Balance_Receive_WatchAddressAlert)
-        )
-        else null
-    }
+    private fun getBeamAlertText(type: BeamAddressType): ReceiveModule.AlertText? =
+        if (type == BeamAddressType.Regular) {
+            ReceiveModule.AlertText.Normal(Translator.getString(R.string.beam_receive_regular_alert))
+        } else {
+            null
+        }
 
     /**
      * Renders twice: the first frame never touches the SDK, so a slow fresh-address lookup cannot
@@ -203,7 +203,7 @@ class ReceiveAddressViewModel internal constructor(
     /** Only fills an empty screen: an adapter's answer already shown outranks a derived address. */
     private suspend fun showFallback(fallbackAddress: String) = renderMutex.withLock {
         if (shown.address.isEmpty()) {
-            shown = Shown(alertText = getAlertText(watchAccount), address = fallbackAddress)
+            shown = Shown(address = fallbackAddress)
         }
     }
 
@@ -236,7 +236,7 @@ class ReceiveAddressViewModel internal constructor(
     ) = renderMutex.withLock {
         // A cancelled fresh-address job must not publish over the render that replaced it.
         currentCoroutineContext().ensureActive()
-        shown = Shown(getAlertText(watchAccount), address, shown.accountActive)
+        shown = Shown(address = address, accountActive = shown.accountActive)
         viewState = ViewState.Success
         if (checkActivation) {
             // Unknown activation state must not hide a valid address behind the TRON warning
@@ -291,6 +291,7 @@ class ReceiveAddressViewModel internal constructor(
         beamRequest?.cancel()
         val requestGeneration = ++beamRequestGeneration
         beamAddressType = type
+        shown = shown.copy(alertText = getBeamAlertText(type))
         clearBeamAddress(ViewState.Loading)
         beamRequest = viewModelScope.launch {
             try {

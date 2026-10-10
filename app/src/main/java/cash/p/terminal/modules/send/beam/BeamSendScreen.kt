@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import cash.p.beam.BeamAddressType
 import cash.p.terminal.R
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.utils.AddressUriParser
@@ -51,6 +52,7 @@ import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.HudHelper
+import cash.p.terminal.ui_compose.components.InfoText
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenType
@@ -156,6 +158,7 @@ private data class BeamSendFormState(
     val token: Token,
     val tokenType: TokenType,
     val recipient: String,
+    val receiverType: BeamAddressType?,
     val hideAddress: Boolean,
     val editable: Boolean,
     val amount: String,
@@ -192,6 +195,7 @@ private fun BeamSendViewModel.formState(balanceHidden: Boolean) = BeamSendFormSt
     token = wallet.token,
     tokenType = wallet.token.type,
     recipient = recipient,
+    receiverType = receiverType,
     hideAddress = hideAddress,
     editable = editable,
     amount = amount,
@@ -338,6 +342,9 @@ private fun BeamAddressSection(
         viewModel = addressViewModel, inputState = inputState, address = address, value = value,
         navigation = navigation,
     )
+    if (state.receiverType == BeamAddressType.Regular) {
+        InfoText(text = stringResource(R.string.beam_send_regular_hint))
+    }
     VSpacer(12.dp)
 }
 
