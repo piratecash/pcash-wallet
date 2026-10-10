@@ -79,12 +79,12 @@ class NetworkErrorTracker {
 
     private fun buildInfo(error: NetworkErrorInfo): Map<String, String> {
         val info = linkedMapOf(
-            "Recent Network Error Source" to sanitizeNetworkUrl(error.source),
+            "Recent Network Error Source" to sanitizeDiagnosticText(error.source),
             "Recent Network Error Method" to error.method,
-            "Recent Network Error URL" to sanitizeNetworkUrl(error.url),
+            "Recent Network Error URL" to sanitizeDiagnosticText(error.url),
             "Recent Network Error Host" to error.host,
             "Recent Network Error Type" to error.throwable.javaClass.simpleName,
-            "Recent Network Error Message" to sanitizeNetworkUrl(error.throwable.message.orEmpty()),
+            "Recent Network Error Message" to sanitizeDiagnosticText(error.throwable.message.orEmpty()),
         ).filterValues(String::isNotBlank).toMutableMap()
 
         if (error.resolvedIps.isNotEmpty()) {
@@ -100,7 +100,7 @@ class NetworkErrorTracker {
     private data class AppLogWrite(val signature: String, val timestampMs: Long)
 }
 
-private const val APP_LOG_DEDUP_WINDOW_MS = 5 * 60 * 1000L
+internal const val APP_LOG_DEDUP_WINDOW_MS = 5 * 60 * 1000L
 
 /**
  * Merges the tracker's most recent network error (if any) and, for explorer hosts (e.g.
@@ -175,9 +175,17 @@ private val SECRET_PATH_SEGMENT = Regex("/[A-Za-z0-9_-]{20,}")
 // length — short custom-RPC keys would slip past the long-token rule otherwise.
 private val VERSION_PREFIXED_SEGMENT = Regex("/(v\\d+)/[^/?#\\s]+", RegexOption.IGNORE_CASE)
 
+private val ZCASH_KEY_TOKEN =
+    Regex("(?:uview|zxview|zview|zxsk|secret-extended-key-)[0-9a-z]+", RegexOption.IGNORE_CASE)
+
+private fun String.redactZcashKeys(): String = replace(ZCASH_KEY_TOKEN, "[redacted]")
+
+/** Diagnostic text that reaches reports: URL credentials and Zcash key tokens redacted. */
+fun sanitizeDiagnosticText(text: String): String = sanitizeNetworkUrl(text).redactZcashKeys()
+
 /** The App Log is exported in reports, so the throwable text is redacted like a URL before it is persisted. */
 fun AppLogger.warningSanitized(message: String, error: Throwable, separator: String = ": ") =
-    warning(message + separator + sanitizeNetworkUrl(error.boundedStackTraceToString()))
+    warning(message + separator + sanitizeDiagnosticText(error.boundedStackTraceToString()))
 
 /**
  * Redacts credentials that can appear in network URLs before they are stored/logged/reported:

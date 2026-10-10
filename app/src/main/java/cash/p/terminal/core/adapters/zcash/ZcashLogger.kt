@@ -1,5 +1,6 @@
 package cash.p.terminal.core.adapters.zcash
 
+import cash.p.terminal.core.managers.APP_LOG_DEDUP_WINDOW_MS
 import cash.p.terminal.core.managers.NetworkErrorInfo
 import cash.p.terminal.core.managers.NetworkErrorTracker
 import cash.p.terminal.core.managers.warningSanitized
@@ -13,6 +14,7 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.logger.AppLogger
 import java.net.URI
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 
 internal val zcashLogger = Logger.withTag("ZEC")
@@ -42,11 +44,14 @@ internal class ZcashSessionDiagnostics(
     private val networkErrorTracker: NetworkErrorTracker,
     private val accountId: String,
     val serverUrl: String,
+    private val timeSource: TimeSource = TimeSource.Monotonic,
 ) {
+    private var lastWrite: FailureWrite? = null
+
     fun syncFailed(error: Throwable) {
         val zcashError = error as? ZcashException
         val stage = zcashError?.stage?.name ?: UNKNOWN
-        logger.warningSanitized("sync failed stage=$stage category=${zcashError?.category?.name ?: UNKNOWN}", error)
+        logSyncFailureOnce(stage, zcashError?.category?.name ?: UNKNOWN, error)
         if (!error.isZcashNetworkFailure()) return
         networkErrorTracker.record(
             BlockchainType.Zcash,
@@ -61,6 +66,20 @@ internal class ZcashSessionDiagnostics(
             ),
         )
     }
+
+    // The retry loop would otherwise flood the exported log with identical stack traces.
+    private fun logSyncFailureOnce(stage: String, category: String, error: Throwable) {
+        val firstLine = error.message?.lineSequence()?.firstOrNull().orEmpty()
+        val signature = "$stage:$category:${error::class.simpleName}:$firstLine"
+        val last = lastWrite
+        val repeated = last != null && last.signature == signature &&
+            last.at.elapsedNow().inWholeMilliseconds < APP_LOG_DEDUP_WINDOW_MS
+        if (repeated) return
+        lastWrite = FailureWrite(signature, timeSource.markNow())
+        logger.warningSanitized("sync failed stage=$stage category=$category", error)
+    }
+
+    private class FailureWrite(val signature: String, val at: TimeMark)
 
     private companion object {
         const val UNKNOWN = "unknown"

@@ -2,7 +2,10 @@ package cash.p.terminal.core.managers
 
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.logger.AppLog
+import io.horizontalsystems.core.logger.AppLogger
 import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
 import io.mockk.verify
@@ -94,5 +97,57 @@ class NetworkErrorTrackerTest {
     private fun recurse(depth: Int): Nothing {
         if (depth <= 0) error("boom")
         recurse(depth - 1)
+    }
+
+    @Test
+    fun warningSanitized_messageWithZcashKeyToken_redactsToken() {
+        val written = slot<String>()
+        val logger = mockk<AppLogger>(relaxed = true)
+        every { logger.warning(capture(written)) } returns Unit
+        val error = IllegalStateException(
+            "bad uview1qqqabc at https://user:pass@host.example/x",
+            IllegalArgumentException("cause zxsk1deadbeef"),
+        )
+
+        logger.warningSanitized("sync failed", error)
+
+        val text = written.captured
+        assertFalse(text.contains("uview1qqqabc"))
+        assertFalse(text.contains("zxsk1deadbeef"))
+        assertFalse(text.contains("user:pass"))
+        assertTrue(text.contains("[redacted]"))
+        assertTrue(text.contains("bad") && text.contains("cause") && text.contains("host.example"))
+    }
+
+    @Test
+    fun sanitizeDiagnosticText_keyTokenInsideUrlPath_redactsBoth() {
+        val text = sanitizeDiagnosticText("GET https://user:pass@host.example/uview1qqqabc?x=1 failed")
+
+        assertFalse(text.contains("uview1qqqabc"))
+        assertFalse(text.contains("user:pass"))
+        assertTrue(text.contains("failed"))
+    }
+
+    @Test
+    fun record_messageWithZcashKeyToken_redactsInInfoAndAppLog() {
+        val written = slot<String>()
+        every { AppLog.warning(any(), capture(written)) } returns Unit
+        val tracker = NetworkErrorTracker()
+        val error = NetworkErrorInfo(
+            source = "Zcash",
+            method = "sync:TARGET",
+            url = "https://zec.rocks:443",
+            host = "zec.rocks",
+            resolvedIps = emptyList(),
+            throwable = IllegalStateException("connection failed uview1qqqabc"),
+        )
+
+        tracker.record(BlockchainType.Zcash, "account-1", error)
+
+        val message = tracker.errorInfo(BlockchainType.Zcash, "account-1")
+            ?.get("Recent Network Error Message").orEmpty()
+        assertTrue(message.contains("[redacted]"))
+        assertFalse(message.contains("uview1qqqabc"))
+        assertFalse(written.captured.contains("uview1qqqabc"))
     }
 }

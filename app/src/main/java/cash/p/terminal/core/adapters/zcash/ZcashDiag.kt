@@ -1,6 +1,6 @@
 package cash.p.terminal.core.adapters.zcash
 
-import cash.p.terminal.core.managers.sanitizeNetworkUrl
+import cash.p.terminal.core.managers.sanitizeDiagnosticText
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
 import java.math.BigDecimal
@@ -80,11 +80,6 @@ private fun positiveFlag(amount: BigDecimal?): String =
 
 internal const val MAX_ERROR_LABEL = 200
 
-private val ZCASH_KEY_TOKEN =
-    Regex("(?:uview|zxview|zview|zxsk|secret-extended-key-)[0-9a-z]+", RegexOption.IGNORE_CASE)
-
-private fun String.redactZcashKeys(): String = replace(ZCASH_KEY_TOKEN, "[redacted]")
-
 /**
  * Label for the exported "Sync State" line. With the current SDK the key-failure messages are fixed
  * texts without key material, so the first message line is shown with URL credentials and key material redacted; the class name is the fallback.
@@ -92,7 +87,7 @@ private fun String.redactZcashKeys(): String = replace(ZCASH_KEY_TOKEN, "[redact
 internal fun safeSyncStateLabel(state: AdapterState): String = when (state) {
     is AdapterState.NotSynced -> {
         val message = state.error.message?.lineSequence()?.first()
-            ?.let(::sanitizeNetworkUrl)?.redactZcashKeys()?.take(MAX_ERROR_LABEL)
+            ?.let(::sanitizeDiagnosticText)?.take(MAX_ERROR_LABEL)
         "NotSynced ${message?.takeIf { it.isNotBlank() } ?: state.error.zcashErrorName}"
     }
     else -> state.toString()
