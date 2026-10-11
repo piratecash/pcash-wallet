@@ -16,6 +16,7 @@ import cash.p.zcash.PoolBalance
 import cash.p.zcash.PoolSet
 import cash.p.zcash.SyncState
 import cash.p.zcash.Transaction
+import cash.p.zcash.ZcashException
 import cash.p.zcash.ZcashWallet
 import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.CancellationException
@@ -222,7 +223,12 @@ class ZcashSession internal constructor(
 
     /** Republishes what the local database already holds; nothing is fetched from the network. */
     suspend fun refresh(): ZcashSessionResult<Unit> = withOperation {
-        publishLocalState(readLocalState())
+        try {
+            publishLocalState(readLocalState())
+        } catch (e: ZcashException) {
+            diagnostics.syncFailed(e)
+            _state.update { it.copy(syncState = SyncState.Failed(e)) }
+        }
     }
 
     /**

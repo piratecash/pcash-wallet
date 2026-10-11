@@ -28,6 +28,7 @@ class ZcashSessionManager(
     private val dispatcherProvider: DispatcherProvider,
     private val networkErrorTracker: NetworkErrorTracker,
     private val serverManager: ZcashServerManager,
+    private val databaseFiles: ZcashDatabaseFiles,
 ) {
     private class Entry(val session: ZcashSession, var refCount: Int)
 
@@ -87,7 +88,7 @@ class ZcashSessionManager(
             deepSweepRequired = opened.deepSweepRequired,
             discovery = discoveryState(wallet),
             diagnostics = ZcashSessionDiagnostics(
-                zcashAppLogger(accountId), networkErrorTracker, accountId, opened.serverUrl
+                zcashAppLogger(accountId), networkErrorTracker, accountId, opened.serverUrl, databaseFiles
             ),
         ).also { session -> mutex.withLock { sessions[accountId] = Entry(session, 1) } }
     }

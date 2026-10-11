@@ -96,6 +96,7 @@ class ZcashSessionManagerTest {
         ),
         networkErrorTracker = mockk(relaxed = true),
         serverManager = serverManager,
+        databaseFiles = mockk<ZcashDatabaseFiles>(relaxed = true),
     )
 
     @Test

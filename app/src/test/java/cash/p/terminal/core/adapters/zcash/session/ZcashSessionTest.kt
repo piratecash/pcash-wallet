@@ -52,6 +52,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.IOException
@@ -67,6 +68,7 @@ private const val BROADCAST_HEIGHT = 3_428_200
 private val RAW = byteArrayOf(1, 2, 3)
 private val ACCEPTED = BroadcastResult(errorCode = 0, message = TXID)
 private const val CLEANUP_MS = 1_000L
+private const val DATABASE_FAILURE = "error returned from database: (code: 14) unable to open database file"
 private const val SERVER_URL = "https://zec.rocks:443"
 private const val CREDENTIAL_MESSAGE =
     "connection failed: https://user:secret@upstream.example/v2/abcdef?token=sekrit"
@@ -111,6 +113,7 @@ internal fun TestScope.zcashSession(
     discovery: ZcashDiscoveryState = ZcashDiscoveryState(),
     logger: AppLogger = mockk(relaxed = true),
     networkErrorTracker: NetworkErrorTracker = mockk(relaxed = true),
+    databaseFiles: ZcashDatabaseFiles = mockk(relaxed = true),
 ) = ZcashSession(
     accountId = "account",
     wallet = wallet,
@@ -123,7 +126,9 @@ internal fun TestScope.zcashSession(
     supportsTransparent = supportsTransparent,
     deepSweepRequired = deepSweepRequired,
     discovery = discovery,
-    diagnostics = ZcashSessionDiagnostics(logger, networkErrorTracker, "account", SERVER_URL),
+    diagnostics = ZcashSessionDiagnostics(
+        logger, networkErrorTracker, "account", SERVER_URL, databaseFiles,
+    ),
 )
 
 @OptIn(ExperimentalCoroutinesApi::class, InternalCoroutinesApi::class)
@@ -629,6 +634,37 @@ class ZcashSessionTest {
         assertEquals(1, peak)
         assertEquals(1, active)
         verify(exactly = 2) { wallet.mempool() }
+    }
+
+    @Test
+    fun refresh_databaseFailure_publishesFailedStateWithTheSameError() = runTest {
+        val failure = ZcashException(DATABASE_FAILURE)
+        coEvery { wallet.balance(any(), any()) } throws failure
+        val session = session()
+
+        assertEquals(ZcashSessionResult.Success(Unit), session.refresh())
+
+        assertSame(failure, (session.state.value.syncState as SyncState.Failed).error)
+    }
+
+    @Test
+    fun refresh_databaseFailure_logsFilesystemDiagnostics() = runTest {
+        coEvery { wallet.balance(any(), any()) } throws ZcashException(DATABASE_FAILURE)
+        val databaseFiles = mockk<ZcashDatabaseFiles> { every { diagnostics(any()) } returns "db-fs: test" }
+
+        zcashSession(wallet, logger = logger, databaseFiles = databaseFiles).refresh()
+
+        verify(exactly = 1) { logger.warning("db-fs: test") }
+    }
+
+    @Test
+    fun refresh_success_keepsSyncState() = runTest {
+        val session = session()
+        val before = session.state.value.syncState
+
+        session.refresh()
+
+        assertEquals(before, session.state.value.syncState)
     }
 
     @Test

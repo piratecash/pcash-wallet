@@ -3,6 +3,7 @@ package cash.p.terminal.core.adapters.zcash.session
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.UnsupportedAccountException
 import cash.p.terminal.core.adapters.zcash.ZcashKey
+import cash.p.terminal.core.adapters.zcash.isZcashDatabaseFailure
 import cash.p.terminal.core.adapters.zcash.zcashAppLogger
 import cash.p.terminal.core.adapters.zcash.zcashKey
 import cash.p.terminal.core.managers.RestoreSettingsManager
@@ -12,7 +13,9 @@ import cash.p.terminal.core.managers.sanitizeNetworkUrl
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.Wallet
+import cash.p.zcash.AccountInfo
 import cash.p.zcash.ServerConfig
+import cash.p.zcash.ZcashException
 import cash.p.zcash.ZcashNetwork
 import cash.p.zcash.ZcashSdk
 import cash.p.zcash.ZcashWallet
@@ -37,7 +40,7 @@ class ZcashWalletOpenerImpl(
         val started = TimeSource.Monotonic.markNow()
         val accountId = wallet.account.id
         val logger = zcashAppLogger(accountId)
-        databaseFiles.dataDir.mkdirs()
+        val dirState = dirState()
         ZcashSdk.initialize(databaseFiles.dataDir.absolutePath, databaseFiles.legacyDir.absolutePath)
 
         val dbKey = dbKeyProvider.keyFor(accountId)
@@ -57,17 +60,39 @@ class ZcashWalletOpenerImpl(
                 "deepSweep=$deepSweepRequired " +
                 "legacyDir=${if (databaseFiles.legacyDir.exists()) "present" else "absent"} " +
                 "server=${sanitizeNetworkUrl(server.url)} transport=${server.transport} " +
-                "accountType=${wallet.account.type::class.simpleName}"
+                "accountType=${wallet.account.type::class.simpleName} dir=$dirState"
         )
-        val dbPath = databaseFiles.databaseFile(accountId).path
-        val zcashWallet = ZcashWallet.open(dbPath, ZcashNetwork.MAIN, server, dbKey.bytes)
-        val existing = zcashWallet.accounts()
-        val dbAccountId = existing.firstOrNull()?.id ?: restore(zcashWallet, wallet, logger)
+        val (zcashWallet, existing, dbAccountId) = openAndRestore(wallet, server, dbKey, logger)
         logger.info(
             "open: done dbAccountId=$dbAccountId accounts=${existing.size} " +
                 "elapsed=${started.elapsedNow().inWholeMilliseconds}ms"
         )
         return OpenedZcashWallet(zcashWallet, dbAccountId, deepSweepRequired, server.url)
+    }
+
+    private fun dirState(): String = when {
+        databaseFiles.dataDir.mkdirs() -> "created"
+        databaseFiles.dataDir.exists() -> "exists"
+        else -> "failed"
+    }
+
+    private suspend fun openAndRestore(
+        wallet: Wallet,
+        server: ServerConfig,
+        dbKey: ZcashDbKey,
+        logger: AppLogger,
+    ): Triple<ZcashWallet, List<AccountInfo>, Int> {
+        val accountId = wallet.account.id
+        val dbPath = databaseFiles.databaseFile(accountId).path
+        try {
+            val zcashWallet = ZcashWallet.open(dbPath, ZcashNetwork.MAIN, server, dbKey.bytes)
+            val existing = zcashWallet.accounts()
+            val dbAccountId = existing.firstOrNull()?.id ?: restore(zcashWallet, wallet, logger)
+            return Triple(zcashWallet, existing, dbAccountId)
+        } catch (e: ZcashException) {
+            if (e.isZcashDatabaseFailure()) logger.warning(databaseFiles.diagnostics(accountId))
+            throw e
+        }
     }
 
     private suspend fun restore(zcashWallet: ZcashWallet, wallet: Wallet, logger: AppLogger): Int {
