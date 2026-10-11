@@ -3,6 +3,7 @@ package cash.p.terminal.core.adapters.zcash
 import cash.p.terminal.core.managers.APP_LOG_DEDUP_WINDOW_MS
 import cash.p.terminal.core.managers.NetworkErrorInfo
 import cash.p.terminal.core.managers.NetworkErrorTracker
+import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFiles
 import cash.p.terminal.core.managers.warningSanitized
 import cash.p.terminal.core.tryOrNull
 import cash.p.zcash.FailureCategory
@@ -13,6 +14,7 @@ import co.touchlab.kermit.Logger
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.logger.AppLogger
 import java.net.URI
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource
@@ -38,15 +40,19 @@ internal fun Throwable.isZcashNetworkFailure(): Boolean = when (this) {
     else -> NETWORK_CLASS_MARKERS.any { it in this::class.simpleName.orEmpty() }
 }
 
+internal fun Throwable.isZcashDatabaseFailure(): Boolean =
+    (this as? ZcashException)?.category == FailureCategory.DATABASE
+
 /** Where a session reports its sync lifecycle and failures: the App Log and the network error tracker. */
 internal class ZcashSessionDiagnostics(
     val logger: AppLogger,
     private val networkErrorTracker: NetworkErrorTracker,
     private val accountId: String,
     val serverUrl: String,
+    private val databaseFiles: ZcashDatabaseFiles,
     private val timeSource: TimeSource = TimeSource.Monotonic,
 ) {
-    private var lastWrite: FailureWrite? = null
+    private val lastWrite = AtomicReference<FailureWrite?>(null)
 
     fun syncFailed(error: Throwable) {
         val zcashError = error as? ZcashException
@@ -71,15 +77,17 @@ internal class ZcashSessionDiagnostics(
     private fun logSyncFailureOnce(stage: String, category: String, error: Throwable) {
         val firstLine = error.message?.lineSequence()?.firstOrNull().orEmpty()
         val signature = "$stage:$category:${error::class.simpleName}:$firstLine"
-        val last = lastWrite
-        val repeated = last != null && last.signature == signature &&
-            last.at.elapsedNow().inWholeMilliseconds < APP_LOG_DEDUP_WINDOW_MS
-        if (repeated) return
-        lastWrite = FailureWrite(signature, timeSource.markNow())
+        val next = FailureWrite(signature, timeSource.markNow())
+        val winner = lastWrite.updateAndGet { last -> if (last != null && last.repeats(signature)) last else next }
+        if (winner !== next) return
         logger.warningSanitized("sync failed stage=$stage category=$category", error)
+        if (error.isZcashDatabaseFailure()) logger.warning(databaseFiles.diagnostics(accountId))
     }
 
-    private class FailureWrite(val signature: String, val at: TimeMark)
+    private class FailureWrite(val signature: String, val at: TimeMark) {
+        fun repeats(signature: String) =
+            this.signature == signature && at.elapsedNow().inWholeMilliseconds < APP_LOG_DEDUP_WINDOW_MS
+    }
 
     private companion object {
         const val UNKNOWN = "unknown"

@@ -3,6 +3,7 @@ package cash.p.terminal.core.adapters.zcash.session
 import android.content.Context
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.adapters.zcash.CapturedAppLog
+import cash.p.terminal.core.adapters.zcash.zcashAppLogger
 import cash.p.terminal.core.managers.RestoreSettings
 import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.ZcashBirthdayProvider
@@ -15,6 +16,7 @@ import cash.p.terminal.wallet.Wallet
 import cash.p.zcash.AccountInfo
 import cash.p.zcash.ServerConfig
 import cash.p.zcash.Transport
+import cash.p.zcash.ZcashException
 import cash.p.zcash.ZcashSdk
 import cash.p.zcash.ZcashWallet
 import io.mockk.coEvery
@@ -27,11 +29,13 @@ import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.io.File
 import java.nio.file.Files
+import kotlin.test.assertFailsWith
 
 private const val ACCOUNT_ID = "account"
 private const val BIRTHDAY = 2_500_000
@@ -193,11 +197,47 @@ class ZcashWalletOpenerImplTest {
         val lines = appLog.messages
         val opening = "open: db=absent key=stored deepSweep=true legacyDir=absent " +
             "server=https://zec.rocks:443 transport=DIRECT"
-        assertTrue(lines.any { it.startsWith(opening) })
+        assertTrue(lines.any { it.startsWith(opening) && " dir=" in it })
         assertTrue(lines.contains("restore: birthSource=setting birth=$BIRTHDAY"))
         assertTrue(lines.any { it.startsWith("open: done dbAccountId=$DB_ACCOUNT_ID accounts=0 elapsed=") })
         val forbidden = listOf("zebra", "quartz", "nimbus", "abababab")
         assertTrue(lines.none { line -> forbidden.any { it in line } })
+    }
+
+    @Test
+    fun open_databaseFailure_logsFilesystemDiagnosticsAndRethrows() = runTest {
+        val appLog = CapturedAppLog()
+        val failure = ZcashException("error returned from database: (code: 14) unable to open database file")
+        coEvery { ZcashWallet.open(any(), any(), any(), any()) } throws failure
+
+        val thrown = assertFailsWith<ZcashException> { opener().open(wallet()) }
+
+        assertSame(failure, thrown)
+        appLog.awaitEntry { it.message.startsWith("db-fs:") }
+    }
+
+    @Test
+    fun open_restoreDatabaseFailure_logsFilesystemDiagnosticsAndRethrows() = runTest {
+        val appLog = CapturedAppLog()
+        val failure = ZcashException("unable to open database file")
+        coEvery { zcashWallet.restoreAccount(any(), any(), any(), any(), any(), any()) } throws failure
+
+        val thrown = assertFailsWith<ZcashException> { opener().open(wallet()) }
+
+        assertSame(failure, thrown)
+        appLog.awaitEntry { it.message.startsWith("db-fs:") }
+    }
+
+    @Test
+    fun open_networkFailure_doesNotLogFilesystemDiagnostics() = runTest {
+        val appLog = CapturedAppLog()
+        coEvery { ZcashWallet.open(any(), any(), any(), any()) } throws ZcashException("connect timed out")
+
+        assertFailsWith<ZcashException> { opener().open(wallet()) }
+        zcashAppLogger(ACCOUNT_ID).info("sentinel")
+        appLog.awaitEntry { it.message == "sentinel" }
+
+        assertTrue(appLog.messages.none { it.startsWith("db-fs:") })
     }
 
     @Test
