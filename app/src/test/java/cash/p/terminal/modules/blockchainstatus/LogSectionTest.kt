@@ -49,6 +49,18 @@ class LogSectionTest {
     }
 
     @Test
+    fun buildCopyText_fullReportExactlyAtCap_keepsAllEntriesWithNoMarker() {
+        // Short entries: dropping one saves less than the omission notice adds.
+        val entries = (1..10).map { LogLine(it.toLong(), "entry-$it") }
+        val logText = "tag\n" + entries.joinToString("") { "  ${it.text}\n" }
+        val statusText = "x".repeat(MAX_COPY_CHARS - logText.length)
+
+        val result = buildCopyText(statusText, listOf(LogGroup("tag", entries)))
+
+        assertEquals(statusText + logText, result)
+    }
+
+    @Test
     fun buildCopyText_noLogGroups_returnsStatusTextUnchanged() {
         assertEquals("STATUS\n", buildCopyText("STATUS\n", emptyList()))
     }

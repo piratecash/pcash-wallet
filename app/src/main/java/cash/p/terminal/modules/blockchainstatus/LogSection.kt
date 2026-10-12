@@ -44,10 +44,12 @@ private fun String.truncateLogEntry(): String =
 /** Keeps the newest log entries by id, dropping the oldest first, within [MAX_COPY_CHARS] of [statusText] plus the log. */
 fun buildCopyText(statusText: String, logGroups: List<LogGroup>): String {
     val totalEntries = logGroups.sumOf { it.entries.size }
-    if (totalEntries == 0) return statusText.take(MAX_COPY_CHARS)
+    val fullText = renderCopyText(statusText, logGroups, totalEntries)
+    if (totalEntries == 0 || fullText.length <= MAX_COPY_CHARS) return fullText.take(MAX_COPY_CHARS)
 
+    // Any omission adds the notice, so the full log is not part of the monotonic search range.
     var lo = 0
-    var hi = totalEntries
+    var hi = totalEntries - 1
     while (lo < hi) {
         val mid = (lo + hi + 1) / 2
         if (renderCopyText(statusText, logGroups, mid).length <= MAX_COPY_CHARS) {
