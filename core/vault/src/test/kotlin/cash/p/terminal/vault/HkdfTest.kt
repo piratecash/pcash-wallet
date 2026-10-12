@@ -1,6 +1,7 @@
 package cash.p.terminal.vault
 
 import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class HkdfTest {
@@ -34,6 +35,16 @@ class HkdfTest {
             info = "",
             okm = "8da4e775a563c18f715f802a063c5a31b8a11f5c5ee1879ec3454e5f3c738d2d9d201395faa4b61a96c8",
         )
+    }
+
+    @Test
+    fun expand_maxLength_returnsRequestedSize() {
+        assertEquals(255 * 32, Hkdf.expand(ByteArray(32), ByteArray(0), 255 * 32).size)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun expand_lengthAbove255Blocks_throws() {
+        Hkdf.expand(ByteArray(32), ByteArray(0), 255 * 32 + 1)
     }
 
     private fun assertOkm(prk: String, info: String, okm: String) {

@@ -5,7 +5,10 @@ import javax.crypto.spec.SecretKeySpec
 
 /** HKDF-Expand with HMAC-SHA256 (RFC 5869); no Extract step, the PRK is already uniformly random. */
 object Hkdf {
+    private const val MAX_LENGTH = 255 * 32
+
     fun expand(prk: ByteArray, info: ByteArray, length: Int): ByteArray {
+        require(length in 0..MAX_LENGTH) { "HKDF-SHA256 output is limited to $MAX_LENGTH bytes" }
         val mac = Mac.getInstance("HmacSHA256")
         mac.init(SecretKeySpec(prk, "HmacSHA256"))
 
