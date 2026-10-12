@@ -40,6 +40,9 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            // jlink keeps only the modules listed here; DataStore's protobuf needs sun.misc.Unsafe
+            // (jdk.unsupported), which the full JDK of `:desktopApp:run` masks. Source: suggestRuntimeModules.
+            modules("java.compiler", "java.instrument", "java.management", "java.naming", "java.sql", "jdk.unsupported")
             packageName = applicationName
             // CI passes 1.0.<run number> so every MSI gets a new ProductCode and upgrades the previous build;
             // macOS rejects MAJOR == 0, so the Android 0.x versionName cannot be reused here.

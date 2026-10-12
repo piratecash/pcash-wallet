@@ -238,6 +238,7 @@ private fun onClick(
 
     when (coinLink.linkType) {
         LinkType.Guide -> marketPages.markdown(absoluteUrl)?.let { navigation.slideFromRight(it) }
+            ?: urlOpener.open(absoluteUrl)
         else -> urlOpener.open(absoluteUrl)
     }
 }
