@@ -223,12 +223,21 @@ class ZcashSession internal constructor(
 
     /** Republishes what the local database already holds; nothing is fetched from the network. */
     suspend fun refresh(): ZcashSessionResult<Unit> = withOperation {
-        try {
-            publishLocalState(readLocalState())
-        } catch (e: ZcashException) {
-            diagnostics.syncFailed(e)
-            _state.update { it.copy(syncState = SyncState.Failed(e)) }
-        }
+        readReportingFailure { publishLocalState(readLocalState()) }
+    }
+
+    /** Null when the session is unavailable, the account is missing, or the read failed. */
+    suspend fun accountBirthHeight(): Int? = (withOperation {
+        readReportingFailure { wallet.accounts().firstOrNull { it.id == dbAccountId }?.birthHeight }
+    } as? ZcashSessionResult.Success)?.value
+
+    /** A database failure is reported like a failed sync instead of escaping to the caller. */
+    private suspend fun <T> readReportingFailure(read: suspend () -> T): T? = try {
+        read()
+    } catch (e: ZcashException) {
+        diagnostics.syncFailed(e)
+        _state.update { it.copy(syncState = SyncState.Failed(e)) }
+        null
     }
 
     /**

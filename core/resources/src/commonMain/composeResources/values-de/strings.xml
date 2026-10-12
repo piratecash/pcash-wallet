@@ -1030,6 +1030,8 @@
     <!--Btc Blockchain Settings -->
     <string name="custom_peers">Custom peers (e.g., 188.40.241.115, dnsseed.custom.io)</string>
     <string name="blockchain_status">Blockchain-Status</string>
+    <string name="blockchain_status_save_to_file">In Datei speichern</string>
+    <string name="blockchain_status_file_saved">Bericht gespeichert</string>
     <string name="btc_blockchain_settings_restore_source_change_warning">Nach dem Ändern der Quelle muss die Brieftasche sich selbst synchronisieren.</string>
     <string name="send_confirmation_syncing_warning">Wallet synchronisiert sich noch. Bitte warten Sie, bis die Synchronisierung abgeschlossen ist, bevor Sie senden.</string>
     <string name="send_confirmation_sync_error_warning">Wallet-Synchronisierung fehlgeschlagen. Tippen Sie auf „Wiederholen", um erneut zu verbinden.</string>

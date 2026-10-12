@@ -1045,6 +1045,8 @@
     <!--Btc Blockchain Settings -->
     <string name="custom_peers">Пользовательские узлы (например, 188.40.241.115, dnsseed.custom.io)</string>
     <string name="blockchain_status">Статус блокчейна</string>
+    <string name="blockchain_status_save_to_file">Сохранить в файл</string>
+    <string name="blockchain_status_file_saved">Отчёт сохранён</string>
     <string name="btc_blockchain_settings_restore_source_change_warning">После изменения источника восстановления, кошелек должен будет повторно синхронизироваться с блокчейном.</string>
     <string name="send_confirmation_syncing_warning">Кошелёк ещё синхронизируется. Пожалуйста, дождитесь окончания синхронизации перед отправкой.</string>
     <string name="send_confirmation_sync_error_warning">Ошибка синхронизации кошелька. Нажмите «Повторить» для переподключения.</string>

@@ -402,9 +402,7 @@ class ZcashAdapter(
         launch { session.state.collect(::onSessionState) }
         launch { recalculateFeeOnChange(session) }
 
-        accountBirthday = walletOrNull { zcash, id ->
-            zcash.accounts().firstOrNull { it.id == id }?.birthHeight
-        }
+        accountBirthday = session.accountBirthHeight()
         // A session may never sync — offline, or an account the scheduler is skipping — so the
         // local database is published once on bind, otherwise every screen stays empty.
         session.refresh()

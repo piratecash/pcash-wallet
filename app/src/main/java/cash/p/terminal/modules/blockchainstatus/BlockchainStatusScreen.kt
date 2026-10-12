@@ -1,6 +1,9 @@
 package cash.p.terminal.modules.blockchainstatus
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +17,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -29,6 +33,7 @@ import cash.p.terminal.R
 import androidx.compose.material3.Icon
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
+import cash.p.terminal.ui_compose.components.ButtonPrimaryDefaultWithIcon
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HSpacer
@@ -44,6 +49,10 @@ import cash.p.terminal.ui_compose.components.subhead1_remus
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.subhead2_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import io.horizontalsystems.core.IPinComponent
+import io.horizontalsystems.core.launchExternalActivity
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 @Composable
 internal fun BlockchainStatusScreen(
@@ -54,6 +63,20 @@ internal fun BlockchainStatusScreen(
     val clipboardManager = LocalClipboardManager.current
     val localView = LocalView.current
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val pinComponent: IPinComponent = koinInject()
+    val saveLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/plain")
+    ) { uri ->
+        uri ?: return@rememberLauncherForActivityResult
+        scope.launch {
+            if (viewModel.saveReport(uri)) {
+                HudHelper.showSuccessMessage(localView, R.string.blockchain_status_file_saved)
+            } else {
+                HudHelper.showErrorMessage(localView, R.string.error_cannot_create_log_file)
+            }
+        }
+    }
 
     Scaffold(
         containerColor = ComposeAppTheme.colors.backgroundBase,
@@ -140,6 +163,26 @@ internal fun BlockchainStatusScreen(
                             }
                         )
                     }
+                }
+
+                item {
+                    ButtonPrimaryDefaultWithIcon(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, end = 16.dp, top = 8.dp),
+                        icon = R.drawable.ic_download_20,
+                        title = stringResource(R.string.blockchain_status_save_to_file),
+                        enabled = !uiState.statusLoading,
+                        onClick = {
+                            try {
+                                pinComponent.launchExternalActivity {
+                                    saveLauncher.launch(viewModel.reportFileName)
+                                }
+                            } catch (_: ActivityNotFoundException) {
+                                HudHelper.showErrorMessage(localView, R.string.error_cannot_create_log_file)
+                            }
+                        }
+                    )
                 }
 
                 // Kit Info

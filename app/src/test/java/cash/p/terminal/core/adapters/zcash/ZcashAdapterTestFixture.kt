@@ -238,6 +238,7 @@ abstract class ZcashAdapterTestFixture {
                 )
             }
             coEvery { refresh() } returns ZcashSessionResult.Success(Unit)
+            coEvery { accountBirthHeight() } returns BIRTHDAY
         }
         coEvery { sessionManager.acquire(any()) } returns session
         every { sessionManager.discoveryState(any()) } returns discoveryState

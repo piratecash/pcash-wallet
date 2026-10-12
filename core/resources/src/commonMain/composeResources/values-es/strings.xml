@@ -1033,6 +1033,8 @@
     <!--Btc Blockchain Settings -->
     <string name="custom_peers">Custom peers (e.g., 188.40.241.115, dnsseed.custom.io)</string>
     <string name="blockchain_status">Estado de Blockchain</string>
+    <string name="blockchain_status_save_to_file">Guardar en archivo</string>
+    <string name="blockchain_status_file_saved">Informe guardado</string>
     <string name="btc_blockchain_settings_restore_source_change_warning">Después de cambiar la fuente, el monedero tendrá que resinc sí mismo.</string>
     <string name="send_confirmation_syncing_warning">La billetera aún se está sincronizando. Espere a que se complete la sincronización antes de enviar.</string>
     <string name="send_confirmation_sync_error_warning">Error de sincronización de billetera. Toca Reintentar para reconectar.</string>

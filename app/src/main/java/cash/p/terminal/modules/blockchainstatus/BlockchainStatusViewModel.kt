@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import cash.p.terminal.BuildConfig
 import cash.p.terminal.R
 import cash.p.terminal.core.App
+import cash.p.terminal.core.tryOrNull
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.ISystemInfoManager
 import io.horizontalsystems.core.helpers.DateHelper
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.Date
 
@@ -38,12 +40,14 @@ internal fun reportBuildInfo(appVersion: String, gitBranch: String): Map<String,
 
 class BlockchainStatusViewModel(
     private val provider: BlockchainStatusProvider,
-    dispatcherProvider: DispatcherProvider,
+    private val dispatcherProvider: DispatcherProvider,
     private val systemInfoManager: ISystemInfoManager,
 ) : ViewModel() {
 
     @Volatile
     private var shareFile: File? = null
+
+    val reportFileName = "${provider.logFilterTag.lowercase()}_blockchain_status_report.txt"
 
     private val _uiState = MutableStateFlow(
         BlockchainStatusUiState(
@@ -89,6 +93,13 @@ class BlockchainStatusViewModel(
         )
     }
 
+    suspend fun saveReport(uri: Uri): Boolean = withContext(dispatcherProvider.io) {
+        val text = _uiState.value.statusAsText ?: return@withContext false
+        tryOrNull {
+            App.instance.contentResolver.openOutputStream(uri)?.use { it.write(text.toByteArray()) }
+        } != null
+    }
+
     private fun rebuildShareFile() {
         val state = _uiState.value
         val allLogBlocks = buildLogBlocks(AppLog.getLog(provider.logFilterTag))
@@ -96,7 +107,7 @@ class BlockchainStatusViewModel(
         _uiState.update { it.copy(statusAsText = statusAsText) }
 
         try {
-            val file = File(App.instance.cacheDir, "${provider.logFilterTag.lowercase()}_blockchain_status_report.txt")
+            val file = File(App.instance.cacheDir, reportFileName)
             file.writeText(statusAsText)
             shareFile = file
         } catch (_: Exception) {
