@@ -1,4 +1,5 @@
 import org.gradle.api.tasks.JavaExec
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 val isMacOs = System.getProperty("os.name").startsWith("Mac")
@@ -38,7 +39,11 @@ compose.desktop {
         mainClass = "cash.p.terminal.desktop.MainKt"
 
         nativeDistributions {
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = applicationName
+            // CI passes 1.0.<run number> so every MSI gets a new ProductCode and upgrades the previous build;
+            // macOS rejects MAJOR == 0, so the Android 0.x versionName cannot be reused here.
+            packageVersion = providers.gradleProperty("desktopPackageVersion").getOrElse("1.0.0")
             macOS {
                 iconFile.set(macIconFile)
             }
