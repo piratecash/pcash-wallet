@@ -136,11 +136,12 @@ internal class TransactionSpeedUpCancelViewModel(
         private val blockchainType: BlockchainType,
         private val transactionHash: String,
         private val optionType: SpeedUpCancelType,
+        private val evmKitWrapper: EvmKitWrapper,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             val feeToken = App.evmBlockchainManager.getBaseToken(blockchainType)!!
-            val sendTransactionService = SendTransactionServiceEvm(feeToken)
+            val sendTransactionService = SendTransactionServiceEvm(feeToken, evmKitWrapper = evmKitWrapper)
             val coinServiceFactory = EvmCoinServiceFactory(
                 feeToken,
                 App.marketKit,
@@ -154,9 +155,6 @@ internal class TransactionSpeedUpCancelViewModel(
                 App.contactsRepository,
                 blockchainType
             )
-
-            val evmKitWrapper =
-                App.evmBlockchainManager.getEvmKitManager(blockchainType).evmKitWrapper!!
 
             val offlineOperationGate: OfflineOperationGate by inject(OfflineOperationGate::class.java)
             val walletManager: IWalletManager by inject(IWalletManager::class.java)

@@ -63,6 +63,8 @@ internal class EvmTransactionsAdapter(
             evmTransactionRepository.forwardSyncState.asFlowable().map {}
         )
 
+    suspend fun release() = evmTransactionRepository.release()
+
     override suspend fun additionalTokenQueries(): List<TokenQuery> =
         evmTransactionRepository.getTagTokenContractAddresses().map { address ->
             TokenQuery.eip20(evmTransactionRepository.getBlockchainType(), address)

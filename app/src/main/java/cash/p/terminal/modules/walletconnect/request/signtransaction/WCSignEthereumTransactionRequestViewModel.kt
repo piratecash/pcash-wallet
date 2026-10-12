@@ -135,12 +135,12 @@ class WCSignEthereumTransactionRequestViewModel(
     class Factory(
         private val blockchainType: BlockchainType,
         private val transaction: WalletConnectTransaction,
-        private val peerName: String
+        private val peerName: String,
+        private val evmKitWrapper: EvmKitWrapper
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             val token = App.evmBlockchainManager.getBaseToken(blockchainType)!!
-            val evmKitWrapper = App.evmBlockchainManager.getEvmKitManager(blockchainType).evmKitWrapper!!
             val coinServiceFactory = EvmCoinServiceFactory(
                 token,
                 App.marketKit,

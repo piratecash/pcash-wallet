@@ -11,6 +11,9 @@ import cash.p.terminal.modules.transactions.beamInteractiveHistoryRecord
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.core.managers.AddressLabelManager
 import cash.p.terminal.core.managers.AddressMetadataManager
+import cash.p.terminal.core.managers.EvmKitWrapper
+import cash.p.terminal.entities.transactionrecords.TransactionRecordType
+import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.PendingTransactionRecord
 import cash.p.terminal.entities.transactionrecords.thorchain.ThorchainTransactionRecord
@@ -30,6 +33,7 @@ import io.horizontalsystems.core.CoreApp
 import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.ethereumkit.models.Transaction as EvmKitTransaction
 import io.horizontalsystems.thorchainkit.models.Transaction
 import io.mockk.every
 import io.mockk.mockk
@@ -41,6 +45,7 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertSame
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -102,6 +107,7 @@ class TransactionInfoViewItemFactoryTest {
             offlineOperationGate = mockk<OfflineOperationGate>(relaxed = true),
             wallet = null,
             blockchainType = BlockchainType.Bitcoin,
+            evmKitWrapper = null,
         ).getViewItemSections(item)
 
         val amount = sections.first().first() as TransactionInfoViewItem.Amount
@@ -123,6 +129,7 @@ class TransactionInfoViewItemFactoryTest {
             offlineOperationGate = mockk<OfflineOperationGate>(relaxed = true),
             wallet = null,
             blockchainType = BlockchainType.Bitcoin,
+            evmKitWrapper = null,
         ).getViewItemSections(item)
 
         val amount = sections.first().first() as TransactionInfoViewItem.Amount
@@ -546,6 +553,57 @@ class TransactionInfoViewItemFactoryTest {
         )
     }
 
+    @Test
+    fun getViewItemSections_pendingEvmTransactionWithoutKitInstance_hasNoSpeedUp() {
+        val items = pendingEvmItems(evmKitWrapper = null)
+
+        assertEquals(
+            emptyList<TransactionInfoViewItem.SpeedUpCancel>(),
+            items.filterIsInstance<TransactionInfoViewItem.SpeedUpCancel>(),
+        )
+    }
+
+    @Test
+    fun getViewItemSections_pendingEvmTransactionWithKitInstance_speedUpCarriesThatInstance() {
+        val wrapper = mockk<EvmKitWrapper>(relaxed = true)
+
+        val speedUp = pendingEvmItems(evmKitWrapper = wrapper)
+            .filterIsInstance<TransactionInfoViewItem.SpeedUpCancel>()
+            .single()
+
+        assertSame(wrapper, speedUp.evmKitWrapper)
+    }
+
+    private fun pendingEvmItems(evmKitWrapper: EvmKitWrapper?): List<TransactionInfoViewItem> {
+        val gate = mockk<OfflineOperationGate>(relaxed = true) {
+            every { availability(beamWallet, any()) } returns OperationAvailability.Available
+        }
+        return TransactionInfoViewItemFactory(
+            offlineOperationGate = gate,
+            wallet = beamWallet,
+            blockchainType = BlockchainType.BinanceSmartChain,
+            evmKitWrapper = evmKitWrapper,
+        ).getViewItemSections(transactionInfoItem(pendingEvmRecord())).flatten()
+    }
+
+    private fun pendingEvmRecord() = EvmTransactionRecord(
+        transaction = mockk<EvmKitTransaction>(relaxed = true) {
+            every { hashString } returns "0xabc"
+            every { blockNumber } returns null
+            every { isFailed } returns false
+        },
+        token = mockk<Token>(relaxed = true),
+        source = mockk<TransactionSource>(relaxed = true) {
+            every { blockchain } returns mockk(relaxed = true) {
+                every { type } returns BlockchainType.BinanceSmartChain
+            }
+        },
+        protected = false,
+        transactionRecordType = TransactionRecordType.EVM_OUTGOING,
+        value = tokenValue(value = BigDecimal("-1")),
+        to = "0x2222222222222222222222222222222222222222",
+    )
+
     private fun beamCancellableItems(
         record: TransactionRecord,
         operationAvailability: OperationAvailability = OperationAvailability.Available,
@@ -563,7 +621,10 @@ class TransactionInfoViewItemFactoryTest {
         wallet: Wallet? = null,
         offlineOperationGate: OfflineOperationGate = mockk(relaxed = true),
     ): List<TransactionInfoViewItem> = TransactionInfoViewItemFactory(
-        offlineOperationGate = offlineOperationGate, wallet = wallet, blockchainType = BlockchainType.Beam
+        offlineOperationGate = offlineOperationGate,
+        wallet = wallet,
+        blockchainType = BlockchainType.Beam,
+        evmKitWrapper = null,
     ).getViewItemSections(transactionInfoItem(record).copy(
         lastBlockInfo = LastBlockInfo(height = 1_000), hideAmount = hideAmount,
     )).flatten()

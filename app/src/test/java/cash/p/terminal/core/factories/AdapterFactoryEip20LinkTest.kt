@@ -1,7 +1,6 @@
 package cash.p.terminal.core.factories
 
 import cash.p.terminal.core.managers.EvmBlockchainManager
-import cash.p.terminal.core.managers.EvmKitManager
 import cash.p.terminal.core.managers.StackingManager
 import cash.p.terminal.data.repository.EvmTransactionRepository
 import cash.p.terminal.wallet.Account
@@ -39,13 +38,11 @@ class AdapterFactoryEip20LinkTest {
         level = 0,
     )
 
-    private val evmKitManager = mockk<EvmKitManager>(relaxed = true)
     private val evmTransactionRepository = mockk<EvmTransactionRepository>(relaxed = true)
     private val evmBlockchainManager = mockk<EvmBlockchainManager> {
         every { getBlockchain(any<Token>()) } returns
             Blockchain(BlockchainType.Ethereum, BlockchainType.Ethereum.uid, null)
         every { getBaseToken(BlockchainType.Ethereum) } returns mockk(relaxed = true)
-        every { getEvmKitManager(BlockchainType.Ethereum) } returns evmKitManager
     }
 
     private val wallet = mockk<Wallet>(relaxed = true) {
@@ -99,7 +96,7 @@ class AdapterFactoryEip20LinkTest {
         val adapter = factory.getAdapterOrNull(wallet)
 
         assertNull(adapter)
-        coVerify(exactly = 1) { evmKitManager.unlink(account) }
+        coVerify(exactly = 1) { evmTransactionRepository.release() }
     }
 
     @Test
@@ -111,7 +108,7 @@ class AdapterFactoryEip20LinkTest {
         job.join()
 
         assertTrue(job.isCancelled)
-        coVerify(exactly = 1) { evmKitManager.unlink(account) }
+        coVerify(exactly = 1) { evmTransactionRepository.release() }
     }
 
     private companion object {

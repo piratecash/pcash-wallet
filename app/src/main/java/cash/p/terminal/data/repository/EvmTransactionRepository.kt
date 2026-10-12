@@ -33,11 +33,14 @@ import java.math.BigInteger
 internal class EvmTransactionRepository(
     private val evmBlockchainManager: EvmBlockchainManager
 ) {
-    private var evmKitWrapper: EvmKitWrapper? = null
+    private var kitWrapper: EvmKitWrapper? = null
     private var _blockchainType: BlockchainType? = null
 
+    val evmKitWrapper: EvmKitWrapper
+        get() = requireNotNull(kitWrapper)
+
     private val evmKit: EthereumKit
-        get() = requireNotNull(evmKitWrapper).evmKit
+        get() = evmKitWrapper.evmKit
 
     val lastBlockHeight: Long?
         get() = evmKit.lastBlockHeight
@@ -86,7 +89,12 @@ internal class EvmTransactionRepository(
         _blockchainType = blockchainType
         return evmBlockchainManager.getEvmKitManager(blockchainType)
             .getEvmKitWrapper(account, blockchainType)
-            .also { evmKitWrapper = it }
+            .also { kitWrapper = it }
+    }
+
+    suspend fun release() {
+        val wrapper = kitWrapper ?: return
+        evmBlockchainManager.getEvmKitManager(wrapper.blockchainType).unlink(wrapper)
     }
 
     suspend fun buildErc20Kit(
@@ -96,7 +104,7 @@ internal class EvmTransactionRepository(
         context,
         evmKit,
         Address(contractAddress),
-        requireNotNull(evmKitWrapper).databaseKey
+        evmKitWrapper.databaseKey
     )
 
     fun getBlockchainType(): BlockchainType = requireNotNull(_blockchainType)
@@ -109,10 +117,10 @@ internal class EvmTransactionRepository(
         gasLimit: Long,
         nonce: Long?,
     ): SignedRawTransaction =
-        requireNotNull(evmKitWrapper).signedRawTransaction(transactionData, gasPrice, gasLimit, nonce)
+        evmKitWrapper.signedRawTransaction(transactionData, gasPrice, gasLimit, nonce)
 
     suspend fun broadcastRawTransaction(rawTransactionHex: String): RawTransactionBroadcastResult =
-        requireNotNull(evmKitWrapper).broadcastRawTransaction(rawTransactionHex)
+        evmKitWrapper.broadcastRawTransaction(rawTransactionHex)
 
     suspend fun getFullTransactionsAsync(
         tags: List<List<String>>,
