@@ -11,6 +11,7 @@ import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import cash.p.terminal.wallet.useCases.IGetMoneroWalletFilesNameUseCase
 import cash.p.terminal.wallet.useCases.RemoveMoneroWalletFilesUseCase
 import io.mockk.coEvery
+import io.horizontalsystems.core.DefaultDispatcherProvider
 import io.mockk.mockk
 import io.reactivex.Flowable
 import org.junit.Assert.assertEquals
@@ -35,6 +36,7 @@ class HiddenWalletAccountVisibilityTest {
         removeMoneroWalletFilesUseCase = removeMoneroWalletFilesUseCase,
         balanceHiddenManager = balanceHiddenManager,
         deletionPreflight = mockk(relaxed = true),
+        dispatcherProvider = DefaultDispatcherProvider(),
     )
 
     @Before

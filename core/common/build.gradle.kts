@@ -4,6 +4,8 @@ plugins {
     kotlin("multiplatform")
     id("com.android.kotlin.multiplatform.library")
     id(libs.plugins.kotlin.parcelize.get().pluginId)
+    alias(libs.plugins.compose.multiplatform)
+    alias(libs.plugins.compose.compiler)
 }
 
 // KMP source directories must be configured explicitly or Detekt reports NO-SOURCE.
@@ -41,11 +43,35 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
+                api(project(":core:resources"))
+                implementation(libs.compose.multiplatform.runtime)
                 implementation(libs.kotlinx.coroutines.core)
+                api(libs.jetbrains.lifecycle.viewmodel)
+                api(libs.rxjava)
+                implementation(libs.gson)
 
                 implementation(project.dependencies.platform(libs.koin.bom))
                 implementation(libs.koin.core)
             }
         }
+        getByName("desktopMain") {
+            dependencies {
+                implementation(libs.datastore.preferences.core)
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation(libs.junit)
+            }
+        }
+        getByName("desktopTest") {
+            dependencies {
+                implementation(libs.kotlin.test.junit)
+            }
+        }
     }
+}
+
+dependencies {
+    add("desktopTestRuntimeOnly", compose.desktop.currentOs)
 }

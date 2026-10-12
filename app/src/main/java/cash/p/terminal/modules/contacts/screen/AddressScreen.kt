@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.Icon
+import cash.p.terminal.resources.Button_Done
+import cash.p.terminal.resources.Res
 import cash.p.terminal.ui_compose.components.AppModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material3.Scaffold
@@ -83,7 +85,7 @@ fun AddressScreen(
                     },
                     menuItems = listOf(
                         MenuItem(
-                            title = TranslatableString.ResString(R.string.Button_Done),
+                            title = TranslatableString.ResString(Res.string.Button_Done),
                             enabled = uiState.doneEnabled,
                             onClick = {
                                 uiState.addressState?.dataOrNull?.let {

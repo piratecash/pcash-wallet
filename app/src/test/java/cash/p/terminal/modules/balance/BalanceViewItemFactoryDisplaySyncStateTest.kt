@@ -5,6 +5,11 @@ import cash.p.terminal.core.managers.OfflineKey
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.offline.OperationAvailability
+import cash.p.terminal.resources.Balance_LockedAmount_Title
+import cash.p.terminal.resources.Info_LockTime_Title
+import cash.p.terminal.resources.Info_ProcessingBalance_Description
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.beam_locked_balance_info
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.wallet.AdapterState
@@ -40,7 +45,7 @@ class BalanceViewItemFactoryDisplaySyncStateTest {
     private val numberFormatter = mockk<IAppNumberFormatter>()
     private val offlineModeManager = mockk<OfflineModeManager>(relaxed = true)
     private val factory = BalanceViewItemFactory(offlineModeManager)
-    private val currency = Currency("USD", "$", 2, 0)
+    private val currency = Currency("USD", "$", 2)
     private val wallet = WalletFactory.previewWallet()
 
     @Before
@@ -270,12 +275,12 @@ class BalanceViewItemFactoryDisplaySyncStateTest {
         val locked = BalanceData(available = BigDecimal.ONE, timeLocked = BigDecimal.TEN)
 
         val beam = lockedValue(walletFor(BlockchainType.Beam), locked)
-        assertEquals(R.string.Balance_LockedAmount_Title, (beam.infoTitle as TranslatableString.ResString).id)
-        assertEquals(R.string.beam_locked_balance_info, (beam.info as TranslatableString.ResString).id)
+        assertEquals(Res.string.Balance_LockedAmount_Title, (beam.infoTitle as TranslatableString.ResString).id)
+        assertEquals(Res.string.beam_locked_balance_info, (beam.info as TranslatableString.ResString).id)
 
         val bitcoin = lockedValue(walletFor(BlockchainType.Bitcoin), locked)
-        assertEquals(R.string.Info_LockTime_Title, (bitcoin.infoTitle as TranslatableString.ResString).id)
-        assertEquals(R.string.Info_ProcessingBalance_Description, (bitcoin.info as TranslatableString.ResString).id)
+        assertEquals(Res.string.Info_LockTime_Title, (bitcoin.infoTitle as TranslatableString.ResString).id)
+        assertEquals(Res.string.Info_ProcessingBalance_Description, (bitcoin.info as TranslatableString.ResString).id)
     }
 
     private fun lockedValue(wallet: Wallet, balanceData: BalanceData) = factory.viewItem(

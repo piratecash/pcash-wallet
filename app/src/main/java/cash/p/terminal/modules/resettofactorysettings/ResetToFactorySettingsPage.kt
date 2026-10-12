@@ -25,6 +25,9 @@ import cash.p.terminal.R
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.reset_card_to_factory_condition_1
+import cash.p.terminal.resources.reset_card_to_factory_condition_2
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.tangem.ui.HardwareWalletError
 import cash.p.terminal.modules.manageaccount.AccountDeletionError
@@ -42,6 +45,7 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.ui_compose.components.HudHelper
 import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
+import org.jetbrains.compose.resources.StringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 class ResetToFactorySettingsPage(val input: Input) : HSPage() {
@@ -112,11 +116,11 @@ private fun ResetToFactorySettingsScreen(
 ) {
     val confirmations = remember {
         listOf(
-            TranslatableString.ResString(R.string.reset_card_to_factory_condition_1),
-            TranslatableString.ResString(R.string.reset_card_to_factory_condition_2)
+            TranslatableString.ResString(Res.string.reset_card_to_factory_condition_1),
+            TranslatableString.ResString(Res.string.reset_card_to_factory_condition_2)
         )
     }
-    var checkedItems by remember { mutableStateOf(setOf<Int>()) }
+    var checkedItems by remember { mutableStateOf(setOf<StringResource>()) }
     Scaffold(
         topBar = {
             AppBar(

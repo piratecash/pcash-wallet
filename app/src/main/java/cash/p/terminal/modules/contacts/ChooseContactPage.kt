@@ -28,6 +28,9 @@ import cash.p.terminal.R
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Button_Search
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.icon_search
 import cash.p.terminal.strings.helpers.shorten
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui.compose.components.ListEmptyView
@@ -125,8 +128,8 @@ private fun ChooseContactScreen(
                 } else {
                     listOf(
                         MenuItem(
-                            title = TranslatableString.ResString(R.string.Button_Search),
-                            icon = R.drawable.icon_search,
+                            title = TranslatableString.ResString(Res.string.Button_Search),
+                            icon = Res.drawable.icon_search,
                             onClick = {
                                 searchMode = true
                             }

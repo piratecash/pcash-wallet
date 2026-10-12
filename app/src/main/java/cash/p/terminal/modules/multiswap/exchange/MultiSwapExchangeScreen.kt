@@ -1,6 +1,9 @@
 package cash.p.terminal.modules.multiswap.exchange
 
 import androidx.compose.foundation.Canvas
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_change_now
+import cash.p.terminal.resources.ic_ston_fi
 import cash.p.terminal.ui_compose.components.plateBackground
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -86,6 +89,7 @@ import io.horizontalsystems.core.entities.Currency
 import io.horizontalsystems.core.entities.CurrencyValue
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
+import org.jetbrains.compose.resources.DrawableResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -392,7 +396,7 @@ private fun LegCard(
 private fun LegContent(
     leg: LegUiState,
     providerName: String? = null,
-    providerIcon: Int? = null,
+    providerIcon: DrawableResource? = null,
     providerIconUrl: String? = null,
 ) {
     // You Send
@@ -537,7 +541,7 @@ private fun Leg1Header(
 @Composable
 private fun Leg2Header(
     providerName: String?,
-    providerIcon: Int?,
+    providerIcon: DrawableResource?,
     clickable: Boolean,
     quoting: Boolean,
     onClickProvider: () -> Unit,
@@ -891,7 +895,7 @@ private fun previewUiState(
 private fun previewLeg1(status: LegStatus) = LegUiState(
     status = status,
     providerName = "STON.fi",
-    providerIcon = R.drawable.ic_ston_fi,
+    providerIcon = Res.drawable.ic_ston_fi,
     coinIn = "PIRATE",
     coinOut = "TONCOIN",
     amountInFormatted = "100",
@@ -905,7 +909,7 @@ private fun previewLeg1(status: LegStatus) = LegUiState(
 private fun previewLeg2() = LegUiState(
     status = LegStatus.Pending,
     providerName = "ChangeNow",
-    providerIcon = R.drawable.ic_change_now,
+    providerIcon = Res.drawable.ic_change_now,
     coinIn = "TONCOIN",
     coinOut = "BNB",
     amountInFormatted = "12.5",

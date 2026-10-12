@@ -470,7 +470,7 @@ class BackupProvider(
             chartIndicatorManager.disable()
         }
 
-        val defaultChartSettings = ChartIndicatorSettingsDao.defaultData()
+        val defaultChartSettings = ChartIndicatorSetting.defaults()
 
         val rsi = chartIndicators.rsi
         val rsiDefaults =

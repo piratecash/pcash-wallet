@@ -24,6 +24,9 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import java.math.BigDecimal
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -47,7 +50,7 @@ class SwapSelectProviderViewModelTest {
         every { formatCoinFull(any(), any(), any()) } returns "0"
     }
     private val currencyManager = mockk<CurrencyManager> {
-        every { baseCurrency } returns Currency("USD", "$", 2, 0)
+        every { baseCurrency } returns Currency("USD", "$", 2)
     }
 
     @Before
@@ -56,11 +59,13 @@ class SwapSelectProviderViewModelTest {
         mockkObject(App)
         every { App.currencyManager } returns currencyManager
         every { App.numberFormatter } returns numberFormatter
+        startKoin { modules(module { single<IAppNumberFormatter> { numberFormatter } }) }
     }
 
     @After
     fun tearDown() {
         Dispatchers.resetMain()
+        stopKoin()
         unmockkAll()
     }
 

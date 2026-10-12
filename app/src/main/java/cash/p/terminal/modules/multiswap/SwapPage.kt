@@ -71,6 +71,9 @@ import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpFrom
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.navigation.viewModelStoreOwnerForPage
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.SwapSettings_Title
+import cash.p.terminal.resources.ic_manage_2_24
 import cash.p.terminal.ui.compose.Keyboard
 import cash.p.terminal.ui.compose.components.CardsSwapInfo
 import cash.p.terminal.ui.compose.components.CoinImage
@@ -141,6 +144,7 @@ import org.koin.core.parameter.parametersOf
 import kotlin.reflect.KClass
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import cash.p.terminal.resources.ic_attention_20
 
 class SwapPage(val tokenIn: Token? = null, val tokenOut: Token? = null) : HSPage() {
     @Composable
@@ -739,8 +743,8 @@ private fun SwapAppBar(uiState: SwapUiState, controller: SwapScreenController) {
             if (uiState.quote?.swapQuote?.settings?.isNotEmpty() == true) {
                 add(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.SwapSettings_Title),
-                        icon = R.drawable.ic_manage_2_24,
+                        title = TranslatableString.ResString(Res.string.SwapSettings_Title),
+                        icon = Res.drawable.ic_manage_2_24,
                         onClick = controller::openSettings,
                     )
                 )
@@ -891,7 +895,7 @@ private fun SwapWarnings(uiState: SwapUiState) {
             TextImportantWarning(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 text = it.getString(),
-                icon = R.drawable.ic_attention_20,
+                icon = Res.drawable.ic_attention_20,
             )
         }
         if (uiState.quoteCautions.isNotEmpty()) {
@@ -904,7 +908,7 @@ private fun SwapWarnings(uiState: SwapUiState) {
             TextImportantWarning(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 text = stringResource(R.string.swap_estimated_amount_warning),
-                icon = R.drawable.ic_attention_20,
+                icon = Res.drawable.ic_attention_20,
             )
         }
         SwapStepWarning(uiState)
@@ -918,7 +922,7 @@ private fun SwapStepWarning(uiState: SwapUiState) {
         VSpacer(height = 12.dp)
         TextImportantError(
             modifier = Modifier.padding(horizontal = 16.dp),
-            icon = R.drawable.ic_attention_20,
+            icon = Res.drawable.ic_attention_20,
             title = stringResource(R.string.Swap_PriceImpact),
             text = stringResource(R.string.Swap_PriceImpactTooHigh, uiState.error.providerTitle.orEmpty()),
         )
@@ -1307,7 +1311,7 @@ private fun SwapOutputInputPreview(
                 amount = amount,
                 fiatAmount = fiatAmount,
                 fiatPriceImpact = fiatPriceImpact,
-                currency = Currency("usd", "$", 6, 0),
+                currency = Currency("usd", "$", 6),
                 token = null,
                 fiatAmountInputEnabled = true,
                 fiatPriceImpactLevel = PriceImpactLevel.Normal,

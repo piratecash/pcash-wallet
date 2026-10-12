@@ -48,6 +48,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.DrawableResource
 import timber.log.Timber
 import java.math.BigDecimal
 
@@ -558,7 +559,7 @@ enum class MultiSwapExchangePresentation { RouteInfo, Execution }
 data class LegUiState(
     val status: LegStatus,
     val providerName: String?,
-    val providerIcon: Int? = null,
+    val providerIcon: DrawableResource? = null,
     val providerIconUrl: String? = null,
     val tokenIn: Token? = null,
     val tokenOut: Token? = null,

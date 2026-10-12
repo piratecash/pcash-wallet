@@ -122,7 +122,3 @@ interface IKeyProvider {
 interface ICurrentDateProvider {
     val currentDate: Date
 }
-
-interface ILanguageManager {
-    val currentLanguage: String
-}

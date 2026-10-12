@@ -11,6 +11,7 @@ data class Colors(
     val surfacePrimary: Color,
     val surfaceElevated: Color,
     val surfacePlaceholder: Color,
+    val coinPlaceholder: Color,
     val controlActionBackground: Color,
     val controlActionBorder: Color,
     val controlTrack: Color,

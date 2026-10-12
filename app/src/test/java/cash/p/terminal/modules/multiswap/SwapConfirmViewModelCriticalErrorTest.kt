@@ -1,11 +1,14 @@
 package cash.p.terminal.modules.multiswap
 
-import cash.p.terminal.R
 import cash.p.terminal.core.ethereum.CautionViewItem
 import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
 import cash.p.terminal.network.exolix.data.entity.BackendExolixResponseError
 import cash.p.terminal.network.yifi.data.entity.BackendYiFiResponseError
-import cash.p.terminal.strings.helpers.Translator
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.swap_provider_order_failed
+import cash.p.terminal.resources.unsupported_address
+import cash.p.terminal.resources.unsupported_refund_address
+import io.horizontalsystems.core.Translator
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -33,7 +36,10 @@ class SwapConfirmViewModelCriticalErrorTest : SwapConfirmViewModelTestBase() {
     @Test
     fun createState_yiFiOrderFailed_showsGenericErrorCaution() = runTest(dispatcher) {
         mockkObject(Translator)
-        every { Translator.getString(R.string.swap_provider_order_failed) } returns "generic-provider-error"
+        every { Translator.getString(any(), *anyVararg()) } returns "title"
+        every {
+            Translator.getString(Res.string.swap_provider_order_failed, *anyVararg())
+        } returns "generic-provider-error"
         val rawMessage = "Provider \"ff\" did not return transactionId"
         val provider = providerFailingWith(
             BackendYiFiResponseError(code = "SWAP_ERROR", message = rawMessage, statusCode = 500),
@@ -55,7 +61,10 @@ class SwapConfirmViewModelCriticalErrorTest : SwapConfirmViewModelTestBase() {
     @Test
     fun createState_yiFiInvalidReceiveAddress_showsUnsupportedAddressCaution() = runTest(dispatcher) {
         mockkObject(Translator)
-        every { Translator.getString(R.string.unsupported_address) } returns "unsupported-address"
+        every { Translator.getString(any(), *anyVararg()) } returns "title"
+        every {
+            Translator.getString(Res.string.unsupported_address, *anyVararg())
+        } returns "unsupported-address"
         val provider = providerFailingWith(
             BackendYiFiResponseError(
                 code = BackendYiFiResponseError.INVALID_RECEIVE_ADDRESS,
@@ -75,7 +84,10 @@ class SwapConfirmViewModelCriticalErrorTest : SwapConfirmViewModelTestBase() {
     @Test
     fun createState_yiFiInvalidRefundAddress_showsUnsupportedRefundAddressCaution() = runTest(dispatcher) {
         mockkObject(Translator)
-        every { Translator.getString(R.string.unsupported_refund_address) } returns "unsupported-refund-address"
+        every { Translator.getString(any(), *anyVararg()) } returns "title"
+        every {
+            Translator.getString(Res.string.unsupported_refund_address, *anyVararg())
+        } returns "unsupported-refund-address"
         val provider = providerFailingWith(
             BackendYiFiResponseError(
                 code = BackendYiFiResponseError.INVALID_REFUND_ADDRESS,
@@ -94,6 +106,8 @@ class SwapConfirmViewModelCriticalErrorTest : SwapConfirmViewModelTestBase() {
 
     @Test
     fun createState_exolixError_keepsProviderMessageInCaution() = runTest(dispatcher) {
+        mockkObject(Translator)
+        every { Translator.getString(any(), *anyVararg()) } returns "title"
         val exolixMessage = "Exolix couldn't process the swap"
         val provider = providerFailingWith(
             BackendExolixResponseError(error = "SOME_ERROR", message = exolixMessage, statusCode = 500),
@@ -110,7 +124,10 @@ class SwapConfirmViewModelCriticalErrorTest : SwapConfirmViewModelTestBase() {
     @Test
     fun refresh_afterProviderError_successfulQuoteClearsErrorCaution() = runTest(dispatcher) {
         mockkObject(Translator)
-        every { Translator.getString(R.string.swap_provider_order_failed) } returns "generic-provider-error"
+        every { Translator.getString(any(), *anyVararg()) } returns "title"
+        every {
+            Translator.getString(Res.string.swap_provider_order_failed, *anyVararg())
+        } returns "generic-provider-error"
         var callCount = 0
         val provider = mockk<IMultiSwapProvider>(relaxed = true) {
             every { mevProtectionAvailable } returns false

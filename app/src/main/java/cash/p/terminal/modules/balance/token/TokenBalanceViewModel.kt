@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.balance.token
 
-import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -67,6 +66,8 @@ import cash.p.terminal.modules.transactions.requestNextPageIfAllFilteredOut
 import cash.p.terminal.modules.transactions.withClearedAmlStatus
 import cash.p.terminal.modules.transactions.withUpdatedAmlStatus
 import cash.p.terminal.premium.domain.PremiumSettings
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.trezor_connect_failed
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapterManager
@@ -108,6 +109,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.time.Instant
+import org.jetbrains.compose.resources.StringResource
 import timber.log.Timber
 
 @Suppress("LongParameterList")
@@ -184,8 +186,7 @@ class TokenBalanceViewModel(
     private var moneroSpendReadiness: MoneroSpendReadiness? = null
     private var moneroKeyImageSyncInProgress = false
     private var pendingMoneroSendIntent = false
-    @StringRes
-    private var moneroKeyImageSyncError: Int? = null
+    private var moneroKeyImageSyncError: StringResource? = null
     private var moneroFullWalletRecoveryAvailable = false
 
     private val _events = Channel<TokenBalanceModule.Event>(Channel.BUFFERED)
@@ -699,7 +700,7 @@ class TokenBalanceViewModel(
 
             MoneroSpendReadiness.ReconciliationFailed -> {
                 moneroKeyImageSyncInProgress = false
-                moneroKeyImageSyncError = R.string.trezor_connect_failed
+                moneroKeyImageSyncError = Res.string.trezor_connect_failed
             }
 
             else -> Unit

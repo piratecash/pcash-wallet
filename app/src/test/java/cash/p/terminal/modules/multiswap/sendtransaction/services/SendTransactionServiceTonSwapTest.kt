@@ -142,7 +142,7 @@ class SendTransactionServiceTonSwapTest : KoinTest {
     private fun setupMocks() {
         every { adapter.balanceData } returns BalanceData(testBalance)
         every { adapter.maxSpendableBalance } returns testBalance
-        every { currencyManager.baseCurrency } returns Currency("USD", "$", 2, 0)
+        every { currencyManager.baseCurrency } returns Currency("USD", "$", 2)
         every { marketKit.token(any()) } returns testToken
         every { marketKit.coinPrice(any(), any()) } returns null
 

@@ -7,8 +7,11 @@ import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.ActiveAccountState
 import cash.p.terminal.wallet.IAccountManager
+import io.horizontalsystems.core.Translator
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -39,6 +42,8 @@ class ManageAccountsViewModelTest {
 
     @Before
     fun setup() {
+        mockkObject(Translator)
+        every { Translator.getString(any(), *anyVararg()) } returns "translated"
         Dispatchers.setMain(dispatcher)
         every { accountManager.accountsFlow } returns accountsFlow
         every { accountManager.activeAccountStateFlow } returns activeStateFlow
@@ -49,6 +54,7 @@ class ManageAccountsViewModelTest {
 
     @After
     fun tearDown() {
+        unmockkObject(Translator)
         Dispatchers.resetMain()
     }
 

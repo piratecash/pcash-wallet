@@ -1,7 +1,6 @@
 package cash.p.terminal.modules.multiswap.providers
 
 import androidx.collection.LruCache
-import cash.p.terminal.R
 import cash.p.terminal.core.cache.accountScoped
 import cash.p.terminal.entities.Address
 import cash.p.terminal.entities.SwapProviderTransaction
@@ -24,6 +23,8 @@ import cash.p.terminal.network.yifi.data.repository.YiFiRepository
 import cash.p.terminal.network.yifi.domain.entity.YiFiOrder
 import cash.p.terminal.network.yifi.domain.entity.YiFiPair
 import cash.p.terminal.network.yifi.domain.entity.YiFiQuote
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_yifi
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.Token
@@ -47,7 +48,7 @@ class YiFiProvider(
 ) : OffChainSwapProvider {
     override val id = "yifi"
     override val title = "YiFi"
-    override val icon = R.drawable.ic_yifi
+    override val icon = Res.drawable.ic_yifi
     override val riskType = ProviderRiskType.Controlled
 
     override val mevProtectionAvailable: Boolean = false

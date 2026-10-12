@@ -5,7 +5,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cash.p.terminal.navigation.HSNavigation
-import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.ISendTronAdapter
 import cash.p.terminal.core.LocalizedException
@@ -27,6 +26,8 @@ import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.tron.SendTronAddressService
 import cash.p.terminal.modules.send.tron.SendTronFeeService
 import cash.p.terminal.modules.xrate.XRateService
+import cash.p.terminal.resources.Error_InsufficientBalanceForFee
+import cash.p.terminal.resources.Res
 import cash.p.terminal.wallet.Token
 import io.horizontalsystems.core.logger.AppLogger
 import kotlinx.coroutines.CoroutineScope
@@ -237,7 +238,7 @@ class SendTransactionServiceTron(
                 feeToken.decimals
             )
             createCaution(
-                LocalizedException(R.string.Error_InsufficientBalanceForFee, feeToken.coin.code, formattedBalance)
+                LocalizedException(Res.string.Error_InsufficientBalanceForFee, feeToken.coin.code, formattedBalance)
             )
         } else {
             null

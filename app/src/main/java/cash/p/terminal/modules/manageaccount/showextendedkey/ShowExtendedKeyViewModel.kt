@@ -5,10 +5,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import cash.p.dogecoinkit.MainNetDogecoin
-import cash.p.terminal.R
 
 
 import cash.p.terminal.modules.manageaccount.showextendedkey.ShowExtendedKeyModule.DisplayKeyType
+import cash.p.terminal.resources.AccountExtendedPrivateKey_Short
+import cash.p.terminal.resources.AccountExtendedPublicKey_Short
+import cash.p.terminal.resources.Bip32RootKey
+import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
 import io.horizontalsystems.bitcoincash.MainNetBitcoinCash
 import io.horizontalsystems.bitcoinkit.MainNet
@@ -42,11 +45,12 @@ class ShowExtendedKeyViewModel(
     val title: TranslatableString
         get() = when (displayKeyType) {
             is DisplayKeyType.AccountPrivateKey -> TranslatableString.ResString(
-                R.string.AccountExtendedPrivateKey_Short
+                Res.string.AccountExtendedPrivateKey_Short
             )
 
-            is DisplayKeyType.AccountPublicKey -> TranslatableString.ResString(R.string.AccountExtendedPublicKey_Short)
-            DisplayKeyType.Bip32RootKey -> TranslatableString.ResString(R.string.Bip32RootKey)
+            is DisplayKeyType.AccountPublicKey ->
+                TranslatableString.ResString(Res.string.AccountExtendedPublicKey_Short)
+            DisplayKeyType.Bip32RootKey -> TranslatableString.ResString(Res.string.Bip32RootKey)
         }
 
     val extendedKey: String

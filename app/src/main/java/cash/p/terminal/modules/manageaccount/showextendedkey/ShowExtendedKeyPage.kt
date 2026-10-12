@@ -12,6 +12,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.Icon
+import cash.p.terminal.resources.Info_Title
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_info_24
 import cash.p.terminal.ui_compose.components.AppModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material3.Scaffold
@@ -138,8 +141,8 @@ private fun ShowExtendedKeyScreen(
                     },
                     menuItems = listOf(
                         MenuItem(
-                            title = TranslatableString.ResString(R.string.Info_Title),
-                            icon = R.drawable.ic_info_24,
+                            title = TranslatableString.ResString(Res.string.Info_Title),
+                            icon = Res.drawable.ic_info_24,
                             onClick = {
                                 FaqManager.showFaqPage(FaqManager.faqPrivateKeys)
                             }

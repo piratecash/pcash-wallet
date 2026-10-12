@@ -201,18 +201,17 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
             MarketWidgetRepository(
                 marketKit = marketKit,
                 favoritesManager = marketFavoritesManager,
-                favoritesMenuService = MarketFavoritesMenuService(localStorage, marketWidgetManager),
+                favoritesMenuService = getKoinInstance<MarketFavoritesMenuService>(),
                 topNftCollectionsRepository = TopNftCollectionsRepository(marketKit),
                 topNftCollectionsViewItemFactory = TopNftCollectionsViewItemFactory(numberFormatter),
                 topPlatformsRepository = TopPlatformsRepository(marketKit),
-                currencyManager = currencyManager
+                currencyManager = currencyManager,
+                numberFormatter = numberFormatter
             )
         }
         val contactsRepository: ContactsRepository by inject(ContactsRepository::class.java)
         val subscriptionManager: SubscriptionManager by inject(SubscriptionManager::class.java)
-        val chartIndicatorManager: ChartIndicatorManager by lazy {
-            ChartIndicatorManager(appDatabase.chartIndicatorSettingsDao(), localStorage)
-        }
+        val chartIndicatorManager: ChartIndicatorManager by inject(ChartIndicatorManager::class.java)
         val backupProvider: BackupProvider by lazy {
             BackupProvider(
                 localStorage = localStorage,

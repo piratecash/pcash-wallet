@@ -53,6 +53,8 @@ import cash.p.terminal.modules.settings.main.HsSettingCell
 import cash.p.terminal.modules.unlinkaccount.UnlinkAccountSheet
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.resources.ManageAccount_Save
+import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.FormsInput
 import cash.p.terminal.ui_compose.components.AppBar
@@ -75,6 +77,7 @@ import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.ui_compose.components.Body
 import cash.p.terminal.navigation.navigateUpSafely
+import org.jetbrains.compose.resources.DrawableResource
 
 @Composable
 internal fun ManageAccountScreen(
@@ -103,7 +106,7 @@ internal fun ManageAccountScreen(
             },
             menuItems = listOf(
                 MenuItem(
-                    title = TranslatableString.ResString(R.string.ManageAccount_Save),
+                    title = TranslatableString.ResString(Res.string.ManageAccount_Save),
                     onClick = onSaveClicked,
                     enabled = viewState.canSave
                 )
@@ -478,7 +481,7 @@ private fun AccountActionItem(
     icon: Painter? = null,
     iconTint: Color? = null,
     coinIconUrl: String? = null,
-    coinIconPlaceholder: Int? = null,
+    coinIconPlaceholder: DrawableResource? = null,
     attention: Boolean = false,
     badge: String? = null,
     onClick: (() -> Unit)? = null

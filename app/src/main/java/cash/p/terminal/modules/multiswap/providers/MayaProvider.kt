@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.multiswap.providers
 
-import cash.p.terminal.R
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.maya
 import io.horizontalsystems.core.entities.BlockchainType
 
 object MayaProvider : BaseThorChainProvider(
@@ -10,6 +11,6 @@ object MayaProvider : BaseThorChainProvider(
 ) {
     override val id = "mayachain"
     override val title = "Maya Protocol"
-    override val icon = R.drawable.maya
+    override val icon = Res.drawable.maya
     override val settlementBlockchainType: BlockchainType = BlockchainType.Mayachain
 }

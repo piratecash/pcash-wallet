@@ -32,6 +32,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_search
 import cash.p.terminal.ui_compose.components.AppBarMenuButton
 import cash.p.terminal.ui_compose.components.HsIconButton
 import cash.p.terminal.ui_compose.components.MenuItem
@@ -148,7 +150,8 @@ fun SearchBarV2(
 
             if (!searchMode) {
                 AppBarMenuButton(
-                    icon = R.drawable.ic_search,
+                    icon = Res.drawable.ic_search,
+                    tint = ComposeAppTheme.colors.brandDefault,
                     onClick = { searchMode = true },
                     description = stringResource(R.string.Button_Search),
                 )

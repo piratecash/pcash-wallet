@@ -43,6 +43,9 @@ import cash.p.terminal.navigation.openQrScanner
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.offline.OperationAvailability
 import cash.p.terminal.modules.offline.rememberOfflineGatedAction
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.button_info
+import cash.p.terminal.resources.ic_info_20
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.FormsInputAddress
 import cash.p.terminal.ui.extensions.WalletSwitchBottomSheet
@@ -154,8 +157,8 @@ fun SendSmsNotificationScreen(
                 },
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.button_info),
-                        icon = R.drawable.ic_info_20,
+                        title = TranslatableString.ResString(Res.string.button_info),
+                        icon = Res.drawable.ic_info_20,
                         onClick = { showInfoSheet = true }
                     )
                 )

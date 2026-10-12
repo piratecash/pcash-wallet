@@ -5,7 +5,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cash.p.terminal.navigation.HSNavigation
-import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.ISendMoneroAdapter
 import cash.p.terminal.core.LocalizedException
@@ -29,6 +28,8 @@ import cash.p.terminal.modules.send.monero.SendMoneroAddressService
 import cash.p.terminal.modules.send.monero.SendMoneroFeeService
 import cash.p.terminal.modules.send.ton.FeeStatus
 import cash.p.terminal.modules.xrate.XRateService
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.check_fee_warning
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
@@ -242,14 +243,14 @@ class SendTransactionServiceMonero(
             if (availableBalance != null) {
                 feeCaution = if (availableBalance < fee) {
                     createCaution(
-                        LocalizedException(R.string.check_fee_warning, fee.toPlainString() + " " + feeToken.coin.code)
+                        LocalizedException(Res.string.check_fee_warning, fee.toPlainString() + " " + feeToken.coin.code)
                     )
                 } else null
                 hasEnoughFeeAmount = feeCaution == null
             }
         } else {
             val neededFee = fee.stripTrailingZeros().toPlainString() + " " + feeToken.coin.code
-            feeCaution = createCaution(LocalizedException(R.string.check_fee_warning, neededFee))
+            feeCaution = createCaution(LocalizedException(Res.string.check_fee_warning, neededFee))
             hasEnoughFeeAmount = false
         }
     }

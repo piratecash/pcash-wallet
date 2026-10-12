@@ -1,0 +1,64 @@
+package cash.p.terminal.modules.coin.audits
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import cash.p.terminal.modules.coin.audits.CoinAuditsModule.AuditViewItem
+import cash.p.terminal.modules.coin.audits.CoinAuditsModule.AuditorViewItem
+import cash.p.terminal.resources.CoinPage_Audits_Issues
+import cash.p.terminal.resources.Res
+import cash.p.terminal.strings.helpers.TranslatableString
+import io.horizontalsystems.core.helpers.DateHelper
+import io.horizontalsystems.core.DispatcherProvider
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+
+class CoinAuditsViewModel(
+    audits: List<CoinAuditsModule.AuditParcelable>,
+    dispatcherProvider: DispatcherProvider
+) : ViewModel() {
+
+    var uiState by mutableStateOf(CoinAuditsModule.UiState(emptyList()))
+
+    init {
+        viewModelScope.launch {
+            uiState = withContext(dispatcherProvider.io) {
+                CoinAuditsModule.UiState(auditorViewItems(audits))
+            }
+        }
+    }
+
+    private fun auditorViewItems(audits: List<CoinAuditsModule.AuditParcelable>): List<AuditorViewItem> {
+        val groupedByAuditor = audits.groupBy { it.partnerName }
+        val formatter = SimpleDateFormat("yyyy-MM-dd")
+        val auditorViewItems = mutableListOf<AuditorViewItem>()
+        groupedByAuditor.forEach { (auditor, reports) ->
+            auditorViewItems.add(
+                AuditorViewItem(
+                    name = auditor ?: "",
+                    logoUrl = auditor?.let { logoUrl(it) } ?: "",
+                    auditViewItems = reports.map { report ->
+                        AuditViewItem(
+                            date = report.date?.let { formatter.parse(it) }?.let { date ->
+                                DateHelper.formatDate(date, "MMM dd, yyyy")
+                            },
+                            name = report.name ?: "",
+                            issues = TranslatableString.ResString(
+                                Res.string.CoinPage_Audits_Issues,
+                                report.techIssues
+                            ),
+                            reportUrl = report.auditUrl
+                        )
+                    }
+                ))
+        }
+        return auditorViewItems
+    }
+
+    private fun logoUrl(name: String): String =
+        "https://cdn.blocksdecoded.com/auditor-icons/$name@3x.png"
+
+}

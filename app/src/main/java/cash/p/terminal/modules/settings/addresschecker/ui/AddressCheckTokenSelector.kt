@@ -24,6 +24,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
 import cash.p.terminal.core.App
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_platform_placeholder_32
 import cash.p.terminal.ui.compose.components.Badge
 import cash.p.terminal.ui.compose.components.SearchBar
 import cash.p.terminal.ui_compose.components.HsDivider
@@ -97,7 +99,7 @@ private fun TokenCell(
     onItemClick: (Token) -> Unit,
 ) {
     val imageSource =
-        ImageSource.Remote(token.blockchain.type.imageUrl, R.drawable.ic_platform_placeholder_32)
+        ImageSource.Remote(token.blockchain.type.imageUrl, Res.drawable.ic_platform_placeholder_32)
     Column {
         HsDivider()
         RowUniversal(

@@ -49,6 +49,64 @@ import org.koin.core.module.flatten
 import org.koin.dsl.module
 import org.koin.ext.getFullName
 import org.koin.test.KoinTest
+import cash.p.terminal.modules.market.SortingField
+import cash.p.terminal.modules.market.TopMarket
+import cash.p.terminal.modules.market.category.CoinCategoryMarketDataChartService
+import cash.p.terminal.modules.market.category.MarketCategoryService
+import cash.p.terminal.modules.market.category.MarketCategoryViewModel
+import cash.p.terminal.modules.market.filters.MarketFiltersService
+import cash.p.terminal.modules.market.filters.MarketFiltersViewModel
+import cash.p.terminal.modules.market.filtersresult.MarketFiltersResultService
+import cash.p.terminal.modules.chart.ChartIndicatorSetting
+import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.RankType
+import cash.p.terminal.modules.coin.analytics.CoinAnalyticsService
+import cash.p.terminal.modules.coin.analytics.CoinAnalyticsViewModel
+import cash.p.terminal.modules.coin.audits.CoinAuditsViewModel
+import cash.p.terminal.modules.coin.coinmarkets.CoinMarketsService
+import cash.p.terminal.modules.coin.coinmarkets.CoinMarketsViewModel
+import cash.p.terminal.modules.coin.detectors.DetectorsViewModel
+import cash.p.terminal.modules.coin.investments.CoinInvestmentsService
+import cash.p.terminal.modules.coin.investments.CoinInvestmentsViewModel
+import cash.p.terminal.modules.coin.majorholders.CoinMajorHoldersViewModel
+import cash.p.terminal.modules.coin.ranks.CoinRankViewModel
+import cash.p.terminal.modules.coin.reports.CoinReportsService
+import cash.p.terminal.modules.coin.reports.CoinReportsViewModel
+import cash.p.terminal.modules.coin.treasuries.CoinTreasuriesService
+import cash.p.terminal.modules.coin.treasuries.CoinTreasuriesViewModel
+import io.horizontalsystems.core.entities.Blockchain
+import io.horizontalsystems.core.entities.Currency
+import cash.p.terminal.modules.coin.CoinService
+import cash.p.terminal.modules.coin.CoinViewFactory
+import cash.p.terminal.modules.coin.CoinViewModel
+import cash.p.terminal.modules.coin.indicators.MacdSettingViewModel
+import cash.p.terminal.modules.coin.indicators.MovingAverageSettingViewModel
+import cash.p.terminal.modules.coin.indicators.RsiSettingViewModel
+import cash.p.terminal.modules.coin.overview.CoinOverviewChartService
+import cash.p.terminal.modules.coin.overview.CoinOverviewService
+import cash.p.terminal.modules.coin.overview.CoinOverviewViewModel
+import cash.p.terminal.modules.market.filtersresult.MarketFiltersResultViewModel
+import cash.p.terminal.modules.market.platform.MarketPlatformCoinsRepository
+import cash.p.terminal.modules.market.platform.MarketPlatformViewModel
+import cash.p.terminal.modules.market.platform.PlatformChartService
+import cash.p.terminal.modules.market.metricspage.MetricsPageChartService
+import cash.p.terminal.modules.market.metricspage.MetricsPageViewModel
+import cash.p.terminal.modules.market.topcoins.MarketTopCoinsViewModel
+import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsService
+import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsViewModel
+import cash.p.terminal.modules.market.tvl.TvlChartService
+import cash.p.terminal.modules.market.tvl.TvlChartViewModel
+import cash.p.terminal.modules.market.tvl.TvlService
+import cash.p.terminal.modules.market.tvl.TvlViewItemFactory
+import cash.p.terminal.modules.market.tvl.TvlViewModel
+import cash.p.terminal.modules.chart.ChartCurrencyValueFormatterShortened
+import cash.p.terminal.modules.metricchart.MetricsType
+import cash.p.terminal.modules.market.topplatforms.Platform
+import cash.p.terminal.modules.metricchart.ProChartModule
+import cash.p.terminal.modules.metricchart.ProChartService
+import cash.p.terminal.wallet.entities.FullCoin
+import io.horizontalsystems.chartview.chart.AbstractChartService
+import io.horizontalsystems.chartview.chart.ChartModule
+import io.horizontalsystems.chartview.chart.ChartViewModel
 import org.koin.test.verify.ParameterTypeInjection
 import org.koin.test.verify.definition
 import org.koin.test.verify.injectedParameters
@@ -102,6 +160,17 @@ class KoinGraphTest : KoinTest {
             definition<PayCoreVerificationViewModel>(PayCoreTicker::class, String::class),
             definition<PayCorePaymentViewModel>(PayCorePaymentParams::class),
             definition<PayCoreExchangeDetailViewModel>(Long::class),
+            definition<MarketTopCoinsViewModel>(TopMarket::class, SortingField::class),
+            definition<MarketFiltersViewModel>(MarketFiltersService::class),
+            definition<MarketFiltersResultViewModel>(MarketFiltersResultService::class),
+            definition<MarketCategoryViewModel>(MarketCategoryService::class),
+            definition<MarketPlatformViewModel>(Platform::class, MarketPlatformCoinsRepository::class),
+            definition<ChartViewModel>(AbstractChartService::class, ChartModule.ChartNumberFormatter::class),
+            definition<CoinCategoryMarketDataChartService>(String::class),
+            definition<PlatformChartService>(Platform::class),
+            *marketMetricsInjections(),
+            *coinPageInjections(),
+            *coinSubPageInjections(),
             definition<TransactionPollingManager>(List::class),
             definition<VersionChangelogViewModel>(ChangelogRequest::class),
         )
@@ -112,6 +181,36 @@ class KoinGraphTest : KoinTest {
         )
         fullModule.verifyOptionalConstructorParametersAreResolvable(extraTypes, injections)
     }
+
+    private fun marketMetricsInjections() = arrayOf(
+        definition<TvlViewModel>(TvlService::class, TvlViewItemFactory::class),
+        definition<TvlChartViewModel>(TvlChartService::class, ChartCurrencyValueFormatterShortened::class),
+        definition<TopNftCollectionsViewModel>(TopNftCollectionsService::class),
+        definition<MetricsPageViewModel>(MetricsType::class),
+        definition<MetricsPageChartService>(MetricsType::class),
+    )
+
+    private fun coinPageInjections() = arrayOf(
+        definition<CoinViewModel>(FullCoin::class, CoinService::class, List::class),
+        definition<CoinOverviewViewModel>(FullCoin::class, CoinOverviewService::class, CoinViewFactory::class),
+        definition<CoinOverviewChartService>(String::class),
+        definition<ProChartService>(String::class, ProChartModule.ChartType::class),
+        definition<MovingAverageSettingViewModel>(ChartIndicatorSetting::class),
+        definition<MacdSettingViewModel>(ChartIndicatorSetting::class),
+        definition<RsiSettingViewModel>(ChartIndicatorSetting::class),
+    )
+
+    private fun coinSubPageInjections() = arrayOf(
+        definition<CoinAnalyticsViewModel>(CoinAnalyticsService::class, String::class),
+        definition<CoinAuditsViewModel>(List::class),
+        definition<CoinMarketsViewModel>(CoinMarketsService::class),
+        definition<CoinInvestmentsViewModel>(CoinInvestmentsService::class),
+        definition<CoinMajorHoldersViewModel>(String::class, Blockchain::class, CoinViewFactory::class),
+        definition<CoinReportsViewModel>(CoinReportsService::class),
+        definition<CoinTreasuriesViewModel>(CoinTreasuriesService::class),
+        definition<DetectorsViewModel>(String::class, List::class),
+        definition<CoinRankViewModel>(RankType::class, Currency::class),
+    )
 
     @OptIn(KoinExperimentalAPI::class, KoinInternalApi::class)
     private fun Module.verifyOptionalConstructorParametersAreResolvable(

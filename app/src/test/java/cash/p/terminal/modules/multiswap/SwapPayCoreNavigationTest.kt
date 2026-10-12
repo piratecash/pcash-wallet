@@ -191,7 +191,7 @@ class SwapPayCoreNavigationTest {
             fiatAmountIn = null,
             fiatAmountOut = null,
             fiatPriceImpact = null,
-            currency = Currency("RUB", "₽", 2, 0),
+            currency = Currency("RUB", "₽", 2),
             fiatAmountInInputEnabled = false,
             fiatAmountOutInputEnabled = false,
             fiatPriceImpactLevel = null,

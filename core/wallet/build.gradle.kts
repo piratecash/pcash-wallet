@@ -1,92 +1,105 @@
-plugins {
-    id(libs.plugins.android.library.get().pluginId)
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
+plugins {
+    kotlin("multiplatform")
+    id("com.android.kotlin.multiplatform.library")
     id(libs.plugins.kotlin.parcelize.get().pluginId)
-    id(libs.plugins.devtools.ksp.get().pluginId)
 }
 
-android {
-    namespace = "cash.p.terminal.wallet"
-    compileSdk = rootProject.ext.get("compile_sdk_version") as Int
-
-    defaultConfig {
-        consumerProguardFiles("consumer-rules.pro")
-        minSdk = 27
-    }
-
-    buildTypes {
-        debug {
-            resValue("string", "marketApiBaseUrl", "https://api-dev.blocksdecoded.com")
-        }
-        release {
-            resValue("string", "marketApiBaseUrl", "https://api.blocksdecoded.com")
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
+// KMP source directories must be configured explicitly or Detekt reports NO-SOURCE.
+detekt {
+    source.setFrom(
+        "src/commonMain/kotlin",
+        "src/androidMain/kotlin",
+    )
 }
 
 kotlin {
-    compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
-    }
-}
+    android {
+        namespace = "cash.p.terminal.wallet"
+        compileSdk = rootProject.ext.get("compile_sdk_version") as Int
+        minSdk = rootProject.ext.get("min_sdk_version") as Int
 
-dependencies {
-    implementation(project.dependencies.platform(libs.koin.bom))
-    implementation(libs.koin.core)
-    implementation(libs.koin.android)
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_11)
+            freeCompilerArgs.addAll(
+                "-P",
+                "plugin:org.jetbrains.kotlin.parcelize:additionalAnnotation=io.horizontalsystems.core.common.CommonParcelize",
+            )
+        }
 
-    implementation(libs.rxjava)
-    implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.kotlinx.coroutines.rx2)
-
-    implementation(libs.ton.kit)
-    implementation(libs.hd.wallet.kit)
-    implementation(libs.ethereum.kit)
-    implementation(libs.tron.kit)
-    implementation(libs.monero.kit)
-    implementation(libs.stellar.kit)
-    implementation(libs.kermit)
-
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.gson)
-    implementation(libs.okhttp.logging.interceptor)
-    implementation(libs.retrofit.rxjava2)
-    implementation(libs.retrofit.scalars)
-    implementation(libs.gson)
-
-    //room
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
-    implementation(libs.androidx.ui.text.android)
-    ksp(libs.room.compiler)
-
-    implementation(project(":core:strings"))
-    implementation(project(":core:core"))
-    api(project(":core:market"))
-    implementation(project(":core:network"))
-    implementation(project(":core:navigation"))
-
-    testImplementation(libs.junit)
-    testImplementation(libs.mockk)
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.robolectric)
-    testImplementation(libs.androidx.test.core)
-    testImplementation(libs.kotlin.test.junit)
-    testRuntimeOnly(libs.secp256k1.jni.jvm)
-}
-
-android {
-    testOptions {
-        unitTests {
+        withHostTest {
             isIncludeAndroidResources = true
+        }
+    }
+
+    jvm("desktop") {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_11)
+        }
+    }
+
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                api(project(":core:market"))
+                implementation(project(":core:common"))
+                implementation(project(":core:network"))
+                implementation(project(":core:navigation"))
+
+                implementation(libs.rxjava)
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.kotlinx.coroutines.rx2)
+
+                implementation(libs.ton.kit)
+                implementation(libs.hd.wallet.kit)
+                implementation(libs.ethereum.kit)
+                implementation(libs.monero.kit)
+                implementation(libs.stellar.kit)
+
+                implementation(libs.retrofit)
+                implementation(libs.retrofit.gson)
+                implementation(libs.okhttp.logging.interceptor)
+                implementation(libs.retrofit.rxjava2)
+                implementation(libs.retrofit.scalars)
+                implementation(libs.gson)
+
+                implementation(libs.room.runtime)
+
+                implementation(project.dependencies.platform(libs.koin.bom))
+                implementation(libs.koin.core)
+                implementation(libs.kermit)
+            }
+        }
+        androidMain {
+            dependencies {
+                implementation(libs.koin.android)
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation(libs.junit)
+                implementation(libs.mockk)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.kotlin.test.junit)
+            }
+        }
+        getByName("desktopTest") {
+            dependencies {
+                runtimeOnly(libs.secp256k1.jni.jvm)
+            }
+        }
+        getByName("androidHostTest") {
+            dependencies {
+                implementation(libs.robolectric)
+                implementation(libs.androidx.test.core)
+                implementation(libs.koin.android)
+                runtimeOnly(libs.secp256k1.jni.jvm)
+            }
         }
     }
 }

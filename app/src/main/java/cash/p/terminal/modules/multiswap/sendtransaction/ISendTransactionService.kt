@@ -16,6 +16,8 @@ import cash.p.terminal.modules.multiswap.ui.DataField
 import cash.p.terminal.modules.offline.OfflineOperationGate
 import cash.p.terminal.modules.send.SendModule
 import cash.p.terminal.modules.send.userMessageRes
+import cash.p.terminal.resources.Hud_Text_NoInternet
+import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.wallet.IAdapterManager
@@ -131,7 +133,7 @@ abstract class ISendTransactionService<T>(protected val token: Token) :
         type: CautionViewItem.Type = CautionViewItem.Type.Error
     ) = when (error) {
         is UnknownHostException -> CautionViewItem(
-            TranslatableString.ResString(R.string.Hud_Text_NoInternet).toString(),
+            TranslatableString.ResString(Res.string.Hud_Text_NoInternet).toString(),
             "",
             type
         )

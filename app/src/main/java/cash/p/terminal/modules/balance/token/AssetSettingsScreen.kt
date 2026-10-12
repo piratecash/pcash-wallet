@@ -44,6 +44,8 @@ import cash.p.terminal.ui_compose.components.InfoText
 import cash.p.terminal.ui_compose.components.SwitchWithText
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.display_options_price_period
 
 @Composable
 fun AssetSettingsScreen(
@@ -207,7 +209,7 @@ fun AssetSettingsScreen(
 
     if (showPeriodSelector) {
         AlertGroup(
-            title = R.string.display_options_price_period,
+            title = Res.string.display_options_price_period,
             select = Select(pricePeriod, DisplayPricePeriod.entries),
             onSelect = { selected ->
                 onPricePeriodChange(selected)

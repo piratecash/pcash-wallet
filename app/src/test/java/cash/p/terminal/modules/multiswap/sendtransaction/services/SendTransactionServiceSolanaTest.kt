@@ -519,7 +519,7 @@ class SendTransactionServiceSolanaTest : KoinTest {
         every { adapterManager.getAdjustedBalanceData(any()) } returns BalanceData(testBalance)
         coEvery { adapterManager.awaitAdapterForWallet<ISendSolanaAdapter>(any(), any()) } returns adapter
 
-        every { currencyManager.baseCurrency } returns Currency("USD", "$", 2, 0)
+        every { currencyManager.baseCurrency } returns Currency("USD", "$", 2)
 
         every { marketKit.token(any()) } returns testToken
         every { marketKit.coinPrice(any(), any()) } returns null

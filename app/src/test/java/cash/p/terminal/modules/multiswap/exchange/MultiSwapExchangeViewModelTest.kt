@@ -97,7 +97,7 @@ class MultiSwapExchangeViewModelTest {
     private val feeFlow = MutableStateFlow(BigDecimal.ZERO)
     private val balanceAdapter = mockk<IBalanceAdapter>(relaxed = true)
     private val currencyManager = mockk<CurrencyManager> {
-        every { baseCurrency } returns Currency("USD", "$", 2, 0)
+        every { baseCurrency } returns Currency("USD", "$", 2)
     }
 
     private val testToken = Token(

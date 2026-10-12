@@ -2,8 +2,10 @@ package cash.p.terminal.screenshots
 
 import android.app.Application
 import androidx.compose.runtime.Composable
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_change_now
+import cash.p.terminal.resources.uniswap
 import com.github.takahirom.roborazzi.captureRoboImage
-import cash.p.terminal.R
 import cash.p.terminal.modules.multiswap.PriceImpactLevel
 import cash.p.terminal.modules.multiswap.exchange.ButtonState
 import cash.p.terminal.modules.multiswap.exchange.LegStatus
@@ -88,7 +90,7 @@ private fun RouteScreenFixture(presentation: MultiSwapExchangePresentation) {
     val pirate = fixtureToken("pirate", "PIRATE", BlockchainType.Bitcoin)
     val toncoin = fixtureToken("toncoin", "TONCOIN", BlockchainType.Ton)
     val bnb = fixtureToken("bnb", "BNB", BlockchainType.BinanceSmartChain)
-    val currency = Currency("USD", "$", 2, 0)
+    val currency = Currency("USD", "$", 2)
     val leg1 = LegUiState(
         status = if (presentation == MultiSwapExchangePresentation.Execution) {
             LegStatus.Completed
@@ -96,7 +98,7 @@ private fun RouteScreenFixture(presentation: MultiSwapExchangePresentation) {
             LegStatus.Pending
         },
         providerName = "ChangeNOW",
-        providerIcon = R.drawable.ic_change_now,
+        providerIcon = Res.drawable.ic_change_now,
         tokenIn = pirate,
         tokenOut = toncoin,
         amountIn = BigDecimal("100"), amountOut = BigDecimal("12.5"),
@@ -108,7 +110,7 @@ private fun RouteScreenFixture(presentation: MultiSwapExchangePresentation) {
         riskType = ProviderRiskType.Auto, estimationTime = 797,
     )
     val leg2 = LegUiState(
-        status = LegStatus.Pending, providerName = "Uniswap", providerIcon = R.drawable.uniswap,
+        status = LegStatus.Pending, providerName = "Uniswap", providerIcon = Res.drawable.uniswap,
         tokenIn = toncoin, tokenOut = bnb, amountIn = BigDecimal("12.5"), amountOut = BigDecimal("0.8"),
         fiatAmountIn = BigDecimal("99"), fiatAmountOut = BigDecimal("98"), currency = currency,
         badgeIn = "TON", badgeOut = "BSC", coinIn = "TONCOIN", coinOut = "BNB",

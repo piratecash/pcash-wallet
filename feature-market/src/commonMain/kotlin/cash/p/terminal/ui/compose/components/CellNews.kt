@@ -1,0 +1,67 @@
+package cash.p.terminal.ui.compose.components
+
+import androidx.compose.foundation.layout.*
+import cash.p.terminal.ui_compose.components.plateOutline
+import cash.p.terminal.ui_compose.components.plateBackground
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import cash.p.terminal.ui_compose.components.captionSB_grey
+import cash.p.terminal.ui_compose.components.headline2_leah
+import cash.p.terminal.ui_compose.components.subhead2_grey
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+
+@Composable
+fun CellNews(
+    source: String,
+    title: String,
+    body: String,
+    date: String,
+    onClick: () -> Unit
+) {
+    var titleLines by remember { mutableStateOf(0) }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .plateOutline(RoundedCornerShape(16.dp)),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = plateBackground()),
+        onClick = { onClick.invoke() }
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            captionSB_grey(
+                text = source,
+                maxLines = 1,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            headline2_leah(
+                text = title,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                onTextLayout = { res -> titleLines = res.lineCount }
+            )
+            if (titleLines < 3) {
+                Spacer(modifier = Modifier.height(8.dp))
+                subhead2_grey(
+                    text = body,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = if (titleLines == 1) 2 else 1,
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = date,
+                color = ComposeAppTheme.colors.textSecondaryDimmed,
+                style = ComposeAppTheme.typography.micro,
+                maxLines = 1,
+            )
+        }
+    }
+}

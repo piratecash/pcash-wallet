@@ -73,6 +73,12 @@ import cash.p.terminal.ui_compose.components.TextImportantError
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.strings.helpers.Translator
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_swap_24
+import cash.p.terminal.resources.ic_arrow_up_right_24
+import cash.p.terminal.resources.ic_arrow_down_left_24
+import cash.p.terminal.resources.ic_attention_20
+import cash.p.terminal.resources.ic_coins_stacking
 
 @Composable
 fun NoteWarning(
@@ -85,7 +91,7 @@ fun NoteWarning(
         modifier = modifier.clickable(onClick = onClick),
         text = text,
         title = stringResource(id = R.string.AccountRecovery_Note),
-        icon = R.drawable.ic_attention_20,
+        icon = Res.drawable.ic_attention_20,
         onClose = onClose
     )
 }
@@ -100,7 +106,7 @@ fun NoteError(
         modifier = modifier.clickable(onClick = onClick),
         text = text,
         title = stringResource(id = R.string.AccountRecovery_Note),
-        icon = R.drawable.ic_attention_20
+        icon = Res.drawable.ic_attention_20
     )
 }
 
@@ -195,7 +201,7 @@ fun BalanceItems(
                         standardActionsVisible -> {
                             {
                                 BalanceActionButton(
-                                    icon = R.drawable.ic_arrow_up_right_24,
+                                    icon = Res.drawable.ic_arrow_up_right_24,
                                     label = stringResource(R.string.Balance_Send),
                                     iconRotation = -90f,
                                     onClick = {
@@ -203,7 +209,7 @@ fun BalanceItems(
                                     },
                                 )
                                 BalanceActionButton(
-                                    icon = R.drawable.ic_arrow_down_left_24,
+                                    icon = Res.drawable.ic_arrow_down_left_24,
                                     label = stringResource(R.string.Balance_Receive),
                                     dimmed = viewModel.isBackupRequired,
                                     onClick = {
@@ -218,7 +224,7 @@ fun BalanceItems(
                                 )
                                 if (viewModel.isSwapEnabled) {
                                     BalanceActionButton(
-                                        icon = R.drawable.ic_swap_24,
+                                        icon = Res.drawable.ic_swap_24,
                                         label = stringResource(R.string.Swap),
                                         dimmed = viewModel.isBackupRequired,
                                         onClick = {
@@ -233,7 +239,7 @@ fun BalanceItems(
                                 }
                                 if (viewModel.isStackingEnabled) {
                                     BalanceActionButton(
-                                        icon = R.drawable.ic_coins_stacking,
+                                        icon = Res.drawable.ic_coins_stacking,
                                         label = stringResource(R.string.stacking),
                                         onClick = {
                                             navigation.slideFromRight(StackingPage(null))
@@ -246,7 +252,7 @@ fun BalanceItems(
                         watchStakingVisible -> {
                             {
                                 BalanceActionButton(
-                                    icon = R.drawable.ic_coins_stacking,
+                                    icon = Res.drawable.ic_coins_stacking,
                                     label = stringResource(R.string.staking_details),
                                     onClick = {
                                         navigation.slideFromRight(StackingPage(null))

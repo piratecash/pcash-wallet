@@ -1,0 +1,526 @@
+package cash.p.terminal.ui.compose.components
+
+import androidx.compose.foundation.background
+import cash.p.terminal.ui_compose.components.plateBackground
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Send_Button_Paste
+import cash.p.terminal.resources.ic_attention_20
+import cash.p.terminal.resources.ic_check_20
+import cash.p.terminal.resources.ic_delete_20
+import cash.p.terminal.resources.ic_qr_scan_20
+import cash.p.terminal.resources.qr_scanner_title_smart_scan
+import cash.p.terminal.navigation.AppPages
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.openQrScanner
+import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
+import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
+import cash.p.terminal.ui_compose.components.HSCircularProgressIndicator
+import cash.p.terminal.ui_compose.components.body_grey
+import cash.p.terminal.ui_compose.entities.DataState
+import cash.p.terminal.ui_compose.entities.FormsInputStateWarning
+import cash.p.terminal.ui_compose.theme.ColoredTextStyle
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.core.launchAfterClearingFocus
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
+
+@Composable
+fun FormsInput(
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    initial: String? = null,
+    hint: String,
+    prefix: String? = null,
+    textColor: Color = ComposeAppTheme.colors.textPrimary,
+    textStyle: TextStyle = ComposeAppTheme.typography.body,
+    hintColor: Color = ComposeAppTheme.colors.textDisabled,
+    hintStyle: TextStyle = ComposeAppTheme.typography.body,
+    singleLine: Boolean = false,
+    state: DataState<Any>? = null,
+    qrScannerEnabled: Boolean = false,
+    qrScannerTitle: String? = null,
+    navigation: HSNavigation? = null,
+    pasteEnabled: Boolean = true,
+    trailingIcon: DrawableResource? = null,
+    onTrailingIconClick: (() -> Unit)? = null,
+    showDeleteButton: Boolean = true,
+    maxLength: Int? = null,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    textPreprocessor: TextPreprocessor = TextPreprocessorImpl,
+    onChangeFocus: ((Boolean) -> Unit)? = null,
+    onValueChange: (String) -> Unit,
+) {
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+    val coroutineScope = rememberCoroutineScope()
+
+    val borderColor = when (state) {
+        is DataState.Error -> {
+            if (state.error is FormsInputStateWarning) {
+                ComposeAppTheme.colors.statusWarning50
+            } else {
+                ComposeAppTheme.colors.statusError50
+            }
+        }
+
+        else -> ComposeAppTheme.colors.borderDefault
+    }
+
+    val cautionColor = if (state?.errorOrNull is FormsInputStateWarning) {
+        ComposeAppTheme.colors.statusWarning
+    } else {
+        ComposeAppTheme.colors.statusError
+    }
+
+    Column(modifier) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .defaultMinSize(minHeight = 44.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .border(1.dp, borderColor, RoundedCornerShape(12.dp))
+                .background(plateBackground()),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            var textState by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+                mutableStateOf(TextFieldValue(initial ?: "", TextRange(initial?.length ?: 0)))
+            }
+
+            LaunchedEffect(initial) {
+                val incoming = initial ?: ""
+                if (incoming != textState.text) {
+                    textState = TextFieldValue(incoming, TextRange(incoming.length))
+                }
+            }
+
+            prefix?.let {
+                body_grey(
+                    modifier = Modifier.padding(start = 12.dp),
+                    text = prefix
+                )
+            }
+
+            BasicTextField(
+                modifier = Modifier
+                    .focusRequester(focusRequester)
+                    .onFocusChanged {
+                        onChangeFocus?.invoke(it.isFocused)
+                    }
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .weight(1f),
+                enabled = enabled,
+                value = textState,
+                onValueChange = { textFieldValue ->
+                    val textFieldValueProcessed =
+                        textFieldValue.copy(text = textPreprocessor.process(textFieldValue.text))
+
+                    val text = textFieldValueProcessed.text
+                    if (maxLength == null || text.length <= maxLength) {
+                        textState = textFieldValueProcessed
+                        onValueChange.invoke(text)
+                    } else {
+                        // Need to set textState to new instance of TextFieldValue with the same values
+                        // Otherwise it getting set to empty string
+                        textState =
+                            TextFieldValue(text = textState.text, selection = textState.selection)
+                    }
+                },
+                textStyle = ColoredTextStyle(
+                    color = textColor,
+                    textStyle = textStyle
+                ),
+                singleLine = singleLine,
+                cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
+                decorationBox = { innerTextField ->
+                    if (textState.text.isEmpty()) {
+                        Text(
+                            hint,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 1,
+                            color = hintColor,
+                            style = hintStyle
+                        )
+                    }
+                    innerTextField()
+                },
+                visualTransformation = visualTransformation,
+                keyboardOptions = keyboardOptions,
+            )
+
+            when (state) {
+                is DataState.Loading -> {
+                    HSCircularProgressIndicator()
+                }
+
+                is DataState.Error -> {
+                    Icon(
+                        modifier = Modifier.padding(end = 8.dp),
+                        painter = painterResource(Res.drawable.ic_attention_20),
+                        contentDescription = null,
+                        tint = cautionColor
+                    )
+                }
+
+                is DataState.Success -> {
+                    Icon(
+                        modifier = Modifier.padding(end = 8.dp),
+                        painter = painterResource(Res.drawable.ic_check_20),
+                        contentDescription = null,
+                        tint = ComposeAppTheme.colors.statusSuccess
+                    )
+                }
+
+                else -> {
+                    Spacer(modifier = Modifier.width(28.dp))
+                }
+            }
+
+            trailingIcon?.let { icon ->
+                ButtonSecondaryCircle(
+                    modifier = Modifier.padding(end = if (pasteEnabled) 8.dp else 16.dp),
+                    icon = icon,
+                    onClick = { onTrailingIconClick?.invoke() }
+                )
+            }
+
+            if (textState.text.isNotEmpty() && showDeleteButton) {
+                ButtonSecondaryCircle(
+                    modifier = Modifier.padding(end = 16.dp),
+                    icon = Res.drawable.ic_delete_20,
+                    onClick = {
+                        val text = textPreprocessor.process("")
+                        textState = textState.copy(text = text, selection = TextRange(0))
+                        onValueChange.invoke(text)
+                        focusRequester.requestFocus()
+                    }
+                )
+            } else {
+                if (qrScannerEnabled) {
+                    val scannerTitle = qrScannerTitle ?: stringResource(Res.string.qr_scanner_title_smart_scan)
+                    val appPages: AppPages = koinInject()
+                    ButtonSecondaryCircle(
+                        modifier = Modifier.padding(end = if (pasteEnabled) 8.dp else 16.dp),
+                        icon = Res.drawable.ic_qr_scan_20,
+                        onClick = {
+                            coroutineScope.launchAfterClearingFocus(focusManager) {
+                                checkNotNull(navigation).openQrScanner(appPages, scannerTitle) { scannedText ->
+                                    val textProcessed = textPreprocessor.process(scannedText)
+                                    textState = TextFieldValue(
+                                        text = textProcessed,
+                                        selection = TextRange(textProcessed.length)
+                                    )
+                                    onValueChange(textProcessed)
+                                }
+                            }
+                        }
+                    )
+                }
+
+                if (pasteEnabled) {
+                    val clipboardManager = LocalClipboardManager.current
+                    ButtonSecondaryDefault(
+                        modifier = Modifier
+                            .padding(end = 16.dp)
+                            .height(28.dp),
+                        title = stringResource(Res.string.Send_Button_Paste),
+                        onClick = {
+                            clipboardManager.getText()?.text?.let { textInClipboard ->
+                                val textProcessed = textPreprocessor.process(textInClipboard)
+                                textState = TextFieldValue(
+                                    text = textProcessed,
+                                    selection = TextRange(textProcessed.length)
+                                )
+                                onValueChange(textProcessed)
+                            }
+                        },
+                    )
+                }
+            }
+        }
+
+        state?.errorOrNull?.localizedMessage?.let {
+            Text(
+                modifier = Modifier.padding(start = 8.dp, top = 8.dp, end = 8.dp),
+                text = it,
+                color = cautionColor,
+                style = ComposeAppTheme.typography.caption
+            )
+        }
+    }
+}
+
+@Composable
+fun FormsInputMultiline(
+    modifier: Modifier = Modifier,
+    initial: String? = null,
+    enabled: Boolean = true,
+    hint: String,
+    textColor: Color = ComposeAppTheme.colors.textPrimary,
+    textStyle: TextStyle = ComposeAppTheme.typography.body,
+    hintColor: Color = ComposeAppTheme.colors.textDisabled,
+    hintStyle: TextStyle = ComposeAppTheme.typography.body,
+    state: DataState<Any>? = null,
+    pasteEnabled: Boolean = true,
+    qrScannerEnabled: Boolean = false,
+    qrScannerTitle: String? = null,
+    navigation: HSNavigation? = null,
+    textPreprocessor: TextPreprocessor = TextPreprocessorImpl,
+    onChangeFocus: ((Boolean) -> Unit)? = null,
+    maxLength: Int? = null,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    onValueChange: (String) -> Unit,
+    onClear: (() -> Unit)? = null,
+    onPaste: (() -> Unit)? = null,
+    onScanQR: (() -> Unit)? = null
+) {
+    val focusManager = LocalFocusManager.current
+    val coroutineScope = rememberCoroutineScope()
+
+    val borderColor = when (state) {
+        is DataState.Error -> {
+            if (state.error is FormsInputStateWarning) {
+                ComposeAppTheme.colors.statusWarning50
+            } else {
+                ComposeAppTheme.colors.statusError50
+            }
+        }
+
+        else -> ComposeAppTheme.colors.borderDefault
+    }
+
+    val cautionColor = if (state?.errorOrNull is FormsInputStateWarning) {
+        ComposeAppTheme.colors.statusWarning
+    } else {
+        ComposeAppTheme.colors.statusError
+    }
+
+    Column(modifier) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .border(1.dp, borderColor, RoundedCornerShape(12.dp))
+                .background(plateBackground()),
+        ) {
+            var textState by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+                mutableStateOf(TextFieldValue(initial ?: ""))
+            }
+
+            LaunchedEffect(initial) {
+                val incoming = initial ?: ""
+                if (incoming != textState.text) {
+                    textState = TextFieldValue(incoming, TextRange(incoming.length))
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            BasicTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = 64.dp)
+                    .onFocusChanged {
+                        onChangeFocus?.invoke(it.isFocused)
+                    }
+                    .padding(horizontal = 16.dp),
+                enabled = enabled,
+                value = textState,
+                onValueChange = { textFieldValue ->
+                    val textFieldValueProcessed =
+                        textFieldValue.copy(text = textPreprocessor.process(textFieldValue.text))
+
+                    val text = textFieldValueProcessed.text
+                    if (maxLength == null || text.length <= maxLength) {
+                        textState = textFieldValueProcessed
+                        onValueChange.invoke(text)
+                    } else {
+                        // Need to set textState to new instance of TextFieldValue with the same values
+                        // Otherwise it getting set to empty string
+                        textState =
+                            TextFieldValue(text = textState.text, selection = textState.selection)
+                    }
+                },
+                textStyle = ColoredTextStyle(
+                    color = textColor,
+                    textStyle = textStyle
+                ),
+                cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
+                decorationBox = { innerTextField ->
+                    if (textState.text.isEmpty()) {
+                        Text(
+                            hint,
+                            overflow = TextOverflow.Ellipsis,
+                            color = hintColor,
+                            style = hintStyle
+                        )
+                    }
+                    innerTextField()
+                },
+                visualTransformation = visualTransformation,
+                keyboardOptions = keyboardOptions,
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(44.dp),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                when (state) {
+                    is DataState.Loading -> {
+                        HSCircularProgressIndicator()
+                    }
+
+                    is DataState.Error -> {
+                        Icon(
+                            modifier = Modifier.padding(end = 8.dp),
+                            painter = painterResource(Res.drawable.ic_attention_20),
+                            contentDescription = null,
+                            tint = cautionColor
+                        )
+                    }
+
+                    is DataState.Success -> {
+                        Icon(
+                            modifier = Modifier.padding(end = 8.dp),
+                            painter = painterResource(Res.drawable.ic_check_20),
+                            contentDescription = null,
+                            tint = ComposeAppTheme.colors.statusSuccess
+                        )
+                    }
+
+                    else -> {
+
+                    }
+                }
+
+                if (textState.text.isNotEmpty()) {
+                    ButtonSecondaryCircle(
+                        modifier = Modifier.padding(end = 16.dp),
+                        icon = Res.drawable.ic_delete_20,
+                        onClick = {
+                            val text = textPreprocessor.process("")
+                            textState = textState.copy(text = text, selection = TextRange(0))
+                            onValueChange.invoke(text)
+
+                            onClear?.invoke()
+                        }
+                    )
+                } else {
+                    if (qrScannerEnabled) {
+                        val scannerTitle = qrScannerTitle ?: stringResource(Res.string.qr_scanner_title_smart_scan)
+                        val appPages: AppPages = koinInject()
+                        ButtonSecondaryCircle(
+                            modifier = Modifier.padding(end = if (pasteEnabled) 8.dp else 16.dp),
+                            icon = Res.drawable.ic_qr_scan_20,
+                            onClick = {
+                                coroutineScope.launchAfterClearingFocus(focusManager) {
+                                    checkNotNull(navigation).openQrScanner(appPages, scannerTitle) { scannedText ->
+                                        val textProcessed = textPreprocessor.process(scannedText)
+                                        textState = textState.copy(
+                                            text = textProcessed,
+                                            selection = TextRange(textProcessed.length)
+                                        )
+                                        onValueChange.invoke(textProcessed)
+                                    }
+                                    onScanQR?.invoke()
+                                }
+                            }
+                        )
+                    }
+
+                    if (pasteEnabled) {
+                        val clipboardManager = LocalClipboardManager.current
+                        ButtonSecondaryDefault(
+                            modifier = Modifier
+                                .padding(end = 16.dp)
+                                .height(28.dp),
+                            title = stringResource(Res.string.Send_Button_Paste),
+                            onClick = {
+                                clipboardManager.getText()?.text?.let { textInClipboard ->
+                                    val textProcessed = textPreprocessor.process(textInClipboard)
+                                    textState = textState.copy(
+                                        text = textProcessed,
+                                        selection = TextRange(textProcessed.length)
+                                    )
+                                    onValueChange.invoke(textProcessed)
+                                }
+
+                                onPaste?.invoke()
+                            },
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+
+        state?.errorOrNull?.localizedMessage?.let {
+            Text(
+                modifier = Modifier.padding(start = 8.dp, top = 8.dp, end = 8.dp),
+                text = it,
+                color = cautionColor,
+                style = ComposeAppTheme.typography.caption
+            )
+        }
+    }
+}
+
+interface TextPreprocessor {
+    fun process(text: String): String
+}
+
+object TextPreprocessorImpl : TextPreprocessor {
+    override fun process(text: String) = text
+}
+
+/** Strips every non-digit character. Applied to typed, pasted and scanned text alike, so letters
+ *  can never reach a digits-only field regardless of input method. */
+object DigitsOnlyTextPreprocessor : TextPreprocessor {
+    override fun process(text: String) = text.replace("[^0-9]".toRegex(), "")
+}

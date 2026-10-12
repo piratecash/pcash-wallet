@@ -1,0 +1,46 @@
+package cash.p.terminal.modules.coin.overview.ui
+
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import cash.p.terminal.modules.coin.CoinDataItem
+import cash.p.terminal.ui.compose.components.Badge
+import cash.p.terminal.ui_compose.components.CellSingleLineLawrenceSection
+import cash.p.terminal.ui_compose.components.subhead1_leah
+import cash.p.terminal.ui_compose.components.subhead2_grey
+
+@Composable
+fun MarketData(marketData: List<CoinDataItem>) {
+    CellSingleLineLawrenceSection(marketData) { marketDataLine ->
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            subhead2_grey(text = marketDataLine.title)
+
+            marketDataLine.rankLabel?.let {
+                Badge(modifier = Modifier.padding(start = 8.dp), it)
+            }
+
+            marketDataLine.value?.let { value ->
+                subhead1_leah(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp),
+                    text = value,
+                    textAlign = TextAlign.End,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+}

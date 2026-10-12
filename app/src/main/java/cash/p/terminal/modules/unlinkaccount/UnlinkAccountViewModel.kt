@@ -6,6 +6,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import cash.p.terminal.R
 import cash.p.terminal.modules.manageaccount.AccountDeletionState
+import cash.p.terminal.resources.ManageAccount_Delete_ConfirmationLose
+import cash.p.terminal.resources.ManageAccount_Delete_ConfirmationRemove
+import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.IAccountManager
@@ -74,8 +77,8 @@ class UnlinkAccountViewModel(
 }
 
 enum class ConfirmationType(val title: TranslatableString) {
-    ConfirmationRemove(TranslatableString.ResString(R.string.ManageAccount_Delete_ConfirmationRemove)),
-    ConfirmationLos(TranslatableString.ResString(R.string.ManageAccount_Delete_ConfirmationLose))
+    ConfirmationRemove(TranslatableString.ResString(Res.string.ManageAccount_Delete_ConfirmationRemove)),
+    ConfirmationLos(TranslatableString.ResString(Res.string.ManageAccount_Delete_ConfirmationLose))
 }
 
 data class ConfirmationItem(val confirmationType: ConfirmationType, val confirmed: Boolean = false)

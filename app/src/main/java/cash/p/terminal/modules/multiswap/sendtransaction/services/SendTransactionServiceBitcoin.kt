@@ -51,6 +51,8 @@ import cash.p.terminal.modules.send.bitcoin.SendBitcoinPluginService
 import cash.p.terminal.modules.send.bitcoin.advanced.FeeRateCaution
 import cash.p.terminal.modules.send.bitcoin.settings.SendBtcSettingsViewModel
 import cash.p.terminal.modules.xrate.XRateService
+import cash.p.terminal.resources.Button_Reset
+import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
@@ -320,7 +322,7 @@ fun SendBtcFeeSettingsScreen(
             },
             menuItems = listOf(
                 MenuItem(
-                    title = TranslatableString.ResString(R.string.Button_Reset),
+                    title = TranslatableString.ResString(Res.string.Button_Reset),
                     enabled = uiState.resetEnabled,
                     tint = ComposeAppTheme.colors.brandDefault,
                     onClick = {

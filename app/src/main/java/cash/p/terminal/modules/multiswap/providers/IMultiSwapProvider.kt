@@ -10,11 +10,12 @@ import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import java.math.BigDecimal
+import org.jetbrains.compose.resources.DrawableResource
 
 interface IMultiSwapProvider {
     val id: String
     val title: String
-    val icon: Int
+    val icon: DrawableResource
     val iconUrl: String? get() = null
 
     val walletUseCase: WalletUseCase

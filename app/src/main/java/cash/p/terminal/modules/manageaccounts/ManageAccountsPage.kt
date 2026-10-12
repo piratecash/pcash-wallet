@@ -45,6 +45,10 @@ import cash.p.terminal.ui_compose.components.subhead2_lucian
 
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_card
+import cash.p.terminal.resources.ic_switch_wallet_24
+import cash.p.terminal.resources.icon_binocule_20
 
 class ManageAccountsPage(val input: ManageAccountsModule.Mode) : HSPage() {
 
@@ -93,7 +97,7 @@ fun ManageAccountsScreen(navigation: HSNavigation, mode: ManageAccountsModule.Mo
                     navigation = navigation,
                     header = {
                         SectionHeaderWithIcon(
-                            iconRes = R.drawable.ic_switch_wallet_24,
+                            iconRes = Res.drawable.ic_switch_wallet_24,
                             text = stringResource(R.string.manage_accounts_section_other)
                         )
                     }
@@ -104,7 +108,7 @@ fun ManageAccountsScreen(navigation: HSNavigation, mode: ManageAccountsModule.Mo
                     navigation = navigation,
                     header = {
                         SectionHeaderWithIcon(
-                            iconRes = R.drawable.icon_binocule_20,
+                            iconRes = Res.drawable.icon_binocule_20,
                             text = stringResource(R.string.manage_accounts_section_watch)
                         )
                     }
@@ -115,7 +119,7 @@ fun ManageAccountsScreen(navigation: HSNavigation, mode: ManageAccountsModule.Mo
                     navigation = navigation,
                     header = {
                         SectionHeaderWithIcon(
-                            iconRes = R.drawable.ic_card,
+                            iconRes = Res.drawable.ic_card,
                             text = stringResource(R.string.manage_accounts_section_hardware)
                         )
                     }

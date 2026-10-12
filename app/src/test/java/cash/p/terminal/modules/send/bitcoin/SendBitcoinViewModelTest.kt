@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.send.bitcoin
 
-import cash.p.terminal.R
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.ISendBitcoinAdapter
 import cash.p.terminal.core.LocalizedException
@@ -14,6 +13,9 @@ import cash.p.terminal.core.managers.PoisonAddressManager
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.xrate.XRateService
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.send_error_address_unavailable
+import cash.p.terminal.resources.send_error_amount_unavailable
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -188,7 +190,7 @@ class SendBitcoinViewModelTest {
             viewModel.getConfirmationData()
         }
 
-        assertEquals(R.string.send_error_address_unavailable, error.errorTextRes)
+        assertEquals(Res.string.send_error_address_unavailable, error.errorTextRes)
     }
 
     @Test
@@ -205,7 +207,7 @@ class SendBitcoinViewModelTest {
             viewModel.getConfirmationData()
         }
 
-        assertEquals(R.string.send_error_amount_unavailable, error.errorTextRes)
+        assertEquals(Res.string.send_error_amount_unavailable, error.errorTextRes)
     }
 
     @Test

@@ -11,14 +11,14 @@ import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.isLitecoinMweb
 import cash.p.terminal.wallet.entities.TokenType
-import cash.p.terminal.wallet.useCases.RemoveMoneroWalletFilesUseCase
+import cash.p.terminal.wallet.useCases.IRemoveMoneroWalletFilesUseCase
 import io.horizontalsystems.core.ISmsNotificationSettings
 import io.horizontalsystems.core.entities.BlockchainType
 
 @Suppress("LongParameterList")
 class AccountCleaner(
     private val clearZCashWalletDataUseCase: ClearZCashWalletDataUseCase,
-    private val removeMoneroWalletFilesUseCase: RemoveMoneroWalletFilesUseCase,
+    private val removeMoneroWalletFilesUseCase: IRemoveMoneroWalletFilesUseCase,
     private val accountManager: IAccountManager,
     private val adapterManager: IAdapterManager,
     private val walletManager: IWalletManager,

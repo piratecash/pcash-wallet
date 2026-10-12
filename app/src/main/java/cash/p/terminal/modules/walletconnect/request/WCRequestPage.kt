@@ -32,6 +32,9 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpFrom
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_close_24
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.MessageToSign
 import cash.p.terminal.ui.compose.components.ScreenMessageWithAction
@@ -211,8 +214,8 @@ fun WCNewSignRequestScreen(
             stringResource(R.string.WalletConnect_SignMessageRequest_Title),
             menuItems = listOf(
                 MenuItem(
-                    title = TranslatableString.ResString(R.string.Button_Close),
-                    icon = R.drawable.ic_close_24,
+                    title = TranslatableString.ResString(Res.string.Button_Close),
+                    icon = Res.drawable.ic_close_24,
                     onClick = { navigation.navigateUpSafely() }
                 )
             )
