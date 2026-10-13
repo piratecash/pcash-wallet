@@ -117,6 +117,7 @@ class WCRequestPage : HSPage() {
                     )
                 } else if (sessionRequestUI.method == "eth_signTransaction") {
                     val blockchainType = wcRequestEvmViewModel.blockchainType ?: return
+                    val evmKitWrapper = wcRequestEvmViewModel.evmKitWrapper ?: return
 
                     val transaction = try {
                         val ethTransaction = Gson().fromJson(
@@ -133,7 +134,8 @@ class WCRequestPage : HSPage() {
                         logger,
                         blockchainType,
                         transaction,
-                        sessionRequestUI.peerUI.peerName
+                        sessionRequestUI.peerUI.peerName,
+                        evmKitWrapper
                     )
                 } else {
                     WCNewSignRequestScreen(

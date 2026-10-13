@@ -533,6 +533,7 @@ fun TransactionInfoSection(
                                 blockchainType = viewItem.blockchainType,
                                 availability = viewItem.availability,
                                 wallet = viewItem.wallet,
+                                evmKitWrapper = viewItem.evmKitWrapper,
                                 navigation = navigation
                             )
                         }

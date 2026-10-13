@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
+import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.modules.contacts.ContactsModule
 import cash.p.terminal.modules.contacts.ContactsPage
 import cash.p.terminal.modules.contacts.Mode
@@ -686,6 +687,7 @@ fun TransactionInfoSpeedUpCell(
     blockchainType: BlockchainType,
     availability: OperationAvailability,
     wallet: Wallet?,
+    evmKitWrapper: EvmKitWrapper?,
     navigation: HSNavigation
 ) {
     val offlineGatedAction = rememberOfflineGatedAction(wallet)
@@ -698,6 +700,7 @@ fun TransactionInfoSpeedUpCell(
                     SpeedUpCancelType.SpeedUp,
                     transactionHash,
                     blockchainType,
+                    evmKitWrapper,
                     navigation
                 )
             }
@@ -1025,6 +1028,7 @@ private fun openTransactionOptionsModule(
     type: SpeedUpCancelType,
     transactionHash: String,
     blockchainType: BlockchainType,
+    evmKitWrapper: EvmKitWrapper?,
     navigation: HSNavigation
 ) {
     when (blockchainType) {
@@ -1049,11 +1053,14 @@ private fun openTransactionOptionsModule(
         BlockchainType.Base,
         BlockchainType.ZkSync,
         BlockchainType.ArbitrumOne -> {
-            navigation.slideFromRight(
-                TransactionSpeedUpCancelPage(
-                    TransactionSpeedUpCancelPage.Input(blockchainType, type, transactionHash)
+            evmKitWrapper?.let {
+                navigation.slideFromRight(
+                    TransactionSpeedUpCancelPage(
+                        TransactionSpeedUpCancelPage.Input(blockchainType, type, transactionHash),
+                        it
+                    )
                 )
-            )
+            }
         }
 
         BlockchainType.Zcash,

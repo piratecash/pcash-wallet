@@ -1,5 +1,6 @@
 package cash.p.terminal.core.adapters.nft
 
+import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.entities.nft.EvmNftRecord
 import cash.p.terminal.entities.nft.NftRecord
 import cash.p.terminal.entities.nft.NftUid
@@ -15,7 +16,8 @@ import java.math.BigInteger
 class EvmNftAdapter(
     private val blockchainType: BlockchainType,
     private val nftKit: NftKit,
-    address: Address
+    address: Address,
+    val evmKitWrapper: EvmKitWrapper,
 ) : INftAdapter {
 
     override val userAddress = address.hex

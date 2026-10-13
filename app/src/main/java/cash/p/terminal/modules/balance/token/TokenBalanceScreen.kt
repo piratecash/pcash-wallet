@@ -1391,7 +1391,7 @@ private fun onSyncErrorClicked(
             val wallet = syncErrorDetails.wallet
             val errorMessage = syncErrorDetails.errorMessage
 
-            navigation.showSyncErrorDialog(wallet, errorMessage)
+            navigation.showSyncErrorDialog(wallet, errorMessage, syncErrorDetails.isBlockedByProvider)
         }
 
         is BalanceViewModel.SyncError.NetworkNotAvailable -> Unit // We already show this at bottom panel

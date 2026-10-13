@@ -337,7 +337,7 @@ class AdapterManager(
         if (wallet.token.blockchainType == BlockchainType.Beam) {
             withContext(NonCancellable) { adapterFactory.unlinkAdapter(wallet, adapter) }
         } else {
-            coroutineScope.launch { adapterFactory.unlinkAdapter(wallet) }
+            coroutineScope.launch { adapterFactory.unlinkAdapter(wallet, adapter) }
         }
     }
 
@@ -438,8 +438,10 @@ class AdapterManager(
     private suspend fun stopAndUnlinkGroup(group: List<Wallet>) {
         group.forEach { wallet ->
             cancelBalanceSubscription(wallet)
-            adaptersMap[wallet]?.stop()
-            adapterFactory.unlinkAdapter(wallet)
+            adaptersMap[wallet]?.let { adapter ->
+                adapter.stop()
+                adapterFactory.unlinkAdapter(wallet, adapter)
+            }
             adaptersMap.remove(wallet)
         }
     }
@@ -511,7 +513,7 @@ class AdapterManager(
     private suspend fun unlinkOtherAdapters(adapters: List<Pair<Wallet, IAdapter>>) {
         adapters.filter { it.first.token.blockchainType != BlockchainType.Beam }.forEach { (wallet, adapter) ->
             adapter.stop()
-            adapterFactory.unlinkAdapter(wallet)
+            adapterFactory.unlinkAdapter(wallet, adapter)
         }
     }
 

@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
+import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.modules.confirm.ConfirmTransactionScreen
 import cash.p.terminal.modules.offline.rememberOfflineGatedAction
 import cash.p.terminal.modules.sendevmtransaction.SendEvmTransactionView
@@ -28,11 +29,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 
-class TransactionSpeedUpCancelPage(val input: Input) : HSPage() {
+class TransactionSpeedUpCancelPage(
+    val input: Input,
+    private val evmKitWrapper: EvmKitWrapper,
+) : HSPage() {
 
     @Composable
     override fun GetContent(navigation: HSNavigation) {
-        TransactionSpeedUpCancelScreen(navigation, this, input)
+        TransactionSpeedUpCancelScreen(navigation, this, input, evmKitWrapper)
     }
 
     @Parcelize
@@ -50,7 +54,8 @@ class TransactionSpeedUpCancelPage(val input: Input) : HSPage() {
 private fun TransactionSpeedUpCancelScreen(
     navigation: HSNavigation,
     page: TransactionSpeedUpCancelPage,
-    input: TransactionSpeedUpCancelPage.Input
+    input: TransactionSpeedUpCancelPage.Input,
+    evmKitWrapper: EvmKitWrapper,
 ) {
     val logger = remember { AppLogger("tx-speedUp-cancel") }
     val view = LocalView.current
@@ -60,6 +65,7 @@ private fun TransactionSpeedUpCancelScreen(
             input.blockchainType,
             input.transactionHash,
             input.optionType,
+            evmKitWrapper,
         )
     )
 

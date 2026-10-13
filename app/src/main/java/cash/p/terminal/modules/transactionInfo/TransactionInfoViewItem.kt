@@ -2,6 +2,7 @@ package cash.p.terminal.modules.transactionInfo
 
 
 import cash.p.terminal.R
+import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.modules.contacts.model.Contact
 import cash.p.terminal.modules.offline.OperationAvailability
 import cash.p.terminal.modules.transactions.AmlStatus
@@ -89,6 +90,7 @@ sealed class TransactionInfoViewItem {
         val blockchainType: BlockchainType,
         val availability: OperationAvailability,
         val wallet: Wallet?,
+        val evmKitWrapper: EvmKitWrapper?,
     ) : TransactionInfoViewItem()
 
     class BeamCancel(

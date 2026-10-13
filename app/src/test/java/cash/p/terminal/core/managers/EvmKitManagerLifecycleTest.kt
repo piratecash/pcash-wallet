@@ -44,6 +44,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Before
@@ -175,6 +176,44 @@ class EvmKitManagerLifecycleTest {
 
         verify(exactly = 1) { evmKit.stop() }
         assertNull(manager.evmKitWrapper)
+    }
+
+    @Test
+    fun unlink_staleReleaseAfterKitRecreatedForSameAccount_keepsNewKitRunning() = runTest {
+        val manager = createManager(mockk { coEvery { awaitKey(ACCOUNT_ID) } returns databaseKey })
+        val staleWrapper = manager.getEvmKitWrapper(account(), BlockchainType.Ethereum)
+        manager.stopFor(ACCOUNT_ID)
+        val currentWrapper = manager.getEvmKitWrapper(account(), BlockchainType.Ethereum)
+        assertNotSame(staleWrapper, currentWrapper)
+
+        manager.unlink(staleWrapper)
+
+        assertSame(currentWrapper, manager.evmKitWrapper)
+    }
+
+    @Test
+    fun unlink_lastReleaseOfCurrentKit_stopsKit() = runTest {
+        val manager = createManager(mockk { coEvery { awaitKey(ACCOUNT_ID) } returns databaseKey })
+        val wrapper = manager.getEvmKitWrapper(account(), BlockchainType.Ethereum)
+        manager.getEvmKitWrapper(account(), BlockchainType.Ethereum)
+
+        manager.unlink(wrapper)
+        manager.unlink(wrapper)
+
+        verify(exactly = 1) { evmKit.stop() }
+        assertNull(manager.evmKitWrapper)
+    }
+
+    @Test
+    fun unlink_releaseOfCurrentKitWhileOtherOwnersRemain_keepsKitRunning() = runTest {
+        val manager = createManager(mockk { coEvery { awaitKey(ACCOUNT_ID) } returns databaseKey })
+        val wrapper = manager.getEvmKitWrapper(account(), BlockchainType.Ethereum)
+        manager.getEvmKitWrapper(account(), BlockchainType.Ethereum)
+
+        manager.unlink(wrapper)
+
+        verify(exactly = 0) { evmKit.stop() }
+        assertSame(wrapper, manager.evmKitWrapper)
     }
 
     @Test

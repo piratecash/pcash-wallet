@@ -130,7 +130,7 @@ class TransactionAdapterManagerTest {
         emitAdapters(mapOf(firstWallet to firstAdapter, secondWallet to secondAdapter))
 
         coVerify(exactly = 1) {
-            adapterFactory.unlinkAdapter(source)
+            adapterFactory.unlinkAdapter(source, firstTxAdapter)
         }
     }
 
@@ -149,7 +149,7 @@ class TransactionAdapterManagerTest {
         emitAdapters(mapOf(wallet to adapter))
 
         coVerify(exactly = 0) {
-            adapterFactory.unlinkAdapter(source)
+            adapterFactory.unlinkAdapter(source, any())
         }
     }
 
@@ -196,7 +196,7 @@ class TransactionAdapterManagerTest {
         coEvery {
             adapterFactory.evmTransactionsAdapter(removedSource, BlockchainType.Ethereum)
         } returns transactionsAdapter()
-        coEvery { adapterFactory.unlinkAdapter(removedSource) } throws IllegalStateException("unlink failed")
+        coEvery { adapterFactory.unlinkAdapter(removedSource, any()) } throws IllegalStateException("unlink failed")
 
         emitAdapters(mapOf(wallet(removedSource) to walletAdapter()))
         emitAdapters(emptyMap())

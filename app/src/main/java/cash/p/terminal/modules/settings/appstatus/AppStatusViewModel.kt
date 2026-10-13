@@ -4,10 +4,8 @@ import android.app.ActivityManager
 import android.content.Context
 import android.net.Uri
 import android.os.Build
-import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cash.p.terminal.BuildConfig
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
@@ -27,6 +25,7 @@ import cash.p.terminal.modules.blockchainstatus.EvmBlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.MoneroBlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.SolanaBlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.StatusItem
+import cash.p.terminal.modules.blockchainstatus.StatusReportFile
 import cash.p.terminal.modules.blockchainstatus.StatusSection
 import cash.p.terminal.modules.blockchainstatus.StellarBlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.ThorchainBlockchainStatusProvider
@@ -34,6 +33,8 @@ import cash.p.terminal.modules.blockchainstatus.TonBlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.TronBlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.ZcashBlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.appendStatusSection
+import cash.p.terminal.modules.blockchainstatus.buildCopyText
+import cash.p.terminal.modules.blockchainstatus.buildLogGroups
 import cash.p.terminal.modules.blockchainstatus.reportBuildInfo
 import cash.p.terminal.modules.settings.appstatus.AppStatusModule.BlockContent
 import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
@@ -41,15 +42,17 @@ import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.MarketKitWrapper
+import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.ISystemInfoManager
 import io.horizontalsystems.core.helpers.DateHelper
 import io.horizontalsystems.core.logger.AppLog
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.getAndUpdate
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.File
+import kotlinx.coroutines.withContext
 import java.util.Date
 
 class AppStatusViewModel(
@@ -71,25 +74,25 @@ class AppStatusViewModel(
     private val btcBlockchainManager: BtcBlockchainManager,
     private val checkPremiumUseCase: CheckPremiumUseCase,
     private val networkErrorTracker: NetworkErrorTracker,
+    private val dispatcherProvider: DispatcherProvider,
+    private val statusReportFile: StatusReportFile,
 ) : ViewModel() {
-
-    private var appLogs: Map<String, Any> = emptyMap()
-    private var shareFile: File? = null
 
     private val _uiState = MutableStateFlow(
         AppStatusModule.UiState(
             appStatusAsText = null,
             blockViewItems = emptyList(),
+            logGroups = emptyList(),
             blockchainStatusSections = emptyList(),
             loading = true,
+            shareInProgress = false,
         )
     )
     val uiState: StateFlow<AppStatusModule.UiState> = _uiState.asStateFlow()
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
-            appLogs = AppLog.getLog()
-            val fullLogs = AppLog.getFullLog()
+        viewModelScope.launch(dispatcherProvider.io) {
+            val logGroups = buildLogGroups(AppLog.getLog())
 
             val blockViewItems = listOf<AppStatusModule.BlockData>()
                 .asSequence()
@@ -98,65 +101,75 @@ class AppStatusViewModel(
                 .plus(getVersionHistoryBlock())
                 .plus(getWalletsStatusBlock())
                 .plus(getMarketLastSyncTimestampsBlock())
-                .plus(getAppLogBlocks())
                 .toList()
 
             val blockchainStatusSections = getBlockchainStatusSections()
 
-            // Truncated text for clipboard (last 500 log entries) to avoid TransactionTooLargeException
-            val appStatusAsText = buildStatusText(appLogs, blockchainStatusSections)
-
-            // Pre-write the share file with full logs on IO thread
-            try {
-                val fullStatusText = buildStatusText(fullLogs, blockchainStatusSections)
-                val file = File(context.cacheDir, "app_status_report.txt")
-                file.writeText(fullStatusText)
-                shareFile = file
-            } catch (_: Exception) {
-                // File write failed, share will be unavailable
-            }
+            val appStatusAsText = buildCopyText(buildStatusText(blockchainStatusSections), logGroups)
 
             _uiState.value = AppStatusModule.UiState(
                 appStatusAsText = appStatusAsText,
                 blockViewItems = blockViewItems,
+                logGroups = logGroups,
                 blockchainStatusSections = blockchainStatusSections,
                 loading = false,
+                shareInProgress = false,
             )
         }
     }
 
-    fun getShareFileUri(context: Context): Uri? {
-        val file = shareFile ?: return null
-        return FileProvider.getUriForFile(
-            context,
-            "${BuildConfig.APPLICATION_ID}.fileprovider",
-            file
-        )
-    }
-
-    private fun buildStatusText(
-        logs: Map<String, Any>,
-        blockchainStatusSections: List<StatusSection>
-    ): String = buildString {
-        formatMapToString(getStatusMap(logs))?.let { append(it) }
-        if (blockchainStatusSections.isNotEmpty()) {
-            appendLine()
-            appendLine("Blockchain Status")
-            blockchainStatusSections.forEach { appendStatusSection(it) }
+    suspend fun prepareShareUri(): Uri? {
+        if (_uiState.getAndUpdate { it.copy(shareInProgress = true) }.shareInProgress) return null
+        try {
+            val (header, footer) = withContext(dispatcherProvider.io) {
+                buildShareHeader() to buildShareFooter(_uiState.value.blockchainStatusSections)
+            }
+            return statusReportFile.share(
+                fileName = "app_status_report.txt",
+                header = header,
+                logTag = null,
+                footer = footer,
+            )
+        } finally {
+            _uiState.update { it.copy(shareInProgress = false) }
         }
     }
 
-    private fun getStatusMap(logs: Map<String, Any>): LinkedHashMap<String, Any> {
-        val status = LinkedHashMap<String, Any>()
+    private fun buildStatusText(blockchainStatusSections: List<StatusSection>): String = buildString {
+        formatMapToString(headerSections() + footerSections())?.let { append(it) }
+        appendBlockchainStatus(blockchainStatusSections)
+    }
 
-        status["App Info"] = getAppInfo()
-        status["Enabled Blockchains"] = getEnabledBlockchains()
-        status["Version History"] = getVersionHistory()
-        status["Wallets Status"] = getWalletsStatus()
-        status["App Log"] = logs
-        status["Market Last Sync Timestamps"] = getMarketLastSyncTimestamps()
+    /** App Info, Enabled Blockchains, Version History, Wallets Status — shared by Copy and Share. */
+    private fun headerSections(): Map<String, Any> = linkedMapOf(
+        "App Info" to getAppInfo(),
+        "Enabled Blockchains" to getEnabledBlockchains(),
+        "Version History" to getVersionHistory(),
+        "Wallets Status" to getWalletsStatus(),
+    )
 
-        return status
+    /** Market Last Sync Timestamps — shared by Copy and Share. */
+    private fun footerSections(): Map<String, Any> = linkedMapOf(
+        "Market Last Sync Timestamps" to getMarketLastSyncTimestamps(),
+    )
+
+    private fun buildShareHeader(): String = buildString {
+        formatMapToString(headerSections())?.let { append(it) }
+        appendLine()
+        appendLine("App Log:")
+    }
+
+    private fun buildShareFooter(blockchainStatusSections: List<StatusSection>): String = buildString {
+        appendLine()
+        formatMapToString(footerSections())?.let { append(it) }
+        appendBlockchainStatus(blockchainStatusSections)
+    }
+
+    private fun StringBuilder.appendBlockchainStatus(blockchainStatusSections: List<StatusSection>) {
+        if (blockchainStatusSections.isEmpty()) return
+        appendLine()
+        appendLine("Blockchain Status")
+        blockchainStatusSections.forEach { appendStatusSection(it) }
     }
 
     private fun getBlockchainStatusSections(): List<StatusSection> {
@@ -227,28 +240,6 @@ class AppStatusViewModel(
             }
         }
         status.sharedSection?.let { into.add(it) }
-    }
-
-    private fun getAppLogBlocks(): List<AppStatusModule.BlockData> {
-        val blocks = mutableListOf<AppStatusModule.BlockData>()
-        var sectionTitleNotSet = true
-        appLogs.forEach { (key, value) ->
-            val title = if (sectionTitleNotSet) "App Log" else null
-            val map = mapOf("" to value)
-            val content = formatMapToString(map)?.removePrefix(":")
-                ?.removePrefix("\n")
-                ?.trimEnd() ?: ""
-            val item = AppStatusModule.BlockData(
-                title = title,
-                content = listOf(
-                    BlockContent.Header(key.replaceFirstChar(Char::uppercase)),
-                    BlockContent.Text(content),
-                )
-            )
-            blocks.add(item)
-            sectionTitleNotSet = false
-        }
-        return blocks
     }
 
     private fun getVersionHistory(): Map<String, Any> {

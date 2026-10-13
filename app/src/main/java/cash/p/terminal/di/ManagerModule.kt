@@ -101,6 +101,7 @@ import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.core.managers.OfflineSignedTransactionRepository
 import cash.p.terminal.core.managers.MoneroKitManager
 import cash.p.terminal.core.managers.OfflineModeManager
+import cash.p.terminal.modules.blockchainstatus.StatusReportFile
 import cash.p.terminal.modules.offline.OfflineOperationGate
 import cash.p.terminal.core.managers.OfflineNetworkController
 import cash.p.terminal.core.managers.MoneroNativeWalletRuntime
@@ -263,6 +264,7 @@ import org.koin.dsl.module
 
 val managerModule = module {
     singleOf(::NetworkManager) bind INetworkManager::class
+    singleOf(::StatusReportFile)
     singleOf(::SystemInfoManager) bind ISystemInfoManager::class
     singleOf(::BackupManager) bind IBackupManager::class
     singleOf(::LanguageManager) bind ILanguageManager::class

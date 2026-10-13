@@ -1,8 +1,10 @@
 package cash.p.terminal.core.factories
 
+import cash.p.terminal.core.ITransactionsAdapter
+import cash.p.terminal.core.adapters.EvmAdapter
+import cash.p.terminal.core.adapters.EvmTransactionsAdapter
 import cash.p.terminal.core.adapters.SplAdapter
 import cash.p.terminal.core.managers.EvmBlockchainManager
-import cash.p.terminal.core.managers.EvmKitManager
 import cash.p.terminal.core.managers.MoneroKitManager
 import cash.p.terminal.core.managers.SolanaKitManager
 import cash.p.terminal.core.managers.SolanaKitWrapper
@@ -11,6 +13,7 @@ import cash.p.terminal.core.managers.ThorchainKitManager
 import cash.p.terminal.core.managers.ThorchainKitManagers
 import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TronKitManager
+import cash.p.terminal.data.repository.EvmTransactionRepository
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -82,30 +85,51 @@ class AdapterFactoryUnlinkTest {
     )
 
     @Test
-    fun unlinkAdapter_everySupportedEvmChain_unlinksItsEvmKit() = runTest {
+    fun unlinkAdapter_everySupportedEvmChainWallet_releasesAdapterOwnRepository() = runTest {
         EvmBlockchainManager.blockchainTypes.forEach { blockchainType ->
-            val evmKitManager = mockk<EvmKitManager>(relaxed = true)
-            every { evmBlockchainManager.getEvmKitManager(blockchainType) } returns evmKitManager
+            val repository = mockk<EvmTransactionRepository>(relaxed = true)
+            val adapter = mockk<EvmAdapter> {
+                every { evmTransactionRepository } returns repository
+            }
 
-            factory.unlinkAdapter(transactionSource(blockchainType))
+            factory.unlinkAdapter(wallet(blockchainType), adapter)
 
-            coVerify(exactly = 1) { evmKitManager.unlink(account) }
+            coVerify(exactly = 1) { repository.release() }
         }
     }
 
     @Test
-    fun unlinkAdapter_walletOverload_unlinksSameKitAsTransactionSource() = runTest {
-        val evmKitManager = mockk<EvmKitManager>(relaxed = true)
-        every {
-            evmBlockchainManager.getEvmKitManager(BlockchainType.Avalanche)
-        } returns evmKitManager
-        val wallet = mockk<Wallet> {
-            every { transactionSource } returns transactionSource(BlockchainType.Avalanche)
+    fun unlinkAdapter_everySupportedEvmChainTransactionsAdapter_releasesThatAdapter() = runTest {
+        EvmBlockchainManager.blockchainTypes.forEach { blockchainType ->
+            val transactionsAdapter = mockk<EvmTransactionsAdapter>(relaxed = true)
+
+            factory.unlinkAdapter(transactionSource(blockchainType), transactionsAdapter)
+
+            coVerify(exactly = 1) { transactionsAdapter.release() }
+        }
+    }
+
+    @Test
+    fun unlinkAdapter_evmTransactionSourceWithoutAdapter_doesNotTouchEvmKitManager() = runTest {
+        EvmBlockchainManager.blockchainTypes.forEach { blockchainType ->
+            factory.unlinkAdapter(transactionSource(blockchainType))
         }
 
-        factory.unlinkAdapter(wallet)
+        verify(exactly = 0) { evmBlockchainManager.getEvmKitManager(any()) }
+    }
 
-        coVerify(exactly = 1) { evmKitManager.unlink(account) }
+    @Test
+    fun unlinkAdapter_nonEvmWallet_unlinksSameKitAsTransactionSource() = runTest {
+        factory.unlinkAdapter(wallet(BlockchainType.Tron), mockk())
+
+        coVerify(exactly = 1) { tronKitManager.unlink(account) }
+    }
+
+    @Test
+    fun unlinkAdapter_nonEvmTransactionsAdapter_unlinksSameKitAsTransactionSource() = runTest {
+        factory.unlinkAdapter(transactionSource(BlockchainType.Ton), mockk<ITransactionsAdapter>())
+
+        coVerify(exactly = 1) { tonKitManager.unlink(account) }
     }
 
     @Test
@@ -174,6 +198,11 @@ class AdapterFactoryUnlinkTest {
 
         verify(exactly = 0) { evmBlockchainManager.getEvmKitManager(any()) }
         coVerify(exactly = 0) { solanaKitManager.unlink(any()) }
+    }
+
+    private fun wallet(blockchainType: BlockchainType): Wallet = mockk {
+        every { token.blockchainType } returns blockchainType
+        every { transactionSource } returns transactionSource(blockchainType)
     }
 
     private fun transactionSource(blockchainType: BlockchainType) = TransactionSource(

@@ -33,6 +33,10 @@ import java.net.UnknownHostException
 import java.nio.channels.UnresolvedAddressException
 import java.util.Locale
 import java.util.Optional
+import retrofit2.HttpException
+
+fun Throwable.isBlockedByProvider(): Boolean =
+    generateSequence(this) { it.cause }.any { (it as? HttpException)?.code() == 403 }
 
 fun Throwable.isNoInternetException(): Boolean {
     return generateSequence(this) { it.cause }
