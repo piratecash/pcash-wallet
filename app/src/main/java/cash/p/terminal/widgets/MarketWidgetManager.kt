@@ -10,6 +10,7 @@ import coil3.request.ErrorResult
 import coil3.request.ImageRequest
 import cash.p.terminal.R
 import cash.p.terminal.core.App
+import cash.p.terminal.core.getKoinInstance
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -69,7 +70,8 @@ class MarketWidgetManager {
 
     private suspend fun updateData(glanceId: GlanceId) {
         val context = App.instance
-        val marketRepository = App.marketWidgetRepository
+        // Resolved per call: MarketWidgetRepository depends on this manager through MarketFavoritesMenuService.
+        val marketRepository: MarketWidgetRepository = getKoinInstance()
         var state = getAppWidgetState(context, MarketWidgetStateDefinition, glanceId)
         val imagePathCache = buildMap {
             state.items.forEach { item ->

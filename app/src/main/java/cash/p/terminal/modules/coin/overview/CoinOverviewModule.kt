@@ -3,6 +3,7 @@ package cash.p.terminal.modules.coin.overview
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import cash.p.terminal.core.App
+import cash.p.terminal.core.getKoinInstance
 import io.horizontalsystems.chartview.chart.ChartCurrencyValueFormatterSignificant
 import io.horizontalsystems.chartview.chart.ChartModule
 import io.horizontalsystems.chartview.chart.ChartViewModel
@@ -35,7 +36,7 @@ object CoinOverviewModule {
                         CoinViewFactory(currency, App.numberFormatter),
                         App.walletManager,
                         App.accountManager,
-                        App.chartIndicatorManager
+                        getKoinInstance()
                     ) as T
                 }
                 ChartViewModel::class.java -> {
@@ -43,7 +44,7 @@ object CoinOverviewModule {
                         App.marketKit,
                         App.currencyManager,
                         fullCoin.coin.uid,
-                        App.chartIndicatorManager
+                        getKoinInstance()
                     )
                     val chartNumberFormatter = ChartCurrencyValueFormatterSignificant()
                     ChartModule.createViewModel(chartService, chartNumberFormatter) as T

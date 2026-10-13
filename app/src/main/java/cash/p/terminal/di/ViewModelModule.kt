@@ -80,6 +80,12 @@ import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.DefaultDispatcherProvider
 import io.horizontalsystems.core.DispatcherProvider
+import cash.p.terminal.modules.market.posts.MarketPostService
+import cash.p.terminal.modules.market.posts.MarketPostsViewModel
+import cash.p.terminal.modules.pin.SetDuressPinIntroViewModel
+import cash.p.terminal.modules.restoreaccount.restoremnemonicnonstandard.RestoreMnemonicNonStandardViewModel
+import cash.p.terminal.modules.settings.about.AboutViewModel
+import cash.p.terminal.modules.settings.appearance.AppearanceViewModel
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
@@ -107,6 +113,12 @@ val viewModelModule = module {
     viewModelOf(::RateAppViewModel)
     viewModelOf(::BalanceAccountsViewModel)
     viewModelOf(::PrivacyViewModel)
+    viewModelOf(::AboutViewModel)
+    viewModelOf(::SetDuressPinIntroViewModel)
+    viewModelOf(::MarketPostsViewModel)
+    viewModelOf(::RestoreMnemonicNonStandardViewModel)
+    viewModelOf(::AppearanceViewModel)
+    factoryOf(::MarketPostService)
     viewModelOf(::HardwareWalletViewModel)
     viewModelOf(::ImportWalletViewModel)
     viewModelOf(::ResetToFactorySettingsViewModel)

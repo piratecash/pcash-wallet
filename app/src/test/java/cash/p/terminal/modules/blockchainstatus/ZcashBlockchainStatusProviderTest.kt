@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.blockchainstatus
 
+import cash.p.terminal.core.adapters.zcash.CapturedAppLog
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
 import cash.p.terminal.core.managers.NetworkErrorInfo
 import cash.p.terminal.core.managers.NetworkErrorTracker
@@ -9,10 +10,9 @@ import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.entities.BlockchainType
-import io.horizontalsystems.core.logger.AppLog
-import io.horizontalsystems.core.storage.LogsDao
 import io.mockk.every
 import io.mockk.mockk
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
@@ -34,9 +34,16 @@ class ZcashBlockchainStatusProviderTest {
         every { getAdapterForWallet<ZcashAdapter>(wallet) } returns adapter
     }
 
+    private lateinit var appLog: CapturedAppLog
+
     @Before
     fun setUp() {
-        AppLog.logsDao = mockk<LogsDao>(relaxed = true)
+        appLog = CapturedAppLog()
+    }
+
+    @After
+    fun tearDown() {
+        appLog.close()
     }
 
     @Test

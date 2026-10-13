@@ -50,8 +50,11 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
+import org.koin.core.context.GlobalContext
+import org.koin.core.context.loadKoinModules
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
+import org.koin.core.context.unloadKoinModules
 import org.koin.dsl.module
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -318,14 +321,25 @@ abstract class ZcashAdapterTestFixture {
     }
 }
 
-/** Replaces [AppLog]'s DAO; the log is written from its own thread, so reads wait for the entry. */
-internal class CapturedAppLog {
+/**
+ * Supplies [AppLog]'s DAO through Koin; the log is written from its own thread, so reads wait for the entry.
+ * [close] releases only what this instance added: the Koin it started, or its module in a running one.
+ */
+internal class CapturedAppLog : AutoCloseable {
     private val entries = CopyOnWriteArrayList<LogEntry>()
+    private val logsDaoModule = module {
+        single<LogsDao> {
+            mockk(relaxed = true) { every { insert(any()) } answers { entries += firstArg<LogEntry>() } }
+        }
+    }
+    private val ownsKoin = GlobalContext.getOrNull() == null
 
     init {
-        AppLog.logsDao = mockk<LogsDao>(relaxed = true).also { dao ->
-            every { dao.insert(any()) } answers { entries += firstArg<LogEntry>() }
-        }
+        if (ownsKoin) startKoin { modules(logsDaoModule) } else loadKoinModules(logsDaoModule)
+    }
+
+    override fun close() {
+        if (ownsKoin) stopKoin() else unloadKoinModules(logsDaoModule)
     }
 
     val messages: List<String> get() = entries.map { it.message }

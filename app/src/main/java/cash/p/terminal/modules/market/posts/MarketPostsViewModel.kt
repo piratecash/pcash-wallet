@@ -12,7 +12,7 @@ import kotlinx.coroutines.rx2.asFlow
 
 class MarketPostsViewModel(private val service: MarketPostService) : ViewModel() {
 
-    val itemsLiveData = MutableLiveData<List<MarketPostsModule.PostViewItem>>()
+    val itemsLiveData = MutableLiveData<List<PostViewItem>>()
     val viewStateLiveData = MutableLiveData<ViewState>(ViewState.Loading)
     val isRefreshingLiveData = MutableLiveData<Boolean>()
 
@@ -39,7 +39,7 @@ class MarketPostsViewModel(private val service: MarketPostService) : ViewModel()
 
                 state.dataOrNull?.let { posts ->
                     val postViewItems = posts.map {
-                        MarketPostsModule.PostViewItem(
+                        PostViewItem(
                             source = it.source.replaceFirstChar(Char::titlecase),
                             title = it.title,
                             body = it.body,
@@ -72,3 +72,11 @@ class MarketPostsViewModel(private val service: MarketPostService) : ViewModel()
         service.refresh()
     }
 }
+
+data class PostViewItem(
+    val source: String,
+    val title: String,
+    val body: String,
+    val timeAgo: String,
+    val url: String
+)

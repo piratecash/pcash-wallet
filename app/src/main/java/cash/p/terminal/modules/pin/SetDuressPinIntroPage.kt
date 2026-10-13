@@ -21,7 +21,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import org.koin.compose.viewmodel.koinViewModel
 import cash.p.terminal.R
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
 import cash.p.terminal.navigation.HSNavigation
@@ -48,7 +48,7 @@ class SetDuressPinIntroPage : HSPage() {
 
 @Composable
 fun SetDuressPinIntroScreen(navigation: HSNavigation) {
-    val viewModel = viewModel<SetDuressPinIntroViewModel>(factory = SetDuressPinIntroViewModel.Factory())
+    val viewModel = koinViewModel<SetDuressPinIntroViewModel>()
 
     Scaffold(
         containerColor = ComposeAppTheme.colors.backgroundBase,

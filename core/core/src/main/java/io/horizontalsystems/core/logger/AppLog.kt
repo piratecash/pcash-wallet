@@ -5,6 +5,7 @@ import io.horizontalsystems.core.storage.LogEntry
 import io.horizontalsystems.core.storage.LogsDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.koin.java.KoinJavaComponent.get
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -13,7 +14,8 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 object AppLog {
-    lateinit var logsDao: LogsDao
+    // Resolved per call so a log made before Koin starts fails inside the executor task, not at the call site.
+    private val logsDao: LogsDao get() = get(LogsDao::class.java)
 
     private const val DAYS_TO_KEEP = 90L
     private val executor = Executors.newSingleThreadExecutor()

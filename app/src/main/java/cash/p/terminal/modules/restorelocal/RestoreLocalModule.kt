@@ -21,7 +21,7 @@ object RestoreLocalModule {
             return RestoreLocalViewModel(
                 backupFilePath = backupFilePath,
                 accountFactory = App.accountFactory,
-                backupProvider = App.backupProvider,
+                backupProvider = getKoinInstance(),
                 backupViewItemFactory = BackupViewItemFactory(),
                 dispatcherProvider = getKoinInstance(),
                 fileName = fileName

@@ -6,15 +6,9 @@ import java.util.Date
 import javax.crypto.SecretKey
 
 interface ICoreApp {
-    var backgroundManager: BackgroundManager
-    var encryptionManager: IEncryptionManager
-    var systemInfoManager: ISystemInfoManager
-    var keyStoreManager: IKeyStoreManager
-    var keyProvider: IKeyProvider
-    var pinComponent: IPinComponent
-    var pinSettingsStorage: IPinSettingsStorage
-    var lockoutStorage: ILockoutStorage
-    var thirdKeyboardStorage: IThirdKeyboard
+    val backgroundManager: BackgroundManager
+    val encryptionManager: IEncryptionManager
+    val pinComponent: IPinComponent
     var instance: CoreApp
 }
 

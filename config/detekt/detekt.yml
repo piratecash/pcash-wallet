@@ -173,3 +173,5 @@ Compose:
 custom-rules:
   UnnecessaryFullyQualifiedNameRule:
     active: true
+  AppSingletonAccess:
+    active: true

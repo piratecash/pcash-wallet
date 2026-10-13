@@ -2,7 +2,7 @@ package cash.p.terminal.modules.coin.indicators
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import cash.p.terminal.core.App
+import cash.p.terminal.core.getKoinInstance
 import io.horizontalsystems.core.ViewModelUiState
 import cash.p.terminal.modules.chart.ChartIndicatorManager
 import cash.p.terminal.modules.chart.ChartIndicatorSetting
@@ -71,7 +71,7 @@ class RsiSettingViewModel(
     class Factory(private val indicatorSetting: ChartIndicatorSetting) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return RsiSettingViewModel(indicatorSetting, App.chartIndicatorManager) as T
+            return RsiSettingViewModel(indicatorSetting, getKoinInstance()) as T
         }
     }
 }

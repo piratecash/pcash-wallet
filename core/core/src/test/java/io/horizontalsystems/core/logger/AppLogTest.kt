@@ -9,14 +9,31 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 class AppLogTest {
+
+    private val logsDao = mockk<LogsDao>(relaxed = true)
+
+    @Before
+    fun setUp() {
+        startKoin { modules(module { single { logsDao } }) }
+    }
+
+    @After
+    fun tearDown() {
+        stopKoin()
+    }
 
     @Test
     fun info_preservesLiteralMessageAndTag() {
@@ -66,12 +83,10 @@ class AppLogTest {
     fun readMethods_useExpectedSelectionAndOrderAndPreserveMultilineMessages() = runTest {
         val first = logEntry(1, "first\ncontinued")
         val second = logEntry(2, "second")
-        AppLog.logsDao = mockk<LogsDao>(relaxed = true).also { dao ->
-            coEvery { dao.getRecent(500) } returns listOf(second, first)
-            coEvery { dao.getAll() } returns listOf(first, second)
-            every { dao.getByTag("tag") } returns listOf(first, second)
-            every { dao.getRecentByTag("tag", 300) } returns listOf(second, first)
-        }
+        coEvery { logsDao.getRecent(500) } returns listOf(second, first)
+        coEvery { logsDao.getAll() } returns listOf(first, second)
+        every { logsDao.getByTag("tag") } returns listOf(first, second)
+        every { logsDao.getRecentByTag("tag", 300) } returns listOf(second, first)
 
         val taggedLogs = AppLog.getLog("tag")
         assertEquals(listOf("1", "2"), AppLog.getLog().messages().keys.toList())
@@ -87,9 +102,7 @@ class AppLogTest {
     private fun captureNextEntry(): CapturedEntry {
         val captured = slot<LogEntry>()
         val inserted = CountDownLatch(1)
-        AppLog.logsDao = mockk<LogsDao>(relaxed = true).also { dao ->
-            every { dao.insert(capture(captured)) } answers { inserted.countDown() }
-        }
+        every { logsDao.insert(capture(captured)) } answers { inserted.countDown() }
         return CapturedEntry(captured, inserted)
     }
 

@@ -183,34 +183,36 @@ class ZcashWalletOpenerImplTest {
 
     @Test
     fun open_writesOneLinePerStep() = runTest {
-        val appLog = CapturedAppLog()
-        every { dbKeyProvider.keyFor(ACCOUNT_ID) } returns
-            ZcashDbKey(ByteArray(32) { 0xAB.toByte() }, newlyGenerated = false)
+        CapturedAppLog().use { appLog ->
+            every { dbKeyProvider.keyFor(ACCOUNT_ID) } returns
+                ZcashDbKey(ByteArray(32) { 0xAB.toByte() }, newlyGenerated = false)
 
-        opener().open(wallet(words = listOf("zebra", "quartz", "nimbus")))
-        appLog.awaitEntry { it.message.startsWith("open: done") }
+            opener().open(wallet(words = listOf("zebra", "quartz", "nimbus")))
+            appLog.awaitEntry { it.message.startsWith("open: done") }
 
-        val lines = appLog.messages
-        val opening = "open: db=absent key=stored deepSweep=true legacyDir=absent " +
-            "server=https://zec.rocks:443 transport=DIRECT"
-        assertTrue(lines.any { it.startsWith(opening) })
-        assertTrue(lines.contains("restore: birthSource=setting birth=$BIRTHDAY"))
-        assertTrue(lines.any { it.startsWith("open: done dbAccountId=$DB_ACCOUNT_ID accounts=0 elapsed=") })
-        val forbidden = listOf("zebra", "quartz", "nimbus", "abababab")
-        assertTrue(lines.none { line -> forbidden.any { it in line } })
+            val lines = appLog.messages
+            val opening = "open: db=absent key=stored deepSweep=true legacyDir=absent " +
+                "server=https://zec.rocks:443 transport=DIRECT"
+            assertTrue(lines.any { it.startsWith(opening) })
+            assertTrue(lines.contains("restore: birthSource=setting birth=$BIRTHDAY"))
+            assertTrue(lines.any { it.startsWith("open: done dbAccountId=$DB_ACCOUNT_ID accounts=0 elapsed=") })
+            val forbidden = listOf("zebra", "quartz", "nimbus", "abababab")
+            assertTrue(lines.none { line -> forbidden.any { it in line } })
+        }
     }
 
     @Test
     fun open_logsServerWithoutUserInfo() = runTest {
-        val appLog = CapturedAppLog()
-        every { serverManager.current } returns ZcashServer("mine", "https://user:pw@host.io:443", isCustom = true)
+        CapturedAppLog().use { appLog ->
+            every { serverManager.current } returns ZcashServer("mine", "https://user:pw@host.io:443", isCustom = true)
 
-        opener().open(wallet())
-        val line = appLog.awaitEntry { it.message.startsWith("open: db=") }.message
+            opener().open(wallet())
+            val line = appLog.awaitEntry { it.message.startsWith("open: db=") }.message
 
-        assertTrue(line.contains("server=https://host.io:443"))
-        assertFalse(line.contains("user"))
-        assertFalse(line.contains("pw"))
+            assertTrue(line.contains("server=https://host.io:443"))
+            assertFalse(line.contains("user"))
+            assertFalse(line.contains("pw"))
+        }
     }
 
     @Test

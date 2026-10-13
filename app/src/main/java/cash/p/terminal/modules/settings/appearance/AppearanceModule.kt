@@ -1,34 +1,9 @@
 package cash.p.terminal.modules.settings.appearance
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import com.google.gson.annotations.SerializedName
 import cash.p.terminal.R
-import cash.p.terminal.core.App
-import cash.p.terminal.core.getKoinInstance
-import cash.p.terminal.modules.theme.ThemeService
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.strings.helpers.WithTranslatableTitle
-
-object AppearanceModule {
-
-    class Factory() : ViewModelProvider.Factory {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            val launchScreenService = LaunchScreenService(App.localStorage)
-            val appIconService = getKoinInstance<AppIconService>()
-            val themeService = ThemeService(App.localStorage)
-            return AppearanceViewModel(
-                launchScreenService,
-                appIconService,
-                themeService,
-                App.balanceViewTypeManager,
-                App.localStorage,
-            ) as T
-        }
-    }
-
-}
 
 enum class AppIconCategory {
     OUR, OUR_PREMIUM, OTHER

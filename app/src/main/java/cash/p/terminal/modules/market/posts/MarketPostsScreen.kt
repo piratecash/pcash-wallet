@@ -14,7 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import org.koin.compose.viewmodel.koinViewModel
 import cash.p.terminal.R
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.modules.coin.overview.ui.Loading
@@ -24,7 +24,7 @@ import cash.p.terminal.ui.compose.components.ListErrorView
 import cash.p.terminal.ui.helpers.LinkHelper
 
 @Composable
-fun MarketPostsScreen(viewModel: MarketPostsViewModel = viewModel(factory = MarketPostsModule.Factory())) {
+fun MarketPostsScreen(viewModel: MarketPostsViewModel = koinViewModel()) {
     val items by viewModel.itemsLiveData.observeAsState(listOf())
     val isRefreshing by viewModel.isRefreshingLiveData.observeAsState(false)
     val viewState by viewModel.viewStateLiveData.observeAsState()
@@ -71,7 +71,7 @@ fun MarketPostsScreen(viewModel: MarketPostsViewModel = viewModel(factory = Mark
 @Preview
 @Composable
 fun PreviewMarketPostView() {
-    val postItem = MarketPostsModule.PostViewItem(
+    val postItem = PostViewItem(
         "Tidal",
         "3iQ's The Ether Fund begins \$CAD trading on TSX after Bitcoin The Ether Fund begins after Bitcoin",
         "Traders in East Asia are ready to take on more built by Wipro to streamline its liquefied.",

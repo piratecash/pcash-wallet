@@ -52,7 +52,7 @@ import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import org.koin.compose.viewmodel.koinViewModel
 import cash.p.terminal.R
 import cash.p.terminal.core.utils.Utils
 import cash.p.terminal.ui_compose.entities.DataState
@@ -98,8 +98,7 @@ fun RestorePhraseNonStandard(
     openSelectCoinsScreen: () -> Unit,
     onBackClick: () -> Unit,
 ) {
-    val viewModel =
-        viewModel<RestoreMnemonicNonStandardViewModel>(factory = RestoreMnemonicNonStandardModule.Factory())
+    val viewModel = koinViewModel<RestoreMnemonicNonStandardViewModel>()
     val uiState = viewModel.uiState
     val context = LocalContext.current
     val appPages: AppPages = koinInject()
@@ -347,7 +346,7 @@ fun RestorePhraseNonStandard(
 @Composable
 private fun BottomSection(
     viewModel: RestoreMnemonicNonStandardViewModel,
-    uiState: RestoreMnemonicNonStandardModule.UiState,
+    uiState: RestoreMnemonicNonStandardUiState,
     coroutineScope: CoroutineScope,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current

@@ -8,6 +8,9 @@ class CustomRuleSetProvider : RuleSetProvider {
     override val ruleSetId = "custom-rules"
     override fun instance(config: Config) = RuleSet(
         id = ruleSetId,
-        rules = listOf(UnnecessaryFullyQualifiedNameRule(config))
+        rules = listOf(
+            UnnecessaryFullyQualifiedNameRule(config),
+            AppSingletonAccessRule(config),
+        )
     )
 }

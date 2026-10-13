@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import cash.p.terminal.R
 import cash.p.terminal.core.App
+import cash.p.terminal.core.managers.NftMetadataManager
+import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.entities.nft.NftUid
 import cash.p.terminal.modules.balance.DefaultBalanceXRateRepository
 import cash.p.terminal.modules.offline.OfflineOperationGate
@@ -25,8 +27,8 @@ object NftAssetModule {
                 collectionUid,
                 nftUid,
                 App.accountManager,
-                App.nftAdapterManager,
-                App.nftMetadataManager.provider(nftUid.blockchainType),
+                getKoinInstance(),
+                getKoinInstance<NftMetadataManager>().provider(nftUid.blockchainType),
                 DefaultBalanceXRateRepository("nft-asset", App.currencyManager, App.marketKit)
             )
             val offlineOperationGate: OfflineOperationGate by inject(OfflineOperationGate::class.java)

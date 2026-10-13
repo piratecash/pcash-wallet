@@ -3,7 +3,7 @@ package cash.p.terminal.modules.backuplocal.fullbackup
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import cash.p.terminal.core.App
+import cash.p.terminal.core.getKoinInstance
 import io.horizontalsystems.core.ViewModelUiState
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.modules.backuplocal.fullbackup.SelectBackupItemsViewModel.UIState
@@ -76,7 +76,7 @@ class SelectBackupItemsViewModel(
     class Factory : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return SelectBackupItemsViewModel(App.backupProvider, BackupViewItemFactory()) as T
+            return SelectBackupItemsViewModel(getKoinInstance(), BackupViewItemFactory()) as T
         }
     }
 
