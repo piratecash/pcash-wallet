@@ -33,7 +33,11 @@ import org.junit.Test
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
+import okhttp3.ResponseBody.Companion.toResponseBody
+import retrofit2.HttpException
+import retrofit2.Response
 import java.math.BigDecimal
+import java.net.SocketTimeoutException
 
 class BalanceViewItemFactoryDisplaySyncStateTest {
 
@@ -144,6 +148,29 @@ class BalanceViewItemFactoryDisplaySyncStateTest {
         assertTrue(viewItem.failedIconVisible)
         assertEquals(historyError.message, viewItem.errorMessage)
     }
+
+    @Test
+    fun viewItem_notSynced403_marksBlockedByProvider() {
+        assertTrue(viewItemWithTxError(httpException403()).syncErrorBlockedByProvider)
+    }
+
+    @Test
+    fun viewItem_notSyncedTimeout_doesNotMarkBlockedByProvider() {
+        assertFalse(viewItemWithTxError(SocketTimeoutException()).syncErrorBlockedByProvider)
+    }
+
+    private fun httpException403() =
+        HttpException(Response.error<Any>(403, "".toResponseBody()))
+
+    private fun viewItemWithTxError(error: Throwable) = factory.viewItem(
+        item = balanceItem(transactionsSyncState = AdapterState.NotSynced(error)),
+        currency = currency,
+        hideBalance = false,
+        watchAccount = false,
+        balanceViewType = BalanceViewType.CoinThenFiat,
+        isSwappable = true,
+        displayDiffOptionType = DisplayDiffOptionType.BOTH,
+    )
 
     @Test
     fun viewItem_snapshotRestoreStages_displayLocalizedStage() {

@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Parcelable
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -42,35 +43,60 @@ class SyncErrorSheet(val input: Input) : HSBottomSheet() {
 
     @Composable
     override fun GetContent(navigation: HSNavigation) {
-        SyncErrorScreen(navigation, input.wallet, input.errorMessage ?: "")
+        SyncErrorScreen(navigation, input.wallet, input.errorMessage ?: "", input.isBlockedByProvider)
     }
 
     @Parcelize
-    data class Input(val wallet: Wallet, val errorMessage: String?) : Parcelable
+    data class Input(
+        val wallet: Wallet,
+        val errorMessage: String?,
+        val isBlockedByProvider: Boolean
+    ) : Parcelable
 }
 
-internal fun HSNavigation.showSyncErrorDialog(wallet: Wallet, errorMessage: String?) {
+internal fun HSNavigation.showSyncErrorDialog(
+    wallet: Wallet,
+    errorMessage: String?,
+    isBlockedByProvider: Boolean
+) {
     if (lastOrNull() is SyncErrorSheet) return
 
-    slideFromBottom(SyncErrorSheet(SyncErrorSheet.Input(wallet, errorMessage)))
+    slideFromBottom(SyncErrorSheet(SyncErrorSheet.Input(wallet, errorMessage, isBlockedByProvider)))
+}
+
+@StringRes
+internal fun syncErrorDescriptionRes(
+    isMonero: Boolean,
+    isEvm: Boolean,
+    isBlockedByProvider: Boolean,
+    sourceChangeable: Boolean
+): Int = when {
+    isMonero || (isEvm && isBlockedByProvider) -> R.string.source_blocked_by_provider_error
+    sourceChangeable -> R.string.balance_sync_error_changeable_source
+    else -> R.string.balance_sync_error_fixed_source
 }
 
 @Composable
-private fun SyncErrorScreen(navigation: HSNavigation, wallet: Wallet, error: String) {
+private fun SyncErrorScreen(
+    navigation: HSNavigation,
+    wallet: Wallet,
+    error: String,
+    isBlockedByProvider: Boolean
+) {
     val viewModel = viewModel<SyncErrorViewModel>(factory = SyncErrorModule.Factory(wallet))
 
     val context = LocalContext.current
     val view = LocalView.current
     val clipboardManager = LocalClipboardManager.current
 
-    val errorDescription = when {
-        wallet.token.isMonero() || wallet.token.blockchainType.isEvm -> annotatedStringResource(
-            R.string.source_blocked_by_provider_error
+    val errorDescription = annotatedStringResource(
+        syncErrorDescriptionRes(
+            isMonero = wallet.token.isMonero(),
+            isEvm = wallet.token.blockchainType.isEvm,
+            isBlockedByProvider = isBlockedByProvider,
+            sourceChangeable = viewModel.sourceChangeable
         )
-
-        viewModel.sourceChangeable -> annotatedStringResource(R.string.balance_sync_error_changeable_source)
-        else -> annotatedStringResource(R.string.balance_sync_error_fixed_source)
-    }
+    )
 
     SyncErrorContent(
         coinCode = wallet.coin.code,

@@ -476,7 +476,11 @@ class BalanceViewModel(
     }
 
     fun getSyncErrorDetails(viewItem: BalanceViewItem2): SyncError = when {
-        service.networkAvailable -> SyncError.Dialog(viewItem.wallet, viewItem.errorMessage)
+        service.networkAvailable -> SyncError.Dialog(
+            viewItem.wallet,
+            viewItem.errorMessage,
+            viewItem.syncErrorBlockedByProvider
+        )
         else -> SyncError.NetworkNotAvailable()
     }
 
@@ -641,7 +645,11 @@ class BalanceViewModel(
 
     sealed class SyncError {
         class NetworkNotAvailable : SyncError()
-        class Dialog(val wallet: Wallet, val errorMessage: String?) : SyncError()
+        class Dialog(
+            val wallet: Wallet,
+            val errorMessage: String?,
+            val isBlockedByProvider: Boolean
+        ) : SyncError()
     }
 
     fun onResume() {

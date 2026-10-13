@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.diffPercentage
+import cash.p.terminal.core.isBlockedByProvider
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.isNetworkPaused
 import cash.p.terminal.core.tryOrNull
@@ -54,6 +55,7 @@ data class BalanceViewItem(
     val fullDiff: String = "",
     val displayDiffOptionType: DisplayDiffOptionType = DisplayDiffOptionType.BOTH,
     val offline: Boolean = false,
+    val syncErrorBlockedByProvider: Boolean = false,
 )
 
 data class WarningText(
@@ -89,6 +91,7 @@ data class BalanceViewItem2(
     val displayDiffOptionType: DisplayDiffOptionType,
     val stackingUnpaid: DeemedValue<String>?,
     val offline: Boolean = false,
+    val syncErrorBlockedByProvider: Boolean = false,
 )
 
 enum class SyncingProgressType {
@@ -506,6 +509,7 @@ class BalanceViewItemFactory(
         }
 
         val syncDisplayState = syncDisplayState(wallet, displaySyncState)
+        val syncError = (displaySyncState as? AdapterState.NotSynced)?.error
 
         return BalanceViewItem(
             wallet = item.wallet,
@@ -522,7 +526,8 @@ class BalanceViewItemFactory(
             badge = wallet.badge,
             swapVisible = isSwappable,
             swapAvailability = availability(state !is AdapterState.NotSynced, syncDisplayState.offline),
-            errorMessage = (displaySyncState as? AdapterState.NotSynced)?.error?.message,
+            errorMessage = syncError?.message,
+            syncErrorBlockedByProvider = syncError?.isBlockedByProvider() == true,
             isWatchAccount = watchAccount,
             warning = item.warning?.warningText,
             diff = item.coinPrice?.diffPercentage,
@@ -581,8 +586,9 @@ class BalanceViewItemFactory(
 
         val stackingUnpaid = stackingUnpaidValue(item, showStackingUnpaid, balanceTotalVisibility)
 
+        val syncError = (displaySyncState as? AdapterState.NotSynced)?.error
         val errorMessage = if (networkAvailable) {
-            (displaySyncState as? AdapterState.NotSynced)?.error?.message
+            syncError?.message
         } else {
             Translator.getString(R.string.Hud_Text_NoInternet)
         }
@@ -604,6 +610,7 @@ class BalanceViewItemFactory(
             badge = wallet.badge,
             swapAvailability = availability(state !is AdapterState.NotSynced, syncDisplayState.offline),
             errorMessage = errorMessage,
+            syncErrorBlockedByProvider = networkAvailable && syncError?.isBlockedByProvider() == true,
             isWatchAccount = watchAccount,
             isSwipeToDeleteEnabled = isSwipeToDeleteEnabled,
             stackingUnpaid = stackingUnpaid,

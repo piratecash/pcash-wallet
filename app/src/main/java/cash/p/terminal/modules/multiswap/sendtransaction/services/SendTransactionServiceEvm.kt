@@ -25,6 +25,7 @@ import cash.p.terminal.core.ethereum.CautionViewItem
 import cash.p.terminal.core.ethereum.CautionViewItemFactory
 import cash.p.terminal.core.ethereum.EvmCoinServiceFactory
 import cash.p.terminal.core.isNative
+import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.core.managers.PendingTransactionRegistrar
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.entities.PendingTransactionDraft
@@ -81,13 +82,11 @@ internal class SendTransactionServiceEvm(
     token: Token,
     initialGasPrice: GasPrice? = null,
     initialNonce: Long? = null,
-    private val ignoreMevErrors: Boolean = false
+    private val ignoreMevErrors: Boolean = false,
+    private val evmKitWrapper: EvmKitWrapper = checkNotNull(
+        App.evmBlockchainManager.getEvmKitManager(token.blockchainType).evmKitWrapper
+    ) { "EVM kit is not running for ${token.blockchainType.uid}" }
 ) : ISendTransactionService<BaseEvmAdapter>(token) {
-    private val evmKitWrapper by lazy {
-        App.evmBlockchainManager.getEvmKitManager(
-            token.blockchainType
-        ).evmKitWrapper!!
-    }
     private val gasPriceService: IEvmGasPriceService by lazy {
         val evmKit = evmKitWrapper.evmKit
         if (evmKit.chain.isEIP1559Supported) {

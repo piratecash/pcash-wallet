@@ -13,6 +13,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cash.p.terminal.R
 import cash.p.terminal.modules.blockchainstatus.StatusSectionBlock
+import cash.p.terminal.modules.blockchainstatus.logSection
 import cash.p.terminal.modules.settings.appcache.AppCachePage
 import cash.p.terminal.modules.settings.appstatus.AppStatusModule.BlockContent
 import cash.p.terminal.modules.settings.appstatus.AppStatusModule.BlockData
@@ -43,8 +45,9 @@ import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.subhead1_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
-import cash.p.terminal.ui_compose.components.subhead2_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -56,6 +59,7 @@ fun AppStatusScreen(
     val clipboardManager = LocalClipboardManager.current
     val localView = LocalView.current
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         containerColor = ComposeAppTheme.colors.backgroundBase,
@@ -108,10 +112,11 @@ fun AppStatusScreen(
                         ButtonPrimaryDefault(
                             modifier = Modifier.weight(1f),
                             title = stringResource(R.string.Button_Share),
+                            enabled = !uiState.shareInProgress,
                             onClick = {
-                                try {
-                                    val uri = viewModel.getShareFileUri(context)
-                                    if (uri != null) {
+                                coroutineScope.launch {
+                                    try {
+                                        val uri = viewModel.prepareShareUri() ?: return@launch
                                         val intent = Intent(Intent.ACTION_SEND).apply {
                                             type = "text/plain"
                                             putExtra(Intent.EXTRA_STREAM, uri)
@@ -121,13 +126,11 @@ fun AppStatusScreen(
                                             )
                                         }
                                         context.startActivity(Intent.createChooser(intent, null))
-                                    } else {
+                                    } catch (e: CancellationException) {
+                                        throw e
+                                    } catch (e: Exception) {
                                         HudHelper.showErrorMessage(localView, R.string.error_cannot_create_log_file)
                                     }
-                                } catch (e: Exception) {
-                                    HudHelper.showErrorMessage(
-                                        localView, e.message ?: context.getString(R.string.Error)
-                                    )
                                 }
                             }
                         )
@@ -149,6 +152,7 @@ fun AppStatusScreen(
                         contentItems = blockData.content,
                     )
                 }
+                logSection(uiState.logGroups)
                 if (uiState.blockchainStatusSections.isNotEmpty()) {
                     item { InfoText(text = "BLOCKCHAIN STATUS") }
                     items(uiState.blockchainStatusSections) { section ->
@@ -177,18 +181,6 @@ private fun StatusBlock(
             modifier = Modifier.padding(horizontal = 16.dp),
         ) {
             when (item) {
-                is BlockContent.Header -> {
-                    subhead2_leah(
-                        text = item.title,
-                    )
-                }
-
-                is BlockContent.Text -> {
-                    subhead2_grey(
-                        text = item.text,
-                    )
-                }
-
                 is BlockContent.TitleValue -> {
                     subhead2_grey(
                         modifier = Modifier.weight(1f),
@@ -212,19 +204,12 @@ private fun StatusBlock(
 @Preview
 @Composable
 fun StatusBlockPreview() {
-    val sampleText =
-        "So then I thought what if I use chat GPT, save a link to my home screen on my phone, and start a new thread " +
-                "on it called MyFitness app. For anyone not familiar with chat GPT you can essentially give it " +
-                "prompts and get it to give outputs that provide information you need. Not always 100% correct but " +
-                "you can give it feedback to adjust as needed."
     val testBlocks = listOf(
         BlockData(
             title = "Status",
             content = listOf(
-                BlockContent.Header("Header"),
                 BlockContent.TitleValue("Title", "Value"),
                 BlockContent.TitleValue("Title 2", "Value 2"),
-                BlockContent.Text(sampleText),
             )
         ),
         BlockData(
@@ -232,7 +217,6 @@ fun StatusBlockPreview() {
             content = listOf(
                 BlockContent.TitleValue("Title", "Value"),
                 BlockContent.TitleValue("Title 2", "Value 2"),
-                BlockContent.Text(sampleText),
             )
         ),
     )

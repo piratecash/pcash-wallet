@@ -165,6 +165,7 @@ class SwapAmountColorInvariantTest {
             offlineOperationGate = mockk<OfflineOperationGate>(relaxed = true),
             wallet = null,
             blockchainType = BlockchainType.BinanceSmartChain,
+            evmKitWrapper = null,
         ).getViewItemSections(
             TransactionInfoItem(
                 record = record,

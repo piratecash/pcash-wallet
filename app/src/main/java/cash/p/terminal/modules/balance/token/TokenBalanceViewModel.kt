@@ -962,7 +962,8 @@ class TokenBalanceViewModel(
     fun getSyncErrorDetails(viewItem: BalanceViewItem): BalanceViewModel.SyncError = when {
         connectivityManager.isConnected.value -> BalanceViewModel.SyncError.Dialog(
             viewItem.wallet,
-            viewItem.errorMessage
+            viewItem.errorMessage,
+            viewItem.syncErrorBlockedByProvider
         )
 
         else -> BalanceViewModel.SyncError.NetworkNotAvailable()

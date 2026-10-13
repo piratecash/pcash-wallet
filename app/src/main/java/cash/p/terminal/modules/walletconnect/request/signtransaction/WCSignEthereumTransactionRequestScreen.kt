@@ -9,6 +9,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
+import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.modules.confirm.ConfirmTransactionScreen
 import cash.p.terminal.modules.sendevmtransaction.SendEvmTransactionView
 import cash.p.terminal.modules.walletconnect.request.WCRequestPage
@@ -32,13 +33,15 @@ fun WCSignEthereumTransactionRequestScreen(
     blockchainType: BlockchainType,
     transaction: WalletConnectTransaction,
     peerName: String,
+    evmKitWrapper: EvmKitWrapper,
 ) {
     val viewModel = viewModel<WCSignEthereumTransactionRequestViewModel>(
         viewModelStoreOwner = navigation.viewModelStoreOwnerForPage(WCRequestPage::class),
         factory = WCSignEthereumTransactionRequestViewModel.Factory(
             blockchainType = blockchainType,
             transaction = transaction,
-            peerName = peerName
+            peerName = peerName,
+            evmKitWrapper = evmKitWrapper
         )
     )
     val uiState = viewModel.uiState
