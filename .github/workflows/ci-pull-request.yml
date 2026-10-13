@@ -25,7 +25,7 @@ jobs:
             | base64 --decode \
             > "$RUNNER_TEMP/firebase-dev.jks"
       - name: Run Unit tests
-        run: ./gradlew :app:testDebugUnitTest :core:core:testDebugUnitTest :core:wallet:testAndroidHostTest :core:wallet:desktopTest :core:market:testAndroidHostTest :core:market:desktopTest :core:navigation:testAndroidHostTest :core:navigation:desktopTest :components:chartview:desktopTest :feature-premium:testDebugUnitTest :feature-logging:testDebugUnitTest :feature-trezor:testDebugUnitTest :feature-tangem:testDebugUnitTest :feature-market:testAndroidHostTest :feature-market:desktopTest :shared:desktopTest --no-daemon
+        run: ./gradlew :app:testDebugUnitTest :core:core:testDebugUnitTest :core:wallet:testAndroidHostTest :core:wallet:desktopTest :core:market:testAndroidHostTest :core:market:desktopTest :core:navigation:testAndroidHostTest :core:navigation:desktopTest :components:chartview:desktopTest :feature-premium:testDebugUnitTest :feature-logging:testDebugUnitTest :feature-trezor:testDebugUnitTest :feature-tangem:testDebugUnitTest :feature-market:testAndroidHostTest :feature-market:desktopTest :shared:desktopTest :core:common:testAndroidHostTest :core:common:desktopTest :core:network:testAndroidHostTest :core:qr-multipart:testAndroidHostTest :core:ui-compose:desktopTest :feature-mini-app:testDebugUnitTest :feature-stacking:testDebugUnitTest :config:lint:checks:test --no-daemon
       - name: Build QA
         run: ./gradlew :app:assembleQa --stacktrace --no-daemon
         env: &qa-build-env
