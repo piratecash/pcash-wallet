@@ -8,7 +8,6 @@ import cash.p.terminal.core.adapters.zcash.zcashAppLogger
 import cash.p.terminal.core.managers.RestoreSettings
 import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.ZcashBirthdayProvider
-import cash.p.terminal.core.managers.ZcashServer
 import cash.p.terminal.core.managers.ZcashServerManager
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -55,8 +54,7 @@ class ZcashWalletOpenerImplTest {
     private val dbKeyProvider = mockk<ZcashDbKeyProvider>(relaxed = true)
     private val zcashWallet = mockk<ZcashWallet>(relaxed = true)
     private val serverManager = mockk<ZcashServerManager> {
-        every { current } returns ZcashServer("zec.rocks", "https://zec.rocks:443", isCustom = false)
-        every { transportFor(any(), any()) } returns Transport.DIRECT
+        every { serverConfig(any()) } returns ServerConfig(url = "https://zec.rocks:443", transport = Transport.DIRECT)
     }
 
     @Before
@@ -176,8 +174,8 @@ class ZcashWalletOpenerImplTest {
 
     @Test
     fun open_usesTheSelectedServer() = runTest {
-        every { serverManager.current } returns ZcashServer("mine", "https://my.node.io:443", isCustom = true)
-        every { serverManager.transportFor("https://my.node.io:443", true) } returns Transport.TOR
+        every { serverManager.serverConfig(true) } returns
+            ServerConfig(url = "https://my.node.io:443", transport = Transport.TOR)
         every { localStorage.torEnabled } returns true
 
         opener().open(wallet())
@@ -247,7 +245,7 @@ class ZcashWalletOpenerImplTest {
     @Test
     fun open_logsServerWithoutUserInfo() = runTest {
         val appLog = CapturedAppLog()
-        every { serverManager.current } returns ZcashServer("mine", "https://user:pw@host.io:443", isCustom = true)
+        every { serverManager.serverConfig(any()) } returns ServerConfig(url = "https://user:pw@host.io:443")
 
         opener().open(wallet())
         val line = appLog.awaitEntry { it.message.startsWith("open: db=") }.message

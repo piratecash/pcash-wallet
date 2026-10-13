@@ -340,8 +340,8 @@
     <string name="balance_connecting_to_api">Verbindung zur API…</string>
     <string name="beam_restore_resolving_birthday">Wiederherstellungspunkt wird gesucht…</string>
     <string name="beam_restore_downloading_snapshot">Snapshot wird heruntergeladen…</string>
-    <string name="beam_restore_downloading_snapshot_downloaded">Snapshot wird heruntergeladen… %1$s MiB</string>
-    <string name="beam_restore_downloading_snapshot_progress">Snapshot wird heruntergeladen… %1$s von %2$s MiB</string>
+    <string name="beam_restore_downloading_snapshot_downloaded">Snapshot wird heruntergeladen… %1$s MB</string>
+    <string name="beam_restore_downloading_snapshot_progress">Snapshot wird heruntergeladen… %1$s von %2$s MB</string>
     <string name="beam_restore_validating_snapshot">Snapshot wird überprüft…</string>
     <string name="beam_restore_counting_shielded_outputs">Geschützte Outputs werden gezählt…</string>
     <string name="beam_restore_scanning_wallet_outputs">Wallet-Outputs werden gescannt…</string>
@@ -1021,6 +1021,10 @@
     <string name="zcash_network_server_url">Server-URL</string>
     <string name="zcash_network_invalid_url">Gib https://host:port ein (oder http://…onion für Tor) – ohne Login, Pfad oder Parameter</string>
     <string name="zcash_network_default_servers">Standard</string>
+    <string name="zcash_network_auto">Automatisch (empfohlen)</string>
+    <string name="zcash_network_auto_current">Aktuell: %1$s</string>
+    <string name="zcash_network_auto_hint">Wählt den schnellsten funktionierenden Server</string>
+    <string name="zcash_network_auto_short">Automatisch · %1$s</string>
     <!--Add RPC Source-->
     <string name="AddEvmSyncSource_RpcUrl">RPC-Url</string>
     <string name="AddEvmSyncSource_AddRPCSource">RPC-Quelle hinzufügen</string>

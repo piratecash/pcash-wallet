@@ -48,7 +48,7 @@ internal class ZcashSessionDiagnostics(
     val logger: AppLogger,
     private val networkErrorTracker: NetworkErrorTracker,
     private val accountId: String,
-    val serverUrl: String,
+    @Volatile var serverUrl: String,
     private val failureReporter: ZcashDatabaseFailureReporter,
     private val timeSource: TimeSource = TimeSource.Monotonic,
 ) {

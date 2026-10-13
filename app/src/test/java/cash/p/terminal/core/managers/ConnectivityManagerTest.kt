@@ -19,6 +19,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.runTest
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -80,6 +81,22 @@ class ConnectivityManagerTest {
         scheduler.runCurrent()
 
         assertTrue(manager.isConnected.value)
+    }
+
+    @Test
+    fun refresh_wifiToCellularHandover_emitsTheNewValidatedSetWhileStayingConnected() {
+        val wifi = validatedNetwork()
+        every { systemConnectivityManager.activeNetwork } returns wifi
+        val manager = createManager()
+        assertEquals(setOf(wifi), manager.validatedNetworksFlow.value)
+        val cellular = validatedNetwork()
+        every { systemConnectivityManager.activeNetwork } returns cellular
+
+        manager.refresh()
+        scheduler.runCurrent()
+
+        assertTrue(manager.isConnected.value)
+        assertEquals(setOf(cellular), manager.validatedNetworksFlow.value)
     }
 
     @Test

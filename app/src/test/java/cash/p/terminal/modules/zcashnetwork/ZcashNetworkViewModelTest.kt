@@ -18,10 +18,16 @@ import org.junit.Test
 class ZcashNetworkViewModelTest {
 
     private var storedUrl: String? = null
+    private var storedAuto = false
+    private var storedAutoUrl: String? = null
     private var storedCustom: List<String> = emptyList()
     private val storage = mockk<BlockchainSettingsStorage> {
         every { zcashServerUrl() } answers { storedUrl }
         every { saveZcashServerUrl(any()) } answers { storedUrl = firstArg() }
+        every { zcashServerAuto() } answers { storedAuto }
+        every { saveZcashServerAuto(any()) } answers { storedAuto = firstArg() }
+        every { zcashAutoServerUrl() } answers { storedAutoUrl }
+        every { saveZcashAutoServerUrl(any()) } answers { storedAutoUrl = firstArg() }
         every { zcashCustomServers() } answers { storedCustom }
         every { saveZcashCustomServers(any()) } answers { storedCustom = firstArg() }
     }
@@ -73,5 +79,30 @@ class ZcashNetworkViewModelTest {
         viewModel.onDelete(customUrl)
 
         assertEquals(emptyList<ZcashNetworkViewModel.ViewItem>(), viewModel.uiState.customItems)
+    }
+
+    @Test
+    fun onSelectAuto_fromManual_uiStateIsAutoWithNoSelectedRow() {
+        storedUrl = manager.defaultServers[3].url
+        val viewModel = ZcashNetworkViewModel(manager)
+
+        viewModel.onSelectAuto()
+
+        assertEquals(true, viewModel.uiState.isAuto)
+        assertEquals(manager.defaultServers.first().name, viewModel.uiState.autoServerName)
+        assertEquals(emptyList<String>(), viewModel.uiState.defaultItems.filter { it.selected }.map { it.url })
+    }
+
+    @Test
+    fun onSelect_afterAuto_turnsAutoOffAndMarksServer() {
+        val viewModel = ZcashNetworkViewModel(manager)
+        viewModel.onSelectAuto()
+        val target = manager.defaultServers[2].url
+
+        viewModel.onSelect(target)
+
+        assertEquals(false, viewModel.uiState.isAuto)
+        assertEquals(null, viewModel.uiState.autoServerName)
+        assertEquals(listOf(target), viewModel.uiState.defaultItems.filter { it.selected }.map { it.url })
     }
 }

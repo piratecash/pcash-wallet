@@ -67,7 +67,8 @@ object BlockchainSettingsModule {
 
         class Zcash(
             override val blockchain: Blockchain,
-            val server: ZcashServer
+            val server: ZcashServer,
+            val auto: Boolean
         ) : BlockchainItem()
 
         class StatusOnly(

@@ -1,6 +1,7 @@
 package cash.p.terminal.core.adapters.zcash.session
 
 import cash.p.zcash.AccountInfo
+import cash.p.zcash.SyncStage
 import cash.p.zcash.SyncState
 import cash.p.zcash.ZcashException
 import io.horizontalsystems.core.logger.AppLogger
@@ -8,6 +9,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -52,6 +54,18 @@ class ZcashSessionDatabaseFailureTest {
 
         assertEquals(ZcashSessionResult.Success(Unit), session.refresh())
 
+        assertSame(failure, (session.state.value.syncState as SyncState.Failed).error)
+    }
+
+    @Test
+    fun sync_databaseFailure_publishesTheFailureAtOnce() = runTest {
+        val failure = ZcashException(DATABASE_FAILURE, stage = SyncStage.SCAN)
+        every { wallet.sync(any()) } returns flow { throw failure }
+        val session = session()
+
+        val result = session.sync()
+
+        assertEquals(ZcashSessionResult.Success(ZcashPassOutcome.Failed(failure, published = true)), result)
         assertSame(failure, (session.state.value.syncState as SyncState.Failed).error)
     }
 

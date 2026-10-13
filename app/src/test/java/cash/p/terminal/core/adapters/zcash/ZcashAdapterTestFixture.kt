@@ -2,6 +2,7 @@ package cash.p.terminal.core.adapters.zcash
 
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.adapters.zcash.server.ZcashServerSelector
 import cash.p.terminal.core.adapters.zcash.session.ZcashDiscoveryState
 import cash.p.terminal.core.adapters.zcash.session.ZcashSession
 import cash.p.terminal.core.adapters.zcash.session.ZcashSessionManager
@@ -82,6 +83,7 @@ abstract class ZcashAdapterTestFixture {
     protected val accountManager = mockk<IAccountManager>(relaxed = true)
     protected val restoreSettingsManager = mockk<RestoreSettingsManager>(relaxed = true)
     protected val serverManager = mockk<ZcashServerManager>(relaxed = true)
+    private val serverSelector = mockk<ZcashServerSelector> { every { statusRows() } returns emptyMap() }
 
     /** In-memory stand-in for the persisted set, so a restart can be simulated. */
     protected var migrationTxIds = emptySet<String>()
@@ -113,6 +115,7 @@ abstract class ZcashAdapterTestFixture {
                 single { accountManager }
                 single { restoreSettingsManager }
                 single { serverManager }
+                single { serverSelector }
             })
         }
 

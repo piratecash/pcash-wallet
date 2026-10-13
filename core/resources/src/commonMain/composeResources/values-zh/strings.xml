@@ -342,8 +342,8 @@
     <string name="balance_connecting_to_api">正在连接 API…</string>
     <string name="beam_restore_resolving_birthday">正在查找恢复点…</string>
     <string name="beam_restore_downloading_snapshot">正在下载快照…</string>
-    <string name="beam_restore_downloading_snapshot_downloaded">正在下载快照… %1$s MiB</string>
-    <string name="beam_restore_downloading_snapshot_progress">正在下载快照… %1$s/%2$s MiB</string>
+    <string name="beam_restore_downloading_snapshot_downloaded">正在下载快照… %1$s MB</string>
+    <string name="beam_restore_downloading_snapshot_progress">正在下载快照… %1$s/%2$s MB</string>
     <string name="beam_restore_validating_snapshot">正在验证快照…</string>
     <string name="beam_restore_counting_shielded_outputs">正在统计隐私输出…</string>
     <string name="beam_restore_scanning_wallet_outputs">正在扫描钱包输出…</string>
@@ -1025,6 +1025,10 @@
     <string name="zcash_network_server_url">服务器 URL</string>
     <string name="zcash_network_invalid_url">请输入 https://host:port（Tor 请使用 http://…onion）——不含登录信息、路径或参数</string>
     <string name="zcash_network_default_servers">默认</string>
+    <string name="zcash_network_auto">自动（推荐）</string>
+    <string name="zcash_network_auto_current">当前：%1$s</string>
+    <string name="zcash_network_auto_hint">自动选择最快的可用服务器</string>
+    <string name="zcash_network_auto_short">自动 · %1$s</string>
     <!--Add RPC Source-->
     <string name="AddEvmSyncSource_RpcUrl">RPC Url</string>
     <string name="AddEvmSyncSource_AddRPCSource">添加 RPC 源</string>

@@ -342,8 +342,8 @@
     <string name="balance_connecting_to_api">API에 연결 중…</string>
     <string name="beam_restore_resolving_birthday">복원 지점 찾는 중…</string>
     <string name="beam_restore_downloading_snapshot">스냅샷 다운로드 중…</string>
-    <string name="beam_restore_downloading_snapshot_downloaded">스냅샷 다운로드 중… %1$s MiB</string>
-    <string name="beam_restore_downloading_snapshot_progress">스냅샷 다운로드 중… %1$s/%2$s MiB</string>
+    <string name="beam_restore_downloading_snapshot_downloaded">스냅샷 다운로드 중… %1$s MB</string>
+    <string name="beam_restore_downloading_snapshot_progress">스냅샷 다운로드 중… %1$s/%2$s MB</string>
     <string name="beam_restore_validating_snapshot">스냅샷 검증 중…</string>
     <string name="beam_restore_counting_shielded_outputs">보호된 출력 개수 확인 중…</string>
     <string name="beam_restore_scanning_wallet_outputs">지갑 출력 스캔 중…</string>
@@ -1028,6 +1028,10 @@
     <string name="zcash_network_server_url">서버 URL</string>
     <string name="zcash_network_invalid_url">https://host:port를 입력하세요(Tor는 http://…onion) — 로그인, 경로, 매개변수는 제외</string>
     <string name="zcash_network_default_servers">기본</string>
+    <string name="zcash_network_auto">자동 (권장)</string>
+    <string name="zcash_network_auto_current">현재: %1$s</string>
+    <string name="zcash_network_auto_hint">가장 빠른 정상 서버를 선택합니다</string>
+    <string name="zcash_network_auto_short">자동 · %1$s</string>
     <!--Add RPC Source-->
     <string name="AddEvmSyncSource_RpcUrl">RPC Url</string>
     <string name="AddEvmSyncSource_AddRPCSource">RPC 소스 추가</string>

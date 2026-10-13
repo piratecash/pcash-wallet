@@ -14,6 +14,9 @@ import cash.p.terminal.core.ITorManager
 import cash.p.terminal.core.adapters.zcash.ZcashAddressDeriver
 import cash.p.terminal.core.adapters.zcash.ZcashIronwoodMigrationRegistry
 import cash.p.terminal.core.adapters.zcash.ZcashKeyExporter
+import cash.p.terminal.core.adapters.zcash.server.ZcashServerProber
+import cash.p.terminal.core.adapters.zcash.server.ZcashServerProberImpl
+import cash.p.terminal.core.adapters.zcash.server.ZcashServerSelector
 import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFailureReporter
 import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFiles
 import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProvider
@@ -269,6 +272,8 @@ val managerModule = module {
     singleOf(::ZcashDbKeyProviderImpl) bind ZcashDbKeyProvider::class
     singleOf(::ZcashWalletOpenerImpl) bind ZcashWalletOpener::class
     singleOf(::ZcashServerManager)
+    singleOf(::ZcashServerProberImpl) bind ZcashServerProber::class
+    singleOf(::ZcashServerSelector)
     singleOf(::ZcashSyncScheduler)
     singleOf(::ZcashSessionManager)
     singleOf(::TonFallbackAddressProvider)

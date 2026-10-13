@@ -21,6 +21,7 @@ import io.reactivex.subjects.PublishSubject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -46,6 +47,7 @@ class BlockchainSettingsServiceTest {
         every { solanaRpcSourceManager.rpcSourceUpdateObservable } returns PublishSubject.create()
         every { zcashServerManager.serverSelectedFlow } returns zcashServerSelected
         every { zcashServerManager.current } returns zcashServer
+        every { zcashServerManager.isAuto } returns false
         every { marketKit.blockchain(BlockchainType.Zcash.uid) } returns null
     }
 
@@ -193,6 +195,22 @@ class BlockchainSettingsServiceTest {
         val zcashItem = service.blockchainItems.single() as BlockchainItem.Zcash
         assertEquals(zcash, zcashItem.blockchain)
         assertEquals(zcashServer, zcashItem.server)
+        assertFalse(zcashItem.auto)
+    }
+
+    @Test
+    fun start_zcashAutoMode_zcashItemIsAuto() {
+        every { zcashServerManager.isAuto } returns true
+        every { btcBlockchainManager.allBlockchains } returns emptyList()
+        every { evmBlockchainManager.allBlockchains } returns emptyList()
+        every { solanaRpcSourceManager.blockchain } returns null
+        every { marketKit.blockchains(any()) } returns emptyList()
+        every { marketKit.blockchain(BlockchainType.Zcash.uid) } returns blockchain(BlockchainType.Zcash)
+
+        val service = createService()
+        service.start()
+
+        assertTrue((service.blockchainItems.single() as BlockchainItem.Zcash).auto)
     }
 
     private fun createService(): BlockchainSettingsService {

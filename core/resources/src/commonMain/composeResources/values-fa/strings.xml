@@ -342,8 +342,8 @@
     <string name="balance_connecting_to_api">اتصال به API…</string>
     <string name="beam_restore_resolving_birthday">در حال یافتن نقطه بازیابی…</string>
     <string name="beam_restore_downloading_snapshot">در حال بارگیری اسنپ‌شات…</string>
-    <string name="beam_restore_downloading_snapshot_downloaded">در حال بارگیری اسنپ‌شات… %1$s MiB</string>
-    <string name="beam_restore_downloading_snapshot_progress">در حال بارگیری اسنپ‌شات… %1$s از %2$s MiB</string>
+    <string name="beam_restore_downloading_snapshot_downloaded">در حال بارگیری اسنپ‌شات… %1$s MB</string>
+    <string name="beam_restore_downloading_snapshot_progress">در حال بارگیری اسنپ‌شات… %1$s از %2$s MB</string>
     <string name="beam_restore_validating_snapshot">در حال اعتبارسنجی اسنپ‌شات…</string>
     <string name="beam_restore_counting_shielded_outputs">در حال شمارش خروجی‌های محافظت‌شده…</string>
     <string name="beam_restore_scanning_wallet_outputs">در حال اسکن خروجی‌های کیف پول…</string>
@@ -1028,6 +1028,10 @@
     <string name="zcash_network_server_url">نشانی سرور</string>
     <string name="zcash_network_invalid_url">https://host:port را وارد کنید (یا http://…onion برای Tor) — بدون نام کاربری، مسیر یا پارامتر</string>
     <string name="zcash_network_default_servers">پیش‌فرض</string>
+    <string name="zcash_network_auto">خودکار (توصیه‌شده)</string>
+    <string name="zcash_network_auto_current">اکنون: %1$s</string>
+    <string name="zcash_network_auto_hint">سریع‌ترین سرور فعال را انتخاب می‌کند</string>
+    <string name="zcash_network_auto_short">خودکار · %1$s</string>
     <!--Add RPC Source-->
     <string name="AddEvmSyncSource_RpcUrl">RPC Url</string>
     <string name="AddEvmSyncSource_AddRPCSource">Add RPC Source</string>

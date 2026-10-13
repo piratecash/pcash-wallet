@@ -94,7 +94,7 @@ class BlockchainSettingsService(
         }
 
         val zcashBlockchainItems = supportedBlockchains.zcashBlockchains.map { blockchain ->
-            BlockchainItem.Zcash(blockchain, zcashServerManager.current)
+            BlockchainItem.Zcash(blockchain, zcashServerManager.current, zcashServerManager.isAuto)
         }
 
         val statusOnlyItems = supportedBlockchains.statusOnlyBlockchains.map {

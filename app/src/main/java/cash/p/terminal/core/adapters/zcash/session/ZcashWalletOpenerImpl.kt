@@ -54,7 +54,7 @@ class ZcashWalletOpenerImpl(
         }
         val deepSweepRequired = !databaseFiles.isPristine(accountId)
 
-        val server = serverConfig()
+        val server = serverManager.serverConfig(localStorage.torEnabled)
         logger.info(
             "open: db=${if (dbExists) "exists" else "absent"} " +
                 "key=${if (dbKey.newlyGenerated) "new" else "stored"} " +
@@ -127,10 +127,5 @@ class ZcashWalletOpenerImpl(
 
             else -> Birth(BirthSource.NONE, 0)
         }
-    }
-
-    private fun serverConfig(): ServerConfig {
-        val url = serverManager.current.url
-        return ServerConfig(url = url, transport = serverManager.transportFor(url, localStorage.torEnabled))
     }
 }
