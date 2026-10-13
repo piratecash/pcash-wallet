@@ -2,6 +2,7 @@ package cash.p.terminal.core.adapters.zcash.session
 
 import android.content.Context
 import cash.p.terminal.core.ILocalStorage
+import cash.p.terminal.core.NonFatalReporter
 import cash.p.terminal.core.adapters.zcash.CapturedAppLog
 import cash.p.terminal.core.adapters.zcash.zcashAppLogger
 import cash.p.terminal.core.managers.RestoreSettings
@@ -25,6 +26,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
+import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -45,6 +47,7 @@ class ZcashWalletOpenerImplTest {
 
     private lateinit var noBackupDir: File
     private lateinit var databaseFiles: ZcashDatabaseFiles
+    private lateinit var failureReporter: ZcashDatabaseFailureReporter
 
     private val localStorage = mockk<ILocalStorage>(relaxed = true)
     private val restoreSettingsManager = mockk<RestoreSettingsManager>()
@@ -60,6 +63,7 @@ class ZcashWalletOpenerImplTest {
     fun setUp() {
         noBackupDir = Files.createTempDirectory("zcash-open").toFile()
         databaseFiles = ZcashDatabaseFiles(mockk<Context> { every { noBackupFilesDir } returns noBackupDir })
+        failureReporter = ZcashDatabaseFailureReporter(databaseFiles, mockk<NonFatalReporter>(relaxed = true))
 
         mockkObject(ZcashSdk)
         mockkObject(ZcashWallet.Companion)
@@ -254,17 +258,27 @@ class ZcashWalletOpenerImplTest {
     }
 
     @Test
+    fun open_successfulOpen_checksDatabase() = runTest {
+        val reporter = mockk<ZcashDatabaseFailureReporter>(relaxed = true)
+
+        opener(reporter).open(wallet())
+
+        verify(exactly = 1) { reporter.checkCantOpen(any()) }
+    }
+
+    @Test
     fun open_selectedServer_reportsItsUrl() = runTest {
         assertEquals("https://zec.rocks:443", opener().open(wallet()).serverUrl)
     }
 
-    private fun opener() = ZcashWalletOpenerImpl(
+    private fun opener(failureReporter: ZcashDatabaseFailureReporter = this.failureReporter) = ZcashWalletOpenerImpl(
         databaseFiles = databaseFiles,
         localStorage = localStorage,
         restoreSettingsManager = restoreSettingsManager,
         birthdayProvider = birthdayProvider,
         dbKeyProvider = dbKeyProvider,
         serverManager = serverManager,
+        failureReporter = failureReporter,
     )
 
     private fun wallet(

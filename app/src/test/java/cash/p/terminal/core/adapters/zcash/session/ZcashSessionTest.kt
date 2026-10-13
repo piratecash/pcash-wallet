@@ -23,6 +23,7 @@ import cash.p.zcash.ZcashException
 import cash.p.zcash.ZcashWallet
 import io.horizontalsystems.core.logger.AppLogger
 import io.horizontalsystems.core.storage.LogEntry
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
@@ -42,6 +43,7 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -112,6 +114,7 @@ internal fun TestScope.zcashSession(
     logger: AppLogger = mockk(relaxed = true),
     networkErrorTracker: NetworkErrorTracker = mockk(relaxed = true),
     databaseFiles: ZcashDatabaseFiles = mockk(relaxed = true),
+    failureReporter: ZcashDatabaseFailureReporter = ZcashDatabaseFailureReporter(databaseFiles, mockk(relaxed = true)),
 ) = ZcashSession(
     accountId = "account",
     wallet = wallet,
@@ -125,7 +128,7 @@ internal fun TestScope.zcashSession(
     deepSweepRequired = deepSweepRequired,
     discovery = discovery,
     diagnostics = ZcashSessionDiagnostics(
-        logger, networkErrorTracker, "account", SERVER_URL, databaseFiles,
+        logger, networkErrorTracker, "account", SERVER_URL, failureReporter,
     ),
 )
 
@@ -184,6 +187,31 @@ class ZcashSessionTest {
         session.close()
 
         assertEquals(ZcashSessionResult.Unavailable, session.withOperation { 42 })
+    }
+
+    @Test
+    fun withOperation_successfulOperation_checksDatabase() = runTest {
+        val reporter = mockk<ZcashDatabaseFailureReporter>(relaxed = true)
+        val session = zcashSession(wallet, logger = logger, failureReporter = reporter)
+        advanceUntilIdle()
+        clearMocks(reporter)
+
+        session.withOperation { 42 }
+
+        verify(exactly = 1) { reporter.checkCantOpen(logger) }
+    }
+
+    @Test
+    fun sync_passEnds_checksDatabase() = runTest {
+        every { wallet.sync(any()) } returns flowOf(SyncState.Synced)
+        val reporter = mockk<ZcashDatabaseFailureReporter>(relaxed = true)
+        val session = zcashSession(wallet, logger = logger, failureReporter = reporter)
+        advanceUntilIdle()
+        clearMocks(reporter)
+
+        session.sync()
+
+        verify(exactly = 1) { reporter.checkCantOpen(logger) }
     }
 
     @Test

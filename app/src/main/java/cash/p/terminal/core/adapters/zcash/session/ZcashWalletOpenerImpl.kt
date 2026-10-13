@@ -30,6 +30,7 @@ class ZcashWalletOpenerImpl(
     private val birthdayProvider: ZcashBirthdayProvider,
     private val dbKeyProvider: ZcashDbKeyProvider,
     private val serverManager: ZcashServerManager,
+    private val failureReporter: ZcashDatabaseFailureReporter,
 ) : ZcashWalletOpener {
 
     private class Birth(val source: BirthSource, val height: Int)
@@ -90,8 +91,10 @@ class ZcashWalletOpenerImpl(
             val dbAccountId = existing.firstOrNull()?.id ?: restore(zcashWallet, wallet, logger)
             return Triple(zcashWallet, existing, dbAccountId)
         } catch (e: ZcashException) {
-            if (e.isZcashDatabaseFailure()) logger.warning(databaseFiles.diagnostics(accountId))
+            if (e.isZcashDatabaseFailure()) failureReporter.databaseFailure(accountId, logger)
             throw e
+        } finally {
+            failureReporter.checkCantOpen(logger)
         }
     }
 

@@ -364,7 +364,7 @@ class ZcashSyncSchedulerTest {
                 networkErrorTracker = mockk(relaxed = true),
                 accountId = "account",
                 serverUrl = "https://zec.rocks:443",
-                databaseFiles = mockk<ZcashDatabaseFiles>(relaxed = true),
+                failureReporter = mockk<ZcashDatabaseFailureReporter>(relaxed = true),
             ),
         )
         val scheduler = scheduler()

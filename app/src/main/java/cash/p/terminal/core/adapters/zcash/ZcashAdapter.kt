@@ -582,6 +582,7 @@ class ZcashAdapter(
                 wallet = accountBirthday,
             ),
             "Transparent discovery" to transparentDiscoveryLabel(),
+            "Database" to databaseLabel(),
         )
 
     /**
@@ -597,6 +598,12 @@ class ZcashAdapter(
         val outcome = if (mark.succeeded) "succeeded" else "failed"
         return "epoch=${mark.epoch} $outcome ${ageSeconds}s ago$selector"
     }
+
+    private fun databaseLabel(): String = tryOrNull {
+        val stats = ZcashSdk.databaseStats()
+        "opens=${stats.opens} native_cantopen=${stats.nativeCantOpen} acquire_cantopen=${stats.cantOpenFailures} " +
+            "recovered=${stats.recoveredByRetry} last=${stats.lastError ?: "none"}"
+    } ?: "n/a"
 
     // endregion
 

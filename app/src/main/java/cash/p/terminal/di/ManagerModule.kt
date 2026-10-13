@@ -2,16 +2,19 @@ package cash.p.terminal.di
 
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.preference.PreferenceManager
+import cash.p.terminal.core.CrashlyticsNonFatalReporter
 import cash.p.terminal.core.IAccountFactory
 import cash.p.terminal.core.IBackupManager
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.IMarketStorage
 import cash.p.terminal.core.IRateAppManager
+import cash.p.terminal.core.NonFatalReporter
 import cash.p.terminal.core.ITermsManager
 import cash.p.terminal.core.ITorManager
 import cash.p.terminal.core.adapters.zcash.ZcashAddressDeriver
 import cash.p.terminal.core.adapters.zcash.ZcashIronwoodMigrationRegistry
 import cash.p.terminal.core.adapters.zcash.ZcashKeyExporter
+import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFailureReporter
 import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFiles
 import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProvider
 import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProviderImpl
@@ -261,6 +264,8 @@ val managerModule = module {
     singleOf(::ZcashAddressDeriver)
     singleOf(::ZcashKeyExporter)
     singleOf(::ZcashDatabaseFiles)
+    singleOf(::CrashlyticsNonFatalReporter) bind NonFatalReporter::class
+    single { ZcashDatabaseFailureReporter(get(), get()) }
     singleOf(::ZcashDbKeyProviderImpl) bind ZcashDbKeyProvider::class
     singleOf(::ZcashWalletOpenerImpl) bind ZcashWalletOpener::class
     singleOf(::ZcashServerManager)

@@ -1,5 +1,7 @@
 package cash.p.terminal.core.adapters.zcash
 
+import cash.p.terminal.core.NonFatalReporter
+import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFailureReporter
 import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFiles
 import cash.p.terminal.core.managers.APP_LOG_DEDUP_WINDOW_MS
 import cash.p.terminal.core.managers.NetworkErrorTracker
@@ -22,8 +24,9 @@ class ZcashSessionDiagnosticsTest {
     private val logger = mockk<AppLogger>(relaxed = true)
     private val tracker = mockk<NetworkErrorTracker>(relaxed = true)
     private val databaseFiles = mockk<ZcashDatabaseFiles> { every { diagnostics(any()) } returns "db-fs: test" }
+    private val failureReporter = ZcashDatabaseFailureReporter(databaseFiles, mockk<NonFatalReporter>(relaxed = true))
     private val time = TestTimeSource()
-    private val diagnostics = ZcashSessionDiagnostics(logger, tracker, "account", SERVER_URL, databaseFiles, time)
+    private val diagnostics = ZcashSessionDiagnostics(logger, tracker, "account", SERVER_URL, failureReporter, time)
 
     private fun failure(message: String = "no route", stage: SyncStage = SyncStage.TARGET) =
         ZcashException(message, stage = stage)
@@ -85,7 +88,7 @@ class ZcashSessionDiagnosticsTest {
                 return time.markNow()
             }
         }
-        racing = ZcashSessionDiagnostics(logger, tracker, "account", SERVER_URL, databaseFiles, reentrantTime)
+        racing = ZcashSessionDiagnostics(logger, tracker, "account", SERVER_URL, failureReporter, reentrantTime)
 
         racing.syncFailed(failure())
 

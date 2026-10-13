@@ -3,7 +3,7 @@ package cash.p.terminal.core.adapters.zcash
 import cash.p.terminal.core.managers.APP_LOG_DEDUP_WINDOW_MS
 import cash.p.terminal.core.managers.NetworkErrorInfo
 import cash.p.terminal.core.managers.NetworkErrorTracker
-import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFiles
+import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFailureReporter
 import cash.p.terminal.core.managers.warningSanitized
 import cash.p.terminal.core.tryOrNull
 import cash.p.zcash.FailureCategory
@@ -49,10 +49,12 @@ internal class ZcashSessionDiagnostics(
     private val networkErrorTracker: NetworkErrorTracker,
     private val accountId: String,
     val serverUrl: String,
-    private val databaseFiles: ZcashDatabaseFiles,
+    private val failureReporter: ZcashDatabaseFailureReporter,
     private val timeSource: TimeSource = TimeSource.Monotonic,
 ) {
     private val lastWrite = AtomicReference<FailureWrite?>(null)
+
+    fun checkDatabase() = failureReporter.checkCantOpen(logger)
 
     fun syncFailed(error: Throwable) {
         val zcashError = error as? ZcashException
@@ -81,7 +83,7 @@ internal class ZcashSessionDiagnostics(
         val winner = lastWrite.updateAndGet { last -> if (last != null && last.repeats(signature)) last else next }
         if (winner !== next) return
         logger.warningSanitized("sync failed stage=$stage category=$category", error)
-        if (error.isZcashDatabaseFailure()) logger.warning(databaseFiles.diagnostics(accountId))
+        if (error.isZcashDatabaseFailure()) failureReporter.databaseFailure(accountId, logger)
     }
 
     private class FailureWrite(val signature: String, val at: TimeMark) {

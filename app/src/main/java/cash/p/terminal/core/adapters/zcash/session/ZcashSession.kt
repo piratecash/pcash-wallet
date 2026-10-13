@@ -184,6 +184,7 @@ class ZcashSession internal constructor(
             return ZcashSessionResult.Success(block(wallet))
         } finally {
             leaveOperation()
+            diagnostics.checkDatabase()
         }
     }
 
@@ -206,6 +207,7 @@ class ZcashSession internal constructor(
             ZcashSessionResult.Success(Unit)
         } finally {
             leaveSync(collector)
+            diagnostics.checkDatabase()
         }
     }
 
