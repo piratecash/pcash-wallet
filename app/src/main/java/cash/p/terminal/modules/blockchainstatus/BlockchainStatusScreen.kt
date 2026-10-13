@@ -14,6 +14,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -42,8 +43,9 @@ import cash.p.terminal.ui_compose.components.subhead1_leah
 import cash.p.terminal.ui_compose.components.subhead1_lucian
 import cash.p.terminal.ui_compose.components.subhead1_remus
 import cash.p.terminal.ui_compose.components.subhead2_grey
-import cash.p.terminal.ui_compose.components.subhead2_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 
 @Composable
 internal fun BlockchainStatusScreen(
@@ -54,6 +56,7 @@ internal fun BlockchainStatusScreen(
     val clipboardManager = LocalClipboardManager.current
     val localView = LocalView.current
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         containerColor = ComposeAppTheme.colors.backgroundBase,
@@ -107,11 +110,11 @@ internal fun BlockchainStatusScreen(
                         ButtonPrimaryDefault(
                             modifier = Modifier.weight(1f),
                             title = stringResource(R.string.Button_Share),
-                            enabled = !uiState.statusLoading,
+                            enabled = !uiState.statusLoading && !uiState.shareInProgress,
                             onClick = {
-                                try {
-                                    val uri = viewModel.getShareFileUri(context)
-                                    if (uri != null) {
+                                coroutineScope.launch {
+                                    try {
+                                        val uri = viewModel.prepareShareUri() ?: return@launch
                                         val intent = Intent(Intent.ACTION_SEND).apply {
                                             type = "text/plain"
                                             putExtra(Intent.EXTRA_STREAM, uri)
@@ -125,17 +128,14 @@ internal fun BlockchainStatusScreen(
                                             )
                                         }
                                         context.startActivity(Intent.createChooser(intent, null))
-                                    } else {
+                                    } catch (e: CancellationException) {
+                                        throw e
+                                    } catch (e: Exception) {
                                         HudHelper.showErrorMessage(
                                             localView,
                                             R.string.error_cannot_create_log_file
                                         )
                                     }
-                                } catch (e: Exception) {
-                                    HudHelper.showErrorMessage(
-                                        localView,
-                                        e.message ?: context.getString(R.string.Error)
-                                    )
                                 }
                             }
                         )
@@ -176,26 +176,7 @@ internal fun BlockchainStatusScreen(
                 }
 
                 // App logs
-                if (uiState.logBlocks.isNotEmpty()) {
-                    item {
-                        InfoText(text = "APP LOG")
-                    }
-                    items(uiState.logBlocks) { logBlock ->
-                        CellUniversalLawrenceSection(
-                            listOf(logBlock)
-                        ) { block ->
-                            RowUniversal(
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    subhead2_leah(text = block.title)
-                                    subhead2_grey(text = block.content.trimEnd())
-                                }
-                            }
-                        }
-                        VSpacer(12.dp)
-                    }
-                }
+                logSection(uiState.logGroups)
 
                 item {
                     VSpacer(32.dp)
