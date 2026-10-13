@@ -53,6 +53,8 @@ data class Colors(
     val qrBackground: Color,
     val scannerBackground: Color,
     val snackbarNeutralBackground: Color,
+    val calculatorEqualsBackground: Color,
+    val calculatorBackspaceIcon: Color,
     val contentOnColor: Color,
     val transparent: Color = Color.Transparent,
 )
