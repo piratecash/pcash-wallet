@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The SDK ships its own night value; override it as well -->
+    <color name="sdk_primary">@color/brand_default</color>
+</resources>

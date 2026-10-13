@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Overrides the SDK style so text on brand fill matches app buttons -->
+    <style name="CustomMaterialButtonStyle" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/sdk_primary</item>
+        <item name="android:textColor">@color/button_primary_brand_content</item>
+        <item name="cornerRadius">25dp</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+</resources>

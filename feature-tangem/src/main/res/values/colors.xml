@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Recolors the Tangem SDK UI with the app brand -->
+    <color name="sdk_primary">@color/brand_default</color>
+    <color name="light_blue">@color/brand_default</color>
+</resources>

@@ -9,6 +9,7 @@
     <color name="text_primary">#171719</color>
     <color name="status_success">#15A65F</color>
     <color name="status_error">#CC3030</color>
+    <color name="button_primary_brand_content">#171719</color>
 
     <!--Non-palette-->
     <color name="black">#000000</color>
