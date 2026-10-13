@@ -50,7 +50,9 @@ class WCRequestEvmViewModel(
     private val chainName = chainData?.name
     private val chainAddress = chainData?.address
 
-    private var evmKitWrapper: EvmKitWrapper? = null
+    var evmKitWrapper: EvmKitWrapper? = null
+        private set
+
     var sessionRequestUi: SessionRequestUI by mutableStateOf(SessionRequestUI.Loading)
         private set
 

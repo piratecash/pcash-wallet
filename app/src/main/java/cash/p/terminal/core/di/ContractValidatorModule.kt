@@ -16,7 +16,7 @@ import org.koin.dsl.module
 val contractValidatorModule = module {
     EvmBlockchainManager.blockchainTypes.forEach { blockchainType ->
         single<ContractAddressValidator>(named(blockchainType.uid)) {
-            EvmContractAddressValidator(get(), get())
+            EvmContractAddressValidator(get(), get(), get())
         }
     }
 

@@ -131,7 +131,12 @@ val viewModelModule = module {
     viewModel { params -> AddressPoisoningViewModel(params[0], params[1], params[2], get(), get(), get(), get()) }
     viewModel { params -> CreationBlockViewModel(params[0], get(), get(), get(), get(), get()) }
     viewModel { params ->
-        BlockchainStatusViewModel(provider = params.get(), dispatcherProvider = get(), systemInfoManager = get())
+        BlockchainStatusViewModel(
+            provider = params.get(),
+            dispatcherProvider = get(),
+            systemInfoManager = get(),
+            statusReportFile = get(),
+        )
     }
     viewModelOf(::AppCacheViewModel)
     viewModelOf(::MoneroConfigureViewModel)

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import cash.p.terminal.R
 import cash.p.terminal.core.App
+import cash.p.terminal.core.adapters.EvmTransactionsAdapter
 import cash.p.terminal.core.getKoinInstance
 import io.horizontalsystems.core.entities.CurrencyValue
 import cash.p.terminal.entities.LastBlockInfo
@@ -53,7 +54,8 @@ object TransactionInfoModule {
             val factory = TransactionInfoViewItemFactory(
                 offlineOperationGate,
                 wallet,
-                transactionSource.blockchain.type
+                transactionSource.blockchain.type,
+                (adapter as? EvmTransactionsAdapter)?.evmKitWrapper,
             )
 
             return TransactionInfoViewModel(

@@ -1,6 +1,7 @@
 package cash.p.terminal.core.adapters.zcash
 
 import cash.p.terminal.core.ILocalStorage
+import cash.p.terminal.core.KoinLogsDao
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.adapters.zcash.session.ZcashDiscoveryState
 import cash.p.terminal.core.adapters.zcash.session.ZcashSession
@@ -50,11 +51,8 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
-import org.koin.core.context.GlobalContext
-import org.koin.core.context.loadKoinModules
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
-import org.koin.core.context.unloadKoinModules
 import org.koin.dsl.module
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -321,26 +319,14 @@ abstract class ZcashAdapterTestFixture {
     }
 }
 
-/**
- * Supplies [AppLog]'s DAO through Koin; the log is written from its own thread, so reads wait for the entry.
- * [close] releases only what this instance added: the Koin it started, or its module in a running one.
- */
+/** Supplies [AppLog]'s DAO through Koin; the log is written from its own thread, so reads wait for the entry. */
 internal class CapturedAppLog : AutoCloseable {
     private val entries = CopyOnWriteArrayList<LogEntry>()
-    private val logsDaoModule = module {
-        single<LogsDao> {
-            mockk(relaxed = true) { every { insert(any()) } answers { entries += firstArg<LogEntry>() } }
-        }
-    }
-    private val ownsKoin = GlobalContext.getOrNull() == null
+    private val koinLogsDao = KoinLogsDao(
+        mockk<LogsDao>(relaxed = true) { every { insert(any()) } answers { entries += firstArg<LogEntry>() } }
+    )
 
-    init {
-        if (ownsKoin) startKoin { modules(logsDaoModule) } else loadKoinModules(logsDaoModule)
-    }
-
-    override fun close() {
-        if (ownsKoin) stopKoin() else unloadKoinModules(logsDaoModule)
-    }
+    override fun close() = koinLogsDao.close()
 
     val messages: List<String> get() = entries.map { it.message }
 

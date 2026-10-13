@@ -80,6 +80,28 @@ class EvmSyncSourceManagerTest {
     }
 
     @Test
+    fun getSyncSource_storedUrlNoLongerListed_returnsFirstDefault() {
+        mockkObject(AppConfigProvider)
+        every { AppConfigProvider.blocksDecodedEthereumRpc } returns BLOCKS_DECODED_RPC
+        every { AppConfigProvider.etherscanApiKey } returns emptyList()
+        every { AppConfigProvider.blockscoutApiKey } returns emptyList()
+        val settingsStorage = mockk<BlockchainSettingsStorage> {
+            every { evmSyncSourceUrl(BlockchainType.Ethereum) } returns "https://eth.llamarpc.com"
+        }
+        val evmSyncSourceStorage = mockk<EvmSyncSourceStorage> {
+            every { evmSyncSources(BlockchainType.Ethereum) } returns emptyList()
+        }
+        try {
+            val source = EvmSyncSourceManager(settingsStorage, evmSyncSourceStorage)
+                .getSyncSource(BlockchainType.Ethereum)
+
+            assertEquals(BLOCKS_DECODED_RPC, source.uri.toString())
+        } finally {
+            unmockkObject(AppConfigProvider)
+        }
+    }
+
+    @Test
     fun getChain_robinhood_returnsEthereumKitRobinhoodChain() {
         val blockchainManager = EvmBlockchainManager(
             backgroundManager = mockk(),
@@ -94,5 +116,9 @@ class EvmSyncSourceManagerTest {
         )
 
         assertSame(Chain.RobinhoodChain, blockchainManager.getChain(BlockchainType.RobinhoodChain))
+    }
+
+    private companion object {
+        const val BLOCKS_DECODED_RPC = "https://api-dev.blocksdecoded.com/v1/ethereum-rpc/mainnet"
     }
 }

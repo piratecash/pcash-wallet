@@ -273,6 +273,8 @@ class AdapterManagerTest {
 
         verify(exactly = 0) { sharedAdapter.stop() }
         verify(exactly = 1) { removedAdapter.stop() }
+        coVerify(exactly = 0) { adapterFactory.unlinkAdapter(sharedWallet, any()) }
+        coVerify(exactly = 1) { adapterFactory.unlinkAdapter(removedWallet, removedAdapter) }
     }
 
     @Test
@@ -511,7 +513,7 @@ class AdapterManagerTest {
 
         verify(exactly = 1) { targetAdapter.stop() }
         verify(exactly = 0) { otherAdapter.stop() }
-        coVerify(exactly = 1) { adapterFactory.unlinkAdapter(targetWallet) }
+        coVerify(exactly = 1) { adapterFactory.unlinkAdapter(targetWallet, targetAdapter) }
         assertNull(adapterManager.getAdapterForWallet<IAdapter>(targetWallet))
         assertSame(otherAdapter, adapterManager.getAdapterForWallet<IAdapter>(otherWallet))
     }
@@ -538,9 +540,9 @@ class AdapterManagerTest {
         verify(exactly = 1) { targetLitecoinAdapter.stop() }
         verify(exactly = 0) { targetBitcoinAdapter.stop() }
         verify(exactly = 0) { otherLitecoinAdapter.stop() }
-        coVerify(exactly = 1) { adapterFactory.unlinkAdapter(targetLitecoinWallet) }
-        coVerify(exactly = 0) { adapterFactory.unlinkAdapter(targetBitcoinWallet) }
-        coVerify(exactly = 0) { adapterFactory.unlinkAdapter(otherLitecoinWallet) }
+        coVerify(exactly = 1) { adapterFactory.unlinkAdapter(targetLitecoinWallet, targetLitecoinAdapter) }
+        coVerify(exactly = 0) { adapterFactory.unlinkAdapter(targetBitcoinWallet, any()) }
+        coVerify(exactly = 0) { adapterFactory.unlinkAdapter(otherLitecoinWallet, any()) }
         assertNull(adapterManager.getAdapterForWallet<IAdapter>(targetLitecoinWallet))
         assertSame(targetBitcoinAdapter, adapterManager.getAdapterForWallet<IAdapter>(targetBitcoinWallet))
         assertSame(otherLitecoinAdapter, adapterManager.getAdapterForWallet<IAdapter>(otherLitecoinWallet))
@@ -744,6 +746,7 @@ class AdapterManagerTest {
             adapterFactory.getAdapterOrNull(zcashWallet, any())
             newAdapter.start()
         }
+        coVerify(exactly = 1) { adapterFactory.unlinkAdapter(zcashWallet, oldAdapter) }
         assertSame(newAdapter, adapterManager.getAdapterForWallet<IAdapter>(zcashWallet))
     }
 
