@@ -48,6 +48,7 @@ import java.util.Optional
 import androidx.compose.ui.focus.FocusManager
 import kotlinx.coroutines.CoroutineScope
 import java.net.URI
+import retrofit2.HttpException
 
 /**
  * Clears focus (dismissing keyboard) and launches [action] after a brief delay.
@@ -64,6 +65,9 @@ fun CoroutineScope.launchAfterClearingFocus(
         action()
     }
 }
+
+fun Throwable.isBlockedByProvider(): Boolean =
+    generateSequence(this) { it.cause }.any { (it as? HttpException)?.code() == 403 }
 
 fun Throwable.isNoInternetException(): Boolean {
     return generateSequence(this) { it.cause }
