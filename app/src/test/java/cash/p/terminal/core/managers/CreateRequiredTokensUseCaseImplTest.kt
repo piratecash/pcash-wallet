@@ -84,6 +84,48 @@ class CreateRequiredTokensUseCaseImplTest {
         coVerify(exactly = 0) { scanToAddUseCase.addTokensByScan(any(), any(), any()) }
     }
 
+    @Test
+    fun invoke_tangemContractTokenWithStoredChainKey_activatesWithoutScan() = runTest {
+        val account = tangemAccount()
+        every { accountManager.account(account.id) } returns account
+        coEvery { hardwarePublicKeyStorage.getAllPublicKeys(account.id) } returns listOf(
+            key(BlockchainType.BinanceSmartChain, TokenType.Native)
+        )
+
+        useCase.invoke(account, listOf(bep20Query))
+
+        coVerify(exactly = 0) { scanToAddUseCase.addTokensByScan(any(), any(), any()) }
+        coVerify { walletActivator.activateWalletsSuspended(account, listOf(bep20Query)) }
+    }
+
+    @Test
+    fun invoke_tangemContractTokenWithoutChainKey_scansForIt() = runTest {
+        val account = tangemAccount()
+        every { accountManager.account(account.id) } returns account
+        coEvery { hardwarePublicKeyStorage.getAllPublicKeys(account.id) } returnsMany listOf(
+            emptyList(),
+            listOf(key(BlockchainType.BinanceSmartChain, bep20Query.tokenType))
+        )
+
+        useCase.invoke(account, listOf(bep20Query))
+
+        coVerify(exactly = 1) {
+            scanToAddUseCase.addTokensByScan(listOf(bep20Query), "card", ACCOUNT_ID)
+        }
+        coVerify { walletActivator.activateWalletsSuspended(account, listOf(bep20Query)) }
+    }
+
+    private val bep20Query = TokenQuery(BlockchainType.BinanceSmartChain, TokenType.Eip20("0xpirate"))
+
+    private fun tangemAccount() = account(
+        AccountType.HardwareCard(
+            cardId = "card",
+            backupCardsCount = 0,
+            walletPublicKey = "pub",
+            signedHashes = 0
+        )
+    )
+
     private val bitcoinQuery = TokenQuery(BlockchainType.Bitcoin, TokenType.Derived(
         TokenType.Derivation.Bip84
     ))

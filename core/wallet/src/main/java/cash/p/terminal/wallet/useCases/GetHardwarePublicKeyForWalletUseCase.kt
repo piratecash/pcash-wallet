@@ -6,6 +6,7 @@ import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.HardwarePublicKey
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.usesChainKey
 import io.horizontalsystems.core.entities.BlockchainType
 
 class GetHardwarePublicKeyForWalletUseCase(
@@ -22,6 +23,11 @@ class GetHardwarePublicKeyForWalletUseCase(
         }
 
         return hardwareWalletStorage.getKey(account.id, blockchainType, tokenType)
+            ?: if (tokenType.usesChainKey) {
+                hardwareWalletStorage.getKeyByBlockchain(account.id, blockchainType)
+            } else {
+                null
+            }
     }
 
     suspend operator fun invoke(
