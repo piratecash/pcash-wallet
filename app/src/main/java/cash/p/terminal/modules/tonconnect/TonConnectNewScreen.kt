@@ -34,6 +34,9 @@ import cash.p.terminal.modules.walletconnect.session.ui.DropDownCell
 import cash.p.terminal.modules.walletconnect.session.ui.TitleValueCell
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_close_24
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppSelectorDialog
 import cash.p.terminal.ui_compose.components.AppSelectorItem
@@ -83,8 +86,8 @@ fun TonConnectNewScreen(
                 title = stringResource(R.string.TonConnect_Title),
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.Button_Close),
-                        icon = R.drawable.ic_close_24,
+                        title = TranslatableString.ResString(Res.string.Button_Close),
+                        icon = Res.drawable.ic_close_24,
                         enabled = !uiState.connecting,
                         onClick = { navigation.navigateUpSafely() }
                     )

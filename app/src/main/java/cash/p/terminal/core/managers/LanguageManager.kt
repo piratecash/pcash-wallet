@@ -10,13 +10,13 @@ class LanguageManager : ILanguageManager {
     val fallbackLocale by LocaleHelper::fallbackLocale
 
     // Not cached: the language can also be changed from the system app-language settings.
-    var currentLocale: Locale
+    override var currentLocale: Locale
         get() = App.instance.getLocale()
         set(value) {
             App.instance.setLocale(value)
         }
 
-    var currentLocaleTag: String
+    override var currentLocaleTag: String
         get() = currentLocale.toLanguageTag()
         set(value) {
             currentLocale = Locale.forLanguageTag(value)

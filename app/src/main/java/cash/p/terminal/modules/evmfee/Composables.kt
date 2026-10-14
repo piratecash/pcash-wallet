@@ -59,6 +59,8 @@ import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.theme.ColoredTextStyle
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import java.math.BigDecimal
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_attention_20
 
 @Composable
 fun Eip1559FeeSettings(
@@ -383,7 +385,7 @@ fun Cautions(cautions: List<CautionViewItem>) {
                         modifier = modifier,
                         text = caution.text,
                         title = caution.title,
-                        icon = R.drawable.ic_attention_20
+                        icon = Res.drawable.ic_attention_20
                     )
                 }
                 CautionViewItem.Type.Warning -> {
@@ -391,7 +393,7 @@ fun Cautions(cautions: List<CautionViewItem>) {
                         modifier = modifier,
                         text = caution.text,
                         title = caution.title,
-                        icon = R.drawable.ic_attention_20
+                        icon = Res.drawable.ic_attention_20
                     )
                 }
             }

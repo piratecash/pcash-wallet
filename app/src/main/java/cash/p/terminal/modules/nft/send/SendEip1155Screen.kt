@@ -32,6 +32,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_close_24
 import coil3.compose.rememberAsyncImagePainter
 import cash.p.terminal.R
 import cash.p.terminal.ui_compose.entities.DataState
@@ -73,8 +76,8 @@ fun SendEip1155Screen(
                 title = stringResource(R.string.SendNft_Title),
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.Button_Close),
-                        icon = R.drawable.ic_close_24,
+                        title = TranslatableString.ResString(Res.string.Button_Close),
+                        icon = Res.drawable.ic_close_24,
                         onClick = { navigation.navigateUpSafely() }
                     )
                 )

@@ -19,6 +19,9 @@ import cash.p.terminal.entities.CoinValue
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_close_24
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
@@ -80,8 +83,8 @@ fun Eip20ApproveScreen(navigation: HSNavigation, input: Eip20ApprovePage.Input) 
                 title = stringResource(R.string.Swap_Unlock_PageTitle),
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.Button_Close),
-                        icon = R.drawable.ic_close_24,
+                        title = TranslatableString.ResString(Res.string.Button_Close),
+                        icon = Res.drawable.ic_close_24,
                         onClick = navigation::navigateUpSafely
                     )
                 )

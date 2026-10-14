@@ -73,6 +73,8 @@ import io.horizontalsystems.chartview.chart.SelectedItem
 import io.horizontalsystems.chartview.ui.Chart
 import io.horizontalsystems.core.models.HsTimePeriod
 import java.math.BigDecimal
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_attention_24
 
 @Composable
 internal fun StackingCoinScreen(
@@ -239,7 +241,7 @@ private fun NoCoins(
                 }
             ),
             onClick = onBuyClicked,
-            icon = R.drawable.ic_swap_24,
+            icon = painterResource(R.drawable.ic_swap_24),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 12.dp),
@@ -287,7 +289,7 @@ private fun PirateCoinScreenWithGraph(
                         }
                     ),
                     onClick = onBuyClicked,
-                    icon = R.drawable.ic_swap_24,
+                    icon = painterResource(R.drawable.ic_swap_24),
                     modifier = Modifier
                         .weight(1f),
                     enabled = !uiState.isWatchAccount
@@ -543,7 +545,7 @@ private fun LazyListScope.warningCard(uiState: StackingCoinUIState) {
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp),
             title = stringResource(R.string.no_active_stacking),
             text = stringDescription,
-            icon = R.drawable.ic_attention_24
+            icon = Res.drawable.ic_attention_24
         )
     }
 }

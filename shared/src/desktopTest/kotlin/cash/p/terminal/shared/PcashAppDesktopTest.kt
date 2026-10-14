@@ -24,15 +24,22 @@ import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.test.click
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import cash.p.terminal.shared.settings.MainSettingUiState
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.ui_compose.theme.darkPalette
 import cash.p.terminal.ui_compose.theme.lightPalette
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
 class PcashAppDesktopTest {
+
+    @BeforeTest
+    fun setUp() = DesktopTestGraph.start()
+
+    @AfterTest
+    fun tearDown() = DesktopTestGraph.stop()
 
     @Test
     fun settings_adaptsToViewportAndKeepsSelection() = runDesktopComposeUiTest(
@@ -49,9 +56,11 @@ class PcashAppDesktopTest {
 
         setContent {
             CompositionLocalProvider(LocalWindowInfo provides windowInfo) {
-                ComposeAppTheme(darkTheme = darkTheme) {
-                    Box(Modifier.size(viewport.width.dp, viewport.height.dp)) {
-                        PcashApp(SETTINGS_STATE, "desktop")
+                TestWindowHost {
+                    ComposeAppTheme(darkTheme = darkTheme) {
+                        Box(Modifier.size(viewport.width.dp, viewport.height.dp)) {
+                            PcashApp("desktop")
+                        }
                     }
                 }
             }
@@ -106,22 +115,5 @@ class PcashAppDesktopTest {
         val WIDE = IntSize(800, 600)
         val NARROW = IntSize(420, 740)
         val DESTINATIONS = listOf("Balance", "Transactions", "Markets", "Settings")
-        val SETTINGS_STATE = MainSettingUiState(
-            isUpdateAvailable = false,
-            currentLanguage = "English",
-            baseCurrencyCode = "",
-            appWebPageLink = "",
-            hasNonStandardAccount = false,
-            allBackedUp = true,
-            pendingRequestCount = 0,
-            walletConnectSessionCount = 0,
-            manageWalletShowAlert = false,
-            securityCenterShowAlert = false,
-            securityCenterShowNewBadge = false,
-            aboutAppShowAlert = false,
-            wcCounterType = null,
-            premiumSettingsShowAlert = false,
-            isPayCoreEnabled = false,
-        )
     }
 }

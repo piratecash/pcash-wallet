@@ -9,7 +9,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Parcelable
 import android.provider.DocumentsContract
-import android.widget.ImageView
 import androidx.compose.ui.platform.Clipboard
 import cash.p.beam.BeamAddressType
 import cash.p.terminal.R
@@ -17,25 +16,15 @@ import cash.p.terminal.modules.backuplocal.BackupLocalModule
 import cash.p.terminal.modules.backuplocal.fullbackup.BackupFileValidator
 import cash.p.terminal.modules.main.MainActivity
 import cash.p.terminal.modules.main.MainModule
-import cash.p.terminal.modules.market.topplatforms.Platform
 import cash.p.terminal.modules.premium.about.AboutPremiumPage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
-import cash.p.terminal.ui_compose.components.ImageSource
 import cash.p.terminal.wallet.entities.FullCoin
-import cash.p.terminal.wallet.models.CoinCategory
-import cash.p.terminal.wallet.models.CoinInvestment
-import cash.p.terminal.wallet.models.CoinTreasury
-import coil3.load
 import io.horizontalsystems.ethereumkit.core.toRawHexString
 import io.horizontalsystems.hdwalletkit.Language
 import io.horizontalsystems.hodler.LockTimeInterval
 import kotlin.system.exitProcess
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.koin.core.parameter.ParametersDefinition
 import org.koin.java.KoinJavaComponent.inject
 import java.io.File
 import java.math.BigDecimal
@@ -44,27 +33,7 @@ import java.net.UnknownHostException
 import java.nio.channels.UnresolvedAddressException
 import java.util.Locale
 import java.util.Optional
-
-import androidx.compose.ui.focus.FocusManager
-import kotlinx.coroutines.CoroutineScope
-import java.net.URI
 import retrofit2.HttpException
-
-/**
- * Clears focus (dismissing keyboard) and launches [action] after a brief delay.
- * Prevents a Compose bug where .imePadding() gets stuck with stale IME insets
- * when the keyboard is dismissed during fragment navigation.
- */
-fun CoroutineScope.launchAfterClearingFocus(
-    focusManager: FocusManager,
-    action: () -> Unit
-) {
-    focusManager.clearFocus()
-    launch {
-        delay(100)
-        action()
-    }
-}
 
 fun Throwable.isBlockedByProvider(): Boolean =
     generateSequence(this) { it.cause }.any { (it as? HttpException)?.code() == 403 }
@@ -88,23 +57,8 @@ val <T> Optional<T>.orNull: T?
         else -> null
     }
 
-val Platform.iconUrl: String
-    get() = "https://p.cash/storage/blockchains/$uid.png"
-
 val String.coinIconUrl: String
     get() = "https://cdn.blocksdecoded.com/coin-icons/32px/$this@3x.png"
-
-val String.fiatIconUrl: String
-    get() = "https://cdn.blocksdecoded.com/fiat-icons/$this@3x.png"
-
-val CoinCategory.imageUrl: String
-    get() = "https://cdn.blocksdecoded.com/category-icons/$uid@3x.png"
-
-val CoinInvestment.Fund.logoUrl: String
-    get() = "https://cdn.blocksdecoded.com/fund-icons/$uid@3x.png"
-
-val CoinTreasury.logoUrl: String
-    get() = "https://cdn.blocksdecoded.com/treasury-icons/$fundUid@3x.png"
 
 fun List<FullCoin>.sortedByFilter(filter: String): List<FullCoin> {
     val baseComparator = compareBy<FullCoin> {
@@ -143,23 +97,6 @@ val Language.displayNameStringRes: Int
         Language.Czech -> R.string.language_czech
         Language.Portuguese -> R.string.language_portuguese
     }
-
-// ImageView
-
-fun ImageView.setRemoteImage(url: String, placeholder: Int? = R.drawable.ic_placeholder) {
-    load(url) {
-        if (placeholder != null) {
-            error(placeholder)
-        }
-    }
-}
-
-fun ImageView.setImage(imageSource: ImageSource) {
-    when (imageSource) {
-        is ImageSource.Local -> setImageResource(imageSource.resId)
-        is ImageSource.Remote -> setRemoteImage(imageSource.url, imageSource.placeholder)
-    }
-}
 
 // String
 
@@ -271,18 +208,6 @@ fun String?.extractBigDecimal(): BigDecimal? =
         "\\d+\\.\\d+".toRegex().find(this)?.value?.toBigDecimal()
     }
 
-inline fun <reified T> getKoinInstance(): T {
-    return object : KoinComponent {
-        val value: T by inject()
-    }.value
-}
-
-inline fun <reified T> getKoinInstance(noinline parameters: ParametersDefinition): T {
-    return object : KoinComponent {
-        val value: T by inject(parameters = parameters)
-    }.value
-}
-
 inline fun <reified T : Enum<T>> Enum.Companion.valueOrDefault(index: Int, default: T): T {
     return enumValues<T>().getOrNull(index) ?: default
 }
@@ -305,27 +230,6 @@ fun ByteArray.toFixedSize(size: Int): ByteArray = when {
     this.size < size -> ByteArray(size - this.size) + this
     else -> this
 }
-
-inline fun <T> tryOrNull(block: () -> T): T? {
-    return try {
-        block()
-    } catch (_: Throwable) {
-        null
-    }
-}
-
-/**
- * Returns the host of this URL string suitable for display (without the leading "www." prefix),
- * or null when the string is not parseable as a URI or has no authority component
- * (e.g. missing scheme like "example.com", opaque URIs like "mailto:..."), or when
- * the URI constructor throws on a malformed input.
- *
- * Centralizes the safe-host extraction so call sites never touch the platform-typed
- * java.net.URI.getHost() directly — that returns a non-null platform String that
- * silently becomes null at runtime for any non-hierarchical URI.
- */
-fun String.urlDisplayHostOrNull(): String? =
-    tryOrNull { URI(this).host?.removePrefix("www.")?.takeIf { it.isNotBlank() } }
 
 fun writeBackupToTempFile(data: ByteArray): String {
     val file = File.createTempFile("backup_", ".tmp", App.instance.cacheDir)

@@ -45,6 +45,10 @@ import cash.p.terminal.ui_compose.components.MicroSBSecondary
 import cash.p.terminal.ui_compose.components.Title1Primary
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import java.util.Locale
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_arrow_down_left_24
+import cash.p.terminal.resources.ic_arrow_up_right_24
+import cash.p.terminal.resources.ic_swap_24
 
 @Composable
 internal fun BalanceSummary(
@@ -221,9 +225,9 @@ private fun BalanceSummaryPreview() {
                 val actions: (@Composable RowScope.() -> Unit)? = if (index == 0) {
                     {
                         listOf(
-                            Triple(R.drawable.ic_arrow_up_right_24, "Send", -90f),
-                            Triple(R.drawable.ic_arrow_down_left_24, "Receive", 0f),
-                            Triple(R.drawable.ic_swap_24, "Swap", 0f),
+                            Triple(Res.drawable.ic_arrow_up_right_24, "Send", -90f),
+                            Triple(Res.drawable.ic_arrow_down_left_24, "Receive", 0f),
+                            Triple(Res.drawable.ic_swap_24, "Swap", 0f),
                         ).forEach { (icon, label, rotation) ->
                             BalanceActionButton(
                                 icon = icon,

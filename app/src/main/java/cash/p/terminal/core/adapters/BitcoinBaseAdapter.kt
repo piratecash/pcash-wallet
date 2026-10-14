@@ -1,7 +1,6 @@
 package cash.p.terminal.core.adapters
 
 import androidx.annotation.VisibleForTesting
-import cash.p.terminal.R
 import cash.p.terminal.core.BitcoinSwapSendResult
 import cash.p.terminal.core.IFeeRateProvider
 import cash.p.terminal.core.LocalizedException
@@ -31,6 +30,8 @@ import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.modules.transactions.TransactionLockInfo
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.send_trezor_time_lock_not_supported
 import cash.p.terminal.tangem.signer.HardwareWalletEcdaSigner
 import cash.p.terminal.tangem.signer.HardwareWalletSchnorrSigner
 import cash.p.terminal.trezor.signer.KitBtcPreviousTransactionProvider
@@ -544,7 +545,7 @@ abstract class BitcoinBaseAdapter(
      */
     private fun rejectHodlerForTrezor(pluginData: Map<Byte, IPluginData>?) {
         if (isTrezorAccount && pluginData?.containsKey(HodlerPlugin.id) == true) {
-            throw LocalizedException(R.string.send_trezor_time_lock_not_supported)
+            throw LocalizedException(Res.string.send_trezor_time_lock_not_supported)
         }
     }
 

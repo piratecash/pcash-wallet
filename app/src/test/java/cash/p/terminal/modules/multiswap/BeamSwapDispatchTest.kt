@@ -42,7 +42,7 @@ class BeamSwapDispatchTest {
     fun createTransactionService_nativeBeam_dispatchesToTheBeamService() {
         mockkObject(App)
         every { App.currencyManager } returns mockk<CurrencyManager> {
-            every { baseCurrency } returns Currency("USD", "$", 2, 0)
+            every { baseCurrency } returns Currency("USD", "$", 2)
         }
 
         val service = SwapTransactionServiceFactory.create(nativeBeam, mockk<IMultiSwapProvider>())

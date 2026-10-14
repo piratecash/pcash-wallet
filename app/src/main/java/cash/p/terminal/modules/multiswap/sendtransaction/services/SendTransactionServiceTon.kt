@@ -5,7 +5,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cash.p.terminal.navigation.HSNavigation
-import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.ISendTonAdapter
 import cash.p.terminal.core.LocalizedException
@@ -31,6 +30,9 @@ import cash.p.terminal.modules.send.ton.SendTonAddressService
 import cash.p.terminal.modules.send.ton.SendTonAmountService
 import cash.p.terminal.modules.send.ton.SendTonFeeService
 import cash.p.terminal.modules.xrate.XRateService
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.check_fee_warning
+import cash.p.terminal.resources.not_enough_ton_for_fee
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.getMaxSendableBalance
@@ -239,7 +241,7 @@ class SendTransactionServiceTon(
                     null,
                     feeToken.decimals
                 )
-                createCaution(LocalizedException(R.string.not_enough_ton_for_fee, formattedBalance))
+                createCaution(LocalizedException(Res.string.not_enough_ton_for_fee, formattedBalance))
             } else {
                 null
             }
@@ -248,7 +250,7 @@ class SendTransactionServiceTon(
             val neededFee = fee.stripTrailingZeros()
                 .toPlainString() + " " + feeToken.coin.code
             feeCaution = createCaution(
-                LocalizedException(R.string.check_fee_warning, neededFee),
+                LocalizedException(Res.string.check_fee_warning, neededFee),
                 type = CautionViewItem.Type.Warning
             )
         }

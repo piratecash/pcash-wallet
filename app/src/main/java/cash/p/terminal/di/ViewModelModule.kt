@@ -19,7 +19,6 @@ import cash.p.terminal.modules.displayoptions.DisplayOptionsViewModel
 import cash.p.terminal.modules.hardwarewallet.HardwareWalletViewModel
 import cash.p.terminal.modules.importwallet.ImportWalletViewModel
 import cash.p.terminal.modules.main.MainActivityViewModel
-import cash.p.terminal.modules.market.favorites.MarketFavoritesViewModel
 import cash.p.terminal.modules.manageaccount.backupkey.BackupKeyViewModel
 import cash.p.terminal.modules.main.MainViewModel
 import cash.p.terminal.modules.softwareupdate.SoftwareUpdateViewModel
@@ -92,7 +91,6 @@ val viewModelModule = module {
     singleOf(::QrCodeImageDecoder)
     factoryOf(::TransactionsRateRepository)
 
-    viewModelOf(::MarketFavoritesViewModel)
     viewModelOf(::MainViewModel)
     viewModelOf(::MainActivityViewModel)
     viewModelOf(::SoftwareUpdateViewModel)

@@ -21,8 +21,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import cash.p.terminal.R
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
+import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_close_24
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
@@ -33,6 +35,7 @@ import cash.p.terminal.ui_compose.components.TermsList
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.entities.TermItem
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.resources.ic_attention_24
 
 
 @Composable
@@ -81,8 +84,8 @@ internal fun GeneralTermsContent(
                 } else {
                     listOf(
                         MenuItem(
-                            title = TranslatableString.ResString(R.string.Button_Close),
-                            icon = R.drawable.ic_close_24,
+                            title = TranslatableString.ResString(Res.string.Button_Close),
+                            icon = Res.drawable.ic_close_24,
                             onClick = onClose
                         )
                     )
@@ -156,7 +159,7 @@ private fun GeneralTermsWarning(
             modifier = Modifier.padding(horizontal = 16.dp),
             text = text,
             title = title,
-            icon = if (title == null) null else R.drawable.ic_attention_24
+            icon = if (title == null) null else Res.drawable.ic_attention_24
         )
     }
 }

@@ -1,0 +1,74 @@
+package cash.p.terminal.modules.market
+
+import androidx.compose.runtime.Immutable
+import cash.p.terminal.wallet.alternativeImageUrl
+import cash.p.terminal.core.iconPlaceholder
+import cash.p.terminal.wallet.imageUrl
+import cash.p.terminal.wallet.models.Analytics.TechnicalAdvice.Advice
+import cash.p.terminal.wallet.entities.FullCoin
+import io.horizontalsystems.core.IAppNumberFormatter
+import org.jetbrains.compose.resources.DrawableResource
+
+@Immutable
+data class MarketViewItem(
+    val fullCoin: FullCoin,
+    val subtitle: String,
+    val value: String,
+    val marketDataValue: MarketDataValue,
+    val rank: String?,
+    val favorited: Boolean,
+    val signal: Advice? = null
+) {
+
+    val coinUid: String
+        get() = fullCoin.coin.uid
+
+    val coinCode: String
+        get() = fullCoin.coin.code
+
+    val coinName: String
+        get() = fullCoin.coin.name
+
+    val iconUrl: String
+        get() = fullCoin.coin.imageUrl
+
+    val alternativeIconUrl: String?
+        get() = fullCoin.coin.alternativeImageUrl
+
+    val iconPlaceHolder: DrawableResource
+        get() = fullCoin.iconPlaceholder
+
+    fun areItemsTheSame(other: MarketViewItem): Boolean {
+        return fullCoin.coin == other.fullCoin.coin
+    }
+
+    fun areContentsTheSame(other: MarketViewItem): Boolean {
+        return this == other
+    }
+
+    companion object {
+        fun create(
+            marketItem: MarketItem,
+            numberFormatter: IAppNumberFormatter,
+            favorited: Boolean = false,
+            advice: Advice? = null,
+        ): MarketViewItem {
+            return MarketViewItem(
+                marketItem.fullCoin,
+                numberFormatter.formatFiatShort(
+                    marketItem.marketCap.value,
+                    marketItem.marketCap.currency.symbol,
+                    2
+                ),
+                numberFormatter.formatFiatFull(
+                    marketItem.rate.value,
+                    marketItem.rate.currency.symbol
+                ),
+                MarketDataValue.Diff(marketItem.diff),
+                marketItem.rank?.toString(),
+                favorited,
+                advice
+            )
+        }
+    }
+}

@@ -47,6 +47,10 @@ import cash.p.terminal.modules.send.offline.OfflineSignPage
 import cash.p.terminal.modules.sendtokenselect.PrefilledData
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.SendEvmSettings_Title
+import cash.p.terminal.resources.Send_DialogProceed
+import cash.p.terminal.resources.ic_manage_2
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.PoisonAddressRiskSection
 import cash.p.terminal.ui.compose.components.PoisonWarningCell
@@ -115,13 +119,13 @@ internal fun SendBitcoinScreen(
                 menuItems = if (uiState.isAdvancedSettingsAvailable) {
                     listOf(
                         MenuItem(
-                            title = TranslatableString.ResString(R.string.SendEvmSettings_Title),
-                            icon = R.drawable.ic_manage_2,
+                            title = TranslatableString.ResString(Res.string.SendEvmSettings_Title),
+                            icon = Res.drawable.ic_manage_2,
                             tint = ComposeAppTheme.colors.brandDefault,
                             onClick = { navigation.slideFromRight(SendBtcAdvancedSettingsPage()) }
                         ),
                         MenuItem(
-                            title = TranslatableString.ResString(R.string.Send_DialogProceed),
+                            title = TranslatableString.ResString(Res.string.Send_DialogProceed),
                             tint = ComposeAppTheme.colors.brandDefault,
                             enabled = proceedEnabled,
                             onClick = {

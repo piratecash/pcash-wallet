@@ -33,6 +33,10 @@ kotlin {
 
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
+            freeCompilerArgs.addAll(
+                "-P",
+                "plugin:org.jetbrains.kotlin.parcelize:additionalAnnotation=io.horizontalsystems.core.common.CommonParcelize",
+            )
         }
     }
 
@@ -46,10 +50,18 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(project(":core:resources"))
+                implementation(project(":core:navigation"))
+                api(project(":core:common"))
                 implementation(libs.compose.multiplatform.runtime)
                 implementation(libs.compose.multiplatform.ui)
                 implementation(libs.compose.multiplatform.foundation)
                 implementation(libs.compose.multiplatform.material3)
+                implementation(libs.coil.compose)
+                implementation(libs.coil.svg)
+                implementation(libs.jetbrains.lifecycle.runtime.compose)
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(project.dependencies.platform(libs.koin.bom))
+                implementation(libs.koin.compose.viewmodel)
             }
         }
 
@@ -64,7 +76,6 @@ kotlin {
 
                 implementation(project.dependencies.platform(libs.compose.bom))
                 implementation(libs.compose.material)
-                implementation(libs.coil.compose)
 
                 implementation(libs.lifecycle.viewmodel.ktx)
                 implementation(libs.androidx.fragment.ktx)
@@ -76,7 +87,13 @@ kotlin {
 
                 implementation(project(":components:icons"))
                 implementation(project(":core:strings"))
-                implementation(project(":core:navigation"))
+            }
+        }
+
+        val desktopMain by getting {
+            dependencies {
+                // Dispatchers.Main on desktop (ModalOverlayTracker grace) comes from Swing.
+                implementation(libs.kotlinx.coroutines.swing)
             }
         }
 

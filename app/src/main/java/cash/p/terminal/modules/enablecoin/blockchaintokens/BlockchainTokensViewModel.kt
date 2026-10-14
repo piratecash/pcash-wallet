@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import cash.p.terminal.R
 import cash.p.terminal.core.description
 import cash.p.terminal.core.title
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_platform_placeholder_32
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.ui_compose.components.ImageSource
 import cash.p.terminal.ui.extensions.BottomSheetSelectorMultipleSheet
@@ -43,7 +45,7 @@ class BlockchainTokensViewModel(
         val selectedTokenIndexes = request.enabledTokens.map { request.tokens.indexOf(it) }
 
         val config = BottomSheetSelectorMultipleSheet.Config(
-            icon = ImageSource.Remote(blockchain.type.imageUrl, R.drawable.ic_platform_placeholder_32),
+            icon = ImageSource.Remote(blockchain.type.imageUrl, Res.drawable.ic_platform_placeholder_32),
             title = blockchain.name,
             description = Translator.getString(R.string.AddressFormatSettings_Description),
             selectedIndexes = selectedTokenIndexes,

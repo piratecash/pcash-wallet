@@ -1,8 +1,10 @@
 package cash.p.terminal.modules.walletconnect.stellar
 
 import cash.p.terminal.modules.walletconnect.request.AbstractWCAction
+import cash.p.terminal.resources.Button_Sign
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.WalletConnect_SignMessageRequest_Title
 import com.google.gson.GsonBuilder
-import cash.p.terminal.R
 import cash.p.terminal.modules.walletconnect.request.WCActionState
 import cash.p.terminal.strings.helpers.TranslatableString
 import io.horizontalsystems.stellarkit.StellarKit
@@ -19,11 +21,11 @@ class WCActionStellarSignXdr(
     private val xdr = params.xdr
 
     override fun getTitle(): TranslatableString {
-        return TranslatableString.ResString(R.string.WalletConnect_SignMessageRequest_Title)
+        return TranslatableString.ResString(Res.string.WalletConnect_SignMessageRequest_Title)
     }
 
     override fun getApproveButtonTitle(): TranslatableString {
-        return TranslatableString.ResString(R.string.Button_Sign)
+        return TranslatableString.ResString(Res.string.Button_Sign)
     }
 
     override suspend fun performAction(): String {

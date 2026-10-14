@@ -60,7 +60,7 @@ class ActivateTokenViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         mockkObject(App)
         every { App.currencyManager } returns mockk<CurrencyManager> {
-            every { baseCurrency } returns Currency("USD", "$", 2, 0)
+            every { baseCurrency } returns Currency("USD", "$", 2)
         }
     }
 

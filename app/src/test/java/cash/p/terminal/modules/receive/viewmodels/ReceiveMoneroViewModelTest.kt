@@ -1,11 +1,12 @@
 package cash.p.terminal.modules.receive.viewmodels
 
-import cash.p.terminal.R
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.IMoneroReceiveAdapter
 import cash.p.terminal.core.MoneroSpendReadiness
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.managers.MoneroSubaddressInfo
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.trezor_connect_failed
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Token
@@ -240,7 +241,7 @@ class ReceiveMoneroViewModelTest {
         viewModel.displayAddressOnDevice()
         advanceUntilIdle()
 
-        assertEquals(R.string.trezor_connect_failed, viewModel.uiState.hardwareOperationError)
+        assertEquals(Res.string.trezor_connect_failed, viewModel.uiState.hardwareOperationError)
     }
 
     @Test

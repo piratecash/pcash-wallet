@@ -1,0 +1,65 @@
+package cash.p.terminal.modules.market.overview.ui
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.unit.dp
+import cash.p.terminal.ui_compose.components.HFillSpacer
+import cash.p.terminal.ui_compose.components.HSpacer
+import cash.p.terminal.ui_compose.components.body_leah
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+
+@Composable
+fun MarketsSectionHeader(
+    title: StringResource,
+    icon: Painter,
+    onClick: (() -> Unit) = {},
+    endSlot: @Composable() (() -> Unit)? = null,
+) {
+    Box {
+        HorizontalDivider(
+            thickness = 1.dp,
+            color = ComposeAppTheme.colors.borderDivider
+        )
+        Row(
+            modifier = Modifier
+                .padding(
+                    horizontal = 16.dp,
+                    vertical = 12.dp
+                ),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier
+                    .clickable(
+                        onClick = onClick,
+                        interactionSource = MutableInteractionSource(),
+                        indication = null
+                    ),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = icon,
+                    contentDescription = "Section Header Icon"
+                )
+                HSpacer(width = 16.dp)
+                body_leah(
+                    text = stringResource(title),
+                    maxLines = 1,
+                )
+            }
+            HFillSpacer(minWidth = 16.dp)
+            endSlot?.invoke()
+        }
+    }
+}

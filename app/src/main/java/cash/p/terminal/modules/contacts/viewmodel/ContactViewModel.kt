@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.contacts.viewmodel
 
-import cash.p.terminal.R
+import cash.p.terminal.resources.Contacts_NewContact
+import cash.p.terminal.resources.Res
 import io.horizontalsystems.core.ViewModelUiState
 import cash.p.terminal.core.order
 import cash.p.terminal.modules.contacts.ContactsModule.ContactValidationException
@@ -19,7 +20,7 @@ class ContactViewModel(
 
     val contact = existingContact ?: Contact(UUID.randomUUID().toString(), "", listOf())
     private val title = if (existingContact == null)
-        TranslatableString.ResString(R.string.Contacts_NewContact)
+        TranslatableString.ResString(Res.string.Contacts_NewContact)
     else
         TranslatableString.PlainString(existingContact.name)
 

@@ -22,12 +22,13 @@ import cash.p.terminal.wallet.Derivation
 import cash.p.terminal.wallet.balance.BalanceViewType
 import cash.p.terminal.wallet.entities.EncryptedString
 import cash.p.terminal.wallet.managers.TransactionDisplayLevel
+import io.horizontalsystems.core.BaseCurrencyStorage
 import io.horizontalsystems.core.ILoggingSettings
 import io.horizontalsystems.core.ISmsNotificationSettings
 import kotlinx.coroutines.flow.StateFlow
 import java.math.BigDecimal
 
-interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings {
+interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurrencyStorage {
     var marketSearchRecentCoinUids: List<String>
     var zcashAccountIds: Set<String>
 
@@ -41,7 +42,6 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings {
 
     var chartIndicatorsEnabled: Boolean
     var amountInputType: AmountInputType?
-    var baseCurrencyCode: String?
     var authToken: String?
     val appId: String?
 

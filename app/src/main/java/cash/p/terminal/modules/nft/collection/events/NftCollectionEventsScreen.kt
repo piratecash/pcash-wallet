@@ -20,6 +20,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.coin_placeholder
+import cash.p.terminal.ui_compose.components.placeholderPainter
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.modules.coin.ContractInfo
@@ -46,6 +49,7 @@ import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.SectionItemBorderedRowUniversalClear
 import io.horizontalsystems.chartview.rememberAsyncImagePainterWithFallback
 import kotlinx.coroutines.launch
+import cash.p.terminal.resources.NftCollection_EventType_SelectorTitle
 
 @Composable
 fun NftCollectionEventsScreen(
@@ -281,7 +285,7 @@ fun NftEvents(
     when (eventTypeSelectorState) {
         SelectorDialogState.Opened -> {
             AlertGroup(
-                R.string.NftCollection_EventType_SelectorTitle,
+                Res.string.NftCollection_EventType_SelectorTitle,
                 viewModel.eventTypeSelect,
                 onSelect = { eventType ->
                     viewModel.onSelect(eventType)
@@ -312,7 +316,7 @@ fun NftEvent(
             Image(
                 painter = rememberAsyncImagePainterWithFallback(
                     model = iconUrl,
-                    error = painterResource(R.drawable.coin_placeholder)
+                    error = placeholderPainter(Res.drawable.coin_placeholder)
                 ),
                 contentDescription = null,
                 modifier = Modifier

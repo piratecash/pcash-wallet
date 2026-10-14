@@ -19,6 +19,8 @@ import cash.p.terminal.modules.restoreaccount.RestoreViewModel
 import cash.p.terminal.modules.restoreaccount.restoremenu.RestoreByMenu
 import cash.p.terminal.modules.restoreaccount.restoremenu.RestoreMenuViewModel
 import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.resources.Button_Next
+import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui.compose.components.FormsInput
@@ -48,7 +50,7 @@ fun RestorePrivateKey(
                 },
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.Button_Next),
+                        title = TranslatableString.ResString(Res.string.Button_Next),
                         onClick = {
                             viewModel.resolveAccountType()?.let { accountType ->
                                 mainViewModel.setAccountData(accountType, viewModel.accountName, true, false)

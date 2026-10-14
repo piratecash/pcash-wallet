@@ -1,5 +1,13 @@
 package io.horizontalsystems.core.models
 
+import cash.p.terminal.resources.CoinPage_TimeDuration_Day
+import cash.p.terminal.resources.CoinPage_TimeDuration_Hour
+import cash.p.terminal.resources.CoinPage_TimeDuration_Month
+import cash.p.terminal.resources.CoinPage_TimeDuration_Week
+import cash.p.terminal.resources.CoinPage_TimeDuration_Year
+import cash.p.terminal.resources.Res
+import org.jetbrains.compose.resources.StringResource
+
 enum class HsTimePeriod(val value: String) {
     Hour1("1h"),
     Day1("1d"),
@@ -18,6 +26,15 @@ enum class HsTimePeriod(val value: String) {
 
     private val day = (24 * 60 * 60).toLong()
 }
+
+val HsTimePeriod.stringResId: StringResource
+    get() = when (this) {
+        HsTimePeriod.Hour1 -> Res.string.CoinPage_TimeDuration_Hour
+        HsTimePeriod.Day1 -> Res.string.CoinPage_TimeDuration_Day
+        HsTimePeriod.Week1 -> Res.string.CoinPage_TimeDuration_Week
+        HsTimePeriod.Month1 -> Res.string.CoinPage_TimeDuration_Month
+        HsTimePeriod.Year1 -> Res.string.CoinPage_TimeDuration_Year
+    }
 
 sealed class HsPeriodType(open val timePeriod: HsTimePeriod?) {
 

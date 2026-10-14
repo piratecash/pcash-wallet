@@ -17,6 +17,12 @@ import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.SendWarningRiskOfGettingStuck
 import cash.p.terminal.modules.transactionInfo.options.SpeedUpCancelType
 import cash.p.terminal.modules.xrate.XRateService
+import cash.p.terminal.resources.Hud_Text_NoInternet
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.TransactionInfoOptions_Rbf_FeeTooLow
+import cash.p.terminal.resources.TransactionInfoOptions_Rbf_NotEnabled
+import cash.p.terminal.resources.TransactionInfoOptions_Rbf_UnableToReplace
+import cash.p.terminal.resources.transaction_error_invalid_derivation_path
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.entities.Coin
 import io.horizontalsystems.bitcoincore.managers.AccountPublicKeyManager
@@ -133,22 +139,22 @@ class ResendBitcoinViewModel(
     }
 
     private fun createCaution(error: Throwable) = when (error) {
-        BuildError.FeeTooLow -> HSCaution(TranslatableString.ResString(R.string.TransactionInfoOptions_Rbf_FeeTooLow))
+        BuildError.FeeTooLow -> HSCaution(TranslatableString.ResString(Res.string.TransactionInfoOptions_Rbf_FeeTooLow))
         BuildError.RbfNotEnabled -> HSCaution(
-            TranslatableString.ResString(R.string.TransactionInfoOptions_Rbf_NotEnabled)
+            TranslatableString.ResString(Res.string.TransactionInfoOptions_Rbf_NotEnabled)
         )
 
         is BuildError.InvalidTransaction,
         BuildError.UnableToReplace,
         BuildError.NoPreviousOutput -> HSCaution(
-            TranslatableString.ResString(R.string.TransactionInfoOptions_Rbf_UnableToReplace)
+            TranslatableString.ResString(Res.string.TransactionInfoOptions_Rbf_UnableToReplace)
         )
 
         AccountPublicKeyManager.Error.InvalidPath -> HSCaution(
-            TranslatableString.ResString(R.string.transaction_error_invalid_derivation_path)
+            TranslatableString.ResString(Res.string.transaction_error_invalid_derivation_path)
         )
 
-        is UnknownHostException -> HSCaution(TranslatableString.ResString(R.string.Hud_Text_NoInternet))
+        is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
         is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
         else -> HSCaution(TranslatableString.PlainString(error.message ?: ""))
     }

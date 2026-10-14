@@ -18,7 +18,11 @@ abstract class CoreApp : Application() {
         override lateinit var lockoutStorage: ILockoutStorage
         override lateinit var thirdKeyboardStorage: IThirdKeyboard
 
-        override lateinit var instance: CoreApp
+        override var instance: CoreApp
+            get() = ApplicationHolder.application as CoreApp
+            set(value) {
+                ApplicationHolder.application = value
+            }
     }
 
     abstract fun localizedContext(): Context

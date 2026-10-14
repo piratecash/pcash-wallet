@@ -35,6 +35,7 @@ import cash.p.terminal.modules.send.fee.NetworkFeeWarningData
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.CoinImage
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
@@ -61,6 +62,8 @@ import io.horizontalsystems.core.entities.CurrencyValue
 import kotlinx.coroutines.delay
 import java.math.BigDecimal
 import kotlin.reflect.KClass
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.StringResource
 
 data class SwapConfirmNavigation(
     val navigation: HSNavigation,
@@ -273,7 +276,7 @@ private fun ExpiredQuoteButton(onRefresh: () -> Unit) {
 private fun ColumnScope.MoneroSpendReadinessStatus(
     spendReadiness: MoneroSpendReadiness,
     preparationInProgress: Boolean,
-    preparationError: Int?,
+    preparationError: StringResource?,
     preparationRetryAvailable: Boolean,
     onRetry: () -> Unit,
 ) {
@@ -303,7 +306,7 @@ private fun ColumnScope.MoneroSpendReadinessStatus(
             preparationError?.let { error ->
                 TextImportantWarning(
                     modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(error),
+                    text = TranslatableString.ResString(error).getString(),
                 )
             }
             VSpacer(height = 8.dp)
@@ -600,7 +603,7 @@ fun TokenRowPure(
     amountColor: Color,
     imageUrl: String?,
     alternativeImageUrl: String?,
-    imagePlaceholder: Int?,
+    imagePlaceholder: DrawableResource?,
     badge: String?,
     amountFormatted: String?,
 ) {

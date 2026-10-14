@@ -27,6 +27,10 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.modules.info.ui.InfoHeader
+import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.Info_DoubleSpend_Title
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_close_24
 import cash.p.terminal.strings.helpers.shorten
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
@@ -69,8 +73,8 @@ private fun InfoScreen(
             AppBar(
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.Button_Close),
-                        icon = R.drawable.ic_close_24,
+                        title = TranslatableString.ResString(Res.string.Button_Close),
+                        icon = Res.drawable.ic_close_24,
                         onClick = onBackClick
                     )
                 )
@@ -81,7 +85,7 @@ private fun InfoScreen(
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
             ) {
-                InfoHeader(R.string.Info_DoubleSpend_Title)
+                InfoHeader(Res.string.Info_DoubleSpend_Title)
                 TextImportantWarning(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     text = stringResource(R.string.Info_DoubleSpend_Description),

@@ -77,7 +77,7 @@ class GetSpecialProposalDataUseCaseTest {
             isPremium = false
         )
         every { marketKitWrapper.coinPrice(any(), any()) } returns null
-        every { currencyManager.baseCurrency } returns Currency("USD", "$", 2, 0)
+        every { currencyManager.baseCurrency } returns Currency("USD", "$", 2)
         coEvery { piratePlaceRepository.getCalculatorData(any(), any()) } answers {
             val stake = secondArg<Double>()
             CalculatorData(

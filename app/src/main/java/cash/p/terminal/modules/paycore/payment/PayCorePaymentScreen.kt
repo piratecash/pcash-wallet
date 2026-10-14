@@ -213,7 +213,7 @@ private fun PayCorePaymentScreenPreview() {
         Column(modifier = Modifier.background(ComposeAppTheme.colors.backgroundBase)) {
             TokenRowPure(
                 fiatAmount = null,
-                currency = Currency("USD", "$", 2, 0),
+                currency = Currency("USD", "$", 2),
                 title = stringResource(R.string.Send_Confirmation_YouSend),
                 amountColor = ComposeAppTheme.colors.statusError,
                 imageUrl = "https://p.cash/storage/coins/rub/image.png",
@@ -225,7 +225,7 @@ private fun PayCorePaymentScreenPreview() {
             TokenRowPure(
                 fiatAmount = null,
                 borderTop = true,
-                currency = Currency("USD", "$", 2, 0),
+                currency = Currency("USD", "$", 2),
                 title = stringResource(R.string.Swap_ToAmountTitle),
                 amountColor = ComposeAppTheme.colors.statusSuccess,
                 imageUrl = null,

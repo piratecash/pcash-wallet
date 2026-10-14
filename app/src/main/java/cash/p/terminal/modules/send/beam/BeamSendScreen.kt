@@ -15,7 +15,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -49,6 +48,8 @@ import cash.p.terminal.modules.send.rememberExistingViewModel
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Button_Next
+import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.HudHelper
@@ -56,11 +57,13 @@ import cash.p.terminal.ui_compose.components.InfoText
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenType
+import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.entities.CurrencyValue
 import kotlinx.coroutines.flow.Flow
 import java.math.BigDecimal
 import kotlin.reflect.KClass
+import org.jetbrains.compose.resources.StringResource
 
 // No recipient-check step: AddressCheckManager refuses every screening type for BEAM on purpose
 // ("BEAM receiver tokens are opaque payment data and must not reach address screening providers",
@@ -102,11 +105,10 @@ internal fun BeamSendScreen(
 
 // Each page collects on its own: the form leaves composition while the sign page is on top.
 @Composable
-private fun BeamErrorEventsEffect(errorEvents: Flow<Int>) {
+private fun BeamErrorEventsEffect(errorEvents: Flow<StringResource>) {
     val view = LocalView.current
-    val context = LocalContext.current
     LaunchedEffect(Unit) {
-        errorEvents.collect { HudHelper.showErrorMessage(view, context.getString(it)) }
+        errorEvents.collect { HudHelper.showErrorMessage(view, Translator.getString(it)) }
     }
 }
 
@@ -240,7 +242,7 @@ private fun BeamSendForm(
             proceedEnabled = state.canProceed,
             onCloseClick = navigation::navigateUpSafely,
             onSendClick = actions.proceed,
-            proceedTitle = TranslatableString.ResString(R.string.Button_Next),
+            proceedTitle = TranslatableString.ResString(Res.string.Button_Next),
             bottomOverlay = {
                 SendSuggestionsBar(
                     availableBalance = state.availableToSend,

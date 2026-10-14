@@ -29,6 +29,9 @@ import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.litecoin_mweb_invalid_amount
+import cash.p.terminal.resources.send_trezor_mweb_not_supported
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
@@ -905,7 +908,7 @@ class LitecoinAdapter(
      */
     private fun rejectMwebForTrezor() {
         if (isTrezorAccount) {
-            throw LocalizedException(R.string.send_trezor_mweb_not_supported)
+            throw LocalizedException(Res.string.send_trezor_mweb_not_supported)
         }
     }
 
@@ -972,7 +975,7 @@ class LitecoinAdapter(
         val mwebSource = mwebSendSource(bitcoinRequest.address) ?: return super.signOffline(request)
 
         val value = atomicAmount(bitcoinRequest.amount)
-            ?: throw LocalizedException(R.string.litecoin_mweb_invalid_amount)
+            ?: throw LocalizedException(Res.string.litecoin_mweb_invalid_amount)
         val signedTransaction = kit.createSignedMwebTransaction(
             address = bitcoinRequest.address,
             value = value,
@@ -1104,7 +1107,7 @@ class LitecoinAdapter(
         changeToFirstInput: Boolean,
         utxoFilters: UtxoFilters
     ): BitcoinSwapSendResult {
-        val value = atomicAmount(amount) ?: throw LocalizedException(R.string.litecoin_mweb_invalid_amount)
+        val value = atomicAmount(amount) ?: throw LocalizedException(Res.string.litecoin_mweb_invalid_amount)
         val sentAt = System.currentTimeMillis() / 1000
         val result = kit.send(
             address = address,

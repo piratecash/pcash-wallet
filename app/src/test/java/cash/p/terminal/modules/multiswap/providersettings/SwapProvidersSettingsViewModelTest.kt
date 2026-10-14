@@ -6,6 +6,8 @@ import cash.p.terminal.modules.multiswap.providers.SwapProvidersRepository
 import cash.p.terminal.core.managers.SystemLanguageProvider
 import cash.p.terminal.modules.paycore.PayCoreFeatureToggle
 import cash.p.terminal.modules.paycore.PayCoreProvider
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_swap_24
 import io.horizontalsystems.core.ILanguageManager
 import io.mockk.every
 import io.mockk.mockk
@@ -88,6 +90,6 @@ class SwapProvidersSettingsViewModelTest {
         mockk(relaxed = true) {
             every { id } returns providerId
             every { title } returns providerTitle
-            every { icon } returns 0
+            every { icon } returns Res.drawable.ic_swap_24
         }
 }

@@ -21,6 +21,8 @@ import cash.p.terminal.R
 import cash.p.terminal.core.managers.DeclinedToken
 import cash.p.terminal.core.managers.normalizedTokenLabel
 import cash.p.terminal.modules.backuplocal.fullbackup.WalletDeclinedTokens
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_attention_24
 import cash.p.terminal.strings.helpers.shorten
 import cash.p.terminal.ui.extensions.BottomSheetSelectorMultiple
 import cash.p.terminal.ui.extensions.BottomSheetSelectorMultipleSheet
@@ -148,7 +150,7 @@ private fun rememberDeclinedTokensSelectorConfig(
     return remember(wallets) {
         val flatTokens = wallets.flatTokens()
         BottomSheetSelectorMultipleSheet.Config(
-            icon = ImageSource.Local(R.drawable.ic_attention_24),
+            icon = ImageSource.Local(Res.drawable.ic_attention_24),
             title = title,
             selectedIndexes = selectedIndexes,
             viewItems = flatTokens.mapIndexed { index, (wallet, token) ->

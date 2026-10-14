@@ -4,7 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
-import cash.p.terminal.R
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.INativeBalanceProvider
 import cash.p.terminal.core.ISendMemoAdapter
@@ -32,6 +31,11 @@ import cash.p.terminal.modules.send.offline.OfflineSignCapableViewModel
 import cash.p.terminal.modules.send.offline.OfflineSigningController
 import cash.p.terminal.modules.send.offline.OfflineTransactionFormat
 import cash.p.terminal.modules.xrate.XRateService
+import cash.p.terminal.resources.Hud_Text_NoInternet
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.offline_broadcast_unsupported_blockchain
+import cash.p.terminal.resources.send_error_address_unavailable
+import cash.p.terminal.resources.send_error_amount_unavailable
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.tangem.domain.isHardwareWalletUserCancelled
 import cash.p.terminal.modules.send.isHardwareWalletCancelled
@@ -114,10 +118,10 @@ class SendMemoViewModel(
     override val offlineSignSupported = offlineSignAdapter != null && !wallet.account.isWatchAccount
 
     private val decimalAmount: BigDecimal
-        get() = amountState.amount ?: throw LocalizedException(R.string.send_error_amount_unavailable)
+        get() = amountState.amount ?: throw LocalizedException(Res.string.send_error_amount_unavailable)
 
     private val destinationAddress: Address
-        get() = addressState.address ?: throw LocalizedException(R.string.send_error_address_unavailable)
+        get() = addressState.address ?: throw LocalizedException(Res.string.send_error_address_unavailable)
 
     private val logger: AppLogger = AppLogger("send-${blockchainType.uid}")
 
@@ -307,7 +311,7 @@ class SendMemoViewModel(
     private suspend fun signedOfflineTransaction(): OfflineSignResult {
         val confirmationData = getConfirmationData()
         val signingAdapter = offlineSignAdapter
-            ?: throw LocalizedException(R.string.offline_broadcast_unsupported_blockchain)
+            ?: throw LocalizedException(Res.string.offline_broadcast_unsupported_blockchain)
         return OfflineSignResult(
             signedTransaction = signingAdapter.signOffline(
                 chain.offlineSignRequest(
@@ -337,7 +341,7 @@ class SendMemoViewModel(
     }
 
     private fun createCaution(error: Throwable) = when (error) {
-        is UnknownHostException -> HSCaution(TranslatableString.ResString(R.string.Hud_Text_NoInternet))
+        is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
         is LocalizedException -> HSCaution(error.toResString())
         else -> HSCaution(TranslatableString.PlainString(error.message ?: ""))
     }

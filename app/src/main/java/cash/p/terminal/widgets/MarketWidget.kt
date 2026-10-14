@@ -210,7 +210,12 @@ class MarketWidget : GlanceAppWidget() {
                 provider = imageProvider(item.imageLocalPath),
                 contentDescription = null,
                 contentScale = ContentScale.Fit,
-                modifier = modifier
+                modifier = modifier,
+                colorFilter = if (item.imageLocalPath == null) {
+                    ColorFilter.tint(ColorProvider(R.color.coin_placeholder_tint))
+                } else {
+                    null
+                }
             )
             Spacer(modifier = GlanceModifier.width(16.dp))
             Column {

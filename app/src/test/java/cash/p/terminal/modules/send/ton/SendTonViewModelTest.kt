@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.send.ton
 
-import cash.p.terminal.R
 import cash.p.terminal.core.ISendTonAdapter
 import cash.p.terminal.core.OfflineTonSignRequest
 import cash.p.terminal.core.OfflineTransactionAdapter
@@ -20,6 +19,8 @@ import cash.p.terminal.modules.pin.core.UptimeProvider
 import cash.p.terminal.modules.send.offline.OfflineSignState
 import cash.p.terminal.modules.send.offline.OfflineTransactionFormat
 import cash.p.terminal.modules.xrate.XRateService
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.offline_transaction_anchor_required
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -252,7 +253,7 @@ class SendTonViewModelTest : KoinTest {
 
         val failed = viewModel.offlineSignState as OfflineSignState.Failed
         assertEquals(
-            R.string.offline_transaction_anchor_required,
+            Res.string.offline_transaction_anchor_required,
             (failed.caution.s as TranslatableString.ResString).id,
         )
         coVerify(exactly = 1) { adapter.signOffline(any()) }

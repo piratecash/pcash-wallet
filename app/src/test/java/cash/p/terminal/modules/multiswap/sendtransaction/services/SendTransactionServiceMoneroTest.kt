@@ -19,6 +19,7 @@ import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.IAppNumberFormatter
+import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.entities.Currency
@@ -76,6 +77,8 @@ class SendTransactionServiceMoneroTest : KoinTest {
 
     @Before
     fun setUp() {
+        mockkObject(Translator)
+        every { Translator.getString(any(), *anyVararg()) } returns "translated"
         walletUseCase = mockk(relaxed = true)
         adapterManager = mockk(relaxed = true)
         marketKit = mockk(relaxed = true)
@@ -94,7 +97,7 @@ class SendTransactionServiceMoneroTest : KoinTest {
         every { adapterManager.getAdjustedBalanceData(wallet) } returns BalanceData(BALANCE)
         every { marketKit.token(any()) } returns token
         every { marketKit.coinPrice(any(), any()) } returns null
-        every { currencyManager.baseCurrency } returns Currency("USD", "$", 2, 0)
+        every { currencyManager.baseCurrency } returns Currency("USD", "$", 2)
         coEvery { walletUseCase.createWalletIfNotExists(token) } returns wallet
         coEvery {
             adapterManager.awaitAdapterForWallet<ISendMoneroAdapter>(wallet, any())

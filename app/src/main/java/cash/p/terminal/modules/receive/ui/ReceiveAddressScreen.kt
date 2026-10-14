@@ -1,6 +1,8 @@
 package cash.p.terminal.modules.receive.ui
 
 import android.content.Intent
+import cash.p.terminal.resources.Button_Done
+import cash.p.terminal.resources.Res
 import cash.p.terminal.ui_compose.components.plateOutline
 import cash.p.terminal.ui_compose.components.plateBackground
 import android.content.res.Configuration
@@ -157,7 +159,7 @@ fun ReceiveAddressScreen(
                 },
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.Button_Done),
+                        title = TranslatableString.ResString(Res.string.Button_Done),
                         onClick = closeModule,
                         tint = ComposeAppTheme.colors.brandDefault
                     )

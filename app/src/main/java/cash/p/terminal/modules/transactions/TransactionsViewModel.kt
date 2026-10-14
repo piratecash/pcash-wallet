@@ -62,6 +62,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import java.util.Calendar
 import java.util.Date
 import java.util.concurrent.atomic.AtomicLong
+import org.jetbrains.compose.resources.DrawableResource
 
 class TransactionsViewModel(
     private val service: TransactionsService,
@@ -715,7 +716,7 @@ data class TransactionViewItem(
         data class Regular(
             val url: String?,
             val alternativeUrl: String?,
-            val placeholder: Int?,
+            val placeholder: DrawableResource?,
             val rectangle: Boolean = false
         ) : Icon()
 

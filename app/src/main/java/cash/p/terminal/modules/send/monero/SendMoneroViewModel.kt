@@ -4,7 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
-import cash.p.terminal.R
 import cash.p.terminal.core.EvmError
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.ISendMoneroAdapter
@@ -33,6 +32,12 @@ import cash.p.terminal.modules.send.offline.OfflineSigningController
 import cash.p.terminal.modules.send.offline.OfflineTransactionFormat
 import cash.p.terminal.modules.send.userMessageRes
 import cash.p.terminal.modules.xrate.XRateService
+import cash.p.terminal.resources.Hud_Text_NoInternet
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.offline_broadcast_unsupported_blockchain
+import cash.p.terminal.resources.offline_transaction_anchor_required
+import cash.p.terminal.resources.send_error_address_unavailable
+import cash.p.terminal.resources.send_error_amount_unavailable
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAdapterManager
@@ -120,10 +125,10 @@ class SendMoneroViewModel(
         private set
 
     private val decimalAmount: BigDecimal
-        get() = amountState.amount ?: throw LocalizedException(R.string.send_error_amount_unavailable)
+        get() = amountState.amount ?: throw LocalizedException(Res.string.send_error_amount_unavailable)
 
     private val destinationAddress: Address
-        get() = addressState.address ?: throw LocalizedException(R.string.send_error_address_unavailable)
+        get() = addressState.address ?: throw LocalizedException(Res.string.send_error_address_unavailable)
 
     override val offlineSignSupported =
         offlineSignAdapter != null &&
@@ -315,7 +320,7 @@ class SendMoneroViewModel(
 
     private suspend fun buildOfflineSignedTransaction(request: OfflineMoneroSignRequest): OfflineSignResult {
         val signingAdapter = offlineSignAdapter
-            ?: throw LocalizedException(R.string.offline_broadcast_unsupported_blockchain)
+            ?: throw LocalizedException(Res.string.offline_broadcast_unsupported_blockchain)
         return OfflineSignResult(
             signedTransaction = signingAdapter.signOffline(request),
             confirmationData = getConfirmationData(),
@@ -325,7 +330,7 @@ class SendMoneroViewModel(
     private suspend fun signedOfflineTransaction(): OfflineSignResult {
         offlineSignJob?.join()
         offlineSignResult?.let { return it }
-        throw offlineSignError ?: LocalizedException(R.string.offline_transaction_anchor_required)
+        throw offlineSignError ?: LocalizedException(Res.string.offline_transaction_anchor_required)
     }
 
     private fun offlineSignedTransactionDraft(result: OfflineSignResult): OfflineSignedTransactionDraft {
@@ -368,7 +373,7 @@ class SendMoneroViewModel(
     }
 
     private fun createCaution(error: Throwable) = when (error) {
-        is UnknownHostException -> HSCaution(TranslatableString.ResString(R.string.Hud_Text_NoInternet))
+        is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
         is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
         is HardwareWalletOperationException ->
             HSCaution(TranslatableString.ResString(error.userMessageRes()))

@@ -68,6 +68,8 @@ import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import kotlinx.coroutines.delay
 import kotlin.reflect.KClass
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_attention_20
 
 @Composable
 fun SendTronConfirmationScreen(
@@ -438,7 +440,7 @@ private fun Cautions(cautions: List<HSCaution>) {
                         modifier = modifier,
                         text = caution.getString(),
                         title = stringResource(R.string.Error),
-                        icon = R.drawable.ic_attention_20
+                        icon = Res.drawable.ic_attention_20
                     )
                 }
 
@@ -447,7 +449,7 @@ private fun Cautions(cautions: List<HSCaution>) {
                         modifier = modifier,
                         text = caution.getString(),
                         title = stringResource(R.string.Alert_TitleWarning),
-                        icon = R.drawable.ic_attention_20
+                        icon = Res.drawable.ic_attention_20
                     )
                 }
             }

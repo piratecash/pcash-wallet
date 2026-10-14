@@ -68,7 +68,7 @@ class SwapSelectCoinViewModelTest {
         every { App.adapterManager } returns adapterManager
         every { App.currencyManager } returns currencyManager
         every { walletManager.activeWallets } returns emptyList()
-        every { currencyManager.baseCurrency } returns Currency("USD", "$", 2, 0)
+        every { currencyManager.baseCurrency } returns Currency("USD", "$", 2)
     }
 
     @After

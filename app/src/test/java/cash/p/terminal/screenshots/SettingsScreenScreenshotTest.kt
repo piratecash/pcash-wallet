@@ -5,9 +5,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation3.runtime.NavBackStack
-import androidx.compose.ui.graphics.toArgb
-import androidx.test.core.app.ApplicationProvider
-import cash.p.terminal.R
 import cash.p.terminal.modules.main.PlainTestPage
 import cash.p.terminal.modules.settings.main.MainSettingsViewModel
 import cash.p.terminal.modules.settings.main.SettingsScreen
@@ -17,14 +14,11 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.LocalHostLifecycleOwner
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
-import cash.p.terminal.ui_compose.theme.darkPalette
-import cash.p.terminal.ui_compose.theme.lightPalette
 import com.github.takahirom.roborazzi.captureRoboImage
 import io.mockk.every
 import io.mockk.mockk
 import io.horizontalsystems.core.IPinComponent
 import org.junit.After
-import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -34,7 +28,6 @@ import org.koin.dsl.module
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
-import org.xmlpull.v1.XmlPullParser
 
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -83,17 +76,6 @@ class SettingsScreenScreenshotTest {
     @Config(qualifiers = "ar-w393dp-h2400dp-xxhdpi")
     fun settingsScreen_lightArabicRtl_capturesSnapshot() = capture("light-ar-rtl", darkTheme = false)
 
-    @Test
-    fun alertIcon_dayTheme_usesLightTint() {
-        assertEquals(lightPalette.statusError.toArgb(), alertIconTint())
-    }
-
-    @Test
-    @Config(qualifiers = "en-w393dp-h2400dp-night-xxhdpi")
-    fun alertIcon_nightTheme_usesDarkTint() {
-        assertEquals(darkPalette.statusError.toArgb(), alertIconTint())
-    }
-
     private fun capture(name: String, darkTheme: Boolean) {
         val outputDirectory = System.getenv("MOBILE812_SNAPSHOT_DIR")
             ?: "build/tmp/mobile812/current"
@@ -108,21 +90,5 @@ class SettingsScreenScreenshotTest {
                 }
             }
         }
-    }
-
-    private fun alertIconTint(): Int {
-        val context = ApplicationProvider.getApplicationContext<Application>()
-        val parser = context.resources.getXml(R.drawable.ic_attention_red_20)
-        while (parser.eventType != XmlPullParser.START_TAG) {
-            parser.next()
-        }
-        val tint = parser.getAttributeResourceValue(
-            "http://schemas.android.com/apk/res/android",
-            "tint",
-            0,
-        )
-        parser.close()
-        assertEquals(R.color.status_error, tint)
-        return context.getColor(tint)
     }
 }

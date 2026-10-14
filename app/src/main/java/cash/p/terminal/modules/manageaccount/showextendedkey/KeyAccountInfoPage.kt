@@ -15,6 +15,10 @@ import cash.p.terminal.R
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.modules.info.ui.InfoBody
+import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.ExtendedKey_AccountInfo
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_close_24
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.MenuItem
@@ -37,8 +41,8 @@ private fun InfoScreen(navigation: HSNavigation) {
                 title = stringResource(R.string.ExtendedKey_Account),
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.Button_Close),
-                        icon = R.drawable.ic_close_24,
+                        title = TranslatableString.ResString(Res.string.Button_Close),
+                        icon = Res.drawable.ic_close_24,
                         onClick = { navigation.navigateUpSafely() }
                     )
                 )
@@ -49,7 +53,7 @@ private fun InfoScreen(navigation: HSNavigation) {
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
             ) {
-                    InfoBody(R.string.ExtendedKey_AccountInfo)
+                    InfoBody(Res.string.ExtendedKey_AccountInfo)
                 Spacer(Modifier.height(20.dp))
             }
         }

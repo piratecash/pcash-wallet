@@ -32,6 +32,21 @@ import cash.p.terminal.entities.OfflineTonRetryMetadata
 import cash.p.terminal.entities.OfflineTronRetryMetadata
 import cash.p.terminal.entities.PendingTransactionDraft
 import cash.p.terminal.modules.send.zcash.zcashPendingDraft
+import cash.p.terminal.resources.EthereumTransaction_Error_CannotEstimate
+import cash.p.terminal.resources.EthereumTransaction_Error_ExecutionReverted
+import cash.p.terminal.resources.EthereumTransaction_Error_InsufficientBalanceWithFee
+import cash.p.terminal.resources.EthereumTransaction_Error_InsufficientLiquidity
+import cash.p.terminal.resources.EthereumTransaction_Error_LowerThanBaseGasLimit
+import cash.p.terminal.resources.Hud_Text_NoInternet
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.offline_broadcast_error_already_sent
+import cash.p.terminal.resources.offline_broadcast_error_low_fee
+import cash.p.terminal.resources.offline_broadcast_error_nonce_used
+import cash.p.terminal.resources.offline_broadcast_error_rejected
+import cash.p.terminal.resources.offline_broadcast_error_send_failed
+import cash.p.terminal.resources.offline_broadcast_error_timeout
+import cash.p.terminal.resources.offline_broadcast_unsupported_blockchain
+import cash.p.terminal.resources.source_blocked_by_provider_error
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.wallet.IAccountManager
@@ -829,7 +844,7 @@ internal fun Throwable.offlineBroadcastErrorText(feeCoinCode: String): Translata
     val error = convertedError
     return error.typedOfflineBroadcastErrorText(feeCoinCode)
         ?: error.message?.knownOfflineBroadcastErrorText(feeCoinCode)
-        ?: TranslatableString.ResString(R.string.offline_broadcast_error_send_failed)
+        ?: TranslatableString.ResString(Res.string.offline_broadcast_error_send_failed)
 }
 
 private fun Throwable.typedOfflineBroadcastErrorText(feeCoinCode: String): TranslatableString? =
@@ -837,42 +852,42 @@ private fun Throwable.typedOfflineBroadcastErrorText(feeCoinCode: String): Trans
         is LocalizedException -> toResString()
         is UnknownHostException,
         is ConnectException,
-        is NoRouteToHostException -> TranslatableString.ResString(R.string.Hud_Text_NoInternet)
+        is NoRouteToHostException -> TranslatableString.ResString(Res.string.Hud_Text_NoInternet)
 
         is InterruptedIOException,
-        is TimeoutException -> TranslatableString.ResString(R.string.offline_broadcast_error_timeout)
+        is TimeoutException -> TranslatableString.ResString(Res.string.offline_broadcast_error_timeout)
 
         is UnsupportedException,
         is UnsupportedOperationException -> TranslatableString.ResString(
-            R.string.offline_broadcast_unsupported_blockchain
+            Res.string.offline_broadcast_unsupported_blockchain
         )
 
         is EvmError.InsufficientBalanceWithFee -> TranslatableString.ResString(
-            R.string.EthereumTransaction_Error_InsufficientBalanceWithFee,
+            Res.string.EthereumTransaction_Error_InsufficientBalanceWithFee,
             feeCoinCode
         )
 
         is EvmError.CannotEstimateSwap -> TranslatableString.ResString(
-            R.string.EthereumTransaction_Error_CannotEstimate,
+            Res.string.EthereumTransaction_Error_CannotEstimate,
             feeCoinCode
         )
 
         is EvmError.LowerThanBaseGasLimit -> TranslatableString.ResString(
-            R.string.EthereumTransaction_Error_LowerThanBaseGasLimit
+            Res.string.EthereumTransaction_Error_LowerThanBaseGasLimit
         )
 
         is EvmError.ExecutionReverted -> TranslatableString.ResString(
-            R.string.EthereumTransaction_Error_ExecutionReverted,
+            Res.string.EthereumTransaction_Error_ExecutionReverted,
             message.orEmpty()
         )
 
         is EvmError.InsufficientLiquidity -> TranslatableString.ResString(
-            R.string.EthereumTransaction_Error_InsufficientLiquidity
+            Res.string.EthereumTransaction_Error_InsufficientLiquidity
         )
 
-        is EvmError.BlockedByProvider -> TranslatableString.ResString(R.string.source_blocked_by_provider_error)
+        is EvmError.BlockedByProvider -> TranslatableString.ResString(Res.string.source_blocked_by_provider_error)
         is EvmError.RpcError -> message?.knownOfflineBroadcastErrorText(feeCoinCode)
-            ?: TranslatableString.ResString(R.string.offline_broadcast_error_send_failed)
+            ?: TranslatableString.ResString(Res.string.offline_broadcast_error_send_failed)
 
         else -> null
     }
@@ -881,29 +896,29 @@ private fun String.knownOfflineBroadcastErrorText(feeCoinCode: String): Translat
     val message = lowercase()
     return when {
         message.isBlank() || message == "error" -> TranslatableString.ResString(
-            R.string.offline_broadcast_error_send_failed
+            Res.string.offline_broadcast_error_send_failed
         )
 
         message.containsAny(alreadyKnownTransactionMessages) ||
                 message.isZcashAlreadyCommittedToBestChainError() -> TranslatableString.ResString(
-            R.string.offline_broadcast_error_already_sent
+            Res.string.offline_broadcast_error_already_sent
         )
 
         message.contains("nonce too low") -> TranslatableString.ResString(
-            R.string.offline_broadcast_error_nonce_used
+            Res.string.offline_broadcast_error_nonce_used
         )
 
         message.containsAny(lowFeeMessages) -> TranslatableString.ResString(
-            R.string.offline_broadcast_error_low_fee
+            Res.string.offline_broadcast_error_low_fee
         )
 
         message.contains("insufficient funds") -> TranslatableString.ResString(
-            R.string.EthereumTransaction_Error_InsufficientBalanceWithFee,
+            Res.string.EthereumTransaction_Error_InsufficientBalanceWithFee,
             feeCoinCode
         )
 
         message.containsAny(rejectedTransactionMessages) -> TranslatableString.ResString(
-            R.string.offline_broadcast_error_rejected
+            Res.string.offline_broadcast_error_rejected
         )
 
         else -> null

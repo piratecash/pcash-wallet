@@ -1,6 +1,5 @@
 package cash.p.terminal.core.adapters
 
-import cash.p.terminal.R
 import cash.p.terminal.core.BroadcastRawTransactionStatus
 import cash.p.terminal.core.IFeeRateProvider
 import cash.p.terminal.core.LocalizedException
@@ -12,6 +11,8 @@ import cash.p.terminal.entities.TransactionDataSortMode
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.litecoin_mweb_invalid_amount
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -2078,7 +2079,7 @@ class LitecoinAdapterTest {
                 utxoFilters = filters
             )
         }
-        assertEquals(R.string.litecoin_mweb_invalid_amount, error.errorTextRes)
+        assertEquals(Res.string.litecoin_mweb_invalid_amount, error.errorTextRes)
         coVerify(exactly = 0) {
             kit.send(
                 address = MWEB_ADDRESS,

@@ -55,6 +55,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
 import cash.p.terminal.core.utils.Utils
+import cash.p.terminal.resources.Button_Next
+import cash.p.terminal.resources.Res
 import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.modules.mnemonic.MnemonicLanguageCell
 import cash.p.terminal.modules.mnemonic.MnemonicLanguageSelectorDialog
@@ -128,7 +130,7 @@ fun RestorePhraseNonStandard(
             },
             menuItems = listOf(
                 MenuItem(
-                    title = TranslatableString.ResString(R.string.Button_Next),
+                    title = TranslatableString.ResString(Res.string.Button_Next),
                     onClick = viewModel::onProceed
                 )
             )

@@ -4,8 +4,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
-import cash.p.terminal.R
 import cash.p.terminal.modules.send.isHardwareWalletCancelled
+import cash.p.terminal.resources.Error
+import cash.p.terminal.resources.Hud_Text_NoInternet
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.send_error_address_unavailable
+import cash.p.terminal.resources.send_error_amount_unavailable
 import cash.p.terminal.trezor.domain.TrezorCancelledException
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.ISendEthereumAdapter
@@ -213,9 +217,9 @@ internal class SendEvmViewModel(
 
     override fun getConfirmationData(): SendConfirmationData {
         val address = addressState.address
-            ?: throw LocalizedException(R.string.send_error_address_unavailable)
+            ?: throw LocalizedException(Res.string.send_error_address_unavailable)
         val amount = amountState.amount
-            ?: throw LocalizedException(R.string.send_error_amount_unavailable)
+            ?: throw LocalizedException(Res.string.send_error_amount_unavailable)
         val fee = sendTransactionService.stateFlow.value.networkFee?.primary?.value
 
         val contact = contactsRepository.getContactsFiltered(
@@ -235,7 +239,7 @@ internal class SendEvmViewModel(
 
     private suspend fun signedOfflineTransaction(): OfflineSignResult {
         val confirmationData = getConfirmationData()
-        val signingAdapter = offlineSignAdapter ?: throw LocalizedException(R.string.Error)
+        val signingAdapter = offlineSignAdapter ?: throw LocalizedException(Res.string.Error)
         val signedTransaction = signingAdapter.signOffline(sendTransactionService.offlineSignRequest())
         // Signed here, so it belongs to this wallet even when broadcast happens elsewhere.
         // Transaction records carry the "0x" prefix that the adapter strips off.
@@ -292,7 +296,7 @@ internal class SendEvmViewModel(
     }
 
     private fun createCaution(error: Throwable) = when (error) {
-        is UnknownHostException -> HSCaution(TranslatableString.ResString(R.string.Hud_Text_NoInternet))
+        is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
         is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
         is JsonRpc.ResponseError.RpcError -> HSCaution(TranslatableString.PlainString(error.error.message))
         else -> HSCaution(TranslatableString.PlainString(error.message ?: ""))

@@ -36,6 +36,8 @@ import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.core.premiumAction
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.navigation.viewModelStoreOwnerForPage
+import cash.p.terminal.resources.Button_Reset
+import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
@@ -168,7 +170,7 @@ private fun FilterScreen(
                 },
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.Button_Reset),
+                        title = TranslatableString.ResString(Res.string.Button_Reset),
                         enabled = uiState.resetEnabled,
                         onClick = onReset
                     )
