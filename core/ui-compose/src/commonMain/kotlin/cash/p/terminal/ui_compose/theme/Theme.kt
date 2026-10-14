@@ -60,6 +60,8 @@ val lightPalette = Colors(
     qrBackground = Color.White,
     scannerBackground = Dark,
     snackbarNeutralBackground = TextSecondaryL,
+    calculatorEqualsBackground = CalculatorAccentL,
+    calculatorBackspaceIcon = CalculatorAccentL,
     contentOnColor = Color.White,
 )
 
@@ -113,6 +115,8 @@ val darkPalette = Colors(
     qrBackground = Color.White,
     scannerBackground = Dark,
     snackbarNeutralBackground = TextSecondaryD,
+    calculatorEqualsBackground = CalculatorAccentD,
+    calculatorBackspaceIcon = CalculatorAccentD,
     contentOnColor = Color.White,
 )
 
