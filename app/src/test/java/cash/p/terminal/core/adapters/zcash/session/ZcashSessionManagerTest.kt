@@ -1,19 +1,21 @@
 package cash.p.terminal.core.adapters.zcash.session
 
+import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.managers.OfflineKey
 import cash.p.terminal.core.managers.OfflineModeManager
-import cash.p.terminal.core.managers.ZcashServer
 import cash.p.terminal.core.managers.ZcashServerManager
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.Wallet
 import cash.p.zcash.MempoolEvent
 import cash.p.zcash.PoolBalance
+import cash.p.zcash.ServerConfig
 import cash.p.zcash.Transaction
 import cash.p.zcash.ZcashWallet
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -22,6 +24,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -33,7 +36,6 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -76,8 +78,11 @@ class ZcashSessionManagerTest {
         }
     }
 
+    private val serverSelected = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
     private val serverManager = mockk<ZcashServerManager> {
-        every { current } answers { ZcashServer(name = "current", url = currentServerUrl, isCustom = false) }
+        every { serverSelectedFlow } returns serverSelected
+        every { serverConfig(any()) } answers { ServerConfig(currentServerUrl) }
     }
 
     private val scheduler = mockk<ZcashSyncScheduler>(relaxed = true)
@@ -96,6 +101,8 @@ class ZcashSessionManagerTest {
         ),
         networkErrorTracker = mockk(relaxed = true),
         serverManager = serverManager,
+        failureReporter = mockk<ZcashDatabaseFailureReporter>(relaxed = true),
+        localStorage = mockk<ILocalStorage>(relaxed = true),
     )
 
     @Test
@@ -566,119 +573,59 @@ class ZcashSessionManagerTest {
     // --- server switch ---
 
     @Test
-    fun closeStaleSessions_closesEverySessionOnTheOldUrl() = runTest {
+    fun serverSelected_switchesEveryOpenSessionInPlaceThenWakesTheScheduler() = runTest {
         val otherZcashWallet = zcashWalletMock()
         val otherWallet = walletOf("other-account")
         coEvery { walletOpener.open(otherWallet) } answers {
             OpenedZcashWallet(otherZcashWallet, 0, deepSweepRequired = true, serverUrl = currentServerUrl)
         }
         val manager = manager()
-        val dormant = manager.acquire(wallet)
-        manager.acquire(otherWallet)
-        val busy = CompletableDeferred<Unit>()
-        startOperation(dormant, busy)
-        backgroundScope.launch { manager.release(dormant) }
+        val session = manager.acquire(wallet)
+        val other = manager.acquire(otherWallet)
         runCurrent()
-        advanceTimeBy(DRAIN_TIMEOUT_MS + 1)
-        busy.complete(Unit)
-        advanceUntilIdle()
-        coVerify(exactly = 0) { zcashWallet.close() }
 
         currentServerUrl = NEW_SERVER_URL
-        manager.closeStaleSessions()
+        serverSelected.emit(Unit)
+        advanceUntilIdle()
 
-        coVerify(exactly = 1) { zcashWallet.close() }
-        coVerify(exactly = 1) { otherZcashWallet.close() }
-    }
-
-    @Test
-    fun closeStaleSessions_keepsSessionsAlreadyOnTheCurrentUrl() = runTest {
-        val manager = manager()
-        val session = manager.acquire(wallet)
-
-        manager.closeStaleSessions()
-
+        coVerifyOrder {
+            zcashWallet.setServer(ServerConfig(NEW_SERVER_URL))
+            scheduler.wakeUp()
+        }
+        coVerify(exactly = 1) { otherZcashWallet.setServer(ServerConfig(NEW_SERVER_URL)) }
+        assertEquals(NEW_SERVER_URL, session.serverUrl)
+        assertEquals(NEW_SERVER_URL, other.serverUrl)
         coVerify(exactly = 0) { zcashWallet.close() }
+        coVerify(exactly = 0) { otherZcashWallet.close() }
         assertSame(session, manager.acquire(wallet))
         coVerify(exactly = 1) { walletOpener.open(wallet) }
     }
 
     @Test
-    fun closeStaleSessions_waitsForInFlightOperation() = runTest {
+    fun serverSelected_whileASessionIsOpening_switchesItOnceOpened() = runTest {
+        val opening = CompletableDeferred<Unit>()
+        coEvery { walletOpener.open(wallet) } coAnswers {
+            opening.await()
+            OpenedZcashWallet(zcashWallet, 0, deepSweepRequired = true, serverUrl = SERVER_URL)
+        }
+        val switchedServers = mutableListOf<ServerConfig>()
+        coEvery { zcashWallet.setServer(capture(switchedServers)) } returns Unit
         val manager = manager()
-        val session = manager.acquire(wallet)
-        val busy = CompletableDeferred<Unit>()
-        startOperation(session, busy)
-        currentServerUrl = NEW_SERVER_URL
-
-        val closing = async { manager.closeStaleSessions() }
         runCurrent()
-        advanceTimeBy(DRAIN_TIMEOUT_MS * 2 + 1)
-        runCurrent()
-        // Observed before the operation ends, asserted after: a failed assertion must not leave the close waiting.
-        val closedEarly = closing.isCompleted
-        val operationDuringClose = session.withOperation { 1 }
-        busy.complete(Unit)
-        closing.await()
-
-        assertFalse(closedEarly)
-        assertEquals(ZcashSessionResult.Unavailable, operationDuringClose)
-        coVerify(exactly = 1) { zcashWallet.close() }
-        verify(exactly = 1) { zcashWallet.mempool() }
-        // A timed-out close that put the session back would have re-enqueued it.
-        coVerify(exactly = 1) { scheduler.enqueue(session) }
-    }
-
-    @Test
-    fun closeStaleSessions_keepsTheDiscoveryMemo() = runTest {
-        val manager = manager()
-        val session = manager.acquire(wallet)
-        advanceUntilIdle()
-        session.discoverForEpoch(1)
-        currentServerUrl = NEW_SERVER_URL
-
-        manager.closeStaleSessions()
-        val reopened = manager.acquire(wallet)
-        advanceUntilIdle()
-        reopened.discoverForEpoch(1)
-
-        coVerify(exactly = 1) { zcashWallet.close() }
-        coVerify(exactly = 1) { zcashWallet.discoverTransparentAddresses(any(), any(), any()) }
-    }
-
-    @Test
-    fun acquire_duringCloseStaleSessions_waitsAndOpensOnTheNewUrl() = runTest {
-        val manager = manager()
-        val session = manager.acquire(wallet)
-        val busy = CompletableDeferred<Unit>()
-        startOperation(session, busy)
-        currentServerUrl = NEW_SERVER_URL
-        val closing = async { manager.closeStaleSessions() }
-        runCurrent()
-
         val acquiring = async { manager.acquire(wallet) }
         runCurrent()
-        val acquiredDuringClose = acquiring.isCompleted
-        busy.complete(Unit)
-        closing.await()
-        val reopened = acquiring.await()
 
-        assertFalse(acquiredDuringClose)
-        assertNotSame(session, reopened)
-        assertEquals(NEW_SERVER_URL, reopened.serverUrl)
-        coVerify(exactly = 1) { zcashWallet.close() }
-        coVerify(exactly = 2) { walletOpener.open(wallet) }
-    }
+        currentServerUrl = NEW_SERVER_URL
+        serverSelected.emit(Unit)
+        runCurrent()
+        val switchedBeforeOpen = switchedServers.size
+        opening.complete(Unit)
+        val session = acquiring.await()
+        advanceUntilIdle()
 
-    private suspend fun TestScope.startOperation(session: ZcashSession, busy: CompletableDeferred<Unit>) {
-        val started = CompletableDeferred<Unit>()
-        backgroundScope.launch {
-            session.withOperation {
-                started.complete(Unit)
-                busy.await()
-            }
-        }
-        started.await()
+        assertEquals(0, switchedBeforeOpen)
+        assertEquals(NEW_SERVER_URL, session.serverUrl)
+        assertEquals(listOf(ServerConfig(NEW_SERVER_URL)), switchedServers)
     }
 
     private fun walletOf(accountId: String): Wallet {

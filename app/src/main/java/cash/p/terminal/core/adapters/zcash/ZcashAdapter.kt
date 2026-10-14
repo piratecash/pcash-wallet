@@ -12,6 +12,7 @@ import cash.p.terminal.core.OfflineSignRequest
 import cash.p.terminal.core.OfflineZcashSignRequest
 import cash.p.terminal.core.SignedOfflineZcashTransaction
 import cash.p.terminal.core.UnsupportedAccountException
+import cash.p.terminal.core.adapters.zcash.server.ZcashServerSelector
 import cash.p.terminal.core.adapters.zcash.session.ZcashDiscoveryState
 import cash.p.terminal.core.adapters.zcash.session.ZcashSession
 import cash.p.terminal.core.adapters.zcash.session.ZcashSessionManager
@@ -132,6 +133,7 @@ class ZcashAdapter(
 
     private val restoreSettingsManager: RestoreSettingsManager by inject(RestoreSettingsManager::class.java)
     private val serverManager: ZcashServerManager by inject(ZcashServerManager::class.java)
+    private val serverSelector: ZcashServerSelector by inject(ZcashServerSelector::class.java)
     private val backgroundKeepAliveManager: BackgroundKeepAliveManager by inject(
         BackgroundKeepAliveManager::class.java
     )
@@ -405,9 +407,7 @@ class ZcashAdapter(
         launch { session.state.collect(::onSessionState) }
         launch { recalculateFeeOnChange(session) }
 
-        accountBirthday = walletOrNull { zcash, id ->
-            zcash.accounts().firstOrNull { it.id == id }?.birthHeight
-        }
+        accountBirthday = session.accountBirthHeight()
         // A session may never sync — offline, or an account the scheduler is skipping — so the
         // local database is published once on bind, otherwise every screen stays empty.
         session.refresh()
@@ -587,7 +587,8 @@ class ZcashAdapter(
                 wallet = accountBirthday,
             ),
             "Transparent discovery" to transparentDiscoveryLabel(),
-        )
+            "Database" to databaseLabel(),
+        ) + serverSelector.statusRows()
 
     /**
      * Observability without consequence: a failed discovery must not affect [balanceState], so
@@ -602,6 +603,12 @@ class ZcashAdapter(
         val outcome = if (mark.succeeded) "succeeded" else "failed"
         return "epoch=${mark.epoch} $outcome ${ageSeconds}s ago$selector"
     }
+
+    private fun databaseLabel(): String = tryOrNull {
+        val stats = ZcashSdk.databaseStats()
+        "opens=${stats.opens} native_cantopen=${stats.nativeCantOpen} acquire_cantopen=${stats.cantOpenFailures} " +
+            "recovered=${stats.recoveredByRetry} last=${stats.lastError ?: "none"}"
+    } ?: "n/a"
 
     // endregion
 

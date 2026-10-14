@@ -73,7 +73,11 @@ class BlockchainSettingsViewModel(
                         is BlockchainSettingsModule.BlockchainItem.Zcash ->
                             BlockchainSettingsModule.BlockchainViewItem(
                                 title = item.blockchain.name,
-                                subtitle = item.server.name,
+                                subtitle = if (item.auto) {
+                                    Translator.getString(R.string.zcash_network_auto_short, item.server.name)
+                                } else {
+                                    item.server.name
+                                },
                                 imageUrl = item.blockchain.type.imageUrl,
                                 blockchainItem = item
                             )

@@ -2,11 +2,13 @@ package cash.p.terminal.core.adapters.zcash.session
 
 import cash.p.terminal.core.adapters.zcash.SyncProgressLog
 import cash.p.terminal.core.adapters.zcash.ZcashSessionDiagnostics
+import cash.p.terminal.core.adapters.zcash.isZcashNetworkFailure
 import cash.p.terminal.core.adapters.zcash.pools
 import cash.p.terminal.core.adapters.zcash.zcashRestartDelayFor
 import cash.p.terminal.core.adapters.zcash.zcashErrorName
 import cash.p.terminal.core.adapters.zcash.zcashLogger
 import cash.p.terminal.core.managers.NotBroadcastException
+import cash.p.terminal.core.managers.sanitizeNetworkUrl
 import cash.p.terminal.core.managers.warningSanitized
 import cash.p.terminal.wallet.AdapterStoppedException
 import cash.p.terminal.wallet.entities.TokenType
@@ -14,8 +16,10 @@ import cash.p.zcash.BroadcastResult
 import cash.p.zcash.MempoolEvent
 import cash.p.zcash.PoolBalance
 import cash.p.zcash.PoolSet
+import cash.p.zcash.ServerConfig
 import cash.p.zcash.SyncState
 import cash.p.zcash.Transaction
+import cash.p.zcash.ZcashException
 import cash.p.zcash.ZcashWallet
 import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.CancellationException
@@ -46,6 +50,16 @@ import kotlin.time.TimeSource
 sealed interface ZcashSessionResult<out T> {
     data class Success<T>(val value: T) : ZcashSessionResult<T>
     data object Unavailable : ZcashSessionResult<Nothing>
+}
+
+sealed interface ZcashPassOutcome {
+    data object Synced : ZcashPassOutcome
+
+    /** Stopped by [ZcashSession.cancelSync] or a drain; never a success. */
+    data object Cancelled : ZcashPassOutcome
+
+    /** [published] is false while a network failure is still kept off the screen. */
+    data class Failed(val error: Throwable, val published: Boolean) : ZcashPassOutcome
 }
 
 /** One walk in flight, and the epoch it was started for. */
@@ -127,6 +141,11 @@ class ZcashSession internal constructor(
     private val scope = CoroutineScope(SupervisorJob() + dispatcherProvider.io)
     private val logger = diagnostics.logger
     val serverUrl: String get() = diagnostics.serverUrl
+
+    /** Server the wallet held when the latest [sync] entered; passes never overlap, so it is that pass's. */
+    @Volatile
+    var passServerUrl: String = diagnostics.serverUrl
+        private set
     private val gate = Mutex()
     private val syncCancelGate = Mutex()
     private var phase = Phase.ACTIVE
@@ -146,6 +165,9 @@ class ZcashSession internal constructor(
 
     /** Backoff state owned by [ZcashSyncScheduler]; it dies together with the session. */
     var syncAttempts: Int = 0
+
+    /** Touched only by the sync pass; passes never overlap. */
+    private var networkFailureStreak = 0
 
     /**
      * Sync status and the local snapshot have one publication point. Consumers that react to
@@ -183,11 +205,12 @@ class ZcashSession internal constructor(
             return ZcashSessionResult.Success(block(wallet))
         } finally {
             leaveOperation()
+            diagnostics.checkDatabase()
         }
     }
 
     /** Runs one sync pass. Only [ZcashSyncScheduler] calls it — syncs are serialized SDK-wide. */
-    suspend fun sync(): ZcashSessionResult<Unit> = supervisorScope {
+    suspend fun sync(): ZcashSessionResult<ZcashPassOutcome> = supervisorScope {
         var generation = 0
         val collector = async(start = CoroutineStart.LAZY) { collectSync(generation) }
         val operation = enter(collector)
@@ -198,31 +221,51 @@ class ZcashSession internal constructor(
         generation = checkNotNull(operation.syncGeneration)
         try {
             collector.start()
-            collector.await()
-            ZcashSessionResult.Success(Unit)
+            val outcome = collector.await()
+            ZcashSessionResult.Success(if (isCurrentSync(generation)) outcome else ZcashPassOutcome.Cancelled)
         } catch (e: CancellationException) {
             if (isCurrentSync(generation)) throw e
-            ZcashSessionResult.Success(Unit)
+            ZcashSessionResult.Success(ZcashPassOutcome.Cancelled)
         } finally {
             leaveSync(collector)
+            diagnostics.checkDatabase()
         }
     }
 
-    private suspend fun collectSync(generation: Int) {
+    /** A pass that ends without reaching Synced or Failed was stopped. */
+    private suspend fun collectSync(generation: Int): ZcashPassOutcome {
         logger.info("sync: start gen=$generation")
         val progress = SyncProgressLog(logger)
+        var outcome: ZcashPassOutcome = ZcashPassOutcome.Cancelled
         try {
-            wallet.sync(listOf(dbAccountId)).collect { onSyncState(it, generation, progress) }
+            wallet.sync(listOf(dbAccountId)).collect { state ->
+                onSyncState(state, generation, progress)?.let { outcome = it }
+            }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
-            onSyncState(SyncState.Failed(e), generation, progress)
+            onSyncState(SyncState.Failed(e), generation, progress)?.let { outcome = it }
         }
+        return outcome
     }
 
     /** Republishes what the local database already holds; nothing is fetched from the network. */
     suspend fun refresh(): ZcashSessionResult<Unit> = withOperation {
-        publishLocalState(readLocalState())
+        readReportingFailure { publishLocalState(readLocalState()) }
+    }
+
+    /** Null when the session is unavailable, the account is missing, or the read failed. */
+    suspend fun accountBirthHeight(): Int? = (withOperation {
+        readReportingFailure { wallet.accounts().firstOrNull { it.id == dbAccountId }?.birthHeight }
+    } as? ZcashSessionResult.Success)?.value
+
+    /** A database failure is reported like a failed sync instead of escaping to the caller. */
+    private suspend fun <T> readReportingFailure(read: suspend () -> T): T? = try {
+        read()
+    } catch (e: ZcashException) {
+        diagnostics.syncFailed(e)
+        _state.update { it.copy(syncState = SyncState.Failed(e)) }
+        null
     }
 
     /**
@@ -340,6 +383,29 @@ class ZcashSession internal constructor(
         }
     }
 
+    /**
+     * Moves the open wallet to [server] in place. The caller serializes this with [close]; a pass
+     * or a mempool stream started before the switch holds the old server, so both are restarted.
+     */
+    suspend fun switchServer(server: ServerConfig) {
+        try {
+            // Under the gate a pass enters by, so no pass runs on one server while reporting another.
+            gate.withLock {
+                wallet.setServer(server)
+                diagnostics.serverUrl = server.url
+            }
+        } catch (e: ZcashException) {
+            logger.warningSanitized("server: switch failed", e)
+            return
+        }
+        stopSync(invalidateState = true)
+        mempoolGate.withLock {
+            stopMempool()
+            startMempool()
+        }
+        logger.info("server: switched to ${sanitizeNetworkUrl(server.url)}")
+    }
+
     /** Cancellation is SDK-wide, so it may only be issued while this session is syncing. */
     suspend fun cancelSync() = stopSync(invalidateState = true)
 
@@ -389,6 +455,7 @@ class ZcashSession internal constructor(
         val generation = if (collector != null) {
             _state.update { it.copy(syncState = SyncState.Connecting) }
             syncCollector = collector
+            passServerUrl = diagnostics.serverUrl
             syncGeneration
         } else {
             null
@@ -433,27 +500,50 @@ class ZcashSession internal constructor(
         scope.launch { mempoolGate.withLock { startMempool() } }
     }
 
-    private suspend fun onSyncState(state: SyncState, generation: Int, progress: SyncProgressLog) {
-        if (!isCurrentSync(generation)) return
-        when (state) {
+    /** Returns the pass outcome once [state] settles it. */
+    private suspend fun onSyncState(
+        state: SyncState,
+        generation: Int,
+        progress: SyncProgressLog,
+    ): ZcashPassOutcome? {
+        if (!isCurrentSync(generation)) return null
+        return when (state) {
             is SyncState.Syncing -> {
                 progress.onSyncing(state)
                 publishState(generation) { it.copy(syncState = state, latestHeight = state.target) }
+                null
             }
 
             SyncState.Synced -> {
                 val localState = readLocalState()
                 progress.onSynced()
+                networkFailureStreak = 0
                 publishState(generation) { it.withLocalState(localState).copy(syncState = state) }
+                ZcashPassOutcome.Synced
             }
 
             is SyncState.Failed -> {
                 diagnostics.syncFailed(state.error)
-                publishState(generation) { it.copy(syncState = state) }
+                val published = isFailureShown(state.error)
+                if (published) publishState(generation) { it.copy(syncState = state) }
+                ZcashPassOutcome.Failed(state.error, published)
             }
 
-            else -> publishState(generation) { it.copy(syncState = state) }
+            else -> {
+                publishState(generation) { it.copy(syncState = state) }
+                null
+            }
         }
+    }
+
+    /** A lone network break is retried quietly; the previous state stays on screen meanwhile. */
+    private fun isFailureShown(error: Throwable): Boolean {
+        if (!error.isZcashNetworkFailure()) {
+            networkFailureStreak = 0
+            return true
+        }
+        networkFailureStreak++
+        return networkFailureStreak >= FAILURES_BEFORE_SHOWN
     }
 
     private suspend fun isCurrentSync(generation: Int): Boolean =
@@ -585,6 +675,7 @@ class ZcashSession internal constructor(
 
     internal companion object {
         const val CONFIRMATIONS = 10
+        const val FAILURES_BEFORE_SHOWN = 2
 
         /** One per address spec, so a spec added later cannot be left without a maximum. */
         val SPENDING_POOL_SETS: List<PoolSet> =

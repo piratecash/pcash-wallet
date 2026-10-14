@@ -341,8 +341,8 @@
     <string name="balance_connecting_to_api">Conectando a la API…</string>
     <string name="beam_restore_resolving_birthday">Buscando punto de restauración…</string>
     <string name="beam_restore_downloading_snapshot">Descargando instantánea…</string>
-    <string name="beam_restore_downloading_snapshot_downloaded">Descargando instantánea… %1$s MiB</string>
-    <string name="beam_restore_downloading_snapshot_progress">Descargando instantánea… %1$s de %2$s MiB</string>
+    <string name="beam_restore_downloading_snapshot_downloaded">Descargando instantánea… %1$s MB</string>
+    <string name="beam_restore_downloading_snapshot_progress">Descargando instantánea… %1$s de %2$s MB</string>
     <string name="beam_restore_validating_snapshot">Validando instantánea…</string>
     <string name="beam_restore_counting_shielded_outputs">Contando salidas protegidas…</string>
     <string name="beam_restore_scanning_wallet_outputs">Escaneando salidas del monedero…</string>
@@ -1024,6 +1024,10 @@
     <string name="zcash_network_server_url">URL del servidor</string>
     <string name="zcash_network_invalid_url">Introduce https://host:port (o http://…onion para Tor), sin usuario, ruta ni parámetros</string>
     <string name="zcash_network_default_servers">Predeterminados</string>
+    <string name="zcash_network_auto">Automático (recomendado)</string>
+    <string name="zcash_network_auto_current">Ahora: %1$s</string>
+    <string name="zcash_network_auto_hint">Elige el servidor más rápido que funcione</string>
+    <string name="zcash_network_auto_short">Automático · %1$s</string>
     <!--Add RPC Source-->
     <string name="AddEvmSyncSource_RpcUrl">Url RPC</string>
     <string name="AddEvmSyncSource_AddRPCSource">Añadir fuente RPC</string>
@@ -1033,6 +1037,8 @@
     <!--Btc Blockchain Settings -->
     <string name="custom_peers">Custom peers (e.g., 188.40.241.115, dnsseed.custom.io)</string>
     <string name="blockchain_status">Estado de Blockchain</string>
+    <string name="blockchain_status_save_to_file">Guardar en archivo</string>
+    <string name="blockchain_status_file_saved">Informe guardado</string>
     <string name="btc_blockchain_settings_restore_source_change_warning">Después de cambiar la fuente, el monedero tendrá que resinc sí mismo.</string>
     <string name="send_confirmation_syncing_warning">La billetera aún se está sincronizando. Espere a que se complete la sincronización antes de enviar.</string>
     <string name="send_confirmation_sync_error_warning">Error de sincronización de billetera. Toca Reintentar para reconectar.</string>

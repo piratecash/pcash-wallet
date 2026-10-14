@@ -73,14 +73,14 @@ class TokenBalanceModule {
                 rateRepository = TransactionsRateRepository(App.currencyManager, App.marketKit),
                 transactionSyncStateRepository = transactionSyncStateRepository,
                 transactionAdapterManager = transactionAdapterManager,
-                nftMetadataService = NftMetadataService(App.nftMetadataManager),
+                nftMetadataService = NftMetadataService(getKoinInstance()),
                 spamManager = getKoinInstance()
             )
 
             val totalService = TotalService(
                 currencyManager = App.currencyManager,
                 marketKit = App.marketKit,
-                baseTokenManager = App.baseTokenManager,
+                baseTokenManager = getKoinInstance(),
                 balanceHiddenManager = App.balanceHiddenManager
             )
 

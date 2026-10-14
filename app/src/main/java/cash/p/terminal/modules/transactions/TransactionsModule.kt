@@ -17,7 +17,7 @@ object TransactionsModule {
             val transactionsService = TransactionsService(
                 rateRepository = TransactionsRateRepository(App.currencyManager, App.marketKit),
                 transactionSyncStateRepository = TransactionSyncStateRepository(App.transactionAdapterManager),
-                nftMetadataService = NftMetadataService(App.nftMetadataManager),
+                nftMetadataService = NftMetadataService(getKoinInstance()),
                 spamManager = getKoinInstance()
             )
 

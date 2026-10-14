@@ -9,6 +9,9 @@ import cash.p.terminal.wallet.entities.AccountRecord
 import cash.p.terminal.wallet.entities.SecretString
 import io.horizontalsystems.core.CoreApp
 import io.horizontalsystems.core.IEncryptionManager
+import io.mockk.every
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -27,7 +30,8 @@ class MoneroFileDaoTest {
 
     @Before
     fun setUp() {
-        CoreApp.encryptionManager = object : IEncryptionManager {
+        mockkObject(CoreApp.Companion)
+        every { CoreApp.encryptionManager } returns object : IEncryptionManager {
             override fun encrypt(data: String) = data
             override fun decrypt(data: String) = data
         }
@@ -41,6 +45,7 @@ class MoneroFileDaoTest {
     @After
     fun tearDown() {
         database.close()
+        unmockkObject(CoreApp.Companion)
     }
 
     @Test

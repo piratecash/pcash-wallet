@@ -7,9 +7,7 @@ import cash.p.terminal.core.utils.MNEMONIC_WORD_REGEX
 import io.horizontalsystems.core.ViewModelUiState
 import cash.p.terminal.core.managers.WordsManager
 import cash.p.terminal.modules.restoreaccount.restoremnemonic.RestoreMnemonicModule
-import cash.p.terminal.modules.restoreaccount.restoremnemonicnonstandard.RestoreMnemonicNonStandardModule.UiState
 import cash.p.terminal.wallet.AccountType
-import io.horizontalsystems.core.CoreApp
 import io.horizontalsystems.core.IThirdKeyboard
 import io.horizontalsystems.hdwalletkit.Language
 import io.horizontalsystems.hdwalletkit.Mnemonic
@@ -19,7 +17,7 @@ class RestoreMnemonicNonStandardViewModel(
     accountFactory: IAccountFactory,
     private val wordsManager: WordsManager,
     private val thirdKeyboardStorage: IThirdKeyboard,
-) : ViewModelUiState<UiState>() {
+) : ViewModelUiState<RestoreMnemonicNonStandardUiState>() {
 
     val mnemonicLanguages = Language.entries.toList()
 
@@ -43,9 +41,9 @@ class RestoreMnemonicNonStandardViewModel(
         private set
 
     val isThirdPartyKeyboardAllowed: Boolean
-        get() = CoreApp.thirdKeyboardStorage.isThirdPartyKeyboardAllowed
+        get() = thirdKeyboardStorage.isThirdPartyKeyboardAllowed
 
-    override fun createState() = UiState(
+    override fun createState() = RestoreMnemonicNonStandardUiState(
         passphraseEnabled = passphraseEnabled,
         passphraseError = passphraseError,
         invalidWordRanges = invalidWordRanges,
@@ -162,3 +160,13 @@ class RestoreMnemonicNonStandardViewModel(
             .toList()
     }
 }
+
+data class RestoreMnemonicNonStandardUiState(
+    val passphraseEnabled: Boolean,
+    val passphraseError: String?,
+    val invalidWordRanges: List<IntRange>,
+    val error: String?,
+    val accountType: AccountType?,
+    val wordSuggestions: RestoreMnemonicModule.WordSuggestions?,
+    val language: Language,
+)

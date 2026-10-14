@@ -3,6 +3,8 @@ package cash.p.terminal.modules.nft.collection.assets
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import cash.p.terminal.core.App
+import cash.p.terminal.core.managers.NftMetadataManager
+import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.modules.balance.DefaultBalanceXRateRepository
 import io.horizontalsystems.core.entities.BlockchainType
 
@@ -17,7 +19,7 @@ object NftCollectionAssetsModule {
             val service = NftCollectionAssetsService(
                 blockchainType,
                 collectionUid,
-                App.nftMetadataManager.provider(blockchainType),
+                getKoinInstance<NftMetadataManager>().provider(blockchainType),
                 DefaultBalanceXRateRepository("nft-collection-assets", App.currencyManager, App.marketKit)
             )
             return NftCollectionAssetsViewModel(service) as T

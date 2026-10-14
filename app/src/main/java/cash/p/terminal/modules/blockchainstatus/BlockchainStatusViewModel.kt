@@ -39,6 +39,8 @@ class BlockchainStatusViewModel(
     private val statusReportFile: StatusReportFile,
 ) : ViewModel() {
 
+    val reportFileName = "${provider.logFilterTag.lowercase()}_blockchain_status_report.txt"
+
     private val _uiState = MutableStateFlow(
         BlockchainStatusUiState(
             blockchainName = provider.blockchainName,
@@ -75,12 +77,22 @@ class BlockchainStatusViewModel(
         }
     }
 
+    suspend fun saveReport(uri: Uri): Boolean {
+        val state = _uiState.value
+        return statusReportFile.save(
+            uri = uri,
+            header = buildShareHeader(state.statusSections, state.sharedSection),
+            logTag = provider.logFilterTag,
+            footer = "",
+        )
+    }
+
     suspend fun prepareShareUri(): Uri? {
         if (_uiState.getAndUpdate { it.copy(shareInProgress = true) }.shareInProgress) return null
         try {
             val state = _uiState.value
             return statusReportFile.share(
-                fileName = "${provider.logFilterTag.lowercase()}_blockchain_status_report.txt",
+                fileName = reportFileName,
                 header = buildShareHeader(state.statusSections, state.sharedSection),
                 logTag = provider.logFilterTag,
                 footer = "",

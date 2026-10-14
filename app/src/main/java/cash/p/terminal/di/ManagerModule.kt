@@ -2,17 +2,23 @@ package cash.p.terminal.di
 
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.preference.PreferenceManager
+import cash.p.terminal.core.CrashlyticsNonFatalReporter
 import cash.p.terminal.core.IAccountFactory
 import cash.p.terminal.core.IBackupManager
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.IClipboardManager
 import cash.p.terminal.core.IMarketStorage
 import cash.p.terminal.core.IRateAppManager
+import cash.p.terminal.core.NonFatalReporter
 import cash.p.terminal.core.ITermsManager
 import cash.p.terminal.core.ITorManager
 import cash.p.terminal.core.adapters.zcash.ZcashAddressDeriver
 import cash.p.terminal.core.adapters.zcash.ZcashIronwoodMigrationRegistry
 import cash.p.terminal.core.adapters.zcash.ZcashKeyExporter
+import cash.p.terminal.core.adapters.zcash.server.ZcashServerProber
+import cash.p.terminal.core.adapters.zcash.server.ZcashServerProberImpl
+import cash.p.terminal.core.adapters.zcash.server.ZcashServerSelector
+import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFailureReporter
 import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFiles
 import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProvider
 import cash.p.terminal.core.adapters.zcash.session.ZcashDbKeyProviderImpl
@@ -31,6 +37,7 @@ import cash.p.terminal.core.managers.BackgroundKeepAliveManager
 import cash.p.terminal.core.managers.BackupManager
 import cash.p.terminal.core.managers.BalanceHiddenManager
 import cash.p.terminal.core.managers.BalanceHideOnFlipManager
+import cash.p.terminal.core.managers.BaseTokenManager
 import cash.p.terminal.core.managers.BeamDatabaseKeyProvider
 import cash.p.terminal.core.managers.BeamSessionFactory
 import cash.p.terminal.core.managers.BeamLifecycleCoordinator
@@ -100,6 +107,9 @@ import cash.p.terminal.core.managers.LocalStorageManager
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.core.managers.OfflineSignedTransactionRepository
 import cash.p.terminal.core.managers.MoneroKitManager
+import cash.p.terminal.core.managers.NftAdapterManager
+import cash.p.terminal.core.managers.NftMetadataManager
+import cash.p.terminal.core.managers.NftMetadataSyncer
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.modules.blockchainstatus.StatusReportFile
 import cash.p.terminal.modules.offline.OfflineOperationGate
@@ -175,6 +185,8 @@ import cash.p.terminal.feature.miniapp.domain.usecase.EvmPersonalSigner
 import cash.p.terminal.feature.miniapp.domain.usecase.GetTonAddressUseCase
 import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.modules.addtoken.AddTokenService
+import cash.p.terminal.modules.backuplocal.fullbackup.BackupProvider
+import cash.p.terminal.modules.balance.BalanceViewTypeManager
 import cash.p.terminal.modules.main.AppPagesImpl
 import cash.p.terminal.modules.market.MarketPages
 import cash.p.terminal.modules.multiswap.AssetFiatRateService
@@ -194,15 +206,19 @@ import cash.p.terminal.modules.send.offline.OfflineTransactionFileTransfer
 import cash.p.terminal.modules.send.offline.BeamOfflineTransactionRelay
 import cash.p.terminal.modules.send.beam.BeamOfflineOperations
 import cash.p.terminal.modules.settings.appearance.AppIconService
+import cash.p.terminal.modules.settings.appearance.LaunchScreenService
+import cash.p.terminal.modules.theme.ThemeService
 import cash.p.terminal.modules.settings.guides.GuidesRepository
 import cash.p.terminal.modules.pin.hiddenwallet.HiddenWalletPinPolicy
 import cash.p.terminal.modules.transactions.CheckAmlIncomingTransactionUseCase
 import cash.p.terminal.modules.transactions.TransactionSyncStateRepository
 import cash.p.terminal.modules.walletconnect.WCManager
+import cash.p.terminal.modules.walletconnect.WCWalletRequestHandler
 import cash.p.terminal.wallet.favorites.MarketFavoritesChangeListener
 import cash.p.terminal.wallet.favorites.MarketFavoritesMigration
 import cash.p.terminal.widgets.MarketWatchlistResetCleaner
 import cash.p.terminal.widgets.MarketWidgetManager
+import cash.p.terminal.widgets.MarketWidgetRepository
 import cash.p.terminal.widgets.WidgetMarketFavoritesChangeListener
 import cash.p.terminal.core.storage.AppDatabase
 import cash.p.terminal.core.storage.ChartIndicatorStorageImpl
@@ -275,9 +291,13 @@ val managerModule = module {
     singleOf(::ZcashAddressDeriver)
     singleOf(::ZcashKeyExporter)
     singleOf(::ZcashDatabaseFiles)
+    singleOf(::CrashlyticsNonFatalReporter) bind NonFatalReporter::class
+    single { ZcashDatabaseFailureReporter(get(), get()) }
     singleOf(::ZcashDbKeyProviderImpl) bind ZcashDbKeyProvider::class
     singleOf(::ZcashWalletOpenerImpl) bind ZcashWalletOpener::class
     singleOf(::ZcashServerManager)
+    singleOf(::ZcashServerProberImpl) bind ZcashServerProber::class
+    singleOf(::ZcashServerSelector)
     singleOf(::ZcashSyncScheduler)
     singleOf(::ZcashSessionManager)
     singleOf(::TonFallbackAddressProvider)
@@ -385,6 +405,9 @@ val managerModule = module {
     singleOf(::AddressLabelManager)
     singleOf(::AddressMetadataManager)
     singleOf(::EvmLabelManager)
+    singleOf(::NftMetadataManager)
+    singleOf(::NftAdapterManager)
+    singleOf(::NftMetadataSyncer)
     factoryOf(::SolanaWalletManager)
     singleOf(::RecentAddressManager)
     singleOf(::AmlStatusManager)
@@ -413,6 +436,7 @@ val managerModule = module {
         }
     }
     singleOf(::WCSessionManager)
+    factoryOf(::WCWalletRequestHandler)
     factoryOf(::WalletActivator)
     factoryOf(::AddTokenService)
 
@@ -436,6 +460,38 @@ val managerModule = module {
     singleOf(::GlanceAppWidgetManager)
     singleOf(::MarketWatchlistResetCleaner)
     singleOf(::AppIconService)
+    factoryOf(::ThemeService)
+    factoryOf(::LaunchScreenService)
+    // 25 constructor parameters exceed the 22 that factoryOf supports.
+    factory {
+        BackupProvider(
+            localStorage = get(),
+            languageManager = get(),
+            walletStorage = get(),
+            settingsManager = get(),
+            accountManager = get(),
+            accountFactory = get(),
+            walletManager = get(),
+            restoreSettingsManager = get(),
+            blockchainSettingsStorage = get(),
+            evmBlockchainManager = get(),
+            marketFavoritesManager = get(),
+            balanceViewTypeManager = get(),
+            appIconService = get(),
+            themeService = get(),
+            chartIndicatorManager = get(),
+            chartIndicatorSettingsDao = get(),
+            balanceHiddenManager = get(),
+            baseTokenManager = get(),
+            launchScreenService = get(),
+            currencyManager = get(),
+            btcBlockchainManager = get(),
+            evmSyncSourceManager = get(),
+            evmSyncSourceStorage = get(),
+            solanaRpcSourceManager = get(),
+            contactsRepository = get(),
+        )
+    }
     singleOf(::CalculatorModeService)
     single { CalculatorPinAttemptThrottle(get(), get()) }
     single { CalculatorExpressionEvaluator() }
@@ -455,6 +511,8 @@ val managerModule = module {
     // would let one closing screen cancel the sync monitoring of another still open.
     factoryOf(::TransactionSyncStateRepository)
     singleOf(::BalanceHiddenManager) bind IBalanceHiddenManager::class
+    singleOf(::BaseTokenManager)
+    singleOf(::BalanceViewTypeManager)
     singleOf(::DeviceFlipDetector)
     singleOf(::BalanceHideOnFlipManager) { createdAtStart() }
     singleOf(::TransactionHiddenManager) bind ITransactionHiddenManager::class
@@ -547,7 +605,9 @@ val managerModule = module {
 
     // Market favorites
     singleOf(::MarketWidgetManager)
+    singleOf(::MarketWidgetRepository)
     singleOf(::PriceManager) bind PriceChangeIntervalProvider::class
+
     singleOf(::WidgetMarketFavoritesChangeListener) bind MarketFavoritesChangeListener::class
     single<MarketFavoritesMigration> {
         MarketFavoritesDataMigration(get<AppDatabase>().marketFavoritesDao(), get())

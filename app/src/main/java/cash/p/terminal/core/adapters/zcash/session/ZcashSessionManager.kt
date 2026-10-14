@@ -1,5 +1,6 @@
 package cash.p.terminal.core.adapters.zcash.session
 
+import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.adapters.zcash.ZcashSessionDiagnostics
 import cash.p.terminal.core.adapters.zcash.zcashAppLogger
 import cash.p.terminal.core.managers.NetworkErrorTracker
@@ -11,7 +12,10 @@ import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.BlockchainType
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentHashMap
@@ -28,6 +32,8 @@ class ZcashSessionManager(
     private val dispatcherProvider: DispatcherProvider,
     private val networkErrorTracker: NetworkErrorTracker,
     private val serverManager: ZcashServerManager,
+    private val failureReporter: ZcashDatabaseFailureReporter,
+    private val localStorage: ILocalStorage,
 ) {
     private class Entry(val session: ZcashSession, var refCount: Int)
 
@@ -50,6 +56,12 @@ class ZcashSessionManager(
      * timeout puts back would count a holder that is already gone.
      */
     private var closing: Entry? = null
+
+    init {
+        CoroutineScope(SupervisorJob() + dispatcherProvider.io).launch {
+            serverManager.serverSelectedFlow.collect { switchServer() }
+        }
+    }
 
     /**
      * An opening waits out a close in progress: the closing session is out of [sessions] while it
@@ -87,7 +99,7 @@ class ZcashSessionManager(
             deepSweepRequired = opened.deepSweepRequired,
             discovery = discoveryState(wallet),
             diagnostics = ZcashSessionDiagnostics(
-                zcashAppLogger(accountId), networkErrorTracker, accountId, opened.serverUrl
+                zcashAppLogger(accountId), networkErrorTracker, accountId, opened.serverUrl, failureReporter
             ),
         ).also { session -> mutex.withLock { sessions[accountId] = Entry(session, 1) } }
     }
@@ -135,17 +147,15 @@ class ZcashSessionManager(
     }
 
     /**
-     * Closes every session on a server other than the current one, whoever holds it, never putting one back:
-     * the SDK's network deadlines bound the wait. An [acquire] meanwhile waits and opens on the current server.
+     * Under [closeGate], so a session opened concurrently is either opened on the new server or
+     * already registered here and switched.
      */
-    suspend fun closeStaleSessions() = closeGate.withLock {
-        val currentUrl = serverManager.current.url
-        while (true) {
-            val entry = mutex.withLock {
-                sessions.values.firstOrNull { it.session.serverUrl != currentUrl }?.let(::takeForClose)
-            } ?: break
-            close(entry, untilDrained = true)
+    private suspend fun switchServer() {
+        closeGate.withLock {
+            val server = serverManager.serverConfig(localStorage.torEnabled)
+            mutex.withLock { sessions.values.map { it.session } }.forEach { it.switchServer(server) }
         }
+        scheduler.wakeUp()
     }
 
     /**
@@ -165,11 +175,11 @@ class ZcashSessionManager(
      * absent entry is what tells the eraser the session is gone, so it may not be observable
      * while a close is still draining.
      */
-    private suspend fun close(entry: Entry, untilDrained: Boolean = false): Boolean = withContext(NonCancellable) {
+    private suspend fun close(entry: Entry): Boolean = withContext(NonCancellable) {
         val session = entry.session
         try {
             scheduler.remove(session)
-            if (drain(session, untilDrained)) {
+            if (session.drain(DRAIN_TIMEOUT_MS, reactivateOnTimeout = false)) {
                 session.close()
                 true
             } else {
@@ -185,14 +195,6 @@ class ZcashSessionManager(
         } finally {
             mutex.withLock { if (closing === entry) closing = null }
         }
-    }
-
-    private suspend fun drain(session: ZcashSession, untilDrained: Boolean): Boolean {
-        while (!session.drain(DRAIN_TIMEOUT_MS, reactivateOnTimeout = false)) {
-            if (!untilDrained) return false
-            zcashAppLogger(session.accountId).warning("server switch: still draining")
-        }
-        return true
     }
 
     /** Callers must hold [mutex]. */

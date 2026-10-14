@@ -51,6 +51,9 @@ class ConnectivityManager(
     private val _isConnected = MutableStateFlow(false)
     override val isConnected = _isConnected.asStateFlow()
 
+    private val _validatedNetworksFlow = MutableStateFlow<Set<Network>>(emptySet())
+    val validatedNetworksFlow = _validatedNetworksFlow.asStateFlow()
+
     override val torEnabled: Boolean
         get() = localStorage.torEnabled
 
@@ -199,6 +202,7 @@ class ConnectivityManager(
 
         val oldValue = _isConnected.value
         _isConnected.value = newValue
+        _validatedNetworksFlow.value = networkValidationMap.filterValues { it }.keys.toSet()
         if (forceEmit || oldValue != newValue) {
             _networkAvailabilityFlow.tryEmit(newValue)
         }

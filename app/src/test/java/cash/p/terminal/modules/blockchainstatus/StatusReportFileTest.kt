@@ -6,9 +6,9 @@ import android.net.Uri
 import android.util.Log
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import cash.p.terminal.core.KoinLogsDao
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.storage.AppDatabase
-import io.horizontalsystems.core.logger.AppLog
 import io.horizontalsystems.core.storage.LogEntry
 import io.horizontalsystems.core.storage.LogsDao
 import io.mockk.every
@@ -38,6 +38,7 @@ class StatusReportFileTest {
 
     private lateinit var database: AppDatabase
     private lateinit var dao: LogsDao
+    private val koinLogsDao = KoinLogsDao()
     private lateinit var statusReportFile: StatusReportFile
     private lateinit var context: Context
 
@@ -48,7 +49,7 @@ class StatusReportFileTest {
             .allowMainThreadQueries()
             .build()
         dao = database.logsDao()
-        AppLog.logsDao = dao
+        koinLogsDao.dao = dao
 
         val dispatcher = UnconfinedTestDispatcher()
         statusReportFile = StatusReportFile(context, TestDispatcherProvider(dispatcher, TestScope(dispatcher)))
@@ -56,7 +57,7 @@ class StatusReportFileTest {
 
     @After
     fun tearDown() {
-        AppLog.logsDao = mockk(relaxed = true)
+        koinLogsDao.close()
         database.close()
     }
 
@@ -123,7 +124,7 @@ class StatusReportFileTest {
                 false
             }
         }
-        AppLog.logsDao = mockk<LogsDao>(relaxed = true).also { logsDao ->
+        koinLogsDao.dao = mockk<LogsDao>(relaxed = true).also { logsDao ->
             every { logsDao.streamGrouped() } returns blockingCursor
         }
 

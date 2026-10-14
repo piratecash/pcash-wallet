@@ -1,6 +1,7 @@
 package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.storage.BlockchainSettingsStorage
+import cash.p.zcash.ServerConfig
 import cash.p.zcash.Transport
 import io.mockk.every
 import io.mockk.mockk
@@ -13,6 +14,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -20,10 +22,16 @@ import org.junit.Test
 class ZcashServerManagerTest {
 
     private var storedUrl: String? = null
+    private var storedAuto: Boolean = true
+    private var storedAutoUrl: String? = null
     private var storedCustom: List<String> = emptyList()
     private val storage = mockk<BlockchainSettingsStorage> {
         every { zcashServerUrl() } answers { storedUrl }
         every { saveZcashServerUrl(any()) } answers { storedUrl = firstArg() }
+        every { zcashServerAuto() } answers { storedAuto }
+        every { saveZcashServerAuto(any()) } answers { storedAuto = firstArg() }
+        every { zcashAutoServerUrl() } answers { storedAutoUrl }
+        every { saveZcashAutoServerUrl(any()) } answers { storedAutoUrl = firstArg() }
         every { zcashCustomServers() } answers { storedCustom }
         every { saveZcashCustomServers(any()) } answers { storedCustom = firstArg() }
     }
@@ -81,6 +89,137 @@ class ZcashServerManagerTest {
             manager.defaultServers.map { it.url },
         )
         assertTrue(manager.defaultServers.none { it.isCustom })
+    }
+
+    @Test
+    fun current_unknownStoredUrlInManualMode_fallsBackToFirstDefault() {
+        storedAuto = false
+        storedUrl = "https://gone.example:443"
+
+        assertEquals(defaultUrl, manager.current.url)
+    }
+
+    @Test
+    fun isAuto_autoKeyAbsentWithStoredManualUrl_isTrueAndIgnoresManualUrl() {
+        storedUrl = manager.defaultServers[2].url
+
+        assertTrue(manager.isAuto)
+        assertEquals(defaultUrl, manager.current.url)
+    }
+
+    @Test
+    fun select_fromAuto_switchesToManualAndCurrentIsUrl() {
+        val target = manager.defaultServers[2].url
+
+        manager.select(target)
+
+        assertFalse(manager.isAuto)
+        assertEquals(target, manager.current.url)
+    }
+
+    @Test
+    fun select_sameUrlAsAutoChoice_emitsBecauseModeChanged() = runTest(UnconfinedTestDispatcher()) {
+        storedAutoUrl = defaultUrl
+        val emissions = collectCount(manager.serverSelectedFlow)
+
+        manager.select(defaultUrl)
+
+        assertEquals(1, emissions.value)
+    }
+
+    @Test
+    fun selectAuto_afterManual_restoresPersistedAutoChoice() = runTest(UnconfinedTestDispatcher()) {
+        val auto = manager.defaultServers[3].url
+        storedAutoUrl = auto
+        manager.select(manager.defaultServers[1].url)
+        val emissions = collectCount(manager.serverSelectedFlow)
+
+        manager.selectAuto()
+        manager.selectAuto()
+
+        assertTrue(manager.isAuto)
+        assertEquals(auto, manager.current.url)
+        assertEquals(1, emissions.value)
+    }
+
+    @Test
+    fun selectAuto_noPersistedChoice_currentIsFirstDefault() {
+        manager.select(manager.defaultServers[1].url)
+
+        manager.selectAuto()
+
+        assertEquals(defaultUrl, manager.current.url)
+    }
+
+    @Test
+    fun applyAutoChoice_manualMode_isIgnored() = runTest(UnconfinedTestDispatcher()) {
+        val manual = manager.defaultServers[1].url
+        manager.select(manual)
+        val emissions = collectCount(manager.serverSelectedFlow)
+
+        manager.applyAutoChoice(manager.defaultServers[2].url)
+
+        assertEquals(manual, manager.current.url)
+        assertEquals(null, storedAutoUrl)
+        assertEquals(0, emissions.value)
+    }
+
+    @Test
+    fun applyAutoChoice_autoMode_emitsOnlyWhenEffectiveServerChanges() = runTest(UnconfinedTestDispatcher()) {
+        val target = manager.defaultServers[2].url
+        val emissions = collectCount(manager.serverSelectedFlow)
+
+        manager.applyAutoChoice(target)
+        manager.applyAutoChoice(target)
+
+        assertEquals(target, manager.current.url)
+        assertEquals(1, emissions.value)
+    }
+
+    @Test
+    fun applyAutoChoice_serverDeletedDuringEvaluation_keepsCurrentChoice() = runTest(UnconfinedTestDispatcher()) {
+        val healthy = manager.defaultServers[3].url
+        manager.applyAutoChoice(healthy)
+        manager.addCustom("https://my.node.io")
+        manager.selectAuto()
+        manager.delete("https://my.node.io:443")
+        val emissions = collectCount(manager.serverSelectedFlow)
+
+        manager.applyAutoChoice("https://my.node.io:443")
+
+        assertEquals(healthy, manager.current.url)
+        assertEquals(0, emissions.value)
+    }
+
+    @Test
+    fun autoPool_withoutTor_includesCustomAndExcludesOnion() {
+        manager.addCustom("https://my.node.io")
+        manager.addCustom("http://abc.onion")
+
+        val urls = manager.autoPool(torEnabled = false).map { it.url }
+
+        assertEquals(manager.defaultServers.map { it.url } + "https://my.node.io:443", urls)
+    }
+
+    @Test
+    fun autoPool_withTor_includesOnion() {
+        manager.addCustom("http://abc.onion")
+
+        assertTrue(manager.autoPool(torEnabled = true).any { it.url == "http://abc.onion:80" })
+    }
+
+    @Test
+    fun delete_autoChosenCustom_fallsBackToFirstDefaultAndEmits() = runTest(UnconfinedTestDispatcher()) {
+        manager.addCustom("https://my.node.io")
+        manager.selectAuto()
+        manager.applyAutoChoice("https://my.node.io:443")
+        val selected = collectCount(manager.serverSelectedFlow)
+
+        manager.delete("https://my.node.io:443")
+
+        assertTrue(manager.isAuto)
+        assertEquals(defaultUrl, manager.current.url)
+        assertEquals(1, selected.value)
     }
 
     @Test
@@ -182,6 +321,28 @@ class ZcashServerManagerTest {
         assertEquals(defaultUrl, manager.current.url)
         assertEquals(1, selected.value)
         assertEquals(1, updated.value)
+    }
+
+    @Test
+    fun serverConfig_torOff_isTheCurrentServerOverDirect() {
+        storedAuto = false
+        storedUrl = manager.defaultServers[3].url
+
+        assertEquals(
+            ServerConfig(url = manager.defaultServers[3].url, transport = Transport.DIRECT),
+            manager.serverConfig(torEnabled = false),
+        )
+    }
+
+    @Test
+    fun serverConfig_torOn_isTheCurrentServerOverTor() {
+        storedAuto = false
+        storedUrl = manager.defaultServers[3].url
+
+        assertEquals(
+            ServerConfig(url = manager.defaultServers[3].url, transport = Transport.TOR),
+            manager.serverConfig(torEnabled = true),
+        )
     }
 
     @Test

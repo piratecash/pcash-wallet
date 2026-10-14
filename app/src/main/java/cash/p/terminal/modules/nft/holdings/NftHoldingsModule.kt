@@ -3,6 +3,7 @@ package cash.p.terminal.modules.nft.holdings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import cash.p.terminal.core.App
+import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.entities.CoinValue
 import io.horizontalsystems.core.entities.CurrencyValue
 import cash.p.terminal.entities.nft.NftUid
@@ -17,10 +18,10 @@ object NftHoldingsModule {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             val totalService =
-                TotalService(App.currencyManager, App.marketKit, App.baseTokenManager, App.balanceHiddenManager)
+                TotalService(App.currencyManager, App.marketKit, getKoinInstance(), App.balanceHiddenManager)
             val xRateRepository = DefaultBalanceXRateRepository("nft-holding", App.currencyManager, App.marketKit)
             val service = NftHoldingsService(
-                account, App.nftAdapterManager, App.nftMetadataManager, App.nftMetadataSyncer, xRateRepository
+                account, getKoinInstance(), getKoinInstance(), getKoinInstance(), xRateRepository
             )
             return NftHoldingsViewModel(service, TotalBalance(totalService, App.balanceHiddenManager)) as T
         }

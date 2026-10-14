@@ -4,8 +4,6 @@ import android.os.HandlerThread
 import cash.p.terminal.core.ILastKnownBalanceAdapter
 import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.ZcashRescanException
-import cash.p.terminal.core.adapters.zcash.session.ZcashSessionManager
-import cash.p.terminal.core.adapters.zcash.zcashLogger
 import cash.p.terminal.core.factories.AdapterFactory
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.FallbackAddressProvider
@@ -74,8 +72,6 @@ class AdapterManager(
     private val pendingBalanceCalculator: PendingBalanceCalculator,
     private val fallbackAddressProvider: FallbackAddressProvider,
     private val offlineModeManager: OfflineModeManager,
-    private val zcashServerManager: ZcashServerManager,
-    private val zcashSessionManager: ZcashSessionManager,
     dispatcherProvider: DispatcherProvider
 ) : IAdapterManager, HandlerThread("A") {
 
@@ -144,9 +140,6 @@ class AdapterManager(
             moneroKitManager.kitStoppedObservable.asFlow().collect {
                 reinitAdapters(BlockchainType.Monero)
             }
-        }
-        coroutineScope.launch {
-            zcashServerManager.serverSelectedFlow.collect { switchZcashServer() }
         }
         for (blockchain in evmBlockchainManager.allBlockchains) {
             coroutineScope.launch {
@@ -414,23 +407,6 @@ class AdapterManager(
             if (reconstructedCount != group.size) {
                 requestInitAdapters(walletManager.activeWallets)
                 throw ZcashRescanException("Failed to reconstruct all Zcash wallets for account $accountId")
-            }
-        }
-    }
-
-    /**
-     * The erase order of [rescanZcashAccount] under one [mutex] hold: stop, await the stale sessions' close, rebuild.
-     * Closes even with no Zcash adapter: dormant and detached sessions exist without one.
-     */
-    private suspend fun switchZcashServer() {
-        mutex.withLock {
-            val group = walletManager.activeWallets.filter { it.token.blockchainType == BlockchainType.Zcash }
-            stopAndUnlinkGroup(group)
-            zcashSessionManager.closeStaleSessions()
-            if (group.isNotEmpty() && reconstructAndStartGroup(group) != group.size) {
-                // Self-heal as the rescan does; nobody awaits a switch, so there is no one to throw to.
-                requestInitAdapters(walletManager.activeWallets)
-                zcashLogger.w { "Server switch rebuilt only part of the Zcash wallets; re-init requested" }
             }
         }
     }

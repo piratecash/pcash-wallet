@@ -2,6 +2,8 @@ package cash.p.terminal.core.adapters.zcash.session
 
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.adapters.zcash.ZcashSessionDiagnostics
+import cash.p.terminal.core.adapters.zcash.server.ZcashServerProber
+import cash.p.terminal.core.adapters.zcash.server.ZcashServerSelector
 import cash.p.terminal.core.managers.OfflineKey
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.modules.pin.core.UptimeProvider
@@ -15,14 +17,18 @@ import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.io.IOException
@@ -32,6 +38,9 @@ private const val FIRST_RESTART_DELAY_MS = 15_000L
 private const val POLL_INTERVAL_MS = 30_000L
 private const val DISCOVERY_DEBOUNCE_MS = 30_000L
 private const val DISCOVERY_RETRY_MS = 3 * 60 * 1000L
+private const val QUIET_RETRY_MIN_MS = 4_000L
+private const val QUIET_RETRY_MAX_MS = 6_000L
+private val SYNCED = ZcashSessionResult.Success(ZcashPassOutcome.Synced)
 
 class ZcashSyncSchedulerTest {
 
@@ -39,8 +48,9 @@ class ZcashSyncSchedulerTest {
     private val backgroundManager = mockk<BackgroundManager>()
     private val uptimeProvider = mockk<UptimeProvider>()
     private val foregroundEpoch = MutableStateFlow(0)
-    private val sessionState = MutableStateFlow(ZcashSessionState(syncState = SyncState.Synced))
     private val session = mockk<ZcashSession>(relaxed = true)
+    private val selector = mockk<ZcashServerSelector>(relaxed = true)
+    private val prober = mockk<ZcashServerProber>(relaxed = true)
 
     @Before
     fun setUp() {
@@ -51,15 +61,16 @@ class ZcashSyncSchedulerTest {
         every { backgroundManager.foregroundEpoch } returns foregroundEpoch
         every { uptimeProvider.uptime } returns 0L
         every { session.accountId } returns "account"
-        every { session.state } returns sessionState
         every { session.discovery } returns ZcashDiscoveryState()
-        coEvery { session.sync() } returns ZcashSessionResult.Success(Unit)
+        coEvery { session.sync() } returns SYNCED
     }
 
     private fun TestScope.scheduler() = ZcashSyncScheduler(
         offlineModeManager = offlineModeManager,
         backgroundManager = backgroundManager,
         uptimeProvider = uptimeProvider,
+        selector = selector,
+        prober = prober,
         dispatcherProvider = TestDispatcherProvider(
             dispatcher = StandardTestDispatcher(testScheduler),
             applicationScope = backgroundScope,
@@ -83,12 +94,11 @@ class ZcashSyncSchedulerTest {
     fun enqueue_twoSessions_runsThemOneAtATime() = runTest {
         val other = mockk<ZcashSession>(relaxed = true)
         every { other.accountId } returns "other"
-        every { other.state } returns MutableStateFlow(ZcashSessionState(syncState = SyncState.Synced))
         every { other.discovery } returns ZcashDiscoveryState()
         val blocked = CompletableDeferred<Unit>()
         coEvery { session.sync() } coAnswers {
             blocked.await()
-            ZcashSessionResult.Success(Unit)
+            SYNCED
         }
         val scheduler = scheduler()
 
@@ -104,11 +114,81 @@ class ZcashSyncSchedulerTest {
         advanceTimeBy(LONG_ENOUGH_FOR_A_FULL_TURN_MS)
     }
 
+    @Test
+    fun runTick_beforeThePass_letsTheSelectorEvaluate() = runTest {
+        val scheduler = scheduler()
+
+        scheduler.enqueue(session)
+        runCurrent()
+
+        coVerifyOrder {
+            selector.evaluateIfDue()
+            session.sync()
+        }
+        scheduler.remove(session)
+        advanceTimeBy(LONG_ENOUGH_FOR_A_FULL_TURN_MS)
+    }
+
+    @Test
+    fun runTick_passFinished_reportsTheServerThePassEnteredOnAndItsStreamBreaks() = runTest {
+        every { session.serverUrl } returns "https://a.zec:443"
+        every { session.passServerUrl } returns "https://b.zec:443"
+        every { prober.streamBreaks() } returnsMany listOf(5L, 7L)
+        val failed = ZcashPassOutcome.Failed(IOException("unexpected EOF"), published = true)
+        coEvery { session.sync() } returns ZcashSessionResult.Success(failed)
+        val scheduler = scheduler()
+
+        scheduler.enqueue(session)
+        runCurrent()
+
+        coVerify { selector.onPassFinished("https://b.zec:443", failed, 2) }
+        scheduler.remove(session)
+        advanceTimeBy(LONG_ENOUGH_FOR_A_FULL_TURN_MS)
+    }
+
+    @Test
+    fun runTick_networkPausedDuringThePass_doesNotReportToTheSelector() = runTest {
+        var paused = false
+        every { offlineModeManager.isNetworkPaused(any<OfflineKey>()) } answers { paused }
+        coEvery { session.sync() } coAnswers {
+            paused = true
+            ZcashSessionResult.Success(ZcashPassOutcome.Failed(IOException("unexpected EOF"), published = false))
+        }
+        val scheduler = scheduler()
+
+        scheduler.enqueue(session)
+        runCurrent()
+
+        coVerify(exactly = 0) { selector.onPassFinished(any(), any(), any()) }
+        scheduler.remove(session)
+        advanceTimeBy(LONG_ENOUGH_FOR_A_FULL_TURN_MS)
+    }
+
+    @Test
+    fun runTick_quietFailure_nextPassWaitsForTheSelectorDecision() = runTest {
+        val decided = CompletableDeferred<Unit>()
+        coEvery { selector.onPassFinished(any(), any(), any()) } coAnswers { decided.await() }
+        coEvery { session.sync() } returns ZcashSessionResult.Success(
+            ZcashPassOutcome.Failed(IOException("unexpected EOF"), published = false)
+        )
+        val scheduler = scheduler()
+
+        scheduler.enqueue(session)
+        advanceTimeBy(QUIET_RETRY_MAX_MS + 1)
+        coVerify(exactly = 1) { session.sync() }
+
+        decided.complete(Unit)
+        advanceTimeBy(QUIET_RETRY_MAX_MS + 1)
+        coVerify(exactly = 2) { session.sync() }
+        scheduler.remove(session)
+        advanceTimeBy(LONG_ENOUGH_FOR_A_FULL_TURN_MS)
+    }
+
     /** Corruption gets no special path: it retries on the ordinary backoff like any failure. */
     @Test
     fun runTick_databaseCorruption_keepsTheSessionAndRetriesAfterTheBackoff() = runTest {
-        sessionState.value = ZcashSessionState(
-            syncState = SyncState.Failed(RuntimeException("database disk image is malformed"))
+        coEvery { session.sync() } returns ZcashSessionResult.Success(
+            ZcashPassOutcome.Failed(RuntimeException("database disk image is malformed"), published = true)
         )
         val scheduler = scheduler()
 
@@ -119,6 +199,93 @@ class ZcashSyncSchedulerTest {
         advanceTimeBy(1)
         coVerify(exactly = 2) { session.sync() }
 
+        scheduler.remove(session)
+        advanceTimeBy(LONG_ENOUGH_FOR_A_FULL_TURN_MS)
+    }
+
+    @Test
+    fun runTick_hiddenFailure_retriesWithinTheQuietWindow() = runTest {
+        coEvery { session.sync() } returns ZcashSessionResult.Success(
+            ZcashPassOutcome.Failed(IOException("unexpected EOF"), published = false)
+        )
+        val scheduler = scheduler()
+
+        scheduler.enqueue(session)
+        advanceTimeBy(QUIET_RETRY_MIN_MS)
+        coVerify(exactly = 1) { session.sync() }
+
+        advanceTimeBy(QUIET_RETRY_MAX_MS - QUIET_RETRY_MIN_MS)
+        runCurrent()
+        coVerify(exactly = 2) { session.sync() }
+        verify(exactly = 0) { session.syncAttempts = any() }
+
+        scheduler.remove(session)
+        advanceTimeBy(LONG_ENOUGH_FOR_A_FULL_TURN_MS)
+    }
+
+    @Test
+    fun runTick_networkFailures_firstStaysHiddenAndRetriesQuicklyThenSecondIsShown() = runTest {
+        val wallet = zcashWalletMock()
+        every { wallet.sync(any()) } returns flow { throw IOException("unexpected EOF") }
+        val realSession = zcashSession(wallet, networkPaused = true)
+        val seen = mutableListOf<SyncState>()
+        backgroundScope.launch { realSession.state.collect { seen += it.syncState } }
+        val scheduler = scheduler()
+
+        scheduler.enqueue(realSession)
+        advanceTimeBy(QUIET_RETRY_MIN_MS)
+        verify(exactly = 1) { wallet.sync(any()) }
+        assertTrue("$seen", seen.none { it is SyncState.Failed })
+
+        advanceTimeBy(QUIET_RETRY_MAX_MS - QUIET_RETRY_MIN_MS)
+        runCurrent()
+        verify(exactly = 2) { wallet.sync(any()) }
+        assertTrue(realSession.state.value.syncState is SyncState.Failed)
+
+        scheduler.remove(realSession)
+        advanceTimeBy(LONG_ENOUGH_FOR_A_FULL_TURN_MS)
+    }
+
+    @Test
+    fun runTick_cancelled_pollsWithoutTouchingTheBackoff() = runTest {
+        coEvery { session.sync() } returns ZcashSessionResult.Success(ZcashPassOutcome.Cancelled)
+        val scheduler = scheduler()
+
+        scheduler.enqueue(session)
+        advanceTimeBy(POLL_INTERVAL_MS)
+        coVerify(exactly = 1) { session.sync() }
+
+        advanceTimeBy(1)
+        coVerify(exactly = 2) { session.sync() }
+        verify(exactly = 0) { session.syncAttempts = any() }
+
+        scheduler.remove(session)
+        advanceTimeBy(LONG_ENOUGH_FOR_A_FULL_TURN_MS)
+    }
+
+    @Test
+    fun runTick_synced_resetsTheBackoff() = runTest {
+        val scheduler = scheduler()
+
+        scheduler.enqueue(session)
+        runCurrent()
+
+        verify(exactly = 1) { session.syncAttempts = 0 }
+        scheduler.remove(session)
+        advanceTimeBy(LONG_ENOUGH_FOR_A_FULL_TURN_MS)
+    }
+
+    @Test
+    fun wakeUp_duringThePollWait_startsTheNextTurnAtOnce() = runTest {
+        val scheduler = scheduler()
+        scheduler.enqueue(session)
+        advanceTimeBy(1_000)
+        coVerify(exactly = 1) { session.sync() }
+
+        scheduler.wakeUp()
+        runCurrent()
+
+        coVerify(exactly = 2) { session.sync() }
         scheduler.remove(session)
         advanceTimeBy(LONG_ENOUGH_FOR_A_FULL_TURN_MS)
     }
@@ -364,6 +531,7 @@ class ZcashSyncSchedulerTest {
                 networkErrorTracker = mockk(relaxed = true),
                 accountId = "account",
                 serverUrl = "https://zec.rocks:443",
+                failureReporter = mockk<ZcashDatabaseFailureReporter>(relaxed = true),
             ),
         )
         val scheduler = scheduler()

@@ -328,8 +328,8 @@
     <string name="balance_connecting_to_api">Подключение к API…</string>
     <string name="beam_restore_resolving_birthday">Поиск точки восстановления…</string>
     <string name="beam_restore_downloading_snapshot">Загрузка снимка…</string>
-    <string name="beam_restore_downloading_snapshot_downloaded">Загрузка снимка… %1$s МиБ</string>
-    <string name="beam_restore_downloading_snapshot_progress">Загрузка снимка… %1$s из %2$s МиБ</string>
+    <string name="beam_restore_downloading_snapshot_downloaded">Загрузка снимка… %1$s МБ</string>
+    <string name="beam_restore_downloading_snapshot_progress">Загрузка снимка… %1$s из %2$s МБ</string>
     <string name="beam_restore_validating_snapshot">Проверка снимка…</string>
     <string name="beam_restore_counting_shielded_outputs">Подсчёт защищённых выходов…</string>
     <string name="beam_restore_scanning_wallet_outputs">Сканирование выходов кошелька…</string>
@@ -1036,6 +1036,10 @@
     <string name="zcash_network_server_url">URL сервера</string>
     <string name="zcash_network_invalid_url">Введите https://host:port (или http://…onion для Tor) — без логина, пути и параметров</string>
     <string name="zcash_network_default_servers">По умолчанию</string>
+    <string name="zcash_network_auto">Авто (рекомендуется)</string>
+    <string name="zcash_network_auto_current">Сейчас: %1$s</string>
+    <string name="zcash_network_auto_hint">Выбирает самый быстрый рабочий сервер</string>
+    <string name="zcash_network_auto_short">Авто · %1$s</string>
     <!--Add RPC Source-->
     <string name="AddEvmSyncSource_RpcUrl">RPC Url</string>
     <string name="AddEvmSyncSource_AddRPCSource">Добавить источник RPC</string>
@@ -1045,6 +1049,8 @@
     <!--Btc Blockchain Settings -->
     <string name="custom_peers">Пользовательские узлы (например, 188.40.241.115, dnsseed.custom.io)</string>
     <string name="blockchain_status">Статус блокчейна</string>
+    <string name="blockchain_status_save_to_file">Сохранить в файл</string>
+    <string name="blockchain_status_file_saved">Отчёт сохранён</string>
     <string name="btc_blockchain_settings_restore_source_change_warning">После изменения источника восстановления, кошелек должен будет повторно синхронизироваться с блокчейном.</string>
     <string name="send_confirmation_syncing_warning">Кошелёк ещё синхронизируется. Пожалуйста, дождитесь окончания синхронизации перед отправкой.</string>
     <string name="send_confirmation_sync_error_warning">Ошибка синхронизации кошелька. Нажмите «Повторить» для переподключения.</string>

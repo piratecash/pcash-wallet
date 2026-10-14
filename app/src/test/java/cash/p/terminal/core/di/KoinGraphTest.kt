@@ -31,6 +31,7 @@ import cash.p.terminal.modules.settings.advancedsecurity.terms.HiddenWalletTerms
 import cash.p.terminal.modules.softwareupdate.changelog.VersionChangelogViewModel
 import cash.p.terminal.modules.softwareupdate.domain.ChangelogRequest
 import cash.p.terminal.core.notifications.polling.TransactionPollingManager
+import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedSheet
 import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedViewModel
 import cash.p.terminal.modules.xrate.XRateService
@@ -116,6 +117,7 @@ import java.io.File
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.KVisibility
+import kotlin.reflect.full.primaryConstructor
 
 class KoinGraphTest : KoinTest {
 
@@ -180,6 +182,51 @@ class KoinGraphTest : KoinTest {
             injections = injections,
         )
         fullModule.verifyOptionalConstructorParametersAreResolvable(extraTypes, injections)
+    }
+
+    @OptIn(KoinInternalApi::class)
+    @Test
+    fun appModule_constructorDependencies_haveNoCycles() {
+        val definitions = (flatten(appModule.includedModules.toList()) + appModule)
+            .flatMap { it.mappings.values }
+            .map { it.beanDefinition }
+            .toSet()
+        val providers = definitions
+            .flatMap { definition ->
+                (definition.secondaryTypes + definition.primaryType).map { it to definition.primaryType }
+            }
+            .groupBy({ it.first }, { it.second })
+        val dependencies = definitions.associate { definition ->
+            definition.primaryType to definition.primaryType.eagerDependencies().flatMap { providers[it].orEmpty() }
+        }
+
+        val cycle = findCycle(dependencies)
+        check(cycle == null) {
+            "Koin constructor dependency cycle: ${cycle?.joinToString(" -> ") { it.qualifiedName.orEmpty() }}"
+        }
+    }
+
+    private fun KClass<*>.eagerDependencies(): List<KClass<*>> {
+        val constructor = tryOrNull { primaryConstructor ?: constructors.maxByOrNull { it.parameters.size } }
+        // Lazy<T> is resolved on first use, so it cannot close a construction cycle.
+        return constructor?.parameters.orEmpty()
+            .filterNot { (it.type.classifier as? KClass<*>)?.simpleName == "Lazy" }
+            .mapNotNull { it.injectedType() }
+    }
+
+    private fun <T> findCycle(graph: Map<T, List<T>>): List<T>? {
+        val visited = mutableSetOf<T>()
+        val path = mutableListOf<T>()
+        fun visit(node: T): List<T>? {
+            val start = path.indexOf(node)
+            if (start >= 0) return path.drop(start) + node
+            if (!visited.add(node)) return null
+            path += node
+            graph[node].orEmpty().forEach { next -> visit(next)?.let { return it } }
+            path.removeAt(path.lastIndex)
+            return null
+        }
+        return graph.keys.firstNotNullOfOrNull(::visit)
     }
 
     private fun marketMetricsInjections() = arrayOf(

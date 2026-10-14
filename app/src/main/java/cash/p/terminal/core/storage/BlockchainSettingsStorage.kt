@@ -13,6 +13,8 @@ class BlockchainSettingsStorage(appDatabase: AppDatabase) {
         const val keyEvmSyncSourceUrl: String = "evm-sync-source-url"
         const val keyZcashServerUrl: String = "zcash-server-url"
         const val keyZcashCustomServers: String = "zcash-custom-servers"
+        const val keyZcashServerAuto: String = "zcash-server-auto"
+        const val keyZcashAutoServerUrl: String = "zcash-auto-server-url"
     }
 
     private val dao by lazy { appDatabase.blockchainSettingDao() }
@@ -67,6 +69,14 @@ class BlockchainSettingsStorage(appDatabase: AppDatabase) {
     fun zcashServerUrl(): String? = zcashSetting(keyZcashServerUrl)
 
     fun saveZcashServerUrl(url: String) = saveZcashSetting(keyZcashServerUrl, url)
+
+    fun zcashServerAuto(): Boolean = zcashSetting(keyZcashServerAuto) != false.toString()
+
+    fun saveZcashServerAuto(auto: Boolean) = saveZcashSetting(keyZcashServerAuto, auto.toString())
+
+    fun zcashAutoServerUrl(): String? = zcashSetting(keyZcashAutoServerUrl)
+
+    fun saveZcashAutoServerUrl(url: String) = saveZcashSetting(keyZcashAutoServerUrl, url)
 
     fun zcashCustomServers(): List<String> =
         zcashSetting(keyZcashCustomServers)?.lines()?.filter { it.isNotBlank() }.orEmpty()

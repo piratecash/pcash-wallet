@@ -324,8 +324,8 @@
     <string name="balance_connecting_to_api">Підключення до API…</string>
     <string name="beam_restore_resolving_birthday">Пошук точки відновлення…</string>
     <string name="beam_restore_downloading_snapshot">Завантаження знімка…</string>
-    <string name="beam_restore_downloading_snapshot_downloaded">Завантаження знімка… %1$s МіБ</string>
-    <string name="beam_restore_downloading_snapshot_progress">Завантаження знімка… %1$s із %2$s МіБ</string>
+    <string name="beam_restore_downloading_snapshot_downloaded">Завантаження знімка… %1$s МБ</string>
+    <string name="beam_restore_downloading_snapshot_progress">Завантаження знімка… %1$s із %2$s МБ</string>
     <string name="beam_restore_validating_snapshot">Перевірка знімка…</string>
     <string name="beam_restore_counting_shielded_outputs">Підрахунок захищених виходів…</string>
     <string name="beam_restore_scanning_wallet_outputs">Сканування виходів гаманця…</string>
@@ -1016,6 +1016,10 @@
     <string name="zcash_network_server_url">URL сервера</string>
     <string name="zcash_network_invalid_url">Введіть https://host:port (або http://…onion для Tor) — без логіна, шляху та параметрів</string>
     <string name="zcash_network_default_servers">За замовчуванням</string>
+    <string name="zcash_network_auto">Авто (рекомендовано)</string>
+    <string name="zcash_network_auto_current">Зараз: %1$s</string>
+    <string name="zcash_network_auto_hint">Обирає найшвидший робочий сервер</string>
+    <string name="zcash_network_auto_short">Авто · %1$s</string>
     <!--Add RPC Source-->
     <string name="AddEvmSyncSource_RpcUrl">URL-адреса RPC</string>
     <string name="AddEvmSyncSource_AddRPCSource">Додати джерело RPC</string>
@@ -1025,6 +1029,8 @@
     <!--Btc Blockchain Settings -->
     <string name="custom_peers">Користувацькі вузли (наприклад, 188.40.241.115, dnsseed.custom.io)</string>
     <string name="blockchain_status">Статус блокчейну</string>
+    <string name="blockchain_status_save_to_file">Зберегти у файл</string>
+    <string name="blockchain_status_file_saved">Звіт збережено</string>
     <string name="btc_blockchain_settings_restore_source_change_warning">Після зміни джерела відновлення, гаманець повинен буде повторно синхронізуватися з блокчейном.</string>
     <string name="send_confirmation_syncing_warning">Гаманець ще синхронізується. Будь ласка, зачекайте завершення синхронізації перед відправленням.</string>
     <string name="send_confirmation_sync_error_warning">Помилка синхронізації гаманця. Натисніть «Повторити» для повторного підключення.</string>

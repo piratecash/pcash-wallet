@@ -20,13 +20,13 @@ object BalanceModule {
             val totalService = TotalService(
                 currencyManager = getKoinInstance(),
                 marketKit = getKoinInstance(),
-                baseTokenManager = App.baseTokenManager,
+                baseTokenManager = getKoinInstance(),
                 balanceHiddenManager = getKoinInstance()
             )
             return BalanceViewModel(
                 service = DefaultBalanceService.getInstance("wallet"),
                 balanceViewItemFactory = BalanceViewItemFactory(getKoinInstance()),
-                balanceViewTypeManager = App.balanceViewTypeManager,
+                balanceViewTypeManager = getKoinInstance(),
                 totalBalance = TotalBalance(totalService, getKoinInstance()),
                 localStorage = getKoinInstance(),
                 wCManager = App.wcManager,

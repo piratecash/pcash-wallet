@@ -155,14 +155,14 @@ class TokenSelectViewModel(
             val totalService = TotalService(
                 currencyManager = App.currencyManager,
                 marketKit = App.marketKit,
-                baseTokenManager = App.baseTokenManager,
+                baseTokenManager = getKoinInstance(),
                 balanceHiddenManager = App.balanceHiddenManager
             )
 
             return TokenSelectViewModel(
                 service = DefaultBalanceService.getInstance("wallet"),
                 balanceViewItemFactory = BalanceViewItemFactory(getKoinInstance()),
-                balanceViewTypeManager = App.balanceViewTypeManager,
+                balanceViewTypeManager = getKoinInstance(),
                 itemsFilter = {
                     !it.wallet.account.isWatchAccount
                 },

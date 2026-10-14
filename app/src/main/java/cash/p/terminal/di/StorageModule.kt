@@ -24,6 +24,7 @@ import cash.p.terminal.core.storage.EnabledWalletsStorage
 import cash.p.terminal.core.storage.EvmSyncSourceStorage
 import cash.p.terminal.core.storage.HardwarePublicKeyStorage
 import cash.p.terminal.core.storage.LocallyCreatedTransactionStorage
+import cash.p.terminal.core.storage.NftStorage
 import cash.p.terminal.core.storage.PendingMultiSwapStorage
 import cash.p.terminal.core.storage.PendingTransactionStorage
 import cash.p.terminal.core.storage.RestoreSettingsStorage
@@ -111,10 +112,14 @@ val storageModule = module {
     single { get<AppDatabase>().offlineSignedTransactionDao() }
     single { get<AppDatabase>().swapProviderTransactionsDao() }
     single { get<AppDatabase>().pinDao() }
+    single { get<AppDatabase>().nftDao() }
+    single { get<AppDatabase>().chartIndicatorSettingsDao() }
+    single { get<AppDatabase>().logsDao() }
     singleOf(::PendingMultiSwapStorage)
     singleOf(::PendingTransactionStorage)
     singleOf(::LocallyCreatedTransactionStorage)
     singleOf(::PinDbStorage)
+    factoryOf(::NftStorage)
     single {
         ZcashSingleUseAddressStorage(
             dao = get(),

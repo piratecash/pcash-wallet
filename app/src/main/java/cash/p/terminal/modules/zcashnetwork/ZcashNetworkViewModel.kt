@@ -24,23 +24,31 @@ class ZcashNetworkViewModel(
             .launchIn(viewModelScope)
     }
 
+    fun onSelectAuto() = serverManager.selectAuto()
+
     fun onSelect(url: String) = serverManager.select(url)
 
     fun onDelete(url: String) = serverManager.delete(url)
 
     private fun buildUiState(): UiState {
-        val currentUrl = serverManager.current.url
+        val isAuto = serverManager.isAuto
+        val current = serverManager.current
+        val selectedUrl = current.url.takeUnless { isAuto }
         return UiState(
-            defaultItems = serverManager.defaultServers.map { it.toViewItem(currentUrl) },
-            customItems = serverManager.customServers.map { it.toViewItem(currentUrl) },
+            isAuto = isAuto,
+            autoServerName = current.name.takeIf { isAuto },
+            defaultItems = serverManager.defaultServers.map { it.toViewItem(selectedUrl) },
+            customItems = serverManager.customServers.map { it.toViewItem(selectedUrl) },
         )
     }
 
-    private fun ZcashServer.toViewItem(currentUrl: String) = ViewItem(name, url, selected = url == currentUrl)
+    private fun ZcashServer.toViewItem(selectedUrl: String?) = ViewItem(name, url, selected = url == selectedUrl)
 
     data class ViewItem(val name: String, val url: String, val selected: Boolean)
 
     data class UiState(
+        val isAuto: Boolean = true,
+        val autoServerName: String? = null,
         val defaultItems: List<ViewItem> = emptyList(),
         val customItems: List<ViewItem> = emptyList(),
     )

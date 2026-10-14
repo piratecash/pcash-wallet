@@ -342,8 +342,8 @@
     <string name="balance_connecting_to_api">Connexion à l\'API…</string>
     <string name="beam_restore_resolving_birthday">Recherche du point de restauration…</string>
     <string name="beam_restore_downloading_snapshot">Téléchargement de l’instantané…</string>
-    <string name="beam_restore_downloading_snapshot_downloaded">Téléchargement de l’instantané… %1$s Mio</string>
-    <string name="beam_restore_downloading_snapshot_progress">Téléchargement de l’instantané… %1$s sur %2$s Mio</string>
+    <string name="beam_restore_downloading_snapshot_downloaded">Téléchargement de l’instantané… %1$s Mo</string>
+    <string name="beam_restore_downloading_snapshot_progress">Téléchargement de l’instantané… %1$s sur %2$s Mo</string>
     <string name="beam_restore_validating_snapshot">Validation de l’instantané…</string>
     <string name="beam_restore_counting_shielded_outputs">Comptage des sorties protégées…</string>
     <string name="beam_restore_scanning_wallet_outputs">Analyse des sorties du portefeuille…</string>
@@ -1025,6 +1025,10 @@
     <string name="zcash_network_server_url">URL du serveur</string>
     <string name="zcash_network_invalid_url">Saisissez https://host:port (ou http://…onion pour Tor) — sans identifiant, chemin ni paramètres</string>
     <string name="zcash_network_default_servers">Par défaut</string>
+    <string name="zcash_network_auto">Automatique (recommandé)</string>
+    <string name="zcash_network_auto_current">Actuellement : %1$s</string>
+    <string name="zcash_network_auto_hint">Choisit le serveur fonctionnel le plus rapide</string>
+    <string name="zcash_network_auto_short">Automatique · %1$s</string>
     <!--Add RPC Source-->
     <string name="AddEvmSyncSource_RpcUrl">Url RPC</string>
     <string name="AddEvmSyncSource_AddRPCSource">Ajouter une source RPC</string>
@@ -1034,6 +1038,8 @@
     <!--Btc Blockchain Settings -->
     <string name="custom_peers">Custom peers (e.g., 188.40.241.115, dnsseed.custom.io)</string>
     <string name="blockchain_status">Statut de la Blockchain</string>
+    <string name="blockchain_status_save_to_file">Enregistrer dans un fichier</string>
+    <string name="blockchain_status_file_saved">Rapport enregistré</string>
     <string name="btc_blockchain_settings_restore_source_change_warning">Après avoir changé de source, le portefeuille devra se resynchroniser lui-même.</string>
     <string name="send_confirmation_syncing_warning">Le portefeuille est encore en cours de synchronisation. Veuillez attendre la fin de la synchronisation avant d\'envoyer.</string>
     <string name="send_confirmation_sync_error_warning">Échec de la synchronisation du portefeuille. Appuyez sur Réessayer pour reconnecter.</string>

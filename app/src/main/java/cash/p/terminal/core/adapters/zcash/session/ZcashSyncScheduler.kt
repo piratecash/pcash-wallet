@@ -1,22 +1,25 @@
 package cash.p.terminal.core.adapters.zcash.session
 
+import cash.p.terminal.core.adapters.zcash.server.ZcashServerProber
+import cash.p.terminal.core.adapters.zcash.server.ZcashServerSelector
 import cash.p.terminal.core.adapters.zcash.zcashRestartDelayFor
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.isNetworkPaused
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.modules.pin.core.UptimeProvider
-import cash.p.zcash.SyncState
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.random.Random
 
 /**
  * Runs the open sessions one at a time. The SDK serializes syncs process-wide anyway, so the
@@ -26,12 +29,15 @@ class ZcashSyncScheduler(
     private val offlineModeManager: OfflineModeManager,
     private val backgroundManager: BackgroundManager,
     private val uptimeProvider: UptimeProvider,
+    private val selector: ZcashServerSelector,
+    private val prober: ZcashServerProber,
     dispatcherProvider: DispatcherProvider,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + dispatcherProvider.io)
     private val mutex = Mutex()
     private val queue = mutableListOf<ZcashSession>()
     private var loop: Job? = null
+    private val wakeUps = Channel<Unit>(Channel.CONFLATED)
 
     suspend fun enqueue(session: ZcashSession) = mutex.withLock {
         if (queue.none { it === session }) queue += session
@@ -42,11 +48,16 @@ class ZcashSyncScheduler(
         mutex.withLock { queue.removeAll { it === session } }
     }
 
+    /** Cuts the current wait short, so the next turn starts at once. */
+    fun wakeUp() {
+        wakeUps.trySend(Unit)
+    }
+
     private suspend fun runLoop() {
         while (true) {
             val session = mutex.withLock { rotate() } ?: return
             val pause = if (session.isNetworkPaused()) POLL_INTERVAL_MS else runTick(session)
-            delay(pause)
+            withTimeoutOrNull(pause) { wakeUps.receive() }
         }
     }
 
@@ -61,18 +72,33 @@ class ZcashSyncScheduler(
 
     /** Returns how long to wait before the next turn. */
     private suspend fun runTick(session: ZcashSession): Long {
+        selector.evaluateIfDue()
         maybeDiscover(session)
         // The walk may have taken long enough for offline mode to arrive in the meantime.
         if (session.isNetworkPaused()) return POLL_INTERVAL_MS
-        if (session.sync() is ZcashSessionResult.Unavailable) {
+        val breaksBefore = prober.streamBreaks()
+        val result = session.sync()
+        if (result !is ZcashSessionResult.Success) {
             remove(session)
             return 0
         }
-        if (session.state.value.syncState !is SyncState.Failed) {
-            session.syncAttempts = 0
-            return POLL_INTERVAL_MS
+        val outcome = result.value
+        if (!session.isNetworkPaused()) {
+            selector.onPassFinished(session.passServerUrl, outcome, prober.streamBreaks() - breaksBefore)
         }
-        return zcashRestartDelayFor(session.syncAttempts++, RESTART_BASE_MS, RESTART_MAX_MS)
+        return when (outcome) {
+            ZcashPassOutcome.Synced -> {
+                session.syncAttempts = 0
+                POLL_INTERVAL_MS
+            }
+
+            ZcashPassOutcome.Cancelled -> POLL_INTERVAL_MS
+            is ZcashPassOutcome.Failed -> if (outcome.published) {
+                zcashRestartDelayFor(session.syncAttempts++, RESTART_BASE_MS, RESTART_MAX_MS)
+            } else {
+                QUIET_RETRY_MS + Random.nextLong(-QUIET_RETRY_JITTER_MS, QUIET_RETRY_JITTER_MS + 1)
+            }
+        }
     }
 
     /**
@@ -104,6 +130,8 @@ class ZcashSyncScheduler(
         const val POLL_INTERVAL_MS = 30_000L
         const val RESTART_BASE_MS = 15_000L
         const val RESTART_MAX_MS = 120_000L
+        const val QUIET_RETRY_MS = 5_000L
+        const val QUIET_RETRY_JITTER_MS = 1_000L
         const val DISCOVERY_DEBOUNCE_MS = 30_000L
         const val DISCOVERY_RETRY_MS = 3 * 60 * 1000L
     }

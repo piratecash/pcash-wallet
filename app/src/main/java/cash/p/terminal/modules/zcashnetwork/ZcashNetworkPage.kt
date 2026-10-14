@@ -21,11 +21,14 @@ class ZcashNetworkPage(private val blockchain: Blockchain) : HSPage() {
         ZcashNetworkScreen(
             uiState = viewModel.uiState,
             blockchain = blockchain,
-            onSelect = viewModel::onSelect,
-            onDelete = {
-                viewModel.onDelete(it)
-                HudHelper.showErrorMessage(view, R.string.Hud_Removed)
-            },
+            serverActions = ZcashServerListActions(
+                onSelectAuto = viewModel::onSelectAuto,
+                onSelect = viewModel::onSelect,
+                onDelete = {
+                    viewModel.onDelete(it)
+                    HudHelper.showErrorMessage(view, R.string.Hud_Removed)
+                },
+            ),
             onAddServerClick = {
                 navigation.slideFromBottomForResult<AddZcashServerPage.Result>(AddZcashServerPage()) {
                     HudHelper.showSuccessMessage(view, R.string.EvmNetwork_Added)

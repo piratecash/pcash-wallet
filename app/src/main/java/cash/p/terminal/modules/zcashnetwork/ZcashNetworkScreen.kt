@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -48,8 +49,7 @@ import io.horizontalsystems.core.imageUrl
 internal fun ZcashNetworkScreen(
     uiState: ZcashNetworkViewModel.UiState,
     blockchain: Blockchain,
-    onSelect: (String) -> Unit,
-    onDelete: (String) -> Unit,
+    serverActions: ZcashServerListActions,
     onAddServerClick: () -> Unit,
     onStatusClick: () -> Unit,
     onClose: () -> Unit,
@@ -75,26 +75,7 @@ internal fun ZcashNetworkScreen(
                     VSpacer(32.dp)
                 }
 
-                item {
-                    HeaderText(stringResource(R.string.zcash_network_default_servers))
-                    CellUniversalLawrenceSection(uiState.defaultItems) { item ->
-                        BlockchainSettingCell(item.name, item.url, item.selected, null) {
-                            onSelect(item.url)
-                        }
-                    }
-                }
-
-                if (uiState.customItems.isNotEmpty()) {
-                    CustomRpcListSection(
-                        items = uiState.customItems,
-                        toRow = { RpcRowItem(it.url, it.name, it.url, it.selected) },
-                        revealedCardId = revealedCardId,
-                        onClick = { onSelect(it.url) },
-                        onReveal = { revealedCardId = it },
-                        onConceal = { revealedCardId = null },
-                        onDelete = { onDelete(it.url) },
-                    )
-                }
+                serverSections(uiState, serverActions, revealedCardId) { revealedCardId = it }
 
                 item {
                     Spacer(Modifier.height(32.dp))
@@ -109,6 +90,54 @@ internal fun ZcashNetworkScreen(
             }
         }
     }
+}
+
+internal class ZcashServerListActions(
+    val onSelectAuto: () -> Unit,
+    val onSelect: (String) -> Unit,
+    val onDelete: (String) -> Unit,
+)
+
+private fun LazyListScope.serverSections(
+    uiState: ZcashNetworkViewModel.UiState,
+    serverActions: ZcashServerListActions,
+    revealedCardId: String?,
+    onRevealedChange: (String?) -> Unit,
+) {
+        item {
+            CellUniversalLawrenceSection {
+                BlockchainSettingCell(
+                    stringResource(R.string.zcash_network_auto),
+                    uiState.autoServerName?.let { stringResource(R.string.zcash_network_auto_current, it) }
+                        ?: stringResource(R.string.zcash_network_auto_hint),
+                    uiState.isAuto,
+                    null,
+                    serverActions.onSelectAuto,
+                )
+            }
+            VSpacer(32.dp)
+        }
+
+        item {
+            HeaderText(stringResource(R.string.zcash_network_default_servers))
+            CellUniversalLawrenceSection(uiState.defaultItems) { item ->
+                BlockchainSettingCell(item.name, item.url, item.selected, null) {
+                    serverActions.onSelect(item.url)
+                }
+            }
+        }
+
+        if (uiState.customItems.isNotEmpty()) {
+            CustomRpcListSection(
+                items = uiState.customItems,
+                toRow = { RpcRowItem(it.url, it.name, it.url, it.selected) },
+                revealedCardId = revealedCardId,
+                onClick = { serverActions.onSelect(it.url) },
+                onReveal = onRevealedChange,
+                onConceal = { onRevealedChange(null) },
+                onDelete = { serverActions.onDelete(it.url) },
+            )
+        }
 }
 
 @Composable
@@ -143,8 +172,10 @@ private fun ZcashNetworkScreenPreview() {
     ComposeAppTheme {
         ZcashNetworkScreen(
             uiState = ZcashNetworkViewModel.UiState(
+                isAuto = true,
+                autoServerName = "zec.rocks (global)",
                 defaultItems = listOf(
-                    ZcashNetworkViewModel.ViewItem("zec.rocks (global)", "https://zec.rocks:443", selected = true),
+                    ZcashNetworkViewModel.ViewItem("zec.rocks (global)", "https://zec.rocks:443", selected = false),
                     ZcashNetworkViewModel.ViewItem("zec.rocks (EU)", "https://eu.zec.rocks:443", selected = false),
                 ),
                 customItems = listOf(
@@ -152,8 +183,7 @@ private fun ZcashNetworkScreenPreview() {
                 ),
             ),
             blockchain = Blockchain(BlockchainType.Zcash, "Zcash", null),
-            onSelect = {},
-            onDelete = {},
+            serverActions = ZcashServerListActions({}, {}, {}),
             onAddServerClick = {},
             onStatusClick = {},
             onClose = {},

@@ -336,7 +336,7 @@ private enum class ButtonStyle {
     fun backgroundColor(): Color = when (this) {
         Digit -> ComposeAppTheme.colors.surfacePrimary
         Operator -> ComposeAppTheme.colors.textSecondary
-        Equals -> ComposeAppTheme.colors.brandDefault
+        Equals -> ComposeAppTheme.colors.calculatorEqualsBackground
         Transparent -> Color.Transparent
     }
 
@@ -345,7 +345,7 @@ private enum class ButtonStyle {
         Digit -> ComposeAppTheme.colors.textPrimary
         Operator -> ComposeAppTheme.colors.textPrimary
         Equals -> ComposeAppTheme.colors.textPrimary
-        Transparent -> ComposeAppTheme.colors.brandDefault
+        Transparent -> ComposeAppTheme.colors.calculatorBackspaceIcon
     }
 }
 

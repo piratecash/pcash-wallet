@@ -10,6 +10,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
 import cash.p.terminal.core.App
+import cash.p.terminal.core.managers.NftAdapterManager
+import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
@@ -93,7 +95,7 @@ private fun getFactory(nftUidString: String): SendNftModule.Factory? {
 
     val nftKey = NftKey(account, nftUid.blockchainType)
 
-    val adapter = App.nftAdapterManager.adapter(nftKey) ?: return null
+    val adapter = getKoinInstance<NftAdapterManager>().adapter(nftKey) ?: return null
 
     val nftRecord = adapter.nftRecord(nftUid) ?: return null
 
@@ -105,7 +107,7 @@ private fun getFactory(nftUidString: String): SendNftModule.Factory? {
         nftRecord.balance,
         adapter,
         SendEvmAddressService(),
-        App.nftMetadataManager
+        getKoinInstance()
     )
 }
 

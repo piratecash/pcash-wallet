@@ -7,7 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.viewmodel.compose.viewModel
+import org.koin.compose.viewmodel.koinViewModel
 import cash.p.terminal.R
 import cash.p.terminal.core.authorizedAction
 import cash.p.terminal.core.ensurePinSet
@@ -26,9 +26,8 @@ class AppIconPage : HSPage() {
 
     @Composable
     override fun GetContent(navigation: HSNavigation) {
-        val viewModel: AppearanceViewModel = viewModel(
-            viewModelStoreOwner = navigation.viewModelStoreOwnerForPage(AppearancePage::class),
-            factory = AppearanceModule.Factory()
+        val viewModel: AppearanceViewModel = koinViewModel(
+            viewModelStoreOwner = navigation.viewModelStoreOwnerForPage(AppearancePage::class)
         )
         val activity = LocalActivity.current
         var showCalculatorPushWarning by rememberSaveable { mutableStateOf(false) }

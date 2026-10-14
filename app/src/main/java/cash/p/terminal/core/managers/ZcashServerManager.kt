@@ -2,6 +2,7 @@ package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.storage.BlockchainSettingsStorage
 import cash.p.terminal.core.tryOrNull
+import cash.p.zcash.ServerConfig
 import cash.p.zcash.Transport
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -78,16 +79,34 @@ class ZcashServerManager(private val storage: BlockchainSettingsStorage) {
     val allServers: List<ZcashServer>
         get() = defaultServers + customServers
 
+    val isAuto: Boolean
+        get() = storage.zcashServerAuto()
+
     val current: ZcashServer
         get() {
-            val stored = storage.zcashServerUrl()
-            return allServers.firstOrNull { it.url == stored } ?: defaultServers.first()
+            val preferred = if (isAuto) storage.zcashAutoServerUrl() else storage.zcashServerUrl()
+            return allServers.firstOrNull { it.url == preferred } ?: defaultServers.first()
         }
 
-    fun select(url: String) {
-        if (storage.zcashServerUrl() == url) return
+    fun autoPool(torEnabled: Boolean): List<ZcashServer> =
+        allServers.filter { torEnabled || !ZcashServerUrl.isOnion(tryOrNull { URI(it.url).host }) }
+
+    fun selectAuto() = emitSelectedIfChanged { storage.saveZcashServerAuto(true) }
+
+    fun select(url: String) = emitSelectedIfChanged {
+        storage.saveZcashServerAuto(false)
         storage.saveZcashServerUrl(url)
-        _serverSelectedFlow.tryEmit(Unit)
+    }
+
+    fun applyAutoChoice(url: String) {
+        if (!isAuto || allServers.none { it.url == url }) return
+        emitSelectedIfChanged { storage.saveZcashAutoServerUrl(url) }
+    }
+
+    private inline fun emitSelectedIfChanged(change: () -> Unit) {
+        val before = isAuto to current.url
+        change()
+        if (before != isAuto to current.url) _serverSelectedFlow.tryEmit(Unit)
     }
 
     fun addCustom(raw: String): AddResult {
@@ -104,12 +123,17 @@ class ZcashServerManager(private val storage: BlockchainSettingsStorage) {
     fun delete(url: String) {
         val custom = storage.zcashCustomServers()
         if (url !in custom) return
-        val wasSelected = storage.zcashServerUrl() == url
+        val wasCurrent = current.url == url
 
         storage.saveZcashCustomServers(custom - url)
         _serversUpdatedFlow.tryEmit(Unit)
-        if (wasSelected) select(defaultServers.first().url)
+        if (!wasCurrent) return
+        if (isAuto) storage.saveZcashAutoServerUrl("") else storage.saveZcashServerUrl(defaultServers.first().url)
+        _serverSelectedFlow.tryEmit(Unit)
     }
+
+    fun serverConfig(torEnabled: Boolean): ServerConfig =
+        current.url.let { ServerConfig(url = it, transport = transportFor(it, torEnabled)) }
 
     fun transportFor(url: String, torEnabled: Boolean): Transport =
         if (torEnabled || ZcashServerUrl.isOnion(tryOrNull { URI(url).host })) Transport.TOR else Transport.DIRECT

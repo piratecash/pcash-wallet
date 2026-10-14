@@ -41,7 +41,7 @@ object TransactionInfoModule {
                 adapter = adapter,
                 marketKit = App.marketKit,
                 currencyManager = App.currencyManager,
-                nftMetadataService = NftMetadataService(App.nftMetadataManager),
+                nftMetadataService = NftMetadataService(getKoinInstance()),
                 updateSwapProviderTransactionsStatusUseCase = getKoinInstance(),
                 swapProviderTransactionsStorage = getKoinInstance(),
                 dispatcherProvider = getKoinInstance(),

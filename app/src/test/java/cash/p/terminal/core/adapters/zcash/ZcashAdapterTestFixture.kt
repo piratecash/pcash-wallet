@@ -1,7 +1,9 @@
 package cash.p.terminal.core.adapters.zcash
 
 import cash.p.terminal.core.ILocalStorage
+import cash.p.terminal.core.KoinLogsDao
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.adapters.zcash.server.ZcashServerSelector
 import cash.p.terminal.core.adapters.zcash.session.ZcashDiscoveryState
 import cash.p.terminal.core.adapters.zcash.session.ZcashSession
 import cash.p.terminal.core.adapters.zcash.session.ZcashSessionManager
@@ -82,6 +84,7 @@ abstract class ZcashAdapterTestFixture {
     protected val accountManager = mockk<IAccountManager>(relaxed = true)
     protected val restoreSettingsManager = mockk<RestoreSettingsManager>(relaxed = true)
     protected val serverManager = mockk<ZcashServerManager>(relaxed = true)
+    private val serverSelector = mockk<ZcashServerSelector> { every { statusRows() } returns emptyMap() }
 
     /** In-memory stand-in for the persisted set, so a restart can be simulated. */
     protected var migrationTxIds = emptySet<String>()
@@ -113,6 +116,7 @@ abstract class ZcashAdapterTestFixture {
                 single { accountManager }
                 single { restoreSettingsManager }
                 single { serverManager }
+                single { serverSelector }
             })
         }
 
@@ -238,6 +242,7 @@ abstract class ZcashAdapterTestFixture {
                 )
             }
             coEvery { refresh() } returns ZcashSessionResult.Success(Unit)
+            coEvery { accountBirthHeight() } returns BIRTHDAY
         }
         coEvery { sessionManager.acquire(any()) } returns session
         every { sessionManager.discoveryState(any()) } returns discoveryState
@@ -318,15 +323,14 @@ abstract class ZcashAdapterTestFixture {
     }
 }
 
-/** Replaces [AppLog]'s DAO; the log is written from its own thread, so reads wait for the entry. */
-internal class CapturedAppLog {
+/** Supplies [AppLog]'s DAO through Koin; the log is written from its own thread, so reads wait for the entry. */
+internal class CapturedAppLog : AutoCloseable {
     private val entries = CopyOnWriteArrayList<LogEntry>()
+    private val koinLogsDao = KoinLogsDao(
+        mockk<LogsDao>(relaxed = true) { every { insert(any()) } answers { entries += firstArg<LogEntry>() } }
+    )
 
-    init {
-        AppLog.logsDao = mockk<LogsDao>(relaxed = true).also { dao ->
-            every { dao.insert(any()) } answers { entries += firstArg<LogEntry>() }
-        }
-    }
+    override fun close() = koinLogsDao.close()
 
     val messages: List<String> get() = entries.map { it.message }
 
