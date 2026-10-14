@@ -17,6 +17,8 @@ jobs:
           cache: gradle
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+      - name: Run vault tests
+        run: ./gradlew :core:vault:test --no-daemon
       - name: Restore Firebase DEV signing key
         env:
           FIREBASE_DEV_KEYSTORE_BASE64: ${{ secrets.FIREBASE_DEV_KEYSTORE_BASE64 }}

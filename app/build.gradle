@@ -286,15 +286,6 @@ android {
         }
     }
 
-    def bcprovVersionsToRedirect = [
-            'bcprov-jdk15on:1.65.01',
-            'bcprov-jdk15on:1.66',
-            'bcprov-jdk15on:1.70',
-            'bcprov-jdk15to18:1.65.01',
-            'bcprov-jdk15to18:1.68',
-            'bcprov-jdk15to18:1.69'
-    ]
-
     configurations.all { c ->
         exclude(group: "com.github.metaplex-foundation.kborsh", module: "kborsh-jvm")
 
@@ -306,9 +297,11 @@ android {
         exclude(group: "com.walletconnect.Scarlet", module: "lifecycle-android")
 
         c.resolutionStrategy.dependencySubstitution {
-            bcprovVersionsToRedirect.each { moduleId ->
-                def (name, version) = moduleId.split(':')
-                substitute module("org.bouncycastle:$name:$version") using module("org.bouncycastle:bcprov-jdk15to18:1.80")
+            // Kits declare various BouncyCastle builds (bcprov also as jdk15on); pin all to the catalog's single version.
+            def bouncycastle = libs.versions.bouncycastle.get()
+            substitute module('org.bouncycastle:bcprov-jdk15on') using module("org.bouncycastle:bcprov-jdk15to18:$bouncycastle")
+            ['bcprov-jdk15to18', 'bcpkix-jdk15to18', 'bcutil-jdk15to18'].each { name ->
+                substitute module("org.bouncycastle:$name") using module("org.bouncycastle:$name:$bouncycastle")
             }
 
             substitute module('com.google.protobuf:protobuf-java:3.6.1') using module('com.google.protobuf:protobuf-javalite:3.21.1')
@@ -515,6 +508,7 @@ dependencies {
     implementation project(':core:resources')
     implementation project(':core:qr-multipart')
     implementation project(':core:navigation')
+    implementation project(':core:vault')
     implementation project(':components:icons')
     implementation project(':components:chartview')
     implementation project(':feature-stacking')

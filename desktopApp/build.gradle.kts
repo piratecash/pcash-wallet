@@ -24,6 +24,7 @@ dependencies {
     implementation(project(":shared"))
     implementation(project(":core:ui-compose"))
     implementation(project(":core:market"))
+    implementation(project(":core:vault"))
     implementation(project(":core:common"))
     implementation(project(":feature-market"))
     implementation(libs.coil.compose)
