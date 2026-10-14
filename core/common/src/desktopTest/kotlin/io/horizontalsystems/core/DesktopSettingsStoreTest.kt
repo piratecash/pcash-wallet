@@ -1,9 +1,12 @@
 package io.horizontalsystems.core
 
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.job
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -37,6 +40,15 @@ class DesktopSettingsStoreTest {
         return DesktopSettingsStore(file, scope)
     }
 
+    /** DataStore releases its file in a completion handler; join() may return before that handler has run. */
+    private fun closeStore(scope: CoroutineScope) {
+        val job = scope.coroutineContext.job
+        val released = CompletableDeferred<Unit>()
+        job.invokeOnCompletion { released.complete(Unit) } // runs after DataStore's own handler
+        job.cancel()
+        runBlocking { released.await() }
+    }
+
     @Test
     fun read_missingFile_returnsDefaults() {
         val store = openStore()
@@ -65,7 +77,7 @@ class DesktopSettingsStoreTest {
         first.launchPage = "Watchlist"
         first.currentMarketTab = "Posts"
         first.baseCurrencyCode = "EUR"
-        scopes.removeAt(scopes.lastIndex).cancel()
+        closeStore(scopes.removeAt(scopes.lastIndex))
 
         val second = openStore()
 
