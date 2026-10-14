@@ -103,6 +103,7 @@ import cash.p.terminal.core.managers.KeyStoreCleaner
 import cash.p.terminal.core.managers.LanguageManager
 import cash.p.terminal.core.managers.SystemLanguageProvider
 import cash.p.terminal.core.managers.SystemLanguageProviderImpl
+import cash.p.terminal.strings.helpers.AndroidLocalizedResources
 import cash.p.terminal.core.managers.LocalStorageManager
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.core.managers.OfflineSignedTransactionRepository
@@ -257,6 +258,7 @@ import io.horizontalsystems.core.IKeyProvider
 import io.horizontalsystems.core.IKeyStoreCleaner
 import io.horizontalsystems.core.IKeyStoreManager
 import io.horizontalsystems.core.ILanguageManager
+import io.horizontalsystems.core.LocalizedResources
 import io.horizontalsystems.core.ILockoutStorage
 import io.horizontalsystems.core.ILoggingSettings
 import io.horizontalsystems.core.IPinComponent
@@ -285,6 +287,7 @@ val managerModule = module {
     singleOf(::BackupManager) bind IBackupManager::class
     singleOf(::LanguageManager) bind ILanguageManager::class
     singleOf(::SystemLanguageProviderImpl) bind SystemLanguageProvider::class
+    singleOf(::AndroidLocalizedResources) bind LocalizedResources::class
     singleOf(::AppHeadersProviderImpl) bind AppHeadersProvider::class
     singleOf(::DefaultCurrencyManager) bind CurrencyManager::class
     singleOf(::SolanaRpcSourceManager)

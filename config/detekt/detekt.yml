@@ -53,6 +53,10 @@ naming:
     active: false  # multiple top-level declarations per file is common
 
 style:
+  ForbiddenImport:
+    active: true
+    imports: ['kotlinx.coroutines.runBlocking']
+    includes: ['**/commonMain/**']
   ForbiddenComment:
     active: false  # we use TODO comments
   MagicNumber:

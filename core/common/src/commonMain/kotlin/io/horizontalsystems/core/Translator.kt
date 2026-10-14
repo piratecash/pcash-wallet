@@ -1,20 +1,14 @@
 package io.horizontalsystems.core
 
-import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.StringArrayResource
 import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.getString as readString
-import org.jetbrains.compose.resources.getStringArray as readStringArray
 import java.math.BigInteger
 import java.util.Locale
 
-object Translator {
-    // Compose Resources only expose suspend readers; each string is cached after its first short asset read.
-    fun getString(res: StringResource, vararg args: Any): String =
-        runBlocking { readString(res) }.formatWithArgs(args)
+expect object Translator {
+    fun getString(res: StringResource, vararg args: Any): String
 
-    fun getStringArrayItem(array: StringArrayResource, index: Int): String =
-        runBlocking { readStringArray(array)[index] }
+    fun getStringArrayItem(array: StringArrayResource, index: Int): String
 }
 
 private val placeholder = Regex("%(?:(\\d+)\\$)?([sd%])")

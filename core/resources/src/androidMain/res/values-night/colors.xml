@@ -9,4 +9,5 @@
     <color name="text_primary">#F5F5F6</color>
     <color name="status_success">#16C96F</color>
     <color name="status_error">#FF4D4D</color>
+    <color name="button_primary_brand_content">#171719</color>
 </resources>
