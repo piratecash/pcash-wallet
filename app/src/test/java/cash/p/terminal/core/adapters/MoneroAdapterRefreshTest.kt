@@ -22,6 +22,7 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
@@ -87,6 +88,27 @@ class MoneroAdapterRefreshTest {
 
         assertEquals(0, BigDecimal("4").compareTo(adapter.maxSpendableBalance))
         assertEquals(false, adapter.sendAllowed())
+    }
+
+    @Test
+    fun lastKnownBalanceData_walletNotOpen_isNullAndBalanceDataZero() {
+        val moneroKitWrapper = mockk<MoneroKitWrapper>(relaxed = true) {
+            every { getBalance() } returns null
+        }
+        val adapter = MoneroAdapter(moneroKitWrapper)
+
+        assertNull(adapter.lastKnownBalanceData)
+        assertEquals(0, BigDecimal.ZERO.compareTo(adapter.balanceData.available))
+    }
+
+    @Test
+    fun lastKnownBalanceData_walletOpen_reportsWalletBalance() {
+        val moneroKitWrapper = mockk<MoneroKitWrapper>(relaxed = true) {
+            every { getBalance() } returns 10_000_000_000_000L
+        }
+        val adapter = MoneroAdapter(moneroKitWrapper)
+
+        assertEquals(0, BigDecimal("10").compareTo(requireNotNull(adapter.lastKnownBalanceData).available))
     }
 
     @Test

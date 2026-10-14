@@ -10,6 +10,7 @@ import cash.p.beam.BeamTransactionDirection
 import cash.p.beam.BeamWalletSession
 import cash.p.beam.BeamWalletState
 import cash.p.terminal.R
+import cash.p.terminal.core.ILastKnownBalanceAdapter
 import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.TransactionExplorerData
 import cash.p.terminal.core.managers.BeamLifecycleCoordinator
@@ -62,7 +63,7 @@ class BeamAdapter(
     private val wallet: Wallet,
     lifecycleCoordinator: BeamLifecycleCoordinator? = null,
     private val sendCoordinator: BeamSendCoordinator? = null,
-) : IAdapter, IBalanceAdapter, IReceiveAdapter, ITransactionsAdapter {
+) : IAdapter, IBalanceAdapter, IReceiveAdapter, ITransactionsAdapter, ILastKnownBalanceAdapter {
     private val monitor = Any()
     private val job = SupervisorJob()
     private val scope = CoroutineScope(dispatcherProvider.io + job)
@@ -98,7 +99,7 @@ class BeamAdapter(
     val isNetworkPaused: Boolean get() = synchronized(monitor) { networkPaused }
     // The amounts the wallet database reported, authoritative or not: what the balance row shows.
     // Null only in the window before the database has been read at all.
-    val lastKnownBalanceData: BalanceData? get() = balance.value
+    override val lastKnownBalanceData: BalanceData? get() = balance.value
     override val balanceData: BalanceData get() = lastKnownBalanceData ?: BalanceData(BigDecimal.ZERO)
 
     // Display may lag behind the chain; spending may not.

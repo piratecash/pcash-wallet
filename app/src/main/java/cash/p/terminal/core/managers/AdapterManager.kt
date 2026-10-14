@@ -1,9 +1,9 @@
 package cash.p.terminal.core.managers
 
 import android.os.HandlerThread
+import cash.p.terminal.core.ILastKnownBalanceAdapter
 import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.ZcashRescanException
-import cash.p.terminal.core.adapters.BeamAdapter
 import cash.p.terminal.core.factories.AdapterFactory
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.FallbackAddressProvider
@@ -532,11 +532,9 @@ class AdapterManager(
 
     override fun getAdjustedBalanceData(wallet: Wallet): BalanceData? {
         val adapter = getBalanceAdapterForWallet(wallet) ?: return null
-        // BEAM is the one adapter that can report "the wallet database has not been read yet",
-        // which is not the same as "the balance is zero": until the SDK session has started, it
-        // has no amounts at all. Passing that through as null keeps the row on the last cached
-        // amount instead of showing — and then persisting — a zero the wallet never had.
-        val rawBalance = if (adapter is BeamAdapter) {
+        // An adapter that has not read its wallet store yet reports null, which keeps the row on
+        // the cached amount instead of showing and persisting a zero.
+        val rawBalance = if (adapter is ILastKnownBalanceAdapter) {
             adapter.lastKnownBalanceData ?: return null
         } else adapter.balanceData
         return pendingBalanceCalculator.adjustBalance(wallet, rawBalance)

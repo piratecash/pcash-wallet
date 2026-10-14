@@ -1,7 +1,9 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.core.ILastKnownBalanceAdapter
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.adapters.BeamAdapter
+import cash.p.terminal.core.adapters.MoneroAdapter
 import cash.p.terminal.core.factories.AdapterFactory
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AdapterState
@@ -124,8 +126,17 @@ class AdapterManagerTest {
     // Once the database is read, the amounts flow through even though they are not authoritative.
     @Test
     fun getAdjustedBalanceData_beamDatabaseNotReadYet_reportsUnknownInsteadOfZero() = testScope.runTest {
-        val wallet = wallet("beam", BlockchainType.Beam, TokenType.Native)
-        val adapter = mockk<BeamAdapter>(relaxed = true) {
+        assertBalanceUnknownUntilRead<BeamAdapter>(wallet("beam", BlockchainType.Beam, TokenType.Native))
+    }
+
+    @Test
+    fun getAdjustedBalanceData_moneroWalletNotOpen_reportsUnknownInsteadOfZero() = testScope.runTest {
+        assertBalanceUnknownUntilRead<MoneroAdapter>(wallet("monero", BlockchainType.Monero, TokenType.Native))
+    }
+
+    private inline fun <reified T> TestScope.assertBalanceUnknownUntilRead(wallet: Wallet)
+        where T : IAdapter, T : IBalanceAdapter, T : ILastKnownBalanceAdapter {
+        val adapter = mockk<T>(relaxed = true) {
             every { balanceState } returns AdapterState.Connecting
             every { balanceStateUpdatedFlow } returns emptyFlow()
             every { balanceUpdatedFlow } returns emptyFlow()

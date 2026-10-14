@@ -474,6 +474,11 @@ interface INativeBalanceProvider {
     val nativeBalanceUpdatedFlow: Flow<Unit>
 }
 
+/** Balance as last read from the wallet store; null until it has been read, which is not zero. */
+interface ILastKnownBalanceAdapter {
+    val lastKnownBalanceData: BalanceData?
+}
+
 interface ISendTronAdapter : IBalanceAdapter {
     val trxBalanceData: BalanceData
 
