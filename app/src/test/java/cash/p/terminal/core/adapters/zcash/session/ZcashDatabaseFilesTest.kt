@@ -34,6 +34,17 @@ class ZcashDatabaseFilesTest {
     }
 
     @Test
+    fun accountIdOf_databaseFilePath_returnsItsAccountId() {
+        assertEquals(ACCOUNT_ID, databaseFiles.accountIdOf(databaseFiles.databaseFile(ACCOUNT_ID).path))
+    }
+
+    @Test
+    fun accountIdOf_foreignPath_returnsNull() {
+        assertNull(databaseFiles.accountIdOf(File(noBackupDir, "wallet_$ACCOUNT_ID.sqlite3").path))
+        assertNull(databaseFiles.accountIdOf(File(databaseFiles.dataDir, "other.sqlite3").path))
+    }
+
+    @Test
     fun delete_existingDatabase_removesEveryCompanionFile() {
         val files = writeDatabase()
 

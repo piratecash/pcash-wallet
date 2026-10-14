@@ -149,13 +149,21 @@ internal const val MAX_TRACE_CAUSE_DEPTH = 3
 internal fun Throwable.boundedStackTraceToString(): String {
     val sb = StringBuilder()
     var current: Throwable? = this
+    var parent: Throwable? = null
     var depth = 0
     while (depth < MAX_TRACE_CAUSE_DEPTH) {
         val t = current ?: break
-        sb.appendLine(if (depth == 0) t.toString() else "Caused by: $t")
+        sb.appendLine(
+            when {
+                depth == 0 -> t.toString()
+                t.message != null && t.message == parent?.message -> "Caused by: ${t.javaClass.name}: (same message)"
+                else -> "Caused by: $t"
+            }
+        )
         t.stackTrace.take(MAX_TRACE_FRAMES_PER_CAUSE).forEach { sb.appendLine("\tat $it") }
         val hidden = t.stackTrace.size - MAX_TRACE_FRAMES_PER_CAUSE
         if (hidden > 0) sb.appendLine("\t... $hidden more")
+        parent = t
         current = t.cause
         depth++
     }

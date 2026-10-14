@@ -16,7 +16,15 @@ class ZcashDatabaseFiles(context: Context) {
     /** Where the ECC SDK left the Sapling parameters; reusing them saves a ~50 MB download. */
     val legacyDir: File = File(context.noBackupFilesDir, ECC_NO_BACKUP_DIR_NAME)
 
-    fun databaseFile(accountId: String): File = File(dataDir, "wallet_$accountId.sqlite3")
+    fun databaseFile(accountId: String): File = File(dataDir, "$DB_PREFIX$accountId$DB_SUFFIX")
+
+    /** Inverse of [databaseFile]; null for a path this wallet does not own. */
+    fun accountIdOf(path: String): String? {
+        val file = File(path)
+        if (file.parentFile != dataDir) return null
+        return file.name.takeIf { it.startsWith(DB_PREFIX) && it.endsWith(DB_SUFFIX) }
+            ?.removeSurrounding(DB_PREFIX, DB_SUFFIX)?.takeIf(String::isNotEmpty)
+    }
 
     /**
      * A seed born in this install whose database was never erased: the mark dies with the database.
@@ -104,6 +112,8 @@ class ZcashDatabaseFiles(context: Context) {
         const val NA = "n/a"
         const val PROBE_FILE_MODE = 0b110_000_000
         const val DATA_DIR_NAME = "zcash"
+        const val DB_PREFIX = "wallet_"
+        const val DB_SUFFIX = ".sqlite3"
 
         /** ECC's own constant, typo included. */
         const val ECC_NO_BACKUP_DIR_NAME = "co.electricoin.zcash"

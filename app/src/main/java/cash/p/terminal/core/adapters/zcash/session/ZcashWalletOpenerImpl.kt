@@ -41,6 +41,7 @@ class ZcashWalletOpenerImpl(
         val started = TimeSource.Monotonic.markNow()
         val accountId = wallet.account.id
         val logger = zcashAppLogger(accountId)
+        failureReporter.processStarted(logger)
         val dirState = dirState()
         ZcashSdk.initialize(databaseFiles.dataDir.absolutePath, databaseFiles.legacyDir.absolutePath)
 
