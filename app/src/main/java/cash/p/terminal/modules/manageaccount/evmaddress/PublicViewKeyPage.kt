@@ -22,6 +22,9 @@ import cash.p.terminal.modules.manageaccount.ui.ActionButton
 import cash.p.terminal.modules.manageaccount.ui.HidableContent
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.resources.Info_Title
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_info_24
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.helpers.TextHelper
 import cash.p.terminal.ui_compose.components.AppBar
@@ -62,8 +65,8 @@ private fun PublicViewKeyScreen(input: Input, navigation: HSNavigation) {
                 menuItems = if (input.showInfo) {
                     listOf(
                         MenuItem(
-                            title = TranslatableString.ResString(R.string.Info_Title),
-                            icon = R.drawable.ic_info_24,
+                            title = TranslatableString.ResString(Res.string.Info_Title),
+                            icon = Res.drawable.ic_info_24,
                             onClick = {
                                 FaqManager.showFaqPage(FaqManager.faqPrivateKeys)
                             }

@@ -20,6 +20,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_attention_red_20
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.HeaderStick
 import cash.p.terminal.ui_compose.components.HsImage
@@ -165,7 +167,7 @@ private fun BottomSheetSelectorMultiplePreview() {
             )
         ),
         selectedIndexes = listOf(0, 2),
-        icon = ImageSource.Local(R.drawable.ic_attention_red_20),
+        icon = ImageSource.Local(Res.drawable.ic_attention_red_20),
         allowEmpty = true
     )
 

@@ -1,0 +1,172 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComposableParamOrder:Badge.kt$Badge</ID>
+    <ID>ComposableParamOrder:Badge.kt$BadgeBase</ID>
+    <ID>ComposableParamOrder:Badge.kt$BadgeText</ID>
+    <ID>ComposableParamOrder:Badge.kt$BadgeWithDiff</ID>
+    <ID>ComposableParamOrder:CoinListComponents.kt$CoinList</ID>
+    <ID>ComposableParamOrder:CoinListOrderable.kt$CoinListOrderable</ID>
+    <ID>ComposableParamOrder:Components.kt$AnalyticsFooterCell</ID>
+    <ID>ComposableParamOrder:Components.kt$BoxItemCell</ID>
+    <ID>ComposableParamOrder:EtfPage.kt$GraphicPointer</ID>
+    <ID>ComposableParamOrder:IndicatorsPage.kt$IndicatorCell</ID>
+    <ID>ComposableParamOrder:MarketCell.kt$MarketCoin</ID>
+    <ID>ComposableParamOrder:MarketCell.kt$MarketCoinClear</ID>
+    <ID>ComposableParamOrder:MarketFiltersPage.kt$AdvancedSearchSwitch</ID>
+    <ID>ComposableParamOrder:MarketFiltersPage.kt$SingleSelectBottomSheetContent</ID>
+    <ID>ComposableParamOrder:SearchBar.kt$SearchBar</ID>
+    <ID>CyclomaticComplexMethod:CoinAnalyticsViewModel.kt$CoinAnalyticsViewModel$private fun getPreviewViewItems(analyticsPreview: AnalyticsPreview): List&lt;PreviewBlockViewItem&gt;</ID>
+    <ID>CyclomaticComplexMethod:CoinAnalyticsViewModel.kt$CoinAnalyticsViewModel$private fun getViewItems(analytics: Analytics): List&lt;BlockViewItem&gt;</ID>
+    <ID>CyclomaticComplexMethod:CoinOverviewScreen.kt$@Composable fun CoinOverviewScreen( fullCoin: FullCoin, navigation: HSNavigation )</ID>
+    <ID>CyclomaticComplexMethod:CoinOverviewViewModel.kt$CoinOverviewViewModel$private fun getTokenVariants( fullCoin: FullCoin, account: Account?, activeWallets: List&lt;Wallet&gt; ): TokenVariants?</ID>
+    <ID>CyclomaticComplexMethod:EtfPage.kt$@Composable fun ChartEtf(loading: Boolean, etfPoints: List&lt;EtfPoint&gt;, currency: Currency)</ID>
+    <ID>CyclomaticComplexMethod:MarketCell.kt$@Composable fun SignalBadge(advice: Advice)</ID>
+    <ID>CyclomaticComplexMethod:MarketFiltersService.kt$MarketFiltersService$private fun filterCoinMarket(marketInfo: MarketInfo): Boolean</ID>
+    <ID>CyclomaticComplexMethod:TechnicalAdviceViewItemFactory.kt$TechnicalAdviceViewItemFactory$private fun mainAdvice(technicalAdvice: TechnicalAdvice): String</ID>
+    <ID>LambdaParameterEventTrailing:Components.kt$onActionClick</ID>
+    <ID>LambdaParameterEventTrailing:EtfPage.kt$onSelect</ID>
+    <ID>LambdaParameterInRestartableEffect:LazyListState.kt$onLoadMore</ID>
+    <ID>LargeClass:CoinAnalyticsViewModel.kt$CoinAnalyticsViewModel : ViewModelUiState</ID>
+    <ID>LongMethod:CoinAnalyticsScreen.kt$@Composable private fun AnalyticsBlock( block: CoinAnalyticsModule.BlockViewItem, navigation: HSNavigation, )</ID>
+    <ID>LongMethod:CoinAnalyticsViewModel.kt$CoinAnalyticsViewModel$private fun getPreviewViewItems(analyticsPreview: AnalyticsPreview): List&lt;PreviewBlockViewItem&gt;</ID>
+    <ID>LongMethod:CoinAnalyticsViewModel.kt$CoinAnalyticsViewModel$private fun getViewItems(analytics: Analytics): List&lt;BlockViewItem&gt;</ID>
+    <ID>LongMethod:CoinListComponents.kt$@Composable fun CategoryCard( type: DiscoveryItem, onClick: () -&gt; Unit )</ID>
+    <ID>LongMethod:CoinListComponents.kt$@Composable fun CoinList( listState: LazyListState = rememberLazyListState(), items: List&lt;MarketViewItem&gt;, scrollToTop: Boolean, onAddFavorite: (String) -&gt; Unit, onRemoveFavorite: (String) -&gt; Unit, onCoinClick: (String) -&gt; Unit, userScrollEnabled: Boolean = true, preItems: LazyListScope.() -&gt; Unit )</ID>
+    <ID>LongMethod:CoinListOrderable.kt$@Composable fun CoinListOrderable( items: List&lt;MarketViewItem&gt;, scrollToTop: Boolean, onAddFavorite: (String) -&gt; Unit, onRemoveFavorite: (String) -&gt; Unit, onCoinClick: (String) -&gt; Unit, userScrollEnabled: Boolean = true, canReorder: Boolean = false, showReorderArrows: Boolean = false, preItems: LazyListScope.() -&gt; Unit, enableManualOrder: () -&gt; Unit, onReorder: (from: Int, to: Int) -&gt; Unit )</ID>
+    <ID>LongMethod:CoinOverviewScreen.kt$@Composable fun CoinOverviewScreen( fullCoin: FullCoin, navigation: HSNavigation )</ID>
+    <ID>LongMethod:CoinOverviewViewModel.kt$CoinOverviewViewModel$private fun getTokenVariants( fullCoin: FullCoin, account: Account?, activeWallets: List&lt;Wallet&gt; ): TokenVariants?</ID>
+    <ID>LongMethod:CoinPage.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun CoinTabs( viewModel: CoinViewModel, navigation: HSNavigation, )</ID>
+    <ID>LongMethod:CoinRankPage.kt$@OptIn(ExperimentalFoundationApi::class) @Composable private fun CoinRankScreen( type: RankType, navigation: HSNavigation, viewModel: CoinRankViewModel = koinViewModel { parametersOf(type) } )</ID>
+    <ID>LongMethod:CoinTreasuriesPage.kt$@Composable private fun CoinTreasuriesScreen( viewModel: CoinTreasuriesViewModel, navigation: HSNavigation, )</ID>
+    <ID>LongMethod:CoinViewFactory.kt$CoinViewFactory$private fun getMarketItems( item: CoinOverviewItem, ): MutableList&lt;CoinDataItem&gt;</ID>
+    <ID>LongMethod:Contracts.kt$@Composable fun Contracts( contracts: List&lt;ContractInfo&gt;, onClickCopy: (ContractInfo) -&gt; Unit, onClickExplorer: (String) -&gt; Unit, )</ID>
+    <ID>LongMethod:DetectorsPage.kt$@Composable fun DetectorCell( issueViewItem: DetectorsModule.IssueViewItem, toggleExpand: (Int) -&gt; Unit )</ID>
+    <ID>LongMethod:EmaSettingsScreen.kt$@Composable fun EmaSettingsScreen(navigation: HSNavigation, indicatorSetting: ChartIndicatorSetting)</ID>
+    <ID>LongMethod:EtfPage.kt$@Composable fun ChartEtf(loading: Boolean, etfPoints: List&lt;EtfPoint&gt;, currency: Currency)</ID>
+    <ID>LongMethod:EtfPage.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun EtfScreen( viewModel: EtfViewModel, navigation: HSNavigation, )</ID>
+    <ID>LongMethod:IndicatorsPage.kt$@Composable fun IndicatorsScreen(navigation: HSNavigation)</ID>
+    <ID>LongMethod:MacdSettingsScreen.kt$@Composable fun MacdSettingsScreen(navigation: HSNavigation, indicatorSetting: ChartIndicatorSetting)</ID>
+    <ID>LongMethod:MarketCategoryPage.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun CategoryScreen( viewModel: MarketCategoryViewModel, chartViewModel: ChartViewModel, onCloseButtonClick: () -&gt; Unit, onCoinClick: (String) -&gt; Unit, )</ID>
+    <ID>LongMethod:MarketFavoritesScreen.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun MarketFavoritesScreen( navigation: HSNavigation )</ID>
+    <ID>LongMethod:MarketFiltersPage.kt$@Composable fun AdvancedSearchContent( viewModel: MarketFiltersViewModel, onFilterByBlockchainsClick: () -&gt; Unit, showBottomSheet: (MarketFiltersModule.FilterDropdown) -&gt; Unit, )</ID>
+    <ID>LongMethod:MarketFiltersPage.kt$@Composable private fun BottomSheetContent( bottomSheetType: MarketFiltersModule.FilterDropdown, viewModel: MarketFiltersViewModel, onClose: () -&gt; Unit, )</ID>
+    <ID>LongMethod:MarketFiltersPage.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable private fun AdvancedSearchScreen( viewModel: MarketFiltersViewModel, navigation: HSNavigation, )</ID>
+    <ID>LongMethod:MarketFiltersResultsPage.kt$@OptIn(ExperimentalFoundationApi::class) @Composable private fun SearchResultsScreen( viewModel: MarketFiltersResultViewModel, navigation: HSNavigation )</ID>
+    <ID>LongMethod:MarketOverviewMetrics.kt$@Composable private fun ChartView(metricsData: MetricData, navigation: HSNavigation)</ID>
+    <ID>LongMethod:MarketPlatformPage.kt$@OptIn(ExperimentalFoundationApi::class) @Composable private fun PlatformScreen( viewModel: MarketPlatformViewModel, chartViewModel: ChartViewModel, onCloseButtonClick: () -&gt; Unit, onCoinClick: (String) -&gt; Unit, )</ID>
+    <ID>LongMethod:MarketSearchPage.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun MarketSearchResults( vararg inputs: Any?, itemSections: Map&lt;MarketSearchSection, List&lt;CoinItem&gt;&gt;, onCoinClick: (Coin, MarketSearchSection) -&gt; Unit, onFavoriteClick: (Boolean, String) -&gt; Unit, )</ID>
+    <ID>LongMethod:MarketSignalsPage.kt$@Composable fun MarketSignalsScreen(navigation: HSNavigation)</ID>
+    <ID>LongMethod:MetricsPage.kt$@OptIn(ExperimentalFoundationApi::class) @Composable private fun MetricsPageScreen( viewModel: MetricsPageViewModel, chartViewModel: ChartViewModel, navigation: HSNavigation, onCoinClick: (String) -&gt; Unit, )</ID>
+    <ID>LongMethod:OverallScoreInfoPage.kt$private fun getScores( scoreCategory: ScoreCategory?, formatFiat: (Int) -&gt; String, formatNumber: (Int) -&gt; String, ): Map&lt;OverallScore, String&gt;</ID>
+    <ID>LongMethod:ProChartService.kt$ProChartService$override suspend fun getItems( chartInterval: HsTimePeriod, currency: Currency, ): ChartPointsWrapper</ID>
+    <ID>LongMethod:Roi.kt$@Composable fun Roi(roi: List&lt;RoiViewItem&gt;)</ID>
+    <ID>LongMethod:RsiSettingsScreen.kt$@Composable fun RsiSettingsScreen(navigation: HSNavigation, indicatorSetting: ChartIndicatorSetting)</ID>
+    <ID>LongMethod:SearchBar.kt$@OptIn(ExperimentalMaterial3Api::class) @ExperimentalAnimationApi @Composable fun SearchBar( title: String, searchHintText: String = "", searchOnlyMode: Boolean = false, searchModeInitial: Boolean = false, focusRequester: FocusRequester = remember { FocusRequester() }, menuItems: List&lt;MenuItem&gt; = listOf(), onClose: () -&gt; Unit, onSearchTextChanged: (String) -&gt; Unit = {}, )</ID>
+    <ID>LongMethod:TechnicalAdviceViewItemFactory.kt$TechnicalAdviceViewItemFactory$private fun mainAdvice(technicalAdvice: TechnicalAdvice): String</ID>
+    <ID>LongMethod:TokenVariants.kt$@Composable fun TokenVariants( tokenVariants: TokenVariants, onClickAddToWallet: (cash.p.terminal.wallet.Token) -&gt; Unit, onClickRemoveWallet: (cash.p.terminal.wallet.Token) -&gt; Unit, onClickCopy: (String) -&gt; Unit, onClickExplorer: (String) -&gt; Unit, )</ID>
+    <ID>LongMethod:TopCoins.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun TopCoins( onCoinClick: (String) -&gt; Unit, )</ID>
+    <ID>LongMethod:TopNftCollectionsPage.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun TopNftCollectionsScreen( viewModel: TopNftCollectionsViewModel, onCloseButtonClick: () -&gt; Unit, onClickCollection: (BlockchainType, String) -&gt; Unit, )</ID>
+    <ID>LongMethod:TopPairsScreen.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun TopPairsScreen()</ID>
+    <ID>LongMethod:TopPlatforms.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun TopPlatforms( navigation: HSNavigation, viewModel: TopPlatformsViewModel = koinViewModel(), )</ID>
+    <ID>LongMethod:TvlPage.kt$@OptIn(ExperimentalFoundationApi::class) @Composable private fun TvlScreen( tvlViewModel: TvlViewModel, chartViewModel: TvlChartViewModel, navigation: HSNavigation, onCoinClick: (String?) -&gt; Unit )</ID>
+    <ID>LongParameterList:CoinListOrderable.kt$( items: List&lt;MarketViewItem&gt;, scrollToTop: Boolean, onAddFavorite: (String) -&gt; Unit, onRemoveFavorite: (String) -&gt; Unit, onCoinClick: (String) -&gt; Unit, userScrollEnabled: Boolean = true, canReorder: Boolean = false, showReorderArrows: Boolean = false, preItems: LazyListScope.() -&gt; Unit, enableManualOrder: () -&gt; Unit, onReorder: (from: Int, to: Int) -&gt; Unit )</ID>
+    <ID>MaxLineLength:ChartIndicatorsViewModel.kt$ChartIndicatorsViewModel$oscillatorIndicators = it.filter { it.type == ChartIndicatorSetting.IndicatorType.RSI || it.type == ChartIndicatorSetting.IndicatorType.MACD }</ID>
+    <ID>MayBeConst:ChartIndicatorManager.kt$ChartIndicatorManager.Companion$val rsiPeriod = 12</ID>
+    <ID>ModifierMissing:About.kt$About</ID>
+    <ID>ModifierMissing:CellNews.kt$CellNews</ID>
+    <ID>ModifierMissing:CoinAuditsPage.kt$CoinAudit</ID>
+    <ID>ModifierMissing:CoinAuditsPage.kt$CoinAuditHeader</ID>
+    <ID>ModifierMissing:CoinInvestmentsPage.kt$CoinInvestmentFund</ID>
+    <ID>ModifierMissing:CoinInvestmentsPage.kt$CoinInvestmentHeader</ID>
+    <ID>ModifierMissing:CoinListComponents.kt$CategoryCard</ID>
+    <ID>ModifierMissing:CoinListComponents.kt$CoinList</ID>
+    <ID>ModifierMissing:CoinListComponents.kt$DescriptionCard</ID>
+    <ID>ModifierMissing:CoinListComponents.kt$ListErrorView</ID>
+    <ID>ModifierMissing:CoinListComponents.kt$TopCloseButton</ID>
+    <ID>ModifierMissing:CoinListOrderable.kt$CoinListOrderable</ID>
+    <ID>ModifierMissing:CoinMarketsScreen.kt$CoinMarketCell</ID>
+    <ID>ModifierMissing:CoinMarketsScreen.kt$CoinMarketList</ID>
+    <ID>ModifierMissing:CoinMarketsScreen.kt$CoinMarketsMenu</ID>
+    <ID>ModifierMissing:CoinMarketsScreen.kt$CoinMarketsScreen</ID>
+    <ID>ModifierMissing:CoinOverviewScreen.kt$CoinOverviewScreen</ID>
+    <ID>ModifierMissing:CoinOverviewScreen.kt$Error</ID>
+    <ID>ModifierMissing:CoinPage.kt$CoinNotFound</ID>
+    <ID>ModifierMissing:CoinPage.kt$CoinTabs</ID>
+    <ID>ModifierMissing:CoinScreenTitle.kt$CoinScreenTitle</ID>
+    <ID>ModifierMissing:Components.kt$AnalyticsBlockHeader</ID>
+    <ID>ModifierMissing:Components.kt$AnalyticsChart</ID>
+    <ID>ModifierMissing:Components.kt$AnalyticsContainer</ID>
+    <ID>ModifierMissing:Components.kt$AnalyticsContentNumber</ID>
+    <ID>ModifierMissing:Components.kt$AnalyticsFooterCell</ID>
+    <ID>ModifierMissing:Containers.kt$Box44</ID>
+    <ID>ModifierMissing:Contracts.kt$Contracts</ID>
+    <ID>ModifierMissing:DescriptionMarkdown.kt$DescriptionMarkdown</ID>
+    <ID>ModifierMissing:Descriptions.kt$Description</ID>
+    <ID>ModifierMissing:DetectorsPage.kt$DetectorCell</ID>
+    <ID>ModifierMissing:DetectorsPage.kt$IssueList</ID>
+    <ID>ModifierMissing:EmaSettingsScreen.kt$EmaSettingsScreen</ID>
+    <ID>ModifierMissing:EtfPage.kt$ChartEtf</ID>
+    <ID>ModifierMissing:EtfPage.kt$EtfScreen</ID>
+    <ID>ModifierMissing:IndicatorsPage.kt$IndicatorsScreen</ID>
+    <ID>ModifierMissing:Links.kt$Links</ID>
+    <ID>ModifierMissing:MacdSettingsScreen.kt$MacdSettingsScreen</ID>
+    <ID>ModifierMissing:MarketCategoryPage.kt$CategoryScreen</ID>
+    <ID>ModifierMissing:MarketCell.kt$MarketCoin</ID>
+    <ID>ModifierMissing:MarketCell.kt$MarketCoinClear</ID>
+    <ID>ModifierMissing:MarketCell.kt$MarketCoinFirstRow</ID>
+    <ID>ModifierMissing:MarketCell.kt$MarketCoinSecondRow</ID>
+    <ID>ModifierMissing:MarketCell.kt$MarketDataValueComponent</ID>
+    <ID>ModifierMissing:MarketData.kt$MarketData</ID>
+    <ID>ModifierMissing:MarketOverviewBoards.kt$BoardsView</ID>
+    <ID>ModifierMissing:MarketOverviewMisc.kt$SeeAllButton</ID>
+    <ID>ModifierMissing:MarketOverviewScreen.kt$MarketOverviewScreen</ID>
+    <ID>ModifierMissing:MarketOverviewTopNft.kt$TopNftCollectionsBoardView</ID>
+    <ID>ModifierMissing:MarketOverviewTopPlatforms.kt$TopPlatformsBoardView</ID>
+    <ID>ModifierMissing:MarketPostsScreen.kt$MarketPostsScreen</ID>
+    <ID>ModifierMissing:MarketScreen.kt$MarketScreen</ID>
+    <ID>ModifierMissing:MarketScreen.kt$MetricsBoard</ID>
+    <ID>ModifierMissing:MarketScreen.kt$TabsSection</ID>
+    <ID>ModifierMissing:MarketSearchPage.kt$MarketSearchResults</ID>
+    <ID>ModifierMissing:MarketSearchPage.kt$MarketSearchScreen</ID>
+    <ID>ModifierMissing:MarketSignalsPage.kt$MarketSignalsScreen</ID>
+    <ID>ModifierMissing:MarketsHorizontalCards.kt$MarketsHorizontalCards</ID>
+    <ID>ModifierMissing:MarketsSectionHeader.kt$MarketsSectionHeader</ID>
+    <ID>ModifierMissing:Roi.kt$Roi</ID>
+    <ID>ModifierMissing:RsiSettingsScreen.kt$RsiSettingsScreen</ID>
+    <ID>ModifierMissing:SearchBar.kt$SearchBar</ID>
+    <ID>ModifierMissing:TechnicalAdvice.kt$TechnicalAdviceBlock</ID>
+    <ID>ModifierMissing:Title.kt$Title</ID>
+    <ID>ModifierMissing:TokenVariants.kt$TokenVariants</ID>
+    <ID>ModifierMissing:TopCoins.kt$OptionController</ID>
+    <ID>ModifierMissing:TopNftCollectionsPage.kt$TopNftCollectionsScreen</ID>
+    <ID>ModifierMissing:TopPairsBoardView.kt$TopPairsBoardView</ID>
+    <ID>ModifierMissing:TopPairsScreen.kt$TopPairItem</ID>
+    <ID>ModifierMissing:TopPairsScreen.kt$TopPairsScreen</ID>
+    <ID>ModifierMissing:TopPlatforms.kt$TopPlatformItem</ID>
+    <ID>ModifierMissing:TopPlatforms.kt$TopPlatforms</ID>
+    <ID>ModifierWithoutDefault:CoinImage.kt$modifier</ID>
+    <ID>MultipleEmitters:CoinMajorHoldersPage.kt$HoldersGeneralInfo</ID>
+    <ID>MultipleEmitters:Components.kt$AnalyticsContainer</ID>
+    <ID>MultipleEmitters:Components.kt$AnalyticsFooterCell</ID>
+    <ID>MultipleEmitters:Components.kt$BoxItemCell</ID>
+    <ID>MultipleEmitters:Components.kt$RatingCell</ID>
+    <ID>MultipleEmitters:MarketOverviewTopNft.kt$TopNftCollectionsBoardView</ID>
+    <ID>MultipleEmitters:MarketOverviewTopPlatforms.kt$TopPlatformsBoardView</ID>
+    <ID>MultipleEmitters:TopPairsBoardView.kt$TopPairsBoardView</ID>
+    <ID>MutableStateAutoboxing:CellNews.kt$mutableStateOf(0)</ID>
+    <ID>ParameterNaming:CoinMarketsScreen.kt$onToggleVerified</ID>
+    <ID>ParameterNaming:MarketFiltersPage.kt$onChecked</ID>
+    <ID>ParameterNaming:SearchBar.kt$onSearchTextChanged</ID>
+    <ID>ThrowingExceptionsWithoutMessageOrCause:MarketOverviewModule.kt$MarketOverviewModule.MarketMetrics$IndexOutOfBoundsException()</ID>
+    <ID>TooGenericExceptionThrown:MetricsPageViewModel.kt$MetricsPageViewModel$throw Exception("MetricsType not supported")</ID>
+    <ID>TooManyFunctions:MarketFiltersViewModel.kt$MarketFiltersViewModel : ViewModelUiState</ID>
+    <ID>UnnecessaryFullyQualifiedNameRule:EtfPage.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors</ID>
+    <ID>UnusedParameter:MarketOverviewViewModel.kt$MarketOverviewViewModel$topMovers: TopMovers</ID>
+    <ID>UseCheckOrError:MarketFavoritesService.kt$MarketFavoritesService$throw IllegalStateException("Manual sorting should be handled separately")</ID>
+    <ID>ViewModelForwarding:CoinMajorHoldersPage.kt$CoinMajorHoldersContent(viewModel)</ID>
+    <ID>ViewModelForwarding:MarketFiltersPage.kt$AdvancedSearchContent( viewModel = viewModel, onFilterByBlockchainsClick = { navigation.slideFromRight(BlockchainsSelectorPage()) }, showBottomSheet = { type -&gt; bottomSheetType = type } )</ID>
+    <ID>ViewModelForwarding:MarketFiltersPage.kt$BottomSheetContent( bottomSheetType = type, viewModel = viewModel, onClose = { coroutineScope.launch { modalBottomSheetState.hide() } .invokeOnCompletion { bottomSheetType = null } } )</ID>
+  </CurrentIssues>
+</SmellBaseline>

@@ -13,7 +13,6 @@ import cash.p.beam.BeamSendDeliveryMode
 import cash.p.beam.BeamSendOperation
 import cash.p.beam.BeamSendResolution
 import cash.p.beam.BeamWalletState
-import cash.p.terminal.R
 import cash.p.terminal.core.managers.BeamSendCoordinator
 import cash.p.terminal.entities.OfflineSignedTransaction
 import cash.p.terminal.modules.send.SendPage.ProceedActionData
@@ -21,6 +20,12 @@ import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.offline.OfflineSignState
 import cash.p.terminal.modules.send.offline.OfflineTransactionFormat
 import cash.p.terminal.modules.sendtokenselect.PrefilledData
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Swap_ErrorInsufficientBalance
+import cash.p.terminal.resources.beam_offline_context_unavailable
+import cash.p.terminal.resources.beam_send_not_ready
+import cash.p.terminal.resources.beam_send_quote_changed
+import cash.p.terminal.resources.beam_send_recovery_in_progress
 import cash.p.terminal.strings.helpers.TranslatableString
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -372,12 +377,12 @@ class BeamSendViewModelTest : BeamSendTestFixture() {
         model.confirm()
         assertTrue(model.attempted)
         assertFalse(model.recorded)
-        assertEquals(R.string.beam_send_recovery_in_progress, model.message)
+        assertEquals(Res.string.beam_send_recovery_in_progress, model.message)
         val result = model.sendResult
         assertTrue(result is SendResult.Failed)
         val caution = (result as SendResult.Failed).caution.s
         assertTrue(caution is TranslatableString.ResString)
-        assertEquals(R.string.beam_send_recovery_in_progress, (caution as TranslatableString.ResString).id)
+        assertEquals(Res.string.beam_send_recovery_in_progress, (caution as TranslatableString.ResString).id)
     }
 
     @Test
@@ -395,12 +400,12 @@ class BeamSendViewModelTest : BeamSendTestFixture() {
         model.confirm()
         model.retry()
         assertFalse(model.attempted)
-        assertEquals(R.string.beam_send_quote_changed, model.message)
+        assertEquals(Res.string.beam_send_quote_changed, model.message)
         val result = model.sendResult
         assertTrue(result is SendResult.Failed)
         val caution = (result as SendResult.Failed).caution.s
         assertTrue(caution is TranslatableString.ResString)
-        assertEquals(R.string.beam_send_quote_changed, (caution as TranslatableString.ResString).id)
+        assertEquals(Res.string.beam_send_quote_changed, (caution as TranslatableString.ResString).id)
     }
 
     // ---- Preview merged into Next: the background fee pipeline ----
@@ -466,7 +471,7 @@ class BeamSendViewModelTest : BeamSendTestFixture() {
         val errors = record(model.errorEvents)
         assertTrue(model.canProceed)
         model.proceed()
-        assertEquals(listOf(R.string.beam_send_not_ready), errors)
+        assertEquals(listOf(Res.string.beam_send_not_ready), errors)
         assertTrue(navigations.isEmpty())
         assertNull(model.message)
         coVerify(exactly = 0) { access.quote(match { it.amount is BeamSendAmount.Exact }) }
@@ -480,7 +485,7 @@ class BeamSendViewModelTest : BeamSendTestFixture() {
             BeamSendCoordinator.SendException(BeamSendCoordinator.Reason.InsufficientFunds)
         model.onAmountChanged("4")
         model.proceed()
-        assertEquals(listOf(R.string.Swap_ErrorInsufficientBalance), errors)
+        assertEquals(listOf(Res.string.Swap_ErrorInsufficientBalance), errors)
         assertNull(model.message)
         assertEquals(BeamFeeState.Failed, model.feeState)
         assertTrue(navigations.isEmpty())
@@ -545,7 +550,7 @@ class BeamSendViewModelTest : BeamSendTestFixture() {
         context.value = BeamOfflineSigningState.Unavailable
         val errors = record(model.errorEvents)
         val opened = openSignPage()
-        assertEquals(listOf(R.string.beam_offline_context_unavailable), errors)
+        assertEquals(listOf(Res.string.beam_offline_context_unavailable), errors)
         assertTrue(opened.isEmpty())
         coVerify(exactly = 0) { access.quoteOffline(any()) }
         assertTrue(model.editable)
@@ -557,7 +562,7 @@ class BeamSendViewModelTest : BeamSendTestFixture() {
             BeamSendCoordinator.SendException(BeamSendCoordinator.Reason.InsufficientFunds)
         val errors = record(model.errorEvents)
         val opened = openSignPage()
-        assertEquals(listOf(R.string.Swap_ErrorInsufficientBalance), errors)
+        assertEquals(listOf(Res.string.Swap_ErrorInsufficientBalance), errors)
         assertTrue(opened.isEmpty())
         verify(exactly = 1) { access.releaseOffline() }
         assertTrue(model.editable)
@@ -652,11 +657,11 @@ class BeamSendViewModelTest : BeamSendTestFixture() {
     fun onClickSignOffline_noOfflineQuoteOrSigner_reportsNotReadyAndLeavesSigningAlone() = runTest(dispatcher) {
         val errors = record(model.errorEvents)
         model.onClickSignOffline(OfflineTransactionFormat.Raw)
-        assertEquals(listOf(R.string.beam_send_not_ready), errors)
+        assertEquals(listOf(Res.string.beam_send_not_ready), errors)
         openSignPage()
         every { access.canSign } returns false
         model.onClickSignOffline(OfflineTransactionFormat.Raw)
-        assertEquals(listOf(R.string.beam_send_not_ready, R.string.beam_send_not_ready), errors)
+        assertEquals(listOf(Res.string.beam_send_not_ready, Res.string.beam_send_not_ready), errors)
         assertEquals(OfflineSignState.Idle, model.signing.signState)
         assertFalse(model.attempted)
         coVerify(exactly = 0) { access.sign(any()) }

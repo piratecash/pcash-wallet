@@ -1,0 +1,704 @@
+package cash.p.terminal.ui_compose.components
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import cash.p.terminal.resources.CoinPage_ShowLess
+import cash.p.terminal.resources.CoinPage_ShowMore
+import cash.p.terminal.resources.Res
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import org.jetbrains.compose.resources.stringResource
+
+@Composable
+fun CellMultilineLawrenceSection(
+    composableItems: List<@Composable () -> Unit>
+) {
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(12.dp))
+    ) {
+        composableItems.forEachIndexed { index, composable ->
+            CellMultilineLawrence(borderTop = index != 0) {
+                composable()
+            }
+        }
+    }
+}
+
+@Composable
+fun CellMultilineLawrenceSection(
+    content: @Composable () -> Unit
+) {
+    CellMultilineLawrenceSection(listOf(content))
+}
+
+@Composable
+fun <T> CellMultilineLawrenceSection(
+    items: Iterable<T>,
+    itemContent: @Composable (T) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(12.dp))
+    ) {
+        items.forEachIndexed { index, marketDataLine ->
+            CellMultilineLawrence(borderTop = index != 0) {
+                itemContent(marketDataLine)
+            }
+        }
+    }
+}
+
+@Composable
+fun CellMultilineLawrence(
+    borderTop: Boolean = false,
+    borderBottom: Boolean = false,
+    content: @Composable () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(60.dp)
+            .background(plateBackground())
+    ) {
+        if (borderTop) {
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = ComposeAppTheme.colors.borderDivider,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+        }
+
+        if (borderBottom) {
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = ComposeAppTheme.colors.borderDivider,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+        }
+
+        content.invoke()
+    }
+}
+
+@Composable
+fun <T> CellSingleLineLawrenceSection(
+    items: List<T>,
+    itemContent: @Composable (T) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(12.dp))
+    ) {
+        items.forEachIndexed { index, marketDataLine ->
+            CellSingleLineLawrence(borderTop = index != 0) {
+                itemContent(marketDataLine)
+            }
+        }
+    }
+
+}
+
+@Composable
+fun CellSingleLineLawrenceSection(
+    content: @Composable () -> Unit
+) {
+    CellSingleLineLawrenceSection(listOf(content))
+}
+
+@Composable
+fun CellSingleLineLawrenceSection(
+    composableItems: List<@Composable () -> Unit>
+) {
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(12.dp))
+    ) {
+        composableItems.forEachIndexed { index, composable ->
+            CellSingleLineLawrence(borderTop = index != 0) {
+                composable()
+            }
+        }
+    }
+
+}
+
+@Composable
+fun HSSectionRounded(
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(12.dp)),
+    ) {
+        content()
+    }
+}
+
+@Composable
+fun Item(content: @Composable () -> Unit) {
+    CellSingleLineLawrence(
+        content = content
+    )
+}
+
+@Composable
+fun CellSingleLineLawrence(
+    borderTop: Boolean = false,
+    borderBottom: Boolean = false,
+    content: @Composable () -> Unit,
+) {
+    CellSingleLine(
+        borderTop = borderTop,
+        borderBottom = borderBottom,
+        color = plateBackground(),
+        content = content
+    )
+}
+
+@Composable
+fun CellSingleLine(
+    borderTop: Boolean = false,
+    borderBottom: Boolean = false,
+    color: Color? = null,
+    content: @Composable () -> Unit,
+) {
+    val colorModifier = when {
+        color != null -> Modifier.background(color)
+        else -> Modifier
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .then(colorModifier)
+    ) {
+        if (borderTop) {
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = ComposeAppTheme.colors.borderDivider,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+        }
+
+        if (borderBottom) {
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = ComposeAppTheme.colors.borderDivider,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+        }
+
+        content.invoke()
+    }
+}
+
+@Composable
+fun CellHeaderSorting(
+    borderTop: Boolean = false,
+    borderBottom: Boolean = false,
+    content: @Composable () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(44.dp)
+    ) {
+        if (borderTop) {
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = ComposeAppTheme.colors.borderDivider,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+        }
+
+        if (borderBottom) {
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = ComposeAppTheme.colors.borderDivider,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+        }
+
+        content.invoke()
+    }
+}
+
+@Composable
+fun CellData2(content: @Composable () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp)
+    ) {
+        content.invoke()
+    }
+
+}
+
+@Composable
+fun CellMultilineClear(
+    borderTop: Boolean = false,
+    borderBottom: Boolean = false,
+    height: Dp? = 60.dp,
+    onClick: (() -> Unit)? = null,
+    onBalanceClick: (() -> Unit)? = null,
+    content: @Composable () -> Unit,
+) {
+    val clickableModifier = when (onClick) {
+        null -> Modifier
+        else -> Modifier.clickable {
+            onClick.invoke()
+        }
+    }
+    val heightModifier = if (height == null) Modifier else Modifier.height(height)
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(heightModifier)
+            .then(clickableModifier)
+    ) {
+        if (borderTop) {
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = ComposeAppTheme.colors.borderDivider,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+        }
+
+        if (borderBottom) {
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = ComposeAppTheme.colors.borderDivider,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+        }
+
+        content.invoke()
+        if (onBalanceClick != null) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .wrapContentWidth(Alignment.End)
+                    .width(70.dp)
+                    .clickable(
+                        interactionSource = null,
+                        indication = null,
+                        onClick = { onBalanceClick() }
+                    )
+            )
+        }
+    }
+}
+
+@Composable
+fun CellSingleLineClear(
+    modifier: Modifier = Modifier,
+    borderTop: Boolean = false,
+    borderBottom: Boolean = false,
+    content: @Composable RowScope.() -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp)
+    ) {
+        if (borderTop) {
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = ComposeAppTheme.colors.borderDivider,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+        }
+
+        if (borderBottom) {
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = ComposeAppTheme.colors.borderDivider,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+        }
+
+        Row(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            content = content
+        )
+    }
+}
+
+
+@Composable
+fun CellFooter(text: String) {
+    Box(
+        modifier = Modifier
+            .height(58.dp)
+            .fillMaxWidth(),
+    ) {
+        HorizontalDivider(color = ComposeAppTheme.colors.borderDivider)
+        caption_grey(
+            text = text,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp),
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+fun ColumnUniversal(
+    modifier: Modifier = Modifier,
+    verticalPadding: Dp = 12.dp,
+    horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
+    onClick: (() -> Unit)? = null,
+    minHeight: Dp = 24.dp,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val clickableModifier = when (onClick) {
+        null -> Modifier
+        else -> Modifier.clickable {
+            onClick.invoke()
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .defaultMinSize(minHeight = minHeight)
+            .then(clickableModifier)
+            .then(modifier)
+            .padding(vertical = verticalPadding),
+        horizontalAlignment = horizontalAlignment,
+        content = content
+    )
+}
+fun getShape(itemsCount: Int, index: Int): Shape = when {
+    itemsCount == 1 -> RoundedCornerShape(12.dp)
+    itemsCount - 1 == index -> RoundedCornerShape(0.dp, 0.dp, 12.dp, 12.dp)
+    index == 0 -> RoundedCornerShape(12.dp, 12.dp, 0.dp, 0.dp)
+    else -> RoundedCornerShape(0.dp)
+}
+
+fun showDivider(itemsCount: Int, index: Int): Boolean =
+    itemsCount != 1 && index != 0
+
+@Composable
+fun CellUniversalLawrenceMutableSection(
+    composableItems: MutableList<@Composable () -> Unit>,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(plateBackground())
+            .plateOutline(RoundedCornerShape(12.dp))
+    ) {
+        composableItems.forEachIndexed { index, composable ->
+            SectionUniversalItem(
+                borderTop = index != 0,
+            ) {
+                composable()
+            }
+        }
+    }
+}
+
+@Composable
+fun CellUniversalLawrenceSectionAnimated(
+    primaryContent: @Composable () -> Unit,
+    animatedContent: @Composable () -> Unit,
+    afterAnimatedContent: @Composable (() -> Unit)? = null,
+    animatedVisible: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val visibleState = remember { MutableTransitionState(animatedVisible) }
+    visibleState.targetState = animatedVisible
+    val isAnimating = visibleState.currentState != visibleState.targetState
+
+    Column(
+        modifier = modifier
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(plateBackground())
+            .plateOutline(RoundedCornerShape(12.dp))
+    ) {
+        SectionUniversalItem(
+            borderBottom = isAnimating
+        ) {
+            primaryContent()
+        }
+        AnimatedVisibility(
+            visibleState = visibleState,
+            enter = expandVertically(),
+            exit = shrinkVertically()
+        ) {
+            SectionUniversalItem {
+                animatedContent()
+            }
+        }
+        afterAnimatedContent?.let {
+            SectionUniversalItem(
+                borderBottom = !animatedVisible && isAnimating
+            ) {
+                it()
+            }
+        }
+    }
+}
+
+@Composable
+fun <T> CellUniversalLawrenceSection(
+    items: Iterable<T>,
+    showFrame: Boolean = false,
+    itemContent: @Composable (T) -> Unit
+) {
+    LawrenceSectionColumn(
+        items = items,
+        frameColor = if (showFrame) ComposeAppTheme.colors.borderDefault else null,
+        itemContent = itemContent,
+    )
+}
+
+@Composable
+fun <T> CellUniversalLawrenceSection(
+    items: Iterable<T>,
+    frameColor: Color,
+    itemContent: @Composable (T) -> Unit
+) {
+    LawrenceSectionColumn(
+        items = items,
+        frameColor = frameColor,
+        itemContent = itemContent,
+    )
+}
+
+@Composable
+private fun <T> LawrenceSectionColumn(
+    items: Iterable<T>,
+    frameColor: Color?,
+    itemContent: @Composable (T) -> Unit
+) {
+    val frameModifier = if (frameColor != null) {
+        Modifier.border(1.dp, frameColor, RoundedCornerShape(12.dp))
+    } else {
+        Modifier
+    }
+
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(plateBackground())
+            .plateOutline(RoundedCornerShape(12.dp))
+            .then(frameModifier)
+    ) {
+        items.forEachIndexed { index, itemData ->
+            SectionUniversalItem(
+                borderTop = index != 0,
+            ) {
+                itemContent(itemData)
+            }
+        }
+    }
+}
+
+@Composable
+fun CellUniversalLawrenceSection(
+    showFrame: Boolean = false,
+    content: @Composable () -> Unit
+) {
+    val frameModifier = if (showFrame) {
+        Modifier.border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(12.dp))
+    } else {
+        Modifier
+    }
+
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(plateBackground())
+            .plateOutline(RoundedCornerShape(12.dp))
+            .then(frameModifier)
+    ) {
+        SectionUniversalItem {
+            content()
+        }
+    }
+}
+
+@Composable
+fun <T> CellUniversalLawrenceSection(
+    items: List<T>,
+    showFrame: Boolean = false,
+    limit: Int,
+    itemContent: @Composable (T) -> Unit
+) {
+    val frameModifier = if (showFrame) {
+        Modifier.border(1.dp, ComposeAppTheme.colors.borderDefault, RoundedCornerShape(12.dp))
+    } else {
+        Modifier
+    }
+
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(plateBackground())
+            .plateOutline(RoundedCornerShape(12.dp))
+            .then(frameModifier)
+    ) {
+        val size = items.size
+        items.subList(0, limit.coerceAtMost(size)).forEachIndexed { index, itemData ->
+            SectionUniversalItem(
+                borderTop = index != 0,
+            ) {
+                itemContent(itemData)
+            }
+        }
+
+        if (size > limit) {
+            var visible by remember { mutableStateOf(false) }
+            AnimatedVisibility(visible = visible) {
+                Column {
+                    items.subList(limit, size).forEach { itemData ->
+                        SectionUniversalItem(
+                            borderTop = true,
+                        ) {
+                            itemContent(itemData)
+                        }
+                    }
+                }
+            }
+
+            RowUniversal(
+                modifier = Modifier
+                    .height(48.dp)
+                    .fillMaxWidth(),
+                verticalPadding = 0.dp,
+                onClick = {
+                    visible = !visible
+                }
+            ) {
+                val text = if (visible) {
+                    stringResource(Res.string.CoinPage_ShowLess)
+                } else {
+                    stringResource(Res.string.CoinPage_ShowMore)
+                }
+
+                body_leah(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = text,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SectionItemBorderedRowUniversalClear(
+    borderTop: Boolean = false,
+    borderBottom: Boolean = false,
+    onClick: (() -> Unit)? = null,
+    content: @Composable RowScope.() -> Unit,
+) {
+    Column {
+        if (borderTop) {
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = ComposeAppTheme.colors.borderDivider,
+            )
+        }
+        RowUniversal(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            onClick = onClick,
+            content = content
+        )
+        if (borderBottom) {
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = ComposeAppTheme.colors.borderDivider,
+            )
+        }
+    }
+}
+
+@Composable
+fun CellBorderedRowUniversal(
+    modifier: Modifier = Modifier,
+    borderTop: Boolean = false,
+    borderBottom: Boolean = false,
+    backgroundColor: Color = Color.Transparent,
+    content: @Composable RowScope.() -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(backgroundColor)
+    ) {
+        if (borderTop) {
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = ComposeAppTheme.colors.borderDivider,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+        }
+
+        if (borderBottom) {
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = ComposeAppTheme.colors.borderDivider,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+        }
+
+        RowUniversal(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            content = content
+        )
+    }
+}

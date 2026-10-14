@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.displayoptions.DisplayPricePeriod
+import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AlertGroup
 import cash.p.terminal.ui_compose.components.AppSelectorDialog
 import cash.p.terminal.ui_compose.components.AppSelectorItem
@@ -45,6 +46,8 @@ import cash.p.terminal.ui_compose.components.balanceSurfaceIndication
 import cash.p.terminal.ui_compose.components.subhead2_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.BalanceSortType
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.display_options_price_period
 
 @Composable
 internal fun BalanceFilters(
@@ -102,14 +105,14 @@ private fun BalanceSortingSelector(
 ) {
     var showDialog by remember { mutableStateOf(false) }
     FilterButton(
-        label = stringResource(sort.selected.getTitleRes()),
+        label = TranslatableString.ResString(sort.selected.getTitleRes()).getString(),
         onClick = { showDialog = true },
     )
     if (showDialog) {
         AppSelectorDialog(
             title = stringResource(R.string.Balance_Sort_PopupTitle),
             items = sort.options.map {
-                AppSelectorItem(stringResource(it.getTitleRes()), it == sort.selected, it)
+                AppSelectorItem(TranslatableString.ResString(it.getTitleRes()).getString(), it == sort.selected, it)
             },
             onDismiss = { showDialog = false },
             onSelect = onSelectSortType,
@@ -130,7 +133,7 @@ private fun PricePeriodSelector(
     )
     if (showDialog) {
         AlertGroup(
-            title = R.string.display_options_price_period,
+            title = Res.string.display_options_price_period,
             select = Select(displayPricePeriod, DisplayPricePeriod.entries),
             onSelect = { selected ->
                 onDisplayPricePeriod(selected)

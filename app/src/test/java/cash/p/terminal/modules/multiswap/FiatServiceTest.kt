@@ -22,7 +22,7 @@ import org.junit.Test
 class FiatServiceTest {
 
     private val assetFiatRateService = mockk<AssetFiatRateService>()
-    private val currency = Currency("USD", "$", 2, 0)
+    private val currency = Currency("USD", "$", 2)
     private val token = PayCoreAssets.rubToken
 
     @After

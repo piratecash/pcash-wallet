@@ -30,6 +30,8 @@ import cash.p.terminal.R
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Button_Done
+import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellMultilineClear
@@ -106,7 +108,7 @@ private fun SelectBlockchainsScreen(
             },
             menuItems = listOf(
                 MenuItem(
-                    title = TranslatableString.ResString(R.string.Button_Done),
+                    title = TranslatableString.ResString(Res.string.Button_Done),
                     onClick = viewModel::onClickWatch,
                     enabled = submitEnabled
                 )

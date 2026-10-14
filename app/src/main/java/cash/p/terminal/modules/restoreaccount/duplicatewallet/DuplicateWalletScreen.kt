@@ -26,6 +26,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
 import cash.p.terminal.modules.createaccount.PassphraseCell
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.create
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.FormsInput
 import cash.p.terminal.ui_compose.components.AppBar
@@ -73,7 +75,7 @@ fun DuplicateWalletScreen(
                 },
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.create),
+                        title = TranslatableString.ResString(Res.string.create),
                         onClick = onCreate,
                         enabled = uiState.createButtonEnabled
                     )

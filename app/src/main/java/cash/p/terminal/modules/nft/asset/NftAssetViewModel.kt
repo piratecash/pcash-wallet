@@ -5,8 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cash.p.terminal.resources.Hud_Text_NoInternet
+import cash.p.terminal.resources.Nfts_Asset_OnSaleUntil
+import cash.p.terminal.resources.Res
 import io.horizontalsystems.core.collectWith
-import cash.p.terminal.R
 import cash.p.terminal.entities.CoinValue
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.entities.nft.NftAssetMetadata
@@ -131,7 +133,7 @@ class NftAssetViewModel(
             sale.bestListing?.let { listing ->
                 SaleViewItem(
                     untilDate = TranslatableString.ResString(
-                        R.string.Nfts_Asset_OnSaleUntil, DateHelper.getFullDate(listing.untilDate)
+                        Res.string.Nfts_Asset_OnSaleUntil, DateHelper.getFullDate(listing.untilDate)
                     ),
                     type = sale.type,
                     price = PriceViewItem(coinValue(listing.price), fiatValue(listing.price))
@@ -160,7 +162,7 @@ class NftAssetViewModel(
 
     private fun errorText(error: Throwable): TranslatableString =
         when (error) {
-            is UnknownHostException -> TranslatableString.ResString(R.string.Hud_Text_NoInternet)
+            is UnknownHostException -> TranslatableString.ResString(Res.string.Hud_Text_NoInternet)
             else -> TranslatableString.PlainString(error.message ?: error.javaClass.simpleName)
         }
 

@@ -26,6 +26,7 @@ import cash.p.terminal.wallet.transaction.TransactionSource
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.IAppNumberFormatter
+import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.thorchainkit.ThorchainKit
@@ -88,6 +89,8 @@ class SendTransactionServiceThorchainTest : KoinTest {
 
     @Before
     fun setUp() {
+        mockkObject(Translator)
+        every { Translator.getString(any(), *anyVararg()) } returns "translated"
         mockkObject(App)
         every { App.marketKit } returns marketKit
         every { App.currencyManager } returns mockk(relaxed = true)

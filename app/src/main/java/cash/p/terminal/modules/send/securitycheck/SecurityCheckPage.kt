@@ -59,6 +59,8 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Wallet
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_attention_20
 
 class SecurityCheckPage(val input: SecurityCheckInput) : HSPage() {
 
@@ -193,7 +195,7 @@ fun AddressCheck(
         if (errorMessage != null) {
             TextImportantError(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                icon = R.drawable.ic_attention_20,
+                icon = Res.drawable.ic_attention_20,
                 title = stringResource(R.string.SwapSettings_Error_InvalidAddress),
                 text = errorMessage
             )
@@ -234,7 +236,7 @@ fun AddressCheck(
         if (addressCheckData.checkResult == AddressCheckResult.Detected) {
             TextImportantError(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                icon = R.drawable.ic_attention_20,
+                icon = Res.drawable.ic_attention_20,
                 title = stringResource(addressCheckType.detectedErrorTitle),
                 text = stringResource(addressCheckType.detectedErrorDescription)
             )

@@ -22,6 +22,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
+import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_close_24
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.AnnotatedResourceString
 import cash.p.terminal.ui_compose.components.AppBar
@@ -64,8 +67,8 @@ fun SafetyRulesScreen(
                 },
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.Button_Close),
-                        icon = R.drawable.ic_close_24,
+                        title = TranslatableString.ResString(Res.string.Button_Close),
+                        icon = Res.drawable.ic_close_24,
                         onClick = onCancelClick
                     )
                 )

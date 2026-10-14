@@ -23,6 +23,8 @@ import cash.p.terminal.modules.walletconnect.session.ui.TitleValueCell
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Button_Add
+import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.FormsInput
 import cash.p.terminal.ui_compose.components.AppBar
@@ -93,7 +95,7 @@ private fun AddTokenScreen(
                 },
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.Button_Add),
+                        title = TranslatableString.ResString(Res.string.Button_Add),
                         onClick = viewModel::onAddClick,
                         enabled = uiState.addButtonEnabled
                     )

@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.multiswap.providers
 
-import cash.p.terminal.ui_compose.R
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.thorchain
 
 object ThorChainProvider : BaseThorChainProvider(
     baseUrl = "https://gateway.liquify.com/chain/thorchain_api/thorchain/",
@@ -9,5 +10,5 @@ object ThorChainProvider : BaseThorChainProvider(
 ) {
     override val id = "thorchain"
     override val title = "THORChain"
-    override val icon = R.drawable.thorchain
+    override val icon = Res.drawable.thorchain
 }

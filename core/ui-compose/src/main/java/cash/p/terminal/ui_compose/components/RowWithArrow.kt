@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,6 +37,7 @@ fun RowWithArrow(
                 modifier = Modifier.padding(horizontal = 8.dp).size(20.dp),
                 painter = painterResource(id = R.drawable.ic_attention_red_20),
                 contentDescription = null,
+                colorFilter = ColorFilter.tint(ComposeAppTheme.colors.statusError),
             )
         }
         if (showSpinner) {

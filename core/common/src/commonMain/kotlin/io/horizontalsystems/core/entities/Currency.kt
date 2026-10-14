@@ -7,6 +7,5 @@ import io.horizontalsystems.core.common.CommonParcelize
 data class Currency(
     val code: String,
     val symbol: String,
-    val decimal: Int,
-    val flag: Int
+    val decimal: Int
 ) : CommonParcelable

@@ -1,12 +1,13 @@
 package cash.p.terminal.modules.send.beam
 
 import cash.p.beam.BeamBalance
-import cash.p.terminal.R
 import cash.p.terminal.core.managers.BeamSendCoordinator
 import cash.p.terminal.core.managers.BeamSendCoordinator.Outcome
 import cash.p.terminal.core.managers.BeamSendCoordinator.Reason
 import cash.p.terminal.core.managers.BeamSendCoordinator.SendException
 import cash.p.terminal.modules.send.SendResult
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.beam_send_quote_changed
 import io.mockk.coEvery
 import io.mockk.coVerify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -95,7 +96,7 @@ class BeamSendReviewSnapshotTest : BeamSendTestFixture() {
         coEvery { access.confirm(any()) } throws SendException(Reason.QuoteChanged)
         model.proceed()
         model.confirm()
-        assertEquals(R.string.beam_send_quote_changed, model.message)
+        assertEquals(Res.string.beam_send_quote_changed, model.message)
         assertTrue(model.sendResult is SendResult.Failed)
         assertNotNull(model.reviewedQuote)
     }

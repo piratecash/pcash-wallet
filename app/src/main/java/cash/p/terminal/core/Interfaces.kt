@@ -99,12 +99,6 @@ interface INetworkManager {
     fun getEvmInfo(host: String, path: String): Single<JsonObject>
 }
 
-interface IClipboardManager {
-    fun copyText(text: String)
-    fun getCopiedText(): String
-    val hasPrimaryClip: Boolean
-}
-
 interface IWordsManager {
     fun validateChecksum(words: List<String>)
     fun validateChecksumStrict(words: List<String>)

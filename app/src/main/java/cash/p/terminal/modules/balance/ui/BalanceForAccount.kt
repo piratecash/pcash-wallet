@@ -54,6 +54,11 @@ import cash.p.terminal.modules.walletconnect.list.WalletConnectListViewModel
 import cash.p.terminal.modules.zcashmigration.ZcashMigrationFlow
 import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.WalletConnect_NewConnect
+import cash.p.terminal.resources.display_options
+import cash.p.terminal.resources.ic_qr_scan_20
+import cash.p.terminal.resources.ic_search
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.TransparentModalBottomSheet
 import cash.p.terminal.ui_compose.components.AppBar
@@ -121,8 +126,8 @@ fun BalanceForAccount(
                     if (accountViewItem.isCoinManagerEnabled) {
                         add(
                             MenuItem(
-                                title = TranslatableString.ResString(R.string.display_options),
-                                icon = R.drawable.ic_search,
+                                title = TranslatableString.ResString(Res.string.display_options),
+                                icon = Res.drawable.ic_search,
                                 onClick = {
                                     navigation.slideFromRight(ManageWalletsPage())
                                 })
@@ -131,8 +136,8 @@ fun BalanceForAccount(
                     if (!accountViewItem.type.isWatchAccountType) {
                         add(
                             MenuItem(
-                                title = TranslatableString.ResString(R.string.WalletConnect_NewConnect),
-                                icon = R.drawable.ic_qr_scan_20,
+                                title = TranslatableString.ResString(Res.string.WalletConnect_NewConnect),
+                                icon = Res.drawable.ic_qr_scan_20,
                                 onClick = {
                                     navigation.openQrScanner(
                                         appPages = appPages,

@@ -1,7 +1,6 @@
 package cash.p.terminal.modules.multiswap.providers
 
 import androidx.collection.LruCache
-import cash.p.terminal.R
 import cash.p.terminal.core.cache.accountScoped
 import cash.p.terminal.core.extractBigDecimal
 import cash.p.terminal.entities.Address
@@ -24,6 +23,8 @@ import cash.p.terminal.network.changenow.domain.entity.NewTransactionResponse
 import cash.p.terminal.network.changenow.domain.repository.ChangeNowRepository
 import cash.p.terminal.network.pirate.domain.useCase.GetChangeNowAssociatedCoinTickerUseCase
 import cash.p.terminal.network.swaprepository.SwapProvider
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_change_now
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.Token
@@ -49,7 +50,7 @@ class ChangeNowProvider(
 ) : OffChainSwapProvider {
     override val id = "changenow"
     override val title = "ChangeNow"
-    override val icon = R.drawable.ic_change_now
+    override val icon = Res.drawable.ic_change_now
     override val riskType = ProviderRiskType.PreCheck
 
     override val mevProtectionAvailable: Boolean = false

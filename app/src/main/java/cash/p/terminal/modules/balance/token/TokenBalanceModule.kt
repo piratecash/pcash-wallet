@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.balance.token
 
-import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import cash.p.terminal.core.App
@@ -33,6 +32,7 @@ import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.favorites.MarketFavoritesManager
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import io.horizontalsystems.core.IAppNumberFormatter
+import org.jetbrains.compose.resources.StringResource
 import org.koin.java.KoinJavaComponent.inject
 
 class TokenBalanceModule {
@@ -159,7 +159,7 @@ class TokenBalanceModule {
         val moneroHardwareWallet: Boolean = false,
         val moneroSpendReadiness: MoneroSpendReadiness? = null,
         val moneroKeyImageSyncInProgress: Boolean = false,
-        @StringRes val moneroKeyImageSyncError: Int? = null,
+        val moneroKeyImageSyncError: StringResource? = null,
         val moneroFullWalletRecoveryAvailable: Boolean = false,
         val backupRequired: Boolean = false,
     ) {

@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.multiswap.providers
 
-import cash.p.terminal.R
 import cash.p.terminal.core.convertedError
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.modules.multiswap.EvmBlockchainHelper
@@ -16,6 +15,8 @@ import cash.p.terminal.modules.multiswap.ui.DataFieldAllowance
 import cash.p.terminal.modules.multiswap.ui.DataFieldRecipient
 import cash.p.terminal.modules.multiswap.ui.DataFieldRecipientExtended
 import cash.p.terminal.modules.multiswap.ui.DataFieldSlippage
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.oneinch
 import cash.p.terminal.wallet.Token
 import io.horizontalsystems.core.scaleUp
 import io.horizontalsystems.ethereumkit.models.Address
@@ -30,7 +31,7 @@ import java.math.BigDecimal
 object OneInchProvider : EvmSwapProvider() {
     override val id = "oneinch"
     override val title = "1inch"
-    override val icon = R.drawable.oneinch
+    override val icon = Res.drawable.oneinch
     private val oneInchKit by lazy { OneInchKit.getInstance(AppConfigProvider.oneInchApiKey) }
     private const val PARTNER_FEE: Float = 0.3F
     private const val PARTNER_ADDRESS: String = "0x696Ed8f9E2b3265Abc24a6A035d6c5094f61e61B"

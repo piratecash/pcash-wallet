@@ -32,6 +32,7 @@ import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.DrawableResource
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -116,7 +117,7 @@ fun ReceiveCoin(
     coinCode: String,
     coinIconUrl: String,
     alternativeCoinIconUrl: String?,
-    coinIconPlaceholder: Int,
+    coinIconPlaceholder: DrawableResource,
     onClick: (() -> Unit)? = null
 ) {
     RowUniversal(

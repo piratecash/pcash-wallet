@@ -14,7 +14,6 @@ import cash.p.beam.BeamSendAmount
 import cash.p.beam.BeamSendContext
 import cash.p.beam.BeamSendResolution
 import cash.p.beam.BeamWalletState
-import cash.p.terminal.R
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.adapters.BeamAdapter
@@ -37,6 +36,13 @@ import cash.p.terminal.modules.send.offline.OfflineSigningController
 import cash.p.terminal.modules.send.offline.OfflineTransactionFormat
 import cash.p.terminal.modules.sendtokenselect.PrefilledData
 import cash.p.terminal.modules.xrate.XRateService
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.beam_offline_context_unavailable
+import cash.p.terminal.resources.beam_send_not_ready
+import cash.p.terminal.resources.beam_send_quote_changed
+import cash.p.terminal.resources.beam_send_recorded
+import cash.p.terminal.resources.beam_send_recovery_in_progress
+import cash.p.terminal.resources.beam_send_uncertain
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
@@ -56,6 +62,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import java.math.BigDecimal
+import org.jetbrains.compose.resources.StringResource
 
 // Both quote pipelines are debounced: the MAX pre-fetch that feeds the amount input's available
 // balance, and the Exact quote that feeds the fee cell. Typing must not fire one quote per key.
@@ -93,7 +100,7 @@ internal class BeamSendViewModel(
         private set
     // The offline sign flow is open (or its quote is in flight): the network is paused until leaveOfflineSign().
     private var offline by mutableStateOf(false)
-    var message by mutableStateOf<Int?>(null)
+    var message by mutableStateOf<StringResource?>(null)
         private set
     var recorded by mutableStateOf(false)
         private set
@@ -176,8 +183,8 @@ internal class BeamSendViewModel(
     private val offlineSignEvents = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val offlineSignRequests: SharedFlow<Unit> = offlineSignEvents.asSharedFlow()
     // Errors raised by a tap, as string resources; `message` only feeds the confirmation screen's sendResult.
-    private val errors = MutableSharedFlow<Int>(extraBufferCapacity = 1)
-    val errorEvents: SharedFlow<Int> = errors.asSharedFlow()
+    private val errors = MutableSharedFlow<StringResource>(extraBufferCapacity = 1)
+    val errorEvents: SharedFlow<StringResource> = errors.asSharedFlow()
 
     // MutableStateFlow conflates equal values, so a repeat request after a balance move would be
     // swallowed without the sequence number.
@@ -345,7 +352,7 @@ internal class BeamSendViewModel(
             return
         }
         if (!ready) {
-            errors.tryEmit(R.string.beam_send_not_ready)
+            errors.tryEmit(Res.string.beam_send_not_ready)
             return
         }
         if (!canQuote) return
@@ -403,7 +410,7 @@ internal class BeamSendViewModel(
         if (!canSignOffline) return
         val signingContext = context as? BeamOfflineSigningState.Ready
         if (signingContext == null) {
-            errors.tryEmit(R.string.beam_offline_context_unavailable)
+            errors.tryEmit(Res.string.beam_offline_context_unavailable)
             return
         }
         val request = quoteRequest(BeamSendContext.Offline(signingContext.contextId)) ?: return
@@ -465,7 +472,7 @@ internal class BeamSendViewModel(
                 quoteChanged = false
                 attempted = false
                 pendingOperationId = null
-                message = R.string.beam_send_quote_changed
+                message = Res.string.beam_send_quote_changed
             }
             return
         }
@@ -475,7 +482,7 @@ internal class BeamSendViewModel(
     fun onClickSignOffline(format: OfflineTransactionFormat) {
         val current = confirmation
         if (current == null || !offline || !access.canSign) {
-            errors.tryEmit(R.string.beam_send_not_ready)
+            errors.tryEmit(Res.string.beam_send_not_ready)
             return
         }
         attempted = true
@@ -534,9 +541,9 @@ internal class BeamSendViewModel(
                 pendingOperationId = outcome.operation.operationId
                 recorded = outcome.operation.resolution is BeamSendResolution.Submitted ||
                     outcome.operation.resolution is BeamSendResolution.Terminal
-                message = if (recorded) R.string.beam_send_recorded else R.string.beam_send_uncertain
+                message = if (recorded) Res.string.beam_send_recorded else Res.string.beam_send_uncertain
             }
-            Outcome.RetryLater -> message = R.string.beam_send_recovery_in_progress
+            Outcome.RetryLater -> message = Res.string.beam_send_recovery_in_progress
         }
     }
 
@@ -557,7 +564,7 @@ internal class BeamSendViewModel(
         }
     }
 
-    private fun errorMessage(error: Throwable): Int = beamSendErrorMessage(error, attempted)
+    private fun errorMessage(error: Throwable): StringResource = beamSendErrorMessage(error, attempted)
 
     override fun onCleared() {
         access.releaseOffline()

@@ -57,6 +57,8 @@ import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.Res
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.entities.nft.NftAssetMetadata
 import cash.p.terminal.entities.nft.NftEventMetadata
@@ -140,7 +142,7 @@ fun NftAssetScreen(
         AppBar(
             menuItems = listOf(
                 MenuItem(
-                    title = TranslatableString.ResString(R.string.Button_Close)
+                    title = TranslatableString.ResString(Res.string.Button_Close)
                 ) {
                     navigation.navigateUpSafely()
                 }

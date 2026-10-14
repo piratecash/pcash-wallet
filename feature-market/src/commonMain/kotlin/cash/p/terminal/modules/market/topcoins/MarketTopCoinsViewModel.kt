@@ -1,0 +1,231 @@
+package cash.p.terminal.modules.market.topcoins
+
+import io.horizontalsystems.core.IAppNumberFormatter
+import androidx.lifecycle.viewModelScope
+import io.horizontalsystems.core.ViewModelUiState
+import cash.p.terminal.wallet.MarketKitWrapper
+import cash.p.terminal.wallet.favorites.MarketFavoritesManager
+import cash.p.terminal.ui_compose.entities.ViewState
+import cash.p.terminal.modules.market.MarketItem
+import cash.p.terminal.modules.market.MarketViewItem
+import cash.p.terminal.modules.market.SortingField
+import cash.p.terminal.modules.market.TimeDuration
+import cash.p.terminal.modules.market.TopMarket
+import cash.p.terminal.modules.market.favorites.period
+import cash.p.terminal.modules.market.sort
+import io.horizontalsystems.core.CurrencyManager
+import cash.p.terminal.wallet.models.MarketInfo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx2.await
+import kotlin.enums.EnumEntries
+import kotlin.math.min
+
+class MarketTopCoinsViewModel(
+    private var topMarket: TopMarket,
+    private var sortingField: SortingField,
+    private val marketKit: MarketKitWrapper,
+    private val currencyManager: CurrencyManager,
+    private val favoritesManager: MarketFavoritesManager,
+    private val numberFormatter: IAppNumberFormatter,
+) : ViewModelUiState<MarketTopCoinsUiState>() {
+
+    private val periods = listOf(
+        TimeDuration.OneDay,
+        TimeDuration.SevenDay,
+        TimeDuration.ThirtyDay,
+    )
+    private val sortingFields = listOf(
+        SortingField.HighestCap,
+        SortingField.LowestCap,
+        SortingField.TopGainers,
+        SortingField.TopLosers,
+    )
+    private val topMarkets = TopMarket.entries
+    private val baseCurrency get() = currencyManager.baseCurrency
+
+    private var isRefreshing = false
+    private var viewState: ViewState = ViewState.Loading
+    private var viewItems: List<MarketViewItem> = listOf()
+    private var period = periods[0]
+    private var favoriteCoinUids: List<String> = listOf()
+
+    override fun createState() = MarketTopCoinsUiState(
+        isRefreshing = isRefreshing,
+        viewState = viewState,
+        viewItems = viewItems,
+        topMarkets = topMarkets,
+        topMarket = topMarket,
+        sortingFields = sortingFields,
+        sortingField = sortingField,
+        periods = periods,
+        period = period,
+    )
+
+    private var marketInfoList: List<MarketInfo>? = null
+    private var marketItemList: List<MarketItem>? = null
+    private var sortedMarketItems: List<MarketItem>? = null
+
+    init {
+        viewModelScope.launch(Dispatchers.Default) {
+            try {
+                reload()
+
+                viewState = ViewState.Success
+            } catch (e: Throwable) {
+                viewState = ViewState.Error(e)
+            }
+
+            emitState()
+        }
+
+        viewModelScope.launch(Dispatchers.Default) {
+            favoritesManager.dataUpdatedFlow.collect {
+                refreshFavoriteCoinUids()
+                refreshViewItems()
+
+                emitState()
+            }
+        }
+
+        viewModelScope.launch(Dispatchers.Default) {
+            currencyManager.baseCurrencyUpdatedFlow.collect {
+                try {
+                    reload()
+
+                    viewState = ViewState.Success
+                } catch (e: Throwable) {
+                    viewState = ViewState.Error(e)
+                }
+
+                emitState()
+            }
+        }
+    }
+
+    private suspend fun reload() {
+        fetchMarketInfoList()
+
+        refreshFavoriteCoinUids()
+        refreshMarketItemList()
+        refreshSortedMarketItems()
+        refreshViewItems()
+    }
+
+    private suspend fun refreshFavoriteCoinUids() {
+        favoriteCoinUids = favoritesManager.getAll()
+    }
+
+    private suspend fun fetchMarketInfoList() {
+        marketInfoList = marketKit.topCoinsMarketInfosSingle(500, baseCurrency.code).await()
+    }
+
+    private fun refreshMarketItemList() {
+        marketItemList = marketInfoList?.map { marketInfo ->
+            MarketItem.createFromCoinMarket(
+                marketInfo,
+                baseCurrency,
+                period.period,
+            )
+        }
+    }
+
+    private fun refreshSortedMarketItems() {
+        sortedMarketItems = marketItemList?.let { list ->
+            list
+                .subList(0, min(list.size, topMarket.value))
+                .sort(sortingField)
+        }
+    }
+
+    private fun refreshViewItems() {
+        sortedMarketItems?.let { list ->
+            viewItems = list.map {
+                MarketViewItem.create(
+                    it,
+                    numberFormatter,
+                    favorited = favoriteCoinUids.contains(it.fullCoin.coin.uid)
+                )
+            }
+        }
+    }
+
+    fun refresh() {
+        isRefreshing = true
+        emitState()
+
+        viewModelScope.launch(Dispatchers.Default) {
+            try {
+                reload()
+
+                viewState = ViewState.Success
+            } catch (e: Throwable) {
+                viewState = ViewState.Error(e)
+            }
+
+            isRefreshing = false
+            emitState()
+        }
+    }
+
+    fun onAddFavorite(uid: String) {
+        viewModelScope.launch(Dispatchers.Default) {
+            favoritesManager.add(uid)
+        }
+    }
+
+    fun onRemoveFavorite(uid: String) {
+        viewModelScope.launch(Dispatchers.Default) {
+            favoritesManager.remove(uid)
+        }
+    }
+
+    fun onSelectSortingField(sortingField: SortingField) {
+        this.sortingField = sortingField
+        emitState()
+
+        viewModelScope.launch(Dispatchers.Default) {
+            refreshSortedMarketItems()
+            refreshViewItems()
+
+            emitState()
+        }
+    }
+
+    fun onSelectTopMarket(topMarket: TopMarket) {
+        this.topMarket = topMarket
+        emitState()
+
+        viewModelScope.launch(Dispatchers.Default) {
+            refreshSortedMarketItems()
+            refreshViewItems()
+
+            emitState()
+        }
+    }
+
+    fun onSelectPeriod(period: TimeDuration) {
+        this.period = period
+        emitState()
+
+        viewModelScope.launch(Dispatchers.Default) {
+            refreshMarketItemList()
+            refreshSortedMarketItems()
+            refreshViewItems()
+
+            emitState()
+        }
+    }
+}
+
+data class MarketTopCoinsUiState(
+    val isRefreshing: Boolean,
+    val viewState: ViewState,
+    val viewItems: List<MarketViewItem>,
+    val topMarkets: EnumEntries<TopMarket>,
+    val topMarket: TopMarket,
+    val sortingFields: List<SortingField>,
+    val sortingField: SortingField,
+    val periods: List<TimeDuration>,
+    val period: TimeDuration,
+)

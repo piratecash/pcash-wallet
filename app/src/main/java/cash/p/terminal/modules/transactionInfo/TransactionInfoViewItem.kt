@@ -12,6 +12,7 @@ import cash.p.terminal.ui_compose.ColoredValue
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.entities.BlockchainType
 import java.util.Date
+import org.jetbrains.compose.resources.DrawableResource
 
 sealed class TransactionInfoViewItem {
     class Transaction(val leftValue: String, val rightValue: String, val icon: Int?) :
@@ -22,7 +23,7 @@ sealed class TransactionInfoViewItem {
         val fiatValue: ColoredValue,
         val coinIconUrl: String?,
         val alternativeCoinIconUrl: String?,
-        val coinIconPlaceholder: Int?,
+        val coinIconPlaceholder: DrawableResource?,
         val coinUid: String?,
         val badge: String?,
         val amountType: AmountType,
@@ -33,7 +34,7 @@ sealed class TransactionInfoViewItem {
         val nftValue: ColoredValue,
         val nftName: String?,
         val iconUrl: String?,
-        val iconPlaceholder: Int?,
+        val iconPlaceholder: DrawableResource?,
         val badge: String?,
     ) : TransactionInfoViewItem()
 

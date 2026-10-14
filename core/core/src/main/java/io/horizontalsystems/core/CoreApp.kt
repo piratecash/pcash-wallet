@@ -13,7 +13,11 @@ abstract class CoreApp : Application() {
         override val encryptionManager: IEncryptionManager by inject(IEncryptionManager::class.java)
         override val pinComponent: IPinComponent by inject(IPinComponent::class.java)
 
-        override lateinit var instance: CoreApp
+        override var instance: CoreApp
+            get() = ApplicationHolder.application as CoreApp
+            set(value) {
+                ApplicationHolder.application = value
+            }
     }
 
     abstract fun localizedContext(): Context

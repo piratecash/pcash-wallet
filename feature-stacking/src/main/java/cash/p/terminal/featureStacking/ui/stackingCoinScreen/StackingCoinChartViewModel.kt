@@ -4,15 +4,21 @@ import androidx.lifecycle.viewModelScope
 import cash.p.terminal.featureStacking.ui.PirateInvestmentChartService
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import io.horizontalsystems.chartview.chart.ChartViewModel
+import io.horizontalsystems.core.DispatcherProvider
+import io.horizontalsystems.core.IAppNumberFormatter
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
 
 abstract class StackingCoinChartViewModel(
     private val service: PirateInvestmentChartService,
+    numberFormatter: IAppNumberFormatter,
+    dispatcherProvider: DispatcherProvider,
 ) : ChartViewModel(
     service = service,
     valueFormatter = ChartValueShortFormatterSignificant(),
+    numberFormatter = numberFormatter,
+    dispatcherProvider = dispatcherProvider,
     considerAlwaysPositive = true
 ) {
     private val balanceHiddenManager: IBalanceHiddenManager by inject(IBalanceHiddenManager::class.java)

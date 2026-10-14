@@ -30,6 +30,8 @@ import cash.p.terminal.modules.transactions.TransactionStatus
 import cash.p.terminal.modules.transactions.TransactionViewItem
 import cash.p.terminal.modules.transactions.getSenderAddresses
 import cash.p.terminal.modules.transactions.isIncomingForAmlCheck
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.icon_24_nft_placeholder
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.ui_compose.ColorName
 import cash.p.terminal.ui_compose.ColoredValue
@@ -174,7 +176,7 @@ object TransactionViewItemFactoryHelper {
             ColoredValue(valueFormatted, amountColor(incoming)),
             nftName,
             nftMetadata?.previewImageUrl,
-            R.drawable.icon_24_nft_placeholder,
+            Res.drawable.icon_24_nft_placeholder,
             null,
         )
     }

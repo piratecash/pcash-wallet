@@ -39,6 +39,8 @@ import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.entities.Coin
 import kotlinx.coroutines.delay
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_attention_20
 
 private const val SUCCESS_CLOSE_DELAY_MILLIS = 1200L
 
@@ -117,7 +119,7 @@ private fun MigrationDetails(
             modifier = Modifier.padding(horizontal = 16.dp),
             title = stringResource(R.string.zcash_migration_publicly_visible_title),
             text = stringResource(R.string.zcash_migration_publicly_visible_description),
-            icon = R.drawable.ic_attention_20
+            icon = Res.drawable.ic_attention_20
         )
         // The send failure is shown here as well: its snackbar disappears and would otherwise
         // leave a disabled button with no explanation.
@@ -127,7 +129,7 @@ private fun MigrationDetails(
             TextImportantError(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 text = it.displayText,
-                icon = R.drawable.ic_attention_20
+                icon = Res.drawable.ic_attention_20
             )
         }
     }

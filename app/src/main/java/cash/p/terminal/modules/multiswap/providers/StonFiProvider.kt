@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.multiswap.providers
 
-import cash.p.terminal.R
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.core.tryOrNull
@@ -21,6 +20,8 @@ import cash.p.terminal.modules.multiswap.ui.DataFieldSlippage
 import cash.p.terminal.network.stonfi.domain.entity.SimulateSwap
 import cash.p.terminal.network.stonfi.domain.entity.RouterInfo
 import cash.p.terminal.network.stonfi.domain.repository.StonFiRepository
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_ston_fi
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.useCases.WalletUseCase
@@ -39,7 +40,7 @@ class StonFiProvider(
 ) : IMultiSwapProvider, IExactOutSwapProvider {
     override val id = "stonfi"
     override val title = "STON.fi"
-    override val icon = R.drawable.ic_ston_fi
+    override val icon = Res.drawable.ic_ston_fi
     override val exactOutAccuracy = SwapAmountAccuracy.AtLeast
 
     override val mevProtectionAvailable: Boolean = false

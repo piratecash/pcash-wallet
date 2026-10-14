@@ -68,6 +68,8 @@ import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_attention_24
 
 @Composable
 fun PayCoreVerificationScreen(
@@ -549,7 +551,7 @@ private fun VerificationWarningScreen(
             TextImportantWarning(
                 title = stringResource(R.string.paycore_verification_warning_title),
                 text = stringResource(R.string.paycore_verification_warning_text),
-                icon = io.horizontalsystems.icons.R.drawable.ic_attention_24
+                icon = Res.drawable.ic_attention_24
             )
             VSpacer(32.dp)
             body_leah(

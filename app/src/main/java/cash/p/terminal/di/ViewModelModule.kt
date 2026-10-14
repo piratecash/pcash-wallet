@@ -19,7 +19,6 @@ import cash.p.terminal.modules.displayoptions.DisplayOptionsViewModel
 import cash.p.terminal.modules.hardwarewallet.HardwareWalletViewModel
 import cash.p.terminal.modules.importwallet.ImportWalletViewModel
 import cash.p.terminal.modules.main.MainActivityViewModel
-import cash.p.terminal.modules.market.favorites.MarketFavoritesViewModel
 import cash.p.terminal.modules.manageaccount.backupkey.BackupKeyViewModel
 import cash.p.terminal.modules.main.MainViewModel
 import cash.p.terminal.modules.softwareupdate.SoftwareUpdateViewModel
@@ -80,8 +79,6 @@ import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.DefaultDispatcherProvider
 import io.horizontalsystems.core.DispatcherProvider
-import cash.p.terminal.modules.market.posts.MarketPostService
-import cash.p.terminal.modules.market.posts.MarketPostsViewModel
 import cash.p.terminal.modules.pin.SetDuressPinIntroViewModel
 import cash.p.terminal.modules.restoreaccount.restoremnemonicnonstandard.RestoreMnemonicNonStandardViewModel
 import cash.p.terminal.modules.settings.about.AboutViewModel
@@ -98,7 +95,6 @@ val viewModelModule = module {
     singleOf(::QrCodeImageDecoder)
     factoryOf(::TransactionsRateRepository)
 
-    viewModelOf(::MarketFavoritesViewModel)
     viewModelOf(::MainViewModel)
     viewModelOf(::MainActivityViewModel)
     viewModelOf(::SoftwareUpdateViewModel)
@@ -115,10 +111,8 @@ val viewModelModule = module {
     viewModelOf(::PrivacyViewModel)
     viewModelOf(::AboutViewModel)
     viewModelOf(::SetDuressPinIntroViewModel)
-    viewModelOf(::MarketPostsViewModel)
     viewModelOf(::RestoreMnemonicNonStandardViewModel)
     viewModelOf(::AppearanceViewModel)
-    factoryOf(::MarketPostService)
     viewModelOf(::HardwareWalletViewModel)
     viewModelOf(::ImportWalletViewModel)
     viewModelOf(::ResetToFactorySettingsViewModel)

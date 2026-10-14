@@ -1,6 +1,7 @@
 package cash.p.terminal.entities
 
-import cash.p.terminal.R
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.the_open_network_jetton
 import cash.p.terminal.wallet.alternativeImageUrl
 import cash.p.terminal.core.iconPlaceholder
 import cash.p.terminal.wallet.imageUrl
@@ -11,6 +12,7 @@ import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenQuery
 import java.math.BigDecimal
 import java.math.BigInteger
+import org.jetbrains.compose.resources.DrawableResource
 
 sealed interface TransactionValue {
     val fullName: String
@@ -20,7 +22,7 @@ sealed interface TransactionValue {
     val badge: String?
     val coinIconUrl: String?
     val alternativeCoinIconUrl: String?
-    val coinIconPlaceholder: Int?
+    val coinIconPlaceholder: DrawableResource?
     val decimalValue: BigDecimal?
     val decimals: Int?
     val zeroValue: Boolean
@@ -45,7 +47,7 @@ sealed interface TransactionValue {
         override val badge = "JETTON"
         override val coinIconUrl = image
         override val alternativeCoinIconUrl = null
-        override val coinIconPlaceholder = R.drawable.the_open_network_jetton
+        override val coinIconPlaceholder = Res.drawable.the_open_network_jetton
         override val decimalValue = value
         override val zeroValue: Boolean
             get() = value.compareTo(BigDecimal.ZERO) == 0
@@ -109,7 +111,7 @@ sealed interface TransactionValue {
         val tokenCode: String,
         val tokenDecimals: Int,
         val value: BigDecimal,
-        override val coinIconPlaceholder: Int? = null,
+        override val coinIconPlaceholder: DrawableResource? = null,
         override val coinUid: String = ""
     ) : TransactionValue {
         override val coin: Coin? = null
@@ -144,7 +146,7 @@ sealed interface TransactionValue {
         override val badge: String? = null
         override val coinIconUrl = null
         override val alternativeCoinIconUrl = null
-        override val coinIconPlaceholder: Int? = null
+        override val coinIconPlaceholder: DrawableResource? = null
         override val fullName: String
             get() = "${tokenName ?: ""} #${nftUid.tokenId}"
         override val coinCode: String

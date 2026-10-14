@@ -12,7 +12,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import cash.p.terminal.R
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Send_DialogProceed
 import cash.p.terminal.ui.compose.components.SuggestionsBarHeight
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
@@ -26,7 +27,7 @@ fun SendScreen(
     proceedEnabled: Boolean,
     onCloseClick: () -> Unit,
     onSendClick: () -> Unit,
-    proceedTitle: TranslatableString = TranslatableString.ResString(R.string.Send_DialogProceed),
+    proceedTitle: TranslatableString = TranslatableString.ResString(Res.string.Send_DialogProceed),
     bottomOverlay: @Composable (BoxScope.() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {

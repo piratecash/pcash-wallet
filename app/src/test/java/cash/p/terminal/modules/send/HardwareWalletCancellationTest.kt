@@ -1,6 +1,9 @@
 package cash.p.terminal.modules.send
 
-import cash.p.terminal.R
+import cash.p.terminal.resources.Hud_Text_NoInternet
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.trezor_connect_failed
+import cash.p.terminal.resources.trezor_not_initialized_description
 import com.piratecash.monero.signer.HardwareWalletErrorCode
 import com.piratecash.monero.signer.HardwareWalletOperationException
 import kotlin.test.assertEquals
@@ -33,15 +36,15 @@ class HardwareWalletCancellationTest {
     @Test
     fun userMessageRes_knownErrors_returnsSpecificMessage() {
         assertEquals(
-            R.string.trezor_not_initialized_description,
+            Res.string.trezor_not_initialized_description,
             hardwareError(HardwareWalletErrorCode.DeviceNotInitialized).userMessageRes(),
         )
         assertEquals(
-            R.string.Hud_Text_NoInternet,
+            Res.string.Hud_Text_NoInternet,
             hardwareError(HardwareWalletErrorCode.Network).userMessageRes(),
         )
         assertEquals(
-            R.string.trezor_connect_failed,
+            Res.string.trezor_connect_failed,
             hardwareError(HardwareWalletErrorCode.Disconnected).userMessageRes(),
         )
     }
@@ -49,7 +52,7 @@ class HardwareWalletCancellationTest {
     @Test
     fun hardwareWalletUserMessageRes_nonHardwareError_returnsConnectionMessage() {
         assertEquals(
-            R.string.trezor_connect_failed,
+            Res.string.trezor_connect_failed,
             IllegalStateException().hardwareWalletUserMessageRes(),
         )
     }

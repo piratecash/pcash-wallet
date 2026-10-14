@@ -91,7 +91,7 @@ class SendTransactionServiceStellarTest : KoinTest {
         coEvery { adapterManager.awaitAdapterForWallet<ISendMemoAdapter>(any(), any()) } returns adapter
         every { adapterManager.getAdjustedBalanceData(any()) } returns null
         every { adapter.maxSpendableBalance } returns BigDecimal("100")
-        every { currencyManager.baseCurrency } returns Currency("USD", "$", 2, 0)
+        every { currencyManager.baseCurrency } returns Currency("USD", "$", 2)
         every { marketKit.token(any()) } returns nativeToken
         every { marketKit.coinPrice(any(), any()) } returns null
 

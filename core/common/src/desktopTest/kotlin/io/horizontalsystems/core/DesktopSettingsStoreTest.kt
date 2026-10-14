@@ -1,0 +1,115 @@
+package io.horizontalsystems.core
+
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Test
+import java.io.File
+import java.nio.file.Files
+
+class DesktopSettingsStoreTest {
+
+    private lateinit var dir: File
+    private val file get() = File(dir, "app_settings.preferences_pb")
+    private val scopes = mutableListOf<CoroutineScope>()
+
+    @Before
+    fun setUp() {
+        dir = Files.createTempDirectory("settings-store").toFile()
+    }
+
+    @After
+    fun tearDown() {
+        scopes.forEach { it.cancel() }
+        dir.deleteRecursively()
+    }
+
+    private fun openStore(): DesktopSettingsStore {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        scopes += scope
+        return DesktopSettingsStore(file, scope)
+    }
+
+    @Test
+    fun read_missingFile_returnsDefaults() {
+        val store = openStore()
+
+        assertDefaults(store)
+    }
+
+    @Test
+    fun read_corruptFile_returnsDefaultsInsteadOfCrashing() {
+        file.writeBytes(byteArrayOf(0x7F, 0x13, 0x00, 0x42, 0x55, 0x01, 0x02, 0x03))
+
+        val store = openStore()
+
+        assertDefaults(store)
+    }
+
+    @Test
+    fun write_allKeys_surviveReopeningTheFile() {
+        val first = openStore()
+        first.marketSearchRecentCoinUids = listOf("bitcoin", "ethereum")
+        first.marketFavoritesSorting = "HighestCap"
+        first.marketFavoritesPeriod = "OneDay"
+        first.marketFavoritesShowSignals = true
+        first.chartIndicatorsEnabled = true
+        first.marketsTabEnabled = false
+        first.launchPage = "Watchlist"
+        first.currentMarketTab = "Posts"
+        first.baseCurrencyCode = "EUR"
+        scopes.removeAt(scopes.lastIndex).cancel()
+
+        val second = openStore()
+
+        assertEquals(listOf("bitcoin", "ethereum"), second.marketSearchRecentCoinUids)
+        assertEquals("HighestCap", second.marketFavoritesSorting)
+        assertEquals("OneDay", second.marketFavoritesPeriod)
+        assertTrue(second.marketFavoritesShowSignals)
+        assertTrue(second.chartIndicatorsEnabled)
+        assertFalse(second.marketsTabEnabled)
+        assertFalse(second.marketsTabEnabledFlow.value)
+        assertEquals("Watchlist", second.launchPage)
+        assertEquals("Posts", second.currentMarketTab)
+        assertEquals("EUR", second.baseCurrencyCode)
+    }
+
+    @Test
+    fun write_nullString_clearsStoredValue() {
+        val store = openStore()
+        store.launchPage = "Market"
+
+        store.launchPage = null
+
+        assertNull(store.launchPage)
+    }
+
+    @Test
+    fun write_marketsTabEnabled_updatesFlow() {
+        val store = openStore()
+
+        store.marketsTabEnabled = false
+
+        assertFalse(store.marketsTabEnabledFlow.value)
+    }
+
+    private fun assertDefaults(store: DesktopSettingsStore) {
+        assertEquals(emptyList<String>(), store.marketSearchRecentCoinUids)
+        assertNull(store.marketFavoritesSorting)
+        assertNull(store.marketFavoritesPeriod)
+        assertFalse(store.marketFavoritesShowSignals)
+        assertFalse(store.chartIndicatorsEnabled)
+        assertTrue(store.marketsTabEnabled)
+        assertTrue(store.marketsTabEnabledFlow.value)
+        assertNull(store.launchPage)
+        assertNull(store.currentMarketTab)
+        assertNull(store.baseCurrencyCode)
+    }
+}

@@ -5,8 +5,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cash.p.terminal.resources.NftCollection_EventType_All
+import cash.p.terminal.resources.NftCollection_EventType_Approve
+import cash.p.terminal.resources.NftCollection_EventType_BidEntered
+import cash.p.terminal.resources.NftCollection_EventType_BidWithdrawn
+import cash.p.terminal.resources.NftCollection_EventType_BulkCancel
+import cash.p.terminal.resources.NftCollection_EventType_Cancelled
+import cash.p.terminal.resources.NftCollection_EventType_Custom
+import cash.p.terminal.resources.NftCollection_EventType_List
+import cash.p.terminal.resources.NftCollection_EventType_Mint
+import cash.p.terminal.resources.NftCollection_EventType_OfferEntered
+import cash.p.terminal.resources.NftCollection_EventType_Payout
+import cash.p.terminal.resources.NftCollection_EventType_Sale
+import cash.p.terminal.resources.NftCollection_EventType_Transfer
+import cash.p.terminal.resources.NftCollection_EventType_Unknown
+import cash.p.terminal.resources.Res
 import io.horizontalsystems.core.collectWith
-import cash.p.terminal.R
 import cash.p.terminal.entities.CoinValue
 import io.horizontalsystems.core.entities.CurrencyValue
 import cash.p.terminal.ui_compose.entities.ViewState
@@ -161,20 +175,20 @@ data class NftEventTypeWrapper(
     companion object {
         fun title(eventType: EventType): TranslatableString {
             val titleResId = when (eventType) {
-                EventType.All -> R.string.NftCollection_EventType_All
-                EventType.List -> R.string.NftCollection_EventType_List
-                EventType.Sale -> R.string.NftCollection_EventType_Sale
-                EventType.OfferEntered -> R.string.NftCollection_EventType_OfferEntered
-                EventType.BidEntered -> R.string.NftCollection_EventType_BidEntered
-                EventType.BidWithdrawn -> R.string.NftCollection_EventType_BidWithdrawn
-                EventType.Transfer -> R.string.NftCollection_EventType_Transfer
-                EventType.Approve -> R.string.NftCollection_EventType_Approve
-                EventType.Custom -> R.string.NftCollection_EventType_Custom
-                EventType.Payout -> R.string.NftCollection_EventType_Payout
-                EventType.Cancel -> R.string.NftCollection_EventType_Cancelled
-                EventType.BulkCancel -> R.string.NftCollection_EventType_BulkCancel
-                EventType.Mint -> R.string.NftCollection_EventType_Mint
-                EventType.Unknown -> R.string.NftCollection_EventType_Unknown
+                EventType.All -> Res.string.NftCollection_EventType_All
+                EventType.List -> Res.string.NftCollection_EventType_List
+                EventType.Sale -> Res.string.NftCollection_EventType_Sale
+                EventType.OfferEntered -> Res.string.NftCollection_EventType_OfferEntered
+                EventType.BidEntered -> Res.string.NftCollection_EventType_BidEntered
+                EventType.BidWithdrawn -> Res.string.NftCollection_EventType_BidWithdrawn
+                EventType.Transfer -> Res.string.NftCollection_EventType_Transfer
+                EventType.Approve -> Res.string.NftCollection_EventType_Approve
+                EventType.Custom -> Res.string.NftCollection_EventType_Custom
+                EventType.Payout -> Res.string.NftCollection_EventType_Payout
+                EventType.Cancel -> Res.string.NftCollection_EventType_Cancelled
+                EventType.BulkCancel -> Res.string.NftCollection_EventType_BulkCancel
+                EventType.Mint -> Res.string.NftCollection_EventType_Mint
+                EventType.Unknown -> Res.string.NftCollection_EventType_Unknown
             }
 
             return TranslatableString.ResString(titleResId)
