@@ -11,6 +11,7 @@ import cash.p.terminal.wallet.AdapterState
 import com.m2049r.xmrwallet.model.Wallet
 import com.m2049r.xmrwallet.model.Wallet.ConnectionStatus
 import com.m2049r.xmrwallet.offline.RawMoneroBroadcastResult
+import com.m2049r.xmrwallet.service.DaemonConnectResult
 import com.m2049r.xmrwallet.service.LocalOpenResult
 import com.m2049r.xmrwallet.service.MoneroWalletService
 import com.piratecash.monero.signer.ExternalSignerRegistration
@@ -19,6 +20,7 @@ import com.piratecash.monero.signer.HardwareWalletOperationException
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
@@ -224,6 +226,61 @@ class MoneroKitWrapperRefreshTest {
     @Test
     fun resume_pausedLocalWalletNotFromFallback_doesNotConnectDaemon() = runTest {
         assertPausedWalletResumeDoesNotConnectDaemon(account)
+    }
+
+    @Test
+    fun resume_fallbackWalletNodeReachable_connectsNodeBeforeResuming() = runTest {
+        val daemonSelector = mockk<MoneroDaemonSelector>(relaxed = true)
+        val (service, wrapper) = fallbackWallet(DaemonConnectResult.Connected, daemonSelector)
+
+        assertTrue(wrapper.resume())
+
+        coVerifyOrder {
+            daemonSelector.selectDaemon()
+            service.connectDaemon()
+            service.resume(wrapper)
+        }
+        assertTrue(wrapper.isNetworkOnline)
+        assertFalse(openedWithoutNode(wrapper))
+    }
+
+    @Test
+    fun resume_fallbackWalletNodeStillUnreachable_staysOpenLocally() = runTest {
+        val (service, wrapper) = fallbackWallet(DaemonConnectResult.Failed(null))
+
+        assertFalse(wrapper.resume())
+
+        assertFallbackWalletStaysOpenLocally(service, wrapper)
+    }
+
+    @Test
+    fun refresh_fallbackWalletNodeStillUnreachable_staysOpenLocally() = runTest {
+        val (service, wrapper) = fallbackWallet(DaemonConnectResult.Failed(null))
+
+        wrapper.refresh()
+
+        assertFallbackWalletStaysOpenLocally(service, wrapper)
+    }
+
+    // A failed connectDaemon() still initializes the daemon, so the kit then resumes the wallet without a node.
+    private suspend fun fallbackWallet(
+        connectResult: DaemonConnectResult,
+        daemonSelector: MoneroDaemonSelector = mockk(relaxed = true),
+    ): Pair<MoneroWalletService, MoneroKitWrapper> {
+        val service = nodeUnreachableService(LocalOpenResult.Opened)
+        every { service.connectDaemon() } returns connectResult
+        val wrapper = createWrapper(service, daemonSelector = daemonSelector)
+        every { service.resume(wrapper) } returns true
+        wrapper.startAccountServiceOrOpenLocally("wallet", "password", fixIfCorruptedFile = true)
+        return service to wrapper
+    }
+
+    private fun assertFallbackWalletStaysOpenLocally(service: MoneroWalletService, wrapper: MoneroKitWrapper) {
+        verify(exactly = 1) { service.connectDaemon() }
+        verify(exactly = 0) { service.resume(any()) }
+        verify(exactly = 0) { service.stop(any()) }
+        assertFalse(wrapper.isNetworkOnline)
+        assertTrue(openedWithoutNode(wrapper))
     }
 
     private suspend fun assertPausedWalletResumeDoesNotConnectDaemon(account: Account) {
@@ -1753,6 +1810,7 @@ class MoneroKitWrapperRefreshTest {
         connectivityManager: IConnectivityManager = connectivity(connected = true),
         gateway: MoneroTrezorOperationGateway = mockk(relaxed = true),
         healthReader: MoneroWalletHealthReader = fakeHealthReader(healthyWalletHealth()),
+        daemonSelector: MoneroDaemonSelector = mockk(relaxed = true),
     ): MoneroKitWrapper {
         return MoneroKitWrapper(
             moneroWalletService = service,
@@ -1763,6 +1821,7 @@ class MoneroKitWrapperRefreshTest {
             moneroTrezorGateway = gateway,
             connectivityManager = connectivityManager,
             walletHealthReader = healthReader,
+            daemonSelector = daemonSelector,
         )
     }
 

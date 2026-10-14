@@ -428,6 +428,18 @@ interface MoneroWalletHealthReader {
     fun snapshot(callbackWallet: Wallet?): MoneroWalletHealthSnapshot
 }
 
+/** Points the native wallet manager at a node; injectable so JVM tests run without JNI. */
+interface MoneroDaemonSelector {
+    suspend fun selectDaemon()
+}
+
+private object AutoMoneroDaemonSelector : MoneroDaemonSelector {
+    override suspend fun selectDaemon() {
+        val node = MoneroConfig.autoSelectNode() ?: NodeInfo.fromString(DefaultNodes.entries.first().uri)
+        WalletManager.getInstance().setDaemon(node)
+    }
+}
+
 private class ServiceMoneroWalletHealthReader(
     private val moneroWalletService: MoneroWalletService,
 ) : MoneroWalletHealthReader {
@@ -637,6 +649,7 @@ class MoneroKitWrapper(
     private val connectivityManager: IConnectivityManager,
     private val walletHealthReader: MoneroWalletHealthReader =
         ServiceMoneroWalletHealthReader(moneroWalletService),
+    private val daemonSelector: MoneroDaemonSelector = AutoMoneroDaemonSelector,
 ) : MoneroWalletService.Observer {
     private val moneroFileDao: MoneroFileDao by inject(MoneroFileDao::class.java)
     private val moneroWalletUseCase: MoneroWalletUseCase by inject(MoneroWalletUseCase::class.java)
@@ -1538,9 +1551,11 @@ class MoneroKitWrapper(
         }
     }
 
-    suspend fun resume(): Boolean = lifecycleMutex.withLock {
-        resumeInternal() || (openedWithoutNode && connectDaemonAndResume())
-    }
+    suspend fun resume(): Boolean = lifecycleMutex.withLock { resumeAttachingNode() }
+
+    // A failed connect still initializes the daemon, so a local resume would look online without a node.
+    private suspend fun resumeAttachingNode(): Boolean =
+        if (openedWithoutNode) connectDaemonAndResume() else resumeInternal()
 
     val isNetworkOnline: Boolean
         get() = isStarted && !isPaused
@@ -1562,9 +1577,7 @@ class MoneroKitWrapper(
     }
 
     private suspend fun connectDaemonAndResume(): Boolean = withContext(dispatcherProvider.io) {
-        val selectedNode = MoneroConfig.autoSelectNode()
-            ?: NodeInfo.fromString(DefaultNodes.entries.first().uri)
-        WalletManager.getInstance().setDaemon(selectedNode)
+        daemonSelector.selectDaemon()
         moneroWalletService.setObserver(this@MoneroKitWrapper)
         moneroWalletService.connectDaemon() is DaemonConnectResult.Connected && resumeInternal()
     }
@@ -1668,9 +1681,9 @@ class MoneroKitWrapper(
     }
 
     private suspend fun refreshStartedWallet() {
-        if (isPaused && !resumeInternal()) {
+        if (isPaused && !resumeAttachingNode()) {
             if (openedWithoutNode) {
-                if (!connectDaemonAndResume()) logger.info("refresh: node unreachable, wallet stays open locally")
+                logger.info("refresh: node unreachable, wallet stays open locally")
                 return
             }
             logger.info("refresh: restarting wallet after failed resume")
