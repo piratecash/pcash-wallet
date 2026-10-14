@@ -465,6 +465,9 @@ private data class MoneroWalletCredentials(
     val password: String,
 )
 
+/** Keeps the message `isNoInternetException()` and the NotSynced presentation rely on. */
+internal class MoneroNodeUnreachableException : Exception("No internet connection")
+
 private const val CONTROLLED_REFRESH_FINALIZATION_TIMEOUT_MILLIS = 30_000L
 
 internal fun interface ControlledHardwareRefreshAborter {
@@ -654,7 +657,11 @@ class MoneroKitWrapper(
 
     @Volatile
     private var isStarted = false
+    @Volatile
+    private var nativeCloseSequence = 0
     private var isPaused = false
+    // Opened from disk because no node answered; refresh/resume may only attach a node, never close it.
+    private var openedWithoutNode = false
     @Volatile
     private var startInProgress = false
 
@@ -812,11 +819,12 @@ class MoneroKitWrapper(
 
                     moneroWalletService.setObserver(this@MoneroKitWrapper)
                     logger.info("start: invoking startService for walletFileName=${credentials.fileName}")
-                    startAccountService(
+                    val startedOnline = startAccountServiceOrOpenLocally(
                         credentials.fileName,
                         credentials.password,
                         fixIfCorruptedFile,
                     )
+                    if (!startedOnline) return@withContext
                     isStarted = true
                     if (hardwareAccount && controlledLiveRefreshPending) {
                         awaitControlledHardwareRefreshFinalization()
@@ -843,6 +851,7 @@ class MoneroKitWrapper(
             LocalOpenResult.Opened -> {
                 isStarted = true
                 isPaused = true
+                _transactionsStateUpdatedFlow.tryEmit(Unit)
             }
 
             is LocalOpenResult.Failed -> {
@@ -897,6 +906,24 @@ class MoneroKitWrapper(
             "Trezor account has no Monero wallet files"
         }
         return MoneroWalletCredentials(record.fileName.value, record.password.value)
+    }
+
+    /** An unreachable node must not hide the stored balance and history: open the wallet from disk instead. */
+    internal suspend fun startAccountServiceOrOpenLocally(
+        walletFileName: String,
+        walletPassword: String,
+        fixIfCorruptedFile: Boolean,
+    ): Boolean = try {
+        startAccountService(walletFileName, walletPassword, fixIfCorruptedFile)
+        true
+    } catch (e: MoneroNodeUnreachableException) {
+        logger.info("start: node unreachable, opening wallet locally")
+        startLocalOnly(MoneroWalletCredentials(walletFileName, walletPassword))
+        if (isStarted) {
+            openedWithoutNode = true
+            _syncState.value = AdapterState.NotSynced(e)
+        }
+        false
     }
 
     internal suspend fun startAccountService(
@@ -1137,10 +1164,9 @@ class MoneroKitWrapper(
             recordNativeConnectionError(walletStatus?.connectionStatus, walletStatus?.errorString)
             if (walletStatus?.isOk != true) {
                 logger.info("startService: wallet status not ok, scheduling retry")
-                Timber.d("Monero wallet start error: $walletStatus, restarting")
                 if (walletStatus?.connectionStatus == ConnectionStatus.ConnectionStatus_Disconnected) {
                     logger.info("startService: detected disconnected status, aborting start")
-                    throw Exception("No internet connection")
+                    throw MoneroNodeUnreachableException()
                 } else if (walletStatus == null) {
                     // Possible corrupted wallet file
                     getBirthdayHeight(account)?.let {
@@ -1471,18 +1497,21 @@ class MoneroKitWrapper(
         try {
             if (isStarted) {
                 logger.info("stop: stopping service saveWallet=$saveWallet")
-                if (hardwareAccount) {
-                    if (!moneroWalletService.stop(saveWallet)) {
-                        isPaused = true
-                        throw moneroWalletService.wallet?.status.toHardwareWalletCloseFailure(
-                            "Failed to close Monero hardware wallet",
-                        )
-                    }
-                } else {
+                val closed = try {
+                    nativeCloseSequence++
                     moneroWalletService.stop(saveWallet)
+                } finally {
+                    nativeCloseSequence++
+                }
+                if (hardwareAccount && !closed) {
+                    isPaused = true
+                    throw moneroWalletService.wallet?.status.toHardwareWalletCloseFailure(
+                        "Failed to close Monero hardware wallet",
+                    )
                 }
                 isStarted = false
                 isPaused = false
+                openedWithoutNode = false
                 lastLoggedSyncProgress = -1
                 lastLoggedConnectionStatus = null
                 if (hardwareAccount) {
@@ -1510,7 +1539,7 @@ class MoneroKitWrapper(
     }
 
     suspend fun resume(): Boolean = lifecycleMutex.withLock {
-        resumeInternal()
+        resumeInternal() || (openedWithoutNode && connectDaemonAndResume())
     }
 
     val isNetworkOnline: Boolean
@@ -1529,17 +1558,15 @@ class MoneroKitWrapper(
             }
             return@withLock isNetworkOnline
         }
-        withContext(dispatcherProvider.io) {
-            val selectedNode = MoneroConfig.autoSelectNode()
-                ?: NodeInfo.fromString(DefaultNodes.entries.first().uri)
-            WalletManager.getInstance().setDaemon(selectedNode)
-            moneroWalletService.setObserver(this@MoneroKitWrapper)
-            if (moneroWalletService.connectDaemon() !is DaemonConnectResult.Connected) {
-                false
-            } else {
-                resumeInternal()
-            }
-        }
+        connectDaemonAndResume()
+    }
+
+    private suspend fun connectDaemonAndResume(): Boolean = withContext(dispatcherProvider.io) {
+        val selectedNode = MoneroConfig.autoSelectNode()
+            ?: NodeInfo.fromString(DefaultNodes.entries.first().uri)
+        WalletManager.getInstance().setDaemon(selectedNode)
+        moneroWalletService.setObserver(this@MoneroKitWrapper)
+        moneroWalletService.connectDaemon() is DaemonConnectResult.Connected && resumeInternal()
     }
 
     private fun resumeInternal(): Boolean {
@@ -1548,6 +1575,7 @@ class MoneroKitWrapper(
             val resumed = moneroWalletService.resume(this)
             if (resumed) {
                 isPaused = false
+                openedWithoutNode = false
                 logger.info("resume: done")
             } else {
                 logger.info("resume: service resume returned false")
@@ -1641,6 +1669,10 @@ class MoneroKitWrapper(
 
     private suspend fun refreshStartedWallet() {
         if (isPaused && !resumeInternal()) {
+            if (openedWithoutNode) {
+                if (!connectDaemonAndResume()) logger.info("refresh: node unreachable, wallet stays open locally")
+                return
+            }
             logger.info("refresh: restarting wallet after failed resume")
             restartInternal()
             return
@@ -2090,15 +2122,17 @@ class MoneroKitWrapper(
     }
 
     // Add methods for balance, transactions, etc.
-    fun getBalance(): Long {
-        return try {
-            Timber.d("getBalance: ${moneroWalletService.wallet?.balance}")
-            moneroWalletService.wallet?.balance ?: 0L
+    fun getBalance(): Long? {
+        // Odd sequence = closing: the kit then reads 0 instead of failing, so an overlapping close voids the read.
+        val closeSequence = nativeCloseSequence
+        if (!isStarted || closeSequence % 2 != 0) return null
+        val balance = try {
+            moneroWalletService.wallet?.balance
         } catch (e: Exception) {
             logger.warning("getBalance: failed to fetch balance", e)
-            Timber.d("getBalance: Failed to get balance")
-            0L
+            null
         }
+        return balance.takeIf { nativeCloseSequence == closeSequence }
     }
 
     fun getUnlockedBalance(): Long {

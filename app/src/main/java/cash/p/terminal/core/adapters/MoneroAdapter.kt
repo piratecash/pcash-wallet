@@ -2,6 +2,7 @@ package cash.p.terminal.core.adapters
 
 import cash.p.terminal.core.BroadcastRawTransactionResult
 import cash.p.terminal.core.BroadcastRawTransactionStatus
+import cash.p.terminal.core.ILastKnownBalanceAdapter
 import cash.p.terminal.core.ISendMoneroAdapter
 import cash.p.terminal.core.IMoneroReceiveAdapter
 import cash.p.terminal.core.MoneroSpendReadiness
@@ -37,7 +38,7 @@ import java.math.BigDecimal
 
 class MoneroAdapter(
     private val moneroKitWrapper: MoneroKitWrapper,
-) : IAdapter, IBalanceAdapter, IMoneroReceiveAdapter, ISendMoneroAdapter {
+) : IAdapter, IBalanceAdapter, IMoneroReceiveAdapter, ISendMoneroAdapter, ILastKnownBalanceAdapter {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
     private var collectJob: Job? = null
@@ -138,8 +139,11 @@ class MoneroAdapter(
     override val balanceStateUpdatedFlow: Flow<Unit>
         get() = walletStateUpdatedFlow
 
+    override val lastKnownBalanceData: BalanceData?
+        get() = moneroKitWrapper.getBalance()?.let { BalanceData(balanceInBigDecimal(it, decimal)) }
+
     override val balanceData: BalanceData
-        get() = BalanceData(balanceInBigDecimal(moneroKitWrapper.getBalance(), decimal))
+        get() = lastKnownBalanceData ?: BalanceData(BigDecimal.ZERO)
 
     override val balanceUpdatedFlow: Flow<Unit>
         get() = walletStateUpdatedFlow

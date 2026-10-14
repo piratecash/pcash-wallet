@@ -11,6 +11,7 @@ import cash.p.terminal.wallet.AdapterState
 import com.m2049r.xmrwallet.model.Wallet
 import com.m2049r.xmrwallet.model.Wallet.ConnectionStatus
 import com.m2049r.xmrwallet.offline.RawMoneroBroadcastResult
+import com.m2049r.xmrwallet.service.LocalOpenResult
 import com.m2049r.xmrwallet.service.MoneroWalletService
 import com.piratecash.monero.signer.ExternalSignerRegistration
 import com.piratecash.monero.signer.HardwareWalletErrorCode
@@ -23,6 +24,7 @@ import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import io.mockk.verifyOrder
+import java.io.File
 import java.lang.reflect.InvocationTargetException
 import java.math.BigDecimal
 import java.util.concurrent.CancellationException
@@ -35,6 +37,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -46,6 +49,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.After
@@ -114,6 +118,139 @@ class MoneroKitWrapperRefreshTest {
         verify(exactly = 1) { service.resume(wrapper) }
         verify(exactly = 1) { service.stop(false) }
     }
+
+    @Test
+    fun getBalance_walletNotOpen_returnsNull() {
+        // A real service: stubbing `wallet` on a mock instantiates Wallet, whose static init loads the native lib.
+        assertNull(createWrapper(MoneroWalletService(File("unused"))).getBalance())
+    }
+
+    @Test
+    fun getBalance_duringStop_returnsNull() = runTest {
+        val service = mockService()
+        val wrapper = createWrapper(service)
+        val balancesReadDuringStop = mutableListOf<Long?>()
+        every { service.stop(any()) } answers {
+            balancesReadDuringStop += wrapper.getBalance()
+            true
+        }
+        setStarted(wrapper)
+
+        wrapper.stop()
+
+        assertEquals(listOf<Long?>(null), balancesReadDuringStop)
+    }
+
+    @Test
+    fun startAccountServiceOrOpenLocally_nodeUnreachable_opensWalletLocally() = runTest {
+        val service = nodeUnreachableService(LocalOpenResult.Opened)
+        val wrapper = createWrapper(service)
+        var transactionUpdates = 0
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            wrapper.transactionsStateUpdatedFlow.collect { transactionUpdates++ }
+        }
+
+        assertFalse(wrapper.startAccountServiceOrOpenLocally("wallet", "password", fixIfCorruptedFile = true))
+
+        verify(exactly = 1) { service.startOffline("wallet", "password") }
+        val state = wrapper.syncState.value as AdapterState.NotSynced
+        assertEquals("No internet connection", state.error.message)
+        assertFalse(wrapper.isNetworkOnline)
+        assertEquals(1, transactionUpdates)
+        assertTrue(openedWithoutNode(wrapper))
+    }
+
+    @Test
+    fun startAccountServiceOrOpenLocally_nodeUnreachableLocalOpenFails_keepsWalletClosed() = runTest {
+        val service = nodeUnreachableService(LocalOpenResult.Failed(null, "boom"))
+        val wrapper = createWrapper(service)
+
+        assertFalse(wrapper.startAccountServiceOrOpenLocally("wallet", "password", fixIfCorruptedFile = true))
+
+        val state = wrapper.syncState.value as AdapterState.NotSynced
+        assertEquals("boom", state.error.message)
+        assertFalse(wrapper.isNetworkOnline)
+        assertTrue(wrapper.getTransactions().isEmpty())
+        assertFalse(openedWithoutNode(wrapper))
+    }
+
+    @Test
+    fun startAccountServiceOrOpenLocally_otherStartFailure_propagatesWithoutLocalOpen() = runTest {
+        val service = mockService()
+        val failure = IllegalStateException("native failure")
+        every { service.start("wallet", "password") } throws failure
+        val wrapper = createWrapper(service)
+
+        val thrown = runCatching {
+            wrapper.startAccountServiceOrOpenLocally("wallet", "password", fixIfCorruptedFile = true)
+        }.exceptionOrNull()
+
+        assertSame(failure, thrown)
+        verify(exactly = 0) { service.startOffline(any(), any()) }
+    }
+
+    @Test
+    fun startAccountServiceOrOpenLocally_nodeReachable_doesNotOpenLocally() = runTest {
+        val service = mockService()
+        val status = mockk<Wallet.Status>(relaxed = true) {
+            every { isOk } returns true
+        }
+        every { service.start("wallet", "password") } returns status
+        val wrapper = createWrapper(service)
+
+        assertTrue(wrapper.startAccountServiceOrOpenLocally("wallet", "password", fixIfCorruptedFile = true))
+
+        verify(exactly = 0) { service.startOffline(any(), any()) }
+    }
+
+    @Test
+    fun stop_openedWithoutNode_clearsFlag() = runTest {
+        val service = nodeUnreachableService(LocalOpenResult.Opened)
+        every { service.stop(true) } returns true
+        val wrapper = createWrapper(service)
+        wrapper.startAccountServiceOrOpenLocally("wallet", "password", fixIfCorruptedFile = true)
+
+        wrapper.stop()
+
+        assertFalse(openedWithoutNode(wrapper))
+        assertFalse(wrapper.isNetworkOnline)
+    }
+
+    @Test
+    fun resume_pausedHardwareWallet_doesNotConnectDaemon() = runTest {
+        assertPausedWalletResumeDoesNotConnectDaemon(trezorAccount)
+    }
+
+    @Test
+    fun resume_pausedLocalWalletNotFromFallback_doesNotConnectDaemon() = runTest {
+        assertPausedWalletResumeDoesNotConnectDaemon(account)
+    }
+
+    private suspend fun assertPausedWalletResumeDoesNotConnectDaemon(account: Account) {
+        val service = mockService()
+        val wrapper = createWrapper(service, account)
+        every { service.resume(wrapper) } returns false
+        setStarted(wrapper)
+        wrapper.pause()
+
+        assertFalse(wrapper.resume())
+
+        verify(exactly = 0) { service.connectDaemon() }
+    }
+
+    private fun nodeUnreachableService(localOpen: LocalOpenResult): MoneroWalletService {
+        val service = mockService()
+        val status = mockk<Wallet.Status>(relaxed = true) {
+            every { isOk } returns false
+            every { connectionStatus } returns ConnectionStatus.ConnectionStatus_Disconnected
+        }
+        every { service.start("wallet", "password") } returns status
+        every { service.startOffline("wallet", "password") } returns localOpen
+        return service
+    }
+
+    private fun openedWithoutNode(wrapper: MoneroKitWrapper): Boolean =
+        privateField(wrapper, "openedWithoutNode").getBoolean(wrapper)
 
     @Test
     fun refreshHardwareKeyImagesWithProgress_reportsNativeProgressAndClearsObserver() {
