@@ -15,10 +15,11 @@ enum class MnemonicKind(val wordsCount: Int) {
     Mnemonic25(25),
     Unknown(-1);
 
-    val title = Translator.getString(
-        Res.string.CreateWallet_N_Words,
-        wordsCount
-    )
+    val title: String
+        get() = Translator.getString(
+            Res.string.CreateWallet_N_Words,
+            wordsCount
+        )
 
     val titleLong: String
         get() = when (this) {
