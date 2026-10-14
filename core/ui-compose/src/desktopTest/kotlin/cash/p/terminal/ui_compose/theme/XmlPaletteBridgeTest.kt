@@ -18,6 +18,7 @@ class XmlPaletteBridgeTest {
         "status_success" to { it.statusSuccess },
         "status_error" to { it.statusError },
         "icon_disabled" to { it.iconDisabled },
+        "button_primary_brand_content" to { it.buttonPrimaryBrandContent },
     )
 
     private val nonPaletteXmlNames = setOf("black", "white_50", "light_grey")
