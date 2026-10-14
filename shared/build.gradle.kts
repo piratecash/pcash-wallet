@@ -10,7 +10,7 @@ plugins {
 
 // KMP source directories must be configured explicitly or Detekt reports NO-SOURCE.
 detekt {
-    source.setFrom("src/commonMain/kotlin", "src/commonTest/kotlin")
+    source.setFrom("src/commonMain/kotlin", "src/commonTest/kotlin", "src/desktopMain/kotlin")
 }
 
 kotlin {
@@ -37,12 +37,31 @@ kotlin {
             dependencies {
                 api(project(":core:network"))
                 api(project(":core:resources"))
+                api(project(":core:common"))
                 implementation(project(":core:ui-compose"))
+                implementation(project(":core:navigation"))
+                implementation(project(":core:market"))
+                implementation(project(":core:wallet"))
+                implementation(project(":feature-market"))
                 implementation(libs.compose.multiplatform.runtime)
                 implementation(libs.compose.multiplatform.ui)
                 implementation(libs.compose.multiplatform.foundation)
                 implementation(libs.compose.multiplatform.material3)
                 implementation(libs.compose.multiplatform.adaptive.navigation.suite)
+                implementation(libs.jetbrains.navigation3.ui)
+                implementation(libs.jetbrains.lifecycle.runtime.compose)
+                implementation(project.dependencies.platform(libs.koin.bom))
+                implementation(libs.koin.core)
+                implementation(libs.koin.compose.viewmodel)
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.kermit)
+            }
+        }
+        val desktopMain by getting {
+            dependencies {
+                implementation(libs.gson)
+                implementation(libs.rxjava)
+                implementation(libs.datastore.preferences.core)
             }
         }
         commonTest {
@@ -54,6 +73,8 @@ kotlin {
         val desktopTest by getting {
             dependencies {
                 implementation(kotlin("test"))
+                implementation(libs.mockk)
+                implementation(libs.kotlinx.coroutines.test)
             }
         }
     }

@@ -33,6 +33,7 @@ import cash.p.terminal.modules.receive.viewmodels.ReceiveMoneroViewModel
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.BottomSheetHeader
 import cash.p.terminal.ui_compose.TransparentModalBottomSheet
 import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
@@ -176,7 +177,7 @@ private fun MoneroHardwareWalletActions(
         uiState.hardwareOperationError?.let { error ->
             TextImportantWarning(
                 modifier = Modifier.padding(vertical = 12.dp),
-                text = stringResource(error),
+                text = TranslatableString.ResString(error).getString(),
             )
         }
         if (uiState.showTrezorUpdateAction) {

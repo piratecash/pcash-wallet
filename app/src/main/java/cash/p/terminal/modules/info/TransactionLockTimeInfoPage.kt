@@ -17,6 +17,10 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.modules.info.ui.InfoHeader
+import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.Info_LockTime_Title
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_close_24
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.InfoTextBody
@@ -51,8 +55,8 @@ private fun InfoScreen(
             AppBar(
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.Button_Close),
-                        icon = R.drawable.ic_close_24,
+                        title = TranslatableString.ResString(Res.string.Button_Close),
+                        icon = Res.drawable.ic_close_24,
                         onClick = onClose
                     )
                 )
@@ -63,7 +67,7 @@ private fun InfoScreen(
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
             ) {
-                InfoHeader(R.string.Info_LockTime_Title)
+                InfoHeader(Res.string.Info_LockTime_Title)
                 InfoTextBody(description)
                 Spacer(Modifier.height(20.dp))
             }

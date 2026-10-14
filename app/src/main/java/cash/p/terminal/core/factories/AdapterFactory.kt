@@ -6,6 +6,7 @@ import io.horizontalsystems.core.logger.AppLogger
 import timber.log.Timber
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.ILocalStorage
+import cash.p.terminal.core.ISendEthereumAdapter
 import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.UnsupportedAccountException
 import cash.p.terminal.core.UnsupportedException
@@ -199,9 +200,7 @@ class AdapterFactory(
             evmTransactionRepository.buildErc20Kit(context, address)
         } catch (error: Throwable) {
             // No adapter will exist to unlink the EVM kit that setup() just linked.
-            withContext(NonCancellable) {
-                evmBlockchainManager.getEvmKitManager(blockchainType).unlink(wallet.account)
-            }
+            withContext(NonCancellable) { evmTransactionRepository.release() }
             throw error
         }
 
@@ -671,27 +670,31 @@ class AdapterFactory(
         )
     }
 
-    suspend fun unlinkAdapter(wallet: Wallet) {
-        if (wallet.transactionSource.blockchain.type == BlockchainType.Beam) {
-            unlinkBeamAdapter(wallet)
-        } else {
-            unlinkAdapter(wallet.transactionSource)
-        }
-    }
-
     suspend fun unlinkAdapter(wallet: Wallet, adapter: IAdapter) {
-        if (wallet.token.blockchainType == BlockchainType.Beam) {
-            unlinkBeamAdapter(wallet, adapter)
-        } else {
-            unlinkAdapter(wallet)
+        when (wallet.token.blockchainType) {
+            BlockchainType.Beam -> unlinkBeamAdapter(wallet, adapter)
+            // Membership in the canonical list, not a hand-copied one: a chain added there must not
+            // stay linked here, keeping its kit syncing after the user disabled it.
+            in EvmBlockchainManager.blockchainTypes ->
+                (adapter as? ISendEthereumAdapter)?.evmTransactionRepository?.release()
+
+            else -> unlinkAdapter(wallet.transactionSource)
         }
     }
 
-    private suspend fun unlinkBeamAdapter(wallet: Wallet, expected: IAdapter? = null) {
+    suspend fun unlinkAdapter(source: TransactionSource, adapter: ITransactionsAdapter) {
+        if (source.blockchain.type in EvmBlockchainManager.blockchainTypes) {
+            (adapter as? EvmTransactionsAdapter)?.release()
+        } else {
+            unlinkAdapter(source)
+        }
+    }
+
+    private suspend fun unlinkBeamAdapter(wallet: Wallet, expected: IAdapter) {
         withContext(NonCancellable) {
             beamMutex.withLock {
                 val linked = beamAdapter ?: return@withLock
-                if (linked.first != wallet || (expected != null && linked.second !== expected)) return@withLock
+                if (linked.first != wallet || linked.second !== expected) return@withLock
                 linked.second.close()
                 beamAdapter = null
             }
@@ -701,11 +704,6 @@ class AdapterFactory(
     suspend fun unlinkAdapter(transactionSource: TransactionSource) {
         val account = transactionSource.account
         when (val blockchainType = transactionSource.blockchain.type) {
-            // Membership in the canonical list, not a hand-copied one: a chain added there must not
-            // stay linked here, keeping its kit syncing after the user disabled it.
-            in EvmBlockchainManager.blockchainTypes ->
-                evmBlockchainManager.getEvmKitManager(blockchainType).unlink(account)
-
             BlockchainType.Solana -> solanaKitManager.unlink(account)
             BlockchainType.Tron -> tronKitManager.unlink(account)
             BlockchainType.Ton -> tonKitManager.unlink(account)

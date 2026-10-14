@@ -25,6 +25,7 @@ import cash.p.terminal.core.ethereum.CautionViewItem
 import cash.p.terminal.core.ethereum.CautionViewItemFactory
 import cash.p.terminal.core.ethereum.EvmCoinServiceFactory
 import cash.p.terminal.core.isNative
+import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.core.managers.PendingTransactionRegistrar
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.entities.PendingTransactionDraft
@@ -54,6 +55,8 @@ import cash.p.terminal.modules.send.evm.settings.SendEvmNonceViewModel
 import cash.p.terminal.modules.send.evm.settings.SendEvmSettingsModule
 import cash.p.terminal.modules.send.evm.settings.SendEvmSettingsService
 import cash.p.terminal.modules.send.evm.settings.SendEvmSettingsViewModel
+import cash.p.terminal.resources.Button_Reset
+import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.HsIconButton
@@ -81,13 +84,11 @@ internal class SendTransactionServiceEvm(
     token: Token,
     initialGasPrice: GasPrice? = null,
     initialNonce: Long? = null,
-    private val ignoreMevErrors: Boolean = false
+    private val ignoreMevErrors: Boolean = false,
+    private val evmKitWrapper: EvmKitWrapper = checkNotNull(
+        App.evmBlockchainManager.getEvmKitManager(token.blockchainType).evmKitWrapper
+    ) { "EVM kit is not running for ${token.blockchainType.uid}" }
 ) : ISendTransactionService<BaseEvmAdapter>(token) {
-    private val evmKitWrapper by lazy {
-        App.evmBlockchainManager.getEvmKitManager(
-            token.blockchainType
-        ).evmKitWrapper!!
-    }
     private val gasPriceService: IEvmGasPriceService by lazy {
         val evmKit = evmKitWrapper.evmKit
         if (evmKit.chain.isEIP1559Supported) {
@@ -389,7 +390,7 @@ fun SendEvmFeeSettingsScreen(
             },
             menuItems = listOf(
                 MenuItem(
-                    title = TranslatableString.ResString(R.string.Button_Reset),
+                    title = TranslatableString.ResString(Res.string.Button_Reset),
                     enabled = !viewModel.isRecommendedSettingsSelected,
                     onClick = { viewModel.onClickReset() }
                 )

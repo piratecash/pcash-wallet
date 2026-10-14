@@ -15,36 +15,20 @@
     <ID>ComplexCondition:TransactionInfoViewItemFactory.kt$TransactionInfoViewItemFactory$transactionItem.swapAmountOut != null &amp;&amp; transactionItem.swapCoinCodeOut != null &amp;&amp; transactionItem.swapCoinCodeIn != null &amp;&amp; transactionItem.swapAmountIn != null</ID>
     <ID>ComplexCondition:TronAccountManager.kt$TronAccountManager$initial &amp;&amp; account.origin == AccountOrigin.Restored &amp;&amp; !account.isWatchAccount &amp;&amp; !shouldAutoEnableTokens</ID>
     <ID>ComposableNaming:MainSettingsScreen.kt$previewSettingsScreen</ID>
-    <ID>ComposableParamOrder:Badge.kt$Badge</ID>
-    <ID>ComposableParamOrder:Badge.kt$BadgeBase</ID>
-    <ID>ComposableParamOrder:Badge.kt$BadgeText</ID>
-    <ID>ComposableParamOrder:Badge.kt$BadgeWithDiff</ID>
     <ID>ComposableParamOrder:BalanceCard.kt$BalanceCard</ID>
     <ID>ComposableParamOrder:BalanceItems.kt$NoteError</ID>
     <ID>ComposableParamOrder:BalanceItems.kt$NoteWarning</ID>
     <ID>ComposableParamOrder:BlockchainSettingsPage.kt$BlockchainSettingsBlock</ID>
     <ID>ComposableParamOrder:ButtonPrimaryCustomColor.kt$ButtonPrimaryCustomColor</ID>
     <ID>ComposableParamOrder:CheckAddressInput.kt$CheckAddressInput</ID>
-    <ID>ComposableParamOrder:CoinListComponents.kt$CoinList</ID>
-    <ID>ComposableParamOrder:CoinListOrderable.kt$CoinListOrderable</ID>
-    <ID>ComposableParamOrder:Components.kt$AnalyticsFooterCell</ID>
-    <ID>ComposableParamOrder:Components.kt$BoxItemCell</ID>
     <ID>ComposableParamOrder:ConfirmTransactionScreen.kt$ConfirmTransactionScreen</ID>
-    <ID>ComposableParamOrder:EtfPage.kt$GraphicPointer</ID>
     <ID>ComposableParamOrder:EvmNetworkPage.kt$RpcCell</ID>
-    <ID>ComposableParamOrder:Forms.kt$FormsInput</ID>
-    <ID>ComposableParamOrder:Forms.kt$FormsInputMultiline</ID>
     <ID>ComposableParamOrder:FormsInputAddress.kt$FormsInputAddress</ID>
     <ID>ComposableParamOrder:HSAddressInput.kt$HSAddressInput</ID>
     <ID>ComposableParamOrder:HSAmountInput.kt$HSAmountInput</ID>
     <ID>ComposableParamOrder:HSFeeInput.kt$HSFeeRaw</ID>
     <ID>ComposableParamOrder:HeaderCell.kt$HeaderCell</ID>
-    <ID>ComposableParamOrder:IndicatorsPage.kt$IndicatorCell</ID>
     <ID>ComposableParamOrder:MarkdownContent.kt$MarkdownContent</ID>
-    <ID>ComposableParamOrder:MarketCell.kt$MarketCoin</ID>
-    <ID>ComposableParamOrder:MarketCell.kt$MarketCoinClear</ID>
-    <ID>ComposableParamOrder:MarketFiltersPage.kt$AdvancedSearchSwitch</ID>
-    <ID>ComposableParamOrder:MarketFiltersPage.kt$SingleSelectBottomSheetContent</ID>
     <ID>ComposableParamOrder:NftAssetPage.kt$ChipVerticalGrid</ID>
     <ID>ComposableParamOrder:OfflineBroadcastScreen.kt$BlockchainPicker</ID>
     <ID>ComposableParamOrder:PinNumpad.kt$ImageKey</ID>
@@ -53,7 +37,6 @@
     <ID>ComposableParamOrder:QuoteInfoRow.kt$QuoteInfoRow</ID>
     <ID>ComposableParamOrder:ReceiveAddressScreen.kt$AmountInputDialog</ID>
     <ID>ComposableParamOrder:RestorePhraseScreen.kt$SuggestionsBar</ID>
-    <ID>ComposableParamOrder:SearchBar.kt$SearchBar</ID>
     <ID>ComposableParamOrder:SearchBarV2.kt$SearchBarV2</ID>
     <ID>ComposableParamOrder:SemiCircleChart.kt$SemiCircleChart</ID>
     <ID>ComposableParamOrder:SuggestionsBar.kt$SuggestionsBar</ID>
@@ -149,23 +132,14 @@
     <ID>CyclomaticComplexMethod:BackupLocalPassword.kt$@Composable fun LocalBackupPasswordScreen( backupType: BackupType, navigation: HSNavigation, onBackClick: () -&gt; Unit, onFinish: () -&gt; Unit )</ID>
     <ID>CyclomaticComplexMethod:BalanceItems.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun BalanceItems( balanceViewItems: List&lt;BalanceViewItem2&gt;, viewModel: BalanceViewModel, onItemClick: (BalanceViewItem2) -&gt; Unit, onBalanceClick: (BalanceViewItem2) -&gt; Unit, accountViewItem: AccountViewItem, navigation: HSNavigation, uiState: BalanceUiState, totalState: TotalUIState, onOpenTransactionInfo: (TransactionItem) -&gt; Unit, )</ID>
     <ID>CyclomaticComplexMethod:BitcoinBaseAdapter.kt$BitcoinBaseAdapter$fun transactionRecord(transaction: TransactionInfo): BitcoinTransactionRecord</ID>
-    <ID>CyclomaticComplexMethod:CoinAnalyticsViewModel.kt$CoinAnalyticsViewModel$private fun getPreviewViewItems(analyticsPreview: AnalyticsPreview): List&lt;PreviewBlockViewItem&gt;</ID>
-    <ID>CyclomaticComplexMethod:CoinAnalyticsViewModel.kt$CoinAnalyticsViewModel$private fun getViewItems(analytics: Analytics): List&lt;BlockViewItem&gt;</ID>
-    <ID>CyclomaticComplexMethod:CoinOverviewScreen.kt$@Composable fun CoinOverviewScreen( fullCoin: FullCoin, navigation: HSNavigation )</ID>
-    <ID>CyclomaticComplexMethod:CoinOverviewViewModel.kt$CoinOverviewViewModel$private fun getTokenVariants( fullCoin: FullCoin, account: Account?, activeWallets: List&lt;Wallet&gt; ): TokenVariants?</ID>
     <ID>CyclomaticComplexMethod:ContactsSettingsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ContactsSettingsScreen( deleteContactsPinEnabled: Boolean, hasContacts: Boolean, backupJson: String, backupFileName: String, onRestore: (String) -&gt; Unit, onPrepareForBackup: () -&gt; Unit, onManageDeleteContactsPasscode: () -&gt; Unit, onDisableDeleteContactsPasscode: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
-    <ID>CyclomaticComplexMethod:EtfPage.kt$@Composable fun ChartEtf(loading: Boolean, etfPoints: List&lt;EtfPoint&gt;, currency: Currency)</ID>
     <ID>CyclomaticComplexMethod:EvmAccountManager.kt$EvmAccountManager$private suspend fun handle( fullTransactions: List&lt;FullTransaction&gt;, account: Account, evmKitWrapper: EvmKitWrapper, initial: Boolean )</ID>
     <ID>CyclomaticComplexMethod:EvmTransactionConverter.kt$EvmTransactionConverter$fun transactionRecord(fullTransaction: FullTransaction): EvmTransactionRecord</ID>
-    <ID>CyclomaticComplexMethod:Forms.kt$@Composable fun FormsInput( modifier: Modifier = Modifier, enabled: Boolean = true, initial: String? = null, hint: String, prefix: String? = null, textColor: Color = ComposeAppTheme.colors.textPrimary, textStyle: TextStyle = ComposeAppTheme.typography.body, hintColor: Color = ComposeAppTheme.colors.textDisabled, hintStyle: TextStyle = ComposeAppTheme.typography.body, singleLine: Boolean = false, state: DataState&lt;Any&gt;? = null, qrScannerEnabled: Boolean = false, qrScannerTitle: String? = null, navigation: HSNavigation? = null, pasteEnabled: Boolean = true, trailingIcon: Int? = null, onTrailingIconClick: (() -&gt; Unit)? = null, showDeleteButton: Boolean = true, maxLength: Int? = null, visualTransformation: VisualTransformation = VisualTransformation.None, keyboardOptions: KeyboardOptions = KeyboardOptions.Default, textPreprocessor: TextPreprocessor = TextPreprocessorImpl, onChangeFocus: ((Boolean) -&gt; Unit)? = null, onValueChange: (String) -&gt; Unit, )</ID>
-    <ID>CyclomaticComplexMethod:Forms.kt$@Composable fun FormsInputMultiline( modifier: Modifier = Modifier, initial: String? = null, enabled: Boolean = true, hint: String, textColor: Color = ComposeAppTheme.colors.textPrimary, textStyle: TextStyle = ComposeAppTheme.typography.body, hintColor: Color = ComposeAppTheme.colors.textDisabled, hintStyle: TextStyle = ComposeAppTheme.typography.body, state: DataState&lt;Any&gt;? = null, pasteEnabled: Boolean = true, qrScannerEnabled: Boolean = false, qrScannerTitle: String? = null, navigation: HSNavigation? = null, textPreprocessor: TextPreprocessor = TextPreprocessorImpl, onChangeFocus: ((Boolean) -&gt; Unit)? = null, maxLength: Int? = null, visualTransformation: VisualTransformation = VisualTransformation.None, keyboardOptions: KeyboardOptions = KeyboardOptions.Default, onValueChange: (String) -&gt; Unit, onClear: (() -&gt; Unit)? = null, onPaste: (() -&gt; Unit)? = null, onScanQR: (() -&gt; Unit)? = null )</ID>
     <ID>CyclomaticComplexMethod:FormsInputAddress.kt$@Composable fun FormsInputAddress( modifier: Modifier = Modifier, value: String, hint: String, state: DataState&lt;Address&gt;? = null, showStateIcon: Boolean = true, textPreprocessor: TextPreprocessor = TextPreprocessorImpl, navigation: HSNavigation, chooseContactEnable: Boolean, blockchainType: BlockchainType?, onQrScanClick: () -&gt; Unit, onValueChange: (String) -&gt; Unit, isPoisonAddress: Boolean = false, )</ID>
     <ID>CyclomaticComplexMethod:HSAmountInput.kt$@Composable fun HSAmountInput( modifier: Modifier = Modifier, focusRequester: FocusRequester = remember { FocusRequester() }, availableBalance: BigDecimal, caution: HSCaution? = null, coinCode: String, coinDecimal: Int, fiatDecimal: Int, onClickHint: () -&gt; Unit, onValueChange: (BigDecimal?) -&gt; Unit, inputType: AmountInputType, rate: CurrencyValue?, amountUnique: AmountUnique? = null, percentageAmountUnique: AmountUnique? = null, pasteEnabled: Boolean = true )</ID>
     <ID>CyclomaticComplexMethod:IAddressHandler.kt$AddressHandlerUdn.Companion$private fun chainCoinCode(blockchainType: BlockchainType)</ID>
     <ID>CyclomaticComplexMethod:MainActivity.kt$MainActivity$override fun onCreate(savedInstanceState: Bundle?)</ID>
     <ID>CyclomaticComplexMethod:MainPage.kt$@Composable private fun MainScreen( transactionsViewModel: TransactionsViewModel, navigation: HSNavigation, intentLiveData: Intent?, intentHandled: () -&gt; Unit, viewModel: MainViewModel = koinViewModel() )</ID>
-    <ID>CyclomaticComplexMethod:MarketCell.kt$@Composable fun SignalBadge(advice: Advice)</ID>
-    <ID>CyclomaticComplexMethod:MarketFiltersService.kt$MarketFiltersService$private fun filterCoinMarket(marketInfo: MarketInfo): Boolean</ID>
     <ID>CyclomaticComplexMethod:MarketKitExtensions.kt$fun BlockchainType.supports(accountType: AccountType): Boolean</ID>
     <ID>CyclomaticComplexMethod:Migration_45_46.kt$CoinType$override fun toString()</ID>
     <ID>CyclomaticComplexMethod:Migration_45_46.kt$CoinType.Companion$fun fromId(id: String): CoinType</ID>
@@ -192,7 +166,6 @@
     <ID>CyclomaticComplexMethod:SwapQuoteService.kt$SwapQuoteService$private fun runQuotation(clearQuotes: Boolean = false)</ID>
     <ID>CyclomaticComplexMethod:SwapSelectCoinViewModel.kt$SwapSelectCoinViewModel$private suspend fun reloadItems()</ID>
     <ID>CyclomaticComplexMethod:SyncPendingMultiSwapUseCase.kt$SyncPendingMultiSwapUseCase$private suspend fun scanIncoming( sideOut: SwapSide, expectedAmount: BigDecimal?, legStartTime: Long, ): IncomingMatch?</ID>
-    <ID>CyclomaticComplexMethod:TechnicalAdviceViewItemFactory.kt$TechnicalAdviceViewItemFactory$private fun mainAdvice(technicalAdvice: TechnicalAdvice): String</ID>
     <ID>CyclomaticComplexMethod:TokenBalanceScreen.kt$@Composable private fun TokenBalanceHeader( balanceViewItem: BalanceViewItem, uiState: TokenBalanceModule.TokenBalanceUiState, secondaryValue: DeemedValue&lt;String&gt;, onStackingClicked: () -&gt; Unit, onClickSubtitle: () -&gt; Unit, onToggleBalanceVisibility: () -&gt; Unit, onSendClick: () -&gt; Unit, onReceiveClick: () -&gt; Unit, onSwapClick: () -&gt; Unit, onShieldClick: () -&gt; Unit, onSyncErrorClick: (BalanceViewItem) -&gt; Unit, onDismissNetworkFeeWarning: () -&gt; Unit, isShowShieldFunds: Boolean )</ID>
     <ID>CyclomaticComplexMethod:TokenBalanceScreen.kt$@Composable private fun TokenBalanceScreenContent( uiState: TokenBalanceModule.TokenBalanceUiState, secondaryValue: DeemedValue&lt;String&gt;, sendResult: SendResult?, navigation: HSNavigation, refreshing: Boolean, onToggleFavorite: () -&gt; Unit, onToggleBalanceVisibility: () -&gt; Unit, onSearchClick: () -&gt; Unit, onSearchClose: () -&gt; Unit, onSearchQueryChange: (String) -&gt; Unit, onSetTransactionType: (FilterTransactionType) -&gt; Unit, onWillShow: (TransactionViewItem) -&gt; Unit, onTransactionClick: (TransactionViewItem) -&gt; Unit, onSensitiveTransactionClick: (TransactionViewItem) -&gt; Unit, onBottomReached: () -&gt; Unit, onSetAmlCheckEnabled: (Boolean) -&gt; Unit, onDismissAmlPromo: () -&gt; Unit, onDismissNetworkFeeWarning: () -&gt; Unit, onSendClick: () -&gt; Unit, onReceiveClick: () -&gt; Unit, onSwapClick: () -&gt; Unit, onShieldClick: () -&gt; Unit, onSyncErrorClick: (BalanceViewItem) -&gt; Unit, onStackingClicked: () -&gt; Unit, onShowAllTransactionsClicked: () -&gt; Unit, onClickSubtitle: () -&gt; Unit, onRefresh: () -&gt; Unit, onSettingsClick: () -&gt; Unit, onGoOnline: () -&gt; Unit, )</ID>
     <ID>CyclomaticComplexMethod:TonConnectNewScreen.kt$@Composable fun TonConnectNewScreen( navigation: HSNavigation, uri: String, onResult: (Boolean) -&gt; Unit, )</ID>
@@ -217,7 +190,6 @@
     <ID>EmptyCatchBlock:CoreUtils.kt$ProcessUtils${ }</ID>
     <ID>EmptyCatchBlock:TorControl.kt$TorControl${ }</ID>
     <ID>EmptyCatchBlock:WatchAddressService.kt$WatchAddressService${ }</ID>
-    <ID>EmptyClassBlock:CoinOverviewModule.kt$TokenVariant${ }</ID>
     <ID>EmptyDefaultConstructor:AppearanceModule.kt$AppearanceModule.Factory$()</ID>
     <ID>EmptyDefaultConstructor:BalanceAccountsViewModel.kt$BalanceScreenState$()</ID>
     <ID>EmptyDefaultConstructor:Exceptions.kt$NoDataException$()</ID>
@@ -231,18 +203,10 @@
     <ID>EmptyFunctionBlock:ShowExtendedKeyPage.kt${ }</ID>
     <ID>EmptyFunctionBlock:TorControl.kt$TorControl.TorEventHandler${ }</ID>
     <ID>FunctionNaming:AddressCheckerPage.kt$@Preview @Composable fun Preview_AddressChecker()</ID>
-    <ID>FunctionNaming:Badge.kt$@Preview @Composable fun BadgeCircleSignal_Preview()</ID>
     <ID>FunctionNaming:BiometricDisabledDialog.kt$@Preview @Composable fun Preview_BiometricDisabledDialog()</ID>
-    <ID>FunctionNaming:CoinAnalyticsInfoPage.kt$@Preview @Composable private fun Preview_CoinAnalyticsInfoScreen()</ID>
-    <ID>FunctionNaming:Components.kt$@Preview @Composable private fun Preview_AnalyticsBarChartDisabled()</ID>
-    <ID>FunctionNaming:Components.kt$@Preview @Composable private fun Preview_AnalyticsLineChartDisabled()</ID>
-    <ID>FunctionNaming:Components.kt$@Preview @Composable private fun Preview_AnalyticsRatingScale()</ID>
-    <ID>FunctionNaming:Components.kt$@Preview @Composable private fun Preview_HoldersBlock()</ID>
-    <ID>FunctionNaming:Components.kt$@Preview @Composable private fun Preview_HoldersBlockLocked()</ID>
     <ID>FunctionNaming:GeneralTermsScreen.kt$@Preview(showBackground = true) @Composable private fun Preview_GeneralTermsDialog()</ID>
     <ID>FunctionNaming:HSHodlerInput.kt$@Preview(showBackground = true) @Composable private fun Preview_HSHodler()</ID>
     <ID>FunctionNaming:HSHodlerInput.kt$@Preview(showBackground = true) @Composable private fun Preview_HSHodlerInput()</ID>
-    <ID>FunctionNaming:IndicatorsPage.kt$@Preview @Composable private fun Preview_Indicators()</ID>
     <ID>FunctionNaming:KeyStoreActivity.kt$@Preview @Composable private fun Preview_NoSystemWarning()</ID>
     <ID>FunctionNaming:KeyStoreActivity.kt$@Preview(showBackground = true) @Composable private fun Preview_KeysInvalidatedDialog()</ID>
     <ID>FunctionNaming:MoneroConfigurePage.kt$@Preview @Composable private fun Preview_MoneroConfigure()</ID>
@@ -257,7 +221,6 @@
     <ID>FunctionNaming:SendEvmTransactionView.kt$@Preview @Composable private fun Preview_Subhead()</ID>
     <ID>FunctionNaming:SendEvmTransactionView.kt$@Preview @Composable private fun Preview_TitleValue()</ID>
     <ID>FunctionNaming:SendEvmTransactionView.kt$@Preview @Composable private fun Preview_TitleValueHex()</ID>
-    <ID>FunctionNaming:StackedBarChart.kt$@Preview @Composable private fun StackedBarChart_Preview()</ID>
     <ID>FunctionNaming:TransactionDoubleSpendInfoPage.kt$@Preview @Composable private fun Preview_InfoScreen()</ID>
     <ID>FunctionNaming:ZcashConfigurePage.kt$@Preview @Composable private fun Preview_ZcashConfigure()</ID>
     <ID>InstanceOfCheckForException:ActivateSubscriptionViewModel.kt$ActivateSubscriptionViewModel$e is UnknownHostException</ID>
@@ -280,9 +243,6 @@
     <ID>LambdaParameterEventTrailing:BalanceItems.kt$onClick</ID>
     <ID>LambdaParameterEventTrailing:BalanceItems.kt$onClose</ID>
     <ID>LambdaParameterEventTrailing:CheckAddressInput.kt$onValueChange</ID>
-    <ID>LambdaParameterEventTrailing:Components.kt$onActionClick</ID>
-    <ID>LambdaParameterEventTrailing:EtfPage.kt$onSelect</ID>
-    <ID>LambdaParameterEventTrailing:Forms.kt$onValueChange</ID>
     <ID>LambdaParameterEventTrailing:MarkdownContent.kt$onUrlClick</ID>
     <ID>LambdaParameterEventTrailing:OfflineBroadcastScreen.kt$onSelectBlockchain</ID>
     <ID>LambdaParameterEventTrailing:ResendBitcoinPage.kt$ResendBitcoinPage$onClickSend</ID>
@@ -293,7 +253,6 @@
     <ID>LambdaParameterInRestartableEffect:ContactScreen.kt$onNavigateToBack</ID>
     <ID>LambdaParameterInRestartableEffect:DuplicateWalletScreen.kt$onFinish</ID>
     <ID>LambdaParameterInRestartableEffect:HardwareWalletPage.kt$onFinish</ID>
-    <ID>LambdaParameterInRestartableEffect:LazyListState.kt$onLoadMore</ID>
     <ID>LambdaParameterInRestartableEffect:MainPage.kt$intentHandled</ID>
     <ID>LambdaParameterInRestartableEffect:MoneroConfigurePage.kt$onCloseWithResult</ID>
     <ID>LambdaParameterInRestartableEffect:QRScannerScreen.kt$onErrorMessageConsumed</ID>
@@ -303,7 +262,6 @@
     <ID>LargeClass:AdapterManagerTest.kt$AdapterManagerTest</ID>
     <ID>LargeClass:BackupProvider.kt$BackupProvider</ID>
     <ID>LargeClass:BitcoinBaseAdapter.kt$BitcoinBaseAdapter : IAdapterITransactionsAdapterIBalanceAdapterIReceiveAdapterISendBitcoinAdapterOfflineTransactionAdapter</ID>
-    <ID>LargeClass:CoinAnalyticsViewModel.kt$CoinAnalyticsViewModel : ViewModelUiState</ID>
     <ID>LargeClass:DeniableEncryptionManagerTest.kt$DeniableEncryptionManagerTest</ID>
     <ID>LargeClass:LitecoinAdapter.kt$LitecoinAdapter : BitcoinBaseAdapterListenerISendBitcoinAdapterIMwebAddressValidator</ID>
     <ID>LargeClass:LitecoinAdapterTest.kt$LitecoinAdapterTest</ID>
@@ -362,40 +320,20 @@
     <ID>LongMethod:BtcBlockchainSettingsScreen.kt$@Composable internal fun BtcBlockchainSettingsScreen( uiState: BtcBlockchainSettingsUIState, onSaveClick: () -&gt; Unit, onSelectRestoreMode: (BtcBlockchainSettingsModule.ViewItem) -&gt; Unit, onCustomPeersChange: (String) -&gt; Unit, navigation: HSNavigation, onBlockchainStatusClick: () -&gt; Unit, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, )</ID>
     <ID>LongMethod:CardTabs.kt$@Composable fun &lt;T&gt; CardTabs( tabItems: List&lt;TabItem&lt;T&gt;&gt;, edgePadding: Dp = TabRowDefaults.ScrollableTabRowPadding, darkTheme: Boolean = isSystemInDarkTheme(), onClick: (T?) -&gt; Unit, )</ID>
     <ID>LongMethod:ChangeNowProvider.kt$ChangeNowProvider$override suspend fun fetchFinalQuote( tokenIn: Token, tokenOut: Token, amountIn: BigDecimal, swapSettings: Map&lt;String, Any?&gt;, sendTransactionSettings: SendTransactionSettings?, swapQuote: ISwapQuote ): ISwapFinalQuote</ID>
-    <ID>LongMethod:ChartIndicatorSetting.kt$ChartIndicatorSettingsDao.Companion$fun defaultData(): List&lt;ChartIndicatorSetting&gt;</ID>
     <ID>LongMethod:CheckAddressInput.kt$@Composable fun CheckAddressInput( modifier: Modifier = Modifier, value: String, hint: String, navigation: HSNavigation, state: DataState&lt;Address&gt;? = null, onValueChange: (String) -&gt; Unit, )</ID>
     <ID>LongMethod:ChooseContactPage.kt$@Composable private fun ChooseContactScreen( page: ChooseContactPage, blockchainType: BlockchainType?, navigation: HSNavigation )</ID>
-    <ID>LongMethod:CoinAnalyticsScreen.kt$@Composable private fun AnalyticsBlock( block: CoinAnalyticsModule.BlockViewItem, navigation: HSNavigation, )</ID>
-    <ID>LongMethod:CoinAnalyticsViewModel.kt$CoinAnalyticsViewModel$private fun getPreviewViewItems(analyticsPreview: AnalyticsPreview): List&lt;PreviewBlockViewItem&gt;</ID>
-    <ID>LongMethod:CoinAnalyticsViewModel.kt$CoinAnalyticsViewModel$private fun getViewItems(analytics: Analytics): List&lt;BlockViewItem&gt;</ID>
-    <ID>LongMethod:CoinImage.kt$@Composable fun CoinIconWithSyncProgress( token: Token, syncingProgress: SyncingProgress, failedIconVisible: Boolean, onClickSyncError: (() -&gt; Unit)?, boxSize: Dp = 40.dp, iconSize: Dp = 32.dp )</ID>
-    <ID>LongMethod:CoinInvestmentsPage.kt$@Composable private fun CoinInvestmentsScreen( viewModel: CoinInvestmentsViewModel, onClickNavigation: () -&gt; Unit, onClickFundUrl: (url: String) -&gt; Unit )</ID>
-    <ID>LongMethod:CoinListComponents.kt$@Composable fun CoinList( listState: LazyListState = rememberLazyListState(), items: List&lt;MarketViewItem&gt;, scrollToTop: Boolean, onAddFavorite: (String) -&gt; Unit, onRemoveFavorite: (String) -&gt; Unit, onCoinClick: (String) -&gt; Unit, userScrollEnabled: Boolean = true, preItems: LazyListScope.() -&gt; Unit )</ID>
-    <ID>LongMethod:CoinListComponents.kt$@OptIn(ExperimentalMaterialApi::class) @Composable fun CategoryCard( type: DiscoveryItem, onClick: () -&gt; Unit )</ID>
-    <ID>LongMethod:CoinListOrderable.kt$@Composable fun CoinListOrderable( items: List&lt;MarketViewItem&gt;, scrollToTop: Boolean, onAddFavorite: (String) -&gt; Unit, onRemoveFavorite: (String) -&gt; Unit, onCoinClick: (String) -&gt; Unit, userScrollEnabled: Boolean = true, canReorder: Boolean = false, showReorderArrows: Boolean = false, preItems: LazyListScope.() -&gt; Unit, enableManualOrder: () -&gt; Unit, onReorder: (from: Int, to: Int) -&gt; Unit )</ID>
-    <ID>LongMethod:CoinOverviewScreen.kt$@Composable fun CoinOverviewScreen( fullCoin: FullCoin, navigation: HSNavigation )</ID>
-    <ID>LongMethod:CoinOverviewViewModel.kt$CoinOverviewViewModel$private fun getTokenVariants( fullCoin: FullCoin, account: Account?, activeWallets: List&lt;Wallet&gt; ): TokenVariants?</ID>
-    <ID>LongMethod:CoinPage.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun CoinTabs( viewModel: CoinViewModel, navigation: HSNavigation, )</ID>
-    <ID>LongMethod:CoinRankPage.kt$@OptIn(ExperimentalFoundationApi::class) @Composable private fun CoinRankScreen( type: RankType, navigation: HSNavigation, viewModel: CoinRankViewModel = viewModel( factory = CoinRankModule.Factory(type) ) )</ID>
-    <ID>LongMethod:CoinReportsPage.kt$@Composable private fun CoinReportsScreen( viewModel: CoinReportsViewModel, onClickNavigation: () -&gt; Unit, onClickReportUrl: (url: String) -&gt; Unit )</ID>
-    <ID>LongMethod:CoinTreasuriesPage.kt$@Composable private fun CoinTreasuriesScreen( viewModel: CoinTreasuriesViewModel, navigation: HSNavigation, )</ID>
+    <ID>LongMethod:CoinImageWithSync.kt$@Composable fun CoinIconWithSyncProgress( token: Token, syncingProgress: SyncingProgress, failedIconVisible: Boolean, onClickSyncError: (() -&gt; Unit)?, boxSize: Dp = 40.dp, iconSize: Dp = 32.dp )</ID>
     <ID>LongMethod:CoinTweetsScreen.kt$@Composable fun CoinTweetsScreen( fullCoin: FullCoin )</ID>
-    <ID>LongMethod:CoinViewFactory.kt$CoinViewFactory$private fun getMarketItems( item: CoinOverviewItem, ): MutableList&lt;CoinDataItem&gt;</ID>
     <ID>LongMethod:Composables.kt$@Composable fun Eip1559FeeSettings( viewModel: Eip1559FeeSettingsViewModel )</ID>
     <ID>LongMethod:Composables.kt$@Composable private fun NumberInputWithButtons( value: BigDecimal, decimals: Int, borderColor: Color, onValueChange: (BigDecimal) -&gt; Unit, onClickIncrement: () -&gt; Unit, onClickDecrement: () -&gt; Unit )</ID>
     <ID>LongMethod:ContactScreen.kt$@OptIn(ExperimentalMaterialApi::class) @Composable fun ContactScreen( viewModel: ContactViewModel, onNavigateToBack: () -&gt; Unit, onNavigateToAddress: (ContactAddress?) -&gt; Unit )</ID>
     <ID>LongMethod:ContactsScreen.kt$@OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class) @Composable fun ContactsScreen( viewModel: ContactsViewModel, onNavigateToBack: () -&gt; Unit, onNavigateToCreateContact: () -&gt; Unit, onNavigateToContact: (Contact) -&gt; Unit, onNavigateToSettings: () -&gt; Unit )</ID>
     <ID>LongMethod:ContactsSettingsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ContactsSettingsScreen( deleteContactsPinEnabled: Boolean, hasContacts: Boolean, backupJson: String, backupFileName: String, onRestore: (String) -&gt; Unit, onPrepareForBackup: () -&gt; Unit, onManageDeleteContactsPasscode: () -&gt; Unit, onDisableDeleteContactsPasscode: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
-    <ID>LongMethod:Contracts.kt$@Composable fun Contracts( contracts: List&lt;ContractInfo&gt;, onClickCopy: (ContractInfo) -&gt; Unit, onClickExplorer: (String) -&gt; Unit, )</ID>
     <ID>LongMethod:CreateAccountAdvanced.kt$@Composable fun CreateAccountAdvancedScreen( viewModel: CreateAdvancedAccountViewModel, preselectMonero: Boolean, passphraseTermsAccepted: Boolean, onBackClick: () -&gt; Unit, onFinish: () -&gt; Unit, onOpenTerms: () -&gt; Unit, onOpenNonEnglishMnemonicTerms: (Language) -&gt; Unit )</ID>
     <ID>LongMethod:CreateAccountPage.kt$@Composable private fun CreateAccountIntroScreen( viewModel: CreateAdvancedAccountViewModel, openCreateAdvancedScreen: () -&gt; Unit, onBackClick: () -&gt; Unit, onFinish: () -&gt; Unit )</ID>
-    <ID>LongMethod:DetectorsPage.kt$@Composable fun DetectorCell( issueViewItem: DetectorsModule.IssueViewItem, toggleExpand: (Int) -&gt; Unit )</ID>
     <ID>LongMethod:DuplicateWalletScreen.kt$@Composable fun DuplicateWalletScreen( uiState: DuplicateWalletUiState, passphraseTermsAccepted: Boolean, onEnterName: (String) -&gt; Unit, onTogglePassphrase: (Boolean) -&gt; Unit, onChangePassphrase: (String) -&gt; Unit, onChangePassphraseConfirmation: (String) -&gt; Unit, onCreate: () -&gt; Unit, onBackClick: () -&gt; Unit, onOpenTerms: () -&gt; Unit, onFinish: () -&gt; Unit )</ID>
     <ID>LongMethod:Eip20ApprovePage.kt$@Composable fun Eip20ApproveScreen(navigation: HSNavigation, input: Eip20ApprovePage.Input)</ID>
     <ID>LongMethod:Eip20RevokeConfirmPage.kt$@Composable fun Eip20RevokeScreen( navigation: HSNavigation, input: Eip20RevokeConfirmPage.Input, onResult: (Eip20RevokeConfirmPage.Result) -&gt; Unit, )</ID>
-    <ID>LongMethod:EmaSettingsScreen.kt$@Composable fun EmaSettingsScreen(navigation: HSNavigation, indicatorSetting: ChartIndicatorSetting)</ID>
-    <ID>LongMethod:EtfPage.kt$@Composable fun ChartEtf(loading: Boolean, etfPoints: List&lt;EtfPoint&gt;, currency: Currency)</ID>
-    <ID>LongMethod:EtfPage.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun EtfScreen( viewModel: EtfViewModel, navigation: HSNavigation, )</ID>
     <ID>LongMethod:EvmAccountManager.kt$EvmAccountManager$private suspend fun handle( fullTransactions: List&lt;FullTransaction&gt;, account: Account, evmKitWrapper: EvmKitWrapper, initial: Boolean )</ID>
     <ID>LongMethod:EvmNetworkPage.kt$@Composable private fun EvmNetworkScreen( navigation: HSNavigation, blockchain: Blockchain, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, onBackPress: () -&gt; Unit, )</ID>
     <ID>LongMethod:EvmPrivateKeyPage.kt$@Composable private fun EvmPrivateKeyScreen( navigation: HSNavigation, evmPrivateKey: String, )</ID>
@@ -404,15 +342,12 @@
     <ID>LongMethod:ExolixProvider.kt$ExolixProvider$override suspend fun fetchFinalQuote( tokenIn: Token, tokenOut: Token, amountIn: BigDecimal, swapSettings: Map&lt;String, Any?&gt;, sendTransactionSettings: SendTransactionSettings?, swapQuote: ISwapQuote ): ISwapFinalQuote</ID>
     <ID>LongMethod:FeeCell.kt$@Composable fun FeeCell( title: String, info: String, value: FeeItem?, viewState: ViewState?, )</ID>
     <ID>LongMethod:FilterCoinPage.kt$@Composable fun FilterCoinScreen(navigation: HSNavigation, viewModel: TransactionsViewModel)</ID>
-    <ID>LongMethod:Forms.kt$@Composable fun FormsInput( modifier: Modifier = Modifier, enabled: Boolean = true, initial: String? = null, hint: String, prefix: String? = null, textColor: Color = ComposeAppTheme.colors.textPrimary, textStyle: TextStyle = ComposeAppTheme.typography.body, hintColor: Color = ComposeAppTheme.colors.textDisabled, hintStyle: TextStyle = ComposeAppTheme.typography.body, singleLine: Boolean = false, state: DataState&lt;Any&gt;? = null, qrScannerEnabled: Boolean = false, qrScannerTitle: String? = null, navigation: HSNavigation? = null, pasteEnabled: Boolean = true, trailingIcon: Int? = null, onTrailingIconClick: (() -&gt; Unit)? = null, showDeleteButton: Boolean = true, maxLength: Int? = null, visualTransformation: VisualTransformation = VisualTransformation.None, keyboardOptions: KeyboardOptions = KeyboardOptions.Default, textPreprocessor: TextPreprocessor = TextPreprocessorImpl, onChangeFocus: ((Boolean) -&gt; Unit)? = null, onValueChange: (String) -&gt; Unit, )</ID>
-    <ID>LongMethod:Forms.kt$@Composable fun FormsInputMultiline( modifier: Modifier = Modifier, initial: String? = null, enabled: Boolean = true, hint: String, textColor: Color = ComposeAppTheme.colors.textPrimary, textStyle: TextStyle = ComposeAppTheme.typography.body, hintColor: Color = ComposeAppTheme.colors.textDisabled, hintStyle: TextStyle = ComposeAppTheme.typography.body, state: DataState&lt;Any&gt;? = null, pasteEnabled: Boolean = true, qrScannerEnabled: Boolean = false, qrScannerTitle: String? = null, navigation: HSNavigation? = null, textPreprocessor: TextPreprocessor = TextPreprocessorImpl, onChangeFocus: ((Boolean) -&gt; Unit)? = null, maxLength: Int? = null, visualTransformation: VisualTransformation = VisualTransformation.None, keyboardOptions: KeyboardOptions = KeyboardOptions.Default, onValueChange: (String) -&gt; Unit, onClear: (() -&gt; Unit)? = null, onPaste: (() -&gt; Unit)? = null, onScanQR: (() -&gt; Unit)? = null )</ID>
     <ID>LongMethod:FormsInputAddress.kt$@Composable fun FormsInputAddress( modifier: Modifier = Modifier, value: String, hint: String, state: DataState&lt;Address&gt;? = null, showStateIcon: Boolean = true, textPreprocessor: TextPreprocessor = TextPreprocessorImpl, navigation: HSNavigation, chooseContactEnable: Boolean, blockchainType: BlockchainType?, onQrScanClick: () -&gt; Unit, onValueChange: (String) -&gt; Unit, isPoisonAddress: Boolean = false, )</ID>
     <ID>LongMethod:GeneralPrivateKeyPage.kt$@Composable private fun GeneralPrivateKeyScreen( navigation: HSNavigation, generalPrivateKey: String, title: String )</ID>
     <ID>LongMethod:GuidesPage.kt$@Composable fun GuidesScreen(navigation: HSNavigation)</ID>
     <ID>LongMethod:HSAmountInput.kt$@Composable fun HSAmountInput( modifier: Modifier = Modifier, focusRequester: FocusRequester = remember { FocusRequester() }, availableBalance: BigDecimal, caution: HSCaution? = null, coinCode: String, coinDecimal: Int, fiatDecimal: Int, onClickHint: () -&gt; Unit, onValueChange: (BigDecimal?) -&gt; Unit, inputType: AmountInputType, rate: CurrencyValue?, amountUnique: AmountUnique? = null, percentageAmountUnique: AmountUnique? = null, pasteEnabled: Boolean = true )</ID>
     <ID>LongMethod:HardwareWalletPage.kt$@Composable internal fun HardwareWalletScreen( navigation: HSNavigation, onScanCard: () -&gt; Unit, onConnectTrezor: () -&gt; Unit, onFinish: () -&gt; Unit, viewModel: HardwareWalletViewModel )</ID>
     <ID>LongMethod:ImportWalletPage.kt$@Composable private fun ImportWalletScreen( navigation: HSNavigation, popUpToInclusiveId: KClass&lt;out HSPage&gt;, inclusive: Boolean )</ID>
-    <ID>LongMethod:IndicatorsPage.kt$@Composable fun IndicatorsScreen(navigation: HSNavigation)</ID>
     <ID>LongMethod:LitecoinAdapterTest.kt$LitecoinAdapterTest$@Test fun availableBalance_mwebDryRunReturnsZero_doesNotCacheZeroAndRecalculatesOnNextCall()</ID>
     <ID>LongMethod:LitecoinAdapterTest.kt$LitecoinAdapterTest$@Test fun availableBalance_mwebFullBalancePreviewFails_calculatesInBackgroundAndReturnsCachedValue()</ID>
     <ID>LongMethod:LitecoinAdapterTest.kt$LitecoinAdapterTest$@Test fun availableBalance_publicMwebDestination_calculatesInBackgroundAndReturnsCachedValue()</ID>
@@ -421,7 +356,6 @@
     <ID>LongMethod:LitecoinAdapterTest.kt$LitecoinAdapterTest$@Test fun getTransactions_publicMultipleMwebPegInMarkers_reusesMwebRecordOnce()</ID>
     <ID>LongMethod:LitecoinAdapterTest.kt$LitecoinAdapterTest$@Test fun getTransactions_publicMwebPegInChangeTie_prefersClosestNetAmount()</ID>
     <ID>LongMethod:LitecoinAdapterTest.kt$LitecoinAdapterTest$@Test fun onMwebSyncStateUpdate_mwebUtxosHeightChanged_invalidatesAvailableBalanceCache()</ID>
-    <ID>LongMethod:MacdSettingsScreen.kt$@Composable fun MacdSettingsScreen(navigation: HSNavigation, indicatorSetting: ChartIndicatorSetting)</ID>
     <ID>LongMethod:MainActivity.kt$MainActivity$override fun onCreate(savedInstanceState: Bundle?)</ID>
     <ID>LongMethod:MainPage.kt$@Composable private fun MainScreen( transactionsViewModel: TransactionsViewModel, navigation: HSNavigation, intentLiveData: Intent?, intentHandled: () -&gt; Unit, viewModel: MainViewModel = koinViewModel() )</ID>
     <ID>LongMethod:ManageAccountScreen.kt$@Composable internal fun ManageAccountScreen( navigation: HSNavigation, viewState: ManageAccountModule.ViewState, account: Account, onCloseClicked: () -&gt; Unit, onSaveClicked: () -&gt; Unit, onNameChanged: (String) -&gt; Unit, onActionClick: (KeyAction) -&gt; Unit, )</ID>
@@ -430,20 +364,8 @@
     <ID>LongMethod:ManageWalletsScreen.kt$@Composable private fun TokenRow( viewItem: CoinViewItem&lt;Token&gt;, startPadding: Dp, iconSize: Dp, onItemClick: () -&gt; Unit, onInfoClick: () -&gt; Unit )</ID>
     <ID>LongMethod:ManageWalletsScreen.kt$@OptIn(ExperimentalAnimationApi::class) @Composable internal fun ManageWalletsScreen( navigation: HSNavigation, manageWalletsCallback: ManageWalletsCallback, onBackPressed: () -&gt; Unit, requestScan: () -&gt; Unit, restoreSettingsViewModel: IRestoreSettingsUi )</ID>
     <ID>LongMethod:ManageWalletsScreen.kt$@Preview(showBackground = true) @Composable private fun ManageWalletsScreenPreview()</ID>
-    <ID>LongMethod:MarketCategoryPage.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun CategoryScreen( viewModel: MarketCategoryViewModel, chartViewModel: ChartViewModel, onCloseButtonClick: () -&gt; Unit, onCoinClick: (String) -&gt; Unit, )</ID>
-    <ID>LongMethod:MarketFavoritesScreen.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun MarketFavoritesScreen( navigation: HSNavigation )</ID>
-    <ID>LongMethod:MarketFiltersPage.kt$@Composable fun AdvancedSearchContent( viewModel: MarketFiltersViewModel, onFilterByBlockchainsClick: () -&gt; Unit, showBottomSheet: (MarketFiltersModule.FilterDropdown) -&gt; Unit, )</ID>
-    <ID>LongMethod:MarketFiltersPage.kt$@Composable private fun BottomSheetContent( bottomSheetType: MarketFiltersModule.FilterDropdown, viewModel: MarketFiltersViewModel, onClose: () -&gt; Unit, )</ID>
-    <ID>LongMethod:MarketFiltersPage.kt$@OptIn(ExperimentalMaterialApi::class) @Composable private fun AdvancedSearchScreen( viewModel: MarketFiltersViewModel, navigation: HSNavigation, )</ID>
-    <ID>LongMethod:MarketFiltersResultsPage.kt$@OptIn(ExperimentalFoundationApi::class) @Composable private fun SearchResultsScreen( viewModel: MarketFiltersResultViewModel, navigation: HSNavigation )</ID>
-    <ID>LongMethod:MarketOverviewMetrics.kt$@Composable private fun ChartView(metricsData: MetricData, navigation: HSNavigation)</ID>
-    <ID>LongMethod:MarketOverviewScreen.kt$@Composable fun MarketOverviewScreen( navigation: HSNavigation, viewModel: MarketOverviewViewModel = viewModel(factory = MarketOverviewModule.Factory()) )</ID>
-    <ID>LongMethod:MarketPlatformPage.kt$@OptIn(ExperimentalFoundationApi::class) @Composable private fun PlatformScreen( factory: ViewModelProvider.Factory, onCloseButtonClick: () -&gt; Unit, onCoinClick: (String) -&gt; Unit, viewModel: MarketPlatformViewModel = viewModel(factory = factory), chartViewModel: ChartViewModel = viewModel(factory = factory), )</ID>
-    <ID>LongMethod:MarketSearchPage.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun MarketSearchResults( vararg inputs: Any?, itemSections: Map&lt;MarketSearchSection, List&lt;CoinItem&gt;&gt;, onCoinClick: (Coin, MarketSearchSection) -&gt; Unit, onFavoriteClick: (Boolean, String) -&gt; Unit, )</ID>
-    <ID>LongMethod:MarketSignalsPage.kt$@Composable fun MarketSignalsScreen(navigation: HSNavigation)</ID>
     <ID>LongMethod:MarketWidget.kt$MarketWidget$@Composable private fun Content(context: Context)</ID>
     <ID>LongMethod:MarketWidgetConfigurationActivity.kt$MarketWidgetConfigurationActivity$override fun onCreate(savedInstanceState: Bundle?)</ID>
-    <ID>LongMethod:MetricsPage.kt$@OptIn(ExperimentalFoundationApi::class) @Composable private fun MetricsPageScreen( viewModel: MetricsPageViewModel, chartViewModel: ChartViewModel, navigation: HSNavigation, onCoinClick: (String) -&gt; Unit, )</ID>
     <ID>LongMethod:MoneroKitManager.kt$MoneroKitWrapper$override fun onRefreshed( wallet: Wallet?, full: Boolean ): Boolean</ID>
     <ID>LongMethod:MultiSwapExchangeScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable internal fun MultiSwapExchangeScreen( uiState: MultiSwapExchangeUiState?, timeRemainingProgress: () -&gt; Float?, onSwap: () -&gt; Unit, onRefresh: () -&gt; Unit, onContinueLater: () -&gt; Unit, onDeleteAndClose: () -&gt; Unit, onBack: () -&gt; Unit, onClickProvider: () -&gt; Unit, onClickLeg1: () -&gt; Unit = {}, swapButtonTitle: String = stringResource(R.string.Swap), )</ID>
     <ID>LongMethod:MultiSwapExchangeViewModel.kt$MultiSwapExchangeViewModel$private suspend fun mapToUiState(swap: PendingMultiSwap): MultiSwapExchangeUiState</ID>
@@ -457,14 +379,12 @@
     <ID>LongMethod:NftHoldingsPage.kt$@Composable fun NftHoldingsScreen(navigation: HSNavigation)</ID>
     <ID>LongMethod:NftHoldingsPage.kt$fun LazyListScope.nftsCollectionSection( collection: NftCollectionViewItem, viewModel: NftHoldingsViewModel, onClickAsset: (NftAssetViewItem) -&gt; Unit )</ID>
     <ID>LongMethod:NftPreview.kt$@Composable fun NftAssetPreview( name: String, imageUrl: String?, onSale: Boolean, coinPrice: CoinValue?, currencyPrice: CurrencyValue?, onClick: () -&gt; Unit )</ID>
-    <ID>LongMethod:OverallScoreInfoPage.kt$private fun getScores(scoreCategory: ScoreCategory?): Map&lt;OverallScore, String&gt;</ID>
     <ID>LongMethod:PasscodeBlock.kt$@Composable fun PasscodeBlock( viewModel: SecuritySettingsViewModel, navigation: HSNavigation, )</ID>
     <ID>LongMethod:PinNumpad.kt$@Composable fun PinNumpad( showFingerScanner: Boolean = false, pinRandomized: Boolean? = null, onNumberClick: (Int) -&gt; Unit, onDeleteClick: () -&gt; Unit, showBiometricPrompt: (() -&gt; Unit)? = null, inputState: InputState = InputState.Enabled(), updatePinRandomized: ((Boolean) -&gt; Unit)? = null, )</ID>
     <ID>LongMethod:PinTopBlock.kt$@Composable fun PinTopBlock( modifier: Modifier = Modifier, title: String, error: String? = null, enteredCount: Int, showShakeAnimation: Boolean = false, inputState: InputState = InputState.Enabled(), onShakeAnimationFinish: (() -&gt; Unit)? = null )</ID>
     <ID>LongMethod:PinUnlockView.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun PinUnlock( showPinLockScreen: Boolean, onSuccess: () -&gt; Unit, )</ID>
     <ID>LongMethod:PremiumSettingsPage.kt$@Composable internal fun PremiumSettingsScreen( uiState: PremiumSettingsUiState, onCheckAddressContractClick: (Boolean) -&gt; Unit, onAmlCheckReceivedClick: (Boolean) -&gt; Unit, onLoginLoggingClick: () -&gt; Unit, onAuthorizationInfoClick: () -&gt; Unit, onPushNotificationsClick: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
     <ID>LongMethod:PrivateKeysPage.kt$@Composable fun ManageAccountScreen( navigation: HSNavigation, account: Account, onZcashKeysClick: () -&gt; Unit, )</ID>
-    <ID>LongMethod:ProChartService.kt$ProChartService$override suspend fun getItems( chartInterval: HsTimePeriod, currency: Currency, ): ChartPointsWrapper</ID>
     <ID>LongMethod:PublicKeysPage.kt$@Composable fun ManageAccountScreen(navigation: HSNavigation, account: Account)</ID>
     <ID>LongMethod:PushNotificationsPage.kt$PushNotificationsPage$@Composable override fun GetContent(navigation: HSNavigation)</ID>
     <ID>LongMethod:PushNotificationsScreen.kt$@Suppress("LongParameterList") @Composable internal fun PushNotificationsScreen( uiState: PushNotificationsUiState, onShowNotificationsToggle: (Boolean) -&gt; Unit, onBlockchainNotificationsToggle: (String, Boolean) -&gt; Unit, onPollingIntervalChange: (PollingInterval) -&gt; Unit, onShowBlockchainNameToggle: (Boolean) -&gt; Unit, onShowCoinAmountToggle: (Boolean) -&gt; Unit, onShowFiatAmountToggle: (Boolean) -&gt; Unit, onClose: () -&gt; Unit, noNotificationPermission: Boolean = false, onPermissionWarningClick: () -&gt; Unit = {}, )</ID>
@@ -488,10 +408,7 @@
     <ID>LongMethod:RestorePhraseNonStandardScreen.kt$@OptIn(ExperimentalComposeUiApi::class) @Composable private fun BottomSection( viewModel: RestoreMnemonicNonStandardViewModel, uiState: RestoreMnemonicNonStandardModule.UiState, coroutineScope: CoroutineScope, )</ID>
     <ID>LongMethod:RestorePhraseScreen.kt$@Composable fun RestorePhrase( navigation: HSNavigation, restoreMenuViewModel: RestoreMenuViewModel, mainViewModel: RestoreViewModel, openSelectCoins: () -&gt; Unit, openNonStandardRestore: () -&gt; Unit, onBackClick: () -&gt; Unit, onFinish: () -&gt; Unit, advanced: Boolean = false, openRestoreAdvanced: (() -&gt; Unit)? = null, prefillWords: List&lt;String&gt;? = null, prefillPassphrase: String? = null, prefillMoneroHeight: Long? = null, prefillMnemonicLanguage: Language? = null )</ID>
     <ID>LongMethod:RestorePrivateKeyScreen.kt$@Composable fun RestorePrivateKey( navigation: HSNavigation, restoreMenuViewModel: RestoreMenuViewModel, mainViewModel: RestoreViewModel, openSelectCoinsScreen: () -&gt; Unit, onBackClick: () -&gt; Unit, )</ID>
-    <ID>LongMethod:Roi.kt$@Composable fun Roi(roi: List&lt;RoiViewItem&gt;)</ID>
-    <ID>LongMethod:RsiSettingsScreen.kt$@Composable fun RsiSettingsScreen(navigation: HSNavigation, indicatorSetting: ChartIndicatorSetting)</ID>
     <ID>LongMethod:SafetyRulesScreen.kt$@Composable fun SafetyRulesScreen( uiState: SafetyRulesUiState, onCheckboxToggle: (Int) -&gt; Unit, onAgreeClick: () -&gt; Unit, onRiskItClick: () -&gt; Unit, onCancelClick: () -&gt; Unit, )</ID>
-    <ID>LongMethod:SearchBar.kt$@OptIn(ExperimentalMaterial3Api::class) @ExperimentalAnimationApi @Composable fun SearchBar( title: String, searchHintText: String = "", searchOnlyMode: Boolean = false, searchModeInitial: Boolean = false, focusRequester: FocusRequester = remember { FocusRequester() }, menuItems: List&lt;MenuItem&gt; = listOf(), onClose: () -&gt; Unit, onSearchTextChanged: (String) -&gt; Unit = {}, )</ID>
     <ID>LongMethod:SearchBarV2.kt$@OptIn(ExperimentalMaterial3Api::class) @ExperimentalAnimationApi @Composable fun SearchBarV2( title: String, searchHintText: String = "", searchOnlyMode: Boolean = false, searchModeInitial: Boolean = false, focusRequester: FocusRequester = remember { FocusRequester() }, menuItems: List&lt;MenuItem&gt; = listOf(), onClose: () -&gt; Unit, onSearchTextChanged: (String) -&gt; Unit = {}, )</ID>
     <ID>LongMethod:SecretKeyScreen.kt$@Composable fun SecretKeyScreen( navigation: HSNavigation, secretKey: String, title: String, hideScreenText: String, )</ID>
     <ID>LongMethod:SecurityCheckPage.kt$@Composable fun AddressCheck( addressValidationInProgress: Boolean, addressValidationError: Throwable?, checkResults: Map&lt;AddressCheckType, AddressCheckData&gt;, onClick: (type: AddressCheckType) -&gt; Unit )</ID>
@@ -531,7 +448,6 @@
     <ID>LongMethod:SwapSettingsComponents.kt$@Composable fun InputWithButtons( modifier: Modifier = Modifier, hint: String? = null, initial: String? = null, buttons: List&lt;InputButton&gt;, state: DataState&lt;Any&gt;? = null, onValueChange: (String) -&gt; Unit, )</ID>
     <ID>LongMethod:SwapSettingsScreen.kt$@Composable fun SwapSettingsScreen( navigation: HSNavigation, swapViewModel: SwapViewModel )</ID>
     <ID>LongMethod:SystemPinBlock.kt$@Composable fun SystemPinBlock( isPinRequired: Boolean, enabled: Boolean, showInfoBlock: Boolean = true, onPinRequiredChange: (Boolean) -&gt; Unit, )</ID>
-    <ID>LongMethod:TechnicalAdviceViewItemFactory.kt$TechnicalAdviceViewItemFactory$private fun mainAdvice(technicalAdvice: TechnicalAdvice): String</ID>
     <ID>LongMethod:TermsPage.kt$@Composable private fun TermsScreen( page: TermsPage, navigation: HSNavigation, viewModel: TermsViewModel = viewModel(factory = TermsModule.Factory()) )</ID>
     <ID>LongMethod:TokenBalanceModule.kt$TokenBalanceModule.Factory$@Suppress("UNCHECKED_CAST") override fun &lt;T : ViewModel&gt; create(modelClass: Class&lt;T&gt;): T</ID>
     <ID>LongMethod:TokenBalanceScreen.kt$@Composable fun TokenBalanceScreen( viewModel: TokenBalanceViewModel, transactionsViewModel: TransactionsViewModel, sendResult: SendResult? = viewModel.sendResult, navigation: HSNavigation, refreshing: Boolean, onStackingClicked: () -&gt; Unit, onShowAllTransactionsClicked: () -&gt; Unit, onClickSubtitle: () -&gt; Unit, onRefresh: () -&gt; Unit, onSettingsClick: () -&gt; Unit, onGoOnline: () -&gt; Unit, )</ID>
@@ -539,7 +455,6 @@
     <ID>LongMethod:TokenBalanceScreen.kt$@Composable private fun TokenBalanceHeader( balanceViewItem: BalanceViewItem, uiState: TokenBalanceModule.TokenBalanceUiState, secondaryValue: DeemedValue&lt;String&gt;, onStackingClicked: () -&gt; Unit, onClickSubtitle: () -&gt; Unit, onToggleBalanceVisibility: () -&gt; Unit, onSendClick: () -&gt; Unit, onReceiveClick: () -&gt; Unit, onSwapClick: () -&gt; Unit, onShieldClick: () -&gt; Unit, onSyncErrorClick: (BalanceViewItem) -&gt; Unit, onDismissNetworkFeeWarning: () -&gt; Unit, isShowShieldFunds: Boolean )</ID>
     <ID>LongMethod:TokenBalanceScreen.kt$@Composable private fun TokenBalanceScreenContent( uiState: TokenBalanceModule.TokenBalanceUiState, secondaryValue: DeemedValue&lt;String&gt;, sendResult: SendResult?, navigation: HSNavigation, refreshing: Boolean, onToggleFavorite: () -&gt; Unit, onToggleBalanceVisibility: () -&gt; Unit, onSearchClick: () -&gt; Unit, onSearchClose: () -&gt; Unit, onSearchQueryChange: (String) -&gt; Unit, onSetTransactionType: (FilterTransactionType) -&gt; Unit, onWillShow: (TransactionViewItem) -&gt; Unit, onTransactionClick: (TransactionViewItem) -&gt; Unit, onSensitiveTransactionClick: (TransactionViewItem) -&gt; Unit, onBottomReached: () -&gt; Unit, onSetAmlCheckEnabled: (Boolean) -&gt; Unit, onDismissAmlPromo: () -&gt; Unit, onDismissNetworkFeeWarning: () -&gt; Unit, onSendClick: () -&gt; Unit, onReceiveClick: () -&gt; Unit, onSwapClick: () -&gt; Unit, onShieldClick: () -&gt; Unit, onSyncErrorClick: (BalanceViewItem) -&gt; Unit, onStackingClicked: () -&gt; Unit, onShowAllTransactionsClicked: () -&gt; Unit, onClickSubtitle: () -&gt; Unit, onRefresh: () -&gt; Unit, onSettingsClick: () -&gt; Unit, onGoOnline: () -&gt; Unit, )</ID>
     <ID>LongMethod:TokenSelectScreen.kt$@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class) @Composable internal fun TokenSelectScreen( navigation: HSNavigation, title: String, uiState: TokenSelectUiState, searchHintText: String = "", onClickItem: (BalanceViewItem2) -&gt; Unit, onBalanceClick: (BalanceViewItem2) -&gt; Unit, updateFilter: (String) -&gt; Unit, emptyItemsText: String, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, header: @Composable (() -&gt; Unit)? = null )</ID>
-    <ID>LongMethod:TokenVariants.kt$@Composable fun TokenVariants( tokenVariants: TokenVariants, onClickAddToWallet: (cash.p.terminal.wallet.Token) -&gt; Unit, onClickRemoveWallet: (cash.p.terminal.wallet.Token) -&gt; Unit, onClickCopy: (String) -&gt; Unit, onClickExplorer: (String) -&gt; Unit, )</ID>
     <ID>LongMethod:TonConnectMainScreen.kt$@Composable fun TonConnectMainScreen( viewModel: TonConnectListViewModel, navigation: HSNavigation, deepLinkUri: String?, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, )</ID>
     <ID>LongMethod:TonConnectNewScreen.kt$@Composable fun TonConnectNewScreen( navigation: HSNavigation, uri: String, onResult: (Boolean) -&gt; Unit, )</ID>
     <ID>LongMethod:TonConnectSendRequestScreen.kt$@Composable fun TonConnectRequestActionSection( action: TonTransactionRecord.Action, transactionInfoHelper: TransactionInfoHelper, navigation: HSNavigation, )</ID>
@@ -547,10 +462,6 @@
     <ID>LongMethod:TonConnectSendRequestViewModel.kt$TonConnectSendRequestViewModel$private suspend fun prepareEnv()</ID>
     <ID>LongMethod:TonKitManager.kt$TonHelper$fun getViewItemsForAction( action: TonTransactionRecord.Action, rates: Map&lt;String, CurrencyValue&gt;, blockchainType: BlockchainType, hideAmount: Boolean, showCopyWarning: Boolean = false, ): List&lt;TransactionInfoViewItem&gt;</ID>
     <ID>LongMethod:TonTransactionConverter.kt$TonTransactionConverter$private fun getActionType(action: Action): TonTransactionRecord.Action.Type</ID>
-    <ID>LongMethod:TopCoins.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun TopCoins( onCoinClick: (String) -&gt; Unit, )</ID>
-    <ID>LongMethod:TopNftCollectionsPage.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun TopNftCollectionsScreen( viewModel: TopNftCollectionsViewModel, onCloseButtonClick: () -&gt; Unit, onClickCollection: (BlockchainType, String) -&gt; Unit, )</ID>
-    <ID>LongMethod:TopPairsScreen.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun TopPairsScreen()</ID>
-    <ID>LongMethod:TopPlatforms.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun TopPlatforms( navigation: HSNavigation, viewModel: TopPlatformsViewModel = viewModel( factory = TopPlatformsModule.Factory(null) ), )</ID>
     <ID>LongMethod:TransactionAdapterWrapperTest.kt$TransactionAdapterWrapperTest$@Test fun get_groupedWalletRealOutgoingDifferentToken_pendingRemainsVisible()</ID>
     <ID>LongMethod:TransactionAdapterWrapperTest.kt$TransactionAdapterWrapperTest$@Test fun setContact_immediatelyFollowedByGet_doesNotReturnStaleCache()</ID>
     <ID>LongMethod:TransactionAutoHideBlock.kt$@Composable internal fun TransactionAutoHideBlock( transactionAutoHideEnabled: Boolean, displayLevel: TransactionDisplayLevel, transactionAutoHideSeparatePinExists: Boolean, onTransactionAutoHideEnabledChange: (Boolean) -&gt; Unit, onPinClicked: () -&gt; Unit, onDisablePinClicked: () -&gt; Unit, onChangeDisplayClicked: () -&gt; Unit )</ID>
@@ -562,7 +473,7 @@
     <ID>LongMethod:TransactionRecordRepositoryWalletSwitchTest.kt$TransactionRecordRepositoryWalletSwitchTest$@Test fun switchAccountWithSameFilters_slowGetTransactions_oldResultDiscarded()</ID>
     <ID>LongMethod:TransactionRecordRepositoryWalletSwitchTest.kt$TransactionRecordRepositoryWalletSwitchTest$@Test fun switchContactInSwapFilter_extraSwapAdaptersUseNewContact()</ID>
     <ID>LongMethod:TransactionSearchComponents.kt$@Composable internal fun TransactionSearchField( query: String, onQueryChange: (String) -&gt; Unit, )</ID>
-    <ID>LongMethod:TransactionSpeedUpCancelPage.kt$@Composable private fun TransactionSpeedUpCancelScreen( navigation: HSNavigation, page: TransactionSpeedUpCancelPage, input: TransactionSpeedUpCancelPage.Input )</ID>
+    <ID>LongMethod:TransactionSpeedUpCancelPage.kt$@Composable private fun TransactionSpeedUpCancelScreen( navigation: HSNavigation, page: TransactionSpeedUpCancelPage, input: TransactionSpeedUpCancelPage.Input, evmKitWrapper: EvmKitWrapper, )</ID>
     <ID>LongMethod:TransactionViewItemFactory.kt$TransactionViewItemFactory$private fun convertToViewItem( transactionItem: TransactionItem, matchedSwap: SwapProviderTransaction? = null ): TransactionViewItem</ID>
     <ID>LongMethod:TransactionViewItemFactory.kt$TransactionViewItemFactory$private fun createViewItemFromEvmTransactionRecord( record: EvmTransactionRecord, transactionItem: TransactionItem, progress: Float?, icon: TransactionViewItem.Icon?, matchedSwap: SwapProviderTransaction? = null ): TransactionViewItem</ID>
     <ID>LongMethod:TransactionViewItemFactory.kt$TransactionViewItemFactory$private fun createViewItemFromStellarTransactionRecord( icon: TransactionViewItem.Icon.Failed?, record: StellarTransactionRecord, currencyValue: CurrencyValue?, ): TransactionViewItem</ID>
@@ -580,7 +491,6 @@
     <ID>LongMethod:TransactionsScreen.kt$@Composable private fun TransactionContentRow( item: TransactionViewItem, showAmount: Boolean, onValueClick: () -&gt; Unit, modifier: Modifier = Modifier, )</ID>
     <ID>LongMethod:TransactionsScreen.kt$@Composable private fun TransactionIconBox(item: TransactionViewItem)</ID>
     <ID>LongMethod:TronTransactionConverter.kt$TronTransactionConverter$fun transactionRecord(fullTransaction: FullTransaction): TronTransactionRecord</ID>
-    <ID>LongMethod:TvlPage.kt$@OptIn(ExperimentalFoundationApi::class) @Composable private fun TvlScreen( tvlViewModel: TvlViewModel, chartViewModel: TvlChartViewModel, navigation: HSNavigation, onCoinClick: (String?) -&gt; Unit )</ID>
     <ID>LongMethod:TweetsPageResponse.kt$TweetsPageResponse$fun tweets(user: TwitterUser): List&lt;Tweet&gt;</ID>
     <ID>LongMethod:UnifiedCoinAddressCheck.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun UnifiedAddressCheckScreen( navigation: HSNavigation, onClose: () -&gt; Unit, onPremiumClick: () -&gt; Unit, initialAddress: String? = null, )</ID>
     <ID>LongMethod:UnlinkAccountSheet.kt$@Composable private fun UnlinkAccountScreen(navigation: HSNavigation, account: Account)</ID>
@@ -599,7 +509,7 @@
     <ID>LongParameterList:AdapterManager.kt$AdapterManager$( private val walletManager: IWalletManager, private val adapterFactory: AdapterFactory, private val btcBlockchainManager: BtcBlockchainManager, private val evmBlockchainManager: EvmBlockchainManager, private val solanaKitManager: SolanaKitManager, private val tronKitManager: TronKitManager, private val tonKitManager: TonKitManager, private val moneroKitManager: MoneroKitManager, private val stellarKitManager: StellarKitManager, private val thorchainKitManagers: ThorchainKitManagers, private val pendingBalanceCalculator: PendingBalanceCalculator, private val fallbackAddressProvider: FallbackAddressProvider, private val offlineModeManager: OfflineModeManager, private val zcashServerManager: ZcashServerManager, private val zcashSessionManager: ZcashSessionManager, dispatcherProvider: DispatcherProvider )</ID>
     <ID>LongParameterList:AllBridgeProvider.kt$AllBridgeAPI$( @Query("amount") amount: BigInteger, @Query("sender") sender: String, @Query("recipient") recipient: String, @Query("sourceToken") sourceToken: String, @Query("destinationToken") destinationToken: String, @Query("messenger") messenger: String = "ALLBRIDGE", @Query("feePaymentMethod") feePaymentMethod: String, @Query("solanaTxFeeParams") solanaTxFeeParams: String?, @Query("solanaTxFeeValue") solanaTxFeeValue: String? )</ID>
     <ID>LongParameterList:AllBridgeProvider.kt$AllBridgeAPI$( @Query("amount") amount: BigInteger, @Query("sender") sender: String, @Query("recipient") recipient: String, @Query("sourceToken") sourceToken: String, @Query("destinationToken") destinationToken: String, @Query("minimumReceiveAmount") minimumReceiveAmount: BigInteger, @Query("solanaTxFeeParams") solanaTxFeeParams: String?, @Query("solanaTxFeeValue") solanaTxFeeValue: String? )</ID>
-    <ID>LongParameterList:AppStatusViewModel.kt$AppStatusViewModel$( private val context: Context, private val systemInfoManager: ISystemInfoManager, private val localStorage: ILocalStorage, private val uniqueCodeStorage: IUniqueCodeStorage, private val accountManager: IAccountManager, private val walletManager: IWalletManager, private val adapterManager: IAdapterManager, private val marketKit: MarketKitWrapper, private val evmBlockchainManager: EvmBlockchainManager, private val moneroKitManager: MoneroKitManager, private val stellarKitManager: StellarKitManager, private val thorchainKitManagers: ThorchainKitManagers, private val tronKitManager: TronKitManager, private val tonKitManager: TonKitManager, private val solanaKitManager: SolanaKitManager, private val btcBlockchainManager: BtcBlockchainManager, private val checkPremiumUseCase: CheckPremiumUseCase, private val networkErrorTracker: NetworkErrorTracker, )</ID>
+    <ID>LongParameterList:AppStatusViewModel.kt$AppStatusViewModel$( private val context: Context, private val systemInfoManager: ISystemInfoManager, private val localStorage: ILocalStorage, private val uniqueCodeStorage: IUniqueCodeStorage, private val accountManager: IAccountManager, private val walletManager: IWalletManager, private val adapterManager: IAdapterManager, private val marketKit: MarketKitWrapper, private val evmBlockchainManager: EvmBlockchainManager, private val moneroKitManager: MoneroKitManager, private val stellarKitManager: StellarKitManager, private val thorchainKitManagers: ThorchainKitManagers, private val tronKitManager: TronKitManager, private val tonKitManager: TonKitManager, private val solanaKitManager: SolanaKitManager, private val btcBlockchainManager: BtcBlockchainManager, private val checkPremiumUseCase: CheckPremiumUseCase, private val networkErrorTracker: NetworkErrorTracker, private val dispatcherProvider: DispatcherProvider, private val statusReportFile: StatusReportFile, )</ID>
     <ID>LongParameterList:AppearanceScreen.kt$( uiState: AppearanceUIState, onThemeSelect: (ThemeType) -&gt; Unit, onLaunchScreenSelect: (LaunchPage) -&gt; Unit, onBalanceViewTypeSelect: (BalanceViewType) -&gt; Unit, onPriceChangeIntervalSelect: (PriceChangeInterval) -&gt; Unit, onMarketTabsHiddenChange: (Boolean) -&gt; Unit, onBalanceTabButtonsHiddenChange: (Boolean) -&gt; Unit, onAppIconClick: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
     <ID>LongParameterList:AssetSettingsScreen.kt$( amlCheckEnabled: Boolean, onAmlCheckChange: (Boolean) -&gt; Unit, pricePeriod: DisplayPricePeriod, displayDiffOptionType: DisplayDiffOptionType, isRoundingAmount: Boolean, onPricePeriodChange: (DisplayPricePeriod) -&gt; Unit, onDisplayDiffOptionTypeChange: (DisplayDiffOptionType) -&gt; Unit, onRoundingAmountChange: (Boolean) -&gt; Unit, onAddressPoisoningViewClick: () -&gt; Unit, transactionFiltersEnabled: Boolean, onTransactionFiltersChange: (Boolean) -&gt; Unit, offlineUiState: OfflineModeToggleUiState, onConfirmOffline: () -&gt; Unit, onGoOnline: () -&gt; Unit, onOfflineSheetDismiss: () -&gt; Unit, navigation: HSNavigation, onBack: () -&gt; Unit, creationBlockVisible: Boolean, currentHeightText: String?, onCreationBlockClick: () -&gt; Unit, )</ID>
     <ID>LongParameterList:BackupProvider.kt$BackupProvider$( private val localStorage: ILocalStorage, private val languageManager: LanguageManager, private val walletStorage: IEnabledWalletStorage, private val settingsManager: RestoreSettingsManager, private val accountManager: cash.p.terminal.wallet.IAccountManager, private val accountFactory: IAccountFactory, private val walletManager: IWalletManager, private val restoreSettingsManager: RestoreSettingsManager, private val blockchainSettingsStorage: BlockchainSettingsStorage, private val evmBlockchainManager: EvmBlockchainManager, private val marketFavoritesManager: MarketFavoritesManager, private val balanceViewTypeManager: BalanceViewTypeManager, private val appIconService: AppIconService, private val themeService: ThemeService, private val chartIndicatorManager: ChartIndicatorManager, private val chartIndicatorSettingsDao: ChartIndicatorSettingsDao, private val balanceHiddenManager: BalanceHiddenManager, private val baseTokenManager: BaseTokenManager, private val launchScreenService: LaunchScreenService, private val currencyManager: CurrencyManager, private val btcBlockchainManager: BtcBlockchainManager, private val evmSyncSourceManager: EvmSyncSourceManager, private val evmSyncSourceStorage: EvmSyncSourceStorage, private val solanaRpcSourceManager: SolanaRpcSourceManager, private val contactsRepository: ContactsRepository )</ID>
@@ -610,7 +520,6 @@
     <ID>LongParameterList:BitcoinBaseAdapter.kt$BitcoinBaseAdapter$( amount: BigDecimal, address: String, memo: String?, feeRate: Int, unspentOutputs: List&lt;UnspentOutputInfo&gt;?, pluginData: Map&lt;Byte, IPluginData&gt;?, transactionSorting: TransactionDataSortMode?, rbfEnabled: Boolean, changeToFirstInput: Boolean, utxoFilters: UtxoFilters )</ID>
     <ID>LongParameterList:BitcoinTransactionRecord.kt$BitcoinTransactionRecord$( token: Token, amount: BigDecimal, to: List&lt;String&gt;?, from: String?, val changeAddresses: List&lt;String&gt;?, uid: String, transactionHash: String, transactionIndex: Int, blockHeight: Int?, confirmationsThreshold: Int, timestamp: Long, failed: Boolean, memo: String?, source: TransactionSource, sentToSelf: Boolean = false, transactionRecordType: TransactionRecordType, val fee: TransactionValue?, val lockInfo: TransactionLockInfo?, val conflictingHash: String?, val showRawTransaction: Boolean, val replaceable: Boolean = false, override val mainValue: TransactionValue = TransactionValue.CoinValue(token, amount), val canonicalTransactionHash: String? = null, /** Zcash Orchard -&gt; Ironwood pool migration: a self-transfer shown with its own label. */ val isIronwoodMigration: Boolean = false, )</ID>
     <ID>LongParameterList:ChecklistTermsScreen.kt$( title: String, terms: List&lt;TermItem&gt;, buttonTitle: String, buttonEnabled: Boolean, onCheckboxToggle: (Int) -&gt; Unit, onAgreeClick: () -&gt; Unit, onNavigateBack: () -&gt; Unit, warningContent: @Composable () -&gt; Unit, checkboxesEnabled: Boolean = true, )</ID>
-    <ID>LongParameterList:CoinListOrderable.kt$( items: List&lt;MarketViewItem&gt;, scrollToTop: Boolean, onAddFavorite: (String) -&gt; Unit, onRemoveFavorite: (String) -&gt; Unit, onCoinClick: (String) -&gt; Unit, userScrollEnabled: Boolean = true, canReorder: Boolean = false, showReorderArrows: Boolean = false, preItems: LazyListScope.() -&gt; Unit, enableManualOrder: () -&gt; Unit, onReorder: (from: Int, to: Int) -&gt; Unit )</ID>
     <ID>LongParameterList:Composables.kt$( title: String, info: String, value: BigDecimal, decimals: Int, borderColor: Color, onValueChange: (BigDecimal) -&gt; Unit, onClickIncrement: () -&gt; Unit, onClickDecrement: () -&gt; Unit, )</ID>
     <ID>LongParameterList:Composables.kt$( title: String, info: String, value: BigDecimal, decimals: Int, caution: HSCaution?, navigation: HSNavigation, onValueChange: (BigDecimal) -&gt; Unit, onClickIncrement: () -&gt; Unit, onClickDecrement: () -&gt; Unit )</ID>
     <ID>LongParameterList:Composables.kt$( title: String, info: String, value: BigDecimal, decimals: Int, warnings: List&lt;Warning&gt;, errors: List&lt;Throwable&gt;, onValueChange: (BigDecimal) -&gt; Unit, onClickIncrement: () -&gt; Unit, onClickDecrement: () -&gt; Unit )</ID>
@@ -648,7 +557,7 @@
     <ID>LongParameterList:SendSmsNotificationScreen.kt$( navigation: HSNavigation, appPages: AppPages, uiState: SendSmsNotificationUiState, onAccountSelected: (Account) -&gt; Unit, onAddressChanged: (String) -&gt; Unit, onMemoChanged: (String) -&gt; Unit, onSaveClick: () -&gt; Unit, onTestSmsClick: () -&gt; Unit, onSaveSuccessShown: () -&gt; Unit, onTestResultShown: () -&gt; Unit, onCancelTest: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
     <ID>LongParameterList:SendZCashScreen.kt$( title: String, navigation: HSNavigation, viewModel: SendZCashViewModel, amountInputModeViewModel: AmountInputModeViewModel, prefilledData: PrefilledData?, addressCheckerControl: AddressCheckerControl, onNextClick: (ProceedActionData) -&gt; Unit, onOfflineSignClick: () -&gt; Unit, )</ID>
     <ID>LongParameterList:SendZecOnDuressUseCase.kt$SendZecOnDuressUseCase$( private val smsNotificationSettings: ISmsNotificationSettings, private val accountsStorage: IAccountsStorage, private val walletManager: IWalletManager, private val dispatcherProvider: DispatcherProvider, private val adapterFactory: AdapterFactory, private val adapterManager: IAdapterManager, private val coinManager: ICoinManager, private val walletFactory: WalletFactory, private val accountManager: IAccountManager, private val offlineModeUseCase: OfflineModeUseCase, )</ID>
-    <ID>LongParameterList:SwapConfirmScreen.kt$( fiatAmount: BigDecimal?, borderTop: Boolean = true, currency: Currency, title: String, amountColor: Color, imageUrl: String?, alternativeImageUrl: String?, imagePlaceholder: Int?, badge: String?, amountFormatted: String?, )</ID>
+    <ID>LongParameterList:SwapConfirmScreen.kt$( fiatAmount: BigDecimal?, borderTop: Boolean = true, currency: Currency, title: String, amountColor: Color, imageUrl: String?, alternativeImageUrl: String?, imagePlaceholder: DrawableResource?, badge: String?, amountFormatted: String?, )</ID>
     <ID>LongParameterList:SwapProviderTransactionsDao.kt$SwapProviderTransactionsDao$( address: String, tokenQueryId: String, coinUid: String, blockchainType: String, accountId: String, amount: Double, tolerance: Double, timestamp: Long, timeWindowMs: Long, dateFrom: Long, dateTo: Long )</ID>
     <ID>LongParameterList:SwapProviderTransactionsDao.kt$SwapProviderTransactionsDao$( provider: String, tokenQueryId: String, coinUid: String, blockchainType: String, accountId: String, addressOut: String, expectedAmount: Double, tolerance: Double, dateFrom: Long, dateTo: Long, )</ID>
     <ID>LongParameterList:SwapProviderTransactionsDao.kt$SwapProviderTransactionsDao$( tokenQueryId: String, coinUid: String, blockchainType: String, accountId: String, dateFrom: Long, dateTo: Long, amount: Double, tolerance: Double, limit: Int )</ID>
@@ -662,7 +571,7 @@
     <ID>LongParameterList:TokenBalanceScreen.kt$( viewModel: TokenBalanceViewModel, transactionsViewModel: TransactionsViewModel, sendResult: SendResult? = viewModel.sendResult, navigation: HSNavigation, refreshing: Boolean, onStackingClicked: () -&gt; Unit, onShowAllTransactionsClicked: () -&gt; Unit, onClickSubtitle: () -&gt; Unit, onRefresh: () -&gt; Unit, onSettingsClick: () -&gt; Unit, onGoOnline: () -&gt; Unit, )</ID>
     <ID>LongParameterList:TransactionAdapterWrapperTest.kt$TransactionAdapterWrapperTest$( recordUid: String, recordHash: String, txSource: TransactionSource, recordToken: Token, txTimestamp: Long, mainValue: TransactionValue?, txToAddress: String, txType: TransactionRecordType, )</ID>
     <ID>LongParameterList:TransactionAdapterWrapperTest.kt$TransactionAdapterWrapperTest$( token: Token, source: TransactionSource, uid: String, transactionHash: String, timestamp: Long, amount: BigDecimal, toAddress: String?, transactionRecordType: TransactionRecordType, changeAddresses: List&lt;String&gt; = emptyList(), toAddresses: List&lt;String&gt;? = toAddress?.let { listOf(it) }, showRawTransaction: Boolean = true, canonicalTransactionHash: String? = null, )</ID>
-    <ID>LongParameterList:TransactionInfoCells.kt$( amountType: AmountType, fiatAmount: ColoredValue?, coinAmount: ColoredValue, coinIconUrl: String?, alternativeCoinIconUrl: String?, badge: String?, coinIconPlaceholder: Int?, onValueClick: () -&gt; Unit, onClick: (() -&gt; Unit)? = null )</ID>
+    <ID>LongParameterList:TransactionInfoCells.kt$( amountType: AmountType, fiatAmount: ColoredValue?, coinAmount: ColoredValue, coinIconUrl: String?, alternativeCoinIconUrl: String?, badge: String?, coinIconPlaceholder: DrawableResource?, onValueClick: () -&gt; Unit, onClick: (() -&gt; Unit)? = null )</ID>
     <ID>LongParameterList:TransactionInfoServiceTest.kt$TransactionInfoServiceTest$( recordUid: String, recordHash: String, source: TransactionSource, recordToken: Token, mainValue: TransactionValue, timestamp: Long, toAddress: String, type: TransactionRecordType, )</ID>
     <ID>LongParameterList:TransactionViewItemFactory.kt$TransactionViewItemFactory$( transactionItem: TransactionItem, baseToken: Token?, uid: String, value: TransactionValue?, sentToSelf: Boolean, from: String?, to: String?, spender: String?, blockchainType: BlockchainType, transaction: Transaction, timestamp: Long, progress: Float?, spam: Boolean, method: String?, contractAddress: String?, incomingEvents: List&lt;TransferEvent&gt;?, outgoingEvents: List&lt;TransferEvent&gt;?, icon: TransactionViewItem.Icon?, matchedSwap: SwapProviderTransaction? = null )</ID>
     <ID>LongParameterList:TransactionViewItemFactory.kt$TransactionViewItemFactory$( uid: String, incomingValues: List&lt;TransactionValue&gt;, outgoingValues: List&lt;TransactionValue&gt;, incomingEvents: List&lt;TransferEvent&gt;, blockchainType: BlockchainType, timestamp: Long, currencyValue: CurrencyValue?, progress: Float?, spam: Boolean, icon: TransactionViewItem.Icon?, nftMetadata: Map&lt;NftUid, NftAssetBriefMetadata&gt; )</ID>
@@ -694,38 +603,17 @@
     <ID>Material2:CardTabs.kt$import androidx.compose.material.ScrollableTabRow</ID>
     <ID>Material2:CardTabs.kt$import androidx.compose.material.Tab</ID>
     <ID>Material2:CardTabs.kt$import androidx.compose.material.TabRowDefaults</ID>
-    <ID>Material2:CellNews.kt$import androidx.compose.material.Card</ID>
-    <ID>Material2:CellNews.kt$import androidx.compose.material.ExperimentalMaterialApi</ID>
-    <ID>Material2:CellNews.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:CellTweet.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:CheckAddressInput.kt$import androidx.compose.material.Text</ID>
-    <ID>Material2:CoinAnalyticsInfoPage.kt$import androidx.compose.material.Surface</ID>
-    <ID>Material2:CoinAuditsPage.kt$import androidx.compose.material.Divider</ID>
-    <ID>Material2:CoinImage.kt$import androidx.compose.material.ripple</ID>
-    <ID>Material2:CoinListComponents.kt$import androidx.compose.material.Card</ID>
-    <ID>Material2:CoinListComponents.kt$import androidx.compose.material.Divider</ID>
-    <ID>Material2:CoinListComponents.kt$import androidx.compose.material.ExperimentalMaterialApi</ID>
-    <ID>Material2:CoinListComponents.kt$import androidx.compose.material.Text</ID>
-    <ID>Material2:CoinListOrderable.kt$import androidx.compose.material.Divider</ID>
-    <ID>Material2:CoinMajorHoldersPage.kt$import androidx.compose.material.Surface</ID>
-    <ID>Material2:CoinMarketsScreen.kt$import androidx.compose.material.Surface</ID>
-    <ID>Material2:CoinOverviewScreen.kt$import androidx.compose.material.CircularProgressIndicator</ID>
-    <ID>Material2:CoinRankPage.kt$import androidx.compose.material.Divider</ID>
-    <ID>Material2:Components.kt$import androidx.compose.material.Divider</ID>
-    <ID>Material2:Components.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:ContactScreen.kt$import androidx.compose.material.ExperimentalMaterialApi</ID>
     <ID>Material2:ContactScreen.kt$import androidx.compose.material.ModalBottomSheetValue</ID>
     <ID>Material2:ContactScreen.kt$import androidx.compose.material.rememberModalBottomSheetState</ID>
     <ID>Material2:ContactsScreen.kt$import androidx.compose.material.ExperimentalMaterialApi</ID>
     <ID>Material2:ContactsScreen.kt$import androidx.compose.material.ModalBottomSheetValue</ID>
     <ID>Material2:ContactsScreen.kt$import androidx.compose.material.rememberModalBottomSheetState</ID>
-    <ID>Material2:Containers.kt$import androidx.compose.material.Divider</ID>
-    <ID>Material2:Contracts.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:CreateAccountAdvanced.kt$import androidx.compose.material.Surface</ID>
     <ID>Material2:CrossSlide.kt$import androidx.compose.material.Text</ID>
-    <ID>Material2:DetectorsPage.kt$import androidx.compose.material.Divider</ID>
     <ID>Material2:DoubleText.kt$import androidx.compose.material.Text</ID>
-    <ID>Material2:EtfPage.kt$import androidx.compose.material.CircularProgressIndicator</ID>
     <ID>Material2:EvmNetworkPage.kt$import androidx.compose.material.Divider</ID>
     <ID>Material2:EvmNetworkPage.kt$import androidx.compose.material.Surface</ID>
     <ID>Material2:EvmPrivateKeyPage.kt$import androidx.compose.material.ModalBottomSheetValue</ID>
@@ -735,7 +623,6 @@
     <ID>Material2:FeePriorityInfoPage.kt$import androidx.compose.material.Surface</ID>
     <ID>Material2:FilterBlockchainPage.kt$import androidx.compose.material.Surface</ID>
     <ID>Material2:FilterCoinPage.kt$import androidx.compose.material.Surface</ID>
-    <ID>Material2:Forms.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:FormsInputAddress.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:GeneralPrivateKeyPage.kt$import androidx.compose.material.ModalBottomSheetValue</ID>
     <ID>Material2:GeneralPrivateKeyPage.kt$import androidx.compose.material.rememberModalBottomSheetState</ID>
@@ -751,33 +638,16 @@
     <ID>Material2:HsTextButton.kt$import androidx.compose.material.TextButton</ID>
     <ID>Material2:ImportWalletPage.kt$import androidx.compose.material.ModalBottomSheetValue</ID>
     <ID>Material2:ImportWalletPage.kt$import androidx.compose.material.rememberModalBottomSheetState</ID>
-    <ID>Material2:InfoHeader.kt$import androidx.compose.material.Divider</ID>
-    <ID>Material2:InfoHeader.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:KeyAccountInfoPage.kt$import androidx.compose.material.Surface</ID>
     <ID>Material2:MainPage.kt$import androidx.compose.material.BadgedBox</ID>
     <ID>Material2:ManageAccountScreen.kt$import androidx.compose.material.ripple</ID>
     <ID>Material2:MarkdownFooter.kt$import androidx.compose.material.Divider</ID>
     <ID>Material2:MarkdownFooter.kt$import androidx.compose.material.Text</ID>
-    <ID>Material2:MarketCategoryPage.kt$import androidx.compose.material.Surface</ID>
-    <ID>Material2:MarketCell.kt$import androidx.compose.material.Text</ID>
-    <ID>Material2:MarketFiltersPage.kt$import androidx.compose.material.ExperimentalMaterialApi</ID>
-    <ID>Material2:MarketFiltersPage.kt$import androidx.compose.material.ModalBottomSheetValue</ID>
-    <ID>Material2:MarketFiltersPage.kt$import androidx.compose.material.rememberModalBottomSheetState</ID>
-    <ID>Material2:MarketFiltersResultsPage.kt$import androidx.compose.material.Surface</ID>
-    <ID>Material2:MarketOverviewBoards.kt$import androidx.compose.material.ExperimentalMaterialApi</ID>
-    <ID>Material2:MarketOverviewBoards.kt$import androidx.compose.material.LocalMinimumInteractiveComponentEnforcement</ID>
-    <ID>Material2:MarketOverviewMetrics.kt$import androidx.compose.material.Card</ID>
-    <ID>Material2:MarketOverviewMetrics.kt$import androidx.compose.material.Text</ID>
-    <ID>Material2:MarketScreen.kt$import androidx.compose.material.Divider</ID>
-    <ID>Material2:MarketSearchPage.kt$import androidx.compose.material.Divider</ID>
-    <ID>Material2:MarketsSectionHeader.kt$import androidx.compose.material.Divider</ID>
     <ID>Material2:NftAssetPage.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:NftCollectionEventsScreen.kt$import androidx.compose.material.*</ID>
     <ID>Material2:NftCollectionOverviewScreen.kt$import androidx.compose.material.Card</ID>
     <ID>Material2:NftCollectionOverviewScreen.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:NftPreview.kt$import androidx.compose.material.Text</ID>
-    <ID>Material2:OverallScoreInfoPage.kt$import androidx.compose.material.Surface</ID>
-    <ID>Material2:OverallScoreInfoPage.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:PrivacyScreen.kt$import androidx.compose.material.Divider</ID>
     <ID>Material2:PrivacyScreen.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:ReceiveStellarAssetScreen.kt$import androidx.compose.material.ModalBottomSheetValue</ID>
@@ -785,11 +655,6 @@
     <ID>Material2:RestoreLocalPage.kt$import androidx.compose.material.ExperimentalMaterialApi</ID>
     <ID>Material2:RestoreLocalPage.kt$import androidx.compose.material.ModalBottomSheetValue</ID>
     <ID>Material2:RestoreLocalPage.kt$import androidx.compose.material.rememberModalBottomSheetState</ID>
-    <ID>Material2:Roi.kt$import androidx.compose.material.Text</ID>
-    <ID>Material2:SearchBar.kt$import androidx.compose.material.OutlinedTextField</ID>
-    <ID>Material2:SearchBar.kt$import androidx.compose.material.Text</ID>
-    <ID>Material2:SearchBar.kt$import androidx.compose.material.TextFieldDefaults</ID>
-    <ID>Material2:SearchBar.kt$import androidx.compose.material.TopAppBar</ID>
     <ID>Material2:SearchBarV2.kt$import androidx.compose.material.OutlinedTextField</ID>
     <ID>Material2:SearchBarV2.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:SearchBarV2.kt$import androidx.compose.material.TextFieldDefaults</ID>
@@ -810,10 +675,8 @@
     <ID>Material2:SuggestionsBar.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:SwapDirectionIndicator.kt$import androidx.compose.material.ripple</ID>
     <ID>Material2:SwapSettingsComponents.kt$import androidx.compose.material.Text</ID>
-    <ID>Material2:Title.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:TonConnectMainScreen.kt$import androidx.compose.material.ModalBottomSheetValue</ID>
     <ID>Material2:TonConnectMainScreen.kt$import androidx.compose.material.rememberModalBottomSheetState</ID>
-    <ID>Material2:TopNftCollectionsPage.kt$import androidx.compose.material.Surface</ID>
     <ID>Material2:TransactionDoubleSpendInfoPage.kt$import androidx.compose.material.Divider</ID>
     <ID>Material2:TransactionDoubleSpendInfoPage.kt$import androidx.compose.material.Surface</ID>
     <ID>Material2:TransactionInputSortModeInfoSceen.kt$import androidx.compose.material.Surface</ID>
@@ -827,8 +690,6 @@
     <ID>Material2:WCSessionScreen.kt$import androidx.compose.material.ModalBottomSheetValue</ID>
     <ID>Material2:WCSessionScreen.kt$import androidx.compose.material.rememberModalBottomSheetState</ID>
     <ID>Material2:WcRequestScreen.kt$import androidx.compose.material.Scaffold</ID>
-    <ID>MaxLineLength:About.kt$About(text = "Bitcoin is a cryptocurrency and worldwide payment system. It is the first decentralized digital currency, as the system works without a central bank or single administrator. Bitcoin is a cryptocurrency and worldwide payment system. It is the first decentralized digital currency, as the system works without a central bank or single administrator. Bitcoin is a cryptocurrency and worldwide payment system. It is the first decentralized digital currency, as the system works without a central bank or single administrator. Bitcoin is a cryptocurrency and worldwide payment system. It is the first decentralized digital currency, as the system works without a central bank or single administrator. Bitcoin is a cryptocurrency")</ID>
-    <ID>MaxLineLength:ChartIndicatorsViewModel.kt$ChartIndicatorsViewModel$oscillatorIndicators = it.filter { it.type == ChartIndicatorSetting.IndicatorType.RSI || it.type == ChartIndicatorSetting.IndicatorType.MACD }</ID>
     <ID>MaxLineLength:CheckAmlIncomingTransactionUseCase.kt$CheckAmlIncomingTransactionUseCase$Timber.d("CheckAmlIncomingTransactionUseCase: Address check failed for type $type, address ${address.hex}, attempt $attempt: ${e.message}")</ID>
     <ID>MaxLineLength:EthCoinFragmentInputParserTest.kt$EthCoinFragmentInputParserTest$input = "0x23b872dd00000000000000000000000077fae6ac54240057b443a4d007627710f4e9c12e000000000000000000000000a49e44aa6f7c1752e95e6de0f2043df04bb3f63200000000000000000000000000000000000000000000000000000001cfb778b8"</ID>
     <ID>MaxLineLength:EthCoinFragmentInputParserTest.kt$EthCoinFragmentInputParserTest$input = "0xa9059cbb0000000000000000000000005d5724e56ea3cc75352339635960d07c1503f75e00000000000000000000000000000000000000000000003635c9adc5dea00000"</ID>
@@ -886,11 +747,9 @@
     <ID>MaxLineLength:ZcashSessionDiscoveryTest.kt$ZcashSessionDiscoveryTest$coVerify(exactly = 1) { wallet.discoverTransparentAddresses(DB_ACCOUNT_ID, STEADY_GAP_LIMIT, ZcashSession.DISCOVERY_CONCURRENCY) }</ID>
     <ID>MaxLineLength:ZcashSessionDiscoveryTest.kt$ZcashSessionDiscoveryTest$coVerify(exactly = 2) { wallet.discoverTransparentAddresses(DB_ACCOUNT_ID, DEEP_GAP_LIMIT, ZcashSession.DISCOVERY_CONCURRENCY) }</ID>
     <ID>MayBeConst:AppConfigProvider.kt$AppConfigProvider$val fiatDecimal: Int = 2</ID>
-    <ID>MayBeConst:ChartIndicatorManager.kt$ChartIndicatorManager.Companion$val rsiPeriod = 12</ID>
     <ID>MayBeConst:TransactionViewItemFactoryHelper.kt$TransactionViewItemFactoryHelper$val zeroAddress = "0x0000000000000000000000000000000000000000"</ID>
     <ID>MemberNameEqualsClassName:T.kt$T$fun t(reset: Boolean = false)</ID>
     <ID>ModifierComposed:Shake.kt$shake</ID>
-    <ID>ModifierMissing:About.kt$About</ID>
     <ID>ModifierMissing:AboutPremiumScreen.kt$AboutPremiumScreen</ID>
     <ID>ModifierMissing:ActionRow.kt$ActionsRow</ID>
     <ID>ModifierMissing:ActivateSubscriptionPage.kt$ActivateSubscriptionScreen</ID>
@@ -932,34 +791,9 @@
     <ID>ModifierMissing:CardTabs.kt$CardTabs</ID>
     <ID>ModifierMissing:CardsSwapInfo.kt$CardsSwapInfo</ID>
     <ID>ModifierMissing:CellLink.kt$CellLink</ID>
-    <ID>ModifierMissing:CellNews.kt$CellNews</ID>
     <ID>ModifierMissing:CellTweet.kt$CellTweet</ID>
-    <ID>ModifierMissing:CoinAuditsPage.kt$CoinAudit</ID>
-    <ID>ModifierMissing:CoinAuditsPage.kt$CoinAuditHeader</ID>
-    <ID>ModifierMissing:CoinImage.kt$CoinIconWithSyncProgress</ID>
-    <ID>ModifierMissing:CoinInvestmentsPage.kt$CoinInvestmentFund</ID>
-    <ID>ModifierMissing:CoinInvestmentsPage.kt$CoinInvestmentHeader</ID>
-    <ID>ModifierMissing:CoinListComponents.kt$CategoryCard</ID>
-    <ID>ModifierMissing:CoinListComponents.kt$CoinList</ID>
-    <ID>ModifierMissing:CoinListComponents.kt$DescriptionCard</ID>
-    <ID>ModifierMissing:CoinListComponents.kt$ListErrorView</ID>
-    <ID>ModifierMissing:CoinListComponents.kt$TopCloseButton</ID>
-    <ID>ModifierMissing:CoinListOrderable.kt$CoinListOrderable</ID>
-    <ID>ModifierMissing:CoinMarketsScreen.kt$CoinMarketCell</ID>
-    <ID>ModifierMissing:CoinMarketsScreen.kt$CoinMarketList</ID>
-    <ID>ModifierMissing:CoinMarketsScreen.kt$CoinMarketsMenu</ID>
-    <ID>ModifierMissing:CoinMarketsScreen.kt$CoinMarketsScreen</ID>
-    <ID>ModifierMissing:CoinOverviewScreen.kt$CoinOverviewScreen</ID>
-    <ID>ModifierMissing:CoinOverviewScreen.kt$Error</ID>
-    <ID>ModifierMissing:CoinPage.kt$CoinNotFound</ID>
-    <ID>ModifierMissing:CoinPage.kt$CoinTabs</ID>
-    <ID>ModifierMissing:CoinScreenTitle.kt$CoinScreenTitle</ID>
+    <ID>ModifierMissing:CoinImageWithSync.kt$CoinIconWithSyncProgress</ID>
     <ID>ModifierMissing:CoinTweetsScreen.kt$CoinTweetsScreen</ID>
-    <ID>ModifierMissing:Components.kt$AnalyticsBlockHeader</ID>
-    <ID>ModifierMissing:Components.kt$AnalyticsChart</ID>
-    <ID>ModifierMissing:Components.kt$AnalyticsContainer</ID>
-    <ID>ModifierMissing:Components.kt$AnalyticsContentNumber</ID>
-    <ID>ModifierMissing:Components.kt$AnalyticsFooterCell</ID>
     <ID>ModifierMissing:Composables.kt$Cautions</ID>
     <ID>ModifierMissing:Composables.kt$Eip1559FeeSettings</ID>
     <ID>ModifierMissing:Composables.kt$FeeInfoCell</ID>
@@ -971,25 +805,16 @@
     <ID>ModifierMissing:ContactScreen.kt$ContactScreen</ID>
     <ID>ModifierMissing:ContactsScreen.kt$Contact</ID>
     <ID>ModifierMissing:ContactsScreen.kt$ContactsScreen</ID>
-    <ID>ModifierMissing:Containers.kt$Box44</ID>
-    <ID>ModifierMissing:Contracts.kt$Contracts</ID>
     <ID>ModifierMissing:CopyWarningBottomSheet.kt$CopyWarningBottomSheet</ID>
     <ID>ModifierMissing:CreateAccountAdvanced.kt$CreateAccountAdvancedScreen</ID>
     <ID>ModifierMissing:CreateAccountAdvanced.kt$PassphraseCell</ID>
     <ID>ModifierMissing:DataFieldFee.kt$DataFieldFee</ID>
-    <ID>ModifierMissing:DescriptionMarkdown.kt$DescriptionMarkdown</ID>
-    <ID>ModifierMissing:Descriptions.kt$Description</ID>
-    <ID>ModifierMissing:DetectorsPage.kt$DetectorCell</ID>
-    <ID>ModifierMissing:DetectorsPage.kt$IssueList</ID>
     <ID>ModifierMissing:DisplayOptionsScreen.kt$PriceParametersSection</ID>
     <ID>ModifierMissing:DonateAddressesPage.kt$DonateScreen</ID>
     <ID>ModifierMissing:DoubleText.kt$DoubleText</ID>
     <ID>ModifierMissing:DuplicateWalletScreen.kt$DuplicateWalletScreen</ID>
     <ID>ModifierMissing:Eip20ApprovePage.kt$Eip20ApproveScreen</ID>
     <ID>ModifierMissing:Eip20RevokeConfirmPage.kt$Eip20RevokeScreen</ID>
-    <ID>ModifierMissing:EmaSettingsScreen.kt$EmaSettingsScreen</ID>
-    <ID>ModifierMissing:EtfPage.kt$ChartEtf</ID>
-    <ID>ModifierMissing:EtfPage.kt$EtfScreen</ID>
     <ID>ModifierMissing:FeeCell.kt$FeeCell</ID>
     <ID>ModifierMissing:FeeInfoSection.kt$FeeInfoSection</ID>
     <ID>ModifierMissing:FilterBlockchainPage.kt$FilterBlockchainScreen</ID>
@@ -1002,38 +827,11 @@
     <ID>ModifierMissing:HeaderCell.kt$HeaderCell</ID>
     <ID>ModifierMissing:HsSlider.kt$HsSlider</ID>
     <ID>ModifierMissing:HsTextButton.kt$HsTextButton</ID>
-    <ID>ModifierMissing:IndicatorsPage.kt$IndicatorsScreen</ID>
-    <ID>ModifierMissing:InfoBlocks.kt$BulletedText</ID>
     <ID>ModifierMissing:InfoErrorMessageDefault.kt$InfoErrorMessageDefault</ID>
-    <ID>ModifierMissing:InfoHeader.kt$InfoH1</ID>
-    <ID>ModifierMissing:InfoHeader.kt$InfoH3</ID>
-    <ID>ModifierMissing:Links.kt$Links</ID>
-    <ID>ModifierMissing:MacdSettingsScreen.kt$MacdSettingsScreen</ID>
     <ID>ModifierMissing:MainSettingsScreen.kt$SettingsScreen</ID>
     <ID>ModifierMissing:ManageAccountsPage.kt$ManageAccountsScreen</ID>
     <ID>ModifierMissing:ManagePasscodeSection.kt$ManagePasscodeSection</ID>
     <ID>ModifierMissing:MarkdownFooter.kt$MarkdownFooter</ID>
-    <ID>ModifierMissing:MarketCategoryPage.kt$CategoryScreen</ID>
-    <ID>ModifierMissing:MarketCell.kt$MarketCoin</ID>
-    <ID>ModifierMissing:MarketCell.kt$MarketCoinClear</ID>
-    <ID>ModifierMissing:MarketCell.kt$MarketCoinFirstRow</ID>
-    <ID>ModifierMissing:MarketCell.kt$MarketCoinSecondRow</ID>
-    <ID>ModifierMissing:MarketCell.kt$MarketDataValueComponent</ID>
-    <ID>ModifierMissing:MarketData.kt$MarketData</ID>
-    <ID>ModifierMissing:MarketOverviewBoards.kt$BoardsView</ID>
-    <ID>ModifierMissing:MarketOverviewMisc.kt$SeeAllButton</ID>
-    <ID>ModifierMissing:MarketOverviewScreen.kt$MarketOverviewScreen</ID>
-    <ID>ModifierMissing:MarketOverviewTopNft.kt$TopNftCollectionsBoardView</ID>
-    <ID>ModifierMissing:MarketOverviewTopPlatforms.kt$TopPlatformsBoardView</ID>
-    <ID>ModifierMissing:MarketPostsScreen.kt$MarketPostsScreen</ID>
-    <ID>ModifierMissing:MarketScreen.kt$MarketScreen</ID>
-    <ID>ModifierMissing:MarketScreen.kt$MetricsBoard</ID>
-    <ID>ModifierMissing:MarketScreen.kt$TabsSection</ID>
-    <ID>ModifierMissing:MarketSearchPage.kt$MarketSearchResults</ID>
-    <ID>ModifierMissing:MarketSearchPage.kt$MarketSearchScreen</ID>
-    <ID>ModifierMissing:MarketSignalsPage.kt$MarketSignalsScreen</ID>
-    <ID>ModifierMissing:MarketsHorizontalCards.kt$MarketsHorizontalCards</ID>
-    <ID>ModifierMissing:MarketsSectionHeader.kt$MarketsSectionHeader</ID>
     <ID>ModifierMissing:MessageToSign.kt$MessageToSign</ID>
     <ID>ModifierMissing:MoneroConfigurePage.kt$BirthdayHeightAppBar</ID>
     <ID>ModifierMissing:NetworkSelectScreen.kt$NetworkCell</ID>
@@ -1067,11 +865,8 @@
     <ID>ModifierMissing:RestorePhraseScreen.kt$MoneroMode</ID>
     <ID>ModifierMissing:RestorePhraseScreen.kt$RestorePhrase</ID>
     <ID>ModifierMissing:RestorePrivateKeyScreen.kt$RestorePrivateKey</ID>
-    <ID>ModifierMissing:Roi.kt$Roi</ID>
     <ID>ModifierMissing:RootedDeviceScreen.kt$RootedDeviceScreen</ID>
-    <ID>ModifierMissing:RsiSettingsScreen.kt$RsiSettingsScreen</ID>
     <ID>ModifierMissing:SafetyRulesScreen.kt$SafetyRulesScreen</ID>
-    <ID>ModifierMissing:SearchBar.kt$SearchBar</ID>
     <ID>ModifierMissing:SearchBarV2.kt$SearchBarV2</ID>
     <ID>ModifierMissing:SecretKeyScreen.kt$SecretKeyScreen</ID>
     <ID>ModifierMissing:SecurityCheckPage.kt$AddressCheck</ID>
@@ -1121,22 +916,12 @@
     <ID>ModifierMissing:SwapSettingsComponents.kt$TransactionDeadlineInput</ID>
     <ID>ModifierMissing:SwapSettingsScreen.kt$SwapSettingsScreen</ID>
     <ID>ModifierMissing:SystemPinBlock.kt$SystemPinBlock</ID>
-    <ID>ModifierMissing:TechnicalAdvice.kt$TechnicalAdviceBlock</ID>
-    <ID>ModifierMissing:Title.kt$Title</ID>
     <ID>ModifierMissing:TitleAndValueCell.kt$TitleAndValueCell</ID>
-    <ID>ModifierMissing:TokenVariants.kt$TokenVariants</ID>
     <ID>ModifierMissing:TonConnectMainScreen.kt$TonConnectMainScreen</ID>
     <ID>ModifierMissing:TonConnectNewScreen.kt$TonConnectNewScreen</ID>
     <ID>ModifierMissing:TonConnectSendRequestScreen.kt$TonConnectSendRequestScreen</ID>
     <ID>ModifierMissing:TonConnectSessionList.kt$TCSessionCell</ID>
     <ID>ModifierMissing:TonConnectSessionList.kt$TonConnectSessionList</ID>
-    <ID>ModifierMissing:TopCoins.kt$OptionController</ID>
-    <ID>ModifierMissing:TopNftCollectionsPage.kt$TopNftCollectionsScreen</ID>
-    <ID>ModifierMissing:TopPairsBoardView.kt$TopPairsBoardView</ID>
-    <ID>ModifierMissing:TopPairsScreen.kt$TopPairItem</ID>
-    <ID>ModifierMissing:TopPairsScreen.kt$TopPairsScreen</ID>
-    <ID>ModifierMissing:TopPlatforms.kt$TopPlatformItem</ID>
-    <ID>ModifierMissing:TopPlatforms.kt$TopPlatforms</ID>
     <ID>ModifierMissing:TorBlock.kt$TorBlock</ID>
     <ID>ModifierMissing:TransactionDoubleSpendInfoPage.kt$ConflictingTransactions</ID>
     <ID>ModifierMissing:TransactionInfoCells.kt$DescriptionCell</ID>
@@ -1194,7 +979,6 @@
     <ID>ModifierMissing:ZcashConfigurePage.kt$ZcashConfigureScreen</ID>
     <ID>ModifierNotUsedAtRoot:HSRow.kt$modifier = modifier</ID>
     <ID>ModifierWithoutDefault:BalanceItems.kt$modifier</ID>
-    <ID>ModifierWithoutDefault:CoinImage.kt$modifier</ID>
     <ID>ModifierWithoutDefault:ManageWalletsScreen.kt$modifier</ID>
     <ID>ModifierWithoutDefault:ReceiveAddressScreen.kt$modifier</ID>
     <ID>ModifierWithoutDefault:ResendBitcoinPage.kt$ResendBitcoinPage$modifier</ID>
@@ -1206,28 +990,18 @@
     <ID>MultipleEmitters:AboutPage.kt$SettingSections</ID>
     <ID>MultipleEmitters:AppIconScreen.kt$AppIconContent</ID>
     <ID>MultipleEmitters:BlockchainSettingsPage.kt$BlockchainSettingsBlock</ID>
-    <ID>MultipleEmitters:CoinAuditsPage.kt$CoinAuditHeader</ID>
-    <ID>MultipleEmitters:CoinMajorHoldersPage.kt$HoldersGeneralInfo</ID>
-    <ID>MultipleEmitters:Components.kt$AnalyticsContainer</ID>
-    <ID>MultipleEmitters:Components.kt$AnalyticsFooterCell</ID>
-    <ID>MultipleEmitters:Components.kt$BoxItemCell</ID>
-    <ID>MultipleEmitters:Components.kt$RatingCell</ID>
     <ID>MultipleEmitters:DonateTokenSelectPage.kt$DonateHeader</ID>
     <ID>MultipleEmitters:DonateTokenSelectPage.kt$GetAddressCell</ID>
     <ID>MultipleEmitters:FeeInfoSection.kt$FeeInfoSection</ID>
     <ID>MultipleEmitters:MainPage.kt$MainScreen</ID>
-    <ID>MultipleEmitters:MarketOverviewTopNft.kt$TopNftCollectionsBoardView</ID>
-    <ID>MultipleEmitters:MarketOverviewTopPlatforms.kt$TopPlatformsBoardView</ID>
     <ID>MultipleEmitters:RestorePhraseNonStandardScreen.kt$BottomSection</ID>
     <ID>MultipleEmitters:RestorePhraseScreen.kt$BottomSection</ID>
     <ID>MultipleEmitters:SecurityCheckPage.kt$AddressCheck</ID>
     <ID>MultipleEmitters:SendEip1155Screen.kt$ItemCountInput</ID>
     <ID>MultipleEmitters:SendTronConfirmationScreen.kt$Cautions</ID>
     <ID>MultipleEmitters:TokenBalanceScreen.kt$ButtonsRow</ID>
-    <ID>MultipleEmitters:TopPairsBoardView.kt$TopPairsBoardView</ID>
     <ID>MultipleEmitters:TransactionDoubleSpendInfoPage.kt$ConflictingTransactions</ID>
     <ID>MutableStateAutoboxing:CardTabs.kt$mutableStateOf(0)</ID>
-    <ID>MutableStateAutoboxing:CellNews.kt$mutableStateOf(0)</ID>
     <ID>MutableStateAutoboxing:ShowExtendedKeyViewModel.kt$ShowExtendedKeyViewModel$mutableStateOf(0)</ID>
     <ID>MutableStateParam:ReceiveAddressScreen.kt$openAmountDialog</ID>
     <ID>MutableStateParam:RestorePhraseScreen.kt$passphraseTextState</ID>
@@ -1250,7 +1024,6 @@
     <ID>ParameterNaming:AmlAddressSelectionBottomSheet.kt$onAddressSelected</ID>
     <ID>ParameterNaming:BackupLocalTerms.kt$onTermsAccepted</ID>
     <ID>ParameterNaming:BottomSheetSelectorMultiple.kt$onItemsSelected</ID>
-    <ID>ParameterNaming:CoinMarketsScreen.kt$onToggleVerified</ID>
     <ID>ParameterNaming:DisplayOptionsScreen.kt$onPercentChangeToggled</ID>
     <ID>ParameterNaming:DisplayOptionsScreen.kt$onPriceChangeToggled</ID>
     <ID>ParameterNaming:DisplayOptionsScreen.kt$onPricePeriodChanged</ID>
@@ -1265,13 +1038,11 @@
     <ID>ParameterNaming:ManageAccountScreen.kt$onNameChanged</ID>
     <ID>ParameterNaming:ManageAccountScreen.kt$onSaveClicked</ID>
     <ID>ParameterNaming:ManageWalletsScreen.kt$onBackPressed</ID>
-    <ID>ParameterNaming:MarketFiltersPage.kt$onChecked</ID>
     <ID>ParameterNaming:NftCollectionAssetsScreen.kt$onBottomReached</ID>
     <ID>ParameterNaming:QRScannerScreen.kt$onErrorMessageConsumed</ID>
     <ID>ParameterNaming:QRScannerScreen.kt$onGalleryImagePicked</ID>
     <ID>ParameterNaming:ReleaseNotesPage.kt$onWhatsNewShown</ID>
     <ID>ParameterNaming:RootedDeviceScreen.kt$onIgnoreWarningClicked</ID>
-    <ID>ParameterNaming:SearchBar.kt$onSearchTextChanged</ID>
     <ID>ParameterNaming:SearchBarV2.kt$onSearchTextChanged</ID>
     <ID>ParameterNaming:SecuritySettingsPage.kt$onChangeDisplayClicked</ID>
     <ID>ParameterNaming:SecuritySettingsPage.kt$onDisableTransactionAutoHidePinClicked</ID>
@@ -1294,32 +1065,14 @@
     <ID>ParameterNaming:TransactionsFilterPage.kt$onChecked</ID>
     <ID>ParameterNaming:TransactionsScreen.kt$onShowAllTransactionsClicked</ID>
     <ID>ParameterNaming:UtxoExpertModeScreen.kt$onItemClicked</ID>
-    <ID>PreviewPublic:About.kt$AboutPreview</ID>
     <ID>PreviewPublic:AddressCheckerPage.kt$Preview_AddressChecker</ID>
     <ID>PreviewPublic:AppStatusScreen.kt$StatusBlockPreview</ID>
-    <ID>PreviewPublic:Badge.kt$BadgeCirclePreview</ID>
-    <ID>PreviewPublic:Badge.kt$BadgeCircleSignal_Preview</ID>
-    <ID>PreviewPublic:Badge.kt$BadgePreview</ID>
-    <ID>PreviewPublic:Badge.kt$BadgeWithDiffPreview</ID>
     <ID>PreviewPublic:BiometricDisabledDialog.kt$Preview_BiometricDisabledDialog</ID>
     <ID>PreviewPublic:CardTabs.kt$PreviewCardTabs</ID>
     <ID>PreviewPublic:CellTweet.kt$CellTweetPreview</ID>
-    <ID>PreviewPublic:CoinListComponents.kt$CardPreview</ID>
-    <ID>PreviewPublic:CoinListComponents.kt$PreviewListErrorView</ID>
-    <ID>PreviewPublic:CoinOverviewScreen.kt$LoadingPreview</ID>
-    <ID>PreviewPublic:CoinScreenTitle.kt$CoinScreenTitlePreviewLongTitle</ID>
-    <ID>PreviewPublic:CoinScreenTitle.kt$CoinScreenTitlePreviewNoRank</ID>
-    <ID>PreviewPublic:CoinScreenTitle.kt$CoinScreenTitlePreviewShortTitle</ID>
-    <ID>PreviewPublic:Contracts.kt$ContractsPreview</ID>
     <ID>PreviewPublic:DataFieldRecipientExtended.kt$DataFieldRecipientExtendedPreview</ID>
     <ID>PreviewPublic:DonateAddressesPage.kt$DonateScreenPreview</ID>
     <ID>PreviewPublic:InfoErrorMessageDefault.kt$InfoErrorMessageDefaultPreview</ID>
-    <ID>PreviewPublic:Links.kt$LinksPreview</ID>
-    <ID>PreviewPublic:MarketCell.kt$PreviewMarketCoin</ID>
-    <ID>PreviewPublic:MarketData.kt$MarketDataPreview</ID>
-    <ID>PreviewPublic:MarketPlatformPage.kt$HeaderContentPreview</ID>
-    <ID>PreviewPublic:MarketPostsScreen.kt$PreviewMarketPostView</ID>
-    <ID>PreviewPublic:MarketSearchPage.kt$MarketCoinPreview</ID>
     <ID>PreviewPublic:PinNumpad.kt$Preview_Pin</ID>
     <ID>PreviewPublic:PinNumpad.kt$Preview_PinLocked</ID>
     <ID>PreviewPublic:PinTopBlock.kt$Preview_PinTopBlockEnabled</ID>
@@ -1350,13 +1103,8 @@
     <ID>ThrowingExceptionsWithoutMessageOrCause:ActivateTokenViewModel.kt$ActivateTokenViewModel.Factory$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:BaseThorChainProvider.kt$BaseThorChainProvider$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:BitcoinCashAdapter.kt$BitcoinCashAdapter.Companion$IllegalArgumentException()</ID>
-    <ID>ThrowingExceptionsWithoutMessageOrCause:CoinOverviewModule.kt$CoinOverviewModule.Factory$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:EvmFeeModule.kt$EvmFeeModule.Factory$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:ManageWalletsModule.kt$ManageWalletsModule.Factory$IllegalArgumentException()</ID>
-    <ID>ThrowingExceptionsWithoutMessageOrCause:MarketCategoryModule.kt$MarketCategoryModule.Factory$IllegalArgumentException()</ID>
-    <ID>ThrowingExceptionsWithoutMessageOrCause:MarketOverviewModule.kt$MarketOverviewModule.MarketMetrics$IndexOutOfBoundsException()</ID>
-    <ID>ThrowingExceptionsWithoutMessageOrCause:MarketPlatformModule.kt$MarketPlatformModule.Factory$IllegalArgumentException()</ID>
-    <ID>ThrowingExceptionsWithoutMessageOrCause:MetricsPageModule.kt$MetricsPageModule.Factory$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:NestedScrollableHost.kt$NestedScrollableHost$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:NftUid.kt$NftUid.Companion$IllegalStateException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:ReceiveAddressViewModel.kt$ReceiveAddressViewModel$NullPointerException()</ID>
@@ -1370,7 +1118,6 @@
     <ID>ThrowingExceptionsWithoutMessageOrCause:SendSolanaModule.kt$SendSolanaModule.Factory$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:SendTonModule.kt$SendTonModule.Factory$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:SendTronModule.kt$SendTronModule.Factory$IllegalArgumentException()</ID>
-    <ID>ThrowingExceptionsWithoutMessageOrCause:TvlModule.kt$TvlModule.Factory$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:UnifiedAddressCheckerViewModel.kt$UnifiedAddressCheckerViewModel$Exception()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:WCRequestEvmViewModel.kt$WCRequestEvmViewModel$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:WatchAddressViewModel.kt$WatchAddressViewModel$Exception()</ID>
@@ -1393,7 +1140,6 @@
     <ID>TooGenericExceptionThrown:BackupProvider.kt$BackupProvider$throw Exception("Couldn't get encryption key")</ID>
     <ID>TooGenericExceptionThrown:CoreUtils.kt$ProcessUtils$throw Exception("Cannot kill: " + fileProcBin.absolutePath)</ID>
     <ID>TooGenericExceptionThrown:EvmSyncSourceManager.kt$EvmSyncSourceManager$throw Exception("Non-supported EVM blockchain")</ID>
-    <ID>TooGenericExceptionThrown:MetricsPageViewModel.kt$MetricsPageViewModel$throw Exception("MetricsType not supported")</ID>
     <ID>TooGenericExceptionThrown:MoneroKitManager.kt$MoneroKitWrapper$throw Exception("No internet connection")</ID>
     <ID>TooGenericExceptionThrown:NativeLoader.kt$NativeLoader$throw Exception("Unable to find file in apk:lib/$arch/$libName")</ID>
     <ID>TooGenericExceptionThrown:NetworkManager.kt$APIClient$throw RuntimeException(e)</ID>
@@ -1410,7 +1156,6 @@
     <ID>TooManyFunctions:BalanceViewModel.kt$BalanceViewModel : ViewModelUiStateITotalBalance</ID>
     <ID>TooManyFunctions:DatabaseConverters.kt$DatabaseConverters</ID>
     <ID>TooManyFunctions:Extensions.kt$cash.p.terminal.core.Extensions.kt</ID>
-    <ID>TooManyFunctions:MarketFiltersViewModel.kt$MarketFiltersViewModel : ViewModelUiState</ID>
     <ID>TooManyFunctions:MoneroKitManager.kt$MoneroKitWrapper : Observer</ID>
     <ID>TooManyFunctions:MoneroKitManager.kt$cash.p.terminal.core.managers.MoneroKitManager.kt</ID>
     <ID>TooManyFunctions:SwapProviderTransactionsDao.kt$SwapProviderTransactionsDao</ID>
@@ -1431,20 +1176,10 @@
     <ID>UnnecessaryFullyQualifiedNameRule:BackupProviderV3Test.kt$BackupProviderV3Test$cash.p.terminal.modules.backuplocal.fullbackup.FullBackup::class.java</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:BiometricDisabledDialog.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { BiometricDisabledDialog({}) }</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:CellTweet.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { CellTweet( TweetViewItem( title = "Super", subtitle = "@super", titleImageUrl = "", text = "Some special!!! Unbelievable...", attachments = listOf(), date = "Nov 12, 12:39", referencedTweet = null, entities = listOf(), url = "" ) ) { } }</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:CoinAnalyticsInfoPage.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { CoinAnalyticsInfoScreen( AnalyticInfo.CexVolumeInfo, ) {} }</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:CoinOverviewScreen.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { Loading() }</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:CoinRankViewModel.kt$CoinRankViewModel$cash.p.terminal.strings.helpers.Translator.getString(rankType.description)</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:CoinRankViewModel.kt$CoinRankViewModel$cash.p.terminal.strings.helpers.Translator.getString(rankType.title)</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:Components.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { AnalyticsContainer( titleRow = { AnalyticsBlockHeader( title = "Defi Cap", onInfoClick = {} ) }, bottomRows = { AnalyticsFooterCell( title = BoxItem.Title(TranslatableString.PlainString("Chain 1")), value = BoxItem.Value("•••"), showRightArrow = true, cellAction = CoinAnalyticsModule.ActionType.Preview, onActionClick = {} ) AnalyticsFooterCell( title = BoxItem.Title(TranslatableString.PlainString("Chain 2")), value = BoxItem.Value("•••"), showRightArrow = true, cellAction = CoinAnalyticsModule.ActionType.Preview, onActionClick = {} ) } ) { AnalyticsContentNumber( number = "\$2.46B", period = "last 30d" ) VSpacer(12.dp) StackedBarChart(slices, modifier = Modifier.padding(horizontal = 16.dp)) VSpacer(16.dp) } }</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:Components.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { AnalyticsContainer( titleRow = { AnalyticsBlockHeader( title = "Dex Volume", onInfoClick = {} ) }, bottomRows = { AnalyticsFooterCell( title = BoxItem.Title(TranslatableString.PlainString("30-Day Rank")), value = BoxItem.Value("#19"), showRightArrow = true, cellAction = CoinAnalyticsModule.ActionType.Preview, onActionClick = {} ) } ) { AnalyticsContentNumber( number = "•••", ) AnalyticsChart( CoinAnalyticsModule.zigzagPlaceholderAnalyticChart(true), ) VSpacer(12.dp) } }</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:Components.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { AnalyticsContainer( titleRow = { AnalyticsBlockHeader( title = "Dex Volume", onInfoClick = {} ) }, bottomRows = { AnalyticsFooterCell( title = BoxItem.Title(TranslatableString.PlainString("30-Day Rank")), value = BoxItem.Value("•••"), showRightArrow = true, cellAction = CoinAnalyticsModule.ActionType.Preview, onActionClick = {} ) } ) { AnalyticsContentNumber( number = "•••", ) AnalyticsChart( CoinAnalyticsModule.zigzagPlaceholderAnalyticChart(false), ) VSpacer(12.dp) } }</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:Components.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { AnalyticsContainer( titleRow = { AnalyticsBlockHeader( title = "Dex Volume", onInfoClick = {} ) }, bottomRows = { AnalyticsFooterCell( title = BoxItem.TitleWithInfo( TranslatableString.PlainString("Rating Scale"), CoinAnalyticsModule.ActionType.OpenOverallScoreInfo(ScoreCategory.CexScoreCategory) ), value = BoxItem.OverallScoreValue(OverallScore.Fair), showRightArrow = false, cellAction = null, onActionClick = {} ) } ) { AnalyticsContentNumber( number = "•••", ) AnalyticsChart( CoinAnalyticsModule.zigzagPlaceholderAnalyticChart(true), ) VSpacer(12.dp) } }</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:Components.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { AnalyticsContainer( titleRow = { AnalyticsBlockHeader( title = "Holders", onInfoClick = {} ) }, bottomRows = { AnalyticsFooterCell( title = BoxItem.Title(TranslatableString.PlainString("Blockchain 1")), value = BoxItem.Value(stringResource(R.string.CoinAnalytics_ThreeDots)), showRightArrow = true, cellAction = CoinAnalyticsModule.ActionType.Preview, onActionClick = {} ) AnalyticsFooterCell( title = BoxItem.Title(TranslatableString.PlainString("Blockchain 2")), value = BoxItem.Value(stringResource(R.string.CoinAnalytics_ThreeDots)), showRightArrow = true, cellAction = CoinAnalyticsModule.ActionType.Preview, onActionClick = {} ) AnalyticsFooterCell( title = BoxItem.Title(TranslatableString.PlainString("Blockchain 3")), value = BoxItem.Value(stringResource(R.string.CoinAnalytics_ThreeDots)), showRightArrow = true, cellAction = CoinAnalyticsModule.ActionType.Preview, onActionClick = {} ) } ) { AnalyticsContentNumber( number = "•••", ) VSpacer(12.dp) StackedBarChart(slices, modifier = Modifier.padding(horizontal = 16.dp)) VSpacer(16.dp) } }</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:ContactsModule.kt$ContactsModule.ContactValidationException.DuplicateAddress$cash.p.terminal.strings.helpers.Translator.getString( R.string.Contacts_Error_DefinedAddress, contact.name )</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:ContactsModule.kt$ContactsModule.ContactValidationException.DuplicateContactName$cash.p.terminal.strings.helpers.Translator.getString(R.string.Contacts_Error_DefinedName)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:DataFieldRecipientExtended.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { DataFieldRecipientExtended( Address("0x1234567890abcdef1234567890abcdef12345678"), BlockchainType.Bitcoin ).GetContent(navigation = navigation, borderTop = true) }</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:Eip1559FeeSettingsViewModel.kt$Eip1559FeeSettingsViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.NotAvailable)</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:EtfPage.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme.colors</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:EvmNetworkViewModel.kt$EvmNetworkViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.NetworkSettings_SwithesAutomatically)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:Exceptions.kt$NoDataException$cash.p.terminal.strings.helpers.Translator.getString(R.string.CoinPage_NoData)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:Exceptions.kt$NotIntegerException$cash.p.terminal.strings.helpers.Translator.getString(R.string.Error_NotInteger)</ID>
@@ -1464,19 +1199,9 @@
     <ID>UnnecessaryFullyQualifiedNameRule:LanguageSettingsModule.kt$cash.p.terminal.strings.helpers.LocaleType.uk</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:LanguageSettingsModule.kt$cash.p.terminal.strings.helpers.LocaleType.zh</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:LegacyFeeSettingsViewModel.kt$LegacyFeeSettingsViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.NotAvailable)</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:Links.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { val links = listOf( CoinLink( "http://q.com", LinkType.Guide, "@twitter", R.drawable.ic_academy_20 ), CoinLink( "http://q.com", LinkType.Guide, "@twitter", R.drawable.ic_globe_20 ), CoinLink( "http://q.com", LinkType.Twitter, "@twitter", R.drawable.ic_twitter_20 ), CoinLink( "http://q.com", LinkType.Telegram, "Telegram", R.drawable.ic_telegram_20 ), ) Links(links = links, onCoinLinkClick = {}) }</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:MainSettingsScreen.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { Column { CellSingleLineLawrenceSection( listOf({ HsSettingCell( R.string.Settings_Faq, R.drawable.ic_faq_20, showAlert = true, onClick = { } ) }, { HsSettingCell( R.string.Guides_Title, R.drawable.ic_academy_20, onClick = { } ) }) ) Spacer(Modifier.height(32.dp)) CellSingleLineLawrenceSection( listOf { HsSettingCell( R.string.Settings_WalletConnect, R.drawable.ic_wallet_connect_20, counterBadge = "13", onClick = { } ) } ) } }</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:MainViewModel.kt$MainViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.DeeplinkScheme)</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:MarketCell.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { MarketCoin( title = "ETH", subtitle = "Ethereum With very long name for token", coinIconUrl = "eth.png", coinIconPlaceholder = R.drawable.logo_ethereum_24, value = "$2600", ) }</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:MarketData.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme(darkTheme = false) { MarketData(marketData) }</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:MarketOverviewViewModel.kt$MarketOverviewViewModel$cash.p.terminal.strings.helpers.Translator.getString( R.string.MarketTopPlatforms_Protocols, item.protocols )</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:MarketPlatformPage.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { HeaderContent( "Solana Ecosystem", "Market cap of all protocols on the Solana chain", ImageSource.Local(R.drawable.logo_ethereum_24) ) }</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:MarketPostsScreen.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { CellNews( source = postItem.source, title = postItem.title, body = postItem.body, date = postItem.timeAgo ) {} }</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:MarketWidgetRepository.kt$MarketWidgetRepository$cash.p.terminal.strings.helpers.Translator.getString( R.string.MarketTopPlatforms_Protocols, item.protocols )</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:MetricsPageViewModel.kt$MetricsPageViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.Market_MarketCap)</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:MetricsPageViewModel.kt$MetricsPageViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.Market_Volume)</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:MetricsPageViewModel.kt$MetricsPageViewModel$cash.p.terminal.strings.helpers.Translator.getString(description)</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:MetricsPageViewModel.kt$MetricsPageViewModel$cash.p.terminal.strings.helpers.Translator.getString(title)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:QuoteInfoRow.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { QuoteInfoRow( title = { subhead2_grey(text = stringResource(R.string.Swap_Recipient)) }, value = { subhead2_leah( text = "0x7A04536a50d12952f69E071e4c92693939db86b5", textAlign = TextAlign.End ) } ) }</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:RestoreSettingsManager.kt$RestoreSettingsManager$cash.p.terminal.strings.helpers.Translator.getString(R.string.ManageAccount_BirthdayHeight, token.coin.code)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:SendBtcAdvancedSettingsViewModel.kt$SendBtcAdvancedSettingsViewModel$cash.p.terminal.strings.helpers.Translator.getString(sortMode.titleShort)</ID>
@@ -1488,18 +1213,13 @@
     <ID>UnnecessaryFullyQualifiedNameRule:SendSolanaAddressService.kt$SendSolanaAddressService$cash.p.terminal.strings.helpers.Translator.getString(R.string.SwapSettings_Error_InvalidAddress)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:SendTonAddressService.kt$SendTonAddressService$cash.p.terminal.strings.helpers.Translator.getString(R.string.SwapSettings_Error_InvalidAddress)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:SolanaWalletManager.kt$SolanaWalletManager$cash.p.terminal.wallet.entities.EnabledWallet( tokenQueryId = token.tokenQuery.id, accountId = account.id, coinName = token.coin.name, coinCode = token.coin.code, coinDecimals = token.decimals, coinImage = token.coin.image )</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:StackedBarChart.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { StackedBarChart( slices, Modifier.padding(horizontal = 16.dp, vertical = 12.dp) ) }</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:SwapSlippageViewModel.kt$SwapSlippageViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.SwapSettings_Warning_UnusualSlippage)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:TonKitManager.kt$TonHelper$cash.p.terminal.strings.helpers.Translator.getString(R.string.TransactionInfo_Memo)</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:TopNftCollectionsViewModel.kt$TopNftCollectionsViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.Nft_TopCollections)</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:TopNftCollectionsViewModel.kt$TopNftCollectionsViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.Nft_TopCollections_Description)</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:TopPlatformsViewModel.kt$TopPlatformsViewModel$cash.p.terminal.strings.helpers.Translator.getString( R.string.MarketTopPlatforms_Protocols, item.protocols )</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:TransactionDoubleSpendInfoPage.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { InfoScreen( "jh2rnj23rnk2b3k42b2k4jb", "nb3k4brk34bk34bk34bk3g" ) { } }</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:TransactionInfoServiceTest.kt$TransactionInfoServiceTest$cash.p.terminal.modules.transactions.FilterTransactionType.All</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:WCErrorNoAccountSheet.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { WalletConnectErrorNoAccount({}) }</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:WCSessionError.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { WCSessionError("Error text", HSNavigation(NavBackStack())) }</ID>
     <ID>UnusedImports:BackupConfirmKeyViewModel.kt$import cash.p.terminal.feature.miniapp.domain.usecase.CreateRequiredTokensUseCase</ID>
-    <ID>UnusedImports:Contracts.kt$import coil3.compose.rememberAsyncImagePainter</ID>
     <ID>UnusedImports:FullCoinsProvider.kt$import cash.p.terminal.core.sortedByFilter</ID>
     <ID>UnusedImports:HiddenWalletAccountVisibilityTest.kt$import cash.p.terminal.core.storage.UserDeletedWalletDao</ID>
     <ID>UnusedImports:MultiSwapExchangeViewModelTest.kt$import io.mockk.slot</ID>
@@ -1512,34 +1232,23 @@
     <ID>UnusedImports:RecoveryPhraseViewModelTest.kt$import io.horizontalsystems.ethereumkit.models.Chain</ID>
     <ID>UnusedImports:RestoreBlockchainsServiceTest.kt$import cash.p.terminal.wallet.zcashAddressSpecTokenQueries</ID>
     <ID>UnusedImports:SendTransactionServiceSolana.kt$import cash.p.terminal.wallet.getMaxSendableBalance</ID>
-    <ID>UnusedImports:TokenVariants.kt$import coil3.compose.rememberAsyncImagePainter</ID>
     <ID>UnusedImports:TronKitManagerDatabaseTest.kt$import io.mockk.coVerify</ID>
     <ID>UnusedImports:TronTransactionRecord.kt$import cash.p.terminal.core.managers.SpamManager</ID>
     <ID>UnusedParameter:Composables.kt$navigation: HSNavigation</ID>
     <ID>UnusedParameter:DonateAddressesPage.kt$chainUid: String</ID>
     <ID>UnusedParameter:EvmSwapHelper.kt$EvmSwapHelper$proxyAddress: String</ID>
     <ID>UnusedParameter:HSFeeInput.kt$navigation: HSNavigation</ID>
-    <ID>UnusedParameter:MarketOverviewViewModel.kt$MarketOverviewViewModel$topMovers: TopMovers</ID>
     <ID>UnusedParameter:MarketWidget.kt$MarketWidget$deeplinkScheme: String</ID>
     <ID>UnusedParameter:MultiSwapExchangeScreen.kt$leg: LegUiState</ID>
     <ID>UnusedParameter:NftMetadataService.kt$NftMetadataService$nftUids: Set&lt;NftUid&gt;</ID>
     <ID>UnusedParameter:NftPreview.kt$onSale: Boolean</ID>
-    <ID>UnusedPrivateMember:CoinAnalyticsInfoPage.kt$@Preview @Composable private fun Preview_CoinAnalyticsInfoScreen()</ID>
-    <ID>UnusedPrivateMember:Components.kt$@Preview @Composable private fun Preview_AnalyticsBarChartDisabled()</ID>
-    <ID>UnusedPrivateMember:Components.kt$@Preview @Composable private fun Preview_AnalyticsLineChartDisabled()</ID>
-    <ID>UnusedPrivateMember:Components.kt$@Preview @Composable private fun Preview_AnalyticsRatingScale()</ID>
-    <ID>UnusedPrivateMember:Components.kt$@Preview @Composable private fun Preview_HoldersBlock()</ID>
-    <ID>UnusedPrivateMember:Components.kt$@Preview @Composable private fun Preview_HoldersBlockLocked()</ID>
     <ID>UnusedPrivateMember:CrossSlide.kt$@Composable private fun CrossSlideExample()</ID>
     <ID>UnusedPrivateMember:GeneralTermsScreen.kt$@Preview(showBackground = true) @Composable private fun Preview_GeneralTermsDialog()</ID>
     <ID>UnusedPrivateMember:HSHodlerInput.kt$@Preview(showBackground = true) @Composable private fun Preview_HSHodler()</ID>
     <ID>UnusedPrivateMember:HSHodlerInput.kt$@Preview(showBackground = true) @Composable private fun Preview_HSHodlerInput()</ID>
-    <ID>UnusedPrivateMember:IndicatorsPage.kt$@Preview @Composable private fun Preview_Indicators()</ID>
     <ID>UnusedPrivateMember:KeyStoreActivity.kt$@Preview @Composable private fun Preview_NoSystemWarning()</ID>
     <ID>UnusedPrivateMember:KeyStoreActivity.kt$@Preview(showBackground = true) @Composable private fun Preview_KeysInvalidatedDialog()</ID>
     <ID>UnusedPrivateMember:MainSettingsScreen.kt$@Preview @Composable private fun previewSettingsScreen()</ID>
-    <ID>UnusedPrivateMember:MarketOverviewViewModel.kt$MarketOverviewViewModel$private fun getSectionIcon(type: ListType): Int</ID>
-    <ID>UnusedPrivateMember:MarketOverviewViewModel.kt$MarketOverviewViewModel$private fun getSectionTitle(type: ListType): Int</ID>
     <ID>UnusedPrivateMember:MoneroConfigurePage.kt$@Preview @Composable private fun Preview_MoneroConfigure()</ID>
     <ID>UnusedPrivateMember:MoneroKitManager.kt$MoneroKitWrapper$private suspend fun fixCorruptedWalletFile( walletKeysFileName: String, walletPassword: String )</ID>
     <ID>UnusedPrivateMember:NftAdapterManager.kt$NftAdapterManager$private suspend fun initAdapters(wallets: List&lt;cash.p.terminal.wallet.Wallet&gt;)</ID>
@@ -1578,7 +1287,6 @@
     <ID>UseCheckOrError:EvmKitManager.kt$EvmKitWrapper$throw IllegalStateException("MEV Protection is enabled, but MerkleTransactionAdapter is not initialized")</ID>
     <ID>UseCheckOrError:ISendTransactionService.kt$ISendTransactionService$throw IllegalStateException("Adapter not available for ${token.coin.code}")</ID>
     <ID>UseCheckOrError:ImportWalletViewModel.kt$ImportWalletViewModel$throw IllegalStateException("Cannot open input stream")</ID>
-    <ID>UseCheckOrError:MarketFavoritesService.kt$MarketFavoritesService$throw IllegalStateException("Manual sorting should be handled separately")</ID>
     <ID>UseCheckOrError:MarketWidgetRepository.kt$MarketWidgetRepository$throw IllegalStateException("Manual sorting should be handled separately")</ID>
     <ID>UseCheckOrError:MoneroKitManager.kt$MoneroKitWrapper$throw IllegalStateException("Failed to estimate fee: wallet not synced with daemon")</ID>
     <ID>UseCheckOrError:MoneroKitManager.kt$MoneroKitWrapper$throw IllegalStateException("Failed to restore account from 12 words")</ID>
@@ -1624,13 +1332,10 @@
     <ID>VariableNaming:TorControl.kt$TorControl$private val CONTROL_SOCKET_TIMEOUT = 60000</ID>
     <ID>VariableNaming:TorControl.kt$TorControl$private val MAX_BOOTSTRAP_CHECK_TRIES = 60</ID>
     <ID>ViewModelForwarding:AboutPage.kt$SettingSections(aboutViewModel, navigation)</ID>
-    <ID>ViewModelForwarding:CoinMajorHoldersPage.kt$CoinMajorHoldersContent(viewModel)</ID>
     <ID>ViewModelForwarding:FilterBlockchainPage.kt$BlockchainCell(viewModel, filterItem, navigation)</ID>
     <ID>ViewModelForwarding:IntroActivity.kt$StaticContent(viewModel, pagerState, closeActivity, pageCount)</ID>
     <ID>ViewModelForwarding:MainPage.kt$MainScreen( transactionsViewModel = transactionsViewModel, navigation = navigation, intentLiveData = intent, intentHandled = intentHandled )</ID>
     <ID>ViewModelForwarding:MainPage.kt$TransactionsScreen( navigation = navigation, paddingValues = paddingValues, viewModel = transactionsViewModel, onShowAllTransactionsClicked = { navigation.authorizedAction( ConfirmPinPage.InputConfirm( descriptionResId = R.string.Unlock_EnterPasscode_Transactions_Hide, pinType = PinType.TRANSACTIONS_HIDE ) ) { transactionsViewModel.showAllTransactions(true) } } )</ID>
-    <ID>ViewModelForwarding:MarketFiltersPage.kt$AdvancedSearchContent( viewModel = viewModel, onFilterByBlockchainsClick = { navigation.slideFromRight(BlockchainsSelectorPage()) }, showBottomSheet = { type -&gt; bottomSheetType = type coroutineScope.launch { modalBottomSheetState.show() } } )</ID>
-    <ID>ViewModelForwarding:MarketFiltersPage.kt$BottomSheetContent( bottomSheetType = bottomSheetType, viewModel = viewModel, onClose = { coroutineScope.launch { modalBottomSheetState.hide() } } )</ID>
     <ID>ViewModelForwarding:NftAssetPage.kt$NftAssetEvents(viewModel)</ID>
     <ID>ViewModelForwarding:NftAssetPage.kt$NftAssetInfo(viewModel, navigation, coroutineScope)</ID>
     <ID>ViewModelForwarding:NftCollectionPage.kt$NftCollectionOverviewScreen( viewModel, onCopyText = { TextHelper.copyText(it) HudHelper.showSuccessMessage(view, R.string.Hud_Text_Copied) }, onOpenUrl = { LinkHelper.openLinkInAppBrowser(context, it) } )</ID>
@@ -1683,25 +1388,14 @@
     <ID>ViewModelInjection:BalanceForAccount.kt$viewModel</ID>
     <ID>ViewModelInjection:BeamSendScreen.kt$addressViewModel</ID>
     <ID>ViewModelInjection:ChooseContactPage.kt$viewModel</ID>
-    <ID>ViewModelInjection:CoinAnalyticsScreen.kt$viewModel</ID>
-    <ID>ViewModelInjection:CoinMarketsScreen.kt$viewModel</ID>
-    <ID>ViewModelInjection:CoinOverviewScreen.kt$chartViewModel</ID>
-    <ID>ViewModelInjection:CoinOverviewScreen.kt$manageWalletsViewModel</ID>
-    <ID>ViewModelInjection:CoinOverviewScreen.kt$restoreSettingsViewModel</ID>
-    <ID>ViewModelInjection:CoinOverviewScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:CoinTweetsScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:ContactsPage.kt$viewModel</ID>
     <ID>ViewModelInjection:Eip20ApprovePage.kt$viewModel</ID>
     <ID>ViewModelInjection:Eip20RevokeConfirmPage.kt$viewModel</ID>
-    <ID>ViewModelInjection:EmaSettingsScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:EvmNetworkPage.kt$viewModel</ID>
     <ID>ViewModelInjection:HSAddressInput.kt$viewModel</ID>
     <ID>ViewModelInjection:HSAmountInput.kt$viewModel</ID>
-    <ID>ViewModelInjection:IndicatorsPage.kt$chartIndicatorsViewModel</ID>
-    <ID>ViewModelInjection:MacdSettingsScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:ManageAccountPage.kt$viewModel</ID>
-    <ID>ViewModelInjection:MarketScreen.kt$viewModel</ID>
-    <ID>ViewModelInjection:MarketSignalsPage.kt$marketFavoritesViewModel</ID>
     <ID>ViewModelInjection:MultiSwapExchangesPage.kt$transactionsViewModel</ID>
     <ID>ViewModelInjection:NetworkSelectScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:NftAssetPage.kt$viewModel</ID>
@@ -1721,7 +1415,6 @@
     <ID>ViewModelInjection:RestoreBlockchains.kt$viewModel</ID>
     <ID>ViewModelInjection:RestorePhraseNonStandardScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:RestorePrivateKeyScreen.kt$viewModel</ID>
-    <ID>ViewModelInjection:RsiSettingsScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:SecurityCheckPage.kt$viewModel</ID>
     <ID>ViewModelInjection:SelectBackupItemsScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:SelectBlockchainsPage.kt$viewModel</ID>
@@ -1752,8 +1445,6 @@
     <ID>ViewModelInjection:SyncErrorSheet.kt$viewModel</ID>
     <ID>ViewModelInjection:TonConnectNewScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:TonConnectSendRequestScreen.kt$viewModel</ID>
-    <ID>ViewModelInjection:TopCoins.kt$viewModel</ID>
-    <ID>ViewModelInjection:TopPairsScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:TransactionSpeedUpCancelPage.kt$viewModel</ID>
     <ID>ViewModelInjection:UnifiedCoinAddressCheck.kt$viewModel</ID>
     <ID>ViewModelInjection:UnlinkAccountSheet.kt$viewModel</ID>

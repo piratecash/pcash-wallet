@@ -29,6 +29,8 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.PageResumeEffect
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_close_24
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
@@ -79,7 +81,7 @@ private fun ConnectMiniAppContent(
                 menuItems = listOf(
                     MenuItem(
                         title = TranslatableString.PlainString(""),
-                        icon = R.drawable.ic_close_24,
+                        icon = Res.drawable.ic_close_24,
                         onClick = { navigation.navigateUpSafely() }
                     )
                 )

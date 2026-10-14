@@ -15,6 +15,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.uniswap
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.HSpacer
 import cash.p.terminal.ui_compose.components.HsBackButton
@@ -125,9 +127,9 @@ private fun SwapProvidersSettingsScreenPreview() {
         SwapProvidersSettingsScreen(
             uiState = SwapProvidersSettingsUiState(
                 items = listOf(
-                    SwapProviderItem("uniswap", "Uniswap", R.drawable.uniswap, enabled = true, mandatory = false),
-                    SwapProviderItem("pancake", "PancakeSwap", R.drawable.uniswap, enabled = true, mandatory = true),
-                    SwapProviderItem("oneinch", "1inch", R.drawable.uniswap, enabled = false, mandatory = false),
+                    SwapProviderItem("uniswap", "Uniswap", Res.drawable.uniswap, enabled = true, mandatory = false),
+                    SwapProviderItem("pancake", "PancakeSwap", Res.drawable.uniswap, enabled = true, mandatory = true),
+                    SwapProviderItem("oneinch", "1inch", Res.drawable.uniswap, enabled = false, mandatory = false),
                 )
             ),
             onToggle = { _, _ -> },

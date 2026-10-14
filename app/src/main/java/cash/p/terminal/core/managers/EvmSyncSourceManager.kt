@@ -63,8 +63,8 @@ class EvmSyncSourceManager(
                 ),
                 evmSyncSource(
                     blockchainType,
-                    "LlamaNodes",
-                    RpcSource.Http(listOf(URI("https://eth.llamarpc.com")), null),
+                    "PublicNode",
+                    RpcSource.Http(listOf(URI("https://ethereum-rpc.publicnode.com")), null),
                     defaultTransactionSource(blockchainType)
                 )
             )
@@ -90,14 +90,8 @@ class EvmSyncSourceManager(
                 ),
                 evmSyncSource(
                     blockchainType,
-                    "BSC RPC",
-                    RpcSource.bscRpcHttp(),
-                    defaultTransactionSource(blockchainType)
-                ),
-                evmSyncSource(
-                    blockchainType,
-                    "Omnia",
-                    RpcSource.Http(listOf(URI("https://endpoints.omniatech.io/v1/bsc/mainnet/public")), null),
+                    "PublicNode",
+                    RpcSource.Http(listOf(URI("https://bsc-rpc.publicnode.com")), null),
                     defaultTransactionSource(blockchainType)
                 )
             )
@@ -111,8 +105,8 @@ class EvmSyncSourceManager(
                 ),
                 evmSyncSource(
                     blockchainType,
-                    "LlamaNodes",
-                    RpcSource.Http(listOf(URI("https://polygon.llamarpc.com")), null),
+                    "PublicNode",
+                    RpcSource.Http(listOf(URI("https://polygon-bor-rpc.publicnode.com")), null),
                     defaultTransactionSource(blockchainType)
                 )
             )
@@ -141,11 +135,8 @@ class EvmSyncSourceManager(
                 ),
                 evmSyncSource(
                     blockchainType,
-                    "Omnia",
-                    RpcSource.Http(
-                        listOf(URI("https://endpoints.omniatech.io/v1/op/mainnet/public")),
-                        null
-                    ),
+                    "PublicNode",
+                    RpcSource.Http(listOf(URI("https://optimism-rpc.publicnode.com")), null),
                     defaultTransactionSource(blockchainType)
                 )
             )
@@ -204,8 +195,8 @@ class EvmSyncSourceManager(
                 ),
                 evmSyncSource(
                     blockchainType,
-                    "Omnia",
-                    RpcSource.Http(listOf(URI("https://endpoints.omniatech.io/v1/arbitrum/one/public")), null),
+                    "PublicNode",
+                    RpcSource.Http(listOf(URI("https://arbitrum-one-rpc.publicnode.com")), null),
                     defaultTransactionSource(blockchainType)
                 )
             )
@@ -219,8 +210,8 @@ class EvmSyncSourceManager(
                 ),
                 evmSyncSource(
                     blockchainType,
-                    "Ankr",
-                    RpcSource.Http(listOf(URI("https://rpc.ankr.com/gnosis")), null),
+                    "dRPC",
+                    RpcSource.Http(listOf(URI("https://gnosis.drpc.org")), null),
                     defaultTransactionSource(blockchainType)
                 )
             )
@@ -240,8 +231,8 @@ class EvmSyncSourceManager(
                 ),
                 evmSyncSource(
                     blockchainType,
-                    "Ankr",
-                    RpcSource.Http(listOf(URI("https://rpc.ankr.com/fantom")), null),
+                    "dRPC",
+                    RpcSource.Http(listOf(URI("https://fantom.drpc.org")), null),
                     defaultTransactionSource(blockchainType)
                 )
             )

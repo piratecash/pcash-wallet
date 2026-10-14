@@ -3,6 +3,7 @@ package cash.p.terminal.modules.transactionInfo
 import cash.p.terminal.R
 import cash.p.beam.BeamTransactionDirection
 import cash.p.beam.BeamTransactionStatus
+import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.beam.BeamTransactionRecord
 import cash.p.terminal.core.managers.TonHelper
@@ -38,6 +39,7 @@ class TransactionInfoViewItemFactory(
     private val offlineOperationGate: OfflineOperationGate,
     private val wallet: Wallet?,
     private val blockchainType: BlockchainType,
+    private val evmKitWrapper: EvmKitWrapper?,
 ) {
     fun getViewItemSections(transactionItem: TransactionInfoItem): List<List<TransactionInfoViewItem>> {
         val transaction = transactionItem.record
@@ -818,8 +820,8 @@ class TransactionInfoViewItemFactory(
         itemSections.add(statusItems.withOfflineStatus(transactionItem.offlineStatus))
 
         val canResend = (
-            transaction is EvmTransactionRecord && !transaction.foreignTransaction && !transaction.protected &&
-                status == TransactionStatus.Pending
+            transaction is EvmTransactionRecord && evmKitWrapper != null && !transaction.foreignTransaction &&
+                !transaction.protected && status == TransactionStatus.Pending
             ) || (
             transaction is BitcoinTransactionRecord &&
                 transaction.transactionRecordType == TransactionRecordType.BITCOIN_OUTGOING &&
@@ -835,6 +837,7 @@ class TransactionInfoViewItemFactory(
                             blockchainType = transaction.blockchainType,
                             availability = resendAvailability,
                             wallet = wallet,
+                            evmKitWrapper = evmKitWrapper,
                         )
                     )
                 )

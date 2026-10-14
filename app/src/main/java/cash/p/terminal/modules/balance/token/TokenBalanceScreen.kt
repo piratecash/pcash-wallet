@@ -3,6 +3,17 @@
 package cash.p.terminal.modules.balance.token
 
 import androidx.annotation.StringRes
+import cash.p.terminal.resources.BalanceSyncError_Title
+import cash.p.terminal.resources.CoinPage_Favorite
+import cash.p.terminal.resources.CoinPage_Unfavorite
+import cash.p.terminal.resources.Coin_Info
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Settings_Title
+import cash.p.terminal.resources.ic_attention_red_24
+import cash.p.terminal.resources.ic_chart_24
+import cash.p.terminal.resources.ic_manage_2_24
+import cash.p.terminal.resources.ic_star_20
+import cash.p.terminal.resources.ic_star_filled_20
 import cash.p.terminal.ui_compose.components.plateBackground
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -156,6 +167,13 @@ import cash.p.terminal.wallet.balance.DeemedValue
 import cash.p.terminal.wallet.isStakingWallet
 import io.horizontalsystems.core.helpers.DateHelper
 import java.util.Date
+import org.jetbrains.compose.resources.StringResource
+import cash.p.terminal.resources.ic_swap_24
+import cash.p.terminal.resources.ic_attention_24
+import cash.p.terminal.resources.ic_arrow_up_right_24
+import cash.p.terminal.resources.ic_arrow_down_left_24
+import cash.p.terminal.resources.ic_attention_20
+import cash.p.terminal.resources.ic_coins_stacking
 
 private const val HEADER_CONTENT_TYPE = "token_balance_sticky_header"
 private const val PLACEHOLDER_CONTENT_TYPE = "token_balance_empty_placeholder"
@@ -343,9 +361,9 @@ private fun TokenBalanceScreenContent(
                     add(
                         MenuItem(
                             title = TranslatableString.ResString(
-                                if (uiState.isFavorite) R.string.CoinPage_Unfavorite else R.string.CoinPage_Favorite
+                                if (uiState.isFavorite) Res.string.CoinPage_Unfavorite else Res.string.CoinPage_Favorite
                             ),
-                            icon = if (uiState.isFavorite) R.drawable.ic_star_filled_20 else R.drawable.ic_star_20,
+                            icon = if (uiState.isFavorite) Res.drawable.ic_star_filled_20 else Res.drawable.ic_star_20,
                             tint = if (uiState.isFavorite) {
                                 ComposeAppTheme.colors.brandDefault
                             } else {
@@ -357,8 +375,8 @@ private fun TokenBalanceScreenContent(
                     if (!uiState.isCustomToken) {
                         add(
                             MenuItem(
-                                title = TranslatableString.ResString(R.string.Coin_Info),
-                                icon = R.drawable.ic_chart_24,
+                                title = TranslatableString.ResString(Res.string.Coin_Info),
+                                icon = Res.drawable.ic_chart_24,
                                 onClick = {
                                     val coinUid = uiState.balanceViewItem?.wallet?.coin?.uid
                                         ?: return@MenuItem
@@ -370,16 +388,16 @@ private fun TokenBalanceScreenContent(
                     }
                     add(
                         MenuItem(
-                            title = TranslatableString.ResString(R.string.Settings_Title),
-                            icon = R.drawable.ic_manage_2_24,
+                            title = TranslatableString.ResString(Res.string.Settings_Title),
+                            icon = Res.drawable.ic_manage_2_24,
                             onClick = onSettingsClick
                         )
                     )
                     if (failedIconVisible && !loading) {
                         add(
                             MenuItem(
-                                title = TranslatableString.ResString(R.string.BalanceSyncError_Title),
-                                icon = R.drawable.ic_attention_red_24,
+                                title = TranslatableString.ResString(Res.string.BalanceSyncError_Title),
+                                icon = Res.drawable.ic_attention_red_24,
                                 tint = ComposeAppTheme.colors.statusError,
                                 onClick = {
                                     uiState.balanceViewItem?.let(onSyncErrorClick)
@@ -1058,7 +1076,7 @@ private fun TokenBalanceHeader(
         balanceViewItem.warning?.let {
             VSpacer(height = 8.dp)
             TextImportantWarning(
-                icon = R.drawable.ic_attention_20,
+                icon = Res.drawable.ic_attention_20,
                 title = it.title.getString(),
                 text = it.text.getString()
             )
@@ -1078,7 +1096,7 @@ private fun TokenBalanceHeader(
                 }
             }
             TextImportantWarning(
-                icon = R.drawable.ic_attention_20,
+                icon = Res.drawable.ic_attention_20,
                 title = warningData.title,
                 text = bodyText,
                 onClose = onDismissNetworkFeeWarning
@@ -1214,7 +1232,7 @@ internal fun TokenNotSyncedSection(
         TextImportant(
             modifier = Modifier.padding(horizontal = 16.dp),
             title = stringResource(R.string.token_not_synced_title),
-            icon = R.drawable.ic_attention_24,
+            icon = Res.drawable.ic_attention_24,
             borderColor = ComposeAppTheme.colors.borderDefault,
             backgroundColor = plateBackground(),
             textColor = ComposeAppTheme.colors.textPrimary,
@@ -1288,7 +1306,7 @@ private fun TokenOfflineSection(
     TextImportant(
         modifier = Modifier.padding(horizontal = 16.dp),
         title = stringResource(R.string.offline_mode_active_title),
-        icon = R.drawable.ic_attention_24,
+        icon = Res.drawable.ic_attention_24,
         borderColor = ComposeAppTheme.colors.borderDefault,
         backgroundColor = plateBackground(),
         textColor = ComposeAppTheme.colors.textPrimary,
@@ -1373,7 +1391,7 @@ private fun onSyncErrorClicked(
             val wallet = syncErrorDetails.wallet
             val errorMessage = syncErrorDetails.errorMessage
 
-            navigation.showSyncErrorDialog(wallet, errorMessage)
+            navigation.showSyncErrorDialog(wallet, errorMessage, syncErrorDetails.isBlockedByProvider)
         }
 
         is BalanceViewModel.SyncError.NetworkNotAvailable -> Unit // We already show this at bottom panel
@@ -1418,7 +1436,7 @@ private fun onSwapClicked(
 @Composable
 internal fun MoneroSendPreparationBottomSheet(
     syncInProgress: Boolean,
-    @StringRes error: Int?,
+    error: StringResource?,
     fullWalletRecoveryAvailable: Boolean,
     onSync: () -> Unit,
     onFullWalletRecovery: () -> Unit,
@@ -1451,7 +1469,7 @@ internal fun MoneroSendPreparationBottomSheet(
 @Composable
 private fun MoneroSendPreparationContent(
     syncInProgress: Boolean,
-    @StringRes error: Int?,
+    error: StringResource?,
     fullWalletRecoveryAvailable: Boolean,
     onSync: () -> Unit,
     onFullWalletRecovery: () -> Unit,
@@ -1465,7 +1483,7 @@ private fun MoneroSendPreparationContent(
         error?.let {
             TextImportantWarning(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                text = stringResource(it),
+                text = TranslatableString.ResString(it).getString(),
             )
         }
         MoneroSendPreparationActions(
@@ -1572,20 +1590,20 @@ private fun ButtonsRow(
         BalanceActionsRow {
             if (viewItem.isWatchAccount) {
                 BalanceActionButton(
-                    icon = R.drawable.ic_arrow_down_left_24,
+                    icon = Res.drawable.ic_arrow_down_left_24,
                     label = stringResource(R.string.Balance_Address),
                     onClick = onReceiveClick,
                 )
                 if (viewItem.wallet.isStakingWallet()) {
                     BalanceActionButton(
-                        icon = R.drawable.ic_coins_stacking,
+                        icon = Res.drawable.ic_coins_stacking,
                         label = stringResource(R.string.stacking),
                         onClick = onStackingClicked,
                     )
                 }
             } else {
                 BalanceActionButton(
-                    icon = R.drawable.ic_arrow_up_right_24,
+                    icon = Res.drawable.ic_arrow_up_right_24,
                     label = stringResource(R.string.Balance_Send),
                     iconRotation = -90f,
                     onClick = {
@@ -1596,14 +1614,14 @@ private fun ButtonsRow(
                     enabled = sendEnabled,
                 )
                 BalanceActionButton(
-                    icon = R.drawable.ic_arrow_down_left_24,
+                    icon = Res.drawable.ic_arrow_down_left_24,
                     label = stringResource(R.string.Balance_Receive),
                     dimmed = backupRequired,
                     onClick = onReceiveClick,
                 )
                 if (viewItem.swapVisible) {
                     BalanceActionButton(
-                        icon = R.drawable.ic_swap_24,
+                        icon = Res.drawable.ic_swap_24,
                         label = stringResource(R.string.Swap),
                         dimmed = backupRequired,
                         onClick = {
@@ -1618,7 +1636,7 @@ private fun ButtonsRow(
                 }
                 if (viewItem.wallet.isStakingWallet()) {
                     BalanceActionButton(
-                        icon = R.drawable.ic_coins_stacking,
+                        icon = Res.drawable.ic_coins_stacking,
                         label = stringResource(R.string.stacking),
                         onClick = onStackingClicked,
                     )

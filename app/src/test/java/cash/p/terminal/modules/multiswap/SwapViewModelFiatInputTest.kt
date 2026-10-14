@@ -44,7 +44,7 @@ import java.net.UnknownHostException
 class SwapViewModelFiatInputTest {
 
     private lateinit var dispatcher: TestDispatcher
-    private val currency = Currency("USD", "$", 2, 0)
+    private val currency = Currency("USD", "$", 2)
     private val tokenOut = PayCoreAssets.rubToken
     private val rateFlow = MutableStateFlow<BigDecimal?>(BigDecimal("0.25"))
     private val quoteStateFlow = MutableStateFlow(

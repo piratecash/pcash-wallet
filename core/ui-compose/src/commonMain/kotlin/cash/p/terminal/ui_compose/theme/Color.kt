@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 internal val Dark = Color(0xFF13151A)
 internal val SteelLight = Color(0xFFE1E1E5)
 internal val Steel20 = Color(0x336E7899)
+internal val Steel50 = Color(0x806E7899)
 
 internal val StatusSuccessL = Color(0xFF15A65F)
 internal val StatusSuccessD = Color(0xFF16C96F)

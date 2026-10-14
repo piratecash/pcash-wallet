@@ -4,8 +4,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
+import cash.p.terminal.resources.Error
+import cash.p.terminal.resources.Hud_Text_NoInternet
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.send_error_address_unavailable
+import cash.p.terminal.resources.send_error_amount_unavailable
 import io.horizontalsystems.core.collectWith
-import cash.p.terminal.R
 import cash.p.terminal.modules.send.isHardwareWalletCancelled
 import cash.p.terminal.trezor.domain.TrezorCancelledException
 import cash.p.terminal.core.EvmError
@@ -107,7 +111,7 @@ class SendSolanaViewModel(
     override var sendResult by mutableStateOf<SendResult?>(null)
         private set
     private val decimalAmount: BigDecimal
-        get() = amountState.amount ?: throw LocalizedException(R.string.send_error_amount_unavailable)
+        get() = amountState.amount ?: throw LocalizedException(Res.string.send_error_amount_unavailable)
 
     override val offlineSignSupported = offlineSignAdapter != null && !wallet.account.isWatchAccount
 
@@ -153,7 +157,7 @@ class SendSolanaViewModel(
 
     override fun getConfirmationData(): SendConfirmationData {
         val address = addressState.address
-            ?: throw LocalizedException(R.string.send_error_address_unavailable)
+            ?: throw LocalizedException(Res.string.send_error_address_unavailable)
         val contact = contactsRepo.getContactsFiltered(
             blockchainType,
             addressQuery = address.hex
@@ -196,9 +200,9 @@ class SendSolanaViewModel(
 
         try {
             val address = addressState.address
-                ?: throw LocalizedException(R.string.send_error_address_unavailable)
+                ?: throw LocalizedException(Res.string.send_error_address_unavailable)
             val solanaAddress = addressState.solanaAddress
-                ?: throw LocalizedException(R.string.send_error_address_unavailable)
+                ?: throw LocalizedException(Res.string.send_error_address_unavailable)
 
             val totalSolAmount =
                 (if (sendToken.type == TokenType.Native) decimalAmount else BigDecimal.ZERO) + SolanaKit.fee
@@ -248,7 +252,7 @@ class SendSolanaViewModel(
 
     private suspend fun signedOfflineTransaction(): OfflineSignResult {
         val confirmationData = getConfirmationData()
-        val signingAdapter = offlineSignAdapter ?: throw LocalizedException(R.string.Error)
+        val signingAdapter = offlineSignAdapter ?: throw LocalizedException(Res.string.Error)
         return OfflineSignResult(
             signedTransaction = signingAdapter.signOffline(
                 OfflineSolanaSignRequest(
@@ -280,7 +284,7 @@ class SendSolanaViewModel(
     }
 
     private fun createCaution(error: Throwable) = when (error) {
-        is UnknownHostException -> HSCaution(TranslatableString.ResString(R.string.Hud_Text_NoInternet))
+        is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
         is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
         is EvmError.InsufficientBalanceWithFee -> SendErrorInsufficientBalance(
             feeToken.coin.code, solBalance.toPlainString()

@@ -44,6 +44,11 @@ import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionSettings
 import cash.p.terminal.modules.multiswap.settings.ISwapSetting
 import cash.p.terminal.modules.multiswap.ui.DataField
+import cash.p.terminal.resources.Button_Done
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_manage_2_24
+import cash.p.terminal.resources.swap_providers_title
+import cash.p.terminal.resources.uniswap_v3
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppSelectorDialog
 import cash.p.terminal.ui_compose.components.AppSelectorItem
@@ -95,12 +100,12 @@ fun SwapSelectProviderScreen(
                 title = stringResource(R.string.Swap_Providers),
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.swap_providers_title),
-                        icon = R.drawable.ic_manage_2_24,
+                        title = TranslatableString.ResString(Res.string.swap_providers_title),
+                        icon = Res.drawable.ic_manage_2_24,
                         onClick = onClickSettings,
                     ),
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.Button_Done),
+                        title = TranslatableString.ResString(Res.string.Button_Done),
                         onClick = onClickClose
                     )
                 ),
@@ -367,7 +372,7 @@ private fun SwapSelectProviderScreenPreview() {
     fun previewProvider(providerId: String, providerTitle: String) = object : IMultiSwapProvider {
         override val id = providerId
         override val title = providerTitle
-        override val icon = R.drawable.uniswap_v3
+        override val icon = Res.drawable.uniswap_v3
 
         override val walletUseCase get() = throw NotImplementedError()
         override val mevProtectionAvailable = false

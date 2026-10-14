@@ -76,6 +76,8 @@ import cash.p.terminal.modules.restoreaccount.restoremenu.RestoreMenuViewModel
 import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.openQrScanner
+import cash.p.terminal.resources.Button_Next
+import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.Keyboard
 import cash.p.terminal.ui.compose.components.BoxTyler44
@@ -218,7 +220,7 @@ fun RestorePhrase(
                 },
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.Button_Next),
+                        title = TranslatableString.ResString(Res.string.Button_Next),
                         onClick = viewModel::onProceed
                     )
                 )

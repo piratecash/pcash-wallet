@@ -1,11 +1,9 @@
 package cash.p.terminal.modules.send.bitcoin
 
-import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
-import cash.p.terminal.R
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.IMwebAddressValidator
 import cash.p.terminal.core.ILocalStorage
@@ -33,6 +31,13 @@ import cash.p.terminal.modules.send.offline.OfflineSignCapableViewModel
 import cash.p.terminal.modules.send.offline.OfflineSigningController
 import cash.p.terminal.modules.send.offline.OfflineTransactionFormat
 import cash.p.terminal.modules.xrate.XRateService
+import cash.p.terminal.resources.Error
+import cash.p.terminal.resources.Hud_Text_NoInternet
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.send_error_address_unavailable
+import cash.p.terminal.resources.send_error_amount_unavailable
+import cash.p.terminal.resources.send_error_balance_unavailable
+import cash.p.terminal.resources.send_error_fee_rate_unavailable
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IBalanceAdapter
@@ -51,6 +56,7 @@ import io.horizontalsystems.hodler.LockTimeInterval
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.jetbrains.compose.resources.StringResource
 import org.koin.java.KoinJavaComponent.inject
 import java.math.BigDecimal
 import java.net.UnknownHostException
@@ -356,9 +362,9 @@ class SendBitcoinViewModel(
 
     override fun getConfirmationData(): SendConfirmationData {
         val address = addressState.validAddress
-            ?: throw LocalizedException(R.string.send_error_address_unavailable)
+            ?: throw LocalizedException(Res.string.send_error_address_unavailable)
         val amount = amountState.amount
-            ?: throw LocalizedException(R.string.send_error_amount_unavailable)
+            ?: throw LocalizedException(Res.string.send_error_amount_unavailable)
         val contact = contactsRepo.getContactsFiltered(
             blockchainType,
             addressQuery = address.hex
@@ -395,7 +401,7 @@ class SendBitcoinViewModel(
         val logger = logger.getScopedUnique()
         logger.info("offline sign click")
         val request = sendRequest()
-        val signingAdapter = offlineSignAdapter ?: throw LocalizedException(R.string.Error)
+        val signingAdapter = offlineSignAdapter ?: throw LocalizedException(Res.string.Error)
         val signedTransaction = signingAdapter.signOffline(
             OfflineBitcoinSignRequest(
                 amount = request.amount,
@@ -464,19 +470,19 @@ class SendBitcoinViewModel(
 
     private fun sendRequest(): SendRequest {
         val validAddress = addressState.validAddress
-            ?: missingSendRequestValue(R.string.send_error_address_unavailable)
+            ?: missingSendRequestValue(Res.string.send_error_address_unavailable)
         val amount = amountState.amount
-            ?: missingSendRequestValue(R.string.send_error_amount_unavailable)
+            ?: missingSendRequestValue(Res.string.send_error_amount_unavailable)
         val feeRate = feeRateState.feeRate
-            ?: missingSendRequestValue(R.string.send_error_fee_rate_unavailable)
+            ?: missingSendRequestValue(Res.string.send_error_fee_rate_unavailable)
         val sdkBalance = adapterManager.getBalanceAdapterForWallet(wallet)
             ?.balanceData?.available ?: amountState.availableBalance
-        ?: missingSendRequestValue(R.string.send_error_balance_unavailable)
+        ?: missingSendRequestValue(Res.string.send_error_balance_unavailable)
 
         return SendRequest(validAddress, amount, feeRate, sdkBalance)
     }
 
-    private fun missingSendRequestValue(@StringRes messageRes: Int): Nothing =
+    private fun missingSendRequestValue(messageRes: StringResource): Nothing =
         throw LocalizedException(messageRes)
 
     private fun pendingTransactionDraft(request: SendRequest): PendingTransactionDraft {
@@ -524,7 +530,7 @@ class SendBitcoinViewModel(
     }
 
     private fun createCaution(error: Throwable) = when (error) {
-        is UnknownHostException -> HSCaution(TranslatableString.ResString(R.string.Hud_Text_NoInternet))
+        is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
         is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
         else -> HSCaution(TranslatableString.PlainString(error.message ?: ""))
     }

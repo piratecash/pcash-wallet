@@ -21,7 +21,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.icon_20_check_1
+import cash.p.terminal.resources.icon_24_circle_coin
+import org.jetbrains.compose.resources.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
@@ -111,7 +114,7 @@ fun FilterCoinScreen(navigation: HSNavigation, viewModel: TransactionsViewModel)
                                     }
                                 } else {
                                     Image(
-                                        painter = painterResource(R.drawable.icon_24_circle_coin),
+                                        painter = painterResource(Res.drawable.icon_24_circle_coin),
                                         modifier = Modifier
                                             .padding(end = 16.dp)
                                             .size(24.dp),
@@ -122,7 +125,7 @@ fun FilterCoinScreen(navigation: HSNavigation, viewModel: TransactionsViewModel)
                                 if (it.selected) {
                                     Spacer(modifier = Modifier.weight(1f))
                                     Icon(
-                                        painter = painterResource(R.drawable.icon_20_check_1),
+                                        painter = painterResource(Res.drawable.icon_20_check_1),
                                         contentDescription = null,
                                         tint = ComposeAppTheme.colors.brandDefault
                                     )

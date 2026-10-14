@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
+import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.modules.contacts.ContactsModule
 import cash.p.terminal.modules.contacts.ContactsPage
 import cash.p.terminal.modules.contacts.Mode
@@ -101,6 +102,9 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.helpers.DateHelper
+import org.jetbrains.compose.resources.DrawableResource
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_attention_24
 
 @Composable
 fun SectionTitleCell(
@@ -154,7 +158,7 @@ fun PoisonWarningCell(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         title = stringResource(R.string.poison_warning_title),
-        icon = R.drawable.ic_attention_24,
+        icon = Res.drawable.ic_attention_24,
         text = stringResource(R.string.poison_warning_body),
         onInfoClick = onInfoClick,
     )
@@ -200,7 +204,7 @@ fun TransactionNftAmountCell(
     amount: ColoredValue,
     nftName: String?,
     iconUrl: String?,
-    iconPlaceholder: Int?,
+    iconPlaceholder: DrawableResource?,
     badge: String?,
 ) {
     RowUniversal(
@@ -245,7 +249,7 @@ fun TransactionAmountCell(
     coinIconUrl: String?,
     alternativeCoinIconUrl: String?,
     badge: String?,
-    coinIconPlaceholder: Int?,
+    coinIconPlaceholder: DrawableResource?,
     onValueClick: () -> Unit,
     onClick: (() -> Unit)? = null
 ) {
@@ -683,6 +687,7 @@ fun TransactionInfoSpeedUpCell(
     blockchainType: BlockchainType,
     availability: OperationAvailability,
     wallet: Wallet?,
+    evmKitWrapper: EvmKitWrapper?,
     navigation: HSNavigation
 ) {
     val offlineGatedAction = rememberOfflineGatedAction(wallet)
@@ -695,6 +700,7 @@ fun TransactionInfoSpeedUpCell(
                     SpeedUpCancelType.SpeedUp,
                     transactionHash,
                     blockchainType,
+                    evmKitWrapper,
                     navigation
                 )
             }
@@ -1022,6 +1028,7 @@ private fun openTransactionOptionsModule(
     type: SpeedUpCancelType,
     transactionHash: String,
     blockchainType: BlockchainType,
+    evmKitWrapper: EvmKitWrapper?,
     navigation: HSNavigation
 ) {
     when (blockchainType) {
@@ -1046,11 +1053,14 @@ private fun openTransactionOptionsModule(
         BlockchainType.Base,
         BlockchainType.ZkSync,
         BlockchainType.ArbitrumOne -> {
-            navigation.slideFromRight(
-                TransactionSpeedUpCancelPage(
-                    TransactionSpeedUpCancelPage.Input(blockchainType, type, transactionHash)
+            evmKitWrapper?.let {
+                navigation.slideFromRight(
+                    TransactionSpeedUpCancelPage(
+                        TransactionSpeedUpCancelPage.Input(blockchainType, type, transactionHash),
+                        it
+                    )
                 )
-            )
+            }
         }
 
         BlockchainType.Zcash,

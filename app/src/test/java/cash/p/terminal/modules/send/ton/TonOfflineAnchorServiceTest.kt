@@ -1,10 +1,13 @@
 package cash.p.terminal.modules.send.ton
 
-import cash.p.terminal.R
 import cash.p.terminal.core.ISendTonAdapter
 import cash.p.terminal.core.LocalizedException
 import cash.p.terminal.core.TonOfflineAnchor
 import cash.p.terminal.modules.pin.core.UptimeProvider
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.offline_sign_error_wallet_not_deployed
+import cash.p.terminal.resources.offline_transaction_anchor_required
+import cash.p.terminal.resources.send_error_fee_rate_unavailable
 import io.horizontalsystems.tonkit.FriendlyAddress
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -12,6 +15,7 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
+import org.jetbrains.compose.resources.StringResource
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -46,7 +50,7 @@ class TonOfflineAnchorServiceTest {
 
     private fun consume(seqno: Int) = service.consumeAnchor(seqno, service.ownershipGeneration)
 
-    private fun assertFailsWithText(expectedRes: Int, block: () -> Unit) {
+    private fun assertFailsWithText(expectedRes: StringResource, block: () -> Unit) {
         try {
             block()
             fail("Expected LocalizedException")
@@ -59,14 +63,14 @@ class TonOfflineAnchorServiceTest {
 
     @Test
     fun buildSignRequest_noAnchor_throwsAnchorRequired() {
-        assertFailsWithText(R.string.offline_transaction_anchor_required) { buildRequest() }
+        assertFailsWithText(Res.string.offline_transaction_anchor_required) { buildRequest() }
     }
 
     @Test
     fun buildSignRequest_anchoredSeqnoZero_throwsWalletNotDeployed() = runTest {
         anchor(seqno = 0)
 
-        assertFailsWithText(R.string.offline_sign_error_wallet_not_deployed) { buildRequest() }
+        assertFailsWithText(Res.string.offline_sign_error_wallet_not_deployed) { buildRequest() }
     }
 
     @Test
@@ -85,7 +89,7 @@ class TonOfflineAnchorServiceTest {
     fun buildSignRequest_nullQuote_throwsFeeUnavailable() = runTest {
         anchor(seqno = 7)
 
-        assertFailsWithText(R.string.send_error_fee_rate_unavailable) {
+        assertFailsWithText(Res.string.send_error_fee_rate_unavailable) {
             service.buildSignRequest(amount, address, null, quote = null)
         }
     }
@@ -94,7 +98,7 @@ class TonOfflineAnchorServiceTest {
     fun buildSignRequest_staleQuote_throwsFeeUnavailable() = runTest {
         anchor(seqno = 7)
 
-        assertFailsWithText(R.string.send_error_fee_rate_unavailable) {
+        assertFailsWithText(Res.string.send_error_fee_rate_unavailable) {
             service.buildSignRequest(amount + BigDecimal.ONE, address, null, quote)
         }
     }
@@ -107,7 +111,7 @@ class TonOfflineAnchorServiceTest {
 
         consume(7)
 
-        assertFailsWithText(R.string.offline_transaction_anchor_required) { buildRequest() }
+        assertFailsWithText(Res.string.offline_transaction_anchor_required) { buildRequest() }
     }
 
     @Test
@@ -130,7 +134,7 @@ class TonOfflineAnchorServiceTest {
         // The abandoned attempt must not burn the anchor; the current owner still can.
         assertEquals(7, buildRequest().seqno)
         consume(7)
-        assertFailsWithText(R.string.offline_transaction_anchor_required) { buildRequest() }
+        assertFailsWithText(Res.string.offline_transaction_anchor_required) { buildRequest() }
     }
 
     @Test
@@ -140,7 +144,7 @@ class TonOfflineAnchorServiceTest {
 
         anchor(seqno = 7)
 
-        assertFailsWithText(R.string.offline_transaction_anchor_required) { buildRequest() }
+        assertFailsWithText(Res.string.offline_transaction_anchor_required) { buildRequest() }
     }
 
     @Test
@@ -208,7 +212,7 @@ class TonOfflineAnchorServiceTest {
         service.refreshAnchor { true }
 
         coVerify(exactly = 1) { adapter.fetchOfflineAnchor() }
-        assertFailsWithText(R.string.offline_transaction_anchor_required) { buildRequest() }
+        assertFailsWithText(Res.string.offline_transaction_anchor_required) { buildRequest() }
     }
 
     @Test

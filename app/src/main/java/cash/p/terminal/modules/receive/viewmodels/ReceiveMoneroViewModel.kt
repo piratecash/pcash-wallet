@@ -21,6 +21,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.parcelize.Parcelize
+import org.jetbrains.compose.resources.StringResource
 import timber.log.Timber
 import java.math.BigDecimal
 
@@ -42,7 +43,7 @@ class ReceiveMoneroViewModel(
     private var isCreatingAddress = false
     private var isHardwareOperationInProgress = false
     @StringRes
-    private var hardwareOperationError: Int? = null
+    private var hardwareOperationError: StringResource? = null
     private var hardwareWallet = false
     private var spendReadiness = MoneroSpendReadiness.Ready
     private var isNewInSession = false
@@ -232,7 +233,7 @@ data class ReceiveMoneroUiState(
     val hardwareWallet: Boolean = false,
     val spendReadiness: MoneroSpendReadiness = MoneroSpendReadiness.Ready,
     val isHardwareOperationInProgress: Boolean = false,
-    @StringRes val hardwareOperationError: Int? = null,
+    val hardwareOperationError: StringResource? = null,
 ) : ReceiveModule.AbstractUiState() {
     val showTrezorUpdateAction: Boolean
         get() = spendReadiness.requiresTrezorPreparation()

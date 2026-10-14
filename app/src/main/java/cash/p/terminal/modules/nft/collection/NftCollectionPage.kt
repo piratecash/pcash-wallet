@@ -21,6 +21,9 @@ import cash.p.terminal.modules.nft.collection.assets.NftCollectionAssetsScreen
 import cash.p.terminal.modules.nft.collection.events.NftCollectionEventsScreen
 import cash.p.terminal.modules.nft.collection.overview.NftCollectionOverviewScreen
 import cash.p.terminal.modules.nft.collection.overview.NftCollectionOverviewViewModel
+import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_close_24
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.MenuItem
@@ -67,8 +70,8 @@ private fun NftCollectionScreen(navigation: HSNavigation, viewModel: NftCollecti
         AppBar(
             menuItems = listOf(
                 MenuItem(
-                    title = TranslatableString.ResString(R.string.Button_Close),
-                    icon = R.drawable.ic_close_24,
+                    title = TranslatableString.ResString(Res.string.Button_Close),
+                    icon = Res.drawable.ic_close_24,
                     onClick = {
                         navigation.navigateUpSafely()
                     }

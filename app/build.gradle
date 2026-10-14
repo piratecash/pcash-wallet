@@ -192,7 +192,7 @@ android {
             applicationIdSuffix ".dev"
             buildConfigField "boolean", "DIAGNOSTIC_LOGGING", "true"
             configureTestServices(delegate)
-//            resValue "string", "marketApiBaseUrl", "https://api-dev.blocksdecoded.com"
+            resValue "string", "marketApiBaseUrl", "https://api-dev.blocksdecoded.com"
 //            resValue "string", "marketApiKey", "IQf1uAjkthZp1i2pYzkXFDom"
         }
 
@@ -211,7 +211,7 @@ android {
             resValue "string", "faqUrl", "https://raw.githubusercontent.com/horizontalsystems/Unstoppable-Wallet-Website/v1.3/src/faq.json"
             resValue "string", "coinsJsonUrl", "https://raw.githubusercontent.com/horizontalsystems/cryptocurrencies/v0.21/coins.json"
             resValue "string", "providerCoinsJsonUrl", "https://raw.githubusercontent.com/horizontalsystems/cryptocurrencies/v0.21/provider.coins.json"
-//            resValue "string", "marketApiBaseUrl", "https://api.blocksdecoded.com"
+            resValue "string", "marketApiBaseUrl", "https://api.blocksdecoded.com"
 //            resValue "string", "marketApiKey", "IQf1uAjkthZp1i2pYzkXFDom"
             resValue "string", "blocksDecodedEthereumRpc", "https://api.blocksdecoded.com/v1/ethereum-rpc/mainnet"
             resValue "string", "chainalysisBaseUrl", "https://public.chainalysis.com/api/v1/"
@@ -517,6 +517,7 @@ dependencies {
     implementation project(':feature-premium')
     implementation project(':feature-logging')
     implementation project(':feature-mini-app')
+    implementation project(':feature-market')
 
     // Integration with activities
     implementation libs.androidx.activity.compose

@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.paycore
 
-import cash.p.terminal.R
 import cash.p.terminal.core.ISendEthereumAdapter
 import cash.p.terminal.core.isEvm
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
@@ -27,6 +26,8 @@ import cash.p.terminal.modules.paycore.selectbank.PayCoreBankSwapSetting
 import cash.p.terminal.modules.paycore.selectbank.PayCoreBanksUnavailableException
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.network.swaprepository.SwapProvider
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_paycore
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapterManager
@@ -57,7 +58,7 @@ class PayCoreProvider(
 
     override val id = ID
     override val title = "PayCore"
-    override val icon = R.drawable.ic_paycore
+    override val icon = Res.drawable.ic_paycore
     override val mevProtectionAvailable = false
     override val exactOutAccuracy = SwapAmountAccuracy.Exact
 

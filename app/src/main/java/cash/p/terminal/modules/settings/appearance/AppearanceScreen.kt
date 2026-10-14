@@ -37,6 +37,11 @@ import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead1_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Appearance_PriceChangeInterval
+import cash.p.terminal.resources.Appearance_BalanceValue
+import cash.p.terminal.resources.Settings_Theme
+import cash.p.terminal.resources.Settings_LaunchScreen
 
 @Composable
 internal fun AppearanceScreen(
@@ -186,7 +191,7 @@ internal fun AppearanceScreen(
 
     if (openThemeSelector) {
         AlertGroup(
-            R.string.Settings_Theme,
+            Res.string.Settings_Theme,
             uiState.themeOptions,
             { selected ->
                 onThemeSelect(selected)
@@ -197,7 +202,7 @@ internal fun AppearanceScreen(
     }
     if (openLaunchPageSelector) {
         AlertGroup(
-            R.string.Settings_LaunchScreen,
+            Res.string.Settings_LaunchScreen,
             uiState.launchScreenOptions,
             { selected ->
                 onLaunchScreenSelect(selected)
@@ -208,7 +213,7 @@ internal fun AppearanceScreen(
     }
     if (openBalanceValueSelector) {
         AlertGroup(
-            R.string.Appearance_BalanceValue,
+            Res.string.Appearance_BalanceValue,
             uiState.balanceViewTypeOptions,
             { selected ->
                 onBalanceViewTypeSelect(selected)
@@ -219,7 +224,7 @@ internal fun AppearanceScreen(
     }
     if (openPriceChangeIntervalSelector) {
         AlertGroup(
-            R.string.Appearance_PriceChangeInterval,
+            Res.string.Appearance_PriceChangeInterval,
             uiState.priceChangeIntervalOptions,
             { selected ->
                 onPriceChangeIntervalSelect(selected)

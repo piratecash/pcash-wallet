@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.multiswap.providers
 
-import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.derivation
@@ -24,6 +23,9 @@ import cash.p.terminal.modules.multiswap.ui.DataFieldRecipient
 import cash.p.terminal.modules.multiswap.ui.DataFieldRecipientExtended
 import cash.p.terminal.modules.multiswap.ui.DataFieldSlippage
 import cash.p.terminal.network.swaprepository.SwapProvider
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.SwapWarning_SlippageNotApplicable_Description
+import cash.p.terminal.resources.SwapWarning_SlippageNotApplicable_Title
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenQuery
@@ -629,10 +631,10 @@ sealed class SwapError : Exception() {
 }
 
 class SlippageNotApplicable(minSlippageApplicable: BigDecimal) : HSCaution(
-    TranslatableString.ResString(R.string.SwapWarning_SlippageNotApplicable_Title),
+    TranslatableString.ResString(Res.string.SwapWarning_SlippageNotApplicable_Title),
     Type.Warning,
     TranslatableString.ResString(
-        R.string.SwapWarning_SlippageNotApplicable_Description,
+        Res.string.SwapWarning_SlippageNotApplicable_Description,
         minSlippageApplicable
     ),
 )

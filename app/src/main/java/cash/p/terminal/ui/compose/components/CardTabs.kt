@@ -1,6 +1,8 @@
 package cash.p.terminal.ui.compose.components
 
 import androidx.compose.foundation.Image
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.coin_placeholder
 import cash.p.terminal.ui_compose.components.plateOutline
 import cash.p.terminal.ui_compose.components.plateBackground
 import androidx.compose.foundation.background
@@ -18,7 +20,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import cash.p.terminal.R
 import cash.p.terminal.ui_compose.components.ImageSource
 import cash.p.terminal.ui_compose.components.TabItem
 import cash.p.terminal.ui_compose.components.subhead1_leah
@@ -102,9 +103,9 @@ fun <T> CardTabs(
 fun PreviewCardTabs() {
     var selectedIndex by remember { mutableStateOf(0) }
     val map = mapOf(
-        "BTC" to ImageSource.Local(R.drawable.coin_placeholder),
-        "ETH" to ImageSource.Local(R.drawable.coin_placeholder),
-        "ZCASH-LONGNAME" to ImageSource.Local(R.drawable.coin_placeholder)
+        "BTC" to ImageSource.Local(Res.drawable.coin_placeholder),
+        "ETH" to ImageSource.Local(Res.drawable.coin_placeholder),
+        "ZCASH-LONGNAME" to ImageSource.Local(Res.drawable.coin_placeholder)
     )
 
     val tabItems = map.toList().mapIndexed { index, (title, icon) ->

@@ -9,7 +9,6 @@ import android.os.Parcelable
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import cash.p.terminal.ui_compose.parcelable
-import io.horizontalsystems.core.entities.BlockchainType
 import java.io.File
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -18,9 +17,6 @@ import java.time.Instant
 import java.util.Locale
 import kotlin.math.absoluteValue
 import kotlin.math.ceil
-
-val BlockchainType.imageUrl: String
-    get() = "https://p.cash/storage/blockchains/$uid.png"
 
 fun View.hideKeyboard(context: Context) {
     val imm = context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager

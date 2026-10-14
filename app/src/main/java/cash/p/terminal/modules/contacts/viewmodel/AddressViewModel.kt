@@ -1,7 +1,8 @@
 package cash.p.terminal.modules.contacts.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import cash.p.terminal.R
+import cash.p.terminal.resources.Contacts_AddAddress
+import cash.p.terminal.resources.Res
 import io.horizontalsystems.core.ViewModelUiState
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.wallet.MarketKitWrapper
@@ -33,7 +34,7 @@ class AddressViewModel(
 ) : ViewModelUiState<AddressViewModel.UiState>() {
 
     private val title = if (contactAddress == null)
-        TranslatableString.ResString(R.string.Contacts_AddAddress)
+        TranslatableString.ResString(Res.string.Contacts_AddAddress)
     else
         TranslatableString.PlainString(contactAddress.blockchain.name)
     private var address = contactAddress?.address ?: ""

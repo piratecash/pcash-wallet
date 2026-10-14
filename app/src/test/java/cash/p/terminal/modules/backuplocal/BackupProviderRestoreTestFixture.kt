@@ -136,7 +136,7 @@ internal abstract class BackupProviderRestoreTestFixture {
         every { balanceViewTypeManager.balanceViewType } returns BalanceViewType.CoinThenFiat
         every { balanceViewTypeManager.balanceViewTypeFlow } returns MutableStateFlow(BalanceViewType.CoinThenFiat)
 
-        val mockCurrency = Currency("USD", "$", 2, 0)
+        val mockCurrency = Currency("USD", "$", 2)
         every { currencyManager.baseCurrency } returns mockCurrency
 
         val mockRpcSource = mockk<RpcSource>(relaxed = true)

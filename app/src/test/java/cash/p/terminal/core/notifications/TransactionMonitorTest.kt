@@ -114,7 +114,7 @@ class TransactionMonitorTest {
         every { localStorage.pushShowBlockchainName } returns true
         every { localStorage.pushShowCoinAmount } returns true
         every { localStorage.pushShowFiatAmount } returns true
-        every { currencyManager.baseCurrency } returns Currency("USD", "$", 2, 0)
+        every { currencyManager.baseCurrency } returns Currency("USD", "$", 2)
         every { numberFormatter.formatCoinFull(any(), any(), any()) } answers {
             "${firstArg<BigDecimal>().toPlainString()} ${secondArg<String>()}"
         }
@@ -361,7 +361,7 @@ class TransactionMonitorTest {
     @Test
     fun processRecords_eurCurrency_usesEuroSymbol() =
         runTest(StandardTestDispatcher()) {
-            every { currencyManager.baseCurrency } returns Currency("EUR", "€", 2, 0)
+            every { currencyManager.baseCurrency } returns Currency("EUR", "€", 2)
             every { localStorage.pushShowBlockchainName } returns false
             every { localStorage.pushShowCoinAmount } returns false
             every { localStorage.pushShowFiatAmount } returns true

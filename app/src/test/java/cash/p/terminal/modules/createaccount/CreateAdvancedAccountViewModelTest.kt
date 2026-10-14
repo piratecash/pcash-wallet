@@ -11,6 +11,7 @@ import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.PassphraseValidator
 import cash.p.terminal.wallet.data.MnemonicKind
+import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.hdwalletkit.Language
 import io.mockk.Runs
@@ -19,6 +20,8 @@ import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -51,6 +54,8 @@ class CreateAdvancedAccountViewModelTest {
 
     @Before
     fun setUp() {
+        mockkObject(Translator)
+        every { Translator.getString(any(), *anyVararg()) } returns "translated"
         Dispatchers.setMain(dispatcher)
         every { accountFactory.getNextAccountName() } returns "Wallet 1"
         every { accountFactory.account(any(), any(), any(), any(), any()) } answers {
@@ -62,6 +67,7 @@ class CreateAdvancedAccountViewModelTest {
 
     @After
     fun tearDown() {
+        unmockkObject(Translator)
         Dispatchers.resetMain()
     }
 

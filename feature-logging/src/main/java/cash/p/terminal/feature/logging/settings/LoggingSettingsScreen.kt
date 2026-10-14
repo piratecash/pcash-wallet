@@ -30,6 +30,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.feature.logging.R
 import cash.p.terminal.feature.logging.components.DeleteLogsConfirmationDialog
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.button_info
+import cash.p.terminal.resources.ic_info_20
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.Select
 import cash.p.terminal.ui_compose.components.AlertGroup
@@ -59,6 +62,8 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import io.horizontalsystems.core.entities.AutoDeletePeriod
 import io.horizontalsystems.core.ui.dialogs.ConfirmationDialogBottomSheet
+import cash.p.terminal.resources.icon_24_warning_2
+import cash.p.terminal.resources.login_logging_delete_period
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -109,8 +114,8 @@ fun LoggingSettingsScreen(
                 },
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.button_info),
-                        icon = R.drawable.ic_info_20,
+                        title = TranslatableString.ResString(Res.string.button_info),
+                        icon = Res.drawable.ic_info_20,
                         tint = ComposeAppTheme.colors.iconSecondary,
                         onClick = { showInfoSheet = true }
                     )
@@ -136,7 +141,7 @@ fun LoggingSettingsScreen(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     title = stringResource(R.string.login_logging_subscription_expired_title),
                     text = stringResource(R.string.login_logging_subscription_expired_description),
-                    icon = R.drawable.icon_24_warning_2
+                    icon = Res.drawable.icon_24_warning_2
                 )
                 VSpacer(16.dp)
             }
@@ -367,7 +372,7 @@ fun LoggingSettingsScreen(
     // Period Selector Dialog
     if (showPeriodSelector) {
         AlertGroup(
-            title = R.string.login_logging_delete_period,
+            title = Res.string.login_logging_delete_period,
             select = Select(uiState.autoDeletePeriod, AutoDeletePeriod.entries),
             onSelect = { selected ->
                 onAutoDeletePeriodChanged(selected)

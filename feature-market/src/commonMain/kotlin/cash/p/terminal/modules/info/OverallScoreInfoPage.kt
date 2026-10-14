@@ -1,0 +1,207 @@
+package cash.p.terminal.modules.info
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.unit.dp
+import cash.p.terminal.resources.Coin_Analytics_OverallScore
+import cash.p.terminal.resources.Res
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.OverallScore
+import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.ScoreCategory
+import cash.p.terminal.modules.info.ui.InfoHeader
+import cash.p.terminal.ui_compose.components.AppBar
+import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
+import cash.p.terminal.ui_compose.components.HSpacer
+import cash.p.terminal.ui_compose.components.HsBackButton
+import cash.p.terminal.ui_compose.components.InfoTextBody
+import cash.p.terminal.ui_compose.components.RowUniversal
+import cash.p.terminal.ui_compose.components.VSpacer
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import io.horizontalsystems.core.CurrencyManager
+import io.horizontalsystems.core.IAppNumberFormatter
+import org.jetbrains.compose.resources.StringResource
+import org.koin.compose.koinInject
+import java.math.BigDecimal
+import cash.p.terminal.ui_compose.components.Headline2
+
+class OverallScoreInfoPage(val input: ScoreCategory) : HSPage() {
+
+    @Composable
+    override fun GetContent(navigation: HSNavigation) {
+        val numberFormatter = koinInject<IAppNumberFormatter>()
+        val currency = koinInject<CurrencyManager>().baseCurrency
+        val categoryScores = getScores(
+            input,
+            formatFiat = { numberFormatter.formatFiatShort(BigDecimal(it), currency.symbol, 0) },
+            formatNumber = { numberFormatter.formatNumberShort(BigDecimal(it), 2) },
+        )
+        InfoScreen(
+            input.title,
+            input.description,
+            categoryScores,
+            onBackPress = navigation::navigateUpSafely
+        )
+    }
+}
+
+@Composable
+private fun InfoScreen(
+    categoryTitle: StringResource,
+    description: StringResource,
+    categoryScores: Map<OverallScore, String>,
+    onBackPress: () -> Unit
+) {
+    Surface(color = ComposeAppTheme.colors.backgroundBase) {
+        Column {
+            AppBar(
+                navigationIcon = {
+                    HsBackButton(onClick = onBackPress)
+                },
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                ScoreCategoryHeader(categoryTitle, description)
+                val items = buildList<@Composable () -> Unit> {
+                    categoryScores.forEach { (score, value) ->
+                        val color = when (score) {
+                            OverallScore.Excellent -> ComposeAppTheme.colors.statusSuccess
+                            OverallScore.Good -> ComposeAppTheme.colors.statusWarning
+                            OverallScore.Fair -> Color(0xFFFF7A00)
+                            OverallScore.Poor -> Color(0xFFFF3D00)
+                        }
+                        add {
+                            RowUniversal(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                            ) {
+                                Image(
+                                    painter = painterResource(score.icon),
+                                    contentDescription = null
+                                )
+                                HSpacer(8.dp)
+                                Text(
+                                    text = stringResource(score.title).uppercase(),
+                                    style = ComposeAppTheme.typography.subhead1,
+                                    color = color,
+                                )
+                                Spacer(Modifier.weight(1f))
+                                Text(
+                                    text = value,
+                                    style = ComposeAppTheme.typography.subhead1,
+                                    color = color,
+                                )
+                            }
+                        }
+                    }
+                }
+                CellUniversalLawrenceSection(items)
+                VSpacer(24.dp)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ScoreCategoryHeader(categoryTitle: StringResource, description: StringResource) {
+    Column {
+        InfoHeader(Res.string.Coin_Analytics_OverallScore)
+        VSpacer(12.dp)
+        Headline2(
+            text = stringResource(categoryTitle),
+            color = ComposeAppTheme.colors.statusWarning,
+            modifier = Modifier.padding(horizontal = 32.dp),
+        )
+        InfoTextBody(stringResource(description))
+        VSpacer(12.dp)
+    }
+}
+
+private fun getScores(
+    scoreCategory: ScoreCategory?,
+    formatFiat: (Int) -> String,
+    formatNumber: (Int) -> String,
+): Map<OverallScore, String> {
+    return when (scoreCategory) {
+        ScoreCategory.CexScoreCategory -> {
+            mapOf(
+                OverallScore.Excellent to "> " + formatFiat(10_000_000),
+                OverallScore.Good to "> " + formatFiat(5_000_000),
+                OverallScore.Fair to "> " + formatFiat(1_000_000),
+                OverallScore.Poor to "< " + formatFiat(1_000_000),
+            )
+        }
+
+        ScoreCategory.DexVolumeScoreCategory -> {
+            mapOf(
+                OverallScore.Excellent to "> " + formatFiat(1_000_000),
+                OverallScore.Good to "> " + formatFiat(500_000),
+                OverallScore.Fair to "> " + formatFiat(100_000),
+                OverallScore.Poor to "< " + formatFiat(100_000),
+            )
+        }
+
+        ScoreCategory.DexLiquidityScoreCategory -> {
+            mapOf(
+                OverallScore.Excellent to "> " + formatFiat(1_000_000),
+                OverallScore.Good to "> " + formatFiat(1_000_000),
+                OverallScore.Fair to "> " + formatFiat(500_000),
+                OverallScore.Poor to "< " + formatFiat(500_000),
+            )
+        }
+
+        ScoreCategory.AddressesScoreCategory -> {
+            mapOf(
+                OverallScore.Excellent to "> 500",
+                OverallScore.Good to "> 200",
+                OverallScore.Fair to "> 100",
+                OverallScore.Poor to "< 100",
+            )
+        }
+
+        ScoreCategory.TransactionCountScoreCategory -> {
+            mapOf(
+                OverallScore.Excellent to "> " + formatNumber(10_000),
+                OverallScore.Good to "> " + formatNumber(5_000),
+                OverallScore.Fair to "> " + formatNumber(1_000),
+                OverallScore.Poor to "< " + formatNumber(1_000),
+            )
+        }
+
+        ScoreCategory.HoldersScoreCategory -> {
+            mapOf(
+                OverallScore.Excellent to "> " + formatNumber(100_000),
+                OverallScore.Good to "> " + formatNumber(50_000),
+                OverallScore.Fair to "> " + formatNumber(30_000),
+                OverallScore.Poor to "< " + formatNumber(30_000),
+            )
+        }
+
+        ScoreCategory.TvlScoreCategory -> {
+            mapOf(
+                OverallScore.Excellent to "> " + formatFiat(200_000_000),
+                OverallScore.Good to "> " + formatFiat(100_000_000),
+                OverallScore.Fair to "> " + formatFiat(50_000_000),
+                OverallScore.Poor to "< " + formatFiat(50_000_000),
+            )
+        }
+
+        null -> emptyMap()
+    }
+}

@@ -1,7 +1,17 @@
 package cash.p.terminal.modules.multiswap.providers
 
-import androidx.annotation.DrawableRes
-import cash.p.terminal.R
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_exolix
+import cash.p.terminal.resources.ic_quickex
+import cash.p.terminal.resources.ic_unstoppable_barter
+import cash.p.terminal.resources.ic_unstoppable_cce
+import cash.p.terminal.resources.ic_unstoppable_circle
+import cash.p.terminal.resources.ic_unstoppable_letsexchange
+import cash.p.terminal.resources.ic_unstoppable_near
+import cash.p.terminal.resources.ic_unstoppable_pegasus
+import cash.p.terminal.resources.ic_unstoppable_stealthex
+import cash.p.terminal.resources.ic_unstoppable_swapuz
+import org.jetbrains.compose.resources.DrawableResource
 
 /**
  * Unstoppable v2 aggregator sub-providers this app routes through. [apiId] is the exact string
@@ -19,77 +29,77 @@ import cash.p.terminal.R
 enum class UnstoppableProvider(
     val apiId: String,
     val title: String,
-    @DrawableRes val icon: Int,
+    val icon: DrawableResource,
     val riskType: ProviderRiskType,
     val isEvm: Boolean,
 ) {
     Near(
         apiId = "NEAR",
         title = "Near",
-        icon = R.drawable.ic_unstoppable_near,
+        icon = Res.drawable.ic_unstoppable_near,
         riskType = ProviderRiskType.Auto,
         isEvm = false,
     ),
     QuickEx(
         apiId = "QUICKEX",
         title = "QuickEx",
-        icon = R.drawable.ic_quickex,
+        icon = Res.drawable.ic_quickex,
         riskType = ProviderRiskType.PreCheck,
         isEvm = false,
     ),
     LetsExchange(
         apiId = "LETSEXCHANGE",
         title = "LetsExchange",
-        icon = R.drawable.ic_unstoppable_letsexchange,
+        icon = Res.drawable.ic_unstoppable_letsexchange,
         riskType = ProviderRiskType.Controlled,
         isEvm = false,
     ),
     StealthEx(
         apiId = "STEALTHEX",
         title = "StealthEX",
-        icon = R.drawable.ic_unstoppable_stealthex,
+        icon = Res.drawable.ic_unstoppable_stealthex,
         riskType = ProviderRiskType.Controlled,
         isEvm = false,
     ),
     Exolix(
         apiId = "EXOLIX",
         title = "Exolix",
-        icon = R.drawable.ic_exolix,
+        icon = Res.drawable.ic_exolix,
         riskType = ProviderRiskType.Controlled,
         isEvm = false,
     ),
     Cce(
         apiId = "CCE",
         title = "CCE Cash",
-        icon = R.drawable.ic_unstoppable_cce,
+        icon = Res.drawable.ic_unstoppable_cce,
         riskType = ProviderRiskType.Controlled,
         isEvm = false,
     ),
     Swapuz(
         apiId = "SWAPUZ",
         title = "Swapuz",
-        icon = R.drawable.ic_unstoppable_swapuz,
+        icon = Res.drawable.ic_unstoppable_swapuz,
         riskType = ProviderRiskType.Flexible,
         isEvm = false,
     ),
     Barter(
         apiId = "BARTER",
         title = "Barter",
-        icon = R.drawable.ic_unstoppable_barter,
+        icon = Res.drawable.ic_unstoppable_barter,
         riskType = ProviderRiskType.Auto,
         isEvm = true,
     ),
     Circle(
         apiId = "CIRCLE",
         title = "Circle CCTP",
-        icon = R.drawable.ic_unstoppable_circle,
+        icon = Res.drawable.ic_unstoppable_circle,
         riskType = ProviderRiskType.Auto,
         isEvm = true,
     ),
     Pegasus(
         apiId = "PEGASUS",
         title = "PegasusSwap",
-        icon = R.drawable.ic_unstoppable_pegasus,
+        icon = Res.drawable.ic_unstoppable_pegasus,
         riskType = ProviderRiskType.Controlled,
         isEvm = false,
     );

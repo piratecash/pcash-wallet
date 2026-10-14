@@ -65,20 +65,12 @@ fun ButtonSecondaryCircle(
     border: BorderStroke? = SecondaryButtonDefaults.filledBorder(),
     onClick: () -> Unit,
 ) {
-    HsIconButton(
+    ButtonSecondaryCircle(
+        painter = painterResource(id = icon),
         onClick = onClick,
-        modifier = modifier
-            .size(28.dp)
-            .clip(CircleShape)
-            .background(background)
-            .then(if (border != null) Modifier.border(border, CircleShape) else Modifier),
+        modifier = modifier.secondaryCircle(background, border),
         enabled = enabled,
-        rippleColor = tint
-    ) {
-        Icon(
-            painter = painterResource(id = icon),
-            contentDescription = contentDescription,
-            tint = if (enabled) tint else ComposeAppTheme.colors.iconDisabled
-        )
-    }
+        contentDescription = contentDescription,
+        tint = tint,
+    )
 }

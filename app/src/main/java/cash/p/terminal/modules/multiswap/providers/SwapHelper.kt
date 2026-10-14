@@ -1,7 +1,6 @@
 package cash.p.terminal.modules.multiswap.providers
 
 import cash.p.terminal.core.App
-import cash.p.terminal.R
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.adapters.BitcoinAdapter
 import cash.p.terminal.core.adapters.BitcoinCashAdapter
@@ -15,6 +14,8 @@ import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.modules.multiswap.action.ActionApprove
 import cash.p.terminal.modules.multiswap.action.ActionRevoke
 import cash.p.terminal.modules.multiswap.action.ISwapProviderAction
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.swap_reapprove_required
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IReceiveAdapter
@@ -155,7 +156,7 @@ object SwapHelper {
 }
 
 class InsufficientAllowanceCaution : HSCaution(
-    TranslatableString.ResString(R.string.swap_reapprove_required),
+    TranslatableString.ResString(Res.string.swap_reapprove_required),
     Type.Error,
 )
 

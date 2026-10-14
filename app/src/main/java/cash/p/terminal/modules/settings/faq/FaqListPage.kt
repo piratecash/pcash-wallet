@@ -18,6 +18,7 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.core.LocalizedException
+import cash.p.terminal.core.toResString
 import cash.p.terminal.entities.Faq
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.modules.coin.overview.ui.Loading
@@ -72,7 +73,7 @@ private fun FaqScreen(
                 is ViewState.Error -> {
                     val s = when (val error = viewState.t) {
                         is UnknownHostException -> stringResource(R.string.Hud_Text_NoInternet)
-                        is LocalizedException -> stringResource(error.errorTextRes)
+                        is LocalizedException -> error.toResString().getString()
                         else -> stringResource(R.string.Hud_UnknownError, error)
                     }
 

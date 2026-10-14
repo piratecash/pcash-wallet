@@ -1,7 +1,6 @@
 package cash.p.terminal.modules.multiswap.providers
 
 import androidx.collection.LruCache
-import cash.p.terminal.R
 import cash.p.terminal.core.cache.accountScoped
 import cash.p.terminal.core.isEvm
 import cash.p.terminal.entities.Address
@@ -22,6 +21,8 @@ import cash.p.terminal.network.quickex.domain.entity.NewTransactionQuickexRespon
 import cash.p.terminal.network.quickex.domain.entity.QuickexInstrument
 import cash.p.terminal.network.quickex.domain.repository.QuickexRepository
 import cash.p.terminal.network.swaprepository.SwapProvider
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_quickex
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.Token
@@ -46,7 +47,7 @@ class QuickexProvider(
 ) : OffChainSwapProvider {
     override val id = "quickex"
     override val title = "Quickex"
-    override val icon = R.drawable.ic_quickex
+    override val icon = Res.drawable.ic_quickex
     override val riskType = ProviderRiskType.PreCheck
 
     override val mevProtectionAvailable: Boolean = false

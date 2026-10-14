@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
@@ -70,6 +71,7 @@ private fun ChecklistConfirmationScreen(
 
     BottomSheetHeader(
         iconPainter = painterResource(R.drawable.ic_attention_red_24),
+        iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusError),
         title = input.title,
         onCloseClick = onClose
     ) {

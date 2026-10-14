@@ -20,6 +20,10 @@ import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
 import cash.p.terminal.modules.info.ui.InfoHeader
+import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.SubscriptionInfo_Title
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_close_24
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
@@ -62,8 +66,8 @@ private fun SubscriptionInfoScreen(
             AppBar(
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.Button_Close),
-                        icon = R.drawable.ic_close_24,
+                        title = TranslatableString.ResString(Res.string.Button_Close),
+                        icon = Res.drawable.ic_close_24,
                         onClick = onClose
                     )
                 )
@@ -75,7 +79,7 @@ private fun SubscriptionInfoScreen(
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
             ) {
-                InfoHeader(R.string.SubscriptionInfo_Title)
+                InfoHeader(Res.string.SubscriptionInfo_Title)
 
                 InfoH3(stringResource(R.string.SubscriptionInfo_Analytics_Title))
                 body_bran(

@@ -6,6 +6,7 @@ import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.strings.helpers.Translator
 import io.horizontalsystems.ethereumkit.api.jsonrpc.JsonRpc
 import io.horizontalsystems.ethereumkit.core.AddressValidator
+import org.jetbrains.compose.resources.StringResource
 
 open class HSCaution(
     val s: TranslatableString,
@@ -29,7 +30,7 @@ open class HSCaution(
 class NotEnoughData() : Exception()
 class UnsupportedException(override val message: String?) : Exception()
 class UnsupportedAccountException : Exception()
-class LocalizedException(val errorTextRes: Int, vararg val formatArgs: Any) : Exception()
+class LocalizedException(val errorTextRes: StringResource, vararg val formatArgs: Any) : Exception()
 class MoneroRescanException(override val message: String?) : Exception()
 class ZcashRescanException(override val message: String?) : Exception()
 

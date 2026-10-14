@@ -7,6 +7,7 @@ import cash.p.terminal.modules.paycore.PayCoreFeatureToggle
 import cash.p.terminal.modules.paycore.PayCoreProvider
 import io.horizontalsystems.core.ViewModelUiState
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.DrawableResource
 
 class SwapProvidersSettingsViewModel(
     private val registry: SwapProvidersRegistry,
@@ -49,7 +50,7 @@ data class SwapProvidersSettingsUiState(
 data class SwapProviderItem(
     val id: String,
     val title: String,
-    val icon: Int,
+    val icon: DrawableResource,
     val enabled: Boolean,
     val mandatory: Boolean,
     val iconUrl: String? = null,

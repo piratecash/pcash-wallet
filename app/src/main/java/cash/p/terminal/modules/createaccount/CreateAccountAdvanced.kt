@@ -31,6 +31,8 @@ import cash.p.terminal.R
 import cash.p.terminal.modules.coin.overview.ui.Loading
 import cash.p.terminal.modules.mnemonic.MnemonicLanguageCell
 import cash.p.terminal.modules.mnemonic.MnemonicLanguageSelectorDialog
+import cash.p.terminal.resources.Button_Create
+import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.FormsInput
 import cash.p.terminal.ui_compose.components.AppSelectorDialog
@@ -127,7 +129,7 @@ fun CreateAccountAdvancedScreen(
                 },
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.Button_Create),
+                        title = TranslatableString.ResString(Res.string.Button_Create),
                         onClick = {
                             if (viewModel.shouldConfirmNonEnglishMnemonic()) {
                                 onOpenNonEnglishMnemonicTerms(viewModel.selectedLanguage)

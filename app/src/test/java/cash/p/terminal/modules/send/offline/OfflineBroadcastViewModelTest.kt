@@ -21,7 +21,6 @@ import cash.p.terminal.entities.OfflineTonRetryMetadata
 import cash.p.terminal.entities.OfflineTokenMetadata
 import cash.p.terminal.entities.OfflineTronRetryMetadata
 import cash.p.terminal.strings.helpers.TranslatableString
-import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -36,6 +35,17 @@ import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.core.DispatcherProvider
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Hud_Text_NoInternet
+import cash.p.terminal.resources.offline_broadcast_error_already_sent
+import cash.p.terminal.resources.offline_broadcast_error_low_fee
+import cash.p.terminal.resources.offline_broadcast_error_nonce_used
+import cash.p.terminal.resources.offline_broadcast_error_rejected
+import cash.p.terminal.resources.offline_broadcast_error_send_failed
+import cash.p.terminal.resources.offline_broadcast_error_timeout
+import org.jetbrains.compose.resources.StringResource
+import cash.p.terminal.strings.helpers.Translator
+import io.horizontalsystems.core.Translator as CommonTranslator
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.Called
@@ -44,6 +54,7 @@ import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import io.mockk.verify
 import junit.framework.TestCase.assertEquals
@@ -144,6 +155,8 @@ class OfflineBroadcastViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
+        mockkObject(CommonTranslator)
+        every { CommonTranslator.getString(any(), *anyVararg()) } returns "translated"
         every { dispatcherProvider.io } returns dispatcher
         every { dispatcherProvider.default } returns dispatcher
         every { dispatcherProvider.main } returns dispatcher
@@ -974,39 +987,39 @@ class OfflineBroadcastViewModelTest {
     fun offlineBroadcastErrorText_knownErrors_returnsLocalizedResources() {
         assertErrorTextRes(
             error = Exception(),
-            expectedRes = R.string.offline_broadcast_error_send_failed,
+            expectedRes = Res.string.offline_broadcast_error_send_failed,
         )
         assertErrorTextRes(
             error = Exception("Error"),
-            expectedRes = R.string.offline_broadcast_error_send_failed,
+            expectedRes = Res.string.offline_broadcast_error_send_failed,
         )
         assertErrorTextRes(
             error = UnknownHostException(),
-            expectedRes = R.string.Hud_Text_NoInternet,
+            expectedRes = Res.string.Hud_Text_NoInternet,
         )
         assertErrorTextRes(
             error = TimeoutException(),
-            expectedRes = R.string.offline_broadcast_error_timeout,
+            expectedRes = Res.string.offline_broadcast_error_timeout,
         )
         assertErrorTextRes(
             error = EvmError.RpcError("already known"),
-            expectedRes = R.string.offline_broadcast_error_already_sent,
+            expectedRes = Res.string.offline_broadcast_error_already_sent,
         )
         assertErrorTextRes(
             error = Exception("transaction was committed to the best chain"),
-            expectedRes = R.string.offline_broadcast_error_already_sent,
+            expectedRes = Res.string.offline_broadcast_error_already_sent,
         )
         assertErrorTextRes(
             error = EvmError.RpcError("nonce too low"),
-            expectedRes = R.string.offline_broadcast_error_nonce_used,
+            expectedRes = Res.string.offline_broadcast_error_nonce_used,
         )
         assertErrorTextRes(
             error = EvmError.RpcError("transaction underpriced"),
-            expectedRes = R.string.offline_broadcast_error_low_fee,
+            expectedRes = Res.string.offline_broadcast_error_low_fee,
         )
         assertErrorTextRes(
             error = EvmError.RpcError("invalid sender"),
-            expectedRes = R.string.offline_broadcast_error_rejected,
+            expectedRes = Res.string.offline_broadcast_error_rejected,
         )
     }
 
@@ -1452,7 +1465,7 @@ class OfflineBroadcastViewModelTest {
         every { this@mockk.account } returns account
     }
 
-    private fun assertErrorTextRes(error: Throwable, expectedRes: Int) {
+    private fun assertErrorTextRes(error: Throwable, expectedRes: StringResource) {
         val message = error.offlineBroadcastErrorText("BNB") as? TranslatableString.ResString
         assertEquals(expectedRes, message?.id)
     }

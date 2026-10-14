@@ -1,0 +1,17 @@
+package cash.p.terminal.core
+
+import io.horizontalsystems.core.DispatcherProvider
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+
+/** Test double; lives in main because KMP has no test-fixtures source set. */
+class TestDispatcherProvider(
+    dispatcher: CoroutineDispatcher,
+    override val applicationScope: CoroutineScope,
+    // A distinct io dispatcher lets tests exercise real main<->io dispatch boundaries
+    // (cancellation checkpoints) that a single shared dispatcher optimizes away.
+    override val io: CoroutineDispatcher = dispatcher,
+) : DispatcherProvider {
+    override val default: CoroutineDispatcher = dispatcher
+    override val main: CoroutineDispatcher = dispatcher
+}

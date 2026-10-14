@@ -13,6 +13,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Button_Reset
+import cash.p.terminal.resources.Res
 import cash.p.terminal.ui_compose.components.AppModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material3.Scaffold
@@ -56,6 +58,7 @@ import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.RowUniversal
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
+import cash.p.terminal.resources.ic_attention_20
 
 @Composable
 fun SendBtcAdvancedSettingsScreen(
@@ -108,7 +111,7 @@ fun SendBtcAdvancedSettingsScreen(
                         },
                         menuItems = listOf(
                             MenuItem(
-                                title = TranslatableString.ResString(R.string.Button_Reset),
+                                title = TranslatableString.ResString(Res.string.Button_Reset),
                                 onClick = {
                                     sendBitcoinViewModel.reset()
                                     viewModel.reset()
@@ -366,7 +369,7 @@ fun FeeRateCaution(modifier: Modifier, feeRateCaution: HSCaution) {
         HSCaution.Type.Error -> {
             TextImportantError(
                 modifier = modifier,
-                icon = R.drawable.ic_attention_20,
+                icon = Res.drawable.ic_attention_20,
                 title = feeRateCaution.getString(),
                 text = feeRateCaution.getDescription() ?: ""
             )
@@ -375,7 +378,7 @@ fun FeeRateCaution(modifier: Modifier, feeRateCaution: HSCaution) {
         HSCaution.Type.Warning -> {
             TextImportantWarning(
                 modifier = modifier,
-                icon = R.drawable.ic_attention_20,
+                icon = Res.drawable.ic_attention_20,
                 title = feeRateCaution.getString(),
                 text = feeRateCaution.getDescription() ?: ""
             )

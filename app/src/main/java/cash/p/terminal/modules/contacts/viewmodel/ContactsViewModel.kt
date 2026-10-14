@@ -1,10 +1,11 @@
 package cash.p.terminal.modules.contacts.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import cash.p.terminal.R
 import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.contacts.Mode
 import cash.p.terminal.modules.contacts.model.Contact
+import cash.p.terminal.resources.Contacts_AddAddress_ReplaceWarning
+import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.shorten
 import cash.p.terminal.strings.helpers.TranslatableString
 import io.horizontalsystems.core.IPinComponent
@@ -89,7 +90,7 @@ class ContactsViewModel(
             contact.addresses.find { it.blockchain.type == blockchainType } ?: return null
 
         return TranslatableString.ResString(
-            R.string.Contacts_AddAddress_ReplaceWarning,
+            Res.string.Contacts_AddAddress_ReplaceWarning,
             oldAddress.blockchain.name,
             oldAddress.address.shorten(),
             address.shorten()

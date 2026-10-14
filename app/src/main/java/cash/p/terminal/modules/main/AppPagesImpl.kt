@@ -3,10 +3,14 @@ package cash.p.terminal.modules.main
 import cash.p.terminal.modules.backuplocal.BackupLocalPage
 import cash.p.terminal.modules.coin.CoinPage
 import cash.p.terminal.modules.createaccount.CreateAccountPage
+import cash.p.terminal.modules.market.MarketPages
+import cash.p.terminal.modules.markdown.MarkdownPage
 import cash.p.terminal.modules.manageaccount.backupkey.BackupKeyPage
 import cash.p.terminal.modules.multiswap.SwapPage
+import cash.p.terminal.modules.nft.collection.NftCollectionPage
 import cash.p.terminal.modules.qrscanner.QRScannerPage
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
+import cash.p.terminal.modules.subscription.SubscriptionInfoPage
 import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.BackupKeyInput
 import cash.p.terminal.navigation.HSPage
@@ -16,7 +20,7 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.navigation.WalletPages
 
-class AppPagesImpl : AppPages, WalletPages {
+class AppPagesImpl : AppPages, WalletPages, MarketPages {
     override fun coin(coinUid: String): HSPage = CoinPage(CoinFragmentInput(coinUid))
     override fun createAccount(): HSPage = CreateAccountPage(null)
     override fun restoreAccount(): HSPage = RestoreAccountPage(null)
@@ -24,4 +28,8 @@ class AppPagesImpl : AppPages, WalletPages {
     override fun qrScanner(input: QrScannerInput): HSPage = QRScannerPage(input)
     override fun swap(tokenOut: Token): HSPage = SwapPage(tokenOut = tokenOut)
     override fun backupLocal(account: Account): HSPage = BackupLocalPage(account)
+    override fun markdown(url: String): HSPage = MarkdownPage(MarkdownPage.Input(url, true))
+    override fun subscriptionInfo(): HSPage = SubscriptionInfoPage()
+    override fun nftCollection(collectionUid: String, blockchainUid: String): HSPage =
+        NftCollectionPage(NftCollectionPage.Input(collectionUid, blockchainUid))
 }

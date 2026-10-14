@@ -22,6 +22,9 @@ import cash.p.terminal.modules.multiswap.SwapViewModel
 import cash.p.terminal.modules.paycore.selectbank.PayCoreBankSwapSetting
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.SwapSettings_Apply
+import cash.p.terminal.resources.ic_checkmark_20
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
@@ -62,8 +65,8 @@ fun SwapSettingsScreen(
                 menuItems = if (bankSetting != null) {
                     listOf(
                         MenuItem(
-                            title = TranslatableString.ResString(R.string.SwapSettings_Apply),
-                            icon = R.drawable.ic_checkmark_20,
+                            title = TranslatableString.ResString(Res.string.SwapSettings_Apply),
+                            icon = Res.drawable.ic_checkmark_20,
                             enabled = uiState.applyEnabled,
                             onClick = applySettings,
                         )

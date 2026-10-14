@@ -1,11 +1,14 @@
 package cash.p.terminal.modules.send.ton
 
-import cash.p.terminal.R
 import cash.p.terminal.core.ISendTonAdapter
 import cash.p.terminal.core.LocalizedException
 import cash.p.terminal.core.OfflineTonSignRequest
 import cash.p.terminal.core.TonOfflineAnchor
 import cash.p.terminal.modules.pin.core.UptimeProvider
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.offline_sign_error_wallet_not_deployed
+import cash.p.terminal.resources.offline_transaction_anchor_required
+import cash.p.terminal.resources.send_error_fee_rate_unavailable
 import io.horizontalsystems.tonkit.FriendlyAddress
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -83,7 +86,7 @@ class TonOfflineAnchorService(
     ): OfflineTonSignRequest {
         val anchored = requireUsableAnchor()
         if (quote == null || !quote.matches(amount, address, memo)) {
-            throw LocalizedException(R.string.send_error_fee_rate_unavailable)
+            throw LocalizedException(Res.string.send_error_fee_rate_unavailable)
         }
         val elapsedSeconds = (uptimeProvider.uptime - anchored.elapsedAtFetch) / MILLIS_IN_SECOND
         return OfflineTonSignRequest(
@@ -98,10 +101,10 @@ class TonOfflineAnchorService(
 
     private fun requireUsableAnchor(): Anchored {
         val anchored = state.get().anchored
-            ?: throw LocalizedException(R.string.offline_transaction_anchor_required)
+            ?: throw LocalizedException(Res.string.offline_transaction_anchor_required)
         if (anchored.anchor.seqno == 0) {
             // Wallet contracts reject external messages until the wallet is deployed.
-            throw LocalizedException(R.string.offline_sign_error_wallet_not_deployed)
+            throw LocalizedException(Res.string.offline_sign_error_wallet_not_deployed)
         }
         return anchored
     }

@@ -2,7 +2,6 @@ package cash.p.terminal.modules.settings.appearance
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.google.gson.annotations.SerializedName
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.getKoinInstance
@@ -88,20 +87,5 @@ enum class AppIcon(
 
         fun fromString(type: String?): AppIcon? = map[type]
         fun fromTitle(title: String?): AppIcon? = titleMap[title]
-    }
-}
-
-enum class PriceChangeInterval(val raw: String, override val title: TranslatableString) :
-    WithTranslatableTitle {
-    @SerializedName("hour_24")
-    LAST_24H("hour_24", TranslatableString.ResString(R.string.Market_PriceChange_24H)),
-
-    @SerializedName("midnight_utc")
-    FROM_UTC_MIDNIGHT("midnight_utc", TranslatableString.ResString(R.string.Market_PriceChange_Utc));
-
-    companion object {
-        fun fromRaw(raw: String): PriceChangeInterval? {
-            return entries.find { it.raw == raw }
-        }
     }
 }

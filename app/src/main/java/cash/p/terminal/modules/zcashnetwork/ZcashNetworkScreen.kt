@@ -28,6 +28,9 @@ import cash.p.terminal.modules.btcblockchainsettings.BlockchainSettingCell
 import cash.p.terminal.modules.evmnetwork.AddButton
 import cash.p.terminal.modules.evmnetwork.CustomRpcListSection
 import cash.p.terminal.modules.evmnetwork.RpcRowItem
+import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_close_24
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
@@ -126,8 +129,8 @@ private fun ZcashNetworkAppBar(blockchain: Blockchain, onClose: () -> Unit) {
         },
         menuItems = listOf(
             MenuItem(
-                title = TranslatableString.ResString(R.string.Button_Close),
-                icon = R.drawable.ic_close_24,
+                title = TranslatableString.ResString(Res.string.Button_Close),
+                icon = Res.drawable.ic_close_24,
                 onClick = onClose
             )
         )

@@ -39,6 +39,9 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.navigation.viewModelStoreOwnerForPage
+import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_close_24
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import cash.p.terminal.strings.helpers.TranslatableString
@@ -207,8 +210,8 @@ private fun TransactionInfoContent(
             title = stringResource(R.string.TransactionInfo_Title),
             menuItems = listOf(
                 MenuItem(
-                    title = TranslatableString.ResString(R.string.Button_Close),
-                    icon = R.drawable.ic_close_24,
+                    title = TranslatableString.ResString(Res.string.Button_Close),
+                    icon = Res.drawable.ic_close_24,
                     onClick = actions.onClose
                 )
             )
@@ -530,6 +533,7 @@ fun TransactionInfoSection(
                                 blockchainType = viewItem.blockchainType,
                                 availability = viewItem.availability,
                                 wallet = viewItem.wallet,
+                                evmKitWrapper = viewItem.evmKitWrapper,
                                 navigation = navigation
                             )
                         }

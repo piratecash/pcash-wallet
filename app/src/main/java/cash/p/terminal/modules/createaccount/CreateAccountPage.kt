@@ -23,6 +23,8 @@ import cash.p.terminal.R
 import cash.p.terminal.modules.mnemonic.NonEnglishMnemonicTermsScreen
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.resources.Button_Create
+import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.FormsInput
 import cash.p.terminal.ui_compose.components.AppBar
@@ -150,7 +152,7 @@ private fun CreateAccountIntroScreen(
                 title = stringResource(R.string.ManageAccounts_CreateNewWallet),
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.Button_Create),
+                        title = TranslatableString.ResString(Res.string.Button_Create),
                         onClick = viewModel::createMnemonicAccount
                     )
                 ),

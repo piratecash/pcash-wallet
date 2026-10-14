@@ -4,6 +4,7 @@ import android.util.Log
 import io.horizontalsystems.core.storage.LogEntry
 import io.horizontalsystems.core.storage.LogsDao
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -16,45 +17,59 @@ object AppLog {
     lateinit var logsDao: LogsDao
 
     private const val DAYS_TO_KEEP = 90L
+    private const val MAX_ENTRIES = 20_000
     private val executor = Executors.newSingleThreadExecutor()
-    private val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US).apply {
-        timeZone = TimeZone.getTimeZone("UTC")
-    }
 
-    fun info(actionId: String, message: String) {
+    /** Serializes the export with every insert and trim, which all run on [executor]. */
+    private val logDispatcher = executor.asCoroutineDispatcher()
+    private val sdf = newDateFormat()
+
+    fun info(actionId: String, message: String) = submitInsert(Log.INFO, actionId, message)
+
+    fun warning(actionId: String, message: String, e: Throwable) =
+        submitInsert(Log.WARN, actionId, message, e)
+
+    fun warning(actionId: String, message: String) = submitInsert(Log.WARN, actionId, message)
+
+    private fun submitInsert(
+        level: Int,
+        actionId: String,
+        message: String,
+        error: Throwable? = null,
+    ) {
         executor.submit {
-            logsDao.insert(LogEntry(System.currentTimeMillis(), Log.INFO, actionId, message))
+            val text = if (error == null) message else message + ": " + getStackTraceString(error)
+            logsDao.insert(LogEntry(System.currentTimeMillis(), level, actionId, text))
+            logsDao.trimToNewest(MAX_ENTRIES)
         }
     }
 
-    fun warning(actionId: String, message: String, e: Throwable) {
-        executor.submit {
-            logsDao.insert(
-                LogEntry(
-                    System.currentTimeMillis(),
-                    Log.WARN,
-                    actionId,
-                    message + ": " + getStackTraceString(e)
-                )
-            )
-        }
-    }
+    /** Streams the whole log (or one tag) into [out] row by row, without materialising the table. */
+    suspend fun writeLog(out: Appendable, tag: String? = null) = withContext(logDispatcher) {
+        val dateFormat = newDateFormat()
+        val cursor = if (tag == null) logsDao.streamGrouped() else logsDao.streamGroupedByTag(tag)
+        cursor.use {
+            val idIndex = it.getColumnIndexOrThrow("id")
+            val dateIndex = it.getColumnIndexOrThrow("date")
+            val actionIdIndex = it.getColumnIndexOrThrow("actionId")
+            val messageIndex = it.getColumnIndexOrThrow("message")
+            var currentActionId: String? = null
 
-    fun warning(actionId: String, message: String) {
-        executor.submit {
-            logsDao.insert(LogEntry(System.currentTimeMillis(), Log.WARN, actionId, message))
+            while (it.moveToNext()) {
+                val actionId = it.getString(actionIdIndex)
+                if (actionId != currentActionId) {
+                    out.appendLine("$actionId:")
+                    currentActionId = actionId
+                }
+                val date = dateFormat.format(Date(it.getLong(dateIndex)))
+                out.appendLine("  - ${it.getInt(idIndex)}: $date ${it.getString(messageIndex)}")
+            }
         }
     }
 
     suspend fun getLog(): Map<String, Any> = withContext(Dispatchers.IO) {
         buildLogMap(logsDao.getRecent(500).reversed())
     }
-
-    suspend fun getFullLog(): Map<String, Any> = withContext(Dispatchers.IO) {
-        buildLogMap(logsDao.getAll())
-    }
-
-    fun getLog(tag: String): Map<String, Any> = buildLogMap(logsDao.getByTag(tag))
 
     fun getRecentLog(tag: String, limit: Int = 300): Map<String, Any> =
         buildLogMap(logsDao.getRecentByTag(tag, limit).reversed())
@@ -74,7 +89,13 @@ object AppLog {
         executor.submit {
             val threeMonthsAgo = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(DAYS_TO_KEEP)
             logsDao.deleteOlderThan(threeMonthsAgo)
+            logsDao.trimToNewest(MAX_ENTRIES)
         }
+    }
+
+    /** A shared instance would be read from both the export thread and the screen threads. */
+    private fun newDateFormat() = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US).apply {
+        timeZone = TimeZone.getTimeZone("UTC")
     }
 
     private fun getStackTraceString(error: Throwable): String {

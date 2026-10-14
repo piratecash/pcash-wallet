@@ -235,13 +235,14 @@ class EvmKitManager(
         }
     }
 
-    suspend fun unlink(account: Account) = lifecycleMutex.withLock {
-        if (account == currentAccount) {
-            useCount.decrementAndGet()
+    suspend fun unlink(wrapper: EvmKitWrapper) = lifecycleMutex.withLock {
+        // A release owed to an already-stopped instance must not count against its replacement.
+        if (wrapper !== evmKitWrapper) return@withLock
 
-            if (useCount.get() < 1) {
-                stopEvmKit()
-            }
+        useCount.decrementAndGet()
+
+        if (useCount.get() < 1) {
+            stopEvmKit()
         }
     }
 

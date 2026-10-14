@@ -7,7 +7,6 @@ import cash.p.beam.BeamSendContext
 import cash.p.beam.BeamSendOperation
 import cash.p.beam.BeamSendResolution
 import cash.p.beam.BeamTransactionStatus
-import cash.p.terminal.R
 import cash.p.terminal.core.LocalizedException
 import cash.p.terminal.core.adapters.BeamAdapter
 import cash.p.terminal.core.ethereum.CautionViewItem
@@ -31,6 +30,11 @@ import cash.p.terminal.modules.send.beam.BeamSendSession
 import cash.p.terminal.modules.send.beam.beamSendErrorMessage
 import cash.p.terminal.modules.send.beam.isNativeBeamSendWallet
 import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.beam_send_not_ready
+import cash.p.terminal.resources.beam_send_preview_error
+import cash.p.terminal.resources.beam_send_uncertain
+import cash.p.terminal.resources.unsupported_address
 import cash.p.terminal.wallet.Token
 import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.CancellationException
@@ -40,6 +44,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.jetbrains.compose.resources.StringResource
 import org.koin.java.KoinJavaComponent.inject
 import java.math.BigDecimal
 
@@ -116,9 +121,9 @@ class SendTransactionServiceBeam(token: Token) : ISendTransactionService<BeamAda
         val amount = BeamAmount.toAtomic(data.amount)
         val session = owner.current
         cautions = when {
-            !BeamRecipient.isSupported(data.address) -> caution(R.string.unsupported_address)
-            amount == null -> caution(R.string.beam_send_preview_error)
-            !isNativeBeamSendWallet(wallet, session, adapter) -> caution(R.string.beam_send_not_ready)
+            !BeamRecipient.isSupported(data.address) -> caution(Res.string.unsupported_address)
+            amount == null -> caution(Res.string.beam_send_preview_error)
+            !isNativeBeamSendWallet(wallet, session, adapter) -> caution(Res.string.beam_send_not_ready)
             else -> try {
                 val access = BeamSendSession(
                     wallet, checkNotNull(session), adapter, owner, coordinator, offlineModeManager, dispatcherProvider,
@@ -148,7 +153,7 @@ class SendTransactionServiceBeam(token: Token) : ISendTransactionService<BeamAda
             throw lookupError
         } catch (_: Exception) {
             unresolved = true
-            fail(R.string.beam_send_uncertain)
+            fail(Res.string.beam_send_uncertain)
         }
         if (operation != null) return resultFor(operation)
         if ((error as? SendException)?.reason == Reason.QuoteChanged) {
@@ -165,7 +170,7 @@ class SendTransactionServiceBeam(token: Token) : ISendTransactionService<BeamAda
             is BeamSendResolution.Terminal ->
                 if (resolution.status == BeamTransactionStatus.Failed ||
                     resolution.status == BeamTransactionStatus.Canceled
-                ) fail(R.string.beam_send_preview_error) else SendResult.Sent(uid)
+                ) fail(Res.string.beam_send_preview_error) else SendResult.Sent(uid)
             is BeamSendResolution.Submitted -> SendResult.Sent(uid)
             // Not terminal: recovery commits Prepared/Committing; Indeterminate is left for Core to report.
             else -> SendResult.SentButQueued(uid)
@@ -173,14 +178,14 @@ class SendTransactionServiceBeam(token: Token) : ISendTransactionService<BeamAda
         return SendTransactionResult.Beam(result, operation.transactionId)
     }
 
-    private fun fail(message: Int): Nothing {
+    private fun fail(message: StringResource): Nothing {
         val error = LocalizedException(message)
         cautions = listOf(createCaution(error))
         emitState()
         throw error
     }
 
-    private fun caution(message: Int) = listOf(createCaution(LocalizedException(message)))
+    private fun caution(message: StringResource) = listOf(createCaution(LocalizedException(message)))
 
     private fun toBeam(atomic: Long) = BigDecimal.valueOf(atomic, BeamAmount.DECIMALS)
 }

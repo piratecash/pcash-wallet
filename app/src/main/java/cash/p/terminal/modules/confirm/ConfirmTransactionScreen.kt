@@ -14,6 +14,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
+import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Settings_Title
+import cash.p.terminal.resources.ic_close_24
+import cash.p.terminal.resources.ic_manage_2_24
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.HsBackButton
@@ -41,8 +46,8 @@ fun ConfirmTransactionScreen(
                     onClickSettings?.let {
                         add(
                             MenuItem(
-                                title = TranslatableString.ResString(R.string.Settings_Title),
-                                icon = R.drawable.ic_manage_2_24,
+                                title = TranslatableString.ResString(Res.string.Settings_Title),
+                                icon = Res.drawable.ic_manage_2_24,
                                 onClick = onClickSettings
                             )
                         )
@@ -50,8 +55,8 @@ fun ConfirmTransactionScreen(
                     onClickClose?.let {
                         add(
                             MenuItem(
-                                title = TranslatableString.ResString(R.string.Button_Close),
-                                icon = R.drawable.ic_close_24,
+                                title = TranslatableString.ResString(Res.string.Button_Close),
+                                icon = Res.drawable.ic_close_24,
                                 onClick = onClickClose
                             )
                         )

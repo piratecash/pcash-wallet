@@ -1,7 +1,7 @@
 package cash.p.terminal.widgets
 
-import cash.p.terminal.R
-import cash.p.terminal.core.App
+import cash.p.terminal.resources.MarketTopPlatforms_Protocols
+import cash.p.terminal.resources.Res
 import cash.p.terminal.wallet.alternativeImageUrl
 import cash.p.terminal.core.iconUrl
 import cash.p.terminal.wallet.imageUrl
@@ -18,6 +18,8 @@ import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsReposit
 import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsViewItemFactory
 import cash.p.terminal.modules.market.topplatforms.TopPlatformsRepository
 import io.horizontalsystems.core.CurrencyManager
+import io.horizontalsystems.core.IAppNumberFormatter
+import io.horizontalsystems.core.Translator
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.rx2.await
 
@@ -28,7 +30,8 @@ class MarketWidgetRepository(
     private val topNftCollectionsRepository: TopNftCollectionsRepository,
     private val topNftCollectionsViewItemFactory: TopNftCollectionsViewItemFactory,
     private val topPlatformsRepository: TopPlatformsRepository,
-    private val currencyManager: CurrencyManager
+    private val currencyManager: CurrencyManager,
+    private val numberFormatter: IAppNumberFormatter
 ) {
     companion object {
         private const val topGainers = 100
@@ -73,12 +76,12 @@ class MarketWidgetRepository(
             MarketWidgetItem(
                 uid = item.platform.uid,
                 title = item.platform.name,
-                subtitle = cash.p.terminal.strings.helpers.Translator.getString(
-                    R.string.MarketTopPlatforms_Protocols,
+                subtitle = Translator.getString(
+                    Res.string.MarketTopPlatforms_Protocols,
                     item.protocols
                 ),
                 label = item.rank.toString(),
-                value = App.numberFormatter.formatFiatShort(
+                value = numberFormatter.formatFiatShort(
                     item.marketCap,
                     currency.symbol,
                     2
@@ -170,7 +173,7 @@ class MarketWidgetRepository(
             title = marketItem.fullCoin.coin.code,
             subtitle = marketItem.marketCap.getFormattedShort(),
             label = marketItem.fullCoin.coin.marketCapRank?.toString() ?: "",
-            value = App.numberFormatter.formatFiatFull(
+            value = numberFormatter.formatFiatFull(
                 marketItem.rate.value,
                 marketItem.rate.currency.symbol
             ),

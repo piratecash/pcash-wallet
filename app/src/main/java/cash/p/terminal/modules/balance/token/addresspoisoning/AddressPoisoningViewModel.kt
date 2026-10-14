@@ -5,6 +5,8 @@ import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.modules.transactions.TransactionViewItem
 import cash.p.terminal.modules.transactions.poison_status.PoisonStatus
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.coin_placeholder
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.strings.helpers.shorten
 import cash.p.terminal.ui_compose.ColorName
@@ -67,7 +69,7 @@ class AddressPoisoningViewModel(
         icon = TransactionViewItem.Icon.Regular(
             url = coinImageUrl(coinUid),
             alternativeUrl = coin?.image,
-            placeholder = R.drawable.coin_placeholder,
+            placeholder = Res.drawable.coin_placeholder,
         ),
         poisonStatus = PoisonStatus.CREATED,
         addressPoisoningViewMode = mode,

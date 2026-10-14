@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.diffPercentage
+import cash.p.terminal.core.isBlockedByProvider
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.isNetworkPaused
 import cash.p.terminal.core.tryOrNull
@@ -11,6 +12,21 @@ import cash.p.terminal.modules.balance.BalanceModule.warningText
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.offline.OfflineOperationGate.Companion.availability
 import cash.p.terminal.modules.offline.OperationAvailability
+import cash.p.terminal.resources.Balance_LockedAmount_Title
+import cash.p.terminal.resources.Balance_NotRelayedAmount_Title
+import cash.p.terminal.resources.Balance_ProcessingBalance_Title
+import cash.p.terminal.resources.Balance_Reserved_Title
+import cash.p.terminal.resources.Info_LockTime_Title
+import cash.p.terminal.resources.Info_NotRelayed_Description
+import cash.p.terminal.resources.Info_NotRelayed_Title
+import cash.p.terminal.resources.Info_ProcessingBalance_Description
+import cash.p.terminal.resources.Info_ProcessingBalance_Title
+import cash.p.terminal.resources.Info_Reserved_CurrentlyLocked
+import cash.p.terminal.resources.Info_Reserved_Description
+import cash.p.terminal.resources.Info_Reserved_Title
+import cash.p.terminal.resources.Info_Reserved_WalletAction
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.beam_locked_balance_info
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.ui.compose.components.diffSign
@@ -54,6 +70,7 @@ data class BalanceViewItem(
     val fullDiff: String = "",
     val displayDiffOptionType: DisplayDiffOptionType = DisplayDiffOptionType.BOTH,
     val offline: Boolean = false,
+    val syncErrorBlockedByProvider: Boolean = false,
 )
 
 data class WarningText(
@@ -89,6 +106,7 @@ data class BalanceViewItem2(
     val displayDiffOptionType: DisplayDiffOptionType,
     val stackingUnpaid: DeemedValue<String>?,
     val offline: Boolean = false,
+    val syncErrorBlockedByProvider: Boolean = false,
 )
 
 enum class SyncingProgressType {
@@ -429,12 +447,16 @@ class BalanceViewItemFactory(
                 val beam = wallet.token.blockchainType == BlockchainType.Beam
                 add(
                     LockedValue(
-                        title = TranslatableString.ResString(R.string.Balance_LockedAmount_Title),
+                        title = TranslatableString.ResString(Res.string.Balance_LockedAmount_Title),
                         infoTitle = TranslatableString.ResString(
-                            if (beam) R.string.Balance_LockedAmount_Title else R.string.Info_LockTime_Title
+                            if (beam) Res.string.Balance_LockedAmount_Title else Res.string.Info_LockTime_Title
                         ),
                         info = TranslatableString.ResString(
-                            if (beam) R.string.beam_locked_balance_info else R.string.Info_ProcessingBalance_Description
+                            if (beam) {
+                                Res.string.beam_locked_balance_info
+                            } else {
+                                Res.string.Info_ProcessingBalance_Description
+                            }
                         ),
                         coinValue = it
                     )
@@ -450,9 +472,9 @@ class BalanceViewItemFactory(
             )?.let {
                 add(
                     LockedValue(
-                        title = TranslatableString.ResString(R.string.Balance_ProcessingBalance_Title),
-                        infoTitle = TranslatableString.ResString(R.string.Info_ProcessingBalance_Title),
-                        info = TranslatableString.ResString(R.string.Info_ProcessingBalance_Description),
+                        title = TranslatableString.ResString(Res.string.Balance_ProcessingBalance_Title),
+                        infoTitle = TranslatableString.ResString(Res.string.Info_ProcessingBalance_Title),
+                        info = TranslatableString.ResString(Res.string.Info_ProcessingBalance_Description),
                         coinValue = it
                     )
                 )
@@ -467,9 +489,9 @@ class BalanceViewItemFactory(
             )?.let {
                 add(
                     LockedValue(
-                        title = TranslatableString.ResString(R.string.Balance_NotRelayedAmount_Title),
-                        infoTitle = TranslatableString.ResString(R.string.Info_NotRelayed_Title),
-                        info = TranslatableString.ResString(R.string.Info_NotRelayed_Description),
+                        title = TranslatableString.ResString(Res.string.Balance_NotRelayedAmount_Title),
+                        infoTitle = TranslatableString.ResString(Res.string.Info_NotRelayed_Title),
+                        info = TranslatableString.ResString(Res.string.Info_NotRelayed_Description),
                         coinValue = it
                     )
                 )
@@ -483,12 +505,12 @@ class BalanceViewItemFactory(
                 wallet.token
             )?.let {
                 var info =
-                    TranslatableString.ResString(R.string.Info_Reserved_Description).toString()
+                    TranslatableString.ResString(Res.string.Info_Reserved_Description).toString()
                 info += "\n\n"
-                info += TranslatableString.ResString(R.string.Info_Reserved_CurrentlyLocked)
+                info += TranslatableString.ResString(Res.string.Info_Reserved_CurrentlyLocked)
                     .toString()
 
-                info += "\n1 XLM - " + TranslatableString.ResString(R.string.Info_Reserved_WalletAction)
+                info += "\n1 XLM - " + TranslatableString.ResString(Res.string.Info_Reserved_WalletAction)
                     .toString()
                 item.balanceData.stellarAssets.forEach {
                     info += "\n0.5 XLM - ${it.code}"
@@ -496,8 +518,8 @@ class BalanceViewItemFactory(
 
                 add(
                     LockedValue(
-                        title = TranslatableString.ResString(R.string.Balance_Reserved_Title),
-                        infoTitle = TranslatableString.ResString(R.string.Info_Reserved_Title),
+                        title = TranslatableString.ResString(Res.string.Balance_Reserved_Title),
+                        infoTitle = TranslatableString.ResString(Res.string.Info_Reserved_Title),
                         info = TranslatableString.PlainString(info),
                         coinValue = it
                     )
@@ -506,6 +528,7 @@ class BalanceViewItemFactory(
         }
 
         val syncDisplayState = syncDisplayState(wallet, displaySyncState)
+        val syncError = (displaySyncState as? AdapterState.NotSynced)?.error
 
         return BalanceViewItem(
             wallet = item.wallet,
@@ -522,7 +545,8 @@ class BalanceViewItemFactory(
             badge = wallet.badge,
             swapVisible = isSwappable,
             swapAvailability = availability(state !is AdapterState.NotSynced, syncDisplayState.offline),
-            errorMessage = (displaySyncState as? AdapterState.NotSynced)?.error?.message,
+            errorMessage = syncError?.message,
+            syncErrorBlockedByProvider = syncError?.isBlockedByProvider() == true,
             isWatchAccount = watchAccount,
             warning = item.warning?.warningText,
             diff = item.coinPrice?.diffPercentage,
@@ -581,8 +605,9 @@ class BalanceViewItemFactory(
 
         val stackingUnpaid = stackingUnpaidValue(item, showStackingUnpaid, balanceTotalVisibility)
 
+        val syncError = (displaySyncState as? AdapterState.NotSynced)?.error
         val errorMessage = if (networkAvailable) {
-            (displaySyncState as? AdapterState.NotSynced)?.error?.message
+            syncError?.message
         } else {
             Translator.getString(R.string.Hud_Text_NoInternet)
         }
@@ -604,6 +629,7 @@ class BalanceViewItemFactory(
             badge = wallet.badge,
             swapAvailability = availability(state !is AdapterState.NotSynced, syncDisplayState.offline),
             errorMessage = errorMessage,
+            syncErrorBlockedByProvider = networkAvailable && syncError?.isBlockedByProvider() == true,
             isWatchAccount = watchAccount,
             isSwipeToDeleteEnabled = isSwipeToDeleteEnabled,
             stackingUnpaid = stackingUnpaid,

@@ -4,8 +4,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
-import cash.p.terminal.R
 import cash.p.terminal.core.App
+import cash.p.terminal.resources.Hud_Text_NoInternet
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Tron_ZeroAmountTrxNotAllowed
+import cash.p.terminal.resources.offline_broadcast_unsupported_blockchain
+import cash.p.terminal.resources.offline_transaction_anchor_required
+import cash.p.terminal.resources.send_error_address_unavailable
+import cash.p.terminal.resources.send_error_amount_unavailable
+import cash.p.terminal.resources.send_error_fee_rate_unavailable
 import io.horizontalsystems.core.logger.AppLogger
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.ISendTronAdapter
@@ -123,13 +130,13 @@ class SendTronViewModel(
     override val offlineSignSupported = offlineSignAdapter != null && !wallet.account.isWatchAccount
 
     private val decimalAmount: BigDecimal
-        get() = amountState.amount ?: throw LocalizedException(R.string.send_error_amount_unavailable)
+        get() = amountState.amount ?: throw LocalizedException(Res.string.send_error_amount_unavailable)
 
     private val destinationAddress: Address
-        get() = addressState.address ?: throw LocalizedException(R.string.send_error_address_unavailable)
+        get() = addressState.address ?: throw LocalizedException(Res.string.send_error_address_unavailable)
 
     private val destinationTronAddress: TronAddress
-        get() = addressState.tronAddress ?: throw LocalizedException(R.string.send_error_address_unavailable)
+        get() = addressState.tronAddress ?: throw LocalizedException(Res.string.send_error_address_unavailable)
 
     override fun getEstimatedFee(): BigDecimal? = confirmationData?.fee
     override fun onSendRequested() = onClickSend()
@@ -228,7 +235,7 @@ class SendTronViewModel(
             listOf(
                 HSCaution(
                     TranslatableString.ResString(
-                        R.string.Tron_ZeroAmountTrxNotAllowed,
+                        Res.string.Tron_ZeroAmountTrxNotAllowed,
                         sendToken.coin.code
                     )
                 )
@@ -376,14 +383,14 @@ class SendTronViewModel(
     }
 
     private fun requireOfflineSignAdapter() = offlineSignAdapter
-        ?: throw LocalizedException(R.string.offline_broadcast_unsupported_blockchain)
+        ?: throw LocalizedException(Res.string.offline_broadcast_unsupported_blockchain)
 
     // Reject an anchor too old to still fall inside the ~54h TAPOS ref-block window (e.g. reconnect
     // refresh never completed). Fail closed to the "prepare online" error instead of building a
     // transaction the network would reject; a reconnect then refreshes the anchor.
     private fun requireFreshAnchor() =
         offlineAnchor?.takeIf { elapsedRealtimeMs - it.elapsedAtFetch < OFFLINE_ANCHOR_MAX_AGE_MS }
-            ?: throw LocalizedException(R.string.offline_transaction_anchor_required)
+            ?: throw LocalizedException(Res.string.offline_transaction_anchor_required)
 
     private suspend fun signedOfflineTransaction(): OfflineSignResult {
         val confirmationData = getConfirmationData()
@@ -391,7 +398,7 @@ class SendTronViewModel(
         val anchor = requireFreshAnchor()
         val feeLimit = offlineFeeLimit
         if (sendToken.type != TokenType.Native && feeLimit == null) {
-            throw LocalizedException(R.string.send_error_fee_rate_unavailable)
+            throw LocalizedException(Res.string.send_error_fee_rate_unavailable)
         }
         // Derive the transaction time from the anchor's network timestamp advanced by the monotonic
         // clock, so a skewed wall clock cannot invalidate expiration while offline.
@@ -431,7 +438,7 @@ class SendTronViewModel(
             null
         } else {
             feeState.feeLimit ?: adapter.estimateFee(decimalAmount, destinationTronAddress).feeLimit
-                ?: throw LocalizedException(R.string.send_error_fee_rate_unavailable)
+                ?: throw LocalizedException(Res.string.send_error_fee_rate_unavailable)
         }
 
     private fun rememberEstimatedFeeLimit(feeLimit: Long?, amount: BigDecimal, addressHex: String) {
@@ -457,7 +464,7 @@ class SendTronViewModel(
         ).firstOrNull()
 
     private fun createCaution(error: Throwable) = when (error) {
-        is UnknownHostException -> HSCaution(TranslatableString.ResString(R.string.Hud_Text_NoInternet))
+        is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
         is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
         else -> HSCaution(TranslatableString.PlainString(error.message ?: ""))
     }

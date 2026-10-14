@@ -98,9 +98,8 @@ class TransactionAdapterManager(
                 }
             }
 
-            val sourcesToUnlink = currentEntries.keys - reusedSources
-            sourcesToUnlink.forEach { source ->
-                skipOnFailure(source) { adapterFactory.unlinkAdapter(source) }
+            (currentEntries - reusedSources).forEach { (source, entry) ->
+                skipOnFailure(source) { adapterFactory.unlinkAdapter(source, entry.transactionsAdapter) }
             }
 
             adapterEntries = newEntries
