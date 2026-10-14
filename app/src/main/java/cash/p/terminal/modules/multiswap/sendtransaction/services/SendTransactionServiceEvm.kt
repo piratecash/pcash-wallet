@@ -55,6 +55,8 @@ import cash.p.terminal.modules.send.evm.settings.SendEvmNonceViewModel
 import cash.p.terminal.modules.send.evm.settings.SendEvmSettingsModule
 import cash.p.terminal.modules.send.evm.settings.SendEvmSettingsService
 import cash.p.terminal.modules.send.evm.settings.SendEvmSettingsViewModel
+import cash.p.terminal.resources.Button_Reset
+import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.HsIconButton
@@ -388,7 +390,7 @@ fun SendEvmFeeSettingsScreen(
             },
             menuItems = listOf(
                 MenuItem(
-                    title = TranslatableString.ResString(R.string.Button_Reset),
+                    title = TranslatableString.ResString(Res.string.Button_Reset),
                     enabled = !viewModel.isRecommendedSettingsSelected,
                     onClick = { viewModel.onClickReset() }
                 )

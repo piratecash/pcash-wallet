@@ -2,6 +2,7 @@ package cash.p.terminal.core.providers
 
 import cash.p.terminal.BuildConfig
 import cash.p.terminal.R
+import cash.p.terminal.core.managers.Currencies
 import cash.p.terminal.network.data.EncodedSecrets
 import cash.p.terminal.wallet.MarketApiConfig
 import io.horizontalsystems.core.entities.Currency
@@ -139,27 +140,7 @@ object AppConfigProvider {
 
     val fiatDecimal: Int = 2
 
-    val currencies: List<Currency> = listOf(
-        Currency("AUD", "A$", 2, R.drawable.icon_32_flag_australia),
-        Currency("ARS", "$", 2, R.drawable.icon_32_flag_argentine),
-        Currency("BRL", "R$", 2, R.drawable.icon_32_flag_brazil),
-        Currency("CAD", "C$", 2, R.drawable.icon_32_flag_canada),
-        Currency("CHF", "₣", 2, R.drawable.icon_32_flag_switzerland),
-        Currency("CNY", "¥", 2, R.drawable.icon_32_flag_china),
-        Currency("EUR", "€", 2, R.drawable.icon_32_flag_europe),
-        Currency("GBP", "£", 2, R.drawable.icon_32_flag_england),
-        Currency("HKD", "HK$", 2, R.drawable.icon_32_flag_hongkong),
-        Currency("HUF", "Ft", 2, R.drawable.icon_32_flag_hungary),
-        Currency("ILS", "₪", 2, R.drawable.icon_32_flag_israel),
-        Currency("INR", "₹", 2, R.drawable.icon_32_flag_india),
-        Currency("JPY", "¥", 2, R.drawable.icon_32_flag_japan),
-        Currency("NOK", "kr", 2, R.drawable.icon_32_flag_norway),
-        Currency("PHP", "₱", 2, R.drawable.icon_32_flag_philippine),
-        Currency("RUB", "₽", 2, R.drawable.icon_32_flag_russia),
-        Currency("SGD", "S$", 2, R.drawable.icon_32_flag_singapore),
-        Currency("USD", "$", 2, R.drawable.icon_32_flag_usa),
-        Currency("ZAR", "R", 2, R.drawable.icon_32_flag_south_africa),
-    )
+    val currencies: List<Currency> = Currencies.all
 
     val donateAddresses: Map<BlockchainType, String> by lazy {
         mapOf(

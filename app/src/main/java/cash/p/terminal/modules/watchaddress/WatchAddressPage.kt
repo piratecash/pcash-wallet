@@ -23,6 +23,8 @@ import cash.p.terminal.modules.zcashconfigure.ZcashConfigurePage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Watch_Address_Watch
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.FormsInput
 import cash.p.terminal.ui.compose.components.FormsInputMultiline
@@ -106,7 +108,7 @@ fun WatchAddressScreen(navigation: HSNavigation, popUpToInclusiveId: KClass<out 
                     is SubmitButtonType.Watch -> {
                         add(
                             MenuItem(
-                                title = TranslatableString.ResString(R.string.Watch_Address_Watch),
+                                title = TranslatableString.ResString(Res.string.Watch_Address_Watch),
                                 onClick = viewModel::onClickWatch,
                                 enabled = submitType.enabled
                             )
@@ -116,7 +118,7 @@ fun WatchAddressScreen(navigation: HSNavigation, popUpToInclusiveId: KClass<out 
                     is SubmitButtonType.Next -> {
                         add(
                             MenuItem(
-                                title = TranslatableString.ResString(R.string.Watch_Address_Watch),
+                                title = TranslatableString.ResString(Res.string.Watch_Address_Watch),
                                 onClick = viewModel::onClickNext,
                                 enabled = submitType.enabled
                             )

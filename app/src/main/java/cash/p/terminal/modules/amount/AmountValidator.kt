@@ -1,10 +1,11 @@
 package cash.p.terminal.modules.amount
 
-import cash.p.terminal.R
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.modules.send.SendErrorInsufficientBalance
 import cash.p.terminal.modules.send.SendErrorMaximumSendAmount
 import cash.p.terminal.modules.send.SendErrorMinimumSendAmount
+import cash.p.terminal.resources.EthereumTransaction_Warning_CoinNeededForFee
+import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
 import java.math.BigDecimal
 
@@ -31,7 +32,7 @@ class AmountValidator {
         }
         leaveSomeBalanceForFee && coinAmount == availableBalance -> {
             HSCaution(
-                TranslatableString.ResString(R.string.EthereumTransaction_Warning_CoinNeededForFee, coinCode),
+                TranslatableString.ResString(Res.string.EthereumTransaction_Warning_CoinNeededForFee, coinCode),
                 HSCaution.Type.Warning
             )
         }

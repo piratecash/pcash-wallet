@@ -1,7 +1,7 @@
 package cash.p.terminal.modules.settings.appearance
 
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
+import org.koin.compose.viewmodel.koinViewModel
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
@@ -10,7 +10,7 @@ class AppearancePage : HSPage() {
 
     @Composable
     override fun GetContent(navigation: HSNavigation) {
-        val viewModel = viewModel<AppearanceViewModel>(factory = AppearanceModule.Factory())
+        val viewModel = koinViewModel<AppearanceViewModel>()
 
         AppearanceScreen(
             uiState = viewModel.uiState,

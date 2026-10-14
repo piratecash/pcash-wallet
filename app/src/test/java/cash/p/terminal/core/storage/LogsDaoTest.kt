@@ -5,10 +5,10 @@ import android.database.Cursor
 import android.util.Log
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import cash.p.terminal.core.KoinLogsDao
 import io.horizontalsystems.core.logger.AppLog
 import io.horizontalsystems.core.storage.LogEntry
 import io.horizontalsystems.core.storage.LogsDao
-import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -24,6 +24,7 @@ class LogsDaoTest {
 
     private lateinit var database: AppDatabase
     private lateinit var dao: LogsDao
+    private val koinLogsDao = KoinLogsDao()
 
     @Before
     fun setUp() {
@@ -36,7 +37,7 @@ class LogsDaoTest {
 
     @After
     fun tearDown() {
-        AppLog.logsDao = mockk(relaxed = true)
+        koinLogsDao.close()
         database.close()
     }
 
@@ -115,7 +116,7 @@ class LogsDaoTest {
                 }
             }
         }
-        AppLog.logsDao = dao
+        koinLogsDao.dao = dao
 
         val out = StringBuilder()
         runBlocking { AppLog.writeLog(out) }

@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import cash.p.terminal.R
 import cash.p.terminal.core.App
+import cash.p.terminal.core.managers.NftMetadataManager
+import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.modules.nft.collection.overview.NftCollectionOverviewService
 import cash.p.terminal.modules.nft.collection.overview.NftCollectionOverviewViewModel
 import cash.p.terminal.modules.xrate.XRateService
@@ -20,7 +22,10 @@ object NftCollectionModule {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             val service = NftCollectionOverviewService(
-                blockchainType, collectionUid, App.nftMetadataManager.provider(blockchainType), App.marketKit
+                blockchainType,
+                collectionUid,
+                getKoinInstance<NftMetadataManager>().provider(blockchainType),
+                App.marketKit
             )
             return NftCollectionOverviewViewModel(
                 service,

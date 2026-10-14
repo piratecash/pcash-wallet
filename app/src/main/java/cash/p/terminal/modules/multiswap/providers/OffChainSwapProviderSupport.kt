@@ -12,6 +12,8 @@ import cash.p.terminal.modules.multiswap.action.ActionCreate
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionData
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionResult
 import cash.p.terminal.network.swaprepository.SwapProvider
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.zec_transparent_used
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapterManager
@@ -112,7 +114,7 @@ class OffChainSwapProviderSupport(
 
         val refundAddress = getCachedZcashTransparentAddress() ?: return null
 
-        return TranslatableString.ResString(R.string.zec_transparent_used, refundAddress)
+        return TranslatableString.ResString(Res.string.zec_transparent_used, refundAddress)
     }
 
     suspend fun getRefundAddress(

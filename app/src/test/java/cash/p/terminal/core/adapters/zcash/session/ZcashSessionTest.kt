@@ -820,23 +820,26 @@ class ZcashSessionTest {
 
     @Test
     fun collectSync_failedWithCredentialsInMessage_logsSanitizedText() = runTest {
-        val appLog = CapturedAppLog()
-        every { wallet.sync(any()) } returns flow { throw ZcashException(CREDENTIAL_MESSAGE, stage = SyncStage.SCAN) }
+        CapturedAppLog().use { appLog ->
+            every { wallet.sync(any()) } returns
+                flow { throw ZcashException(CREDENTIAL_MESSAGE, stage = SyncStage.SCAN) }
 
-        zcashSession(wallet, logger = zcashAppLogger("account")).sync()
+            zcashSession(wallet, logger = zcashAppLogger("account")).sync()
 
-        appLog.awaitEntry { it.message.startsWith("sync failed") }.assertSanitized()
+            appLog.awaitEntry { it.message.startsWith("sync failed") }.assertSanitized()
+        }
     }
 
     @Test
     fun mempool_subscriptionErrorWithCredentialsInMessage_logsSanitizedText() = runTest {
-        val appLog = CapturedAppLog()
-        every { wallet.mempool() } returns flow { throw IOException(CREDENTIAL_MESSAGE) }
-        val session = zcashSession(wallet, logger = zcashAppLogger("account"))
-        advanceTimeBy(1_000L)
-        session.drain(DRAIN_TIMEOUT_MS)
+        CapturedAppLog().use { appLog ->
+            every { wallet.mempool() } returns flow { throw IOException(CREDENTIAL_MESSAGE) }
+            val session = zcashSession(wallet, logger = zcashAppLogger("account"))
+            advanceTimeBy(1_000L)
+            session.drain(DRAIN_TIMEOUT_MS)
 
-        appLog.awaitEntry { it.message.startsWith("Mempool subscription failed") }.assertSanitized()
+            appLog.awaitEntry { it.message.startsWith("Mempool subscription failed") }.assertSanitized()
+        }
     }
 
     @Test

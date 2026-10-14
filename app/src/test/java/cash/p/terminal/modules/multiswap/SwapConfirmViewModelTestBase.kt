@@ -128,7 +128,7 @@ abstract class SwapConfirmViewModelTestBase {
         val adapterManager = mockk<IAdapterManager>(relaxed = true)
         val assetFiatRateService = mockk<AssetFiatRateService>(relaxed = true)
         val currencyManager = mockk<CurrencyManager> {
-            every { baseCurrency } returns Currency("USD", "$", 2, 0)
+            every { baseCurrency } returns Currency("USD", "$", 2)
         }
         val vm = SwapConfirmViewModel(
             request = SwapConfirmRequest(

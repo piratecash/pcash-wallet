@@ -13,6 +13,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.Icon
+import cash.p.terminal.resources.Button_Save
+import cash.p.terminal.resources.Res
 import cash.p.terminal.ui_compose.components.AppModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material3.Scaffold
@@ -166,7 +168,7 @@ fun ContactScreen(
                     },
                     menuItems = listOf(
                         MenuItem(
-                            title = TranslatableString.ResString(R.string.Button_Save),
+                            title = TranslatableString.ResString(Res.string.Button_Save),
                             enabled = uiState.saveEnabled,
                             onClick = viewModel::onSave
                         )

@@ -1,6 +1,7 @@
 package cash.p.terminal.core.adapters.zcash
 
 import cash.p.terminal.core.ILocalStorage
+import cash.p.terminal.core.KoinLogsDao
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.adapters.zcash.server.ZcashServerSelector
 import cash.p.terminal.core.adapters.zcash.session.ZcashDiscoveryState
@@ -322,15 +323,14 @@ abstract class ZcashAdapterTestFixture {
     }
 }
 
-/** Replaces [AppLog]'s DAO; the log is written from its own thread, so reads wait for the entry. */
-internal class CapturedAppLog {
+/** Supplies [AppLog]'s DAO through Koin; the log is written from its own thread, so reads wait for the entry. */
+internal class CapturedAppLog : AutoCloseable {
     private val entries = CopyOnWriteArrayList<LogEntry>()
+    private val koinLogsDao = KoinLogsDao(
+        mockk<LogsDao>(relaxed = true) { every { insert(any()) } answers { entries += firstArg<LogEntry>() } }
+    )
 
-    init {
-        AppLog.logsDao = mockk<LogsDao>(relaxed = true).also { dao ->
-            every { dao.insert(any()) } answers { entries += firstArg<LogEntry>() }
-        }
-    }
+    override fun close() = koinLogsDao.close()
 
     val messages: List<String> get() = entries.map { it.message }
 

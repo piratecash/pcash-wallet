@@ -1,9 +1,10 @@
 package cash.p.terminal.core.adapters.zcash
 
-import cash.p.terminal.R
 import cash.p.terminal.core.LocalizedException
 import cash.p.terminal.core.OfflineZcashSignRequest
 import cash.p.terminal.core.managers.NotBroadcastException
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Swap_ErrorInsufficientBalance
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
 import cash.p.zcash.Balance
 import cash.p.zcash.BroadcastResult
@@ -170,7 +171,7 @@ class ZcashAdapterSourcePoolsTest : ZcashAdapterTestFixture() {
 
         assertTrue("planning fails before the broadcast", failure is NotBroadcastException)
         assertEquals(
-            R.string.Swap_ErrorInsufficientBalance,
+            Res.string.Swap_ErrorInsufficientBalance,
             (failure.cause as LocalizedException).errorTextRes,
         )
     }
@@ -195,7 +196,7 @@ class ZcashAdapterSourcePoolsTest : ZcashAdapterTestFixture() {
         }
 
         assertEquals(
-            R.string.Swap_ErrorInsufficientBalance,
+            Res.string.Swap_ErrorInsufficientBalance,
             (failure as LocalizedException).errorTextRes,
         )
     }

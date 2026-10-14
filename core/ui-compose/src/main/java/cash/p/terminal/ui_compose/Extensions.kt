@@ -25,9 +25,6 @@ import androidx.compose.ui.unit.Density
 import kotlinx.coroutines.flow.first
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import java.time.Year
-
-fun currentYear(): Int = Year.now().value
 
 /**
  * Suspends until the soft keyboard (IME) is fully hidden.

@@ -93,6 +93,9 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import androidx.compose.ui.tooling.preview.Preview as ComposePreview
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.star_filled_yellow_16
+import org.jetbrains.compose.resources.painterResource
 
 // Both thresholds were already exceeded before the paste callback was added; the detekt baseline
 // suppressed them by signature, so changing the signature re-keyed those entries.
@@ -211,7 +214,7 @@ fun QRScannerScreen(
                     )
                 } else {
                     ButtonPrimaryDefaultWithIcon(
-                        icon = R.drawable.star_filled_yellow_16,
+                        icon = painterResource(Res.drawable.star_filled_yellow_16),
                         iconTint = ComposeAppTheme.colors.statusWarning,
                         modifier = Modifier
                             .fillMaxWidth()

@@ -135,7 +135,7 @@ object WCDelegate : WalletKit.WalletDelegate, CoreClient.CoreDelegate {
         sessionRequestEvent = null
 
         val newSessionRequest = App.wcSessionManager.getNewSessionRequest() ?: return
-        if (App.wcWalletRequestHandler.handle(newSessionRequest)) return
+        if (getKoinInstance<WCWalletRequestHandler>().handle(newSessionRequest)) return
 
         sessionRequestEvent = newSessionRequest
 

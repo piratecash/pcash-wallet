@@ -37,7 +37,7 @@ class IterativeExactOutSearchTest {
         every { decimals } returns 8
     }
     private val tokenOut = mockk<Token>()
-    private val currency = Currency("USD", "$", 2, 0)
+    private val currency = Currency("USD", "$", 2)
     private val currencyManager = mockk<CurrencyManager> {
         every { baseCurrency } returns currency
     }

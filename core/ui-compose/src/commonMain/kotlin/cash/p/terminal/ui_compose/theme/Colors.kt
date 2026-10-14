@@ -11,6 +11,7 @@ data class Colors(
     val surfacePrimary: Color,
     val surfaceElevated: Color,
     val surfacePlaceholder: Color,
+    val coinPlaceholder: Color,
     val controlActionBackground: Color,
     val controlActionBorder: Color,
     val controlTrack: Color,
@@ -53,6 +54,8 @@ data class Colors(
     val qrBackground: Color,
     val scannerBackground: Color,
     val snackbarNeutralBackground: Color,
+    val calculatorEqualsBackground: Color,
+    val calculatorBackspaceIcon: Color,
     val contentOnColor: Color,
     val transparent: Color = Color.Transparent,
 )

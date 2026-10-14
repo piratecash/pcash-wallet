@@ -41,6 +41,8 @@ import cash.p.terminal.modules.enablecoin.restoresettings.RestoreSettingsViewMod
 import cash.p.terminal.modules.enablecoin.restoresettings.TokenConfig
 import cash.p.terminal.modules.restoreaccount.RestoreViewModel
 import cash.p.terminal.modules.restoreaccount.TokenConfigResult
+import cash.p.terminal.resources.Button_Restore
+import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.extensions.BottomSheetSelectorMultiple
 import cash.p.terminal.ui_compose.TransparentModalBottomSheet
@@ -177,7 +179,7 @@ fun ManageWalletsScreen(
                 },
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.Button_Restore),
+                        title = TranslatableString.ResString(Res.string.Button_Restore),
                         onClick = { viewModel.onRestore() },
                         enabled = doneButtonEnabled
                     )

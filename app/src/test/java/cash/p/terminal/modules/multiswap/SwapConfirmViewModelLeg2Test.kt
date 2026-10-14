@@ -147,7 +147,7 @@ class SwapConfirmViewModelLeg2Test {
     private fun createViewModel(legInfo: MultiSwapLegInfo): SwapConfirmViewModel {
         val adapterManager = mockk<IAdapterManager>(relaxed = true)
         val currencyManager = mockk<CurrencyManager> {
-            every { baseCurrency } returns Currency("USD", "$", 2, 0)
+            every { baseCurrency } returns Currency("USD", "$", 2)
         }
         val vm = SwapConfirmViewModel(
             request = SwapConfirmRequest(

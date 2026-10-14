@@ -1,0 +1,333 @@
+package cash.p.terminal.ui_compose.components
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import cash.p.terminal.strings.helpers.WithTranslatableTitle
+import cash.p.terminal.ui_compose.Select
+import cash.p.terminal.ui_compose.components.SecondaryButtonDefaults.buttonColors
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
+
+@Composable
+fun ButtonSecondaryDefault(
+    title: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    overflow: TextOverflow = TextOverflow.Clip,
+) {
+    ButtonSecondary(
+        modifier = modifier,
+        onClick = onClick,
+        content = {
+            D1(
+                text = title,
+                maxLines = 1,
+                overflow = overflow,
+                textColor = if (enabled) ComposeAppTheme.colors.textPrimary else ComposeAppTheme.colors.textDisabled,
+            )
+        },
+        enabled = enabled
+    )
+}
+
+@Composable
+fun ButtonSecondaryCustom(
+    modifier: Modifier = Modifier,
+    title: String,
+    textColor: Color,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+) {
+    ButtonSecondary(
+        modifier = modifier,
+        onClick = onClick,
+        content = {
+            D1(
+                text = title,
+                maxLines = 1,
+                textColor = if (enabled) textColor else ComposeAppTheme.colors.textDisabled,
+            )
+        },
+        enabled = enabled
+    )
+}
+
+@Composable
+fun ButtonSecondaryYellow(
+    modifier: Modifier = Modifier,
+    title: String,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+) {
+    ButtonSecondary(
+        modifier = modifier,
+        onClick = onClick,
+        border = null,
+        buttonColors = ButtonPrimaryDefaults.textButtonColors(
+            backgroundColor = ComposeAppTheme.colors.brandDefault,
+            contentColor = ComposeAppTheme.colors.buttonPrimaryBrandContent,
+            disabledBackgroundColor = ComposeAppTheme.colors.buttonPrimaryDisabledBackground,
+            disabledContentColor = ComposeAppTheme.colors.textDisabled,
+        ),
+        content = {
+            Text(
+                title,
+                maxLines = 1,
+                style = ComposeAppTheme.typography.subhead2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        },
+        enabled = enabled
+    )
+}
+
+@Composable
+fun ButtonSecondaryWithIcon(
+    modifier: Modifier = Modifier,
+    title: String,
+    iconRight: Painter,
+    onClick: () -> Unit,
+    enabled: Boolean = true
+) {
+    ButtonSecondary(
+        modifier = modifier,
+        onClick = onClick,
+        contentPadding = PaddingValues(
+            start = 16.dp,
+            end = 8.dp,
+        ),
+        content = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                D1(
+                    text = title,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textColor = if (enabled) ComposeAppTheme.colors.textPrimary else ComposeAppTheme.colors.textDisabled,
+                )
+                Icon(
+                    modifier = Modifier.padding(start = 2.dp),
+                    painter = iconRight,
+                    contentDescription = null,
+                    tint = if (enabled) {
+                        ComposeAppTheme.colors.iconPrimary
+                    } else {
+                        ComposeAppTheme.colors.iconDisabled
+                    }
+                )
+            }
+        },
+        enabled = enabled
+    )
+}
+
+@Composable
+fun ButtonSecondaryTransparent(
+    modifier: Modifier = Modifier,
+    title: String,
+    iconRight: DrawableResource? = null,
+    onClick: () -> Unit,
+    enabled: Boolean = true
+) {
+
+    ButtonSecondary(
+        modifier = modifier,
+        onClick = onClick,
+        border = null,
+        buttonColors = buttonColors(
+            backgroundColor = ComposeAppTheme.colors.transparent,
+            contentColor = ComposeAppTheme.colors.textSecondary,
+            disabledBackgroundColor = ComposeAppTheme.colors.transparent,
+            disabledContentColor = ComposeAppTheme.colors.textDisabled,
+        ),
+        content = {
+            if (iconRight != null) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = title,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Icon(
+                        modifier = Modifier.padding(start = 4.dp),
+                        painter = painterResource(iconRight),
+                        contentDescription = null,
+                        tint = if (enabled) {
+                            ComposeAppTheme.colors.iconSecondary
+                        } else {
+                            ComposeAppTheme.colors.iconDisabled
+                        }
+                    )
+                }
+            } else {
+                Text(
+                    text = title,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        },
+        enabled = enabled
+    )
+}
+
+@Composable
+fun <T : WithTranslatableTitle> ButtonSecondaryToggle(
+    modifier: Modifier = Modifier,
+    select: Select<T>,
+    onSelect: (T) -> Unit,
+    enabled: Boolean = true
+) {
+    ButtonSecondary(
+        modifier = modifier,
+        onClick = {
+            val options = select.options
+            val selectedItemIndex = options.indexOf(select.selected)
+            val nextSelectedItemIndex =
+                if (selectedItemIndex == options.size - 1) 0 else selectedItemIndex + 1
+
+            onSelect(options[nextSelectedItemIndex])
+        },
+        content = {
+            Row(
+                modifier = Modifier.height(IntrinsicSize.Max),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = select.selected.title.getString(),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Column(
+                    modifier = Modifier
+                        .height(16.dp)
+                        .padding(start = 12.dp),
+                    verticalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    select.options.forEach {
+                        Box(
+                            modifier = Modifier
+                                .size(3.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (select.selected == it) {
+                                        ComposeAppTheme.colors.brandDefault
+                                    } else {
+                                        ComposeAppTheme.colors.textSecondary
+                                    }
+                                )
+                        )
+                    }
+                }
+            }
+        },
+        enabled = enabled
+    )
+}
+
+
+@Composable
+fun ButtonSecondary(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    shape: Shape = RoundedCornerShape(14.dp),
+    border: BorderStroke? = SecondaryButtonDefaults.filledBorder(),
+    buttonColors: HsButtonColors = buttonColors(),
+    contentPadding: PaddingValues = SecondaryButtonDefaults.ContentPadding,
+    content: @Composable RowScope.() -> Unit
+) {
+    Surface(
+        modifier = modifier,
+        shape = shape,
+        color = buttonColors.backgroundColor(enabled).value,
+        contentColor = buttonColors.contentColor(enabled).value,
+        border = border,
+        onClick = onClick,
+        enabled = enabled,
+    ) {
+        ProvideTextStyle(value = ComposeAppTheme.typography.subhead2) {
+            Row(
+                Modifier
+                    .defaultMinSize(
+                        minWidth = SecondaryButtonDefaults.MinWidth,
+                        minHeight = SecondaryButtonDefaults.MinHeight
+                    )
+                    .padding(contentPadding),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                content = content
+            )
+        }
+    }
+}
+
+object SecondaryButtonDefaults {
+    private val ButtonHorizontalPadding = 16.dp
+
+    val ContentPadding = PaddingValues(
+        start = ButtonHorizontalPadding,
+        end = ButtonHorizontalPadding,
+    )
+
+
+    /**
+     * The default min width applied for the button.
+     * Note that you can override it by applying Modifier.widthIn directly on it.
+     */
+    val MinWidth = 50.dp
+
+    /**
+     * The default min height applied for the button.
+     * Note that you can override it by applying Modifier.heightIn directly on it.
+     */
+    val MinHeight = 28.dp
+
+    @Composable
+    fun filledBorder(): BorderStroke =
+        BorderStroke(1.dp, ComposeAppTheme.colors.buttonSecondaryFilledBorder)
+
+    @Composable
+    fun buttonColors(
+        backgroundColor: Color = ComposeAppTheme.colors.buttonSecondaryFilledBackground,
+        contentColor: Color = ComposeAppTheme.colors.textPrimary,
+        disabledBackgroundColor: Color = ComposeAppTheme.colors.buttonSecondaryFilledBackground,
+        disabledContentColor: Color = ComposeAppTheme.colors.textDisabled,
+    ): HsButtonColors = HsButtonColors(
+        backgroundColor = backgroundColor,
+        contentColor = contentColor,
+        disabledBackgroundColor = disabledBackgroundColor,
+        disabledContentColor = disabledContentColor,
+    )
+}

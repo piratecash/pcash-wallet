@@ -1,69 +1,68 @@
-plugins {
-    id(libs.plugins.android.library.get().pluginId)
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
+plugins {
+    kotlin("multiplatform")
+    id("com.android.kotlin.multiplatform.library")
+    alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
 }
 
-android {
-    val minSdkVersion: Int = rootProject.ext.get("min_sdk_version") as Int
-    val targetSdkVersion: Int = rootProject.ext.get("compile_sdk_version") as Int
-    compileSdk = targetSdkVersion
-
-    defaultConfig {
-        minSdk = minSdkVersion
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
-        vectorDrawables.useSupportLibrary = true
-    }
-
-    buildTypes {
-        debug {
-            isMinifyEnabled = false
-        }
-        release {
-            isMinifyEnabled = false
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    buildFeatures {
-        viewBinding = true
-        compose = true
-    }
-    namespace = "io.horizontalsystems.chartview"
-}
-
 kotlin {
-    compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    android {
+        namespace = "io.horizontalsystems.chartview"
+        compileSdk = rootProject.ext.get("compile_sdk_version") as Int
+        minSdk = rootProject.ext.get("min_sdk_version") as Int
+
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_11)
+        }
+    }
+
+    jvm("desktop") {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_11)
+        }
+    }
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                api(project(":core:common"))
+                implementation(project(":core:ui-compose"))
+                implementation(project(":core:resources"))
+                implementation(libs.compose.multiplatform.runtime)
+                implementation(libs.compose.multiplatform.ui)
+                implementation(libs.compose.multiplatform.foundation)
+                implementation(libs.compose.multiplatform.material3)
+                implementation(libs.jetbrains.lifecycle.viewmodel)
+                implementation(libs.jetbrains.lifecycle.viewmodel.compose)
+                implementation(libs.coil.compose)
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(project.dependencies.platform(libs.koin.bom))
+                implementation(libs.koin.compose.viewmodel)
+                implementation(libs.rxjava)
+                implementation(libs.kotlinx.coroutines.rx2)
+            }
+        }
+
+        androidMain {
+            dependencies {
+                implementation(project.dependencies.platform(libs.compose.bom))
+                implementation(libs.androidx.ui.tooling.preview)
+            }
+        }
+
+        val desktopTest by getting {
+            dependencies {
+                implementation(libs.kotlin.test.junit)
+                implementation(libs.mockk)
+                implementation(libs.kotlinx.coroutines.test)
+            }
+        }
     }
 }
 
 dependencies {
-    implementation(project(":core:core"))
-    implementation(project(":core:ui-compose"))
-    implementation(project(":core:strings"))
-    implementation(project(":core:resources"))
-
-    implementation(libs.rxjava)
-    implementation(libs.kotlinx.coroutines.rx2)
-
-    implementation(platform(libs.compose.bom))
-    implementation(libs.compose.material)
-    implementation(libs.androidx.material3.android)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.coil.compose)
-
-    implementation(project.dependencies.platform(libs.koin.bom))
-    implementation(libs.koin.core)
-    implementation(libs.koin.android)
-
-    implementation(libs.appcompat)
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.android.core.ktx)
+    add("desktopTestImplementation", compose.desktop.uiTestJUnit4)
+    add("desktopTestRuntimeOnly", compose.desktop.currentOs)
 }

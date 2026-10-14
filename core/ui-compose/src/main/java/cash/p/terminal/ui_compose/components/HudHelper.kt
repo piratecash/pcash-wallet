@@ -120,10 +120,17 @@ object HudHelper {
         resId: Int,
         duration: SnackbarDuration = SnackbarDuration.SHORT,
         gravity: SnackbarGravity = SnackbarGravity.BOTTOM
+    ): CustomSnackbar? = showWarningMessage(contentView, contentView.context.getString(resId), duration, gravity)
+
+    fun showWarningMessage(
+        contentView: View,
+        text: String,
+        duration: SnackbarDuration = SnackbarDuration.SHORT,
+        gravity: SnackbarGravity = SnackbarGravity.BOTTOM
     ): CustomSnackbar? {
         return showHudNotification(
             contentView = contentView,
-            text = contentView.context.getString(resId),
+            text = text,
             variant = AppSnackbarVariant.Warning,
             duration = duration,
             gravity = gravity,

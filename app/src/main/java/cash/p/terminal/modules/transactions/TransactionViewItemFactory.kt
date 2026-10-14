@@ -31,6 +31,9 @@ import cash.p.terminal.entities.swapProviderDisplayTitle
 import cash.p.terminal.modules.paycore.PayCoreAssetResolver
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.network.changenow.domain.entity.toStatus
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.coin_placeholder
+import cash.p.terminal.resources.icon_24_nft_placeholder
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.strings.helpers.shorten
 import cash.p.terminal.ui_compose.ColorName
@@ -50,6 +53,7 @@ import io.horizontalsystems.tronkit.models.Transaction
 import java.math.BigDecimal
 import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
+import org.jetbrains.compose.resources.DrawableResource
 
 private val TransactionRecord.mainCoinToken: Token?
     get() = (mainValue as? TransactionValue.CoinValue)?.token
@@ -153,7 +157,7 @@ class TransactionViewItemFactory(
                 TransactionViewItem.Icon.Regular(
                     nftMetadata[value.nftUid]?.previewImageUrl,
                     null,
-                    R.drawable.icon_24_nft_placeholder,
+                    Res.drawable.icon_24_nft_placeholder,
                     rectangle = true
                 )
             }
@@ -177,11 +181,11 @@ class TransactionViewItemFactory(
     ): TransactionViewItem.Icon {
         var backUrl: String? = null
         var backAlternativeUrl: String? = null
-        var backPlaceHolder: Int? = null
+        var backPlaceHolder: DrawableResource? = null
         var backRectangle = false
         var frontUrl: String? = null
         var frontAlternativeUrl: String? = null
-        var frontPlaceHolder: Int? = null
+        var frontPlaceHolder: DrawableResource? = null
         var frontRectangle = false
 
         if (primaryValue != null) {
@@ -189,7 +193,7 @@ class TransactionViewItemFactory(
                 is TransactionValue.NftValue -> {
                     frontRectangle = true
                     frontUrl = nftMetadata[primaryValue.nftUid]?.previewImageUrl
-                    frontPlaceHolder = R.drawable.icon_24_nft_placeholder
+                    frontPlaceHolder = Res.drawable.icon_24_nft_placeholder
                 }
 
                 is TransactionValue.CoinValue,
@@ -205,7 +209,7 @@ class TransactionViewItemFactory(
         } else {
             frontRectangle = false
             frontUrl = null
-            frontPlaceHolder = R.drawable.coin_placeholder
+            frontPlaceHolder = Res.drawable.coin_placeholder
         }
 
         if (secondaryValue != null) {
@@ -213,7 +217,7 @@ class TransactionViewItemFactory(
                 is TransactionValue.NftValue -> {
                     backRectangle = true
                     backUrl = nftMetadata[secondaryValue.nftUid]?.previewImageUrl
-                    backPlaceHolder = R.drawable.icon_24_nft_placeholder
+                    backPlaceHolder = Res.drawable.icon_24_nft_placeholder
                 }
 
                 is TransactionValue.CoinValue,
@@ -229,7 +233,7 @@ class TransactionViewItemFactory(
         } else {
             backRectangle = false
             backUrl = null
-            backPlaceHolder = R.drawable.coin_placeholder
+            backPlaceHolder = Res.drawable.coin_placeholder
         }
 
         return TransactionViewItem.Icon.Double(
@@ -255,7 +259,7 @@ class TransactionViewItemFactory(
         return TransactionViewItem.Icon.Regular(
             url = coinImageUrl(coinUid),
             alternativeUrl = coin?.alternativeImageUrl,
-            placeholder = R.drawable.coin_placeholder
+            placeholder = Res.drawable.coin_placeholder
         )
     }
 

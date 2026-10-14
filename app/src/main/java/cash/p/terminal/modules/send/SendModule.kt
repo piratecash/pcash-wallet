@@ -1,9 +1,19 @@
 package cash.p.terminal.modules.send
 
-import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.entities.CoinValue
+import cash.p.terminal.resources.Error_InsufficientBalanceForFee
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Send_Error_FetchFeeRateFailed
+import cash.p.terminal.resources.Send_Error_FetchFeeRateFailed_Description
+import cash.p.terminal.resources.Send_Error_LowFee
+import cash.p.terminal.resources.Send_Error_LowFee_Description
+import cash.p.terminal.resources.Send_Error_MaximumAmount
+import cash.p.terminal.resources.Send_Error_MinimumAmount
+import cash.p.terminal.resources.Send_Warning_LowFee
+import cash.p.terminal.resources.Send_Warning_LowFee_Description
+import cash.p.terminal.resources.Swap_ErrorInsufficientBalance
 import io.horizontalsystems.core.entities.CurrencyValue
 import cash.p.terminal.strings.helpers.TranslatableString
 import java.math.BigDecimal
@@ -67,37 +77,37 @@ sealed class SendResult {
 }
 
 object SendErrorFetchFeeRateFailed : HSCaution(
-    TranslatableString.ResString(R.string.Send_Error_FetchFeeRateFailed),
+    TranslatableString.ResString(Res.string.Send_Error_FetchFeeRateFailed),
     Type.Error,
-    TranslatableString.ResString(R.string.Send_Error_FetchFeeRateFailed_Description)
+    TranslatableString.ResString(Res.string.Send_Error_FetchFeeRateFailed_Description)
 )
 
 object SendWarningRiskOfGettingStuck : HSCaution(
-    TranslatableString.ResString(R.string.Send_Warning_LowFee),
+    TranslatableString.ResString(Res.string.Send_Warning_LowFee),
     Type.Warning,
-    TranslatableString.ResString(R.string.Send_Warning_LowFee_Description)
+    TranslatableString.ResString(Res.string.Send_Warning_LowFee_Description)
 )
 
 object SendErrorLowFee : HSCaution(
-    TranslatableString.ResString(R.string.Send_Error_LowFee),
+    TranslatableString.ResString(Res.string.Send_Error_LowFee),
     Type.Error,
-    TranslatableString.ResString(R.string.Send_Error_LowFee_Description)
+    TranslatableString.ResString(Res.string.Send_Error_LowFee_Description)
 )
 
 class SendErrorInsufficientBalance(coinCode: Any, balance: Any) : HSCaution(
-    TranslatableString.ResString(R.string.Swap_ErrorInsufficientBalance),
+    TranslatableString.ResString(Res.string.Swap_ErrorInsufficientBalance),
     Type.Error,
     TranslatableString.ResString(
-        R.string.Error_InsufficientBalanceForFee,
+        Res.string.Error_InsufficientBalanceForFee,
         coinCode,
         balance
     )
 )
 
 class SendErrorMinimumSendAmount(amount: Any) : HSCaution(
-    TranslatableString.ResString(R.string.Send_Error_MinimumAmount, amount)
+    TranslatableString.ResString(Res.string.Send_Error_MinimumAmount, amount)
 )
 
 class SendErrorMaximumSendAmount(amount: Any) : HSCaution(
-    TranslatableString.ResString(R.string.Send_Error_MaximumAmount, amount)
+    TranslatableString.ResString(Res.string.Send_Error_MaximumAmount, amount)
 )

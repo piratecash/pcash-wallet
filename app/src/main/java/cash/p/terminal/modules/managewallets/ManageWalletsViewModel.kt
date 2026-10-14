@@ -38,6 +38,7 @@ import com.piratecash.monero.signer.HardwareWalletOperationException
 import com.tangem.common.core.TangemSdkError.UserCancelled
 import com.tangem.common.doOnFailure
 import com.tangem.common.doOnSuccess
+import io.horizontalsystems.core.Translator
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -182,7 +183,7 @@ class ManageWalletsViewModel(
             finishScanToAdd()
             if (e.isHardwareWalletCancelled()) return
             Timber.e(e, "Trezor: failed to add Monero wallet")
-            showError(App.instance.getString(e.userMessageRes()))
+            showError(Translator.getString(e.userMessageRes()))
         } catch (e: Exception) {
             finishScanToAdd()
             Timber.e(e, "Trezor: failed to fetch public keys")

@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.multiswap.providers
 
-import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.isEvm
@@ -20,6 +19,10 @@ import cash.p.terminal.modules.multiswap.ui.DataFieldRecipient
 import cash.p.terminal.modules.multiswap.ui.DataFieldRecipientExtended
 import cash.p.terminal.modules.multiswap.ui.DataFieldSlippage
 import cash.p.terminal.modules.multiswap.ui.DataFieldSlippageNotAvailable
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.SwapWarning_SlippageNotAvailable_Description
+import cash.p.terminal.resources.SwapWarning_SlippageNotAvailable_Title
+import cash.p.terminal.resources.allbridge
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenQuery
@@ -39,7 +42,7 @@ import java.math.BigInteger
 object AllBridgeProvider : IMultiSwapProvider {
     override val id = "allbridge"
     override val title = "AllBridge"
-    override val icon = R.drawable.allbridge
+    override val icon = Res.drawable.allbridge
     private val feePaymentMethod = FeePaymentMethod.StableCoin
 
     override val mevProtectionAvailable: Boolean = false
@@ -587,7 +590,7 @@ internal fun resolveAllBridgeTransferTimeSeconds(
 }
 
 class SlippageNotAvailable : HSCaution(
-    TranslatableString.ResString(R.string.SwapWarning_SlippageNotAvailable_Title),
+    TranslatableString.ResString(Res.string.SwapWarning_SlippageNotAvailable_Title),
     Type.Warning,
-    TranslatableString.ResString(R.string.SwapWarning_SlippageNotAvailable_Description),
+    TranslatableString.ResString(Res.string.SwapWarning_SlippageNotAvailable_Description),
 )

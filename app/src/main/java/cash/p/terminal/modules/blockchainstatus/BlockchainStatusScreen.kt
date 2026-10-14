@@ -167,7 +167,7 @@ internal fun BlockchainStatusScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(start = 16.dp, end = 16.dp, top = 8.dp),
-                        icon = R.drawable.ic_download_20,
+                        icon = painterResource(R.drawable.ic_download_20),
                         title = stringResource(R.string.blockchain_status_save_to_file),
                         enabled = !uiState.statusLoading,
                         onClick = {

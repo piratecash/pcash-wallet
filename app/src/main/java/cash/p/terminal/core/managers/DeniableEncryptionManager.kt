@@ -1,12 +1,10 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.vault.AesGcm
+import cash.p.terminal.vault.Hkdf
 import org.bouncycastle.crypto.generators.SCrypt
 import java.nio.ByteBuffer
 import java.security.SecureRandom
-import javax.crypto.Cipher
-import javax.crypto.Mac
-import javax.crypto.spec.GCMParameterSpec
-import javax.crypto.spec.SecretKeySpec
 
 /**
  * Deniable Encryption Manager for V4 Backup Format
@@ -62,8 +60,6 @@ object DeniableEncryptionManager {
     private const val SALT_LENGTH = 32
     private const val HEADER_SIZE = SALT_LENGTH  // salt only = 32 bytes
 
-    private const val GCM_NONCE_LENGTH = 12
-    private const val GCM_TAG_BITS = 128
     private const val LENGTH_FIELD_SIZE = 4
     private const val RANDOM_PADDING_MAX = 32
 
@@ -102,42 +98,17 @@ object DeniableEncryptionManager {
         return SCrypt.generate(passwordBytes, salt, SCRYPT_N, SCRYPT_R, SCRYPT_P, SCRYPT_DKLEN)
     }
 
-    /**
-     * HKDF-Expand using HMAC-SHA256 (RFC 5869)
-     */
-    private fun hkdfExpand(prk: ByteArray, info: String, length: Int): ByteArray {
-        val infoBytes = info.toByteArray(Charsets.UTF_8)
-        val mac = Mac.getInstance("HmacSHA256")
-        mac.init(SecretKeySpec(prk, "HmacSHA256"))
-
-        val result = ByteArray(length)
-        var t = ByteArray(0)
-        var offset = 0
-        var counter: Byte = 1
-
-        while (offset < length) {
-            mac.reset()
-            mac.update(t)
-            mac.update(infoBytes)
-            mac.update(counter)
-            t = mac.doFinal()
-
-            val copyLen = minOf(t.size, length - offset)
-            System.arraycopy(t, 0, result, offset, copyLen)
-            offset += copyLen
-            counter++
-        }
-        return result
-    }
-
     /** Derive AES encryption key from master key */
-    private fun deriveEncKey(masterKey: ByteArray): ByteArray = hkdfExpand(masterKey, "enc", 32)
+    private fun deriveEncKey(masterKey: ByteArray): ByteArray =
+        Hkdf.expand(masterKey, "enc".toByteArray(Charsets.UTF_8), 32)
 
     /** Derive offset calculation key from master key */
-    private fun deriveOffsetKey(masterKey: ByteArray): ByteArray = hkdfExpand(masterKey, "offset", 32)
+    private fun deriveOffsetKey(masterKey: ByteArray): ByteArray =
+        Hkdf.expand(masterKey, "offset".toByteArray(Charsets.UTF_8), 32)
 
     /** Derive length obfuscation key from master key */
-    private fun deriveLengthKey(masterKey: ByteArray): ByteArray = hkdfExpand(masterKey, "len", 4)
+    private fun deriveLengthKey(masterKey: ByteArray): ByteArray =
+        Hkdf.expand(masterKey, "len".toByteArray(Charsets.UTF_8), 4)
 
     // ========== Offset Calculation ==========
 
@@ -158,46 +129,6 @@ object DeniableEncryptionManager {
     private fun roundToSizeBucket(size: Int): Int {
         val minSize = maxOf(size, MIN_CONTAINER_SIZE)
         return SIZE_BUCKETS.firstOrNull { it >= minSize } ?: MAX_CONTAINER_SIZE
-    }
-
-    // ========== AES-GCM Encryption ==========
-
-    /**
-     * AES-256-GCM encryption with random nonce
-     * Output: [12-byte nonce][ciphertext][16-byte auth tag]
-     */
-    private fun aesGcmEncrypt(plaintext: ByteArray, key: ByteArray): ByteArray {
-        val nonce = ByteArray(GCM_NONCE_LENGTH)
-        secureRandom.nextBytes(nonce)
-
-        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        cipher.init(Cipher.ENCRYPT_MODE, SecretKeySpec(key, "AES"), GCMParameterSpec(GCM_TAG_BITS, nonce))
-
-        val ciphertext = cipher.doFinal(plaintext)
-
-        return ByteArray(GCM_NONCE_LENGTH + ciphertext.size).also {
-            System.arraycopy(nonce, 0, it, 0, GCM_NONCE_LENGTH)
-            System.arraycopy(ciphertext, 0, it, GCM_NONCE_LENGTH, ciphertext.size)
-        }
-    }
-
-    /**
-     * AES-256-GCM decryption
-     * Returns null if auth tag verification fails
-     */
-    private fun aesGcmDecrypt(data: ByteArray, key: ByteArray): ByteArray? {
-        if (data.size < GCM_NONCE_LENGTH + 16) return null
-
-        return try {
-            val nonce = data.copyOfRange(0, GCM_NONCE_LENGTH)
-            val ciphertext = data.copyOfRange(GCM_NONCE_LENGTH, data.size)
-
-            val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-            cipher.init(Cipher.DECRYPT_MODE, SecretKeySpec(key, "AES"), GCMParameterSpec(GCM_TAG_BITS, nonce))
-            cipher.doFinal(ciphertext)
-        } catch (e: Exception) {
-            null
-        }
     }
 
     // ========== Block Creation ==========
@@ -228,7 +159,7 @@ object DeniableEncryptionManager {
         plaintext[pos++] = (payload.size and 0xFF).toByte()
         System.arraycopy(payload, 0, plaintext, pos, payload.size)
 
-        val encrypted = aesGcmEncrypt(plaintext, encKey)
+        val encrypted = AesGcm.encrypt(plaintext, encKey)
 
         // Obfuscate length with password-derived key
         val block = ByteArray(LENGTH_FIELD_SIZE + encrypted.size)
@@ -422,7 +353,7 @@ object DeniableEncryptionManager {
 
         // Validate length against actual container size
         val dataRegionSize = container.size - HEADER_SIZE
-        if (encLen < GCM_NONCE_LENGTH + 16 || encLen > dataRegionSize) {
+        if (encLen < AesGcm.NONCE_SIZE + AesGcm.TAG_SIZE || encLen > dataRegionSize) {
             return null
         }
         if (absOffset + LENGTH_FIELD_SIZE + encLen > container.size) {
@@ -431,7 +362,7 @@ object DeniableEncryptionManager {
 
         // Extract and decrypt
         val encrypted = container.copyOfRange(absOffset + LENGTH_FIELD_SIZE, absOffset + LENGTH_FIELD_SIZE + encLen)
-        val decrypted = aesGcmDecrypt(encrypted, encKey) ?: return null
+        val decrypted = AesGcm.decrypt(encrypted, encKey) ?: return null
 
         // Parse decrypted data
         if (decrypted.isEmpty()) return null

@@ -1,0 +1,67 @@
+package cash.p.terminal.ui_compose.components
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+
+@Composable
+fun TabBalance(
+    modifier: Modifier = Modifier,
+    borderTop: Boolean = false,
+    borderBottom: Boolean = false,
+    content: @Composable (RowScope.() -> Unit),
+) {
+    BarSingleLine(modifier.padding(horizontal = 16.dp), borderTop, borderBottom, content = content)
+}
+
+@Composable
+fun TabPeriod(
+    modifier: Modifier = Modifier,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
+    content: @Composable RowScope.() -> Unit,
+) {
+    BarSingleLine(modifier, false, false, horizontalArrangement, content)
+}
+
+@Composable
+fun BarSingleLine(
+    modifier: Modifier = Modifier,
+    borderTop: Boolean = false,
+    borderBottom: Boolean = false,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
+    content: @Composable RowScope.() -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(44.dp)
+    ) {
+        if (borderTop) {
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = ComposeAppTheme.colors.borderDivider,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+        }
+
+        if (borderBottom) {
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = ComposeAppTheme.colors.borderDivider,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+        }
+
+        Row(
+            modifier = modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = horizontalArrangement
+        ) {
+            content.invoke(this)
+        }
+    }
+}

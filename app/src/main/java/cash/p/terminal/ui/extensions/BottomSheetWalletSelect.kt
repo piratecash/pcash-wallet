@@ -33,6 +33,10 @@ import cash.p.terminal.ui_compose.components.HeaderText
 import cash.p.terminal.ui_compose.components.HsRadioButton
 import cash.p.terminal.ui_compose.components.RowUniversal
 import kotlinx.coroutines.launch
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_card
+import cash.p.terminal.resources.ic_switch_wallet_24
+import cash.p.terminal.resources.icon_binocule_20
 
 /**
  * Material3 ModalBottomSheet for wallet selection.
@@ -137,7 +141,7 @@ private fun ColumnScope.PremiumWalletSwitchBody(
     WalletSwitchSection(
         header = {
             SectionHeaderWithIcon(
-                iconRes = R.drawable.ic_switch_wallet_24,
+                iconRes = Res.drawable.ic_switch_wallet_24,
                 text = stringResource(R.string.manage_accounts_section_other)
             )
         },
@@ -149,7 +153,7 @@ private fun ColumnScope.PremiumWalletSwitchBody(
     WalletSwitchSection(
         header = {
             SectionHeaderWithIcon(
-                iconRes = R.drawable.icon_binocule_20,
+                iconRes = Res.drawable.icon_binocule_20,
                 text = stringResource(R.string.manage_accounts_section_watch)
             )
         },
@@ -161,7 +165,7 @@ private fun ColumnScope.PremiumWalletSwitchBody(
     WalletSwitchSection(
         header = {
             SectionHeaderWithIcon(
-                iconRes = R.drawable.ic_card,
+                iconRes = Res.drawable.ic_card,
                 text = stringResource(R.string.manage_accounts_section_hardware)
             )
         },

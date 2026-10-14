@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
+import cash.p.terminal.resources.Info_Title
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_info_24
 import cash.p.terminal.ui_compose.components.AppModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material3.Scaffold
@@ -128,8 +131,8 @@ fun WCSessionsScreen(
                     },
                     menuItems = listOf(
                         MenuItem(
-                            title = TranslatableString.ResString(R.string.Info_Title),
-                            icon = R.drawable.ic_info_24,
+                            title = TranslatableString.ResString(Res.string.Info_Title),
+                            icon = Res.drawable.ic_info_24,
                             onClick = {
                                 FaqManager.showFaqPage(R.string.WalletConnect_info)
                             }

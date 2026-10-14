@@ -35,6 +35,9 @@ import androidx.glance.GlanceId
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
 import cash.p.terminal.R
+import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_close_24
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellSingleLineLawrenceSection
@@ -75,8 +78,8 @@ class MarketWidgetConfigurationActivity : AppCompatActivity() {
                             title = stringResource(R.string.WidgetList_Config_Title),
                             navigationIcon = null,
                             menuItems = listOf(MenuItem(
-                                title = TranslatableString.ResString(R.string.Button_Close),
-                                icon = R.drawable.ic_close_24,
+                                title = TranslatableString.ResString(Res.string.Button_Close),
+                                icon = Res.drawable.ic_close_24,
                                 onClick = { finish() }
                             ))
                         )

@@ -1,11 +1,12 @@
 package cash.p.terminal.core.adapters.zcash
 
-import cash.p.terminal.R
 import cash.p.terminal.core.LocalizedException
 import cash.p.terminal.core.adapters.zcash.session.ZcashSessionResult
 import cash.p.terminal.core.managers.NotBroadcastException
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.zcash_migration_error_nothing_to_migrate
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
 import cash.p.zcash.Balance
 import cash.p.zcash.MigrationEvent
@@ -205,7 +206,7 @@ class ZcashAdapterIronwoodMigrationTest : ZcashAdapterTestFixture() {
 
         val failure = assertFailsWith<LocalizedException> { adapter.proposeIronwoodMigration() }
 
-        assertEquals(R.string.zcash_migration_error_nothing_to_migrate, failure.errorTextRes)
+        assertEquals(Res.string.zcash_migration_error_nothing_to_migrate, failure.errorTextRes)
     }
 
     @Test
@@ -246,7 +247,7 @@ class ZcashAdapterIronwoodMigrationTest : ZcashAdapterTestFixture() {
 
     private fun assertNothingToMigrate(failure: NotBroadcastException) {
         assertEquals(
-            R.string.zcash_migration_error_nothing_to_migrate,
+            Res.string.zcash_migration_error_nothing_to_migrate,
             (failure.cause as LocalizedException).errorTextRes,
         )
     }

@@ -31,6 +31,8 @@ import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.InfoText
 import cash.p.terminal.ui_compose.components.SwitchWithText
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.display_options_price_period
 
 @Composable
 internal fun DisplayOptionsScreen(
@@ -88,7 +90,7 @@ internal fun DisplayOptionsScreen(
     // Period Selector Dialog
     if (showPeriodSelector) {
         AlertGroup(
-            title = R.string.display_options_price_period,
+            title = Res.string.display_options_price_period,
             select = Select(uiState.pricePeriod, DisplayPricePeriod.entries),
             onSelect = { selected ->
                 onPricePeriodChanged(selected)

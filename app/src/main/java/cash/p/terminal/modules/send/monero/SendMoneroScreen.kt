@@ -67,6 +67,7 @@ import java.math.BigDecimal
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
 import timber.log.Timber
 
 @Composable
@@ -407,7 +408,7 @@ private fun MoneroLiveRefreshPreparation(
 ) {
     var preparationJob by remember { mutableStateOf<Job?>(null) }
     var preparationInProgress by remember { mutableStateOf(false) }
-    var preparationError by remember { mutableStateOf<Int?>(null) }
+    var preparationError by remember { mutableStateOf<StringResource?>(null) }
     var fullWalletRecoveryAvailable by remember { mutableStateOf(false) }
     var showPreparation by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()

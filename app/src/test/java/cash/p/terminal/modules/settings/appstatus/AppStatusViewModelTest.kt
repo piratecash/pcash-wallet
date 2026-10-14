@@ -2,6 +2,7 @@ package cash.p.terminal.modules.settings.appstatus
 
 import android.net.Uri
 import cash.p.terminal.core.ILocalStorage
+import cash.p.terminal.core.KoinLogsDao
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
@@ -69,12 +70,13 @@ class AppStatusViewModelTest {
 
     private val dispatcher = UnconfinedTestDispatcher()
     private val logsDao = mockk<LogsDao>(relaxed = true)
+    private lateinit var koinLogsDao: KoinLogsDao
     private val statusReportFile = mockk<StatusReportFile>(relaxed = true)
 
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
-        AppLog.logsDao = logsDao
+        koinLogsDao = KoinLogsDao(logsDao)
         CoreApp.instance = RuntimeEnvironment.getApplication() as CoreApp
         // Robolectric leaves this field unset; reportBuildInfo() requires a non-null value.
         CoreApp.instance.applicationInfo.nativeLibraryDir = "/data/app/x86_64"
@@ -82,6 +84,7 @@ class AppStatusViewModelTest {
 
     @After
     fun tearDown() {
+        koinLogsDao.close()
         Dispatchers.resetMain()
     }
 

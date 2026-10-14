@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.main
 
+import android.app.Activity
 import android.view.Window
 import android.view.WindowManager
 import androidx.activity.compose.BackHandler
@@ -17,6 +18,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -34,7 +36,12 @@ import cash.p.terminal.navigation.rememberSharedViewModelStoreNavEntryDecorator
 import cash.p.terminal.ui_compose.LocalConnectionPanelState
 import cash.p.terminal.ui_compose.ModalOverlayTracker
 import cash.p.terminal.ui_compose.ScreenSecurityState
+import cash.p.terminal.ui.helpers.LinkHelper
 import cash.p.terminal.ui_compose.components.ConnectionStatusView
+import cash.p.terminal.ui_compose.components.HudHelperMessenger
+import cash.p.terminal.ui_compose.components.LocalHudMessenger
+import cash.p.terminal.ui_compose.components.LocalUrlOpener
+import cash.p.terminal.ui_compose.components.UrlOpener
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.core.hideKeyboard
 
@@ -42,8 +49,15 @@ import io.horizontalsystems.core.hideKeyboard
 @Composable
 fun Nav3Host(navigation: HSNavigation, isLocked: State<Boolean>) {
     val activity = checkNotNull(LocalActivity.current)
+    val view = LocalView.current
+    val hudMessenger = remember(view) { HudHelperMessenger(view) }
+    val urlOpener = remember(activity) { ActivityUrlOpener(activity) }
     ComposeAppTheme {
-        CompositionLocalProvider(LocalHostLifecycleOwner provides LocalLifecycleOwner.current) {
+        CompositionLocalProvider(
+            LocalHostLifecycleOwner provides LocalLifecycleOwner.current,
+            LocalHudMessenger provides hudMessenger,
+            LocalUrlOpener provides urlOpener,
+        ) {
             // Composed before the pages, so any page's own back handler takes precedence.
             BackHandler(enabled = navigation.backStack.size == 1) {
                 activity.moveTaskToBack(true)
@@ -76,6 +90,11 @@ fun Nav3Host(navigation: HSNavigation, isLocked: State<Boolean>) {
             )
         }
     }
+}
+
+/** Custom tab only opens from an Activity context; an application context falls back to the external browser. */
+private class ActivityUrlOpener(private val activity: Activity) : UrlOpener {
+    override fun open(url: String) = LinkHelper.openLinkInAppBrowser(activity, url)
 }
 
 @OptIn(ExperimentalComposeUiApi::class)

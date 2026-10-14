@@ -8,7 +8,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.toLiveData
 import androidx.lifecycle.viewModelScope
-import cash.p.terminal.R
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_platform_placeholder_32
 import cash.p.terminal.wallet.Clearable
 import cash.p.terminal.core.description
 import cash.p.terminal.ui_compose.components.ImageSource
@@ -56,7 +57,7 @@ class RestoreBlockchainsViewModel(
         item: RestoreBlockchainsService.Item,
     ) = CoinViewItem(
         item = item.blockchain,
-        imageSource = ImageSource.Remote(item.blockchain.type.imageUrl, R.drawable.ic_platform_placeholder_32),
+        imageSource = ImageSource.Remote(item.blockchain.type.imageUrl, Res.drawable.ic_platform_placeholder_32),
         title = item.blockchain.name,
         subtitle = item.blockchain.description,
         enabled = item.enabled,

@@ -50,12 +50,17 @@ import cash.p.terminal.modules.send.address.ui.CheckAddressInput
 import cash.p.terminal.modules.settings.addresschecker.CheckState
 import cash.p.terminal.modules.settings.addresschecker.IssueType
 import cash.p.terminal.modules.settings.addresschecker.UnifiedAddressCheckerViewModel
+import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.coin_placeholder
+import cash.p.terminal.resources.ic_close_24
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.BottomSheetHeader
 import cash.p.terminal.ui_compose.TransparentModalBottomSheet
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.HsBackButton
+import cash.p.terminal.ui_compose.components.placeholderPainter
 import cash.p.terminal.ui_compose.components.HsDivider
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.TextImportantError
@@ -68,6 +73,7 @@ import coil3.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.launch
 import cash.p.terminal.navigation.HSNavigation
 import androidx.navigation3.runtime.NavBackStack
+import cash.p.terminal.resources.ic_attention_20
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,8 +103,8 @@ fun UnifiedAddressCheckScreen(
                 },
                 menuItems = listOf(
                     MenuItem(
-                        title = TranslatableString.ResString(R.string.Button_Close),
-                        icon = R.drawable.ic_close_24,
+                        title = TranslatableString.ResString(Res.string.Button_Close),
+                        icon = Res.drawable.ic_close_24,
                         onClick = onClose
                     )
                 )
@@ -225,7 +231,7 @@ fun UnifiedAddressCheckScreen(
                             ),
                             icon = rememberAsyncImagePainter(
                                 model = fullCoin.coin.imageUrl,
-                                error = painterResource(R.drawable.coin_placeholder)
+                                error = placeholderPainter(Res.drawable.coin_placeholder)
                             ),
                             description = description,
                             onInfoClick = { info ->
@@ -273,7 +279,7 @@ fun UnifiedAddressCheckScreen(
 private fun ValidationError(addressValidationError: Throwable) {
     TextImportantError(
         modifier = Modifier.padding(horizontal = 16.dp),
-        icon = R.drawable.ic_attention_20,
+        icon = Res.drawable.ic_attention_20,
         title = stringResource(R.string.SwapSettings_Error_InvalidAddress),
         text = addressValidationError.getErrorMessage()
             ?: stringResource(R.string.SettingsAddressChecker_InvalidAddress)

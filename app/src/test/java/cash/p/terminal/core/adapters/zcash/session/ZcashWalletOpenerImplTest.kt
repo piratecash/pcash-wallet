@@ -189,70 +189,75 @@ class ZcashWalletOpenerImplTest {
 
     @Test
     fun open_writesOneLinePerStep() = runTest {
-        val appLog = CapturedAppLog()
-        every { dbKeyProvider.keyFor(ACCOUNT_ID) } returns
-            ZcashDbKey(ByteArray(32) { 0xAB.toByte() }, newlyGenerated = false)
+        CapturedAppLog().use { appLog ->
+            every { dbKeyProvider.keyFor(ACCOUNT_ID) } returns
+                ZcashDbKey(ByteArray(32) { 0xAB.toByte() }, newlyGenerated = false)
 
-        opener().open(wallet(words = listOf("zebra", "quartz", "nimbus")))
-        appLog.awaitEntry { it.message.startsWith("open: done") }
+            opener().open(wallet(words = listOf("zebra", "quartz", "nimbus")))
+            appLog.awaitEntry { it.message.startsWith("open: done") }
 
-        val lines = appLog.messages
-        val opening = "open: db=absent key=stored deepSweep=true legacyDir=absent " +
-            "server=https://zec.rocks:443 transport=DIRECT"
-        assertTrue(lines.any { it.startsWith(opening) && " dir=" in it })
-        assertTrue(lines.contains("restore: birthSource=setting birth=$BIRTHDAY"))
-        assertTrue(lines.any { it.startsWith("open: done dbAccountId=$DB_ACCOUNT_ID accounts=0 elapsed=") })
-        val forbidden = listOf("zebra", "quartz", "nimbus", "abababab")
-        assertTrue(lines.none { line -> forbidden.any { it in line } })
+            val lines = appLog.messages
+            val opening = "open: db=absent key=stored deepSweep=true legacyDir=absent " +
+                "server=https://zec.rocks:443 transport=DIRECT"
+            assertTrue(lines.any { it.startsWith(opening) && " dir=" in it })
+            assertTrue(lines.contains("restore: birthSource=setting birth=$BIRTHDAY"))
+            assertTrue(lines.any { it.startsWith("open: done dbAccountId=$DB_ACCOUNT_ID accounts=0 elapsed=") })
+            val forbidden = listOf("zebra", "quartz", "nimbus", "abababab")
+            assertTrue(lines.none { line -> forbidden.any { it in line } })
+        }
     }
 
     @Test
     fun open_databaseFailure_logsFilesystemDiagnosticsAndRethrows() = runTest {
-        val appLog = CapturedAppLog()
-        val failure = ZcashException("error returned from database: (code: 14) unable to open database file")
-        coEvery { ZcashWallet.open(any(), any(), any(), any()) } throws failure
+        CapturedAppLog().use { appLog ->
+            val failure = ZcashException("error returned from database: (code: 14) unable to open database file")
+            coEvery { ZcashWallet.open(any(), any(), any(), any()) } throws failure
 
-        val thrown = assertFailsWith<ZcashException> { opener().open(wallet()) }
+            val thrown = assertFailsWith<ZcashException> { opener().open(wallet()) }
 
-        assertSame(failure, thrown)
-        appLog.awaitEntry { it.message.startsWith("db-fs:") }
+            assertSame(failure, thrown)
+            appLog.awaitEntry { it.message.startsWith("db-fs:") }
+        }
     }
 
     @Test
     fun open_restoreDatabaseFailure_logsFilesystemDiagnosticsAndRethrows() = runTest {
-        val appLog = CapturedAppLog()
-        val failure = ZcashException("unable to open database file")
-        coEvery { zcashWallet.restoreAccount(any(), any(), any(), any(), any(), any()) } throws failure
+        CapturedAppLog().use { appLog ->
+            val failure = ZcashException("unable to open database file")
+            coEvery { zcashWallet.restoreAccount(any(), any(), any(), any(), any(), any()) } throws failure
 
-        val thrown = assertFailsWith<ZcashException> { opener().open(wallet()) }
+            val thrown = assertFailsWith<ZcashException> { opener().open(wallet()) }
 
-        assertSame(failure, thrown)
-        appLog.awaitEntry { it.message.startsWith("db-fs:") }
+            assertSame(failure, thrown)
+            appLog.awaitEntry { it.message.startsWith("db-fs:") }
+        }
     }
 
     @Test
     fun open_networkFailure_doesNotLogFilesystemDiagnostics() = runTest {
-        val appLog = CapturedAppLog()
-        coEvery { ZcashWallet.open(any(), any(), any(), any()) } throws ZcashException("connect timed out")
+        CapturedAppLog().use { appLog ->
+            coEvery { ZcashWallet.open(any(), any(), any(), any()) } throws ZcashException("connect timed out")
 
-        assertFailsWith<ZcashException> { opener().open(wallet()) }
-        zcashAppLogger(ACCOUNT_ID).info("sentinel")
-        appLog.awaitEntry { it.message == "sentinel" }
+            assertFailsWith<ZcashException> { opener().open(wallet()) }
+            zcashAppLogger(ACCOUNT_ID).info("sentinel")
+            appLog.awaitEntry { it.message == "sentinel" }
 
-        assertTrue(appLog.messages.none { it.startsWith("db-fs:") })
+            assertTrue(appLog.messages.none { it.startsWith("db-fs:") })
+        }
     }
 
     @Test
     fun open_logsServerWithoutUserInfo() = runTest {
-        val appLog = CapturedAppLog()
-        every { serverManager.serverConfig(any()) } returns ServerConfig(url = "https://user:pw@host.io:443")
+        CapturedAppLog().use { appLog ->
+            every { serverManager.serverConfig(any()) } returns ServerConfig(url = "https://user:pw@host.io:443")
 
-        opener().open(wallet())
-        val line = appLog.awaitEntry { it.message.startsWith("open: db=") }.message
+            opener().open(wallet())
+            val line = appLog.awaitEntry { it.message.startsWith("open: db=") }.message
 
-        assertTrue(line.contains("server=https://host.io:443"))
-        assertFalse(line.contains("user"))
-        assertFalse(line.contains("pw"))
+            assertTrue(line.contains("server=https://host.io:443"))
+            assertFalse(line.contains("user"))
+            assertFalse(line.contains("pw"))
+        }
     }
 
     @Test

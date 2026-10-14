@@ -3,8 +3,11 @@ package cash.p.terminal.modules.coin.tweets
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cash.p.terminal.resources.CoinPage_Twitter_Quoted
+import cash.p.terminal.resources.CoinPage_Twitter_Replied
+import cash.p.terminal.resources.CoinPage_Twitter_Retweeted
+import cash.p.terminal.resources.Res
 import com.twitter.twittertext.Extractor
-import cash.p.terminal.R
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.strings.helpers.TranslatableString
 import io.horizontalsystems.core.helpers.DateHelper
@@ -48,9 +51,9 @@ class CoinTweetsViewModel(
         date = DateHelper.getDayAndTime(tweet.date),
         referencedTweet = tweet.referencedTweet?.let { referencedTweet ->
             val typeStringRes = when (referencedTweet.referenceType) {
-                Tweet.ReferenceType.Quoted -> R.string.CoinPage_Twitter_Quoted
-                Tweet.ReferenceType.Retweeted -> R.string.CoinPage_Twitter_Retweeted
-                Tweet.ReferenceType.Replied -> R.string.CoinPage_Twitter_Replied
+                Tweet.ReferenceType.Quoted -> Res.string.CoinPage_Twitter_Quoted
+                Tweet.ReferenceType.Retweeted -> Res.string.CoinPage_Twitter_Retweeted
+                Tweet.ReferenceType.Replied -> Res.string.CoinPage_Twitter_Replied
             }
             val title = TranslatableString.ResString(typeStringRes, "@${referencedTweet.tweet.user.username}")
 

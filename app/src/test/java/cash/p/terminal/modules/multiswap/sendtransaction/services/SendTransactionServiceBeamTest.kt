@@ -4,7 +4,6 @@ import cash.p.beam.BeamFailure
 import cash.p.beam.BeamQuoteRequest
 import cash.p.beam.BeamSendResolution
 import cash.p.beam.BeamTransactionStatus
-import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.LocalizedException
 import cash.p.terminal.core.TestDispatcherProvider
@@ -21,6 +20,10 @@ import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionResult
 import cash.p.terminal.modules.offline.OfflineOperationGate
 import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.beam.BeamRecipient
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Swap_ErrorInsufficientBalance
+import cash.p.terminal.resources.beam_send_preview_error
+import cash.p.terminal.resources.beam_send_uncertain
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.MarketKitWrapper
@@ -33,6 +36,7 @@ import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.IAppNumberFormatter
+import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.entities.Currency
@@ -85,7 +89,7 @@ class SendTransactionServiceBeamTest : BeamSendTestFixture(), KoinTest {
         every { coinPrice(any(), any()) } returns null
     }
     private val currencyManager = mockk<CurrencyManager> {
-        every { baseCurrency } returns Currency("USD", "$", 2, 0)
+        every { baseCurrency } returns Currency("USD", "$", 2)
     }
     private val quoted = mutableListOf<BeamQuoteRequest>()
     private var version = "v1"
@@ -109,6 +113,8 @@ class SendTransactionServiceBeamTest : BeamSendTestFixture(), KoinTest {
 
     @Before
     fun setUp() {
+        mockkObject(Translator)
+        every { Translator.getString(any(), *anyVararg()) } returns "translated"
         mockkObject(App, BeamRecipient)
         every { App.marketKit } returns marketKit
         every { App.currencyManager } returns currencyManager
@@ -181,7 +187,7 @@ class SendTransactionServiceBeamTest : BeamSendTestFixture(), KoinTest {
 
         val error = assertFailsWith<LocalizedException> { service.send() }
 
-        assertEquals(R.string.Swap_ErrorInsufficientBalance, error.errorTextRes)
+        assertEquals(Res.string.Swap_ErrorInsufficientBalance, error.errorTextRes)
         assertTrue(sdk.operations.isEmpty())
         assertFalse(service.stateFlow.value.sendable)
     }
@@ -233,7 +239,7 @@ class SendTransactionServiceBeamTest : BeamSendTestFixture(), KoinTest {
         sdk.afterPrepare = { sdk.beforeInventory = { throw secretFailure() } }
 
         val error = assertFailsWith<LocalizedException> { service.send() }
-        assertEquals(R.string.beam_send_uncertain, error.errorTextRes)
+        assertEquals(Res.string.beam_send_uncertain, error.errorTextRes)
         val quotesBefore = quoted.size
 
         sdk.beforeInventory = {}
@@ -254,7 +260,7 @@ class SendTransactionServiceBeamTest : BeamSendTestFixture(), KoinTest {
 
         val error = assertFailsWith<LocalizedException> { service.send() }
 
-        assertEquals(R.string.beam_send_preview_error, error.errorTextRes)
+        assertEquals(Res.string.beam_send_preview_error, error.errorTextRes)
     }
 
     @Test
@@ -268,7 +274,7 @@ class SendTransactionServiceBeamTest : BeamSendTestFixture(), KoinTest {
 
         val error = assertFailsWith<LocalizedException> { service.send() }
 
-        assertEquals(R.string.beam_send_preview_error, error.errorTextRes)
+        assertEquals(Res.string.beam_send_preview_error, error.errorTextRes)
     }
 
     @Test

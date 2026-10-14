@@ -47,6 +47,8 @@ import cash.p.terminal.ui_compose.components.SnackbarDuration
 import cash.p.terminal.ui_compose.components.HudHelper
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_attention_20
 
 class ActivateTokenPage(val input: Wallet) : HSPage() {
     @Composable
@@ -165,7 +167,7 @@ fun ActivateTokenScreen(
                         modifier = modifier,
                         text = stringResource(R.string.activate_already_active_description),
                         title = stringResource(R.string.activate_already_active_title),
-                        icon = R.drawable.ic_attention_20
+                        icon = Res.drawable.ic_attention_20
                     )
                 }
 
@@ -183,7 +185,7 @@ fun ActivateTokenScreen(
                         modifier = modifier,
                         title = stringResource(R.string.activate_insufficient_balance_title),
                         text = stringResource(R.string.activate_insufficient_balance_description),
-                        icon = R.drawable.ic_attention_20
+                        icon = Res.drawable.ic_attention_20
                     )
                 }
 
@@ -195,7 +197,7 @@ fun ActivateTokenScreen(
                             token.blockchain.name
                         ),
                         title = null,
-                        icon = R.drawable.ic_attention_20
+                        icon = Res.drawable.ic_attention_20
                     )
                 }
             }

@@ -12,6 +12,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
+import cash.p.terminal.resources.Contacts_NewContact
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Settings_Title
+import cash.p.terminal.resources.ic_manage_2
+import cash.p.terminal.resources.icon_user_plus
 import cash.p.terminal.ui_compose.components.AppModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
@@ -112,8 +117,8 @@ fun ContactsScreen(
                         if (uiState.showAddContact) {
                             add(
                                 MenuItem(
-                                    title = TranslatableString.ResString(R.string.Contacts_NewContact),
-                                    icon = R.drawable.icon_user_plus,
+                                    title = TranslatableString.ResString(Res.string.Contacts_NewContact),
+                                    icon = Res.drawable.icon_user_plus,
                                     tint = ComposeAppTheme.colors.brandDefault,
                                     onClick = onNavigateToCreateContact
                                 )
@@ -122,8 +127,8 @@ fun ContactsScreen(
                         if (uiState.showSettings) {
                             add(
                                 MenuItem(
-                                    title = TranslatableString.ResString(R.string.Settings_Title),
-                                    icon = R.drawable.ic_manage_2,
+                                    title = TranslatableString.ResString(Res.string.Settings_Title),
+                                    icon = Res.drawable.ic_manage_2,
                                     tint = ComposeAppTheme.colors.brandDefault,
                                     enabled = true,
                                     onClick = onNavigateToSettings

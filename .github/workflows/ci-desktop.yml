@@ -14,10 +14,13 @@ jobs:
         include:
           - os: ubuntu-24.04
             artifact: linux-x64
+            format: deb
           - os: windows-2025
             artifact: windows-x64
+            format: msi
           - os: macos-26
             artifact: macos-arm64
+            format: dmg
 
     runs-on: ${{ matrix.os }}
 
@@ -29,12 +32,13 @@ jobs:
           java-version: "21"
           distribution: temurin
           cache: gradle
-      - name: Build Desktop distributable
+      - name: Build Desktop installer
         shell: bash
-        run: ./gradlew :desktopApp:createDistributable
-      - name: Upload Desktop distributable
+        run: ./gradlew :desktopApp:packageDistributionForCurrentOS -PdesktopPackageVersion=1.0.${{ github.run_number }}
+      - name: Upload Desktop installer
         uses: actions/upload-artifact@v4
         with:
           name: desktop-${{ matrix.artifact }}
-          path: desktopApp/build/compose/binaries/main/app
+          path: desktopApp/build/compose/binaries/main/${{ matrix.format }}
           if-no-files-found: error
+          retention-days: 30

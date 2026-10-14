@@ -12,11 +12,15 @@ import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -24,11 +28,18 @@ import kotlin.concurrent.thread
 
 class AppLogTest {
 
-    /** AppLog is a singleton with one shared executor: finish pending tasks before restubbing. */
+    private val logsDao = mockk<LogsDao>(relaxed = true)
+
     @Before
-    fun drainExecutor() {
-        AppLog.logsDao = mockk(relaxed = true)
+    fun setUp() {
+        startKoin { modules(module { single { logsDao } }) }
+    }
+
+    /** AppLog is a singleton with one shared executor: finish pending tasks before the next test restubs. */
+    @After
+    fun tearDown() {
         runBlocking { AppLog.writeLog(StringBuilder()) }
+        stopKoin()
     }
 
     @Test
@@ -79,10 +90,8 @@ class AppLogTest {
     fun readMethods_useExpectedSelectionAndOrderAndPreserveMultilineMessages() = runTest {
         val first = logEntry(1, "first\ncontinued")
         val second = logEntry(2, "second")
-        AppLog.logsDao = mockk<LogsDao>(relaxed = true).also { dao ->
-            coEvery { dao.getRecent(500) } returns listOf(second, first)
-            every { dao.getRecentByTag("tag", 300) } returns listOf(second, first)
-        }
+        coEvery { logsDao.getRecent(500) } returns listOf(second, first)
+        every { logsDao.getRecentByTag("tag", 300) } returns listOf(second, first)
 
         val taggedLogs = AppLog.getRecentLog("tag")
         assertEquals(listOf("1", "2"), AppLog.getLog().messages().keys.toList())
@@ -122,13 +131,11 @@ class AppLogTest {
 
     @Test
     fun writeLog_groupedRows_writesOneHeaderPerActionIdAndOneLinePerEntry() {
-        AppLog.logsDao = mockk<LogsDao>(relaxed = true).also { dao ->
-            every { dao.streamGrouped() } returns cursorOf(
-                logEntry(1, "one", "a"),
-                logEntry(2, "two", "a"),
-                logEntry(3, "three", "b"),
-            )
-        }
+        every { logsDao.streamGrouped() } returns cursorOf(
+            logEntry(1, "one", "a"),
+            logEntry(2, "two", "a"),
+            logEntry(3, "three", "b"),
+        )
 
         val out = StringBuilder()
         runBlocking { AppLog.writeLog(out) }
@@ -147,16 +154,13 @@ class AppLogTest {
 
     @Test
     fun writeLog_withTag_readsOnlyTheTaggedCursor() {
-        val dao = mockk<LogsDao>(relaxed = true).also { dao ->
-            every { dao.streamGroupedByTag("tag") } returns cursorOf(logEntry(1, "one", "tag"))
-        }
-        AppLog.logsDao = dao
+        every { logsDao.streamGroupedByTag("tag") } returns cursorOf(logEntry(1, "one", "tag"))
 
         val out = StringBuilder()
         runBlocking { AppLog.writeLog(out, "tag") }
 
         assertEquals("tag:\n  - 1: 1970-01-01 00:00:00.000 one\n", out.toString())
-        verify(exactly = 0) { dao.streamGrouped() }
+        verify(exactly = 0) { logsDao.streamGrouped() }
     }
 
     @Test
@@ -171,10 +175,8 @@ class AppLogTest {
                 false
             }
         }
-        AppLog.logsDao = mockk<LogsDao>(relaxed = true).also { dao ->
-            every { dao.streamGrouped() } returns cursor
-            every { dao.insert(any()) } answers { inserted.countDown() }
-        }
+        every { logsDao.streamGrouped() } returns cursor
+        every { logsDao.insert(any()) } answers { inserted.countDown() }
 
         val export = thread { runBlocking { AppLog.writeLog(StringBuilder()) } }
         assertTrue(exportStarted.await(TIMEOUT_SECONDS, TimeUnit.SECONDS))
@@ -194,11 +196,9 @@ class AppLogTest {
             recorded += call
             completed.countDown()
         }
-        AppLog.logsDao = mockk<LogsDao>(relaxed = true).also { dao ->
-            every { dao.insert(any()) } answers { record("insert") }
-            every { dao.deleteOlderThan(any()) } answers { record("deleteOlderThan") }
-            every { dao.trimToNewest(any()) } answers { record("trim:${firstArg<Int>()}") }
-        }
+        every { logsDao.insert(any()) } answers { record("insert") }
+        every { logsDao.deleteOlderThan(any()) } answers { record("deleteOlderThan") }
+        every { logsDao.trimToNewest(any()) } answers { record("trim:${firstArg<Int>()}") }
         return RecordingDao(recorded, completed)
     }
 
@@ -220,9 +220,7 @@ class AppLogTest {
     private fun captureNextEntry(): CapturedEntry {
         val captured = slot<LogEntry>()
         val inserted = CountDownLatch(1)
-        AppLog.logsDao = mockk<LogsDao>(relaxed = true).also { dao ->
-            every { dao.insert(capture(captured)) } answers { inserted.countDown() }
-        }
+        every { logsDao.insert(capture(captured)) } answers { inserted.countDown() }
         return CapturedEntry(captured, inserted)
     }
 

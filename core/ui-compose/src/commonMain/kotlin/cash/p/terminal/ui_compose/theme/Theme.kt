@@ -17,6 +17,7 @@ val lightPalette = Colors(
     surfacePrimary = Color.White,
     surfaceElevated = Color.White,
     surfacePlaceholder = BorderDividerL,
+    coinPlaceholder = Steel20,
     controlActionBackground = ActionBackgroundL,
     controlActionBorder = ActionBorderL,
     controlTrack = Steel20,
@@ -59,6 +60,8 @@ val lightPalette = Colors(
     qrBackground = Color.White,
     scannerBackground = Dark,
     snackbarNeutralBackground = TextSecondaryL,
+    calculatorEqualsBackground = CalculatorAccentL,
+    calculatorBackspaceIcon = CalculatorAccentL,
     contentOnColor = Color.White,
 )
 
@@ -69,6 +72,7 @@ val darkPalette = Colors(
     surfacePrimary = SurfaceD,
     surfaceElevated = SurfaceElevatedD,
     surfacePlaceholder = BorderDividerD,
+    coinPlaceholder = Steel50,
     controlActionBackground = ActionBackgroundD,
     controlActionBorder = ActionBorderD,
     controlTrack = Steel20,
@@ -111,6 +115,8 @@ val darkPalette = Colors(
     qrBackground = Color.White,
     scannerBackground = Dark,
     snackbarNeutralBackground = TextSecondaryD,
+    calculatorEqualsBackground = CalculatorAccentD,
+    calculatorBackspaceIcon = CalculatorAccentD,
     contentOnColor = Color.White,
 )
 

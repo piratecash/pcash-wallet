@@ -1,6 +1,5 @@
 package cash.p.terminal.core.adapters.thorchain
 
-import cash.p.terminal.R
 import cash.p.terminal.core.BroadcastRawTransactionResult
 import cash.p.terminal.core.BroadcastRawTransactionStatus
 import cash.p.terminal.core.INativeBalanceProvider
@@ -20,6 +19,8 @@ import cash.p.terminal.core.managers.thorchainSeed
 import cash.p.terminal.core.managers.toAdapterState
 import cash.p.terminal.core.toRawHexString
 import cash.p.terminal.entities.transactionrecords.thorchain.ThorchainTransactionRecord
+import cash.p.terminal.resources.Error_InsufficientBalanceForFee
+import cash.p.terminal.resources.Res
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.IAdapter
 import cash.p.terminal.wallet.IBalanceAdapter
@@ -200,7 +201,7 @@ class ThorchainAdapter(
         val required = if (isNative) amount + sendFee else sendFee
         if (nativeBalance >= required) return null
         return LocalizedException(
-            R.string.Error_InsufficientBalanceForFee,
+            Res.string.Error_InsufficientBalanceForFee,
             network.assetResolver.assetFor(network.nativeDenom).ticker,
             nativeBalance.stripTrailingZeros().toPlainString(),
         )

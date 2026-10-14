@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import org.koin.compose.viewmodel.koinViewModel
 import cash.p.terminal.R
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.modules.releasenotes.ReleaseNotesPage
@@ -51,7 +51,7 @@ class AboutPage : HSPage() {
 private fun AboutScreen(
     navigation: HSNavigation,
     onBackPress: () -> Unit,
-    aboutViewModel: AboutViewModel = viewModel(factory = AboutModule.Factory()),
+    aboutViewModel: AboutViewModel = koinViewModel(),
 ) {
     Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {

@@ -58,6 +58,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import cash.p.terminal.resources.Button_Search
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Transactions_Filter
+import cash.p.terminal.resources.coin_placeholder
+import cash.p.terminal.resources.ic_manage_2_24
+import cash.p.terminal.resources.ic_search
 import org.koin.compose.viewmodel.koinViewModel
 import cash.p.terminal.R
 import cash.p.terminal.core.App
@@ -93,6 +99,7 @@ import cash.p.terminal.ui_compose.components.SnackbarDuration
 import cash.p.terminal.ui_compose.components.TabItem
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
+import cash.p.terminal.ui_compose.components.placeholderPainter
 import cash.p.terminal.ui_compose.components.subhead1_grey
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.entities.SectionItemPosition
@@ -296,13 +303,13 @@ private fun TransactionsAppBar(
             showSpinner = syncing,
             menuItems = listOf(
                 MenuItem(
-                    title = TranslatableString.ResString(R.string.Button_Search),
-                    icon = R.drawable.ic_search,
+                    title = TranslatableString.ResString(Res.string.Button_Search),
+                    icon = Res.drawable.ic_search,
                     onClick = onSearchClick,
                 ),
                 MenuItem(
-                    title = TranslatableString.ResString(R.string.Transactions_Filter),
-                    icon = R.drawable.ic_manage_2_24,
+                    title = TranslatableString.ResString(Res.string.Transactions_Filter),
+                    icon = Res.drawable.ic_manage_2_24,
                     showAlertDot = showFilterAlertDot,
                     onClick = onFilterClick,
                 )
@@ -813,7 +820,8 @@ private fun TransactionIconBox(item: TransactionViewItem) {
             is TransactionViewItem.Icon.Platform -> {
                 Icon(
                     modifier = Modifier.size(32.dp),
-                    painter = painterResource(icon.iconRes ?: R.drawable.coin_placeholder),
+                    painter = icon.iconRes?.let { painterResource(it) }
+                        ?: placeholderPainter(Res.drawable.coin_placeholder),
                     tint = ComposeAppTheme.colors.iconPrimary,
                     contentDescription = null
                 )

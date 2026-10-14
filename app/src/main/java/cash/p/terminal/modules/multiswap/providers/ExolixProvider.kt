@@ -1,7 +1,6 @@
 package cash.p.terminal.modules.multiswap.providers
 
 import androidx.collection.LruCache
-import cash.p.terminal.R
 import cash.p.terminal.core.cache.accountScoped
 import cash.p.terminal.core.extractBigDecimal
 import cash.p.terminal.entities.Address
@@ -21,6 +20,8 @@ import cash.p.terminal.network.exolix.domain.entity.ExolixNetwork
 import cash.p.terminal.network.exolix.domain.entity.ExolixTransaction
 import cash.p.terminal.network.exolix.domain.repository.ExolixRepository
 import cash.p.terminal.network.swaprepository.SwapProvider
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_exolix
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.Token
@@ -43,7 +44,7 @@ class ExolixProvider(
 ) : OffChainSwapProvider {
     override val id = "exolix"
     override val title = "Exolix"
-    override val icon = R.drawable.ic_exolix
+    override val icon = Res.drawable.ic_exolix
     override val riskType = ProviderRiskType.Controlled
 
     override val mevProtectionAvailable: Boolean = false

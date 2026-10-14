@@ -66,6 +66,10 @@ import cash.p.terminal.modules.main.MainPage
 import cash.p.terminal.modules.restoreaccount.restoreblockchains.CoinViewItem
 import cash.p.terminal.modules.configuredtoken.ConfiguredTokenInfoBottomSheet
 import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.resources.ManageCoins_AddToken
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_add_yellow
+import cash.p.terminal.resources.ic_placeholder
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.ListEmptyView
 import cash.p.terminal.ui_compose.awaitImeHidden
@@ -138,8 +142,8 @@ internal fun ManageWalletsScreen(
                 menuItems = if (manageWalletsCallback.addTokenEnabled) {
                     listOf(
                         MenuItem(
-                            title = TranslatableString.ResString(R.string.ManageCoins_AddToken),
-                            icon = R.drawable.ic_add_yellow,
+                            title = TranslatableString.ResString(Res.string.ManageCoins_AddToken),
+                            icon = Res.drawable.ic_add_yellow,
                             onClick = {
                                 navigation.slideFromRightForResult<AddTokenPage.Result>(
                                     AddTokenPage()
@@ -534,7 +538,7 @@ private fun ManageWalletsScreenPreview() {
                     type = TokenType.Native,
                     decimals = 8
                 ),
-                imageSource = ImageSource.Local(R.drawable.ic_placeholder),
+                imageSource = ImageSource.Local(Res.drawable.ic_placeholder),
                 title = "BTC",
                 subtitle = "Bitcoin",
                 enabled = true
@@ -546,7 +550,7 @@ private fun ManageWalletsScreenPreview() {
                     type = TokenType.Native,
                     decimals = 18
                 ),
-                imageSource = ImageSource.Local(R.drawable.ic_placeholder),
+                imageSource = ImageSource.Local(Res.drawable.ic_placeholder),
                 title = "ETH",
                 subtitle = "Ethereum",
                 enabled = false,
@@ -560,7 +564,7 @@ private fun ManageWalletsScreenPreview() {
                     type = TokenType.Native,
                     decimals = 18
                 ),
-                imageSource = ImageSource.Local(R.drawable.ic_placeholder),
+                imageSource = ImageSource.Local(Res.drawable.ic_placeholder),
                 title = "ETH",
                 subtitle = "Ethereum",
                 enabled = true,

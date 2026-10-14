@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.balance.token
 
-import cash.p.terminal.R
 import cash.p.terminal.core.INativeBalanceProvider
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.ISendMoneroAdapter
@@ -42,6 +41,9 @@ import cash.p.terminal.modules.transactions.TransactionItem
 import cash.p.terminal.modules.transactions.TransactionViewItem
 import cash.p.terminal.modules.transactions.TransactionViewItemFactory
 import cash.p.terminal.premium.domain.PremiumSettings
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.trezor_connect_failed
+import cash.p.terminal.resources.trezor_not_initialized_description
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.Token
@@ -1847,7 +1849,7 @@ class TokenBalanceViewModelTest : KoinTest {
         advanceUntilIdle()
 
         assertEquals(false, viewModel.uiState.moneroKeyImageSyncInProgress)
-        assertEquals(R.string.trezor_connect_failed, viewModel.uiState.moneroKeyImageSyncError)
+        assertEquals(Res.string.trezor_connect_failed, viewModel.uiState.moneroKeyImageSyncError)
         assertEquals(true, viewModel.uiState.moneroKeyImageSyncRequired)
         assertEquals(emptyList<TokenBalanceModule.Event>(), events)
 
@@ -1884,7 +1886,7 @@ class TokenBalanceViewModelTest : KoinTest {
 
         coVerify(exactly = 1) { adapter.refreshHardwareKeyImages() }
         assertEquals(
-            R.string.trezor_not_initialized_description,
+            Res.string.trezor_not_initialized_description,
             viewModel.uiState.moneroKeyImageSyncError,
         )
         assertEquals(false, viewModel.uiState.moneroKeyImageSyncInProgress)
@@ -1963,7 +1965,7 @@ class TokenBalanceViewModelTest : KoinTest {
             viewModel.syncMoneroKeyImages()
             advanceUntilIdle()
 
-            assertEquals(R.string.trezor_connect_failed, viewModel.uiState.moneroKeyImageSyncError)
+            assertEquals(Res.string.trezor_connect_failed, viewModel.uiState.moneroKeyImageSyncError)
             assertEquals(false, viewModel.uiState.moneroKeyImageSyncInProgress)
             assertEquals(emptyList<TokenBalanceModule.Event>(), events)
 
@@ -1997,7 +1999,7 @@ class TokenBalanceViewModelTest : KoinTest {
             readiness.value = MoneroSpendReadiness.ReconciliationFailed
             advanceUntilIdle()
 
-            assertEquals(R.string.trezor_connect_failed, viewModel.uiState.moneroKeyImageSyncError)
+            assertEquals(Res.string.trezor_connect_failed, viewModel.uiState.moneroKeyImageSyncError)
             assertEquals(false, viewModel.uiState.moneroKeyImageSyncInProgress)
             assertEquals(emptyList<TokenBalanceModule.Event>(), events)
 

@@ -3,6 +3,7 @@ package cash.p.terminal.modules.backuplocal.password
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import cash.p.terminal.core.App
+import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.wallet.PassphraseValidator
 import cash.p.terminal.ui_compose.entities.DataState
 import io.horizontalsystems.core.CoreApp
@@ -16,7 +17,7 @@ object BackupLocalPasswordModule {
                 backupType,
                 PassphraseValidator(),
                 App.accountManager,
-                App.backupProvider,
+                getKoinInstance(),
                 CoreApp.pinComponent,
             ) as T
         }

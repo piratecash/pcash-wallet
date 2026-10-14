@@ -106,7 +106,7 @@ class SendTransactionServiceZCashTest : KoinTest {
         coEvery { walletUseCase.createWalletIfNotExists(any()) } returns testWallet
         coEvery { adapterManager.awaitAdapterForWallet<ISendZcashAdapter>(any(), any()) } returns adapter
 
-        every { currencyManager.baseCurrency } returns Currency("USD", "$", 2, 0)
+        every { currencyManager.baseCurrency } returns Currency("USD", "$", 2)
         every { marketKit.coinPrice(any(), any()) } returns null
 
         mockkObject(App)

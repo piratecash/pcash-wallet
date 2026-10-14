@@ -102,6 +102,9 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.helpers.DateHelper
+import org.jetbrains.compose.resources.DrawableResource
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_attention_24
 
 @Composable
 fun SectionTitleCell(
@@ -155,7 +158,7 @@ fun PoisonWarningCell(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         title = stringResource(R.string.poison_warning_title),
-        icon = R.drawable.ic_attention_24,
+        icon = Res.drawable.ic_attention_24,
         text = stringResource(R.string.poison_warning_body),
         onInfoClick = onInfoClick,
     )
@@ -201,7 +204,7 @@ fun TransactionNftAmountCell(
     amount: ColoredValue,
     nftName: String?,
     iconUrl: String?,
-    iconPlaceholder: Int?,
+    iconPlaceholder: DrawableResource?,
     badge: String?,
 ) {
     RowUniversal(
@@ -246,7 +249,7 @@ fun TransactionAmountCell(
     coinIconUrl: String?,
     alternativeCoinIconUrl: String?,
     badge: String?,
-    coinIconPlaceholder: Int?,
+    coinIconPlaceholder: DrawableResource?,
     onValueClick: () -> Unit,
     onClick: (() -> Unit)? = null
 ) {

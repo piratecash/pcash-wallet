@@ -41,6 +41,9 @@ import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Swap_ErrorInsufficientBalance
+import cash.p.terminal.resources.zcash_migration_error_nothing_to_migrate
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.trezor.domain.TrezorZcashAdmissionPolicy
 import cash.p.terminal.trezor.domain.model.TrezorModel
@@ -758,7 +761,7 @@ class ZcashAdapter(
         prepare(account, recipients, options)
     } catch (e: ZcashException) {
         if (e.message?.contains(NO_FEASIBLE_SELECTION) == true) {
-            throw LocalizedException(R.string.Swap_ErrorInsufficientBalance)
+            throw LocalizedException(Res.string.Swap_ErrorInsufficientBalance)
         }
         throw e
     }
@@ -912,7 +915,7 @@ class ZcashAdapter(
         val steps = requireWallet { zcash, id -> zcash.migrationStatus(id) }.remainingSteps()
         // A zero-step proposal would leave the Migrate button enabled for a migration that
         // plans nothing.
-        if (steps == 0L) throw LocalizedException(R.string.zcash_migration_error_nothing_to_migrate)
+        if (steps == 0L) throw LocalizedException(Res.string.zcash_migration_error_nothing_to_migrate)
         val fee = steps * MINERS_FEE_ZATOSHI
         return IronwoodMigrationProposal(
             amount = (available - fee).coerceAtLeast(0).convertZatoshiToZec(),
@@ -942,7 +945,7 @@ class ZcashAdapter(
             rememberIronwoodMigration(txIds)
         }
         txIds.firstOrNull() ?: throw NotBroadcastException(
-            LocalizedException(R.string.zcash_migration_error_nothing_to_migrate)
+            LocalizedException(Res.string.zcash_migration_error_nothing_to_migrate)
         )
     }
 

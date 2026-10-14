@@ -6,6 +6,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cash.p.terminal.resources.NftAsset_Links_Discord
+import cash.p.terminal.resources.NftAsset_Links_Twitter
+import cash.p.terminal.resources.NftAsset_Links_Website
+import cash.p.terminal.resources.Res
 import io.horizontalsystems.core.collectWith
 import cash.p.terminal.R
 import io.horizontalsystems.core.IAppNumberFormatter
@@ -155,7 +159,7 @@ class NftCollectionOverviewViewModel(
             add(
                 NftCollectionOverviewViewItem.Link(
                     url = it,
-                    title = TranslatableString.ResString(R.string.NftAsset_Links_Website),
+                    title = TranslatableString.ResString(Res.string.NftAsset_Links_Website),
                     icon = R.drawable.ic_globe_20
                 )
             )
@@ -173,7 +177,7 @@ class NftCollectionOverviewViewModel(
             add(
                 NftCollectionOverviewViewItem.Link(
                     url = it,
-                    title = TranslatableString.ResString(R.string.NftAsset_Links_Discord),
+                    title = TranslatableString.ResString(Res.string.NftAsset_Links_Discord),
                     icon = R.drawable.ic_discord_20
                 )
             )
@@ -182,7 +186,7 @@ class NftCollectionOverviewViewModel(
             add(
                 NftCollectionOverviewViewItem.Link(
                     url = "https://twitter.com/$it",
-                    title = TranslatableString.ResString(R.string.NftAsset_Links_Twitter),
+                    title = TranslatableString.ResString(Res.string.NftAsset_Links_Twitter),
                     icon = R.drawable.ic_twitter_20
                 )
             )

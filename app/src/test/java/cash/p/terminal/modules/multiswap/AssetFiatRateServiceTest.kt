@@ -28,7 +28,7 @@ class AssetFiatRateServiceTest {
 
     private val marketKit = mockk<MarketKitWrapper>(relaxed = true)
     private val fiatCurrencyRateService = mockk<FiatCurrencyRateService>(relaxed = true)
-    private val currency = Currency("USD", "$", 2, 0)
+    private val currency = Currency("USD", "$", 2)
 
     @After
     fun tearDown() {

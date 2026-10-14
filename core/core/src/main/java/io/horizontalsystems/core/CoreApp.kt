@@ -3,22 +3,21 @@ package io.horizontalsystems.core
 import android.app.Application
 import android.content.Context
 import cash.p.terminal.strings.helpers.LocaleHelper
+import org.koin.java.KoinJavaComponent.inject
 import java.util.Locale
 
 abstract class CoreApp : Application() {
 
     companion object : ICoreApp {
-        override lateinit var backgroundManager: BackgroundManager
-        override lateinit var encryptionManager: IEncryptionManager
-        override lateinit var systemInfoManager: ISystemInfoManager
-        override lateinit var keyStoreManager: IKeyStoreManager
-        override lateinit var keyProvider: IKeyProvider
-        override lateinit var pinComponent: IPinComponent
-        override lateinit var pinSettingsStorage: IPinSettingsStorage
-        override lateinit var lockoutStorage: ILockoutStorage
-        override lateinit var thirdKeyboardStorage: IThirdKeyboard
+        override val backgroundManager: BackgroundManager by inject(BackgroundManager::class.java)
+        override val encryptionManager: IEncryptionManager by inject(IEncryptionManager::class.java)
+        override val pinComponent: IPinComponent by inject(IPinComponent::class.java)
 
-        override lateinit var instance: CoreApp
+        override var instance: CoreApp
+            get() = ApplicationHolder.application as CoreApp
+            set(value) {
+                ApplicationHolder.application = value
+            }
     }
 
     abstract fun localizedContext(): Context

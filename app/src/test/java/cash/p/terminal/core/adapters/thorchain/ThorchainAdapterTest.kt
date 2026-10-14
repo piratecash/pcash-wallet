@@ -1,12 +1,13 @@
 package cash.p.terminal.core.adapters.thorchain
 
-import cash.p.terminal.R
 import cash.p.terminal.core.BroadcastRawTransactionResult
 import cash.p.terminal.core.BroadcastRawTransactionStatus
 import cash.p.terminal.core.LocalizedException
 import cash.p.terminal.core.OfflineThorchainSignRequest
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.managers.ThorchainKitWrapper
+import cash.p.terminal.resources.Error_InsufficientBalanceForFee
+import cash.p.terminal.resources.Res
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -126,7 +127,7 @@ class ThorchainAdapterTest {
 
         val error = runCatchingSuspend { adapter.send(BigDecimal("1"), RUNE_ADDRESS, null) }
 
-        assertEquals(R.string.Error_InsufficientBalanceForFee, (error as LocalizedException).errorTextRes)
+        assertEquals(Res.string.Error_InsufficientBalanceForFee, (error as LocalizedException).errorTextRes)
         coVerify(exactly = 0) { kit.send(any(), any(), any(), any(), any()) }
     }
 
@@ -147,7 +148,7 @@ class ThorchainAdapterTest {
 
         val error = runCatchingSuspend { adapter().send(BigDecimal("1"), RUNE_ADDRESS, null) }
 
-        assertEquals(R.string.Error_InsufficientBalanceForFee, (error as LocalizedException).errorTextRes)
+        assertEquals(Res.string.Error_InsufficientBalanceForFee, (error as LocalizedException).errorTextRes)
     }
 
     @Test

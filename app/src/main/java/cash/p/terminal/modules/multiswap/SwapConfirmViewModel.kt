@@ -1,7 +1,6 @@
 package cash.p.terminal.modules.multiswap
 
 import android.widget.Toast
-import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,8 +47,17 @@ import cash.p.terminal.network.backendswap.data.entity.BackendSwapError
 import cash.p.terminal.network.changenow.data.entity.BackendChangeNowResponseError
 import cash.p.terminal.network.exolix.data.entity.BackendExolixResponseError
 import cash.p.terminal.network.yifi.data.entity.BackendYiFiResponseError
+import cash.p.terminal.resources.Button_Refresh
+import cash.p.terminal.resources.Error
+import cash.p.terminal.resources.EthereumTransaction_Error_InsufficientBalance_Title
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Swap_ErrorInsufficientBalance
+import cash.p.terminal.resources.swap_provider_order_failed
+import cash.p.terminal.resources.swap_yifi_memo_unsupported
+import cash.p.terminal.resources.unexpected_error
+import cash.p.terminal.resources.unsupported_address
+import cash.p.terminal.resources.unsupported_refund_address
 import cash.p.terminal.strings.helpers.TranslatableString
-import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.trezor.domain.TrezorSigningException
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Token
@@ -60,6 +68,7 @@ import com.piratecash.monero.signer.HardwareWalletOperationException
 import io.horizontalsystems.bitcoincore.managers.SendValueErrors
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.DispatcherProvider
+import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.entities.Currency
 import io.horizontalsystems.ethereumkit.api.jsonrpc.JsonRpc.ResponseError
 import kotlinx.coroutines.CoroutineScope
@@ -70,6 +79,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.jetbrains.compose.resources.StringResource
 import org.koin.java.KoinJavaComponent.inject
 import timber.log.Timber
 import java.math.BigDecimal
@@ -146,7 +156,7 @@ class SwapConfirmViewModel(
     private var moneroPreparationJob: Job? = null
     private var moneroPreparationAutoStarted = false
     private var moneroPreparationActivity = MoneroPreparationActivity.Idle
-    private var moneroPreparationError: Int? = null
+    private var moneroPreparationError: StringResource? = null
     private val mevProtectionAvailable =
         swapProvider.mevProtectionAvailable && sendTransactionService.mevProtectionAvailable
 
@@ -294,7 +304,7 @@ class SwapConfirmViewModel(
         val balanceCaution = if (hasInsufficientInputBalance()) {
             listOf(
                 HSCaution(
-                    TranslatableString.ResString(R.string.Swap_ErrorInsufficientBalance),
+                    TranslatableString.ResString(Res.string.Swap_ErrorInsufficientBalance),
                     HSCaution.Type.Error,
                 ).toCautionViewItem()
             )
@@ -304,7 +314,7 @@ class SwapConfirmViewModel(
         val criticalErrorCaution = criticalError?.let {
             listOf(
                 HSCaution(
-                    s = TranslatableString.ResString(R.string.Error),
+                    s = TranslatableString.ResString(Res.string.Error),
                     type = HSCaution.Type.Error,
                     description = TranslatableString.PlainString(it),
                 ).toCautionViewItem()
@@ -418,7 +428,7 @@ class SwapConfirmViewModel(
             } catch (e: BackendSwapError) {
                 setCriticalError(criticalErrorOf(e.message, e.code))
             } catch (_: SwapDepositMemoUnsupported) {
-                setCriticalError(Translator.getString(R.string.swap_yifi_memo_unsupported))
+                setCriticalError(Translator.getString(Res.string.swap_yifi_memo_unsupported))
             } catch (_: CancellationException) {
                 Timber.w("fetchFinalQuote was cancelled")
             } catch (t: Throwable) {
@@ -442,11 +452,11 @@ class SwapConfirmViewModel(
 
     private fun finalQuoteCriticalError(error: Throwable): String =
         when (val hardwareError = error.toHardwareWalletError()) {
-            HardwareWalletError.Cancelled -> Translator.getString(R.string.Button_Refresh)
+            HardwareWalletError.Cancelled -> Translator.getString(Res.string.Button_Refresh)
             is HardwareWalletError.Failed -> Translator.getString(hardwareError.messageRes)
             null -> {
                 Timber.e(error, "fetchFinalQuote error")
-                Translator.getString(R.string.unexpected_error)
+                Translator.getString(Res.string.unexpected_error)
             }
         }
 
@@ -477,33 +487,33 @@ class SwapConfirmViewModel(
     private val BackendChangeNowResponseError.changeNowCriticalError: String
         get() = when (error) {
             BackendChangeNowResponseError.NOT_VALID_REFUND_ADDRESS -> {
-                Translator.getString(R.string.unsupported_refund_address)
+                Translator.getString(Res.string.unsupported_refund_address)
             }
 
             BackendChangeNowResponseError.NOT_VALID_ADDRESS -> {
-                Translator.getString(R.string.unsupported_address)
+                Translator.getString(Res.string.unsupported_address)
             }
 
             else -> {
-                Translator.getString(R.string.unexpected_error)
+                Translator.getString(Res.string.unexpected_error)
             }
         }
 
     private fun criticalErrorOf(vararg candidates: String?): String =
-        candidates.firstOrNull { !it.isNullOrBlank() } ?: Translator.getString(R.string.unexpected_error)
+        candidates.firstOrNull { !it.isNullOrBlank() } ?: Translator.getString(Res.string.unexpected_error)
 
     private val BackendYiFiResponseError.yiFiCriticalError: String
         get() = when (code) {
             BackendYiFiResponseError.INVALID_RECEIVE_ADDRESS -> {
-                Translator.getString(R.string.unsupported_address)
+                Translator.getString(Res.string.unsupported_address)
             }
 
             BackendYiFiResponseError.INVALID_REFUND_ADDRESS -> {
-                Translator.getString(R.string.unsupported_refund_address)
+                Translator.getString(Res.string.unsupported_refund_address)
             }
 
             else -> {
-                Translator.getString(R.string.swap_provider_order_failed)
+                Translator.getString(Res.string.swap_provider_order_failed)
             }
         }
 
@@ -564,14 +574,14 @@ class SwapConfirmViewModel(
 
     private fun sendFailureCaution(error: Throwable): HSCaution =
         if (error.cause is SendValueErrors.InsufficientUnspentOutputs) {
-            HSCaution(TranslatableString.ResString(R.string.EthereumTransaction_Error_InsufficientBalance_Title))
+            HSCaution(TranslatableString.ResString(Res.string.EthereumTransaction_Error_InsufficientBalance_Title))
         } else {
             HSCaution(TranslatableString.PlainString(error.javaClass.simpleName))
         }
 
     private sealed interface HardwareWalletError {
         data object Cancelled : HardwareWalletError
-        class Failed(@StringRes val messageRes: Int) : HardwareWalletError
+        class Failed(val messageRes: StringResource) : HardwareWalletError
     }
 
     private fun Throwable.toHardwareWalletError(): HardwareWalletError? = when {
@@ -814,7 +824,7 @@ data class SwapConfirmUiState(
     val mevProtectionEnabled: Boolean,
     val moneroSpendReadiness: MoneroSpendReadiness? = null,
     val moneroPreparationInProgress: Boolean = false,
-    val moneroPreparationError: Int? = null,
+    val moneroPreparationError: StringResource? = null,
     val moneroPreparationRetryAvailable: Boolean = false,
 )
 

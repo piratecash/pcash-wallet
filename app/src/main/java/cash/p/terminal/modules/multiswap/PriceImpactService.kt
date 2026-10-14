@@ -1,7 +1,10 @@
 package cash.p.terminal.modules.multiswap
 
-import cash.p.terminal.R
 import cash.p.terminal.core.HSCaution
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Swap_PriceImpact
+import cash.p.terminal.resources.Swap_PriceImpactTooHigh
+import cash.p.terminal.resources.Swap_PriceImpactWarning
 import cash.p.terminal.strings.helpers.TranslatableString
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,10 +46,10 @@ class PriceImpactService {
             when {
                 priceImpactAbs > forbiddenPriceImpact -> {
                     HSCaution(
-                        s = TranslatableString.ResString(R.string.Swap_PriceImpact),
+                        s = TranslatableString.ResString(Res.string.Swap_PriceImpact),
                         type = HSCaution.Type.Error,
                         description = TranslatableString.ResString(
-                            R.string.Swap_PriceImpactTooHigh,
+                            Res.string.Swap_PriceImpactTooHigh,
                             providerTitle ?: ""
                         )
                     )
@@ -54,9 +57,9 @@ class PriceImpactService {
 
                 priceImpactAbs > warningPriceImpact -> {
                     HSCaution(
-                        s = TranslatableString.ResString(R.string.Swap_PriceImpact),
+                        s = TranslatableString.ResString(Res.string.Swap_PriceImpact),
                         type = HSCaution.Type.Warning,
-                        description = TranslatableString.ResString(R.string.Swap_PriceImpactWarning)
+                        description = TranslatableString.ResString(Res.string.Swap_PriceImpactWarning)
                     )
                 }
 

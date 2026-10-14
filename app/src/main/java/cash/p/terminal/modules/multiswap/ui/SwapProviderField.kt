@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.multiswap.ui
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -10,6 +9,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_changelly
+import cash.p.terminal.resources.uniswap
 import cash.p.terminal.ui.compose.components.HSRow
 import cash.p.terminal.ui_compose.components.HSpacer
 import cash.p.terminal.ui_compose.components.HsImage
@@ -17,11 +19,12 @@ import cash.p.terminal.ui_compose.components.subhead1_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.ui_compose.components.CellUniversal
+import org.jetbrains.compose.resources.DrawableResource
 
 @Composable
 fun SwapProviderField(
     title: String,
-    @DrawableRes iconId: Int,
+    iconId: DrawableResource,
     iconUrl: String? = null,
 ) {
     CellUniversal(borderTop = true) {
@@ -47,7 +50,7 @@ private fun SwapProviderFieldPreview() {
     ComposeAppTheme {
         SwapProviderField(
             title = "Uniswap",
-            iconId = R.drawable.uniswap
+            iconId = Res.drawable.uniswap
         )
     }
 }
@@ -58,7 +61,7 @@ private fun SwapProviderFieldRemoteIconPreview() {
     ComposeAppTheme {
         SwapProviderField(
             title = "Changelly",
-            iconId = R.drawable.ic_changelly,
+            iconId = Res.drawable.ic_changelly,
             iconUrl = "https://example.com/icon.png",
         )
     }

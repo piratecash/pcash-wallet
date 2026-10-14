@@ -1,6 +1,9 @@
 package cash.p.terminal.modules.watchaddress.selectblockchains
 
 import cash.p.terminal.R
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.coin_placeholder
+import cash.p.terminal.resources.ic_platform_placeholder_32
 import cash.p.terminal.wallet.alternativeImageUrl
 import cash.p.terminal.core.description
 import cash.p.terminal.wallet.imageUrl
@@ -74,7 +77,7 @@ class SelectBlockchainsViewModel(
         val blockchain = token.blockchain
         return CoinViewItem(
             item = token,
-            imageSource = ImageSource.Remote(blockchain.type.imageUrl, R.drawable.ic_platform_placeholder_32),
+            imageSource = ImageSource.Remote(blockchain.type.imageUrl, Res.drawable.ic_platform_placeholder_32),
             title = blockchain.name,
             subtitle = blockchain.description,
             enabled = false
@@ -85,7 +88,7 @@ class SelectBlockchainsViewModel(
         return CoinViewItem(
             item = token,
             imageSource = ImageSource.Remote(
-                token.fullCoin.coin.imageUrl, R.drawable.coin_placeholder, token.fullCoin.coin.alternativeImageUrl
+                token.fullCoin.coin.imageUrl, Res.drawable.coin_placeholder, token.fullCoin.coin.alternativeImageUrl
             ),
             title = token.fullCoin.coin.code,
             subtitle = token.fullCoin.coin.name,

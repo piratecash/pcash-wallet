@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
@@ -62,6 +63,7 @@ private fun UnlinkAccountScreen(navigation: HSNavigation, account: Account) {
 
     BottomSheetHeader(
         iconPainter = painterResource(R.drawable.ic_attention_red_24),
+        iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusError),
         title = stringResource(R.string.ManageKeys_Delete_Title),
         onCloseClick = {
             navigation.navigateUpSafely()
