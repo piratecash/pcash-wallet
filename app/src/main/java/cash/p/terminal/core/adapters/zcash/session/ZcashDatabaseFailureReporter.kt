@@ -7,7 +7,6 @@ import cash.p.terminal.core.tryOrNull
 import cash.p.zcash.DatabaseStats
 import cash.p.zcash.ZcashSdk
 import io.horizontalsystems.core.logger.AppLogger
-import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -28,7 +27,6 @@ class ZcashDatabaseFailureReporter(
     private val seen = AtomicReference(Counters(0, 0, 0, 0))
     private val reportedAt = ConcurrentHashMap<String, TimeMark>()
     private val processStartLogged = AtomicBoolean(false)
-    private val firstCantOpenLogged = AtomicBoolean(false)
 
     fun databaseFailure(accountId: String, logger: AppLogger) {
         logger.warning(databaseFiles.diagnostics(accountId))
@@ -37,7 +35,7 @@ class ZcashDatabaseFailureReporter(
 
     /** Logs the healthy baseline once per process, to compare against the first code-14 line. */
     fun processStarted(logger: AppLogger) {
-        if (processStartLogged.compareAndSet(false, true)) logger.info(processLine("start"))
+        if (processStartLogged.compareAndSet(false, true)) logger.info(processLine())
     }
 
     private fun poolsLine(): String? {
@@ -68,7 +66,6 @@ class ZcashDatabaseFailureReporter(
         val summary = "sqlite cantopen native +$native acquire +$acquire recovered +$recovered opens=${stats.opens}"
         logger.warning(summary)
         logUnseenEntries(stats, previous.seq, logger)
-        if (firstCantOpenLogged.compareAndSet(false, true)) logger.warning(processLine("first-cantopen"))
         if (isDueForNonFatal(signature(stats))) {
             nonFatalReporter.report(ZcashCantOpenException(summary), summary)
         }
@@ -106,17 +103,10 @@ class ZcashDatabaseFailureReporter(
         return text.takeIf { isOsLayer && code.toIntOrNull()?.and(PRIMARY_CODE_MASK) == CANTOPEN }
     }
 
-    private fun processLine(label: String): String {
-        val status = tryOrNull { File("/proc/self/status").readLines() }.orEmpty()
-        val libs = tryOrNull { File("/proc/self/maps").useLines { nativeLibraryNames(it) } }
+    private fun processLine(): String {
         val ageSeconds = tryOrNull { (SystemClock.elapsedRealtime() - Process.getStartElapsedRealtime()) / 1000 }
-        return "process: $label pid=${tryOrNull { Process.myPid() } ?: NA} age=${ageSeconds ?: NA}s " +
-            "threads=${status.field("Threads:")} vmSizeKb=${status.field("VmSize:")} " +
-            "libs=${libs?.joinToString(",") ?: NA}"
+        return "process: start pid=${tryOrNull { Process.myPid() } ?: NA} age=${ageSeconds ?: NA}s"
     }
-
-    private fun List<String>.field(key: String): String =
-        firstOrNull { it.startsWith(key) }?.removePrefix(key)?.trim()?.substringBefore(' ') ?: NA
 
     private companion object {
         const val NA = "n/a"
@@ -128,12 +118,3 @@ class ZcashDatabaseFailureReporter(
         const val PRIMARY_CODE_MASK = 0xff
     }
 }
-
-/** File names of the app's own native libraries mapped into the process, from `/proc/self/maps` lines. */
-internal fun nativeLibraryNames(maps: Sequence<String>): List<String> =
-    maps.mapNotNull { it.trim().split(Regex("\\s+"), limit = 6).getOrNull(5) }
-        .filter { it.contains("/data/app/") && it.endsWith(".so") }
-        .map { it.substringAfterLast('/') }
-        .distinct()
-        .sorted()
-        .toList()

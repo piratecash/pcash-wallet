@@ -16,7 +16,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.ExperimentalTime
 import kotlin.time.TestTimeSource
@@ -225,38 +224,12 @@ class ZcashDatabaseFailureReporterTest {
     }
 
     @Test
-    fun nativeLibraryNames_mixedMaps_returnsAppLibraryNamesDistinctSorted() {
-        val maps = sequenceOf(
-            "7000 r-xp 00000000 fd:01 1 /data/app/~~x/cash.p.terminal-y/lib/arm64/libzcash.so",
-            "8000 r--p 00001000 fd:01 1 /data/app/~~x/cash.p.terminal-y/lib/arm64/libzcash.so",
-            "9000 r-xp 00000000 fd:01 2 /data/app/~~x/cash.p.terminal-y/lib/arm64/liba.so",
-            "a000 r-xp 00000000 fd:01 3 /system/lib64/libc.so",
-            "b000 r--s 00000000 fd:01 4 /data/app/~~x/cash.p.terminal-y/base.apk",
-            "c000 rw-p 00000000 00:00 0",
-        )
-
-        assertEquals(listOf("liba.so", "libzcash.so"), nativeLibraryNames(maps))
-    }
-
-    @Test
     fun processStarted_calledTwice_logsOneLine() {
         reporter.processStarted(logger)
         reporter.processStarted(logger)
 
-        verify(exactly = 1) { logger.info(match { it.startsWith("process: start pid=") && it.contains(" libs=") }) }
-    }
-
-    @Test
-    fun checkCantOpen_twoDeltas_logsFirstCantopenOnce() {
-        val lines = mutableListOf<String>()
-        every { logger.warning(capture(lines)) } returns Unit
-
-        report(stats(native = 1))
-        report(stats(native = 2))
-
-        assertEquals(1, lines.count { it.startsWith("process: first-cantopen pid=") })
-        val summaryAt = lines.indexOfFirst { it.startsWith("sqlite cantopen") }
-        assertTrue(lines.indexOfFirst { it.startsWith("process:") } > summaryAt)
+        val startLine = Regex("process: start pid=\\S+ age=\\S+s")
+        verify(exactly = 1) { logger.info(match { startLine.matches(it) && !it.contains("libs=") }) }
     }
 
     private companion object {

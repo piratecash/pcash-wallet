@@ -35,6 +35,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import java.util.TimeZone
 
 /**
  * Robolectric is required for [android.os.Build.SUPPORTED_ABIS] and a real [android.content.pm.ApplicationInfo],
@@ -91,6 +92,32 @@ class BlockchainStatusViewModelTest {
         verify(exactly = 0) { logsDao.streamGroupedByTag(any()) }
         coVerify(exactly = 0) { statusReportFile.share(any(), any(), any(), any()) }
         coVerify(exactly = 0) { statusReportFile.write(any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun constructor_initCompletes_statusTextHasReportTimeRightAfterTitle() {
+        val viewModel = createViewModel()
+
+        viewModel.awaitInitLoaded()
+
+        val line = viewModel.uiState.value.statusAsText.orEmpty().lines()[1]
+        assertTrue(line, line.startsWith("Report Time: ") && line.endsWith(" UTC"))
+    }
+
+    @Test
+    fun formatReportTime_fixedInstant_formatsUtc() {
+        assertEquals("2026-10-15 08:11:02 UTC", formatReportTime(1_792_051_862_000L))
+    }
+
+    @Test
+    fun formatReportTime_nonUtcDefaultZoneNearMidnight_stillFormatsUtc() {
+        val original = TimeZone.getDefault()
+        TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"))
+        try {
+            assertEquals("2026-10-15 23:59:59 UTC", formatReportTime(1_792_108_799_000L))
+        } finally {
+            TimeZone.setDefault(original)
+        }
     }
 
     @Test
