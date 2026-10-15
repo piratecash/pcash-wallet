@@ -36,7 +36,7 @@ class DesktopHostTest {
 
     @Test
     fun marketTab_selected_showsMarketScreen() = runDesktopComposeUiTest {
-        setContent { TestWindowHost { ComposeAppTheme { PcashApp("desktop") } } }
+        setContent { TestWindowHost { ComposeAppTheme { PcashTestApp() } } }
 
         onNodeWithContentDescription("Markets").performClick()
 
@@ -45,7 +45,7 @@ class DesktopHostTest {
 
     @Test
     fun coinRow_clicked_opensCoinPageAndBackReturnsToMarket() = runDesktopComposeUiTest {
-        setContent { TestWindowHost { ComposeAppTheme { PcashApp("desktop") } } }
+        setContent { TestWindowHost { ComposeAppTheme { PcashTestApp() } } }
         onNodeWithContentDescription("Markets").performClick()
         waitForText("BTC")
 
@@ -59,7 +59,7 @@ class DesktopHostTest {
 
     @Test
     fun baseCurrencyRow_clicked_opensPageKeepingSettingsTabSelected() = runDesktopComposeUiTest {
-        setContent { TestWindowHost { ComposeAppTheme { PcashApp("desktop") } } }
+        setContent { TestWindowHost { ComposeAppTheme { PcashTestApp() } } }
         onNodeWithContentDescription("Settings").performClick()
 
         onNodeWithText("Base Currency").performClick()
@@ -72,7 +72,7 @@ class DesktopHostTest {
 
     @Test
     fun baseCurrency_switchedToEur_marketShowsEurValues() = runDesktopComposeUiTest {
-        setContent { TestWindowHost { ComposeAppTheme { PcashApp("desktop") } } }
+        setContent { TestWindowHost { ComposeAppTheme { PcashTestApp() } } }
         onNodeWithContentDescription("Markets").performClick()
         waitForText("$1T")
 

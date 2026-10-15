@@ -13,7 +13,6 @@ import cash.p.terminal.wallet.useCases.RemoveMoneroWalletFilesUseCase
 import io.mockk.coEvery
 import io.horizontalsystems.core.DefaultDispatcherProvider
 import io.mockk.mockk
-import io.reactivex.Flowable
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -202,9 +201,6 @@ private class InMemoryAccountsDao : AccountsDao {
 
     override fun getDeletedIds(): List<String> =
         accounts.values.filter { it.deleted }.map { it.id }
-
-    override fun getNonBackedUpCount(): Flowable<Int> =
-        Flowable.just(accounts.values.count { !it.isBackedUp && !it.deleted })
 
     override fun getTotalCount(): Int =
         accounts.values.count { !it.deleted }

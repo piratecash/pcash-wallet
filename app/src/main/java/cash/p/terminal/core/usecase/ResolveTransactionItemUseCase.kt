@@ -3,6 +3,7 @@ package cash.p.terminal.core.usecase
 import cash.p.terminal.core.managers.TransactionAdapterManager
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.core.tryOrNull
+import cash.p.terminal.entities.toStatusUrl
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.modules.transactions.TransactionItem

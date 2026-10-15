@@ -87,8 +87,8 @@ class BlockchainStatusViewModelTest {
         viewModel.awaitInitLoaded()
         assertNotNull(viewModel.uiState.value.statusAsText)
 
-        verify(exactly = 0) { logsDao.streamGrouped() }
-        verify(exactly = 0) { logsDao.streamGroupedByTag(any()) }
+        verify(exactly = 0) { logsDao.getGroupedPage(any(), any(), any()) }
+        verify(exactly = 0) { logsDao.getGroupedPageByTag(any(), any(), any(), any()) }
         coVerify(exactly = 0) { statusReportFile.share(any(), any(), any(), any()) }
         coVerify(exactly = 0) { statusReportFile.write(any(), any(), any(), any()) }
     }

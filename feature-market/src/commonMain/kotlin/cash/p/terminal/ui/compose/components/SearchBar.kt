@@ -26,6 +26,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -60,10 +62,16 @@ fun SearchBar(
     onSearchTextChanged: (String) -> Unit = {},
 ) {
 
-    var searchMode by remember { mutableStateOf(searchModeInitial) }
-    var showClearButton by remember { mutableStateOf(false) }
+    var searchMode by rememberSaveable { mutableStateOf(searchModeInitial) }
     val keyboardController = LocalSoftwareKeyboardController.current
-    var searchText by remember { mutableStateOf("") }
+    var searchText by rememberSaveable { mutableStateOf("") }
+    val showClearButton = searchText.isNotEmpty()
+    val reportSearchText by rememberUpdatedState(onSearchTextChanged)
+
+    LaunchedEffect(Unit) {
+        // A restored query: the caller's filter may have started over, so it hears the query again.
+        if (searchText.isNotEmpty()) reportSearchText(searchText)
+    }
 
     TopAppBar(
         title = {
@@ -77,7 +85,6 @@ fun SearchBar(
                     onValueChange = {
                         searchText = it
                         onSearchTextChanged.invoke(it)
-                        showClearButton = it.isNotEmpty()
                     },
                     placeholder = {
                         body_disabled(
@@ -111,7 +118,6 @@ fun SearchBar(
                             HsIconButton(onClick = {
                                 searchText = ""
                                 onSearchTextChanged.invoke("")
-                                showClearButton = false
                             }) {
                                 Icon(
                                     painter = painterResource(Res.drawable.ic_close_24),

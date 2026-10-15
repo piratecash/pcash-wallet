@@ -23,7 +23,6 @@ import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.MarketKitWrapper
 import io.horizontalsystems.core.CoreApp
 import io.horizontalsystems.core.ISystemInfoManager
-import io.horizontalsystems.core.logger.AppLog
 import io.horizontalsystems.core.storage.LogsDao
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -126,8 +125,8 @@ class AppStatusViewModelTest {
         viewModel.awaitInitLoaded()
         assertNotNull(viewModel.uiState.value.appStatusAsText)
 
-        verify(exactly = 0) { logsDao.streamGrouped() }
-        verify(exactly = 0) { logsDao.streamGroupedByTag(any()) }
+        verify(exactly = 0) { logsDao.getGroupedPage(any(), any(), any()) }
+        verify(exactly = 0) { logsDao.getGroupedPageByTag(any(), any(), any(), any()) }
         coVerify(exactly = 0) { statusReportFile.share(any(), any(), any(), any()) }
         coVerify(exactly = 0) { statusReportFile.write(any(), any(), any(), any()) }
     }

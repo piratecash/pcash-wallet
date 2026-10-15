@@ -1,6 +1,5 @@
 package cash.p.terminal.entities
 
-import androidx.room.Entity
 import io.horizontalsystems.ethereumkit.models.RpcSource
 import io.horizontalsystems.ethereumkit.models.TransactionSource
 import java.net.URI
@@ -25,10 +24,3 @@ data class EvmSyncSource(
             is RpcSource.WebSocket -> source.auth
         }
 }
-
-@Entity(primaryKeys = ["blockchainTypeUid", "url"])
-data class EvmSyncSourceRecord(
-    val blockchainTypeUid: String,
-    val url: String,
-    val auth: String?,
-)

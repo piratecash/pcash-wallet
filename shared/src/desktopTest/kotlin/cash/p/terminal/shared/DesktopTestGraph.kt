@@ -15,6 +15,9 @@ import cash.p.terminal.feature.market.di.marketFeatureModule
 import cash.p.terminal.modules.chart.ChartIndicatorStorage
 import cash.p.terminal.shared.desktop.DesktopChartIndicatorStorage
 import cash.p.terminal.shared.desktop.desktopFeatureModule
+import cash.p.terminal.shared.desktop.vault.DesktopPreferencesReset
+import cash.p.terminal.shared.desktop.vault.DesktopVaultFiles
+import cash.p.terminal.vault.PasswordVault
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.SubscriptionManager
 import cash.p.terminal.wallet.entities.Coin
@@ -26,6 +29,7 @@ import com.google.gson.Gson
 import io.horizontalsystems.core.BaseCurrencyStorage
 import io.horizontalsystems.core.DefaultDispatcherProvider
 import io.horizontalsystems.core.DesktopSettingsStore
+import io.horizontalsystems.core.ILockoutStorage
 import io.horizontalsystems.core.MarketSettingsStore
 import io.mockk.every
 import io.mockk.mockk
@@ -76,7 +80,11 @@ internal object DesktopTestGraph {
             )
         }
         single { DesktopSettingsStore(File(dataDir, "settings.preferences_pb")) } binds
-            arrayOf(MarketSettingsStore::class, BaseCurrencyStorage::class)
+            arrayOf(MarketSettingsStore::class, BaseCurrencyStorage::class, ILockoutStorage::class)
+        // The vault of a test never leaves the temp directory: the real one holds the user's wallets.
+        single { DesktopVaultFiles(dataDir) }
+        single { PasswordVault(get<DesktopVaultFiles>().vaultFile) }
+        single<DesktopPreferencesReset> { mockk(relaxed = true) }
         single<ChartIndicatorStorage> {
             DesktopChartIndicatorStorage(File(dataDir, "indicators.preferences_pb"), Gson(), DefaultDispatcherProvider())
         }

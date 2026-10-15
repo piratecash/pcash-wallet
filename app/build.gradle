@@ -378,7 +378,6 @@ dependencies {
     // Room
     implementation libs.room.runtime
     implementation libs.room.ktx
-    implementation libs.androidx.room.rxjava2
     implementation libs.room.paging
     implementation libs.androidx.material3.android
     ksp libs.room.compiler
@@ -509,6 +508,7 @@ dependencies {
     implementation project(':core:qr-multipart')
     implementation project(':core:navigation')
     implementation project(':core:vault')
+    implementation project(':core:storage')
     implementation project(':components:icons')
     implementation project(':components:chartview')
     implementation project(':feature-stacking')

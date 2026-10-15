@@ -47,7 +47,6 @@ annotation = "1.9.1"
 lifecycle-viewmodel-compose = "2.10.0"
 resolutionJava = "v7.1.0"
 richtextMarkdown = "1.0.0-alpha03"
-roomRxjava2 = "2.8.4"
 runner = "1.7.0"
 runtimeLivedata = "1.10.6"
 rxandroid = "2.1.1"
@@ -144,7 +143,6 @@ reown-walletkit = { module = "com.reown:walletkit" }
 
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
-androidx-room-rxjava2 = { module = "androidx.room:room-rxjava2", version.ref = "roomRxjava2" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
@@ -168,6 +166,7 @@ compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 compose-multiplatform-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
 compose-multiplatform-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
 compose-multiplatform-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
+compose-multiplatform-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
 compose-multiplatform-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeResources" }
 compose-multiplatform-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "composeMaterial3" }
 compose-multiplatform-adaptive-navigation-suite = { module = "org.jetbrains.compose.material3:material3-adaptive-navigation-suite", version.ref = "composeMaterial3" }
@@ -239,6 +238,7 @@ bitcoin-dogecoin-kit = { group = "com.github.piratecash.bitcoin-kit-android", na
 bitcoin-cosanta-kit = { group = "com.github.piratecash.bitcoin-kit-android", name = "cosantakit", version.ref = "piratecash-bitcoin" }
 bitcoin-piratecash-kit = { group = "com.github.piratecash.bitcoin-kit-android", name = "piratecashkit", version.ref = "piratecash-bitcoin" }
 bitcoin-hodler = { group = "com.github.piratecash.bitcoin-kit-android", name = "hodler", version.ref = "piratecash-bitcoin" }
+bitcoin-kit-sqlcipher-driver = { group = "com.github.piratecash.bitcoin-kit-android", name = "sqlcipher-driver", version.ref = "piratecash-bitcoin" }
 hd-wallet-kit = { group = "com.github.piratecash.hd-wallet-kit-android", name = "hd-wallet-kit-kmp", version.ref = "hd-wallet-kit" }
 stellar-kit = { group = "com.github.piratecash.stellar-kit-android", name = "stellarkit", version.ref = "stellar-kit" }
 thorchain-kit = { group = "com.github.piratecash.thorchain-kit-android", name = "thorchainkit", version.ref = "thorchain-kit" }

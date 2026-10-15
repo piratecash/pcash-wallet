@@ -1883,8 +1883,8 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="Unlock_BiometricScanner">Biometrie-Scanner</string>
     <string name="Unlock_BiometricScannerDisabled_Description">Code eingeben oder später erneut versuchen</string>
     <string name="Unlock_BiometricScannerDisabled_Info">Biometrische Auth. deaktiviert</string>
-    <string name="Unlock_WalletDisabledUntil">Deaktiviert bis: %s </string>
-    <string name="Unlock_AttemptsLeft">Verbleibende Versuche: %s</string>
+    <string name="Unlock_WalletDisabledUntil">Deaktiviert bis: %1$s </string>
+    <string name="Unlock_AttemptsLeft">Verbleibende Versuche: %1$s</string>
     <string name="Unlock_Random">Zufällig</string>
     <!--Set Pin-->
     <string name="PinSet_Title">Code festlegen</string>
@@ -2305,4 +2305,34 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="beam_wallet_state_closed">BEAM-Wallet geschlossen</string>
     <string name="beam_wallet_operation_failed">BEAM-Wallet-Vorgang fehlgeschlagen</string>
     <string name="beam_wallet_stop_failed">Stoppen der BEAM-Wallet fehlgeschlagen</string>
+    <string name="desktop_already_running">P.CASH wird bereits ausgeführt</string>
+    <string name="desktop_create_password_title">Passwort erstellen</string>
+    <string name="desktop_create_password_description">Das Passwort schützt die auf diesem Computer gespeicherten Wallets. Es wird nirgendwo gespeichert und kann nicht wiederhergestellt werden.</string>
+    <string name="desktop_password_repeat_hint">Passwort wiederholen</string>
+    <string name="desktop_password_mismatch">Die Passwörter stimmen nicht überein</string>
+    <string name="desktop_password_requirement_length">Mindestens 8 Zeichen</string>
+    <string name="desktop_password_requirement_uppercase">Ein Großbuchstabe</string>
+    <string name="desktop_password_requirement_lowercase">Ein Kleinbuchstabe</string>
+    <string name="desktop_password_requirement_digit">Eine Ziffer</string>
+    <string name="desktop_password_requirement_special">Ein Sonderzeichen</string>
+    <string name="desktop_password_caps_lock">Feststelltaste ist aktiviert</string>
+    <string name="desktop_password_switch_layout">Tastaturlayout wechseln: Das Passwort darf nur lateinische Zeichen enthalten</string>
+    <string name="desktop_create_password_warning">Ohne dieses Passwort können die Daten auf diesem Computer nicht geöffnet werden, und niemand kann sie wiederherstellen. Bewahren Sie eine Sicherungskopie jeder Wiederherstellungsphrase auf.</string>
+    <string name="desktop_create_password_failed">Das Passwort konnte nicht gespeichert werden. Prüfen Sie den freien Speicherplatz und die Zugriffsrechte</string>
+    <string name="desktop_unlock_title">Passwort eingeben</string>
+    <string name="desktop_unlock_wrong_password">Falsches Passwort</string>
+    <string name="desktop_unlock_data_unreadable">Ihre Daten konnten nicht geöffnet werden</string>
+    <string name="desktop_unlock_failed">Die Schlüsseldatei konnte nicht gelesen werden. Bitte versuchen Sie es erneut</string>
+    <string name="desktop_unlock_forgot_password">Passwort vergessen?</string>
+    <string name="desktop_forgot_password_title">Passwort vergessen</string>
+    <string name="desktop_forgot_password_warning">Die auf diesem Computer gespeicherten Wallets, Kontakte, Einstellungen und der Verlauf werden gelöscht. Die Gelder in der Blockchain sind nicht betroffen: Die Wallets können nur mit ihren Wiederherstellungsphrasen wiederhergestellt werden.</string>
+    <string name="desktop_forgot_password_action">Daten löschen</string>
+    <string name="desktop_forgot_password_failed">Die Daten konnten nicht gelöscht werden</string>
+    <string name="desktop_change_password_title">Passwort ändern</string>
+    <string name="desktop_change_password_current_hint">Aktuelles Passwort</string>
+    <string name="desktop_change_password_new_hint">Neues Passwort</string>
+    <string name="desktop_change_password_failed">Das Passwort konnte nicht gespeichert werden. Das aktuelle Passwort funktioniert weiterhin</string>
+    <string name="desktop_change_password_corrupted">Die Schlüsseldatei ist beschädigt: Sobald die App gesperrt ist, können Sie sich nicht mehr anmelden. Speichern Sie eine Sicherungskopie jeder Wiederherstellungsphrase.</string>
+    <string name="desktop_change_password_success">Passwort geändert</string>
+    <string name="desktop_security_lock_now">Jetzt sperren</string>
 </resources>

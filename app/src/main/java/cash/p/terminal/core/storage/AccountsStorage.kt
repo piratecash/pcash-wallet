@@ -8,7 +8,6 @@ import cash.p.terminal.wallet.IAccountsStorage
 import cash.p.terminal.wallet.entities.AccountRecord
 import cash.p.terminal.wallet.entities.SecretList
 import cash.p.terminal.wallet.entities.SecretString
-import io.reactivex.Flowable
 
 class AccountsStorage(appDatabase: AppDatabase) : IAccountsStorage {
 
@@ -171,10 +170,6 @@ class AccountsStorage(appDatabase: AppDatabase) : IAccountsStorage {
 
     override fun delete(id: String) {
         dao.delete(id)
-    }
-
-    override fun getNonBackedUpCount(): Flowable<Int> {
-        return dao.getNonBackedUpCount()
     }
 
     override fun clear() {

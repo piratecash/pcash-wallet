@@ -20,6 +20,7 @@ import cash.p.terminal.core.usecase.SyncPendingMultiSwapUseCase
 import cash.p.terminal.core.usecase.UpdateSwapProviderTransactionsStatusUseCase
 import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.SwapProviderTransaction
+import cash.p.terminal.entities.toStatusUrl
 import cash.p.terminal.entities.nft.NftAssetBriefMetadata
 import cash.p.terminal.entities.nft.NftUid
 import cash.p.terminal.entities.transactionrecords.TransactionRecord

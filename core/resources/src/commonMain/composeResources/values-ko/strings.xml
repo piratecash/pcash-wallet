@@ -1889,8 +1889,8 @@
     <string name="Unlock_BiometricScanner">생체정보 스캐너</string>
     <string name="Unlock_BiometricScannerDisabled_Description">비밀번호를 입력하거나 나중에 다시 시도하십시오</string>
     <string name="Unlock_BiometricScannerDisabled_Info">생체정보 인증 비활성화</string>
-    <string name="Unlock_WalletDisabledUntil">~때까지 사용 안 함: %s</string>
-    <string name="Unlock_AttemptsLeft">남은 시도 횟수: %s</string>
+    <string name="Unlock_WalletDisabledUntil">~때까지 사용 안 함: %1$s</string>
+    <string name="Unlock_AttemptsLeft">남은 시도 횟수: %1$s</string>
     <string name="Unlock_Random">랜덤</string>
     <!--Set Pin-->
     <string name="PinSet_Title">암호 설정</string>
@@ -2306,4 +2306,34 @@
     <string name="beam_wallet_state_closed">BEAM 지갑이 닫힘</string>
     <string name="beam_wallet_operation_failed">BEAM 지갑 작업 실패</string>
     <string name="beam_wallet_stop_failed">BEAM 지갑 중지 실패</string>
+    <string name="desktop_already_running">P.CASH이 이미 실행 중입니다</string>
+    <string name="desktop_create_password_title">비밀번호 만들기</string>
+    <string name="desktop_create_password_description">비밀번호는 이 컴퓨터에 저장된 지갑을 보호합니다. 어디에도 저장되지 않으며 복구할 수 없습니다.</string>
+    <string name="desktop_password_repeat_hint">비밀번호 다시 입력</string>
+    <string name="desktop_password_mismatch">비밀번호가 일치하지 않습니다</string>
+    <string name="desktop_password_requirement_length">최소 8자</string>
+    <string name="desktop_password_requirement_uppercase">대문자 포함</string>
+    <string name="desktop_password_requirement_lowercase">소문자 포함</string>
+    <string name="desktop_password_requirement_digit">숫자 포함</string>
+    <string name="desktop_password_requirement_special">특수 문자 포함</string>
+    <string name="desktop_password_caps_lock">Caps Lock이 켜져 있습니다</string>
+    <string name="desktop_password_switch_layout">키보드 레이아웃을 전환하세요: 비밀번호는 라틴 문자만 사용할 수 있습니다</string>
+    <string name="desktop_create_password_warning">이 비밀번호가 없으면 이 컴퓨터의 데이터를 열 수 없으며, 아무도 복구할 수 없습니다. 모든 복구 문구의 백업을 보관하세요.</string>
+    <string name="desktop_create_password_failed">비밀번호를 저장할 수 없습니다. 디스크 여유 공간과 접근 권한을 확인하세요</string>
+    <string name="desktop_unlock_title">비밀번호를 입력하세요</string>
+    <string name="desktop_unlock_wrong_password">비밀번호가 올바르지 않습니다</string>
+    <string name="desktop_unlock_data_unreadable">데이터를 열 수 없습니다</string>
+    <string name="desktop_unlock_failed">키 파일을 읽을 수 없습니다. 다시 시도해 주세요</string>
+    <string name="desktop_unlock_forgot_password">비밀번호를 잊으셨나요?</string>
+    <string name="desktop_forgot_password_title">비밀번호를 잊으셨나요</string>
+    <string name="desktop_forgot_password_warning">이 컴퓨터에 저장된 지갑, 연락처, 설정 및 내역이 삭제됩니다. 블록체인상의 자금에는 영향이 없습니다. 지갑은 복구 문구로만 복원할 수 있습니다.</string>
+    <string name="desktop_forgot_password_action">데이터 삭제</string>
+    <string name="desktop_forgot_password_failed">데이터를 삭제할 수 없습니다</string>
+    <string name="desktop_change_password_title">비밀번호 변경</string>
+    <string name="desktop_change_password_current_hint">현재 비밀번호</string>
+    <string name="desktop_change_password_new_hint">새 비밀번호</string>
+    <string name="desktop_change_password_failed">비밀번호를 저장할 수 없습니다. 현재 비밀번호는 계속 사용할 수 있습니다</string>
+    <string name="desktop_change_password_corrupted">키 파일이 손상되었습니다. 앱이 잠기면 로그인할 수 없게 됩니다. 모든 복구 문구의 백업을 저장하세요.</string>
+    <string name="desktop_change_password_success">비밀번호가 변경되었습니다</string>
+    <string name="desktop_security_lock_now">지금 잠금</string>
 </resources>
