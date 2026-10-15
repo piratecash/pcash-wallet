@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.common.CommonParcelize
 
 @Entity(
@@ -63,6 +64,16 @@ class HardwarePublicKey(
         return result
     }
 }
+
+/** Contract tokens of an account-based chain sign with the chain's single key. */
+val TokenType.usesChainKey: Boolean
+    get() = when (this) {
+        is TokenType.Eip20, is TokenType.Spl, is TokenType.Jetton, is TokenType.Asset -> true
+        else -> false
+    }
+
+fun HardwarePublicKey.serves(blockchainType: BlockchainType, tokenType: TokenType): Boolean =
+    this.blockchainType == blockchainType.uid && (this.tokenType == tokenType || tokenType.usesChainKey)
 
 enum class HardwarePublicKeyType {
     PUBLIC_KEY,
