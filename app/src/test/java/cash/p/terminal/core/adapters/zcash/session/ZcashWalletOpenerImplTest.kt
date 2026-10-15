@@ -21,6 +21,7 @@ import cash.p.zcash.ZcashSdk
 import cash.p.zcash.ZcashWallet
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -267,6 +268,18 @@ class ZcashWalletOpenerImplTest {
         opener(reporter).open(wallet())
 
         verify(exactly = 1) { reporter.checkCantOpen(any()) }
+    }
+
+    @Test
+    fun open_anyOpen_marksProcessStartBeforeOpening() = runTest {
+        val reporter = mockk<ZcashDatabaseFailureReporter>(relaxed = true)
+
+        opener(reporter).open(wallet())
+
+        coVerifyOrder {
+            reporter.processStarted(any())
+            ZcashWallet.open(any(), any(), any(), any())
+        }
     }
 
     @Test

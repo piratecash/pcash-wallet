@@ -23,7 +23,6 @@ import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.MarketKitWrapper
 import io.horizontalsystems.core.CoreApp
 import io.horizontalsystems.core.ISystemInfoManager
-import io.horizontalsystems.core.logger.AppLog
 import io.horizontalsystems.core.storage.LogsDao
 import io.mockk.coEvery
 import io.mockk.coVerify

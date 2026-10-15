@@ -17,9 +17,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+
+private val REPORT_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss 'UTC'").withZone(ZoneOffset.UTC)
+
+internal fun formatReportTime(epochMillis: Long): String =
+    REPORT_TIME_FORMAT.format(Instant.ofEpochMilli(epochMillis))
 
 internal fun reportBuildInfo(appVersion: String, gitBranch: String): Map<String, String> =
     linkedMapOf(
+        "Report Time" to formatReportTime(System.currentTimeMillis()),
         "App Version" to appVersion,
         "Version Code" to BuildConfig.VERSION_CODE.toString(),
         "Build Type" to BuildConfig.BUILD_TYPE,
