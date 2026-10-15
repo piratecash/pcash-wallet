@@ -15,11 +15,14 @@ class DesktopPreferencesReset(
     private val chartIndicatorManager: ChartIndicatorManager,
     private val languageManager: DesktopLanguageManager,
 ) {
-    suspend fun resetToDefaults() {
+    /** Also drops the stored language; the screen switches only in [applySystemLanguage]. */
+    suspend fun resetStored() {
         settingsStore.clearAll()
         favoritesManager.clear()
         currencyManager.setBaseCurrencyCode(DefaultCurrencyManager.DEFAULT_CURRENCY_CODE)
         chartIndicatorManager.resetToDefaults()
-        languageManager.reset()
     }
+
+    /** Recreates the screens, so it runs only once nothing can fail on the current one. */
+    fun applySystemLanguage() = languageManager.reset()
 }

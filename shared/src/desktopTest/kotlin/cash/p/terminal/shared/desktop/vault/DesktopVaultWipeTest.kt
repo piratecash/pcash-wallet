@@ -145,9 +145,29 @@ class DesktopVaultWipeTest {
 
         assertEquals(WipeOutcome.FAILED, vault.wipe())
         assertEquals(DesktopVaultState.Locked, vault.state.value)
+        assertEquals(DesktopVaultState.Locked, vault(settingsStore = settingsStore).state.value)
 
         assertEquals(WipeOutcome.SUCCESS, vault.wipe())
         assertEquals(DesktopVaultState.NoVault, vault.state.value)
+    }
+
+    @Test
+    fun wipe_slotDeletionFailsWithAnotherLanguage_keepsTheLanguageOnScreen() = runTest {
+        val originalLocale = Locale.getDefault()
+        Locale.setDefault(Locale.US)
+        try {
+            val settingsStore = DesktopSettingsStore(File(fixture.dataDirectory, "settings.preferences_pb"), scope)
+            val languageManager = DesktopLanguageManager(settingsStore)
+            languageManager.currentLocaleTag = "ru"
+            File(fixture.files.vaultFile, "content").apply { parentFile.mkdirs() }.writeBytes(byteArrayOf(1))
+            val vault = vault(settingsStore = settingsStore, languageManager = languageManager)
+
+            assertEquals(WipeOutcome.FAILED, vault.wipe())
+
+            assertEquals("ru", languageManager.localeTag.value)
+        } finally {
+            Locale.setDefault(originalLocale)
+        }
     }
 
     private fun favoritesManager() = MarketFavoritesManager(

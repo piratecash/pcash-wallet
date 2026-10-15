@@ -142,12 +142,14 @@ class DesktopVault(
     private suspend fun wipeInternal(): WipeOutcome {
         (_state.value as? DesktopVaultState.Unlocked)?.session?.close()
         _state.value = DesktopVaultState.Locked
+        // Before the erase: a restart without slots must not find the old preferences.
+        preferencesReset.resetStored()
         // Deleting the slots is the crypto-erase: without them neither the database nor kit keys open.
         if (!delete(files.slotFiles())) return WipeOutcome.FAILED
         // Past this point the keys are gone, so a leftover file is data nobody can read.
         delete(files.databaseFiles())
         files.kitsDirectory.deleteRecursively()
-        preferencesReset.resetToDefaults()
+        preferencesReset.applySystemLanguage()
         _state.value = DesktopVaultState.NoVault
         return WipeOutcome.SUCCESS
     }
