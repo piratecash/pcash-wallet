@@ -147,6 +147,7 @@ kotlin {
         getByName("desktopTest") {
             dependencies {
                 runtimeOnly(libs.secp256k1.jni.jvm)
+                runtimeOnly(compose.desktop.currentOs)
             }
         }
         getByName("androidHostTest") {
