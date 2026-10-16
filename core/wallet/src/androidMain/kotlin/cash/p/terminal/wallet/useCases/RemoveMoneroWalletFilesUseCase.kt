@@ -27,24 +27,8 @@ class RemoveMoneroWalletFilesUseCase(
     }
 
     private fun deleteWallet(walletFile: File): Boolean {
-        val files = MoneroWalletFiles(walletFile)
-        var success = true
-        if (files.cache.exists()) {
-            success = files.cache.delete()
-        }
-        success = files.keys.delete() && success
-        if (files.address.exists()) {
-            success = files.address.delete() && success
-        }
+        val success = MoneroWalletFiles(walletFile).delete()
         KeyStoreHelper.removeWalletUserPass(appContext, walletFile.name)
         return success
     }
-}
-
-class MoneroWalletFiles(walletFile: File) {
-    val cache = walletFile
-    val keys = walletFile.resolveSibling("${walletFile.name}.keys")
-    val address = walletFile.resolveSibling("${walletFile.name}.address.txt")
-    val required = listOf(cache, keys)
-    val all = required + address
 }

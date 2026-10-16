@@ -10,7 +10,7 @@ import cash.p.terminal.strings.helpers.Translator
 import io.horizontalsystems.core.entities.BlockchainType
 import java.math.BigDecimal
 
-object AppConfigProvider {
+object AppConfigProvider : AddressResolutionConfig {
 
     val appVersion by lazy { BuildConfig.VERSION_NAME }
     val appBuild by lazy { BuildConfig.VERSION_CODE }
@@ -36,7 +36,6 @@ object AppConfigProvider {
     val walletConnectAppMetaDataName by lazy { Translator.getString(R.string.walletConnectAppMetaDataName) }
     val walletConnectAppMetaDataUrl by lazy { Translator.getString(R.string.walletConnectAppMetaDataUrl) }
     val walletConnectAppMetaDataIcon by lazy { Translator.getString(R.string.walletConnectAppMetaDataIcon) }
-    val accountsBackupFileSalt by lazy { Translator.getString(R.string.accountsBackupFileSalt) }
 
     val spamCoinValueLimits: Map<String, BigDecimal> = mapOf(
         "USDT" to BigDecimal("0.01"),
@@ -50,20 +49,11 @@ object AppConfigProvider {
         "SOL" to BigDecimal("0.000001"),
     )
 
-    val blocksDecodedEthereumRpc by lazy {
+    override val blocksDecodedEthereumRpc by lazy {
         Translator.getString(R.string.blocksDecodedEthereumRpc)
     }
     val twitterBearerToken by lazy {
         EncodedSecrets.TWITTER_BEARER_TOKEN
-    }
-    val etherscanApiKey by lazy {
-        EncodedSecrets.ETHERSCAN_KEY.toKeyList()
-    }
-    val blockscoutApiKey by lazy {
-        EncodedSecrets.BLOCKSCOUT_KEY.toKeyList()
-    }
-    val bscscanApiKey by lazy {
-        EncodedSecrets.BSCSCAN_KEY.toKeyList()
     }
     val guidesUrl by lazy {
         Translator.getString(R.string.guidesUrl)
@@ -100,7 +90,7 @@ object AppConfigProvider {
         EncodedSecrets.ALCHEMY_SOLANA_API_KEYS.toKeyList()
     }
 
-    val udnApiKey by lazy {
+    override val udnApiKey by lazy {
         EncodedSecrets.UDN_API_KEY
     }
 
@@ -174,6 +164,4 @@ object AppConfigProvider {
             BlockchainType.Stellar to "GAZXDMWYHMPM2WF6FCWEBIMJITKKTU6MLHYLCFRVB3WMXTNPVEHBOXRE"
         ).toList().sortedBy { it.first.uid }.toMap()
     }
-
-    private fun String.toKeyList(): List<String> = split(",").map { it.trim() }
 }

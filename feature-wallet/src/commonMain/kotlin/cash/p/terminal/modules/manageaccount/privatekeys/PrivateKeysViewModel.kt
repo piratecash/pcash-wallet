@@ -1,0 +1,93 @@
+package cash.p.terminal.modules.manageaccount.privatekeys
+
+import cash.p.terminal.core.getKoinInstance
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
+import cash.p.terminal.core.adapters.zcash.ZcashKeyExporter
+import cash.p.terminal.core.managers.EvmBlockchains
+import cash.p.terminal.core.managers.toStellarWallet
+import cash.p.terminal.core.toRawHexString
+import cash.p.terminal.modules.manageaccount.showextendedkey.ShowExtendedKeyModule
+import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.AccountType
+import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.ethereumkit.core.signer.Signer
+import io.horizontalsystems.hdwalletkit.HDExtendedKey
+import io.horizontalsystems.hdwalletkit.HDWallet
+import io.horizontalsystems.stellarkit.StellarKit
+import java.math.BigInteger
+
+class PrivateKeysViewModel(
+    private val account: Account,
+    evmBlockchainManager: EvmBlockchains,
+) : ViewModel() {
+
+    private val zcashKeyExporter: ZcashKeyExporter by lazy { getKoinInstance<ZcashKeyExporter>() }
+
+    var viewState by mutableStateOf(PrivateKeysModule.ViewState())
+        private set
+
+    init {
+
+        val ethereumPrivateKey = when (val accountType = account.type) {
+            is AccountType.Mnemonic -> {
+                val chain = evmBlockchainManager.getChain(BlockchainType.Ethereum)
+                toHexString(Signer.privateKey(accountType.seed, chain))
+            }
+
+            is AccountType.EvmPrivateKey -> toHexString(accountType.key)
+            else -> null
+        }
+
+        val mnemonicType = account.type as? AccountType.Mnemonic
+        val hdExtendedKey = (account.type as? AccountType.HdExtendedKey)?.hdExtendedKey
+
+        val bip32RootKey = if (mnemonicType != null) {
+            HDExtendedKey(mnemonicType.seed, HDWallet.Purpose.BIP44)
+        } else if (hdExtendedKey?.derivedType == HDExtendedKey.DerivedType.Master) {
+            hdExtendedKey
+        } else {
+            null
+        }
+
+        var accountExtendedDisplayType = ShowExtendedKeyModule.DisplayKeyType.AccountPrivateKey(true)
+        val accountExtendedPrivateKey = bip32RootKey
+            ?: if (hdExtendedKey?.derivedType == HDExtendedKey.DerivedType.Account && !hdExtendedKey.isPublic) {
+                accountExtendedDisplayType = ShowExtendedKeyModule.DisplayKeyType.AccountPrivateKey(false)
+                hdExtendedKey
+            } else {
+                null
+            }
+
+        val stellarSecretKey = try {
+            val stellarWallet = account.type.toStellarWallet()
+            StellarKit.getSecretSeed(stellarWallet)
+        } catch (e: Throwable) {
+            null
+        }
+
+        viewState = PrivateKeysModule.ViewState(
+            evmPrivateKey = ethereumPrivateKey,
+            bip32RootKey = bip32RootKey?.let {
+                PrivateKeysModule.ExtendedKey(it, ShowExtendedKeyModule.DisplayKeyType.Bip32RootKey)
+            },
+            accountExtendedPrivateKey = accountExtendedPrivateKey?.let {
+                PrivateKeysModule.ExtendedKey(it, accountExtendedDisplayType)
+            },
+            stellarSecretKey = stellarSecretKey,
+            hasZcashKeys = zcashKeyExporter.privateKeyTypes(account.type).isNotEmpty()
+        )
+    }
+
+    private fun toHexString(key: BigInteger): String {
+        return key.toByteArray().let {
+            if (it.size > 32) {
+                it.copyOfRange(1, it.size)
+            } else {
+                it
+            }.toRawHexString()
+        }
+    }
+}

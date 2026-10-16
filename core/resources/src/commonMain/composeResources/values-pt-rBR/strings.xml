@@ -106,7 +106,7 @@
     <string name="CreateWallet_N_Words">%s palavras</string>
     <string name="create_wallet_n_words_monero">%s palavras (somente Monero)</string>
     <string name="CreateWallet_Error_EmptyPassphrase">A senha não pode estar vazia</string>
-    <string name="CreateWallet_Error_PassphraseForbiddenSymbols">Por favor, use apenas símbolos suportados: <![CDATA[A-Z a-z 0-9 \' " ` & / ? : ; . , ~ * $ = + - [ ](){} <> \ _ # @ £% ]]></string>
+    <string name="CreateWallet_Error_PassphraseForbiddenSymbols">Por favor, use apenas símbolos suportados: <![CDATA[A-Z a-z 0-9 \u0027 " ` & / ? : ; . , ~ * $ = + - [ ](){} <> \ _ # @ £% ]]></string>
     <string name="CreateWallet_Error_InvalidConfirmation">Confirmação da senha não coincide</string>
     <string name="create_wallet_error_failed">Falha ao criar a carteira. Tente novamente ou reinicie o aplicativo.</string>
     <string name="CreateWallet_PassphraseDescription">Frases secretas adicionam camada de segurança adicional para carteiras. Para restaurar essa carteira, o usuário exigia uma frase de recuperação e uma frase secreta.\n\nAs frases secretas também facilitam para os usuários ter muitas carteiras com várias moedas usando um único mnemônico, mas com senhas diferentes.</string>
@@ -469,7 +469,7 @@
     <!-- Fee Settings -->
     <string name="FeeSettings_NetworkFee">Taxa de Rede</string>
     <string name="FeeSettings_NetworkFee_Info">O custo estimado do envio de determinada transação na rede.</string>
-    <string name="FeeSettings_GasLimit_Info">A complexidade da transação é medida em unidades chamadas \"gas\". Ela varia dependendo do contrato inteligente ser executado. O Limite de Gas é estimado o gas máximo necessário para o executar. O gas real utilizado normalmente será mais baixo.</string>
+    <string name="FeeSettings_GasLimit_Info">A complexidade da transação é medida em unidades chamadas \u0022gas\u0022. Ela varia dependendo do contrato inteligente ser executado. O Limite de Gas é estimado o gas máximo necessário para o executar. O gas real utilizado normalmente será mais baixo.</string>
     <string name="FeeSettings_GasPrice_Info">A taxa para transação na rede é medida em unidades de gás. O preço do gás é a quantidade que um usuário está disposto a gastar por unidade de gás. Quando a rede está ocupada, os preços do gás são altos e baixos quando está inativa. Um preço de gás insuficiente é frequentemente uma razão para que uma transação permaneça pendente por um período prolongado.</string>
     <string name="FeeSettings_BaseFee">Taxa Base</string>
     <string name="FeeSettings_BaseFee_Info">O protocolo de rede determina o preço base por gas para cada bloco, a taxa base. Varia de acordo com o nível de utilização da rede de bloco para bloco. Ele pode aumentar ou diminuir em não mais do que 12,5% no próximo bloco, tornando as taxas mais previsíveis. O valor mostrado aqui é a taxa base de taxa atual do bloco.</string>
@@ -632,8 +632,8 @@
     <string name="Swap_Revoking">Revogando...</string>
     <string name="swap_create_wallets">Create wallets</string>
     <string name="swap_creating_wallets">Creating wallets..</string>
-    <string name="swap_create_wallet_description">You don\'t have all chosen wallets, need to create first</string>
-    <string name="swap_create_wallet_description_with_zcash">You don\'t have all chosen wallets, need to create first,\nto exchange ZEC you need to create transparent address first</string>
+    <string name="swap_create_wallet_description">You don\u0027t have all chosen wallets, need to create first</string>
+    <string name="swap_create_wallet_description_with_zcash">You don\u0027t have all chosen wallets, need to create first,\nto exchange ZEC you need to create transparent address first</string>
     <string name="Swap_Approve">Aprovar</string>
     <string name="Swap_Approving">Aprovando</string>
     <string name="Swap_Swapping">Trocando</string>
@@ -932,7 +932,7 @@
     <string name="Settings_PersonalSupport_EnterTelegramAccountDescription">Digite seu nome de conta Telegram para começar um chat de suporte pessoal com a nossa equipe. Entraremos em contato com você e começaremos a trabalhar em seu problema assim que virmos.</string>
     <string name="Settings_PersonalSupport_YouAlreadyRequestedSupportDescription">Você já pediu um chat privado, encontre-o no Telegram</string>
     <string name="Settings_PersonalSupport_Account">Conta</string>
-    <string name="Settings_PersonalSupport_UsernameHint">\@username</string>
+    <string name="Settings_PersonalSupport_UsernameHint">\u0040username</string>
     <string name="Settings_PersonalSupport_Requested">Solicitado</string>
     <string name="Settings_PersonalSupport_Request">Solicitar</string>
     <string name="Settings_PersonalSupport_NewRequest">Nova solicitação</string>
@@ -1827,7 +1827,7 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="NftCollection_Items">Itens</string>
     <string name="NftCollection_Activity">Atividade</string>
     <string name="NftCollection_Owners">Donos</string>
-    <string name="NftCollection_TodaysSales">Today\'s Sales</string>
+    <string name="NftCollection_TodaysSales">Today\u0027s Sales</string>
     <string name="NftCollection_TodaysSalesCount">%s NFT</string>
     <string name="NftCollection_Royalty">Direitos Autorais</string>
     <string name="NftCollection_InceptionDate">Data de Início</string>
@@ -1876,7 +1876,7 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="alert_keys_invalidated_title">Erro de Keystore do Android</string>
     <string name="alert_keys_invalidated_description">As chaves de criptografia da sua carteira foram invalidadas pelo sistema de segurança do Android. Isso pode acontecer quando as configurações de impressão digital ou tela de bloqueio são alteradas.\n\nPara restaurar o acesso, reimporte sua carteira usando sua frase de backup.\n\nSe isso acontecer com frequência, tente desativar o Google Smart Lock nas configurações do dispositivo e reinicie o telefone.</string>
     <string name="Alert_TitleWarning">Aviso</string>
-    <string name="Alert_CustomKeyboardIsUsed">Parece que o seu dispositivo usa um teclado que não é padrão. A P.CASH recomenda a seleção de teclado padrão no seu dispositivo, já que teclados de terceiros podem potencialmente coletar e expor os dados de entrada dos usuários. \n\nClique no botão \'Avançar\' se você quiser continuar usando seu teclado preferido.</string>
+    <string name="Alert_CustomKeyboardIsUsed">Parece que o seu dispositivo usa um teclado que não é padrão. A P.CASH recomenda a seleção de teclado padrão no seu dispositivo, já que teclados de terceiros podem potencialmente coletar e expor os dados de entrada dos usuários. \n\nClique no botão \u0027Avançar\u0027 se você quiser continuar usando seu teclado preferido.</string>
     <string name="Alert_DeviceIsRootedWarning">A equipe P.CASH recomenda a execução do aplicativo apenas em telefones sem root (sem jailbreak).\n\nObserve que quando você usa um dispositivo com root, o aplicativo não pode mais garantir a segurança de sua criptomoeda contra software malicioso.</string>
     <!--OS Pin-->
     <string name="OSPin_Confirm_Title">PIN do telefone</string>
@@ -1886,13 +1886,13 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="Unlock_Title">Desbloquear</string>
     <string name="Unlock_Passcode">Senha</string>
     <string name="Unlock_EnterPasscode">Insira a senha</string>
-    <string name="Unlock_EnterPasscode_Transactions_Hide">Enter Passcode for \"Transactions Auto Hide\"</string>
-    <string name="Unlock_EnterPasscode_Transfer">Enter a passcode to enable \"Passcode for transfer\"</string>
+    <string name="Unlock_EnterPasscode_Transactions_Hide">Enter Passcode for \u0022Transactions Auto Hide\u0022</string>
+    <string name="Unlock_EnterPasscode_Transfer">Enter a passcode to enable \u0022Passcode for transfer\u0022</string>
     <string name="Unlock_BiometricScanner">Leitura Biométrica</string>
     <string name="Unlock_BiometricScannerDisabled_Description">Digite a senha ou tente novamente mais tarde</string>
     <string name="Unlock_BiometricScannerDisabled_Info">Autenticação Biométrica desativada</string>
-    <string name="Unlock_WalletDisabledUntil">Desativar até: %s</string>
-    <string name="Unlock_AttemptsLeft">Tentativas restantes: %s</string>
+    <string name="Unlock_WalletDisabledUntil">Desativar até: %1$s</string>
+    <string name="Unlock_AttemptsLeft">Tentativas restantes: %1$s</string>
     <string name="Unlock_Random">Aleatório</string>
     <!--Set Pin-->
     <string name="PinSet_Title">Definir senha</string>
@@ -2314,4 +2314,34 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="beam_wallet_state_closed">Carteira BEAM fechada</string>
     <string name="beam_wallet_operation_failed">Falha na operação da carteira BEAM</string>
     <string name="beam_wallet_stop_failed">Falha ao interromper a carteira BEAM</string>
+    <string name="desktop_already_running">O P.CASH já está em execução</string>
+    <string name="desktop_create_password_title">Crie uma senha</string>
+    <string name="desktop_create_password_description">A senha protege as carteiras guardadas neste computador. Ela não é armazenada em nenhum lugar e não pode ser recuperada.</string>
+    <string name="desktop_password_repeat_hint">Repita a senha</string>
+    <string name="desktop_password_mismatch">As senhas não coincidem</string>
+    <string name="desktop_password_requirement_length">Pelo menos 8 caracteres</string>
+    <string name="desktop_password_requirement_uppercase">Uma letra maiúscula</string>
+    <string name="desktop_password_requirement_lowercase">Uma letra minúscula</string>
+    <string name="desktop_password_requirement_digit">Um número</string>
+    <string name="desktop_password_requirement_special">Um caractere especial</string>
+    <string name="desktop_password_caps_lock">O Caps Lock está ativado</string>
+    <string name="desktop_password_switch_layout">Mude o layout do teclado: a senha só pode conter caracteres latinos</string>
+    <string name="desktop_create_password_warning">Sem esta senha, os dados deste computador não podem ser abertos, e ninguém poderá recuperá-los. Guarde um backup de cada frase de recuperação.</string>
+    <string name="desktop_create_password_failed">Não foi possível salvar a senha. Verifique o espaço livre em disco e as permissões de acesso</string>
+    <string name="desktop_unlock_title">Digite sua senha</string>
+    <string name="desktop_unlock_wrong_password">Senha incorreta</string>
+    <string name="desktop_unlock_data_unreadable">Não foi possível abrir seus dados</string>
+    <string name="desktop_unlock_failed">Não foi possível ler o arquivo de chave. Tente novamente</string>
+    <string name="desktop_unlock_forgot_password">Esqueceu a senha?</string>
+    <string name="desktop_forgot_password_title">Esqueci a senha</string>
+    <string name="desktop_forgot_password_warning">As carteiras, contatos, configurações e histórico guardados neste computador serão excluídos. Os fundos na blockchain não são afetados: as carteiras só podem ser restauradas por meio de suas frases de recuperação.</string>
+    <string name="desktop_forgot_password_action">Excluir dados</string>
+    <string name="desktop_forgot_password_failed">Não foi possível excluir os dados</string>
+    <string name="desktop_change_password_title">Alterar senha</string>
+    <string name="desktop_change_password_current_hint">Senha atual</string>
+    <string name="desktop_change_password_new_hint">Nova senha</string>
+    <string name="desktop_change_password_failed">Não foi possível salvar a senha. A senha atual continua funcionando</string>
+    <string name="desktop_change_password_corrupted">O arquivo de chave está danificado: depois que o app for bloqueado, você não conseguirá entrar. Salve um backup de cada frase de recuperação.</string>
+    <string name="desktop_change_password_success">Senha alterada</string>
+    <string name="desktop_security_lock_now">Bloquear agora</string>
 </resources>

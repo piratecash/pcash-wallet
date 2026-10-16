@@ -34,6 +34,7 @@ import cash.p.terminal.ui_compose.components.UrlOpener
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import org.jetbrains.compose.resources.painterResource
 
 private const val SNACKBAR_DURATION_MS = 3_000L
 
@@ -97,7 +98,7 @@ private fun HudSnackbar(hudMessenger: DesktopHudMessenger, modifier: Modifier = 
         AppSnackbar(
             text = it.text,
             variant = it.variant,
-            icon = null,
+            icon = it.icon?.let { icon -> painterResource(icon) },
             modifier = modifier.padding(16.dp),
         )
     }

@@ -1,25 +1,21 @@
 package cash.p.terminal.core
 
 import cash.p.terminal.entities.AppVersion
-import cash.p.terminal.entities.LaunchPage
 import cash.p.terminal.entities.SyncMode
 import cash.p.terminal.modules.amount.AmountInputType
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.displayoptions.DisplayPricePeriod
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewMode
-import cash.p.terminal.shared.main.MainDestination
+import cash.p.terminal.shared.main.MainTabStorage
 import cash.p.terminal.modules.market.TimeDuration
 import cash.p.terminal.modules.premium.settings.PollingInterval
 import cash.p.terminal.modules.softwareupdate.domain.UpdateCheckInterval
 import cash.p.terminal.modules.market.favorites.WatchlistSorting
 import cash.p.terminal.modules.calculator.domain.CalculatorAutoLockOption
 import cash.p.terminal.modules.settings.appearance.AppIcon
-import cash.p.terminal.modules.settings.appearance.PriceChangeInterval
 import cash.p.terminal.modules.settings.security.autolock.AutoLockInterval
-import cash.p.terminal.modules.theme.ThemeType
 import cash.p.terminal.wallet.BalanceSortType
 import cash.p.terminal.wallet.Derivation
-import cash.p.terminal.wallet.balance.BalanceViewType
 import cash.p.terminal.wallet.entities.EncryptedString
 import cash.p.terminal.wallet.managers.TransactionDisplayLevel
 import io.horizontalsystems.core.BaseCurrencyStorage
@@ -28,7 +24,8 @@ import io.horizontalsystems.core.ISmsNotificationSettings
 import kotlinx.coroutines.flow.StateFlow
 import java.math.BigDecimal
 
-interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurrencyStorage {
+interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurrencyStorage, WalletOnboardingStorage,
+    AppearanceSettingsStore, MainTabStorage {
     var marketSearchRecentCoinUids: List<String>
     var zcashAccountIds: Set<String>
 
@@ -75,15 +72,10 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurren
     var transferPasscodeEnabled: Boolean
 
     var balanceTotalCoinUid: String?
-    var termsAccepted: Boolean
-    var mainShowedOnce: Boolean
     var notificationId: String?
     var notificationServerTime: Long
-    var currentTheme: ThemeType
-    var balanceViewType: BalanceViewType?
     var changelogShownForAppVersion: String?
     var ignoreRootedDeviceWarning: Boolean
-    var launchPage: LaunchPage?
     var appIcon: AppIcon?
     val appIconRaw: String?
     var isCalculatorModeEnabled: Boolean
@@ -96,15 +88,10 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurren
     var calculatorThrottleLastWallClock: Long
     var calculatorAutoLockOption: CalculatorAutoLockOption
     val calculatorAutoLockOptionFlow: StateFlow<CalculatorAutoLockOption>
-    var mainTab: MainDestination?
     var marketFavoritesSorting: WatchlistSorting?
     var marketFavoritesShowSignals: Boolean
     var marketFavoritesPeriod: TimeDuration?
     var relaunchBySettingChange: Boolean
-    var marketsTabEnabled: Boolean
-    val marketsTabEnabledFlow: StateFlow<Boolean>
-    var balanceTabButtonsEnabled: Boolean
-    val balanceTabButtonsEnabledFlow: StateFlow<Boolean>
     var nonRecommendedAccountAlertDismissedAccounts: Set<String>
     var personalSupportEnabled: Boolean
     var hideSuspiciousTransactions: Boolean
@@ -120,12 +107,8 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurren
     var lastUpdateCheckTimestamp: Long
     var latestKnownVersion: String?
 
-    var customDashPeers: String
-
     val utxoExpertModeEnabledFlow: StateFlow<Boolean>
 
-    var priceChangeInterval: PriceChangeInterval
-    val priceChangeIntervalFlow: StateFlow<PriceChangeInterval>
     var isRoundingAmountMainPage: Boolean
     var transactionFiltersEnabled: Boolean
 
@@ -136,9 +119,6 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurren
     val displayDiffOptionTypeFlow: StateFlow<DisplayDiffOptionType>
 
     var addressPoisoningViewMode: AddressPoisoningViewMode
-
-    var passphraseTermsAgreed: Boolean
-    var safetyRulesAgreed: Boolean
 
     fun getStackingUnpaid(coin: String, address: String): BigDecimal?
     fun getStackingMint(coin: String, address: String): BigDecimal?

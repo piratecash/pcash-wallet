@@ -1,7 +1,6 @@
 package cash.p.terminal.modules.multiswap.sendtransaction.services
 
 import cash.p.terminal.core.App
-import cash.p.terminal.core.installEthereumCryptoProviderForTest
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.EvmKitManager
 import cash.p.terminal.core.managers.EvmKitWrapper
@@ -140,7 +139,7 @@ class SendTransactionServiceEvmTest : KoinTest {
 
     @Before
     fun setUp() {
-        installEthereumCryptoProviderForTest()
+        EthereumKit.init()
         Dispatchers.setMain(dispatcher)
         testWallet = checkNotNull(walletFactory.create(bnbToken, testAccount, null))
 

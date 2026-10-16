@@ -141,7 +141,6 @@ class MainSettingsViewModel(
             allBackedUp = allBackedUp,
             pendingRequestCount = wcPendingRequestCount,
             walletConnectSessionCount = wcSessionsCount,
-            manageWalletShowAlert = !allBackedUp || hasNonStandardAccount,
             securityCenterShowAlert = !isPinSet || !localStorage.isSystemPinRequired,
             securityCenterShowNewBadge = !localStorage.securityFlipFeatureSeen,
             aboutAppShowAlert = !termsManager.allTermsAccepted,

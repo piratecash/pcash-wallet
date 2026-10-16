@@ -105,7 +105,7 @@
     <string name="CreateWallet_N_Words">%s Wörter</string>
     <string name="create_wallet_n_words_monero">%s Wörter (nur Monero)</string>
     <string name="CreateWallet_Error_EmptyPassphrase">Passphrase darf nicht leer sein</string>
-    <string name="CreateWallet_Error_PassphraseForbiddenSymbols">Bitte verwende nur unterstützte Symbole: <![CDATA[A-Z a-z 0-9 \' " ` & / ? ! : ; . , ~ * $ = + - [ ](){} <> \ _ # @ | % ]]></string>
+    <string name="CreateWallet_Error_PassphraseForbiddenSymbols">Bitte verwende nur unterstützte Symbole: <![CDATA[A-Z a-z 0-9 \u0027 " ` & / ? ! : ; . , ~ * $ = + - [ ](){} <> \ _ # @ | % ]]></string>
     <string name="CreateWallet_Error_InvalidConfirmation">Passphrase-Bestätigung stimmt nicht überein</string>
     <string name="create_wallet_error_failed">Wallet konnte nicht erstellt werden. Bitte versuchen Sie es erneut oder starten Sie die App neu.</string>
     <string name="CreateWallet_PassphraseDescription">Passphrases fügen eine zusätzliche Sicherheitsschicht für Brieftaschen hinzu. Um eine solche Brieftasche wiederherzustellen, benötigt ein Benutzer sowohl mnemonische als auch eine Passphrase.\n\nPassphrasen erleichtern es Benutzern auch, mehrere Multicoin-Wallets mit einem einzigen mnemonischen, aber anderen Passwort zu haben.</string>
@@ -467,7 +467,7 @@
     <!-- Fee Settings -->
     <string name="FeeSettings_NetworkFee">Netzwerkgebühr</string>
     <string name="FeeSettings_NetworkFee_Info">Einschätzung der Kosten für den Versand einer angegebenen Transaktion im Netzwerk.</string>
-    <string name="FeeSettings_GasLimit_Info">Die Transaktionskomplexität wird in Einheiten mit dem Namen \"Gas\" gemessen, die je nach ausgeführten intelligenten Verträgen variieren. Das Gaslimit ist das geschätzte Höchstgas, das benötigt wird, um es auszuführen. Das tatsächliche Gas wird normalerweise niedriger sein.</string>
+    <string name="FeeSettings_GasLimit_Info">Die Transaktionskomplexität wird in Einheiten mit dem Namen \u0022Gas\u0022 gemessen, die je nach ausgeführten intelligenten Verträgen variieren. Das Gaslimit ist das geschätzte Höchstgas, das benötigt wird, um es auszuführen. Das tatsächliche Gas wird normalerweise niedriger sein.</string>
     <string name="FeeSettings_GasPrice_Info">Die Gebühr für Transaktionen im Netzwerk wird in Gaseinheiten gemessen. Der Gaspreis ist der Betrag, den ein Nutzer für eine Einheit Gas auszugeben bereit ist. Wenn das Netzwerk ausgelastet ist, sind die Gaspreise hoch, und niedrig, wenn es nicht genutzt wird. Ein unzureichender Gaspreis ist oft ein Grund dafür, dass eine Transaktion über einen längeren Zeitraum aussteht.</string>
     <string name="FeeSettings_BaseFee">Basisgebühr</string>
     <string name="FeeSettings_BaseFee_Info">Das Netzwerkprotokoll bestimmt den Basispreis pro Gas für jeden Block, sogenannte Basisgebühren. Sie variiert je nach Netzwerkauslastung von Block zu Block. Sie kann im nächsten Block um nicht mehr als 12,5% steigen oder sinken, was die Gebühren berechenbarer macht. Der hier angezeigte Wert ist die Basisgebühr des aktuellen Blocks.</string>
@@ -626,8 +626,8 @@
     <string name="Swap_Revoking">Widerrufen...</string>
     <string name="swap_create_wallets">Create wallets</string>
     <string name="swap_creating_wallets">Creating wallets..</string>
-    <string name="swap_create_wallet_description">You don\'t have all chosen wallets, need to create first</string>
-    <string name="swap_create_wallet_description_with_zcash">You don\'t have all chosen wallets, need to create first,\nto exchange ZEC you need to create transparent address first</string>
+    <string name="swap_create_wallet_description">You don\u0027t have all chosen wallets, need to create first</string>
+    <string name="swap_create_wallet_description_with_zcash">You don\u0027t have all chosen wallets, need to create first,\nto exchange ZEC you need to create transparent address first</string>
     <string name="Swap_Approve">Genehmigen</string>
     <string name="Swap_Approving">Wird bestätigt</string>
     <string name="Swap_Swapping">Wird getauscht</string>
@@ -926,7 +926,7 @@
     <string name="Settings_PersonalSupport_EnterTelegramAccountDescription">Geben Sie Ihren Telegram-Kontonamen ein, um einen persönlichen Support-Chat mit unserem Team zu starten. Wir werden uns mit Ihnen in Verbindung setzen und anfangen, an Ihrem Problem zu arbeiten, sobald wir es sehen.</string>
     <string name="Settings_PersonalSupport_YouAlreadyRequestedSupportDescription">Sie haben bereits einen privaten Chat angefordert, finden Sie ihn auf Telegram</string>
     <string name="Settings_PersonalSupport_Account">Konto</string>
-    <string name="Settings_PersonalSupport_UsernameHint">\@Benutzername</string>
+    <string name="Settings_PersonalSupport_UsernameHint">\u0040Benutzername</string>
     <string name="Settings_PersonalSupport_Requested">Angefragt</string>
     <string name="Settings_PersonalSupport_Request">Anforderung</string>
     <string name="Settings_PersonalSupport_NewRequest">Neue Zahlungsaufforderung</string>
@@ -1866,7 +1866,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="alert_keys_invalidated_title">Android Keystore Fehler</string>
     <string name="alert_keys_invalidated_description">Die Verschlüsselungsschlüssel deiner Wallet wurden vom Android-Sicherheitssystem ungültig gemacht. Dies kann passieren, wenn Fingerabdruck- oder Sperrbildschirm-Einstellungen geändert werden.\n\nUm den Zugriff wiederherzustellen, importiere deine Wallet erneut mit deiner Backup-Phrase.\n\nWenn dies häufig passiert, versuche Google Smart Lock in den Geräteeinstellungen zu deaktivieren und starte dein Telefon neu.</string>
     <string name="Alert_TitleWarning">Warnung</string>
-    <string name="Alert_CustomKeyboardIsUsed">Es sieht so aus, als ob Ihr Gerät eine nicht-standardmäßige Tastatur verwendet. Unaufhaltsam empfiehlt die Auswahl der Standardtastatur auf Ihrem Gerät, da Tastaturen von Drittanbietern möglicherweise Daten von Benutzern erfassen und ausgeben können. \n\nKlicken Sie auf \'Überspringen\', wenn Sie Ihre bevorzugte Tastatur weiter verwenden möchten.</string>
+    <string name="Alert_CustomKeyboardIsUsed">Es sieht so aus, als ob Ihr Gerät eine nicht-standardmäßige Tastatur verwendet. Unaufhaltsam empfiehlt die Auswahl der Standardtastatur auf Ihrem Gerät, da Tastaturen von Drittanbietern möglicherweise Daten von Benutzern erfassen und ausgeben können. \n\nKlicken Sie auf \u0027Überspringen\u0027, wenn Sie Ihre bevorzugte Tastatur weiter verwenden möchten.</string>
     <string name="Alert_DeviceIsRootedWarning">Das P.CASH-Team empfiehlt, die App nur auf nicht gerooteten (nicht jailbroken) Mobiltelefonen auszuführen.\n\nBitte beachten Sie, wenn Sie ein gerootetes Gerät verwenden, kann die App die Sicherheit Ihrer Kryptowährung vor bösartiger Software nicht mehr garantieren.</string>
     <!--OS Pin-->
     <string name="OSPin_Confirm_Title">Telefon PIN</string>
@@ -1878,13 +1878,13 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="Unlock_Title">Entsperren</string>
     <string name="Unlock_Passcode">Code</string>
     <string name="Unlock_EnterPasscode">Code eingeben</string>
-    <string name="Unlock_EnterPasscode_Transactions_Hide">Enter Passcode for \"Transactions Auto Hide\"</string>
-    <string name="Unlock_EnterPasscode_Transfer">Enter a passcode to enable \"Passcode for transfer\"</string>
+    <string name="Unlock_EnterPasscode_Transactions_Hide">Enter Passcode for \u0022Transactions Auto Hide\u0022</string>
+    <string name="Unlock_EnterPasscode_Transfer">Enter a passcode to enable \u0022Passcode for transfer\u0022</string>
     <string name="Unlock_BiometricScanner">Biometrie-Scanner</string>
     <string name="Unlock_BiometricScannerDisabled_Description">Code eingeben oder später erneut versuchen</string>
     <string name="Unlock_BiometricScannerDisabled_Info">Biometrische Auth. deaktiviert</string>
-    <string name="Unlock_WalletDisabledUntil">Deaktiviert bis: %s </string>
-    <string name="Unlock_AttemptsLeft">Verbleibende Versuche: %s</string>
+    <string name="Unlock_WalletDisabledUntil">Deaktiviert bis: %1$s </string>
+    <string name="Unlock_AttemptsLeft">Verbleibende Versuche: %1$s</string>
     <string name="Unlock_Random">Zufällig</string>
     <!--Set Pin-->
     <string name="PinSet_Title">Code festlegen</string>
@@ -2305,4 +2305,34 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="beam_wallet_state_closed">BEAM-Wallet geschlossen</string>
     <string name="beam_wallet_operation_failed">BEAM-Wallet-Vorgang fehlgeschlagen</string>
     <string name="beam_wallet_stop_failed">Stoppen der BEAM-Wallet fehlgeschlagen</string>
+    <string name="desktop_already_running">P.CASH wird bereits ausgeführt</string>
+    <string name="desktop_create_password_title">Passwort erstellen</string>
+    <string name="desktop_create_password_description">Das Passwort schützt die auf diesem Computer gespeicherten Wallets. Es wird nirgendwo gespeichert und kann nicht wiederhergestellt werden.</string>
+    <string name="desktop_password_repeat_hint">Passwort wiederholen</string>
+    <string name="desktop_password_mismatch">Die Passwörter stimmen nicht überein</string>
+    <string name="desktop_password_requirement_length">Mindestens 8 Zeichen</string>
+    <string name="desktop_password_requirement_uppercase">Ein Großbuchstabe</string>
+    <string name="desktop_password_requirement_lowercase">Ein Kleinbuchstabe</string>
+    <string name="desktop_password_requirement_digit">Eine Ziffer</string>
+    <string name="desktop_password_requirement_special">Ein Sonderzeichen</string>
+    <string name="desktop_password_caps_lock">Feststelltaste ist aktiviert</string>
+    <string name="desktop_password_switch_layout">Tastaturlayout wechseln: Das Passwort darf nur lateinische Zeichen enthalten</string>
+    <string name="desktop_create_password_warning">Ohne dieses Passwort können die Daten auf diesem Computer nicht geöffnet werden, und niemand kann sie wiederherstellen. Bewahren Sie eine Sicherungskopie jeder Wiederherstellungsphrase auf.</string>
+    <string name="desktop_create_password_failed">Das Passwort konnte nicht gespeichert werden. Prüfen Sie den freien Speicherplatz und die Zugriffsrechte</string>
+    <string name="desktop_unlock_title">Passwort eingeben</string>
+    <string name="desktop_unlock_wrong_password">Falsches Passwort</string>
+    <string name="desktop_unlock_data_unreadable">Ihre Daten konnten nicht geöffnet werden</string>
+    <string name="desktop_unlock_failed">Die Schlüsseldatei konnte nicht gelesen werden. Bitte versuchen Sie es erneut</string>
+    <string name="desktop_unlock_forgot_password">Passwort vergessen?</string>
+    <string name="desktop_forgot_password_title">Passwort vergessen</string>
+    <string name="desktop_forgot_password_warning">Die auf diesem Computer gespeicherten Wallets, Kontakte, Einstellungen und der Verlauf werden gelöscht. Die Gelder in der Blockchain sind nicht betroffen: Die Wallets können nur mit ihren Wiederherstellungsphrasen wiederhergestellt werden.</string>
+    <string name="desktop_forgot_password_action">Daten löschen</string>
+    <string name="desktop_forgot_password_failed">Die Daten konnten nicht gelöscht werden</string>
+    <string name="desktop_change_password_title">Passwort ändern</string>
+    <string name="desktop_change_password_current_hint">Aktuelles Passwort</string>
+    <string name="desktop_change_password_new_hint">Neues Passwort</string>
+    <string name="desktop_change_password_failed">Das Passwort konnte nicht gespeichert werden. Das aktuelle Passwort funktioniert weiterhin</string>
+    <string name="desktop_change_password_corrupted">Die Schlüsseldatei ist beschädigt: Sobald die App gesperrt ist, können Sie sich nicht mehr anmelden. Speichern Sie eine Sicherungskopie jeder Wiederherstellungsphrase.</string>
+    <string name="desktop_change_password_success">Passwort geändert</string>
+    <string name="desktop_security_lock_now">Jetzt sperren</string>
 </resources>

@@ -2,19 +2,16 @@ package cash.p.terminal.di
 
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.preference.PreferenceManager
+import cash.p.terminal.core.AppearanceSettingsStore
 import cash.p.terminal.core.CrashlyticsNonFatalReporter
-import cash.p.terminal.core.IAccountFactory
-import cash.p.terminal.core.IBackupManager
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.IClipboardManager
 import cash.p.terminal.core.IMarketStorage
 import cash.p.terminal.core.IRateAppManager
 import cash.p.terminal.core.NonFatalReporter
-import cash.p.terminal.core.ITermsManager
 import cash.p.terminal.core.ITorManager
-import cash.p.terminal.core.adapters.zcash.ZcashAddressDeriver
+import cash.p.terminal.core.WalletOnboardingStorage
 import cash.p.terminal.core.adapters.zcash.ZcashIronwoodMigrationRegistry
-import cash.p.terminal.core.adapters.zcash.ZcashKeyExporter
 import cash.p.terminal.core.adapters.zcash.server.ZcashServerProber
 import cash.p.terminal.core.adapters.zcash.server.ZcashServerProberImpl
 import cash.p.terminal.core.adapters.zcash.server.ZcashServerSelector
@@ -29,12 +26,10 @@ import cash.p.terminal.core.adapters.zcash.session.ZcashWalletOpenerImpl
 import cash.p.terminal.core.address.AddressCheckManager
 import cash.p.terminal.core.converters.PendingTransactionConverter
 import cash.p.terminal.core.deeplink.DeeplinkParser
-import cash.p.terminal.core.factories.AccountFactory
 import cash.p.terminal.core.managers.AdapterManager
 import cash.p.terminal.core.managers.AmlStatusManager
 import cash.p.terminal.core.managers.AppHeadersProviderImpl
 import cash.p.terminal.core.managers.BackgroundKeepAliveManager
-import cash.p.terminal.core.managers.BackupManager
 import cash.p.terminal.core.managers.BalanceHiddenManager
 import cash.p.terminal.core.managers.BalanceHideOnFlipManager
 import cash.p.terminal.core.managers.BaseTokenManager
@@ -47,6 +42,10 @@ import cash.p.terminal.core.managers.BeamStorageLocator
 import cash.p.terminal.core.managers.BeamAccountDeletionPreflight
 import cash.p.terminal.core.managers.BeamDeletionState
 import cash.p.terminal.core.managers.DeletedAccountsCleanup
+import cash.p.terminal.core.managers.EvmBlockchains
+import cash.p.terminal.core.providers.AddressResolutionConfig
+import cash.p.terminal.core.providers.ZcashDatabaseFilesMarker
+import cash.p.terminal.core.providers.ZcashDbMarker
 import cash.p.terminal.ui.helpers.TextHelper
 import cash.p.terminal.wallet.AccountDeletionPreflight
 import cash.p.terminal.wallet.IAccountCleaner
@@ -84,7 +83,6 @@ import cash.p.terminal.core.managers.CreateRequiredTokensUseCaseImpl
 import cash.p.terminal.core.managers.AndroidAppForegroundState
 import cash.p.terminal.core.managers.AndroidMarketSettingsStore
 import cash.p.terminal.core.managers.DefaultCurrencyManager
-import cash.p.terminal.core.managers.DefaultUserManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.EvmKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.MarketFavoritesDataMigration
@@ -132,8 +130,6 @@ import cash.p.terminal.core.managers.PendingTransactionRepository
 import cash.p.terminal.core.managers.RateAppManager
 import cash.p.terminal.core.managers.RecentAddressManager
 import cash.p.terminal.core.managers.ReleaseNotesManager
-import cash.p.terminal.core.managers.RestoreSettingsManager
-import cash.p.terminal.core.managers.SeedPhraseQrCrypto
 import cash.p.terminal.core.managers.SilentCameraManager
 import cash.p.terminal.core.managers.NetworkErrorTracker
 import cash.p.terminal.core.managers.SolanaKitDatabaseKeyProvider
@@ -145,10 +141,7 @@ import cash.p.terminal.core.managers.StackingManager
 import cash.p.terminal.core.managers.StellarKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.StellarKitManager
 import cash.p.terminal.core.managers.SystemInfoManager
-import cash.p.terminal.core.managers.TermsManager
 import cash.p.terminal.core.managers.ThorchainKitManagers
-import cash.p.terminal.core.managers.TimePasswordProvider
-import cash.p.terminal.core.managers.TokenAutoEnableManager
 import cash.p.terminal.core.managers.TonConnectDatabaseKeyProvider
 import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.core.managers.TonKitDatabaseKeyProvider
@@ -158,8 +151,6 @@ import cash.p.terminal.core.managers.TransactionAdapterManager
 import cash.p.terminal.core.managers.TransactionHiddenManager
 import cash.p.terminal.core.managers.TronKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.TronKitManager
-import cash.p.terminal.core.managers.WalletActivator
-import cash.p.terminal.core.managers.WordsManager
 import cash.p.terminal.core.INetworkManager
 import cash.p.terminal.core.managers.NetworkManager
 import cash.p.terminal.core.providers.AppConfigProvider
@@ -176,7 +167,6 @@ import cash.p.terminal.network.github.data.GithubApiConfig
 import cash.p.terminal.core.providers.CompositeFallbackAddressProvider
 import cash.p.terminal.core.providers.PendingAccountProvider
 import cash.p.terminal.core.providers.PendingAccountProviderImpl
-import cash.p.terminal.core.providers.PredefinedBlockchainSettingsProvider
 import cash.p.terminal.core.providers.TonFallbackAddressProvider
 import cash.p.terminal.core.providers.ZcashFallbackAddressProvider
 import cash.p.terminal.wallet.FallbackAddressProvider
@@ -186,15 +176,27 @@ import cash.p.terminal.feature.miniapp.domain.usecase.EvmPersonalSigner
 import cash.p.terminal.feature.miniapp.domain.usecase.GetTonAddressUseCase
 import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.modules.addtoken.AddTokenService
+import cash.p.terminal.modules.backuplocal.fullbackup.AndroidAppSettingsBackup
 import cash.p.terminal.modules.backuplocal.fullbackup.BackupProvider
+import cash.p.terminal.modules.backuplocal.fullbackup.ChartIndicatorsBackup
+import cash.p.terminal.modules.backuplocal.fullbackup.WalletBackupProvider
 import cash.p.terminal.modules.balance.BalanceViewTypeManager
 import cash.p.terminal.modules.main.AppPagesImpl
+import cash.p.terminal.core.ActivityAppRestarter
+import cash.p.terminal.core.AndroidBackupFileLauncher
+import cash.p.terminal.core.PinSecretActionAuthorizer
+import cash.p.terminal.feature.wallet.AppRestarter
+import cash.p.terminal.feature.wallet.BackupFileLauncher
+import cash.p.terminal.feature.wallet.PinStateInfo
+import cash.p.terminal.feature.wallet.SecretActionAuthorizer
+import cash.p.terminal.feature.wallet.WalletPlatformPages
 import cash.p.terminal.modules.market.MarketPages
 import cash.p.terminal.modules.multiswap.AssetFiatRateService
 import cash.p.terminal.modules.pin.PinComponent
 import cash.p.terminal.modules.pin.core.ILockoutManager
 import cash.p.terminal.modules.pin.core.ILockoutUntilDateFactory
 import cash.p.terminal.modules.pin.core.LockoutManager
+import cash.p.terminal.modules.pin.core.AndroidUptimeProvider
 import cash.p.terminal.modules.pin.core.LockoutUntilDateFactory
 import cash.p.terminal.modules.pin.core.OneTimeTimer
 import cash.p.terminal.modules.pin.core.UptimeProvider
@@ -240,7 +242,6 @@ import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import cash.p.terminal.wallet.managers.ITransactionHiddenManager
-import cash.p.terminal.wallet.managers.UserManager
 import cash.p.terminal.wallet.navigation.WalletPages
 import com.m2049r.xmrwallet.service.MoneroWalletService
 import com.piratecash.monero.MoneroWalletFiles
@@ -284,16 +285,15 @@ val managerModule = module {
     singleOf(::NetworkManager) bind INetworkManager::class
     singleOf(::StatusReportFile)
     singleOf(::SystemInfoManager) bind ISystemInfoManager::class
-    singleOf(::BackupManager) bind IBackupManager::class
     singleOf(::LanguageManager) bind ILanguageManager::class
     singleOf(::SystemLanguageProviderImpl) bind SystemLanguageProvider::class
     singleOf(::AndroidLocalizedResources) bind LocalizedResources::class
     singleOf(::AppHeadersProviderImpl) bind AppHeadersProvider::class
     singleOf(::DefaultCurrencyManager) bind CurrencyManager::class
     singleOf(::SolanaRpcSourceManager)
-    singleOf(::ZcashAddressDeriver)
-    singleOf(::ZcashKeyExporter)
     singleOf(::ZcashDatabaseFiles)
+    singleOf(::ZcashDatabaseFilesMarker) bind ZcashDbMarker::class
+    single<AddressResolutionConfig> { AppConfigProvider }
     singleOf(::CrashlyticsNonFatalReporter) bind NonFatalReporter::class
     single { ZcashDatabaseFailureReporter(get(), get()) }
     singleOf(::ZcashDbKeyProviderImpl) bind ZcashDbKeyProvider::class
@@ -328,6 +328,8 @@ val managerModule = module {
         bind<IMarketStorage>()
         bind<BaseCurrencyStorage>()
         bind<IUniqueCodeStorage>()
+        bind<WalletOnboardingStorage>()
+        bind<AppearanceSettingsStore>()
     }
     single { PreferenceManager.getDefaultSharedPreferences(get()) }
     singleOf(::BackgroundManager)
@@ -379,9 +381,8 @@ val managerModule = module {
     singleOf(::DefaultBitcoinKitDatabaseOperations) bind BitcoinKitDatabaseOperations::class
     singleOf(::BitcoinKitDatabaseManager)
     singleOf(::EvmSyncSourceManager)
-    singleOf(::TokenAutoEnableManager)
     singleOf(::EvmKitDatabaseKeyProvider)
-    singleOf(::EvmBlockchainManager)
+    singleOf(::EvmBlockchainManager) bind EvmBlockchains::class
     singleOf(::EvmSignerFactory)
     singleOf(::BtcBlockchainManager)
     singleOf(::OfflineBroadcastTokenResolver)
@@ -402,9 +403,6 @@ val managerModule = module {
     singleOf(::TronKitDatabaseKeyProvider)
     singleOf(::TronKitManager)
     singleOf(::StackingManager)
-    singleOf(::RestoreSettingsManager)
-    singleOf(::TimePasswordProvider)
-    singleOf(::SeedPhraseQrCrypto)
     singleOf(::AddressLabelManager)
     singleOf(::AddressMetadataManager)
     singleOf(::EvmLabelManager)
@@ -414,8 +412,7 @@ val managerModule = module {
     factoryOf(::SolanaWalletManager)
     singleOf(::RecentAddressManager)
     singleOf(::AmlStatusManager)
-    singleOf(::DefaultUserManager) bind UserManager::class
-    single<IPinComponent> {
+    single {
         PinComponent(
             pinSettingsStorage = get(),
             userManager = get(),
@@ -425,10 +422,11 @@ val managerModule = module {
             deleteAllContactsUseCase = get(),
             dispatcherProvider = get()
         )
-    }
-    singleOf(::AccountFactory) bind IAccountFactory::class
+    } binds arrayOf(IPinComponent::class, PinStateInfo::class)
+    singleOf(::PinSecretActionAuthorizer) bind SecretActionAuthorizer::class
+    singleOf(::ActivityAppRestarter) bind AppRestarter::class
+    singleOf(::AndroidBackupFileLauncher) bind BackupFileLauncher::class
     singleOf(::RateAppManager) bind IRateAppManager::class
-    singleOf(::TermsManager) bind ITermsManager::class
     singleOf(::ReleaseNotesManager)
     singleOf(::WCSessionStorage)
     singleOf(::WCPairingMetadataStorage)
@@ -440,11 +438,9 @@ val managerModule = module {
     }
     singleOf(::WCSessionManager)
     factoryOf(::WCWalletRequestHandler)
-    factoryOf(::WalletActivator)
     factoryOf(::AddTokenService)
 
     singleOf(::Mnemonic)
-    factoryOf(::WordsManager)
 
     singleOf(::MoneroKitManager)
     singleOf(::DefaultMoneroNativeWalletRuntime) bind MoneroNativeWalletRuntime::class
@@ -456,7 +452,7 @@ val managerModule = module {
     single { MoneroWalletService(MoneroWalletFiles.root(get())) }
     singleOf(::SilentCameraManager) bind ISilentPhotoCapture::class
     singleOf(::CurrentDateProvider) bind ICurrentDateProvider::class
-    singleOf(::UptimeProvider)
+    singleOf(::AndroidUptimeProvider) bind UptimeProvider::class
     singleOf(::LockoutUntilDateFactory) bind ILockoutUntilDateFactory::class
     singleOf(::LockoutManager) bind ILockoutManager::class
     factoryOf(::OneTimeTimer)
@@ -465,36 +461,9 @@ val managerModule = module {
     singleOf(::AppIconService)
     factoryOf(::ThemeService)
     factoryOf(::LaunchScreenService)
-    // 25 constructor parameters exceed the 22 that factoryOf supports.
-    factory {
-        BackupProvider(
-            localStorage = get(),
-            languageManager = get(),
-            walletStorage = get(),
-            settingsManager = get(),
-            accountManager = get(),
-            accountFactory = get(),
-            walletManager = get(),
-            restoreSettingsManager = get(),
-            blockchainSettingsStorage = get(),
-            evmBlockchainManager = get(),
-            marketFavoritesManager = get(),
-            balanceViewTypeManager = get(),
-            appIconService = get(),
-            themeService = get(),
-            chartIndicatorManager = get(),
-            chartIndicatorSettingsDao = get(),
-            balanceHiddenManager = get(),
-            baseTokenManager = get(),
-            launchScreenService = get(),
-            currencyManager = get(),
-            btcBlockchainManager = get(),
-            evmSyncSourceManager = get(),
-            evmSyncSourceStorage = get(),
-            solanaRpcSourceManager = get(),
-            contactsRepository = get(),
-        )
-    }
+    factoryOf(::ChartIndicatorsBackup)
+    factoryOf(::AndroidAppSettingsBackup)
+    factoryOf(::BackupProvider) bind WalletBackupProvider::class
     singleOf(::CalculatorModeService)
     single { CalculatorPinAttemptThrottle(get(), get()) }
     single { CalculatorExpressionEvaluator() }
@@ -506,7 +475,12 @@ val managerModule = module {
     singleOf(::DeeplinkParser)
     singleOf(::ChartIndicatorStorageImpl) bind ChartIndicatorStorage::class
     factoryOf(::AndroidTokenWalletActions) bind TokenWalletActions::class
-    singleOf(::AppPagesImpl) binds arrayOf(AppPages::class, WalletPages::class, MarketPages::class)
+    singleOf(::AppPagesImpl) binds arrayOf(
+        AppPages::class,
+        WalletPages::class,
+        MarketPages::class,
+        WalletPlatformPages::class,
+    )
     single { MarketFeatureConfig(AppConfigProvider.guidesUrl) }
     singleOf(::CheckAmlIncomingTransactionUseCase)
     singleOf(::TransactionAdapterManager)
@@ -520,7 +494,6 @@ val managerModule = module {
     singleOf(::BalanceHideOnFlipManager) { createdAtStart() }
     singleOf(::TransactionHiddenManager) bind ITransactionHiddenManager::class
     singleOf(::TorManager) bind ITorManager::class
-    singleOf(::PredefinedBlockchainSettingsProvider)
     single {
         KeyStoreCleaner(get(), get(), get(), get(), lazy { get<IAccountCleaner>() }, lazy { get<TonConnectManager>() })
     } bind IKeyStoreCleaner::class

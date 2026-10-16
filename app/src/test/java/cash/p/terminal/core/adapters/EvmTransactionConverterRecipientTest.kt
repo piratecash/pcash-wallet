@@ -1,7 +1,7 @@
 package cash.p.terminal.core.adapters
 
 import cash.p.terminal.core.ICoinManager
-import cash.p.terminal.core.installEthereumCryptoProviderForTest
+import io.horizontalsystems.ethereumkit.core.EthereumKit
 import cash.p.terminal.core.managers.EvmLabelManager
 import cash.p.terminal.data.repository.EvmTransactionRepository
 import cash.p.terminal.wallet.Account
@@ -31,7 +31,7 @@ class EvmTransactionConverterRecipientTest {
 
     companion object {
         init {
-            installEthereumCryptoProviderForTest()
+            EthereumKit.init()
         }
     }
 

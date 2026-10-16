@@ -25,6 +25,9 @@ interface UserManager {
     /** Startup-time level initialization. Updates state but does NOT emit a change event. */
     fun initUserLevel(level: Int)
 
+    /** Back to [DEFAULT_USER_LEVEL] without loading accounts, so the next [setUserLevel] applies again. */
+    fun resetUserLevel()
+
     fun allowAccountsForDuress(accountIds: List<String>)
     fun disallowAccountsForDuress()
 }

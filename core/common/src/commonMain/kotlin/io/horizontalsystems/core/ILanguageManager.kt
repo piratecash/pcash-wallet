@@ -4,6 +4,6 @@ import java.util.Locale
 
 interface ILanguageManager {
     val currentLanguage: String
-    val currentLocaleTag: String
-    val currentLocale: Locale
+    var currentLocaleTag: String
+    var currentLocale: Locale
 }

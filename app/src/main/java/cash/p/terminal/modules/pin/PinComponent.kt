@@ -6,6 +6,7 @@ import cash.p.terminal.core.managers.DefaultUserManager
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.domain.usecase.ResetUseCase
 import cash.p.terminal.domain.usecase.DeleteAllContactsUseCase
+import cash.p.terminal.feature.wallet.PinStateInfo
 import cash.p.terminal.modules.pin.core.LockManager
 import cash.p.terminal.modules.pin.core.PinDbStorage
 import cash.p.terminal.modules.pin.core.PinLevels
@@ -32,7 +33,7 @@ class PinComponent(
     private val deleteAllContactsUseCase: DeleteAllContactsUseCase,
     private val dispatcherProvider: DispatcherProvider,
     scope: CoroutineScope = CoroutineScope(Executors.newFixedThreadPool(5).asCoroutineDispatcher())
-) : IPinComponent {
+) : IPinComponent, PinStateInfo {
 
     init {
         scope.launch {

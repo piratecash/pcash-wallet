@@ -1,6 +1,6 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.core.installEthereumCryptoProviderForTest
+import io.horizontalsystems.ethereumkit.core.EthereumKit
 import cash.p.terminal.modules.multiswap.providers.backendswap.BackendSwapGoldenVectors
 import cash.p.terminal.tangem.common.CustomXPubKeyAddressParser
 import cash.p.terminal.tangem.signer.HardwareWalletEvmSigner
@@ -81,7 +81,7 @@ class EvmSignerFactoryTest {
 
     @Before
     fun setUp() {
-        installEthereumCryptoProviderForTest()
+        EthereumKit.init()
         coEvery {
             hardwarePublicKeyStorage.getKey(hardwareAccount.id, BlockchainType.Ethereum, TokenType.Native)
         } returns hardwarePublicKey

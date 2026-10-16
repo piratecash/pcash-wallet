@@ -1,7 +1,7 @@
 package cash.p.terminal.modules.multiswap.providers.backendswap
 
 import cash.p.terminal.core.TestDispatcherProvider
-import cash.p.terminal.core.installEthereumCryptoProviderForTest
+import io.horizontalsystems.ethereumkit.core.EthereumKit
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.EvmSignerFactory
 import cash.p.terminal.modules.multiswap.providers.backendswap.BackendSwapGoldenVectors.assertSameSignature
@@ -40,7 +40,7 @@ class BackendSwapSignerTest {
 
     @Before
     fun setUp() {
-        installEthereumCryptoProviderForTest()
+        EthereumKit.init()
     }
 
     @Test

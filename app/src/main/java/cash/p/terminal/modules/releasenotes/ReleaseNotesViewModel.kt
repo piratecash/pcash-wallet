@@ -10,14 +10,14 @@ import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.managers.ConnectivityManager
 import cash.p.terminal.core.managers.ReleaseNotesManager
 import cash.p.terminal.core.providers.AppConfigProvider
-import cash.p.terminal.domain.usecase.GetLocalizedAssetUseCase
+import cash.p.terminal.feature.wallet.LocalizedAssetReader
 import cash.p.terminal.ui_compose.entities.ViewState
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class ReleaseNotesViewModel(
-    private val getLocalizedAssetUseCase: GetLocalizedAssetUseCase,
+    private val localizedAssetReader: LocalizedAssetReader,
     private val localStorage: ILocalStorage
 ) : ViewModel() {
 
@@ -58,7 +58,7 @@ class ReleaseNotesViewModel(
     private fun loadContent() {
         viewModelScope.launch {
             try {
-                val content = getLocalizedAssetUseCase(GetLocalizedAssetUseCase.CHANGELOG_PREFIX)
+                val content = localizedAssetReader.read(CHANGELOG_PREFIX)
                 uiState = uiState.copy(
                     viewState = ViewState.Success,
                     markdownContent = content
@@ -72,6 +72,10 @@ class ReleaseNotesViewModel(
     fun setShowChangeLogAfterUpdate() {
         localStorage.showChangelogAfterUpdate = !localStorage.showChangelogAfterUpdate
         uiState = uiState.copy(showChangelogAfterUpdate = localStorage.showChangelogAfterUpdate)
+    }
+
+    private companion object {
+        const val CHANGELOG_PREFIX = "changelog_"
     }
 }
 

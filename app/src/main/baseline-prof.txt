@@ -28660,7 +28660,6 @@ SPLcash/p/terminal/domain/usecase/ClearZCashWalletDataUseCase$Companion;-><init>
 Lcash/p/terminal/domain/usecase/DeleteAllContactsUseCase;
 SPLcash/p/terminal/domain/usecase/DeleteAllContactsUseCase;-><clinit>()V
 SPLcash/p/terminal/domain/usecase/DeleteAllContactsUseCase;-><init>(Lcash/p/terminal/modules/contacts/ContactsRepository;)V
-Lcash/p/terminal/domain/usecase/GetLocalizedAssetUseCase;
 Lcash/p/terminal/domain/usecase/ResetUseCase;
 SPLcash/p/terminal/domain/usecase/ResetUseCase;-><clinit>()V
 SPLcash/p/terminal/domain/usecase/ResetUseCase;-><init>(Landroid/content/Context;Lcash/p/terminal/core/ILocalStorage;Lcash/p/terminal/core/storage/AppDatabase;Lcash/p/terminal/wallet/IAccountManager;Lcash/p/terminal/wallet/IAdapterManager;Lcash/p/terminal/wallet/IAccountCleaner;Lcash/p/terminal/modules/contacts/ContactsRepository;Lio/horizontalsystems/core/DispatcherProvider;Landroidx/glance/appwidget/GlanceAppWidgetManager;Lcash/p/terminal/modules/settings/appearance/AppIconService;)V

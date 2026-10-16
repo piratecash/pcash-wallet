@@ -106,7 +106,7 @@
     <string name="CreateWallet_N_Words">%s 个单词</string>
     <string name="create_wallet_n_words_monero">%s 个单词（仅限 Monero）</string>
     <string name="CreateWallet_Error_EmptyPassphrase">助记词不能为空</string>
-    <string name="CreateWallet_Error_PassphraseForbiddenSymbols">请只使用支持的符号： <![CDATA[A-Z a-z 0-9 \' " & / ? ！: ; 。 ，~ * $ = + - [ ](){} <> \ _ # @ | % ]]></string>
+    <string name="CreateWallet_Error_PassphraseForbiddenSymbols">请只使用支持的符号： <![CDATA[A-Z a-z 0-9 \u0027 " & / ? ！: ; 。 ，~ * $ = + - [ ](){} <> \ _ # @ | % ]]></string>
     <string name="CreateWallet_Error_InvalidConfirmation">确认密码不匹配</string>
     <string name="create_wallet_error_failed">创建钱包失败。请重试或重启应用。</string>
     <string name="CreateWallet_PassphraseDescription">密码为钱包添加一个额外的安全层。要恢复这个钱包，用户既需要密码，也需要密码。\n\n密码也使得用户可以轻松地使用单一的密钥但不同的密码来拥有许多多币钱包。</string>
@@ -628,8 +628,8 @@
     <string name="Swap_Revoking">正在取消...</string>
     <string name="swap_create_wallets">Create wallets</string>
     <string name="swap_creating_wallets">Creating wallets..</string>
-    <string name="swap_create_wallet_description">You don\'t have all chosen wallets, need to create first</string>
-    <string name="swap_create_wallet_description_with_zcash">You don\'t have all chosen wallets, need to create first,\nto exchange ZEC you need to create transparent address first</string>
+    <string name="swap_create_wallet_description">You don\u0027t have all chosen wallets, need to create first</string>
+    <string name="swap_create_wallet_description_with_zcash">You don\u0027t have all chosen wallets, need to create first,\nto exchange ZEC you need to create transparent address first</string>
     <string name="Swap_Approve">批准</string>
     <string name="Swap_Approving">审批中</string>
     <string name="Swap_Swapping">交易中...</string>
@@ -929,7 +929,7 @@
     <string name="Settings_PersonalSupport_EnterTelegramAccountDescription">请输入您的 Telegram 帳號名稱，開始与我們的团队的個人支援聊天。 一旦我们看到这个问题，我们就会回到您的面前。</string>
     <string name="Settings_PersonalSupport_YouAlreadyRequestedSupportDescription">您已经请求了一个私聊，在Telegram 上找到它</string>
     <string name="Settings_PersonalSupport_Account">账户</string>
-    <string name="Settings_PersonalSupport_UsernameHint">\@username</string>
+    <string name="Settings_PersonalSupport_UsernameHint">\u0040username</string>
     <string name="Settings_PersonalSupport_Requested">已申请</string>
     <string name="Settings_PersonalSupport_Request">请求</string>
     <string name="Settings_PersonalSupport_NewRequest">新建请求</string>
@@ -1875,13 +1875,13 @@
     <string name="Unlock_Title">解锁​​​​</string>
     <string name="Unlock_Passcode">密码</string>
     <string name="Unlock_EnterPasscode">输入密码</string>
-    <string name="Unlock_EnterPasscode_Transactions_Hide">Enter Passcode for \"Transactions Auto Hide\"</string>
-    <string name="Unlock_EnterPasscode_Transfer">Enter a passcode to enable \"Passcode for transfer\"</string>
+    <string name="Unlock_EnterPasscode_Transactions_Hide">Enter Passcode for \u0022Transactions Auto Hide\u0022</string>
+    <string name="Unlock_EnterPasscode_Transfer">Enter a passcode to enable \u0022Passcode for transfer\u0022</string>
     <string name="Unlock_BiometricScanner">生物扫描仪</string>
     <string name="Unlock_BiometricScannerDisabled_Description">输入密码或稍后再试</string>
     <string name="Unlock_BiometricScannerDisabled_Info">生物认证被禁用</string>
-    <string name="Unlock_WalletDisabledUntil">禁用至：%s</string>
-    <string name="Unlock_AttemptsLeft">剩余尝试次数: %s</string>
+    <string name="Unlock_WalletDisabledUntil">禁用至：%1$s</string>
+    <string name="Unlock_AttemptsLeft">剩余尝试次数: %1$s</string>
     <string name="Unlock_Random">随机</string>
     <!--Set Pin-->
     <string name="PinSet_Title">设置密码</string>
@@ -1896,7 +1896,7 @@
     <string name="pin_set_for_login_logging_passcode">设置密码以保护登录日志</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">输入密码以禁用登录日志</string>
     <string name="pin_set_for_delete_all_contacts">设置一个密码以删除所有联系人</string>
-    <string name="confirm_pin_to_disable_delete_all_contacts_passcode">输入密码以禁用\"删除所有联系人\"</string>
+    <string name="confirm_pin_to_disable_delete_all_contacts_passcode">输入密码以禁用\u0022删除所有联系人\u0022</string>
     <string name="disable_delete_contacts_passcode_warning">出于安全考虑，我们建议您不要对此值使用复制操作。</string>
     <string name="confirm_pin_to_access_login_logging">输入密码以访问登录日志</string>
     <string name="PinSet_ErrorPinInUse">此密码已被使用.</string>
@@ -2297,4 +2297,34 @@
     <string name="beam_wallet_state_closed">BEAM 钱包已关闭</string>
     <string name="beam_wallet_operation_failed">BEAM 钱包操作失败</string>
     <string name="beam_wallet_stop_failed">停止 BEAM 钱包失败</string>
+    <string name="desktop_already_running">P.CASH 已在运行</string>
+    <string name="desktop_create_password_title">创建密码</string>
+    <string name="desktop_create_password_description">密码用于保护此计算机上保存的钱包。该密码不会被存储在任何地方，也无法找回。</string>
+    <string name="desktop_password_repeat_hint">重复密码</string>
+    <string name="desktop_password_mismatch">两次密码不一致</string>
+    <string name="desktop_password_requirement_length">至少 8 个字符</string>
+    <string name="desktop_password_requirement_uppercase">一个大写字母</string>
+    <string name="desktop_password_requirement_lowercase">一个小写字母</string>
+    <string name="desktop_password_requirement_digit">一个数字</string>
+    <string name="desktop_password_requirement_special">一个特殊字符</string>
+    <string name="desktop_password_caps_lock">大写锁定已开启</string>
+    <string name="desktop_password_switch_layout">请切换键盘布局：密码只能包含拉丁字符</string>
+    <string name="desktop_create_password_warning">没有此密码，此计算机上的数据将无法打开，任何人都无法恢复。请为每个恢复短语保留备份。</string>
+    <string name="desktop_create_password_failed">无法保存密码。请检查磁盘可用空间和访问权限</string>
+    <string name="desktop_unlock_title">输入您的密码</string>
+    <string name="desktop_unlock_wrong_password">密码错误</string>
+    <string name="desktop_unlock_data_unreadable">无法打开您的数据</string>
+    <string name="desktop_unlock_failed">无法读取密钥文件。请重试</string>
+    <string name="desktop_unlock_forgot_password">忘记密码？</string>
+    <string name="desktop_forgot_password_title">忘记密码</string>
+    <string name="desktop_forgot_password_warning">此计算机上保存的钱包、联系人、设置和历史记录将被删除。区块链上的资金不受影响：钱包只能通过其恢复短语恢复。</string>
+    <string name="desktop_forgot_password_action">删除数据</string>
+    <string name="desktop_forgot_password_failed">无法删除数据</string>
+    <string name="desktop_change_password_title">更改密码</string>
+    <string name="desktop_change_password_current_hint">当前密码</string>
+    <string name="desktop_change_password_new_hint">新密码</string>
+    <string name="desktop_change_password_failed">无法保存密码。当前密码仍然有效</string>
+    <string name="desktop_change_password_corrupted">密钥文件已损坏：应用锁定后您将无法登录。请为每个恢复短语保存备份。</string>
+    <string name="desktop_change_password_success">密码已更改</string>
+    <string name="desktop_security_lock_now">立即锁定</string>
 </resources>
