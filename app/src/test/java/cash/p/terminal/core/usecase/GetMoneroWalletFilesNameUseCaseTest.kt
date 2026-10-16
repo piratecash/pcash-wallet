@@ -1,5 +1,6 @@
 package cash.p.terminal.core.usecase
 
+import cash.p.terminal.core.storage.AppDatabaseProvider
 import cash.p.terminal.core.storage.MoneroFileDao
 import cash.p.terminal.entities.MoneroFileRecord
 import cash.p.terminal.wallet.Account
@@ -7,6 +8,7 @@ import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.entities.SecretString
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -23,7 +25,8 @@ class GetMoneroWalletFilesNameUseCaseTest {
                 password = SecretString("password"),
             )
         }
-        val useCase = GetMoneroWalletFilesNameUseCase(dao)
+        val databases = mockk<AppDatabaseProvider> { every { database.moneroFileDao() } returns dao }
+        val useCase = GetMoneroWalletFilesNameUseCase(databases)
 
         val result = useCase(trezorAccount())
 

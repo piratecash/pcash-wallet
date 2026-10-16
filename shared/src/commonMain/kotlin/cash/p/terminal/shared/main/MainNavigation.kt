@@ -69,6 +69,7 @@ fun MainDestinationIcon(
 
 @Composable
 fun MainNavigation(
+    destinations: List<MainDestination>,
     selectedDestination: MainDestination,
     onDestinationSelect: (MainDestination) -> Unit,
     modifier: Modifier = Modifier,
@@ -92,7 +93,7 @@ fun MainNavigation(
             navigationRailContainerColor = colors.backgroundNavigation,
         ),
         navigationSuiteItems = {
-            MainDestination.entries.forEach { destination ->
+            destinations.forEach { destination ->
                 item(
                     selected = destination == selectedDestination,
                     onClick = { onDestinationSelect(destination) },

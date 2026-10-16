@@ -8,6 +8,7 @@ import cash.p.terminal.core.managers.ZcashServer
 import cash.p.terminal.core.managers.ZcashServerManager
 import cash.p.terminal.entities.BtcRestoreMode
 import cash.p.terminal.entities.EvmSyncSource
+import cash.p.terminal.feature.wallet.WalletPlatformPages
 import cash.p.terminal.modules.blockchainsettings.BlockchainSettingsModule.BlockchainItem
 import cash.p.terminal.wallet.MarketKitWrapper
 import io.horizontalsystems.core.entities.Blockchain
@@ -34,6 +35,9 @@ class BlockchainSettingsServiceTest {
     private val solanaRpcSourceManager = mockk<SolanaRpcSourceManager>()
     private val marketKit = mockk<MarketKitWrapper>()
     private val zcashServerManager = mockk<ZcashServerManager>()
+    private val platformPages = mockk<WalletPlatformPages> {
+        every { isBlockchainStatusAvailable } returns true
+    }
     private val zcashServerSelected = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     private val zcashServer = ZcashServer("zec.rocks (global)", "https://zec.rocks:443", isCustom = false)
 
@@ -221,6 +225,7 @@ class BlockchainSettingsServiceTest {
             solanaRpcSourceManager = solanaRpcSourceManager,
             marketKit = marketKit,
             zcashServerManager = zcashServerManager,
+            platformPages = platformPages,
         ).also {
             service = it
         }

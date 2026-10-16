@@ -80,8 +80,9 @@ class PcashAppDesktopTest {
         }
         onNodeWithText("Settings").assertExists()
 
-        onNodeWithContentDescription("Balance").performClick()
-        onNodeWithText("Balance").assertExists()
+        // Balance shows the wallet state, which this graph never loads; Transactions is still a plain title.
+        onNodeWithContentDescription("Transactions").performClick()
+        onNodeWithText("Transactions").assertExists()
         onNodeWithContentDescription("Settings").performClick()
         onNodeWithText("Donate").assertExists()
 

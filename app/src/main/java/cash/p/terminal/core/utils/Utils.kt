@@ -1,37 +1,12 @@
 package cash.p.terminal.core.utils
 
-import android.content.Context
-import android.content.pm.ApplicationInfo
-import android.provider.Settings
 import android.util.Log
-import android.view.inputmethod.InputMethodManager
 import kotlinx.coroutines.delay
 import java.net.Inet6Address
 import java.net.InetAddress
 import java.net.UnknownHostException
 
 object Utils {
-
-    fun isUsingCustomKeyboard(context: Context): Boolean {
-
-        val inputMethodManager =
-            context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        val inputMethodProperties = inputMethodManager.enabledInputMethodList
-        for (i in 0 until inputMethodProperties.size) {
-            val imi = inputMethodProperties[i]
-            if (imi.id == Settings.Secure.getString(
-                    context.contentResolver,
-                    Settings.Secure.DEFAULT_INPUT_METHOD
-                )
-            ) {
-                if ((imi.serviceInfo.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) == 0) {
-                    return true
-                }
-            }
-        }
-
-        return false
-    }
 
     suspend fun waitUntil(timeout: Long, checkPeriod: Long, condition: () -> Boolean) {
         var waited = 0L

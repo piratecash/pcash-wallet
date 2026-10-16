@@ -6,7 +6,6 @@ import cash.p.terminal.modules.pin.ConfirmPinPage
 import cash.p.terminal.modules.pin.PinType
 import cash.p.terminal.modules.pin.SetPinPage
 import cash.p.terminal.modules.settings.advancedsecurity.terms.DeleteContactsTermsPage
-import cash.p.terminal.modules.settings.terms.TermsPage
 import cash.p.terminal.navigation.HSNavigation
 
 fun HSNavigation.authorizedAction(
@@ -23,18 +22,6 @@ fun HSNavigation.authorizedAction(
     if (needEnterPin) {
         slideFromBottomForResult<ConfirmPinPage.Result>(ConfirmPinPage(input)) {
             if (it.success) {
-                action.invoke()
-            }
-        }
-    } else {
-        action.invoke()
-    }
-}
-
-fun HSNavigation.navigateWithTermsAccepted(action: () -> Unit) {
-    if (!App.termsManager.allTermsAccepted) {
-        slideFromBottomForResult<TermsPage.Result>(TermsPage()) { result ->
-            if (result.termsAccepted) {
                 action.invoke()
             }
         }

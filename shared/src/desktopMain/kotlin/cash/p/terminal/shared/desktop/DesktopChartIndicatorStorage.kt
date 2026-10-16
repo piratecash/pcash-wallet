@@ -54,7 +54,7 @@ class DesktopChartIndicatorStorage(
     private fun setEnabled(id: String, enabled: Boolean) =
         edit { current -> current.map { if (it.id == id) it.copy(enabled = enabled) else it } }
 
-    private fun all(): List<ChartIndicatorSetting> = runBlocking { dataStore.data.first().settings() }
+    internal fun all(): List<ChartIndicatorSetting> = runBlocking { dataStore.data.first().settings() }
 
     private fun edit(transform: (List<ChartIndicatorSetting>) -> List<ChartIndicatorSetting>) {
         runBlocking {

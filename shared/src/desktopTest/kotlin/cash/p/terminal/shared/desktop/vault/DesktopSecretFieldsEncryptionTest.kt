@@ -1,5 +1,6 @@
 package cash.p.terminal.shared.desktop.vault
 
+import cash.p.terminal.core.StorageLockedException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.Test
@@ -42,12 +43,12 @@ class DesktopSecretFieldsEncryptionTest {
     }
 
     @Test
-    fun decrypt_afterLock_throwsIllegalState() = runTest {
+    fun decrypt_afterWipe_throwsStorageLocked() = runTest {
         vault.create(password())
         val sealed = encryption.encrypt(SECRET)
 
-        vault.lock()
+        vault.wipe()
 
-        assertFailsWith<IllegalStateException> { encryption.decrypt(sealed) }
+        assertFailsWith<StorageLockedException> { encryption.decrypt(sealed) }
     }
 }

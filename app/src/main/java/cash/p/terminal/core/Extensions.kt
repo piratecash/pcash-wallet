@@ -12,21 +12,13 @@ import android.provider.DocumentsContract
 import androidx.compose.ui.platform.Clipboard
 import cash.p.beam.BeamAddressType
 import cash.p.terminal.R
-import cash.p.terminal.modules.backuplocal.BackupLocalModule
-import cash.p.terminal.modules.backuplocal.fullbackup.BackupFileValidator
 import cash.p.terminal.modules.main.MainActivity
 import cash.p.terminal.modules.main.MainModule
-import cash.p.terminal.modules.premium.about.AboutPremiumPage
-import cash.p.terminal.navigation.HSNavigation
-import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
 import cash.p.terminal.wallet.entities.FullCoin
 import io.horizontalsystems.ethereumkit.core.toRawHexString
-import io.horizontalsystems.hdwalletkit.Language
 import io.horizontalsystems.hodler.LockTimeInterval
 import kotlin.system.exitProcess
 import kotlinx.coroutines.delay
-import org.koin.java.KoinJavaComponent.inject
-import java.io.File
 import java.math.BigDecimal
 import java.net.NoRouteToHostException
 import java.net.UnknownHostException
@@ -82,36 +74,6 @@ fun List<FullCoin>.sortedByFilter(filter: String): List<FullCoin> {
     }
 
     return sortedWith(comparator)
-}
-
-val Language.displayNameStringRes: Int
-    get() = when (this) {
-        Language.English -> R.string.language_english
-        Language.Japanese -> R.string.language_japanese
-        Language.Korean -> R.string.language_korean
-        Language.Spanish -> R.string.language_spanish
-        Language.SimplifiedChinese -> R.string.language_simplified_chinese
-        Language.TraditionalChinese -> R.string.language_traditional_chinese
-        Language.French -> R.string.language_french
-        Language.Italian -> R.string.language_italian
-        Language.Czech -> R.string.language_czech
-        Language.Portuguese -> R.string.language_portuguese
-    }
-
-// String
-
-fun String.hexToByteArray(): ByteArray {
-    return ByteArray(this.length / 2) {
-        this.substring(it * 2, it * 2 + 2).toInt(16).toByte()
-    }
-}
-
-// ByteArray
-
-fun ByteArray.toRawHexString(): String {
-    return this.joinToString(separator = "") {
-        it.toInt().and(0xff).toString(16).padStart(2, '0')
-    }
 }
 
 fun ByteArray?.to0xHexString(): String {
@@ -220,50 +182,11 @@ fun String.splitToAddresses(): List<String> {
         .filter { it.isNotEmpty() }
 }
 
-/**
- * Normalizes a private key byte array to exactly [size] bytes.
- * BigInteger.toByteArray() may return fewer bytes (leading zeros stripped)
- * or more bytes (sign byte prepended). This ensures a fixed-size output.
- */
-fun ByteArray.toFixedSize(size: Int): ByteArray = when {
-    this.size > size -> copyOfRange(this.size - size, this.size)
-    this.size < size -> ByteArray(size - this.size) + this
-    else -> this
-}
-
-fun writeBackupToTempFile(data: ByteArray): String {
-    val file = File.createTempFile("backup_", ".tmp", App.instance.cacheDir)
-    file.writeBytes(data)
-    return file.absolutePath
-}
-
-fun validateAndSaveBackup(bytes: ByteArray): String {
-    val validator = BackupFileValidator()
-    if (BackupLocalModule.BackupV4Binary.isBinaryFormat(bytes)) {
-        validator.validateBinary(bytes)
-    } else {
-        validator.validate(String(bytes, Charsets.UTF_8))
-    }
-    return writeBackupToTempFile(bytes)
-}
-
 fun Context.hasNFC(): Boolean {
     val pm = getSystemService(Context.NFC_SERVICE) as android.nfc.NfcManager
     return pm.defaultAdapter?.isEnabled == true
 }
 
-fun HSNavigation.premiumAction(block: () -> Unit) {
-    val checkPremiumUseCase: CheckPremiumUseCase by inject(CheckPremiumUseCase::class.java)
-    if (checkPremiumUseCase.getPremiumType().isPremium()) {
-        block.invoke()
-    } else {
-        slideFromBottomForResult<AboutPremiumPage.Result>(
-            AboutPremiumPage(AboutPremiumPage.CloseOnPremiumInput())
-        ) {
-            block.invoke()
-        }
-    }
-}
 
 suspend fun Clipboard.getText(): String? {
     val clip = this.getClipEntry()?.clipData

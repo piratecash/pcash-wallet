@@ -138,6 +138,7 @@ class DesktopLockFlowDesktopTest {
             }
         }
 
+        finishIntro()
         onNodeWithText(CREATE_TITLE).assertExists()
         onAllNodes(hasSetTextAction())[0].performTextInput(PASSWORD)
         onAllNodes(hasSetTextAction())[1].performTextInput(PASSWORD)

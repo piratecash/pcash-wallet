@@ -42,7 +42,7 @@ class DesktopStorageSessionTest {
         vault.create(password())
         val session = assertIs<DesktopVaultState.Unlocked>(vault.state.value).session
         session.database.accountsDao().insert(accountRecord())
-        vault.lock()
+        vault.close()
 
         val fileBytes = fixture.files.databaseFile.readBytes()
         assertFalse(fileBytes.decodeToString().contains(MNEMONIC_WORD))
@@ -63,7 +63,7 @@ class DesktopStorageSessionTest {
         vault.create(password())
         val session = assertIs<DesktopVaultState.Unlocked>(vault.state.value).session
 
-        vault.lock()
+        vault.close()
 
         assertNull(session.secretFieldsKey())
     }

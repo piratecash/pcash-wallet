@@ -2,6 +2,10 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
+    <ID>CyclomaticComplexMethod:AccountsStorage.kt$AccountsStorage$private fun getAccountRecord(account: Account): AccountRecord</ID>
+    <ID>CyclomaticComplexMethod:AccountsStorage.kt$AccountsStorage$private fun toAccount(record: AccountRecord?): Account?</ID>
+    <ID>LongMethod:AccountsStorage.kt$AccountsStorage$private fun getAccountRecord(account: Account): AccountRecord</ID>
+    <ID>LongMethod:AccountsStorage.kt$AccountsStorage$private fun toAccount(record: AccountRecord?): Account?</ID>
     <ID>LongParameterList:SwapProviderTransactionsDao.kt$SwapProviderTransactionsDao$( address: String, tokenQueryId: String, coinUid: String, blockchainType: String, accountId: String, amount: Double, tolerance: Double, timestamp: Long, timeWindowMs: Long, dateFrom: Long, dateTo: Long )</ID>
     <ID>LongParameterList:SwapProviderTransactionsDao.kt$SwapProviderTransactionsDao$( provider: String, tokenQueryId: String, coinUid: String, blockchainType: String, accountId: String, addressOut: String, expectedAmount: Double, tolerance: Double, dateFrom: Long, dateTo: Long, )</ID>
     <ID>LongParameterList:SwapProviderTransactionsDao.kt$SwapProviderTransactionsDao$( tokenQueryId: String, coinUid: String, blockchainType: String, accountId: String, dateFrom: Long, dateTo: Long, amount: Double, tolerance: Double, limit: Int )</ID>

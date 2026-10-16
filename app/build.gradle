@@ -128,7 +128,6 @@ android {
         resValue "string", "walletConnectAppMetaDataName", "pcash"
         resValue "string", "walletConnectAppMetaDataUrl", "p.cash"
         resValue "string", "walletConnectAppMetaDataIcon", "https://raw.githubusercontent.com/piratecash/pcash-wallet-ios/master/UnstoppableWallet/UnstoppableWallet/AppIcon.xcassets/AppIcon.appiconset/p.cash_1024.png"
-        resValue "string", "accountsBackupFileSalt", "pcash"
 
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a"
@@ -518,6 +517,7 @@ dependencies {
     implementation project(':feature-logging')
     implementation project(':feature-mini-app')
     implementation project(':feature-market')
+    implementation project(':feature-wallet')
 
     // Integration with activities
     implementation libs.androidx.activity.compose
@@ -596,29 +596,6 @@ configurations.all {
         cacheChangingModulesFor 0, 'seconds'
     }
 }
-
-task copyChangelogs(type: Copy) {
-    description = 'Copy changelog files from root to assets'
-    group = 'build'
-
-    from rootProject.projectDir
-    into 'src/main/assets/common'
-    include 'CHANGELOG_*.md'
-    include 'changelog_*.md'
-
-    outputs.upToDateWhen { false }
-
-    doFirst {
-        file('src/main/assets/common').mkdirs()
-        println "Copying changelog files..."
-    }
-
-    doLast {
-        println "Changelog files copied successfully"
-    }
-}
-
-preBuild.dependsOn copyChangelogs
 
 // macOS Finder silently creates .DS_Store files inside build/ when its windows
 // or IDE file browsers traverse generated dirs. AGP tasks like dexBuilderDebug

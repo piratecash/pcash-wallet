@@ -4,11 +4,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import cash.p.terminal.domain.usecase.GetLocalizedAssetUseCase
+import cash.p.terminal.feature.wallet.LocalizedAssetReader
 import cash.p.terminal.ui_compose.entities.ViewState
 
 class MarkdownLocalViewModel(
-    private val getLocalizedAssetUseCase: GetLocalizedAssetUseCase,
+    private val localizedAssetReader: LocalizedAssetReader,
 ) : ViewModel() {
 
     var markdownContent by mutableStateOf<String?>(null)
@@ -23,7 +23,7 @@ class MarkdownLocalViewModel(
     }
 
     suspend fun loadAsset(prefix: String) {
-        parseContent(getLocalizedAssetUseCase(prefix))
+        parseContent(localizedAssetReader.read(prefix))
     }
 
 }

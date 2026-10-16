@@ -39,6 +39,7 @@ import java.math.BigDecimal
 import kotlin.io.path.createTempDirectory
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
+import org.koin.dsl.bind
 import org.koin.dsl.binds
 import org.koin.dsl.module
 
@@ -85,9 +86,9 @@ internal object DesktopTestGraph {
         single { DesktopVaultFiles(dataDir) }
         single { PasswordVault(get<DesktopVaultFiles>().vaultFile) }
         single<DesktopPreferencesReset> { mockk(relaxed = true) }
-        single<ChartIndicatorStorage> {
+        single {
             DesktopChartIndicatorStorage(File(dataDir, "indicators.preferences_pb"), Gson(), DefaultDispatcherProvider())
-        }
+        } bind ChartIndicatorStorage::class
     }
 
     private fun marketGlobal(marketCap: Long) = MarketGlobal(

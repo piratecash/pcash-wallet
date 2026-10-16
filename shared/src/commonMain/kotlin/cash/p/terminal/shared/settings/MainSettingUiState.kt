@@ -9,14 +9,15 @@ data class MainSettingUiState(
     val allBackedUp: Boolean,
     val pendingRequestCount: Int,
     val walletConnectSessionCount: Int,
-    val manageWalletShowAlert: Boolean,
     val securityCenterShowAlert: Boolean,
     val securityCenterShowNewBadge: Boolean,
     val aboutAppShowAlert: Boolean,
     val wcCounterType: CounterType?,
     val premiumSettingsShowAlert: Boolean,
     val isPayCoreEnabled: Boolean,
-)
+) {
+    val manageWalletShowAlert: Boolean get() = !allBackedUp || hasNonStandardAccount
+}
 
 sealed class CounterType {
     class SessionCounter(val number: Int) : CounterType()

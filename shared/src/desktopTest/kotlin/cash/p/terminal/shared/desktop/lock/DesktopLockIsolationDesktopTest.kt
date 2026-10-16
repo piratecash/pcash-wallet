@@ -119,6 +119,7 @@ class DesktopLockIsolationDesktopTest {
                 DesktopRootContent(
                     vaultState = vaultState,
                     localeTag = "en",
+                    appGeneration = 0,
                     rootPage = { FirstPage() },
                     appContent = appContent,
                 )

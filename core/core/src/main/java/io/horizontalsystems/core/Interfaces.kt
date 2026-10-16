@@ -83,10 +83,6 @@ interface IPinSettingsStorage {
     var isSystemPinRequired: Boolean
 }
 
-interface IThirdKeyboard {
-    var isThirdPartyKeyboardAllowed: Boolean
-}
-
 interface IKeyStoreManager {
     fun validateKeyStore()
     fun removeKey()

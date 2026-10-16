@@ -16,7 +16,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
@@ -61,12 +60,12 @@ import cash.p.terminal.navigation.openQrScanner
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.shared.settings.SettingsAction
 import cash.p.terminal.shared.settings.SettingsContent
+import cash.p.terminal.shared.settings.settingsAlertPainter
 import cash.p.terminal.ui.helpers.LinkHelper
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellSingleLineLawrenceSection
 import cash.p.terminal.ui_compose.components.HsSettingCell as SharedHsSettingCell
 import cash.p.terminal.ui_compose.components.HudHelper
-import cash.p.terminal.ui_compose.components.tinted
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.core.IPinComponent
 import io.horizontalsystems.core.launchExternalActivity
@@ -142,16 +141,12 @@ fun SettingsScreen(
                         importTransactionFile = importTransactionFile,
                     )
                 },
-                alertPainter = alertErrorPainter(),
+                alertPainter = settingsAlertPainter(),
                 modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding()),
             )
         }
     }
 }
-
-@Composable
-private fun alertErrorPainter(): Painter =
-    painterResource(R.drawable.ic_attention_red_20).tinted(ComposeAppTheme.colors.statusError)
 
 internal fun handleSettingsAction(
     action: SettingsAction,
@@ -286,7 +281,7 @@ fun HsSettingCell(
         value = value,
         counterBadge = counterBadge,
         newBadgeText = newBadgeText,
-        alertPainter = if (showAlert) alertErrorPainter() else null,
+        alertPainter = if (showAlert) settingsAlertPainter() else null,
         onClick = onClick,
     )
 }

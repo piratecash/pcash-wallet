@@ -42,6 +42,7 @@ import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.subhead2_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Account
+import cash.p.terminal.feature.wallet.ResetToFactoryResult
 import cash.p.terminal.ui_compose.components.HudHelper
 import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
@@ -84,7 +85,7 @@ class ResetToFactorySettingsPage(val input: Input) : HSPage() {
 
         LaunchedEffect(viewModel.uiState.value.primaryCardWasReset) {
             if (viewModel.uiState.value.primaryCardWasReset) {
-                navigation.setResult(this@ResetToFactorySettingsPage, Result(true))
+                navigation.setResult(this@ResetToFactorySettingsPage, ResetToFactoryResult(true))
             }
         }
 
@@ -103,9 +104,6 @@ class ResetToFactorySettingsPage(val input: Input) : HSPage() {
 
     @Parcelize
     data class Input(val account: Account) : Parcelable
-
-    @Parcelize
-    data class Result(val success: Boolean) : Parcelable
 }
 
 @Composable

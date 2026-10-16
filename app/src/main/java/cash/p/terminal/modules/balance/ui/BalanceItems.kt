@@ -3,7 +3,6 @@ package cash.p.terminal.modules.balance.ui
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,6 +39,7 @@ import androidx.annotation.StringRes
 import org.koin.compose.viewmodel.koinViewModel
 import cash.p.terminal.R
 import cash.p.terminal.core.managers.FaqManager
+import cash.p.terminal.feature.wallet.FaqTopic
 import cash.p.terminal.core.usecase.PayCoreNavigationTarget
 import cash.p.terminal.featureStacking.ui.staking.StackingPage
 import cash.p.terminal.modules.balance.AccountViewItem
@@ -69,46 +69,13 @@ import cash.p.terminal.ui_compose.components.RowWithArrow
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.Select
-import cash.p.terminal.ui_compose.components.TextImportantError
-import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.ic_swap_24
 import cash.p.terminal.resources.ic_arrow_up_right_24
 import cash.p.terminal.resources.ic_arrow_down_left_24
-import cash.p.terminal.resources.ic_attention_20
 import cash.p.terminal.resources.ic_coins_stacking
-
-@Composable
-fun NoteWarning(
-    modifier: Modifier = Modifier,
-    text: String,
-    onClick: (() -> Unit),
-    onClose: (() -> Unit)?
-) {
-    TextImportantWarning(
-        modifier = modifier.clickable(onClick = onClick),
-        text = text,
-        title = stringResource(id = R.string.AccountRecovery_Note),
-        icon = Res.drawable.ic_attention_20,
-        onClose = onClose
-    )
-}
-
-@Composable
-fun NoteError(
-    modifier: Modifier = Modifier,
-    text: String,
-    onClick: (() -> Unit)
-) {
-    TextImportantError(
-        modifier = modifier.clickable(onClick = onClick),
-        text = text,
-        title = stringResource(id = R.string.AccountRecovery_Note),
-        icon = Res.drawable.ic_attention_20
-    )
-}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -293,7 +260,7 @@ fun BalanceItems(
                             ),
                             text = stringResource(R.string.AccountRecovery_MigrationRequired),
                             onClick = {
-                                FaqManager.showFaqPage(FaqManager.faqMigrationRequired)
+                                FaqManager.showFaqPage(FaqTopic.MigrationRequired)
                             }
                         )
                     }
@@ -308,7 +275,7 @@ fun BalanceItems(
                             ),
                             text = stringResource(R.string.AccountRecovery_MigrationRecommended),
                             onClick = {
-                                FaqManager.showFaqPage(FaqManager.faqMigrationRecommended)
+                                FaqManager.showFaqPage(FaqTopic.MigrationRecommended)
                             },
                             onClose = {
                                 viewModel.onCloseHeaderNote(HeaderNote.NonRecommendedAccount)

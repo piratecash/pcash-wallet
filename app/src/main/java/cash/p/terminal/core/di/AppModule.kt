@@ -2,6 +2,7 @@ package cash.p.terminal.core.di
 
 import cash.p.terminal.di.managerModule
 import cash.p.terminal.feature.market.di.marketFeatureModule
+import cash.p.terminal.feature.wallet.di.featureWalletModule
 import cash.p.terminal.di.repositoryModule
 import cash.p.terminal.di.storageModule
 import cash.p.terminal.di.swapProvidersModule
@@ -25,6 +26,7 @@ val appModule = module {
         repositoryModule,
         viewModelModule,
         walletFeatureModule,
+        featureWalletModule,
         featureStackingModule,
         featureTangemModule,
         featureTrezorModule,

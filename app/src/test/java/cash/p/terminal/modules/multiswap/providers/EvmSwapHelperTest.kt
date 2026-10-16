@@ -3,7 +3,7 @@ package cash.p.terminal.modules.multiswap.providers
 import cash.p.terminal.core.App
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.core.adapters.Eip20Adapter
-import cash.p.terminal.core.installEthereumCryptoProviderForTest
+import io.horizontalsystems.ethereumkit.core.EthereumKit
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
@@ -36,7 +36,7 @@ class EvmSwapHelperTest {
 
     companion object {
         init {
-            installEthereumCryptoProviderForTest()
+            EthereumKit.init()
         }
     }
 

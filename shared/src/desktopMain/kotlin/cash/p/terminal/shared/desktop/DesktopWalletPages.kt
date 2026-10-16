@@ -1,0 +1,75 @@
+package cash.p.terminal.shared.desktop
+
+import cash.p.terminal.feature.wallet.AppRestarter
+import cash.p.terminal.feature.wallet.FaqTopic
+import cash.p.terminal.feature.wallet.SecretActionAuthorizer
+import cash.p.terminal.feature.wallet.WalletPlatformPages
+import cash.p.terminal.modules.backuplocal.BackupLocalPage
+import cash.p.terminal.modules.coin.CoinPage
+import cash.p.terminal.modules.createaccount.CreateAccountPage
+import cash.p.terminal.modules.manageaccount.backupkey.BackupKeyPage
+import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
+import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
+import cash.p.terminal.navigation.AppPages
+import cash.p.terminal.navigation.BackupKeyInput
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.QrScannerInput
+import cash.p.terminal.shared.desktop.lock.ConfirmPasswordPage
+import cash.p.terminal.ui_compose.CoinFragmentInput
+import cash.p.terminal.ui_compose.components.UrlOpener
+import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.navigation.WalletPages
+import io.horizontalsystems.core.entities.Blockchain
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+
+/** The desktop pages of the wallet screens: no camera, no swap, no hardware wallets (each entry is hidden). */
+class DesktopWalletPages(private val urlOpener: UrlOpener) : AppPages, WalletPages, WalletPlatformPages {
+    override fun coin(coinUid: String): HSPage = CoinPage(CoinFragmentInput(coinUid))
+    override fun createAccount(): HSPage = CreateAccountPage(null)
+    override fun restoreAccount(): HSPage = RestoreAccountPage(null)
+    override fun backupKey(input: BackupKeyInput): HSPage = BackupKeyPage(input)
+    override fun backupLocal(account: Account): HSPage = BackupLocalPage(account)
+
+    override fun qrScanner(input: QrScannerInput): HSPage =
+        throw UnsupportedOperationException("No QR scanner on desktop: isQrScannerAvailable hides its entries")
+
+    override fun swap(tokenOut: Token): HSPage =
+        throw UnsupportedOperationException("No swap on desktop yet: no wallet screen offers it")
+
+    override val isQrScannerAvailable = false
+    override fun hardwareWallet(input: ManageAccountsModule.Input?): HSPage? = null
+    override fun resetToFactory(account: Account): HSPage? = null
+    override fun faq(topic: FaqTopic): HSPage = DesktopMarkdownAssetPage(topic.assetPrefix)
+    override fun appIcon(): HSPage? = null
+    override val isBlockchainStatusAvailable = false
+    override fun blockchainStatus(blockchain: Blockchain): HSPage? = null
+
+    // Desktop has no in-app markdown reader for remote files, so every link opens in the browser.
+    override fun openMarkdownOrWeblink(navigation: HSNavigation, url: String) = urlOpener.open(url)
+
+    // Tangem cards need NFC: hardwareWallet() and resetToFactory() hide every way to these.
+    override suspend fun accessCodeRecovery(): HSPage? = null
+    override suspend fun changeAccessCode() = Unit
+    override suspend fun forgotAccessCode(cardId: String) = Unit
+}
+
+/** Desktop always has a password, so it is asked again before every secret (Android asks for a set PIN). */
+class DesktopSecretActionAuthorizer : SecretActionAuthorizer {
+    override fun authorize(navigation: HSNavigation, action: () -> Unit) =
+        navigation.slideFromBottomForResult<ConfirmPasswordPage.Result>(ConfirmPasswordPage()) { result ->
+            if (result.success) action()
+        }
+}
+
+/** As Android starting a new task: the root watches [generation] and starts over with a fresh back stack. */
+class DesktopAppRestarter : AppRestarter {
+    private val _generation = MutableStateFlow(0)
+    val generation: StateFlow<Int> = _generation.asStateFlow()
+
+    override fun restart() = _generation.update { it + 1 }
+}

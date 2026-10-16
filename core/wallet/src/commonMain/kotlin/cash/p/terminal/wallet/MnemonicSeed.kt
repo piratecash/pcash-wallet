@@ -6,8 +6,17 @@ import javax.crypto.spec.SecretKeySpec
 
 object MnemonicSeed {
     fun derive(words: List<String>, passphrase: String = ""): ByteArray {
-        Mnemonic().validate(words)
+        validate(words)
         return pbkdf2(words.joinToString(" "), "mnemonic$passphrase")
+    }
+
+    // The library puts the offending word into the message, and that message reaches logs.
+    private fun validate(words: List<String>) {
+        try {
+            Mnemonic().validate(words)
+        } catch (_: Mnemonic.InvalidMnemonicKeyException) {
+            throw Mnemonic.InvalidMnemonicKeyException("Invalid mnemonic word")
+        }
     }
 
     // Stored non-standard accounts intentionally derive from their original UTF-8 bytes.

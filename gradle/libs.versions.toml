@@ -71,7 +71,7 @@ secp256k1 = "0.24.0"
 tonKotlin = "0.5.0" # updated for ktor 3.x compatibility
 piratecash-ton = "v2.0.0-pcash.9"
 beam-sdk = "v0.3.0"
-piratecash-bitcoin = "v0.1.0-pcash.36"
+piratecash-bitcoin = "v0.1.0-pcash.37"
 hd-wallet-kit = "1.0.1"
 stellar-kit = "v2.0.0-pcash.1"
 thorchain-kit = "1.2.0"
@@ -168,6 +168,7 @@ compose-multiplatform-runtime = { module = "org.jetbrains.compose.runtime:runtim
 compose-multiplatform-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
 compose-multiplatform-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
 compose-multiplatform-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeResources" }
+compose-multiplatform-material = { module = "org.jetbrains.compose.material:material", version.ref = "composeMultiplatform" }
 compose-multiplatform-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "composeMaterial3" }
 compose-multiplatform-adaptive-navigation-suite = { module = "org.jetbrains.compose.material3:material3-adaptive-navigation-suite", version.ref = "composeMaterial3" }
 compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }

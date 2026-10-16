@@ -1,5 +1,6 @@
 package cash.p.terminal.shared.desktop.lock
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -19,13 +20,18 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
+import cash.p.terminal.core.WalletOnboardingStorage
+import cash.p.terminal.modules.intro.IntroScreen
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.shared.PcashApp
+import cash.p.terminal.shared.desktop.DesktopAppRestarter
+import cash.p.terminal.shared.desktop.rememberDesktopDarkTheme
 import cash.p.terminal.shared.desktop.vault.DesktopVault
 import cash.p.terminal.shared.desktop.vault.DesktopVaultState
 import cash.p.terminal.shared.main.DesktopMainPage
 import cash.p.terminal.strings.helpers.LocaleType
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.core.DesktopLanguageManager
 import org.koin.compose.koinInject
 
@@ -40,10 +46,12 @@ fun DesktopRoot(appVersion: String, modifier: Modifier = Modifier) {
     val languageManager = koinInject<DesktopLanguageManager>()
     val vaultState by vault.state.collectAsStateWithLifecycle()
     val localeTag by languageManager.localeTag.collectAsStateWithLifecycle()
+    val appGeneration by koinInject<DesktopAppRestarter>().generation.collectAsStateWithLifecycle()
 
     DesktopRootContent(
         vaultState = vaultState,
         localeTag = localeTag,
+        appGeneration = appGeneration,
         rootPage = { DesktopMainPage(appVersion) },
         appContent = { navigation -> PcashApp(navigation) },
         modifier = modifier,
@@ -54,6 +62,7 @@ fun DesktopRoot(appVersion: String, modifier: Modifier = Modifier) {
 internal fun DesktopRootContent(
     vaultState: DesktopVaultState,
     localeTag: String,
+    appGeneration: Int,
     rootPage: () -> HSPage,
     appContent: @Composable (HSNavigation) -> Unit,
     modifier: Modifier = Modifier,
@@ -67,8 +76,9 @@ internal fun DesktopRootContent(
     // Keyed by the language: a composition reads the locale of the resources when it is created.
     key(localeTag) {
         CompositionLocalProvider(LocalLayoutDirection provides layoutDirectionFor(localeTag)) {
-            Box(modifier = modifier.fillMaxSize()) {
-                key(vaultGeneration) {
+            Box(modifier = modifier.fillMaxSize().background(ComposeAppTheme.colors.backgroundBase)) {
+                // An app restart (after a full backup restore) starts over the same way; the storage stays open.
+                key(vaultGeneration, appGeneration) {
                     // Outlives the lock: the ViewModel stores of the pages hang off this owner.
                     SessionViewModelStore {
                         val navigation = remember { HSNavigation(NavBackStack(rootPage())) }
@@ -79,7 +89,7 @@ internal fun DesktopRootContent(
                     }
                 }
                 when (vaultState) {
-                    DesktopVaultState.NoVault -> LockScreen { CreatePasswordScreen() }
+                    DesktopVaultState.NoVault -> LockScreen { FirstRunGate() }
                     DesktopVaultState.Locked -> LockScreen { UnlockGate() }
                     is DesktopVaultState.Unlocked -> Unit
                 }
@@ -97,6 +107,19 @@ private fun LockScreen(content: @Composable () -> Unit) {
         LocalNavigationEventDispatcherOwner provides rememberNavigationEventDispatcherOwner(parent = null)
     ) {
         SessionViewModelStore(content)
+    }
+}
+
+/** The intro runs before the first password, as on Android before the first main screen. */
+@Composable
+private fun FirstRunGate() {
+    val onboardingStorage = koinInject<WalletOnboardingStorage>()
+    // Read each time the gate appears: the wipe clears the flag with the other plain settings.
+    var introPending by remember { mutableStateOf(!onboardingStorage.mainShowedOnce) }
+    if (introPending) {
+        IntroScreen(nightMode = rememberDesktopDarkTheme(), onFinish = { introPending = false })
+    } else {
+        CreatePasswordScreen()
     }
 }
 

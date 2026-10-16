@@ -1,5 +1,6 @@
 package cash.p.terminal.shared.desktop.vault
 
+import cash.p.terminal.core.StorageLockedException
 import cash.p.terminal.vault.AesGcm
 import io.horizontalsystems.core.IEncryptionManager
 import java.util.Base64
@@ -16,8 +17,5 @@ class DesktopSecretFieldsEncryption(private val vault: DesktopVault) : IEncrypti
         return String(plaintext, Charsets.UTF_8)
     }
 
-    private fun sessionKey(): ByteArray =
-        checkNotNull((vault.state.value as? DesktopVaultState.Unlocked)?.session?.secretFieldsKey()) {
-            "No unlocked storage session"
-        }
+    private fun sessionKey(): ByteArray = vault.openSession()?.secretFieldsKey() ?: throw StorageLockedException()
 }

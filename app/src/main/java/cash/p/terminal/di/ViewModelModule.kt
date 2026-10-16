@@ -5,30 +5,19 @@ import cash.p.terminal.modules.balance.token.creationblock.CreationBlockViewMode
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusViewModel
 import cash.p.terminal.modules.configuredtoken.ConfiguredTokenInfoViewModel
 import cash.p.terminal.modules.addtoken.AddTokenViewModel
-import cash.p.terminal.modules.createaccount.CreateAdvancedAccountViewModel
-import cash.p.terminal.modules.createaccount.passphraseterms.PassphraseTermsViewModel
-import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesModule
-import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesViewModel
-import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
-import cash.p.terminal.modules.manageaccounts.ManageAccountsViewModel
 import cash.p.terminal.modules.multiswap.TimerService
 import cash.p.terminal.modules.multiswap.exchange.MultiSwapExchangeViewModel
 import cash.p.terminal.modules.multiswap.exchanges.MultiSwapExchangesViewModel
 import cash.p.terminal.modules.multiswap.providersettings.SwapProvidersSettingsViewModel
 import cash.p.terminal.modules.displayoptions.DisplayOptionsViewModel
 import cash.p.terminal.modules.hardwarewallet.HardwareWalletViewModel
-import cash.p.terminal.modules.importwallet.ImportWalletViewModel
 import cash.p.terminal.modules.main.MainActivityViewModel
-import cash.p.terminal.modules.manageaccount.backupkey.BackupKeyViewModel
 import cash.p.terminal.modules.main.MainViewModel
 import cash.p.terminal.modules.softwareupdate.SoftwareUpdateViewModel
 import cash.p.terminal.modules.softwareupdate.changelog.VersionChangelogViewModel
 import cash.p.terminal.modules.softwareupdate.history.VersionHistoryViewModel
 import cash.p.terminal.modules.pin.unlock.PinUnlockViewModel
 import cash.p.terminal.modules.markdown.localreader.MarkdownLocalViewModel
-import cash.p.terminal.modules.moneroconfigure.MoneroConfigureViewModel
-import cash.p.terminal.modules.mwebconfigure.MwebConfigureViewModel
-import cash.p.terminal.modules.premium.about.AboutPremiumViewModel
 import cash.p.terminal.modules.premium.settings.PushNotificationsViewModel
 import cash.p.terminal.modules.premium.settings.PremiumSettingsViewModel
 import cash.p.terminal.modules.premium.smsnotification.SendSmsNotificationViewModel
@@ -39,8 +28,6 @@ import cash.p.terminal.modules.releasenotes.ReleaseNotesViewModel
 import cash.p.terminal.modules.resettofactorysettings.ResetToFactorySettingsViewModel
 import cash.p.terminal.modules.send.offline.OfflineBroadcastViewModel
 import cash.p.terminal.modules.send.offline.OfflineSignedTransactionsViewModel
-import cash.p.terminal.modules.restoreaccount.duplicatewallet.DuplicateWalletViewModel
-import cash.p.terminal.modules.restoreaccount.restoremnemonic.RestoreMnemonicViewModel
 import cash.p.terminal.modules.calculator.autolock.CalculatorAutoLockViewModel
 import cash.p.terminal.modules.calculator.lockscreen.CalculatorLockScreenViewModel
 import cash.p.terminal.modules.calculator.pinsettings.CalculatorPinSettingsViewModel
@@ -55,7 +42,6 @@ import cash.p.terminal.modules.settings.guides.GuidesViewModel
 import cash.p.terminal.modules.balance.BalanceAccountsViewModel
 import cash.p.terminal.modules.rateapp.RateAppViewModel
 import cash.p.terminal.modules.subscription.ActivateSubscriptionViewModel
-import cash.p.terminal.modules.manageaccount.zcashkeys.ZcashKeysViewModel
 import cash.p.terminal.modules.walletconnect.request.WCRequestEvmViewModel
 import cash.p.terminal.modules.settings.main.MainSettingsViewModel
 import cash.p.terminal.modules.settings.privacy.PrivacyViewModel
@@ -64,11 +50,6 @@ import cash.p.terminal.modules.tonconnect.TonConnectListViewModel
 import cash.p.terminal.modules.transactions.TransactionsRateRepository
 import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedSheet
 import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedViewModel
-import cash.p.terminal.modules.solananetwork.SolanaNetworkService
-import cash.p.terminal.modules.solananetwork.SolanaNetworkViewModel
-import cash.p.terminal.modules.zcashnetwork.ZcashNetworkViewModel
-import cash.p.terminal.modules.zcashnetwork.addserver.AddZcashServerViewModel
-import cash.p.terminal.modules.zcashconfigure.ZcashConfigureViewModel
 import cash.p.terminal.modules.zcashmigration.ZcashMigrationViewModel
 import cash.p.terminal.modules.multiswap.SwapSelectCoinViewModel
 import cash.p.terminal.modules.offline.OfflineModeToggleViewModel
@@ -80,9 +61,8 @@ import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.DefaultDispatcherProvider
 import io.horizontalsystems.core.DispatcherProvider
 import cash.p.terminal.modules.pin.SetDuressPinIntroViewModel
-import cash.p.terminal.modules.restoreaccount.restoremnemonicnonstandard.RestoreMnemonicNonStandardViewModel
 import cash.p.terminal.modules.settings.about.AboutViewModel
-import cash.p.terminal.modules.settings.appearance.AppearanceViewModel
+import cash.p.terminal.modules.settings.appearance.AppIconViewModel
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
@@ -111,16 +91,13 @@ val viewModelModule = module {
     viewModelOf(::PrivacyViewModel)
     viewModelOf(::AboutViewModel)
     viewModelOf(::SetDuressPinIntroViewModel)
-    viewModelOf(::RestoreMnemonicNonStandardViewModel)
-    viewModelOf(::AppearanceViewModel)
+    viewModelOf(::AppIconViewModel)
     viewModelOf(::HardwareWalletViewModel)
-    viewModelOf(::ImportWalletViewModel)
     viewModelOf(::ResetToFactorySettingsViewModel)
     viewModelOf(::SecuritySettingsViewModel)
     viewModelOf(::MainSettingsViewModel)
     viewModelOf(::ReleaseNotesViewModel)
     viewModelOf(::MarkdownLocalViewModel)
-    viewModelOf(::RestoreMnemonicViewModel)
     viewModelOf(::AppStatusViewModel)
     viewModel { params -> AddressPoisoningViewModel(params[0], params[1], params[2], get(), get(), get(), get()) }
     viewModel { params -> CreationBlockViewModel(params[0], get(), get(), get(), get(), get()) }
@@ -133,19 +110,11 @@ val viewModelModule = module {
         )
     }
     viewModelOf(::AppCacheViewModel)
-    viewModelOf(::MoneroConfigureViewModel)
-    viewModelOf(::MwebConfigureViewModel)
-    viewModelOf(::AboutPremiumViewModel)
     viewModelOf(::PremiumSettingsViewModel)
     viewModelOf(::PushNotificationsViewModel)
     viewModelOf(::SendSmsNotificationViewModel)
     viewModelOf(::DisplayOptionsViewModel)
     viewModelOf(::TonConnectListViewModel)
-    viewModelOf(::ZcashConfigureViewModel)
-    factoryOf(::SolanaNetworkService)
-    viewModelOf(::SolanaNetworkViewModel)
-    viewModelOf(::ZcashNetworkViewModel)
-    viewModelOf(::AddZcashServerViewModel)
     viewModelOf(::QRScannerViewModel)
     viewModelOf(::AddTokenViewModel)
     viewModelOf(::PinUnlockViewModel)
@@ -159,26 +128,6 @@ val viewModelModule = module {
             restoreSettingsManager = get()
         )
     }
-    viewModel { (accountToCopy: Account) ->
-        DuplicateWalletViewModel(
-            accountToCopy = accountToCopy,
-            accountManager = get(),
-            accountFactory = get(),
-            moneroWalletUseCase = get(),
-            enabledWalletStorage = get(),
-            walletManager = get(),
-            restoreSettingsManager = get(),
-            localStorage = get(),
-            marketKit = get()
-        )
-    }
-    viewModel { (accountId: String) ->
-        BackupKeyViewModel(accountId = accountId, accountManager = get())
-    }
-    viewModel { (accountId: String) -> ZcashKeysViewModel(accountId, get(), get()) }
-    viewModel { (mode: ManageAccountsModule.Mode) ->
-        ManageAccountsViewModel(get(), get(), mode)
-    }
     viewModelOf(::AdvancedSecurityViewModel)
     viewModelOf(::CalculatorPinSettingsViewModel)
     viewModelOf(::CalculatorAutoLockViewModel)
@@ -186,13 +135,6 @@ val viewModelModule = module {
     viewModelOf(::DeleteContactsTermsViewModel)
     viewModelOf(::HiddenWalletTermsViewModel)
     viewModelOf(::SecureResetTermsViewModel)
-    viewModelOf(::CreateAdvancedAccountViewModel)
-    viewModel { (termTitles: Array<String>) ->
-        PassphraseTermsViewModel(termTitles = termTitles, localStorage = get())
-    }
-    viewModel { (mode: SafetyRulesModule.SafetyRulesMode, termTitles: List<String>) ->
-        SafetyRulesViewModel(mode = mode, termTitles = termTitles, localStorage = get())
-    }
     viewModelOf(::MultiSwapExchangesViewModel)
     viewModelOf(::SwapProvidersSettingsViewModel)
     viewModel { params ->

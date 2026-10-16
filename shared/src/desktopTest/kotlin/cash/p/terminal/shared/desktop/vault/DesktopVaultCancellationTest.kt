@@ -88,7 +88,7 @@ class DesktopVaultCancellationTest {
     }
 
     @Test
-    fun lock_cancelledBeforeTheCloseRuns_closesTheSessionAnyway() = runTest {
+    fun close_cancelledBeforeTheCloseRuns_closesTheSessionAnyway() = runTest {
         val parking = ParkingDispatcher()
         val vault = fixture.vault(io = parking)
         val create = launch { vault.create(password()) }
@@ -98,14 +98,14 @@ class DesktopVaultCancellationTest {
         create.join()
         val session = (vault.state.value as DesktopVaultState.Unlocked).session
 
-        val locking = launch { vault.lock() }
+        val closing = launch { vault.close() }
         runCurrent()
-        locking.cancel()
+        closing.cancel()
         runCurrent()
         parking.flush()
         runCurrent()
 
-        assertEquals(null, session.secretFieldsKey(), "the session survived a cancelled lock")
+        assertEquals(null, session.secretFieldsKey(), "the session survived a cancelled close")
         assertEquals(null, session.kitDatabaseKey("bitcoin", "account-1"))
     }
 

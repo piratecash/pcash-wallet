@@ -4,8 +4,6 @@ import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.os.Parcelable
 import android.os.SystemClock
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -48,12 +46,6 @@ internal inline fun <reified T> getKoinInstance(): T {
         val value: T by inject()
     }.value
 }
-
-@Composable
-fun Modifier.blockClicksBehind() = this.clickable(
-    indication = null,
-    interactionSource = remember { MutableInteractionSource() }
-) { /* Do nothing */ }
 
 @Composable
 fun Modifier.oneLineHeight(textStyle: TextStyle) =

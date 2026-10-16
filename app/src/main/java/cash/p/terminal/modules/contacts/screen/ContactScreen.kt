@@ -4,7 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -30,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalView
@@ -45,21 +43,16 @@ import cash.p.terminal.modules.contacts.viewmodel.ContactViewModel
 import cash.p.terminal.modules.contacts.viewmodel.ContactViewModel.AddressViewItem
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
-import cash.p.terminal.ui_compose.components.ButtonPrimaryRed
-import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
-import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui.compose.components.FormsInput
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.RowUniversal
-import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_brand
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.body_lucian
 import cash.p.terminal.ui_compose.components.subhead2_grey
-import cash.p.terminal.ui_compose.BottomSheetHeader
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.chartview.rememberAsyncImagePainterWithFallback
 import cash.p.terminal.ui_compose.components.SnackbarDuration
@@ -217,70 +210,6 @@ fun ContactScreen(
                 VSpacer(32.dp)
             }
         }
-    }
-}
-
-@Composable
-fun ConfirmationBottomSheet(
-    title: String,
-    text: String,
-    iconPainter: Painter,
-    iconTint: ColorFilter,
-    confirmText: String,
-    cautionType: Caution.Type,
-    cancelText: String,
-    onConfirm: () -> Unit,
-    onClose: () -> Unit
-) {
-    BottomSheetHeader(
-        iconPainter = iconPainter,
-        iconTint = iconTint,
-        title = title,
-        onCloseClick = onClose
-    ) {
-        Spacer(modifier = Modifier.height(12.dp))
-        TextImportantWarning(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            text = text
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        when (cautionType) {
-            Caution.Type.Error -> {
-                ButtonPrimaryRed(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
-                    title = confirmText,
-                    onClick = {
-                        onConfirm()
-                    }
-                )
-            }
-
-            Caution.Type.Warning -> {
-                ButtonPrimaryYellow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
-                    title = confirmText,
-                    onClick = {
-                        onConfirm()
-                    }
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-        ButtonPrimaryTransparent(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp),
-            title = cancelText,
-            onClick = onClose
-        )
-        Spacer(Modifier.height(32.dp))
     }
 }
 

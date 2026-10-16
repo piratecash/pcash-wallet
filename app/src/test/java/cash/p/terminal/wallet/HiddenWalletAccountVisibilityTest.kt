@@ -4,6 +4,7 @@ import android.content.Context
 import cash.p.terminal.core.storage.AccountsDao
 import cash.p.terminal.core.storage.AccountsStorage
 import cash.p.terminal.core.storage.AppDatabase
+import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import cash.p.terminal.core.storage.UserDeletedWalletDao
 import cash.p.terminal.entities.ActiveAccount
 import cash.p.terminal.wallet.entities.AccountRecord
@@ -21,7 +22,7 @@ import org.junit.Test
 class HiddenWalletAccountVisibilityTest {
 
     private val accountsDao = InMemoryAccountsDao()
-    private val storage = AccountsStorage(FakeAppDatabase(accountsDao))
+    private val storage = AccountsStorage(StaticAppDatabaseProvider(FakeAppDatabase(accountsDao)))
     private val getMoneroWalletFilesNameUseCase = mockk<IGetMoneroWalletFilesNameUseCase>()
     private val removeMoneroWalletFilesUseCase: RemoveMoneroWalletFilesUseCase =
         RemoveMoneroWalletFilesUseCase(

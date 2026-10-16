@@ -104,7 +104,7 @@
     <string name="CreateWallet_N_Words">%s слов</string>
     <string name="create_wallet_n_words_monero">%s слов (только Monero)</string>
     <string name="CreateWallet_Error_EmptyPassphrase">Поле для кодовой фразы не может быть пустым</string>
-    <string name="CreateWallet_Error_PassphraseForbiddenSymbols">Пожалуйста, используйте только поддерживаемые символы: <![CDATA[A-Z a-z 0-9 \' " ` & / ? ! : ; . , ~ * $ = + - [ ](){} <> \ _ # @ | % ]]></string>
+    <string name="CreateWallet_Error_PassphraseForbiddenSymbols">Пожалуйста, используйте только поддерживаемые символы: <![CDATA[A-Z a-z 0-9 \u0027 " ` & / ? ! : ; . , ~ * $ = + - [ ](){} <> \ _ # @ | % ]]></string>
     <string name="CreateWallet_Error_InvalidConfirmation">Подтвержденная кодовая фраза не совпадает</string>
     <string name="create_wallet_error_failed">Не удалось создать кошелек. Попробуйте снова или перезапустите приложение.</string>
     <string name="CreateWallet_PassphraseDescription">Кодовая фраза добавляет дополнительный слой безопасности для кошельков. Чтобы восстановить такой кошелек требуется как мнемоник, так и кодовая фраза.\n\nКодовая фраза также облегчает пользователям возможность иметь множество мульти-монетных кошельков, используя одну фразу восстановления, но другой пароль.</string>
@@ -869,7 +869,7 @@
     <string name="StatusInfo_PendingDescription">Транзакция еще не подтверждена в блокчейне. Транзакции, отправленные с рекомендованной или более высокой комиссией, обычно обрабатываются в течение  минут. Транзакции, отправленные с низкой комиссией, могут обрабатываться в течение нескольких часов или дней и даже отклоняться. Учтите, что обновление статуса каждой транзакции, отображаемого в интерфейсе кошелька P.CASH, обычно происходит с небольшой задержкой. </string>
     <string name="StatusInfo_ProcessingDescription">Транзакция уже включена в блокчейн, но пока не обработана. На данном этапе транзакции считаются завершенными для небольших платежей. Что касается завершения обработки более крупных транзакций, стоит дождаться смены статуса.</string>
     <string name="StatusInfo_ConfirmedDescription">Транзакция завершена и считается постоянной и необратимой.</string>
-    <string name="StatusInfo_FailedDescription">Транзакция не была обработана и передача средств не произошла. В зависимости от причины неудачи, некоторые неудачные транзакции могут использовать комиссию за транзакцию. Транзакции, которые были заменены или отменены другой транзакцией, не потребляют транзакционные сборы и также будут показаны как \"не удалось\". Приложение P.CASH не может показать причину неудачных транзакций, но пользователи могут посмотреть это в etherscan.io.</string>
+    <string name="StatusInfo_FailedDescription">Транзакция не была обработана и передача средств не произошла. В зависимости от причины неудачи, некоторые неудачные транзакции могут использовать комиссию за транзакцию. Транзакции, которые были заменены или отменены другой транзакцией, не потребляют транзакционные сборы и также будут показаны как \u0022не удалось\u0022. Приложение P.CASH не может показать причину неудачных транзакций, но пользователи могут посмотреть это в etherscan.io.</string>
     <!-- Transaction Info Options -->
     <string name="TransactionInfoOptions_SpeedUp_Title">Ускорение</string>
     <string name="TransactionInfoOptions_SpeedUp_Button">Отправить повторно</string>
@@ -939,7 +939,7 @@
     <string name="Settings_PersonalSupport_EnterTelegramAccountDescription">Введите имя вашей учетной записи Telegram, чтобы начать чат с нашей командой. Мы свяжемся с вами и начнем работать над вашей проблемой, как только увидим ее.</string>
     <string name="Settings_PersonalSupport_YouAlreadyRequestedSupportDescription">Вы уже запросили приватный чат, найдите его в Telegram</string>
     <string name="Settings_PersonalSupport_Account">Аккаунт</string>
-    <string name="Settings_PersonalSupport_UsernameHint">\@username</string>
+    <string name="Settings_PersonalSupport_UsernameHint">\u0040username</string>
     <string name="Settings_PersonalSupport_Requested">Запрошено</string>
     <string name="Settings_PersonalSupport_Request">Запрос</string>
     <string name="Settings_PersonalSupport_NewRequest">Новый запрос</string>
@@ -1777,7 +1777,7 @@
     <string name="alert_keys_invalidated_title">Ошибка Android Keystore</string>
     <string name="alert_keys_invalidated_description">Ключи шифрования кошелька были аннулированы системой безопасности Android. Это может произойти при изменении настроек отпечатка пальца или блокировки экрана.\n\nДля восстановления доступа повторно импортируйте кошелек, используя вашу резервную фразу.\n\nЕсли это происходит часто, попробуйте отключить Google Smart Lock в настройках устройства и перезагрузить телефон.</string>
     <string name="Alert_TitleWarning">Внимание</string>
-    <string name="Alert_CustomKeyboardIsUsed">Кажется, ваше устройство использует клавиатуру, не являющуюся по умолчанию. P.CASH рекомендует выбрать на вашем устройстве клавиатуру по умолчанию, поскольку сторонние клавиатуры потенциально могут собирать и раскрывать информацию о пользователях. \n\nНажмите кнопку \'Пропустить\', если вы хотите продолжать использовать предпочитаемую вами клавиатуру.</string>
+    <string name="Alert_CustomKeyboardIsUsed">Кажется, ваше устройство использует клавиатуру, не являющуюся по умолчанию. P.CASH рекомендует выбрать на вашем устройстве клавиатуру по умолчанию, поскольку сторонние клавиатуры потенциально могут собирать и раскрывать информацию о пользователях. \n\nНажмите кнопку \u0027Пропустить\u0027, если вы хотите продолжать использовать предпочитаемую вами клавиатуру.</string>
     <string name="Alert_DeviceIsRootedWarning">Команда P.CASH рекомендует запускать приложение только на нерутированных телефонах (без джейлбрейка).\n\nОбратите внимание, что при использовании рутированного устройства приложение больше не будет защищать вашу криптовалюту от вредоносного ПО.</string>
     <!--OS Pin-->
     <string name="OSPin_Confirm_Title">PIN-код телефона</string>
@@ -1787,8 +1787,8 @@
     <string name="Unlock_Title">Разблокировать</string>
     <string name="Unlock_Passcode">Код доступа</string>
     <string name="Unlock_EnterPasscode">Введите код доступа</string>
-    <string name="Unlock_EnterPasscode_Transactions_Hide">Введите пароль для режима \"Автоскрытие транзакций\"</string>
-    <string name="Unlock_EnterPasscode_Transfer">Введите пароль, чтобы отключить \"Пароль для перевода\"</string>
+    <string name="Unlock_EnterPasscode_Transactions_Hide">Введите пароль для режима \u0022Автоскрытие транзакций\u0022</string>
+    <string name="Unlock_EnterPasscode_Transfer">Введите пароль, чтобы отключить \u0022Пароль для перевода\u0022</string>
     <string name="Unlock_BiometricScanner">Биометрический сканер</string>
     <string name="Unlock_BiometricScannerDisabled_Description">Введите код доступа или повторите попытку позже</string>
     <string name="Unlock_BiometricScannerDisabled_Info">Биометрическая аутентификация отключена</string>
@@ -1798,7 +1798,7 @@
     <!--Set Pin-->
     <string name="PinSet_Title">Установить код доступа</string>
     <string name="PinSet_Info">Код доступа будет использоваться для разблокировки вашего кошелька</string>
-    <string name="PinSet_Transactions_Hide">Установить пароль для режима \"Автоскрытие транзакций\"</string>
+    <string name="PinSet_Transactions_Hide">Установить пароль для режима \u0022Автоскрытие транзакций\u0022</string>
     <string name="PinSet_ConfirmInfo">Подтвердить</string>
     <string name="PinSet_ErrorPinsDontMatch">Код не совпадает. Попробуйте еще раз.</string>
     <string name="PinSet_ErrorFailedToSavePin">При сохранении вашего кода произошла ошибка. Повторите попытку.</string>
