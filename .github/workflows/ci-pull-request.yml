@@ -14,11 +14,15 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: gradle
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          # Write from every branch: repeated pushes to a feature branch reuse its own outputs.
+          cache-read-only: false
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Run vault tests
-        run: ./gradlew :core:vault:test --no-daemon
+        run: ./gradlew :core:vault:test --no-daemon --build-cache
       - name: Restore Firebase DEV signing key
         env:
           FIREBASE_DEV_KEYSTORE_BASE64: ${{ secrets.FIREBASE_DEV_KEYSTORE_BASE64 }}
@@ -27,9 +31,9 @@ jobs:
             | base64 --decode \
             > "$RUNNER_TEMP/firebase-dev.jks"
       - name: Run Unit tests
-        run: ./gradlew :app:testDebugUnitTest :core:core:testDebugUnitTest :core:wallet:testAndroidHostTest :core:wallet:desktopTest :core:market:testAndroidHostTest :core:market:desktopTest :core:navigation:testAndroidHostTest :core:navigation:desktopTest :components:chartview:desktopTest :feature-premium:testAndroidHostTest :feature-premium:desktopTest :feature-logging:testDebugUnitTest :feature-trezor:testDebugUnitTest :feature-tangem:testDebugUnitTest :feature-market:testAndroidHostTest :feature-market:desktopTest :shared:desktopTest :core:common:testAndroidHostTest :core:common:desktopTest :core:network:testAndroidHostTest :core:network:desktopTest :core:qr-multipart:testAndroidHostTest :core:ui-compose:desktopTest :feature-mini-app:testDebugUnitTest :feature-stacking:testDebugUnitTest :config:lint:checks:test :feature-wallet:testAndroidHostTest :feature-wallet:desktopTest :core:storage:desktopTest --no-daemon
+        run: ./gradlew :app:testDebugUnitTest :core:core:testDebugUnitTest :core:wallet:testAndroidHostTest :core:wallet:desktopTest :core:market:testAndroidHostTest :core:market:desktopTest :core:navigation:testAndroidHostTest :core:navigation:desktopTest :components:chartview:desktopTest :feature-premium:testAndroidHostTest :feature-premium:desktopTest :feature-logging:testDebugUnitTest :feature-trezor:testDebugUnitTest :feature-tangem:testDebugUnitTest :feature-market:testAndroidHostTest :feature-market:desktopTest :shared:desktopTest :core:common:testAndroidHostTest :core:common:desktopTest :core:network:testAndroidHostTest :core:network:desktopTest :core:qr-multipart:testAndroidHostTest :core:ui-compose:desktopTest :feature-mini-app:testDebugUnitTest :feature-stacking:testDebugUnitTest :config:lint:checks:test :feature-wallet:testAndroidHostTest :feature-wallet:desktopTest :core:storage:desktopTest --no-daemon --build-cache
       - name: Build QA
-        run: ./gradlew :app:assembleQa --stacktrace --no-daemon
+        run: ./gradlew :app:assembleQa --stacktrace --no-daemon --build-cache
         env: &qa-build-env
           BUILD_NUMBER: ${{ github.run_number }}
           FIREBASE_DEV_KEYSTORE_PATH: ${{ runner.temp }}/firebase-dev.jks
@@ -37,7 +41,14 @@ jobs:
           FIREBASE_DEV_KEY_ALIAS: ${{ secrets.FIREBASE_DEV_KEY_ALIAS }}
           FIREBASE_DEV_KEY_PASSWORD: ${{ secrets.FIREBASE_DEV_KEY_PASSWORD }}
       - name: Upload Crashlytics native symbols
-        run: ./gradlew :app:uploadCrashlyticsSymbolFileQa --stacktrace --no-daemon
+        # Firebase answers transient 503s; uploading the same symbol IDs again is harmless.
+        run: |
+          for attempt in 1 2 3; do
+            ./gradlew :app:uploadCrashlyticsSymbolFileQa --stacktrace --no-daemon --build-cache && exit 0
+            echo "Crashlytics upload attempt $attempt failed"
+            [ "$attempt" -lt 3 ] && sleep 30
+          done
+          exit 1
         env: *qa-build-env
       - name: Verify Firebase DEV signing certificate
         run: |
