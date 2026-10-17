@@ -31,6 +31,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -53,6 +54,7 @@ class BackendSwapProviderTest {
     private val resolver = mockk<BackendSwapAssetResolver>()
     private val signer = mockk<BackendSwapSigner>()
     private val providerSupport = mockk<OffChainSwapProviderSupport>(relaxed = true)
+    private val uncaughtErrors = mutableListOf<Throwable>()
 
     private val provider = BackendSwapProvider(
         info = BackendSwapProviderInfo(
@@ -69,7 +71,10 @@ class BackendSwapProviderTest {
         assetResolver = resolver,
         signer = signer,
         providerSupport = providerSupport,
-        dispatcherProvider = TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)),
+        dispatcherProvider = TestDispatcherProvider(
+            dispatcher,
+            CoroutineScope(dispatcher + CoroutineExceptionHandler { _, error -> uncaughtErrors += error }),
+        ),
     )
 
     private val eth = yiFiTestToken(BlockchainType.Ethereum, TokenType.Native, "ETH")
@@ -297,6 +302,18 @@ class BackendSwapProviderTest {
                 ),
             )
         }
+    }
+
+    @Test
+    fun onTransactionCompleted_confirmFails_doesNotCrash() = runTest(dispatcher) {
+        coEvery { repository.confirm(any(), any(), any()) } throws
+            BackendSwapError(statusCode = 500, message = "Internal Server Error")
+        fetchFinalQuote()
+
+        provider.onTransactionCompleted(transaction(), sendResult(txHash = "hash"))
+
+        coVerify { repository.confirm(ORDER_ID, WALLET, any()) }
+        assertEquals(emptyList<Throwable>(), uncaughtErrors)
     }
 
     @Test

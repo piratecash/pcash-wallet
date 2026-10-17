@@ -2,6 +2,7 @@ package cash.p.terminal.modules.multiswap.providers.backendswap
 
 import android.content.SharedPreferences
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.network.backendswap.data.entity.BackendSwapError
 import cash.p.terminal.network.backendswap.data.repository.BackendSwapRepository
 import cash.p.terminal.network.backendswap.domain.entity.BackendSwapProviderInfo
 import io.mockk.coEvery
@@ -50,9 +51,14 @@ class BackendSwapProvidersRepositoryTest {
     }
 
     @Test
-    fun refresh_failure_keepsCachedList() = runTest(dispatcher) {
-        coEvery { backendSwapRepository.getProviders() } returns listOf(changelly) andThenThrows
-            IOException("offline")
+    fun refresh_failure_keepsCachedList() = assertRefreshFailureKeepsCachedList(IOException("offline"))
+
+    @Test
+    fun refresh_backendError_keepsCachedList() =
+        assertRefreshFailureKeepsCachedList(BackendSwapError(statusCode = 500, message = "Internal Server Error"))
+
+    private fun assertRefreshFailureKeepsCachedList(failure: Throwable) = runTest(dispatcher) {
+        coEvery { backendSwapRepository.getProviders() } returns listOf(changelly) andThenThrows failure
         val repository = createRepository()
         repository.refresh()
 
