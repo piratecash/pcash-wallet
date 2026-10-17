@@ -42,6 +42,7 @@ kotlin {
                 implementation(project(":core:navigation"))
                 implementation(project(":core:market"))
                 implementation(project(":core:wallet"))
+                implementation(project(":core:storage"))
                 implementation(project(":feature-market"))
                 implementation(libs.compose.multiplatform.runtime)
                 implementation(libs.compose.multiplatform.ui)
@@ -59,9 +60,13 @@ kotlin {
         }
         val desktopMain by getting {
             dependencies {
+                implementation(libs.compose.multiplatform.ui.tooling.preview)
+                implementation(project(":core:vault"))
                 implementation(libs.gson)
                 implementation(libs.rxjava)
                 implementation(libs.datastore.preferences.core)
+                implementation(libs.room.runtime)
+                implementation(libs.bitcoin.kit.sqlcipher.driver)
             }
         }
         commonTest {

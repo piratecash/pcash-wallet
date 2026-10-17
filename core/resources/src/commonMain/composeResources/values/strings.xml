@@ -2252,8 +2252,8 @@ Proceed only if you\'re sure.</string>
     <string name="Unlock_BiometricScanner">Biometrics Scanner</string>
     <string name="Unlock_BiometricScannerDisabled_Description">Enter passcode or try again later</string>
     <string name="Unlock_BiometricScannerDisabled_Info">Biometric auth. disabled</string>
-    <string name="Unlock_WalletDisabledUntil">Disabled until: %s</string>
-    <string name="Unlock_AttemptsLeft">Attempts left: %s</string>
+    <string name="Unlock_WalletDisabledUntil">Disabled until: %1$s</string>
+    <string name="Unlock_AttemptsLeft">Attempts left: %1$s</string>
     <string name="Unlock_Random">Random</string>
 
     <!--Set Pin-->
@@ -2746,4 +2746,34 @@ Proceed only if you\'re sure.</string>
     <string name="beam_wallet_state_closed">BEAM wallet closed</string>
     <string name="beam_wallet_operation_failed">BEAM wallet operation failed</string>
     <string name="beam_wallet_stop_failed">BEAM wallet stop failed</string>
+    <string name="desktop_already_running">P.CASH is already running</string>
+    <string name="desktop_create_password_title">Create a password</string>
+    <string name="desktop_create_password_description">The password protects the wallets kept on this computer. It is not stored anywhere and cannot be restored.</string>
+    <string name="desktop_password_repeat_hint">Repeat password</string>
+    <string name="desktop_password_mismatch">Passwords do not match</string>
+    <string name="desktop_password_requirement_length">At least 8 characters</string>
+    <string name="desktop_password_requirement_uppercase">An uppercase letter</string>
+    <string name="desktop_password_requirement_lowercase">A lowercase letter</string>
+    <string name="desktop_password_requirement_digit">A digit</string>
+    <string name="desktop_password_requirement_special">A special character</string>
+    <string name="desktop_password_caps_lock">Caps Lock is on</string>
+    <string name="desktop_password_switch_layout">Switch the keyboard layout: the password may only contain Latin characters</string>
+    <string name="desktop_create_password_warning">Without this password the data on this computer cannot be opened, and nobody can restore it. Keep a backup of every recovery phrase.</string>
+    <string name="desktop_create_password_failed">Could not save the password. Check the free disk space and the access rights</string>
+    <string name="desktop_unlock_title">Enter your password</string>
+    <string name="desktop_unlock_wrong_password">Wrong password</string>
+    <string name="desktop_unlock_data_unreadable">Could not open your data</string>
+    <string name="desktop_unlock_failed">Could not read the key file. Please try again</string>
+    <string name="desktop_unlock_forgot_password">Forgot password?</string>
+    <string name="desktop_forgot_password_title">Forgot password</string>
+    <string name="desktop_forgot_password_warning">The wallets, contacts, settings and history kept on this computer will be deleted. The funds on the blockchain are not affected: the wallets can only be restored from their recovery phrases.</string>
+    <string name="desktop_forgot_password_action">Delete data</string>
+    <string name="desktop_forgot_password_failed">Could not delete the data</string>
+    <string name="desktop_change_password_title">Change password</string>
+    <string name="desktop_change_password_current_hint">Current password</string>
+    <string name="desktop_change_password_new_hint">New password</string>
+    <string name="desktop_change_password_failed">Could not save the password. The current password still works</string>
+    <string name="desktop_change_password_corrupted">The key file is damaged: once the app is locked you will not be able to sign in. Save a backup of every recovery phrase.</string>
+    <string name="desktop_change_password_success">Password changed</string>
+    <string name="desktop_security_lock_now">Lock now</string>
 </resources>

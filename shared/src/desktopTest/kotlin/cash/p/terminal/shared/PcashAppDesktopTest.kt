@@ -59,7 +59,7 @@ class PcashAppDesktopTest {
                 TestWindowHost {
                     ComposeAppTheme(darkTheme = darkTheme) {
                         Box(Modifier.size(viewport.width.dp, viewport.height.dp)) {
-                            PcashApp("desktop")
+                            PcashTestApp()
                         }
                     }
                 }

@@ -1883,8 +1883,8 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="Unlock_BiometricScanner">Escáner biométrico</string>
     <string name="Unlock_BiometricScannerDisabled_Description">Introduzca el código de acceso o vuelva a intentarlo más tarde</string>
     <string name="Unlock_BiometricScannerDisabled_Info">Autenticación biométrica desactivada</string>
-    <string name="Unlock_WalletDisabledUntil">Inhabilitado hasta: %s</string>
-    <string name="Unlock_AttemptsLeft">Intentos restantes: %s</string>
+    <string name="Unlock_WalletDisabledUntil">Inhabilitado hasta: %1$s</string>
+    <string name="Unlock_AttemptsLeft">Intentos restantes: %1$s</string>
     <string name="Unlock_Random">Aleatorio</string>
     <!--Set Pin-->
     <string name="PinSet_Title">Establezca una contraseña</string>
@@ -2306,4 +2306,34 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="beam_wallet_state_closed">Monedero BEAM cerrado</string>
     <string name="beam_wallet_operation_failed">Error en la operación del monedero BEAM</string>
     <string name="beam_wallet_stop_failed">No se pudo detener el monedero BEAM</string>
+    <string name="desktop_already_running">P.CASH ya está en ejecución</string>
+    <string name="desktop_create_password_title">Crea una contraseña</string>
+    <string name="desktop_create_password_description">La contraseña protege los monederos guardados en este equipo. No se almacena en ningún lugar y no se puede recuperar.</string>
+    <string name="desktop_password_repeat_hint">Repite la contraseña</string>
+    <string name="desktop_password_mismatch">Las contraseñas no coinciden</string>
+    <string name="desktop_password_requirement_length">Al menos 8 caracteres</string>
+    <string name="desktop_password_requirement_uppercase">Una letra mayúscula</string>
+    <string name="desktop_password_requirement_lowercase">Una letra minúscula</string>
+    <string name="desktop_password_requirement_digit">Un número</string>
+    <string name="desktop_password_requirement_special">Un carácter especial</string>
+    <string name="desktop_password_caps_lock">Bloq Mayús está activado</string>
+    <string name="desktop_password_switch_layout">Cambia la distribución del teclado: la contraseña solo puede contener caracteres latinos</string>
+    <string name="desktop_create_password_warning">Sin esta contraseña no se pueden abrir los datos de este equipo y nadie podrá recuperarlos. Guarda una copia de seguridad de cada frase de recuperación.</string>
+    <string name="desktop_create_password_failed">No se pudo guardar la contraseña. Comprueba el espacio libre en disco y los permisos de acceso</string>
+    <string name="desktop_unlock_title">Introduce tu contraseña</string>
+    <string name="desktop_unlock_wrong_password">Contraseña incorrecta</string>
+    <string name="desktop_unlock_data_unreadable">No se pudieron abrir tus datos</string>
+    <string name="desktop_unlock_failed">No se pudo leer el archivo de claves. Inténtalo de nuevo</string>
+    <string name="desktop_unlock_forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="desktop_forgot_password_title">Olvidé mi contraseña</string>
+    <string name="desktop_forgot_password_warning">Se eliminarán los monederos, contactos, configuraciones e historial guardados en este equipo. Los fondos en la blockchain no se verán afectados: los monederos solo pueden restaurarse con sus frases de recuperación.</string>
+    <string name="desktop_forgot_password_action">Eliminar datos</string>
+    <string name="desktop_forgot_password_failed">No se pudieron eliminar los datos</string>
+    <string name="desktop_change_password_title">Cambiar contraseña</string>
+    <string name="desktop_change_password_current_hint">Contraseña actual</string>
+    <string name="desktop_change_password_new_hint">Nueva contraseña</string>
+    <string name="desktop_change_password_failed">No se pudo guardar la contraseña. La contraseña actual sigue funcionando</string>
+    <string name="desktop_change_password_corrupted">El archivo de claves está dañado: una vez que la aplicación se bloquee, no podrás iniciar sesión. Guarda una copia de seguridad de cada frase de recuperación.</string>
+    <string name="desktop_change_password_success">Contraseña cambiada</string>
+    <string name="desktop_security_lock_now">Bloquear ahora</string>
 </resources>

@@ -1,6 +1,5 @@
 package cash.p.terminal.wallet
 
-import io.reactivex.Flowable
 
 interface IAccountsStorage {
     val isAccountsEmpty: Boolean
@@ -14,7 +13,6 @@ interface IAccountsStorage {
     fun updateName(id: String, name: String)
     fun updateBackupFlags(id: String, isBackedUp: Boolean, isFileBackedUp: Boolean)
     fun delete(id: String)
-    fun getNonBackedUpCount(): Flowable<Int>
     fun clear()
     fun getDeletedAccountIds(): List<String>
     fun clearDeleted(accountIds: List<String>)

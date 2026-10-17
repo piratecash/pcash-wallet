@@ -1772,8 +1772,8 @@
     <string name="Unlock_BiometricScanner">Біометричний сканер</string>
     <string name="Unlock_BiometricScannerDisabled_Description">Введіть код доступу або повторіть спробу пізніше</string>
     <string name="Unlock_BiometricScannerDisabled_Info">Біометричну автентифікацію вимкнено</string>
-    <string name="Unlock_WalletDisabledUntil">Вимкнено до: %s</string>
-    <string name="Unlock_AttemptsLeft">Залишилося спроб: %s</string>
+    <string name="Unlock_WalletDisabledUntil">Вимкнено до: %1$s</string>
+    <string name="Unlock_AttemptsLeft">Залишилося спроб: %1$s</string>
     <string name="Unlock_Random">Випадковий</string>
     <!--Set Pin-->
     <string name="PinSet_Title">Встановити код доступу</string>
@@ -2459,4 +2459,34 @@
     <string name="beam_wallet_state_closed">Гаманець BEAM закрито</string>
     <string name="beam_wallet_operation_failed">Помилка операції гаманця BEAM</string>
     <string name="beam_wallet_stop_failed">Не вдалося зупинити гаманець BEAM</string>
+    <string name="desktop_already_running">P.CASH уже запущено</string>
+    <string name="desktop_create_password_title">Створіть пароль</string>
+    <string name="desktop_create_password_description">Пароль захищає гаманці, що зберігаються на цьому комп\'ютері. Він ніде не зберігається і не може бути відновлений.</string>
+    <string name="desktop_password_repeat_hint">Повторіть пароль</string>
+    <string name="desktop_password_mismatch">Паролі не збігаються</string>
+    <string name="desktop_password_requirement_length">Щонайменше 8 символів</string>
+    <string name="desktop_password_requirement_uppercase">Велика буква</string>
+    <string name="desktop_password_requirement_lowercase">Мала буква</string>
+    <string name="desktop_password_requirement_digit">Цифра</string>
+    <string name="desktop_password_requirement_special">Спеціальний символ</string>
+    <string name="desktop_password_caps_lock">Увімкнено Caps Lock</string>
+    <string name="desktop_password_switch_layout">Перемкніть розкладку клавіатури: пароль може містити лише латинські символи</string>
+    <string name="desktop_create_password_warning">Без цього пароля дані на цьому комп\'ютері неможливо відкрити, і відновити їх неможливо. Зберігайте резервну копію кожної фрази відновлення.</string>
+    <string name="desktop_create_password_failed">Не вдалося зберегти пароль. Перевірте вільне місце на диску та права доступу</string>
+    <string name="desktop_unlock_title">Введіть пароль</string>
+    <string name="desktop_unlock_wrong_password">Неправильний пароль</string>
+    <string name="desktop_unlock_data_unreadable">Не вдалося відкрити ваші дані</string>
+    <string name="desktop_unlock_failed">Не вдалося прочитати файл ключа. Спробуйте ще раз</string>
+    <string name="desktop_unlock_forgot_password">Забули пароль?</string>
+    <string name="desktop_forgot_password_title">Забули пароль</string>
+    <string name="desktop_forgot_password_warning">Гаманці, контакти, налаштування та історія, що зберігаються на цьому комп\'ютері, будуть видалені. Кошти в блокчейні не постраждають: гаманці можна відновити лише за фразами відновлення.</string>
+    <string name="desktop_forgot_password_action">Видалити дані</string>
+    <string name="desktop_forgot_password_failed">Не вдалося видалити дані</string>
+    <string name="desktop_change_password_title">Змінити пароль</string>
+    <string name="desktop_change_password_current_hint">Поточний пароль</string>
+    <string name="desktop_change_password_new_hint">Новий пароль</string>
+    <string name="desktop_change_password_failed">Не вдалося зберегти пароль. Поточний пароль досі діє</string>
+    <string name="desktop_change_password_corrupted">Файл ключа пошкоджено: після блокування застосунку ви не зможете увійти. Збережіть резервну копію кожної фрази відновлення.</string>
+    <string name="desktop_change_password_success">Пароль змінено</string>
+    <string name="desktop_security_lock_now">Заблокувати зараз</string>
 </resources>

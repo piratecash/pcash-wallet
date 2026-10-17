@@ -25,11 +25,11 @@ class ChartIndicatorManager(
 
     init {
         if (storage.count() == 0) {
-            insertDefaultData()
+            resetToDefaults()
         }
     }
 
-    private fun insertDefaultData() {
+    fun resetToDefaults() {
         storage.insertAll(ChartIndicatorSetting.defaults())
     }
 

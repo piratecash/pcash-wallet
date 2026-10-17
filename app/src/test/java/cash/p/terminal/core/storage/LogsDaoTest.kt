@@ -1,12 +1,12 @@
 package cash.p.terminal.core.storage
 
 import android.content.Context
-import android.database.Cursor
 import android.util.Log
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import cash.p.terminal.core.KoinLogsDao
 import io.horizontalsystems.core.logger.AppLog
+import io.horizontalsystems.core.storage.GroupedLogRow
 import io.horizontalsystems.core.storage.LogEntry
 import io.horizontalsystems.core.storage.LogsDao
 import kotlinx.coroutines.runBlocking
@@ -77,26 +77,39 @@ class LogsDaoTest {
     }
 
     @Test
-    fun streamGrouped_interleavedActionIds_groupsInFirstAppearanceOrder() {
+    fun getGroupedPage_interleavedActionIds_groupsInFirstAppearanceOrder() {
         listOf("a", "b", "a", "c", "b").forEachIndexed { index, actionId ->
             dao.insert(entry(index, actionId))
         }
 
         assertEquals(
             listOf("a" to 1, "a" to 3, "b" to 2, "b" to 5, "c" to 4),
-            dao.streamGrouped().readRows(),
+            dao.getGroupedPage(0, 0, Int.MAX_VALUE).rows(),
         )
     }
 
     @Test
-    fun streamGroupedByTag_actionIdSubstring_returnsOnlyMatchingGroups() {
+    fun getGroupedPage_keysetAfterFirstGroup_resumesWithoutRepeatingRows() {
+        listOf("a", "b", "a", "c", "b").forEachIndexed { index, actionId ->
+            dao.insert(entry(index, actionId))
+        }
+        val firstPage = dao.getGroupedPage(0, 0, 2)
+
+        val secondPage = dao.getGroupedPage(firstPage.last().firstId, firstPage.last().id, 2)
+
+        assertEquals(listOf("a" to 1, "a" to 3), firstPage.rows())
+        assertEquals(listOf("b" to 2, "b" to 5), secondPage.rows())
+    }
+
+    @Test
+    fun getGroupedPageByTag_actionIdSubstring_returnsOnlyMatchingGroups() {
         listOf("Zcash-sync", "Bitcoin-sync", "Zcash-send").forEachIndexed { index, actionId ->
             dao.insert(entry(index, actionId))
         }
 
         assertEquals(
             listOf("Zcash-sync" to 1, "Zcash-send" to 3),
-            dao.streamGroupedByTag("Zcash").readRows(),
+            dao.getGroupedPageByTag("Zcash", 0, 0, Int.MAX_VALUE).rows(),
         )
     }
 
@@ -146,15 +159,8 @@ class LogsDaoTest {
     private fun storedMessages() =
         runBlocking { dao.getRecent(Int.MAX_VALUE) }.reversed().map { it.message }
 
-    private fun Cursor.readRows(): List<Pair<String, Int>> = use { cursor ->
-        val actionIdIndex = cursor.getColumnIndexOrThrow("actionId")
-        val idIndex = cursor.getColumnIndexOrThrow("id")
-        buildList {
-            while (cursor.moveToNext()) {
-                add(cursor.getString(actionIdIndex) to cursor.getInt(idIndex))
-            }
-        }
-    }
+    private fun List<GroupedLogRow>.rows(): List<Pair<String, Int>> =
+        map { it.actionId to it.id }
 
     private fun groupName(index: Int) = "action-%05d".format(index)
 

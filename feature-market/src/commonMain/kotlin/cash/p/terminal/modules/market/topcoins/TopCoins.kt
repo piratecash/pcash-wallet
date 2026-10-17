@@ -5,6 +5,7 @@ import cash.p.terminal.resources.ic_down_arrow_20
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -71,9 +72,10 @@ fun TopCoins(
                 ViewState.Success -> {
                     val listState = rememberLazyListState()
 
-                    LaunchedEffect(uiState.period, uiState.topMarket, uiState.sortingField) {
-                        listState.scrollToItem(0)
-                    }
+                    ScrollToTopOnFilterChange(
+                        filter = "${uiState.sortingField}|${uiState.topMarket}|${uiState.period}",
+                        listState = listState,
+                    )
 
                     CoinList(
                         listState = listState,
@@ -161,6 +163,18 @@ fun TopCoins(
                 openPeriodSelector = false
             }
         )
+    }
+}
+
+/** Only a filter the user changed scrolls the list; a recreated screen keeps its position. */
+@Composable
+internal fun ScrollToTopOnFilterChange(filter: String, listState: LazyListState) {
+    var appliedFilter by rememberSaveable { mutableStateOf(filter) }
+    LaunchedEffect(filter) {
+        if (filter != appliedFilter) {
+            appliedFilter = filter
+            listState.scrollToItem(0)
+        }
     }
 }
 

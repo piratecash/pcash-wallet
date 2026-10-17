@@ -1889,8 +1889,8 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="Unlock_BiometricScanner">Scanner biométrique</string>
     <string name="Unlock_BiometricScannerDisabled_Description">Entrez le code d\'accès ou réessayez plus tard</string>
     <string name="Unlock_BiometricScannerDisabled_Info">Autorisation biométrique désactivée</string>
-    <string name="Unlock_WalletDisabledUntil">Désactivé jusqu\'à: %s</string>
-    <string name="Unlock_AttemptsLeft">Tentatives restantes : %s</string>
+    <string name="Unlock_WalletDisabledUntil">Désactivé jusqu\'à: %1$s</string>
+    <string name="Unlock_AttemptsLeft">Tentatives restantes : %1$s</string>
     <string name="Unlock_Random">Aléatoire</string>
     <!--Set Pin-->
     <string name="PinSet_Title">Définir le code d\'accès</string>
@@ -2312,4 +2312,34 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="beam_wallet_state_closed">Portefeuille BEAM fermé</string>
     <string name="beam_wallet_operation_failed">Échec de l’opération du portefeuille BEAM</string>
     <string name="beam_wallet_stop_failed">Échec de l’arrêt du portefeuille BEAM</string>
+    <string name="desktop_already_running">P.CASH est déjà en cours d\'exécution</string>
+    <string name="desktop_create_password_title">Créez un mot de passe</string>
+    <string name="desktop_create_password_description">Le mot de passe protège les portefeuilles conservés sur cet ordinateur. Il n\'est stocké nulle part et ne peut pas être récupéré.</string>
+    <string name="desktop_password_repeat_hint">Répétez le mot de passe</string>
+    <string name="desktop_password_mismatch">Les mots de passe ne correspondent pas</string>
+    <string name="desktop_password_requirement_length">Au moins 8 caractères</string>
+    <string name="desktop_password_requirement_uppercase">Une lettre majuscule</string>
+    <string name="desktop_password_requirement_lowercase">Une lettre minuscule</string>
+    <string name="desktop_password_requirement_digit">Un chiffre</string>
+    <string name="desktop_password_requirement_special">Un caractère spécial</string>
+    <string name="desktop_password_caps_lock">Le verrouillage majuscule est activé</string>
+    <string name="desktop_password_switch_layout">Changez la disposition du clavier : le mot de passe ne peut contenir que des caractères latins</string>
+    <string name="desktop_create_password_warning">Sans ce mot de passe, les données de cet ordinateur ne peuvent pas être ouvertes, et personne ne peut les récupérer. Conservez une sauvegarde de chaque phrase de récupération.</string>
+    <string name="desktop_create_password_failed">Impossible d\'enregistrer le mot de passe. Vérifiez l\'espace disque disponible et les droits d\'accès</string>
+    <string name="desktop_unlock_title">Saisissez votre mot de passe</string>
+    <string name="desktop_unlock_wrong_password">Mot de passe incorrect</string>
+    <string name="desktop_unlock_data_unreadable">Impossible d\'ouvrir vos données</string>
+    <string name="desktop_unlock_failed">Impossible de lire le fichier de clé. Veuillez réessayer</string>
+    <string name="desktop_unlock_forgot_password">Mot de passe oublié ?</string>
+    <string name="desktop_forgot_password_title">Mot de passe oublié</string>
+    <string name="desktop_forgot_password_warning">Les portefeuilles, contacts, paramètres et l\'historique conservés sur cet ordinateur seront supprimés. Les fonds sur la blockchain ne sont pas affectés : les portefeuilles ne peuvent être restaurés qu\'à partir de leurs phrases de récupération.</string>
+    <string name="desktop_forgot_password_action">Supprimer les données</string>
+    <string name="desktop_forgot_password_failed">Impossible de supprimer les données</string>
+    <string name="desktop_change_password_title">Changer le mot de passe</string>
+    <string name="desktop_change_password_current_hint">Mot de passe actuel</string>
+    <string name="desktop_change_password_new_hint">Nouveau mot de passe</string>
+    <string name="desktop_change_password_failed">Impossible d\'enregistrer le mot de passe. Le mot de passe actuel fonctionne toujours</string>
+    <string name="desktop_change_password_corrupted">Le fichier de clé est endommagé : une fois l\'application verrouillée, vous ne pourrez plus vous connecter. Enregistrez une sauvegarde de chaque phrase de récupération.</string>
+    <string name="desktop_change_password_success">Mot de passe modifié</string>
+    <string name="desktop_security_lock_now">Verrouiller maintenant</string>
 </resources>

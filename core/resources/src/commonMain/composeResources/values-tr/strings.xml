@@ -1891,8 +1891,8 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="Unlock_BiometricScanner">Biyometri Tarayıcı</string>
     <string name="Unlock_BiometricScannerDisabled_Description">Parolayı girin veya daha sonra tekrar deneyin</string>
     <string name="Unlock_BiometricScannerDisabled_Info">Biyometrik kimlik. etkisizleştirildi</string>
-    <string name="Unlock_WalletDisabledUntil">Engellendi: %s</string>
-    <string name="Unlock_AttemptsLeft">%s deneme kaldı</string>
+    <string name="Unlock_WalletDisabledUntil">Engellendi: %1$s</string>
+    <string name="Unlock_AttemptsLeft">%1$s deneme kaldı</string>
     <string name="Unlock_Random">Rastgele</string>
     <!--Set Pin-->
     <string name="PinSet_Title">Şifre belirle</string>
@@ -2314,4 +2314,34 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="beam_wallet_state_closed">BEAM cüzdanı kapatıldı</string>
     <string name="beam_wallet_operation_failed">BEAM cüzdanı işlemi başarısız oldu</string>
     <string name="beam_wallet_stop_failed">BEAM cüzdanı durdurulamadı</string>
+    <string name="desktop_already_running">P.CASH zaten çalışıyor</string>
+    <string name="desktop_create_password_title">Bir şifre oluşturun</string>
+    <string name="desktop_create_password_description">Şifre, bu bilgisayarda tutulan cüzdanları korur. Hiçbir yerde saklanmaz ve kurtarılamaz.</string>
+    <string name="desktop_password_repeat_hint">Şifreyi tekrar girin</string>
+    <string name="desktop_password_mismatch">Şifreler eşleşmiyor</string>
+    <string name="desktop_password_requirement_length">En az 8 karakter</string>
+    <string name="desktop_password_requirement_uppercase">Bir büyük harf</string>
+    <string name="desktop_password_requirement_lowercase">Bir küçük harf</string>
+    <string name="desktop_password_requirement_digit">Bir rakam</string>
+    <string name="desktop_password_requirement_special">Bir özel karakter</string>
+    <string name="desktop_password_caps_lock">Caps Lock açık</string>
+    <string name="desktop_password_switch_layout">Klavye düzenini değiştirin: şifre yalnızca Latin karakterler içerebilir</string>
+    <string name="desktop_create_password_warning">Bu şifre olmadan bu bilgisayardaki veriler açılamaz ve kimse onları kurtaramaz. Her kurtarma ifadesinin bir yedeğini saklayın.</string>
+    <string name="desktop_create_password_failed">Şifre kaydedilemedi. Boş disk alanını ve erişim izinlerini kontrol edin</string>
+    <string name="desktop_unlock_title">Şifrenizi girin</string>
+    <string name="desktop_unlock_wrong_password">Yanlış şifre</string>
+    <string name="desktop_unlock_data_unreadable">Verileriniz açılamadı</string>
+    <string name="desktop_unlock_failed">Anahtar dosyası okunamadı. Lütfen tekrar deneyin</string>
+    <string name="desktop_unlock_forgot_password">Şifrenizi mi unuttunuz?</string>
+    <string name="desktop_forgot_password_title">Şifremi unuttum</string>
+    <string name="desktop_forgot_password_warning">Bu bilgisayarda tutulan cüzdanlar, kişiler, ayarlar ve geçmiş silinecek. Blok zincirindeki fonlar etkilenmez: cüzdanlar yalnızca kurtarma ifadeleriyle geri yüklenebilir.</string>
+    <string name="desktop_forgot_password_action">Verileri sil</string>
+    <string name="desktop_forgot_password_failed">Veriler silinemedi</string>
+    <string name="desktop_change_password_title">Şifreyi değiştir</string>
+    <string name="desktop_change_password_current_hint">Mevcut şifre</string>
+    <string name="desktop_change_password_new_hint">Yeni şifre</string>
+    <string name="desktop_change_password_failed">Şifre kaydedilemedi. Mevcut şifre kullanılmaya devam ediyor</string>
+    <string name="desktop_change_password_corrupted">Anahtar dosyası zarar görmüş: uygulama kilitlendiğinde oturum açamayacaksınız. Her kurtarma ifadesinin bir yedeğini kaydedin.</string>
+    <string name="desktop_change_password_success">Şifre değiştirildi</string>
+    <string name="desktop_security_lock_now">Şimdi kilitle</string>
 </resources>

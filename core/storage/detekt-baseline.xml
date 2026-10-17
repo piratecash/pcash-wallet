@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>LongParameterList:SwapProviderTransactionsDao.kt$SwapProviderTransactionsDao$( address: String, tokenQueryId: String, coinUid: String, blockchainType: String, accountId: String, amount: Double, tolerance: Double, timestamp: Long, timeWindowMs: Long, dateFrom: Long, dateTo: Long )</ID>
+    <ID>LongParameterList:SwapProviderTransactionsDao.kt$SwapProviderTransactionsDao$( provider: String, tokenQueryId: String, coinUid: String, blockchainType: String, accountId: String, addressOut: String, expectedAmount: Double, tolerance: Double, dateFrom: Long, dateTo: Long, )</ID>
+    <ID>LongParameterList:SwapProviderTransactionsDao.kt$SwapProviderTransactionsDao$( tokenQueryId: String, coinUid: String, blockchainType: String, accountId: String, dateFrom: Long, dateTo: Long, amount: Double, tolerance: Double, limit: Int )</ID>
+    <ID>ThrowingExceptionsWithoutMessageOrCause:NftUid.kt$NftUid.Companion$IllegalStateException()</ID>
+    <ID>TooManyFunctions:AccountsDao.kt$AccountsDao</ID>
+    <ID>TooManyFunctions:AppDatabase.kt$AppDatabase : RoomDatabase</ID>
+    <ID>TooManyFunctions:DatabaseConverters.kt$DatabaseConverters</ID>
+    <ID>TooManyFunctions:SwapProviderTransactionsDao.kt$SwapProviderTransactionsDao</ID>
+    <ID>UseCheckOrError:NftUid.kt$NftUid.Companion$throw IllegalStateException("Could not parse NftUid: $uid")</ID>
+    <ID>UseCheckOrError:NftUid.kt$NftUid.Companion$throw IllegalStateException()</ID>
+  </CurrentIssues>
+</SmellBaseline>
