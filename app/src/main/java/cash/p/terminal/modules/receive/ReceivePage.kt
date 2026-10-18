@@ -16,11 +16,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.beam.BeamNetwork
 import cash.p.terminal.R
 import cash.p.terminal.core.titleResId
+import cash.p.terminal.resources.Balance_Receive_UsedAddresses
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_arrow_right
 import cash.p.terminal.modules.receive.ui.ReceiveAddressScreen
 import cash.p.terminal.modules.receive.ui.UsedAddressesParams
 import cash.p.terminal.modules.receive.viewmodels.ReceiveAddressViewModel
@@ -235,18 +240,18 @@ fun UsedAddressesRow(
             body_grey(
                 modifier = Modifier
                     .weight(1f),
-                text = stringResource(R.string.Balance_Receive_UsedAddresses),
+                text = stringResource(Res.string.Balance_Receive_UsedAddresses),
             )
         } else {
             body_disabled(
                 modifier = Modifier
                     .weight(1f),
-                text = stringResource(R.string.Balance_Receive_UsedAddresses),
+                text = stringResource(Res.string.Balance_Receive_UsedAddresses),
             )
         }
 
         Icon(
-            painter = painterResource(id = R.drawable.ic_arrow_right),
+            painter = painterResource(Res.drawable.ic_arrow_right),
             contentDescription = null,
             tint = if (enabled) ComposeAppTheme.colors.iconSecondary else ComposeAppTheme.colors.iconDisabled,
         )

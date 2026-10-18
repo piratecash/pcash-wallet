@@ -2,7 +2,36 @@ package cash.p.terminal.modules.receive.ui
 
 import android.content.Intent
 import cash.p.terminal.resources.Button_Done
+import cash.p.terminal.resources.Balance_Format
+import cash.p.terminal.resources.Balance_Network
+import cash.p.terminal.resources.Balance_Receive_Account
+import cash.p.terminal.resources.Balance_Receive_Amount
+import cash.p.terminal.resources.Balance_Receive_Memo
+import cash.p.terminal.resources.Balance_Receive_NotActive
+import cash.p.terminal.resources.Balance_Receive_SetAmount
+import cash.p.terminal.resources.Balance_Receive_WatchAddressAlert
+import cash.p.terminal.resources.Button_Cancel
+import cash.p.terminal.resources.Button_Confirm
+import cash.p.terminal.resources.Button_Copy
+import cash.p.terminal.resources.Button_SetAmount
+import cash.p.terminal.resources.Button_Share
+import cash.p.terminal.resources.Button_Understand
+import cash.p.terminal.resources.SyncError
+import cash.p.terminal.resources.Tron_AddressNotActive_Info
+import cash.p.terminal.resources.Tron_AddressNotActive_Title
+import cash.p.terminal.resources.ic_attention_24
+import cash.p.terminal.resources.ic_copy_20
+import cash.p.terminal.resources.ic_delete_20
+import cash.p.terminal.resources.ic_info_20
+import cash.p.terminal.resources.ic_info_24
+import cash.p.terminal.resources.receive_address_badge_new
+import cash.p.terminal.resources.receive_address_badge_unused
+import cash.p.terminal.resources.receive_address_badge_used
+import cash.p.terminal.resources.receive_address_qr_too_large
+import cash.p.terminal.resources.receive_create_new_address
 import cash.p.terminal.resources.Res
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import cash.p.terminal.ui_compose.components.plateOutline
 import cash.p.terminal.ui_compose.components.plateBackground
 import android.content.res.Configuration
@@ -53,8 +82,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
@@ -184,7 +211,7 @@ fun ReceiveAddressScreen(
                         is ViewState.Error, ViewState.Loading -> {
                             statusContent()
                             if (viewState is ViewState.Error) {
-                                ListErrorView(stringResource(R.string.SyncError), onErrorClick)
+                                ListErrorView(stringResource(Res.string.SyncError), onErrorClick)
                             } else {
                                 Loading()
                             }
@@ -230,8 +257,8 @@ fun ReceiveAddressScreen(
     }
     if (isTronInfoVisible) {
         TronInfoBottomSheet(
-            title = stringResource(R.string.Tron_AddressNotActive_Title),
-            text = stringResource(R.string.Tron_AddressNotActive_Info),
+            title = stringResource(Res.string.Tron_AddressNotActive_Title),
+            text = stringResource(Res.string.Tron_AddressNotActive_Info),
             hideBottomSheet = {
                 scope.launch { tronInfoSheetState.hide() }
                 isTronInfoVisible = false
@@ -241,8 +268,8 @@ fun ReceiveAddressScreen(
     }
     if (isTronAlertVisible) {
         TronAlertBottomSheet(
-            title = stringResource(R.string.Tron_AddressNotActive_Title),
-            text = stringResource(R.string.Tron_AddressNotActive_Info),
+            title = stringResource(Res.string.Tron_AddressNotActive_Title),
+            text = stringResource(Res.string.Tron_AddressNotActive_Info),
             hideBottomSheet = {
                 scope.launch { tronAlertSheetState.hide() }
                 isTronAlertVisible = false
@@ -286,7 +313,7 @@ private fun ColumnScope.ReceiveAddressCard(
         if (uiState.watchAccount) {
             TextImportantWarning(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                text = stringResource(R.string.Balance_Receive_WatchAddressAlert),
+                text = stringResource(Res.string.Balance_Receive_WatchAddressAlert),
             )
         }
 
@@ -360,7 +387,7 @@ private fun ColumnScope.ReceiveAddressCard(
                     subhead2_grey(
                         modifier = Modifier.padding(horizontal = 32.dp),
                         text = stringResource(
-                            R.string.Balance_Network
+                            Res.string.Balance_Network
                         ) + ": " + blockchainName + testNetBadge,
                         textAlign = TextAlign.Center,
                     )
@@ -370,7 +397,7 @@ private fun ColumnScope.ReceiveAddressCard(
                     subhead2_grey(
                         modifier = Modifier.padding(horizontal = 32.dp),
                         text = stringResource(
-                            R.string.Balance_Format
+                            Res.string.Balance_Format
                         ) + ": " + addressFormat + testNetBadge,
                         textAlign = TextAlign.Center,
                     )
@@ -431,7 +458,7 @@ private fun QrCodeUnavailableMessage(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 32.dp, vertical = 24.dp),
-        text = stringResource(R.string.receive_address_qr_too_large),
+        text = stringResource(Res.string.receive_address_qr_too_large),
         textAlign = TextAlign.Center,
     )
 }
@@ -509,7 +536,7 @@ private fun ActionButtonsRow(
             ReceiveActionButton(
                 modifier = itemModifier,
                 icon = R.drawable.ic_edit_24px,
-                buttonText = stringResource(R.string.Button_SetAmount),
+                buttonText = stringResource(Res.string.Button_SetAmount),
                 onClick = {
                     openAmountDialog.value = true
                 },
@@ -519,7 +546,7 @@ private fun ActionButtonsRow(
         ReceiveActionButton(
             modifier = itemModifier,
             icon = R.drawable.ic_copy_24px,
-            buttonText = stringResource(R.string.Button_Copy),
+            buttonText = stringResource(Res.string.Button_Copy),
             enabled = enabled,
             onClick = {
                 TextHelper.copyText(uri)
@@ -534,7 +561,7 @@ private fun ActionButtonsRow(
         ReceiveActionButton(
             modifier = itemModifier,
             icon = R.drawable.ic_share_24px,
-            buttonText = stringResource(R.string.Button_Share),
+            buttonText = stringResource(Res.string.Button_Share),
             enabled = enabled,
             onClick = {
                 context.startActivity(Intent().apply {
@@ -566,7 +593,7 @@ private fun AdditionalDataSection(
                         modifier = Modifier
                             .padding(start = 16.dp)
                             .weight(1f),
-                        text = stringResource(R.string.Balance_Receive_Amount),
+                        text = stringResource(Res.string.Balance_Receive_Amount),
                     )
                     subhead1_leah(
                         text = item.value,
@@ -574,7 +601,7 @@ private fun AdditionalDataSection(
                     )
                     ButtonSecondaryCircle(
                         modifier = Modifier.padding(end = 16.dp),
-                        icon = R.drawable.ic_delete_20,
+                        icon = Res.drawable.ic_delete_20,
                         onClick = onClearAmount
                     )
                 }
@@ -584,7 +611,7 @@ private fun AdditionalDataSection(
                         modifier = Modifier
                             .padding(start = 16.dp)
                             .weight(1f),
-                        text = stringResource(R.string.Balance_Receive_Memo),
+                        text = stringResource(Res.string.Balance_Receive_Memo),
                     )
                     subhead1_leah(
                         text = item.value,
@@ -594,7 +621,7 @@ private fun AdditionalDataSection(
                         modifier = Modifier
                             .height(28.dp)
                             .padding(end = 16.dp),
-                        icon = R.drawable.ic_copy_20,
+                        icon = Res.drawable.ic_copy_20,
                         onClick = {
                             TextHelper.copyText(item.value)
                             HudHelper.showSuccessMessage(localView, R.string.Hud_Text_Copied)
@@ -605,7 +632,7 @@ private fun AdditionalDataSection(
                 is ReceiveModule.AdditionalData.AccountNotActive -> {
                     subhead2_grey(
                         modifier = Modifier.padding(start = 16.dp),
-                        text = stringResource(R.string.Balance_Receive_Account),
+                        text = stringResource(Res.string.Balance_Receive_Account),
                     )
                     HSpacer(8.dp)
                     HsIconButton(
@@ -613,12 +640,12 @@ private fun AdditionalDataSection(
                         onClick = showAccountNotActiveWarningDialog
                     ) {
                         Image(
-                            painter = painterResource(R.drawable.ic_info_20),
+                            painter = painterResource(Res.drawable.ic_info_20),
                             contentDescription = null
                         )
                     }
                     Subhead1(
-                        text = stringResource(R.string.Balance_Receive_NotActive),
+                        text = stringResource(Res.string.Balance_Receive_NotActive),
                         color = ComposeAppTheme.colors.statusWarning,
                         textAlign = TextAlign.End,
                         modifier = Modifier
@@ -672,7 +699,7 @@ fun AmountInputDialog(
             modifier = Modifier
                 .padding(horizontal = 24.dp)
                 .fillMaxWidth(),
-            text = stringResource(R.string.Balance_Receive_SetAmount),
+            text = stringResource(Res.string.Balance_Receive_SetAmount),
         )
         VSpacer(16.dp)
 
@@ -714,13 +741,13 @@ fun AmountInputDialog(
             horizontalArrangement = Arrangement.End
         ) {
             HsTextButton(onClick = onDismissRequest) {
-                body_brand(stringResource(R.string.Button_Cancel).uppercase())
+                body_brand(stringResource(Res.string.Button_Cancel).uppercase())
             }
             HSpacer(8.dp)
             HsTextButton(
                 onClick = { onAmountConfirm.invoke(textState.value.text.toBigDecimalOrNull()) }
             ) {
-                body_brand(stringResource(R.string.Button_Confirm).uppercase())
+                body_brand(stringResource(Res.string.Button_Confirm).uppercase())
             }
         }
     }
@@ -739,7 +766,7 @@ private fun TronAlertBottomSheet(
         sheetState = bottomSheetState,
     ) {
         BottomSheetHeader(
-            iconPainter = painterResource(R.drawable.ic_attention_24),
+            iconPainter = painterResource(Res.drawable.ic_attention_24),
             iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
             title = title,
             onCloseClick = hideBottomSheet
@@ -754,7 +781,7 @@ private fun TronAlertBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp),
-                title = stringResource(R.string.Button_Understand),
+                title = stringResource(Res.string.Button_Understand),
                 onClick = hideBottomSheet
             )
             Spacer(Modifier.height(32.dp))
@@ -775,7 +802,7 @@ private fun TronInfoBottomSheet(
         sheetState = bottomSheetState,
     ) {
         BottomSheetHeader(
-            iconPainter = painterResource(R.drawable.ic_info_24),
+            iconPainter = painterResource(Res.drawable.ic_info_24),
             iconTint = ColorFilter.tint(ComposeAppTheme.colors.iconSecondary),
             title = title,
             onCloseClick = hideBottomSheet
@@ -837,9 +864,9 @@ private fun ReceiveAddressScreenPreview() {
             },
             addressBadge = {
                 val badgeText = when (addressBadge) {
-                    AddressBadge.NEW -> stringResource(R.string.receive_address_badge_new)
-                    AddressBadge.USED -> stringResource(R.string.receive_address_badge_used)
-                    AddressBadge.UNUSED -> stringResource(R.string.receive_address_badge_unused)
+                    AddressBadge.NEW -> stringResource(Res.string.receive_address_badge_new)
+                    AddressBadge.USED -> stringResource(Res.string.receive_address_badge_used)
+                    AddressBadge.UNUSED -> stringResource(Res.string.receive_address_badge_unused)
                 }
                 val badgeColor = when (addressBadge) {
                     AddressBadge.NEW -> ComposeAppTheme.colors.statusSuccess
@@ -861,7 +888,7 @@ private fun ReceiveAddressScreenPreview() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-                    title = stringResource(R.string.receive_create_new_address),
+                    title = stringResource(Res.string.receive_create_new_address),
                     onClick = {},
                 )
             },
