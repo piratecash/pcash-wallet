@@ -2306,6 +2306,7 @@
     <string name="beam_send_public_offline">Público offline</string>
     <string name="beam_send_max_privacy">Privacidade máxima</string>
     <string name="beam_address_type_regular">Regular (online)</string>
+    <string name="beam_address_type_sbbs">SBBS (online)</string>
     <string name="beam_recovery_required_title">Recuperação necessária</string>
     <string name="beam_recovery_required_description">A reposição automática está bloqueada para proteger os dados da sua carteira BEAM. Os dados foram preservados, mas o acesso à carteira antiga não pode ser garantido. O restauro com a sua frase de recuperação deve criar uma carteira separada.</string>
     <string name="beam_offline_context_unavailable">O contexto para assinatura offline não está disponível. Primeiro, sincronize esta carteira online.</string>

@@ -15,7 +15,6 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.core.app.ApplicationProvider
-import cash.p.beam.BeamAddressType
 import cash.p.terminal.R
 import cash.p.terminal.modules.receive.ReceiveModule
 import cash.p.terminal.modules.receive.viewmodels.ReceiveMoneroUiState
@@ -49,8 +48,8 @@ class ReceiveAddressCardLayoutTest {
     @Test
     fun beamPublicOffline_loadingReservesTheSettledQrHeight() {
         val (settled, loading) = panelHeights(
-            beamState(ViewState.Success, BeamAddressType.PublicOffline, SHORT_TOKEN),
-            beamState(ViewState.Loading, BeamAddressType.PublicOffline, ""),
+            beamState(ViewState.Success, ReceiveModule.BeamReceiveType.PublicOffline, SHORT_TOKEN),
+            beamState(ViewState.Loading, ReceiveModule.BeamReceiveType.PublicOffline, ""),
         )
 
         assertEquals(settled, loading)
@@ -61,8 +60,8 @@ class ReceiveAddressCardLayoutTest {
         // An Offline token is past QR byte-mode capacity, so this type settles to a message panel
         // of a different height than the other two. The loading state must reserve that one.
         val (settled, loading) = panelHeights(
-            beamState(ViewState.Success, BeamAddressType.Offline, LONG_TOKEN),
-            beamState(ViewState.Loading, BeamAddressType.Offline, ""),
+            beamState(ViewState.Success, ReceiveModule.BeamReceiveType.Offline, LONG_TOKEN),
+            beamState(ViewState.Loading, ReceiveModule.BeamReceiveType.Offline, ""),
         )
 
         assertEquals(settled, loading)
@@ -73,8 +72,8 @@ class ReceiveAddressCardLayoutTest {
         // Guards the premise of the two cases above: if both types settled to the same height, a
         // single hard-coded height would pass them and the reservation would prove nothing.
         val (offline, publicOffline) = panelHeights(
-            beamState(ViewState.Success, BeamAddressType.Offline, LONG_TOKEN),
-            beamState(ViewState.Success, BeamAddressType.PublicOffline, SHORT_TOKEN),
+            beamState(ViewState.Success, ReceiveModule.BeamReceiveType.Offline, LONG_TOKEN),
+            beamState(ViewState.Success, ReceiveModule.BeamReceiveType.PublicOffline, SHORT_TOKEN),
         )
 
         assert(offline != publicOffline) { "Both BEAM types settled to $offline px" }
@@ -84,9 +83,9 @@ class ReceiveAddressCardLayoutTest {
     fun beamTypeSwitch_keepsOneCardWithTheSpinnerInItsQrPanel() {
         // A cross-fade would recompose the outgoing card with the emptied uri, drawing a QR of
         // nothing beside the spinner for the length of the animation.
-        val state = beamScreen(beamState(ViewState.Success, BeamAddressType.PublicOffline, SHORT_TOKEN))
+        val state = beamScreen(beamState(ViewState.Success, ReceiveModule.BeamReceiveType.PublicOffline, SHORT_TOKEN))
 
-        midTransitionTo(state, beamState(ViewState.Loading, BeamAddressType.MaxPrivacy, ""))
+        midTransitionTo(state, beamState(ViewState.Loading, ReceiveModule.BeamReceiveType.MaxPrivacy, ""))
 
         qrPanels().assertCountEquals(1)
         qrPanels().assertAll(hasAnyDescendant(hasProgressBarRangeInfo(ProgressBarRangeInfo.Indeterminate)))
@@ -94,9 +93,12 @@ class ReceiveAddressCardLayoutTest {
 
     @Test
     fun beamRequestFailed_fadingCardDrawsNoQrOfTheClearedToken() {
-        val state = beamScreen(beamState(ViewState.Loading, BeamAddressType.MaxPrivacy, ""))
+        val state = beamScreen(beamState(ViewState.Loading, ReceiveModule.BeamReceiveType.MaxPrivacy, ""))
 
-        midTransitionTo(state, beamState(ViewState.Error(IllegalStateException()), BeamAddressType.MaxPrivacy, ""))
+        midTransitionTo(
+            state,
+            beamState(ViewState.Error(IllegalStateException()), ReceiveModule.BeamReceiveType.MaxPrivacy, ""),
+        )
 
         qrPanels().assertCountEquals(1)
         qrPanels().assertAll(hasAnyDescendant(hasProgressBarRangeInfo(ProgressBarRangeInfo.Indeterminate)))
@@ -137,7 +139,7 @@ class ReceiveAddressCardLayoutTest {
     fun nonBeamState_loading_keepsThePlainSpinner() {
         // R13: the card layout is BEAM-only. A chain without a receiver type has no target height
         // to reserve, so it must keep today's full-screen spinner and draw no QR panel at all.
-        setContent(beamState(ViewState.Loading, beamAddressType = null, uri = ""))
+        setContent(beamState(ViewState.Loading, beamReceiveType = null, uri = ""))
 
         composeTestRule.onNodeWithTag(QrPanelTestTag, useUnmergedTree = true).assertDoesNotExist()
     }
@@ -148,7 +150,7 @@ class ReceiveAddressCardLayoutTest {
         // every adaptersReadyObservable emission, for any chain. Scoping on "a card was already
         // shown" would have given this one the BEAM layout with no target type to reserve.
         val state = mutableStateOf<ReceiveModule.AbstractUiState>(
-            beamState(ViewState.Success, beamAddressType = null, uri = SHORT_TOKEN)
+            beamState(ViewState.Success, beamReceiveType = null, uri = SHORT_TOKEN)
         )
         composeTestRule.setContent {
             ComposeAppTheme {
@@ -165,7 +167,7 @@ class ReceiveAddressCardLayoutTest {
         composeTestRule.onNodeWithTag(QrPanelTestTag, useUnmergedTree = true).assertExists()
 
         composeTestRule.runOnUiThread {
-            state.value = beamState(ViewState.Loading, beamAddressType = null, uri = "")
+            state.value = beamState(ViewState.Loading, beamReceiveType = null, uri = "")
         }
         composeTestRule.waitForIdle()
 
@@ -179,7 +181,7 @@ class ReceiveAddressCardLayoutTest {
 
     @Test
     fun beamRegularState_rendersTheRegularAlertText() {
-        val state = beamState(ViewState.Success, BeamAddressType.PublicOffline, SHORT_TOKEN)
+        val state = beamState(ViewState.Success, ReceiveModule.BeamReceiveType.PublicOffline, SHORT_TOKEN)
             .copy(alertText = ReceiveModule.AlertText.Normal("keep the app open"))
         beamScreen(state)
 
@@ -188,7 +190,7 @@ class ReceiveAddressCardLayoutTest {
 
     @Test
     fun watchAccountState_rendersTheWatchAlertExactlyOnce() {
-        val state = beamState(ViewState.Success, beamAddressType = null, uri = SHORT_TOKEN)
+        val state = beamState(ViewState.Success, beamReceiveType = null, uri = SHORT_TOKEN)
             .copy(watchAccount = true, alertText = null)
         beamScreen(state)
 
@@ -197,7 +199,7 @@ class ReceiveAddressCardLayoutTest {
 
     @Test
     fun watchAccountState_withRegularAlert_rendersBothWarnings() {
-        val state = beamState(ViewState.Success, beamAddressType = null, uri = SHORT_TOKEN)
+        val state = beamState(ViewState.Success, beamReceiveType = null, uri = SHORT_TOKEN)
             .copy(watchAccount = true, alertText = ReceiveModule.AlertText.Normal("keep the app open"))
         beamScreen(state)
 
@@ -261,7 +263,7 @@ class ReceiveAddressCardLayoutTest {
 
     private fun beamState(
         viewState: ViewState,
-        beamAddressType: BeamAddressType?,
+        beamReceiveType: ReceiveModule.BeamReceiveType?,
         uri: String,
     ) = ReceiveModule.UiState(
         viewState = viewState,
@@ -271,7 +273,7 @@ class ReceiveAddressCardLayoutTest {
         usedChangeAddresses = emptyList(),
         isAddressHistorySupported = false,
         showTronAlert = false,
-        beamAddressType = beamAddressType,
+        beamReceiveType = beamReceiveType,
         uri = uri,
         blockchainName = "Beam",
         addressFormat = null,

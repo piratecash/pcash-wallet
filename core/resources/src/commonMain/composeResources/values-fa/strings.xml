@@ -2309,6 +2309,7 @@
     <string name="beam_send_public_offline">آفلاین عمومی</string>
     <string name="beam_send_max_privacy">حداکثر حریم خصوصی</string>
     <string name="beam_address_type_regular">معمولی (آنلاین)</string>
+    <string name="beam_address_type_sbbs">SBBS (آنلاین)</string>
     <string name="beam_recovery_required_title">بازیابی لازم است</string>
     <string name="beam_recovery_required_description">بازنشانی خودکار برای محافظت از داده‌های کیف پول BEAM شما مسدود شده است. داده‌ها حفظ شده‌اند، اما دسترسی به کیف پول قبلی تضمین نمی‌شود. بازیابی با عبارت بازیابی باید یک کیف پول جداگانه ایجاد کند.</string>
     <string name="beam_offline_context_unavailable">زمینهٔ امضای آفلاین در دسترس نیست. ابتدا این کیف پول را آنلاین همگام‌سازی کنید.</string>

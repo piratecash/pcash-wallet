@@ -174,7 +174,7 @@ fun ReceiveAddressScreen(
         ) {
             // BEAM keeps one card while a new token is generated, so the screen does not jump. Its
             // token is cleared meanwhile, so a card fading out must not draw a QR of it.
-            val beamType = (uiState as? UiState)?.beamAddressType
+            val beamType = (uiState as? UiState)?.beamReceiveType
             val beamPending = beamType != null && uiState.viewState != ViewState.Success
             val cardKey = uiState.viewState.takeUnless { beamType != null && it == ViewState.Loading }
                 ?: ViewState.Success
@@ -195,7 +195,7 @@ fun ReceiveAddressScreen(
                             // BEAM card sizes the panel for the type's token instead.
                             val qrEncodable = remember(uiState.uri, beamPending, beamType) {
                                 if (beamPending) {
-                                    beamType != BeamAddressType.Offline
+                                    beamType?.addressType != BeamAddressType.Offline
                                 } else {
                                     canEncodeAsPcashQrCode(uiState.uri)
                                 }
@@ -815,7 +815,7 @@ private fun ReceiveAddressScreenPreview() {
                 ),
                 isAddressHistorySupported = true,
                 showTronAlert = false,
-                beamAddressType = null,
+                beamReceiveType = null,
                 uri = "bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
                 blockchainName = "Bitcoin",
                 addressFormat = null,
@@ -865,6 +865,36 @@ private fun ReceiveAddressScreenPreview() {
                     onClick = {},
                 )
             },
+            setAmount = {},
+            onBackPress = {},
+            closeModule = {},
+        )
+    }
+}
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ReceiveAddressScreenBeamSbbsPreview() {
+    ComposeAppTheme {
+        ReceiveAddressScreen(
+            title = "Receive BEAM",
+            uiState = UiState(
+                viewState = ViewState.Success,
+                address = "e17cc06481d9ae88e1e0181efee407fa8c36a861b9df723845eddc8fb1ba552048",
+                mainNet = true,
+                usedAddresses = emptyList(),
+                usedChangeAddresses = emptyList(),
+                isAddressHistorySupported = false,
+                showTronAlert = false,
+                beamReceiveType = ReceiveModule.BeamReceiveType.Sbbs,
+                uri = "e17cc06481d9ae88e1e0181efee407fa8c36a861b9df723845eddc8fb1ba552048",
+                blockchainName = "Beam",
+                addressFormat = null,
+                watchAccount = false,
+                additionalItems = emptyList(),
+                amount = null,
+                alertText = ReceiveModule.AlertText.Normal("The receiver must be online to receive this payment"),
+            ),
             setAmount = {},
             onBackPress = {},
             closeModule = {},

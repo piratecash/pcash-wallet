@@ -2477,6 +2477,7 @@
     <string name="beam_send_public_offline">Публичный офлайн</string>
     <string name="beam_send_max_privacy">Максимальная приватность</string>
     <string name="beam_address_type_regular">Обычный (онлайн)</string>
+    <string name="beam_address_type_sbbs">SBBS (онлайн)</string>
     <string name="beam_recovery_required_title">Требуется восстановление</string>
     <string name="beam_recovery_required_description">Автоматический сброс заблокирован для защиты данных кошелька BEAM. Данные сохранены, но доступ к старому кошельку не гарантирован. Восстановление по секретной фразе должно создавать отдельный кошелёк.</string>
     <string name="beam_offline_context_unavailable">Контекст для офлайн-подписи недоступен. Сначала синхронизируйте кошелёк с сетью.</string>

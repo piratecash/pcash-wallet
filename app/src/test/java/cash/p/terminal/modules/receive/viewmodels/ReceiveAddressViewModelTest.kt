@@ -161,7 +161,7 @@ class ReceiveAddressViewModelTest {
 
             assertEquals(ViewState.Success, viewModel.uiState.viewState)
             assertEquals(FALLBACK_ADDRESS, viewModel.uiState.address)
-            assertEquals(null, viewModel.uiState.beamAddressType)
+            assertEquals(null, viewModel.uiState.beamReceiveType)
         }
 
     @Test
@@ -515,7 +515,7 @@ class ReceiveAddressViewModelTest {
         val viewModel = createViewModel(beamAddressProvider = provider)
         advanceUntilIdle()
 
-        assertEquals(BeamAddressType.Regular, viewModel.uiState.beamAddressType)
+        assertEquals(ReceiveModule.BeamReceiveType.Regular, viewModel.uiState.beamReceiveType)
         assertEquals(REGULAR_ADDRESS, viewModel.uiState.address)
         assertEquals(ViewState.Success, viewModel.uiState.viewState)
         val alertText = viewModel.uiState.alertText as? ReceiveModule.AlertText.Normal
@@ -543,7 +543,7 @@ class ReceiveAddressViewModelTest {
     }
 
     @Test
-    fun onBeamAddressTypeSelect_staleCompletion_keepsSelectedTypeAddress() = runTest(dispatcher) {
+    fun onBeamReceiveTypeSelect_staleCompletion_keepsSelectedTypeAddress() = runTest(dispatcher) {
         every { token.blockchainType } returns BlockchainType.Beam
         val regularResult = CompletableDeferred<BeamReceiveAddress>()
         val offlineResult = CompletableDeferred<BeamReceiveAddress>()
@@ -556,8 +556,8 @@ class ReceiveAddressViewModelTest {
         } coAnswers { offlineResult.await() }
         val viewModel = createViewModel(beamAddressProvider = provider)
 
-        viewModel.onBeamAddressTypeSelect(BeamAddressType.Offline)
-        assertEquals(BeamAddressType.Offline, viewModel.uiState.beamAddressType)
+        viewModel.onBeamReceiveTypeSelect(ReceiveModule.BeamReceiveType.Offline)
+        assertEquals(ReceiveModule.BeamReceiveType.Offline, viewModel.uiState.beamReceiveType)
         assertEquals("", viewModel.uiState.address)
         assertEquals(ViewState.Loading, viewModel.uiState.viewState)
 
@@ -566,13 +566,13 @@ class ReceiveAddressViewModelTest {
         regularResult.complete(beamAddress(REGULAR_ADDRESS, BeamAddressType.Regular))
         advanceUntilIdle()
 
-        assertEquals(BeamAddressType.Offline, viewModel.uiState.beamAddressType)
+        assertEquals(ReceiveModule.BeamReceiveType.Offline, viewModel.uiState.beamReceiveType)
         assertEquals(OFFLINE_ADDRESS, viewModel.uiState.address)
         assertEquals(OFFLINE_ADDRESS, viewModel.uiState.uri)
     }
 
     @Test
-    fun onBeamAddressTypeSelect_ownerChanged_retryKeepsSelectedType() = runTest(dispatcher) {
+    fun onBeamReceiveTypeSelect_ownerChanged_retryKeepsSelectedType() = runTest(dispatcher) {
         every { token.blockchainType } returns BlockchainType.Beam
         val provider = beamProvider()
         coEvery {
@@ -584,9 +584,9 @@ class ReceiveAddressViewModelTest {
         val viewModel = createViewModel(beamAddressProvider = provider)
         advanceUntilIdle()
 
-        viewModel.onBeamAddressTypeSelect(BeamAddressType.MaxPrivacy)
+        viewModel.onBeamReceiveTypeSelect(ReceiveModule.BeamReceiveType.MaxPrivacy)
         advanceUntilIdle()
-        assertEquals(BeamAddressType.MaxPrivacy, viewModel.uiState.beamAddressType)
+        assertEquals(ReceiveModule.BeamReceiveType.MaxPrivacy, viewModel.uiState.beamReceiveType)
         assertEquals("", viewModel.uiState.address)
         assertTrue(viewModel.uiState.viewState is ViewState.Error)
 
@@ -663,8 +663,8 @@ class ReceiveAddressViewModelTest {
         level = 0,
     )
 
-    private fun beamAddress(token: String, type: BeamAddressType) =
-        BeamReceiveAddress(BeamAddress(token, type, BeamNetwork.Mainnet)) { true }
+    private fun beamAddress(token: String, type: BeamAddressType, sbbsAddress: String? = null) =
+        BeamReceiveAddress(BeamAddress(token, type, BeamNetwork.Mainnet, sbbsAddress)) { true }
 
     private fun beamProvider() = mockk<BeamReceiveAddressProvider> {
         every { changes(any()) } returns flowOf(Unit)
@@ -678,6 +678,62 @@ class ReceiveAddressViewModelTest {
         const val REGULAR_ADDRESS = "regular-address"
         const val OFFLINE_ADDRESS = "offline-address"
         const val MAX_PRIVACY_ADDRESS = "max-privacy-address"
+        const val SBBS_ADDRESS = "e17cc06481d9ae88e1e0181efee407fa8c36a861b9df723845eddc8fb1ba552048"
+    }
+
+    @Test
+    fun onBeamReceiveTypeSelect_sbbs_showsSbbsAddressOfRegularAnswer() = runTest(dispatcher) {
+        every { token.blockchainType } returns BlockchainType.Beam
+        val provider = beamProvider()
+        coEvery {
+            provider.receiveAddress(account, BeamAddressType.Regular)
+        } returns beamAddress(REGULAR_ADDRESS, BeamAddressType.Regular, SBBS_ADDRESS)
+
+        val viewModel = createViewModel(beamAddressProvider = provider)
+        viewModel.onBeamReceiveTypeSelect(ReceiveModule.BeamReceiveType.Sbbs)
+        advanceUntilIdle()
+
+        coVerify { provider.receiveAddress(account, BeamAddressType.Regular) }
+        assertEquals(ReceiveModule.BeamReceiveType.Sbbs, viewModel.uiState.beamReceiveType)
+        assertEquals(SBBS_ADDRESS, viewModel.uiState.address)
+        assertEquals(ViewState.Success, viewModel.uiState.viewState)
+        assertTrue(viewModel.uiState.additionalItems.isEmpty())
+        val alertText = viewModel.uiState.alertText as? ReceiveModule.AlertText.Normal
+        assertEquals(
+            Translator.getString(R.string.beam_receive_regular_alert),
+            alertText?.content,
+        )
+    }
+
+    @Test
+    fun onBeamReceiveTypeSelect_sbbsAnswerWithoutSbbs_showsError() = runTest(dispatcher) {
+        every { token.blockchainType } returns BlockchainType.Beam
+        val provider = beamProvider()
+        coEvery {
+            provider.receiveAddress(account, BeamAddressType.Regular)
+        } returns beamAddress(REGULAR_ADDRESS, BeamAddressType.Regular)
+
+        val viewModel = createViewModel(beamAddressProvider = provider)
+        viewModel.onBeamReceiveTypeSelect(ReceiveModule.BeamReceiveType.Sbbs)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.viewState is ViewState.Error)
+        assertEquals("", viewModel.uiState.address)
+    }
+
+    @Test
+    fun requestBeamAddress_regularWithSbbs_showsTokenOnly() = runTest(dispatcher) {
+        every { token.blockchainType } returns BlockchainType.Beam
+        val provider = beamProvider()
+        coEvery {
+            provider.receiveAddress(account, BeamAddressType.Regular)
+        } returns beamAddress(REGULAR_ADDRESS, BeamAddressType.Regular, SBBS_ADDRESS)
+
+        val viewModel = createViewModel(beamAddressProvider = provider)
+        advanceUntilIdle()
+
+        assertEquals(REGULAR_ADDRESS, viewModel.uiState.address)
+        assertTrue(viewModel.uiState.additionalItems.isEmpty())
     }
 
     @Test

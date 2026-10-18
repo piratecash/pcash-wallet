@@ -2306,6 +2306,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="beam_send_public_offline">Herkese açık çevrimdışı</string>
     <string name="beam_send_max_privacy">Maksimum gizlilik</string>
     <string name="beam_address_type_regular">Normal (çevrimiçi)</string>
+    <string name="beam_address_type_sbbs">SBBS (çevrimiçi)</string>
     <string name="beam_recovery_required_title">Kurtarma gerekli</string>
     <string name="beam_recovery_required_description">BEAM cüzdan verilerinizi korumak için otomatik sıfırlama engellendi. Veriler saklandı, ancak eski cüzdana erişim garanti edilemez. Kurtarma ifadenizle geri yükleme işlemi ayrı bir cüzdan oluşturmalıdır.</string>
     <string name="beam_offline_context_unavailable">Çevrimdışı imzalama bağlamı kullanılamıyor. Önce bu cüzdanı çevrimiçi eşitleyin.</string>

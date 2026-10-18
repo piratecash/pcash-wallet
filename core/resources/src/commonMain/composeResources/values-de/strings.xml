@@ -2297,6 +2297,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="beam_send_public_offline">Öffentlich offline</string>
     <string name="beam_send_max_privacy">Maximale Privatsphäre</string>
     <string name="beam_address_type_regular">Regulär (online)</string>
+    <string name="beam_address_type_sbbs">SBBS (online)</string>
     <string name="beam_recovery_required_title">Wiederherstellung erforderlich</string>
     <string name="beam_recovery_required_description">Das automatische Zurücksetzen ist zum Schutz Ihrer BEAM-Wallet-Daten gesperrt. Die Daten bleiben erhalten, der Zugriff auf die alte Wallet kann jedoch nicht garantiert werden. Bei der Wiederherstellung mit Ihrer Wiederherstellungsphrase muss eine separate Wallet erstellt werden.</string>
     <string name="beam_offline_context_unavailable">Der Kontext für die Offline-Signatur ist nicht verfügbar. Synchronisieren Sie zuerst diese Wallet online.</string>

@@ -18,7 +18,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import cash.p.beam.BeamAddressType
 import cash.p.beam.BeamNetwork
 import cash.p.terminal.R
 import cash.p.terminal.core.titleResId
@@ -111,8 +110,8 @@ fun ReceiveScreen(navigation: HSNavigation, wallet: Wallet, receiveEntryPoint: K
 
     val uiState = addressViewModel.uiState
     val beamTypeSelector: @Composable () -> Unit = {
-        uiState.beamAddressType?.let { type ->
-            BeamReceiveTypeSelector(type, addressViewModel::onBeamAddressTypeSelect)
+        uiState.beamReceiveType?.let { type ->
+            BeamReceiveTypeSelector(type, addressViewModel::onBeamReceiveTypeSelect)
         }
     }
     ReceiveAddressScreen(
@@ -151,7 +150,7 @@ private fun ReceiveTopContent(
     onUsedAddressesClick: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        if (uiState.beamAddressType != null) {
+        if (uiState.beamReceiveType != null) {
             beamTypeSelector()
             HorizontalDivider(
                 modifier = Modifier.fillMaxWidth(),
@@ -176,8 +175,8 @@ private fun ReceiveTopContent(
 
 @Composable
 private fun BeamReceiveTypeSelector(
-    selected: BeamAddressType,
-    onSelect: (BeamAddressType) -> Unit,
+    selected: ReceiveModule.BeamReceiveType,
+    onSelect: (ReceiveModule.BeamReceiveType) -> Unit,
 ) {
     var showSelector by remember { mutableStateOf(false) }
     // The right-hand half of the Appearance screen's MenuItemWithDialog: no filled background,
@@ -207,7 +206,7 @@ private fun BeamReceiveTypeSelector(
     if (showSelector) {
         AppSelectorDialog(
             title = stringResource(R.string.beam_send_receiver_type),
-            items = BEAM_RECEIVE_ADDRESS_TYPES.map {
+            items = ReceiveModule.BeamReceiveType.entries.map {
                 AppSelectorItem(stringResource(it.titleResId()), it == selected, it)
             },
             onDismiss = { showSelector = false },
@@ -216,12 +215,10 @@ private fun BeamReceiveTypeSelector(
     }
 }
 
-private val BEAM_RECEIVE_ADDRESS_TYPES = listOf(
-    BeamAddressType.Regular,
-    BeamAddressType.PublicOffline,
-    BeamAddressType.Offline,
-    BeamAddressType.MaxPrivacy,
-)
+private fun ReceiveModule.BeamReceiveType.titleResId(): Int = when (this) {
+    ReceiveModule.BeamReceiveType.Sbbs -> R.string.beam_address_type_sbbs
+    else -> addressType.titleResId()
+}
 
 @Composable
 fun UsedAddressesRow(
