@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.memo
 import android.app.Application
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -7,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.hasSetTextAction
@@ -82,41 +84,59 @@ class HSMemoInputTest {
         )
         assertEquals(listOf("stale", "", ""), values); assertEquals(listOf(1L, 1L), handledIds)
     }
-    @Test fun externalMemo_separatePrefillLimit_preservesLongPrefillAsReadOnly() {
+    @Test fun externalMemo_overByteLimit_keepsPrefillReadOnlyWithError() {
         val values = mutableListOf<String>()
         var event by mutableStateOf<MemoUnique?>(MemoUnique("long memo", 1))
-        composeTestRule.setContent {
-            ComposeAppTheme {
-                HSMemoInput(
-                    maxLength = 4,
-                    memoPrefill = MemoPrefill(event) { event = null },
-                    onValueChange = values::add,
-                    prefillMaxLength = 20,
-                )
-            }
-        }
+        setMemoInput(maxBytes = 4, memoPrefill = { MemoPrefill(event) { event = null } }, onValueChange = values::add)
 
         composeTestRule.onNodeWithText("long memo").assertIsNotEnabled()
+        composeTestRule.onNodeWithText("Memo is too long: 9 of 4 bytes").assertExists()
         assertEquals(listOf("long memo"), values)
     }
-    @Test fun externalMemo_overByteLimit_clearsPrefill() {
+    @Test fun externalMemo_multiByteOverByteLimit_keepsPrefillWithError() {
         val values = mutableListOf<String>()
         var event by mutableStateOf<MemoUnique?>(MemoUnique("🙂🙂🙂", 1))
+        setMemoInput(maxBytes = 9, memoPrefill = { MemoPrefill(event) { event = null } }, onValueChange = values::add)
+
+        composeTestRule.onNodeWithText("🙂🙂🙂").assertIsNotEnabled()
+        composeTestRule.onNodeWithText("Memo is too long: 12 of 9 bytes").assertExists()
+        assertEquals(listOf("🙂🙂🙂"), values)
+    }
+    @Test fun externalMemo_blankOverByteLimit_showsNoError() {
+        var event by mutableStateOf<MemoUnique?>(MemoUnique(" ".repeat(5), 1))
+        setMemoInput(maxBytes = 4, memoPrefill = { MemoPrefill(event) { event = null } }, onValueChange = {})
+
+        composeTestRule.onNode(hasSetTextAction()).assertIsEnabled()
+        composeTestRule.onNodeWithText("Memo is too long", substring = true).assertDoesNotExist()
+    }
+    @Test fun typing_multiByteOverByteLimit_isRejectedWhileSameLengthAsciiIsAccepted() {
+        val values = mutableListOf<String>()
+        setMemoInput(maxBytes = 5, memoPrefill = { MemoPrefill(null) {} }, onValueChange = values::add)
+        val input = composeTestRule.onNode(hasSetTextAction())
+
+        input.performTextReplacement("жжж")
+        input.assert(SemanticsMatcher.expectValue(SemanticsProperties.EditableText, AnnotatedString("")))
+        input.performTextReplacement("🙂🙂")
+        input.assert(SemanticsMatcher.expectValue(SemanticsProperties.EditableText, AnnotatedString("")))
+        input.performTextReplacement("abcd")
+
+        input.assertTextEquals("abcd")
+        assertEquals(listOf("abcd"), values)
+    }
+    private fun setMemoInput(
+        maxBytes: Int,
+        memoPrefill: @Composable () -> MemoPrefill,
+        onValueChange: (String) -> Unit,
+    ) {
         composeTestRule.setContent {
             ComposeAppTheme {
                 HSMemoInput(
-                    maxLength = 4,
-                    memoPrefill = MemoPrefill(event) { event = null },
-                    onValueChange = values::add,
-                    prefillMaxLength = 20,
-                    prefillMaxBytes = 9,
+                    maxLength = maxBytes,
+                    memoPrefill = memoPrefill(),
+                    onValueChange = onValueChange,
+                    maxBytes = maxBytes,
                 )
             }
         }
-
-        composeTestRule.onNode(hasSetTextAction()).assert(
-            SemanticsMatcher.expectValue(SemanticsProperties.EditableText, AnnotatedString(""))
-        )
-        assertEquals(listOf(""), values)
     }
 }

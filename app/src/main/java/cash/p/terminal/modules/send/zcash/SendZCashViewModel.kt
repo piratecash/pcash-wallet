@@ -21,6 +21,7 @@ import cash.p.terminal.entities.Address
 import cash.p.terminal.entities.OfflineSignedTransactionDraft
 import cash.p.terminal.modules.amount.SendAmountService
 import cash.p.terminal.modules.contacts.ContactsRepository
+import cash.p.terminal.modules.memo.fitsMemoBytes
 import cash.p.terminal.modules.send.SendConfirmationData
 import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.offline.OfflineSignCapableViewModel
@@ -70,7 +71,7 @@ class SendZCashViewModel(
     override val coinMaxAllowedDecimals = wallet.token.decimals
     override val feeCoinMaxAllowedDecimals = wallet.token.decimals
     val fiatMaxAllowedDecimals = AppConfigProvider.fiatDecimal
-    val memoMaxLength by memoService::memoMaxLength
+    val memoMaxBytes by memoService::memoMaxBytes
 
     @Suppress("UNCHECKED_CAST")
     private val offlineSignAdapter = adapter as? OfflineTransactionAdapter<SignedOfflineZcashTransaction>
@@ -146,7 +147,8 @@ class SendZCashViewModel(
             addressError = addressState.addressError,
             amountCaution = amountState.amountCaution,
             memoIsAllowed = memoState.memoIsAllowed,
-            canBeSend = amountState.canBeSend && addressState.canBeSend && (!poison || riskAccepted),
+            canBeSend = amountState.canBeSend && addressState.canBeSend &&
+                memoState.memo.fitsMemoBytes(memoMaxBytes) && (!poison || riskAccepted),
             showAddressInput = showAddressInput,
             address = addressState.address,
             isPoisonAddress = poison,
