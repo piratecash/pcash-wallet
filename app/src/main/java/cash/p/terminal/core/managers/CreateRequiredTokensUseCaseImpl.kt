@@ -7,6 +7,7 @@ import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IHardwarePublicKeyStorage
 import cash.p.terminal.wallet.entities.HardwarePublicKey
 import cash.p.terminal.wallet.entities.TokenQuery
+import cash.p.terminal.wallet.entities.serves
 import cash.p.terminal.wallet.expandedZcashAddressSpecQueries
 import cash.p.terminal.wallet.isMonero
 import cash.p.terminal.wallet.latestAccountOr
@@ -59,7 +60,6 @@ class CreateRequiredTokensUseCaseImpl(
         )
     }
 
-    private fun TokenQuery.isDerivedIn(keys: List<HardwarePublicKey>): Boolean = keys.any {
-        it.blockchainType == blockchainType.uid && it.tokenType == tokenType
-    }
+    private fun TokenQuery.isDerivedIn(keys: List<HardwarePublicKey>): Boolean =
+        keys.any { it.serves(blockchainType, tokenType) }
 }

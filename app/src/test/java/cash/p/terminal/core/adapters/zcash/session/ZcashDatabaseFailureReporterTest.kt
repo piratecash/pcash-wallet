@@ -1,6 +1,7 @@
 package cash.p.terminal.core.adapters.zcash.session
 
 import cash.p.terminal.core.NonFatalReporter
+import cash.p.zcash.DatabasePool
 import cash.p.zcash.DatabaseStats
 import cash.p.zcash.ZcashSdk
 import io.horizontalsystems.core.logger.AppLogger
@@ -10,6 +11,7 @@ import io.mockk.mockkObject
 import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
+import io.mockk.verifyOrder
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -41,6 +43,8 @@ class ZcashDatabaseFailureReporterTest {
         acquire: Long = 0,
         recovered: Long = 0,
         recent: List<String> = emptyList(),
+        lastSeq: Long = 0,
+        pools: List<DatabasePool> = emptyList(),
     ) = DatabaseStats(
         opens = 5,
         nativeCantOpen = native,
@@ -48,6 +52,8 @@ class ZcashDatabaseFailureReporterTest {
         recoveredByRetry = recovered,
         lastError = null,
         recent = recent,
+        pools = pools,
+        lastSeq = lastSeq,
     )
 
     private fun report(stats: DatabaseStats) {
@@ -73,7 +79,7 @@ class ZcashDatabaseFailureReporterTest {
             "14: acquire recovered after 1 failed attempts"
         )
 
-        report(stats(native = 2, acquire = 1, recovered = 1, recent = recent))
+        report(stats(native = 2, acquire = 1, recovered = 1, recent = recent, lastSeq = recent.size.toLong()))
 
         verify(exactly = 1) { logger.warning("sqlite cantopen native +2 acquire +1 recovered +1 opens=5") }
         recent.forEach { verify(exactly = 1) { logger.warning(it) } }
@@ -152,6 +158,78 @@ class ZcashDatabaseFailureReporterTest {
 
         verify(exactly = 0) { logger.warning(any<String>()) }
         verify(exactly = 0) { nonFatalReporter.report(any(), any()) }
+    }
+
+    @Test
+    fun checkCantOpen_secondDeltaWithTwoNewEntries_printsOnlyThoseTwo() {
+        val first = listOf("14: a", "14: b", "14: c")
+        report(stats(native = 1, recent = first, lastSeq = 3))
+        val second = first + listOf("14: d", "14: e")
+
+        report(stats(native = 2, recent = second, lastSeq = 5))
+
+        verify(exactly = 1) { logger.warning("14: a") }
+        verify(exactly = 1) { logger.warning("14: d") }
+        verify(exactly = 1) { logger.warning("14: e") }
+        verify(exactly = 0) { logger.warning(match { it.contains("evicted unseen") }) }
+    }
+
+    @Test
+    fun checkCantOpen_gapLargerThanRing_logsEvictedCountBeforeEntries() {
+        val ring = listOf("14: x", "14: y")
+
+        report(stats(native = 1, recent = ring, lastSeq = 7))
+
+        verifyOrder {
+            logger.warning("sqlite log: 5 entries evicted unseen")
+            logger.warning("14: x")
+            logger.warning("14: y")
+        }
+    }
+
+    @Test
+    fun checkCantOpen_counterGrewWithoutNewEntries_keepsSeenSequence() {
+        report(stats(native = 1, recent = listOf("14: a"), lastSeq = 1))
+        report(stats(native = 2, recent = listOf("14: a"), lastSeq = 1))
+
+        verify(exactly = 1) { logger.warning("14: a") }
+    }
+
+    @Test
+    fun databaseFailure_poolsPresent_logsMappedAndForeignPools() {
+        every { databaseFiles.accountIdOf("/db/wallet_account.sqlite3") } returns ACCOUNT_ID
+        every { databaseFiles.accountIdOf("/elsewhere/x.sqlite3") } returns null
+        every { ZcashSdk.databaseStats() } returns stats(
+            pools = listOf(
+                DatabasePool(id = 1, path = "/db/wallet_account.sqlite3", size = 4, idle = 3),
+                DatabasePool(id = 2, path = "/elsewhere/x.sqlite3", size = 1, idle = 0),
+            ),
+        )
+
+        reporter.databaseFailure(ACCOUNT_ID, logger)
+
+        verify(exactly = 1) {
+            logger.warning("db-pools: account pool=1 size=4 idle=3; other pool=2 size=1 idle=0")
+        }
+    }
+
+    @Test
+    fun databaseFailure_statsUnavailable_writesOnlyDbFsLine() {
+        every { ZcashSdk.databaseStats() } throws UnsatisfiedLinkError()
+
+        reporter.databaseFailure(ACCOUNT_ID, logger)
+
+        verify(exactly = 1) { logger.warning("db-fs: test") }
+        verify(exactly = 0) { logger.warning(match { it.startsWith("db-pools:") }) }
+    }
+
+    @Test
+    fun processStarted_calledTwice_logsOneLine() {
+        reporter.processStarted(logger)
+        reporter.processStarted(logger)
+
+        val startLine = Regex("process: start pid=\\S+ age=\\S+s")
+        verify(exactly = 1) { logger.info(match { startLine.matches(it) && !it.contains("libs=") }) }
     }
 
     private companion object {

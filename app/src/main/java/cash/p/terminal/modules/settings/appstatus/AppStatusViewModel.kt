@@ -322,7 +322,6 @@ class AppStatusViewModel(
 
     private fun getAppInfo(): Map<String, Any> {
         val appInfo = LinkedHashMap<String, Any>()
-        appInfo["Current Time"] = Date()
         getBuildInfo().forEach { (title, value) -> appInfo[title] = value }
         systemInfoManager.getSigningCertFingerprint()?.let {
             appInfo["App Signature"] = it
@@ -341,12 +340,6 @@ class AppStatusViewModel(
         return AppStatusModule.BlockData(
             title = "App Info",
             content = buildList {
-                add(
-                    BlockContent.TitleValue(
-                        "Current Time",
-                        DateHelper.formatDate(Date(), "MMM d, yyyy, HH:mm")
-                    )
-                )
                 addAll(
                     getBuildInfo().map { (title, value) ->
                         BlockContent.TitleValue(title, value)

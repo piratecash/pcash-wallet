@@ -15,6 +15,7 @@ import cash.p.terminal.core.managers.BeamSessionFactory
 import cash.p.terminal.core.managers.BeamSessionOwner
 import cash.p.terminal.core.managers.BeamStorageLocator
 import cash.p.terminal.core.storage.AppDatabase
+import cash.p.terminal.modules.receive.ReceiveModule
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -201,7 +202,7 @@ class SessionBeamReceiveAddressProviderTest {
         settleReceive()
         viewModel.onErrorClick()
         settleReceive()
-        viewModel.onBeamAddressTypeSelect(BeamAddressType.MaxPrivacy)
+        viewModel.onBeamReceiveTypeSelect(ReceiveModule.BeamReceiveType.MaxPrivacy)
         settleReceive()
 
         assertSame(current, owner.current)
@@ -216,7 +217,7 @@ class SessionBeamReceiveAddressProviderTest {
         initializing.value = true
         val viewModel = viewModel()
         settleReceive()
-        viewModel.onBeamAddressTypeSelect(BeamAddressType.Offline)
+        viewModel.onBeamReceiveTypeSelect(ReceiveModule.BeamReceiveType.Offline)
         settleReceive()
         viewModel.onErrorClick()
         settleReceive()
@@ -230,7 +231,7 @@ class SessionBeamReceiveAddressProviderTest {
 
         assertSame(session, owner.current)
         assertEquals(ViewState.Success, viewModel.uiState.viewState)
-        assertEquals(BeamAddressType.Offline, viewModel.uiState.beamAddressType)
+        assertEquals(ReceiveModule.BeamReceiveType.Offline, viewModel.uiState.beamReceiveType)
         assertEquals("test-Offline", viewModel.uiState.address)
         coVerify(exactly = 0) { sdk.start() }
     }

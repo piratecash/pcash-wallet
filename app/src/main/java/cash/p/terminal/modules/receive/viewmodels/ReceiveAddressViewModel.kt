@@ -76,7 +76,7 @@ class ReceiveAddressViewModel internal constructor(
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
-    private var beamAddressType = beamAddressProvider?.let { BeamAddressType.Regular }
+    private var beamReceiveType = beamAddressProvider?.let { ReceiveModule.BeamReceiveType.Regular }
     private var beamRequestGeneration = 0L
     private var beamRequest: Job? = null
 
@@ -100,7 +100,7 @@ class ReceiveAddressViewModel internal constructor(
         } else {
             viewModelScope.launch {
                 beamAddressProvider.changes(wallet.account).collect {
-                    requestBeamAddress(checkNotNull(beamAddressType), beamAddressProvider)
+                    requestBeamAddress(checkNotNull(beamReceiveType), beamAddressProvider)
                 }
             }
         }
@@ -119,7 +119,7 @@ class ReceiveAddressViewModel internal constructor(
             usedChangeAddresses = usedChangeAddresses,
             isAddressHistorySupported = isAddressHistorySupported,
             showTronAlert = !shown.accountActive,
-            beamAddressType = beamAddressType,
+            beamReceiveType = beamReceiveType,
             uri = getUri(shown.address),
             watchAccount = watchAccount,
             additionalItems = getAdditionalData(shown.accountActive),
@@ -274,7 +274,7 @@ class ReceiveAddressViewModel internal constructor(
 
     fun onErrorClick() {
         val provider = beamAddressProvider
-        val type = beamAddressType
+        val type = beamReceiveType
         if (provider != null && type != null) {
             requestBeamAddress(type, provider)
             return
@@ -282,20 +282,20 @@ class ReceiveAddressViewModel internal constructor(
         retries.tryEmit(Unit)
     }
 
-    fun onBeamAddressTypeSelect(type: BeamAddressType) {
+    fun onBeamReceiveTypeSelect(type: ReceiveModule.BeamReceiveType) {
         val provider = beamAddressProvider ?: return
         requestBeamAddress(type, provider)
     }
 
-    private fun requestBeamAddress(type: BeamAddressType, provider: BeamReceiveAddressProvider) {
+    private fun requestBeamAddress(type: ReceiveModule.BeamReceiveType, provider: BeamReceiveAddressProvider) {
         beamRequest?.cancel()
         val requestGeneration = ++beamRequestGeneration
-        beamAddressType = type
-        shown = shown.copy(alertText = getBeamAlertText(type))
+        beamReceiveType = type
+        shown = shown.copy(alertText = getBeamAlertText(type.addressType))
         clearBeamAddress(ViewState.Loading)
         beamRequest = viewModelScope.launch {
             try {
-                val received = provider.receiveAddress(wallet.account, type)
+                val received = provider.receiveAddress(wallet.account, type.addressType)
                 currentCoroutineContext().ensureActive()
                 if (!isCurrentBeamRequest(requestGeneration, type)) return@launch
                 check(received.isCurrent()) { "BEAM receive session changed" }
@@ -314,17 +314,22 @@ class ReceiveAddressViewModel internal constructor(
         }
     }
 
-    private fun showBeamAddress(received: BeamReceiveAddress, type: BeamAddressType) {
+    private fun showBeamAddress(received: BeamReceiveAddress, type: ReceiveModule.BeamReceiveType) {
         val result = received.address
-        check(result.type == type) { "Unexpected BEAM receive address type" }
-        shown = shown.copy(address = result.token)
+        check(result.type == type.addressType) { "Unexpected BEAM receive address type" }
+        val address = if (type == ReceiveModule.BeamReceiveType.Sbbs) {
+            checkNotNull(result.sbbsAddress)
+        } else {
+            result.token
+        }
+        shown = shown.copy(address = address)
         mainNet = result.network == BeamNetwork.Mainnet
         viewState = ViewState.Success
         emitState()
     }
 
-    private fun isCurrentBeamRequest(generation: Long, type: BeamAddressType) =
-        generation == beamRequestGeneration && type == beamAddressType
+    private fun isCurrentBeamRequest(generation: Long, type: ReceiveModule.BeamReceiveType) =
+        generation == beamRequestGeneration && type == beamReceiveType
 
     private fun clearBeamAddress(state: ViewState) {
         shown = shown.copy(address = "")

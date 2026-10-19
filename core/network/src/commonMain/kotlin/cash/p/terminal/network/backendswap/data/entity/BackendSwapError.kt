@@ -12,7 +12,7 @@ class BackendSwapError(
     val minAmount: String? = null,
     val maxAmount: String? = null,
     val limitType: String? = null,
-) : Throwable() {
+) : Exception() {
     override fun toString(): String =
         "BackendSwapError(statusCode=$statusCode, code=$code, message=$message, minAmount=$minAmount, " +
             "maxAmount=$maxAmount, limitType=$limitType)"

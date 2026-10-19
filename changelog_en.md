@@ -1,20 +1,21 @@
-## 🚀 Version 0.61.0 Update
-_Release date: October 1, 2026_
+## 🚀 Version 1.0.260 Update
+_Release date: October 16, 2026_
 
 ### ✨ New Features
 
-- **Added Zcash support on Trezor**
-  Trezor can now be used with transparent Zcash accounts. Payments can also be sent between t-addresses (t-to-t).
+- **Introduced a completely redesigned app interface**
 
-- **Added support for BEAM**
-
-- **Added THORChain support and swaps through THORChain**
-
-- **Added support for Robinhood Chain**
-
-- **Added Changelly as a new CEX swap provider**
+- **Added the Regular address type for BEAM**
 
 ### ⚙️ Improvements
 
-- **Migrated Zcash to our own Kotlin Multiplatform SDK**
-  The new SDK is built on zkool's Rust core.
+- **Improved BEP-20 token synchronization**
+  Newly added tokens now synchronize after being added to the wallet.
+
+- **Added Monero balance display when there is no active connection**
+
+### 🐛 Fixes
+
+- **Fixed Zcash synchronization when running the app in LDPlayer**
+
+- **Fixed adding new tokens to Tangem cards**

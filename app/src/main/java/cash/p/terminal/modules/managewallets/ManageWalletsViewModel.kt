@@ -30,6 +30,7 @@ import cash.p.terminal.wallet.alternativeImageUrl
 import cash.p.terminal.wallet.badge
 import cash.p.terminal.wallet.entities.HardwarePublicKey
 import cash.p.terminal.wallet.entities.TokenQuery
+import cash.p.terminal.wallet.entities.serves
 import cash.p.terminal.wallet.imageUrl
 import cash.p.terminal.wallet.isMonero
 import cash.p.terminal.wallet.latestAccountOr
@@ -334,15 +335,19 @@ class ManageWalletsViewModel(
         val account = accountManager.activeAccount
         if (!isHardwareWallet() || hasPublicKey(token)) {
             service.enable(token)
-        } else {
-            if (account != null && !hardwareWalletTokenPolicy.isSupported(account, token)) {
-                showError(App.instance.getString(R.string.error_hardware_wallet_not_supported))
-                return
-            }
-            awaitingEnabledTokens.add(token)
-            updateNeedToShowScanToAddButton()
-            sync(service.itemsFlow.value)
+            return
         }
+        if (account != null && !hardwareWalletTokenPolicy.isSupported(account, token)) {
+            showError(App.instance.getString(R.string.error_hardware_wallet_not_supported))
+            return
+        }
+        if (existingPublicKeys?.any { it.serves(token.blockchainType, token.type) } == true) {
+            service.enable(token)
+            return
+        }
+        awaitingEnabledTokens.add(token)
+        updateNeedToShowScanToAddButton()
+        sync(service.itemsFlow.value)
     }
 
     override fun disable(token: Token) {

@@ -114,6 +114,17 @@ class NetworkErrorTrackerTest {
         assertFalse("levels beyond the cap must be dropped", bounded.contains("l3"))
     }
 
+    @Test
+    fun boundedStackTraceToString_causesRepeatParentMessage_printsMessageOnce() {
+        val chain = IllegalStateException("m", IllegalArgumentException("m", RuntimeException("m")))
+
+        val bounded = chain.boundedStackTraceToString()
+
+        assertEquals(1, bounded.lines().count { it.endsWith(": m") })
+        assertTrue(bounded.contains("Caused by: java.lang.IllegalArgumentException: (same message)"))
+        assertTrue(bounded.contains("Caused by: java.lang.RuntimeException: (same message)"))
+    }
+
     private fun deepException(depth: Int): RuntimeException =
         try {
             recurse(depth)

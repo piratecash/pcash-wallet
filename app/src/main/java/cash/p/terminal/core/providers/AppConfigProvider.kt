@@ -134,6 +134,7 @@ object AppConfigProvider : AddressResolutionConfig {
 
     val donateAddresses: Map<BlockchainType, String> by lazy {
         mapOf(
+            BlockchainType.Beam to "23oqENM4qYeLYVxFrLJKVzNjgMAmYVsN5ULEq6NeoHpRQmYZ8K9SmmCkNjeMdUS9143uUKLmbSgrFRujGL7aTTfb1kHPPx3Rtk1ACkNbx6C7n9emx7Aw4bT6EKqWwHErJccR2E1PLqcmguFyucRXwANvQiGPsEVBsXgfkNoKaKXixadDXVnYHtw5qXbzJj5ZLK9nZDAibfUocAa6MTmJm9uUWarfdLyS2xKP6EUuAvtbhMt9WVVVnYhGaXtibYDfVfUTW8PMnP3LH2C1rarAXBPS51TzkKAYQUs3zfncjQMTYe3uhRhAgWZacyjNJMRcERKF3XqrnJUaHA4dimB7n9zZ46Fg471iWx8JVeqJWtPDfrR1k7Bqbixz4EyyrUQojPgQ3PnTvi3YhQEX544s23kFYmzFwEsT3wDwhohFg27mzpx",
             BlockchainType.Bitcoin to "bc1q2ph64sryt6skegze6726fp98u44kjsc5exktap",
             BlockchainType.BitcoinCash to "bitcoincash:qp497gfxadpz30zxp7kltcq9c2jn57z34q5xuclrhf",
             BlockchainType.ECash to "ecash:qrzcal2fmm6vumxp3g2jndk0fepmt2racya9lc4yxy",
@@ -155,6 +156,7 @@ object AppConfigProvider : AddressResolutionConfig {
             BlockchainType.Solana to "CefzHT5zCUncm3yhTLck9bCRYkbjHrKToT1GpPUyqCMa",
             BlockchainType.Gnosis to "0x52be29951B0D10d5eFa48D58363a25fE5Cc097e9",
             BlockchainType.Fantom to "0x52be29951B0D10d5eFa48D58363a25fE5Cc097e9",
+            BlockchainType.Thorchain to "thor1xpthl6uhkyepgefmnq5udq5r2298q84d3edtcn",
             BlockchainType.Ton to "UQCYTBH7n8OnQ6BgOfdkNRWF7socLJb9U-JMRcoz3UpL_0V6",
             BlockchainType.Tron to "TAaYtFBxJztC5pG1zMapvUFSfEyJLSLJM5",
             BlockchainType.Monero to

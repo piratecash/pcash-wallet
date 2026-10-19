@@ -41,6 +41,14 @@ object ReceiveModule {
         }
     }
 
+    enum class BeamReceiveType(val addressType: BeamAddressType) {
+        Regular(BeamAddressType.Regular),
+        Sbbs(BeamAddressType.Regular),
+        PublicOffline(BeamAddressType.PublicOffline),
+        Offline(BeamAddressType.Offline),
+        MaxPrivacy(BeamAddressType.MaxPrivacy),
+    }
+
     sealed class AdditionalData {
         class Amount(val value: String) : AdditionalData()
         class Memo(val value: String) : AdditionalData()
@@ -68,7 +76,7 @@ object ReceiveModule {
         val usedChangeAddresses: List<UsedAddress>,
         val isAddressHistorySupported: Boolean,
         val showTronAlert: Boolean,
-        val beamAddressType: BeamAddressType?,
+        val beamReceiveType: BeamReceiveType?,
         override val uri: String,
         override val blockchainName: String?,
         override val addressFormat: String?,

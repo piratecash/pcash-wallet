@@ -2738,6 +2738,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="beam_send_public_offline">Public offline</string>
     <string name="beam_send_max_privacy">Maximum privacy</string>
     <string name="beam_address_type_regular">Regular (online)</string>
+    <string name="beam_address_type_sbbs">SBBS (online)</string>
     <string name="beam_recovery_required_title">Recovery required</string>
     <string name="beam_recovery_required_description">Automatic reset is blocked to protect your BEAM wallet data. The stored data has been kept, but access to the old wallet cannot be guaranteed. Restoring from your recovery phrase must create a separate wallet.</string>
     <string name="beam_offline_context_unavailable">Offline signing context is unavailable. Synchronize this wallet online first.</string>
