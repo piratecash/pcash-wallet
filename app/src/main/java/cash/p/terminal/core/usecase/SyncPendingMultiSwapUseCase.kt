@@ -69,7 +69,8 @@ class SyncPendingMultiSwapUseCase(
     private suspend fun refreshTonKitThrottled() {
         val now = currentTimeMillis()
         val last = lastTonRefreshAt.get()
-        if (now - last < TON_REFRESH_INTERVAL_MS) return
+        // A negative delta means the wall clock moved back: refresh rather than wait for it to catch up.
+        if (now - last in 0 until TON_REFRESH_INTERVAL_MS) return
         if (lastTonRefreshAt.compareAndSet(last, now)) {
             tonKitManager.refresh()
         }

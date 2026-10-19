@@ -1632,6 +1632,17 @@ class SyncPendingMultiSwapUseCaseTest {
     }
 
     @Test
+    fun invoke_clockMovedBackward_refreshesAgain() = runTest(dispatcher) {
+        stubLeg1OffChainIntoTon(providerStatus = "exchanging")
+
+        useCase()
+        nowMs -= 3_600_000
+        useCase()
+
+        coVerify(exactly = 2) { tonKitManager.refresh() }
+    }
+
+    @Test
     fun invoke_concurrentCalls_refreshesTonKitOnce() = runTest(dispatcher) {
         stubLeg1OffChainIntoTon(providerStatus = "exchanging")
         val refreshGate = CompletableDeferred<Unit>()
