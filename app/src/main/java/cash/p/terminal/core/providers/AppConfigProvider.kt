@@ -144,7 +144,12 @@ object AppConfigProvider {
 
     val donateAddresses: Map<BlockchainType, String> by lazy {
         mapOf(
-            BlockchainType.Beam to "23oqENM4qYeLYVxFrLJKVzNjgMAmYVsN5ULEq6NeoHpRQmYZ8K9SmmCkNjeMdUS9143uUKLmbSgrFRujGL7aTTfb1kHPPx3Rtk1ACkNbx6C7n9emx7Aw4bT6EKqWwHErJccR2E1PLqcmguFyucRXwANvQiGPsEVBsXgfkNoKaKXixadDXVnYHtw5qXbzJj5ZLK9nZDAibfUocAa6MTmJm9uUWarfdLyS2xKP6EUuAvtbhMt9WVVVnYhGaXtibYDfVfUTW8PMnP3LH2C1rarAXBPS51TzkKAYQUs3zfncjQMTYe3uhRhAgWZacyjNJMRcERKF3XqrnJUaHA4dimB7n9zZ46Fg471iWx8JVeqJWtPDfrR1k7Bqbixz4EyyrUQojPgQ3PnTvi3YhQEX544s23kFYmzFwEsT3wDwhohFg27mzpx",
+            BlockchainType.Beam to
+                "23oqENM4qYeLYVxFrLJKVzNjgMAmYVsN5ULEq6NeoHpRQmYZ8K9SmmCkNjeMdUS9143uUKLmbSgrFRujGL7aTTfb1kHPPx3R" +
+                "tk1ACkNbx6C7n9emx7Aw4bT6EKqWwHErJccR2E1PLqcmguFyucRXwANvQiGPsEVBsXgfkNoKaKXixadDXVnYHtw5qXbzJj5Z" +
+                "LK9nZDAibfUocAa6MTmJm9uUWarfdLyS2xKP6EUuAvtbhMt9WVVVnYhGaXtibYDfVfUTW8PMnP3LH2C1rarAXBPS51TzkKAY" +
+                "QUs3zfncjQMTYe3uhRhAgWZacyjNJMRcERKF3XqrnJUaHA4dimB7n9zZ46Fg471iWx8JVeqJWtPDfrR1k7Bqbixz4EyyrUQo" +
+                "jPgQ3PnTvi3YhQEX544s23kFYmzFwEsT3wDwhohFg27mzpx",
             BlockchainType.Bitcoin to "bc1q2ph64sryt6skegze6726fp98u44kjsc5exktap",
             BlockchainType.BitcoinCash to "bitcoincash:qp497gfxadpz30zxp7kltcq9c2jn57z34q5xuclrhf",
             BlockchainType.ECash to "ecash:qrzcal2fmm6vumxp3g2jndk0fepmt2racya9lc4yxy",
