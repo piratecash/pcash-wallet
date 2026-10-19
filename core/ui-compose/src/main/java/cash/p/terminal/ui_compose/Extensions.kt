@@ -1,6 +1,5 @@
 package cash.p.terminal.ui_compose
 
-import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.os.Parcelable
 import android.os.SystemClock
@@ -22,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Density
+import androidx.core.os.BundleCompat
 import kotlinx.coroutines.flow.first
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -38,10 +38,8 @@ suspend fun WindowInsets.awaitImeHidden(density: Density) {
     snapshotFlow { getBottom(density) }.first { it == 0 }
 }
 
-inline fun <reified T : Parcelable> Bundle.parcelable(key: String): T? = when {
-    SDK_INT >= 33 -> getParcelable(key, T::class.java)
-    else -> @Suppress("DEPRECATION") getParcelable(key) as? T
-}
+inline fun <reified T : Parcelable> Bundle.parcelable(key: String): T? =
+    BundleCompat.getParcelable(this, key, T::class.java)
 
 internal inline fun <reified T> getKoinInstance(): T {
     return object : KoinComponent {
