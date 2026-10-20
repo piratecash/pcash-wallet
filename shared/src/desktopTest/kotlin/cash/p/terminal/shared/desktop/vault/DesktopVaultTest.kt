@@ -233,7 +233,7 @@ class DesktopVaultTest {
     }
 
     @Test
-    fun kitDatabaseKey_sameKitAndAccount_isDeterministicAndNullAfterLock() = runTest {
+    fun kitDatabaseKey_sameKitAndAccount_isDeterministicAndNullAfterWipe() = runTest {
         vault.create(password())
         val session = unlockedSession()
 
@@ -242,7 +242,7 @@ class DesktopVaultTest {
         assertFalse(key.contentEquals(session.kitDatabaseKey("litecoin", "account-1")))
         assertFalse(key.contentEquals(session.kitDatabaseKey("bitcoin", "account-2")))
 
-        vault.lock()
+        vault.wipe()
         assertNull(session.kitDatabaseKey("bitcoin", "account-1"))
     }
 

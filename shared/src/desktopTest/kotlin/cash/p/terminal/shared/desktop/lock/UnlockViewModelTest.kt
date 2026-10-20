@@ -47,13 +47,13 @@ class UnlockViewModelTest {
     }
 
     @Test
-    fun onUnlockClick_afterTheLockoutDeadlinePasses_acceptsTheCorrectPassword() = runTest(dispatcher) {
+    fun onSubmitClick_afterTheLockoutDeadlinePasses_acceptsTheCorrectPassword() = runTest(dispatcher) {
         coEvery { vault.unlock(any()) } returns
             UnlockOutcome.LockedOut(Date(now.time + LOCKOUT_MS)) andThen UnlockOutcome.Success
         val viewModel = UnlockViewModel(vault, currentDateProvider)
 
         viewModel.onPasswordChange(PASSWORD)
-        viewModel.onUnlockClick()
+        viewModel.onSubmitClick()
         runCurrent()
         assertFalse(viewModel.uiState.canSubmit)
 
@@ -61,18 +61,18 @@ class UnlockViewModelTest {
         runCurrent()
 
         assertTrue(viewModel.uiState.canSubmit)
-        viewModel.onUnlockClick()
+        viewModel.onSubmitClick()
         runCurrent()
         assertNull(viewModel.uiState.outcome)
         coVerify(exactly = 2) { vault.unlock(any()) }
     }
 
     @Test
-    fun onUnlockClick_lockoutExpiresWhileTheComputerSleeps_acceptsAPasswordAgain() = runTest(dispatcher) {
+    fun onSubmitClick_lockoutExpiresWhileTheComputerSleeps_acceptsAPasswordAgain() = runTest(dispatcher) {
         coEvery { vault.unlock(any()) } returns UnlockOutcome.LockedOut(Date(now.time + LOCKOUT_MS))
         val viewModel = UnlockViewModel(vault, currentDateProvider)
         viewModel.onPasswordChange(PASSWORD)
-        viewModel.onUnlockClick()
+        viewModel.onSubmitClick()
         runCurrent()
 
         sleptMillis = 2 * LOCKOUT_MS
@@ -83,12 +83,12 @@ class UnlockViewModelTest {
     }
 
     @Test
-    fun onUnlockClick_success_clearsThePassword() = runTest(dispatcher) {
+    fun onSubmitClick_success_clearsThePassword() = runTest(dispatcher) {
         coEvery { vault.unlock(any()) } returns UnlockOutcome.Success
         val viewModel = UnlockViewModel(vault, currentDateProvider)
         viewModel.onPasswordChange(PASSWORD)
 
-        viewModel.onUnlockClick()
+        viewModel.onSubmitClick()
         runCurrent()
 
         assertEquals("", viewModel.uiState.password)

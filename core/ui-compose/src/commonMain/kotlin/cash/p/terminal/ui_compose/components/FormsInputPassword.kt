@@ -1,0 +1,182 @@
+package cash.p.terminal.ui_compose.components
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Icon
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_attention_20
+import cash.p.terminal.resources.ic_eye_20
+import cash.p.terminal.resources.ic_eye_off_20
+import cash.p.terminal.ui_compose.entities.DataState
+import cash.p.terminal.ui_compose.entities.FormsInputStateWarning
+import cash.p.terminal.ui_compose.theme.ColoredTextStyle
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import org.jetbrains.compose.resources.painterResource
+
+@Composable
+fun FormsInputPassword(
+    modifier: Modifier = Modifier,
+    hint: String,
+    textColor: Color = ComposeAppTheme.colors.textPrimary,
+    textStyle: TextStyle = ComposeAppTheme.typography.body,
+    hintColor: Color = ComposeAppTheme.colors.textDisabled,
+    hintStyle: TextStyle = ComposeAppTheme.typography.body,
+    singleLine: Boolean = true,
+    state: DataState<Any>? = null,
+    maxLength: Int? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    enabled: Boolean = true,
+    textState: MutableState<TextFieldValue> = rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(
+            TextFieldValue("")
+        )
+    },
+    onValueChange: (String) -> Unit,
+) {
+    var hide by remember { mutableStateOf(true) }
+    val borderColor = when (state) {
+        is DataState.Error -> {
+            if (state.error is FormsInputStateWarning) {
+                ComposeAppTheme.colors.statusWarning50
+            } else {
+                ComposeAppTheme.colors.statusError50
+            }
+        }
+
+        else -> ComposeAppTheme.colors.borderDefault
+    }
+
+    val cautionColor = if (state?.errorOrNull is FormsInputStateWarning) {
+        ComposeAppTheme.colors.statusWarning
+    } else {
+        ComposeAppTheme.colors.statusError
+    }
+
+    Column(modifier) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .defaultMinSize(minHeight = 44.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .border(1.dp, borderColor, RoundedCornerShape(12.dp))
+                .background(plateBackground()),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            BasicTextField(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .weight(1f),
+                value = textState.value,
+                onValueChange = { textFieldValue ->
+
+                    val text = textFieldValue.text
+                    if (maxLength == null || text.length <= maxLength) {
+                        textState.value = textFieldValue
+                        onValueChange.invoke(text)
+                    } else {
+                        // Need to set textState to new instance of TextFieldValue with the same values
+                        // Otherwise it getting set to empty string
+                        textState.value = TextFieldValue(
+                            text = textState.value.text,
+                            selection = textState.value.selection
+                        )
+                    }
+                },
+                textStyle = ColoredTextStyle(
+                    color = textColor,
+                    textStyle = textStyle
+                ),
+                singleLine = singleLine,
+                cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
+                decorationBox = { innerTextField ->
+                    if (textState.value.text.isEmpty()) {
+                        Text(
+                            hint,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 1,
+                            color = hintColor,
+                            style = hintStyle
+                        )
+                    }
+                    innerTextField()
+                },
+                visualTransformation = if (hide) PasswordVisualTransformation() else VisualTransformation.None,
+                keyboardOptions = keyboardOptions,
+                keyboardActions = keyboardActions,
+                enabled = enabled,
+            )
+
+            when (state) {
+                is DataState.Error -> {
+                    Icon(
+                        modifier = Modifier.padding(end = 8.dp),
+                        painter = painterResource(Res.drawable.ic_attention_20),
+                        contentDescription = null,
+                        tint = cautionColor
+                    )
+                }
+
+                else -> {
+                    Spacer(modifier = Modifier.width(28.dp))
+                }
+            }
+
+            Icon(
+                modifier = Modifier
+                    .size(20.dp)
+                    .clickable(
+                        onClick = { hide = !hide },
+                        interactionSource = MutableInteractionSource(),
+                        indication = null
+                    ),
+                painter = painterResource(if (hide) Res.drawable.ic_eye_off_20 else Res.drawable.ic_eye_20),
+                contentDescription = null,
+                tint = ComposeAppTheme.colors.iconSecondary
+            )
+            Spacer(Modifier.width(16.dp))
+        }
+
+        state?.errorOrNull?.localizedMessage?.let {
+            Text(
+                modifier = Modifier.padding(start = 8.dp, top = 8.dp, end = 8.dp),
+                text = it,
+                color = cautionColor,
+                style = ComposeAppTheme.typography.caption
+            )
+        }
+    }
+}

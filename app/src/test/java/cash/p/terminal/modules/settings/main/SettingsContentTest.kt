@@ -31,7 +31,6 @@ internal val settingsContentTestState = MainSettingUiState(
     allBackedUp = false,
     pendingRequestCount = 7,
     walletConnectSessionCount = 3,
-    manageWalletShowAlert = true,
     securityCenterShowAlert = true,
     securityCenterShowNewBadge = true,
     aboutAppShowAlert = true,
@@ -126,7 +125,8 @@ class SettingsContentTest {
     fun settingsContent_allAlertStatesOff_rendersWithoutNewBadge() {
         setContent({}, settingsContentTestState.copy(
             isUpdateAvailable = false,
-            manageWalletShowAlert = false,
+            hasNonStandardAccount = false,
+            allBackedUp = true,
             securityCenterShowAlert = false,
             securityCenterShowNewBadge = false,
             aboutAppShowAlert = false,

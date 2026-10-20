@@ -1,0 +1,70 @@
+package cash.p.terminal.modules.mwebconfigure
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
+import cash.p.terminal.core.managers.LitecoinMwebRestoreHeight
+import cash.p.terminal.modules.enablecoin.restoresettings.BirthdayHeightConfigUiState
+import cash.p.terminal.modules.enablecoin.restoresettings.TokenConfig
+import io.horizontalsystems.core.Translator
+import cash.p.terminal.ui_compose.components.RestoreHeightMode
+import cash.p.terminal.ui_compose.components.toRestoreHeightMode
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.invalid_height
+
+class MwebConfigureViewModel : ViewModel() {
+
+    var uiState by mutableStateOf(
+        BirthdayHeightConfigUiState(birthdayHeight = "")
+    )
+        private set
+
+    fun onModeSelect(mode: RestoreHeightMode) {
+        uiState = uiState.copy(mode = mode)
+    }
+
+    fun setBirthdayHeight(height: String) {
+        uiState = uiState.copy(
+            birthdayHeight = height,
+            errorHeight = null
+        )
+    }
+
+    fun setInitialConfig(config: TokenConfig?) {
+        if (config == null) return
+
+        uiState = uiState.copy(
+            birthdayHeight = config.birthdayHeight.orEmpty(),
+            mode = config.restoreAsNew.toRestoreHeightMode(),
+            errorHeight = null,
+            closeWithResult = null
+        )
+    }
+
+    fun onDoneClick() {
+        val height = if (uiState.restoreAsNew) {
+            null
+        } else {
+            LitecoinMwebRestoreHeight.parse(uiState.birthdayHeight)
+        }
+        val invalidHeight = !uiState.restoreAsNew && height == null
+
+        uiState = uiState.copy(
+            closeWithResult = if (invalidHeight) {
+                null
+            } else {
+                TokenConfig(height?.toString(), uiState.restoreAsNew)
+            },
+            errorHeight = if (invalidHeight) {
+                Translator.getString(Res.string.invalid_height)
+            } else {
+                null
+            }
+        )
+    }
+
+    fun onClosed() {
+        uiState = uiState.copy(closeWithResult = null)
+    }
+}

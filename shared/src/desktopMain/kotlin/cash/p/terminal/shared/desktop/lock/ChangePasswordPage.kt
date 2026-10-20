@@ -1,13 +1,9 @@
 package cash.p.terminal.shared.desktop.lock
 
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -130,13 +126,6 @@ internal fun ChangePasswordContent(
         }
     }
 }
-
-/** Scrolls across the whole window but keeps the fields as narrow as on the lock screens. */
-private fun Modifier.centeredForm(scrollState: ScrollState): Modifier = fillMaxWidth()
-    .verticalScroll(scrollState)
-    .wrapContentWidth()
-    .widthIn(max = PasswordFormMaxWidth)
-    .padding(horizontal = 16.dp)
 
 @Composable
 private fun OutcomeMessage(outcome: ChangePasswordOutcome?) {

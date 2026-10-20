@@ -106,7 +106,7 @@
     <string name="CreateWallet_N_Words">%s 个单词</string>
     <string name="create_wallet_n_words_monero">%s 个单词（仅限 Monero）</string>
     <string name="CreateWallet_Error_EmptyPassphrase">助记词不能为空</string>
-    <string name="CreateWallet_Error_PassphraseForbiddenSymbols">请只使用支持的符号： <![CDATA[A-Z a-z 0-9 \' " & / ? ！: ; 。 ，~ * $ = + - [ ](){} <> \ _ # @ | % ]]></string>
+    <string name="CreateWallet_Error_PassphraseForbiddenSymbols">请只使用支持的符号： <![CDATA[A-Z a-z 0-9 \u0027 " & / ? ！: ; 。 ，~ * $ = + - [ ](){} <> \ _ # @ | % ]]></string>
     <string name="CreateWallet_Error_InvalidConfirmation">确认密码不匹配</string>
     <string name="create_wallet_error_failed">创建钱包失败。请重试或重启应用。</string>
     <string name="CreateWallet_PassphraseDescription">密码为钱包添加一个额外的安全层。要恢复这个钱包，用户既需要密码，也需要密码。\n\n密码也使得用户可以轻松地使用单一的密钥但不同的密码来拥有许多多币钱包。</string>
@@ -628,8 +628,8 @@
     <string name="Swap_Revoking">正在取消...</string>
     <string name="swap_create_wallets">Create wallets</string>
     <string name="swap_creating_wallets">Creating wallets..</string>
-    <string name="swap_create_wallet_description">You don\'t have all chosen wallets, need to create first</string>
-    <string name="swap_create_wallet_description_with_zcash">You don\'t have all chosen wallets, need to create first,\nto exchange ZEC you need to create transparent address first</string>
+    <string name="swap_create_wallet_description">You don\u0027t have all chosen wallets, need to create first</string>
+    <string name="swap_create_wallet_description_with_zcash">You don\u0027t have all chosen wallets, need to create first,\nto exchange ZEC you need to create transparent address first</string>
     <string name="Swap_Approve">批准</string>
     <string name="Swap_Approving">审批中</string>
     <string name="Swap_Swapping">交易中...</string>
@@ -929,7 +929,7 @@
     <string name="Settings_PersonalSupport_EnterTelegramAccountDescription">请输入您的 Telegram 帳號名稱，開始与我們的团队的個人支援聊天。 一旦我们看到这个问题，我们就会回到您的面前。</string>
     <string name="Settings_PersonalSupport_YouAlreadyRequestedSupportDescription">您已经请求了一个私聊，在Telegram 上找到它</string>
     <string name="Settings_PersonalSupport_Account">账户</string>
-    <string name="Settings_PersonalSupport_UsernameHint">\@username</string>
+    <string name="Settings_PersonalSupport_UsernameHint">\u0040username</string>
     <string name="Settings_PersonalSupport_Requested">已申请</string>
     <string name="Settings_PersonalSupport_Request">请求</string>
     <string name="Settings_PersonalSupport_NewRequest">新建请求</string>
@@ -1875,8 +1875,8 @@
     <string name="Unlock_Title">解锁​​​​</string>
     <string name="Unlock_Passcode">密码</string>
     <string name="Unlock_EnterPasscode">输入密码</string>
-    <string name="Unlock_EnterPasscode_Transactions_Hide">Enter Passcode for \"Transactions Auto Hide\"</string>
-    <string name="Unlock_EnterPasscode_Transfer">Enter a passcode to enable \"Passcode for transfer\"</string>
+    <string name="Unlock_EnterPasscode_Transactions_Hide">Enter Passcode for \u0022Transactions Auto Hide\u0022</string>
+    <string name="Unlock_EnterPasscode_Transfer">Enter a passcode to enable \u0022Passcode for transfer\u0022</string>
     <string name="Unlock_BiometricScanner">生物扫描仪</string>
     <string name="Unlock_BiometricScannerDisabled_Description">输入密码或稍后再试</string>
     <string name="Unlock_BiometricScannerDisabled_Info">生物认证被禁用</string>
@@ -1896,7 +1896,7 @@
     <string name="pin_set_for_login_logging_passcode">设置密码以保护登录日志</string>
     <string name="confirm_pin_to_disable_login_logging_passcode">输入密码以禁用登录日志</string>
     <string name="pin_set_for_delete_all_contacts">设置一个密码以删除所有联系人</string>
-    <string name="confirm_pin_to_disable_delete_all_contacts_passcode">输入密码以禁用\"删除所有联系人\"</string>
+    <string name="confirm_pin_to_disable_delete_all_contacts_passcode">输入密码以禁用\u0022删除所有联系人\u0022</string>
     <string name="disable_delete_contacts_passcode_warning">出于安全考虑，我们建议您不要对此值使用复制操作。</string>
     <string name="confirm_pin_to_access_login_logging">输入密码以访问登录日志</string>
     <string name="PinSet_ErrorPinInUse">此密码已被使用.</string>

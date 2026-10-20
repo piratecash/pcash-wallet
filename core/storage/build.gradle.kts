@@ -55,6 +55,13 @@ kotlin {
                 implementation(libs.koin.core)
             }
         }
+        commonTest {
+            dependencies {
+                implementation(libs.junit)
+                implementation(libs.mockk)
+                implementation(libs.kotlin.test.junit)
+            }
+        }
     }
 }
 

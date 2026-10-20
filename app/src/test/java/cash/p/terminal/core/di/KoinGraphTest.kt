@@ -8,7 +8,10 @@ import cash.p.terminal.featureStacking.ui.staking.StackingType
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusViewModel
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewModel
+import cash.p.terminal.modules.btcblockchainsettings.BtcBlockchainSettingsService
 import cash.p.terminal.modules.configuredtoken.ConfiguredTokenInfoViewModel
+import cash.p.terminal.modules.evmnetwork.EvmNetworkViewModel
+import cash.p.terminal.modules.evmnetwork.addrpc.AddRpcViewModel
 import cash.p.terminal.modules.multiswap.SwapSelectCoinViewModel
 import cash.p.terminal.wallet.Account
 import io.horizontalsystems.core.entities.BlockchainType
@@ -17,6 +20,20 @@ import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesModule
 import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesViewModel
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.manageaccounts.ManageAccountsViewModel
+import cash.p.terminal.modules.address.AddressParserChain
+import cash.p.terminal.modules.watchaddress.WatchAddressViewModel
+import cash.p.terminal.modules.watchaddress.selectblockchains.SelectBlockchainsViewModel
+import cash.p.terminal.modules.manageaccount.backupconfirmkey.BackupConfirmKeyViewModel
+import cash.p.terminal.modules.backuplocal.fullbackup.BackupViewItemFactory
+import cash.p.terminal.modules.backuplocal.fullbackup.SelectBackupItemsViewModel
+import cash.p.terminal.modules.backuplocal.password.BackupLocalPasswordViewModel
+import cash.p.terminal.modules.backuplocal.password.BackupType
+import cash.p.terminal.modules.restorelocal.RestoreLocalViewModel
+import cash.p.terminal.wallet.PassphraseValidator
+import cash.p.terminal.core.IRandomProvider
+import cash.p.terminal.modules.manageaccount.recoveryphrase.RecoveryPhrasePage
+import cash.p.terminal.modules.manageaccount.recoveryphrase.RecoveryPhraseViewModel
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.modules.multiswap.TimerService
 import cash.p.terminal.modules.pin.hiddenwallet.HiddenWalletPinPolicy
 import cash.p.terminal.modules.paycore.PayCoreTicker
@@ -143,6 +160,8 @@ class KoinGraphTest : KoinTest {
                 TimerService::class,
                 XRateService::class,
                 StackingType::class,
+                // Built inside the BtcBlockchainSettingsViewModel definition from its injected Blockchain.
+                BtcBlockchainSettingsService::class,
             )
         val injections = injectedParameters(
             definition<AccountTypeNotSupportedViewModel>(AccountTypeNotSupportedSheet.Input::class),
@@ -171,6 +190,7 @@ class KoinGraphTest : KoinTest {
             definition<CoinCategoryMarketDataChartService>(String::class),
             definition<PlatformChartService>(Platform::class),
             *marketMetricsInjections(),
+            *walletInjections(),
             *coinPageInjections(),
             *coinSubPageInjections(),
             definition<TransactionPollingManager>(List::class),
@@ -228,6 +248,18 @@ class KoinGraphTest : KoinTest {
         }
         return graph.keys.firstNotNullOfOrNull(::visit)
     }
+
+    private fun walletInjections() = arrayOf(
+        definition<WatchAddressViewModel>(AddressParserChain::class),
+        definition<SelectBlockchainsViewModel>(AccountType::class),
+        definition<BackupConfirmKeyViewModel>(IRandomProvider::class),
+        definition<RecoveryPhraseViewModel>(RecoveryPhrasePage.RecoveryPhraseType::class),
+        definition<SelectBackupItemsViewModel>(BackupViewItemFactory::class),
+        definition<BackupLocalPasswordViewModel>(BackupType::class, PassphraseValidator::class),
+        definition<RestoreLocalViewModel>(String::class, BackupViewItemFactory::class),
+        definition<EvmNetworkViewModel>(Blockchain::class),
+        definition<AddRpcViewModel>(Blockchain::class),
+    )
 
     private fun marketMetricsInjections() = arrayOf(
         definition<TvlViewModel>(TvlService::class, TvlViewItemFactory::class),

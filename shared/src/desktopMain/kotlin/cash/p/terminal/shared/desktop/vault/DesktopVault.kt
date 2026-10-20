@@ -21,7 +21,7 @@ import java.io.File
 import java.util.Date
 
 /**
- * The desktop password gate: owns the slot file, the unlocked session and the lockout counter.
+ * The desktop password gate: owns the slot file, the storage session and the lockout counter.
  * Every operation takes ownership of the passwords handed to it and wipes them.
  */
 class DesktopVault(
@@ -35,6 +35,9 @@ class DesktopVault(
     private val logger = Logger.withTag("DesktopVault")
     private val mutex = Mutex()
 
+    @Volatile
+    private var session: DesktopStorageSession? = null
+
     private val _state = MutableStateFlow<DesktopVaultState>(
         if (passwordVault.exists()) DesktopVaultState.Locked else DesktopVaultState.NoVault
     )
@@ -45,6 +48,20 @@ class DesktopVault(
 
     suspend fun unlock(password: CharArray): UnlockOutcome =
         operation("unlock", UnlockOutcome.Failed, password) { unlockInternal(password) }
+
+    /** Re-asks the password inside the app; failures count into the same lockout as unlock. */
+    suspend fun verifyPassword(password: CharArray): UnlockOutcome =
+        operation("verifyPassword", UnlockOutcome.Failed, password) {
+            when (val check = checkPassword(password)) {
+                is PasswordCheck.Correct -> {
+                    check.vaultSession.close()
+                    UnlockOutcome.Success
+                }
+                is PasswordCheck.Wrong -> UnlockOutcome.WrongPassword(check.attemptsLeft)
+                is PasswordCheck.LockedOut -> UnlockOutcome.LockedOut(check.until)
+                PasswordCheck.Corrupted -> UnlockOutcome.Corrupted
+            }
+        }
 
     /** The persisted lockout, so a restarted unlock screen shows it before any attempt. */
     suspend fun lockedOutUntil(): Date? = withContext(dispatcherProvider.io) {
@@ -60,12 +77,22 @@ class DesktopVault(
             }
         }
 
-    /** Covers the application with the unlock screen first, then takes the data down. */
+    /**
+     * The storage of the current process: null before the first unlock or create and after a wipe or quit.
+     * The lock does not close it, so screens and singletons that outlive a lock keep working.
+     */
+    fun openSession(): DesktopStorageSession? = session
+
+    /** Covers the application with the unlock screen; the storage stays open until wipe or quit. */
     suspend fun lock() = mutex.withLock {
-        val session = (_state.value as? DesktopVaultState.Unlocked)?.session ?: return@withLock
-        _state.value = DesktopVaultState.Locked
+        if (_state.value is DesktopVaultState.Unlocked) _state.value = DesktopVaultState.Locked
+    }
+
+    /** App quit: covers the application first, then takes the data down. */
+    suspend fun close() = mutex.withLock {
+        if (_state.value is DesktopVaultState.Unlocked) _state.value = DesktopVaultState.Locked
         // Once the screen says locked, the keys have to go down even if the caller is cancelled.
-        withContext(NonCancellable + dispatcherProvider.io) { session.close() }
+        withContext(NonCancellable + dispatcherProvider.io) { closeSession() }
     }
 
     suspend fun wipe(): WipeOutcome = operation("wipe", WipeOutcome.FAILED) { wipeInternal() }
@@ -92,40 +119,63 @@ class DesktopVault(
     private fun unlockInternal(password: CharArray): UnlockOutcome {
         // A second press after a successful first one must not open a second session over the open one.
         if (_state.value is DesktopVaultState.Unlocked) return UnlockOutcome.Success
+        val vaultSession = when (val check = checkPassword(password)) {
+            is PasswordCheck.Correct -> check.vaultSession
+            is PasswordCheck.Wrong -> return UnlockOutcome.WrongPassword(check.attemptsLeft)
+            is PasswordCheck.LockedOut -> return UnlockOutcome.LockedOut(check.until)
+            PasswordCheck.Corrupted -> return UnlockOutcome.Corrupted
+        }
+        val openSession = session
+            ?: return startSession(vaultSession, UnlockOutcome.Success, UnlockOutcome.StorageUnavailable)
+        // The storage stayed open under the lock: the password only proves who came back.
+        vaultSession.close()
+        _state.value = DesktopVaultState.Unlocked(openSession)
+        return UnlockOutcome.Success
+    }
+
+    /** The slot check under the shared lockout counter; a correct password hands over its vault session. */
+    private fun checkPassword(password: CharArray): PasswordCheck {
         // Covers a request queued on the mutex before the lockout began.
-        (lockoutManager.currentState as? LockoutState.Locked)?.let { return UnlockOutcome.LockedOut(it.until) }
+        (lockoutManager.currentState as? LockoutState.Locked)?.let { return PasswordCheck.LockedOut(it.until) }
         return when (val result = passwordVault.unlock(password)) {
-            is UnlockResult.Success -> unlockSucceeded(result.session)
+            is UnlockResult.Success -> passwordAccepted(result.session)
             UnlockResult.WrongPassword -> {
                 lockoutManager.didFailUnlock()
                 when (val lockout = lockoutManager.currentState) {
-                    is LockoutState.Locked -> UnlockOutcome.LockedOut(lockout.until)
-                    is LockoutState.Unlocked -> UnlockOutcome.WrongPassword(lockout.attemptsLeft)
+                    is LockoutState.Locked -> PasswordCheck.LockedOut(lockout.until)
+                    is LockoutState.Unlocked -> PasswordCheck.Wrong(lockout.attemptsLeft)
                 }
             }
-            UnlockResult.Corrupted -> UnlockOutcome.Corrupted
+            UnlockResult.Corrupted -> PasswordCheck.Corrupted
         }
     }
 
-    /** The counter reset writes to disk, so its failure must not leave the fresh session open. */
-    private fun unlockSucceeded(vaultSession: VaultSession): UnlockOutcome {
+    /** The counter reset writes to disk, so its failure must not leave the fresh vault session open. */
+    private fun passwordAccepted(vaultSession: VaultSession): PasswordCheck {
+        // A slot file swapped under the open storage must not unlock it with its own password.
+        if (session?.isOpenedBy(vaultSession) == false) {
+            vaultSession.close()
+            logger.w { "The slot file does not belong to the open storage" }
+            return PasswordCheck.Corrupted
+        }
         try {
             lockoutManager.dropFailedAttempts()
         } catch (e: Throwable) {
             vaultSession.close()
             throw e
         }
-        return startSession(vaultSession, UnlockOutcome.Success, UnlockOutcome.StorageUnavailable)
+        return PasswordCheck.Correct(vaultSession)
     }
 
     private fun <T> startSession(vaultSession: VaultSession, success: T, failure: T): T {
-        val session = openSession(vaultSession)
-        _state.value = session?.let(DesktopVaultState::Unlocked) ?: DesktopVaultState.Locked
-        return if (session == null) failure else success
+        val opened = openStorage(vaultSession)
+        session = opened
+        _state.value = opened?.let(DesktopVaultState::Unlocked) ?: DesktopVaultState.Locked
+        return if (opened == null) failure else success
     }
 
     /** Missing SQLCipher natives surface as a LinkageError; that is an open failure like any other. */
-    private fun openSession(vaultSession: VaultSession): DesktopStorageSession? {
+    private fun openStorage(vaultSession: VaultSession): DesktopStorageSession? {
         val cause = try {
             return DesktopStorageSession.open(vaultSession, files, driverFactory)
         } catch (e: CancellationException) {
@@ -139,8 +189,15 @@ class DesktopVault(
         return null
     }
 
+    /** Unpublished before it is closed, so no reader gets a session that is going down. */
+    private fun closeSession() {
+        val closing = session ?: return
+        session = null
+        closing.close()
+    }
+
     private suspend fun wipeInternal(): WipeOutcome {
-        (_state.value as? DesktopVaultState.Unlocked)?.session?.close()
+        closeSession()
         _state.value = DesktopVaultState.Locked
         // Before the erase: a restart without slots must not find the old preferences.
         preferencesReset.resetStored()
@@ -179,4 +236,11 @@ class DesktopVault(
         // Outside the lock on purpose: a request cancelled while queued owns its password too.
         passwords.forEach { it.fill('\u0000') }
     }
+}
+
+private sealed interface PasswordCheck {
+    class Correct(val vaultSession: VaultSession) : PasswordCheck
+    class Wrong(val attemptsLeft: Int?) : PasswordCheck
+    class LockedOut(val until: Date) : PasswordCheck
+    data object Corrupted : PasswordCheck
 }

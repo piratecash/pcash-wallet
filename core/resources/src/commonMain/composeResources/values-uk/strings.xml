@@ -101,7 +101,7 @@
     <string name="CreateWallet_N_Words">%s слів</string>
     <string name="create_wallet_n_words_monero">%s слів (тільки Monero)</string>
     <string name="CreateWallet_Error_EmptyPassphrase">Поле для кодової фрази не може бути порожнім</string>
-    <string name="CreateWallet_Error_PassphraseForbiddenSymbols">Будь ласка, використовуйте лише підтримувані символи: A-Z a-z 0-9 \' " ` &amp; / ? ! : ; . , ~ * $ = + - [ ](){} &lt;&gt; \ _ # @ | % </string>
+    <string name="CreateWallet_Error_PassphraseForbiddenSymbols">Будь ласка, використовуйте лише підтримувані символи: A-Z a-z 0-9 \u0027 " ` &amp; / ? ! : ; . , ~ * $ = + - [ ](){} &lt;&gt; \ _ # @ | % </string>
     <string name="CreateWallet_Error_InvalidConfirmation">Підтверджена кодова фраза не збігається</string>
     <string name="create_wallet_error_failed">Не вдалося створити гаманець. Спробуйте ще раз або перезапустіть додаток.</string>
     <string name="CreateWallet_PassphraseDescription">Кодова фраза додає додатковий шар безпеки для гаманців. Щоб відновити такий гаманець, потрібні як мнемонік, так і кодова фраза.\n\nКодова фраза також полегшує користувачам можливість мати безліч мульти-монетних гаманців, використовуючи одну фразу відновлення, але інший пароль.</string>
@@ -374,7 +374,7 @@
     <string name="monero_full_wallet_recovery_warning">Це відновлення може тривати довго.</string>
     <string name="monero_show_address_on_trezor">Показати адресу на Trezor</string>
     <string name="receive_create_another_address_title">Створити ще одну адресу?</string>
-    <string name="receive_create_another_address_warning">У вас вже є нова адреса, на яку ще не надходили кошти. Створення нової адреси не обов\'язкове. Бажаєте продовжити?</string>
+    <string name="receive_create_another_address_warning">У вас вже є нова адреса, на яку ще не надходили кошти. Створення нової адреси не обов\u0027язкове. Бажаєте продовжити?</string>
     <string name="receive_dont_ask_again">Більше не запитувати (зберегти налаштування)</string>
     <string name="receive_create_new">Створити нову</string>
     <string name="receive_keep_current">Залишити поточну</string>
@@ -529,7 +529,7 @@
     <!--WalletConnect-->
     <string name="WalletConnect_Status">Статус</string>
     <string name="WalletConnect_Approve_Hint">Натиснувши Підключити, ви дозволяєте цьому застосунку переглядати вашу публічну адресу. Це важливий крок безпеки, щоб захистити ваші дані від потенційних ризиків фішингу.</string>
-    <string name="WalletConnect_Reconnect_Hint">Не вдалося встановити з\'єднання. Спробуйте підключитися ще раз.</string>
+    <string name="WalletConnect_Reconnect_Hint">Не вдалося встановити з\u0027єднання. Спробуйте підключитися ще раз.</string>
     <string name="WalletConnect_Error_InvalidUrl">Невірна URL-адреса</string>
     <string name="WalletConnect_Status_Offline">Офлайн</string>
     <string name="WalletConnect_Status_Online">Онлайн</string>
@@ -541,7 +541,7 @@
     <string name="WalletConnect_SignMessageRequest_ShowMessageTitle">Повідомлення для підпису</string>
     <string name="WalletConnect_SignMessageRequest_ButtonSign">Підписати</string>
     <string name="WalletConnect_Error_NoWallet">Вам потрібно створити або імпортувати гаманець, перш ніж використовувати WalletConnect</string>
-    <string name="WalletConnect_Error_NeedBackup">Створіть резервну копію фрази відновлення та пов\'язаного пароля, щоб ви могли відновити гаманець, якщо ваш телефон буде загублено, вкрадено, пошкоджено тощо.</string>
+    <string name="WalletConnect_Error_NeedBackup">Створіть резервну копію фрази відновлення та пов\u0027язаного пароля, щоб ви могли відновити гаманець, якщо ваш телефон буде загублено, вкрадено, пошкоджено тощо.</string>
     <string name="WalletConnect_Error_UnsupportedChainId">Непідтримуваний блокчейн</string>
     <string name="WalletConnect_Error_NoSuitableAccount">Немає відповідного облікового запису</string>
     <string name="WalletConnect_Error_NoSuitableEvmKit">Немає відповідного EVM-кита</string>
@@ -589,7 +589,7 @@
     <string name="estimated_fee">Орієнтовна комісія</string>
     <string name="Swap_PriceImpact">Відхилення від рин. ціни</string>
     <string name="Swap_PriceImpactTooHigh">Різниця між ринковою ціною та очікуваною розрахунковою ціною занадто висока.</string>
-    <string name="Swap_PriceImpactWarning">Важливо! Ви отримуєте надзвичайно несприятливу ціну. Це пов\'язано з вкрай низькою ліквідністю.</string>
+    <string name="Swap_PriceImpactWarning">Важливо! Ви отримуєте надзвичайно несприятливу ціну. Це пов\u0027язано з вкрай низькою ліквідністю.</string>
     <string name="Swap_MinimumReceived">Гарантована сума</string>
     <string name="Swap_Slippage">Відхилення від курсу</string>
     <string name="Swap_Recipient">Отримувач</string>
@@ -747,7 +747,7 @@
     <string name="TransactionInfo_Id">ID Транзакції</string>
     <string name="TransactionInfo_Service">Сервіс</string>
     <string name="TransactionInfo_RawTransaction">Непідтверджена транзакція</string>
-    <string name="TransactionInfo_ContactName">Ім\'я контакту</string>
+    <string name="TransactionInfo_ContactName">Ім\u0027я контакту</string>
     <string name="TransactionInfo_To">Кому</string>
     <string name="TransactionInfo_From">Від</string>
     <string name="TransactionInfo_Address">Адреса</string>
@@ -838,7 +838,7 @@
     <string name="address_poisoning_info_bullet_1">збігатися за першими та останніми символами;</string>
     <string name="address_poisoning_info_bullet_2">виглядати майже ідентично у списку нещодавніх транзакцій;</string>
     <string name="address_poisoning_info_bullet_3">маскуватися під раніше використовувані вами адреси.</string>
-    <string name="send_poison_address_alert">Ця адреса може бути пов\'язана з атакою підміни адреси. Вона може імітувати раніше використану вами адресу. Перевірте повну адресу перед відправленням коштів.</string>
+    <string name="send_poison_address_alert">Ця адреса може бути пов\u0027язана з атакою підміни адреси. Вона може імітувати раніше використану вами адресу. Перевірте повну адресу перед відправленням коштів.</string>
     <string name="send_poison_accept_risk">Я розумію та приймаю ризик</string>
 
     <string name="StatusInfo_Pending">В очікуванні</string>
@@ -848,7 +848,7 @@
     <string name="StatusInfo_PendingDescription">Транзакція ще не підтверджена в блокчейні. Транзакції, надіслані з рекомендованою або вищою комісією, зазвичай обробляються протягом хвилин. Транзакції, надіслані з низькою комісією, можуть оброблятися протягом кількох годин або днів і навіть відхилятися. Врахуйте, що оновлення статусу кожної транзакції, що відображається в інтерфейсі гаманця P.CASH, зазвичай відбувається з невеликою затримкою. </string>
     <string name="StatusInfo_ProcessingDescription">Транзакція вже включена в блокчейн, але поки не оброблена. На даному етапі транзакції вважаються завершеними для невеликих платежів. Щодо завершення обробки більших транзакцій, варто дочекатися зміни статусу.</string>
     <string name="StatusInfo_ConfirmedDescription">Транзакція завершена і вважається постійною та незворотною.</string>
-    <string name="StatusInfo_FailedDescription">Транзакція не була оброблена і передача коштів не відбулася. Залежно від причини невдачі, деякі невдалі транзакції можуть використовувати комісію за транзакцію. Транзакції, які були замінені або скасовані іншою транзакцією, не споживають транзакційні збори і також будуть показані як \"не вдалося\". Додаток P.CASH не може показати причину невдалих транзакцій, але користувачі можуть подивитися це в etherscan.io.</string>
+    <string name="StatusInfo_FailedDescription">Транзакція не була оброблена і передача коштів не відбулася. Залежно від причини невдачі, деякі невдалі транзакції можуть використовувати комісію за транзакцію. Транзакції, які були замінені або скасовані іншою транзакцією, не споживають транзакційні збори і також будуть показані як \u0022не вдалося\u0022. Додаток P.CASH не може показати причину невдалих транзакцій, але користувачі можуть подивитися це в etherscan.io.</string>
     <!-- Transaction Info Options -->
     <string name="TransactionInfoOptions_SpeedUp_Title">Прискорення</string>
     <string name="TransactionInfoOptions_SpeedUp_Button">Надіслати повторно</string>
@@ -916,10 +916,10 @@
     <string name="Settings_JoinUs">Слідкуйте за нами</string>
     <string name="Settings_JoinUs_Description">Слідкуйте за нами в соціальних мережах, щоб першими дізнаватися про останні новини, оновлення та нові функції проєкту!</string>
     <string name="Settings_PersonalSupport">Персональна підтримка</string>
-    <string name="Settings_PersonalSupport_EnterTelegramAccountDescription">Введіть ім\'я вашого облікового запису Telegram, щоб розпочати чат з нашою командою. Ми зв\'яжемося з вами та почнемо працювати над вашою проблемою, як тільки побачимо її.</string>
+    <string name="Settings_PersonalSupport_EnterTelegramAccountDescription">Введіть ім\u0027я вашого облікового запису Telegram, щоб розпочати чат з нашою командою. Ми зв\u0027яжемося з вами та почнемо працювати над вашою проблемою, як тільки побачимо її.</string>
     <string name="Settings_PersonalSupport_YouAlreadyRequestedSupportDescription">Ви вже запросили приватний чат, знайдіть його в Telegram</string>
     <string name="Settings_PersonalSupport_Account">Обліковий запис</string>
-    <string name="Settings_PersonalSupport_UsernameHint">\@username</string>
+    <string name="Settings_PersonalSupport_UsernameHint">\u0040username</string>
     <string name="Settings_PersonalSupport_Requested">Запрошено</string>
     <string name="Settings_PersonalSupport_Request">Запит</string>
     <string name="Settings_PersonalSupport_NewRequest">Новий запит</string>
@@ -1023,7 +1023,7 @@
     <!--Add RPC Source-->
     <string name="AddEvmSyncSource_RpcUrl">URL-адреса RPC</string>
     <string name="AddEvmSyncSource_AddRPCSource">Додати джерело RPC</string>
-    <string name="AddEvmSyncSource_BasicAuthentication">Базова автентифікація (необов\'язково)</string>
+    <string name="AddEvmSyncSource_BasicAuthentication">Базова автентифікація (необов\u0027язково)</string>
     <string name="AddEvmSyncSource_Warning_UrlExists">Джерело RPC з такою URL-адресою вже існує</string>
     <string name="AddEvmSyncSource_Error_InvalidUrl">Введена URL-адреса невірна. Допустима URL-адреса повинна мати одну з наступних схем: http, https, ws, wss</string>
     <!--Btc Blockchain Settings -->
@@ -1109,7 +1109,7 @@
     <string name="BtcBlockchainSettings_TransactionSettings">Налаштування транзакцій</string>
     <string name="BtcBlockchainSettings_TransactionInputsOutputs">Входи / виходи транзакцій</string>
     <string name="BtcBlockchainSettings_TransactionInputsOutputsSettingsDescription">Змініть спосіб структурування транзакцій, щоб ускладнити відстеження ваших операцій з BTC, LTC, BCH.</string>
-    <string name="BtcBlockchainSettings_TransactionInputsOutputsDescription">Багато біткойн-транзакцій, а також транзакції, що здійснюються в схожих криптовалютах, включаючи Bitcoin Cash, Dash і Litecoin, генерують два типи вихідних даних. Перший тип вихідних даних - це сума, що надсилається одержувачу, а другий - решта, що повертається відправнику. Керуючись принципом обробки транзакцій більшості гаманців, третя сторона може легко зрозуміти, які з вихідних даних були надіслані приймаючій стороні, а також дізнатися суму решти, повернуту відправнику. Оскільки решта, повернута відправнику, пізніше використовується для здійснення інших транзакцій, зв\'язок між цими двома типами вихідних даних стає очевидним.\n\nГаманець P.CASH застосовує спеціальні заходи для приховування напрямків надсилання двох типів вихідних даних.\n\nКористувачам P.CASH доступні два варіанти усунення цієї проблеми:\n\n1. Мікшування: Порядок виведення транзакцій рандомізується для кожної транзакції. Решта може бути першим типом вихідних даних, а іноді, навпаки, другим. Якщо користувач довіряє розробнику програми, то рекомендується використовувати цей варіант.\n\n2. Детермінування: існує загальноприйнятий стандарт для впорядкування вихідних даних транзакцій під назвою BIP69. У гаманцях з відкритим вихідним кодом застосування цього стандарту гарантує, що користувачам гаманця не потрібно буде покладатися на принцип реалізації порядку вихідних даних розробниками програми. Оскільки цей стандарт є новим, багато гаманців його поки що не впровадили. Тому в блокчейні видно, чи була транзакція надіслана з гаманця з таким стандартом чи ні.</string>
+    <string name="BtcBlockchainSettings_TransactionInputsOutputsDescription">Багато біткойн-транзакцій, а також транзакції, що здійснюються в схожих криптовалютах, включаючи Bitcoin Cash, Dash і Litecoin, генерують два типи вихідних даних. Перший тип вихідних даних - це сума, що надсилається одержувачу, а другий - решта, що повертається відправнику. Керуючись принципом обробки транзакцій більшості гаманців, третя сторона може легко зрозуміти, які з вихідних даних були надіслані приймаючій стороні, а також дізнатися суму решти, повернуту відправнику. Оскільки решта, повернута відправнику, пізніше використовується для здійснення інших транзакцій, зв\u0027язок між цими двома типами вихідних даних стає очевидним.\n\nГаманець P.CASH застосовує спеціальні заходи для приховування напрямків надсилання двох типів вихідних даних.\n\nКористувачам P.CASH доступні два варіанти усунення цієї проблеми:\n\n1. Мікшування: Порядок виведення транзакцій рандомізується для кожної транзакції. Решта може бути першим типом вихідних даних, а іноді, навпаки, другим. Якщо користувач довіряє розробнику програми, то рекомендується використовувати цей варіант.\n\n2. Детермінування: існує загальноприйнятий стандарт для впорядкування вихідних даних транзакцій під назвою BIP69. У гаманцях з відкритим вихідним кодом застосування цього стандарту гарантує, що користувачам гаманця не потрібно буде покладатися на принцип реалізації порядку вихідних даних розробниками програми. Оскільки цей стандарт є новим, багато гаманців його поки що не впровадили. Тому в блокчейні видно, чи була транзакція надіслана з гаманця з таким стандартом чи ні.</string>
     <!--Info screen-->
     <string name="Info_Title">Інформація</string>
     <!--Setting_Security-->
@@ -1173,7 +1173,7 @@
     <string name="SettingsShare_Title">Поділитися</string>
     <string name="SettingsShare_Text">Продовжити</string>
     <!--Setting_Contact-->
-    <string name="SettingsContact_Title">Зв\'яжіться з нами</string>
+    <string name="SettingsContact_Title">Зв\u0027яжіться з нами</string>
 
     <!-- Settings Launch Screen -->
     <string name="SettingsLaunchScreen_Auto">За замовчуванням</string>
@@ -1224,7 +1224,7 @@
 \n- BIP-86 (найновіший)
 \n- MWEB (приватний)
 \n
-\nХоча гаманець P.CASH підтримує всі п\'ять форматів, рекомендується використовувати %2$s гаманець, що працює у форматі BIP84. Гаманці, що працюють у цьому форматі, сплачують найменшу комісію при надсиланні %3$s транзакцій.</string>
+\nХоча гаманець P.CASH підтримує всі п\u0027ять форматів, рекомендується використовувати %2$s гаманець, що працює у форматі BIP84. Гаманці, що працюють у цьому форматі, сплачують найменшу комісію при надсиланні %3$s транзакцій.</string>
     <string name="ManageCoins_BchTypeDescription">Існує 2 формати адрес, які гаманці Bitcoin Cash можуть використовувати для прийому вхідних платежів:\n\n- TYPE 0 (старіший)\n- TYPE 145 (новіший)\n\nХоча гаманець P.CASH підтримує обидва формати, рекомендується використовувати гаманець Bitcoin Cash, що працює у форматі TYPE 145.</string>
     <string name="ManageCoins_ContractAddress">АДРЕСА КОНТРАКТУ</string>
 
@@ -1508,7 +1508,7 @@
     <string name="CoinPage_OscillatorsSettings">Осцилятори</string>
     <string name="CoinPage_EmaSettingsDescription">У EMA, SMA та WMA використовуються середні значення для технічного аналізу:\n\nEMA підкреслює останні ціни для швидших реакцій.\nСередні ціни SMA для загального уявлення тренду.\nЧутливість та шумове зниження ВМА шляхом лінійного зважування останніх даних.</string>
     <string name="CoinPage_RsiSettingsDescription">Індекс відносної сили (RSI) - це осцилятор імпульсу, який вимірює швидкість та зміни цін, визначаючи перекуплені (понад 70) або перепродані (менше 30) ринкові умови. Він також може виявляти зміни цін через розбіжності.</string>
-    <string name="CoinPage_MacdSettingsDescription">Дивергенція Ковзної Середньої Конвергенції (MACD) — індикатор динаміки, який відстежує відношення між двома ЕМА ціни безпеки. Це сигналізує про можливість купівлі або продажу, коли лінія MACD (12-ти періодна EMA мінус 26-ти періодів EMA) перетинає дев\'ять періодів EMA, відому як сигнальна лінія.</string>
+    <string name="CoinPage_MacdSettingsDescription">Дивергенція Ковзної Середньої Конвергенції (MACD) — індикатор динаміки, який відстежує відношення між двома ЕМА ціни безпеки. Це сигналізує про можливість купівлі або продажу, коли лінія MACD (12-ти періодна EMA мінус 26-ти періодів EMA) перетинає дев\u0027ять періодів EMA, відому як сигнальна лінія.</string>
     <string name="CoinPage_Type">Тип</string>
     <string name="CoinPage_Period">Період</string>
     <string name="CoinPage_RsiLength">Довжина RSI</string>
@@ -1620,7 +1620,7 @@
     <string name="CoinAnalytics_PoweredByDeFi">За підтримки De.Fi</string>
     <string name="CoinAnalytics_CountItems">%d Елементів</string>
     <string name="TechnicalAdvice_Title">Технічні індикатори</string>
-    <string name="TechnicalAdvice_IndicatorsDisclaimer">Завжди пам\'ятайте про застосування управління ризиками, та зверніть увагу, що це не фінансова порада.</string>
+    <string name="TechnicalAdvice_IndicatorsDisclaimer">Завжди пам\u0027ятайте про застосування управління ризиками, та зверніть увагу, що це не фінансова порада.</string>
     <string name="TechnicalAdvice_OverBought">перекуплений</string>
     <string name="TechnicalAdvice_OverSold">перепроданий</string>
     <string name="TechnicalAdvice_Down">вниз</string>
@@ -1646,7 +1646,7 @@
     <string name="TechnicalAdvice_MacdNegative">нижче</string>
     <string name="TechnicalAdvice_MacdAdvice">MACD. Оцінює силу тренду, враховуючи середню зміну ціни. Щоденне значення гістограми становить %1$s (%2$s). Ціна активу в глобальному масштабі може змінитися на %3$s.</string>
     <string name="TechnicalAdvice_InfoTitle">Технічні індикатори</string>
-    <string name="TechnicalAdvice_InfoDescription">Ми використовуємо стратегію Bollinger Bands + RSI для визначення сигналів торгівлі. Всі розрахунки базуються на щоденних свічках та надають рекомендації на середньостроковий період. Суть стратегії полягає в тому, що ціна активу повинна досягти екстремуму, вибиваючись з каналу Bollinger Bands, а RSI повинен знаходитися в зоні перекупленості/перепроданості. Після того, як ціна повертається в канал, існує висока ймовірність того, що ціна повернеться до середніх значень або спробує пробити канал з іншого боку. Зверніть увагу, що стратегія може давати кілька помилкових сигналів під час сильних ринкових рухів, перш ніж з\'явиться правильний сигнал.\n\nБудь ласка, пам\'ятайте, що дуже важливо застосовувати управління ризиками при торгівлі та пам\'ятати про скорочення збитків, якщо ситуація на ринку зміниться!</string>
+    <string name="TechnicalAdvice_InfoDescription">Ми використовуємо стратегію Bollinger Bands + RSI для визначення сигналів торгівлі. Всі розрахунки базуються на щоденних свічках та надають рекомендації на середньостроковий період. Суть стратегії полягає в тому, що ціна активу повинна досягти екстремуму, вибиваючись з каналу Bollinger Bands, а RSI повинен знаходитися в зоні перекупленості/перепроданості. Після того, як ціна повертається в канал, існує висока ймовірність того, що ціна повернеться до середніх значень або спробує пробити канал з іншого боку. Зверніть увагу, що стратегія може давати кілька помилкових сигналів під час сильних ринкових рухів, перш ніж з\u0027явиться правильний сигнал.\n\nБудь ласка, пам\u0027ятайте, що дуже важливо застосовувати управління ризиками при торгівлі та пам\u0027ятати про скорочення збитків, якщо ситуація на ринку зміниться!</string>
     <string name="TechnicalAdvice_ShowDetails">Показати деталі</string>
     <string name="TechnicalAdvice_HideDetails">Приховати деталі</string>
     <string name="TechnicalAdvice_Indicators_StrongBuy">Активно купувати</string>
@@ -1668,7 +1668,7 @@
     <string name="SubscriptionInfo_Indicators_Title">Індикатори тренду цін</string>
     <string name="SubscriptionInfo_Indicators_Info">Відкрийте для себе актуальні токени на основі показників технічного аналізу.</string>
     <string name="SubscriptionInfo_PersonalSupport_Title">Персональна підтримка</string>
-    <string name="SubscriptionInfo_PersonalSupport_Info">Зв\'яжіться з нашою командою безпосередньо через Telegram для отримання особистої допомоги.</string>
+    <string name="SubscriptionInfo_PersonalSupport_Info">Зв\u0027яжіться з нашою командою безпосередньо через Telegram для отримання особистої допомоги.</string>
     <string name="SubscriptionInfo_GetPremium">Отримайте преміум</string>
     <string name="SubscriptionInfo_HavePremium">У мене вже є преміум</string>
     <string name="Nfts_PriceType_Days_7">7Д сер.</string>
@@ -1757,7 +1757,7 @@
     <string name="alert_keys_invalidated_title">Помилка Android Keystore</string>
     <string name="alert_keys_invalidated_description">Ключі шифрування гаманця були анульовані системою безпеки Android. Це може статися при зміні налаштувань відбитка пальця або блокування екрана.\n\nДля відновлення доступу повторно імпортуйте гаманець, використовуючи вашу резервну фразу.\n\nЯкщо це трапляється часто, спробуйте вимкнути Google Smart Lock у налаштуваннях пристрою та перезавантажте телефон.</string>
     <string name="Alert_TitleWarning">Увага</string>
-    <string name="Alert_CustomKeyboardIsUsed">Здається, ваш пристрій використовує клавіатуру, що не є типовою. P.CASH рекомендує вибрати на вашому пристрої типову клавіатуру, оскільки сторонні клавіатури потенційно можуть збирати та розкривати інформацію про користувачів. \n\nНатисніть кнопку \'Пропустити\', якщо ви хочете продовжувати використовувати обрану вами клавіатуру.</string>
+    <string name="Alert_CustomKeyboardIsUsed">Здається, ваш пристрій використовує клавіатуру, що не є типовою. P.CASH рекомендує вибрати на вашому пристрої типову клавіатуру, оскільки сторонні клавіатури потенційно можуть збирати та розкривати інформацію про користувачів. \n\nНатисніть кнопку \u0027Пропустити\u0027, якщо ви хочете продовжувати використовувати обрану вами клавіатуру.</string>
     <string name="Alert_DeviceIsRootedWarning">Команда P.CASH рекомендує запускати програму лише на нерутованих телефонах (без джейлбрейка).\n\nЗверніть увагу, що при використанні рутованого пристрою програма більше не захищатиме вашу криптовалюту від шкідливого ПЗ.</string>
     <!--OS Pin-->
     <string name="OSPin_Confirm_Title">PIN-код телефону</string>
@@ -1823,7 +1823,7 @@
     <string name="delete_all_contacts">Видалити всі контакти</string>
     <string name="Contacts_ActionMore">Ще</string>
     <string name="Contacts_Error_DefinedAddress">Ця адреса вже використовується для %s</string>
-    <string name="Contacts_Error_DefinedName">Таке ім\'я вже існує</string>
+    <string name="Contacts_Error_DefinedName">Таке ім\u0027я вже існує</string>
 
     <!-- Stacking screen -->
     <string name="stacking">Стекінг</string>
@@ -1986,7 +1986,7 @@
     <string name="Send_Address_NotSmartContractCheck_Info3">Виявлено: адреса є смарт-контрактом. Переконайтеся, що ви дійсно хочете надіслати кошти на цю адресу. У деяких випадках такі перекази можуть бути незворотними або призвести до втрати коштів. Продовжуйте лише якщо впевнені.</string>
     <string name="Send_Address_BlacklistCheck_Info1">Перевіряє, чи вказана адреса призначення в офіційних або неофіційних чорних списках.</string>
     <string name="Send_Address_BlacklistCheck_Info2">Чистий: адреса не знайдена в чорних списках.</string>
-    <string name="Send_Address_BlacklistCheck_Info3">Виявлено: Адреса знаходиться в чорному списку і може бути пов\'язана з юридичними або безпековими ризиками. Дійте з обережністю. Багато криптовалютних бірж обмежують користувачів, які переказують кошти з гаманців, що взаємодіяли з адресами з чорних списків. Майте це на увазі.</string>
+    <string name="Send_Address_BlacklistCheck_Info3">Виявлено: Адреса знаходиться в чорному списку і може бути пов\u0027язана з юридичними або безпековими ризиками. Дійте з обережністю. Багато криптовалютних бірж обмежують користувачів, які переказують кошти з гаманців, що взаємодіяли з адресами з чорних списків. Майте це на увазі.</string>
     <string name="Send_Address_SanctionCheck">Перевірка на санкції</string>
     <string name="Send_Address_SanctionCheck_Info1">Перевіряє, чи підпадає адреса одержувача під міжнародні санкції, використовуючи дані з Chainalysis.com.</string>
     <string name="Send_Address_SanctionCheck_Info2">Чистий: санкції не виявлені.</string>
@@ -2041,10 +2041,10 @@
     <string name="aml_medium_risk">Середній ризик</string>
     <string name="aml_high_risk">Високий ризик</string>
     <string name="SettingsAddressChecker_TokenBlacklistCheck">Перевірка %s за чорним списком</string>
-    <string name="SettingsAddressChecker_ChainalysisCheckDescription">Chainalysis - це платформа для аналізу блокчейнів, яка надає інструменти для відстеження, розслідування та оцінки ризиків криптовалютних адрес. Вона допомагає виявляти адреси, пов\'язані з санкціями, шахрайством та іншою незаконною діяльністю.</string>
+    <string name="SettingsAddressChecker_ChainalysisCheckDescription">Chainalysis - це платформа для аналізу блокчейнів, яка надає інструменти для відстеження, розслідування та оцінки ризиків криптовалютних адрес. Вона допомагає виявляти адреси, пов\u0027язані з санкціями, шахрайством та іншою незаконною діяльністю.</string>
     <string name="SettingsAddressChecker_HashditCheckDescription">HashDit - це платформа безпеки, яка дозволяє користувачам перевіряти адреси гаманців на наявність ризиків, таких як санкції та статус у чорних списках. Вона допомагає уникати взаємодії з потенційно шкідливими або заблокованими адресами.</string>
-    <string name="SettingsAddressChecker_TetherBlacklistDescription">Дозволяє перевірити, чи внесено адресу гаманця до чорного списку Tether (USDT). Якщо адреса знаходиться в чорному списку, пов\'язані з нею токени USDT можуть бути заморожені, що робить їх недоступними та непереказними. Ця перевірка допомагає користувачам уникати взаємодії з адресами з високим рівнем ризику або обмеженнями.</string>
-    <string name="SettingsAddressChecker_UsdcBlacklistDescription">Дозволяє перевірити, чи внесено адресу гаманця до чорного списку емітента USDC (Circle). Адреси в чорному списку можуть мати заморожені баланси USDC з причин, пов\'язаних із дотриманням нормативних вимог, шахрайством або регуляторними обмеженнями. Ця перевірка знижує ризик надсилання коштів на заблоковані або підозрілі гаманці.</string>
+    <string name="SettingsAddressChecker_TetherBlacklistDescription">Дозволяє перевірити, чи внесено адресу гаманця до чорного списку Tether (USDT). Якщо адреса знаходиться в чорному списку, пов\u0027язані з нею токени USDT можуть бути заморожені, що робить їх недоступними та непереказними. Ця перевірка допомагає користувачам уникати взаємодії з адресами з високим рівнем ризику або обмеженнями.</string>
+    <string name="SettingsAddressChecker_UsdcBlacklistDescription">Дозволяє перевірити, чи внесено адресу гаманця до чорного списку емітента USDC (Circle). Адреси в чорному списку можуть мати заморожені баланси USDC з причин, пов\u0027язаних із дотриманням нормативних вимог, шахрайством або регуляторними обмеженнями. Ця перевірка знижує ризик надсилання коштів на заблоковані або підозрілі гаманці.</string>
     <string name="SettingsAddressChecker_PyusdBlacklistDescription">Дозволяє перевірити, чи внесено адресу гаманця до чорного списку PYUSD, випущеного PayPal. Кошти на таких адресах можуть бути заморожені та недоступні для використання, як правило, з юридичних або безпекових причин. Цей інструмент допомагає забезпечити безпечніші та відповідні вимогам транзакції з PYUSD.</string>
     <string name="need_setup_system_pin">Щоб використовувати цю функцію, необхідно встановити PIN-код системи Android.</string>
     <string name="SettingsSecurity_system_pin_enable">Увімкнути системний PIN-код</string>
@@ -2081,7 +2081,7 @@
     <string name="calculator_pin_settings_unlock_method_pin">введіть свій PIN безпосередньо і натисніть «=» — наприклад, 1234 =</string>
     <string name="calculator_pin_settings_unlock_method_expression">введіть будь-який вираз, результат якого дорівнює PIN, і натисніть «=» — наприклад, 1000+234 =</string>
     <string name="calculator_pin_settings_leading_zeros">якщо ваш PIN починається з нуля — вводьте тільки значущі цифри. Наприклад, для PIN 000010 достатньо ввести 10 =</string>
-    <string name="calculator_pin_settings_throttle_invisible">Блокування за часом ніяк не відображається в калькуляторі. Калькулятор продовжує працювати у звичайному режимі — жодних повідомлень про помилку не з\'являється.</string>
+    <string name="calculator_pin_settings_throttle_invisible">Блокування за часом ніяк не відображається в калькуляторі. Калькулятор продовжує працювати у звичайному режимі — жодних повідомлень про помилку не з\u0027являється.</string>
     <string name="calculator_pin_settings_outro">Для всіх це просто калькулятор.</string>
     <string name="calculator_auto_lock_title">Блокування</string>
     <string name="calculator_error_divide_by_zero">Не можна ділити на 0</string>
@@ -2207,7 +2207,7 @@
     <string name="Send_Address_ErrorMessage_AmlDetected_Description">Введена адреса знаходиться в чорному списку AML. Транзакції на цю адресу можуть призвести до втрати коштів або інших ризиків. Будь ласка, перевірте дані одержувача перед продовженням.</string>
     <string name="Send_Address_AmlCheck_Info1">Перевіряє, чи знаходиться адреса призначення в списку alpha-aml.com.</string>
     <string name="Send_Address_AmlCheck_Info2">Чисто: Немає прапорців у чорному списку.</string>
-    <string name="Send_Address_AmlCheck_Info3">Виявлено: Адреса знаходиться в списку alpha-aml.com і може бути пов\'язана з юридичними або безпековими ризиками. Діяйте обережно. Багато криптобірж обмежують користувачів, які вносять або виводять кошти з гаманців, що взаємодіяли з адресами з чорного списку. Врахуйте це.</string>
+    <string name="Send_Address_AmlCheck_Info3">Виявлено: Адреса знаходиться в списку alpha-aml.com і може бути пов\u0027язана з юридичними або безпековими ризиками. Діяйте обережно. Багато криптобірж обмежують користувачів, які вносять або виводять кошти з гаманців, що взаємодіяли з адресами з чорного списку. Врахуйте це.</string>
     <string name="error_cannot_create_log_file">Не вдалося створити файл журналу. Переконайтеся, що на пристрої достатньо вільного місця.</string>
 
     <!-- Safety Rules -->
@@ -2390,7 +2390,7 @@
     <string name="update_interval_day_full">1 день</string>
     <string name="update_interval_week_full">1 тиждень</string>
     <string name="update_interval_month_full">1 місяць</string>
-    <string name="balance_zcash_migration_required">Міграція обов\'язкова</string>
+    <string name="balance_zcash_migration_required">Міграція обов\u0027язкова</string>
     <string name="balance_zcash_migration_title">Міграція на Ironwood</string>
     <string name="balance_zcash_migration_description">Оновлення мережі Zcash:\nПеремістіть свої ZEC із пулу Orchard до нового пулу Ironwood. Ваші кошти в безпеці.</string>
     <string name="balance_zcash_migration_migrate">Перенести</string>
@@ -2462,7 +2462,7 @@
     <string name="beam_wallet_stop_failed">Не вдалося зупинити гаманець BEAM</string>
     <string name="desktop_already_running">P.CASH уже запущено</string>
     <string name="desktop_create_password_title">Створіть пароль</string>
-    <string name="desktop_create_password_description">Пароль захищає гаманці, що зберігаються на цьому комп\'ютері. Він ніде не зберігається і не може бути відновлений.</string>
+    <string name="desktop_create_password_description">Пароль захищає гаманці, що зберігаються на цьому комп\u0027ютері. Він ніде не зберігається і не може бути відновлений.</string>
     <string name="desktop_password_repeat_hint">Повторіть пароль</string>
     <string name="desktop_password_mismatch">Паролі не збігаються</string>
     <string name="desktop_password_requirement_length">Щонайменше 8 символів</string>
@@ -2472,7 +2472,7 @@
     <string name="desktop_password_requirement_special">Спеціальний символ</string>
     <string name="desktop_password_caps_lock">Увімкнено Caps Lock</string>
     <string name="desktop_password_switch_layout">Перемкніть розкладку клавіатури: пароль може містити лише латинські символи</string>
-    <string name="desktop_create_password_warning">Без цього пароля дані на цьому комп\'ютері неможливо відкрити, і відновити їх неможливо. Зберігайте резервну копію кожної фрази відновлення.</string>
+    <string name="desktop_create_password_warning">Без цього пароля дані на цьому комп\u0027ютері неможливо відкрити, і відновити їх неможливо. Зберігайте резервну копію кожної фрази відновлення.</string>
     <string name="desktop_create_password_failed">Не вдалося зберегти пароль. Перевірте вільне місце на диску та права доступу</string>
     <string name="desktop_unlock_title">Введіть пароль</string>
     <string name="desktop_unlock_wrong_password">Неправильний пароль</string>
@@ -2480,7 +2480,7 @@
     <string name="desktop_unlock_failed">Не вдалося прочитати файл ключа. Спробуйте ще раз</string>
     <string name="desktop_unlock_forgot_password">Забули пароль?</string>
     <string name="desktop_forgot_password_title">Забули пароль</string>
-    <string name="desktop_forgot_password_warning">Гаманці, контакти, налаштування та історія, що зберігаються на цьому комп\'ютері, будуть видалені. Кошти в блокчейні не постраждають: гаманці можна відновити лише за фразами відновлення.</string>
+    <string name="desktop_forgot_password_warning">Гаманці, контакти, налаштування та історія, що зберігаються на цьому комп\u0027ютері, будуть видалені. Кошти в блокчейні не постраждають: гаманці можна відновити лише за фразами відновлення.</string>
     <string name="desktop_forgot_password_action">Видалити дані</string>
     <string name="desktop_forgot_password_failed">Не вдалося видалити дані</string>
     <string name="desktop_change_password_title">Змінити пароль</string>

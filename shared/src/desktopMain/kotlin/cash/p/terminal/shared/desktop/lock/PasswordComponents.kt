@@ -1,5 +1,6 @@
 package cash.p.terminal.shared.desktop.lock
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Box
@@ -7,9 +8,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
@@ -33,6 +36,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.resources.Button_Understand
 import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Unlock_AttemptsLeft
+import cash.p.terminal.resources.Unlock_WalletDisabledUntil
 import cash.p.terminal.resources.desktop_password_caps_lock
 import cash.p.terminal.resources.desktop_password_requirement_digit
 import cash.p.terminal.resources.desktop_password_requirement_length
@@ -53,9 +58,17 @@ import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.PasswordRequirement
+import io.horizontalsystems.core.helpers.DateHelper
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import androidx.compose.runtime.LaunchedEffect
+import cash.p.terminal.resources.Password
+import cash.p.terminal.resources.desktop_unlock_data_unreadable
+import cash.p.terminal.resources.desktop_unlock_failed
+import cash.p.terminal.resources.desktop_unlock_wrong_password
+import cash.p.terminal.shared.desktop.vault.UnlockOutcome
+import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
 
 /** The lock screens cover the whole window: an opaque sheet with one centered column on it. */
 @Composable
@@ -125,6 +138,56 @@ internal fun DesktopPasswordField(
     }
 }
 
+/** The password, what the shared lockout reports after a failed attempt, and the submit button. */
+@Composable
+internal fun PasswordCheckForm(
+    uiState: PasswordCheckUiState,
+    submitTitle: String,
+    onPasswordChange: (String) -> Unit,
+    onSubmit: () -> Unit,
+) {
+    val focusRequester = remember { FocusRequester() }
+    LaunchedEffect(focusRequester) { focusRequester.requestFocus() }
+
+    Column(Modifier.fillMaxWidth()) {
+        DesktopPasswordField(
+            value = uiState.password,
+            hint = stringResource(Res.string.Password),
+            onValueChange = onPasswordChange,
+            onSubmit = onSubmit,
+            enabled = !uiState.inProgress,
+            error = uiState.errorMessage(),
+            focusRequester = focusRequester,
+        )
+        uiState.attemptsLeft?.let {
+            VSpacer(8.dp)
+            subhead2_grey(text = stringResource(Res.string.Unlock_AttemptsLeft, it))
+        }
+        uiState.lockedOut?.let {
+            VSpacer(8.dp)
+            val until = DateHelper.getOnlyTime(it.until)
+            subhead2_grey(text = stringResource(Res.string.Unlock_WalletDisabledUntil, until))
+        }
+        VSpacer(24.dp)
+        ButtonPrimaryYellow(
+            modifier = Modifier.fillMaxWidth(),
+            title = submitTitle,
+            onClick = onSubmit,
+            enabled = uiState.canSubmit,
+            loadingIndicator = uiState.inProgress,
+        )
+    }
+}
+
+@Composable
+private fun PasswordCheckUiState.errorMessage(): String? = when (outcome) {
+    is UnlockOutcome.WrongPassword -> stringResource(Res.string.desktop_unlock_wrong_password)
+    UnlockOutcome.Failed -> stringResource(Res.string.desktop_unlock_failed)
+    UnlockOutcome.Corrupted,
+    UnlockOutcome.StorageUnavailable -> stringResource(Res.string.desktop_unlock_data_unreadable)
+    else -> null
+}
+
 private fun KeyEvent.isSubmit(): Boolean =
     type == KeyEventType.KeyDown && (key == Key.Enter || key == Key.NumPadEnter)
 
@@ -183,6 +246,13 @@ private fun RequirementRow(title: StringResource, met: Boolean) {
 }
 
 internal val PasswordFormMaxWidth = 420.dp
+
+/** Scrolls across the whole window but keeps the fields as narrow as on the lock screens. */
+internal fun Modifier.centeredForm(scrollState: ScrollState): Modifier = fillMaxWidth()
+    .verticalScroll(scrollState)
+    .wrapContentWidth()
+    .widthIn(max = PasswordFormMaxWidth)
+    .padding(horizontal = 16.dp)
 
 private fun PasswordRequirement.title(): StringResource = when (this) {
     PasswordRequirement.MIN_LENGTH -> Res.string.desktop_password_requirement_length

@@ -27,7 +27,6 @@ import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.core.managers.NftMetadataSyncer
 import cash.p.terminal.core.managers.PriceManager
 import cash.p.terminal.core.managers.ReleaseNotesManager
-import cash.p.terminal.core.managers.SolanaRpcSourceManager
 import cash.p.terminal.core.managers.StellarAccountManager
 import cash.p.terminal.core.managers.ThorchainAccountManager
 import cash.p.terminal.core.managers.ThorchainKitManagers
@@ -166,7 +165,6 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
         val releaseNotesManager: ReleaseNotesManager by inject(ReleaseNotesManager::class.java)
         val evmSyncSourceManager: EvmSyncSourceManager by inject(EvmSyncSourceManager::class.java)
         val evmBlockchainManager: EvmBlockchainManager by inject(EvmBlockchainManager::class.java)
-        val solanaRpcSourceManager: SolanaRpcSourceManager by inject(SolanaRpcSourceManager::class.java)
         val evmLabelManager: EvmLabelManager by inject(EvmLabelManager::class.java)
         val balanceHiddenManager: BalanceHiddenManager by inject(IBalanceHiddenManager::class.java)
         val contactsRepository: ContactsRepository by inject(ContactsRepository::class.java)

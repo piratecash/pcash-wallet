@@ -1,16 +1,19 @@
 package cash.p.terminal.modules.zcashnetwork
 
-import cash.p.terminal.R
 import cash.p.terminal.core.Caution
 import cash.p.terminal.core.managers.AddResult
 import cash.p.terminal.core.managers.ZcashServer
 import cash.p.terminal.core.managers.ZcashServerManager
 import cash.p.terminal.modules.zcashnetwork.addserver.AddZcashServerViewModel
-import cash.p.terminal.strings.helpers.Translator
+import cash.p.terminal.resources.AddEvmSyncSource_Warning_UrlExists
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.zcash_network_invalid_url
+import io.horizontalsystems.core.Translator
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
+import org.jetbrains.compose.resources.StringResource
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -26,9 +29,9 @@ class AddZcashServerViewModelTest {
 
     @Before
     fun setUp() {
-        // Translator has no Android context here; the resource id itself identifies the message.
+        // Translator has no Android context here; the resource key itself identifies the message.
         mockkObject(Translator)
-        every { Translator.getString(any<Int>()) } answers { firstArg<Int>().toString() }
+        every { Translator.getString(any(), *anyVararg()) } answers { firstArg<StringResource>().key }
     }
 
     @After
@@ -57,7 +60,7 @@ class AddZcashServerViewModelTest {
 
         assertFalse(viewModel.uiState.closeScreen)
         assertEquals(
-            Caution(R.string.AddEvmSyncSource_Warning_UrlExists.toString(), Caution.Type.Warning),
+            Caution(Res.string.AddEvmSyncSource_Warning_UrlExists.key, Caution.Type.Warning),
             viewModel.uiState.caution
         )
     }
@@ -71,7 +74,7 @@ class AddZcashServerViewModelTest {
 
         assertFalse(viewModel.uiState.closeScreen)
         assertEquals(
-            Caution(R.string.zcash_network_invalid_url.toString(), Caution.Type.Error),
+            Caution(Res.string.zcash_network_invalid_url.key, Caution.Type.Error),
             viewModel.uiState.caution
         )
     }

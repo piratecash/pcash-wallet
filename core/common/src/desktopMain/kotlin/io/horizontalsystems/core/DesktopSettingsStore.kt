@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 
 /** Both contracts are synchronous, so reads and writes block on DataStore (a small local file). */
 class DesktopSettingsStore(
@@ -97,12 +98,41 @@ class DesktopSettingsStore(
             _autoLockIntervalFlow.value = value
         }
 
+    private val cachedFlows = ConcurrentHashMap<String, CachedFlow<*>>()
+
+    /** Values of features this module cannot depend on; cleared with everything else. */
+    fun flag(name: String): Boolean? = read(booleanPreferencesKey(name))
+
+    fun setFlag(name: String, value: Boolean) {
+        write(booleanPreferencesKey(name), value)
+        cachedFlows[name]?.refresh()
+    }
+
+    fun string(name: String): String? = read(stringPreferencesKey(name))
+
+    fun setString(name: String, value: String?) {
+        write(stringPreferencesKey(name), value)
+        cachedFlows[name]?.refresh()
+    }
+
+    /** One flow per [name]: later calls get the first one, so the decoder must not differ between callers. */
+    fun <T> stringFlow(name: String, decode: (String?) -> T): StateFlow<T> =
+        cachedFlow(name) { decode(string(name)) }
+
+    fun flagFlow(name: String, default: Boolean): StateFlow<Boolean> =
+        cachedFlow(name) { flag(name) ?: default }
+
     /** Drops every stored value, the cached ones included. */
     fun clearAll() {
         runBlocking { dataStore.edit { it.clear() } }
         _marketsTabEnabledFlow.value = marketsTabEnabledStored()
         _autoLockIntervalFlow.value = autoLockIntervalStored()
+        cachedFlows.values.forEach(CachedFlow<*>::refresh)
     }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> cachedFlow(name: String, readValue: () -> T): StateFlow<T> =
+        (cachedFlows.getOrPut(name) { CachedFlow(readValue) } as CachedFlow<T>).flow
 
     private fun marketsTabEnabledStored() = read(MARKETS_TAB_ENABLED) ?: true
 
@@ -115,6 +145,15 @@ class DesktopSettingsStore(
     private fun <T> write(key: Preferences.Key<T>, value: T?) = runBlocking {
         dataStore.edit { if (value == null) it.remove(key) else it[key] = value }
         Unit
+    }
+
+    private class CachedFlow<T>(private val readValue: () -> T) {
+        private val _flow = MutableStateFlow(readValue())
+        val flow: StateFlow<T> = _flow.asStateFlow()
+
+        fun refresh() {
+            _flow.value = readValue()
+        }
     }
 
     private companion object {

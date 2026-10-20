@@ -4,7 +4,17 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.managers.DefaultCurrencyManager
 import cash.p.terminal.entities.SyncerState
+import cash.p.terminal.entities.LaunchPage
+import cash.p.terminal.modules.balance.BalanceViewTypeManager
 import cash.p.terminal.modules.chart.ChartIndicatorManager
+import cash.p.terminal.modules.settings.appearance.LaunchScreenService
+import cash.p.terminal.modules.settings.appearance.PriceChangeInterval
+import cash.p.terminal.modules.theme.ThemeService
+import cash.p.terminal.modules.theme.ThemeType
+import cash.p.terminal.shared.desktop.DesktopAppearanceSettingsStore
+import cash.p.terminal.shared.desktop.DesktopBalanceHiddenManager
+import cash.p.terminal.shared.desktop.backup.DesktopSettingsBackupFixture
+import cash.p.terminal.wallet.balance.BalanceViewType
 import cash.p.terminal.modules.chart.ChartIndicatorSetting
 import cash.p.terminal.shared.desktop.DesktopChartIndicatorStorage
 import cash.p.terminal.vault.PasswordVault
@@ -33,6 +43,7 @@ import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 class DesktopVaultWipeTest {
@@ -86,6 +97,57 @@ class DesktopVaultWipeTest {
 
         assertEquals(CreateOutcome.SUCCESS, vault.create(password()))
         assertTrue(fixture.files.vaultFile.exists())
+    }
+
+    @Test
+    fun wipe_appearanceChanged_putsTheManagersAndStoredValuesBackToDefaults() = runTest {
+        val settingsStore = DesktopSettingsStore(File(fixture.dataDirectory, "settings.preferences_pb"), scope)
+        val appearanceStore = DesktopAppearanceSettingsStore(settingsStore)
+        val themeService = ThemeService(appearanceStore)
+        val launchScreenService = LaunchScreenService(appearanceStore)
+        val balanceViewTypeManager = BalanceViewTypeManager(appearanceStore)
+        val balanceHiddenManager = DesktopBalanceHiddenManager(settingsStore)
+        val vault = vault(
+            settingsStore = settingsStore,
+            themeService = themeService,
+            launchScreenService = launchScreenService,
+            balanceViewTypeManager = balanceViewTypeManager,
+        )
+        vault.create(password())
+        themeService.setThemeType(ThemeType.Dark)
+        launchScreenService.setLaunchScreen(LaunchPage.Market)
+        balanceViewTypeManager.setViewType(BalanceViewType.FiatThenCoin)
+        appearanceStore.marketsTabEnabled = false
+        appearanceStore.balanceTabButtonsEnabled = false
+        appearanceStore.priceChangeInterval = PriceChangeInterval.FROM_UTC_MIDNIGHT
+        balanceHiddenManager.setBalanceAutoHidden(true)
+
+        assertEquals(WipeOutcome.SUCCESS, vault.wipe())
+
+        assertEquals(ThemeType.System, themeService.optionsFlow.value.selected)
+        assertEquals(LaunchPage.Auto, launchScreenService.optionsFlow.value.selected)
+        assertEquals(BalanceViewType.CoinThenFiat, balanceViewTypeManager.balanceViewTypeFlow.value)
+        assertTrue(appearanceStore.marketsTabEnabledFlow.value)
+        assertTrue(appearanceStore.balanceTabButtonsEnabledFlow.value)
+        assertEquals(PriceChangeInterval.LAST_24H, appearanceStore.priceChangeIntervalFlow.value)
+        assertFalse(balanceHiddenManager.balanceAutoHidden)
+    }
+
+    @Test
+    fun wipe_restoredBackupSettings_newVaultExportsTheDefaults() = runTest {
+        val backupFixture = DesktopSettingsBackupFixture()
+        try {
+            val defaults = backupFixture.export()
+            backupFixture.backup.restore(DesktopSettingsBackupFixture.androidSettings(), DesktopSettingsBackupFixture.PASSPHRASE)
+            assertNotEquals(defaults, backupFixture.export())
+
+            assertEquals(WipeOutcome.SUCCESS, backupFixture.vault.wipe())
+            assertEquals(CreateOutcome.SUCCESS, backupFixture.vault.create(password()))
+
+            assertEquals(defaults, backupFixture.export())
+        } finally {
+            backupFixture.tearDown()
+        }
     }
 
     @Test
@@ -181,6 +243,9 @@ class DesktopVaultWipeTest {
         currencyManager: CurrencyManager = mockk(relaxed = true),
         chartIndicatorManager: ChartIndicatorManager = mockk(relaxed = true),
         languageManager: DesktopLanguageManager = mockk(relaxed = true),
+        themeService: ThemeService = mockk(relaxed = true),
+        launchScreenService: LaunchScreenService = mockk(relaxed = true),
+        balanceViewTypeManager: BalanceViewTypeManager = mockk(relaxed = true),
     ) = DesktopVault(
         files = fixture.files,
         passwordVault = PasswordVault(fixture.files.vaultFile),
@@ -191,6 +256,9 @@ class DesktopVaultWipeTest {
             currencyManager = currencyManager,
             chartIndicatorManager = chartIndicatorManager,
             languageManager = languageManager,
+            themeService = themeService,
+            launchScreenService = launchScreenService,
+            balanceViewTypeManager = balanceViewTypeManager,
         ),
         dispatcherProvider = dispatcherProvider,
         driverFactory = DefaultSqlCipherDriverFactory(),

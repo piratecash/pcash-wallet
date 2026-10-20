@@ -57,5 +57,7 @@ data class Colors(
     val calculatorEqualsBackground: Color,
     val calculatorBackspaceIcon: Color,
     val contentOnColor: Color,
+    val premiumGradientStart: Color,
+    val premiumGradientEnd: Color,
     val transparent: Color = Color.Transparent,
 )

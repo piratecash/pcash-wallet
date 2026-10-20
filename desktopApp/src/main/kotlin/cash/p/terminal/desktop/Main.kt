@@ -16,9 +16,12 @@ import cash.p.terminal.feature.market.di.marketFeatureModule
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.desktop_already_running
 import cash.p.terminal.shared.desktop.DesktopForegroundEffect
+import cash.p.terminal.shared.desktop.DesktopWalletSession
 import cash.p.terminal.shared.desktop.desktopFeatureModule
+import cash.p.terminal.shared.desktop.rememberDesktopDarkTheme
 import cash.p.terminal.shared.desktop.lock.DesktopInactivityLock
 import cash.p.terminal.shared.desktop.lock.DesktopRoot
+import cash.p.terminal.shared.desktop.vault.DesktopVault
 import cash.p.terminal.shared.desktop.vault.SingleInstanceLock
 import cash.p.terminal.shared.market.MarketCatalogSyncer
 import cash.p.terminal.ui_compose.components.body_leah
@@ -31,8 +34,11 @@ import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.crossfade
 import coil3.svg.SvgDecoder
 import io.horizontalsystems.core.DesktopLanguageManager
+import io.horizontalsystems.ethereumkit.core.EthereumKit
+import io.horizontalsystems.sqlcipher.SqlCipherDriver
 import java.util.Locale
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.context.startKoin
@@ -49,12 +55,18 @@ private val applicationScope = MainScope()
 private var instanceLock: SingleInstanceLock? = null
 
 fun main() {
+    // The packager re-signs natives inside jars, so the driver loads its copy from the app resources.
+    System.getProperty("compose.application.resources.dir")?.let {
+        System.setProperty(SqlCipherDriver.NATIVE_DIR_PROPERTY, it)
+    }
     secureDesktopAppDataDirectory()
     instanceLock = SingleInstanceLock.acquire(desktopAppDataFile(INSTANCE_LOCK_FILE))
     if (instanceLock == null) {
         showAlreadyRunning()
         return
     }
+    // Registers the crypto provider the kits sign and derive keys with, before anything touches a key.
+    EthereumKit.init()
     val koin = startKoin {
         modules(networkModule, marketModule, marketFeatureModule, desktopFeatureModule, desktopModule)
     }.koin
@@ -62,13 +74,24 @@ fun main() {
     koin.get<DesktopLanguageManager>()
     SingletonImageLoader.setSafe(::buildImageLoader)
     koin.get<MarketCatalogSyncer>().start(applicationScope)
+    koin.get<DesktopWalletSession>().start(applicationScope)
     val inactivityLock = koin.get<DesktopInactivityLock>()
     inactivityLock.start(applicationScope)
     inactivityLock.watchUserInput()
+    val vault = koin.get<DesktopVault>()
     application {
-        Window(onCloseRequest = ::exitApplication, title = APPLICATION_NAME) {
+        val quit: () -> Unit = {
+            applicationScope.launch {
+                try {
+                    vault.close()
+                } finally {
+                    exitApplication()
+                }
+            }
+        }
+        Window(onCloseRequest = quit, title = APPLICATION_NAME) {
             DesktopForegroundEffect()
-            ComposeAppTheme {
+            ComposeAppTheme(darkTheme = rememberDesktopDarkTheme()) {
                 DesktopRoot(APPLICATION_VERSION)
             }
         }

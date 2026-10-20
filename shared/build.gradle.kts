@@ -44,6 +44,7 @@ kotlin {
                 implementation(project(":core:wallet"))
                 implementation(project(":core:storage"))
                 implementation(project(":feature-market"))
+                implementation(project(":feature-wallet"))
                 implementation(libs.compose.multiplatform.runtime)
                 implementation(libs.compose.multiplatform.ui)
                 implementation(libs.compose.multiplatform.foundation)
@@ -62,6 +63,9 @@ kotlin {
             dependencies {
                 implementation(libs.compose.multiplatform.ui.tooling.preview)
                 implementation(project(":core:vault"))
+                implementation(project(":feature-premium"))
+                implementation(libs.hd.wallet.kit)
+                implementation(libs.monero.kit)
                 implementation(libs.gson)
                 implementation(libs.rxjava)
                 implementation(libs.datastore.preferences.core)
@@ -80,6 +84,10 @@ kotlin {
                 implementation(kotlin("test"))
                 implementation(libs.mockk)
                 implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.koin.test.junit4)
+                implementation(libs.ktor.client.core)
+                implementation(project(":components:chartview"))
+                implementation(libs.ethereum.kit)
             }
         }
     }
