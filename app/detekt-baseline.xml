@@ -33,7 +33,6 @@
     <ID>AppSingletonAccess:BalanceViewItemFactory.kt$BalanceViewItemFactory$App.numberFormatter</ID>
     <ID>AppSingletonAccess:BalanceViewModel.kt$BalanceViewModel$App.tonConnectManager</ID>
     <ID>AppSingletonAccess:BaseActivity.kt$BaseActivity$App.sqlCipherLoadFailed</ID>
-    <ID>AppSingletonAccess:BaseCurrencySettingsModule.kt$BaseCurrencySettingsModule.Factory$App.currencyManager</ID>
     <ID>AppSingletonAccess:BaseThorChainProvider.kt$BaseThorChainProvider$App.marketKit</ID>
     <ID>AppSingletonAccess:BaseThorChainProviderTest.kt$BaseThorChainProviderTest$App.marketKit</ID>
     <ID>AppSingletonAccess:BchAddressTypeSelectViewModel.kt$BchAddressTypeSelectViewModel.Factory$App.walletManager</ID>
@@ -44,52 +43,14 @@
     <ID>AppSingletonAccess:BlockchainSettingsModule.kt$BlockchainSettingsModule.Factory$App.marketKit</ID>
     <ID>AppSingletonAccess:BlockchainSettingsModule.kt$BlockchainSettingsModule.Factory$App.solanaRpcSourceManager</ID>
     <ID>AppSingletonAccess:BtcBlockchainSettingsModule.kt$BtcBlockchainSettingsModule.Factory$App.btcBlockchainManager</ID>
-    <ID>AppSingletonAccess:ChartCoinValueFormatterShortened.kt$ChartCoinValueFormatterShortened$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:ChartCurrencyValueFormatterShortened.kt$ChartCurrencyValueFormatterShortened$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:ChartNumberFormatterShortened.kt$ChartNumberFormatterShortened$App.numberFormatter</ID>
     <ID>AppSingletonAccess:ChooseContactViewModel.kt$ChooseContactViewModel.Factory$App.contactsRepository</ID>
-    <ID>AppSingletonAccess:CoinAnalyticsModule.kt$CoinAnalyticsModule.Factory$App.accountManager</ID>
-    <ID>AppSingletonAccess:CoinAnalyticsModule.kt$CoinAnalyticsModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:CoinAnalyticsModule.kt$CoinAnalyticsModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:CoinAnalyticsModule.kt$CoinAnalyticsModule.Factory$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:CoinAnalyticsModule.kt$CoinAnalyticsModule.Factory$App.subscriptionManager</ID>
-    <ID>AppSingletonAccess:CoinAnalyticsService.kt$CoinAnalyticsService$App.evmBlockchainManager</ID>
-    <ID>AppSingletonAccess:CoinInvestmentsModule.kt$CoinInvestmentsModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:CoinInvestmentsModule.kt$CoinInvestmentsModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:CoinInvestmentsModule.kt$CoinInvestmentsModule.Factory$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:CoinMajorHoldersModule.kt$CoinMajorHoldersModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:CoinMajorHoldersModule.kt$CoinMajorHoldersModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:CoinMajorHoldersModule.kt$CoinMajorHoldersModule.Factory$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:CoinMarketsModule.kt$CoinMarketsModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:CoinMarketsModule.kt$CoinMarketsModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:CoinMarketsViewModel.kt$CoinMarketsViewModel$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:CoinModule.kt$CoinModule.Factory$App.localStorage</ID>
-    <ID>AppSingletonAccess:CoinModule.kt$CoinModule.Factory$App.marketFavoritesManager</ID>
-    <ID>AppSingletonAccess:CoinModule.kt$CoinModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:CoinModule.kt$CoinModule.Factory$App.subscriptionManager</ID>
-    <ID>AppSingletonAccess:CoinOverviewModule.kt$CoinOverviewModule.Factory$App.accountManager</ID>
-    <ID>AppSingletonAccess:CoinOverviewModule.kt$CoinOverviewModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:CoinOverviewModule.kt$CoinOverviewModule.Factory$App.languageManager</ID>
-    <ID>AppSingletonAccess:CoinOverviewModule.kt$CoinOverviewModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:CoinOverviewModule.kt$CoinOverviewModule.Factory$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:CoinOverviewModule.kt$CoinOverviewModule.Factory$App.walletManager</ID>
-    <ID>AppSingletonAccess:CoinRankModule.kt$CoinRankModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:CoinRankModule.kt$CoinRankModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:CoinRankModule.kt$CoinRankModule.Factory$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:CoinReportsModule.kt$CoinReportsModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:CoinTreasuriesModule.kt$CoinTreasuriesModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:CoinTreasuriesModule.kt$CoinTreasuriesModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:CoinTreasuriesModule.kt$CoinTreasuriesModule.Factory$App.numberFormatter</ID>
     <ID>AppSingletonAccess:CoinTweetsModule.kt$CoinTweetsModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:CoinValue.kt$CoinValue$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:ComposeUtils.kt$App.numberFormatter</ID>
     <ID>AppSingletonAccess:ContactsModule.kt$ContactsModule.AddressViewModelFactory$App.marketKit</ID>
     <ID>AppSingletonAccess:ContactsPage.kt$App.marketKit</ID>
     <ID>AppSingletonAccess:CreateHardwareWalletUseCase.kt$CreateHardwareWalletUseCase$App.accountFactory</ID>
     <ID>AppSingletonAccess:CreateHardwareWalletUseCase.kt$CreateHardwareWalletUseCase$App.walletActivator</ID>
     <ID>AppSingletonAccess:DataFieldRecipientExtended.kt$DataFieldRecipientExtended$App.contactsRepository</ID>
     <ID>AppSingletonAccess:DataFieldSlippage.kt$DataFieldSlippage$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:DatabaseConverters.kt$DatabaseConverters$App.Companion.encryptionManager</ID>
     <ID>AppSingletonAccess:DefaultBalanceService.kt$DefaultBalanceService.Companion$App.accountManager</ID>
     <ID>AppSingletonAccess:DefaultBalanceService.kt$DefaultBalanceService.Companion$App.adapterManager</ID>
     <ID>AppSingletonAccess:DefaultBalanceService.kt$DefaultBalanceService.Companion$App.appDatabase</ID>
@@ -108,10 +69,6 @@
     <ID>AppSingletonAccess:Eip20RevokeConfirmViewModel.kt$Eip20RevokeConfirmViewModel.Factory$App.contactsRepository</ID>
     <ID>AppSingletonAccess:Eip20RevokeConfirmViewModel.kt$Eip20RevokeConfirmViewModel.Factory$App.currencyManager</ID>
     <ID>AppSingletonAccess:EnterAddressValidator.kt$MemoAddressValidator$App.adapterManager</ID>
-    <ID>AppSingletonAccess:EtfModule.kt$EtfModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:EtfModule.kt$EtfModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:EtfPage.kt$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:EtfViewModel.kt$EtfViewModel$App.numberFormatter</ID>
     <ID>AppSingletonAccess:EvmBlockchainHelper.kt$EvmBlockchainHelper$App.evmBlockchainManager</ID>
     <ID>AppSingletonAccess:EvmBlockchainHelper.kt$EvmBlockchainHelper$App.evmSyncSourceManager</ID>
     <ID>AppSingletonAccess:EvmNetworkModule.kt$EvmNetworkModule.Factory$App.evmSyncSourceManager</ID>
@@ -136,43 +93,9 @@
     <ID>AppSingletonAccess:ManageWalletsModule.kt$ManageWalletsModule.Factory$App.walletManager</ID>
     <ID>AppSingletonAccess:MarkdownModule.kt$MarkdownModule.Factory$App.connectivityManager</ID>
     <ID>AppSingletonAccess:MarkdownModule.kt$MarkdownModule.Factory$App.networkManager</ID>
-    <ID>AppSingletonAccess:MarketCategoryModule.kt$MarketCategoryModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:MarketCategoryModule.kt$MarketCategoryModule.Factory$App.languageManager</ID>
-    <ID>AppSingletonAccess:MarketCategoryModule.kt$MarketCategoryModule.Factory$App.marketFavoritesManager</ID>
-    <ID>AppSingletonAccess:MarketCategoryModule.kt$MarketCategoryModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:MarketFiltersModule.kt$MarketFiltersModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:MarketFiltersModule.kt$MarketFiltersModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:MarketFiltersResultsModule.kt$MarketFiltersResultsModule.Factory$App.marketFavoritesManager</ID>
     <ID>AppSingletonAccess:MarketKitExtensions.kt$App.priceManager</ID>
-    <ID>AppSingletonAccess:MarketModule.kt$App.priceManager</ID>
-    <ID>AppSingletonAccess:MarketModule.kt$MarketModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:MarketModule.kt$MarketModule.Factory$App.localStorage</ID>
-    <ID>AppSingletonAccess:MarketModule.kt$MarketModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:MarketModule.kt$MarketModule.Factory$App.marketStorage</ID>
-    <ID>AppSingletonAccess:MarketOverviewMetrics.kt$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:MarketOverviewModule.kt$MarketOverviewModule.Factory$App.backgroundManager</ID>
-    <ID>AppSingletonAccess:MarketOverviewModule.kt$MarketOverviewModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:MarketOverviewModule.kt$MarketOverviewModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:MarketOverviewModule.kt$MarketOverviewModule.Factory$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:MarketOverviewModule.kt$TopPairViewItem.Companion$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:MarketOverviewViewModel.kt$MarketOverviewViewModel$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:MarketPlatformModule.kt$MarketPlatformModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:MarketPlatformModule.kt$MarketPlatformModule.Factory$App.marketFavoritesManager</ID>
-    <ID>AppSingletonAccess:MarketPlatformModule.kt$MarketPlatformModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:MarketScreen.kt$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:MarketSearchModule.kt$MarketSearchModule.Factory$App.localStorage</ID>
-    <ID>AppSingletonAccess:MarketSearchModule.kt$MarketSearchModule.Factory$App.marketFavoritesManager</ID>
-    <ID>AppSingletonAccess:MarketSearchModule.kt$MarketSearchModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:MarketTopCoinsViewModel.kt$MarketTopCoinsViewModel.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:MarketTopCoinsViewModel.kt$MarketTopCoinsViewModel.Factory$App.marketFavoritesManager</ID>
-    <ID>AppSingletonAccess:MarketTopCoinsViewModel.kt$MarketTopCoinsViewModel.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:MarketViewItem.kt$MarketViewItem.Companion$App.numberFormatter</ID>
     <ID>AppSingletonAccess:MarketWidget.kt$MarketWidget$App.numberFormatter</ID>
     <ID>AppSingletonAccess:MarketWidgetManager.kt$MarketWidgetManager.Companion$App.localStorage</ID>
-    <ID>AppSingletonAccess:MarketWidgetRepository.kt$MarketWidgetRepository$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:MetricsPageModule.kt$MetricsPageModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:MetricsPageModule.kt$MetricsPageModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:MoneroFileDaoTest.kt$MoneroFileDaoTest$CoreApp.encryptionManager</ID>
     <ID>AppSingletonAccess:NavController.kt$App.pinComponent</ID>
     <ID>AppSingletonAccess:NavController.kt$App.termsManager</ID>
     <ID>AppSingletonAccess:NetworkFeeWarningScreen.kt$App.numberFormatter</ID>
@@ -192,8 +115,6 @@
     <ID>AppSingletonAccess:NftHoldingsModule.kt$NftHoldingsModule.Factory$App.marketKit</ID>
     <ID>AppSingletonAccess:NftHoldingsPage.kt$App.accountManager</ID>
     <ID>AppSingletonAccess:OfflineSignScreen.kt$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:OverallScoreInfoPage.kt$App.currencyManager</ID>
-    <ID>AppSingletonAccess:OverallScoreInfoPage.kt$App.numberFormatter</ID>
     <ID>AppSingletonAccess:PersonalSupportModule.kt$PersonalSupportModule.Factory$App.localStorage</ID>
     <ID>AppSingletonAccess:PersonalSupportModule.kt$PersonalSupportModule.Factory$App.marketKit</ID>
     <ID>AppSingletonAccess:PinComponent.kt$PinComponent$App.localStorage</ID>
@@ -201,8 +122,6 @@
     <ID>AppSingletonAccess:PinComponentSecureResetLevelTest.kt$PinComponentSecureResetLevelTest$App.localStorage</ID>
     <ID>AppSingletonAccess:PinSetModule.kt$PinSetModule.Factory$App.pinComponent</ID>
     <ID>AppSingletonAccess:PrivateKeysModule.kt$PrivateKeysModule.Factory$App.evmBlockchainManager</ID>
-    <ID>AppSingletonAccess:ProChartModule.kt$ProChartModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:ProChartModule.kt$ProChartModule.Factory$App.marketKit</ID>
     <ID>AppSingletonAccess:PublicKeysModule.kt$PublicKeysModule.Factory$App.evmBlockchainManager</ID>
     <ID>AppSingletonAccess:ReceiveChooseCoinPage.kt$ReceiveChooseCoinPage$App.accountManager</ID>
     <ID>AppSingletonAccess:ReceiveModule.kt$ReceiveModule.Factory$App.adapterManager</ID>
@@ -226,7 +145,6 @@
     <ID>AppSingletonAccess:RestoreBlockchainsModule.kt$RestoreBlockchainsModule.Factory$App.walletManager</ID>
     <ID>AppSingletonAccess:RestoreLocalModule.kt$RestoreLocalModule.Factory$App.accountFactory</ID>
     <ID>AppSingletonAccess:RestorePrivateKeyModule.kt$RestorePrivateKeyModule.Factory$App.accountFactory</ID>
-    <ID>AppSingletonAccess:Roi.kt$App.numberFormatter</ID>
     <ID>AppSingletonAccess:RootedDeviceModule.kt$RootedDeviceModule.Factory$App.localStorage</ID>
     <ID>AppSingletonAccess:SecurityTorSettingsModule.kt$SecurityTorSettingsModule.Factory$App.pinComponent</ID>
     <ID>AppSingletonAccess:SecurityTorSettingsModule.kt$SecurityTorSettingsModule.Factory$App.torKitManager</ID>
@@ -348,7 +266,6 @@
     <ID>AppSingletonAccess:SwapViewModel.kt$SwapViewModel.Factory$App.connectivityManager</ID>
     <ID>AppSingletonAccess:SwapViewModel.kt$SwapViewModel.Factory$App.currencyManager</ID>
     <ID>AppSingletonAccess:TermsModule.kt$TermsModule.Factory$App.termsManager</ID>
-    <ID>AppSingletonAccess:Title.kt$App.numberFormatter</ID>
     <ID>AppSingletonAccess:TokenBalanceModule.kt$TokenBalanceModule.Factory$App.accountManager</ID>
     <ID>AppSingletonAccess:TokenBalanceModule.kt$TokenBalanceModule.Factory$App.appDatabase</ID>
     <ID>AppSingletonAccess:TokenBalanceModule.kt$TokenBalanceModule.Factory$App.balanceHiddenManager</ID>
@@ -363,14 +280,6 @@
     <ID>AppSingletonAccess:TonConnectSendRequestScreen.kt$App.accountManager</ID>
     <ID>AppSingletonAccess:TonConnectSendRequestScreen.kt$App.tonConnectManager</ID>
     <ID>AppSingletonAccess:TonConnectSendRequestViewModel.kt$TonConnectSendRequestViewModel$App.coinManager</ID>
-    <ID>AppSingletonAccess:TopNftCollectionsModule.kt$TopNftCollectionsModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:TopNftCollectionsModule.kt$TopNftCollectionsModule.Factory$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:TopPairsViewModel.kt$TopPairsViewModel.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:TopPairsViewModel.kt$TopPairsViewModel.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:TopPlatformsModule.kt$TopPlatformsModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:TopPlatformsModule.kt$TopPlatformsModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:TopPlatformsViewModel.kt$TopPlatformsViewModel$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:TopSectorsRepository.kt$TopSectorsRepository.Companion$App.numberFormatter</ID>
     <ID>AppSingletonAccess:TotalBalance.kt$TotalBalance$App.numberFormatter</ID>
     <ID>AppSingletonAccess:TransactionHiddenManager.kt$TransactionHiddenManager$App.encryptionManager</ID>
     <ID>AppSingletonAccess:TransactionHiddenManager.kt$TransactionHiddenManager$App.pinComponent</ID>
@@ -395,8 +304,6 @@
     <ID>AppSingletonAccess:TransactionsModule.kt$TransactionsModule.Factory$App.marketKit</ID>
     <ID>AppSingletonAccess:TransactionsModule.kt$TransactionsModule.Factory$App.transactionAdapterManager</ID>
     <ID>AppSingletonAccess:TransactionsModule.kt$TransactionsModule.Factory$App.walletManager</ID>
-    <ID>AppSingletonAccess:TvlModule.kt$TvlModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:TvlModule.kt$TvlModule.Factory$App.marketKit</ID>
     <ID>AppSingletonAccess:UnifiedAddressCheckerViewModel.kt$UnifiedAddressCheckerViewModel.Factory$App.evmBlockchainManager</ID>
     <ID>AppSingletonAccess:UnifiedAddressCheckerViewModel.kt$UnifiedAddressCheckerViewModel.Factory$App.evmSyncSourceManager</ID>
     <ID>AppSingletonAccess:UnifiedAddressCheckerViewModel.kt$UnifiedAddressCheckerViewModel.Factory$App.marketKit</ID>
@@ -623,7 +530,6 @@
     <ID>EmptyCatchBlock:CoreUtils.kt$ProcessUtils${ }</ID>
     <ID>EmptyCatchBlock:TorControl.kt$TorControl${ }</ID>
     <ID>EmptyCatchBlock:WatchAddressService.kt$WatchAddressService${ }</ID>
-    <ID>EmptyDefaultConstructor:AppearanceModule.kt$AppearanceModule.Factory$()</ID>
     <ID>EmptyDefaultConstructor:BalanceAccountsViewModel.kt$BalanceScreenState$()</ID>
     <ID>EmptyDefaultConstructor:Exceptions.kt$NoDataException$()</ID>
     <ID>EmptyDefaultConstructor:Exceptions.kt$NotEnoughData$()</ID>
@@ -669,7 +575,6 @@
     <ID>InvalidPackageDeclaration:CreateWalletPresenterTest.kt$package cash.p.terminal.modules.createwallet</ID>
     <ID>InvalidPackageDeclaration:EthCoinFragmentInputParserTest.kt$package cash.p.terminal.core</ID>
     <ID>InvalidPackageDeclaration:ExtensionsKtTest.kt$package cash.p.terminal.core</ID>
-    <ID>InvalidPackageDeclaration:NumberRoundingTest.kt$package cash.p.terminal.core.managers</ID>
     <ID>InvalidPackageDeclaration:RxBaseTest.kt$package cash.p.terminal.modules</ID>
     <ID>InvalidPackageDeclaration:TransactionViewItemFactoryTest.kt$package cash.p.terminal.core.factories</ID>
     <ID>InvalidPackageDeclaration:VersionTest.kt$package cash.p.terminal.core.managers</ID>
@@ -723,7 +628,6 @@
     <ID>LongMethod:ActivateSubscriptionPage.kt$@Composable fun ActivateSubscriptionScreen(navigation: HSNavigation)</ID>
     <ID>LongMethod:ActivateTokenPage.kt$@Composable fun ActivateTokenScreen( navigation: HSNavigation, wallet: Wallet, onResult: (ActivateTokenPage.Result) -&gt; Unit, )</ID>
     <ID>LongMethod:AdapterFactory.kt$AdapterFactory$private suspend fun getAdapter( wallet: Wallet, activeLitecoinMwebAccounts: Set&lt;String&gt;?, )</ID>
-    <ID>LongMethod:AddRpcScreen.kt$@Composable fun AddRpcScreen( page: AddRpcPage, navigation: HSNavigation, blockchain: Blockchain, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets )</ID>
     <ID>LongMethod:AddTokenPage.kt$@Composable private fun AddTokenScreen( navigation: HSNavigation, page: AddTokenPage, viewModel: AddTokenViewModel, )</ID>
     <ID>LongMethod:AddressEnterBottomSheet.kt$@Composable fun InfoBlock(checkType: AddressCheckType)</ID>
     <ID>LongMethod:AddressInputModule.kt$AddressInputModule.FactoryToken$@Suppress("UNCHECKED_CAST") override fun &lt;T : ViewModel&gt; create(modelClass: Class&lt;T&gt;): T</ID>
@@ -732,7 +636,6 @@
     <ID>LongMethod:AllBridgeProvider.kt$AllBridgeProvider$override suspend fun fetchQuote( tokenIn: Token, tokenOut: Token, amountIn: BigDecimal, settings: Map&lt;String, Any?&gt;, ): ISwapQuote</ID>
     <ID>LongMethod:AllBridgeProvider.kt$AllBridgeProvider$private suspend fun getSendTransactionData( tokenIn: Token, tokenOut: Token, amountIn: BigDecimal, expectedAmountOutMin: BigDecimal, recipient: cash.p.terminal.entities.Address?, ): SendTransactionData</ID>
     <ID>LongMethod:AmlCheckPromoBanner.kt$@Composable fun AmlCheckPromoBanner( amlCheckEnabled: Boolean, onToggleChange: (Boolean) -&gt; Unit, onInfoClick: () -&gt; Unit, onClose: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
-    <ID>LongMethod:AppDatabase.kt$AppDatabase.Companion$private fun buildDatabase(context: Context): AppDatabase</ID>
     <ID>LongMethod:AppStatusScreen.kt$@Composable fun AppStatusScreen( navigation: HSNavigation )</ID>
     <ID>LongMethod:AppearanceScreen.kt$@Composable internal fun AppearanceScreen( uiState: AppearanceUIState, onThemeSelect: (ThemeType) -&gt; Unit, onLaunchScreenSelect: (LaunchPage) -&gt; Unit, onBalanceViewTypeSelect: (BalanceViewType) -&gt; Unit, onPriceChangeIntervalSelect: (PriceChangeInterval) -&gt; Unit, onMarketTabsHiddenChange: (Boolean) -&gt; Unit, onBalanceTabButtonsHiddenChange: (Boolean) -&gt; Unit, onAppIconClick: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
     <ID>LongMethod:AssetSettingsScreen.kt$@Composable fun AssetSettingsScreen( amlCheckEnabled: Boolean, onAmlCheckChange: (Boolean) -&gt; Unit, pricePeriod: DisplayPricePeriod, displayDiffOptionType: DisplayDiffOptionType, isRoundingAmount: Boolean, onPricePeriodChange: (DisplayPricePeriod) -&gt; Unit, onDisplayDiffOptionTypeChange: (DisplayDiffOptionType) -&gt; Unit, onRoundingAmountChange: (Boolean) -&gt; Unit, onAddressPoisoningViewClick: () -&gt; Unit, transactionFiltersEnabled: Boolean, onTransactionFiltersChange: (Boolean) -&gt; Unit, offlineUiState: OfflineModeToggleUiState, onConfirmOffline: () -&gt; Unit, onGoOnline: () -&gt; Unit, onOfflineSheetDismiss: () -&gt; Unit, navigation: HSNavigation, onBack: () -&gt; Unit, creationBlockVisible: Boolean, currentHeightText: String?, onCreationBlockClick: () -&gt; Unit, )</ID>
@@ -991,9 +894,6 @@
     <ID>LongParameterList:SendZCashScreen.kt$( title: String, navigation: HSNavigation, viewModel: SendZCashViewModel, amountInputModeViewModel: AmountInputModeViewModel, prefilledData: PrefilledData?, addressCheckerControl: AddressCheckerControl, onNextClick: (ProceedActionData) -&gt; Unit, onOfflineSignClick: () -&gt; Unit, )</ID>
     <ID>LongParameterList:SendZecOnDuressUseCase.kt$SendZecOnDuressUseCase$( private val smsNotificationSettings: ISmsNotificationSettings, private val accountsStorage: IAccountsStorage, private val walletManager: IWalletManager, private val dispatcherProvider: DispatcherProvider, private val adapterFactory: AdapterFactory, private val adapterManager: IAdapterManager, private val coinManager: ICoinManager, private val walletFactory: WalletFactory, private val accountManager: IAccountManager, private val offlineModeUseCase: OfflineModeUseCase, )</ID>
     <ID>LongParameterList:SwapConfirmScreen.kt$( fiatAmount: BigDecimal?, borderTop: Boolean = true, currency: Currency, title: String, amountColor: Color, imageUrl: String?, alternativeImageUrl: String?, imagePlaceholder: DrawableResource?, badge: String?, amountFormatted: String?, )</ID>
-    <ID>LongParameterList:SwapProviderTransactionsDao.kt$SwapProviderTransactionsDao$( address: String, tokenQueryId: String, coinUid: String, blockchainType: String, accountId: String, amount: Double, tolerance: Double, timestamp: Long, timeWindowMs: Long, dateFrom: Long, dateTo: Long )</ID>
-    <ID>LongParameterList:SwapProviderTransactionsDao.kt$SwapProviderTransactionsDao$( provider: String, tokenQueryId: String, coinUid: String, blockchainType: String, accountId: String, addressOut: String, expectedAmount: Double, tolerance: Double, dateFrom: Long, dateTo: Long, )</ID>
-    <ID>LongParameterList:SwapProviderTransactionsDao.kt$SwapProviderTransactionsDao$( tokenQueryId: String, coinUid: String, blockchainType: String, accountId: String, dateFrom: Long, dateTo: Long, amount: Double, tolerance: Double, limit: Int )</ID>
     <ID>LongParameterList:SwapSelectProviderScreen.kt$( onClickClose: () -&gt; Unit, onClickSettings: () -&gt; Unit, quotes: List&lt;QuoteViewItem&gt;, currentQuote: SwapProviderQuote?, mandatoryProviderIds: Set&lt;String&gt;, disabledProviderIds: Set&lt;String&gt;, sortType: ProviderSortType, onSortTypeChange: (ProviderSortType) -&gt; Unit, onToggleProvider: (providerId: String, disabled: Boolean) -&gt; Unit, swapRates: () -&gt; Unit, onSelectQuote: (SwapProviderQuote) -&gt; Unit, )</ID>
     <ID>LongParameterList:SwapSelectProviderScreen.kt$( viewItem: QuoteViewItem, borderColor: Color, swipeEnabled: Boolean, disabled: Boolean, revealed: Boolean, onReveal: () -&gt; Unit, onConceal: () -&gt; Unit, onSelectQuote: (SwapProviderQuote) -&gt; Unit, swapRates: () -&gt; Unit, onToggle: () -&gt; Unit, )</ID>
     <ID>LongParameterList:SwapViewModel.kt$SwapViewModel$( private val quoteService: SwapQuoteService, private val balanceService: TokenBalanceService, private val priceImpactService: PriceImpactService, currencyManager: CurrencyManager, private val fiatServiceIn: FiatService, private val fiatServiceOut: FiatService, private val timerService: TimerService, private val networkAvailabilityService: NetworkAvailabilityService, private val marketKit: MarketKitWrapper, tokenIn: Token?, tokenOut: Token? )</ID>
@@ -1539,7 +1439,6 @@
     <ID>ThrowingExceptionsWithoutMessageOrCause:EvmFeeModule.kt$EvmFeeModule.Factory$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:ManageWalletsModule.kt$ManageWalletsModule.Factory$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:NestedScrollableHost.kt$NestedScrollableHost$IllegalArgumentException()</ID>
-    <ID>ThrowingExceptionsWithoutMessageOrCause:NftUid.kt$NftUid.Companion$IllegalStateException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:ReceiveAddressViewModel.kt$ReceiveAddressViewModel$NullPointerException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:RestoreBlockchainsModule.kt$RestoreBlockchainsModule.Factory$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:SecurityCheckViewModel.kt$SecurityCheckViewModel$Exception()</ID>
@@ -1573,25 +1472,19 @@
     <ID>TooGenericExceptionThrown:BackupProvider.kt$BackupProvider$throw Exception("Couldn't get encryption key")</ID>
     <ID>TooGenericExceptionThrown:CoreUtils.kt$ProcessUtils$throw Exception("Cannot kill: " + fileProcBin.absolutePath)</ID>
     <ID>TooGenericExceptionThrown:EvmSyncSourceManager.kt$EvmSyncSourceManager$throw Exception("Non-supported EVM blockchain")</ID>
-    <ID>TooGenericExceptionThrown:MoneroKitManager.kt$MoneroKitWrapper$throw Exception("No internet connection")</ID>
     <ID>TooGenericExceptionThrown:NativeLoader.kt$NativeLoader$throw Exception("Unable to find file in apk:lib/$arch/$libName")</ID>
     <ID>TooGenericExceptionThrown:NetworkManager.kt$APIClient$throw RuntimeException(e)</ID>
-    <ID>TooGenericExceptionThrown:NumberFormatter.kt$NumberFormatter$throw Exception("No formatter")</ID>
     <ID>TooGenericExceptionThrown:PersonalSupportViewModel.kt$PersonalSupportViewModel$throw Exception("Error")</ID>
     <ID>TooGenericExceptionThrown:PollingSessionTest.kt$PollingSessionTest$throw RuntimeException("fail")</ID>
     <ID>TooGenericExceptionThrown:TorOperator.kt$TorOperator$throw Exception( "Error: " + shellResult.exitCode + " ERR=" + shellResult.getStderr() + " OUT=" + shellResult.getStdout() )</ID>
     <ID>TooGenericExceptionThrown:WCRequestEvmViewModel.kt$WCRequestEvmViewModel$throw Exception("Invalid Data")</ID>
     <ID>TooGenericExceptionThrown:WCRequestEvmViewModel.kt$WCRequestEvmViewModel$throw Exception("Unsupported Chain")</ID>
     <ID>TooGenericExceptionThrown:WatchAddressViewModel.kt$WatchAddressViewModel$throw Exception()</ID>
-    <ID>TooManyFunctions:AccountsDao.kt$AccountsDao</ID>
-    <ID>TooManyFunctions:AppDatabase.kt$AppDatabase : RoomDatabase</ID>
     <ID>TooManyFunctions:BackupProvider.kt$BackupProvider</ID>
     <ID>TooManyFunctions:BalanceViewModel.kt$BalanceViewModel : ViewModelUiStateITotalBalance</ID>
-    <ID>TooManyFunctions:DatabaseConverters.kt$DatabaseConverters</ID>
     <ID>TooManyFunctions:Extensions.kt$cash.p.terminal.core.Extensions.kt</ID>
     <ID>TooManyFunctions:MoneroKitManager.kt$MoneroKitWrapper : Observer</ID>
     <ID>TooManyFunctions:MoneroKitManager.kt$cash.p.terminal.core.managers.MoneroKitManager.kt</ID>
-    <ID>TooManyFunctions:SwapProviderTransactionsDao.kt$SwapProviderTransactionsDao</ID>
     <ID>TooManyFunctions:SwapProviderTransactionsStorage.kt$SwapProviderTransactionsStorage</ID>
     <ID>TooManyFunctions:SwapViewModel.kt$SwapViewModel : ViewModelUiState</ID>
     <ID>TooManyFunctions:TokenBalanceViewModel.kt$TokenBalanceViewModel : ViewModelUiStateHost</ID>
@@ -1615,26 +1508,11 @@
     <ID>UnnecessaryFullyQualifiedNameRule:Eip1559FeeSettingsViewModel.kt$Eip1559FeeSettingsViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.NotAvailable)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:EvmNetworkViewModel.kt$EvmNetworkViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.NetworkSettings_SwithesAutomatically)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:Exceptions.kt$NoDataException$cash.p.terminal.strings.helpers.Translator.getString(R.string.CoinPage_NoData)</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:Exceptions.kt$NotIntegerException$cash.p.terminal.strings.helpers.Translator.getString(R.string.Error_NotInteger)</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:Exceptions.kt$OutOfRangeException$cash.p.terminal.strings.helpers.Translator.getString(R.string.Error_OutOfRange, lower, upper)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:HSHodlerInput.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { HSHodler(LockTimeInterval.halfYear) }</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:HSHodlerInput.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { HSHodlerInput( listOf(LockTimeInterval.hour, LockTimeInterval.halfYear), LockTimeInterval.halfYear, {} ) }</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:LanguageSettingsModule.kt$cash.p.terminal.strings.helpers.LocaleType.de</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:LanguageSettingsModule.kt$cash.p.terminal.strings.helpers.LocaleType.en</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:LanguageSettingsModule.kt$cash.p.terminal.strings.helpers.LocaleType.es</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:LanguageSettingsModule.kt$cash.p.terminal.strings.helpers.LocaleType.fa</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:LanguageSettingsModule.kt$cash.p.terminal.strings.helpers.LocaleType.fr</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:LanguageSettingsModule.kt$cash.p.terminal.strings.helpers.LocaleType.ko</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:LanguageSettingsModule.kt$cash.p.terminal.strings.helpers.LocaleType.pt</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:LanguageSettingsModule.kt$cash.p.terminal.strings.helpers.LocaleType.pt_br</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:LanguageSettingsModule.kt$cash.p.terminal.strings.helpers.LocaleType.ru</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:LanguageSettingsModule.kt$cash.p.terminal.strings.helpers.LocaleType.tr</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:LanguageSettingsModule.kt$cash.p.terminal.strings.helpers.LocaleType.uk</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:LanguageSettingsModule.kt$cash.p.terminal.strings.helpers.LocaleType.zh</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:LegacyFeeSettingsViewModel.kt$LegacyFeeSettingsViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.NotAvailable)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:MainSettingsScreen.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { Column { CellSingleLineLawrenceSection( listOf({ HsSettingCell( R.string.Settings_Faq, R.drawable.ic_faq_20, showAlert = true, onClick = { } ) }, { HsSettingCell( R.string.Guides_Title, R.drawable.ic_academy_20, onClick = { } ) }) ) Spacer(Modifier.height(32.dp)) CellSingleLineLawrenceSection( listOf { HsSettingCell( R.string.Settings_WalletConnect, R.drawable.ic_wallet_connect_20, counterBadge = "13", onClick = { } ) } ) } }</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:MainViewModel.kt$MainViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.DeeplinkScheme)</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:MarketWidgetRepository.kt$MarketWidgetRepository$cash.p.terminal.strings.helpers.Translator.getString( R.string.MarketTopPlatforms_Protocols, item.protocols )</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:QuoteInfoRow.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { QuoteInfoRow( title = { subhead2_grey(text = stringResource(R.string.Swap_Recipient)) }, value = { subhead2_leah( text = "0x7A04536a50d12952f69E071e4c92693939db86b5", textAlign = TextAlign.End ) } ) }</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:RestoreSettingsManager.kt$RestoreSettingsManager$cash.p.terminal.strings.helpers.Translator.getString(R.string.ManageAccount_BirthdayHeight, token.coin.code)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:SendBtcAdvancedSettingsViewModel.kt$SendBtcAdvancedSettingsViewModel$cash.p.terminal.strings.helpers.Translator.getString(sortMode.titleShort)</ID>
@@ -1726,8 +1604,6 @@
     <ID>UseCheckOrError:MoneroKitManager.kt$MoneroKitWrapper$throw IllegalStateException("Monero wallet not initialized")</ID>
     <ID>UseCheckOrError:NavController.kt$throw IllegalStateException("Unsupported pin type for ensurePinSet: $pinType")</ID>
     <ID>UseCheckOrError:NftAssetPage.kt$throw IllegalStateException("No URL!")</ID>
-    <ID>UseCheckOrError:NftUid.kt$NftUid.Companion$throw IllegalStateException("Could not parse NftUid: $uid")</ID>
-    <ID>UseCheckOrError:NftUid.kt$NftUid.Companion$throw IllegalStateException()</ID>
     <ID>UseCheckOrError:OffChainSwapProviderSupport.kt$OffChainSwapProviderSupport$throw IllegalStateException("Can't find ZCASH transparent wallet")</ID>
     <ID>UseCheckOrError:OffChainSwapProviderSupport.kt$OffChainSwapProviderSupport$throw IllegalStateException("Ethereum adapter not found")</ID>
     <ID>UseCheckOrError:OneInchProvider.kt$OneInchProvider$throw IllegalStateException("Unsupported tokenType: $tokenType")</ID>
@@ -1846,7 +1722,6 @@
     <ID>ViewModelInjection:RestoreBlockchains.kt$blockchainTokensViewModel</ID>
     <ID>ViewModelInjection:RestoreBlockchains.kt$restoreSettingsViewModel</ID>
     <ID>ViewModelInjection:RestoreBlockchains.kt$viewModel</ID>
-    <ID>ViewModelInjection:RestorePhraseNonStandardScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:RestorePrivateKeyScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:SecurityCheckPage.kt$viewModel</ID>
     <ID>ViewModelInjection:SelectBackupItemsScreen.kt$viewModel</ID>
@@ -1868,7 +1743,6 @@
     <ID>ViewModelInjection:SendTonScreen.kt$paymentAddressViewModel</ID>
     <ID>ViewModelInjection:SendTronScreen.kt$paymentAddressViewModel</ID>
     <ID>ViewModelInjection:SendZCashScreen.kt$paymentAddressViewModel</ID>
-    <ID>ViewModelInjection:SetDuressPinIntroPage.kt$viewModel</ID>
     <ID>ViewModelInjection:ShowExtendedKeyPage.kt$viewModel</ID>
     <ID>ViewModelInjection:SwapPage.kt$manageWalletsViewModel</ID>
     <ID>ViewModelInjection:SwapPage.kt$restoreSettingsViewModel</ID>

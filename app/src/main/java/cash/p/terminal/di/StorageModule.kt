@@ -18,6 +18,7 @@ import cash.p.terminal.core.providers.FeeRateProvider
 import cash.p.terminal.core.storage.AccountsStorage
 import cash.p.terminal.core.storage.AppDatabase
 import cash.p.terminal.core.storage.BlockchainSettingsStorage
+import cash.p.terminal.core.storage.buildAppDatabase
 import cash.p.terminal.core.storage.OfflineModeStorage
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.core.storage.EnabledWalletsStorage
@@ -56,7 +57,7 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val storageModule = module {
-    single { AppDatabase.getInstance(get()) }
+    single { buildAppDatabase(get()) }
     singleOf(::NumberFormatter) bind IAppNumberFormatter::class
     singleOf(::RestoreSettingsStorage) bind IRestoreSettingsStorage::class
     singleOf(::CoinManager) bind ICoinManager::class

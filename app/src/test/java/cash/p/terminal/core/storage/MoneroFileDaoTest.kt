@@ -7,17 +7,16 @@ import androidx.test.core.app.ApplicationProvider
 import cash.p.terminal.entities.MoneroFileRecord
 import cash.p.terminal.wallet.entities.AccountRecord
 import cash.p.terminal.wallet.entities.SecretString
-import io.horizontalsystems.core.CoreApp
 import io.horizontalsystems.core.IEncryptionManager
-import io.mockk.every
-import io.mockk.mockkObject
-import io.mockk.unmockkObject
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import kotlin.test.assertFailsWith
@@ -30,11 +29,7 @@ class MoneroFileDaoTest {
 
     @Before
     fun setUp() {
-        mockkObject(CoreApp.Companion)
-        every { CoreApp.encryptionManager } returns object : IEncryptionManager {
-            override fun encrypt(data: String) = data
-            override fun decrypt(data: String) = data
-        }
+        startKoin { modules(module { single<IEncryptionManager> { PlainTextEncryptionManager() } }) }
         val context = ApplicationProvider.getApplicationContext<Context>()
         database = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
             .allowMainThreadQueries()
@@ -45,7 +40,7 @@ class MoneroFileDaoTest {
     @After
     fun tearDown() {
         database.close()
-        unmockkObject(CoreApp.Companion)
+        stopKoin()
     }
 
     @Test

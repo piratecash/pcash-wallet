@@ -26,6 +26,8 @@ import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.shared.settings.MainSettingUiState
 import cash.p.terminal.shared.settings.SettingsAction
 import cash.p.terminal.shared.settings.SettingsContent
+import cash.p.terminal.shared.settings.SettingsPages
+import cash.p.terminal.shared.settings.currentLanguageName
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.ILanguageManager
@@ -57,6 +59,7 @@ class DesktopMainPage(private val appVersion: String) : HSPage() {
 @Composable
 private fun SettingsPane(navigation: HSNavigation, appVersion: String) {
     val uiState = rememberSettingsUiState()
+    val settingsPages = koinInject<SettingsPages>()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -75,8 +78,11 @@ private fun SettingsPane(navigation: HSNavigation, appVersion: String) {
             uiState = uiState,
             appVersion = appVersion,
             onAction = { action ->
-                if (action == SettingsAction.BaseCurrency) {
-                    navigation.slideFromRight(BaseCurrencySettingsPage())
+                when (action) {
+                    SettingsAction.BaseCurrency -> navigation.slideFromRight(BaseCurrencySettingsPage())
+                    SettingsAction.SecurityCenter -> navigation.slideFromRight(settingsPages.security())
+                    SettingsAction.Language -> navigation.slideFromRight(settingsPages.language())
+                    else -> Unit
                 }
             },
             alertPainter = null,
@@ -88,13 +94,14 @@ private fun SettingsPane(navigation: HSNavigation, appVersion: String) {
 @Composable
 private fun rememberSettingsUiState(): MainSettingUiState {
     val currencyManager = koinInject<CurrencyManager>()
-    val locale = koinInject<ILanguageManager>().currentLocale
+    val languageManager = koinInject<ILanguageManager>()
+    val currentLanguage = remember(languageManager.currentLocaleTag) { currentLanguageName(languageManager) }
     val baseCurrencyCode by remember(currencyManager) {
         currencyManager.baseCurrencyUpdatedFlow.map { currencyManager.baseCurrency.code }
     }.collectAsStateWithLifecycle(currencyManager.baseCurrency.code)
     return MainSettingUiState(
         isUpdateAvailable = false,
-        currentLanguage = locale.displayName.ifEmpty { locale.language.ifEmpty { "English" } },
+        currentLanguage = currentLanguage,
         baseCurrencyCode = baseCurrencyCode,
         appWebPageLink = "",
         hasNonStandardAccount = false,

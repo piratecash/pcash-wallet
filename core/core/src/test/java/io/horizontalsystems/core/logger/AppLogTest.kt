@@ -1,7 +1,7 @@
 package io.horizontalsystems.core.logger
 
-import android.database.Cursor
 import android.util.Log
+import io.horizontalsystems.core.storage.GroupedLogRow
 import io.horizontalsystems.core.storage.LogEntry
 import io.horizontalsystems.core.storage.LogsDao
 import io.mockk.CapturingSlot
@@ -131,11 +131,14 @@ class AppLogTest {
 
     @Test
     fun writeLog_groupedRows_writesOneHeaderPerActionIdAndOneLinePerEntry() {
-        every { logsDao.streamGrouped() } returns cursorOf(
+        val rows = groupedRows(
             logEntry(1, "one", "a"),
             logEntry(2, "two", "a"),
             logEntry(3, "three", "b"),
         )
+        every { logsDao.getGroupedPage(any(), any(), any()) } answers {
+            rows.pageAfter(firstArg(), secondArg(), thirdArg())
+        }
 
         val out = StringBuilder()
         runBlocking { AppLog.writeLog(out) }
@@ -153,14 +156,17 @@ class AppLogTest {
     }
 
     @Test
-    fun writeLog_withTag_readsOnlyTheTaggedCursor() {
-        every { logsDao.streamGroupedByTag("tag") } returns cursorOf(logEntry(1, "one", "tag"))
+    fun writeLog_withTag_readsOnlyTheTaggedPages() {
+        val rows = groupedRows(logEntry(1, "one", "tag"))
+        every { logsDao.getGroupedPageByTag("tag", any(), any(), any()) } answers {
+            rows.pageAfter(secondArg(), thirdArg(), arg(3))
+        }
 
         val out = StringBuilder()
         runBlocking { AppLog.writeLog(out, "tag") }
 
         assertEquals("tag:\n  - 1: 1970-01-01 00:00:00.000 one\n", out.toString())
-        verify(exactly = 0) { logsDao.streamGrouped() }
+        verify(exactly = 0) { logsDao.getGroupedPage(any(), any(), any()) }
     }
 
     @Test
@@ -168,14 +174,11 @@ class AppLogTest {
         val exportStarted = CountDownLatch(1)
         val releaseExport = CountDownLatch(1)
         val inserted = CountDownLatch(1)
-        val cursor = mockk<Cursor>(relaxed = true).also { cursor ->
-            every { cursor.moveToNext() } answers {
-                exportStarted.countDown()
-                releaseExport.await(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-                false
-            }
+        every { logsDao.getGroupedPage(any(), any(), any()) } answers {
+            exportStarted.countDown()
+            releaseExport.await(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            emptyList()
         }
-        every { logsDao.streamGrouped() } returns cursor
         every { logsDao.insert(any()) } answers { inserted.countDown() }
 
         val export = thread { runBlocking { AppLog.writeLog(StringBuilder()) } }
@@ -202,20 +205,27 @@ class AppLogTest {
         return RecordingDao(recorded, completed)
     }
 
-    private fun cursorOf(vararg rows: LogEntry): Cursor {
-        var position = -1
-        return mockk<Cursor>(relaxed = true).also { cursor ->
-            every { cursor.getColumnIndexOrThrow("id") } returns 0
-            every { cursor.getColumnIndexOrThrow("date") } returns 1
-            every { cursor.getColumnIndexOrThrow("actionId") } returns 2
-            every { cursor.getColumnIndexOrThrow("message") } returns 3
-            every { cursor.moveToNext() } answers { ++position < rows.size }
-            every { cursor.getInt(0) } answers { rows[position].id ?: 0 }
-            every { cursor.getLong(1) } answers { rows[position].date }
-            every { cursor.getString(2) } answers { rows[position].actionId }
-            every { cursor.getString(3) } answers { rows[position].message }
+    private fun groupedRows(vararg rows: LogEntry): List<GroupedLogRow> {
+        val firstIds = rows.groupBy { it.actionId }
+            .mapValues { (_, group) -> group.minOf { it.id ?: 0 }.toLong() }
+        return rows.map { row ->
+            GroupedLogRow(
+                firstId = firstIds.getValue(row.actionId),
+                id = row.id ?: 0,
+                date = row.date,
+                actionId = row.actionId,
+                message = row.message,
+            )
         }
     }
+
+    private fun List<GroupedLogRow>.pageAfter(
+        afterFirstId: Long,
+        afterId: Int,
+        limit: Int,
+    ): List<GroupedLogRow> = filter {
+        it.firstId > afterFirstId || (it.firstId == afterFirstId && it.id > afterId)
+    }.take(limit)
 
     private fun captureNextEntry(): CapturedEntry {
         val captured = slot<LogEntry>()

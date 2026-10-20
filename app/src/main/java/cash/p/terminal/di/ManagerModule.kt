@@ -195,6 +195,7 @@ import cash.p.terminal.modules.pin.PinComponent
 import cash.p.terminal.modules.pin.core.ILockoutManager
 import cash.p.terminal.modules.pin.core.ILockoutUntilDateFactory
 import cash.p.terminal.modules.pin.core.LockoutManager
+import cash.p.terminal.modules.pin.core.AndroidUptimeProvider
 import cash.p.terminal.modules.pin.core.LockoutUntilDateFactory
 import cash.p.terminal.modules.pin.core.OneTimeTimer
 import cash.p.terminal.modules.pin.core.UptimeProvider
@@ -456,7 +457,7 @@ val managerModule = module {
     single { MoneroWalletService(MoneroWalletFiles.root(get())) }
     singleOf(::SilentCameraManager) bind ISilentPhotoCapture::class
     singleOf(::CurrentDateProvider) bind ICurrentDateProvider::class
-    singleOf(::UptimeProvider)
+    singleOf(::AndroidUptimeProvider) bind UptimeProvider::class
     singleOf(::LockoutUntilDateFactory) bind ILockoutUntilDateFactory::class
     singleOf(::LockoutManager) bind ILockoutManager::class
     factoryOf(::OneTimeTimer)

@@ -1880,8 +1880,8 @@
     <string name="Unlock_BiometricScanner">生物扫描仪</string>
     <string name="Unlock_BiometricScannerDisabled_Description">输入密码或稍后再试</string>
     <string name="Unlock_BiometricScannerDisabled_Info">生物认证被禁用</string>
-    <string name="Unlock_WalletDisabledUntil">禁用至：%s</string>
-    <string name="Unlock_AttemptsLeft">剩余尝试次数: %s</string>
+    <string name="Unlock_WalletDisabledUntil">禁用至：%1$s</string>
+    <string name="Unlock_AttemptsLeft">剩余尝试次数: %1$s</string>
     <string name="Unlock_Random">随机</string>
     <!--Set Pin-->
     <string name="PinSet_Title">设置密码</string>
@@ -2298,4 +2298,34 @@
     <string name="beam_wallet_state_closed">BEAM 钱包已关闭</string>
     <string name="beam_wallet_operation_failed">BEAM 钱包操作失败</string>
     <string name="beam_wallet_stop_failed">停止 BEAM 钱包失败</string>
+    <string name="desktop_already_running">P.CASH 已在运行</string>
+    <string name="desktop_create_password_title">创建密码</string>
+    <string name="desktop_create_password_description">密码用于保护此计算机上保存的钱包。该密码不会被存储在任何地方，也无法找回。</string>
+    <string name="desktop_password_repeat_hint">重复密码</string>
+    <string name="desktop_password_mismatch">两次密码不一致</string>
+    <string name="desktop_password_requirement_length">至少 8 个字符</string>
+    <string name="desktop_password_requirement_uppercase">一个大写字母</string>
+    <string name="desktop_password_requirement_lowercase">一个小写字母</string>
+    <string name="desktop_password_requirement_digit">一个数字</string>
+    <string name="desktop_password_requirement_special">一个特殊字符</string>
+    <string name="desktop_password_caps_lock">大写锁定已开启</string>
+    <string name="desktop_password_switch_layout">请切换键盘布局：密码只能包含拉丁字符</string>
+    <string name="desktop_create_password_warning">没有此密码，此计算机上的数据将无法打开，任何人都无法恢复。请为每个恢复短语保留备份。</string>
+    <string name="desktop_create_password_failed">无法保存密码。请检查磁盘可用空间和访问权限</string>
+    <string name="desktop_unlock_title">输入您的密码</string>
+    <string name="desktop_unlock_wrong_password">密码错误</string>
+    <string name="desktop_unlock_data_unreadable">无法打开您的数据</string>
+    <string name="desktop_unlock_failed">无法读取密钥文件。请重试</string>
+    <string name="desktop_unlock_forgot_password">忘记密码？</string>
+    <string name="desktop_forgot_password_title">忘记密码</string>
+    <string name="desktop_forgot_password_warning">此计算机上保存的钱包、联系人、设置和历史记录将被删除。区块链上的资金不受影响：钱包只能通过其恢复短语恢复。</string>
+    <string name="desktop_forgot_password_action">删除数据</string>
+    <string name="desktop_forgot_password_failed">无法删除数据</string>
+    <string name="desktop_change_password_title">更改密码</string>
+    <string name="desktop_change_password_current_hint">当前密码</string>
+    <string name="desktop_change_password_new_hint">新密码</string>
+    <string name="desktop_change_password_failed">无法保存密码。当前密码仍然有效</string>
+    <string name="desktop_change_password_corrupted">密钥文件已损坏：应用锁定后您将无法登录。请为每个恢复短语保存备份。</string>
+    <string name="desktop_change_password_success">密码已更改</string>
+    <string name="desktop_security_lock_now">立即锁定</string>
 </resources>

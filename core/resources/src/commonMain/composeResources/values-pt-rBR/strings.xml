@@ -1891,8 +1891,8 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="Unlock_BiometricScanner">Leitura Biométrica</string>
     <string name="Unlock_BiometricScannerDisabled_Description">Digite a senha ou tente novamente mais tarde</string>
     <string name="Unlock_BiometricScannerDisabled_Info">Autenticação Biométrica desativada</string>
-    <string name="Unlock_WalletDisabledUntil">Desativar até: %s</string>
-    <string name="Unlock_AttemptsLeft">Tentativas restantes: %s</string>
+    <string name="Unlock_WalletDisabledUntil">Desativar até: %1$s</string>
+    <string name="Unlock_AttemptsLeft">Tentativas restantes: %1$s</string>
     <string name="Unlock_Random">Aleatório</string>
     <!--Set Pin-->
     <string name="PinSet_Title">Definir senha</string>
@@ -2315,4 +2315,34 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="beam_wallet_state_closed">Carteira BEAM fechada</string>
     <string name="beam_wallet_operation_failed">Falha na operação da carteira BEAM</string>
     <string name="beam_wallet_stop_failed">Falha ao interromper a carteira BEAM</string>
+    <string name="desktop_already_running">O P.CASH já está em execução</string>
+    <string name="desktop_create_password_title">Crie uma senha</string>
+    <string name="desktop_create_password_description">A senha protege as carteiras guardadas neste computador. Ela não é armazenada em nenhum lugar e não pode ser recuperada.</string>
+    <string name="desktop_password_repeat_hint">Repita a senha</string>
+    <string name="desktop_password_mismatch">As senhas não coincidem</string>
+    <string name="desktop_password_requirement_length">Pelo menos 8 caracteres</string>
+    <string name="desktop_password_requirement_uppercase">Uma letra maiúscula</string>
+    <string name="desktop_password_requirement_lowercase">Uma letra minúscula</string>
+    <string name="desktop_password_requirement_digit">Um número</string>
+    <string name="desktop_password_requirement_special">Um caractere especial</string>
+    <string name="desktop_password_caps_lock">O Caps Lock está ativado</string>
+    <string name="desktop_password_switch_layout">Mude o layout do teclado: a senha só pode conter caracteres latinos</string>
+    <string name="desktop_create_password_warning">Sem esta senha, os dados deste computador não podem ser abertos, e ninguém poderá recuperá-los. Guarde um backup de cada frase de recuperação.</string>
+    <string name="desktop_create_password_failed">Não foi possível salvar a senha. Verifique o espaço livre em disco e as permissões de acesso</string>
+    <string name="desktop_unlock_title">Digite sua senha</string>
+    <string name="desktop_unlock_wrong_password">Senha incorreta</string>
+    <string name="desktop_unlock_data_unreadable">Não foi possível abrir seus dados</string>
+    <string name="desktop_unlock_failed">Não foi possível ler o arquivo de chave. Tente novamente</string>
+    <string name="desktop_unlock_forgot_password">Esqueceu a senha?</string>
+    <string name="desktop_forgot_password_title">Esqueci a senha</string>
+    <string name="desktop_forgot_password_warning">As carteiras, contatos, configurações e histórico guardados neste computador serão excluídos. Os fundos na blockchain não são afetados: as carteiras só podem ser restauradas por meio de suas frases de recuperação.</string>
+    <string name="desktop_forgot_password_action">Excluir dados</string>
+    <string name="desktop_forgot_password_failed">Não foi possível excluir os dados</string>
+    <string name="desktop_change_password_title">Alterar senha</string>
+    <string name="desktop_change_password_current_hint">Senha atual</string>
+    <string name="desktop_change_password_new_hint">Nova senha</string>
+    <string name="desktop_change_password_failed">Não foi possível salvar a senha. A senha atual continua funcionando</string>
+    <string name="desktop_change_password_corrupted">O arquivo de chave está danificado: depois que o app for bloqueado, você não conseguirá entrar. Salve um backup de cada frase de recuperação.</string>
+    <string name="desktop_change_password_success">Senha alterada</string>
+    <string name="desktop_security_lock_now">Bloquear agora</string>
 </resources>

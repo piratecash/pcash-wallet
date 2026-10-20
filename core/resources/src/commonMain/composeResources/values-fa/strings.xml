@@ -1894,8 +1894,8 @@
     <string name="Unlock_BiometricScanner">اسکنر بیومتریک</string>
     <string name="Unlock_BiometricScannerDisabled_Description">کد عبور را وارد کنید یا بعدا دوباره امتحان کنید</string>
     <string name="Unlock_BiometricScannerDisabled_Info">بیومتریک auth. غیرفعال شد</string>
-    <string name="Unlock_WalletDisabledUntil">معلول تا: %s</string>
-    <string name="Unlock_AttemptsLeft">Attempts left: %s</string>
+    <string name="Unlock_WalletDisabledUntil">معلول تا: %1$s</string>
+    <string name="Unlock_AttemptsLeft">Attempts left: %1$s</string>
     <string name="Unlock_Random">Random</string>
     <!--Set Pin-->
     <string name="PinSet_Title">تنظیم یک گذرواژه</string>
@@ -2318,4 +2318,34 @@
     <string name="beam_wallet_state_closed">کیف پول BEAM بسته شد</string>
     <string name="beam_wallet_operation_failed">عملیات کیف پول BEAM ناموفق بود</string>
     <string name="beam_wallet_stop_failed">توقف کیف پول BEAM ناموفق بود</string>
+    <string name="desktop_already_running">P.CASH از قبل در حال اجراست</string>
+    <string name="desktop_create_password_title">یک رمز عبور بسازید</string>
+    <string name="desktop_create_password_description">این رمز عبور از کیف‌پول‌های ذخیره‌شده روی این کامپیوتر محافظت می‌کند. این رمز هیچ‌جا ذخیره نمی‌شود و قابل بازیابی نیست.</string>
+    <string name="desktop_password_repeat_hint">تکرار رمز عبور</string>
+    <string name="desktop_password_mismatch">رمزهای عبور مطابقت ندارند</string>
+    <string name="desktop_password_requirement_length">حداقل ۸ کاراکتر</string>
+    <string name="desktop_password_requirement_uppercase">یک حرف بزرگ</string>
+    <string name="desktop_password_requirement_lowercase">یک حرف کوچک</string>
+    <string name="desktop_password_requirement_digit">یک رقم</string>
+    <string name="desktop_password_requirement_special">یک کاراکتر ویژه</string>
+    <string name="desktop_password_caps_lock">Caps Lock فعال است</string>
+    <string name="desktop_password_switch_layout">چیدمان صفحه‌کلید را تغییر دهید: رمز عبور فقط می‌تواند شامل حروف لاتین باشد</string>
+    <string name="desktop_create_password_warning">بدون این رمز عبور، داده‌های این کامپیوتر باز نمی‌شوند و هیچ‌کس نمی‌تواند آن‌ها را بازیابی کند. از هر عبارت بازیابی یک نسخه پشتیبان نگه دارید.</string>
+    <string name="desktop_create_password_failed">ذخیره رمز عبور ممکن نشد. فضای خالی دیسک و دسترسی‌ها را بررسی کنید</string>
+    <string name="desktop_unlock_title">رمز عبور خود را وارد کنید</string>
+    <string name="desktop_unlock_wrong_password">رمز عبور اشتباه است</string>
+    <string name="desktop_unlock_data_unreadable">باز کردن داده‌های شما ممکن نشد</string>
+    <string name="desktop_unlock_failed">خواندن فایل کلید ممکن نشد. لطفاً دوباره تلاش کنید</string>
+    <string name="desktop_unlock_forgot_password">رمز عبور را فراموش کرده‌اید؟</string>
+    <string name="desktop_forgot_password_title">رمز عبور را فراموش کرده‌ام</string>
+    <string name="desktop_forgot_password_warning">کیف‌پول‌ها، مخاطبین، تنظیمات و تاریخچه ذخیره‌شده روی این کامپیوتر حذف خواهند شد. وجوه موجود در بلاک‌چین تحت تأثیر قرار نمی‌گیرند: کیف‌پول‌ها فقط با عبارت بازیابی خود قابل بازیابی هستند.</string>
+    <string name="desktop_forgot_password_action">حذف داده‌ها</string>
+    <string name="desktop_forgot_password_failed">حذف داده‌ها ممکن نشد</string>
+    <string name="desktop_change_password_title">تغییر رمز عبور</string>
+    <string name="desktop_change_password_current_hint">رمز عبور فعلی</string>
+    <string name="desktop_change_password_new_hint">رمز عبور جدید</string>
+    <string name="desktop_change_password_failed">ذخیره رمز عبور ممکن نشد. رمز عبور فعلی همچنان کار می‌کند</string>
+    <string name="desktop_change_password_corrupted">فایل کلید آسیب دیده است: پس از قفل شدن برنامه نمی‌توانید وارد شوید. از هر عبارت بازیابی یک نسخه پشتیبان ذخیره کنید.</string>
+    <string name="desktop_change_password_success">رمز عبور تغییر یافت</string>
+    <string name="desktop_security_lock_now">اکنون قفل کن</string>
 </resources>

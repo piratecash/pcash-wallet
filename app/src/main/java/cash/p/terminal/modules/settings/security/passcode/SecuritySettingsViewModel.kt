@@ -13,6 +13,7 @@ import io.horizontalsystems.core.ISystemInfoManager
 import io.horizontalsystems.core.ViewModelUiState
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
+import org.jetbrains.compose.resources.StringResource
 
 class SecuritySettingsViewModel(
     private val cardSdkConfigRepository: CardSdkConfigRepository,
@@ -158,7 +159,7 @@ data class SecuritySettingsUiState(
     val displayLevel: TransactionDisplayLevel,
     val transactionAutoHideSeparatePinExists: Boolean,
     val transferPasscodeEnabled: Boolean,
-    val autoLockIntervalName: Int,
+    val autoLockIntervalName: StringResource,
     val isSaveAccessCodeForHardwareWalletEnabled: Boolean,
     val isSystemPinRequired: Boolean,
     val isDeviceSecure: Boolean,

@@ -7,7 +7,10 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import cash.p.terminal.modules.settings.security.autolock.AutoLockInterval
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -22,7 +25,7 @@ import java.io.File
 class DesktopSettingsStore(
     file: File,
     scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-) : MarketSettingsStore, BaseCurrencyStorage {
+) : MarketSettingsStore, BaseCurrencyStorage, ILockoutStorage {
 
     private val dataStore: DataStore<Preferences> = PreferenceDataStoreFactory.create(
         corruptionHandler = ReplaceFileCorruptionHandler { emptyPreferences() },
@@ -32,6 +35,9 @@ class DesktopSettingsStore(
 
     private val _marketsTabEnabledFlow = MutableStateFlow(marketsTabEnabledStored())
     override val marketsTabEnabledFlow: StateFlow<Boolean> = _marketsTabEnabledFlow.asStateFlow()
+
+    private val _autoLockIntervalFlow = MutableStateFlow(autoLockIntervalStored())
+    val autoLockIntervalFlow: StateFlow<AutoLockInterval> = _autoLockIntervalFlow.asStateFlow()
 
     override var marketSearchRecentCoinUids: List<String>
         get() = read(RECENT_COIN_UIDS)?.split(SEPARATOR)?.filter { it.isNotEmpty() }.orEmpty()
@@ -72,7 +78,36 @@ class DesktopSettingsStore(
         get() = read(BASE_CURRENCY_CODE)
         set(value) = write(BASE_CURRENCY_CODE, value)
 
+    override var failedAttempts: Int?
+        get() = read(FAILED_ATTEMPTS)
+        set(value) = write(FAILED_ATTEMPTS, value)
+
+    override var lockoutUptime: Long?
+        get() = read(LOCKOUT_UPTIME)
+        set(value) = write(LOCKOUT_UPTIME, value)
+
+    var languageTag: String?
+        get() = read(LANGUAGE_TAG)
+        set(value) = write(LANGUAGE_TAG, value)
+
+    var autoLockInterval: AutoLockInterval
+        get() = autoLockIntervalStored()
+        set(value) {
+            write(AUTO_LOCK_INTERVAL, value.raw)
+            _autoLockIntervalFlow.value = value
+        }
+
+    /** Drops every stored value, the cached ones included. */
+    fun clearAll() {
+        runBlocking { dataStore.edit { it.clear() } }
+        _marketsTabEnabledFlow.value = marketsTabEnabledStored()
+        _autoLockIntervalFlow.value = autoLockIntervalStored()
+    }
+
     private fun marketsTabEnabledStored() = read(MARKETS_TAB_ENABLED) ?: true
+
+    private fun autoLockIntervalStored() =
+        read(AUTO_LOCK_INTERVAL)?.let(AutoLockInterval::fromRaw) ?: AutoLockInterval.AFTER_1_MIN
 
     private fun <T> read(key: Preferences.Key<T>): T? =
         runBlocking { dataStore.data.first()[key] }
@@ -94,5 +129,9 @@ class DesktopSettingsStore(
         val LAUNCH_PAGE = stringPreferencesKey("launchPage")
         val CURRENT_MARKET_TAB = stringPreferencesKey("currentMarketTab")
         val BASE_CURRENCY_CODE = stringPreferencesKey("baseCurrencyCode")
+        val FAILED_ATTEMPTS = intPreferencesKey("failedAttempts")
+        val LOCKOUT_UPTIME = longPreferencesKey("lockoutUptime")
+        val LANGUAGE_TAG = stringPreferencesKey("languageTag")
+        val AUTO_LOCK_INTERVAL = stringPreferencesKey("autoLockInterval")
     }
 }
