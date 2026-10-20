@@ -1,10 +1,14 @@
 package cash.p.terminal.wallet
 
 import cash.p.terminal.wallet.entities.EnabledWallet
+import co.touchlab.kermit.Logger
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,6 +31,8 @@ class WalletManager(
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private val mutex = Mutex()
+
+    private val logger = Logger.withTag("WalletManager")
 
     init {
         coroutineScope.launch {
@@ -68,13 +74,25 @@ class WalletManager(
 
     private suspend fun handleUpdatedSuspended(activeAccount: Account?) {
         mutex.withLock {
-            val activeWallets =
-                activeAccount?.let { withContext(Dispatchers.IO) { storage.wallets(it) } }
-                    ?: listOf()
+            val activeWallets = activeAccount?.let { loadWallets(it) }
+            if (activeWallets == null) storage.forgetLoadedWallets()
             walletsSet.clear()
-            walletsSet.addAll(activeWallets)
+            walletsSet.addAll(activeWallets.orEmpty())
             notifyActiveWalletsLocked()
         }
+    }
+
+    /** Null when the load fails, e.g. a desktop wipe closed the database mid-read. */
+    private suspend fun loadWallets(account: Account): List<Wallet>? = try {
+        withContext(Dispatchers.IO) { storage.wallets(account) }
+    } catch (e: CancellationException) {
+        // Rethrows only when this collector itself was cancelled, not a closed database's scope.
+        currentCoroutineContext().ensureActive()
+        logger.w(e) { "Wallet load was cancelled by the storage" }
+        null
+    } catch (e: Exception) {
+        logger.w(e) { "Wallet load failed" }
+        null
     }
 
     override fun save(wallets: List<Wallet>) {

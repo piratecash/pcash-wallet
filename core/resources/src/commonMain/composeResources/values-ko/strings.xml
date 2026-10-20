@@ -75,7 +75,7 @@
     <string name="button_info">Info</string>
     <string name="not_enough_ton_for_fee">수수료를 위한 TON이 부족합니다. 현재 잔액: %s TON.</string>
     <string name="check_fee_warning">수수료로 최소 %s를 보유하고 있는지 확인하세요. 그렇지 않으면 거래가 실패할 수 있습니다</string>
-    <string name="Error_OutOfRange">Can\'t be less than %1$s or more than %2$s</string>
+    <string name="Error_OutOfRange">Can\u0027t be less than %1$s or more than %2$s</string>
     <string name="Error_NotInteger">Wrong integer number</string>
     <string name="Error">오류</string>
     <string name="NotAvailable">N/A</string>
@@ -106,7 +106,7 @@
     <string name="CreateWallet_N_Words">%s 단어</string>
     <string name="create_wallet_n_words_monero">%s 단어(Monero 전용)</string>
     <string name="CreateWallet_Error_EmptyPassphrase">암호 문구는 필수 입력 사항입니다</string>
-    <string name="CreateWallet_Error_PassphraseForbiddenSymbols">지원되는 기호만 사용하세요:  <![CDATA[A-Z a-z 0-9 \' " ` & / ? ! : ; . , ~ * $ = + - [ ](){} <> \ _ # @ | % ]]></string>
+    <string name="CreateWallet_Error_PassphraseForbiddenSymbols">지원되는 기호만 사용하세요:  <![CDATA[A-Z a-z 0-9 \u0027 " ` & / ? ! : ; . , ~ * $ = + - [ ](){} <> \ _ # @ | % ]]></string>
     <string name="CreateWallet_Error_InvalidConfirmation">암호 확인이 일치하지 않습니다</string>
     <string name="create_wallet_error_failed">지갑 생성에 실패했습니다. 다시 시도하거나 앱을 재시작해 주세요.</string>
     <string name="CreateWallet_PassphraseDescription">암호는 지갑에 대한 추가 보안 계층을 추가합니다. 이러한 지갑을 복원하려면 사용자는 니모닉과 암호가 모두 필요했습니다.\n\n암호는 또한 사용자가 하나의 니모닉을 사용하지만 다른 암호를 사용하여 여러 코인 지갑을 쉽게 가질 수 있도록 합니다.</string>
@@ -230,8 +230,8 @@
     <string name="MarketGlobalMetrics_Volume">24h 거래량</string>
     <string name="MarketGlobalMetrics_TvlInDefi">디파이(DeFi)에서의 총 예치 가치</string>
     <string name="MarketGlobalMetrics_EtfInflow">ETF 유입액</string>
-    <string name="MarketGlobalMetrics_TotalMarketCapDescription">모든 암호화폐의 총 시장 가치\" or \"모든 가상 화폐의 총 시장 가치.</string>
-    <string name="MarketGlobalMetrics_VolumeDescription">암호화폐 시장의 24시간 거래량\" or \"가상 화폐 시장의 24시간 거래량.</string>
+    <string name="MarketGlobalMetrics_TotalMarketCapDescription">모든 암호화폐의 총 시장 가치\u0022 or \u0022모든 가상 화폐의 총 시장 가치.</string>
+    <string name="MarketGlobalMetrics_VolumeDescription">암호화폐 시장의 24시간 거래량\u0022 or \u0022가상 화폐 시장의 24시간 거래량.</string>
     <string name="MarketGlobalMetrics_TvlInDefiDescription">디파이 (DeFi)에서의 총 예치 가치 (TVL).</string>
     <string name="MarketGlobalMetrics_ChainSelectorTitle">체인별 필터링</string>
     <string name="MarketGlobalMetrics_ChainSelectorAll">모든</string>
@@ -469,10 +469,10 @@
     <!-- Fee Settings -->
     <string name="FeeSettings_NetworkFee">네트워크 수수료</string>
     <string name="FeeSettings_NetworkFee_Info">네트워크에서 주어진 거래를 보내는 데 예상되는 비용.</string>
-    <string name="FeeSettings_GasLimit_Info">거래 복잡성은 \'가스\'라고 불리는 단위로 측정됩니다. 이는 실행되는 스마트 계약에 따라 다릅니다. 가스 한도는 해당 거래를 실행하는 데 필요한 최대 가스를 예상한 값입니다. 실제로 사용된 가스는 일반적으로 더 낮을 것입니다.</string>
+    <string name="FeeSettings_GasLimit_Info">거래 복잡성은 \u0027가스\u0027라고 불리는 단위로 측정됩니다. 이는 실행되는 스마트 계약에 따라 다릅니다. 가스 한도는 해당 거래를 실행하는 데 필요한 최대 가스를 예상한 값입니다. 실제로 사용된 가스는 일반적으로 더 낮을 것입니다.</string>
     <string name="FeeSettings_GasPrice_Info">네트워크 거래 수수료는 가스 단위로 측정됩니다. 가스 가격은 사용자가 가스 단위당 지출할 의향이 있는 금액입니다. 네트워크가 사용 중일 때는 가스 가격이 높고 유휴 상태일 때는 가스 가격이 낮습니다. 가스 가격이 충분하지 않아 거래가 장기간 보류 상태로 남아 있는 경우가 많습니다.</string>
     <string name="FeeSettings_BaseFee">기본 수수료</string>
-    <string name="FeeSettings_BaseFee_Info">네트워크 프로토콜은 각 블록마다 가스당 기본 가격을 결정하며, 이를 \'기본 수수료율\'이라고 합니다. 이는 블록마다 네트워크 이용률에 따라 다양하게 변할 수 있습니다. 다음 블록에서 최대 12.5%까지 증가 또는 감소할 수 있으므로 수수료를 더 예측 가능하게 만듭니다. 여기에 표시된 값은 현재 블록의 기본 수수료율입니다.</string>
+    <string name="FeeSettings_BaseFee_Info">네트워크 프로토콜은 각 블록마다 가스당 기본 가격을 결정하며, 이를 \u0027기본 수수료율\u0027이라고 합니다. 이는 블록마다 네트워크 이용률에 따라 다양하게 변할 수 있습니다. 다음 블록에서 최대 12.5%까지 증가 또는 감소할 수 있으므로 수수료를 더 예측 가능하게 만듭니다. 여기에 표시된 값은 현재 블록의 기본 수수료율입니다.</string>
     <string name="FeeSettings_MaxFee">최대 수수료율</string>
     <string name="FeeSettings_MaxFee_Info">이것은 사용자가 지불하려는 가스당 최대 총 가격입니다. 이것은 네트워크의 기본 수수료율과 최대 우선순위 수수료율을 포함해야 합니다. 여기에 표시된 값은 사용자가 선택한 다음 블록의 기본 수수료율과 최대 우선순위 수수료율을 기반으로 추천된 것입니다. 실제로 지불되는 수수료율은 일반적으로 더 낮을 것입니다. 현재 기본 수수료율보다 낮게 설정하면 수수료 지불이 제한될 수 있지만, 거래가 확인되기까지 더 긴 대기 시간이나 막힌 거래가 발생할 수 있습니다.</string>
     <string name="FeeSettings_MaxMinerTips">최대 우선 가스비</string>
@@ -632,8 +632,8 @@
     <string name="Swap_Revoking">철회...</string>
     <string name="swap_create_wallets">Create wallets</string>
     <string name="swap_creating_wallets">Creating wallets..</string>
-    <string name="swap_create_wallet_description">You don\'t have all chosen wallets, need to create first</string>
-    <string name="swap_create_wallet_description_with_zcash">You don\'t have all chosen wallets, need to create first,\nto exchange ZEC you need to create transparent address first</string>
+    <string name="swap_create_wallet_description">You don\u0027t have all chosen wallets, need to create first</string>
+    <string name="swap_create_wallet_description_with_zcash">You don\u0027t have all chosen wallets, need to create first,\nto exchange ZEC you need to create transparent address first</string>
     <string name="Swap_Approve">승인</string>
     <string name="Swap_Approving">승인 중</string>
     <string name="Swap_Swapping">스와핑</string>
@@ -933,7 +933,7 @@
     <string name="Settings_PersonalSupport_EnterTelegramAccountDescription">Telegram 계정 이름을 입력하여 저희 팀과 개인 지원 채팅을 시작하세요. 문제가 확인되는 즉시 연락을 드리고 문제 해결을 시작하겠습니다.</string>
     <string name="Settings_PersonalSupport_YouAlreadyRequestedSupportDescription">이미 비공개 채팅을 요청하셨습니다. Telegram에서 찾아보세요.</string>
     <string name="Settings_PersonalSupport_Account">계정</string>
-    <string name="Settings_PersonalSupport_UsernameHint">\@username</string>
+    <string name="Settings_PersonalSupport_UsernameHint">\u0040username</string>
     <string name="Settings_PersonalSupport_Requested">신청 완료</string>
     <string name="Settings_PersonalSupport_Request">요청</string>
     <string name="Settings_PersonalSupport_NewRequest">요청</string>
@@ -1874,7 +1874,7 @@
     <string name="alert_keys_invalidated_title">안드로이드 키 저장소 에러</string>
     <string name="alert_keys_invalidated_description">지갑 암호화 키가 안드로이드 보안 시스템에 의해 무효화되었습니다. 이는 지문 또는 잠금 화면 설정이 변경될 때 발생할 수 있습니다.\n\n액세스를 복원하려면 백업 문구를 사용하여 지갑을 다시 가져오세요.\n\n이 문제가 자주 발생하면 기기 설정에서 Google Smart Lock을 비활성화하고 휴대폰을 다시 시작해 보세요.</string>
     <string name="Alert_TitleWarning">경고</string>
-    <string name="Alert_CustomKeyboardIsUsed">It looks like your device uses a non-default keyboard. P.CASH recommends selecting the default keyboard on your device as third-party keyboards can potentially collect and expose users\' input data. \n\nClick \'Skip\' button if you would like to keep using your preferred keyboard.</string>
+    <string name="Alert_CustomKeyboardIsUsed">It looks like your device uses a non-default keyboard. P.CASH recommends selecting the default keyboard on your device as third-party keyboards can potentially collect and expose users\u0027 input data. \n\nClick \u0027Skip\u0027 button if you would like to keep using your preferred keyboard.</string>
     <string name="Alert_DeviceIsRootedWarning">P.CASH 팀은 루트 없는 (탈옥 없는) 전화에서만 앱을 실행할 것을 권장드립니다./n/n루트 장치를 사용할 때 앱은 더 이상 악성 소프트웨어로부터 암호 화폐의 안전을 보장할 수 없습니다.</string>
     <!--OS Pin-->
     <string name="OSPin_Confirm_Title">휴대폰 PIN 번호</string>
@@ -1884,13 +1884,13 @@
     <string name="Unlock_Title">잠금 해제</string>
     <string name="Unlock_Passcode">비밀번호</string>
     <string name="Unlock_EnterPasscode">비밀번호 입력</string>
-    <string name="Unlock_EnterPasscode_Transactions_Hide">Enter Passcode for \"Transactions Auto Hide\"</string>
-    <string name="Unlock_EnterPasscode_Transfer">Enter a passcode to enable \"Passcode for transfer\"</string>
+    <string name="Unlock_EnterPasscode_Transactions_Hide">Enter Passcode for \u0022Transactions Auto Hide\u0022</string>
+    <string name="Unlock_EnterPasscode_Transfer">Enter a passcode to enable \u0022Passcode for transfer\u0022</string>
     <string name="Unlock_BiometricScanner">생체정보 스캐너</string>
     <string name="Unlock_BiometricScannerDisabled_Description">비밀번호를 입력하거나 나중에 다시 시도하십시오</string>
     <string name="Unlock_BiometricScannerDisabled_Info">생체정보 인증 비활성화</string>
-    <string name="Unlock_WalletDisabledUntil">~때까지 사용 안 함: %s</string>
-    <string name="Unlock_AttemptsLeft">남은 시도 횟수: %s</string>
+    <string name="Unlock_WalletDisabledUntil">~때까지 사용 안 함: %1$s</string>
+    <string name="Unlock_AttemptsLeft">남은 시도 횟수: %1$s</string>
     <string name="Unlock_Random">랜덤</string>
     <!--Set Pin-->
     <string name="PinSet_Title">암호 설정</string>
@@ -2308,4 +2308,34 @@
     <string name="beam_wallet_state_closed">BEAM 지갑이 닫힘</string>
     <string name="beam_wallet_operation_failed">BEAM 지갑 작업 실패</string>
     <string name="beam_wallet_stop_failed">BEAM 지갑 중지 실패</string>
+    <string name="desktop_already_running">P.CASH이 이미 실행 중입니다</string>
+    <string name="desktop_create_password_title">비밀번호 만들기</string>
+    <string name="desktop_create_password_description">비밀번호는 이 컴퓨터에 저장된 지갑을 보호합니다. 어디에도 저장되지 않으며 복구할 수 없습니다.</string>
+    <string name="desktop_password_repeat_hint">비밀번호 다시 입력</string>
+    <string name="desktop_password_mismatch">비밀번호가 일치하지 않습니다</string>
+    <string name="desktop_password_requirement_length">최소 8자</string>
+    <string name="desktop_password_requirement_uppercase">대문자 포함</string>
+    <string name="desktop_password_requirement_lowercase">소문자 포함</string>
+    <string name="desktop_password_requirement_digit">숫자 포함</string>
+    <string name="desktop_password_requirement_special">특수 문자 포함</string>
+    <string name="desktop_password_caps_lock">Caps Lock이 켜져 있습니다</string>
+    <string name="desktop_password_switch_layout">키보드 레이아웃을 전환하세요: 비밀번호는 라틴 문자만 사용할 수 있습니다</string>
+    <string name="desktop_create_password_warning">이 비밀번호가 없으면 이 컴퓨터의 데이터를 열 수 없으며, 아무도 복구할 수 없습니다. 모든 복구 문구의 백업을 보관하세요.</string>
+    <string name="desktop_create_password_failed">비밀번호를 저장할 수 없습니다. 디스크 여유 공간과 접근 권한을 확인하세요</string>
+    <string name="desktop_unlock_title">비밀번호를 입력하세요</string>
+    <string name="desktop_unlock_wrong_password">비밀번호가 올바르지 않습니다</string>
+    <string name="desktop_unlock_data_unreadable">데이터를 열 수 없습니다</string>
+    <string name="desktop_unlock_failed">키 파일을 읽을 수 없습니다. 다시 시도해 주세요</string>
+    <string name="desktop_unlock_forgot_password">비밀번호를 잊으셨나요?</string>
+    <string name="desktop_forgot_password_title">비밀번호를 잊으셨나요</string>
+    <string name="desktop_forgot_password_warning">이 컴퓨터에 저장된 지갑, 연락처, 설정 및 내역이 삭제됩니다. 블록체인상의 자금에는 영향이 없습니다. 지갑은 복구 문구로만 복원할 수 있습니다.</string>
+    <string name="desktop_forgot_password_action">데이터 삭제</string>
+    <string name="desktop_forgot_password_failed">데이터를 삭제할 수 없습니다</string>
+    <string name="desktop_change_password_title">비밀번호 변경</string>
+    <string name="desktop_change_password_current_hint">현재 비밀번호</string>
+    <string name="desktop_change_password_new_hint">새 비밀번호</string>
+    <string name="desktop_change_password_failed">비밀번호를 저장할 수 없습니다. 현재 비밀번호는 계속 사용할 수 있습니다</string>
+    <string name="desktop_change_password_corrupted">키 파일이 손상되었습니다. 앱이 잠기면 로그인할 수 없게 됩니다. 모든 복구 문구의 백업을 저장하세요.</string>
+    <string name="desktop_change_password_success">비밀번호가 변경되었습니다</string>
+    <string name="desktop_security_lock_now">지금 잠금</string>
 </resources>

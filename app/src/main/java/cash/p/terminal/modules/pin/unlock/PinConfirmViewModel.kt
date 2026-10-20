@@ -170,7 +170,7 @@ class PinConfirmViewModel(
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             val lockoutManager = LockoutManager(
-                getKoinInstance(), UptimeProvider(), LockoutUntilDateFactory(
+                getKoinInstance(), getKoinInstance<UptimeProvider>(), LockoutUntilDateFactory(
                     CurrentDateProvider()
                 )
             )

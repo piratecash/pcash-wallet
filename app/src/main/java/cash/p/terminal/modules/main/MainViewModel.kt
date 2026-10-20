@@ -20,6 +20,8 @@ import cash.p.terminal.feature.logging.domain.usecase.LogLoginAttemptUseCase
 import cash.p.terminal.modules.balance.OpenSendTokenSelect
 import cash.p.terminal.modules.balance.openSendTokenSelect
 import cash.p.terminal.shared.main.MainDestination
+import cash.p.terminal.shared.main.launchDestination
+import cash.p.terminal.shared.main.rememberedMainTab
 import cash.p.terminal.modules.coin.CoinPage
 import cash.p.terminal.modules.market.platform.MarketPlatformPage
 import cash.p.terminal.modules.market.topplatforms.Platform
@@ -230,9 +232,7 @@ class MainViewModel(
     }
 
     fun onSelect(mainNavItem: MainDestination) {
-        if (mainNavItem != MainDestination.Settings) {
-            currentMainTab = mainNavItem
-        }
+        rememberedMainTab(mainNavItem)?.let { currentMainTab = it }
         if (mainNavItem == MainDestination.Transactions) {
             evmBlockchainManager.syncTransactionHistory()
         }
@@ -292,28 +292,14 @@ class MainViewModel(
     }
 
     private fun getTabIndexToOpen(): Int {
-        val tab = when {
-            relaunchBySettingChange -> {
-                relaunchBySettingChange = false
-                MainDestination.Settings
-            }
-
-            !marketsTabEnabled -> {
-                MainDestination.Balance
-            }
-
-            else -> getLaunchTab()
+        val tab = if (relaunchBySettingChange) {
+            relaunchBySettingChange = false
+            MainDestination.Settings
+        } else {
+            launchDestination(launchPage, marketsTabEnabled, currentMainTab)
         }
 
         return items.indexOf(tab)
-    }
-
-    private fun getLaunchTab(): MainDestination = when (launchPage) {
-        LaunchPage.Market,
-        LaunchPage.Watchlist -> MainDestination.Market
-
-        LaunchPage.Balance -> MainDestination.Balance
-        LaunchPage.Auto -> currentMainTab
     }
 
     private fun getNavigationDataForDeeplink(deepLink: Uri): Pair<MainDestination, DeeplinkPage?> {

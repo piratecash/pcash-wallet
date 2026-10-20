@@ -16,7 +16,7 @@ import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
 import cash.p.terminal.core.managers.PriceManager
 import cash.p.terminal.core.managers.SeedPhraseQrCrypto
-import cash.p.terminal.core.managers.toSeedQrErrorStringRes
+import cash.p.terminal.core.managers.toSeedQrErrorMessage
 import cash.p.terminal.core.storage.PendingMultiSwapStorage
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.core.supported
@@ -552,7 +552,7 @@ class BalanceViewModel(
                 emitState()
             }
             .onFailure { error ->
-                errorMessage = Translator.getString(error.toSeedQrErrorStringRes())
+                errorMessage = error.toSeedQrErrorMessage()
                 emitState()
             }
     }
@@ -753,16 +753,4 @@ sealed class TotalUIState {
 
     object Hidden : TotalUIState()
 
-}
-
-enum class HeaderNote {
-    None,
-    NonStandardAccount,
-    NonRecommendedAccount
-}
-
-fun Account.headerNote(nonRecommendedDismissed: Boolean): HeaderNote = when {
-    nonStandard -> HeaderNote.NonStandardAccount
-    nonRecommended -> if (nonRecommendedDismissed) HeaderNote.None else HeaderNote.NonRecommendedAccount
-    else -> HeaderNote.None
 }

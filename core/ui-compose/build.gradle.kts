@@ -55,6 +55,7 @@ kotlin {
                 implementation(libs.compose.multiplatform.runtime)
                 implementation(libs.compose.multiplatform.ui)
                 implementation(libs.compose.multiplatform.foundation)
+                implementation(libs.compose.multiplatform.material)
                 implementation(libs.compose.multiplatform.material3)
                 implementation(libs.coil.compose)
                 implementation(libs.coil.svg)

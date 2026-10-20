@@ -57,7 +57,6 @@ class SettingsContentDesktopTest {
             allBackedUp = false,
             pendingRequestCount = 7,
             walletConnectSessionCount = 3,
-            manageWalletShowAlert = true,
             securityCenterShowAlert = true,
             securityCenterShowNewBadge = true,
             aboutAppShowAlert = true,

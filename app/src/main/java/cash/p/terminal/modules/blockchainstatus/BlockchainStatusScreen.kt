@@ -30,7 +30,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cash.p.terminal.R
-import androidx.compose.material3.Icon
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefaultWithIcon
@@ -253,26 +252,6 @@ private fun KitInfoBlock(kitVersion: String, kitStarted: Boolean) {
                     subhead1_lucian(text = "No")
                 }
             }
-        }
-    }
-}
-
-@Composable
-internal fun BlockchainStatusButton(onClick: () -> Unit) {
-    CellUniversalLawrenceSection(listOf(Unit)) {
-        RowUniversal(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            onClick = onClick
-        ) {
-            body_leah(
-                modifier = Modifier.weight(1f),
-                text = stringResource(R.string.blockchain_status)
-            )
-            Icon(
-                painter = painterResource(R.drawable.ic_arrow_right),
-                tint = ComposeAppTheme.colors.iconSecondary,
-                contentDescription = null,
-            )
         }
     }
 }

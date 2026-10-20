@@ -32,7 +32,7 @@ class DefaultCurrencyManager(
         }
 
     private val defaultCurrency: Currency
-        get() = Currencies.all.first { it.code == "USD" }
+        get() = Currencies.all.first { it.code == DEFAULT_CURRENCY_CODE }
 
     private fun getInitialCurrency(): Currency {
         return storage.baseCurrencyCode?.let { code ->
@@ -47,5 +47,9 @@ class DefaultCurrencyManager(
     override fun setBaseCurrencyCode(baseCurrencyCode: String) {
         val newCurrency = Currencies.all.find { it.code == baseCurrencyCode }
         baseCurrency = newCurrency ?: defaultCurrency
+    }
+
+    companion object {
+        const val DEFAULT_CURRENCY_CODE = "USD"
     }
 }

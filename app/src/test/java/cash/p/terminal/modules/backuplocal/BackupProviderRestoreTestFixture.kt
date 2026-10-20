@@ -2,8 +2,9 @@ package cash.p.terminal.modules.backuplocal
 
 import android.util.Base64
 import cash.p.terminal.core.IAccountFactory
-import cash.p.terminal.core.installEthereumCryptoProviderForTest
+import io.horizontalsystems.ethereumkit.core.EthereumKit
 import cash.p.terminal.core.ILocalStorage
+import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.managers.BalanceHiddenManager
 import cash.p.terminal.core.managers.BaseTokenManager
 import cash.p.terminal.core.managers.BtcBlockchainManager
@@ -19,7 +20,11 @@ import cash.p.terminal.entities.LaunchPage
 import cash.p.terminal.modules.balance.BalanceViewTypeManager
 import cash.p.terminal.modules.chart.ChartIndicatorManager
 import cash.p.terminal.modules.chart.ChartIndicatorSettingsDao
+import cash.p.terminal.modules.backuplocal.fullbackup.AndroidAppSettingsBackup
+import cash.p.terminal.modules.backuplocal.fullbackup.AppearanceSettingsBackup
 import cash.p.terminal.modules.backuplocal.fullbackup.BackupProvider
+import cash.p.terminal.modules.backuplocal.fullbackup.BlockchainSettingsBackup
+import cash.p.terminal.modules.backuplocal.fullbackup.ChartIndicatorsBackup
 import cash.p.terminal.modules.backuplocal.fullbackup.BackupSource
 import cash.p.terminal.modules.backuplocal.fullbackup.ChartIndicators
 import cash.p.terminal.modules.backuplocal.fullbackup.EvmSyncSourceBackup
@@ -58,7 +63,13 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.unmockkStatic
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.koin.core.context.startKoin
@@ -70,6 +81,7 @@ import org.koin.dsl.module
  * setup/teardown, and the restore-filtering helpers reused by
  * [BackupProviderV4BinaryTest] and [BackupProviderDeclinedTokensTest].
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 internal abstract class BackupProviderRestoreTestFixture {
 
     protected lateinit var backupProvider: BackupProvider
@@ -100,12 +112,45 @@ internal abstract class BackupProviderRestoreTestFixture {
     protected val solanaRpcSourceManager: SolanaRpcSourceManager = mockk(relaxed = true)
     protected val contactsRepository: ContactsRepository = mockk(relaxed = true)
     protected val marketKit: MarketKitWrapper = mockk(relaxed = true)
+    protected val appearanceSettingsBackup = AppearanceSettingsBackup(
+        themeService = themeService,
+        balanceViewTypeManager = balanceViewTypeManager,
+        launchScreenService = launchScreenService,
+        store = localStorage,
+        balanceHiddenManager = balanceHiddenManager,
+        dispatcherProvider = TestDispatcherProvider(UnconfinedTestDispatcher(), TestScope()),
+    )
+    protected val blockchainSettingsBackup = BlockchainSettingsBackup(
+        btcBlockchainManager = btcBlockchainManager,
+        evmBlockchains = evmBlockchainManager,
+        evmSyncSourceManager = evmSyncSourceManager,
+        evmSyncSourceStorage = evmSyncSourceStorage,
+        blockchainSettingsStorage = blockchainSettingsStorage,
+        solanaRpcSourceManager = solanaRpcSourceManager,
+    )
+    protected val appSettingsBackup = AndroidAppSettingsBackup(
+        localStorage = localStorage,
+        languageManager = languageManager,
+        appIconService = appIconService,
+        chartIndicatorsBackup = ChartIndicatorsBackup(localStorage, chartIndicatorManager, chartIndicatorSettingsDao),
+        baseTokenManager = baseTokenManager,
+        currencyManager = currencyManager,
+        contactsRepository = contactsRepository,
+        appearanceSettingsBackup = appearanceSettingsBackup,
+        blockchainSettingsBackup = blockchainSettingsBackup,
+    )
+
+    // Settings restore switches to Main for theme and language.
+    @Before
+    fun setUpMainDispatcher() {
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+    }
 
     @Before
     fun setUp() {
         // Creating a real V4 binary goes through EncryptDecryptManager.generateMac, which needs
         // EthereumKit's ETH-KECCAK-256 digest.
-        installEthereumCryptoProviderForTest()
+        EthereumKit.init()
 
         mockkStatic(Base64::class)
         every { Base64.encodeToString(any(), any()) } answers {
@@ -144,31 +189,14 @@ internal abstract class BackupProviderRestoreTestFixture {
         every { solanaRpcSourceManager.rpcSource } returns mockRpcSource
 
         backupProvider = BackupProvider(
-            localStorage = localStorage,
-            languageManager = languageManager,
             walletStorage = walletStorage,
             settingsManager = settingsManager,
             accountManager = accountManager,
             accountFactory = accountFactory,
             walletManager = walletManager,
             restoreSettingsManager = restoreSettingsManager,
-            blockchainSettingsStorage = blockchainSettingsStorage,
-            evmBlockchainManager = evmBlockchainManager,
             marketFavoritesManager = marketFavoritesManager,
-            balanceViewTypeManager = balanceViewTypeManager,
-            appIconService = appIconService,
-            themeService = themeService,
-            chartIndicatorManager = chartIndicatorManager,
-            chartIndicatorSettingsDao = chartIndicatorSettingsDao,
-            balanceHiddenManager = balanceHiddenManager,
-            baseTokenManager = baseTokenManager,
-            launchScreenService = launchScreenService,
-            currencyManager = currencyManager,
-            btcBlockchainManager = btcBlockchainManager,
-            evmSyncSourceManager = evmSyncSourceManager,
-            evmSyncSourceStorage = evmSyncSourceStorage,
-            solanaRpcSourceManager = solanaRpcSourceManager,
-            contactsRepository = contactsRepository
+            appSettingsBackup = appSettingsBackup,
         )
     }
 
@@ -176,6 +204,7 @@ internal abstract class BackupProviderRestoreTestFixture {
     fun tearDown() {
         unmockkStatic(Base64::class)
         stopKoin()
+        Dispatchers.resetMain()
     }
 
     protected val usdtQueryId = "ethereum|eip20:0xdac17f958d2ee523a2206206994597c13d831ec7"
@@ -245,6 +274,11 @@ internal abstract class BackupProviderRestoreTestFixture {
         coEvery { walletManager.saveEnabledWallets(capture(saved)) } returns Unit
         return saved
     }
+
+    /** Auth gets a fresh IV per export and [BackupLocalModule.KdfParams] has no equals: compare it decrypted. */
+    protected fun Settings.withoutCustomAuth() = copy(
+        evmSyncSources = evmSyncSources.copy(custom = evmSyncSources.custom.map { it.copy(auth = null) })
+    )
 
     /** A minimal but complete [Settings], with one custom EVM sync source to prove custom RPC restore ran. */
     protected fun minimalSettings() = Settings(

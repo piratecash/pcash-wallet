@@ -20,6 +20,7 @@ object AppLog {
 
     private const val DAYS_TO_KEEP = 90L
     private const val MAX_ENTRIES = 20_000
+    private const val EXPORT_PAGE_SIZE = 500
     private val executor = Executors.newSingleThreadExecutor()
 
     /** Serializes the export with every insert and trim, which all run on [executor]. */
@@ -46,26 +47,33 @@ object AppLog {
         }
     }
 
-    /** Streams the whole log (or one tag) into [out] row by row, without materialising the table. */
+    /** Streams the whole log (or one tag) into [out] page by page, without materialising the table. */
     suspend fun writeLog(out: Appendable, tag: String? = null) = withContext(logDispatcher) {
         val dateFormat = newDateFormat()
-        val cursor = if (tag == null) logsDao.streamGrouped() else logsDao.streamGroupedByTag(tag)
-        cursor.use {
-            val idIndex = it.getColumnIndexOrThrow("id")
-            val dateIndex = it.getColumnIndexOrThrow("date")
-            val actionIdIndex = it.getColumnIndexOrThrow("actionId")
-            val messageIndex = it.getColumnIndexOrThrow("message")
-            var currentActionId: String? = null
+        var currentActionId: String? = null
+        var afterFirstId = 0L
+        var afterId = 0
 
-            while (it.moveToNext()) {
-                val actionId = it.getString(actionIdIndex)
-                if (actionId != currentActionId) {
-                    out.appendLine("$actionId:")
-                    currentActionId = actionId
-                }
-                val date = dateFormat.format(Date(it.getLong(dateIndex)))
-                out.appendLine("  - ${it.getInt(idIndex)}: $date ${it.getString(messageIndex)}")
+        while (true) {
+            val page = if (tag == null) {
+                logsDao.getGroupedPage(afterFirstId, afterId, EXPORT_PAGE_SIZE)
+            } else {
+                logsDao.getGroupedPageByTag(tag, afterFirstId, afterId, EXPORT_PAGE_SIZE)
             }
+            if (page.isEmpty()) break
+
+            page.forEach { row ->
+                if (row.actionId != currentActionId) {
+                    out.appendLine("${row.actionId}:")
+                    currentActionId = row.actionId
+                }
+                val date = dateFormat.format(Date(row.date))
+                out.appendLine("  - ${row.id}: $date ${row.message}")
+            }
+
+            if (page.size < EXPORT_PAGE_SIZE) break
+            afterFirstId = page.last().firstId
+            afterId = page.last().id
         }
     }
 
