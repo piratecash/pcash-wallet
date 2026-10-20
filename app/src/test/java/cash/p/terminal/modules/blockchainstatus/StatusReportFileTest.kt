@@ -1,7 +1,6 @@
 package cash.p.terminal.modules.blockchainstatus
 
 import android.content.Context
-import android.database.Cursor
 import android.net.Uri
 import android.util.Log
 import androidx.room.Room
@@ -115,17 +114,14 @@ class StatusReportFileTest {
 
     @Test
     fun share_calledWhileAnotherShareIsRunning_returnsNullWithoutOverlappingTheFirst() {
-        val cursorReached = CountDownLatch(1)
-        val releaseCursor = CountDownLatch(1)
-        val blockingCursor = mockk<Cursor>(relaxed = true).also { cursor ->
-            every { cursor.moveToNext() } answers {
-                cursorReached.countDown()
-                releaseCursor.await(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-                false
-            }
-        }
+        val exportReached = CountDownLatch(1)
+        val releaseExport = CountDownLatch(1)
         koinLogsDao.dao = mockk<LogsDao>(relaxed = true).also { logsDao ->
-            every { logsDao.streamGrouped() } returns blockingCursor
+            every { logsDao.getGroupedPage(any(), any(), any()) } answers {
+                exportReached.countDown()
+                releaseExport.await(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+                emptyList()
+            }
         }
 
         var firstUri: Uri? = null
@@ -136,14 +132,14 @@ class StatusReportFileTest {
             }
             firstDone.countDown()
         }
-        assertTrue(cursorReached.await(TIMEOUT_SECONDS, TimeUnit.SECONDS))
+        assertTrue(exportReached.await(TIMEOUT_SECONDS, TimeUnit.SECONDS))
 
         val second = runBlocking {
             statusReportFile.share(fileName = "second.txt", header = "", logTag = null, footer = "")
         }
         assertNull(second)
 
-        releaseCursor.countDown()
+        releaseExport.countDown()
         assertTrue(firstDone.await(TIMEOUT_SECONDS, TimeUnit.SECONDS))
         assertTrue(firstUri != null)
     }

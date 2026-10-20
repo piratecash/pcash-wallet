@@ -130,6 +130,19 @@ class WalletStorageTest {
     }
 
     @Test
+    fun forgetLoadedWallets_savedWallet_deleteNoLongerReachesIt() {
+        val enabledWalletStorage = InMemoryEnabledWalletStorage()
+        val walletStorage = walletStorage(enabledWalletStorage, mockk(relaxed = true))
+        val wallet = assertNotNull(walletFactory.create(token, account, null))
+        walletStorage.save(listOf(wallet))
+
+        walletStorage.forgetLoadedWallets()
+        walletStorage.delete(listOf(wallet))
+
+        assertSingleWalletStored(enabledWalletStorage, wallet)
+    }
+
+    @Test
     fun walletFactory_unsupportedTokenForMoneroMnemonicAccount_skipsWallet() {
         val moneroAccount = Account(
             id = "monero-account-id",

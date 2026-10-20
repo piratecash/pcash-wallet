@@ -7,7 +7,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
@@ -20,11 +19,14 @@ import cash.p.terminal.modules.settings.security.autolock.AutoLockIntervalsPage
 import cash.p.terminal.modules.settings.security.passcode.SecuritySettingsViewModel
 import cash.p.terminal.modules.settings.main.HsSettingCell
 import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.SettingsSecurity_Biometric_Authentication
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HsSwitch
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun PasscodeBlock(
@@ -85,7 +87,7 @@ fun PasscodeBlock(
                 },
                 center = {
                     body_leah(
-                        text = stringResource(R.string.SettingsSecurity_Biometric_Authentication),
+                        text = stringResource(Res.string.SettingsSecurity_Biometric_Authentication),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )

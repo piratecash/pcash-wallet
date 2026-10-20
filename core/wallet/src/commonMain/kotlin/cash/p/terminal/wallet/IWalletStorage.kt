@@ -9,4 +9,7 @@ interface IWalletStorage {
     fun deleteByTokenQueryId(accountId: String, tokenQueryId: String)
     fun handle(newEnabledWallets: List<EnabledWallet>): List<Long>
     fun clear()
+
+    /** Drops the wallets kept from the last load: they reference their accounts' keys. */
+    fun forgetLoadedWallets()
 }

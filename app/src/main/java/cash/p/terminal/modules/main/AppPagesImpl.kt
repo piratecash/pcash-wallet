@@ -1,26 +1,42 @@
 package cash.p.terminal.modules.main
 
+import cash.p.terminal.core.managers.FaqManager
+import cash.p.terminal.feature.wallet.FaqTopic
+import cash.p.terminal.feature.wallet.WalletPlatformPages
 import cash.p.terminal.modules.backuplocal.BackupLocalPage
+import cash.p.terminal.modules.blockchainstatus.BlockchainStatusPage
 import cash.p.terminal.modules.coin.CoinPage
 import cash.p.terminal.modules.createaccount.CreateAccountPage
+import cash.p.terminal.modules.hardwarewallet.HardwareWalletPage
+import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.market.MarketPages
 import cash.p.terminal.modules.markdown.MarkdownPage
+import cash.p.terminal.modules.markdown.openMarkdownOrWeblink
 import cash.p.terminal.modules.manageaccount.backupkey.BackupKeyPage
 import cash.p.terminal.modules.multiswap.SwapPage
 import cash.p.terminal.modules.nft.collection.NftCollectionPage
 import cash.p.terminal.modules.qrscanner.QRScannerPage
+import cash.p.terminal.modules.resettofactorysettings.ResetToFactorySettingsPage
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
+import cash.p.terminal.modules.settings.appearance.AppIconPage
 import cash.p.terminal.modules.subscription.SubscriptionInfoPage
 import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.BackupKeyInput
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.QrScannerInput
+import cash.p.terminal.tangem.domain.sdk.TangemSdkManager
+import cash.p.terminal.tangem.ui.accesscoderecovery.AccessCodeRecoverySheet
 import cash.p.terminal.ui_compose.CoinFragmentInput
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.navigation.WalletPages
+import com.tangem.common.doOnSuccess
+import io.horizontalsystems.core.entities.Blockchain
 
-class AppPagesImpl : AppPages, WalletPages, MarketPages {
+class AppPagesImpl(
+    private val tangemSdkManager: TangemSdkManager,
+) : AppPages, WalletPages, MarketPages, WalletPlatformPages {
     override fun coin(coinUid: String): HSPage = CoinPage(CoinFragmentInput(coinUid))
     override fun createAccount(): HSPage = CreateAccountPage(null)
     override fun restoreAccount(): HSPage = RestoreAccountPage(null)
@@ -32,4 +48,34 @@ class AppPagesImpl : AppPages, WalletPages, MarketPages {
     override fun subscriptionInfo(): HSPage = SubscriptionInfoPage()
     override fun nftCollection(collectionUid: String, blockchainUid: String): HSPage =
         NftCollectionPage(NftCollectionPage.Input(collectionUid, blockchainUid))
+
+    override val isQrScannerAvailable = true
+    override fun hardwareWallet(input: ManageAccountsModule.Input?): HSPage = HardwareWalletPage(input)
+    override fun resetToFactory(account: Account): HSPage =
+        ResetToFactorySettingsPage(ResetToFactorySettingsPage.Input(account))
+    override fun faq(topic: FaqTopic): HSPage = FaqManager.faqPage(topic)
+    override fun appIcon(): HSPage = AppIconPage()
+    override val isBlockchainStatusAvailable = true
+    override fun blockchainStatus(blockchain: Blockchain): HSPage = BlockchainStatusPage(blockchain)
+    override fun openMarkdownOrWeblink(navigation: HSNavigation, url: String) =
+        navigation.openMarkdownOrWeblink(url)
+
+    override suspend fun accessCodeRecovery(): HSPage? {
+        var page: HSPage? = null
+        tangemSdkManager.scanCard(cardId = null, allowRequestAccessCodeFromRepository = false)
+            .doOnSuccess { card ->
+                page = AccessCodeRecoverySheet(
+                    AccessCodeRecoverySheet.Input(card.userSettings.isUserCodeRecoveryAllowed)
+                )
+            }
+        return page
+    }
+
+    override suspend fun changeAccessCode() {
+        tangemSdkManager.setAccessCode(null)
+    }
+
+    override suspend fun forgotAccessCode(cardId: String) {
+        tangemSdkManager.restoreAccessCode(cardId)
+    }
 }

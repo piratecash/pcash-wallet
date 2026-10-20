@@ -75,7 +75,7 @@
     <string name="button_info">Info</string>
     <string name="not_enough_ton_for_fee">TON insuficiente para taxa. Seu saldo atual é %s TON.</string>
     <string name="check_fee_warning">Certifique-se de que tem pelo menos %s para taxas ou a transação pode falhar</string>
-    <string name="Error_OutOfRange">Can\'t be less than %1$s or more than %2$s</string>
+    <string name="Error_OutOfRange">Can\u0027t be less than %1$s or more than %2$s</string>
     <string name="Error_NotInteger">Wrong integer number</string>
     <string name="Error">Erro</string>
     <string name="NotAvailable">N/A</string>
@@ -106,7 +106,7 @@
     <string name="CreateWallet_N_Words">%s palavras</string>
     <string name="create_wallet_n_words_monero">%s palavras (somente Monero)</string>
     <string name="CreateWallet_Error_EmptyPassphrase">A senha não pode estar vazia</string>
-    <string name="CreateWallet_Error_PassphraseForbiddenSymbols">Por favor, use apenas símbolos suportados: <![CDATA[A-Z a-z 0-9 \' " ` & / ? : ; . , ~ * $ = + - [ ](){} <> \ _ # @ £% ]]></string>
+    <string name="CreateWallet_Error_PassphraseForbiddenSymbols">Por favor, use apenas símbolos suportados: <![CDATA[A-Z a-z 0-9 \u0027 " ` & / ? : ; . , ~ * $ = + - [ ](){} <> \ _ # @ £% ]]></string>
     <string name="CreateWallet_Error_InvalidConfirmation">Confirmação da senha não coincide</string>
     <string name="create_wallet_error_failed">Falha ao criar a carteira. Tente novamente ou reinicie o aplicativo.</string>
     <string name="CreateWallet_PassphraseDescription">Frases secretas adicionam camada de segurança adicional para carteiras. Para restaurar essa carteira, o usuário exigia uma frase de recuperação e uma frase secreta.\n\nAs frases secretas também facilitam para os usuários ter muitas carteiras com várias moedas usando um único mnemônico, mas com senhas diferentes.</string>
@@ -361,8 +361,8 @@
     <string name="Balance_NetworkSelectDescription">Choose network to get an address to receive.</string>
     <string name="Balance_Receive_AddressFormatDescription">Choose a format for providing an address to receive.</string>
     <string name="Balance_Receive_AddressFormat">Address Format</string>
-    <string name="Balance_Receive_AddressFormat_RecommendedAddressType">The Cash Address format is preferred for receiving Bitcoin Cash (BCH) due to its improved user experience and compatibility. However, both address formats can be used interchangeably to receive BCH, regardless of the sender\'s address format.</string>
-    <string name="Balance_Receive_AddressFormat_RecommendedDerivation">The Native SegWit format is preferred in Bitcoin for improved throughput and security. All address formats (Taproot, SegWit, Legacy) can be used interchangeably to receive BTC regardless of the sender\'s address format, enabling seamless transactions across different coin types.</string>
+    <string name="Balance_Receive_AddressFormat_RecommendedAddressType">The Cash Address format is preferred for receiving Bitcoin Cash (BCH) due to its improved user experience and compatibility. However, both address formats can be used interchangeably to receive BCH, regardless of the sender\u0027s address format.</string>
+    <string name="Balance_Receive_AddressFormat_RecommendedDerivation">The Native SegWit format is preferred in Bitcoin for improved throughput and security. All address formats (Taproot, SegWit, Legacy) can be used interchangeably to receive BTC regardless of the sender\u0027s address format, enabling seamless transactions across different coin types.</string>
     <string name="Balance_Receive_Account">Account</string>
     <string name="Balance_Receive_NotActive">Not active</string>
     <string name="Balance_Receive_Amount">Amount</string>
@@ -469,7 +469,7 @@
     <!-- Fee Settings -->
     <string name="FeeSettings_NetworkFee">Taxa de Rede</string>
     <string name="FeeSettings_NetworkFee_Info">The estimated cost of sending given transaction on the network.</string>
-    <string name="FeeSettings_GasLimit_Info">A complexidade da transação é medida em unidades chamadas \"gas\". Ela varia dependendo do contrato inteligente ser executado. O Limite de Gas é estimado o gas máximo necessário para o executar. O gas real utilizado normalmente será mais baixo.</string>
+    <string name="FeeSettings_GasLimit_Info">A complexidade da transação é medida em unidades chamadas \u0022gas\u0022. Ela varia dependendo do contrato inteligente ser executado. O Limite de Gas é estimado o gas máximo necessário para o executar. O gas real utilizado normalmente será mais baixo.</string>
     <string name="FeeSettings_GasPrice_Info">A taxa para transação na rede é medida em unidades de gás. O preço do gás é a quantidade que um usuário está disposto a gastar por unidade de gás. Quando a rede está ocupada, os preços do gás são altos e baixos quando está inativa. Um preço de gás insuficiente é frequentemente uma razão para que uma transação permaneça pendente por um período prolongado.</string>
     <string name="FeeSettings_BaseFee">Taxa Base</string>
     <string name="FeeSettings_BaseFee_Info">O protocolo de rede determina o preço base por gas para cada bloco, a taxa base. Varia de acordo com o nível de utilização da rede de bloco para bloco. Ele pode aumentar ou diminuir em não mais do que 12,5% no próximo bloco, tornando as taxas mais previsíveis. O valor mostrado aqui é a taxa base de taxa atual do bloco.</string>
@@ -610,8 +610,8 @@
     <string name="fee">Taxa</string>
     <string name="estimated_fee">Taxa estimada</string>
     <string name="Swap_PriceImpact">Impacto de preço</string>
-    <string name="Swap_PriceImpactTooHigh">P.CASH has disabled swap action for this trade because you\'re getting an extremely unfavorable price. This is due to extremely low liquidity.\nIf you still want to swap please use %s website instead.</string>
-    <string name="Swap_PriceImpactWarning">Important! You\'re getting an extremely unfavorable price. This is due to extremely low liquidity.</string>
+    <string name="Swap_PriceImpactTooHigh">P.CASH has disabled swap action for this trade because you\u0027re getting an extremely unfavorable price. This is due to extremely low liquidity.\nIf you still want to swap please use %s website instead.</string>
+    <string name="Swap_PriceImpactWarning">Important! You\u0027re getting an extremely unfavorable price. This is due to extremely low liquidity.</string>
     <string name="Swap_MinimumReceived">Valor garantido</string>
     <string name="Swap_Slippage">Slippage</string>
     <string name="Swap_Recipient">Recipient</string>
@@ -632,8 +632,8 @@
     <string name="Swap_Revoking">Revogando...</string>
     <string name="swap_create_wallets">Create wallets</string>
     <string name="swap_creating_wallets">Creating wallets..</string>
-    <string name="swap_create_wallet_description">You don\'t have all chosen wallets, need to create first</string>
-    <string name="swap_create_wallet_description_with_zcash">You don\'t have all chosen wallets, need to create first,\nto exchange ZEC you need to create transparent address first</string>
+    <string name="swap_create_wallet_description">You don\u0027t have all chosen wallets, need to create first</string>
+    <string name="swap_create_wallet_description_with_zcash">You don\u0027t have all chosen wallets, need to create first,\nto exchange ZEC you need to create transparent address first</string>
     <string name="Swap_Approve">Aprovar</string>
     <string name="Swap_Approving">Aprovando</string>
     <string name="Swap_Swapping">Trocando</string>
@@ -754,7 +754,7 @@
     <string name="Transactions_Filter_HideSuspiciousTx">Ocultar transações suspeitas</string>
     <string name="Transactions_Filter_StablecoinDustAmount_Description">Hiding incoming transactions with the dust amount in stablecoins, this partially solves the  address poisoning attack problems.</string>
     <string name="Transactions_Filter_ChooseContact_Hint">Filtering by contacts works on the following blockchains: Ethereum, BNB Smart Chain, Polygon, Avalanche, Gnosis, Fantom, Arbitrum, Optimism, Tron, Ton and ZCash. Below are the suitable contacts</string>
-    <string name="Transactions_Filter_ChooseContact_NoSuitableContact">You don\'t have any suitable contacts </string>
+    <string name="Transactions_Filter_ChooseContact_NoSuitableContact">You don\u0027t have any suitable contacts </string>
     <!--Transaction Info-->
     <string name="TransactionInfo_Title">Informações sobre a transação</string>
     <string name="TransactionInfo_Status">Status</string>
@@ -930,10 +930,10 @@
     <string name="Settings_JoinUs">Siga-nos</string>
     <string name="Settings_JoinUs_Description">Siga-nos nas redes sociais para ser o primeiro a conhecer as últimas novidades, atualizações e novos recursos do projeto!</string>
     <string name="Settings_PersonalSupport">Personal Support</string>
-    <string name="Settings_PersonalSupport_EnterTelegramAccountDescription">Enter your Telegram account name to start a personal support chat with our team. We\'ll get back to you and start working on your problem as soon as we see it.</string>
-    <string name="Settings_PersonalSupport_YouAlreadyRequestedSupportDescription">You\'ve already requested a private chat, find it on Telegram</string>
+    <string name="Settings_PersonalSupport_EnterTelegramAccountDescription">Enter your Telegram account name to start a personal support chat with our team. We\u0027ll get back to you and start working on your problem as soon as we see it.</string>
+    <string name="Settings_PersonalSupport_YouAlreadyRequestedSupportDescription">You\u0027ve already requested a private chat, find it on Telegram</string>
     <string name="Settings_PersonalSupport_Account">Account</string>
-    <string name="Settings_PersonalSupport_UsernameHint">\@username</string>
+    <string name="Settings_PersonalSupport_UsernameHint">\u0040username</string>
     <string name="Settings_PersonalSupport_Requested">Requested</string>
     <string name="Settings_PersonalSupport_Request">Request</string>
     <string name="Settings_PersonalSupport_NewRequest">New Request</string>
@@ -1302,13 +1302,13 @@
     <string name="BackupRecoveryPhrase_LocalBackup">Local Backup</string>
     <string name="BackupRecoveryPhrase_Later">Mais tarde</string>
     <string name="BackupRecoveryPhrase_BackupRequiredText">Complete one of the wallet backup options to start using the wallet.</string>
-    <string name="BackupRecoveryPhrase_BackupRecomendedText">It\'s recommended to have a manual backup for each wallet.</string>
+    <string name="BackupRecoveryPhrase_BackupRecomendedText">It\u0027s recommended to have a manual backup for each wallet.</string>
     <!-- Local Backup -->
     <string name="LocalBackup_Title">Local Backup</string>
     <string name="LocalBackup_SaveAndBackup">Save and Backup</string>
     <string name="LocalBackup_SetPassword">Set Password</string>
     <string name="LocalBackup_BackupSaved">Backup Saved</string>
-    <string name="LocalBackup_DontForgetPasswordWarning">This password is used to encrypt backup file of your wallet. It can\'t be recovered or reset if lost or forgotten.</string>
+    <string name="LocalBackup_DontForgetPasswordWarning">This password is used to encrypt backup file of your wallet. It can\u0027t be recovered or reset if lost or forgotten.</string>
     <string name="LocalBackup_ProtextBackupWithPasswordInfo">Para garantir a segurança dos dados, recomendamos usar uma senha forte para o seu backup — combinando letras, números e caracteres especiais.\nO aplicativo permite que você crie um backup com uma senha simples para sua conveniência, mas você concorda que o backup pode ser comprometido se uma senha simples for usada.</string>
     <string name="LocalBackup_TermsWarningText">Dispositivos de armazenamento como discos rígidos, unidades USB, armazenamento em smartphone, etc. são todos vulneráveis a perdas devido a danos físicos, roubo ou outras circunstâncias imprevistas.</string>
     <string name="LocalBackup_Term1">Compreendo que o roubo ou dano de um dispositivo de cópia de segurança resultará na perda da cópia de segurança da carteira correspondente.</string>
@@ -1500,7 +1500,7 @@
     <string name="CoinPage_OscillatorsSettings">Oscillators</string>
     <string name="CoinPage_EmaSettingsDescription">The EMA, SMA, and WMA are moving averages used in technical analysis:\n\nEMA emphasizes recent prices for quicker reactions.\nSMA averages price data for a general trend view.\nWMA balances sensitivity and noise reduction by linearly weighting recent data.</string>
     <string name="CoinPage_RsiSettingsDescription">The Relative Strength Index (RSI) is a momentum oscillator that measures price speed and change, identifying overbought (above 70) or oversold (below 30) market conditions. It can also detect price reversals through divergences.</string>
-    <string name="CoinPage_MacdSettingsDescription">The Moving Average Convergence Divergence (MACD) is a momentum indicator that tracks the relationship between two EMAs of a security\'s price. It signals buying or selling opportunities when the MACD line (12-period EMA minus 26-period EMA) crosses the 9-period EMA, known as the signal line.</string>
+    <string name="CoinPage_MacdSettingsDescription">The Moving Average Convergence Divergence (MACD) is a momentum indicator that tracks the relationship between two EMAs of a security\u0027s price. It signals buying or selling opportunities when the MACD line (12-period EMA minus 26-period EMA) crosses the 9-period EMA, known as the signal line.</string>
     <string name="CoinPage_Type">Type</string>
     <string name="CoinPage_Period">Period</string>
     <string name="CoinPage_RsiLength">RSI Length</string>
@@ -1514,11 +1514,11 @@
     <string name="CoinPage_MarketsVerifiedMenu_All">All</string>
     <string name="CoinAnalytics_CexVolume_Info1">Total trading volume for the token on leading centralized exchanges over a 30-day period.</string>
     <string name="CoinAnalytics_CexVolume_Info2">Gráfico mostrando a variação no volume diário de negociação do token nas principais corretoras centralizadas durante um período de 1 ano.</string>
-    <string name="CoinAnalytics_CexVolume_Info3">Token\'s rank is based on trading volume on leading centralized exchanges over a 30-day period.</string>
+    <string name="CoinAnalytics_CexVolume_Info3">Token\u0027s rank is based on trading volume on leading centralized exchanges over a 30-day period.</string>
     <string name="CoinAnalytics_CexVolume_Info4">Lista de todos os tokens com base no volume de trading em corretoras centralizadas ao longo de 24H / 7D / 1M.</string>
     <string name="CoinAnalytics_DexVolume_Info1">Volume total de trading para o token em corretoras centralizadas durante um período de 30 dias.</string>
     <string name="CoinAnalytics_DexVolume_Info2">Gráfico mostrando a variação no volume diário de negociação do token nas principais corretoras centralizadas durante um período de 1 ano.</string>
-    <string name="CoinAnalytics_DexVolume_Info3">Token\'s rank is based on trading volume on leading decentralized exchanges over a 30-day period.</string>
+    <string name="CoinAnalytics_DexVolume_Info3">Token\u0027s rank is based on trading volume on leading decentralized exchanges over a 30-day period.</string>
     <string name="CoinAnalytics_DexVolume_Info4">Lista de todos os tokens com base no volume de trading em corretoras descentralizadas ao longo de 24H / 7D / 1M.</string>
     <string name="CoinAnalytics_DexVolume_TrackedDexes">DEXes que estão sendo rastreados:</string>
     <string name="CoinAnalytics_DexLiquidity_Info1">Quantidade total de liquidez disponível para o token em corretoras descentralizadas.</string>
@@ -1528,7 +1528,7 @@
     <string name="CoinAnalytics_ActiveAddresses_Info1">Total number of unique daily active addresses over 24-hour period.</string>
     <string name="CoinAnalytics_ActiveAddresses_Info2">Chart showing variation in daily active address count over 1 year period.</string>
     <string name="CoinAnalytics_ActiveAddresses_Info3">Total number of unique blockchain addresses transacting with token over 30-day period.</string>
-    <string name="CoinAnalytics_ActiveAddresses_Info4">Token\'s rank based on the number of active wallets transacting with the token 30-day period.</string>
+    <string name="CoinAnalytics_ActiveAddresses_Info4">Token\u0027s rank based on the number of active wallets transacting with the token 30-day period.</string>
     <string name="CoinAnalytics_ActiveAddresses_Info5">List of all tokens ranked based on the number of daily active addresses transacting with the token over 24h / 7D / 1M intervals.</string>
     <string name="CoinAnalytics_TransactionCount_Info1">Total number of unique blockchain transactions with token over a 30-day period.</string>
     <string name="CoinAnalytics_TransactionCount_Info2">Gráfico mostrando a variação na contagem de transações no período de 1 ano.</string>
@@ -1540,7 +1540,7 @@
     <string name="CoinAnalytics_Holders_TrackedBlockchains">Blockchains rastreadas: Ethereum, Binance Smart Chain, Optimism, Arbitrum, Celo, Cronos, Avalanche, Fantom, Polygon</string>
     <string name="CoinAnalytics_ProjectTVL_Info1">Valor-Total-Bloqueado (ou ativos sob gestão) nos contratos inteligentes do projeto.</string>
     <string name="CoinAnalytics_ProjectTVL_Info2">Gráfico mostrando a variação de Valor-Total-Bloqueado nos contratos inteligentes do projeto durante o período de 1 ano.</string>
-    <string name="CoinAnalytics_ProjectTVL_Info3">Token\'s rank is based on current Total-Value-Locked.</string>
+    <string name="CoinAnalytics_ProjectTVL_Info3">Token\u0027s rank is based on current Total-Value-Locked.</string>
     <string name="CoinAnalytics_ProjectTVL_Info4">Lista de todos os tokens classificados com base no Valor-Total-Bloqueado atual.</string>
     <string name="CoinAnalytics_ProjectTVL_Info5">Valor de Mercado / proporção TVL para o projeto.</string>
     <string name="CoinAnalytics_ProjectNoAnalyticData">Este projeto não tem dados analíticos</string>
@@ -1621,7 +1621,7 @@
     <string name="TechnicalAdvice_OverIndicators_SignalDate">Starting from the %s</string>
     <string name="TechnicalAdvice_OverIndicators">The asset is outside the Bollinger Band channel and %s.</string>
     <string name="TechnicalAdvice_OverRsi"> RSI = %1$s, This also indicates that the asset is %2$s.</string>
-    <string name="TechnicalAdvice_OverAdvice"> There might be a strong %sward movement, so it\'s better to wait for the asset price to return to the channel.</string>
+    <string name="TechnicalAdvice_OverAdvice"> There might be a strong %sward movement, so it\u0027s better to wait for the asset price to return to the channel.</string>
     <string name="TechnicalAdvice_StrongIndicators">the asset was %s, but now it has returned to the Bollinger Band channel. This indicates a possible trend reversal.</string>
     <string name="TechnicalAdvice_StrongRsi">Meanwhile, the RSI is %1$s, which still indicates that it is %2$s.</string>
     <string name="TechnicalAdvice_StrongAdvice">This could be a very strong signal to enter the market. Keep in mind that there may be several attempts of %sward movement after returning to the channel, so do not forget about risk management.</string>
@@ -1827,7 +1827,7 @@
     <string name="NftCollection_Items">Itens</string>
     <string name="NftCollection_Activity">Atividade</string>
     <string name="NftCollection_Owners">Donos</string>
-    <string name="NftCollection_TodaysSales">Today\'s Sales</string>
+    <string name="NftCollection_TodaysSales">Today\u0027s Sales</string>
     <string name="NftCollection_TodaysSalesCount">%s NFT</string>
     <string name="NftCollection_Royalty">Direitos Autorais</string>
     <string name="NftCollection_InceptionDate">Data de Início</string>
@@ -1876,7 +1876,7 @@
     <string name="alert_keys_invalidated_title">Erro de Keystore do Android</string>
     <string name="alert_keys_invalidated_description">As chaves de criptografia da sua carteira foram invalidadas pelo sistema de segurança do Android. Isso pode acontecer quando as configurações de impressão digital ou tela de bloqueio são alteradas.\n\nPara restaurar o acesso, reimporte sua carteira usando sua frase de backup.\n\nSe isso acontecer com frequência, tente desativar o Google Smart Lock nas configurações do dispositivo e reinicie o telefone.</string>
     <string name="Alert_TitleWarning">Aviso</string>
-    <string name="Alert_CustomKeyboardIsUsed">Parece que o seu dispositivo usa um teclado que não é padrão. A P.CASH recomenda a seleção de teclado padrão no seu dispositivo, já que teclados de terceiros podem potencialmente coletar e expor os dados de entrada dos usuários. \n\nClique no botão \'Avançar\' se você quiser continuar usando seu teclado preferido.</string>
+    <string name="Alert_CustomKeyboardIsUsed">Parece que o seu dispositivo usa um teclado que não é padrão. A P.CASH recomenda a seleção de teclado padrão no seu dispositivo, já que teclados de terceiros podem potencialmente coletar e expor os dados de entrada dos usuários. \n\nClique no botão \u0027Avançar\u0027 se você quiser continuar usando seu teclado preferido.</string>
     <string name="Alert_DeviceIsRootedWarning">A equipe P.CASH recomenda a execução do aplicativo apenas em telefones sem root (sem jailbreak).\n\nObserve que quando você usa um dispositivo com root, o aplicativo não pode mais garantir a segurança de sua criptomoeda contra software malicioso.</string>
     <!--OS Pin-->
     <string name="OSPin_Confirm_Title">PIN do telefone</string>
@@ -1886,13 +1886,13 @@
     <string name="Unlock_Title">Unlock</string>
     <string name="Unlock_Passcode">Senha</string>
     <string name="Unlock_EnterPasscode">Enter Passcode</string>
-    <string name="Unlock_EnterPasscode_Transactions_Hide">Enter Passcode for \"Transactions Auto Hide\"</string>
-    <string name="Unlock_EnterPasscode_Transfer">Enter a passcode to enable \"Passcode for transfer\"</string>
+    <string name="Unlock_EnterPasscode_Transactions_Hide">Enter Passcode for \u0022Transactions Auto Hide\u0022</string>
+    <string name="Unlock_EnterPasscode_Transfer">Enter a passcode to enable \u0022Passcode for transfer\u0022</string>
     <string name="Unlock_BiometricScanner">Leitura Biométrica</string>
     <string name="Unlock_BiometricScannerDisabled_Description">Digite a senha ou tente novamente mais tarde</string>
     <string name="Unlock_BiometricScannerDisabled_Info">Autenticação Biométrica desativada</string>
-    <string name="Unlock_WalletDisabledUntil">Desativar até: %s</string>
-    <string name="Unlock_AttemptsLeft">Attempts left: %s</string>
+    <string name="Unlock_WalletDisabledUntil">Desativar até: %1$s</string>
+    <string name="Unlock_AttemptsLeft">Attempts left: %1$s</string>
     <string name="Unlock_Random">Random</string>
     <!--Set Pin-->
     <string name="PinSet_Title">Create Passcode</string>
@@ -2315,4 +2315,34 @@
     <string name="beam_wallet_state_closed">Carteira BEAM fechada</string>
     <string name="beam_wallet_operation_failed">Falha na operação da carteira BEAM</string>
     <string name="beam_wallet_stop_failed">Falha ao parar a carteira BEAM</string>
+    <string name="desktop_already_running">O P.CASH já está em execução</string>
+    <string name="desktop_create_password_title">Crie uma senha</string>
+    <string name="desktop_create_password_description">A senha protege as carteiras guardadas neste computador. Ela não é armazenada em nenhum lugar e não pode ser recuperada.</string>
+    <string name="desktop_password_repeat_hint">Repita a senha</string>
+    <string name="desktop_password_mismatch">As senhas não coincidem</string>
+    <string name="desktop_password_requirement_length">Pelo menos 8 caracteres</string>
+    <string name="desktop_password_requirement_uppercase">Uma letra maiúscula</string>
+    <string name="desktop_password_requirement_lowercase">Uma letra minúscula</string>
+    <string name="desktop_password_requirement_digit">Um número</string>
+    <string name="desktop_password_requirement_special">Um caractere especial</string>
+    <string name="desktop_password_caps_lock">O Caps Lock está ativado</string>
+    <string name="desktop_password_switch_layout">Mude o layout do teclado: a senha só pode conter caracteres latinos</string>
+    <string name="desktop_create_password_warning">Sem esta senha, os dados deste computador não podem ser abertos, e ninguém poderá recuperá-los. Guarde uma cópia de segurança de cada frase de recuperação.</string>
+    <string name="desktop_create_password_failed">Não foi possível salvar a senha. Verifique o espaço livre em disco e as permissões de acesso</string>
+    <string name="desktop_unlock_title">Digite sua senha</string>
+    <string name="desktop_unlock_wrong_password">Senha incorreta</string>
+    <string name="desktop_unlock_data_unreadable">Não foi possível abrir seus dados</string>
+    <string name="desktop_unlock_failed">Não foi possível ler o arquivo de chave. Tente novamente</string>
+    <string name="desktop_unlock_forgot_password">Esqueceu a senha?</string>
+    <string name="desktop_forgot_password_title">Esqueci a senha</string>
+    <string name="desktop_forgot_password_warning">As carteiras, contactos, configurações e histórico guardados neste computador serão eliminados. Os fundos na blockchain não são afetados: as carteiras só podem ser restauradas através das suas frases de recuperação.</string>
+    <string name="desktop_forgot_password_action">Eliminar dados</string>
+    <string name="desktop_forgot_password_failed">Não foi possível eliminar os dados</string>
+    <string name="desktop_change_password_title">Alterar senha</string>
+    <string name="desktop_change_password_current_hint">Senha atual</string>
+    <string name="desktop_change_password_new_hint">Nova senha</string>
+    <string name="desktop_change_password_failed">Não foi possível salvar a senha. A senha atual continua a funcionar</string>
+    <string name="desktop_change_password_corrupted">O arquivo de chave está danificado: depois de a app ser bloqueada, não poderá entrar. Guarde uma cópia de segurança de cada frase de recuperação.</string>
+    <string name="desktop_change_password_success">Senha alterada</string>
+    <string name="desktop_security_lock_now">Bloquear agora</string>
 </resources>

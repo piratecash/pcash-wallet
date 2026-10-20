@@ -28,6 +28,7 @@ import cash.p.terminal.entities.transactionrecords.thorchain.ThorchainTransactio
 import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
 import cash.p.terminal.entities.transactionrecords.tron.TronTransactionRecord
 import cash.p.terminal.entities.swapProviderDisplayTitle
+import cash.p.terminal.entities.toStatusUrl
 import cash.p.terminal.modules.paycore.PayCoreAssetResolver
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.network.changenow.domain.entity.toStatus

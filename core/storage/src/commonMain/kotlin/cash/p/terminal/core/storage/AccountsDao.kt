@@ -1,0 +1,72 @@
+package cash.p.terminal.core.storage
+
+import androidx.room.*
+import cash.p.terminal.entities.ActiveAccount
+import cash.p.terminal.wallet.entities.AccountRecord
+
+@Dao
+interface AccountsDao {
+
+    @Query("SELECT id FROM AccountRecord")
+    fun getIds(): List<String>
+
+    @Query("SELECT EXISTS(SELECT 1 FROM AccountRecord WHERE id = :id AND deleted = 0)")
+    fun isAvailable(id: String): Boolean
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(accountRow: AccountRecord)
+
+    @Update
+    fun update(accountRow: AccountRecord)
+
+    @Query("UPDATE AccountRecord SET name = :name WHERE id = :id")
+    fun updateName(id: String, name: String)
+
+    @Query("UPDATE AccountRecord SET isBackedUp = :isBackedUp, isFileBackedUp = :isFileBackedUp WHERE id = :id")
+    fun updateBackupFlags(id: String, isBackedUp: Boolean, isFileBackedUp: Boolean)
+
+    @Query("SELECT * FROM AccountRecord WHERE id = :id")
+    fun loadAccount(id: String): AccountRecord?
+
+    @Query("UPDATE AccountRecord SET deleted = 1 WHERE id = :id")
+    fun delete(id: String)
+
+    @Query("UPDATE AccountRecord SET level = :level WHERE id IN(:accountIds)")
+    fun updateLevels(accountIds: List<String>, level: Int)
+
+    @Query("UPDATE AccountRecord SET level = :level WHERE level > :level")
+    fun updateMaxLevel(level: Int)
+
+    @Query("SELECT * FROM AccountRecord WHERE deleted = 0 AND level >= :accountsMinLevel")
+    fun getAll(accountsMinLevel: Int): List<AccountRecord>
+
+    @Query("SELECT * FROM AccountRecord WHERE deleted = 0 AND level = :level")
+    fun getAccountForLevel(level: Int): List<AccountRecord>
+
+    @Query("SELECT id FROM AccountRecord WHERE deleted = 1")
+    fun getDeletedIds(): List<String>
+
+    @Query("SELECT COUNT(*) FROM AccountRecord WHERE deleted = 0")
+    fun getTotalCount(): Int
+
+    @Query("UPDATE AccountRecord SET deleted = 1")
+    fun deleteAll()
+
+    @Query("DELETE FROM AccountRecord WHERE deleted = 1 AND id IN (:accountIds)")
+    fun clearDeleted(accountIds: List<String>)
+
+    @Query("SELECT * FROM ActiveAccount WHERE level = :level LIMIT 1")
+    fun getActiveAccount(level: Int): ActiveAccount?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertActiveAccount(activeAccount: ActiveAccount)
+
+    @Query("DELETE FROM ActiveAccount WHERE level = :level")
+    fun deleteActiveAccount(level: Int)
+
+    @Query("SELECT COUNT(*) FROM AccountRecord WHERE deleted = 0 AND level = :level")
+    fun getCountByLevel(level: Int): Int
+}
+
+// Every access level: IAccountManager.accounts holds only the current level's accounts.
+fun AccountsDao.liveAccountIds(): List<String> = getIds() - getDeletedIds().toSet()

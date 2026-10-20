@@ -62,6 +62,6 @@ class PredefinedBlockchainSettingsProviderTest {
         manager = manager,
         zcashBirthdayProvider = zcashBirthdayProvider,
         validateMoneroHeightUseCase = validateMoneroHeightUseCase,
-        databaseFiles = databaseFiles,
+        zcashDbMarker = ZcashDatabaseFilesMarker(databaseFiles),
     )
 }

@@ -18,7 +18,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -38,10 +37,10 @@ import cash.p.terminal.ui_compose.ModalOverlayTracker
 import cash.p.terminal.ui_compose.ScreenSecurityState
 import cash.p.terminal.ui.helpers.LinkHelper
 import cash.p.terminal.ui_compose.components.ConnectionStatusView
-import cash.p.terminal.ui_compose.components.HudHelperMessenger
 import cash.p.terminal.ui_compose.components.LocalHudMessenger
 import cash.p.terminal.ui_compose.components.LocalUrlOpener
 import cash.p.terminal.ui_compose.components.UrlOpener
+import cash.p.terminal.ui_compose.components.rememberHudMessenger
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.core.hideKeyboard
 
@@ -49,8 +48,7 @@ import io.horizontalsystems.core.hideKeyboard
 @Composable
 fun Nav3Host(navigation: HSNavigation, isLocked: State<Boolean>) {
     val activity = checkNotNull(LocalActivity.current)
-    val view = LocalView.current
-    val hudMessenger = remember(view) { HudHelperMessenger(view) }
+    val hudMessenger = rememberHudMessenger()
     val urlOpener = remember(activity) { ActivityUrlOpener(activity) }
     ComposeAppTheme {
         CompositionLocalProvider(

@@ -155,6 +155,10 @@ class WalletStorage(
         storage.deleteAll()
     }
 
+    override fun forgetLoadedWallets() {
+        map.clear()
+    }
+
     private fun enabledWallet(wallet: Wallet, index: Int? = null): EnabledWallet {
         return EnabledWallet(
             tokenQueryId = wallet.token.tokenQuery.id,

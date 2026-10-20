@@ -1,0 +1,14 @@
+package cash.p.terminal.modules.pin.core
+
+import java.util.Date
+
+interface ILockoutManager {
+    fun didFailUnlock()
+    fun dropFailedAttempts()
+
+    val currentState: LockoutState
+}
+
+interface ILockoutUntilDateFactory {
+    fun lockoutUntilDate(failedAttempts: Int, lockoutUptime: Long, uptime: Long): Date?
+}

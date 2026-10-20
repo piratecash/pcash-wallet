@@ -9,8 +9,8 @@ import java.util.Locale
 class NumberFormatterTest {
 
     private val formatter = NumberFormatter(object : ILanguageManager {
-        override val currentLocale: Locale = Locale.US
-        override val currentLocaleTag: String = "en-US"
+        override var currentLocale: Locale = Locale.US
+        override var currentLocaleTag: String = "en-US"
         override val currentLanguage: String = "en"
     })
 

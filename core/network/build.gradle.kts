@@ -53,6 +53,11 @@ kotlin {
                 implementation(libs.sqlite.bundled)
             }
         }
+        getByName("desktopTest") {
+            dependencies {
+                implementation(libs.kotlin.test.junit)
+            }
+        }
         getByName("androidHostTest") {
             dependencies {
                 implementation(libs.junit)

@@ -4,6 +4,7 @@ import android.content.Context
 import cash.p.terminal.core.storage.AccountsDao
 import cash.p.terminal.core.storage.AccountsStorage
 import cash.p.terminal.core.storage.AppDatabase
+import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import cash.p.terminal.core.storage.UserDeletedWalletDao
 import cash.p.terminal.entities.ActiveAccount
 import cash.p.terminal.wallet.entities.AccountRecord
@@ -13,7 +14,6 @@ import cash.p.terminal.wallet.useCases.RemoveMoneroWalletFilesUseCase
 import io.mockk.coEvery
 import io.horizontalsystems.core.DefaultDispatcherProvider
 import io.mockk.mockk
-import io.reactivex.Flowable
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -22,7 +22,7 @@ import org.junit.Test
 class HiddenWalletAccountVisibilityTest {
 
     private val accountsDao = InMemoryAccountsDao()
-    private val storage = AccountsStorage(FakeAppDatabase(accountsDao))
+    private val storage = AccountsStorage(StaticAppDatabaseProvider(FakeAppDatabase(accountsDao)))
     private val getMoneroWalletFilesNameUseCase = mockk<IGetMoneroWalletFilesNameUseCase>()
     private val removeMoneroWalletFilesUseCase: RemoveMoneroWalletFilesUseCase =
         RemoveMoneroWalletFilesUseCase(
@@ -202,9 +202,6 @@ private class InMemoryAccountsDao : AccountsDao {
 
     override fun getDeletedIds(): List<String> =
         accounts.values.filter { it.deleted }.map { it.id }
-
-    override fun getNonBackedUpCount(): Flowable<Int> =
-        Flowable.just(accounts.values.count { !it.isBackedUp && !it.deleted })
 
     override fun getTotalCount(): Int =
         accounts.values.count { !it.deleted }

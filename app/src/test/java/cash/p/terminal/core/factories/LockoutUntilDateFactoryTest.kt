@@ -78,4 +78,16 @@ class LockoutUntilDateFactoryTest {
         Assert.assertEquals(factory.lockoutUntilDate(9, lockoutTimeStamp, uptime), date2)
     }
 
+    @Test
+    fun lockoutUntilDate_lockoutStartInFuture_locksNoLongerThan30Min() {
+        val now = Date()
+        every { currentDateProvider.currentDate } returns Date(now.time)
+        val startInFarFuture = uptime + 365L * 24 * 60 * 60 * 1000
+
+        val until = factory.lockoutUntilDate(9, startInFarFuture, uptime)
+
+        Assert.assertNotNull(until)
+        Assert.assertTrue((until?.time ?: 0) - now.time <= 30 * 60 * 1000)
+    }
+
 }

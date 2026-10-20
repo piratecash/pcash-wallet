@@ -29,6 +29,9 @@ interface IAccountManager {
     fun clearDeleted(accountIds: List<String>)
     fun onHandledBackupRequiredNewAccount()
     fun setLevel(level: Int)
+
+    /** Drops every account of the current storage from memory; the next [setLevel] reloads. */
+    fun unload()
     fun updateAccountLevels(accountIds: List<String>, level: Int)
     fun updateMaxLevel(level: Int)
     fun accountsAtLevel(level: Int): List<Account>

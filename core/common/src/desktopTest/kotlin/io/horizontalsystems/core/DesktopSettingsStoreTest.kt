@@ -112,6 +112,53 @@ class DesktopSettingsStoreTest {
         assertFalse(store.marketsTabEnabledFlow.value)
     }
 
+    @Test
+    fun setString_storedName_isReadBackAndNullClearsIt() {
+        val store = openStore()
+
+        store.setString("theme", "Dark")
+        assertEquals("Dark", store.string("theme"))
+
+        store.setString("theme", null)
+        assertNull(store.string("theme"))
+    }
+
+    @Test
+    fun stringFlow_afterSetString_updatesSynchronously() {
+        val store = openStore()
+        val flow = store.stringFlow("interval") { it ?: "default" }
+
+        store.setString("interval", "midnight")
+
+        assertEquals("midnight", flow.value)
+    }
+
+    @Test
+    fun flagFlow_afterSetFlag_updatesSynchronouslyAndStartsAtDefault() {
+        val store = openStore()
+        val flow = store.flagFlow("buttons", true)
+        assertTrue(flow.value)
+
+        store.setFlag("buttons", false)
+
+        assertFalse(flow.value)
+    }
+
+    @Test
+    fun clearAll_cachedGenericFlows_returnToDefaults() {
+        val store = openStore()
+        val strings = store.stringFlow("interval") { it ?: "default" }
+        val flags = store.flagFlow("buttons", true)
+        store.setString("interval", "midnight")
+        store.setFlag("buttons", false)
+
+        store.clearAll()
+
+        assertEquals("default", strings.value)
+        assertTrue(flags.value)
+        assertNull(store.string("interval"))
+    }
+
     private fun assertDefaults(store: DesktopSettingsStore) {
         assertEquals(emptyList<String>(), store.marketSearchRecentCoinUids)
         assertNull(store.marketFavoritesSorting)

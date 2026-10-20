@@ -23,9 +23,6 @@ object LocaleHelper {
     private const val PREFERENCES_NAME = "cash.p.terminal.strings.helpers.LocaleHelper"
     private const val SELECTED_LANGUAGE = "Locale.Helper.Selected.Language"
 
-    private val supportedLanguageTags: Set<String> by lazy {
-        LocaleType.values().mapTo(hashSetOf()) { it.tag }
-    }
     private val RTL: Set<String> by lazy {
         hashSetOf(
             "ar",
@@ -59,8 +56,7 @@ object LocaleHelper {
     }
 
     fun getLocale(context: Context): Locale =
-        displayedLocales(context).firstSupported()?.let { Locale.forLanguageTag(it.supportedLanguageTag()) }
-            ?: fallbackLocale
+        displayedLocales(context).firstSupported()?.supportedLocale() ?: fallbackLocale
 
     /** Must run on the main thread: on API <= 32 AppCompat recreates the running activities. */
     fun setLocale(context: Context, locale: Locale) {
@@ -129,33 +125,12 @@ object LocaleHelper {
         context.getSystemService(LocaleManager::class.java)
 
     private fun LocaleListCompat.firstSupported(): Locale? =
-        (0 until size()).mapNotNull(::get).firstOrNull { it.supportedLanguageTag() in supportedLanguageTags }
+        (0 until size()).mapNotNull(::get).firstOrNull { it.supportedLocale() != null }
 
-    private fun Locale.supportedLanguageTag(): String {
-        val tag = toLanguageTag()
-        return if (tag.contains("-") && tag != LocaleType.pt_br.tag) {
-            tag.substringBefore("-")
-        } else {
-            tag
-        }
-    }
+    private fun Locale.supportedLocale(): Locale? =
+        LocaleType.of(toLanguageTag())?.let { Locale.forLanguageTag(it.tag) }
 
     private fun preferences(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
 
-}
-
-enum class LocaleType(val tag: String) {
-    de("de"),
-    en("en"),
-    es("es"),
-    pt_br("pt-BR"),
-    pt("pt"),
-    fa("fa"),
-    fr("fr"),
-    ko("ko"),
-    ru("ru"),
-    uk("uk"),
-    tr("tr"),
-    zh("zh");
 }

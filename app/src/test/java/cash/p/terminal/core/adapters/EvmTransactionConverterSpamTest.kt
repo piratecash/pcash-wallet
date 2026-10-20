@@ -1,7 +1,7 @@
 package cash.p.terminal.core.adapters
 
 import cash.p.terminal.core.ICoinManager
-import cash.p.terminal.core.installEthereumCryptoProviderForTest
+import io.horizontalsystems.ethereumkit.core.EthereumKit
 import cash.p.terminal.core.managers.EvmLabelManager
 import cash.p.terminal.data.repository.EvmTransactionRepository
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
@@ -40,7 +40,7 @@ class EvmTransactionConverterSpamTest {
             // CryptoUtils.sha3 needs ETH-KECCAK-256 from BouncyCastle, which EthereumKit
             // registers at runtime. Unit tests must register it manually before
             // TransferEventInstance.<clinit> triggers the keccak computation.
-            installEthereumCryptoProviderForTest()
+            EthereumKit.init()
         }
     }
 

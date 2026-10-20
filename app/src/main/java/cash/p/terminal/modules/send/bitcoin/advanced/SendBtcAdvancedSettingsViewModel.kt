@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.send.bitcoin.advanced
 
 import cash.p.terminal.core.ILocalStorage
+import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.ViewModelUiState
 import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.entities.TransactionDataSortMode
@@ -21,7 +22,7 @@ class SendBtcAdvancedSettingsViewModel(
 
     override fun createState() = SendBtcAdvancedSettingsModule.UiState(
         transactionSortOptions = sortOptions,
-        transactionSortTitle = cash.p.terminal.strings.helpers.Translator.getString(sortMode.titleShort),
+        transactionSortTitle = Translator.getString(sortMode.titleShort),
         utxoExpertModeEnabled = utxoExpertModeEnabled,
         rbfEnabled = rbfEnabled
     )
