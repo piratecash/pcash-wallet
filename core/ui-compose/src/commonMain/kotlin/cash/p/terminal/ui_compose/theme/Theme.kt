@@ -63,6 +63,8 @@ val lightPalette = Colors(
     calculatorEqualsBackground = CalculatorAccentL,
     calculatorBackspaceIcon = CalculatorAccentL,
     contentOnColor = Color.White,
+    premiumGradientStart = PremiumGradientStart,
+    premiumGradientEnd = PremiumGradientEnd,
 )
 
 val darkPalette = Colors(
@@ -118,6 +120,8 @@ val darkPalette = Colors(
     calculatorEqualsBackground = CalculatorAccentD,
     calculatorBackspaceIcon = CalculatorAccentD,
     contentOnColor = Color.White,
+    premiumGradientStart = PremiumGradientStart,
+    premiumGradientEnd = PremiumGradientEnd,
 )
 
 @Composable

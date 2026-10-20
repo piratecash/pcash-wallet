@@ -19,14 +19,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import cash.p.terminal.core.AppearanceSettingsStore
+import cash.p.terminal.core.IBackupManager
+import cash.p.terminal.entities.LaunchPage
+import cash.p.terminal.modules.backuplocal.fullbackup.BackupManagerPage
+import cash.p.terminal.modules.balance.ui.BalanceNoAccount
 import cash.p.terminal.modules.basecurrency.BaseCurrencySettingsPage
+import cash.p.terminal.modules.blockchainsettings.BlockchainSettingsPage
+import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
+import cash.p.terminal.modules.manageaccounts.ManageAccountsPage
 import cash.p.terminal.modules.market.MarketScreen
+import cash.p.terminal.modules.premium.about.AboutPremiumPage
+import cash.p.terminal.modules.settings.appearance.AppearancePage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.shared.settings.MainSettingUiState
 import cash.p.terminal.shared.settings.SettingsAction
 import cash.p.terminal.shared.settings.SettingsContent
+import cash.p.terminal.shared.settings.settingsAlertPainter
+import cash.p.terminal.shared.settings.SettingsPages
+import cash.p.terminal.shared.settings.currentLanguageName
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.wallet.ActiveAccountState
+import cash.p.terminal.wallet.IAccountManager
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.ILanguageManager
 import kotlinx.coroutines.flow.map
@@ -37,26 +52,68 @@ class DesktopMainPage(private val appVersion: String) : HSPage() {
 
     @Composable
     override fun GetContent(navigation: HSNavigation) {
-        var selectedDestination by rememberSaveable { mutableStateOf(MainDestination.Balance) }
+        val appearanceStore = koinInject<AppearanceSettingsStore>()
+        val mainTabStorage = koinInject<MainTabStorage>()
+        val marketsTabEnabled by appearanceStore.marketsTabEnabledFlow.collectAsStateWithLifecycle()
+        val destinations = remember(marketsTabEnabled) {
+            MainDestination.entries.filter { it != MainDestination.Market || marketsTabEnabled }
+        }
+        var selected by rememberSaveable {
+            mutableStateOf(
+                launchDestination(
+                    launchPage = appearanceStore.launchPage ?: LaunchPage.Auto,
+                    marketsTabEnabled = marketsTabEnabled,
+                    lastTab = mainTabStorage.mainTab ?: MainDestination.Balance,
+                )
+            )
+        }
+        val selectedDestination = selected.takeIf { it in destinations } ?: MainDestination.Balance
         MainNavigation(
+            destinations = destinations,
             selectedDestination = selectedDestination,
-            onDestinationSelect = { selectedDestination = it },
+            onDestinationSelect = {
+                rememberedMainTab(it)?.let { tab -> mainTabStorage.mainTab = tab }
+                selected = it
+            },
             modifier = Modifier.fillMaxSize(),
         ) { destination ->
             when (destination) {
+                MainDestination.Balance -> BalancePane(navigation)
                 MainDestination.Market -> MarketScreen(navigation, PaddingValues())
                 MainDestination.Settings -> SettingsPane(navigation, appVersion)
-                else -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(MainDestinationTitle(destination))
-                }
+                else -> DestinationPlaceholder(destination)
             }
         }
+    }
+}
+
+/** As Android, the create/import screen when there is no wallet; the wallet list waits for the chain adapters. */
+@Composable
+private fun BalancePane(navigation: HSNavigation) {
+    val accountManager = koinInject<IAccountManager>()
+    val accountState by accountManager.activeAccountStateFlow
+        .collectAsStateWithLifecycle(ActiveAccountState.NotLoaded)
+    when (val state = accountState) {
+        ActiveAccountState.NotLoaded -> Unit
+        is ActiveAccountState.ActiveAccount -> if (state.account == null) {
+            BalanceNoAccount(navigation, PaddingValues())
+        } else {
+            DestinationPlaceholder(MainDestination.Balance)
+        }
+    }
+}
+
+@Composable
+private fun DestinationPlaceholder(destination: MainDestination) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(MainDestinationTitle(destination))
     }
 }
 
 @Composable
 private fun SettingsPane(navigation: HSNavigation, appVersion: String) {
     val uiState = rememberSettingsUiState()
+    val settingsPages = koinInject<SettingsPages>()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -75,11 +132,20 @@ private fun SettingsPane(navigation: HSNavigation, appVersion: String) {
             uiState = uiState,
             appVersion = appVersion,
             onAction = { action ->
-                if (action == SettingsAction.BaseCurrency) {
-                    navigation.slideFromRight(BaseCurrencySettingsPage())
+                when (action) {
+                    SettingsAction.ManageWallets ->
+                        navigation.slideFromRight(ManageAccountsPage(ManageAccountsModule.Mode.Manage))
+                    SettingsAction.BackupManager -> navigation.slideFromRight(BackupManagerPage())
+                    SettingsAction.BaseCurrency -> navigation.slideFromRight(BaseCurrencySettingsPage())
+                    SettingsAction.SecurityCenter -> navigation.slideFromRight(settingsPages.security())
+                    SettingsAction.Language -> navigation.slideFromRight(settingsPages.language())
+                    SettingsAction.AboutPremium -> navigation.slideFromBottom(AboutPremiumPage(null))
+                    SettingsAction.Appearance -> navigation.slideFromRight(AppearancePage())
+                    SettingsAction.BlockchainSettings -> navigation.slideFromRight(BlockchainSettingsPage())
+                    else -> Unit
                 }
             },
-            alertPainter = null,
+            alertPainter = settingsAlertPainter(),
             modifier = Modifier.weight(1f),
         )
     }
@@ -88,20 +154,26 @@ private fun SettingsPane(navigation: HSNavigation, appVersion: String) {
 @Composable
 private fun rememberSettingsUiState(): MainSettingUiState {
     val currencyManager = koinInject<CurrencyManager>()
-    val locale = koinInject<ILanguageManager>().currentLocale
+    val languageManager = koinInject<ILanguageManager>()
+    val currentLanguage = remember(languageManager.currentLocaleTag) { currentLanguageName(languageManager) }
     val baseCurrencyCode by remember(currencyManager) {
         currencyManager.baseCurrencyUpdatedFlow.map { currencyManager.baseCurrency.code }
     }.collectAsStateWithLifecycle(currencyManager.baseCurrency.code)
+    val backupManager = koinInject<IBackupManager>()
+    val accountManager = koinInject<IAccountManager>()
+    // As Android: both are re-read whenever the accounts change.
+    val (allBackedUp, hasNonStandardAccount) = remember(backupManager, accountManager) {
+        backupManager.allBackedUpFlow.map { backupManager.allBackedUp to accountManager.hasNonStandardAccount }
+    }.collectAsStateWithLifecycle(backupManager.allBackedUp to accountManager.hasNonStandardAccount).value
     return MainSettingUiState(
         isUpdateAvailable = false,
-        currentLanguage = locale.displayName.ifEmpty { locale.language.ifEmpty { "English" } },
+        currentLanguage = currentLanguage,
         baseCurrencyCode = baseCurrencyCode,
         appWebPageLink = "",
-        hasNonStandardAccount = false,
-        allBackedUp = true,
+        hasNonStandardAccount = hasNonStandardAccount,
+        allBackedUp = allBackedUp,
         pendingRequestCount = 0,
         walletConnectSessionCount = 0,
-        manageWalletShowAlert = false,
         securityCenterShowAlert = false,
         securityCenterShowNewBadge = false,
         aboutAppShowAlert = false,

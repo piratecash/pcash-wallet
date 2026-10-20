@@ -46,6 +46,7 @@ kotlin {
                 implementation(project(":core:ui-compose"))
                 implementation(project(":core:resources"))
                 implementation(project(":core:network"))
+                implementation(project(":core:storage"))
                 implementation(project(":components:chartview"))
 
                 implementation(libs.compose.multiplatform.runtime)
@@ -67,7 +68,6 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.coroutines.rx2)
                 implementation(libs.rxjava)
-                implementation(libs.room.runtime)
                 implementation(libs.ethereum.kit)
                 implementation(libs.retrofit)
                 implementation(libs.kermit)

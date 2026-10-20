@@ -16,12 +16,6 @@ import com.m2049r.xmrwallet.model.Wallet
 import io.horizontalsystems.ethereumkit.core.AddressValidator
 import io.horizontalsystems.tonkit.FriendlyAddress
 
-interface EnterAddressValidator {
-    @Throws
-    suspend fun validate(address: Address)
-}
-
-
 class BitcoinAddressValidator(
     private val token: Token,
     private val adapterManager: IAdapterManager

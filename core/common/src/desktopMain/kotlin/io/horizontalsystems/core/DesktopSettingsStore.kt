@@ -7,7 +7,10 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import cash.p.terminal.modules.settings.security.autolock.AutoLockInterval
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -17,12 +20,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 
 /** Both contracts are synchronous, so reads and writes block on DataStore (a small local file). */
 class DesktopSettingsStore(
     file: File,
     scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-) : MarketSettingsStore, BaseCurrencyStorage {
+) : MarketSettingsStore, BaseCurrencyStorage, ILockoutStorage {
 
     private val dataStore: DataStore<Preferences> = PreferenceDataStoreFactory.create(
         corruptionHandler = ReplaceFileCorruptionHandler { emptyPreferences() },
@@ -32,6 +36,9 @@ class DesktopSettingsStore(
 
     private val _marketsTabEnabledFlow = MutableStateFlow(marketsTabEnabledStored())
     override val marketsTabEnabledFlow: StateFlow<Boolean> = _marketsTabEnabledFlow.asStateFlow()
+
+    private val _autoLockIntervalFlow = MutableStateFlow(autoLockIntervalStored())
+    val autoLockIntervalFlow: StateFlow<AutoLockInterval> = _autoLockIntervalFlow.asStateFlow()
 
     override var marketSearchRecentCoinUids: List<String>
         get() = read(RECENT_COIN_UIDS)?.split(SEPARATOR)?.filter { it.isNotEmpty() }.orEmpty()
@@ -72,7 +79,65 @@ class DesktopSettingsStore(
         get() = read(BASE_CURRENCY_CODE)
         set(value) = write(BASE_CURRENCY_CODE, value)
 
+    override var failedAttempts: Int?
+        get() = read(FAILED_ATTEMPTS)
+        set(value) = write(FAILED_ATTEMPTS, value)
+
+    override var lockoutUptime: Long?
+        get() = read(LOCKOUT_UPTIME)
+        set(value) = write(LOCKOUT_UPTIME, value)
+
+    var languageTag: String?
+        get() = read(LANGUAGE_TAG)
+        set(value) = write(LANGUAGE_TAG, value)
+
+    var autoLockInterval: AutoLockInterval
+        get() = autoLockIntervalStored()
+        set(value) {
+            write(AUTO_LOCK_INTERVAL, value.raw)
+            _autoLockIntervalFlow.value = value
+        }
+
+    private val cachedFlows = ConcurrentHashMap<String, CachedFlow<*>>()
+
+    /** Values of features this module cannot depend on; cleared with everything else. */
+    fun flag(name: String): Boolean? = read(booleanPreferencesKey(name))
+
+    fun setFlag(name: String, value: Boolean) {
+        write(booleanPreferencesKey(name), value)
+        cachedFlows[name]?.refresh()
+    }
+
+    fun string(name: String): String? = read(stringPreferencesKey(name))
+
+    fun setString(name: String, value: String?) {
+        write(stringPreferencesKey(name), value)
+        cachedFlows[name]?.refresh()
+    }
+
+    /** One flow per [name]: later calls get the first one, so the decoder must not differ between callers. */
+    fun <T> stringFlow(name: String, decode: (String?) -> T): StateFlow<T> =
+        cachedFlow(name) { decode(string(name)) }
+
+    fun flagFlow(name: String, default: Boolean): StateFlow<Boolean> =
+        cachedFlow(name) { flag(name) ?: default }
+
+    /** Drops every stored value, the cached ones included. */
+    fun clearAll() {
+        runBlocking { dataStore.edit { it.clear() } }
+        _marketsTabEnabledFlow.value = marketsTabEnabledStored()
+        _autoLockIntervalFlow.value = autoLockIntervalStored()
+        cachedFlows.values.forEach(CachedFlow<*>::refresh)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> cachedFlow(name: String, readValue: () -> T): StateFlow<T> =
+        (cachedFlows.getOrPut(name) { CachedFlow(readValue) } as CachedFlow<T>).flow
+
     private fun marketsTabEnabledStored() = read(MARKETS_TAB_ENABLED) ?: true
+
+    private fun autoLockIntervalStored() =
+        read(AUTO_LOCK_INTERVAL)?.let(AutoLockInterval::fromRaw) ?: AutoLockInterval.AFTER_1_MIN
 
     private fun <T> read(key: Preferences.Key<T>): T? =
         runBlocking { dataStore.data.first()[key] }
@@ -80,6 +145,15 @@ class DesktopSettingsStore(
     private fun <T> write(key: Preferences.Key<T>, value: T?) = runBlocking {
         dataStore.edit { if (value == null) it.remove(key) else it[key] = value }
         Unit
+    }
+
+    private class CachedFlow<T>(private val readValue: () -> T) {
+        private val _flow = MutableStateFlow(readValue())
+        val flow: StateFlow<T> = _flow.asStateFlow()
+
+        fun refresh() {
+            _flow.value = readValue()
+        }
     }
 
     private companion object {
@@ -94,5 +168,9 @@ class DesktopSettingsStore(
         val LAUNCH_PAGE = stringPreferencesKey("launchPage")
         val CURRENT_MARKET_TAB = stringPreferencesKey("currentMarketTab")
         val BASE_CURRENCY_CODE = stringPreferencesKey("baseCurrencyCode")
+        val FAILED_ATTEMPTS = intPreferencesKey("failedAttempts")
+        val LOCKOUT_UPTIME = longPreferencesKey("lockoutUptime")
+        val LANGUAGE_TAG = stringPreferencesKey("languageTag")
+        val AUTO_LOCK_INTERVAL = stringPreferencesKey("autoLockInterval")
     }
 }

@@ -30,7 +30,7 @@ class AccountManager(
     private val accountsDeletedSubject = PublishSubject.create<Unit>()
     private val _activeAccountStateFlow =
         MutableStateFlow<ActiveAccountState>(ActiveAccountState.NotLoaded)
-    private var currentLevel = Int.MAX_VALUE
+    private var currentLevel = LEVEL_NOT_SET
 
     override val activeAccountStateFlow = _activeAccountStateFlow
 
@@ -215,10 +215,10 @@ class AccountManager(
     }
 
     override fun setLevel(level: Int) {
-        accountsCache = storage.allAccounts(level).associateBy { it.id }.toMutableMap()
+        replaceCache(storage.allAccounts(level))
         val activeAccountIdForLevel = storage.getActiveAccountId(level)
 
-        if (activeAccountIdForLevel != null && accountsCache.isEmpty() && currentLevel != Int.MAX_VALUE) {
+        if (activeAccountIdForLevel != null && accountsCache.isEmpty() && currentLevel != LEVEL_NOT_SET) {
             logger.i { "Keystore problems, can't decode accounts, ignore account changing level" }
             return // looks like we can't decode accounts due to Keystore problems(found on Android 11 Oppo devices)
         }
@@ -233,11 +233,28 @@ class AccountManager(
         _accountsSharedFlow.tryEmit(accounts)
     }
 
+    override fun unload() {
+        replaceCache(emptyList())
+        currentLevel = LEVEL_NOT_SET
+        activeAccount = null
+        _newAccountBackupRequiredFlow.update { null }
+        _activeAccountStateFlow.update { ActiveAccountState.NotLoaded }
+        _accountsSharedFlow.tryEmit(accounts)
+    }
+
+    private fun replaceCache(accounts: List<Account>) {
+        accountsCache = accounts.associateBy { it.id }.toMutableMap()
+    }
+
     override fun getDeletedAccountIds() = storage.getDeletedAccountIds()
     override fun clearDeleted(accountIds: List<String>) = storage.clearDeleted(accountIds)
 
     override fun accountsAtLevel(level: Int): List<Account> {
         return storage.allAccounts(level)
+    }
+
+    private companion object {
+        const val LEVEL_NOT_SET = Int.MAX_VALUE
     }
 }
 

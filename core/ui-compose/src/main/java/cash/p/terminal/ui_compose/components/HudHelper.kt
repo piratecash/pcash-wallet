@@ -8,6 +8,7 @@ import android.os.VibratorManager
 import android.view.View
 import androidx.annotation.DrawableRes
 import cash.p.terminal.ui_compose.R
+import org.jetbrains.compose.resources.DrawableResource
 
 object HudHelper {
 
@@ -56,6 +57,17 @@ object HudHelper {
             variant = AppSnackbarVariant.Success,
             duration = duration,
             gravity = gravity,
+        )
+    }
+
+    fun showSuccessMessage(contentView: View, text: String, icon: DrawableResource): CustomSnackbar? {
+        return showHudNotification(
+            contentView = contentView,
+            text = text,
+            variant = AppSnackbarVariant.Success,
+            duration = SnackbarDuration.SHORT,
+            gravity = SnackbarGravity.BOTTOM,
+            iconResource = icon,
         )
     }
 
@@ -182,6 +194,7 @@ object HudHelper {
         duration: SnackbarDuration,
         gravity: SnackbarGravity,
         @DrawableRes icon: Int? = null,
+        iconResource: DrawableResource? = null,
     ): CustomSnackbar? {
 
         val snackbar = CustomSnackbar.make(
@@ -191,6 +204,7 @@ object HudHelper {
             duration = duration,
             gravity = gravity,
             iconRes = icon,
+            iconResource = iconResource,
         )
         snackbar?.show()
 

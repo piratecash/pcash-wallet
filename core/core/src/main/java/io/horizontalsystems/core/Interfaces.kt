@@ -2,7 +2,6 @@ package io.horizontalsystems.core
 
 import io.reactivex.Flowable
 import kotlinx.coroutines.flow.StateFlow
-import java.util.Date
 import javax.crypto.SecretKey
 
 interface ICoreApp {
@@ -10,11 +9,6 @@ interface ICoreApp {
     val encryptionManager: IEncryptionManager
     val pinComponent: IPinComponent
     var instance: CoreApp
-}
-
-interface IEncryptionManager {
-    fun encrypt(data: String): String
-    fun decrypt(data: String): String
 }
 
 interface ISystemInfoManager {
@@ -82,20 +76,11 @@ inline fun IPinComponent.launchExternalActivity(launch: () -> Unit) {
     }
 }
 
-interface ILockoutStorage {
-    var failedAttempts: Int?
-    var lockoutUptime: Long?
-}
-
 interface IPinSettingsStorage {
     var biometricAuthEnabled: Boolean
     var pin: String?
 
     var isSystemPinRequired: Boolean
-}
-
-interface IThirdKeyboard {
-    var isThirdPartyKeyboardAllowed: Boolean
 }
 
 interface IKeyStoreManager {
@@ -111,8 +96,4 @@ interface IKeyStoreCleaner {
 
 interface IKeyProvider {
     fun getKey(): SecretKey
-}
-
-interface ICurrentDateProvider {
-    val currentDate: Date
 }

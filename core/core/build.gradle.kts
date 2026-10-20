@@ -3,7 +3,6 @@ plugins {
 
     id(libs.plugins.kotlin.parcelize.get().pluginId)
     alias(libs.plugins.compose.compiler)
-    id(libs.plugins.devtools.ksp.get().pluginId)
 }
 
 android {
@@ -54,11 +53,7 @@ dependencies {
     implementation(libs.koin.core)
     implementation(libs.koin.android)
 
-    // Room
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
     implementation(libs.androidx.material3.android)
-    ksp(libs.room.compiler)
 
     // Paging (for ILoginRecordRepository interface)
     api(libs.paging.runtime)
@@ -76,6 +71,7 @@ dependencies {
     implementation(project(":core:strings"))
     implementation(project(":core:ui-compose"))
     implementation(project(":core:navigation"))
+    implementation(project(":core:storage"))
 
     testImplementation(libs.junit)
     testImplementation(libs.mockk)

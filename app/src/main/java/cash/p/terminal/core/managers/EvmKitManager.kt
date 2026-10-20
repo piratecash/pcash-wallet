@@ -21,7 +21,6 @@ import io.horizontalsystems.ethereumkit.models.FullTransaction
 import io.horizontalsystems.ethereumkit.models.GasPrice
 import io.horizontalsystems.ethereumkit.models.RawTransaction
 import io.horizontalsystems.ethereumkit.models.RawTransactionBroadcastResult
-import io.horizontalsystems.ethereumkit.models.RpcSource
 import io.horizontalsystems.ethereumkit.models.Signature
 import io.horizontalsystems.ethereumkit.models.SignedRawTransaction
 import io.horizontalsystems.ethereumkit.models.TransactionData
@@ -45,7 +44,6 @@ import kotlinx.coroutines.rx2.await
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.koin.java.KoinJavaComponent.inject
-import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
 
 class EvmKitManager(
@@ -327,12 +325,6 @@ class EvmKitManager(
         val txPollerLogger = Logger.withTag("TxPoller")
     }
 }
-
-val RpcSource.uris: List<URI>
-    get() = when (this) {
-        is RpcSource.WebSocket -> listOf(uri)
-        is RpcSource.Http -> uris
-    }
 
 class EvmKitWrapper(
     val evmKit: EthereumKit,

@@ -54,11 +54,11 @@
     <string name="hardware_wallet_offline_confirmation_positive">Çevrimdışı devam et</string>
     <string name="trezor_wallet">Trezor Cüzdan</string>
     <string name="connect_trezor">Trezor Bağla</string>
-    <string name="trezor_setup_description">Trezor\'unuzu USB kablosuyla bağlayın ve cihazda onaylayın.</string>
+    <string name="trezor_setup_description">Trezor\u0027unuzu USB kablosuyla bağlayın ve cihazda onaylayın.</string>
     <string name="trezor_not_initialized_title">Cihaz kurulmadı</string>
     <string name="trezor_not_initialized_description">Bu Trezor henüz kurulmadı. Kurulumu cihazda tamamlayın ve yeniden bağlayın.</string>
     <string name="trezor_not_initialized_cta">Kurulum kılavuzu</string>
-    <string name="trezor_connect_failed">Trezor\'a bağlanılamadı.</string>
+    <string name="trezor_connect_failed">Trezor\u0027a bağlanılamadı.</string>
     <string name="Button_Activate">Etkinleştir</string>
     <string name="activation_required_dialog_description">%s almak için tokeni etkinleştirmeniz gerekir. Stellar ağı her token için bir güven hattı (trustline) kurulmasını gerektirir. Bu olmadan cüzdanınız %s alamaz — işlem reddedilir ve fonlar teslim edilmez.</string>
     <string name="activate_you_activate">Etkinleştirdiğiniz</string>
@@ -75,7 +75,7 @@
     <string name="button_info">Info</string>
     <string name="not_enough_ton_for_fee">Ücret için yeterli TON yok. Mevcut bakiyeniz: %s TON.</string>
     <string name="check_fee_warning">Ücretler için en az %s bulundurduğunuzdan emin olun, aksi halde işlem başarısız olabilir</string>
-    <string name="Error_OutOfRange">Can\'t be less than %1$s or more than %2$s</string>
+    <string name="Error_OutOfRange">Can\u0027t be less than %1$s or more than %2$s</string>
     <string name="Error_NotInteger">Wrong integer number</string>
     <string name="Error">Hata</string>
     <string name="NotAvailable">N/A</string>
@@ -106,7 +106,7 @@
     <string name="CreateWallet_N_Words">%s kelime</string>
     <string name="create_wallet_n_words_monero">%s kelime (yalnızca Monero)</string>
     <string name="CreateWallet_Error_EmptyPassphrase">Parola boş olamaz</string>
-    <string name="CreateWallet_Error_PassphraseForbiddenSymbols">Lütfen yalnızca desteklenen sembolleri kullanın:  <![CDATA[A-Z a-z 0-9 \' " ` & / ? ! : ; . , ~ * $ = + - [ ](){} <> \ _ # @ | % ]]></string>
+    <string name="CreateWallet_Error_PassphraseForbiddenSymbols">Lütfen yalnızca desteklenen sembolleri kullanın:  <![CDATA[A-Z a-z 0-9 \u0027 " ` & / ? ! : ; . , ~ * $ = + - [ ](){} <> \ _ # @ | % ]]></string>
     <string name="CreateWallet_Error_InvalidConfirmation">Parola onayı eşleşmiyor</string>
     <string name="create_wallet_error_failed">Cüzdan oluşturulamadı. Lütfen tekrar deneyin veya uygulamayı yeniden başlatın.</string>
     <string name="CreateWallet_PassphraseDescription">Parolalar, cüzdanlar için ek bir güvenlik katmanı ekler. Bir cüzdanı geri yüklemek için bir kullanıcı hem anımsatıcı hem de bir parola gerektiriyordu.\n\n\nParolalar, kullanıcıların tek bir anımsatıcı ancak farklı bir parola kullanarak çok paralı cüzdanlara sahip olmalarını da kolaylaştırır.</string>
@@ -142,7 +142,7 @@
     <string name="birthday_height_rescan_confirm_text">Yerel cüzdan verileri silinecek ve senkronizasyon yeni yükseklikten başlayacaktır. Bu işlem zaman ve veri kullanımı gerektirebilir.</string>
     <string name="invalid_height_format">Geçersiz yükseklik, YYYY-AA-GG veya doğum yüksekliği girdiğinizden emin olun</string>
     <string name="invalid_qr_code">Geçersiz QR Kodu</string>
-    <string name="blockchair_height_by_date_connection_error">Tarihe göre yüksekliği bulmak için Blockchair\'a bağlanılamıyor</string>
+    <string name="blockchair_height_by_date_connection_error">Tarihe göre yüksekliği bulmak için Blockchair\u0027a bağlanılamıyor</string>
     <string name="Restore_Error_EmptyPassphrase">Parola boş olamaz</string>
     <string name="Restore_InvalidChecksum">Geçersiz sağlama toplamı</string>
     <string name="Restore_PassphraseDescription">Bu anımsatıcı ifadeyi oluştururken kullandığınız parolayı girin. Mevcut bir cüzdanı yeni bir parolayla geri yüklemek, yepyeni bir cüzdan oluşturur.</string>
@@ -232,7 +232,7 @@
     <string name="MarketGlobalMetrics_EtfInflow">ETF</string>
     <string name="MarketGlobalMetrics_TotalMarketCapDescription">Tüm kripto paraların toplam piyasa değeri.</string>
     <string name="MarketGlobalMetrics_VolumeDescription">Kripto piyasa 24 saatlik işlem hacmi.</string>
-    <string name="MarketGlobalMetrics_TvlInDefiDescription">DeFi\'deki Toplam Kilit Değer (TVL).</string>
+    <string name="MarketGlobalMetrics_TvlInDefiDescription">DeFi\u0027deki Toplam Kilit Değer (TVL).</string>
     <string name="MarketGlobalMetrics_ChainSelectorTitle">Zincir ile filtrele</string>
     <string name="MarketGlobalMetrics_ChainSelectorAll">Hepsi</string>
     <string name="MarketGlobalMetrics_NoCoin">This project doesn’t have a coin</string>
@@ -260,11 +260,11 @@
     <string name="Market_PriceChange_24H">24 Hours</string>
     <string name="Market_PriceChange_Utc">Midnight UTC</string>
     <string name="Market_Filter_Blockchains">Blockchains</string>
-    <string name="Market_Filter_OutperformedBtc">BTC\'yi Geride Bıraktı</string>
-    <string name="Market_Filter_OutperformedEth">ETH\'yi Geride Bıraktı</string>
-    <string name="Market_Filter_OutperformedBnb">BNB\'yi Geride Bıraktı</string>
-    <string name="Market_Filter_PriceCloseToAth">ATH\'ye Yakın Fiyat</string>
-    <string name="Market_Filter_PriceCloseToAtl">ATL\'ye Yakın Fiyat</string>
+    <string name="Market_Filter_OutperformedBtc">BTC\u0027yi Geride Bıraktı</string>
+    <string name="Market_Filter_OutperformedEth">ETH\u0027yi Geride Bıraktı</string>
+    <string name="Market_Filter_OutperformedBnb">BNB\u0027yi Geride Bıraktı</string>
+    <string name="Market_Filter_PriceCloseToAth">ATH\u0027ye Yakın Fiyat</string>
+    <string name="Market_Filter_PriceCloseToAtl">ATL\u0027ye Yakın Fiyat</string>
     <string name="Market_Filter_ListedOnTopExchanges">En İyi Borsalarda Listelenmiş</string>
     <string name="Market_Filter_SolidCex">İyi CEX Hacmi</string>
     <string name="Market_Filter_SolidCex_Description">Genel Puan iyi veya mükemmel</string>
@@ -339,7 +339,7 @@
     <string name="balance_syncing_blocks_remaining">%s blok kaldı</string>
     <string name="balance_processing">İşleniyor…</string>
     <string name="balance_waiting_for_peers">Eşler bekleniyor: %1$d / %2$d</string>
-    <string name="balance_connecting_to_api">API\'ye bağlanılıyor…</string>
+    <string name="balance_connecting_to_api">API\u0027ye bağlanılıyor…</string>
     <string name="beam_restore_resolving_birthday">Geri yükleme noktası bulunuyor…</string>
     <string name="beam_restore_downloading_snapshot">Anlık görüntü indiriliyor…</string>
     <string name="beam_restore_downloading_snapshot_downloaded">Anlık görüntü indiriliyor… %1$s MB</string>
@@ -361,8 +361,8 @@
     <string name="Balance_NetworkSelectDescription">Bir ağ seçin ve para yatırmak için bir adres alın.</string>
     <string name="Balance_Receive_AddressFormatDescription">Adresinizi almak için bir adres biçimi seçin.</string>
     <string name="Balance_Receive_AddressFormat">Adres Formatı</string>
-    <string name="Balance_Receive_AddressFormat_RecommendedAddressType">Geliştirilmiş kullanıcı deneyimi ve uyumluluğu nedeniyle Bitcoin Cash (BCH) almak için Nakit Adresi formatı tercih edilmektedir. Ancak gönderenin adres formatı ne olursa olsun, BCH\'yi almak için her iki adres formatı da birbirinin yerine kullanılabilir.</string>
-    <string name="Balance_Receive_AddressFormat_RecommendedDerivation">Bitcoin\'de daha iyi bir verimlilik ve güvenlik için yerel SegWit formatı tercih edilir. Tüm adres formatları (Taproot, SegWit, Legacy), gönderenin adres formatına bakılmaksızın BTC almak için birbirinin yerine kullanılabilir ve farklı para birimlerinde kesintisiz işlemlere olanak tanır.</string>
+    <string name="Balance_Receive_AddressFormat_RecommendedAddressType">Geliştirilmiş kullanıcı deneyimi ve uyumluluğu nedeniyle Bitcoin Cash (BCH) almak için Nakit Adresi formatı tercih edilmektedir. Ancak gönderenin adres formatı ne olursa olsun, BCH\u0027yi almak için her iki adres formatı da birbirinin yerine kullanılabilir.</string>
+    <string name="Balance_Receive_AddressFormat_RecommendedDerivation">Bitcoin\u0027de daha iyi bir verimlilik ve güvenlik için yerel SegWit formatı tercih edilir. Tüm adres formatları (Taproot, SegWit, Legacy), gönderenin adres formatına bakılmaksızın BTC almak için birbirinin yerine kullanılabilir ve farklı para birimlerinde kesintisiz işlemlere olanak tanır.</string>
     <string name="Balance_Receive_Account">Hesap</string>
     <string name="Balance_Receive_NotActive">Aktif değil</string>
     <string name="Balance_Receive_Amount">Tutar</string>
@@ -412,7 +412,7 @@
     <string name="Send_Advanced">İleri düzey</string>
     <string name="Send_Hodler_Description">TimeLock yalnızca BIP44 adreslerine (1 ile başlar) göndermek için çalışır</string>
     <string name="Send_UtxoExpertMode">UTxO Uzman Modu</string>
-    <string name="Send_Utxo_Description">Bakiyedeki fonları harcamak için UTxO\'yu manuel olarak seçin</string>
+    <string name="Send_Utxo_Description">Bakiyedeki fonları harcamak için UTxO\u0027yu manuel olarak seçin</string>
     <string name="Send_Rbf">Ücretle Değiştir</string>
     <string name="Send_Rbf_Description">Bu seçenek, takılı kalmış bir işlemi ücret miktarını artırarak yeniden göndermenizi sağlar.</string>
     <string name="Send_RbfEnabled">Etkinleştirildi</string>
@@ -463,16 +463,16 @@
     <!-- Send Evm Settings -->
     <string name="SendEvmSettings_Title">İleri düzey</string>
     <string name="SendEvmSettings_Nonce">İşlem Nonce</string>
-    <string name="SendEvmSettings_Nonce_Info">Nonce, kullanıcının cüzdanındaki bir işlem için benzersiz bir tamsayı değeridir. Normalde gönderilen her işlemle birlikte artar ve değiştirilmesi gerekmez. İleri düzey kullanıcılar, yeni işlemin eskisinin onaylanmasını önlemek için yeterince yüksek bir ücrete sahip olduğu sürece, bu işlemi iptal etmek ve değiştirmek için bekleyen bir işlemin bir nonsine eşit olarak ayarlayabilirler (örneğin, onayını hızlandırmak veya işlem parametrelerini tamamen değiştirmek isteyebilirler). Birden fazla bekleyen işlem aynı nonce\'a sahip olduğunda, genellikle en yüksek ücrete sahip olan biri onaylanır.</string>
+    <string name="SendEvmSettings_Nonce_Info">Nonce, kullanıcının cüzdanındaki bir işlem için benzersiz bir tamsayı değeridir. Normalde gönderilen her işlemle birlikte artar ve değiştirilmesi gerekmez. İleri düzey kullanıcılar, yeni işlemin eskisinin onaylanmasını önlemek için yeterince yüksek bir ücrete sahip olduğu sürece, bu işlemi iptal etmek ve değiştirmek için bekleyen bir işlemin bir nonsine eşit olarak ayarlayabilirler (örneğin, onayını hızlandırmak veya işlem parametrelerini tamamen değiştirmek isteyebilirler). Birden fazla bekleyen işlem aynı nonce\u0027a sahip olduğunda, genellikle en yüksek ücrete sahip olan biri onaylanır.</string>
     <string name="SendEvmSettings_Error_NonceUsed_Title">Kullanılmış Nonce</string>
     <string name="SendEvmSettings_Error_NonceUsed">Bu nonce ile gerçekleştirilen bir işlem zaten var.</string>
     <!-- Fee Settings -->
     <string name="FeeSettings_NetworkFee">Ağ Ücreti</string>
     <string name="FeeSettings_NetworkFee_Info">Ağda belirli bir işlemi göndermenin tahmini maliyeti.</string>
-    <string name="FeeSettings_GasLimit_Info">İşlem karmaşıklığı \"gaz\" adı verilen birimlerle ölçülür. Yürütülen akıllı sözleşmeye bağlı olarak değişir. Gaz Limiti, onu yürütmek için gereken tahmini maksimum gazdır. Kullanılan gerçek gaz normalde daha düşük olacaktır.</string>
+    <string name="FeeSettings_GasLimit_Info">İşlem karmaşıklığı \u0022gaz\u0022 adı verilen birimlerle ölçülür. Yürütülen akıllı sözleşmeye bağlı olarak değişir. Gaz Limiti, onu yürütmek için gereken tahmini maksimum gazdır. Kullanılan gerçek gaz normalde daha düşük olacaktır.</string>
     <string name="FeeSettings_GasPrice_Info">Ağ üzerinde işlem yapmanın ücreti gaz birimleri cinsinden ölçülür. Gaz Fiyatı, bir kullanıcının bir işlemi gerçekleştirmek için ödemeye razı olduğu tutardır. Ağ yoğun olduğunda gaz fiyatları yüksek ve boşta olduğunda düşüktür. Gaz fiyatının yetersiz olması, genellikle bir işlemin uzun süre beklemede kalmasının bir nedenidir.</string>
     <string name="FeeSettings_BaseFee">Baz Ücret</string>
-    <string name="FeeSettings_BaseFee_Info">Ağ protokolü, her blok için gaz başına taban fiyatı belirler ve buna baz ücret oranı denir. Bloktan bloğa ağ kullanım seviyesine göre değişir. Bir sonraki blokta% 12,5\'ten fazla artamaz veya azalabilir ve bu da ücretleri daha öngörülebilir hale getirir. Burada gösterilen değer, geçerli bloğun temel ücret oranıdır.</string>
+    <string name="FeeSettings_BaseFee_Info">Ağ protokolü, her blok için gaz başına taban fiyatı belirler ve buna baz ücret oranı denir. Bloktan bloğa ağ kullanım seviyesine göre değişir. Bir sonraki blokta% 12,5\u0027ten fazla artamaz veya azalabilir ve bu da ücretleri daha öngörülebilir hale getirir. Burada gösterilen değer, geçerli bloğun temel ücret oranıdır.</string>
     <string name="FeeSettings_MaxFee">Maks. Ücret Oranı (Gwei)</string>
     <string name="FeeSettings_MaxFee_Info">Bu, kullanıcının ödemek istediği gaz başına maksimum toplam fiyattır. Ağın temel ücret oranını ve maksimum öncelik ücreti oranını kapsamalıdır. Burada gösterilen değer, bir sonraki bloğun taban ücret oranının tahmini artı kullanıcı tarafından seçilen maksimum öncelik ücreti oranına göre önerilir. Ödenen gerçek ücret oranı normalde daha düşük olacaktır. Bunu mevcut taban ücret oranından daha düşük bir değere ayarlamak, ödenen ücreti sınırlayacaktır, ancak işlemin onaylanması için daha uzun bekleme sürelerine, hatta sıkışmış bir işlemde bile sonuçlanacaktır.</string>
     <string name="FeeSettings_MaxMinerTips">Maks. Öncelik Ücreti (Gwei)</string>
@@ -545,10 +545,10 @@
     <string name="TonConnect_Wallet">Cüzdan</string>
     <string name="TonConnect_ChooseWallet">Cüzdan Seçin</string>
     <string name="manifest_loading">Manifest yükleniyor…</string>
-    <string name="account_not_supported_by">Mevcut cüzdan türünüz %1$s, %2$s\'i desteklemiyor</string>
+    <string name="account_not_supported_by">Mevcut cüzdan türünüz %1$s, %2$s\u0027i desteklemiyor</string>
     <!--WalletConnect-->
     <string name="WalletConnect_Status">Durum</string>
-    <string name="WalletConnect_Approve_Hint">Bağlan\'a tıklayarak bu uygulamanın açık adresinizi görüntülemesine izin verirsiniz. Bu, verilerinizi olası kimlik avı risklerinden korumak için önemli bir güvenlik adımıdır.</string>
+    <string name="WalletConnect_Approve_Hint">Bağlan\u0027a tıklayarak bu uygulamanın açık adresinizi görüntülemesine izin verirsiniz. Bu, verilerinizi olası kimlik avı risklerinden korumak için önemli bir güvenlik adımıdır.</string>
     <string name="WalletConnect_Reconnect_Hint">Bağlantı kurulamadı. Tekrar bağlanmayı deneyin.</string>
     <string name="WalletConnect_Error_InvalidUrl">Geçersiz URL adresi</string>
     <string name="WalletConnect_Status_Offline">Çevrimdışı</string>
@@ -560,7 +560,7 @@
     <string name="WalletConnect_SignMessageRequest_Title">İmza isteği</string>
     <string name="WalletConnect_SignMessageRequest_ShowMessageTitle">İmzalanacak mesaj</string>
     <string name="WalletConnect_SignMessageRequest_ButtonSign">İmzala</string>
-    <string name="WalletConnect_Error_NoWallet">WalletConnect\'i kullanmadan önce bir cüzdan oluşturmanız veya içe aktarmanız gerekir</string>
+    <string name="WalletConnect_Error_NoWallet">WalletConnect\u0027i kullanmadan önce bir cüzdan oluşturmanız veya içe aktarmanız gerekir</string>
     <string name="WalletConnect_Error_NeedBackup">Kurtarma ifadesinin ve ilişkili parolanın bir yedeğini oluşturun; böylece telefonunuz kaybolur, çalınır, bozulur vb. durumlarda cüzdanınızı kurtarabilirsiniz.</string>
     <string name="WalletConnect_Error_UnsupportedChainId">Desteklenmeyen blokzincir</string>
     <string name="WalletConnect_Error_NoSuitableAccount">Uygun hesap yok</string>
@@ -569,19 +569,19 @@
     <string name="WalletConnect_Error_UnsupportedMethods">Desteklenmeyen yöntemler: %s</string>
     <string name="WalletConnect_Error_UnsupportedEvents">Desteklenmeyen olaylar: %s</string>
     <string name="WalletConnect_Error_RequestNotFoundError">Hata: istek bulunamadı</string>
-    <string name="WalletConnect_NoConnection">Bağlı dApp\'iniz yok</string>
+    <string name="WalletConnect_NoConnection">Bağlı dApp\u0027iniz yok</string>
     <string name="WalletConnect_PendingRequests">Bekleyen istekler</string>
     <string name="WalletConnect_ActiveWallet">Aktif cüzdan</string>
     <string name="WalletConnect_Unnamed">İsimsiz</string>
     <string name="WalletConnect_Pairings">Eşleştirmeler</string>
     <string name="WalletConnect_PairedDApps">Eşleştirilmiş dApps</string>
     <string name="delete_all">Tümünü sil</string>
-    <string name="WalletConnect_Pairings_ConfirmationDeleteAll">Eşleştirilmiş tüm dApps\'leri silmek istiyor musunuz?</string>
+    <string name="WalletConnect_Pairings_ConfirmationDeleteAll">Eşleştirilmiş tüm dApps\u0027leri silmek istiyor musunuz?</string>
     <string name="WalletConnect_Pairings_Delete">Sil</string>
     <string name="WalletConnect_DeleteAllPairs">Hepsini sil</string>
 
     <string name="connect">Bağlan</string>
-    <string name="connect_trezor_to_add_message">Token eklemek için Trezor\'u bağlamanız gerekir</string>
+    <string name="connect_trezor_to_add_message">Token eklemek için Trezor\u0027u bağlamanız gerekir</string>
     <!--EthereumTransaction-->
     <string name="EthereumTransaction_Warning_Title">Uyarı</string>
     <string name="EthereumTransaction_Error_Title">Hata</string>
@@ -605,7 +605,7 @@
     <string name="Swap_Price">Fiyat</string>
     <string name="Swap_AvailableBalance">Mevcut Bakiye</string>
     <string name="swap_insufficient_fee_balance">Mevcut %s bakiyesi, işlem ücreti dahil bu işlemi gerçekleştirmek için gereken tutardan düşüktür.</string>
-    <string name="fee_warning_low_balance">Bakiye gerekli seviyenin altında. Ücretler %s\'ye kadar çıkabilir.</string>
+    <string name="fee_warning_low_balance">Bakiye gerekli seviyenin altında. Ücretler %s\u0027ye kadar çıkabilir.</string>
     <string name="swap_balance_for_fees">Ücretler için bakiye</string>
     <string name="fee">Ücret</string>
     <string name="estimated_fee">Tahmini ücret</string>
@@ -632,8 +632,8 @@
     <string name="Swap_Revoking">İptal ediliyor...</string>
     <string name="swap_create_wallets">Create wallets</string>
     <string name="swap_creating_wallets">Creating wallets..</string>
-    <string name="swap_create_wallet_description">You don\'t have all chosen wallets, need to create first</string>
-    <string name="swap_create_wallet_description_with_zcash">You don\'t have all chosen wallets, need to create first,\nto exchange ZEC you need to create transparent address first</string>
+    <string name="swap_create_wallet_description">You don\u0027t have all chosen wallets, need to create first</string>
+    <string name="swap_create_wallet_description_with_zcash">You don\u0027t have all chosen wallets, need to create first,\nto exchange ZEC you need to create transparent address first</string>
     <string name="Swap_Approve">Onayla</string>
     <string name="Swap_Approving">Onaylanıyor</string>
     <string name="Swap_Swapping">Takas</string>
@@ -657,7 +657,7 @@
     <string name="unsupported_token">Desteklenmeyen token</string>
     <string name="zec_transparent_used">Takas oluşturulurken geçici bir t-adresi kullanılır: %s. Bu adres, takas sağlayıcısına iletilir ve takas tamamlanmazsa geri ödeme için gereklidir. Bir t-adresinin kullanılması, işlemin kısmen anonim olmaktan çıkmasına neden olabilir.</string>
     <string name="swap_yifi_memo_unsupported">Swap sağlayıcısı, bu ağdan gönderilemeyen bir yatırma memosu gerektiriyor. Başka bir sağlayıcı seçin.</string>
-    <string name="swap_provider_order_failed">Sağlayıcı swap\'ı oluşturamadı. Teklifi yenileyin veya geri dönüp başka bir sağlayıcı seçin.</string>
+    <string name="swap_provider_order_failed">Sağlayıcı swap\u0027ı oluşturamadı. Teklifi yenileyin veya geri dönüp başka bir sağlayıcı seçin.</string>
     <!-- Swap Settings -->
     <string name="SwapSettings_Title">Swap Ayarları</string>
     <string name="SwapSettings_SlippageTitle">Slipaj Toleransı</string>
@@ -752,7 +752,7 @@
     <string name="Transactions_Multiple">Çoklu</string>
     <string name="Transactions_Filter">Filtre</string>
     <string name="Transactions_Filter_HideSuspiciousTx">Şüpheli İşlemleri Gizle</string>
-    <string name="Transactions_Filter_StablecoinDustAmount_Description">Gelen işlemleri, stablecoin\'lerdeki toz miktarı ile gizlemek, adres zehirleme saldırısı sorunlarını kısmen çözer.</string>
+    <string name="Transactions_Filter_StablecoinDustAmount_Description">Gelen işlemleri, stablecoin\u0027lerdeki toz miktarı ile gizlemek, adres zehirleme saldırısı sorunlarını kısmen çözer.</string>
     <string name="Transactions_Filter_ChooseContact_Hint">İletişim filtrelemesi aşağıdaki blok zincirlerinde çalışır: Ethereum, BNB Smart Chain, Polygon, Avalanche, Gnosis, Fantom, Arbitrum, Optimism, Tron, Ton ve ZCash. Aşağıda uygun iletişim bilgileri bulunmaktadır</string>
     <string name="Transactions_Filter_ChooseContact_NoSuitableContact">Uygun hiçbir iletişim bilginiz yok</string>
     <!--Transaction Info-->
@@ -877,13 +877,13 @@
     <string name="TransactionInfoOptions_Rbf_NotEnabled">RBF (Ücretle Değiştir) etkin değil</string>
     <string name="TransactionInfoOptions_Rbf_UnableToReplace">Değiştirilemiyor</string>
     <!-- Info -->
-    <string name="Info_LockTime_Description">Gönderici bu fonları %s.\n\n tarihte sona erecek şekilde bir harcama kilidiyle gönderdi. Endişelenmeyin, alınan Bitcoin\'ler zaten sizindir ancak kilitleme süresi sona erene kadar bunları harcayamazsınız.</string>
+    <string name="Info_LockTime_Description">Gönderici bu fonları %s.\n\n tarihte sona erecek şekilde bir harcama kilidiyle gönderdi. Endişelenmeyin, alınan Bitcoin\u0027ler zaten sizindir ancak kilitleme süresi sona erene kadar bunları harcayamazsınız.</string>
     <string name="Info_NotRelayed_Title">Broadcast</string>
     <string name="Info_NotRelayed_Description">Bu miktarı içeren işlem yayınlandı ancak henüz ağ tarafından kabul edilmedi.</string>
     <string name="Info_ProcessingBalance_Title">Processing amount</string>
     <string name="Info_ProcessingBalance_Description">Transactions with this amount still syncing. And when they are confirmed, these tokens will be available for spending</string>
     <string name="Info_DoubleSpend_Title">Çifte Harcama</string>
-    <string name="Info_DoubleSpend_Description">Çifte Harcama Riski! Blockchain\'de, bu işlemde kullanılan girdileri harcamaya çalışan başka bir işlem var. Ağ tarafından yalnızca bir işlem kabul edilecektir</string>
+    <string name="Info_DoubleSpend_Description">Çifte Harcama Riski! Blockchain\u0027de, bu işlemde kullanılan girdileri harcamaya çalışan başka bir işlem var. Ağ tarafından yalnızca bir işlem kabul edilecektir</string>
     <string name="Info_DoubleSpend_ThisTx">Bu Tx</string>
     <string name="Info_DoubleSpend_ConflictingTx">Çakışan Tx</string>
     <!--Guides-->
@@ -930,10 +930,10 @@
     <string name="Settings_JoinUs">Bizi takip edin</string>
     <string name="Settings_JoinUs_Description">Bizi sosyal medyada takip edin, projeyle ilgili en son haberleri, güncellemeleri ve yakında gelecek özellikleri ilk öğrenen siz olun!</string>
     <string name="Settings_PersonalSupport">Kişisel Destek</string>
-    <string name="Settings_PersonalSupport_EnterTelegramAccountDescription">Enter your Telegram account name to start a personal support chat with our team. We\'ll get back to you and start working on your problem as soon as we see it.</string>
-    <string name="Settings_PersonalSupport_YouAlreadyRequestedSupportDescription">Zaten özel bir sohbet talep ettiniz, bunu Telegram\'da bulun</string>
+    <string name="Settings_PersonalSupport_EnterTelegramAccountDescription">Enter your Telegram account name to start a personal support chat with our team. We\u0027ll get back to you and start working on your problem as soon as we see it.</string>
+    <string name="Settings_PersonalSupport_YouAlreadyRequestedSupportDescription">Zaten özel bir sohbet talep ettiniz, bunu Telegram\u0027da bulun</string>
     <string name="Settings_PersonalSupport_Account">Hesap</string>
-    <string name="Settings_PersonalSupport_UsernameHint">\@username</string>
+    <string name="Settings_PersonalSupport_UsernameHint">\u0040username</string>
     <string name="Settings_PersonalSupport_Requested">Talep Edildi</string>
     <string name="Settings_PersonalSupport_Request">İstek</string>
     <string name="Settings_PersonalSupport_NewRequest">Yeni istek</string>
@@ -946,7 +946,7 @@
     <string name="mini_app_nft_banner_label">6. Swap için bonus</string>
     <string name="mini_app_nft_banner_title">NFT satın alın</string>
     <string name="mini_app_nft_banner_description">Her NFT bir sır. Hangi bonusu alacağınız ancak satış bittikten sonra açıklanacak.</string>
-    <string name="mini_app_nft_banner_button">Getgems\'te satın al</string>
+    <string name="mini_app_nft_banner_button">Getgems\u0027te satın al</string>
     <string name="mini_app_not_connected">Mini Uygulama bağlı değil</string>
     <string name="mini_app_connected">Mini Uygulama bağlandı</string>
     <string name="mini_app_connection">Bağlantı</string>
@@ -1015,7 +1015,7 @@
     <string name="BackupManager_AppSettingsTitle">Uygulama Ayarları</string>
     <string name="BackupManager_AppSettingsDescription">Dil, Para Birimi, Görünüm...</string>
     <!-- Privacy  -->
-    <string name="Privacy_Information">P.CASH doesn\'t collect personal data that expose your private information i.e. coin balances or addresses. While we gather some UI usage statistics, it\'s solely for understanding our user base and app usage trends. That can be disabled if you wish.</string>
+    <string name="Privacy_Information">P.CASH doesn\u0027t collect personal data that expose your private information i.e. coin balances or addresses. While we gather some UI usage statistics, it\u0027s solely for understanding our user base and app usage trends. That can be disabled if you wish.</string>
     <string name="Privacy_BulletedText1">The wallet does not gather any personal data.</string>
     <string name="Privacy_BulletedText2">There are no user accounts or databases storing user data.</string>
     <string name="Privacy_BulletedText3">If allowed the wallet will share app usage habits with P.CASH team. This is to understand which features are being used (or not) by our users. Being a privacy focused app we need some way to evaluate our efforts and without this we have no idea whether the features we built are being used or not.</string>
@@ -1024,9 +1024,9 @@
     <!--Evm Network-->
     <string name="EvmNetwork_AddNew">Yeni ekle</string>
     <string name="EvmNetwork_Added">Eklendi</string>
-    <string name="zcash_network_description">Uygulamanın Zcash\'i senkronize ettiği Lightwalletd sunucusu. Değiştirmek Zcash senkronizasyonunu yeniden başlatır.</string>
+    <string name="zcash_network_description">Uygulamanın Zcash\u0027i senkronize ettiği Lightwalletd sunucusu. Değiştirmek Zcash senkronizasyonunu yeniden başlatır.</string>
     <string name="zcash_network_add_server">Sunucu ekle</string>
-    <string name="zcash_network_server_url">Sunucu URL\'si</string>
+    <string name="zcash_network_server_url">Sunucu URL\u0027si</string>
     <string name="zcash_network_invalid_url">https://host:port girin (Tor için http://…onion) — oturum bilgisi, yol veya parametre olmadan</string>
     <string name="zcash_network_default_servers">Varsayılan</string>
     <string name="zcash_network_auto">Otomatik (önerilen)</string>
@@ -1037,7 +1037,7 @@
     <string name="AddEvmSyncSource_RpcUrl">RPC Url</string>
     <string name="AddEvmSyncSource_AddRPCSource">RPC Kaynağı Ekle</string>
     <string name="AddEvmSyncSource_BasicAuthentication">Basic Auth (optional)</string>
-    <string name="AddEvmSyncSource_Warning_UrlExists">Bu URL\'ye sahip RPC kaynak zaten var</string>
+    <string name="AddEvmSyncSource_Warning_UrlExists">Bu URL\u0027ye sahip RPC kaynak zaten var</string>
     <string name="AddEvmSyncSource_Error_InvalidUrl">Girilen Url geçersiz. Geçerli url aşağıdaki şemalardan birine sahip olmalıdır: http, https, ws, wss</string>
     <!--Btc Blockchain Settings -->
     <string name="custom_peers">Custom peers (e.g., 188.40.241.115, dnsseed.custom.io)</string>
@@ -1046,7 +1046,7 @@
     <string name="blockchain_status_file_saved">Rapor kaydedildi</string>
     <string name="btc_blockchain_settings_restore_source_change_warning">Kaynak değiştirdikten sonra cüzdanın kendini yeniden senkronize etmesi gerekecek.</string>
     <string name="send_confirmation_syncing_warning">Cüzdan hâlâ senkronize ediliyor. Lütfen göndermeden önce senkronizasyonun tamamlanmasını bekleyin.</string>
-    <string name="send_confirmation_sync_error_warning">Cüzdan senkronizasyonu başarısız oldu. Yeniden bağlanmak için Tekrar Dene\'ye dokunun.</string>
+    <string name="send_confirmation_sync_error_warning">Cüzdan senkronizasyonu başarısız oldu. Yeniden bağlanmak için Tekrar Dene\u0027ye dokunun.</string>
     <string name="offline_transaction_sign_offline">Çevrimdışı imzala</string>
     <string name="offline_transaction_sign_title">Çevrimdışı imzalama</string>
     <string name="offline_transaction_signing">İmzalanıyor</string>
@@ -1122,7 +1122,7 @@
     <string name="BtcBlockchainSettings_TransactionSettings">İşlem Ayarları</string>
     <string name="BtcBlockchainSettings_TransactionInputsOutputs">İşlem Girdileri / Çıktıları</string>
     <string name="BtcBlockchainSettings_TransactionInputsOutputsSettingsDescription">İşlemlerin yapılandırılma şeklini değiştirerek BTC, LTC, BCH işlemlerinizin izlenilmesini zorlaştırın.</string>
-    <string name="BtcBlockchainSettings_TransactionInputsOutputsDescription">Most Bitcoin transactions, as well as transactions in alike cryptocurrencies including Bitcoin Cash, Dash, and Litecoin, generate two outputs. One output is the amount that goes to the receiver and the other is the change output that is returned to the sender. The way most wallets construct transactions makes it easy for a third party to understand which of the outputs went to the receiving party and which one was the change amount returned to the sender. As the output returned to the sender is later used in future transactions, a connection between these two transactions becomes apparent.\n\nThe P.CASH wallet implements measures to make it harder for someone to figure out which output goes where.\n\nThere are two options available to P.CASH users:\n\n1. Shuffle: The order of transaction outputs is randomized on every transaction. Sometimes change can be the first output, sometimes it can be the second. If a user trusts the developer of the app, then consider this a recommended option.\n\n2. Deterministic: There is a commonly agreed standard for ordering transaction outputs (known as BIP69). In open-source wallets, that standard ensures wallet users do not need to trust how developers of the app implement the ordering of the outputs. As this standard is new, not many wallets have implemented it yet. As a result, it\'s somewhat possible to see on the blockchain whether a transaction was sent from a wallet that uses that standard or not.</string>
+    <string name="BtcBlockchainSettings_TransactionInputsOutputsDescription">Most Bitcoin transactions, as well as transactions in alike cryptocurrencies including Bitcoin Cash, Dash, and Litecoin, generate two outputs. One output is the amount that goes to the receiver and the other is the change output that is returned to the sender. The way most wallets construct transactions makes it easy for a third party to understand which of the outputs went to the receiving party and which one was the change amount returned to the sender. As the output returned to the sender is later used in future transactions, a connection between these two transactions becomes apparent.\n\nThe P.CASH wallet implements measures to make it harder for someone to figure out which output goes where.\n\nThere are two options available to P.CASH users:\n\n1. Shuffle: The order of transaction outputs is randomized on every transaction. Sometimes change can be the first output, sometimes it can be the second. If a user trusts the developer of the app, then consider this a recommended option.\n\n2. Deterministic: There is a commonly agreed standard for ordering transaction outputs (known as BIP69). In open-source wallets, that standard ensures wallet users do not need to trust how developers of the app implement the ordering of the outputs. As this standard is new, not many wallets have implemented it yet. As a result, it\u0027s somewhat possible to see on the blockchain whether a transaction was sent from a wallet that uses that standard or not.</string>
     <!--Info screen-->
     <string name="Info_Title">Bilgi</string>
     <!--Setting_Security-->
@@ -1137,7 +1137,7 @@
     <string name="SettingsSecurity_DisableDuressPin">Zorlama Şifresini Devre Dışı Bırak</string>
     <string name="SettingsSecurity_DuressPinDescription">Seçilen cüzdanları zorlama altında güvende tutmak için tasarlanmış özel bir mod.</string>
     <string name="SettingsSecurity_ManageKeys">Cüzdanları yönet</string>
-    <string name="SettingsSecurity_AppRestartWarning">Bu eylem, P.CASH Cüzdan\'ı yeniden başlatacak.</string>
+    <string name="SettingsSecurity_AppRestartWarning">Bu eylem, P.CASH Cüzdan\u0027ı yeniden başlatacak.</string>
     <string name="SettingsSecurity_TorConnectionDescription">Bu uygulamayı kullanırken internetinizi tamamen anonimleştirin. Bazı durumlarda DeFi uygulamaları için WalletConnect özelliğinin çok yavaş olabileceğini veya hiç çalışmayabileceğini unutmayın.</string>
     <string name="SettingsSecurity_SortingShuffle">Karıştır</string>
     <string name="SettingsSecurity_SortingShuffleDescription">Rastgele Dizinleme</string>
@@ -1168,7 +1168,7 @@
     <!--Setting_Terms-->
     <string name="SettingsTerms_Backup">Her cüzdan için kurtarma ifadelerini güvenli bir şekilde yedekleyin. Uygulama arızalanırsa fonlara yeniden erişmenin tek yolu budur.</string>
     <string name="SettingsTerms_PrivateKeys">Cüzdan kurtarma ifadeleri kurulum sırasında cihazda rastgele oluşturulur ve başka bir yerde saklanmaz.</string>
-    <string name="SettingsTerms_DisablingPin">Akıllı telefon kilit açma PIN\'ini devre dışı bırakmak, tüm cüzdanları uygulamadan siler. Fonlara yeniden erişim sağlamak için kurtarma ifadelerine ihtiyaç duyulacaktır.</string>
+    <string name="SettingsTerms_DisablingPin">Akıllı telefon kilit açma PIN\u0027ini devre dışı bırakmak, tüm cüzdanları uygulamadan siler. Fonlara yeniden erişim sağlamak için kurtarma ifadelerine ihtiyaç duyulacaktır.</string>
     <string name="SettingsTerms_JailBraking">Jailbreak, eski (OS) işletim sistemlerini kullanmak ve bilinmeyen kaynaklardan uygulama yüklemek fonların güvenliğini tehlikeye atabilir.</string>
     <string name="SettingsTerms_Bugs">Bu uygulamaya güç veren kodda, uygulamanın arızalanmasına neden olabilecek keşfedilmemiş yazılım sorunları olabilir.</string>
     <!--Setting_Tell Friends-->
@@ -1225,7 +1225,7 @@
 \n- BIP-86 (en yeni)
 \n- MWEB (gizli)
 \n
-\nP.CASH cüzdanı bunların 5\'ini de desteklese de, BIP-84 formatında çalışan bir %2$s cüzdanı kullanmanız önerilir. Bu biçimde çalışan cüzdanlar, %3$s işlemi gönderirken en düşük ücreti öderler.</string>
+\nP.CASH cüzdanı bunların 5\u0027ini de desteklese de, BIP-84 formatında çalışan bir %2$s cüzdanı kullanmanız önerilir. Bu biçimde çalışan cüzdanlar, %3$s işlemi gönderirken en düşük ücreti öderler.</string>
     <string name="ManageCoins_BchTypeDescription">Bitcoin Cash cüzdanlarının gelen ödemeleri almak için kullanabileceği 2 adres formatı vardır: 
 \n 
 \n- TYPE0 (eski) 
@@ -1245,7 +1245,7 @@
     <string name="ImportWallet_BackupFile_Description">Bir yedek dosyadan içe aktar.</string>
     <string name="ImportWallet_RecoveryPhrase">Kurtarma İfadesinden</string>
     <string name="ImportWallet_RecoveryPhrase_Description">Kurtarma ifadesini veya özel anahtarı kullanarak içe aktarın.</string>
-    <string name="import_wallet_from_qr">QR\'dan</string>
+    <string name="import_wallet_from_qr">QR\u0027dan</string>
     <string name="import_wallet_from_qr_description">P.CASH uygulamasından QR kullanarak içe aktarın.</string>
     <string name="ImportWallet_WatchAddress">Adresi İzle</string>
     <string name="ImportWallet_WarningInvalidJson">Geçersiz Json Dosyası</string>
@@ -1417,7 +1417,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="AddToken_Blockchain">Blockchains</string>
     <string name="AddToken_CoinAlreadyInListWarning">Bu token zaten kripto para yöneticisi listesindedir</string>
     <string name="AddToken_InvalidContractAddress">Geçersiz sözleşme adresi</string>
-    <string name="AddEvmToken_ContractAddressNotFoundInBlockchain">Sözleşme adresi %s blockchain\'de bulunamadı</string>
+    <string name="AddEvmToken_ContractAddressNotFoundInBlockchain">Sözleşme adresi %s blockchain\u0027de bulunamadı</string>
     <!-- Address Format Settings List -->
     <string name="AddressFormatSettings_Description">Ödemeleri almak için adres biçimini seçin. Mevcut bir cüzdanı geri yüklerken doğru bir format seçilmelidir.</string>
     <!-- Coin Platforms -->
@@ -1430,8 +1430,8 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="zcash_unified_description">Combined transparent and private transactions</string>
     <string name="token_type_litecoin_mweb">Gizli Litecoin</string>
     <!-- Tor -->
-    <string name="Tor_Connection_Enable">Tor\'u etkinleştir</string>
-    <string name="Tor_Connection_Disable">Tor\'u devre dışı bırak</string>
+    <string name="Tor_Connection_Enable">Tor\u0027u etkinleştir</string>
+    <string name="Tor_Connection_Disable">Tor\u0027u devre dışı bırak</string>
     <string name="Tor_Alert_Title">İnternet</string>
     <string name="TorPage_Connecting">Tor Bağlanıyor…</string>
     <string name="TorPage_Failed">Tor bağlanılamadı</string>
@@ -1470,7 +1470,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="CoinPage_Twitter_Quoted">Alıntılandı%s</string>
     <string name="CoinPage_Twitter_Retweeted">Yeniden Tweetlendi%s</string>
     <string name="CoinPage_Twitter_Replied">Yanıtlanıyor%s</string>
-    <string name="CoinPage_Twitter_SeeOnTwitter">Twitter\'da görün</string>
+    <string name="CoinPage_Twitter_SeeOnTwitter">Twitter\u0027da görün</string>
     <string name="CoinPage_MarketCap">Piyasa Değeri</string>
     <string name="CoinPage_DilutedMarketCap">Seyreltilmiş P. Değeri</string>
     <string name="CoinPage_inCirculation">Dolaşımda</string>
@@ -1502,7 +1502,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="CoinPage_OscillatorsSettings">Osilatörler</string>
     <string name="CoinPage_EmaSettingsDescription">EMA, SMA ve WMA, teknik analizde kullanılan hareketli ortalamalardır:\n\nEMA, daha hızlı tepkiler için yakın dönem fiyatlarına vurgu yapar.\nSMA, genel bir trend görünümü için fiyat verilerini ortalayır.\nWMA, yakın dönem verilerini lineer olarak ağırlıklandırarak hassasiyeti ve gürültü azaltmayı dengelemektedir.</string>
     <string name="CoinPage_RsiSettingsDescription">Göreceli Güç Endeksi (RSI), fiyat hızını ve değişimini ölçen, aşırı alım (70 üzeri) veya aşırı satım (30 altı) piyasa koşullarını tanımlayan bir momentum osilatörüdür. Ayrıca fiyat ters dönüşlerini değişimler yoluyla tespit edebilir.</string>
-    <string name="CoinPage_MacdSettingsDescription">Hareketli Ortalama Yakınsama Iraksama (MACD), bir güvenliğin fiyatının iki EMA\'sı arasındaki ilişkiyi izleyen bir momentum göstergesidir. MACD çizgisi (12 dönemlik EMA eksi 26 dönemlik EMA), sinyal çizgisi olarak bilinen 9 dönemlik EMA\'yı kestiğinde, alım veya satım fırsatlarını sinyalize eder.</string>
+    <string name="CoinPage_MacdSettingsDescription">Hareketli Ortalama Yakınsama Iraksama (MACD), bir güvenliğin fiyatının iki EMA\u0027sı arasındaki ilişkiyi izleyen bir momentum göstergesidir. MACD çizgisi (12 dönemlik EMA eksi 26 dönemlik EMA), sinyal çizgisi olarak bilinen 9 dönemlik EMA\u0027yı kestiğinde, alım veya satım fırsatlarını sinyalize eder.</string>
     <string name="CoinPage_Type">Tür</string>
     <string name="CoinPage_Period">Periyot</string>
     <string name="CoinPage_RsiLength">RSI Uzunluğu</string>
@@ -1516,33 +1516,33 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="CoinPage_MarketsVerifiedMenu_All">Hepsi</string>
     <string name="CoinAnalytics_CexVolume_Info1">Önde gelen merkezileştirilmiş borsalarda token için 30 günlük süre boyunca toplam işlem hacmi.</string>
     <string name="CoinAnalytics_CexVolume_Info2">Bir yıllık süre zarfında önde gelen merkezi olmayan borsalarda token için günlük işlem hacmindeki değişikliği gösteren grafik.</string>
-    <string name="CoinAnalytics_CexVolume_Info3">Token\'ın sıralaması, önde gelen merkezileştirilmiş borsalarda 30 günlük süre boyunca işlem hacmine dayanmaktadır.</string>
+    <string name="CoinAnalytics_CexVolume_Info3">Token\u0027ın sıralaması, önde gelen merkezileştirilmiş borsalarda 30 günlük süre boyunca işlem hacmine dayanmaktadır.</string>
     <string name="CoinAnalytics_CexVolume_Info4">24 Saat / 7 Gün / 1 Ay aralıklarında merkezi borsalarda işlem hacmine göre sıralanan tüm tokenların listesi.</string>
     <string name="CoinAnalytics_DexVolume_Info1">Önde gelen merkezi olmayan borsalarda token için 30 günlük süre boyunca toplam işlem hacmi.</string>
     <string name="CoinAnalytics_DexVolume_Info2">Bir yıllık süre zarfında önde gelen merkezi olmayan borsalarda token için günlük işlem hacmindeki değişikliği gösteren grafik.</string>
     <string name="CoinAnalytics_DexVolume_Info3">30 günlük süre içinde önde gelen merkezi olmayan borsalarda işlem hacmine göre token sıralaması.</string>
     <string name="CoinAnalytics_DexVolume_Info4">24 saat / 7 gün / 1 ay aralıklarında, merkezi olmayan borsalardaki işlem hacmine göre sıralanan tüm tokenlerin listesi.</string>
-    <string name="CoinAnalytics_DexVolume_TrackedDexes">İzlenen DEX\'ler:</string>
+    <string name="CoinAnalytics_DexVolume_TrackedDexes">İzlenen DEX\u0027ler:</string>
     <string name="CoinAnalytics_DexLiquidity_Info1">Önde gelen merkezi olmayan borsalarda token için şu anda mevcut olan toplam likidite.</string>
     <string name="CoinAnalytics_DexLiquidity_Info2">Bir yıllık süre zarfında önde gelen merkezi olmayan borsalarda token için mevcut likiditedeki değişikliği gösteren grafik.</string>
     <string name="CoinAnalytics_DexLiquidity_Info3">Önde gelen merkezi olmayan borsalarda token için mevcut likiditeye göre sıralanan tüm tokenlerin listesi.</string>
-    <string name="CoinAnalytics_DexLiquidity_TrackedDexes">İzlenen DEX\'ler:</string>
+    <string name="CoinAnalytics_DexLiquidity_TrackedDexes">İzlenen DEX\u0027ler:</string>
     <string name="CoinAnalytics_ActiveAddresses_Info1">24 saatlik süre boyunca benzersiz günlük aktif adreslerin toplam sayısı.</string>
     <string name="CoinAnalytics_ActiveAddresses_Info2">Bir yıllık süre zarfında günlük aktif adres sayısındaki değişimi gösteren grafik.</string>
     <string name="CoinAnalytics_ActiveAddresses_Info3">30 günlük süre boyunca token ile işlem yapan benzersiz blockchain adreslerinin toplam sayısı.</string>
-    <string name="CoinAnalytics_ActiveAddresses_Info4">Token\'ın sıralaması, 30 günlük süre boyunca token ile işlem yapan aktif cüzdan sayısına dayanmaktadır.</string>
+    <string name="CoinAnalytics_ActiveAddresses_Info4">Token\u0027ın sıralaması, 30 günlük süre boyunca token ile işlem yapan aktif cüzdan sayısına dayanmaktadır.</string>
     <string name="CoinAnalytics_ActiveAddresses_Info5">24 saat / 7 gün / 1 ay aralıklarında, token ile işlem yapan günlük aktif adreslerin sayısına göre sıralanan tüm tokenlerin listesi.</string>
     <string name="CoinAnalytics_TransactionCount_Info1">30 günlük süre boyunca token ile yapılan benzersiz blockchain işlemlerinin toplam sayısı.</string>
     <string name="CoinAnalytics_TransactionCount_Info2">Bir yıllık süre zarfında işlem sayısındaki değişimi gösteren grafik.</string>
-    <string name="CoinAnalytics_TransactionCount_Info3">Token\'ın sıralaması, 30 günlük süre boyunca token ile yapılan işlem sayısına dayanmaktadır.</string>
+    <string name="CoinAnalytics_TransactionCount_Info3">Token\u0027ın sıralaması, 30 günlük süre boyunca token ile yapılan işlem sayısına dayanmaktadır.</string>
     <string name="CoinAnalytics_TransactionCount_Info4">24 saat / 7 gün / 1 ay aralıklarında, token ile yapılan işlem sayısına göre sıralanan tüm tokenlerin listesi.</string>
     <string name="CoinAnalytics_TransactionCount_Info5">30 günlük süre boyunca blockchain üzerinden transfer edilen toplam token sayısı.</string>
-    <string name="CoinAnalytics_Holders_Info1">Çeşitli blockchain\'lerde tokeni tutan benzersiz adreslerin toplam sayısı.</string>
+    <string name="CoinAnalytics_Holders_Info1">Çeşitli blockchain\u0027lerde tokeni tutan benzersiz adreslerin toplam sayısı.</string>
     <string name="CoinAnalytics_Holders_Info2">Her blok zincirinde tokenı tutan en iyi 10 cüzdan.</string>
     <string name="CoinAnalytics_Holders_TrackedBlockchains">İzlenen blok zincirleri: Ethereum, Binance Smart Chain, İyimserlik, Arbitrum, Celo, Cronos, Avalanche, Fantom, Polygon</string>
     <string name="CoinAnalytics_ProjectTVL_Info1">Projenin akıllı sözleşmelerinde Kilitlenen Toplam Değer (veya Yönetim Altındaki Varlıklar).</string>
     <string name="CoinAnalytics_ProjectTVL_Info2">Projenin akıllı sözleşmelerindeki Toplam Kilit Değerdeki değişimi gösteren 1 yıllık döneme ait grafik.</string>
-    <string name="CoinAnalytics_ProjectTVL_Info3">Token\'ın sıralaması mevcut Toplam Kilitli Değer üzerine kuruludur.</string>
+    <string name="CoinAnalytics_ProjectTVL_Info3">Token\u0027ın sıralaması mevcut Toplam Kilitli Değer üzerine kuruludur.</string>
     <string name="CoinAnalytics_ProjectTVL_Info4">Mevcut Toplam Kilit Değere göre sıralanan tüm tokenların listesi.</string>
     <string name="CoinAnalytics_ProjectTVL_Info5">Proje için Piyasa Değeri / TVL oranı.</string>
     <string name="CoinAnalytics_ProjectNoAnalyticData">Bu projenin analitik verisi yoktur</string>
@@ -1571,7 +1571,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="CoinAnalytics_HoldersRank">Sahipler Sıralaması</string>
     <string name="CoinAnalytics_ProjectRevenueRank_Description">Tokenlar, sahipler için mekanizmalar aracılığıyla oluşturulan gelire göre sıralanır, örneğin staking veya token yakma.</string>
     <string name="CoinAnalytics_ProjectFeeRank_Description">Tokenlar, ilgili projeler tarafından üretilen ücretlere göre sıralanır. Ücretlerin toplanma şekli projeden projeye değişir.</string>
-    <string name="CoinAnalytics_HoldersRank_Description">Birden fazla blockchain\'de bulunan benzersiz adresler tarafından tutulan tokenları sıralama.</string>
+    <string name="CoinAnalytics_HoldersRank_Description">Birden fazla blockchain\u0027de bulunan benzersiz adresler tarafından tutulan tokenları sıralama.</string>
     <string name="CoinAnalytics_OtherData">Diğer Veriler</string>
     <string name="CoinAnalytics_Reports">Raporlar</string>
     <string name="CoinAnalytics_Funding">Finansman</string>
@@ -1623,7 +1623,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="TechnicalAdvice_OverIndicators_SignalDate">Starting from the %s</string>
     <string name="TechnicalAdvice_OverIndicators">The asset is outside the Bollinger Band channel and %s.</string>
     <string name="TechnicalAdvice_OverRsi"> RSI = %1$s, This also indicates that the asset is %2$s.</string>
-    <string name="TechnicalAdvice_OverAdvice"> There might be a strong %sward movement, so it\'s better to wait for the asset price to return to the channel.</string>
+    <string name="TechnicalAdvice_OverAdvice"> There might be a strong %sward movement, so it\u0027s better to wait for the asset price to return to the channel.</string>
     <string name="TechnicalAdvice_StrongIndicators">the asset was %s, but now it has returned to the Bollinger Band channel. This indicates a possible trend reversal.</string>
     <string name="TechnicalAdvice_StrongRsi">Meanwhile, the RSI is %1$s, which still indicates that it is %2$s.</string>
     <string name="TechnicalAdvice_StrongAdvice">This could be a very strong signal to enter the market. Keep in mind that there may be several attempts of %sward movement after returning to the channel, so do not forget about risk management.</string>
@@ -1670,7 +1670,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="premium_settings">Premium ayarları</string>
     <string name="advanced_security">Gelişmiş Güvenlik</string>
     <string name="AdvancedSecurity_CreateHiddenWallet">Create Hidden Wallet</string>
-    <string name="create_hidden_wallet_pin">Gizli cüzdan PIN\'i</string>
+    <string name="create_hidden_wallet_pin">Gizli cüzdan PIN\u0027i</string>
     <string name="create_hidden_wallet_pin_description">Gizli cüzdan için bir PIN oluşturun</string>
     <string name="AdvancedSecurity_Terms_Title">Terms</string>
     <string name="AdvancedSecurity_Terms_Warning">The global wallet will not see this wallet, and if you forget your PIN, you can restore access to the wallet using the seed phrase.</string>
@@ -1681,27 +1681,27 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="AdvancedSecurity_SecureReset">Güvenli Sıfırlama</string>
     <string name="calculator_app_name">Hesap Makinesi</string>
     <string name="calculator_mode">Hesap Makinesi</string>
-    <string name="calculator_pin_settings_title">Hesap Makinesi PIN\'i</string>
+    <string name="calculator_pin_settings_title">Hesap Makinesi PIN\u0027i</string>
     <string name="calculator_pin_settings_intro">Uygulama, normal bir hesap makinesi gibi görünür ve çalışır.</string>
     <string name="calculator_pin_settings_unlock_methods_title">Cüzdana girmenin iki yolu vardır:</string>
-    <string name="calculator_pin_settings_unlock_method_pin">PIN\'inizi doğrudan girin ve «=» tuşuna basın — örneğin, 1234 =</string>
-    <string name="calculator_pin_settings_unlock_method_expression">Sonucu PIN\'e eşit olan herhangi bir ifade girin ve «=» tuşuna basın — örneğin, 1000+234 =</string>
-    <string name="calculator_pin_settings_leading_zeros">PIN\'iniz sıfırla başlıyorsa — yalnızca anlamlı rakamları girin. Örneğin, PIN 000010 için 10 = girmek yeterlidir</string>
+    <string name="calculator_pin_settings_unlock_method_pin">PIN\u0027inizi doğrudan girin ve «=» tuşuna basın — örneğin, 1234 =</string>
+    <string name="calculator_pin_settings_unlock_method_expression">Sonucu PIN\u0027e eşit olan herhangi bir ifade girin ve «=» tuşuna basın — örneğin, 1000+234 =</string>
+    <string name="calculator_pin_settings_leading_zeros">PIN\u0027iniz sıfırla başlıyorsa — yalnızca anlamlı rakamları girin. Örneğin, PIN 000010 için 10 = girmek yeterlidir</string>
     <string name="calculator_pin_settings_throttle_invisible">Süreye dayalı kilit hesap makinesinde gösterilmez. Hesap makinesi normal şekilde çalışmaya devam eder — herhangi bir hata mesajı görünmez.</string>
     <string name="calculator_pin_settings_outro">Diğer herkes için bu yalnızca bir hesap makinesidir.</string>
     <string name="calculator_auto_lock_title">Otomatik kilit</string>
-    <string name="calculator_error_divide_by_zero">0\'a bölünemez</string>
+    <string name="calculator_error_divide_by_zero">0\u0027a bölünemez</string>
     <string name="appearance_app_icon_premium">PREMIUM</string>
-    <string name="SecureReset_Pin_Title">Güvenli Sıfırlama PIN\'i</string>
+    <string name="SecureReset_Pin_Title">Güvenli Sıfırlama PIN\u0027i</string>
     <string name="SecureReset_Pin_Description">Güvenli Sıfırlama için PIN oluşturun</string>
     <string name="SecureReset_Terms_Title">Şartlar</string>
     <string name="SecureReset_Terms_Warning">Şartları ve koşulları dikkatlice okuyun.</string>
     <string name="SecureReset_Terms_Warning_NoBackup">Bu özelliği kullanmak için lütfen tüm cüzdanları yedekleyin.</string>
     <string-array name="SecureReset_Terms_Checkboxes">
-        <item>Yetkilendirme sırasında belirtilen PIN\'in girilmesi, cüzdanlar dahil tüm bilgilerin silinmesine neden olacaktır.</item>
+        <item>Yetkilendirme sırasında belirtilen PIN\u0027in girilmesi, cüzdanlar dahil tüm bilgilerin silinmesine neden olacaktır.</item>
         <item>Tüm cüzdanlar için özel anahtarların yedek kopyalarını yapmadıysanız, tüm fonlarınıza erişiminizi kaybedersiniz.</item>
         <item>Kullanıcı risklerin farkındadır ve bu eylemin geri alınamaz olacağını anlar.</item>
-        <item>Sıfırlama sonrasında ana PIN\'iniz sıfırlama PIN\'iniz olacak ve sıfırlama PIN\'i kapatılacaktır.</item>
+        <item>Sıfırlama sonrasında ana PIN\u0027iniz sıfırlama PIN\u0027iniz olacak ve sıfırlama PIN\u0027i kapatılacaktır.</item>
     </string-array>
     <string name="delete_all_contacts_terms_agreement"><![CDATA[Kripto adres defterini silmek için PIN kodu oluşturulmasına ilişkin kullanıcı sözleşmesi<br/><br/>Bir PIN kodu oluşturarak, onun amacını gizliliğinizi koruyan bir mekanizma olarak anladığınızı onaylarsınız.<br/><b>1. PIN kodunun koruyucu işlevi</b><br/>Bu PIN kodu, mali bağlantılarınızın ve kayıtlı adreslerinizin üçüncü taraflarca olası şekilde ele geçirilmesini önlemek amacıyla cihazdaki kripto adres defterinin acil olarak silinmesi için tasarlanmıştır.<br/><b>2. Çalışma mekanizması</b><br/>Ayarlanan PIN kodunun girilmesi, bu cihazda saklanan kripto adres defterinizin derhal silinmesine yol açar.<br/><b>3. Silmenin geri döndürülemezliği</b><br/>PIN kodu girildikten sonra adres defterinin silinmesi kesin ve geri döndürülemez bir işlemdir.<br/><b>4. Geri yükleme yok</b><br/>Adres defteri silinirse, önceden bir yedek oluşturulmadıysa veriler geri yüklenemez.<br/><b>5. Yerel saklama</b><br/>Adres defteri yalnızca cihazınızda yerel olarak saklanır ve geliştiricilere veya harici sunuculara aktarılmaz.]]></string>
     <string-array name="delete_all_contacts_terms_checkboxes">
@@ -1709,9 +1709,9 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
         <item>PIN kodunu girdikten sonra adres defterinin, yedek olmadan geri yükleme imkânı olmaksızın silineceğini anlıyorum.</item>
     </string-array>
     <!--Premium Screens-->
-    <string name="premium_demo_activation_error_backup">Premium\'i etkinleştirmek için cüzdanınızı yedeklemeniz gerekir</string>
-    <string name="premium_demo_activation_error_watch_account">İzleme hesabı premium\'i etkinleştirmek için kullanılamaz</string>
-    <string name="premium_demo_activation_error_wrong_type">Premium\'i etkinleştirmek için anımsatıcı veya donanım cüzdan türünü kullanın</string>
+    <string name="premium_demo_activation_error_backup">Premium\u0027i etkinleştirmek için cüzdanınızı yedeklemeniz gerekir</string>
+    <string name="premium_demo_activation_error_watch_account">İzleme hesabı premium\u0027i etkinleştirmek için kullanılamaz</string>
+    <string name="premium_demo_activation_error_wrong_type">Premium\u0027i etkinleştirmek için anımsatıcı veya donanım cüzdan türünü kullanın</string>
     <string name="premium_try_for_free">ÜCRETSİZ Deneyin</string>
     <string name="premium_upgrade_text">Premium özelliklerle deneyiminizi yükseltin!</string>
     <string name="premium_available">⭐️ Premium</string>
@@ -1720,7 +1720,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
         <item quantity="other">Demo Premium: %d gün kaldı</item>
     </plurals>
     <string name="premium_select_wallet_title">Demo için Cüzdan Seçin</string>
-    <string name="premium_select_wallet_description">Demo premium özelliklerini etkinleştirmek için bir cüzdan seçin. Aynı anda yalnızca bir cüzdan demo premium\'e sahip olabilir.</string>
+    <string name="premium_select_wallet_description">Demo premium özelliklerini etkinleştirmek için bir cüzdan seçin. Aynı anda yalnızca bir cüzdan demo premium\u0027e sahip olabilir.</string>
     <string name="premium_demo_activated">Demo Premium başarıyla etkinleştirildi!</string>
     <string name="premium_demo_expired">Bu cüzdan için Demo Premium süresi doldu</string>
     <string name="wallet_is_not_eligible">Bu cüzdan Premium için uygun değil</string>
@@ -1736,7 +1736,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="login_logging_selfie_on_unsuccessful_login">Başarısız girişte selfie çek</string>
     <string name="login_logging_selfie_on_duress_login">Zorlama modunda selfie çek</string>
     <string name="camera_permission_denied_title">Kamera izni gerekli</string>
-    <string name="camera_permission_denied_message">Girişte selfie çekmek için kamera erişimi gereklidir. Lütfen Ayarlar\'dan etkinleştirin.</string>
+    <string name="camera_permission_denied_message">Girişte selfie çekmek için kamera erişimi gereklidir. Lütfen Ayarlar\u0027dan etkinleştirin.</string>
     <string name="button_open_settings">Ayarları aç</string>
     <string name="login_logging_standard_login">STANDART GİRİŞ</string>
     <string name="login_logging_log_successful">Başarılı girişleri kaydet</string>
@@ -1761,7 +1761,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="login_logging_delete_data_title">Verileri sil</string>
     <string name="login_logging_delete_data_confirmation">Tüm günlükleri silmek istediğinizden emin misiniz?</string>
     <string name="login_logging_delete_record_confirmation">Bu kaydı silmek istediğinizden emin misiniz?</string>
-    <string name="login_logging_info_description">Günlük kaydı etkinleştirilmişse, giriş geçmişini Gelişmiş Güvenlik\'te görüntüleyebilirsiniz.</string>
+    <string name="login_logging_info_description">Günlük kaydı etkinleştirilmişse, giriş geçmişini Gelişmiş Güvenlik\u0027te görüntüleyebilirsiniz.</string>
     <!-- Push Notifications -->
     <string name="push_notification">Push bildirimleri</string>
     <string name="premium_push_notifications_show">Bildirimleri göster</string>
@@ -1861,7 +1861,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="balance_sync_error_text">Senkronizasyon hatası</string>
     <string name="balance_sync_error_changeable_source">Mevcut kaynaktan veri alınamadı. Yeniden deneyebilir veya farklı bir senkronizasyon kaynağına geçebilirsiniz.</string>
     <string name="balance_sync_error_fixed_source">Mevcut kaynaktan veri alınamadı. Lütfen daha sonra tekrar deneyin.</string>
-    <string name="source_blocked_by_provider_error">Mevcut kaynaktan veri alınamadı.\n\nYapabilecekleriniz:\n• Daha sonra tekrar deneyin\n• VPN\'i etkinleştirin ve senkronizasyonu yeniden deneyin\n\n<b>403</b> hatası aldıysanız, <b>IP adresiniz engellenmiş olabilir</b>. VPN kullanmak genellikle <b>bu sorunu çözer</b>.</string>
+    <string name="source_blocked_by_provider_error">Mevcut kaynaktan veri alınamadı.\n\nYapabilecekleriniz:\n• Daha sonra tekrar deneyin\n• VPN\u0027i etkinleştirin ve senkronizasyonu yeniden deneyin\n\n<b>403</b> hatası aldıysanız, <b>IP adresiniz engellenmiş olabilir</b>. VPN kullanmak genellikle <b>bu sorunu çözer</b>.</string>
     <!-- Token not synced -->
     <string name="token_not_synced_title">Veriler senkronize değil.</string>
     <string name="token_not_synced_description">Bilinen son işlemler gösteriliyor. Bilgiler güncel olmayabilir.</string>
@@ -1874,25 +1874,25 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="Widget_EnableAutostartWarning">To make sure that this widget works properly, you should enable Autostart.</string>
     <!--Alert-->
     <string name="alert_keys_invalidated_title">Android anahtar deposu hatası</string>
-    <string name="alert_keys_invalidated_description">Cüzdan şifreleme anahtarlarınız Android güvenlik sistemi tarafından geçersiz kılındı. Bu, parmak izi veya kilit ekranı ayarları değiştiğinde olabilir.\n\nErişimi geri yüklemek için yedek ifadenizi kullanarak cüzdanınızı yeniden içe aktarın.\n\nBu sık sık oluyorsa, cihaz ayarlarında Google Smart Lock\'u devre dışı bırakmayı deneyin ve telefonunuzu yeniden başlatın.</string>
+    <string name="alert_keys_invalidated_description">Cüzdan şifreleme anahtarlarınız Android güvenlik sistemi tarafından geçersiz kılındı. Bu, parmak izi veya kilit ekranı ayarları değiştiğinde olabilir.\n\nErişimi geri yüklemek için yedek ifadenizi kullanarak cüzdanınızı yeniden içe aktarın.\n\nBu sık sık oluyorsa, cihaz ayarlarında Google Smart Lock\u0027u devre dışı bırakmayı deneyin ve telefonunuzu yeniden başlatın.</string>
     <string name="Alert_TitleWarning">Uyarı</string>
-    <string name="Alert_CustomKeyboardIsUsed">Cihazınız varsayılan olmayan bir klavye kullanıyor gibi görünüyor. P.CASH, üçüncü taraf klavyelerin kullanıcıların girdiği verileri toplayıp paylaşabileceği ihtimali nedeniyle, cihazınızda varsayılan klavyeyi seçmenizi önerir.\n\nTercih ettiğiniz klavyeyi kullanmaya devam etmek istiyorsanız \'Atla\' butonuna tıklayın.</string>
+    <string name="Alert_CustomKeyboardIsUsed">Cihazınız varsayılan olmayan bir klavye kullanıyor gibi görünüyor. P.CASH, üçüncü taraf klavyelerin kullanıcıların girdiği verileri toplayıp paylaşabileceği ihtimali nedeniyle, cihazınızda varsayılan klavyeyi seçmenizi önerir.\n\nTercih ettiğiniz klavyeyi kullanmaya devam etmek istiyorsanız \u0027Atla\u0027 butonuna tıklayın.</string>
     <string name="Alert_DeviceIsRootedWarning">P.CASH ekibi, uygulamanın yalnızca root olmayan (jailbreak yapılmamış) telefonlarda çalıştırılmasını önerir.\n\nKöklü bir cihaz kullandığınızda, uygulamanın artık kripto para biriminizin kötü amaçlı yazılımlara karşı güvenliğini garanti edemeyeceğini lütfen unutmayın.</string>
     <!--OS Pin-->
-    <string name="OSPin_Confirm_Title">Telefon PİN\'i</string>
+    <string name="OSPin_Confirm_Title">Telefon PİN\u0027i</string>
     <string name="OSPin_Confirm_Desciption">Bu uygulamayı kullanabilmeniz için telefonun Ekran Kilidi (Şifre/PİN) etkinleştirilmeli.\n\nAndroid Ayarlarından etkinleştirebilirsiniz.\n\nŞifreyi kaldırdığınızda, kullanılmakta olan güvenli bilgi deposu sistem tarafından kaldırılır. Cüzdanlarınızı gizli anahtar ile geri yüklemeniz gerekecek.</string>
-    <string name="OSPin_Prompt_Desciption">Bu uygulama, hassas bilgileri kendi deposunda tutmaktansa Android\'in güvenli deposunda tutmak için telefonun PİN\'ine ihtiyaç duyar.</string>
+    <string name="OSPin_Prompt_Desciption">Bu uygulama, hassas bilgileri kendi deposunda tutmaktansa Android\u0027in güvenli deposunda tutmak için telefonun PİN\u0027ine ihtiyaç duyar.</string>
     <!--Unlock-->
     <string name="Unlock_Title">Kilidi Aç</string>
     <string name="Unlock_Passcode">Şifre</string>
     <string name="Unlock_EnterPasscode">Şifre Girin</string>
-    <string name="Unlock_EnterPasscode_Transactions_Hide">Enter Passcode for \"Transactions Auto Hide\"</string>
-    <string name="Unlock_EnterPasscode_Transfer">Enter a passcode to enable \"Passcode for transfer\"</string>
+    <string name="Unlock_EnterPasscode_Transactions_Hide">Enter Passcode for \u0022Transactions Auto Hide\u0022</string>
+    <string name="Unlock_EnterPasscode_Transfer">Enter a passcode to enable \u0022Passcode for transfer\u0022</string>
     <string name="Unlock_BiometricScanner">Biyometri Tarayıcı</string>
     <string name="Unlock_BiometricScannerDisabled_Description">Parolayı girin veya daha sonra tekrar deneyin</string>
     <string name="Unlock_BiometricScannerDisabled_Info">Biyometrik kimlik. etkisizleştirildi</string>
-    <string name="Unlock_WalletDisabledUntil">Engellendi: %s</string>
-    <string name="Unlock_AttemptsLeft">%s deneme kaldı</string>
+    <string name="Unlock_WalletDisabledUntil">Engellendi: %1$s</string>
+    <string name="Unlock_AttemptsLeft">%1$s deneme kaldı</string>
     <string name="Unlock_Random">Rastgele</string>
     <!--Set Pin-->
     <string name="PinSet_Title">Şifre belirle</string>
@@ -1949,7 +1949,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="no_active_stacking">Aktif staking işlemi yok.</string>
     <string name="no_active_stacking_pirate_description">PIRATE Staking: 100 token ile başlayın ve yıllık _annual_interest_ kazanın!</string>
     <string name="no_active_stacking_cosanta_description">COSANTA Staking: 1 token ile başlayın ve yıllık _annual_interest_ kazanın!</string>
-    <string name="no_active_stacking_pirate_buy_more_description">Staking\'i etkinleştirmek için %1$s token daha gerekli ve yıllık _annual_interest_ alacaksınız!</string>
+    <string name="no_active_stacking_pirate_buy_more_description">Staking\u0027i etkinleştirmek için %1$s token daha gerekli ve yıllık _annual_interest_ alacaksınız!</string>
     <string name="no_active_stacking_cosanta_buy_more_description">%1$s token yatırın ve 36 saat içinde kazanmaya başlayın.</string>
     <string name="buy_to_activate_premium">⭐ Ek özellikleri etkinleştirmek için %s jeton satın alın!</string>
     <string name="tokens">tokens</string>
@@ -2048,9 +2048,9 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="check_from_aml">alpha-aml.com kontrolü</string>
     <string name="Send_Address_ErrorMessage_AmlDetected">AML Sorunu Tespit Edildi!</string>
     <string name="Send_Address_ErrorMessage_AmlDetected_Description">Girdiğiniz adres AML kara listesinde bulunuyor. Bu adrese yapılan işlemler kayıp veya diğer risklere yol açabilir. Lütfen devam etmeden önce alıcının bilgilerini doğrulayın.</string>
-    <string name="Send_Address_AmlCheck_Info1">Hedef adresin alpha-aml.com\'da listelenip listelenmediğini kontrol eder.</string>
+    <string name="Send_Address_AmlCheck_Info1">Hedef adresin alpha-aml.com\u0027da listelenip listelenmediğini kontrol eder.</string>
     <string name="Send_Address_AmlCheck_Info2">Temiz: Kara liste işareti yok.</string>
-    <string name="Send_Address_AmlCheck_Info3">Tespit edildi: Adres alpha-aml.com\'da listelenmiştir ve yasal veya güvenlik riskleriyle ilişkili olabilir. Dikkatli ilerleyin. Birçok kripto borsası, kara listedeki adreslerle etkileşime geçmiş cüzdanlardan para yatıran veya çeken kullanıcıları kısıtlar. Bunu aklınızda tutun.</string>
+    <string name="Send_Address_AmlCheck_Info3">Tespit edildi: Adres alpha-aml.com\u0027da listelenmiştir ve yasal veya güvenlik riskleriyle ilişkili olabilir. Dikkatli ilerleyin. Birçok kripto borsası, kara listedeki adreslerle etkileşime geçmiş cüzdanlardan para yatıran veya çeken kullanıcıları kısıtlar. Bunu aklınızda tutun.</string>
     <string name="error_cannot_create_log_file">Günlük dosyası oluşturulamıyor. Lütfen yeterli depolama alanınız olduğundan emin olun.</string>
 
     <!-- Safety Rules -->
@@ -2106,7 +2106,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="connect_mini_app_captcha_error_qr_expired">QR kod süresi doldu, tekrar tarayın</string>
     <string name="connect_mini_app_link_expired">Bağlantı süresi doldu, bağlantıyı başlatmak için mini uygulamadan yeni bir tane kullanın</string>
     <string name="connect_mini_app_open_mini_app">Mini Uygulamayı Aç</string>
-    <string name="connect_mini_app_bonus_text_prefix">P.CASH\'te Premium\'u etkinleştirin ve garantili olarak</string>
+    <string name="connect_mini_app_bonus_text_prefix">P.CASH\u0027te Premium\u0027u etkinleştirin ve garantili olarak</string>
     <string name="connect_mini_app_bonus_text_suffix">artırılmış bütçe dağıtım katsayısı sayesinde alın.</string>
     <string name="connect_mini_app_tab_pirate_cash">PirateCash</string>
     <string name="connect_mini_app_tab_cosanta">Cosanta</string>
@@ -2123,7 +2123,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="connect_mini_app_close">Kapat</string>
     <string name="try_again">Tekrar dene</string>
     <string name="native_library_error_title">Başlatılamıyor</string>
-    <string name="native_library_error_message">Gerekli bir bileşen yüklenemedi. Lütfen uygulamayı Play Store\'dan yeniden yüklemeyi deneyin.</string>
+    <string name="native_library_error_message">Gerekli bir bileşen yüklenemedi. Lütfen uygulamayı Play Store\u0027dan yeniden yüklemeyi deneyin.</string>
     <string name="native_library_error_close">Kapat</string>
     <string name="scan_tangem_card">Tangem kartını tara</string>
     <string name="scan_card_to_add">Token eklemek için kartı tarayın</string>
@@ -2202,10 +2202,10 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="send_error_balance_unavailable">Bakiye kullanılamıyor</string>
     <string name="litecoin_mweb_invalid_amount">Geçersiz Litecoin MWEB tutarı</string>
     <string name="litecoin_hardware_extended_public_key_required">Donanım Litecoin cüzdanı genişletilmiş açık anahtar gerektirir</string>
-    <string name="send_trezor_mweb_not_supported">Trezor MWEB\'i desteklemiyor. Litecoin\'i normal (MWEB olmayan) bir adrese gönderin.</string>
+    <string name="send_trezor_mweb_not_supported">Trezor MWEB\u0027i desteklemiyor. Litecoin\u0027i normal (MWEB olmayan) bir adrese gönderin.</string>
     <string name="send_trezor_time_lock_not_supported">Trezor zaman kilitli işlemleri desteklemiyor.</string>
     <string name="send_trezor_zcash_memo_not_supported">Trezor, Zcash işlemine not (memo) ekleyemez. Devam etmek için notu kaldırın.</string>
-    <string name="send_trezor_zcash_transparent_only">Trezor, Zcash\'i yalnızca şeffaf adreslere gönderebilir.</string>
+    <string name="send_trezor_zcash_transparent_only">Trezor, Zcash\u0027i yalnızca şeffaf adreslere gönderebilir.</string>
     <string name="send_trezor_zcash_unified_no_transparent_receiver">Bu unified adresin şeffaf bir alıcısı yok, bu yüzden Trezor ona transfer gönderemez.</string>
     <string name="send_trezor_zcash_firmware_required">%1$s, unified Zcash adreslerine gönderim yapmak için %2$s veya daha yeni bir üretici yazılımı gerektirir. Cihazı güncelleyip tekrar deneyin — üretici yazılımı sürümü bir sonraki Zcash işleminizde yeniden kontrol edilecek.</string>
     <string name="send_failed_offline_prompt_title">İşlem gönderilmedi</string>
@@ -2247,12 +2247,12 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="update_interval_week_full">1 hafta</string>
     <string name="update_interval_month_full">1 ay</string>
     <string name="balance_zcash_migration_required">Geçiş gerekli</string>
-    <string name="balance_zcash_migration_title">Ironwood\'a Geçiş</string>
-    <string name="balance_zcash_migration_description">Zcash ağı yükseltmesi:\nZEC\'inizi Orchard havuzundan yeni Ironwood havuzuna taşıyın. Fonlarınız güvendedir.</string>
+    <string name="balance_zcash_migration_title">Ironwood\u0027a Geçiş</string>
+    <string name="balance_zcash_migration_description">Zcash ağı yükseltmesi:\nZEC\u0027inizi Orchard havuzundan yeni Ironwood havuzuna taşıyın. Fonlarınız güvendedir.</string>
     <string name="balance_zcash_migration_migrate">Geçir</string>
     <string name="zcash_migration_confirm_title">Geçişi onaylayın</string>
     <string name="transactions_migrate">Geçir</string>
-    <string name="transactions_migrate_to_ironwood">Ironwood\'a</string>
+    <string name="transactions_migrate_to_ironwood">Ironwood\u0027a</string>
     <string name="zcash_migration_publicly_visible_title">Herkese açık görünür tutar</string>
     <string name="zcash_migration_publicly_visible_description">Havuzlar arasında para transferi, geçirilen tutarın blokzincirde herkese açık şekilde görünür olmasını gerektirir. Gönderici, alıcı ve adresleriniz özel kalır.</string>
     <string name="zcash_migration_error_nothing_to_migrate">Şu anda taşınabilecek bir şey yok.</string>
@@ -2315,4 +2315,34 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="beam_wallet_state_closed">BEAM cüzdanı kapatıldı</string>
     <string name="beam_wallet_operation_failed">BEAM cüzdanı işlemi başarısız oldu</string>
     <string name="beam_wallet_stop_failed">BEAM cüzdanı durdurulamadı</string>
+    <string name="desktop_already_running">P.CASH zaten çalışıyor</string>
+    <string name="desktop_create_password_title">Bir şifre oluşturun</string>
+    <string name="desktop_create_password_description">Şifre, bu bilgisayarda tutulan cüzdanları korur. Hiçbir yerde saklanmaz ve kurtarılamaz.</string>
+    <string name="desktop_password_repeat_hint">Şifreyi tekrar girin</string>
+    <string name="desktop_password_mismatch">Şifreler eşleşmiyor</string>
+    <string name="desktop_password_requirement_length">En az 8 karakter</string>
+    <string name="desktop_password_requirement_uppercase">Bir büyük harf</string>
+    <string name="desktop_password_requirement_lowercase">Bir küçük harf</string>
+    <string name="desktop_password_requirement_digit">Bir rakam</string>
+    <string name="desktop_password_requirement_special">Bir özel karakter</string>
+    <string name="desktop_password_caps_lock">Caps Lock açık</string>
+    <string name="desktop_password_switch_layout">Klavye düzenini değiştirin: şifre yalnızca Latin karakterler içerebilir</string>
+    <string name="desktop_create_password_warning">Bu şifre olmadan bu bilgisayardaki veriler açılamaz ve kimse onları kurtaramaz. Her kurtarma ifadesinin bir yedeğini saklayın.</string>
+    <string name="desktop_create_password_failed">Şifre kaydedilemedi. Boş disk alanını ve erişim izinlerini kontrol edin</string>
+    <string name="desktop_unlock_title">Şifrenizi girin</string>
+    <string name="desktop_unlock_wrong_password">Yanlış şifre</string>
+    <string name="desktop_unlock_data_unreadable">Verileriniz açılamadı</string>
+    <string name="desktop_unlock_failed">Anahtar dosyası okunamadı. Lütfen tekrar deneyin</string>
+    <string name="desktop_unlock_forgot_password">Şifrenizi mi unuttunuz?</string>
+    <string name="desktop_forgot_password_title">Şifremi unuttum</string>
+    <string name="desktop_forgot_password_warning">Bu bilgisayarda tutulan cüzdanlar, kişiler, ayarlar ve geçmiş silinecek. Blok zincirindeki fonlar etkilenmez: cüzdanlar yalnızca kurtarma ifadeleriyle geri yüklenebilir.</string>
+    <string name="desktop_forgot_password_action">Verileri sil</string>
+    <string name="desktop_forgot_password_failed">Veriler silinemedi</string>
+    <string name="desktop_change_password_title">Şifreyi değiştir</string>
+    <string name="desktop_change_password_current_hint">Mevcut şifre</string>
+    <string name="desktop_change_password_new_hint">Yeni şifre</string>
+    <string name="desktop_change_password_failed">Şifre kaydedilemedi. Mevcut şifre kullanılmaya devam ediyor</string>
+    <string name="desktop_change_password_corrupted">Anahtar dosyası zarar görmüş: uygulama kilitlendiğinde oturum açamayacaksınız. Her kurtarma ifadesinin bir yedeğini kaydedin.</string>
+    <string name="desktop_change_password_success">Şifre değiştirildi</string>
+    <string name="desktop_security_lock_now">Şimdi kilitle</string>
 </resources>

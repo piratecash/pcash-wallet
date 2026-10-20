@@ -8,16 +8,16 @@ import cash.p.terminal.core.managers.AccountCleaner
 import cash.p.terminal.core.managers.AccountStorageCleaner
 import cash.p.terminal.core.managers.CoinManager
 import cash.p.terminal.core.managers.DeletedWalletChecker
-import cash.p.terminal.core.managers.LitecoinBirthdayProvider
 import cash.p.terminal.core.managers.NumberFormatter
 import cash.p.terminal.core.managers.UserDeletedWalletManager
-import cash.p.terminal.core.managers.ZcashBirthdayProvider
 import cash.p.terminal.wallet.IDeletedWalletChecker
 import cash.p.terminal.core.providers.EvmLabelProvider
 import cash.p.terminal.core.providers.FeeRateProvider
 import cash.p.terminal.core.storage.AccountsStorage
 import cash.p.terminal.core.storage.AppDatabase
+import cash.p.terminal.core.storage.AppDatabaseProvider
 import cash.p.terminal.core.storage.BlockchainSettingsStorage
+import cash.p.terminal.core.storage.buildAppDatabase
 import cash.p.terminal.core.storage.OfflineModeStorage
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.core.storage.EnabledWalletsStorage
@@ -29,6 +29,7 @@ import cash.p.terminal.core.storage.PendingMultiSwapStorage
 import cash.p.terminal.core.storage.PendingTransactionStorage
 import cash.p.terminal.core.storage.RestoreSettingsStorage
 import cash.p.terminal.core.storage.SpamAddressStorage
+import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import cash.p.terminal.core.storage.ZcashSingleUseAddressStorage
 import cash.p.terminal.core.adapters.zcash.ZcashSingleUseAddressManager
 import cash.p.terminal.modules.pin.core.PinDbStorage
@@ -56,7 +57,8 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val storageModule = module {
-    single { AppDatabase.getInstance(get()) }
+    single { buildAppDatabase(get()) }
+    singleOf(::StaticAppDatabaseProvider) bind AppDatabaseProvider::class
     singleOf(::NumberFormatter) bind IAppNumberFormatter::class
     singleOf(::RestoreSettingsStorage) bind IRestoreSettingsStorage::class
     singleOf(::CoinManager) bind ICoinManager::class
@@ -72,8 +74,6 @@ val storageModule = module {
     factoryOf(::SwapTransactionMatcher)
     singleOf(::EvmSyncSourceStorage)
     singleOf(::ContactsRepository)
-    singleOf(::ZcashBirthdayProvider)
-    singleOf(::LitecoinBirthdayProvider)
     singleOf(::EvmLabelProvider)
     singleOf(::FeeRateProvider)
 
@@ -98,7 +98,6 @@ val storageModule = module {
     single { get<AppDatabase>().evmMethodLabelDao() }
     single { get<AppDatabase>().syncerStateDao() }
     single { get<AppDatabase>().recentAddressDao() }
-    single { get<AppDatabase>().tokenAutoEnabledBlockchainDao() }
     single { get<AppDatabase>().userDeletedWalletDao() }
     singleOf(::UserDeletedWalletManager) bind IDeletedWalletRestorer::class
     singleOf(::DeletedWalletChecker) bind IDeletedWalletChecker::class

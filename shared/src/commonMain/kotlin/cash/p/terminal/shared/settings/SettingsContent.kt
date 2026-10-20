@@ -43,6 +43,7 @@ import cash.p.terminal.resources.advanced_security
 import cash.p.terminal.resources.badge_new
 import cash.p.terminal.resources.ic_about_app_20
 import cash.p.terminal.resources.ic_arrow_right
+import cash.p.terminal.resources.ic_attention_red_20
 import cash.p.terminal.resources.ic_blocks_20
 import cash.p.terminal.resources.ic_brush_20
 import cash.p.terminal.resources.ic_company_logo
@@ -80,6 +81,7 @@ import cash.p.terminal.ui_compose.components.PremiumHeader
 import cash.p.terminal.ui_compose.components.SectionPremiumUniversalLawrence
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.caption_grey
+import cash.p.terminal.ui_compose.components.tinted
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
@@ -193,7 +195,7 @@ private fun GeneralSettingsSection(
                     title = Res.string.Settings_SecurityCenter,
                     icon = Res.drawable.ic_security,
                     newBadgeText = if (uiState.securityCenterShowNewBadge) {
-                        settingsStringResource(Res.string.badge_new)
+                        stringResource(Res.string.badge_new)
                     } else {
                         null
                     },
@@ -369,7 +371,7 @@ private fun SettingsFooter(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         caption_grey(
-            text = settingsStringResource(
+            text = stringResource(
                 Res.string.Settings_InfoTitleWithVersion,
                 appVersion,
             ).uppercase()
@@ -381,7 +383,7 @@ private fun SettingsFooter(
             color = ComposeAppTheme.colors.borderDivider,
         )
         Text(
-            text = settingsStringResource(Res.string.Settings_InfoSubtitle),
+            text = stringResource(Res.string.Settings_InfoSubtitle),
             style = ComposeAppTheme.typography.micro,
             color = ComposeAppTheme.colors.textSecondary,
         )
@@ -395,10 +397,15 @@ private fun SettingsFooter(
         )
         caption_grey(
             modifier = Modifier.padding(top = 12.dp, bottom = 32.dp),
-            text = settingsStringResource(Res.string.Settings_CompanyName),
+            text = stringResource(Res.string.Settings_CompanyName),
         )
     }
 }
+
+/** The mark on a settings row that needs the user's attention. */
+@Composable
+fun settingsAlertPainter(): Painter =
+    painterResource(Res.drawable.ic_attention_red_20).tinted(ComposeAppTheme.colors.statusError)
 
 @Composable
 private fun SettingsCell(
@@ -412,7 +419,7 @@ private fun SettingsCell(
     alertPainter: Painter? = null,
 ) {
     HsSettingCell(
-        title = settingsStringResource(title),
+        title = stringResource(title),
         arrowPainter = painterResource(Res.drawable.ic_arrow_right),
         leadingPainter = icon?.let { painterResource(it) },
         iconTint = iconTint,
@@ -423,10 +430,6 @@ private fun SettingsCell(
         onClick = onClick,
     )
 }
-
-@Composable
-private fun settingsStringResource(resource: StringResource, vararg formatArgs: Any): String =
-    stringResource(resource, *formatArgs).replace("\\'", "'")
 
 private fun ((SettingsAction) -> Unit).callbackFor(action: SettingsAction): () -> Unit = {
     invoke(action)

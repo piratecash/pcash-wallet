@@ -14,15 +14,9 @@ import androidx.compose.ui.unit.dp
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import com.google.android.material.snackbar.BaseTransientBottomBar
-import com.google.android.material.snackbar.Snackbar
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
 
-
-enum class SnackbarDuration(val value: Int) {
-    SHORT(Snackbar.LENGTH_SHORT),
-    MEDIUM(Snackbar.LENGTH_LONG),
-    LONG(7_000),
-    INDEFINITE(Snackbar.LENGTH_INDEFINITE),
-}
 
 // Snackbar placement on screen
 enum class SnackbarGravity(val value: Int) {
@@ -59,6 +53,7 @@ class CustomSnackbar(
             duration: SnackbarDuration,
             gravity: SnackbarGravity,
             @DrawableRes iconRes: Int?,
+            iconResource: DrawableResource? = null,
         ): CustomSnackbar? {
             val parentViewGroup = contentView.findSuitableParent() ?: return null
             val composeView = ComposeView(contentView.context).apply {
@@ -68,7 +63,7 @@ class CustomSnackbar(
                         AppSnackbar(
                             text = text,
                             variant = variant,
-                            icon = iconRes?.let { painterResource(it) },
+                            icon = iconRes?.let { painterResource(it) } ?: iconResource?.let { painterResource(it) },
                             modifier = Modifier.padding(8.dp),
                         )
                     }

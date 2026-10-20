@@ -1,0 +1,40 @@
+package cash.p.terminal.modules.markdown
+
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Divider
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.unit.dp
+import cash.p.terminal.ui_compose.currentYear
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.footer_text
+
+@Composable
+fun ColumnScope.MarkdownFooter() {
+    Divider(
+        modifier = Modifier.fillMaxWidth(),
+        thickness = 1.dp,
+        color = ComposeAppTheme.colors.borderDivider
+    )
+
+    Spacer(Modifier.height(12.dp))
+
+    Text(
+        text = stringResource(Res.string.footer_text, currentYear()),
+        style = ComposeAppTheme.typography.caption,
+        color = ComposeAppTheme.colors.textSecondary,
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .align(Alignment.CenterHorizontally)
+    )
+
+    Spacer(Modifier.height(28.dp))
+}

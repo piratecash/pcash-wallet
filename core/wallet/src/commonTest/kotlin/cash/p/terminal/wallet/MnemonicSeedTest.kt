@@ -1,8 +1,12 @@
 package cash.p.terminal.wallet
 
+import io.horizontalsystems.hdwalletkit.Mnemonic
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
+import kotlin.test.assertFailsWith
 
 class MnemonicSeedTest {
 
@@ -52,9 +56,21 @@ class MnemonicSeedTest {
         assertEquals(JAPANESE_BIP39_SEED, seed.toHex())
     }
 
+    @Test
+    fun derive_unknownWord_exceptionCarriesNoWord() {
+        val words = List(11) { "abandon" } + LEAK_TOKEN
+
+        val error = assertFailsWith<Mnemonic.InvalidMnemonicKeyException> { MnemonicSeed.derive(words) }
+
+        assertFalse(error.message.orEmpty().contains(LEAK_TOKEN))
+        assertFalse(error.stackTraceToString().contains(LEAK_TOKEN))
+        assertNull(error.cause)
+    }
+
     private fun ByteArray.toHex() = joinToString("") { byte -> "%02x".format(byte) }
 
     private companion object {
+        const val LEAK_TOKEN = "zqxleaktoken"
         const val BIP39_SEED =
             "c55257c360c07c72029aebc1b53c05ed0362ada38ead3e3e9efa3708e534955" +
                 "31f09a6987599d18264c1e1c92f2cf141630c7a3c4ab7c81b2f001698e7463b04"

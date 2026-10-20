@@ -19,16 +19,13 @@ import cash.p.terminal.modules.calculator.domain.CalculatorModeService
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
-import cash.p.terminal.navigation.viewModelStoreOwnerForPage
 import io.horizontalsystems.core.IPinComponent
 
 class AppIconPage : HSPage() {
 
     @Composable
     override fun GetContent(navigation: HSNavigation) {
-        val viewModel: AppearanceViewModel = koinViewModel(
-            viewModelStoreOwner = navigation.viewModelStoreOwnerForPage(AppearancePage::class)
-        )
+        val viewModel = koinViewModel<AppIconViewModel>()
         val activity = LocalActivity.current
         var showCalculatorPushWarning by rememberSaveable { mutableStateOf(false) }
 

@@ -1,6 +1,6 @@
 package cash.p.terminal.core.managers
 
-import cash.p.terminal.core.installEthereumCryptoProviderForTest
+import io.horizontalsystems.ethereumkit.core.EthereumKit
 import cash.p.terminal.trezor.domain.TrezorSigningException
 import cash.p.terminal.trezor.signer.TrezorEvmSigner
 import cash.p.terminal.wallet.AccountType
@@ -18,7 +18,7 @@ class EvmMessageSigningTest {
 
     @Before
     fun setUp() {
-        installEthereumCryptoProviderForTest()
+        EthereumKit.init()
     }
 
     private fun mnemonicSigner(): Signer {

@@ -8,16 +8,11 @@ import cash.p.terminal.core.utils.AddressUriResult
 import cash.p.terminal.data.repository.EvmTransactionRepository
 import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.OfflineTransactionOutpoint
-import cash.p.terminal.entities.RestoreSettingRecord
 import cash.p.terminal.entities.TransactionDataSortMode
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.market.MarketModule
 import cash.p.terminal.modules.settings.security.tor.TorStatus
-import cash.p.terminal.modules.settings.terms.TermsModule
 import cash.p.terminal.modules.transactions.FilterTransactionType
-import cash.p.terminal.wallet.Account
-import cash.p.terminal.wallet.AccountOrigin
-import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.IReceiveAdapter
@@ -32,7 +27,6 @@ import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.BalanceData
 import cash.p.terminal.wallet.entities.TokenQuery
 import io.horizontalsystems.bitcoincore.storage.UtxoFilters
-import io.horizontalsystems.hdwalletkit.Language
 import io.horizontalsystems.solanakit.models.FullTransaction
 import io.horizontalsystems.tonkit.FriendlyAddress
 import io.horizontalsystems.tronkit.models.Contract
@@ -51,39 +45,8 @@ import java.math.BigInteger
 import io.horizontalsystems.solanakit.models.Address as SolanaAddress
 import io.horizontalsystems.tronkit.models.Address as TronAddress
 
-interface IRestoreSettingsStorage {
-    fun restoreSettings(accountId: String, blockchainTypeUid: String): List<RestoreSettingRecord>
-    fun restoreSettings(accountId: String): List<RestoreSettingRecord>
-    fun save(restoreSettingRecords: List<RestoreSettingRecord>)
-    fun deleteAllRestoreSettings(accountId: String)
-}
-
 interface IMarketStorage {
     var currentMarketTab: MarketModule.Tab?
-}
-
-interface IBackupManager {
-    val allBackedUp: Boolean
-    val allBackedUpFlow: Flow<Boolean>
-}
-
-interface IAccountFactory {
-    fun account(
-        name: String,
-        type: AccountType,
-        origin: AccountOrigin,
-        backedUp: Boolean,
-        fileBackedUp: Boolean
-    ): Account
-    fun watchAccount(name: String, type: AccountType): Account
-    fun getNextWatchAccountName(): String
-    fun getNextAccountName(): String
-    fun getNextHardwareAccountName(): String
-    fun getUniqueName(name: String, additionalExistingNames: Set<String> = emptySet()): String
-}
-
-interface IRandomProvider {
-    fun getRandomNumbers(count: Int, maxIndex: Int): List<Int>
 }
 
 interface INetworkManager {
@@ -97,14 +60,6 @@ interface INetworkManager {
 
     fun ping(host: String, url: String, isSafeCall: Boolean): Flowable<Any>
     fun getEvmInfo(host: String, path: String): Single<JsonObject>
-}
-
-interface IWordsManager {
-    fun validateChecksum(words: List<String>)
-    fun validateChecksumStrict(words: List<String>)
-    fun isWordValid(word: String): Boolean
-    fun isWordPartiallyValid(word: String): Boolean
-    fun generateWords(count: Int, language: Language): List<String>
 }
 
 interface ITransactionsAdapter {
@@ -528,11 +483,4 @@ interface IRateAppManager {
 
 interface ICoinManager {
     fun getToken(query: TokenQuery): Token?
-}
-
-interface ITermsManager {
-    val termsAcceptedSignalFlow: Flow<Boolean>
-    val terms: List<TermsModule.TermType>
-    val allTermsAccepted: Boolean
-    fun acceptTerms()
 }

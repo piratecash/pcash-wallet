@@ -3,15 +3,16 @@ package cash.p.terminal.core.di
 import cash.p.terminal.core.policy.CompositeHardwareWalletTokenPolicy
 import cash.p.terminal.core.policy.CompositeScanToAddUseCase
 import cash.p.terminal.core.usecase.AddMoneroToTrezorAccountUseCase
+import cash.p.terminal.core.usecase.AndroidMoneroWalletStorage
 import cash.p.terminal.core.usecase.CheckGooglePlayUpdateUseCase
 import cash.p.terminal.core.usecase.CreateHardwareWalletUseCase
 import cash.p.terminal.core.usecase.CreateTrezorWalletUseCase
-import cash.p.terminal.core.usecase.GenerateMoneroWalletUseCase
 import cash.p.terminal.core.usecase.GetMoneroWalletFilesNameUseCase
 import cash.p.terminal.core.usecase.GetRestoreHeightForWalletUseCase
-import cash.p.terminal.core.usecase.MoneroWalletUseCase
 import cash.p.terminal.core.usecase.FetchSwapQuotesUseCase
 import cash.p.terminal.core.usecase.IterativeExactOutSearch
+import cash.p.terminal.core.usecase.MoneroRestoreHeightResolver
+import cash.p.terminal.core.usecase.MoneroWalletStorage
 import cash.p.terminal.core.usecase.OfflineModeUseCase
 import cash.p.terminal.core.usecase.RescanMoneroUseCase
 import cash.p.terminal.core.usecase.RescanZcashUseCase
@@ -19,11 +20,8 @@ import cash.p.terminal.core.usecase.ResolvePayCoreNavigationUseCase
 import cash.p.terminal.core.usecase.ResolveTransactionItemUseCase
 import cash.p.terminal.core.usecase.SyncPendingMultiSwapUseCase
 import cash.p.terminal.core.usecase.UpdateSwapProviderTransactionsStatusUseCase
-import cash.p.terminal.core.usecase.ValidateMoneroHeightUseCase
-import cash.p.terminal.core.usecase.ValidateMoneroMnemonicUseCase
 import cash.p.terminal.domain.usecase.ClearLegacyZcashDataUseCase
 import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
-import cash.p.terminal.domain.usecase.GetLocalizedAssetUseCase
 import cash.p.terminal.domain.usecase.DeleteAllContactsUseCase
 import cash.p.terminal.domain.usecase.ResetUseCase
 import cash.p.terminal.manager.ITorConnectionStatusUseCase
@@ -49,13 +47,10 @@ val useCaseModule = module {
     factoryOf(::IterativeExactOutSearch)
     factoryOf(::ResolveTransactionItemUseCase)
     factoryOf(::ResolvePayCoreNavigationUseCase)
-    factoryOf(::ValidateMoneroMnemonicUseCase)
-    factoryOf(::ValidateMoneroHeightUseCase) bind TrezorMoneroRestoreHeightResolver::class
+    factoryOf(::MoneroRestoreHeightResolver) bind TrezorMoneroRestoreHeightResolver::class
+    factoryOf(::AndroidMoneroWalletStorage) bind MoneroWalletStorage::class
     singleOf(::AddMoneroToTrezorAccountUseCase)
-    factoryOf(::GetLocalizedAssetUseCase)
     factoryOf(::CheckGooglePlayUpdateUseCase) bind GooglePlayUpdateAvailabilityProvider::class
-    factoryOf(::MoneroWalletUseCase)
-    factoryOf(::GenerateMoneroWalletUseCase)
     factoryOf(::GetRestoreHeightForWalletUseCase)
     factoryOf(::RescanMoneroUseCase)
     factoryOf(::RescanZcashUseCase)

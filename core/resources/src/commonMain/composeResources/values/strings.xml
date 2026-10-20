@@ -49,7 +49,7 @@
     <string name="trezor_not_initialized_title">Device not set up</string>
     <string name="trezor_not_initialized_description">This Trezor is not set up yet. Complete setup on the device, then reconnect it.</string>
     <string name="trezor_not_initialized_cta">Setup guide</string>
-    <string name="trezor_connect_failed">Couldn\'t connect to Trezor.</string>
+    <string name="trezor_connect_failed">Couldn\u0027t connect to Trezor.</string>
     <string name="Button_Restore">Import</string>
     <string name="Button_Reset">Reset</string>
     <string name="Button_Understand">I Understand</string>
@@ -76,9 +76,9 @@
     <string name="button_info">Info</string>
     <string name="not_enough_ton_for_fee">Not enough TON for fee. Your current balance is %s TON.</string>
     <string name="check_fee_warning">Make sure you have at least %s for fees or the transaction may fail</string>
-    <string name="Error_AssetNotEnabled">The recipient hasn\'t enabled %s, therefore they are unable to receive it.</string>
+    <string name="Error_AssetNotEnabled">The recipient hasn\u0027t enabled %s, therefore they are unable to receive it.</string>
 
-    <string name="Error_OutOfRange">Can\'t be less than %1$s or more than %2$s</string>
+    <string name="Error_OutOfRange">Can\u0027t be less than %1$s or more than %2$s</string>
     <string name="Error_NotInteger">Wrong integer number</string>
     <string name="Error">Error</string>
     <string name="NotAvailable">n/a</string>
@@ -132,7 +132,7 @@
     <string name="birthday_height_rescan_confirm_text">Local wallet data will be cleared and synchronization will start from the new height. This may take time and traffic.</string>
     <string name="create_wallet_n_words_monero">%s words (Monero only)</string>
     <string name="CreateWallet_Error_EmptyPassphrase">Passphrase cannot be empty</string>
-    <string name="CreateWallet_Error_PassphraseForbiddenSymbols">Please use only supported symbols: <![CDATA[A-Z a-z 0-9 \' " ` & / ? ! : ; . , ~ * $ = + - [ ](){} <> \ _ # @ | % ]]></string>
+    <string name="CreateWallet_Error_PassphraseForbiddenSymbols">Please use only supported symbols: <![CDATA[A-Z a-z 0-9 \u0027 " ` & / ? ! : ; . , ~ * $ = + - [ ](){} <> \ _ # @ | % ]]></string>
     <string name="CreateWallet_Error_InvalidConfirmation">Passphrase confirmation does not match</string>
     <string name="create_wallet_error_failed">Failed to create wallet. Please try again or restart the app.</string>
     <string name="CreateWallet_PassphraseDescription">Passphrases add additional security layer for wallets. To restore such wallet a user required both a recovery phrase as well as a passphrase.\n\nPassphrases also make it easy for users to have many multi-coin wallets using a single mnemonic but different passwords.</string>
@@ -162,7 +162,7 @@
     <string name="invalid_height">Invalid height</string>
     <string name="invalid_height_format">Invalid height, make sure you entered YYYY-MM-DD or birth height</string>
     <string name="invalid_qr_code">Invalid QR Code</string>
-    <string name="blockchair_height_by_date_connection_error">Can\'t connect to Blockchair to find the height by date</string>
+    <string name="blockchair_height_by_date_connection_error">Can\u0027t connect to Blockchair to find the height by date</string>
     <string name="monero_restore_error">Monero restore error</string>
     <string name="Restore_Error_EmptyPassphrase">Passphrase cannot be empty</string>
     <string name="Restore_InvalidChecksum">Invalid Checksum</string>
@@ -176,7 +176,7 @@
     <string name="Restore_PhraseHint">Enter Recovery Phrase</string>
     <string name="monero_restore_seed">Monero restore seed</string>
     <string name="Restore_NonStandardRestore">Non-Standard Import</string>
-    <string name="Restore_NonStandard_Description">This page provides a special wallet restore mechanism to P.CASH users who have a non-standard wallet. Such wallets might have been created in P.CASH version 0.27 - 0.28 using a non-English recovery phrase and/or a special character in the wallet passphrase (i.e. diacritic symbol).\n\nIf you\'re an affected user then your wallet balance will be shown 0 after restoring such wallet in version 0.29 or above. This page will enable you to restore access to your non-standard wallet. Once restored you\'re recommended to create a new wallet (which will be standard compliant) and move funds there.</string>
+    <string name="Restore_NonStandard_Description">This page provides a special wallet restore mechanism to P.CASH users who have a non-standard wallet. Such wallets might have been created in P.CASH version 0.27 - 0.28 using a non-English recovery phrase and/or a special character in the wallet passphrase (i.e. diacritic symbol).\n\nIf you\u0027re an affected user then your wallet balance will be shown 0 after restoring such wallet in version 0.29 or above. This page will enable you to restore access to your non-standard wallet. Once restored you\u0027re recommended to create a new wallet (which will be standard compliant) and move funds there.</string>
 
     <string name="Restore_Bip_Recommended">(recommended)</string>
 
@@ -189,11 +189,11 @@
     <string name="Restore_BirthdayHeight">Birthday Height</string>
     <string name="restore_monero" translatable="false">Monero</string>
     <string name="Restore_ZCash">ZCash</string>
-    <string name="Restore_ZCash_BirthdayHeight_Hint">Enter wallet\'s birthday height for faster synchronization.</string>
+    <string name="Restore_ZCash_BirthdayHeight_Hint">Enter wallet\u0027s birthday height for faster synchronization.</string>
     <string name="Restore_ZCash_Birthday_Hint">000000000 (optional)</string>
     <string name="Restore_ZCash_RestoreAsNew">Restore as New</string>
     <string name="Restore_ZCash_NewWallet">New Wallet</string>
-    <string name="Restore_ZCash_NewWallet_Description">Doesn\'t have any transactions</string>
+    <string name="Restore_ZCash_NewWallet_Description">Doesn\u0027t have any transactions</string>
     <string name="Restore_ZCash_OldWallet">Existing Wallet</string>
     <string name="Restore_ZCash_OldWallet_Description">Has transactions</string>
     <string name="Restore_ZCash_SlowSyncWarningText">The initial synchronization with the blockchain can consume a lot of internet traffic.</string>
@@ -265,7 +265,7 @@
     <string name="MarketGlobalMetrics_TvlInDefiDescription">Total Value Locked (TVL) in DeFi.</string>
     <string name="MarketGlobalMetrics_ChainSelectorTitle">Filter by chain</string>
     <string name="MarketGlobalMetrics_ChainSelectorAll">All</string>
-    <string name="MarketGlobalMetrics_NoCoin">This project doesn\'t have a coin</string>
+    <string name="MarketGlobalMetrics_NoCoin">This project doesn\u0027t have a coin</string>
 
     <!-- ETF-->
     <string name="MarketEtf_Title">Total Net Inflow</string>
@@ -403,15 +403,15 @@
     <string name="Balance_Sort_PopupTitle">Sort by</string>
     <string name="Balance_Sort_Az">Name</string>
     <string name="Balance_Sort_24hPriceChange">Price Change</string>
-    <string name="Balance_NoCoinsAlert">You haven\'t added any coins to this wallet.</string>
+    <string name="Balance_NoCoinsAlert">You haven\u0027t added any coins to this wallet.</string>
     <string name="Balance_NoAssetsToSend">You have no assets to send.</string>
     <string name="Balance_Network">Network</string>
     <string name="Balance_Format">Format</string>
     <string name="Balance_NetworkSelectDescription">Choose network to get an address to receive.</string>
     <string name="Balance_Receive_AddressFormatDescription">Choose a format for providing an address to receive.</string>
     <string name="Balance_Receive_AddressFormat">Address Format</string>
-    <string name="Balance_Receive_AddressFormat_RecommendedAddressType">The Cash Address format is preferred for receiving Bitcoin Cash (BCH) due to its improved user experience and compatibility. However, both address formats can be used interchangeably to receive BCH, regardless of the sender\'s address format.</string>
-    <string name="Balance_Receive_AddressFormat_RecommendedDerivation">The Native SegWit format is preferred in Bitcoin for improved throughput and security. All address formats (Taproot, SegWit, Legacy) can be used interchangeably to receive BTC regardless of the sender\'s address format, enabling seamless transactions across different coin types.</string>
+    <string name="Balance_Receive_AddressFormat_RecommendedAddressType">The Cash Address format is preferred for receiving Bitcoin Cash (BCH) due to its improved user experience and compatibility. However, both address formats can be used interchangeably to receive BCH, regardless of the sender\u0027s address format.</string>
+    <string name="Balance_Receive_AddressFormat_RecommendedDerivation">The Native SegWit format is preferred in Bitcoin for improved throughput and security. All address formats (Taproot, SegWit, Legacy) can be used interchangeably to receive BTC regardless of the sender\u0027s address format, enabling seamless transactions across different coin types.</string>
     <string name="Balance_Receive_Account">Account</string>
     <string name="Balance_Receive_NotActive">Not active</string>
     <string name="Balance_Receive_Amount">Amount</string>
@@ -420,7 +420,7 @@
     <string name="Balance_ProcessingBalance_Title">Processing</string>
     <string name="Balance_NotRelayedAmount_Title">Broadcasting</string>
     <string name="Balance_Receive_Memo">Memo (Tag)</string>
-    <string name="Balance_Error_InvalidQrCode">Can\'t recognize</string>
+    <string name="Balance_Error_InvalidQrCode">Can\u0027t recognize</string>
     <string name="Balance_Receive_WatchAddressAlert">This address is the address of the watched account</string>
     <string name="Balance_Receive_UsedAddresses">Used Addresses</string>
     <string name="Balance_Receive_UsedAddressesDescriptoin">%s addresses change for privacy and security. Below a list of used addresses in this wallet.</string>
@@ -441,8 +441,8 @@
     <string name="monero_full_wallet_recovery_warning">This recovery can take a long time.</string>
     <string name="monero_show_address_on_trezor">Show address on Trezor</string>
     <string name="receive_create_another_address_title">Create another address?</string>
-    <string name="receive_create_another_address_warning">You already have a new address that hasn\'t received any funds yet. Creating a new address is not required. Do you want to continue?</string>
-    <string name="receive_dont_ask_again">Don\'t ask again (save setting)</string>
+    <string name="receive_create_another_address_warning">You already have a new address that hasn\u0027t received any funds yet. Creating a new address is not required. Do you want to continue?</string>
+    <string name="receive_dont_ask_again">Don\u0027t ask again (save setting)</string>
     <string name="receive_create_new">Create new</string>
     <string name="receive_keep_current">Keep current</string>
     <string name="receive_monero_used_addresses_description">For enhanced privacy, it is recommended to use a new address for each transaction.\nIn our app, Monero addresses are created manually to reduce the load when scanning the wallet.\nBelow are the addresses previously created in this wallet.</string>
@@ -509,7 +509,7 @@
     <string name="Send_Address_NotSmartContractCheck_Info1">Checks if the destination address is not a smart contract.</string>
     <string name="Send_Address_NotSmartContractCheck_Info2">Clear: Not a smart contract.</string>
     <string name="Send_Address_NotSmartContractCheck_Info3">Detected: The address is a smart contract. Make sure you really intend to send funds to this address. In some cases, such transfers may be irreversible or result in loss of funds.
-Proceed only if you\'re sure.</string>
+Proceed only if you\u0027re sure.</string>
     <string name="Send_Address_BlacklistCheck_Info1">Checks if the destination address is listed on official or unofficial blacklists.</string>
     <string name="Send_Address_BlacklistCheck_Info2">Clear: No blacklist flags.</string>
     <string name="Send_Address_BlacklistCheck_Info3">Detected: The address is blacklisted and may be associated with legal or security risks. Proceed with caution. Many crypto exchanges restrict users who deposit or withdraw funds from wallets that have interacted with blacklisted addresses. Keep that in mind.</string>
@@ -526,11 +526,11 @@ Proceed only if you\'re sure.</string>
     <string name="Send_Address_ErrorMessage_AmlDetected">AML Problem Detected!</string>
     <string name="Send_Address_ErrorMessage_SanctionDetected">Sanctioned Address Detected!</string>
     <string name="Send_Address_ErrorMessage_SmartContractDetected_Description">Make sure you really intend to send funds to this address. In some cases, such transfers may be irreversible or result in loss of funds.
-Proceed only if you\'re sure.</string>
+Proceed only if you\u0027re sure.</string>
     <string name="Send_Address_ErrorMessage_PhishingDetected_Description">The address you entered may be fraudulent. Scammers often alter the first and last characters. Verify the full address carefully before proceeding to avoid loss.</string>
-    <string name="Send_Address_ErrorMessage_BlacklistDetected_Description">The address you entered is flagged as blacklisted. Transactions to this address could lead to loss or other risks. Please verify the recipient\'s details before proceeding.</string>
-    <string name="Send_Address_ErrorMessage_AmlDetected_Description">The address you entered is found in the AML blacklist. Transactions to this address could lead to loss or other risks. Please verify the recipient\'s details before proceeding.</string>
-    <string name="Send_Address_ErrorMessage_SanctionDetected_Description">The address you entered is marked as being under sanctions. Transactions to this address could lead to loss or other risks. Please verify the recipient\'s details before proceeding.</string>
+    <string name="Send_Address_ErrorMessage_BlacklistDetected_Description">The address you entered is flagged as blacklisted. Transactions to this address could lead to loss or other risks. Please verify the recipient\u0027s details before proceeding.</string>
+    <string name="Send_Address_ErrorMessage_AmlDetected_Description">The address you entered is found in the AML blacklist. Transactions to this address could lead to loss or other risks. Please verify the recipient\u0027s details before proceeding.</string>
+    <string name="Send_Address_ErrorMessage_SanctionDetected_Description">The address you entered is marked as being under sanctions. Transactions to this address could lead to loss or other risks. Please verify the recipient\u0027s details before proceeding.</string>
 
     <string name="Send_RiskyAddress">Risky Address!</string>
     <string name="Send_RiskyAddress_AlertText">You are about to send funds to a high-risk address. Proceeding may result in loss or other security risks. By continuing, you accept the potential dangers. Are you sure you want to proceed?</string>
@@ -577,7 +577,7 @@ Proceed only if you\'re sure.</string>
 
     <string name="SendEvmSettings_Title">Advanced</string>
     <string name="SendEvmSettings_Nonce">Transaction Nonce</string>
-    <string name="SendEvmSettings_Nonce_Info">The nonce is a unique integer value for a transaction within the user\'s wallet. It normally increments with each submitted transaction and does not need changing. Advanced users can set it equal to a nonce of a pending transaction in order to cancel and replace that transaction, as long as the new transaction has a sufficiently higher fee to prevent the old one from being confirmed instead (for example, they may want to speed up its confirmation, or to change transaction parameters entirely). When multiple pending transactions have the same nonce, only one gets confirmed, typically the one with the highest fee.</string>
+    <string name="SendEvmSettings_Nonce_Info">The nonce is a unique integer value for a transaction within the user\u0027s wallet. It normally increments with each submitted transaction and does not need changing. Advanced users can set it equal to a nonce of a pending transaction in order to cancel and replace that transaction, as long as the new transaction has a sufficiently higher fee to prevent the old one from being confirmed instead (for example, they may want to speed up its confirmation, or to change transaction parameters entirely). When multiple pending transactions have the same nonce, only one gets confirmed, typically the one with the highest fee.</string>
     <string name="SendEvmSettings_Error_NonceUsed_Title">Used Nonce</string>
     <string name="SendEvmSettings_Error_NonceUsed">An executed transaction with this nonce already exists.</string>
 
@@ -588,13 +588,13 @@ Proceed only if you\'re sure.</string>
     <string name="estimated_fee">Estimated Fee</string>
     <string name="FeeSettings_NetworkFee_Info">The estimated cost of sending given transaction on the network.</string>
     <string name="FeeSettings_GasLimit" translatable="false">Gas Limit</string>
-    <string name="FeeSettings_GasLimit_Info">Transaction complexity is measured in units called \"gas\". It varies depending on the smart contract being executed. The Gas Limit is the estimated maximum gas needed to execute it. The actual gas used will normally be lower.</string>
+    <string name="FeeSettings_GasLimit_Info">Transaction complexity is measured in units called \u0022gas\u0022. It varies depending on the smart contract being executed. The Gas Limit is the estimated maximum gas needed to execute it. The actual gas used will normally be lower.</string>
     <string name="FeeSettings_GasPrice" translatable="false">Gas Price (Gwei)</string>
-    <string name="FeeSettings_GasPrice_Info">The fee for transacting on the network is measured in gas units. Gas Price is the amount a user is willing to spend per unit of gas. When the network is busy, gas prices are high, and low when it\'s idle. An insufficient gas price is often a reason for a transaction to remain pending for an extended period.</string>
+    <string name="FeeSettings_GasPrice_Info">The fee for transacting on the network is measured in gas units. Gas Price is the amount a user is willing to spend per unit of gas. When the network is busy, gas prices are high, and low when it\u0027s idle. An insufficient gas price is often a reason for a transaction to remain pending for an extended period.</string>
     <string name="FeeSettings_BaseFee">Base Fee</string>
-    <string name="FeeSettings_BaseFee_Info">The network protocol determines the base price per gas for each block, called base fee rate. It varies according to the network utilization level from block to block. It can increase or decrease by no more than 12.5% in the next block, making fees more predictable. The value shown here is the current block\'s base fee rate.</string>
+    <string name="FeeSettings_BaseFee_Info">The network protocol determines the base price per gas for each block, called base fee rate. It varies according to the network utilization level from block to block. It can increase or decrease by no more than 12.5% in the next block, making fees more predictable. The value shown here is the current block\u0027s base fee rate.</string>
     <string name="FeeSettings_MaxFee">Max Fee Rate</string>
-    <string name="FeeSettings_MaxFee_Info">This is the maximum total price per gas the user is willing to pay. It must cover the network\'s base fee rate and max priority fee rate. The value shown here is suggested based on an estimate of the next block\'s base fee rate plus the max priority fee rate chosen by the user. The actual fee rate paid will normally be lower. Setting this lower than the current base fee rate will limit the fee paid, but will result in longer waiting times for the transaction to be confirmed, or even in a stuck transaction.</string>
+    <string name="FeeSettings_MaxFee_Info">This is the maximum total price per gas the user is willing to pay. It must cover the network\u0027s base fee rate and max priority fee rate. The value shown here is suggested based on an estimate of the next block\u0027s base fee rate plus the max priority fee rate chosen by the user. The actual fee rate paid will normally be lower. Setting this lower than the current base fee rate will limit the fee paid, but will result in longer waiting times for the transaction to be confirmed, or even in a stuck transaction.</string>
     <string name="FeeSettings_MaxMinerTips">Max Priority Fee</string>
     <string name="FeeSettings_MaxMinerTips_Info">Users pay priority fees to incentivize a transaction to be confirmed more quickly. They are sometimes called tips. The max priority fee rate is the maximum additional price per gas the user is willing to pay on top of the base fee rate. The value shown here is suggested based on predicted network conditions. The actual priority fee will normally be lower. Setting this to zero may result in a long waiting time for transaction to be confirmed, as it is placed at the end of the pending transactions queue from all users.</string>
     <string name="FeeSettings_RiskOfGettingStuckLegacy_Title">Risky</string>
@@ -610,7 +610,7 @@ Proceed only if you\'re sure.</string>
         \n\nThe recommended fee rate shown as the amount of satoshi user needs to pay for a single byte of the transaction. Thus, the total fee depends on the total size of the transaction which is measured in bytes.
         \n\nUsers may use provided controls to increase or decrease the fee rate value. The change in fee rate changes the total fee for the transaction the user will pay.
         \n\nSetting fee rate below recommended value may result in a transaction being held as pending for hours, or being rejected. The lower the value, the longer it will take for the transaction to confirm. For transactions where priority is important, we recommend setting higher fee rate.</string>
-    <string name="warning_inaccurate_commission">We couldn\'t calculate the network fee precisely. We used an approximate value, but the transaction may fail or the fee may be higher than normal.</string>
+    <string name="warning_inaccurate_commission">We couldn\u0027t calculate the network fee precisely. We used an approximate value, but the transaction may fail or the fee may be higher than normal.</string>
 
 
     <!--Fee Info -->
@@ -621,7 +621,7 @@ Proceed only if you\'re sure.</string>
     <string name="FeeInfo_Average">Recommended</string>
     <string name="FeeInfo_AverageDescription">Typically, the recommended fee value should be sufficient for a transaction to be processed within minutes or an hour for Bitcoin and within minutes for Ethereum.</string>
     <string name="FeeInfo_Fast">High</string>
-    <string name="FeeInfo_FastDescription">For transactions where priority is important, we recommend using the high fee value. It\'s expected to be sufficient for a transaction to be completed within 10 minutes for Bitcoin and within 1-2 minutes for Ethereum.</string>
+    <string name="FeeInfo_FastDescription">For transactions where priority is important, we recommend using the high fee value. It\u0027s expected to be sufficient for a transaction to be completed within 10 minutes for Bitcoin and within 1-2 minutes for Ethereum.</string>
     <string name="FeeInfo_TronFee_Title">Fee</string>
     <string name="FeeInfo_TronFee_Description">The estimated cost of sending given transaction on the network. (Without excluding Energy, Bandwidth and Activating Fee)</string>
     <string name="FeeInfo_TronActivationFee_Title">Activation Fee</string>
@@ -698,7 +698,7 @@ Proceed only if you\'re sure.</string>
     <string name="WalletConnect_Error_UnsupportedMethods">Unsupported methods: %s</string>
     <string name="WalletConnect_Error_UnsupportedEvents">Unsupported events: %s</string>
     <string name="WalletConnect_Error_RequestNotFoundError">Request not found</string>
-    <string name="WalletConnect_NoConnection">You don\'t have any connected dApps</string>
+    <string name="WalletConnect_NoConnection">You don\u0027t have any connected dApps</string>
     <string name="WalletConnect_PendingRequests">Pending Requests</string>
     <string name="WalletConnect_ActiveWallet">Active Wallet</string>
     <string name="WalletConnect_Unnamed">Unnamed</string>
@@ -708,7 +708,7 @@ Proceed only if you\'re sure.</string>
     <string name="WalletConnect_Pairings_ConfirmationDeleteAll">Do you want to delete all paired dApps?</string>
     <string name="WalletConnect_Pairings_Delete">Delete</string>
     <string name="WalletConnect_DeleteAllPairs">Delete All Pairs</string>
-    <string name="WalletConnect_info"># What are the risks when using WalletConnect?\n\nIt should be noted that WalletConnect merely acts as a bridge between the DeFi service website and the user\'s wallet (for example P.CASH).\n\nWhen a user initiates any action on the DeFi service website requiring a transfer of funds, P.CASH wallet presents a user with the confirmation window to approve/deny the respective transaction. The P.CASH wallet has little means to know the context of the transaction and merely acts as an instrument to allow/deny the transaction.\n\nIt\'s important to use a DeFi website provided by reliable entities. If a bad actor overtakes the website of the service, it\'s potentially possible for a user to be presented with a confirmation window going beyond the intents of the user without realising it. Therefore, only use well-regarded and widely used DeFi services.</string>
+    <string name="WalletConnect_info"># What are the risks when using WalletConnect?\n\nIt should be noted that WalletConnect merely acts as a bridge between the DeFi service website and the user\u0027s wallet (for example P.CASH).\n\nWhen a user initiates any action on the DeFi service website requiring a transfer of funds, P.CASH wallet presents a user with the confirmation window to approve/deny the respective transaction. The P.CASH wallet has little means to know the context of the transaction and merely acts as an instrument to allow/deny the transaction.\n\nIt\u0027s important to use a DeFi website provided by reliable entities. If a bad actor overtakes the website of the service, it\u0027s potentially possible for a user to be presented with a confirmation window going beyond the intents of the user without realising it. Therefore, only use well-regarded and widely used DeFi services.</string>
 
     <string name="scan">Scan</string>
     <string name="connect">Connect</string>
@@ -718,7 +718,7 @@ Proceed only if you\'re sure.</string>
     <string name="create_wallet">Create wallet</string>
     <string name="create">Create</string>
     <string name="error_wallets_creating">Error during creating wallets</string>
-    <string name="issuer_signature_loading_failed">Couldn\'t load the card\'s certificate. Please try again later.</string>
+    <string name="issuer_signature_loading_failed">Couldn\u0027t load the card\u0027s certificate. Please try again later.</string>
     <string name="error_backup_card">Error during adding backup card</string>
 
     <!-- Hardware wallet onboarding -->
@@ -750,14 +750,14 @@ Proceed only if you\'re sure.</string>
     <string name="reset_backup_card">Reset backup card</string>
     <string name="reset_card_with_backup_to_factory_message">Factory Reset will completely delete the wallet from the selected card. You will not be able to restore the current wallet or use the card or ring to recover the access code.</string>
     <string name="reset_card_to_factory_condition_1">I understand that after performing this action, I will no longer have access to the current wallet</string>
-    <string name="reset_card_to_factory_condition_2">I realize that I can\'t use this card to recover my access code on the other cards of the current wallet</string>
+    <string name="reset_card_to_factory_condition_2">I realize that I can\u0027t use this card to recover my access code on the other cards of the current wallet</string>
     <string name="common_attention">Attention</string>
-    <string name="onboarding_linking_error_card_with_wallets">Another wallet has already been created on the card you\'re trying to add. If you have funds in this wallet, please withdraw it and then reset this card and add it as a backup.</string>
+    <string name="onboarding_linking_error_card_with_wallets">Another wallet has already been created on the card you\u0027re trying to add. If you have funds in this wallet, please withdraw it and then reset this card and add it as a backup.</string>
     <string name="initial_message_reset_backup_card_header">Tap the card #%s of the wallet</string>
     <string name="skip_and_finish">Skip and Finish</string>
     <string name="initial_message_change_access_code_body">To change the access code tap the card or ring as shown above and do not remove until the end of the operation</string>
     <string name="card_settings_access_code_recovery_title">Access code recovery</string>
-    <string name="card_settings_access_code_recovery_disabled_description">Disable this option if you don\'t want this card to be used to reset access codes on other cards or rings in this wallet. Please note that this will also prevent you from resetting the access code on this card.</string>
+    <string name="card_settings_access_code_recovery_disabled_description">Disable this option if you don\u0027t want this card to be used to reset access codes on other cards or rings in this wallet. Please note that this will also prevent you from resetting the access code on this card.</string>
     <string name="card_settings_access_code_recovery_enabled_description">Allows you to use this card to reset access code on other cards in this wallet</string>
     <string name="initial_message_tap_header">Tap the card</string>
     <string name="enabled">Enabled</string>
@@ -793,8 +793,8 @@ Proceed only if you\'re sure.</string>
     <string name="fee_warning_low_balance">Balance is lower than necessary. You might pay up to %s in fees.</string>
     <string name="swap_balance_for_fees">Balance for Fees</string>
     <string name="Swap_PriceImpact">Price Impact</string>
-    <string name="Swap_PriceImpactTooHigh">P.CASH has disabled swap action for this trade because you\'re getting an extremely unfavorable price. This is due to extremely low liquidity.\nIf you still want to swap please use %s website instead.</string>
-    <string name="Swap_PriceImpactWarning">Important! You\'re getting an extremely unfavorable price. This is due to extremely low liquidity.</string>
+    <string name="Swap_PriceImpactTooHigh">P.CASH has disabled swap action for this trade because you\u0027re getting an extremely unfavorable price. This is due to extremely low liquidity.\nIf you still want to swap please use %s website instead.</string>
+    <string name="Swap_PriceImpactWarning">Important! You\u0027re getting an extremely unfavorable price. This is due to extremely low liquidity.</string>
     <string name="Swap_MinimumReceived">Guaranteed Amount</string>
     <string name="Swap_Slippage">Slippage</string>
     <string name="Swap_Recipient">Recipient</string>
@@ -815,8 +815,8 @@ Proceed only if you\'re sure.</string>
     <string name="Swap_Revoking">Revoking...</string>
     <string name="swap_create_wallets">Create wallets</string>
     <string name="swap_creating_wallets">Creating wallets..</string>
-    <string name="swap_create_wallet_description">You don\'t have all chosen wallets, need to create first</string>
-    <string name="swap_create_wallet_description_with_zcash">You don\'t have all chosen wallets, need to create first,\nto exchange ZEC you need to create transparent address first</string>
+    <string name="swap_create_wallet_description">You don\u0027t have all chosen wallets, need to create first</string>
+    <string name="swap_create_wallet_description_with_zcash">You don\u0027t have all chosen wallets, need to create first,\nto exchange ZEC you need to create transparent address first</string>
     <string name="Swap_Approve">Approve</string>
     <string name="Swap_Approving">Approving</string>
     <string name="Swap_Swapping">Swapping</string>
@@ -862,8 +862,8 @@ Proceed only if you\'re sure.</string>
     <string name="Fee_OutboundFee">Outbound Fee</string>
     <string name="Fee_LiquidityFee">Liquidity Fee</string>
     <string name="zec_transparent_used">A temporary t-address is used when creating the exchange: %s. It is provided to the exchange provider and required for a refund if the exchange is not completed. Using a t-address may lead to partial deanonymization of the transaction.</string>
-    <string name="swap_yifi_memo_unsupported">The swap provider requires a deposit memo that can\'t be sent from this network. Choose another provider.</string>
-    <string name="swap_provider_order_failed">The provider couldn\'t create the swap. Refresh the quote or go back and choose another provider.</string>
+    <string name="swap_yifi_memo_unsupported">The swap provider requires a deposit memo that can\u0027t be sent from this network. Choose another provider.</string>
+    <string name="swap_provider_order_failed">The provider couldn\u0027t create the swap. Refresh the quote or go back and choose another provider.</string>
 
     <!-- Swap Settings -->
     <string name="SwapSettings_Title">Swap Settings</string>
@@ -985,7 +985,7 @@ Proceed only if you\'re sure.</string>
     <string name="Transactions_Filter_HideSuspiciousTx">Hide suspicious tx</string>
     <string name="Transactions_Filter_StablecoinDustAmount_Description">Hiding incoming transactions with the dust amount in stablecoins, this partially solves the  address poisoning attack problems.</string>
     <string name="Transactions_Filter_ChooseContact_Hint">Filtering by contacts works on the following blockchains: Ethereum, BNB Smart Chain, Polygon, Avalanche, Gnosis, Fantom, Arbitrum, Optimism, Tron, Ton and ZCash. Below are the suitable contacts</string>
-    <string name="Transactions_Filter_ChooseContact_NoSuitableContact">You don\'t have any suitable contacts </string>
+    <string name="Transactions_Filter_ChooseContact_NoSuitableContact">You don\u0027t have any suitable contacts </string>
 
     <!--Transaction Info-->
     <string name="TransactionInfo_Title">Transaction Info</string>
@@ -1050,9 +1050,9 @@ Proceed only if you\'re sure.</string>
     <string name="offline_mode_confirm_button">Take the entire network offline</string>
     <string name="offline_mode_go_online_failed">Failed to go online. Please try again.</string>
     <string name="offline_mode_go_offline_failed">Failed to go offline. Please try again.</string>
-    <string name="offline_mode_state_degraded">Some assets on the network didn\'t switch. Please try again.</string>
+    <string name="offline_mode_state_degraded">Some assets on the network didn\u0027t switch. Please try again.</string>
     <string name="offline_mode_active_title">Offline mode is on</string>
-    <string name="offline_mode_active_description">Blockchain data hasn\'t been updated since %1$s. The price is up to date.</string>
+    <string name="offline_mode_active_description">Blockchain data hasn\u0027t been updated since %1$s. The price is up to date.</string>
     <string name="offline_mode_go_online">Go online</string>
     <string name="offline_mode_badge">Offline</string>
     <string name="offline_mode_blocked_title">Network is offline</string>
@@ -1077,11 +1077,11 @@ Proceed only if you\'re sure.</string>
     <string name="copy_warning_body_2">If you copy it by mistake, funds may be sent to a <b>different recipient.</b></string>
     <string name="copy_warning_body_3"><b>Verify the address before copying.</b></string>
     <string name="copy_warning_copy_anyway">Copy Anyway</string>
-    <string name="copy_warning_dont_copy">Don\'t Copy</string>
+    <string name="copy_warning_dont_copy">Don\u0027t Copy</string>
     <string name="poison_warning_add_body_2">If you add it by mistake, you may later send funds to a <b>different recipient.</b></string>
     <string name="poison_warning_verify_before_adding"><b>Verify the address before adding to contacts.</b></string>
     <string name="poison_warning_add_anyway">Add Anyway</string>
-    <string name="poison_warning_dont_add">Don\'t Add</string>
+    <string name="poison_warning_dont_add">Don\u0027t Add</string>
 
     <string name="address_poisoning_info_title">What is Address Poisoning?</string>
     <string name="address_poisoning_info_description"><b>Address Poisoning (Address Poisoning)</b> - is a type of fraud where an attacker sends you a transaction from an address that looks similar to one you have previously used.</string>
@@ -1099,7 +1099,7 @@ Proceed only if you\'re sure.</string>
     <string name="StatusInfo_Confirmed">Completed</string>
     <string name="StatusInfo_Failed">Failed</string>
     <string name="StatusInfo_PendingDescription">The transaction has not been confirmed on the blockchain yet. Transactions sent with a recommended or higher fee setting are generally processed within a few minutes. Transactions sent with a low fee may remain pending for a few hours or even days, and can even be rejected. Note that status of an individual transaction in P.CASH wallet interface typically updated with a short delay.</string>
-    <string name="StatusInfo_ProcessingDescription">The transaction has been already included in the blockchain but has not reached permanent finality. At this point, it\'s safe to consider the transaction as completed for smaller payments. For larger payments, it\'s recommended to wait until the transaction status changes to completed.</string>
+    <string name="StatusInfo_ProcessingDescription">The transaction has been already included in the blockchain but has not reached permanent finality. At this point, it\u0027s safe to consider the transaction as completed for smaller payments. For larger payments, it\u0027s recommended to wait until the transaction status changes to completed.</string>
     <string name="StatusInfo_ConfirmedDescription">Transaction is completed and considered permanent and irreversible.</string>
     <string name="StatusInfo_FailedDescription">The transaction did not get processed and no value transfer took place. Depending on the fail reason, some failed transactions may consume transaction fees. Transactions that were replaced or cancelled by another transaction do not consume transaction fees and will also appear sa failed. The P.CASH app is unable to show the reason for failed transactions, but users are able to look it up themselves on a public block explorer i.e. etherscan.io.</string>
 
@@ -1146,7 +1146,7 @@ Proceed only if you\'re sure.</string>
     <string name="SettingsCurrency_Title">Base Currency</string>
     <string name="SettingsCurrency_Other">OTHER</string>
     <string name="SettingsCurrency_DisclaimerTitle">Disclaimer</string>
-    <string name="SettingsCurrency_DisclaimerText">The exchange rate data is provided by a third party service - Coingecko.com.\n\nThe P.CASH wallet app doesn\'t guarantee these values are always correct and matches market data. The chance for inconsistency is higher if you select any base currency other than %s.</string>
+    <string name="SettingsCurrency_DisclaimerText">The exchange rate data is provided by a third party service - Coingecko.com.\n\nThe P.CASH wallet app doesn\u0027t guarantee these values are always correct and matches market data. The chance for inconsistency is higher if you select any base currency other than %s.</string>
 
     <!-- Display options -->
     <string name="display_options">Display Options</string>
@@ -1206,10 +1206,10 @@ Proceed only if you\'re sure.</string>
     <string name="Settings_JoinUs_Description">Join us on social media to be the first to discover project news, updates, and upcoming features!</string>
 
     <string name="Settings_PersonalSupport">Personal Support</string>
-    <string name="Settings_PersonalSupport_EnterTelegramAccountDescription">Enter your Telegram account name to start a personal support chat with our team. We\'ll get back to you and start working on your problem as soon as we see it.</string>
-    <string name="Settings_PersonalSupport_YouAlreadyRequestedSupportDescription">You\'ve already requested a private chat, find it on Telegram</string>
+    <string name="Settings_PersonalSupport_EnterTelegramAccountDescription">Enter your Telegram account name to start a personal support chat with our team. We\u0027ll get back to you and start working on your problem as soon as we see it.</string>
+    <string name="Settings_PersonalSupport_YouAlreadyRequestedSupportDescription">You\u0027ve already requested a private chat, find it on Telegram</string>
     <string name="Settings_PersonalSupport_Account">Account</string>
-    <string name="Settings_PersonalSupport_UsernameHint">\@username</string>
+    <string name="Settings_PersonalSupport_UsernameHint">\u0040username</string>
     <string name="Settings_PersonalSupport_Requested">Requested</string>
     <string name="Settings_PersonalSupport_Request">Request</string>
     <string name="Settings_PersonalSupport_NewRequest">New Request</string>
@@ -1342,7 +1342,7 @@ Proceed only if you\'re sure.</string>
 
 
     <!-- Privacy  -->
-    <string name="Privacy_Information">P.CASH doesn\'t collect personal data that expose your private information i.e. coin balances or addresses. While we gather some UI usage statistics, it\'s solely for understanding our user base and app usage trends. That can be disabled if you wish.</string>
+    <string name="Privacy_Information">P.CASH doesn\u0027t collect personal data that expose your private information i.e. coin balances or addresses. While we gather some UI usage statistics, it\u0027s solely for understanding our user base and app usage trends. That can be disabled if you wish.</string>
     <string name="Privacy_BulletedText1">The wallet does not gather any personal data.</string>
     <string name="Privacy_BulletedText2">There are no user accounts or databases storing user data.</string>
     <string name="Privacy_BulletedText3">If allowed the wallet will share app usage habits with P.CASH team. This is to understand which features are being used (or not) by our users. Being a privacy focused app we need some way to evaluate our efforts and without this we have no idea whether the features we built are being used or not.</string>
@@ -1406,19 +1406,19 @@ Proceed only if you\'re sure.</string>
     <string name="offline_transaction_qr_save_failed">Failed to save QR code</string>
     <string name="offline_transaction_save_file">Save file</string>
     <string name="offline_transaction_file_saved">Transaction file saved</string>
-    <string name="offline_transaction_file_save_failed">Couldn\'t create the transaction file. Try again.</string>
+    <string name="offline_transaction_file_save_failed">Couldn\u0027t create the transaction file. Try again.</string>
     <string name="offline_transaction_signed_transaction_unavailable">Signed transaction is no longer available. Sign it again.</string>
     <string name="offline_broadcast_title">Send RAW TX</string>
     <string name="offline_broadcast_import_file">Import transaction file</string>
-    <string name="offline_broadcast_file_read_failed">Couldn\'t read the transaction file. Check the file and try again.</string>
-    <string name="offline_broadcast_invalid_input">Couldn\'t recognize the transaction. Check the format and try again.</string>
+    <string name="offline_broadcast_file_read_failed">Couldn\u0027t read the transaction file. Check the file and try again.</string>
+    <string name="offline_broadcast_invalid_input">Couldn\u0027t recognize the transaction. Check the format and try again.</string>
     <string name="offline_broadcast_check_title">Check transaction</string>
     <string name="offline_broadcast_blockchain">Blockchain</string>
     <string name="offline_broadcast_select_network">Select</string>
     <string name="offline_broadcast_no_wallet">No active wallet supports broadcasting this transaction.</string>
     <string name="offline_broadcast_unsupported_blockchain">RAW transaction broadcasting is unavailable for this blockchain.</string>
     <string name="offline_broadcast_details">Transaction details</string>
-    <string name="offline_broadcast_disclaimer">You are not sending your own funds. You are only delivering someone else\'s signed transaction to the network.</string>
+    <string name="offline_broadcast_disclaimer">You are not sending your own funds. You are only delivering someone else\u0027s signed transaction to the network.</string>
     <string name="offline_broadcast_send_button">Send to network</string>
     <string name="offline_broadcast_sending">Sending…</string>
     <string name="offline_broadcast_success_title">Transaction sent</string>
@@ -1437,7 +1437,7 @@ Proceed only if you\'re sure.</string>
     <string name="offline_broadcast_enable_network_button">Enable %1$s</string>
     <string name="offline_broadcast_preparing_network_button">Preparing %1$s…</string>
     <string name="offline_broadcast_enable_network_warning">%1$s is not enabled in the app. Enable the network so the app can broadcast this signed transaction. This does not create a new transaction or send your funds.</string>
-    <string name="offline_broadcast_enable_network_failed">Couldn\'t enable %1$s. Please try again.</string>
+    <string name="offline_broadcast_enable_network_failed">Couldn\u0027t enable %1$s. Please try again.</string>
     <string name="offline_broadcast_watch_only_unavailable">Offline broadcast is not available for watch-only wallets.</string>
     <string name="offline_signed_title">Signed offline</string>
     <string name="offline_signed_empty">No offline-signed transactions</string>
@@ -1457,7 +1457,7 @@ Proceed only if you\'re sure.</string>
 \n\nThe P.CASH wallet implements measures to make it harder for someone to figure out which output goes where.
 \n\nThere are two options available to P.CASH users:
 \n\n1. Shuffle: The order of transaction outputs is randomized on every transaction. Sometimes change can be the first output, sometimes it can be the second. If a user trusts the developer of the app, then consider this a recommended option.
-\n\n2. Deterministic: There is a commonly agreed standard for ordering transaction outputs (known as BIP69). In open-source wallets, that standard ensures wallet users do not need to trust how developers of the app implement the ordering of the outputs. As this standard is new, not many wallets have implemented it yet. As a result, it\'s somewhat possible to see on the blockchain whether a transaction was sent from a wallet that uses that standard or not.</string>
+\n\n2. Deterministic: There is a commonly agreed standard for ordering transaction outputs (known as BIP69). In open-source wallets, that standard ensures wallet users do not need to trust how developers of the app implement the ordering of the outputs. As this standard is new, not many wallets have implemented it yet. As a result, it\u0027s somewhat possible to see on the blockchain whether a transaction was sent from a wallet that uses that standard or not.</string>
 
     <!--Info screen-->
     <string name="Info_Title">Info</string>
@@ -1500,15 +1500,15 @@ Proceed only if you\'re sure.</string>
     <string name="SettingsSecurity_system_pin_description">Require setting up a system PIN to use the application. This significantly improves application security.</string>
     <string name="SettingsSecurity_system_pin_description_enabled">Can only be configured during initial setup. Disabling will reset all wallets.</string>
     <string-array name="enable_system_pin_confirm">
-        <item>This action can\'t be undone.</item>
+        <item>This action can\u0027t be undone.</item>
         <item>To disable this feature you need to reinitialize the app.</item>
     </string-array>
 
     <string name="system_pin_terms">System PIN Terms</string>
     <string-array name="system_pin_term_list">
         <item>Wallet access key will be permanently available to the app, even when device is locked.\nThis means an attacker can access data without additional verification.</item>
-        <item>Protection will only be at Android Keystore level, without additional authentication (PIN, biometrics).\nAlthough Keystore uses hardware protection, it doesn\'t replace user authentication.</item>
-        <item>In case of device compromise or app breach, private key and/or seed phrase may be stolen.\nThe app won\'t be able to prevent third-party access if they gain physical or software control over the device.</item>
+        <item>Protection will only be at Android Keystore level, without additional authentication (PIN, biometrics).\nAlthough Keystore uses hardware protection, it doesn\u0027t replace user authentication.</item>
+        <item>In case of device compromise or app breach, private key and/or seed phrase may be stolen.\nThe app won\u0027t be able to prevent third-party access if they gain physical or software control over the device.</item>
         <item>Responsibility for fund security lies entirely with the user.\nDevelopers are not responsible for access loss or fund theft due to disabled authentication.</item>
         <item>Disabling authentication is not recommended for storing significant amounts.\nThis feature is only for users who consciously and voluntarily accept increased risks.</item>
     </string-array>
@@ -1534,7 +1534,7 @@ Proceed only if you\'re sure.</string>
     <string name="DuressPinSelectAccounts_SectionWatchWallets_Title">WATCH WALLETS</string>
 
     <!--Setting_Terms-->
-    <string name="SettingsTerms_Backup">Securely backup recovery phrases for each wallet. It\'s the only way to regain access to funds if the app malfunctions.</string>
+    <string name="SettingsTerms_Backup">Securely backup recovery phrases for each wallet. It\u0027s the only way to regain access to funds if the app malfunctions.</string>
     <string name="SettingsTerms_PrivateKeys">The wallet recovery phrases are randomly generated on the device during setup and are not stored elsewhere.</string>
     <string name="SettingsTerms_DisablingPin">Disabling unlock PIN (code) on the smartphone deletes all wallets from the app. Recovery phrases will be needed to restore access to funds.</string>
     <string name="SettingsTerms_JailBraking">Jailbreaking (rooting), using outdated OS, and installing apps from unknown sources may endanger the safety of funds.</string>
@@ -1689,7 +1689,7 @@ Proceed only if you\'re sure.</string>
     <string name="ShowKey_Passphrase">Passphrase</string>
     <string name="ShowKey_PrivateKeyCopyWarning_Text">As a security measure we recommend not to use copy action on private key.</string>
     <string name="ShowKey_PrivateKeyCopyWarning_Proceed">I will risk it</string>
-    <string name="ShowKey_PrivateKeyCopyWarning_Cancel">Don\'t copy</string>
+    <string name="ShowKey_PrivateKeyCopyWarning_Cancel">Don\u0027t copy</string>
 
     <!-- Backup Recovery Phrase -->
     <string name="BackupRecoveryPhrase_Title">Backup Recovery Phrase</string>
@@ -1698,14 +1698,14 @@ Proceed only if you\'re sure.</string>
     <string name="BackupRecoveryPhrase_LocalBackup">Local Backup</string>
     <string name="BackupRecoveryPhrase_Later">Later</string>
     <string name="BackupRecoveryPhrase_BackupRequiredText">Complete one of the wallet backup options to start using the wallet.</string>
-    <string name="BackupRecoveryPhrase_BackupRecomendedText">It\'s recommended to have a manual backup for each wallet.</string>
+    <string name="BackupRecoveryPhrase_BackupRecomendedText">It\u0027s recommended to have a manual backup for each wallet.</string>
 
     <!-- Local Backup -->
     <string name="LocalBackup_Title">Local Backup</string>
     <string name="LocalBackup_SaveAndBackup">Save and Backup</string>
     <string name="LocalBackup_SetPassword">Set Password</string>
     <string name="LocalBackup_BackupSaved">Backup Saved</string>
-    <string name="LocalBackup_DontForgetPasswordWarning">This password is used to encrypt backup file of your wallet. It can\'t be recovered or reset if lost or forgotten.</string>
+    <string name="LocalBackup_DontForgetPasswordWarning">This password is used to encrypt backup file of your wallet. It can\u0027t be recovered or reset if lost or forgotten.</string>
     <string name="LocalBackup_ProtextBackupWithPasswordInfo">To ensure data security, we recommend using a strong password for your backup — combining letters, numbers, and special characters.\nThe app allows you to create a backup with a simple password for your convenience, but you agree that the backup may be compromised if a simple password is used.</string>
     <string name="LocalBackup_TermsWarningText">Storage devices i.e. hard drives, USB drives , storage on smartphone etc. are all vulnerable to loss due to physical damage, theft or other unforeseen circumstances.</string>
     <string name="LocalBackup_Term1">I understand that theft or damage of a backup device will result in loss of a backup to a respective wallet.</string>
@@ -1756,7 +1756,7 @@ Proceed only if you\'re sure.</string>
     <string name="seed_qr_invalid_format">This is not a valid seed QR code.</string>
     <string name="seed_qr_monero_restore_hint">Monero seed copied. Enable Monero toggle and enter height: %s</string>
     <string name="RecoveryPhrase_QrCodeWarning">Do not save this QR code — it is valid for 1 hour only.</string>
-    <string name="RecoveryPhrase_QrGenerationError">Can\'t generate seed QR code</string>
+    <string name="RecoveryPhrase_QrGenerationError">Can\u0027t generate seed QR code</string>
     <string name="RecoveryPhrase_Verify">Verify</string>
     <string name="RecoveryPhrase_CopyWarning_Title">Risk of Copying</string>
 
@@ -1798,12 +1798,12 @@ Proceed only if you\'re sure.</string>
     <string name="PrivateKeys_NeverShareWarning">Never share your private key, recovery phrase, or any other confidential wallet data with anyone. The P.CASH team will never ask for this information.</string>
     <string name="private_keys_zec_sapling_spending_key">ZCash Sapling Spending Key</string>
     <string name="private_keys_zec_sapling_spending_key_description">Grants full control over the shielded ZCash funds of this wallet, including spending them.</string>
-    <string name="private_keys_zec_sapling_spending_key_error">Couldn\'t get the ZCash Sapling spending key</string>
+    <string name="private_keys_zec_sapling_spending_key_error">Couldn\u0027t get the ZCash Sapling spending key</string>
     <string name="private_keys_zec">ZCash</string>
     <string name="private_keys_zec_description">Grants full control over the transparent and shielded ZCash funds of this wallet, including spending them.</string>
     <string name="private_keys_zec_transparent_key">ZCash Transparent Key</string>
     <string name="private_keys_zec_transparent_key_description">Grants full control over the transparent ZCash funds of this wallet, including spending them.</string>
-    <string name="private_keys_zec_transparent_key_error">Couldn\'t get the ZCash transparent key</string>
+    <string name="private_keys_zec_transparent_key_error">Couldn\u0027t get the ZCash transparent key</string>
     <string name="private_key_conversion_monero_description">
         <![CDATA[
         <p><b>We have converted your seed phrase from %d words to the Monero standard — 25 words.</b></p>
@@ -1824,7 +1824,7 @@ Proceed only if you\'re sure.</string>
     <string name="publicKeys_zec_transparent_viewing_key_description">Allows read-only monitoring of transparent ZCash transactions for the wallet. Shielded transactions are not included.</string>
     <string name="public_keys_zec_sapling_viewing_key">ZCash Sapling Viewing Key</string>
     <string name="public_keys_zec_sapling_viewing_key_description">Allows read-only monitoring of the shielded ZCash transactions of this wallet. Transparent transactions are not included.</string>
-    <string name="public_keys_zec_viewing_key_error">Couldn\'t get the ZCash viewing key</string>
+    <string name="public_keys_zec_viewing_key_error">Couldn\u0027t get the ZCash viewing key</string>
 
     <!-- Recovery Phrase Verify -->
     <string name="RecoveryPhraseVerify_Title">Verify</string>
@@ -1946,7 +1946,7 @@ Proceed only if you\'re sure.</string>
     <string name="CoinPage_OscillatorsSettings">Oscillators</string>
     <string name="CoinPage_EmaSettingsDescription">The EMA, SMA, and WMA are moving averages used in technical analysis:\n\nEMA emphasizes recent prices for quicker reactions.\nSMA averages price data for a general trend view.\nWMA balances sensitivity and noise reduction by linearly weighting recent data.</string>
     <string name="CoinPage_RsiSettingsDescription">The Relative Strength Index (RSI) is a momentum oscillator that measures price speed and change, identifying overbought (above 70) or oversold (below 30) market conditions. It can also detect price reversals through divergences.</string>
-    <string name="CoinPage_MacdSettingsDescription">The Moving Average Convergence Divergence (MACD) is a momentum indicator that tracks the relationship between two EMAs of a security\'s price. It signals buying or selling opportunities when the MACD line (12-period EMA minus 26-period EMA) crosses the 9-period EMA, known as the signal line.</string>
+    <string name="CoinPage_MacdSettingsDescription">The Moving Average Convergence Divergence (MACD) is a momentum indicator that tracks the relationship between two EMAs of a security\u0027s price. It signals buying or selling opportunities when the MACD line (12-period EMA minus 26-period EMA) crosses the 9-period EMA, known as the signal line.</string>
     <string name="CoinPage_Type">Type</string>
     <string name="CoinPage_Period">Period</string>
     <string name="CoinPage_RsiLength">RSI Length</string>
@@ -1962,12 +1962,12 @@ Proceed only if you\'re sure.</string>
     // Coin Page -> Analytics
     <string name="CoinAnalytics_CexVolume_Info1">Total trading volume for the token on leading centralized exchanges over a 30-day period.</string>
     <string name="CoinAnalytics_CexVolume_Info2">Chart showing variation in daily trading volume for the token on leading centralized exchanges over 1 year period.</string>
-    <string name="CoinAnalytics_CexVolume_Info3">Token\'s rank is based on trading volume on leading centralized exchanges over a 30-day period.</string>
+    <string name="CoinAnalytics_CexVolume_Info3">Token\u0027s rank is based on trading volume on leading centralized exchanges over a 30-day period.</string>
     <string name="CoinAnalytics_CexVolume_Info4">List of all tokens ranked based on trading volume on centralized exchanges over 24H / 7D / 1M intervals.</string>
 
     <string name="CoinAnalytics_DexVolume_Info1">Total trading volume for the token on leading decentralized exchanges over 30-day period.</string>
     <string name="CoinAnalytics_DexVolume_Info2">Chart showing variation in daily trading volume for the token on leading decentralized exchanges over 1 year period.</string>
-    <string name="CoinAnalytics_DexVolume_Info3">Token\'s rank is based on trading volume on leading decentralized exchanges over a 30-day period.</string>
+    <string name="CoinAnalytics_DexVolume_Info3">Token\u0027s rank is based on trading volume on leading decentralized exchanges over a 30-day period.</string>
     <string name="CoinAnalytics_DexVolume_Info4">List of all tokens ranked based on trading volume on decentralized exchanges over 24H / 7D / 1M intervals.</string>
 
     <string name="CoinAnalytics_DexVolume_TrackedDexes">DEXes that are being tracked:</string>
@@ -1985,12 +1985,12 @@ Proceed only if you\'re sure.</string>
     <string name="CoinAnalytics_ActiveAddresses_Info1">Total number of unique daily active addresses over 24-hour period.</string>
     <string name="CoinAnalytics_ActiveAddresses_Info2">Chart showing variation in daily active address count over 1 year period.</string>
     <string name="CoinAnalytics_ActiveAddresses_Info3">Total number of unique blockchain addresses transacting with token over 30-day period.</string>
-    <string name="CoinAnalytics_ActiveAddresses_Info4">Token\'s rank based on the number of active wallets transacting with the token 30-day period.</string>
+    <string name="CoinAnalytics_ActiveAddresses_Info4">Token\u0027s rank based on the number of active wallets transacting with the token 30-day period.</string>
     <string name="CoinAnalytics_ActiveAddresses_Info5">List of all tokens ranked based on the number of daily active addresses transacting with the token over 24h / 7D / 1M intervals.</string>
 
     <string name="CoinAnalytics_TransactionCount_Info1">Total number of unique blockchain transactions with token over a 30-day period.</string>
     <string name="CoinAnalytics_TransactionCount_Info2">Chart showing variation in transaction count over 1 year period.</string>
-    <string name="CoinAnalytics_TransactionCount_Info3">Token\'s rank based on the number of transactions with the token 30-day period.</string>
+    <string name="CoinAnalytics_TransactionCount_Info3">Token\u0027s rank based on the number of transactions with the token 30-day period.</string>
     <string name="CoinAnalytics_TransactionCount_Info4">List of all tokens ranked based on the number of transactions with the token over 24h / 7D / 1M intervals.</string>
     <string name="CoinAnalytics_TransactionCount_Info5">The total number of tokens transferred over the blockchain over the 30 day period.</string>
 
@@ -1998,9 +1998,9 @@ Proceed only if you\'re sure.</string>
     <string name="CoinAnalytics_Holders_Info2">Top 10 wallets holding the token on each blockchain.</string>
     <string name="CoinAnalytics_Holders_TrackedBlockchains">Tracked blockchains: Ethereum, Binance Smart Chain, Optimism, Arbitrum, Celo, Cronos, Avalanche, Fantom, Polygon</string>
 
-    <string name="CoinAnalytics_ProjectTVL_Info1">Total-Value-Locked (or Assets Under Management) in the project\'s smart contracts.</string>
-    <string name="CoinAnalytics_ProjectTVL_Info2">Chart showing variation Total-Value-Locked in project\'s smart contracts over 1 year period.</string>
-    <string name="CoinAnalytics_ProjectTVL_Info3">Token\'s rank is based on current Total-Value-Locked.</string>
+    <string name="CoinAnalytics_ProjectTVL_Info1">Total-Value-Locked (or Assets Under Management) in the project\u0027s smart contracts.</string>
+    <string name="CoinAnalytics_ProjectTVL_Info2">Chart showing variation Total-Value-Locked in project\u0027s smart contracts over 1 year period.</string>
+    <string name="CoinAnalytics_ProjectTVL_Info3">Token\u0027s rank is based on current Total-Value-Locked.</string>
     <string name="CoinAnalytics_ProjectTVL_Info4">List of all tokens ranked based on current Total-Value-Locked.</string>
     <string name="CoinAnalytics_ProjectTVL_Info5">Market Cap / TVL ratio for the project.</string>
 
@@ -2088,7 +2088,7 @@ Proceed only if you\'re sure.</string>
     <string name="TechnicalAdvice_OverIndicators_SignalDate">Starting from the %s</string>
     <string name="TechnicalAdvice_OverIndicators">The asset is outside the Bollinger Band channel and %s.</string>
     <string name="TechnicalAdvice_OverRsi"> RSI = %1$s, This also indicates that the asset is %2$s.</string>
-    <string name="TechnicalAdvice_OverAdvice"> There might be a strong %sward movement, so it\'s better to wait for the asset price to return to the channel.</string>
+    <string name="TechnicalAdvice_OverAdvice"> There might be a strong %sward movement, so it\u0027s better to wait for the asset price to return to the channel.</string>
     <string name="TechnicalAdvice_StrongIndicators">the asset was %s, but now it has returned to the Bollinger Band channel. This indicates a possible trend reversal.</string>
     <string name="TechnicalAdvice_StrongRsi">Meanwhile, the RSI is %1$s, which still indicates that it is %2$s.</string>
     <string name="TechnicalAdvice_StrongAdvice">This could be a very strong signal to enter the market. Keep in mind that there may be several attempts of %sward movement after returning to the channel, so do not forget about risk management.</string>
@@ -2141,7 +2141,7 @@ Proceed only if you\'re sure.</string>
     <string name="Nfts_Asset_OnSale">On Sale</string>
     <string name="Nfts_Asset_OnAuction">On Auction</string>
     <string name="Nfts_Asset_OnSaleUntil">until %s</string>
-    <string name="Nfts_Empty">You don\'t have an NFT in your wallet</string>
+    <string name="Nfts_Empty">You don\u0027t have an NFT in your wallet</string>
     <string name="Nfts_PriceMode">Price Mode</string>
 
     <string name="NftAsset_Overview">Overview</string>
@@ -2176,7 +2176,7 @@ Proceed only if you\'re sure.</string>
     <string name="NftCollection_Items">Items</string>
     <string name="NftCollection_Activity">Activity</string>
     <string name="NftCollection_Owners">Owners</string>
-    <string name="NftCollection_TodaysSales">Today\'s Sellers</string>
+    <string name="NftCollection_TodaysSales">Today\u0027s Sellers</string>
     <string name="NftCollection_TodaysSalesCount">%s NFT</string>
     <string name="NftCollection_Royalty">Royalty</string>
     <string name="NftCollection_InceptionDate">Inception Date</string>
@@ -2235,25 +2235,25 @@ Proceed only if you\'re sure.</string>
     <string name="alert_keys_invalidated_title">Android Keystore Error</string>
     <string name="alert_keys_invalidated_description">Your wallet encryption keys were invalidated by Android security system. This can happen when fingerprint or lock screen settings change.\n\nTo restore access, re-import your wallet using your backup phrase.\n\nIf this happens frequently, try disabling Google Smart Lock in device settings and restart your phone.</string>
     <string name="Alert_TitleWarning">Warning</string>
-    <string name="Alert_CustomKeyboardIsUsed">It looks like your device uses a non-default keyboard. P.CASH recommends selecting default keyboard on your device as third party keyboards can potentially collect and expose users\' input data. \n\nClick \'Skip\' button if you would like to keep using your preferred keyboard.</string>
+    <string name="Alert_CustomKeyboardIsUsed">It looks like your device uses a non-default keyboard. P.CASH recommends selecting default keyboard on your device as third party keyboards can potentially collect and expose users\u0027 input data. \n\nClick \u0027Skip\u0027 button if you would like to keep using your preferred keyboard.</string>
     <string name="Alert_DeviceIsRootedWarning">The P.CASH team recommends running app only on non-rooted (not jailbroken) phones.\n\nPlease note when you use a rooted device the app can no longer guarantee the safety of your cryptocurrency from malicious software.</string>
 
     <!--OS Pin-->
     <string name="OSPin_Confirm_Title">Phone PIN</string>
     <string name="OSPin_Confirm_Desciption">This app requires that phone has the passcode (screen lock) enabled.\n\n You may enable it in Android settings.\n\nPlease note that when you disabled the PIN on the OS level the security measures in safe storage of your phonе made the previously stored data invalid. You will need to Restore your wallet keys to get back to your wallet.</string>
-    <string name="OSPin_Prompt_Desciption">This app requires your phone\'s PIN in order to keep sensitive data from your wallet in Android\'s secure storage and not in the app itself.</string>
+    <string name="OSPin_Prompt_Desciption">This app requires your phone\u0027s PIN in order to keep sensitive data from your wallet in Android\u0027s secure storage and not in the app itself.</string>
 
     <!--Unlock-->
     <string name="Unlock_Title">Unlock</string>
     <string name="Unlock_Passcode">Passcode</string>
     <string name="Unlock_EnterPasscode">Enter Passcode</string>
-    <string name="Unlock_EnterPasscode_Transactions_Hide">Enter Passcode for \"Transactions Auto Hide\"</string>
-    <string name="Unlock_EnterPasscode_Transfer">Enter a passcode to disable \"Passcode for transfer\"</string>
+    <string name="Unlock_EnterPasscode_Transactions_Hide">Enter Passcode for \u0022Transactions Auto Hide\u0022</string>
+    <string name="Unlock_EnterPasscode_Transfer">Enter a passcode to disable \u0022Passcode for transfer\u0022</string>
     <string name="Unlock_BiometricScanner">Biometrics Scanner</string>
     <string name="Unlock_BiometricScannerDisabled_Description">Enter passcode or try again later</string>
     <string name="Unlock_BiometricScannerDisabled_Info">Biometric auth. disabled</string>
-    <string name="Unlock_WalletDisabledUntil">Disabled until: %s</string>
-    <string name="Unlock_AttemptsLeft">Attempts left: %s</string>
+    <string name="Unlock_WalletDisabledUntil">Disabled until: %1$s</string>
+    <string name="Unlock_AttemptsLeft">Attempts left: %1$s</string>
     <string name="Unlock_Random">Random</string>
 
     <!--Set Pin-->
@@ -2386,13 +2386,13 @@ Proceed only if you\'re sure.</string>
     <string name="calculator_pin_settings_title">Calculator PIN</string>
     <string name="calculator_pin_settings_intro">The app looks and works like a normal calculator.</string>
     <string name="calculator_pin_settings_unlock_methods_title">There are two ways to enter the wallet:</string>
-    <string name="calculator_pin_settings_unlock_method_pin">enter your PIN directly and press \"=\" — for example, 1234 =</string>
-    <string name="calculator_pin_settings_unlock_method_expression">enter any expression whose result equals the PIN and press \"=\" — for example, 1000+234 =</string>
+    <string name="calculator_pin_settings_unlock_method_pin">enter your PIN directly and press \u0022=\u0022 — for example, 1234 =</string>
+    <string name="calculator_pin_settings_unlock_method_expression">enter any expression whose result equals the PIN and press \u0022=\u0022 — for example, 1000+234 =</string>
     <string name="calculator_pin_settings_leading_zeros">if your PIN starts with zero — type only the significant digits. For example, for PIN 000010 it is enough to enter 10 =</string>
     <string name="calculator_pin_settings_throttle_invisible">The time-based lock is not shown in the calculator. The calculator keeps working as usual — no error messages appear.</string>
     <string name="calculator_pin_settings_outro">For everyone else it is just a calculator.</string>
     <string name="calculator_auto_lock_title">Auto-Lock</string>
-    <string name="calculator_error_divide_by_zero">Can\'t divide by 0</string>
+    <string name="calculator_error_divide_by_zero">Can\u0027t divide by 0</string>
     <string name="appearance_app_icon_premium">PREMIUM</string>
     <string name="SecureReset_Pin_Title">Secure Reset PIN</string>
     <string name="SecureReset_Pin_Description">Create PIN for Secure Reset</string>
@@ -2425,7 +2425,7 @@ Proceed only if you\'re sure.</string>
     <string name="wallet_is_not_eligible">This wallet is not eligible for Premium</string>
     <string name="premium_demo_activation_failed">Failed to activate demo premium</string>
     <string name="premium_demo_activation_error_backup">To activate premium you need to backup your wallet</string>
-    <string name="premium_demo_activation_error_watch_account">Watch account can\'t be used to activate premium</string>
+    <string name="premium_demo_activation_error_watch_account">Watch account can\u0027t be used to activate premium</string>
     <string name="premium_demo_activation_error_wrong_type">Use mnemonic or hardware wallet type to activate premium</string>
 
     <!-- Login Logging -->
@@ -2484,7 +2484,7 @@ Proceed only if you\'re sure.</string>
     <!-- Push Notifications -->
     <string name="push_notification">Push Notifications</string>
     <string name="premium_push_notifications_show">Show Notifications</string>
-    <string name="premium_push_notifications_warning">To receive transaction notifications, the app may stay active in the background for selected blockchains. This can increase battery usage even when you\'re not using the app.</string>
+    <string name="premium_push_notifications_warning">To receive transaction notifications, the app may stay active in the background for selected blockchains. This can increase battery usage even when you\u0027re not using the app.</string>
     <string name="push_notifications_calculator_mode_warning">Calculator mode is enabled. Push notifications may reveal that a crypto app is installed on this device. Are you sure you want to enable notifications?</string>
     <string name="calculator_mode_push_notifications_warning">Push notifications are enabled. The app may show wallet notifications even in calculator mode. Do you want to disable push notifications to improve privacy?</string>
     <string name="push_notification_polling_interval">Check Interval</string>
@@ -2512,7 +2512,7 @@ Proceed only if you\'re sure.</string>
 
     <!-- SMS Notification via ZEC -->
     <string name="send_sms_via_zec_title">Send SMS via ZEC</string>
-    <string name="send_sms_via_zec_info">This mode allows you to notify your close friends or lawyer that you have been forced to open the app. This mode works if you have ZEC in your wallet. If you don\'t, the app will add it.</string>
+    <string name="send_sms_via_zec_info">This mode allows you to notify your close friends or lawyer that you have been forced to open the app. This mode works if you have ZEC in your wallet. If you don\u0027t, the app will add it.</string>
     <string name="send_sms_wallet_balance_hint">Make sure you have the required amount in the selected wallet.</string>
     <string name="send_sms_syncing">Syncing to send…</string>
     <string name="send_sms_test_success">Your message has been successfully sent.</string>
@@ -2557,10 +2557,10 @@ Proceed only if you\'re sure.</string>
     <string name="connect_mini_app_step_1_choose_wallet">Please choose your wallet with premium subscription</string>
     <string name="connect_mini_app_premium_bonus">+5% Bonus with Premium</string>
     <string name="connect_mini_app_checking_tokens">Checking availability %s</string>
-    <string name="connect_mini_app_missing_tokens">You don\'t have %s</string>
+    <string name="connect_mini_app_missing_tokens">You don\u0027t have %s</string>
     <string name="connect_mini_app_add_tokens">Add</string>
-    <string name="connect_mini_app_error_token_check">Couldn\'t check the wallet tokens. Please try again.</string>
-    <string name="connect_mini_app_error_no_evm_key">Couldn\'t get the EVM key for signing. Check the wallet and try again.</string>
+    <string name="connect_mini_app_error_token_check">Couldn\u0027t check the wallet tokens. Please try again.</string>
+    <string name="connect_mini_app_error_no_evm_key">Couldn\u0027t get the EVM key for signing. Check the wallet and try again.</string>
     <string name="connect_mini_app_step_2">Step 2</string>
     <string name="connect_mini_app_step_2_description">Special proposal for premium members</string>
     <string name="connect_mini_app_captcha_error_qr_expired">QR code expired, please scan again</string>
@@ -2635,11 +2635,11 @@ Proceed only if you\'re sure.</string>
     <string name="duration_short_hours">%1$dh</string>
     <string name="duration_short_minutes">%1$dm</string>
     <string name="duration_short_seconds">%1$ds</string>
-    <string name="send_trezor_mweb_not_supported">Trezor doesn\'t support MWEB. Send Litecoin to a regular (non-MWEB) address.</string>
-    <string name="send_trezor_time_lock_not_supported">Trezor doesn\'t support time-locked transactions.</string>
-    <string name="send_trezor_zcash_memo_not_supported">Trezor can\'t attach a memo to a Zcash transaction. Remove the memo to continue.</string>
+    <string name="send_trezor_mweb_not_supported">Trezor doesn\u0027t support MWEB. Send Litecoin to a regular (non-MWEB) address.</string>
+    <string name="send_trezor_time_lock_not_supported">Trezor doesn\u0027t support time-locked transactions.</string>
+    <string name="send_trezor_zcash_memo_not_supported">Trezor can\u0027t attach a memo to a Zcash transaction. Remove the memo to continue.</string>
     <string name="send_trezor_zcash_transparent_only">Trezor can only send Zcash to transparent addresses.</string>
-    <string name="send_trezor_zcash_unified_no_transparent_receiver">This unified address has no transparent receiver, so Trezor can\'t send to it.</string>
+    <string name="send_trezor_zcash_unified_no_transparent_receiver">This unified address has no transparent receiver, so Trezor can\u0027t send to it.</string>
     <string name="send_trezor_zcash_firmware_required">%1$s needs firmware %2$s or later to send to unified Zcash addresses. Update it, then try again — the app checks the firmware version again on your next Zcash transaction.</string>
     <string name="send_failed_offline_prompt_title">Transaction not sent</string>
     <string name="send_failed_offline_prompt_message">Sign the transaction offline and send it later?</string>
@@ -2704,10 +2704,10 @@ Proceed only if you\'re sure.</string>
     <!-- Hide balance on flip -->
     <string name="balance_hide_on_flip_title">Hide on flip</string>
     <string name="balance_hide_on_flip_description">Flip the device screen face down to quickly hide and show your balance.</string>
-    <string name="balance_hide_on_flip_unsupported">This device doesn\'t support Hide on flip.</string>
+    <string name="balance_hide_on_flip_unsupported">This device doesn\u0027t support Hide on flip.</string>
     <string name="balance_hide_on_flip_info_title">Balance hidden</string>
     <string name="balance_hide_on_flip_info_description">To hide or show your balance, just flip the device screen face down, or turn it off in the security settings.</string>
-    <string name="balance_hide_on_flip_dont_show_again">Don\'t show again</string>
+    <string name="balance_hide_on_flip_dont_show_again">Don\u0027t show again</string>
     <string name="badge_new">New</string>
     <string name="beam_history_in_progress">In progress</string>
     <string name="beam_history_registering">Registering</string>
@@ -2723,7 +2723,7 @@ Proceed only if you\'re sure.</string>
     <string name="beam_cancel_description">Available while the transfer is waiting for the receiver.</string>
     <string name="beam_cancel_too_late">The transfer can no longer be cancelled.</string>
     <string name="beam_send_receiver_type">Receiver type</string>
-    <string name="beam_receive_regular_alert">Funds sent to this address arrive only while P.CASH is open; the sender\'s wallet waits up to 12 hours for it.</string>
+    <string name="beam_receive_regular_alert">Funds sent to this address arrive only while P.CASH is open; the sender\u0027s wallet waits up to 12 hours for it.</string>
     <string name="beam_send_recorded">Operation recorded. Check transaction history for its status.</string>
     <string name="beam_send_uncertain">The send may still be processing. Retry checks the same operation; do not start another send.</string>
     <string name="beam_locked_balance_info">BEAM received to a Max Privacy address stays locked until enough newer shielded transactions appear on the network, for up to 72 hours after confirmation. Other incoming BEAM is locked only until it is confirmed.</string>
@@ -2731,7 +2731,7 @@ Proceed only if you\'re sure.</string>
     <string name="beam_send_quote_changed">The quote changed. Retry to resolve this operation, then tap Next again.</string>
     <string name="beam_send_preview_error">Could not prepare the transaction. Check the recipient, amount and available balance.</string>
     <string name="beam_send_recovery_in_progress">BEAM wallet is recovering its state, try again in a moment</string>
-    <string name="beam_send_regular_hint">The receiver\'s wallet must come online: this transfer waits for its reply for up to 12 hours and can be cancelled from the transaction details until then.</string>
+    <string name="beam_send_regular_hint">The receiver\u0027s wallet must come online: this transfer waits for its reply for up to 12 hours and can be cancelled from the transaction details until then.</string>
     <string name="beam_send_regular_online_only">Interactive (Regular) addresses can only be paid online. Sign offline needs an Offline, Max privacy or Public offline address.</string>
     <string name="beam_sync_network_error">Could not connect to the BEAM network or download wallet data. Please try again.</string>
     <string name="beam_send_offline">Offline</string>
@@ -2747,4 +2747,34 @@ Proceed only if you\'re sure.</string>
     <string name="beam_wallet_state_closed">BEAM wallet closed</string>
     <string name="beam_wallet_operation_failed">BEAM wallet operation failed</string>
     <string name="beam_wallet_stop_failed">BEAM wallet stop failed</string>
+    <string name="desktop_already_running">P.CASH is already running</string>
+    <string name="desktop_create_password_title">Create a password</string>
+    <string name="desktop_create_password_description">The password protects the wallets kept on this computer. It is not stored anywhere and cannot be restored.</string>
+    <string name="desktop_password_repeat_hint">Repeat password</string>
+    <string name="desktop_password_mismatch">Passwords do not match</string>
+    <string name="desktop_password_requirement_length">At least 8 characters</string>
+    <string name="desktop_password_requirement_uppercase">An uppercase letter</string>
+    <string name="desktop_password_requirement_lowercase">A lowercase letter</string>
+    <string name="desktop_password_requirement_digit">A digit</string>
+    <string name="desktop_password_requirement_special">A special character</string>
+    <string name="desktop_password_caps_lock">Caps Lock is on</string>
+    <string name="desktop_password_switch_layout">Switch the keyboard layout: the password may only contain Latin characters</string>
+    <string name="desktop_create_password_warning">Without this password the data on this computer cannot be opened, and nobody can restore it. Keep a backup of every recovery phrase.</string>
+    <string name="desktop_create_password_failed">Could not save the password. Check the free disk space and the access rights</string>
+    <string name="desktop_unlock_title">Enter your password</string>
+    <string name="desktop_unlock_wrong_password">Wrong password</string>
+    <string name="desktop_unlock_data_unreadable">Could not open your data</string>
+    <string name="desktop_unlock_failed">Could not read the key file. Please try again</string>
+    <string name="desktop_unlock_forgot_password">Forgot password?</string>
+    <string name="desktop_forgot_password_title">Forgot password</string>
+    <string name="desktop_forgot_password_warning">The wallets, contacts, settings and history kept on this computer will be deleted. The funds on the blockchain are not affected: the wallets can only be restored from their recovery phrases.</string>
+    <string name="desktop_forgot_password_action">Delete data</string>
+    <string name="desktop_forgot_password_failed">Could not delete the data</string>
+    <string name="desktop_change_password_title">Change password</string>
+    <string name="desktop_change_password_current_hint">Current password</string>
+    <string name="desktop_change_password_new_hint">New password</string>
+    <string name="desktop_change_password_failed">Could not save the password. The current password still works</string>
+    <string name="desktop_change_password_corrupted">The key file is damaged: once the app is locked you will not be able to sign in. Save a backup of every recovery phrase.</string>
+    <string name="desktop_change_password_success">Password changed</string>
+    <string name="desktop_security_lock_now">Lock now</string>
 </resources>
