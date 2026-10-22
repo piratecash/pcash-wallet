@@ -133,6 +133,38 @@ class TonKitManagerOfflineGateTest {
     }
 
     @Test
+    fun refresh_onlineKit_refreshesKit() = testScope.runTest {
+        every { offlineModeManager.isNetworkPaused(OfflineKey(account.id, BlockchainType.Ton)) } returns false
+        val manager = createManager()
+
+        manager.refresh()
+
+        coVerify(exactly = 1) { mockTonKit.refresh() }
+    }
+
+    @Test
+    fun refresh_networkPaused_skipsKit() = testScope.runTest {
+        every { offlineModeManager.isNetworkPaused(OfflineKey(account.id, BlockchainType.Ton)) } returns true
+        val manager = createManager()
+
+        manager.refresh()
+
+        coVerify(exactly = 0) { mockTonKit.refresh() }
+    }
+
+    @Test
+    fun refresh_noKit_doesNothing() = testScope.runTest {
+        every { offlineModeManager.isNetworkPaused(OfflineKey(account.id, BlockchainType.Ton)) } returns false
+        val manager = createManager()
+        setField(manager, "tonKitWrapper", null)
+        setField(manager, "currentAccount", null)
+
+        manager.refresh()
+
+        coVerify(exactly = 0) { mockTonKit.refresh() }
+    }
+
+    @Test
     fun resumeNetwork_pauseCallerCancelledDuringStop_startsListenerOnlyAfterStopCompletes() = testScope.runTest {
         val manager = createManager()
         manager.tonKitWrapper?.networkStarted = true

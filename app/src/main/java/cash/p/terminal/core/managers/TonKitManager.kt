@@ -212,6 +212,12 @@ class TonKitManager(
         wrapper.tonKit.refresh()
     }
 
+    suspend fun refresh() = lifecycleMutex.withLock {
+        val account = currentAccount ?: return@withLock
+        if (isNetworkPaused(account)) return@withLock
+        tonKitWrapper?.tonKit?.refresh()
+    }
+
     // Ownership is invalidated before the suspending teardown, so a cancellation here cannot leave a
     // half-stopped wrapper published. The teardown runs under NonCancellable and cancels the start
     // job first: a start still in flight would otherwise resurrect the SSE listener, which lives in

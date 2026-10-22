@@ -2,6 +2,7 @@ package cash.p.terminal.core.usecase
 
 import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TransactionAdapterManager
 import cash.p.terminal.core.storage.PendingMultiSwapStorage
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
@@ -26,11 +27,14 @@ import cash.p.terminal.wallet.transaction.TransactionSource
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -65,6 +69,9 @@ class SyncPendingMultiSwapUseCaseTest {
         )
     }
 
+    private val tonKitManager = mockk<TonKitManager>(relaxed = true)
+    private var nowMs = 1_000_000L
+
     private val useCase = SyncPendingMultiSwapUseCase(
         pendingMultiSwapStorage,
         swapProviderTransactionsStorage,
@@ -74,7 +81,8 @@ class SyncPendingMultiSwapUseCaseTest {
         adapterManager,
         updateSwapProviderTransactionsStatusUseCase,
         accountManager,
-    )
+        tonKitManager,
+    ).apply { currentTimeMillis = { nowMs } }
 
     @Before
     fun setup() {
@@ -1544,6 +1552,153 @@ class SyncPendingMultiSwapUseCaseTest {
         verifyLeg1Updated(status = PendingMultiSwap.STATUS_FAILED, transactionId = "H-rune", times = 0)
     }
 
+    @Test
+    fun invoke_leg1ExecutingIntoTon_refreshesTonKitBeforeScanningHistory() = runTest(dispatcher) {
+        val outputSource = mockk<TransactionSource>()
+        val outputWallet = mockk<Wallet>(relaxed = true) {
+            every { coin.uid } returns "the-open-network"
+            every { token.blockchainType } returns BlockchainType.Ton
+            every { transactionSource } returns outputSource
+        }
+        val txAdapter = mockk<ITransactionsAdapter>(relaxed = true)
+        coEvery { txAdapter.getTransactions(any(), any(), any(), any(), any()) } returns emptyList()
+        every { walletManager.activeWallets } returns listOf(outputWallet)
+        every { transactionAdapterManager.getAdapter(outputSource) } returns txAdapter
+        coEvery { pendingMultiSwapStorage.getAllOnceByAccountId("test-account") } returns
+            listOf(swap(leg1IsOffChain = false, leg1TransactionId = null, leg1AmountOut = BigDecimal("5.0")))
+
+        useCase()
+
+        coVerifyOrder {
+            tonKitManager.refresh()
+            txAdapter.getTransactions(any(), any(), any(), eq(FilterTransactionType.All), any())
+        }
+    }
+
+    @Test
+    fun invoke_leg2ExecutingIntoTon_refreshesTonKit() = runTest(dispatcher) {
+        coEvery { pendingMultiSwapStorage.getAllOnceByAccountId("test-account") } returns listOf(
+            swap(
+                leg1Status = PendingMultiSwap.STATUS_COMPLETED,
+                leg2Status = PendingMultiSwap.STATUS_EXECUTING,
+                leg2IsOffChain = false,
+            ).copy(blockchainTypeIntermediate = BSC_UID)
+        )
+        every { walletManager.activeWallets } returns listOf()
+
+        useCase()
+
+        coVerify(exactly = 1) { tonKitManager.refresh() }
+    }
+
+    @Test
+    fun invoke_noLegAwaitingTon_doesNotRefreshTonKit() = runTest(dispatcher) {
+        coEvery { pendingMultiSwapStorage.getAllOnceByAccountId("test-account") } returns listOf(
+            swap(id = "into-bsc").copy(blockchainTypeIntermediate = BSC_UID, blockchainTypeOut = BSC_UID),
+            swap(id = "leg2-pending", leg1Status = PendingMultiSwap.STATUS_COMPLETED),
+            swap(
+                id = "both-completed",
+                leg1Status = PendingMultiSwap.STATUS_COMPLETED,
+                leg2Status = PendingMultiSwap.STATUS_COMPLETED,
+            ),
+        )
+        every { swapProviderTransactionsStorage.getByOutgoingRecordUid(any()) } returns null
+
+        useCase()
+
+        coVerify(exactly = 0) { tonKitManager.refresh() }
+    }
+
+    @Test
+    fun invoke_repeatedWithinInterval_refreshesTonKitOnce() = runTest(dispatcher) {
+        stubLeg1OffChainIntoTon(providerStatus = "exchanging")
+
+        useCase()
+        nowMs += 29_999
+        useCase()
+
+        coVerify(exactly = 1) { tonKitManager.refresh() }
+    }
+
+    @Test
+    fun invoke_repeatedAfterInterval_refreshesAgain() = runTest(dispatcher) {
+        stubLeg1OffChainIntoTon(providerStatus = "exchanging")
+
+        useCase()
+        nowMs += 30_000
+        useCase()
+
+        coVerify(exactly = 2) { tonKitManager.refresh() }
+    }
+
+    @Test
+    fun invoke_clockMovedBackward_refreshesAgain() = runTest(dispatcher) {
+        stubLeg1OffChainIntoTon(providerStatus = "exchanging")
+
+        useCase()
+        nowMs -= 3_600_000
+        useCase()
+
+        coVerify(exactly = 2) { tonKitManager.refresh() }
+    }
+
+    @Test
+    fun invoke_concurrentCalls_refreshesTonKitOnce() = runTest(dispatcher) {
+        stubLeg1OffChainIntoTon(providerStatus = "exchanging")
+        val refreshGate = CompletableDeferred<Unit>()
+        coEvery { tonKitManager.refresh() } coAnswers { refreshGate.await() }
+
+        val first = launch { useCase() }
+        val second = launch { useCase() }
+        refreshGate.complete(Unit)
+        first.join()
+        second.join()
+
+        coVerify(exactly = 1) { tonKitManager.refresh() }
+    }
+
+    @Test
+    fun invoke_offChainLeg1CompletesIntoTon_refreshesTonKitBeforeStoringCompletion() = runTest(dispatcher) {
+        stubLeg1OffChainIntoTon(providerStatus = "exchanging")
+        useCase()
+        stubLeg1OffChainIntoTon(providerStatus = "finished")
+        nowMs += 1_000
+
+        useCase()
+
+        coVerify(exactly = 2) { tonKitManager.refresh() }
+        coVerifyOrder {
+            tonKitManager.refresh()
+            tonKitManager.refresh()
+            pendingMultiSwapStorage.updateLeg1(
+                id = "swap-1",
+                status = PendingMultiSwap.STATUS_COMPLETED,
+                amountOut = any(),
+                transactionId = any(),
+            )
+        }
+    }
+
+    @Test
+    fun invoke_legCompletesIntoNonTonChain_doesNotRefreshTonKit() = runTest(dispatcher) {
+        coEvery { pendingMultiSwapStorage.getAllOnceByAccountId("test-account") } returns
+            listOf(swap().copy(blockchainTypeIntermediate = BSC_UID, blockchainTypeOut = BSC_UID))
+        every { swapProviderTransactionsStorage.getByOutgoingRecordUid("0xabc") } returns swapProviderTx()
+
+        useCase()
+
+        coVerify(exactly = 1) {
+            pendingMultiSwapStorage.updateLeg1("swap-1", PendingMultiSwap.STATUS_COMPLETED, any(), any())
+        }
+        coVerify(exactly = 0) { tonKitManager.refresh() }
+    }
+
+    private fun stubLeg1OffChainIntoTon(providerStatus: String) {
+        coEvery { pendingMultiSwapStorage.getAllOnceByAccountId("test-account") } returns listOf(swap())
+        every { swapProviderTransactionsStorage.getByOutgoingRecordUid("0xabc") } returns
+            swapProviderTx(status = providerStatus)
+    }
+
     private fun outgoingRecord(uid: String, hash: String, failed: Boolean) =
         mockk<TransactionRecord>(relaxed = true) {
             every { this@mockk.uid } returns uid
@@ -1581,3 +1736,4 @@ class SyncPendingMultiSwapUseCaseTest {
 }
 
 private const val TON_TOKEN_QUERY_ID = "the-open-network|native"
+private const val BSC_UID = "binance-smart-chain"

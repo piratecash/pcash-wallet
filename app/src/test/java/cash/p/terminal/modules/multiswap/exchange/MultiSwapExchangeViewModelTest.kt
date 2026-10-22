@@ -50,6 +50,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -912,6 +913,7 @@ class MultiSwapExchangeViewModelTest {
     private fun createViewModel(
         timerService: TimerService = TimerService(),
         fetchQuotesUseCase: FetchSwapQuotesUseCase = fetchSwapQuotesUseCase,
+        syncIntervalMs: Long = Long.MAX_VALUE,
     ): MultiSwapExchangeViewModel {
         // Clear previous VM before creating a new one
         viewModelStore.clear()
@@ -933,7 +935,7 @@ class MultiSwapExchangeViewModelTest {
             walletManager = walletManager,
             walletUseCase = walletUseCase,
             accountManager = accountManager,
-            syncIntervalMs = Long.MAX_VALUE,
+            syncIntervalMs = syncIntervalMs,
         )
         viewModelStore.put("test-vm", vm)
         return vm
@@ -1053,6 +1055,58 @@ class MultiSwapExchangeViewModelTest {
         advanceUntilIdle()
 
         coVerify(atLeast = 1) { syncPendingMultiSwapUseCase() }
+    }
+
+    @Test
+    fun periodicSync_leg1CompletesOnLaterPoll_enablesLeg2Swap() = runTest(dispatcher) {
+        setupLeg2Quotes()
+        completeLeg1OnSyncCall(3)
+
+        val vm = createViewModel(createMockTimerService(createMockTimerStateFlow()), syncIntervalMs = 10_000)
+        advanceTimeBy(25_000)
+
+        assertEquals(LegStatus.Completed, vm.uiState?.leg1?.status)
+        assertEquals(ButtonState.Enabled, vm.uiState?.buttonState)
+    }
+
+    @Test
+    fun periodicSync_balanceSignalBeforeHistoryReady_enablesLeg2SwapOnLaterPoll() = runTest(dispatcher) {
+        setupLeg2Quotes()
+        completeLeg1OnSyncCall(4)
+        val callbacks = mutableListOf<() -> Unit>()
+        every {
+            onChainMonitor.observeBalanceIncrease(any(), any(), capture(callbacks))
+        } returns true
+
+        val vm = createViewModel(createMockTimerService(createMockTimerStateFlow()), syncIntervalMs = 10_000)
+        callbacks.first().invoke()
+        advanceTimeBy(35_000)
+
+        assertEquals(LegStatus.Completed, vm.uiState?.leg1?.status)
+        assertEquals(ButtonState.Enabled, vm.uiState?.buttonState)
+    }
+
+    private fun setupLeg2Quotes() {
+        setupTokenResolution()
+        val provider = mockOnChainProvider()
+        every { swapQuoteService.providers } returns listOf(provider)
+        coEvery { fetchSwapQuotesUseCase(any(), any(), any(), any(), any(), any()) } returns
+            listOf(createQuote(provider))
+    }
+
+    // Stands in for the sync use case finding the leg1 payout only once the kit history catches up.
+    private fun completeLeg1OnSyncCall(callNumber: Int) {
+        val executing = executingLeg1Swap().copy(leg1AmountOut = BigDecimal("0.5"))
+        var stored = executing
+        var syncCalls = 0
+        coEvery { pendingMultiSwapStorage.getById("test-swap") } answers { stored }
+        coEvery { syncPendingMultiSwapUseCase() } answers {
+            if (++syncCalls == callNumber) {
+                stored = completedLeg1Swap()
+                swapsFlow.value = listOf(stored)
+            }
+        }
+        swapsFlow.value = listOf(executing)
     }
 
     @Test
