@@ -1,0 +1,789 @@
+package cash.p.terminal.modules.receive.ui
+
+import org.jetbrains.compose.resources.DrawableResource
+import cash.p.terminal.modules.manageaccount.ui.rememberCopyWithHud
+import cash.p.terminal.ui_compose.components.rememberTextShare
+import cash.p.terminal.resources.Button_Done
+import cash.p.terminal.resources.Balance_Format
+import cash.p.terminal.resources.Balance_Network
+import cash.p.terminal.resources.Balance_Receive_Account
+import cash.p.terminal.resources.Balance_Receive_Amount
+import cash.p.terminal.resources.Balance_Receive_Memo
+import cash.p.terminal.resources.Balance_Receive_NotActive
+import cash.p.terminal.resources.Balance_Receive_SetAmount
+import cash.p.terminal.resources.Balance_Receive_WatchAddressAlert
+import cash.p.terminal.resources.Button_Cancel
+import cash.p.terminal.resources.Button_Confirm
+import cash.p.terminal.resources.Button_Copy
+import cash.p.terminal.resources.Button_SetAmount
+import cash.p.terminal.resources.Button_Share
+import cash.p.terminal.resources.Button_Understand
+import cash.p.terminal.resources.SyncError
+import cash.p.terminal.resources.Tron_AddressNotActive_Info
+import cash.p.terminal.resources.Tron_AddressNotActive_Title
+import cash.p.terminal.resources.ic_attention_24
+import cash.p.terminal.resources.ic_copy_20
+import cash.p.terminal.resources.ic_delete_20
+import cash.p.terminal.resources.ic_info_20
+import cash.p.terminal.resources.ic_info_24
+import cash.p.terminal.resources.receive_address_qr_too_large
+import cash.p.terminal.resources.Res
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import cash.p.terminal.ui_compose.components.plateOutline
+import cash.p.terminal.ui_compose.components.plateBackground
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import cash.p.beam.BeamAddressType
+import cash.p.terminal.modules.coin.overview.ui.Loading
+import cash.p.terminal.modules.receive.ReceiveModule
+import cash.p.terminal.modules.receive.ReceiveModule.UiState
+import cash.p.terminal.strings.helpers.TranslatableString
+import cash.p.terminal.strings.helpers.shorten
+import cash.p.terminal.ui.compose.components.HsTextButton
+import cash.p.terminal.ui.compose.components.ListErrorView
+import cash.p.terminal.ui.compose.components.PcashQrCodeDefaults
+import cash.p.terminal.ui.compose.components.PcashQrCodeImage
+import cash.p.terminal.ui.compose.components.canEncodeAsPcashQrCode
+import cash.p.terminal.ui_compose.BottomSheetHeader
+import cash.p.terminal.ui_compose.TransparentModalBottomSheet
+import cash.p.terminal.ui_compose.components.AppBar
+import cash.p.terminal.ui_compose.components.AppDialog
+import cash.p.terminal.ui_compose.components.AppDialogDefaultModifier
+import cash.p.terminal.ui_compose.components.ButtonPrimaryCircle
+import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
+import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
+import cash.p.terminal.ui_compose.components.HSpacer
+import cash.p.terminal.ui_compose.components.HsBackButton
+import cash.p.terminal.ui_compose.components.HsDivider
+import cash.p.terminal.ui_compose.components.HsIconButton
+import cash.p.terminal.ui_compose.components.InfoText
+import cash.p.terminal.ui_compose.components.MenuItem
+import cash.p.terminal.ui_compose.components.RowUniversal
+import cash.p.terminal.ui_compose.components.TextImportantError
+import cash.p.terminal.ui_compose.components.TextImportantWarning
+import cash.p.terminal.ui_compose.components.VSpacer
+import cash.p.terminal.ui_compose.components.body_disabled
+import cash.p.terminal.ui_compose.components.body_brand
+import cash.p.terminal.ui_compose.components.caption_grey
+import cash.p.terminal.ui_compose.components.Subhead1
+import cash.p.terminal.ui_compose.components.subhead1_leah
+import cash.p.terminal.ui_compose.components.subhead2_grey
+import cash.p.terminal.ui_compose.components.subhead2_leah
+import cash.p.terminal.ui_compose.components.title3_leah
+import cash.p.terminal.ui_compose.entities.ViewState
+import cash.p.terminal.ui_compose.theme.ColoredTextStyle
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.math.BigDecimal
+import cash.p.terminal.resources.ic_copy_24px
+import cash.p.terminal.resources.ic_edit_24px
+import cash.p.terminal.resources.ic_share_24px
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ReceiveAddressScreen(
+    title: String,
+    uiState: ReceiveModule.AbstractUiState,
+    setAmount: (BigDecimal?) -> Unit,
+    onBackPress: () -> Unit,
+    closeModule: () -> Unit,
+    allowSetAmount: Boolean = true,
+    onErrorClick: () -> Unit = {},
+    topContent: @Composable () -> Unit = {},
+    addressBadge: @Composable () -> Unit = {},
+    bottomContent: @Composable () -> Unit = {},
+    statusContent: @Composable () -> Unit = {},
+) {
+    val openAmountDialog = remember { mutableStateOf(false) }
+    val tronAlertSheetState =
+        rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val tronInfoSheetState =
+        rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
+    var isTronAlertVisible by remember { mutableStateOf(false) }
+    var isTronInfoVisible by remember { mutableStateOf(false) }
+
+    if (uiState is UiState) {
+        LaunchedEffect(uiState.showTronAlert) {
+            if (uiState.showTronAlert) {
+                isTronAlertVisible = true
+                scope.launch {
+                    delay(2000)
+                    tronAlertSheetState.show()
+                }
+            }
+        }
+    }
+
+    Scaffold(
+        containerColor = ComposeAppTheme.colors.backgroundBase,
+        topBar = {
+            AppBar(
+                title = title,
+                navigationIcon = {
+                    HsBackButton(onClick = onBackPress)
+                },
+                menuItems = listOf(
+                    MenuItem(
+                        title = TranslatableString.ResString(Res.string.Button_Done),
+                        onClick = closeModule,
+                        tint = ComposeAppTheme.colors.brandDefault
+                    )
+                )
+            )
+        }
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
+        ) {
+            // BEAM keeps one card while a new token is generated, so the screen does not jump. Its
+            // token is cleared meanwhile, so a card fading out must not draw a QR of it.
+            val beamType = (uiState as? UiState)?.beamReceiveType
+            val beamPending = beamType != null && uiState.viewState != ViewState.Success
+            val cardKey = uiState.viewState.takeUnless { beamType != null && it == ViewState.Loading }
+                ?: ViewState.Success
+            Crossfade(cardKey, label = "") { viewState ->
+                Column {
+                    when (viewState) {
+                        is ViewState.Error, ViewState.Loading -> {
+                            statusContent()
+                            if (viewState is ViewState.Error) {
+                                ListErrorView(stringResource(Res.string.SyncError), onErrorClick)
+                            } else {
+                                Loading()
+                            }
+                        }
+
+                        ViewState.Success -> {
+                            // PcashQrCodeImage draws nothing for a refused payload. A pending
+                            // BEAM card sizes the panel for the type's token instead.
+                            val qrEncodable = remember(uiState.uri, beamPending, beamType) {
+                                if (beamPending) {
+                                    beamType?.addressType != BeamAddressType.Offline
+                                } else {
+                                    canEncodeAsPcashQrCode(uiState.uri)
+                                }
+                            }
+                            ReceiveAddressCard(
+                                uiState = uiState,
+                                loading = beamPending,
+                                qrEncodable = qrEncodable,
+                                setAmount = setAmount,
+                                allowSetAmount = allowSetAmount,
+                                openAmountDialog = openAmountDialog,
+                                showTronInfo = { isTronInfoVisible = true },
+                                topContent = topContent,
+                                addressBadge = addressBadge,
+                                bottomContent = bottomContent,
+                            )
+                        }
+                    }
+                }
+            }
+            if (openAmountDialog.value && allowSetAmount) {
+                AmountInputDialog(
+                    initialAmount = uiState.amount,
+                    onDismissRequest = { openAmountDialog.value = false },
+                    onAmountConfirm = { amount ->
+                        setAmount(amount)
+                        openAmountDialog.value = false
+                    }
+                )
+            }
+        }
+    }
+    if (isTronInfoVisible) {
+        TronInfoBottomSheet(
+            title = stringResource(Res.string.Tron_AddressNotActive_Title),
+            text = stringResource(Res.string.Tron_AddressNotActive_Info),
+            hideBottomSheet = {
+                scope.launch { tronInfoSheetState.hide() }
+                isTronInfoVisible = false
+            },
+            bottomSheetState = tronInfoSheetState
+        )
+    }
+    if (isTronAlertVisible) {
+        TronAlertBottomSheet(
+            title = stringResource(Res.string.Tron_AddressNotActive_Title),
+            text = stringResource(Res.string.Tron_AddressNotActive_Info),
+            hideBottomSheet = {
+                scope.launch { tronAlertSheetState.hide() }
+                isTronAlertVisible = false
+            },
+            bottomSheetState = tronAlertSheetState,
+        )
+    }
+}
+
+/**
+ * The receive card itself. [loading] renders the same card with the QR panel replaced by a
+ * spinner, so the screen keeps its shape while a new token is generated; [qrEncodable] then
+ * describes the token that is coming rather than the one on screen.
+ */
+@Composable
+private fun ColumnScope.ReceiveAddressCard(
+    uiState: ReceiveModule.AbstractUiState,
+    loading: Boolean,
+    qrEncodable: Boolean,
+    setAmount: (BigDecimal?) -> Unit,
+    allowSetAmount: Boolean,
+    openAmountDialog: MutableState<Boolean>,
+    showTronInfo: () -> Unit,
+    topContent: @Composable () -> Unit,
+    addressBadge: @Composable () -> Unit,
+    bottomContent: @Composable () -> Unit,
+) {
+    val copyWithHud = rememberCopyWithHud()
+    Column(
+        modifier = Modifier
+            .weight(1f)
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        VSpacer(12.dp)
+        uiState.alertText?.let {
+            WarningTextView(it)
+        }
+
+        if (uiState.watchAccount) {
+            TextImportantWarning(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                text = stringResource(Res.string.Balance_Receive_WatchAddressAlert),
+            )
+        }
+
+        VSpacer(16.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(plateBackground())
+                .plateOutline(RoundedCornerShape(24.dp)),
+        ) {
+            topContent()
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    // While the token is being generated the card holds no address, so a tap
+                    // here would report "Copied!" over an empty clipboard.
+                    .then(
+                        if (loading) {
+                            Modifier
+                        } else {
+                            Modifier.clickable { copyWithHud(uiState.uri) }
+                        }
+                    ),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                VSpacer(16.dp)
+                if (qrEncodable) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(ComposeAppTheme.colors.qrBackground)
+                            .size(PcashQrCodeDefaults.Size)
+                            .testTag(QrPanelTestTag),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (loading) QrCodePlaceholder() else QrCodeImage(uiState.uri)
+                    }
+                } else if (loading) {
+                    // The settled card of a type whose token cannot be encoded shows a message
+                    // where the QR would be, so the invisible message reserves exactly the
+                    // height this panel is about to take.
+                    Box(
+                        modifier = Modifier.testTag(QrPanelTestTag),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        QrCodeUnavailableMessage(modifier = Modifier.alpha(0f))
+                        QrCodePlaceholder()
+                    }
+                } else {
+                    QrCodeUnavailableMessage(modifier = Modifier.testTag(QrPanelTestTag))
+                }
+                VSpacer(12.dp)
+                addressBadge()
+                ReceiveAddressValue(
+                    address = uiState.address,
+                    collapsible = !qrEncodable,
+                )
+
+                val testNetBadge =
+                    if (!uiState.mainNet) " (TestNet)" else ""
+                uiState.blockchainName?.let { blockchainName ->
+                    VSpacer(12.dp)
+                    subhead2_grey(
+                        modifier = Modifier.padding(horizontal = 32.dp),
+                        text = stringResource(
+                            Res.string.Balance_Network
+                        ) + ": " + blockchainName + testNetBadge,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+                uiState.addressFormat?.let { addressFormat ->
+                    VSpacer(12.dp)
+                    subhead2_grey(
+                        modifier = Modifier.padding(horizontal = 32.dp),
+                        text = stringResource(
+                            Res.string.Balance_Format
+                        ) + ": " + addressFormat + testNetBadge,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+                VSpacer(16.dp)
+            }
+            val additionalItems = buildList {
+                addAll(uiState.additionalItems)
+                uiState.amount?.let {
+                    add(ReceiveModule.AdditionalData.Amount(it.toString()))
+                }
+            }
+
+            if (additionalItems.isNotEmpty()) {
+                AdditionalDataSection(
+                    items = additionalItems,
+                    onClearAmount = {
+                        setAmount(null)
+                    },
+                    showAccountNotActiveWarningDialog = showTronInfo
+                )
+            }
+
+            ActionButtonsRow(
+                uri = uiState.uri,
+                watchAccount = uiState.watchAccount,
+                openAmountDialog = openAmountDialog,
+                allowSetAmount = allowSetAmount,
+                enabled = !loading,
+            )
+            VSpacer(16.dp)
+
+            bottomContent()
+        }
+    }
+}
+
+/** Matches the indicator of the full-screen [Loading] it replaces. */
+@Composable
+private fun QrCodePlaceholder() {
+    CircularProgressIndicator(
+        modifier = Modifier.size(24.dp),
+        color = ComposeAppTheme.colors.textSecondary,
+        strokeWidth = 2.dp,
+    )
+}
+
+internal const val QrPanelTestTag = "receive-qr-panel"
+
+@Composable
+private fun QrCodeImage(address: String) {
+    PcashQrCodeImage(content = address)
+}
+
+@Composable
+private fun QrCodeUnavailableMessage(modifier: Modifier = Modifier) {
+    subhead2_grey(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 32.dp, vertical = 24.dp),
+        text = stringResource(Res.string.receive_address_qr_too_large),
+        textAlign = TextAlign.Center,
+    )
+}
+
+@Composable
+private fun ReceiveAddressValue(
+    address: String,
+    collapsible: Boolean,
+) {
+    val textModifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 32.dp)
+
+    if (!collapsible) {
+        subhead2_leah(
+            modifier = textModifier,
+            text = address,
+            textAlign = TextAlign.Start,
+        )
+        return
+    }
+
+    var expanded by remember(address) { mutableStateOf(false) }
+    subhead2_leah(
+        // The card around this text copies on tap and a nested clickable swallows that gesture,
+        // so this one exists only in the shortened branch.
+        modifier = textModifier.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null,
+            onClick = { expanded = !expanded },
+        ),
+        text = if (expanded) address else address.shorten(),
+        textAlign = if (expanded) TextAlign.Start else TextAlign.Center,
+    )
+}
+
+@Composable
+private fun WarningTextView(
+    alertText: ReceiveModule.AlertText
+) {
+    when (alertText) {
+        is ReceiveModule.AlertText.Critical -> {
+            TextImportantError(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                text = alertText.content,
+            )
+        }
+
+        is ReceiveModule.AlertText.Normal -> {
+            TextImportantWarning(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                text = alertText.content,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ActionButtonsRow(
+    uri: String,
+    watchAccount: Boolean,
+    openAmountDialog: MutableState<Boolean>,
+    allowSetAmount: Boolean,
+    enabled: Boolean = true,
+) {
+    val copyWithHud = rememberCopyWithHud()
+    val textShare = rememberTextShare()
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(),
+        horizontalArrangement = if (watchAccount) Arrangement.Center else Arrangement.SpaceBetween,
+    ) {
+        val itemModifier = if (watchAccount) Modifier else Modifier.weight(1f)
+        if (!watchAccount && allowSetAmount) {
+            ReceiveActionButton(
+                modifier = itemModifier,
+                icon = Res.drawable.ic_edit_24px,
+                buttonText = stringResource(Res.string.Button_SetAmount),
+                onClick = {
+                    openAmountDialog.value = true
+                },
+            )
+        }
+
+        ReceiveActionButton(
+            modifier = itemModifier,
+            icon = Res.drawable.ic_copy_24px,
+            buttonText = stringResource(Res.string.Button_Copy),
+            enabled = enabled,
+            onClick = { copyWithHud(uri) },
+        )
+
+        if (!textShare.isAvailable) return@Row
+        if (watchAccount) {
+            HSpacer(64.dp)
+        }
+
+        ReceiveActionButton(
+            modifier = itemModifier,
+            icon = Res.drawable.ic_share_24px,
+            buttonText = stringResource(Res.string.Button_Share),
+            enabled = enabled,
+            onClick = { textShare.share(uri) },
+        )
+    }
+}
+
+@Composable
+private fun AdditionalDataSection(
+    items: List<ReceiveModule.AdditionalData>,
+    onClearAmount: () -> Unit,
+    showAccountNotActiveWarningDialog: () -> Unit,
+) {
+    val copyWithHud = rememberCopyWithHud()
+
+    items.forEach { item ->
+        HsDivider(modifier = Modifier.fillMaxWidth())
+        RowUniversal(
+            modifier = Modifier.height(48.dp),
+        ) {
+            when (item) {
+                is ReceiveModule.AdditionalData.Amount -> {
+                    subhead2_grey(
+                        modifier = Modifier
+                            .padding(start = 16.dp)
+                            .weight(1f),
+                        text = stringResource(Res.string.Balance_Receive_Amount),
+                    )
+                    subhead1_leah(
+                        text = item.value,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                    ButtonSecondaryCircle(
+                        modifier = Modifier.padding(end = 16.dp),
+                        icon = Res.drawable.ic_delete_20,
+                        onClick = onClearAmount
+                    )
+                }
+
+                is ReceiveModule.AdditionalData.Memo -> {
+                    subhead2_grey(
+                        modifier = Modifier
+                            .padding(start = 16.dp)
+                            .weight(1f),
+                        text = stringResource(Res.string.Balance_Receive_Memo),
+                    )
+                    subhead1_leah(
+                        text = item.value,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                    ButtonSecondaryCircle(
+                        modifier = Modifier
+                            .height(28.dp)
+                            .padding(end = 16.dp),
+                        icon = Res.drawable.ic_copy_20,
+                        onClick = { copyWithHud(item.value) }
+                    )
+                }
+
+                is ReceiveModule.AdditionalData.AccountNotActive -> {
+                    subhead2_grey(
+                        modifier = Modifier.padding(start = 16.dp),
+                        text = stringResource(Res.string.Balance_Receive_Account),
+                    )
+                    HSpacer(8.dp)
+                    HsIconButton(
+                        modifier = Modifier.size(20.dp),
+                        onClick = showAccountNotActiveWarningDialog
+                    ) {
+                        Image(
+                            painter = painterResource(Res.drawable.ic_info_20),
+                            contentDescription = null
+                        )
+                    }
+                    Subhead1(
+                        text = stringResource(Res.string.Balance_Receive_NotActive),
+                        color = ComposeAppTheme.colors.statusWarning,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .weight(1f)
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun ReceiveActionButton(
+    modifier: Modifier,
+    icon: DrawableResource,
+    buttonText: String,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        ButtonPrimaryCircle(
+            icon = icon,
+            onClick = onClick,
+            enabled = enabled,
+        )
+        caption_grey(
+            modifier = Modifier.padding(top = 8.dp),
+            text = buttonText,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+@Composable
+fun AmountInputDialog(
+    initialAmount: BigDecimal? = null,
+    onDismissRequest: () -> Unit,
+    onAmountConfirm: (BigDecimal?) -> Unit,
+    modifier: Modifier = AppDialogDefaultModifier,
+) {
+    val textState = remember { mutableStateOf(TextFieldValue(text = initialAmount?.toString() ?: "")) }
+    val focusRequester = remember { FocusRequester() }
+    AppDialog(onDismissRequest = onDismissRequest, modifier = modifier) {
+        VSpacer(24.dp)
+        title3_leah(
+            modifier = Modifier
+                .padding(horizontal = 24.dp)
+                .fillMaxWidth(),
+            text = stringResource(Res.string.Balance_Receive_SetAmount),
+        )
+        VSpacer(16.dp)
+
+        BasicTextField(
+            modifier = Modifier
+                .padding(horizontal = 24.dp)
+                .fillMaxWidth()
+                .padding(16.dp)
+                .focusRequester(focusRequester),
+            value = textState.value,
+            onValueChange = { textState.value = it },
+            singleLine = true,
+            textStyle = ColoredTextStyle(
+                color = ComposeAppTheme.colors.textPrimary,
+                textStyle = ComposeAppTheme.typography.body
+            ),
+            decorationBox = { innerTextField ->
+                if (textState.value.text.isEmpty()) {
+                    body_disabled("0")
+                }
+                innerTextField()
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
+        )
+        SideEffect {
+            focusRequester.requestFocus()
+            textState.value = textState.value.copy(
+                selection = TextRange(textState.value.text.length)
+            )
+        }
+
+        HsDivider(modifier = Modifier.padding(horizontal = 24.dp))
+
+        Row(
+            modifier = Modifier
+                .padding(all = 24.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            HsTextButton(onClick = onDismissRequest) {
+                body_brand(stringResource(Res.string.Button_Cancel).uppercase())
+            }
+            HSpacer(8.dp)
+            HsTextButton(
+                onClick = { onAmountConfirm.invoke(textState.value.text.toBigDecimalOrNull()) }
+            ) {
+                body_brand(stringResource(Res.string.Button_Confirm).uppercase())
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TronAlertBottomSheet(
+    title: String,
+    text: String,
+    hideBottomSheet: () -> Unit,
+    bottomSheetState: SheetState,
+) {
+    TransparentModalBottomSheet(
+        onDismissRequest = hideBottomSheet,
+        sheetState = bottomSheetState,
+    ) {
+        BottomSheetHeader(
+            iconPainter = painterResource(Res.drawable.ic_attention_24),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
+            title = title,
+            onCloseClick = hideBottomSheet
+        ) {
+            TextImportantWarning(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                text = text
+            )
+
+            VSpacer(12.dp)
+            ButtonPrimaryYellow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                title = stringResource(Res.string.Button_Understand),
+                onClick = hideBottomSheet
+            )
+            Spacer(Modifier.height(32.dp))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TronInfoBottomSheet(
+    title: String,
+    text: String,
+    hideBottomSheet: () -> Unit,
+    bottomSheetState: SheetState,
+) {
+    TransparentModalBottomSheet(
+        onDismissRequest = hideBottomSheet,
+        sheetState = bottomSheetState,
+    ) {
+        BottomSheetHeader(
+            iconPainter = painterResource(Res.drawable.ic_info_24),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.iconSecondary),
+            title = title,
+            onCloseClick = hideBottomSheet
+        ) {
+            InfoText(text)
+
+            Spacer(Modifier.height(64.dp))
+        }
+    }
+}
+
+

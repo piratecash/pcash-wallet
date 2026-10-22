@@ -1,5 +1,6 @@
 package cash.p.terminal.core.providers
 
+import cash.p.terminal.core.managers.AndroidKitPlatformContexts
 import android.content.Context
 import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFiles
 import cash.p.terminal.core.managers.RestoreSettingsManager
@@ -36,7 +37,9 @@ class PredefinedBlockchainSettingsProviderTest {
     @Before
     fun setUp() {
         noBackupDir = Files.createTempDirectory("zcash-settings").toFile()
-        databaseFiles = ZcashDatabaseFiles(mockk<Context> { every { noBackupFilesDir } returns noBackupDir })
+        databaseFiles = ZcashDatabaseFiles(
+            AndroidKitPlatformContexts(mockk<Context> { every { noBackupFilesDir } returns noBackupDir })
+        )
     }
 
     @After

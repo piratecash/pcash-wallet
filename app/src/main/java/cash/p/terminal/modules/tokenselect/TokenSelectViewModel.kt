@@ -161,7 +161,7 @@ class TokenSelectViewModel(
 
             return TokenSelectViewModel(
                 service = DefaultBalanceService.getInstance("wallet"),
-                balanceViewItemFactory = BalanceViewItemFactory(getKoinInstance()),
+                balanceViewItemFactory = getKoinInstance(),
                 balanceViewTypeManager = getKoinInstance(),
                 itemsFilter = {
                     !it.wallet.account.isWatchAccount

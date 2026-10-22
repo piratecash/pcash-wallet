@@ -23,6 +23,7 @@ import cash.p.terminal.entities.RecentAddress
 import cash.p.terminal.entities.RestoreSettingRecord
 import cash.p.terminal.entities.SpamAddress
 import cash.p.terminal.entities.SpamScanState
+import cash.p.terminal.entities.StackingCache
 import cash.p.terminal.entities.SwapProviderTransaction
 import cash.p.terminal.entities.SyncerState
 import cash.p.terminal.entities.TokenAutoEnabledBlockchain
@@ -49,7 +50,7 @@ import io.horizontalsystems.core.storage.LogsDao
 const val APP_DATABASE_NAME = "db_p_cash"
 
 @Database(
-    version = 118,
+    version = 119,
     exportSchema = false,
     entities = [
         EnabledWallet::class,
@@ -86,7 +87,8 @@ const val APP_DATABASE_NAME = "db_p_cash"
         PoisonAddress::class,
         LocallyCreatedTransactionRecord::class,
         OfflineSignedTransactionEntity::class,
-        OfflineBlockchain::class
+        OfflineBlockchain::class,
+        StackingCache::class
     ]
 )
 @TypeConverters(DatabaseConverters::class)
@@ -123,6 +125,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun locallyCreatedTransactionDao(): LocallyCreatedTransactionDao
     abstract fun offlineSignedTransactionDao(): OfflineSignedTransactionDao
     abstract fun offlineBlockchainDao(): OfflineBlockchainDao
+    abstract fun stackingCacheDao(): StackingCacheDao
 }
 
 @Suppress("KotlinNoActualForExpect")

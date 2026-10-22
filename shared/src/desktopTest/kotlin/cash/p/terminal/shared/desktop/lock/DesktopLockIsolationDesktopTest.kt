@@ -122,6 +122,7 @@ class DesktopLockIsolationDesktopTest {
                     appGeneration = 0,
                     rootPage = { FirstPage() },
                     appContent = appContent,
+                    wipeFailed = false,
                 )
             }
         }

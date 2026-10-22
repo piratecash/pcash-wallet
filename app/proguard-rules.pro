@@ -23,9 +23,6 @@
 -keep class cash.p.terminal.wallet.providers.CryptoCompareProvider$PostsResponse { <fields>; <init>(...); }
 -keep class cash.p.terminal.wallet.providers.CryptoCompareProvider$PostItem { <fields>; <init>(...); }
 -keep class cash.p.terminal.wallet.providers.TopCollectionRaw { <fields>; <init>(...); }
--keep class cash.p.terminal.core.address.ChainalysisAddressValidator$* { <fields>; <init>(...); }
--keep class cash.p.terminal.core.address.HashDitAddressValidator$* { <fields>; <init>(...); }
--keep class cash.p.terminal.core.providers.EvmLabelProvider$* { <fields>; <init>(...); }
 -keep class cash.p.terminal.core.providers.nft.** { <fields>; <init>(...); }
 -keep class cash.p.terminal.modules.coin.tweets.* { <fields>; <init>(...); }
 -keep class cash.p.terminal.modules.multiswap.providers.AllBridgeAPI$Response$** { <fields>; <init>(...); }

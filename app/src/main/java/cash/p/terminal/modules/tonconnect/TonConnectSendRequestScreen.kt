@@ -115,7 +115,7 @@ fun TonConnectSendRequestScreen(navigation: HSNavigation) {
                                 buttonEnabled = false
                                 HudHelper.showInProcessMessage(
                                     view,
-                                    R.string.Send_Sending,
+                                    view.context.getString(R.string.Send_Sending),
                                     SnackbarDuration.INDEFINITE
                                 )
 

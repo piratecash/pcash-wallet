@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.nft.collection.overview
 
 import cash.p.terminal.wallet.MarketKitWrapper
+import cash.p.terminal.R
 import cash.p.terminal.core.providers.nft.INftProvider
 import cash.p.terminal.entities.nft.NftCollectionMetadata
 import io.horizontalsystems.core.entities.Blockchain
@@ -24,7 +25,7 @@ class NftCollectionOverviewService(
     val nftCollection = _nftCollection.filterNotNull()
 
     val providerTitle = provider.title
-    val providerIcon = provider.icon
+    val providerIcon = R.drawable.ic_opensea_20
 
     val blockchain: Blockchain?
         get() = marketKit.blockchain(blockchainType.uid)

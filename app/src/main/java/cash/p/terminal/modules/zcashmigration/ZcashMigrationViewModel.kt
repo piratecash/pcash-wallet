@@ -8,7 +8,7 @@ import cash.p.terminal.core.adapters.zcash.zcashLogger
 import cash.p.terminal.core.managers.PendingTransactionRegistrar
 import cash.p.terminal.core.managers.broadcasting
 import cash.p.terminal.modules.send.SendResult
-import cash.p.terminal.modules.send.zcash.SendZCashViewModel
+import cash.p.terminal.modules.send.zcash.zcashSendCaution
 import cash.p.terminal.modules.send.zcash.zcashPendingDraft
 import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.wallet.IAdapterManager
@@ -82,7 +82,7 @@ class ZcashMigrationViewModel(
                 throw e
             } catch (e: Throwable) {
                 zcashLogger.w { "Ironwood proposal failed error=${e.zcashErrorName}" }
-                error = SendZCashViewModel.createCaution(e)
+                error = zcashSendCaution(e)
             }
             emitState()
         }
@@ -125,7 +125,7 @@ class ZcashMigrationViewModel(
                 sendResult = SendResult.Sent(transactionHash)
             } catch (e: Throwable) {
                 zcashLogger.e { "Ironwood migration failed error=${e.zcashErrorName}" }
-                sendResult = SendResult.Failed(SendZCashViewModel.createCaution(e))
+                sendResult = SendResult.Failed(zcashSendCaution(e))
             }
             emitState()
         }

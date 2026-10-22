@@ -3,75 +3,12 @@ package cash.p.terminal.ui_compose
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.os.Parcelable
-import android.os.SystemClock
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.Density
-import kotlinx.coroutines.flow.first
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-
-/**
- * Suspends until the soft keyboard (IME) is fully hidden.
- *
- * Material3 `ModalBottomSheet` hard-codes an internal `imePadding`, so opening it while the
- * keyboard is still retracting makes the sheet start raised and slide down mid-animation,
- * leaving a visible gap. Awaiting this before showing such a sheet lets it appear in its
- * final position. Read [WindowInsets.Companion.ime] in a composable scope and pass it here.
- */
-suspend fun WindowInsets.awaitImeHidden(density: Density) {
-    snapshotFlow { getBottom(density) }.first { it == 0 }
-}
 
 inline fun <reified T : Parcelable> Bundle.parcelable(key: String): T? = when {
     SDK_INT >= 33 -> getParcelable(key, T::class.java)
     else -> @Suppress("DEPRECATION") getParcelable(key) as? T
-}
-
-internal inline fun <reified T> getKoinInstance(): T {
-    return object : KoinComponent {
-        val value: T by inject()
-    }.value
-}
-
-@Composable
-fun Modifier.oneLineHeight(textStyle: TextStyle) =
-    this
-        .height(with(LocalDensity.current) {
-            textStyle.lineHeight.toDp()
-        })
-        .wrapContentHeight(Alignment.CenterVertically)
-
-@Composable
-fun <T> rememberDebouncedAction(
-    timeoutMs: Long = 500,
-    action: (T) -> Unit
-): (T) -> Unit {
-    val actionState by rememberUpdatedState(action)
-    val lastClickTime = remember { mutableLongStateOf(0L) }
-
-    return remember(timeoutMs) {
-        { param: T ->
-            val now = SystemClock.elapsedRealtime()
-            if (now - lastClickTime.longValue > timeoutMs) {
-                lastClickTime.longValue = now
-                actionState(param)
-            }
-        }
-    }
 }
 
 fun TextFieldValue.withLeadingZeroIfDecimal(): TextFieldValue {

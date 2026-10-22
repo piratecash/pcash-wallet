@@ -15,6 +15,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import org.jetbrains.compose.resources.StringResource
 
 internal actual fun parseHtml(html: String, linkStyle: SpanStyle?): AnnotatedString =
     spannedToAnnotatedString(Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY), linkStyle)
@@ -67,6 +68,14 @@ fun annotatedStringResource(@StringRes id: Int): AnnotatedString {
         val text = context.resources.getText(id)
         spannedToAnnotatedString(text)
     }
+}
+
+@Composable
+actual fun annotatedStringResource(resource: StringResource): AnnotatedString {
+    val context = LocalContext.current
+    // Compose resource keys match the Android resource names generated from the same XML.
+    val id = remember(resource) { context.resources.getIdentifier(resource.key, "string", context.packageName) }
+    return annotatedStringResource(id)
 }
 
 @Composable
