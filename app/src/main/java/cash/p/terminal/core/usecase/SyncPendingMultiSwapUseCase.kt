@@ -1,5 +1,6 @@
 package cash.p.terminal.core.usecase
 
+import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TransactionAdapterManager
 import cash.p.terminal.core.storage.PendingMultiSwapStorage
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
@@ -20,8 +21,10 @@ import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IWalletManager
 import io.horizontalsystems.core.DispatcherProvider
+import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.coroutines.withContext
 import java.math.BigDecimal
+import java.util.concurrent.atomic.AtomicLong
 
 
 class SyncPendingMultiSwapUseCase(
@@ -33,10 +36,18 @@ class SyncPendingMultiSwapUseCase(
     private val adapterManager: IAdapterManager,
     private val updateSwapProviderTransactionsStatusUseCase: UpdateSwapProviderTransactionsStatusUseCase,
     private val accountManager: IAccountManager,
+    private val tonKitManager: TonKitManager,
 ) {
+    internal var currentTimeMillis: () -> Long = System::currentTimeMillis
+    private val lastTonRefreshAt = AtomicLong(0)
+
     suspend operator fun invoke() = withContext(dispatcherProvider.io) {
         val accountId = accountManager.activeAccount?.id ?: return@withContext
         val swaps = pendingMultiSwapStorage.getAllOnceByAccountId(accountId)
+        // The TON kit gets no live updates, so the payout would never reach the local history otherwise.
+        if (swaps.any { it.awaitsPayoutOnTon() }) {
+            refreshTonKitThrottled()
+        }
         val hasExecutingOffChain = swaps.any { swap ->
             (swap.leg1Status == PendingMultiSwap.STATUS_EXECUTING && swap.leg1IsOffChain)
             || (swap.leg2Status == PendingMultiSwap.STATUS_EXECUTING && swap.leg2IsOffChain == true)
@@ -49,6 +60,27 @@ class SyncPendingMultiSwapUseCase(
             syncLeg2(swap)
         }
         deleteCompleted()
+    }
+
+    private fun PendingMultiSwap.awaitsPayoutOnTon(): Boolean =
+        (leg1Status == PendingMultiSwap.STATUS_EXECUTING && blockchainTypeIntermediate == BlockchainType.Ton.uid)
+            || (leg2Status == PendingMultiSwap.STATUS_EXECUTING && blockchainTypeOut == BlockchainType.Ton.uid)
+
+    private suspend fun refreshTonKitThrottled() {
+        val now = currentTimeMillis()
+        val last = lastTonRefreshAt.get()
+        // A negative delta means the wall clock moved back: refresh rather than wait for it to catch up.
+        if (now - last in 0 until TON_REFRESH_INTERVAL_MS) return
+        if (lastTonRefreshAt.compareAndSet(last, now)) {
+            tonKitManager.refresh()
+        }
+    }
+
+    // The screen publishes leg2 off the stored COMPLETED status, so the TON balance must be fresh first.
+    private suspend fun refreshTonBeforeCompletion(status: String, payoutBlockchainUid: String) {
+        if (status == PendingMultiSwap.STATUS_COMPLETED && payoutBlockchainUid == BlockchainType.Ton.uid) {
+            tonKitManager.refresh()
+        }
     }
 
     private suspend fun updateProviderStatuses() {
@@ -262,6 +294,7 @@ class SyncPendingMultiSwapUseCase(
 
     private suspend fun syncLeg1Executing(swap: PendingMultiSwap) {
         val updateLeg: suspend (String, BigDecimal?) -> Unit = { status, amount ->
+            refreshTonBeforeCompletion(status, swap.blockchainTypeIntermediate)
             pendingMultiSwapStorage.updateLeg1(
                 id = swap.id,
                 status = status,
@@ -330,6 +363,7 @@ class SyncPendingMultiSwapUseCase(
         if (swap.leg2Status != PendingMultiSwap.STATUS_EXECUTING) return
 
         val updateLeg: suspend (String, BigDecimal?) -> Unit = { status, amount ->
+            refreshTonBeforeCompletion(status, swap.blockchainTypeOut)
             pendingMultiSwapStorage.updateLeg2(
                 id = swap.id,
                 status = status,
@@ -381,5 +415,6 @@ class SyncPendingMultiSwapUseCase(
         const val START_TIME_BUFFER_SEC = 60L
         const val MAX_PAGES = 5
         const val PAGE_SIZE = 50
+        const val TON_REFRESH_INTERVAL_MS = 30_000L
     }
 }
