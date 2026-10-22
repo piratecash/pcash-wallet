@@ -1,6 +1,5 @@
 package cash.p.terminal.ledger.domain
 
-import co.touchlab.kermit.Logger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +13,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.time.Duration
-import kotlin.time.TimeSource
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
@@ -46,14 +44,11 @@ class LedgerUserOperations {
 
     /** Nested runs count as one operation that ends with the outermost. */
     suspend fun <T> run(block: suspend () -> T): T {
-        val before = state.getAndUpdate { it.copy(running = it.running + 1) }.running
-        val startedAt = TimeSource.Monotonic.markNow()
-        if (before == 0) diag.i { "user op start, nested=$before" }
+        state.update { it.copy(running = it.running + 1) }
         try {
             return block()
         } finally {
             finish()
-            if (before == 0) diag.i { "user op end, durationMs=${startedAt.elapsedNow().inWholeMilliseconds}" }
         }
     }
 
@@ -95,7 +90,6 @@ class LedgerUserOperations {
     private data class State(val running: Int, val yieldedApps: Set<String>)
 
     private companion object {
-        val diag = Logger.withTag("LedgerDiag")
         val FIRST_WAIT_NOTICE_AFTER = 1500.milliseconds
         val WAIT_NOTICE_INTERVAL = 10.seconds
     }

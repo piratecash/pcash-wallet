@@ -14,7 +14,6 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.monero
-import co.touchlab.kermit.Logger
 import com.piratecash.monero.signer.ExternalSigner
 import com.piratecash.monero.signer.ExternalSignerApduChannel
 import com.piratecash.monero.signer.ExternalSignerException
@@ -34,12 +33,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.AbstractCoroutineContextElement
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicLong
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-
-private val diag = Logger.withTag("LedgerDiag")
 
 /** Runs a Monero wallet2 operation with the open Ledger Monero app as the wallet's device. */
 class MoneroLedgerOperationGateway(
@@ -115,36 +110,26 @@ class MoneroLedgerOperationGateway(
     ): T {
         val walletPublicKey = requireNotNull(account.type as? AccountType.LedgerDevice).walletPublicKey
         val runBlock: suspend () -> T = { runInterruptible(dispatcherProvider.io) { block(walletPublicKey) } }
-        val enteredAt = System.currentTimeMillis()
         return appAccess.withLedgerApp(account, TokenQuery.monero, admit, switchApp) { transport ->
-            withContext(sessionContext) { runSession(transport, waitReason, enteredAt, runBlock) }
+            withContext(sessionContext) { runSession(transport, waitReason, runBlock) }
         }
     }
 
     private suspend fun <T> runSession(
         transport: LedgerTransport,
         waitReason: LedgerWaitReason?,
-        enteredAt: Long,
         runBlock: suspend () -> T,
     ): T {
-        val heldAt = System.currentTimeMillis()
-        val kind = waitReason?.name ?: "user"
         val channel = LedgerApduChannel(transport)
-        var outcome = "ok"
         sessionChannel = channel
         try {
             return withExternalSignerRegistration(ExternalSigner.registerApdu(channel)) {
                 if (waitReason == null) runBlock() else remindingWaitingUsers(waitReason, runBlock)
             }.also { channel.requireIntact() }
         } catch (error: Throwable) {
-            outcome = error.javaClass.simpleName
             throw channel.explain(error)
         } finally {
             sessionChannel = null
-            diag.i {
-                "session kind=$kind waitedMs=${heldAt - enteredAt} heldMs=${System.currentTimeMillis() - heldAt} " +
-                    "apdu=${channel.exchangeCount.get()} exchangeMs=${channel.exchangeMillis.get()} outcome=$outcome"
-            }
         }
     }
 
@@ -178,9 +163,6 @@ internal class LedgerApduChannel(private val transport: LedgerTransport) : Exter
     private val exchanges = SupervisorJob()
     private val mutex = Mutex()
 
-    val exchangeCount = AtomicInteger()
-    val exchangeMillis = AtomicLong()
-
     @Volatile
     var transportFailure: Throwable? = null
         private set
@@ -190,7 +172,7 @@ internal class LedgerApduChannel(private val transport: LedgerTransport) : Exter
 
     override fun exchange(apdu: ByteArray): ByteArray {
         val response = try {
-            runBlocking(exchanges) { mutex.withLock { timedExchange(apdu) } }
+            runBlocking(exchanges) { mutex.withLock { transport.exchange(apdu) } }
         } catch (error: CancellationException) {
             throw exchangeFailed(error)
         } catch (error: Exception) {
@@ -200,16 +182,6 @@ internal class LedgerApduChannel(private val transport: LedgerTransport) : Exter
         // The Monero app answers a refusal on its screen with this status word.
         if (response.statusWord() == StatusWord.SECURITY_STATUS_NOT_SATISFIED) deniedOnDevice = true
         return response
-    }
-
-    private suspend fun timedExchange(apdu: ByteArray): ByteArray {
-        val startedAt = System.currentTimeMillis()
-        try {
-            return transport.exchange(apdu)
-        } finally {
-            exchangeCount.incrementAndGet()
-            exchangeMillis.addAndGet(System.currentTimeMillis() - startedAt)
-        }
     }
 
     override fun cancel() {

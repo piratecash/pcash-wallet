@@ -27,7 +27,6 @@ import cash.p.terminal.wallet.data.MnemonicKind
 import cash.p.terminal.wallet.entities.SecretString
 import cash.p.terminal.wallet.useCases.IGetMoneroWalletFilesNameUseCase
 import cash.p.terminal.wallet.useCases.RemoveMoneroWalletFilesUseCase
-import co.touchlab.kermit.Logger
 import com.m2049r.xmrwallet.data.DefaultNodes
 import com.m2049r.xmrwallet.data.NodeInfo
 import com.m2049r.xmrwallet.data.TxData
@@ -438,8 +437,6 @@ class MoneroKitManager(
 }
 
 // A Monero block takes about two minutes; this keeps a connected Ledger well within one block.
-private val diag = Logger.withTag("LedgerDiag")
-
 private val LEDGER_SYNC_INTERVAL = 30.seconds
 
 private val waitingForLedgerState = AdapterState.Syncing(substatus = AdapterState.Substatus.WaitingForLedger)
@@ -1293,24 +1290,6 @@ class MoneroKitWrapper(
 
     /** Runs while the Ledger channel is registered; returns the synced height. */
     internal open fun refreshProxyWalletLeaseOwned(): Long {
-        val startedAt = System.currentTimeMillis()
-        var refreshMs = -1L
-        var newBlocks = 0
-        var height = -1L
-        try {
-            return refreshProxyWalletDiag(
-                onRefreshMs = { refreshMs = it },
-                onNewBlock = { newBlocks++ },
-            ).also { height = it }
-        } finally {
-            diag.i {
-                "refresh end refreshMs=$refreshMs historyStoreMs=${System.currentTimeMillis() - startedAt - refreshMs.coerceAtLeast(0)} " +
-                    "heightAfter=$height newBlocks=$newBlocks earlyEnd=$proxySyncEarlyEnd"
-            }
-        }
-    }
-
-    private fun refreshProxyWalletDiag(onRefreshMs: (Long) -> Unit, onNewBlock: () -> Unit): Long {
         val wallet = requireNotNull(moneroWalletService.wallet) { "Monero Ledger wallet is not initialized" }
         val rescanHeight = restoreSettingsManager.settings(account, BlockchainType.Monero).birthdayHeight
             ?.takeIf { it >= 0 && it != wallet.restoreHeight }
@@ -1321,30 +1300,22 @@ class MoneroKitWrapper(
             wallet.rescanBlockchainAsync()
         }
         val restoreHeight = wallet.restoreHeight
-        diag.i {
-            "refresh start walletHeight=${wallet.blockChainHeight} daemonHeight=${moneroWalletService.daemonHeight} " +
-                "rescanScheduled=${rescanHeight != null}"
-        }
         refreshHardwareKeyImagesWithProgress(
             cachedTotalHeight = moneroWalletService.daemonHeight,
             fallbackTotalHeight = { wallet.daemonBlockChainHeight },
             onNewBlock = {
-                onNewBlock()
                 if (restoreHeightUnstored) rescanObservedFor = restoreHeight
                 yieldToLedgerUser { wallet.pauseRefreshAndDrain() }
             },
         ) {
             yieldBeforeRefreshIfRequested(wallet)
-            val refreshStartedAt = System.currentTimeMillis()
-            val refreshed = wallet.refresh()
-            onRefreshMs(System.currentTimeMillis() - refreshStartedAt)
-            if (!refreshed) throw wallet.fullStatus.hardwareFailure()
+            if (!wallet.refresh()) throw wallet.fullStatus.hardwareFailure()
         }
         val height = wallet.blockChainHeight
         if (!moneroScanReachedDaemon(height, wallet.daemonBlockChainHeight, wallet.daemonBlockChainTargetHeight)) {
             storeEarlyEnd(wallet)
             // A checkpoint goes on in the same session; the birthday is read again, so a new rescan height applies.
-            return refreshProxyWalletDiag(onRefreshMs, onNewBlock)
+            return refreshProxyWalletLeaseOwned()
         }
         wallet.setSynchronized()
         wallet.refreshHistory()
@@ -1394,7 +1365,6 @@ class MoneroKitWrapper(
     internal fun yieldToLedgerUser(stopRefresh: () -> Unit) {
         val earlyEnd = requestedEarlyEnd() ?: return
         latchEarlyEnd(earlyEnd)
-        diag.i { "yieldToLedgerUser: stop requested" }
         stopRefresh()
     }
 
@@ -1404,7 +1374,6 @@ class MoneroKitWrapper(
             ProxySyncEarlyEnd.Checkpoint -> storeProxyWallet(wallet)
             else -> {
                 latchEarlyEnd(earlyEnd)
-                diag.i { "yieldBeforeRefresh: yielding before refresh" }
                 throw LedgerSessionYieldedException()
             }
         }
