@@ -65,6 +65,7 @@ class ManageWalletsServiceTest : KoinTest {
         mockk<GetHardwarePublicKeyForWalletUseCase>(relaxed = true)
     private val marketKit = mockk<MarketKitWrapper>(relaxed = true)
     private val hardwareWalletTokenPolicy = mockk<HardwareWalletTokenPolicy>()
+    private val fullCoinsProvider = mockk<FullCoinsProvider>(relaxed = true)
 
     private val approveSettingsSubject =
         PublishSubject.create<RestoreSettingsService.TokenWithSettings>()
@@ -167,6 +168,22 @@ class ManageWalletsServiceTest : KoinTest {
     }
 
     @Test
+    fun itemsFlow_activeWalletsBringMoreCoins_listsNewCoins() = runTest(dispatcher) {
+        val bitcoin = bitcoinToken()
+        val bitcoinCoin = FullCoin(bitcoin.coin, listOf(bitcoin))
+        every { hardwareWalletTokenPolicy.isSupported(account, any<Token>()) } returns true
+        service = serviceFor(account, bitcoinCoin)
+        awaitItems()
+
+        coEvery { fullCoinsProvider.getItems() } returns
+            listOf(bitcoinCoin, FullCoin(ethereumToken.coin, listOf(ethereumToken)))
+        activeWalletsFlow.value = listOf(wallet(bitcoin))
+        val items = awaitItems { it.size > 1 }
+
+        assertEquals(listOf(bitcoin, ethereumToken), items.map { it.token })
+    }
+
+    @Test
     fun itemsFlow_hardwareAccountWithTransparentZcash_checksOnlyTransparent() = runTest(dispatcher) {
         val transparent = zcashTokens.first {
             it.type == TokenType.AddressSpecTyped(TokenType.AddressSpecType.Transparent)
@@ -197,12 +214,11 @@ class ManageWalletsServiceTest : KoinTest {
     private fun serviceFor(account: Account, fullCoin: FullCoin): ManageWalletsService {
         service.clear()
         every { accountManager.account(account.id) } returns account
-        val provider = mockk<FullCoinsProvider>(relaxed = true)
-        coEvery { provider.getItems() } returns listOf(fullCoin)
+        coEvery { fullCoinsProvider.getItems() } returns listOf(fullCoin)
         return ManageWalletsService(
             walletManager = walletManager,
             restoreSettingsService = restoreSettingsService,
-            fullCoinsProvider = provider,
+            fullCoinsProvider = fullCoinsProvider,
             account = account,
             userDeletedWalletManager = userDeletedWalletManager,
             rescanMoneroUseCase = rescanMoneroUseCase,
@@ -211,10 +227,12 @@ class ManageWalletsServiceTest : KoinTest {
     }
 
     /** Items arrive after a Dispatchers.IO hop, which one drain can outrun. */
-    private fun TestScope.awaitItems(): List<ManageWalletsService.Item> {
+    private fun TestScope.awaitItems(
+        until: (List<ManageWalletsService.Item>) -> Boolean = { it.isNotEmpty() },
+    ): List<ManageWalletsService.Item> {
         repeat(SETTLE_ATTEMPTS) {
             advanceUntilIdle()
-            service.itemsFlow.value.takeIf { it.isNotEmpty() }?.let { return it }
+            service.itemsFlow.value.takeIf(until)?.let { return it }
             Thread.sleep(SETTLE_STEP_MS)
         }
         return service.itemsFlow.value
@@ -384,7 +402,7 @@ class ManageWalletsServiceTest : KoinTest {
 
     private companion object {
         const val MONERO_RESTORE_HEIGHT = 3_529_956L
-        const val SETTLE_ATTEMPTS = 200
+        const val SETTLE_ATTEMPTS = 1000
         const val SETTLE_STEP_MS = 10L
     }
 

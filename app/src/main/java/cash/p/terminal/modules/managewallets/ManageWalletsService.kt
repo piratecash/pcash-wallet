@@ -137,11 +137,14 @@ class ManageWalletsService(
     }
 
     private suspend fun sortItems() {
-        mutex.withLock {
-            items = fullCoins
-                .map { getItemsForFullCoin(it) }
-                .flatten()
-        }
+        mutex.withLock { rebuildItems() }
+    }
+
+    // Kotlin's Mutex is not reentrant: callers already holding it must use this directly.
+    private fun rebuildItems() {
+        items = fullCoins
+            .map { getItemsForFullCoin(it) }
+            .flatten()
     }
 
     private fun getItemsForFullCoin(fullCoin: FullCoin): List<Item> {
@@ -190,7 +193,7 @@ class ManageWalletsService(
         mutex.withLock {
             if (newFullCons.size > fullCoins.size) {
                 fullCoins = newFullCons
-                sortItems()
+                rebuildItems()
             }
         }
         syncState()
