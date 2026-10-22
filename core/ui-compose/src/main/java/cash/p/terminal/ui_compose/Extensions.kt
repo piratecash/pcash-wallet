@@ -1,15 +1,13 @@
 package cash.p.terminal.ui_compose
 
-import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.core.os.BundleCompat
 
-inline fun <reified T : Parcelable> Bundle.parcelable(key: String): T? = when {
-    SDK_INT >= 33 -> getParcelable(key, T::class.java)
-    else -> @Suppress("DEPRECATION") getParcelable(key) as? T
-}
+inline fun <reified T : Parcelable> Bundle.parcelable(key: String): T? =
+    BundleCompat.getParcelable(this, key, T::class.java)
 
 fun TextFieldValue.withLeadingZeroIfDecimal(): TextFieldValue {
     val text = this.text
