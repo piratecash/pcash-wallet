@@ -71,16 +71,18 @@ kermit = "2.1.0"
 secp256k1 = "0.24.0"
 
 tonKotlin = "0.5.0" # updated for ktor 3.x compatibility
-piratecash-ton = "v2.0.0-pcash.9"
+piratecash-ton = "v2.0.0-pcash.11"
 beam-sdk = "v0.3.1"
 piratecash-bitcoin = "v0.1.0-pcash.37"
 hd-wallet-kit = "1.0.1"
 stellar-kit = "v2.0.0-pcash.1"
-thorchain-kit = "1.2.0"
+thorchain-kit = "1.3.0"
 trezor-kit = "1.4.0"
+ledger-kit = "0.6.8"
+orgJson = "20250517"
 piratecash-ethereum = "v1.0.0-pcash.5"
-piratecash-solana = "v2.0.0-pcash.6"
-monero-kit-android = "v0.18.3.4-pcash.20"
+piratecash-solana = "v2.0.0-pcash.7"
+monero-kit-android = "v0.18.3.4-pcash.22"
 netcipher = "2.1.0"
 solanakt = "v1.0.0-pcash.5"
 piratecash-tron = "v2.0.0-pcash.1"
@@ -96,7 +98,7 @@ android-core-ktx = "1.18.0"
 twitterText = "3.1.0"
 workRuntimeKtx = "2.11.2"
 workRxjava2 = "2.11.2"
-zcashSdkKmp = "v1.3.2"
+zcashSdkKmp = "v1.4.4"
 junitJupiter = "6.0.3"
 google-play-core = "2.1.0"
 bitcoinj = "0.17"
@@ -246,6 +248,8 @@ hd-wallet-kit = { group = "com.github.piratecash.hd-wallet-kit-android", name = 
 stellar-kit = { group = "com.github.piratecash.stellar-kit-android", name = "stellarkit", version.ref = "stellar-kit" }
 thorchain-kit = { group = "com.github.piratecash.thorchain-kit-android", name = "thorchainkit", version.ref = "thorchain-kit" }
 trezor-kit = { group = "com.github.piratecash", name = "trezor-kit-android", version.ref = "trezor-kit" }
+ledger-kit = { group = "com.github.piratecash.ledger-kit", name = "ledgerkit", version.ref = "ledger-kit" }
+org-json = { module = "org.json:json", version.ref = "orgJson" }
 solana-kit = { group = "com.github.piratecash.solana-kit-android", name = "solanakit", version.ref = "piratecash-solana" }
 monero-kit = { group = "com.github.piratecash.monero-kit-android", name = "monerokit", version.ref = "monero-kit-android" }
 netcipher = { group = "info.guardianproject.netcipher", name = "netcipher", version.ref = "netcipher" }

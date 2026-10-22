@@ -86,6 +86,7 @@ import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.SearchField
 import cash.p.terminal.ui_compose.components.SnackbarDuration
 import cash.p.terminal.ui_compose.components.VSpacer
+import cash.p.terminal.ui_compose.components.body_grey
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
@@ -477,10 +478,11 @@ private fun TokenRow(
                 .padding(vertical = 12.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                body_leah(
-                    text = viewItem.title,
-                    maxLines = 1,
-                )
+                if (viewItem.available) {
+                    body_leah(text = viewItem.title, maxLines = 1)
+                } else {
+                    body_grey(text = viewItem.title, maxLines = 1)
+                }
                 viewItem.label?.let { labelText ->
                     Box(
                         modifier = Modifier
@@ -518,10 +520,13 @@ private fun TokenRow(
                 )
             }
         }
+        val switchActive = viewItem.available || viewItem.enabled
         HsSwitch(
             modifier = Modifier.padding(0.dp),
             checked = viewItem.enabled,
-            onCheckedChange = { onItemClick.invoke() },
+            // An inert switch passes the tap to the row, which explains why the token is unavailable.
+            onCheckedChange = { _: Boolean -> onItemClick() }.takeIf { switchActive },
+            enabled = switchActive,
         )
     }
 }
@@ -570,6 +575,19 @@ private fun ManageWalletsScreenPreview() {
                 enabled = true,
                 label = "BASE",
                 hasInfo = true
+            ),
+            CoinViewItem(
+                item = Token(
+                    coin = Coin("Zcash", "Zcash", "ZEC"),
+                    blockchain = Blockchain(BlockchainType.Zcash, "Zcash", null),
+                    type = TokenType.Native,
+                    decimals = 8
+                ),
+                imageSource = ImageSource.Local(Res.drawable.ic_placeholder),
+                title = "ZEC",
+                subtitle = "Zcash",
+                enabled = false,
+                available = false
             )
         )
 
@@ -578,6 +596,12 @@ private fun ManageWalletsScreenPreview() {
                 coinName = "Bitcoin",
                 coinUid = "bitcoin",
                 items = listOf(items[0]),
+                isExpanded = false
+            ),
+            CoinGroup(
+                coinName = "Zcash",
+                coinUid = "zcash",
+                items = listOf(items[3]),
                 isExpanded = false
             ),
             CoinGroup(

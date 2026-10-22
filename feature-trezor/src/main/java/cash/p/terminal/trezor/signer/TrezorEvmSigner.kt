@@ -9,12 +9,11 @@ import cash.p.terminal.trezorkit.client.TrezorEvmGasFee
 import cash.p.terminal.trezorkit.client.TrezorEvmTx
 import cash.p.terminal.trezorkit.client.TrezorMessageSignature
 import cash.p.terminal.wallet.crypto.EvmSignatureRecovery
+import cash.p.terminal.wallet.hardware.DeviceEvmSigner
+import cash.p.terminal.wallet.hardware.ExternalEvmTransactionSigner
+import cash.p.terminal.wallet.hardware.SignedEvmTransaction
 import io.horizontalsystems.ethereumkit.core.TransactionBuilder
-import io.horizontalsystems.ethereumkit.core.TransactionSigner
-import io.horizontalsystems.ethereumkit.core.signer.EthSigner
-import io.horizontalsystems.ethereumkit.core.signer.Signer
 import io.horizontalsystems.ethereumkit.core.toByteArray
-import io.horizontalsystems.ethereumkit.crypto.CryptoUtils
 import io.horizontalsystems.ethereumkit.crypto.EIP712Encoder
 import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.Chain
@@ -33,14 +32,8 @@ class TrezorEvmSigner(
     private val trezorClient: ITrezorClient,
     private val model: TrezorModel?,
     private val firmwareVersion: String
-) : Signer(
-    transactionBuilder = TransactionBuilder(address, chain.id),
-    transactionSigner = TransactionSigner(MOCK_PRIVATE_KEY, chain.id),
-    ethSigner = EthSigner(MOCK_PRIVATE_KEY, CryptoUtils, EIP712Encoder())
-) {
+) : DeviceEvmSigner(address, chain.id), ExternalEvmTransactionSigner {
     companion object {
-        private val MOCK_PRIVATE_KEY = BigInteger.ONE
-
         private const val LEGACY_GAS_PRICE_INDEX = 1
         private const val LEGACY_GAS_LIMIT_INDEX = 2
         private const val EIP1559_MAX_PRIORITY_FEE_INDEX = 2
@@ -66,7 +59,7 @@ class TrezorEvmSigner(
      * in depth: it confirms the device signed exactly the fields we sent, so the signature can never
      * be broadcast against a mismatched transaction.
      */
-    suspend fun signTransaction(rawTransaction: RawTransaction): SignedEvmTransaction {
+    override suspend fun signTransaction(rawTransaction: RawTransaction): SignedEvmTransaction {
         val deviceSignature = trezorClient.connect { signEthereum(rawTransaction.toTrezorEvmTx()) }
         val signature = Signature(
             v = deviceSignature.v,
@@ -167,41 +160,28 @@ class TrezorEvmSigner(
      * Returns `r‖s‖recId` (recId ∈ {0,1}), byte-identical to mnemonic signing, so callers can
      * treat hardware and software signatures uniformly.
      */
-    suspend fun signPersonalMessage(message: ByteArray): ByteArray {
+    override suspend fun signPersonalMessage(message: ByteArray): ByteArray {
         val result = trezorClient.connect { signEthereumMessage(TrezorDerivationPath.parse(derivationPath), message) }
         return result.toRsRecId(EvmSignatureRecovery.personalSignHash(message))
     }
 
+    // Resolving the recovery id doubles as the account check: a signature from another account never resolves.
     private fun TrezorMessageSignature.toRsRecId(hash: ByteArray): ByteArray {
         if (signature.size != SIGNATURE_SIZE) {
             throw TrezorSigningException("Unexpected Trezor signature size: ${signature.size}")
         }
         val r = signature.copyOfRange(0, R_S_SIZE)
         val s = signature.copyOfRange(R_S_SIZE, 2 * R_S_SIZE)
-        val recId = resolveRecoveryId(hash, r, s)
+        return EvmSignatureRecovery.messageSignature(hash, r, s, this@TrezorEvmSigner.address)
             ?: throw TrezorSigningException("Device signed with an unexpected account")
-        return r + s + byteArrayOf(recId.toByte())
-    }
-
-    /**
-     * Determines which recovery id (0 or 1) recovers our wallet address. This doubles as the
-     * defense-in-depth account check: a signature from the wrong account never resolves, and we
-     * don't have to trust how Trezor happens to encode `v` in the raw signature byte.
-     */
-    private fun resolveRecoveryId(hash: ByteArray, r: ByteArray, s: ByteArray): Int? {
-        val rInt = BigInteger(1, r)
-        val sInt = BigInteger(1, s)
-        return (0..1).firstOrNull { recId ->
-            EvmSignatureRecovery.recoverMessageAddress(hash, rInt, sInt, recId) == address
-        }
     }
 
     /** Not supported: Trezor has no raw-hash (`eth_sign`) operation for Ethereum. */
-    suspend fun signLegacyHash(hash: ByteArray): ByteArray =
+    override suspend fun signLegacyHash(hash: ByteArray): ByteArray =
         throw TrezorSigningException("eth_sign (raw hash) is not supported on Trezor")
 
     /** Signs EIP-712 typed data on-device (Trezor One signs the hashes only); returns `r‖s‖recId`. */
-    suspend fun signTypedDataMessage(rawJson: String): ByteArray {
+    override suspend fun signTypedDataMessage(rawJson: String): ByteArray {
         if (!TrezorModelSupport.supportsTypedData(model, firmwareVersion)) {
             throw TrezorSigningException("eth_signTypedData is not supported on this Trezor firmware")
         }
@@ -231,8 +211,3 @@ class TrezorEvmSigner(
         return hashMessage(jsonMessageObject.primaryType, message)
     }
 }
-
-data class SignedEvmTransaction(
-    val signature: Signature,
-    val rawTransaction: RawTransaction
-)

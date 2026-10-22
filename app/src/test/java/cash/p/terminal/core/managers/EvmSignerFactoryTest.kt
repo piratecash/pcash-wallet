@@ -1,6 +1,11 @@
 package cash.p.terminal.core.managers
 
 import io.horizontalsystems.ethereumkit.core.EthereumKit
+import cash.p.terminal.ledger.domain.LedgerAppAccess
+import cash.p.terminal.ledger.domain.LedgerRejectedException
+import cash.p.terminal.ledger.domain.LedgerSigningFailedException
+import cash.p.terminal.ledger.ethereum.LedgerEvmSigner
+import cash.p.terminal.ledger.ethereum.LedgerTokenDescriptorStore
 import cash.p.terminal.modules.multiswap.providers.backendswap.BackendSwapGoldenVectors
 import cash.p.terminal.tangem.common.CustomXPubKeyAddressParser
 import cash.p.terminal.tangem.signer.HardwareWalletEvmSigner
@@ -17,10 +22,13 @@ import cash.p.terminal.wallet.entities.HardwarePublicKey
 import cash.p.terminal.wallet.entities.HardwarePublicKeyType
 import cash.p.terminal.wallet.entities.SecretString
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.hardware.ExternalEvmTransactionSigner
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.ethereumkit.core.signer.Signer
 import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.Chain
+import io.horizontalsystems.ethereumkit.models.GasPrice
+import io.horizontalsystems.ethereumkit.models.RawTransaction
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -30,6 +38,7 @@ import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.math.BigInteger
 
 class EvmSignerFactoryTest {
 
@@ -40,7 +49,9 @@ class EvmSignerFactoryTest {
 
     private val hardwarePublicKeyStorage: IHardwarePublicKeyStorage = mockk()
     private val trezorClient: ITrezorClient = mockk()
-    private val factory = EvmSignerFactory(hardwarePublicKeyStorage, trezorClient)
+    private val ledgerAppAccess: LedgerAppAccess = mockk()
+    private val factory =
+        EvmSignerFactory(hardwarePublicKeyStorage, trezorClient, ledgerAppAccess, mockk<LedgerTokenDescriptorStore>())
 
     private val hardwareAccount = Account(
         id = "hardware-account-id",
@@ -176,6 +187,50 @@ class EvmSignerFactoryTest {
         }
         coVerify(exactly = 0) { session.signEthereumTypedData(any(), any()) }
     }
+
+    @Test
+    fun createSigner_ledgerAccount_everySigningPathReachesTheDevice() = runBlocking<Unit> {
+        coEvery {
+            hardwarePublicKeyStorage.getKey(ledgerAccount.id, BlockchainType.BinanceSmartChain, TokenType.Native)
+        } returns HardwarePublicKey(
+            accountId = ledgerAccount.id,
+            blockchainType = BlockchainType.BinanceSmartChain.uid,
+            type = HardwarePublicKeyType.PUBLIC_KEY,
+            tokenType = TokenType.Native,
+            key = SecretString(xPubKey),
+            derivationPath = "m/44'/60'/0'/0/0",
+            publicKey = byteArrayOf(1, 2, 3),
+            derivedPublicKey = byteArrayOf(4, 5, 6)
+        )
+        coEvery { ledgerAppAccess.signWithLedgerApp<Any>(ledgerAccount, any(), any()) } throws LedgerRejectedException()
+        val signer = factory.createSigner(ledgerAccount, BlockchainType.BinanceSmartChain, Chain.BinanceSmartChain)
+        val transaction = RawTransaction(GasPrice.Legacy(1), 21_000, Address(ByteArray(20)), BigInteger.ONE, 0)
+
+        assertTrue(signer is LedgerEvmSigner && signer is ExternalEvmTransactionSigner)
+        val ledgerSigner = signer as LedgerEvmSigner
+        assertThrows(LedgerRejectedException::class.java) {
+            runBlocking { EvmMessageSigning.signPersonalMessage(ledgerSigner, byteArrayOf(1)) }
+        }
+        assertThrows(LedgerRejectedException::class.java) {
+            runBlocking { EvmMessageSigning.signTypedData(ledgerSigner, BackendSwapGoldenVectors.m1.toTypedDataJson()) }
+        }
+        assertThrows(LedgerSigningFailedException::class.java) {
+            runBlocking { EvmMessageSigning.signLegacyHash(ledgerSigner, ByteArray(32)) }
+        }
+        assertThrows(LedgerSigningFailedException::class.java) { runBlocking { ledgerSigner.signature(transaction) } }
+    }
+
+    private val ledgerAccount = Account(
+        id = "ledger-account-id",
+        name = "Ledger",
+        type = AccountType.LedgerDevice(
+            deviceId = "device-id",
+            model = "NanoSPlus",
+            walletPublicKey = "wallet-public-key",
+        ),
+        origin = AccountOrigin.Restored,
+        level = 0
+    )
 
     private val trezorOneAccount = Account(
         id = "trezor-account-id",

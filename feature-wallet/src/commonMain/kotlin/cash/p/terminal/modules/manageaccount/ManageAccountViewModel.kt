@@ -210,7 +210,7 @@ class ManageAccountViewModel(
                 KeyAction.ResetToFactorySettings
             )
 
-            is AccountType.TrezorDevice -> listOf()
+            is AccountType.HardwareDevice -> listOf()
 
             is AccountType.ZCashUfvKey,
             is AccountType.ZCashSaplingKey -> zcashKeyActions(account.type, zcashKeyExporter)

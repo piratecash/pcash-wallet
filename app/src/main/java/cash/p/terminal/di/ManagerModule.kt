@@ -62,6 +62,8 @@ import cash.p.terminal.core.managers.DeviceFlipDetector
 import cash.p.terminal.core.managers.EffectiveMonitoredChains
 import cash.p.terminal.modules.send.offline.OfflineBroadcastTokenResolver
 import android.content.Context
+import android.hardware.usb.UsbManager
+import io.horizontalsystems.core.common.usb.AndroidUsbPermissionRequester
 import android.net.ConnectivityManager as AndroidConnectivityManager
 import cash.p.terminal.core.managers.ConnectivityManager
 import cash.p.terminal.core.notifications.NotificationDeduplicator
@@ -118,7 +120,10 @@ import cash.p.terminal.core.managers.MoneroDeviceWalletNative
 import cash.p.terminal.core.managers.MoneroDeviceWalletFileStore
 import cash.p.terminal.core.managers.MoneroDeviceWalletProvisioner
 import cash.p.terminal.core.managers.MoneroTrezorReadiness
+import cash.p.terminal.core.managers.MoneroDeviceOperationGateway
+import cash.p.terminal.core.managers.MoneroLedgerOperationGateway
 import cash.p.terminal.core.managers.MoneroTrezorOperationGateway
+import cash.p.terminal.core.managers.MoneroHardwareOperationGateway
 import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
 import cash.p.terminal.core.managers.PriceManager
 import cash.p.terminal.core.managers.PendingBalanceCalculator
@@ -133,6 +138,7 @@ import cash.p.terminal.core.managers.ReleaseNotesManager
 import cash.p.terminal.core.managers.SilentCameraManager
 import cash.p.terminal.core.managers.NetworkErrorTracker
 import cash.p.terminal.core.managers.SolanaKitDatabaseKeyProvider
+import cash.p.terminal.core.managers.DeviceSignerFactory
 import cash.p.terminal.core.managers.SolanaKitManager
 import cash.p.terminal.core.managers.SolanaRpcSourceManager
 import cash.p.terminal.core.managers.SolanaWalletManager
@@ -388,6 +394,7 @@ val managerModule = module {
     singleOf(::OfflineBroadcastTokenResolver)
     singleOf(::NetworkErrorTracker)
     singleOf(::SolanaKitDatabaseKeyProvider)
+    singleOf(::DeviceSignerFactory)
     singleOf(::SolanaKitManager)
     singleOf(::StellarKitDatabaseKeyProvider)
     singleOf(::StellarKitManager)
@@ -445,10 +452,14 @@ val managerModule = module {
     singleOf(::MoneroKitManager)
     singleOf(::DefaultMoneroNativeWalletRuntime) bind MoneroNativeWalletRuntime::class
     singleOf(::MoneroTrezorOperationGateway)
+    singleOf(::MoneroLedgerOperationGateway)
+    singleOf(::MoneroDeviceOperationGateway) bind MoneroHardwareOperationGateway::class
     singleOf(::MoneroTrezorReadiness)
     singleOf(::DefaultMoneroDeviceWalletNative) bind MoneroDeviceWalletNative::class
     single { MoneroDeviceWalletFileStore.create(get()) }
     singleOf(::MoneroDeviceWalletProvisioner)
+    single { get<Context>().getSystemService(Context.USB_SERVICE) as UsbManager }
+    singleOf(::AndroidUsbPermissionRequester)
     single { MoneroWalletService(MoneroWalletFiles.root(get())) }
     singleOf(::SilentCameraManager) bind ISilentPhotoCapture::class
     singleOf(::CurrentDateProvider) bind ICurrentDateProvider::class

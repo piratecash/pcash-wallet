@@ -119,6 +119,7 @@ import io.horizontalsystems.core.toBigDecimalOrNullExt
 import java.math.BigDecimal
 import java.net.UnknownHostException
 import cash.p.terminal.modules.managewallets.ManageWalletsModule
+import cash.p.terminal.modules.managewallets.MoneroRestoreHeightRequests
 import cash.p.terminal.modules.managewallets.ManageWalletsViewModel
 import cash.p.terminal.modules.enablecoin.restoresettings.RestoreSettingsViewModel
 import cash.p.terminal.modules.enablecoin.restoresettings.openRestoreSettingsDialog
@@ -561,6 +562,7 @@ private fun SwapMainScreen(
     val restoreSettingsViewModel =
         viewModel<RestoreSettingsViewModel>(factory = manageWalletsFactory)
     val manageWalletsViewModel = viewModel<ManageWalletsViewModel>(factory = manageWalletsFactory)
+    MoneroRestoreHeightRequests(manageWalletsViewModel, navigation)
 
     navigation.openRestoreSettingsDialog(
         token = restoreSettingsViewModel.openTokenConfigure,

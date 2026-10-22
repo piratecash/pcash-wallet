@@ -1,10 +1,9 @@
 package cash.p.terminal.core.managers
 
 import android.content.Context
+import cash.p.terminal.wallet.IHardwarePublicKeyStorage
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.entities.BlockchainType
-import io.horizontalsystems.thorchainkit.network.Network
-import java.net.URL
 
 class ThorchainKitManagers(
     context: Context,
@@ -13,29 +12,31 @@ class ThorchainKitManagers(
     backgroundKeepAliveManager: BackgroundKeepAliveManager,
     networkErrorTracker: NetworkErrorTracker,
     offlineModeManager: OfflineModeManager,
+    hardwarePublicKeyStorage: IHardwarePublicKeyStorage,
+    deviceSigners: DeviceSignerFactory,
 ) {
     val thorchain = ThorchainKitManager(
-        BlockchainType.Thorchain.thorchainNetwork,
         BlockchainType.Thorchain,
-        THORCHAIN_THORNODE_URLS,
         context,
         kitDatabaseKeys,
         backgroundManager,
         backgroundKeepAliveManager,
         networkErrorTracker,
         offlineModeManager,
+        hardwarePublicKeyStorage,
+        deviceSigners,
     )
 
     val maya = ThorchainKitManager(
-        BlockchainType.Mayachain.thorchainNetwork,
         BlockchainType.Mayachain,
-        Network.MayaMainnet.thornodeUrls,
         context,
         kitDatabaseKeys,
         backgroundManager,
         backgroundKeepAliveManager,
         networkErrorTracker,
         offlineModeManager,
+        hardwarePublicKeyStorage,
+        deviceSigners,
     )
 
     val all = listOf(thorchain, maya)
@@ -47,12 +48,4 @@ class ThorchainKitManagers(
     }
 
     fun clear(accountId: String) = all.forEach { it.clear(accountId) }
-
-    private companion object {
-        // The kit fails over in list order.
-        val THORCHAIN_THORNODE_URLS = listOf(
-            URL("https://lcd-thorchain.keplr.app/"),
-            URL("https://gateway.liquify.com/chain/thorchain_api/"),
-        )
-    }
 }

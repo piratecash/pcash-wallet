@@ -60,6 +60,7 @@ class TonKitManager(
     private val networkErrorTracker: NetworkErrorTracker,
     private val offlineModeManager: OfflineModeManager,
     private val tonKitDatabaseKeyProvider: TonKitDatabaseKeyProvider,
+    private val deviceSigners: DeviceSignerFactory,
 ) {
     private val lifecycleMutex = Mutex()
     private val pollingSessionCount = AtomicInteger(0)
@@ -95,12 +96,7 @@ class TonKitManager(
         }
 
         if (this.tonKitWrapper == null) {
-            val wrapper = createKitInstance(
-                account.toTonWallet(
-                    hardwarePublicKeyStorage,
-                    blockchainType,
-                ), account
-            )
+            val wrapper = createKitInstance(getTonWallet(account, blockchainType), account)
             this.tonKitWrapper = wrapper
             job = scope.launch {
                 start(account, wrapper)
@@ -113,25 +109,28 @@ class TonKitManager(
         requireNotNull(this.tonKitWrapper)
     }
 
-    fun getTonWallet(
+    suspend fun getTonWallet(
         account: Account,
         blockchainType: BlockchainType?,
-    ) = account.toTonWallet(
-        hardwarePublicKeyStorage,
-        blockchainType,
-    )
+    ): TonWallet = when (val type = account.type) {
+        is AccountType.HardwareDevice -> deviceTonWallet(account, type)
+        else -> account.toTonWallet(hardwarePublicKeyStorage, blockchainType)
+    }
+
+    // Jettons share the TON key, so whichever of the chain's keys was stored first serves.
+    private suspend fun deviceTonWallet(account: Account, type: AccountType.HardwareDevice): TonWallet {
+        val key = hardwarePublicKeyStorage.getKeyByBlockchain(account.id, BlockchainType.Ton)
+            ?: throw UnsupportedException("Hardware device does not have a key for TON")
+        val publicKey = PublicKeyEd25519(ByteString(key.key.value.hexStringToByteArray()))
+        return TonWallet.ExternalSigner(publicKey, deviceSigners.ton(account, type, key))
+    }
 
     // Under the lifecycle lock so it cannot interleave with clear() of the same account.
     suspend fun getNonActiveTonKitWrapper(
         account: Account,
         blockchainType: BlockchainType?,
     ) = lifecycleMutex.withLock {
-        createKitInstance(
-            getTonWallet(
-                account,
-                blockchainType,
-            ), account
-        )
+        createKitInstance(getTonWallet(account, blockchainType), account)
     }
 
     private fun eventListenerFactory(account: Account): NetworkErrorEventListener.Factory =

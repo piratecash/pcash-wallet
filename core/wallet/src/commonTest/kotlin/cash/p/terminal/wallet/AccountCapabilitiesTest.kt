@@ -9,6 +9,7 @@ import cash.p.terminal.wallet.AccountType.StellarAddress
 import cash.p.terminal.wallet.AccountType.TonAddress
 import cash.p.terminal.wallet.AccountType.ZCashSaplingKey
 import cash.p.terminal.wallet.AccountType.ZCashUfvKey
+import cash.p.terminal.network.pirate.domain.enity.PremiumAccountEligibility
 import java.math.BigInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -106,6 +107,29 @@ class AccountCapabilitiesTest {
             assertFalse(type.canAddTokens, "$type should not add tokens")
             assertEquals(emptyList(), type.supportedDerivations, "$type should have no derivations")
         }
+    }
+
+    @Test
+    fun hardwareDevice_trezorAndLedger_shareHardwareCapabilities() {
+        listOf(
+            AccountType.TrezorDevice("trezor", "T3T1", "2.8.1", "key"),
+            AccountType.LedgerDevice("ledger", "nanoSP", "key"),
+        ).forEach { type ->
+            val account = accountOf(type)
+            val name = type::class.simpleName
+            assertTrue(account.isHardwareWalletAccount, "$name should be a hardware wallet")
+            assertFalse(account.supportsBackup, "$name should not support backup")
+            assertTrue(type.canAddTokens, "$name should add tokens")
+            assertTrue(type.supportsWalletConnect, "$name should support WalletConnect")
+            assertEquals(PremiumAccountEligibility.ELIGIBLE, account.premiumEligibility(), "$name premium")
+            assertFalse(account.supportsTonConnect(), "$name should not support TON Connect")
+            assertFalse(account.canBeDuplicated(), "$name should not be duplicated")
+        }
+    }
+
+    @Test
+    fun description_ledgerDevice_namesTheVendor() {
+        assertEquals("Ledger Device", AccountType.LedgerDevice("ledger", "nanoSP", "key").description)
     }
 
     private fun accountOf(

@@ -3,6 +3,8 @@ package cash.p.terminal.core.managers
 import cash.p.terminal.core.MoneroSpendReadiness
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.storage.MoneroFileDao
+import cash.p.terminal.ledger.domain.LedgerAttachments
+import cash.p.terminal.ledger.domain.LedgerUserOperations
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -27,6 +29,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestScope
@@ -40,6 +43,9 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.assertFailsWith
 import kotlin.reflect.KClass
@@ -50,82 +56,36 @@ import kotlin.reflect.KClass
  * request is in effect.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-class MoneroKitManagerTest {
+class MoneroKitManagerTest : MoneroKitManagerTestFixture() {
 
-    private val moneroWalletService = mockk<MoneroWalletService>(relaxed = true)
-    private val restoreSettingsManager = mockk<RestoreSettingsManager>(relaxed = true)
-    private val backgroundKeepAliveManager = mockk<BackgroundKeepAliveManager>(relaxed = true)
-    private val moneroFileDao = mockk<MoneroFileDao>(relaxed = true)
-    private val removeMoneroWalletFilesUseCase =
-        mockk<RemoveMoneroWalletFilesUseCase>(relaxed = true)
-    private val networkAvailability = MutableSharedFlow<Boolean>()
-    private val connectedState = MutableStateFlow(true)
-    private val connectivityManager = mockk<ConnectivityManager>(relaxed = true) {
-        every { networkAvailabilityFlow } returns networkAvailability
-        every { isConnected } returns connectedState
-    }
-    private val wrapperSyncState = MutableStateFlow<AdapterState>(AdapterState.Synced)
-    private val mockWrapper = mockk<MoneroKitWrapper>(relaxed = true) {
-        every { syncState } returns wrapperSyncState
-    }
-    private val offlineModeManager = mockk<OfflineModeManager>(relaxed = true)
-    private val account = Account(
-        id = "account-id",
-        name = "Monero",
-        type = AccountType.MnemonicMonero(
-            words = emptyList(),
-            password = "password",
-            height = 1,
-            walletInnerName = "wallet"
-        ),
-        origin = AccountOrigin.Created,
-        level = 0
+    private val ledgerAccount = account.copy(
+        type = AccountType.LedgerDevice(deviceId = "device-id", model = "NanoSPlus", walletPublicKey = "key"),
     )
+    private val ledgerAttached = MutableSharedFlow<Unit>()
 
-    private val dispatcher = UnconfinedTestDispatcher()
-    private val testScope = TestScope(dispatcher)
-    private val dispatcherProvider = TestDispatcherProvider(dispatcher, testScope)
-
-    private var createdManager: MoneroKitManager? = null
-
-    @After
-    fun tearDown() {
-        // MoneroKitManager doesn't expose a close/destroy method, so cancel its internal
-        // coroutineScope via reflection to avoid leaking the background collectors.
-        createdManager?.let { manager ->
-            val scopeField = MoneroKitManager::class.java.getDeclaredField("coroutineScope").apply {
-                isAccessible = true
-            }
-            (scopeField.get(manager) as CoroutineScope).cancel()
+    // The periodic Ledger sync loop never idles, so it must stop before runTest drains the scheduler.
+    private suspend fun withLedgerSubscription(manager: MoneroKitManager, block: suspend () -> Unit) {
+        invokeSubscribeToLedger(manager)
+        try {
+            block()
+        } finally {
+            manager.cancelScope()
         }
     }
 
-    private fun createManager(
-        backgroundStateFlow: MutableStateFlow<BackgroundManagerState>,
-        inForeground: Boolean = true,
-        wrapper: MoneroKitWrapper? = mockWrapper,
-    ): MoneroKitManager {
-        val backgroundManager = mockk<BackgroundManager> {
-            every { stateFlow } returns backgroundStateFlow
-            every { this@mockk.inForeground } returns inForeground
+    private fun invokeSubscribeToLedger(manager: MoneroKitManager) {
+        startKoin {
+            modules(module {
+                single<LedgerAttachments> {
+                    object : LedgerAttachments {
+                        override val attached = ledgerAttached
+                    }
+                }
+            })
         }
-        // A live wrapper always belongs to the account whose wallet file it opened.
-        every { mockWrapper.account } returns account
-        return MoneroKitManager(
-            moneroWalletService = moneroWalletService,
-            backgroundManager = backgroundManager,
-            restoreSettingsManager = restoreSettingsManager,
-            backgroundKeepAliveManager = backgroundKeepAliveManager,
-            connectivityManager = connectivityManager,
-            dispatcherProvider = dispatcherProvider,
-            moneroFileDao = moneroFileDao,
-            removeMoneroWalletFilesUseCase = removeMoneroWalletFilesUseCase,
-            networkErrorTracker = mockk(relaxed = true),
-            offlineModeManager = offlineModeManager,
-        ).apply {
-            moneroKitWrapper = wrapper
-            createdManager = this
-        }
+        MoneroKitManager::class.java.getDeclaredMethod("subscribeToLedger", Account::class.java)
+            .apply { isAccessible = true }
+            .invoke(manager, ledgerAccount)
     }
 
     private fun invokeSubscribeToEvents(manager: MoneroKitManager) {
@@ -146,6 +106,30 @@ class MoneroKitManagerTest {
 
         coVerify(exactly = 1) { mockWrapper.stop(saveWallet = true) }
         coVerify(exactly = 0) { mockWrapper.pause() }
+    }
+
+    @Test
+    fun enterBackground_ledgerAccount_requestsCheckpointWithoutStopping() = testScope.runTest {
+        every { backgroundKeepAliveManager.isKeepAlive(BlockchainType.Monero) } returns false
+        val backgroundStateFlow = MutableStateFlow(BackgroundManagerState.EnterForeground)
+        val manager = createManager(backgroundStateFlow)
+        every { mockWrapper.account } returns ledgerAccount
+        invokeSubscribeToEvents(manager)
+
+        backgroundStateFlow.value = BackgroundManagerState.EnterBackground
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { mockWrapper.requestCheckpoint() }
+        coVerify(exactly = 0) { mockWrapper.stop(any()) }
+    }
+
+    @Test
+    fun deviceAttached_ledgerInForeground_retriesSync() = testScope.runTest {
+        val manager = createManager(MutableStateFlow(BackgroundManagerState.EnterForeground))
+
+        withLedgerSubscription(manager) { ledgerAttached.emit(Unit) }
+
+        coVerify(exactly = 1) { mockWrapper.onDeviceAttached() }
     }
 
     @Test
@@ -242,6 +226,18 @@ class MoneroKitManagerTest {
     }
 
     @Test
+    fun rescanIfActive_ledgerAccount_releasesAccountMutexBeforeScan() = testScope.runTest {
+        val busyDevice = mockk<MoneroHardwareOperationGateway> {
+            coEvery { executeYielding<Any?>(ledgerAccount, any()) } coAnswers { awaitCancellation() }
+        }
+        val wrapper = realWrapper(ledgerAccount, busyDevice).also { setWrapperField(it, "isStarted", true) }
+        val manager = createManager(MutableStateFlow(BackgroundManagerState.EnterForeground), wrapper = wrapper)
+        setField(manager, "currentAccount", ledgerAccount)
+
+        assertTrue(async { manager.rescanIfActive(ledgerAccount, 123L) }.isCompleted)
+    }
+
+    @Test
     fun rescanIfActive_inactiveAccount_leavesWrapperUntouched() = testScope.runTest {
         val manager = createManager(MutableStateFlow(BackgroundManagerState.EnterForeground))
         setField(manager, "currentAccount", account.copy(id = "other-account-id"))
@@ -273,7 +269,7 @@ class MoneroKitManagerTest {
 
         // stopKit() must null the wrapper so a later poller restart cannot reuse it with a null factory.
         assertNull(manager.moneroKitWrapper)
-        coVerify { mockWrapper.stop(any()) }
+        coVerify { mockWrapper.close() }
     }
 
     @Test
@@ -282,7 +278,7 @@ class MoneroKitManagerTest {
         val closeFailure = IllegalStateException("close failed")
         setField(manager, "currentAccount", account)
         (fieldValue(manager, "useCount") as AtomicInteger).set(1)
-        coEvery { mockWrapper.stop(any()) } throws closeFailure
+        coEvery { mockWrapper.close() } throws closeFailure
 
         val actual = assertFailsWith<IllegalStateException> {
             manager.unlink(account)
@@ -630,19 +626,23 @@ class MoneroKitManagerTest {
         ),
     )
 
+    private fun realWrapper(
+        account: Account,
+        gateway: MoneroHardwareOperationGateway = mockk(relaxed = true),
+    ) = MoneroKitWrapper(
+        moneroWalletService = moneroWalletService,
+        restoreSettingsManager = restoreSettingsManager,
+        account = account,
+        dispatcherProvider = dispatcherProvider,
+        networkErrorTracker = mockk(relaxed = true),
+        moneroHardwareGateway = gateway,
+        connectivityManager = connectivityManager,
+        ledgerUserOperations = LedgerUserOperations(),
+        ledgerGateway = mockk(relaxed = true),
+    )
+
     private fun createPausedTrezorWrapper(): MoneroKitWrapper {
-        val wrapper = spyk(
-            MoneroKitWrapper(
-                moneroWalletService = moneroWalletService,
-                restoreSettingsManager = restoreSettingsManager,
-                account = trezorAccount(),
-                dispatcherProvider = dispatcherProvider,
-                networkErrorTracker = mockk(relaxed = true),
-                moneroTrezorGateway = mockk(relaxed = true),
-                connectivityManager = connectivityManager,
-            ),
-            recordPrivateCalls = true,
-        )
+        val wrapper = spyk(realWrapper(trezorAccount()), recordPrivateCalls = true)
         setWrapperField(wrapper, "isStarted", true)
         setWrapperField(wrapper, "isPaused", true)
         coEvery { wrapper["stopInternal"](false) } returns Unit
@@ -669,29 +669,6 @@ class MoneroKitManagerTest {
         coVerify(exactly = 1) { wrapper["startInternal"](true, true) }
     }
 
-    private fun createWrapper(): MoneroKitWrapper = mockk(relaxed = true) {
-        every { syncState } returns wrapperSyncState
-    }
-
-    private fun createKitInstanceSpy(
-        backgroundStateFlow: MutableStateFlow<BackgroundManagerState>,
-        wrapper: MoneroKitWrapper,
-    ): MoneroKitManager {
-        val manager = spyk(
-            createManager(backgroundStateFlow, wrapper = null),
-            recordPrivateCalls = true,
-        )
-        every { manager["createKitInstance"](any<Account>()) } returns wrapper
-        createdManager = manager
-        return manager
-    }
-
-    private fun setField(manager: MoneroKitManager, name: String, value: Any?) {
-        MoneroKitManager::class.java.getDeclaredField(name).apply {
-            isAccessible = true
-        }.set(manager, value)
-    }
-
     private fun setWrapperField(wrapper: MoneroKitWrapper, name: String, value: Any?) {
         MoneroKitWrapper::class.java.getDeclaredField(name).apply {
             isAccessible = true
@@ -704,4 +681,110 @@ class MoneroKitManagerTest {
             .getDeclaredField(name).apply {
             isAccessible = true
         }.get(instance)
+}
+
+/** Shared by the manager test classes: one manager per test, its background collectors cancelled after it. */
+@OptIn(ExperimentalCoroutinesApi::class)
+abstract class MoneroKitManagerTestFixture {
+    protected val moneroWalletService = mockk<MoneroWalletService>(relaxed = true)
+    protected val restoreSettingsManager = mockk<RestoreSettingsManager>(relaxed = true)
+    protected val backgroundKeepAliveManager = mockk<BackgroundKeepAliveManager>(relaxed = true)
+    protected val moneroFileDao = mockk<MoneroFileDao>(relaxed = true)
+    protected val removeMoneroWalletFilesUseCase =
+        mockk<RemoveMoneroWalletFilesUseCase>(relaxed = true)
+    protected val networkAvailability = MutableSharedFlow<Boolean>()
+    protected val connectedState = MutableStateFlow(true)
+    protected val connectivityManager = mockk<ConnectivityManager>(relaxed = true) {
+        every { networkAvailabilityFlow } returns networkAvailability
+        every { isConnected } returns connectedState
+    }
+    protected val wrapperSyncState = MutableStateFlow<AdapterState>(AdapterState.Synced)
+    protected val mockWrapper = mockk<MoneroKitWrapper>(relaxed = true) {
+        every { syncState } returns wrapperSyncState
+    }
+    protected val offlineModeManager = mockk<OfflineModeManager>(relaxed = true)
+    protected val account = Account(
+        id = "account-id",
+        name = "Monero",
+        type = AccountType.MnemonicMonero(
+            words = emptyList(),
+            password = "password",
+            height = 1,
+            walletInnerName = "wallet"
+        ),
+        origin = AccountOrigin.Created,
+        level = 0
+    )
+
+    protected val dispatcher = UnconfinedTestDispatcher()
+    protected val testScope = TestScope(dispatcher)
+    protected val dispatcherProvider = TestDispatcherProvider(dispatcher, testScope)
+
+    protected var createdManager: MoneroKitManager? = null
+
+    @After
+    fun tearDown() {
+        createdManager?.cancelScope()
+        stopKoin()
+    }
+
+    // MoneroKitManager doesn't expose a close/destroy method, so cancel its internal
+    // coroutineScope via reflection to avoid leaking the background collectors.
+    protected fun MoneroKitManager.cancelScope() {
+        val scopeField = MoneroKitManager::class.java.getDeclaredField("coroutineScope").apply {
+            isAccessible = true
+        }
+        (scopeField.get(this) as CoroutineScope).cancel()
+    }
+
+    protected fun createManager(
+        backgroundStateFlow: MutableStateFlow<BackgroundManagerState>,
+        inForeground: Boolean = true,
+        wrapper: MoneroKitWrapper? = mockWrapper,
+    ): MoneroKitManager {
+        val backgroundManager = mockk<BackgroundManager> {
+            every { stateFlow } returns backgroundStateFlow
+            every { this@mockk.inForeground } returns inForeground
+        }
+        // A live wrapper always belongs to the account whose wallet file it opened.
+        every { mockWrapper.account } returns account
+        return MoneroKitManager(
+            moneroWalletService = moneroWalletService,
+            backgroundManager = backgroundManager,
+            restoreSettingsManager = restoreSettingsManager,
+            backgroundKeepAliveManager = backgroundKeepAliveManager,
+            connectivityManager = connectivityManager,
+            dispatcherProvider = dispatcherProvider,
+            moneroFileDao = moneroFileDao,
+            removeMoneroWalletFilesUseCase = removeMoneroWalletFilesUseCase,
+            networkErrorTracker = mockk(relaxed = true),
+            offlineModeManager = offlineModeManager,
+        ).apply {
+            moneroKitWrapper = wrapper
+            createdManager = this
+        }
+    }
+
+    protected fun createWrapper(): MoneroKitWrapper = mockk(relaxed = true) {
+        every { syncState } returns wrapperSyncState
+    }
+
+    protected fun createKitInstanceSpy(
+        backgroundStateFlow: MutableStateFlow<BackgroundManagerState>,
+        wrapper: MoneroKitWrapper,
+    ): MoneroKitManager {
+        val manager = spyk(
+            createManager(backgroundStateFlow, wrapper = null),
+            recordPrivateCalls = true,
+        )
+        every { manager["createKitInstance"](any<Account>()) } returns wrapper
+        createdManager = manager
+        return manager
+    }
+
+    protected fun setField(manager: MoneroKitManager, name: String, value: Any?) {
+        MoneroKitManager::class.java.getDeclaredField(name).apply {
+            isAccessible = true
+        }.set(manager, value)
+    }
 }

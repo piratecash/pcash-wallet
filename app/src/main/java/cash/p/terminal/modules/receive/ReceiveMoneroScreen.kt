@@ -193,7 +193,9 @@ private fun MoneroHardwareWalletActions(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp),
-            title = stringResource(R.string.monero_show_address_on_trezor),
+            title = stringResource(
+                if (uiState.ledgerWallet) R.string.ledger_verify_address else R.string.monero_show_address_on_trezor,
+            ),
             enabled = !uiState.isHardwareOperationInProgress,
             onClick = onDisplayAddress,
         )

@@ -3,12 +3,13 @@ package cash.p.terminal.modules.walletconnect.request
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import cash.p.terminal.modules.offline.OfflineOperationBlockedException
+import cash.p.terminal.modules.send.signingErrorText
 import cash.p.terminal.modules.sendevmtransaction.SectionViewItem
 import cash.p.terminal.modules.walletconnect.WCDelegate
 import cash.p.terminal.strings.helpers.TranslatableString
 import com.reown.walletkit.client.Wallet
 import io.horizontalsystems.core.ViewModelUiState
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -19,7 +20,7 @@ class WCRequestViewModel(
 
     private var approveInProgress = false
     private var finish: Boolean = false
-    private var error: Throwable? = null
+    private var errorText: String? = null
 
     private var actionState = wcAction.stateFlow.value
 
@@ -41,25 +42,26 @@ class WCRequestViewModel(
         runnable = !approveInProgress && actionState.runnable,
         approveButtonTitle = wcAction.getApproveButtonTitle(),
         contentItems = actionState.items,
-        error = error
+        errorText = errorText
     )
 
     fun errorShown() {
-        error = null
+        errorText = null
         emitState()
     }
 
     fun approve() = viewModelScope.launch(Dispatchers.Default) {
-        error = null
+        errorText = null
         approveInProgress = true
         emitState()
 
         val actionResult = try {
             wcAction.performAction()
-        } catch (e: OfflineOperationBlockedException) {
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
             approveInProgress = false
-            error = e
-            emitState()
+            showError(e)
             return@launch
         }
 
@@ -74,14 +76,13 @@ class WCRequestViewModel(
             },
             onErrorResult = {
                 approveInProgress = false
-                error = it
-                emitState()
+                showError(it)
             }
         )
     }
 
     fun reject() = viewModelScope.launch(Dispatchers.Default) {
-        error = null
+        errorText = null
 
         WCDelegate.rejectRequest(
             sessionRequest.topic,
@@ -90,12 +91,15 @@ class WCRequestViewModel(
                 finish = true
                 emitState()
             },
-            onErrorResult = {
-                error = it
-                emitState()
-            }
+            onErrorResult = ::showError
         )
 
+        emitState()
+    }
+
+    // A cancellation on the device resets the screen without a message.
+    private fun showError(error: Throwable) {
+        errorText = error.signingErrorText(error.message ?: error.javaClass.simpleName)
         emitState()
     }
 
@@ -116,5 +120,5 @@ data class WCRequestUiState(
     val runnable: Boolean,
     val approveButtonTitle: TranslatableString,
     val contentItems: List<SectionViewItem>,
-    val error: Throwable? = null
+    val errorText: String? = null
 )

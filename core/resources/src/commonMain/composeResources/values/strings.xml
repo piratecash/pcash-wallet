@@ -46,10 +46,43 @@
     <string name="trezor_wallet">Trezor Wallet</string>
     <string name="connect_trezor">Connect Trezor</string>
     <string name="trezor_setup_description">Connect your Trezor with a USB cable, then confirm on the device.</string>
+    <string name="ledger_wallet">Ledger Wallet</string>
+    <string name="connect_ledger">Connect Ledger</string>
+    <string name="ledger_setup_description">Connect your Ledger with a USB cable and unlock it, then confirm opening each app on the device.</string>
+    <string name="ledger_usb_permission">Allow access to the Ledger in the system dialog</string>
+    <string name="ledger_opening_app">%1$d of %2$d: confirm opening the %3$s app on Ledger</string>
+    <string name="ledger_not_added_title">Not added</string>
+    <string name="ledger_not_added_description">%1$s: the app is missing, outdated, or opening it was declined. Install or update it via Ledger Live, then add the network in Coin Manager.</string>
+    <string name="ledger_identity_mismatch">Another Ledger or passphrase is connected</string>
+    <string name="ledger_update_app">Update the %1$s app via Ledger Live</string>
+    <string name="ledger_install_app">Install the %1$s app via Ledger Live</string>
+    <string name="ledger_install_identity_app">To confirm this is the same Ledger, install any of these apps via Ledger Live: %1$s</string>
+    <string name="ledger_not_found">Ledger not found. Connect it with a USB cable and unlock it.</string>
+    <string name="ledger_usb_permission_denied">USB access to the Ledger was denied</string>
+    <string name="ledger_device_locked">Unlock your Ledger</string>
+    <string name="ledger_device_not_set_up">Ledger is not set up yet. Set it up and install apps via Ledger Live, then connect again</string>
+    <string name="ledger_no_supported_apps">No supported networks were added from this Ledger</string>
+    <string name="ledger_connect_failed">Failed to connect Ledger</string>
+    <string name="ledger_rejected">Declined on the Ledger</string>
+    <string name="ledger_signing_failed">Ledger couldn\u0027t sign the transaction</string>
+    <string name="ledger_blind_signing_required">Enable Blind signing in the %1$s app settings on your Ledger, then try again</string>
+    <string name="ledger_data_too_large">The message is too large for Ledger</string>
+    <string name="ledger_zcash_reopen_app">Close and reopen the Zcash app on your Ledger, then try again</string>
+    <string name="ledger_ton_single_message">Ledger can sign only one message per TON transaction</string>
+    <string name="ledger_tron_settings_required">Enable Transactions data (for a memo) or Custom contracts (for other contract calls) in the Tron app settings on your Ledger, then try again</string>
+    <string name="ledger_ton_blind_signing_required">Turn on Allow blind sign in the TON app settings on your Ledger, then try again</string>
+    <string name="ledger_verify_address">Verify address on Ledger</string>
+    <string name="ledger_monero_confirm_view_key">Allow exporting the view key in the Monero app on your Ledger</string>
+    <string name="ledger_waiting_for_device">Waiting for Ledger…</string>
+    <string name="ledger_sync_paused_open_app">%1$s sync paused. Open the %1$s app on your Ledger to continue.</string>
+    <string name="ledger_sync_finishing_wait">Ledger is finishing the %1$s sync. Your operation will continue automatically.</string>
+    <string name="ledger_device_request_wait">Confirm the %1$s request on your Ledger. Your operation will continue automatically.</string>
+    <string name="ledger_confirm_opening_app">Confirm opening the %1$s app on your Ledger</string>
     <string name="trezor_not_initialized_title">Device not set up</string>
     <string name="trezor_not_initialized_description">This Trezor is not set up yet. Complete setup on the device, then reconnect it.</string>
     <string name="trezor_not_initialized_cta">Setup guide</string>
     <string name="trezor_connect_failed">Couldn\u0027t connect to Trezor.</string>
+    <string name="hardware_connect_device_to_sync">Connect the device to sync</string>
     <string name="Button_Restore">Import</string>
     <string name="Button_Reset">Reset</string>
     <string name="Button_Understand">I Understand</string>
@@ -715,6 +748,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="adding_tokens">Adding tokens</string>
     <string name="scan_to_add_message">You need to scan card to add tokens</string>
     <string name="connect_trezor_to_add_message">You need to connect Trezor to add tokens</string>
+    <string name="connect_ledger_to_add_message">You need to connect Ledger to add tokens</string>
     <string name="create_wallet">Create wallet</string>
     <string name="create">Create</string>
     <string name="error_wallets_creating">Error during creating wallets</string>
@@ -1583,8 +1617,8 @@ Proceed only if you\u0027re sure.</string>
     <string name="ManageCoins_title">Coin Manager</string>
     <string name="ManageCoins_Search">Name, code or contract address</string>
     <string name="error_no_active_account">No active account found</string>
-    <string name="error_hardware_wallet_not_supported">Not supported by hardware card yet</string>
     <string name="error_hardware_wallet_some_tokens_not_found">Some tokens could not be added</string>
+    <string name="error_hardware_wallet_token_unavailable">Not available on %1$s. You can use it in a seed phrase wallet</string>
     <string name="send_error_address_unavailable">Address unavailable</string>
     <string name="send_error_amount_unavailable">Amount unavailable</string>
     <string name="send_error_fee_rate_unavailable">Fee rate unavailable</string>
@@ -1627,6 +1661,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="scan_tangem_card">Scan Tangem Card</string>
     <string name="scan_card_to_add">Scan card to add token</string>
     <string name="add_via_trezor">Add via Trezor</string>
+    <string name="add_via_ledger">Add via Ledger</string>
 
     <!-- Import Wallet -->
     <string name="ImportWallet_BackupFile">from File</string>
@@ -2635,12 +2670,14 @@ Proceed only if you\u0027re sure.</string>
     <string name="duration_short_hours">%1$dh</string>
     <string name="duration_short_minutes">%1$dm</string>
     <string name="duration_short_seconds">%1$ds</string>
-    <string name="send_trezor_mweb_not_supported">Trezor doesn\u0027t support MWEB. Send Litecoin to a regular (non-MWEB) address.</string>
-    <string name="send_trezor_time_lock_not_supported">Trezor doesn\u0027t support time-locked transactions.</string>
+    <string name="send_hardware_mweb_not_supported">This hardware wallet doesn\u0027t support MWEB. Send Litecoin to a regular (non-MWEB) address.</string>
+    <string name="send_hardware_time_lock_not_supported">This hardware wallet doesn\u0027t support time-locked transactions.</string>
     <string name="send_trezor_zcash_memo_not_supported">Trezor can\u0027t attach a memo to a Zcash transaction. Remove the memo to continue.</string>
     <string name="send_trezor_zcash_transparent_only">Trezor can only send Zcash to transparent addresses.</string>
     <string name="send_trezor_zcash_unified_no_transparent_receiver">This unified address has no transparent receiver, so Trezor can\u0027t send to it.</string>
     <string name="send_trezor_zcash_firmware_required">%1$s needs firmware %2$s or later to send to unified Zcash addresses. Update it, then try again — the app checks the firmware version again on your next Zcash transaction.</string>
+    <string name="send_ledger_zcash_sapling_not_supported">Ledger does not send Zcash to Sapling addresses. Use a unified or transparent address.</string>
+    <string name="send_ledger_zcash_transaction_too_large">This transaction is too large for the Ledger. Send a smaller amount.</string>
     <string name="send_failed_offline_prompt_title">Transaction not sent</string>
     <string name="send_failed_offline_prompt_message">Sign the transaction offline and send it later?</string>
 

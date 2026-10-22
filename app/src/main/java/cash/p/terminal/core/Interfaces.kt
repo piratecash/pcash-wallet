@@ -371,6 +371,8 @@ interface ISendZcashAdapter : IBalanceAdapter, OfflineTransactionAdapter<SignedO
     fun stop()
 
     suspend fun validate(address: String): ZcashAdapter.ZCashAddressType
+    /** The form of [address] the signing device will show, so the user can compare the two. */
+    fun addressShownOnDevice(address: String): String
     /** Returns the txid of the broadcast transaction. */
     suspend fun send(amount: BigDecimal, address: String, memo: String): String
     suspend fun getOwnAddresses(): List<String>

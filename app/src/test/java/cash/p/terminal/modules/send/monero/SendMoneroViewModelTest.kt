@@ -295,6 +295,15 @@ class SendMoneroViewModelTest : KoinTest {
     }
 
     @Test
+    fun offlineSignSupported_ledgerAccount_returnsFalse() {
+        val ledgerAccount = account.copy(type = AccountType.LedgerDevice("ledger", "nanoSP", "key"))
+
+        val viewModel = createViewModel(wallet = createWallet(moneroToken, ledgerAccount))
+
+        assertFalse(viewModel.offlineSignSupported)
+    }
+
+    @Test
     fun onClickSignOffline_preparedOnlineThenConnectionLost_signsFromCache() = runTest(dispatcher) {
         val viewModel = createViewModel()
         viewModel.onEnterAddress(address)

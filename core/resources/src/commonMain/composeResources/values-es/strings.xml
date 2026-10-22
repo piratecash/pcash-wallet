@@ -55,10 +55,43 @@
     <string name="trezor_wallet">Trezor Wallet</string>
     <string name="connect_trezor">Conectar Trezor</string>
     <string name="trezor_setup_description">Conecta tu Trezor con un cable USB y confirma en el dispositivo.</string>
+    <string name="ledger_wallet">Ledger Wallet</string>
+    <string name="connect_ledger">Conectar Ledger</string>
+    <string name="ledger_setup_description">Conecta tu Ledger con un cable USB, desbloquéalo y confirma la apertura de cada aplicación en el dispositivo.</string>
+    <string name="ledger_usb_permission">Permite el acceso al Ledger en el diálogo del sistema</string>
+    <string name="ledger_opening_app">%1$d de %2$d: confirma la apertura de la aplicación %3$s en el Ledger</string>
+    <string name="ledger_not_added_title">No añadido</string>
+    <string name="ledger_not_added_description">%1$s: la aplicación no está instalada, está desactualizada o se rechazó su apertura. Instálala o actualízala con Ledger Live y luego añade la red en el Administrador de monedas.</string>
+    <string name="ledger_identity_mismatch">Hay otro Ledger u otra frase de contraseña conectados</string>
+    <string name="ledger_update_app">Actualiza la aplicación %1$s con Ledger Live</string>
+    <string name="ledger_install_app">Instala la aplicación %1$s con Ledger Live</string>
+    <string name="ledger_install_identity_app">Para confirmar que es el mismo Ledger, instala cualquiera de estas aplicaciones con Ledger Live: %1$s</string>
+    <string name="ledger_not_found">No se encontró el Ledger. Conéctalo con un cable USB y desbloquéalo.</string>
+    <string name="ledger_usb_permission_denied">Se denegó el acceso USB al Ledger</string>
+    <string name="ledger_device_locked">Desbloquea tu Ledger</string>
+    <string name="ledger_device_not_set_up">Tu Ledger aún no está configurado. Configúralo e instala las aplicaciones con Ledger Live y vuelve a conectarlo</string>
+    <string name="ledger_no_supported_apps">No se añadió ninguna red compatible desde este Ledger</string>
+    <string name="ledger_connect_failed">No se pudo conectar el Ledger</string>
+    <string name="ledger_rejected">Rechazado en el Ledger</string>
+    <string name="ledger_signing_failed">El Ledger no pudo firmar la transacción</string>
+    <string name="ledger_blind_signing_required">Activa Blind signing en los ajustes de la aplicación %1$s de tu Ledger y vuelve a intentarlo</string>
+    <string name="ledger_data_too_large">El mensaje es demasiado grande para el Ledger</string>
+    <string name="ledger_zcash_reopen_app">Cierra y vuelve a abrir la aplicación Zcash en tu Ledger y vuelve a intentarlo</string>
+    <string name="ledger_ton_single_message">Ledger solo puede firmar un mensaje por transacción de TON</string>
+    <string name="ledger_tron_settings_required">Activa Transactions data (para un memo) o Custom contracts (para otras llamadas a contratos) en los ajustes de la aplicación Tron de tu Ledger y vuelve a intentarlo</string>
+    <string name="ledger_ton_blind_signing_required">Activa Allow blind sign en los ajustes de la aplicación TON de tu Ledger y vuelve a intentarlo</string>
+    <string name="ledger_verify_address">Verificar la dirección en el Ledger</string>
+    <string name="ledger_monero_confirm_view_key">Permite exportar la clave de visualización en la aplicación Monero de tu Ledger</string>
+    <string name="ledger_waiting_for_device">Esperando a Ledger…</string>
+    <string name="ledger_sync_paused_open_app">Sincronización de %1$s en pausa. Abre la aplicación %1$s en tu Ledger para continuar.</string>
+    <string name="ledger_sync_finishing_wait">Ledger está terminando la sincronización de %1$s. Tu operación continuará automáticamente.</string>
+    <string name="ledger_device_request_wait">Confirma la solicitud de %1$s en tu Ledger. Tu operación continuará automáticamente.</string>
+    <string name="ledger_confirm_opening_app">Confirma la apertura de la aplicación %1$s en tu Ledger</string>
     <string name="trezor_not_initialized_title">Dispositivo no configurado</string>
     <string name="trezor_not_initialized_description">Este Trezor aún no está configurado. Completa la configuración en el dispositivo y vuelve a conectarlo.</string>
     <string name="trezor_not_initialized_cta">Guía de configuración</string>
     <string name="trezor_connect_failed">No se pudo conectar con Trezor.</string>
+    <string name="hardware_connect_device_to_sync">Conecta el dispositivo para sincronizar</string>
     <string name="Button_Activate">Activar</string>
     <string name="activation_required_dialog_description">Para recibir %s, debe activar el token. La red Stellar requiere establecer una línea de confianza (trustline) para cada token. Sin ella, su monedero no podrá recibir %s: la transacción será rechazada y los fondos no serán entregados.</string>
     <string name="activate_you_activate">Usted activa</string>
@@ -577,6 +610,7 @@
 
     <string name="connect">Conectar</string>
     <string name="connect_trezor_to_add_message">Necesitas conectar Trezor para agregar tokens</string>
+    <string name="connect_ledger_to_add_message">Necesitas conectar Ledger para agregar tokens</string>
     <!--EthereumTransaction-->
     <string name="EthereumTransaction_Warning_Title">Aviso</string>
     <string name="EthereumTransaction_Error_Title">Erreur</string>
@@ -1230,6 +1264,7 @@
     <string name="ManageAccounts_ImportWallet">Restaurar desde</string>
     <string name="ManageAccounts_WatchAddress">Ver Monedero</string>
     <string name="add_via_trezor">Agregar vía Trezor</string>
+    <string name="add_via_ledger">Agregar vía Ledger</string>
     <!-- Import Wallet -->
     <string name="ImportWallet_BackupFile">Desde archivo</string>
     <string name="ImportWallet_BackupFile_Description">Importar desde un archivo de copia de seguridad.</string>
@@ -2187,18 +2222,21 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="adding_tokens">Agregando tokens</string>
     <string name="scan_to_add_message">Necesitas escanear la tarjeta para agregar tokens</string>
     <string name="error_hardware_wallet_some_tokens_not_found">No se pudieron agregar algunos tokens</string>
+    <string name="error_hardware_wallet_token_unavailable">No disponible en %1$s. Puedes usarlo en una billetera con frase semilla</string>
     <string name="send_error_address_unavailable">Dirección no disponible</string>
     <string name="send_error_amount_unavailable">Importe no disponible</string>
     <string name="send_error_fee_rate_unavailable">Tarifa de comisión no disponible</string>
     <string name="send_error_balance_unavailable">Saldo no disponible</string>
     <string name="litecoin_mweb_invalid_amount">Importe de Litecoin MWEB no válido</string>
     <string name="litecoin_hardware_extended_public_key_required">La cartera hardware de Litecoin requiere una clave pública extendida</string>
-    <string name="send_trezor_mweb_not_supported">Trezor no admite MWEB. Envía Litecoin a una dirección normal (no MWEB).</string>
-    <string name="send_trezor_time_lock_not_supported">Trezor no admite transacciones con bloqueo temporal.</string>
+    <string name="send_hardware_mweb_not_supported">Este monedero hardware no admite MWEB. Envía Litecoin a una dirección normal (no MWEB).</string>
+    <string name="send_hardware_time_lock_not_supported">Este monedero hardware no admite transacciones con bloqueo temporal.</string>
     <string name="send_trezor_zcash_memo_not_supported">Trezor no puede adjuntar un memo a una transacción de Zcash. Elimina el memo para continuar.</string>
     <string name="send_trezor_zcash_transparent_only">Trezor solo puede enviar Zcash a direcciones transparentes.</string>
     <string name="send_trezor_zcash_unified_no_transparent_receiver">Esta dirección unificada no tiene un receptor transparente, por lo que Trezor no puede enviarle una transferencia.</string>
     <string name="send_trezor_zcash_firmware_required">%1$s necesita el firmware %2$s o posterior para enviar a direcciones unificadas de Zcash. Actualiza el dispositivo y vuelve a intentarlo — la versión del firmware se comprobará de nuevo en tu próxima transacción de Zcash.</string>
+    <string name="send_ledger_zcash_sapling_not_supported">Ledger no envía Zcash a direcciones Sapling. Usa una dirección unificada o transparente.</string>
+    <string name="send_ledger_zcash_transaction_too_large">Esta transacción es demasiado grande para el Ledger. Envía un importe menor.</string>
     <string name="send_failed_offline_prompt_title">Transacción no enviada</string>
     <string name="send_failed_offline_prompt_message">¿Firmar la transacción sin conexión y enviarla más tarde?</string>
 

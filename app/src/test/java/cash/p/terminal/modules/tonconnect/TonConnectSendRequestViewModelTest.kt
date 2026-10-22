@@ -17,6 +17,7 @@ import com.tonapps.wallet.data.core.entity.SendRequestEntity
 import io.horizontalsystems.sqlcipher.room.DatabaseKeyMismatchException
 import io.horizontalsystems.sqlcipher.room.InsufficientDatabaseMigrationSpaceException
 import io.horizontalsystems.tonkit.core.TonKit
+import io.horizontalsystems.tonkit.core.TonWallet
 import io.horizontalsystems.tonkit.core.TransactionSigner
 import io.horizontalsystems.tonkit.models.SignTransaction
 import io.horizontalsystems.tonkit.tonconnect.TonConnectKit
@@ -132,8 +133,9 @@ class TonConnectSendRequestViewModelTest {
         coEvery { tonKitManager.getNonActiveTonKitWrapper(account, any()) } returns
             TonKitWrapper(tonKit, mockk(relaxed = true))
         // Stops prepareEnv before the coin lookup; confirm stays available.
-        coEvery { transactionSigner.getDetails(any(), any()) } throws IllegalStateException("no details")
-        coEvery { transactionSigner.sign(any(), any()) } returns "boc"
+        coEvery { transactionSigner.getDetails(any(), any<TonWallet.FullAccess>()) } throws
+            IllegalStateException("no details")
+        coEvery { transactionSigner.sign(any(), any<TonWallet.FullAccess>()) } returns "boc"
         val viewModel = createViewModel()
         advanceUntilIdle()
         coEvery { tonConnectManager.kit() } throws IllegalStateException("TON Connect unavailable")

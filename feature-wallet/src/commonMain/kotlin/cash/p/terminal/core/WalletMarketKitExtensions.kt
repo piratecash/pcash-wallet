@@ -1,6 +1,7 @@
 package cash.p.terminal.core
 
 import cash.p.terminal.core.managers.RestoreSettingType
+import cash.p.terminal.ledger.di.ledgerAppKeyFetchers
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.Derivation
 import cash.p.terminal.wallet.Token
@@ -123,6 +124,8 @@ fun BlockchainType.supports(accountType: AccountType): Boolean {
         is AccountType.TrezorDevice ->
             HardwareWalletSupport.supports(accountType, this)
 
+        is AccountType.LedgerDevice -> nativeTokenQueries.any(ledgerAppKeyFetchers::supports)
+
         is AccountType.HardwareCard ->
             this != BlockchainType.Thorchain && this != BlockchainType.Mayachain
 
@@ -206,6 +209,8 @@ fun Token.supports(accountType: AccountType): Boolean {
         is AccountType.MnemonicMonero -> accountType.isCompatibleWith(blockchainType, type)
 
         is AccountType.TrezorDevice -> HardwareWalletSupport.supports(accountType, blockchainType, type)
+
+        is AccountType.LedgerDevice -> ledgerAppKeyFetchers.supports(tokenQuery)
 
         else -> true
     }

@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.beam.BeamNetwork
 import cash.p.terminal.R
+import cash.p.terminal.ledger.ui.LedgerVerifyAddressButton
 import cash.p.terminal.core.titleResId
 import cash.p.terminal.resources.Balance_Receive_UsedAddresses
 import cash.p.terminal.resources.Res
@@ -126,6 +127,7 @@ fun ReceiveScreen(navigation: HSNavigation, wallet: Wallet, receiveEntryPoint: K
         onErrorClick = { addressViewModel.onErrorClick() },
         allowSetAmount = wallet.token.blockchainType != BlockchainType.Beam,
         statusContent = beamTypeSelector,
+        bottomContent = { LedgerVerifyAddressButton(wallet, uiState.address) },
         topContent = {
             ReceiveTopContent(uiState, beamTypeSelector) {
                 navigation.slideFromRight(

@@ -57,12 +57,16 @@ private fun CancelOrScanScreen(
     onConfirm: () -> Unit,
     onCancel: () -> Unit,
 ) {
-    val isTrezor = accountType is AccountType.TrezorDevice
+    val isHardwareDevice = accountType is AccountType.HardwareDevice
     val bodyText = stringResource(
-        if (isTrezor) R.string.connect_trezor_to_add_message else R.string.scan_to_add_message
+        when (accountType) {
+            is AccountType.TrezorDevice -> R.string.connect_trezor_to_add_message
+            is AccountType.LedgerDevice -> R.string.connect_ledger_to_add_message
+            else -> R.string.scan_to_add_message
+        }
     )
     val confirmText = stringResource(
-        if (isTrezor) R.string.connect else R.string.scan
+        if (isHardwareDevice) R.string.connect else R.string.scan
     )
 
     ComposeAppTheme {

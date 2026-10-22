@@ -34,6 +34,7 @@ import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.entities.CurrencyValue
+import io.horizontalsystems.hodler.LockTimeInterval
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.justRun
@@ -224,6 +225,28 @@ class SendBitcoinViewModelTest {
         advanceUntilIdle()
 
         assertEquals(true, viewModel.offlineSignSupported)
+    }
+
+    @Test
+    fun onEnterLockTimeInterval_lockTimeDisabled_dropsInterval() = runTest(mainDispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.onEnterLockTimeInterval(LockTimeInterval.hour)
+
+        verify { pluginService.setLockTimeInterval(null) }
+        verify(exactly = 0) { pluginService.setLockTimeInterval(LockTimeInterval.hour) }
+    }
+
+    @Test
+    fun onEnterLockTimeInterval_lockTimeEnabled_setsInterval() = runTest(mainDispatcher) {
+        every { pluginService.isLockTimeEnabled } returns true
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.onEnterLockTimeInterval(LockTimeInterval.hour)
+
+        verify { pluginService.setLockTimeInterval(LockTimeInterval.hour) }
     }
 
     private fun createViewModel(

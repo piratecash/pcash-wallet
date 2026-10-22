@@ -4,6 +4,7 @@ import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.evmChain
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.ethereumkit.models.Chain
@@ -42,20 +43,8 @@ class EvmBlockchainCatalog(private val marketKit: MarketKitWrapper) : EvmBlockch
     override val allMainNetBlockchains: List<Blockchain>
         get() = marketKit.blockchains(EvmBlockchains.blockchainTypes.map { it.uid })
 
-    override fun getChain(blockchainType: BlockchainType) = when (blockchainType) {
-        BlockchainType.Ethereum -> Chain.Ethereum
-        BlockchainType.BinanceSmartChain -> Chain.BinanceSmartChain
-        BlockchainType.Polygon -> Chain.Polygon
-        BlockchainType.Avalanche -> Chain.Avalanche
-        BlockchainType.Optimism -> Chain.Optimism
-        BlockchainType.Base -> Chain.Base
-        BlockchainType.ZkSync -> Chain.ZkSync
-        BlockchainType.RobinhoodChain -> Chain.RobinhoodChain
-        BlockchainType.ArbitrumOne -> Chain.ArbitrumOne
-        BlockchainType.Gnosis -> Chain.Gnosis
-        BlockchainType.Fantom -> Chain.Fantom
-        else -> throw IllegalArgumentException("Unsupported blockchain type $blockchainType")
-    }
+    override fun getChain(blockchainType: BlockchainType): Chain =
+        blockchainType.evmChain ?: throw IllegalArgumentException("Unsupported blockchain type $blockchainType")
 
     override fun getBlockchain(chainId: Int): Blockchain? =
         allBlockchains.firstOrNull { getChain(it.type).id == chainId }

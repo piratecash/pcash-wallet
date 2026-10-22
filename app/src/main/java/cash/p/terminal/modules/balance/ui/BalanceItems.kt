@@ -60,6 +60,7 @@ import cash.p.terminal.modules.receive.ui.ReceiveChooseCoinPage
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
 import cash.p.terminal.modules.send.offline.OfflineBroadcastPage
 import cash.p.terminal.modules.sendtokenselect.SendTokenSelectPage
+import cash.p.terminal.modules.syncerror.closeSyncErrorDialogUnlessFailing
 import cash.p.terminal.modules.transactions.TransactionItem
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui_compose.components.BalanceActionButton
@@ -107,6 +108,11 @@ fun BalanceItems(
                     navigation.slideFromRight(MultiSwapExchangesPage(payCoreDate = event.date))
             }
         }
+    }
+
+    val failingWallets = balanceViewItems.filter { it.failedIconVisible }.map { it.wallet }
+    LaunchedEffect(failingWallets) {
+        navigation.closeSyncErrorDialogUnlessFailing(failingWallets)
     }
 
     val context = LocalContext.current

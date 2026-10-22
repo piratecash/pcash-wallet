@@ -22,7 +22,7 @@ fun AccountType.zcashKey(hardwarePublicKey: HardwarePublicKey? = null): ZcashKey
     is AccountType.ZCashUfvKey -> ZcashKey.ViewingKey(key)
     is AccountType.ZCashSaplingKey -> key.asKey(spendable = isSpendingKey)
     is AccountType.HdExtendedKey -> keySerialized.asKey(spendable = !hdExtendedKey.isPublic)
-    is AccountType.TrezorDevice -> hardwarePublicKey?.key?.value?.let(ZcashKey::ViewingKey)
+    is AccountType.HardwareDevice -> hardwarePublicKey?.key?.value?.let(ZcashKey::ViewingKey)
     else -> null
 }
 

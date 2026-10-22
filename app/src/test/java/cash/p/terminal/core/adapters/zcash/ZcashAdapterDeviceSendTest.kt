@@ -2,6 +2,7 @@ package cash.p.terminal.core.adapters.zcash
 
 import cash.p.terminal.core.OfflineZcashSignRequest
 import cash.p.terminal.core.managers.NotBroadcastException
+import cash.p.terminal.wallet.hardware.HardwareAddressPosition
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
 import cash.p.zcash.BroadcastResult
 import cash.p.zcash.PaymentOptions
@@ -10,6 +11,7 @@ import cash.p.zcash.PoolSet
 import cash.p.zcash.PreparedTransaction
 import cash.p.zcash.Recipient
 import cash.p.zcash.TransactionPlan
+import cash.p.zcash.ZcashException
 import cash.p.zcash.ZcashSdk
 import cash.p.zcash.transactionId
 import io.mockk.coEvery
@@ -21,6 +23,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -31,9 +34,10 @@ import kotlin.test.assertFailsWith
 /**
  * A Trezor account signs only the transparent bundle, so every recipient it pays must be
  * transparent-only - and a memo, which rides in a shielded output, cannot be delivered at all.
+ * A Ledger signs transparent and Orchard/Ironwood, but no Sapling and only as much as the app holds.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-class ZcashAdapterTrezorSendTest : ZcashAdapterTestFixture() {
+class ZcashAdapterDeviceSendTest : ZcashAdapterTestFixture() {
 
     /** Recipient lists of every plan the adapter asked for. */
     private val plannedRecipients = mutableListOf<List<Recipient>>()
@@ -113,6 +117,58 @@ class ZcashAdapterTrezorSendTest : ZcashAdapterTestFixture() {
         }
     }
 
+    @Test
+    fun send_ledgerAccount_plansForExternalPcztSignerWithMemo() = runTest(dispatcher) {
+        stubLedgerAccount()
+        startAdapter(AddressSpecType.Unified)
+
+        adapter.send(AMOUNT, UNIFIED_RECIPIENT, memo = MEMO)
+
+        val options = plannedOptions.single()
+        assertTrue(options.externalPcztSigning)
+        assertFalse(options.hardwareSigning)
+        assertEquals(MEMO, plannedRecipients.single().single().memo)
+    }
+
+    @Test
+    fun send_ledgerAccount_planRefused_failsBeforeBroadcastWithDeviceReason() = runTest(dispatcher) {
+        stubLedgerAccount()
+        startAdapter(AddressSpecType.Unified)
+        val reasons = mapOf(
+            "sapling" to ZcashAdapter.ZcashError.LedgerSaplingRecipient,
+            "transparent-inputs" to ZcashAdapter.ZcashError.LedgerTransactionTooLarge,
+            "ironwood-actions" to ZcashAdapter.ZcashError.LedgerTransactionTooLarge,
+        )
+
+        reasons.forEach { (code, error) ->
+            val refusal = ZcashException("refused [external-signing:$code]")
+            coEvery { zcashWallet.prepare(any(), any(), any()) } throws refusal
+
+            val failure = assertFailsWith<NotBroadcastException> { adapter.send(AMOUNT, UNIFIED_RECIPIENT, memo = "") }
+
+            assertEquals(error, failure.cause)
+        }
+        coVerify(exactly = 0) { signer.sign(any(), any(), any()) }
+    }
+
+    @Test
+    fun locate_ledgerAccount_ownAddressPastIndex1000_returnsItsExternalIndex() = runTest(dispatcher) {
+        stubLedgerAccount()
+        coEvery { zcashWallet.transparentAddressIndex(DB_ACCOUNT_ID, OWN_T_ADDRESS) } returns 1_000
+        startAdapter(AddressSpecType.Transparent)
+
+        assertEquals(HardwareAddressPosition(change = false, index = 1_000), adapter.locate(OWN_T_ADDRESS))
+    }
+
+    @Test
+    fun locate_addressTheWalletDoesNotOwn_returnsNull() = runTest(dispatcher) {
+        stubLedgerAccount()
+        coEvery { zcashWallet.transparentAddressIndex(DB_ACCOUNT_ID, OWN_T_ADDRESS) } returns null
+        startAdapter(AddressSpecType.Transparent)
+
+        assertNull(adapter.locate(OWN_T_ADDRESS))
+    }
+
     private fun TestScope.startAdapter(spec: AddressSpecType) {
         adapter = createAdapter(spec, signer)
         adapter.start()
@@ -126,6 +182,7 @@ class ZcashAdapterTrezorSendTest : ZcashAdapterTestFixture() {
         const val FEE_ZAT = 10_000L
         const val MEMO = "order-42"
         const val UNIFIED_RECIPIENT = "u1RecipientAddress"
+        const val OWN_T_ADDRESS = "t1OwnAddress"
         val AMOUNT: BigDecimal = BigDecimal("0.1")
         val RAW = byteArrayOf(1, 2, 3, 4)
         val PREPARED = PreparedTransaction(byteArrayOf(9, 9, 9, 9))

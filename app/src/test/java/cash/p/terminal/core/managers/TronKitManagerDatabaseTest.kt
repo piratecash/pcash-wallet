@@ -162,7 +162,7 @@ class TronKitManagerDatabaseTest {
         hardwarePublicKeyStorage = mockk(relaxed = true),
         backgroundKeepAliveManager = mockk(relaxed = true),
         networkErrorTracker = mockk(relaxed = true),
-        trezorClient = mockk(relaxed = true),
+        deviceSigners = DeviceSignerFactory(mockk(relaxed = true), mockk(relaxed = true), mockk(relaxed = true)),
         offlineModeManager = mockk(relaxed = true),
         tronKitDatabaseKeyProvider = keyProvider,
     ).also { createdManager = it }

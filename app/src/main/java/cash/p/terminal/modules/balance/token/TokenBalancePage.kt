@@ -123,10 +123,10 @@ class AssetSettingsPage(val wallet: Wallet) : HSPage() {
         OfflineModeErrorEffect(offlineModeToggleViewModel)
 
         // Zcash created-in-app wallets have no history before their creation checkpoint, so
-        // editing the birthday height is meaningful only for restored (imported) Zcash wallets.
+        // editing the birthday height is meaningful only for restored and hardware (existing) wallets.
         val creationBlockVisible = wallet.token.blockchainType == BlockchainType.Monero ||
             (wallet.token.blockchainType == BlockchainType.Zcash &&
-                wallet.account.origin == AccountOrigin.Restored)
+                (wallet.account.origin == AccountOrigin.Restored || wallet.account.isHardwareWalletAccount))
         val getRestoreHeight = remember { getKoinInstance<GetRestoreHeightForWalletUseCase>() }
         val currentHeightText by produceState<String?>(null, wallet, creationBlockVisible) {
             value = if (creationBlockVisible) getRestoreHeight(wallet)?.toString() else null

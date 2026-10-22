@@ -11,6 +11,7 @@ import cash.p.terminal.core.deeplink.DeeplinkParser
 import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.modules.main.Nav3Host
 import cash.p.terminal.modules.main.PlainTestPage
+import cash.p.terminal.ledger.domain.LedgerUserOperations
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.QrScannerInput
@@ -20,6 +21,7 @@ import cash.p.terminal.ui_compose.LocalConnectionPanelState
 import io.horizontalsystems.core.IPinComponent
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -64,7 +66,12 @@ class QRScannerPageTest {
         }
         composeRule.setContent {
             CompositionLocalProvider(LocalConnectionPanelState provides mutableStateOf(false)) {
-                Nav3Host(navigation, isLocked = mutableStateOf(false))
+                Nav3Host(
+                    navigation,
+                    isLocked = mutableStateOf(false),
+                    ledgerUserOperations = LedgerUserOperations(),
+                    ledgerOpeningApp = MutableStateFlow(null),
+                )
             }
         }
         composeRule.runOnUiThread {

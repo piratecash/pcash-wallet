@@ -89,7 +89,10 @@ object SwapHelper {
 
                 BlockchainType.Thorchain,
                 BlockchainType.Mayachain -> {
-                    if (account.type !is AccountType.Mnemonic) throw SwapError.NoDestinationAddress()
+                    val type = account.type
+                    if (type !is AccountType.Mnemonic && type !is AccountType.LedgerDevice) {
+                        throw SwapError.NoDestinationAddress()
+                    }
                     val thorchainKitManagers: ThorchainKitManagers by inject(ThorchainKitManagers::class.java)
                     thorchainKitManagers.forType(blockchainType).getAddress(account)
                 }

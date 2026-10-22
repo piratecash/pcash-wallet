@@ -1,5 +1,8 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.ledger.domain.LedgerAppAccess
+import cash.p.terminal.ledger.ethereum.LedgerEvmSigner
+import cash.p.terminal.ledger.ethereum.LedgerTokenDescriptorStore
 import cash.p.terminal.tangem.common.CustomXPubKeyAddressParser
 import cash.p.terminal.tangem.domain.model.AddressBytesWithPublicKey
 import cash.p.terminal.tangem.signer.HardwareWalletEvmSigner
@@ -26,6 +29,8 @@ import io.horizontalsystems.ethereumkit.models.Chain
 class EvmSignerFactory(
     private val hardwarePublicKeyStorage: IHardwarePublicKeyStorage,
     private val trezorClient: ITrezorClient,
+    private val ledgerAppAccess: LedgerAppAccess,
+    private val ledgerTokenDescriptors: LedgerTokenDescriptorStore,
 ) {
 
     suspend fun resolveAddress(account: Account, blockchainType: BlockchainType, chain: Chain): Address? =
@@ -33,7 +38,7 @@ class EvmSignerFactory(
             is AccountType.Mnemonic -> Signer.address(type.seed, chain)
             is AccountType.EvmPrivateKey -> Signer.address(type.key)
             is AccountType.EvmAddress -> Address(type.address)
-            is AccountType.HardwareCard, is AccountType.TrezorDevice -> hardwareAddress(account.id, blockchainType)
+            is AccountType.HardwareCard, is AccountType.HardwareDevice -> hardwareAddress(account.id, blockchainType)
             else -> null
         }
 
@@ -62,6 +67,19 @@ class EvmSignerFactory(
                     trezorClient = trezorClient,
                     model = TrezorModel.fromInternalModel(type.model),
                     firmwareVersion = type.firmwareVersion
+                )
+            }
+
+            is AccountType.LedgerDevice -> hardwareKey(
+                account.id, blockchainType
+            )?.let { (publicKey, addressWithPublicKey) ->
+                LedgerEvmSigner(
+                    appAccess = ledgerAppAccess,
+                    tokenDescriptors = ledgerTokenDescriptors,
+                    account = account,
+                    hardwarePublicKey = publicKey,
+                    address = Address(addressWithPublicKey.addressBytes),
+                    chain = chain,
                 )
             }
 

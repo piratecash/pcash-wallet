@@ -14,11 +14,13 @@ import cash.p.terminal.core.managers.PoisonAddressManager
 import cash.p.terminal.core.managers.RecentAddressManager
 import cash.p.terminal.entities.Address
 import cash.p.terminal.entities.OfflineSignedTransactionDraft
+import cash.p.terminal.ledger.domain.LedgerBlindSigningRequiredException
 import cash.p.terminal.modules.amount.SendAmountService
 import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.send.offline.OfflineSignState
 import cash.p.terminal.modules.send.offline.OfflineTransactionFormat
 import cash.p.terminal.modules.xrate.XRateService
+import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.trezor.domain.TrezorCancelledException
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
@@ -32,6 +34,7 @@ import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import cash.p.terminal.wallet.policy.HardwareWalletTokenPolicy
+import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.entities.CurrencyValue
@@ -40,6 +43,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.slot
 import io.mockk.unmockkAll
 import kotlinx.coroutines.CoroutineScope
@@ -52,6 +56,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.jetbrains.compose.resources.StringResource
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -247,6 +252,23 @@ class SendSolanaViewModelTest : KoinTest {
 
         assertEquals(OfflineSignState.Idle, viewModel.offlineSignState)
         coVerify(exactly = 0) { offlineSignedTransactionRepository.save(any(), any()) }
+    }
+
+    @Test
+    fun onClickSignOffline_ledgerBlindSigningOff_showsBlindSigningInstruction() = runTest(dispatcher) {
+        mockkObject(Translator)
+        every { Translator.getString(any(), *anyVararg()) } answers { firstArg<StringResource>().key }
+        coEvery { adapter.signOffline(any()) } throws LedgerBlindSigningRequiredException("Solana")
+        val viewModel = createViewModel()
+        viewModel.onEnterAddress(address)
+        viewModel.onEnterAmount(amount)
+        advanceUntilIdle()
+
+        viewModel.onClickSignOffline(OfflineTransactionFormat.Pcash)
+        advanceUntilIdle()
+
+        val caution = (viewModel.offlineSignState as OfflineSignState.Failed).caution
+        assertEquals("ledger_blind_signing_required", (caution.s as TranslatableString.PlainString).text)
     }
 
     @Test

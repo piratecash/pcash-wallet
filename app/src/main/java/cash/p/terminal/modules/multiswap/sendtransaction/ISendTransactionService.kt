@@ -15,7 +15,8 @@ import cash.p.terminal.entities.CoinValue
 import cash.p.terminal.modules.multiswap.ui.DataField
 import cash.p.terminal.modules.offline.OfflineOperationGate
 import cash.p.terminal.modules.send.SendModule
-import cash.p.terminal.modules.send.userMessageRes
+import cash.p.terminal.modules.send.hardwareWalletErrorMessage
+import cash.p.terminal.modules.send.isHardwareWalletCancelled
 import cash.p.terminal.resources.Hud_Text_NoInternet
 import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
@@ -28,7 +29,6 @@ import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.useCases.WalletUseCase
-import com.piratecash.monero.signer.HardwareWalletOperationException
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.IAppNumberFormatter
@@ -128,10 +128,14 @@ abstract class ISendTransactionService<T>(protected val token: Token) :
         locallyCreatedTransactionRepository.markCreated(wallet, transactionHash)
     }
 
+    /** A cancellation on the hardware wallet leaves nothing to show. */
+    protected fun failureCautions(error: Throwable): List<CautionViewItem> =
+        if (error.isHardwareWalletCancelled()) emptyList() else listOf(createCaution(error))
+
     protected fun createCaution(
         error: Throwable,
         type: CautionViewItem.Type = CautionViewItem.Type.Error
-    ) = when (error) {
+    ) = error.hardwareWalletErrorMessage()?.let { CautionViewItem(it, "", type) } ?: when (error) {
         is UnknownHostException -> CautionViewItem(
             TranslatableString.ResString(Res.string.Hud_Text_NoInternet).toString(),
             "",
@@ -140,12 +144,6 @@ abstract class ISendTransactionService<T>(protected val token: Token) :
 
         is LocalizedException -> CautionViewItem(
             error.toResString().toString(),
-            "",
-            type
-        )
-
-        is HardwareWalletOperationException -> CautionViewItem(
-            TranslatableString.ResString(error.userMessageRes()).toString(),
             "",
             type
         )

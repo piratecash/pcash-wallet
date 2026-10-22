@@ -12,8 +12,6 @@ import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.core.storage.HardwarePublicKeyStorage
 import cash.p.terminal.core.utils.TronAddressParser
 import cash.p.terminal.tangem.signer.HardwareWalletTronSigner
-import cash.p.terminal.trezor.signer.TrezorTronSigner
-import cash.p.terminal.trezorkit.client.ITrezorClient
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
 import io.horizontalsystems.core.BackgroundManager
@@ -41,7 +39,7 @@ class TronKitManager(
     private val hardwarePublicKeyStorage: HardwarePublicKeyStorage,
     private val backgroundKeepAliveManager: BackgroundKeepAliveManager,
     private val networkErrorTracker: NetworkErrorTracker,
-    private val trezorClient: ITrezorClient,
+    private val deviceSigners: DeviceSignerFactory,
     private val offlineModeManager: OfflineModeManager,
     private val tronKitDatabaseKeyProvider: TronKitDatabaseKeyProvider,
 ) {
@@ -93,8 +91,8 @@ class TronKitManager(
                 is AccountType.HardwareCard ->
                     createKitInstance(account, databaseKey)
 
-                is AccountType.TrezorDevice ->
-                    createTrezorKitInstance(account, databaseKey)
+                is AccountType.HardwareDevice ->
+                    createDeviceKitInstance(account, accountType, databaseKey)
 
                 else -> throw UnsupportedAccountException()
             }
@@ -150,15 +148,14 @@ class TronKitManager(
         return createAddressKitInstance(addressAndPublicKey.address, account, signer, databaseKey)
     }
 
-    private fun createTrezorKitInstance(account: Account, databaseKey: ByteArray): TronKitWrapper {
-        val key = getHardwareKey(account, "Trezor does not have a key for Tron")
-        val address = key.key.value
-        val signer = TrezorTronSigner(
-            expectedAddressBase58 = address,
-            derivationPath = key.derivationPath,
-            trezorClient = trezorClient
-        )
-        return createAddressKitInstance(Address.fromBase58(address), account, signer, databaseKey)
+    private fun createDeviceKitInstance(
+        account: Account,
+        accountType: AccountType.HardwareDevice,
+        databaseKey: ByteArray,
+    ): TronKitWrapper {
+        val key = getHardwareKey(account, "Hardware device does not have a key for Tron")
+        val signer = deviceSigners.tron(account, accountType, key)
+        return createAddressKitInstance(Address.fromBase58(key.key.value), account, signer, databaseKey)
     }
 
     private fun getHardwareKey(account: Account, missingKeyMessage: String) = runBlocking {

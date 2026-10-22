@@ -5,6 +5,7 @@ import cash.p.terminal.core.managers.UserDeletedWalletManager
 import cash.p.terminal.core.usecase.OfflineModeUseCase
 import cash.p.terminal.core.usecase.RescanMoneroUseCase
 import cash.p.terminal.modules.enablecoin.restoresettings.RestoreSettingsService
+import cash.p.terminal.modules.receive.FullCoinsProvider
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -15,7 +16,9 @@ import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
 import cash.p.terminal.wallet.entities.Coin
+import cash.p.terminal.wallet.entities.FullCoin
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.policy.HardwareWalletTokenPolicy
 import cash.p.terminal.wallet.useCases.GetHardwarePublicKeyForWalletUseCase
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
@@ -39,6 +42,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import kotlin.test.assertEquals
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.KoinTest
@@ -60,6 +64,7 @@ class ManageWalletsServiceTest : KoinTest {
     private val hardwarePublicKeyProvider =
         mockk<GetHardwarePublicKeyForWalletUseCase>(relaxed = true)
     private val marketKit = mockk<MarketKitWrapper>(relaxed = true)
+    private val hardwareWalletTokenPolicy = mockk<HardwareWalletTokenPolicy>()
 
     private val approveSettingsSubject =
         PublishSubject.create<RestoreSettingsService.TokenWithSettings>()
@@ -79,6 +84,7 @@ class ManageWalletsServiceTest : KoinTest {
                 single { hardwarePublicKeyProvider }
                 single<MarketKitWrapper> { marketKit }
                 single { offlineModeUseCase }
+                single<HardwareWalletTokenPolicy> { hardwareWalletTokenPolicy }
             }
         )
     }
@@ -148,6 +154,72 @@ class ManageWalletsServiceTest : KoinTest {
         }
     }
 
+    @Test
+    fun itemsFlow_hardwareAccount_listsDeviceUnsupportedTokensLastAndUnavailable() = runTest(dispatcher) {
+        every { hardwareWalletTokenPolicy.isSupported(account, ethereumToken) } returns false
+        every { hardwareWalletTokenPolicy.isSupported(account, bscToken) } returns true
+        service = serviceFor(account, FullCoin(ethereumToken.coin, listOf(ethereumToken, bscToken)))
+
+        val items = awaitItems()
+
+        assertEquals(listOf(bscToken, ethereumToken), items.map { it.token })
+        assertEquals(listOf(true, false), items.map { it.available })
+    }
+
+    @Test
+    fun itemsFlow_hardwareAccountWithTransparentZcash_checksOnlyTransparent() = runTest(dispatcher) {
+        val transparent = zcashTokens.first {
+            it.type == TokenType.AddressSpecTyped(TokenType.AddressSpecType.Transparent)
+        }
+        activeWallets = listOf(wallet(transparent))
+        zcashTokens.forEach {
+            every { hardwareWalletTokenPolicy.isSupported(account, it) } returns (it == transparent)
+        }
+        service = serviceFor(account, FullCoin(transparent.coin, zcashTokens))
+
+        val enabledTokens = awaitItems().filter { it.enabled }.map { it.token }
+
+        assertEquals(listOf(transparent), enabledTokens)
+    }
+
+    @Test
+    fun itemsFlow_softwareAccount_listsEligibleTokensAvailableWithoutPolicy() = runTest(dispatcher) {
+        val solanaAccount = account.copy(type = AccountType.SolanaAddress("address"))
+        service = serviceFor(solanaAccount, FullCoin(ethereumToken.coin, listOf(ethereumToken, solanaToken)))
+
+        val items = awaitItems()
+
+        assertEquals(listOf(solanaToken), items.map { it.token })
+        assertEquals(listOf(true), items.map { it.available })
+        verify(exactly = 0) { hardwareWalletTokenPolicy.isSupported(any<Account>(), any<Token>()) }
+    }
+
+    private fun serviceFor(account: Account, fullCoin: FullCoin): ManageWalletsService {
+        service.clear()
+        every { accountManager.account(account.id) } returns account
+        val provider = mockk<FullCoinsProvider>(relaxed = true)
+        coEvery { provider.getItems() } returns listOf(fullCoin)
+        return ManageWalletsService(
+            walletManager = walletManager,
+            restoreSettingsService = restoreSettingsService,
+            fullCoinsProvider = provider,
+            account = account,
+            userDeletedWalletManager = userDeletedWalletManager,
+            rescanMoneroUseCase = rescanMoneroUseCase,
+            accountManager = accountManager,
+        )
+    }
+
+    /** Items arrive after a Dispatchers.IO hop, which one drain can outrun. */
+    private fun TestScope.awaitItems(): List<ManageWalletsService.Item> {
+        repeat(SETTLE_ATTEMPTS) {
+            advanceUntilIdle()
+            service.itemsFlow.value.takeIf { it.isNotEmpty() }?.let { return it }
+            Thread.sleep(SETTLE_STEP_MS)
+        }
+        return service.itemsFlow.value
+    }
+
     private fun signalOn(token: Token) = CountDownLatch(1).also { signal ->
         every {
             offlineModeUseCase.resetIfBlockchainRemoved(account, token.blockchainType)
@@ -170,21 +242,75 @@ class ManageWalletsServiceTest : KoinTest {
         decimals = 8
     )
 
+    private val ethereumToken = Token(
+        coin = Coin(uid = "wrapped", name = "Wrapped", code = "WRP"),
+        blockchain = Blockchain(BlockchainType.Ethereum, "Ethereum", null),
+        type = TokenType.Native,
+        decimals = 18
+    )
+
+    private val bscToken = Token(
+        coin = Coin(uid = "wrapped", name = "Wrapped", code = "WRP"),
+        blockchain = Blockchain(BlockchainType.BinanceSmartChain, "BNB Smart Chain", null),
+        type = TokenType.Eip20("0xwrapped"),
+        decimals = 18
+    )
+
+    private val solanaToken = Token(
+        coin = Coin(uid = "wrapped", name = "Wrapped", code = "WRP"),
+        blockchain = Blockchain(BlockchainType.Solana, "Solana", null),
+        type = TokenType.Native,
+        decimals = 9
+    )
+
     private fun wallet(token: Token) = mockk<Wallet> {
         every { this@mockk.token } returns token
     }
 
     @Test
     fun enable_trezorMoneroWithApprovedHeight_appliesHardwareRescan() = runTest(dispatcher) {
+        assertApprovedMoneroHeightRescansBeforeCreatingWallet(account)
+    }
+
+    @Test
+    fun enable_ledgerMoneroWithApprovedHeight_appliesHardwareRescan() = runTest(dispatcher) {
+        val ledgerAccount = account.copy(
+            type = AccountType.LedgerDevice("device-id", "NanoSPlus", "wallet-public-key")
+        )
+        every { hardwareWalletTokenPolicy.isSupported(ledgerAccount, any<Token>()) } returns true
+        service = serviceFor(ledgerAccount, FullCoin(moneroToken().coin, listOf(moneroToken())))
+
+        assertApprovedMoneroHeightRescansBeforeCreatingWallet(ledgerAccount)
+    }
+
+    @Test
+    fun enable_withBirthdayHeight_savesHeightWithoutRequest() = runTest(dispatcher) {
         val token = moneroToken()
-        val wallet = mockk<Wallet> {
-            every { this@mockk.token } returns token
+        coEvery { hardwarePublicKeyProvider(account, token) } returns null
+        every { walletFactory.create(token, account, null) } returns wallet(token)
+        advanceUntilIdle()
+
+        service.enable(token, MONERO_RESTORE_HEIGHT)
+        advanceUntilIdle()
+
+        verify(timeout = 2_000) { walletFactory.create(token, account, null) }
+        verify {
+            restoreSettingsService.save(
+                match { it.birthdayHeight == MONERO_RESTORE_HEIGHT },
+                account,
+                BlockchainType.Monero,
+            )
         }
+        verify(exactly = 0) { restoreSettingsService.approveSettings(any(), any(), any(), any()) }
+    }
+
+    private fun TestScope.assertApprovedMoneroHeightRescansBeforeCreatingWallet(account: Account) {
+        val token = moneroToken()
         val settings = RestoreSettings().apply {
             birthdayHeight = MONERO_RESTORE_HEIGHT
         }
         coEvery { hardwarePublicKeyProvider(account, token) } returns null
-        every { walletFactory.create(token, account, null) } returns wallet
+        every { walletFactory.create(token, account, null) } returns wallet(token)
         advanceUntilIdle()
 
         approveSettingsSubject.onNext(

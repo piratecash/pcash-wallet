@@ -24,16 +24,17 @@ internal class AddMoneroToTrezorAccountUseCase(
         walletActivator.activateWalletsSuspended(provisionedAccount, listOf(TokenQuery.monero))
     }
 
-    suspend fun provision(account: Account): Account = provisioningMutex.withLock {
+    suspend fun provision(account: Account, restoreHeight: Long? = null): Account = provisioningMutex.withLock {
         val latestAccount = accountManager.latestAccountOr(account)
-        check(latestAccount.type is AccountType.TrezorDevice) {
-            "Monero device wallet requires a Trezor account"
+        check(latestAccount.type is AccountType.HardwareDevice) {
+            "Monero device wallet requires a hardware account"
         }
         val walletPublicKey = provisioner.provision(
             account = latestAccount,
-            restoreHeight = validateMoneroHeightUseCase.getTodayHeight(),
+            restoreHeight = restoreHeight ?: validateMoneroHeightUseCase.getTodayHeight(),
         )
-        val accountType = latestAccount.type as AccountType.TrezorDevice
+        // A Ledger is identified by its stored keys, which the Monero app was checked against before the wallet.
+        val accountType = latestAccount.type as? AccountType.TrezorDevice ?: return@withLock latestAccount
         val updatedAccount = if (accountType.walletPublicKey.isNotEmpty()) {
             check(accountType.walletPublicKey == walletPublicKey) {
                 "Connected Trezor passphrase wallet does not match the account"

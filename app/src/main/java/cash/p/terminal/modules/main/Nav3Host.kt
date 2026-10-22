@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.main
 
 import android.app.Activity
+import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import androidx.activity.compose.BackHandler
@@ -18,6 +19,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -25,6 +27,10 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.google.android.material.snackbar.BaseTransientBottomBar
+import cash.p.terminal.R
+import cash.p.terminal.ledger.domain.LedgerUserOperations
+import cash.p.terminal.ledger.domain.LedgerWaitReason
 import cash.p.terminal.navigation.BottomSheetColors
 import cash.p.terminal.navigation.BottomSheetSceneStrategy
 import cash.p.terminal.navigation.HSNavigation
@@ -32,22 +38,38 @@ import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.LocalHostLifecycleOwner
 import cash.p.terminal.navigation.ReportPageResumed
 import cash.p.terminal.navigation.rememberSharedViewModelStoreNavEntryDecorator
+import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.ui_compose.LocalConnectionPanelState
 import cash.p.terminal.ui_compose.ModalOverlayTracker
 import cash.p.terminal.ui_compose.ScreenSecurityState
 import cash.p.terminal.ui.helpers.LinkHelper
 import cash.p.terminal.ui_compose.components.ConnectionStatusView
+import cash.p.terminal.ui_compose.components.CustomSnackbar
+import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.components.LocalHudMessenger
 import cash.p.terminal.ui_compose.components.LocalUrlOpener
+import cash.p.terminal.ui_compose.components.SnackbarDuration
 import cash.p.terminal.ui_compose.components.UrlOpener
 import cash.p.terminal.ui_compose.components.rememberHudMessenger
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.core.hideKeyboard
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 /** Root of the app's navigation; [isLocked] keeps sheets from drawing above the lock overlay. */
 @Composable
-fun Nav3Host(navigation: HSNavigation, isLocked: State<Boolean>) {
+fun Nav3Host(
+    navigation: HSNavigation,
+    isLocked: State<Boolean>,
+    ledgerUserOperations: LedgerUserOperations,
+    ledgerOpeningApp: StateFlow<String?>,
+) {
     val activity = checkNotNull(LocalActivity.current)
+    val view = LocalView.current
     val hudMessenger = rememberHudMessenger()
     val urlOpener = remember(activity) { ActivityUrlOpener(activity) }
     ComposeAppTheme {
@@ -56,6 +78,17 @@ fun Nav3Host(navigation: HSNavigation, isLocked: State<Boolean>) {
             LocalHudMessenger provides hudMessenger,
             LocalUrlOpener provides urlOpener,
         ) {
+            LaunchedEffect(ledgerUserOperations, ledgerOpeningApp, hudMessenger, view) {
+                fun show(message: Int, appName: String) =
+                    hudMessenger.showWarning(Translator.getString(message, appName))
+                launch {
+                    ledgerUserOperations.yieldedNotices.collect { show(R.string.ledger_sync_paused_open_app, it) }
+                }
+                // Collected directly (no merge/buffer) so the delivery-time filter stays valid.
+                launch { ledgerUserOperations.waitNotices.collect { show(it.reason.message, it.appName) } }
+                launch { showLedgerOpeningHints(view, ledgerOpeningApp) }
+                launch { showViewKeyExportHint(view, ledgerUserOperations.awaitingViewKeyExport) }
+            }
             // Composed before the pages, so any page's own back handler takes precedence.
             BackHandler(enabled = navigation.backStack.size == 1) {
                 activity.moveTaskToBack(true)
@@ -89,6 +122,49 @@ fun Nav3Host(navigation: HSNavigation, isLocked: State<Boolean>) {
         }
     }
 }
+
+private const val HINT_RESHOW_GRACE_MS = 3_000L
+
+private suspend fun showLedgerOpeningHints(view: View, openingApp: StateFlow<String?>) =
+    openingApp.collectLatest { appName ->
+        if (appName == null) return@collectLatest
+        showHintWhilePending(view, Translator.getString(R.string.ledger_confirm_opening_app, appName))
+    }
+
+private suspend fun showViewKeyExportHint(view: View, awaiting: Flow<Boolean>) =
+    awaiting.collectLatest { pending ->
+        if (pending) showHintWhilePending(view, Translator.getString(R.string.ledger_monero_confirm_view_key))
+    }
+
+/** Another snackbar replaces the hint while the Ledger still waits, so it comes back once that one is readable. */
+private suspend fun showHintWhilePending(view: View, text: String) {
+    while (true) {
+        val snackbar = HudHelper.showWarningMessage(view, text, SnackbarDuration.INDEFINITE) ?: return
+        try {
+            if (snackbar.awaitDismissEvent() != BaseTransientBottomBar.BaseCallback.DISMISS_EVENT_CONSECUTIVE) return
+        } finally {
+            snackbar.dismiss()
+        }
+        delay(HINT_RESHOW_GRACE_MS)
+    }
+}
+
+private suspend fun CustomSnackbar.awaitDismissEvent(): Int = suspendCancellableCoroutine { continuation ->
+    val callback = object : BaseTransientBottomBar.BaseCallback<CustomSnackbar?>() {
+        override fun onDismissed(transientBottomBar: CustomSnackbar?, event: Int) {
+            removeCallback(this)
+            if (continuation.isActive) continuation.resume(event, null)
+        }
+    }
+    addCallback(callback)
+    continuation.invokeOnCancellation { removeCallback(callback) }
+}
+
+private val LedgerWaitReason.message: Int
+    get() = when (this) {
+        LedgerWaitReason.Sync -> R.string.ledger_sync_finishing_wait
+        LedgerWaitReason.DeviceRequest -> R.string.ledger_device_request_wait
+    }
 
 /** Custom tab only opens from an Activity context; an application context falls back to the external browser. */
 private class ActivityUrlOpener(private val activity: Activity) : UrlOpener {

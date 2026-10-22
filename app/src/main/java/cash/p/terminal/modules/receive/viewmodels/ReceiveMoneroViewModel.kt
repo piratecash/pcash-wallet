@@ -12,6 +12,7 @@ import cash.p.terminal.modules.receive.ReceiveModule
 import cash.p.terminal.modules.send.hardwareWalletUserMessageRes
 import cash.p.terminal.modules.send.isHardwareWalletCancelled
 import cash.p.terminal.ui_compose.entities.ViewState
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.DispatcherProvider
@@ -104,6 +105,7 @@ class ReceiveMoneroViewModel(
         hasAddressHistory = subaddresses.count { it.index != currentAddressIndex } > 0,
         isCreatingAddress = isCreatingAddress,
         hardwareWallet = hardwareWallet,
+        ledgerWallet = wallet.account.type is AccountType.LedgerDevice,
         spendReadiness = spendReadiness,
         isHardwareOperationInProgress = isHardwareOperationInProgress,
         hardwareOperationError = hardwareOperationError,
@@ -231,6 +233,7 @@ data class ReceiveMoneroUiState(
     val hasAddressHistory: Boolean = false,
     val isCreatingAddress: Boolean = false,
     val hardwareWallet: Boolean = false,
+    val ledgerWallet: Boolean = false,
     val spendReadiness: MoneroSpendReadiness = MoneroSpendReadiness.Ready,
     val isHardwareOperationInProgress: Boolean = false,
     val hardwareOperationError: StringResource? = null,

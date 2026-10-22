@@ -7,9 +7,9 @@ import cash.p.terminal.core.UnsupportedAccountException
 import cash.p.terminal.core.evmExplorerTransactionHash
 import cash.p.terminal.core.toRawHexString
 import cash.p.terminal.core.providers.AppConfigProvider
-import cash.p.terminal.trezor.signer.TrezorEvmSigner
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
+import cash.p.terminal.wallet.hardware.ExternalEvmTransactionSigner
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
 import io.horizontalsystems.core.entities.BlockchainType
@@ -387,7 +387,7 @@ class EvmKitWrapper(
     suspend fun signReconciled(rawTransaction: RawTransaction): Pair<RawTransaction, Signature> {
         val signer = signer ?: throw EvmSignerNotInitializedException()
         return when (signer) {
-            is TrezorEvmSigner -> signer.signTransaction(rawTransaction)
+            is ExternalEvmTransactionSigner -> signer.signTransaction(rawTransaction)
                 .let { it.rawTransaction to it.signature }
 
             else -> rawTransaction to signer.signature(rawTransaction)

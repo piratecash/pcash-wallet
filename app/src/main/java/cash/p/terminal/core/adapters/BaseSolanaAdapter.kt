@@ -29,6 +29,7 @@ abstract class BaseSolanaAdapter(
 
     val solanaKit = solanaKitWrapper.solanaKit
     protected val signer: Signer? = solanaKitWrapper.signer
+    protected val offlineSigner: Signer? = solanaKitWrapper.offlineSigner
 
     override val debugInfo: String
         get() = solanaKit.debugInfo()

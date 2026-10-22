@@ -69,6 +69,7 @@ kotlin {
                 implementation(project(":core:vault"))
                 implementation(project(":feature-market"))
                 implementation(project(":feature-premium"))
+                implementation(project(":feature-ledger"))
                 implementation(project(":components:chartview"))
 
                 implementation(libs.compose.multiplatform.runtime)

@@ -3,6 +3,8 @@ package cash.p.terminal.core.managers
 import cash.p.terminal.core.storage.MoneroFileDao
 import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
 import cash.p.terminal.modules.pin.core.PinDbStorage
+import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountCleaner
 import cash.p.terminal.wallet.AccountDeletionPreflight
 import cash.p.terminal.wallet.IAccountManager
@@ -78,7 +80,11 @@ class AccountCleaner(
         }
 
         if (isWalletActive(accountId, token)) return
-        clearWalletData(accountId, token.blockchainType)
+        if (token.blockchainType != BlockchainType.Monero) return clearWalletData(accountId, token.blockchainType)
+
+        val account = accountManager.account(accountId) ?: return
+        // Only its device can recreate a device wallet: RescanMoneroUseCase applies its height instead.
+        if (account.type !is AccountType.HardwareDevice) clearMoneroWalletData(account)
     }
 
     /**
@@ -107,15 +113,14 @@ class AccountCleaner(
     ) {
         when (blockchainType) {
             is BlockchainType.Zcash -> clearZCashWalletDataUseCase.invoke(accountId)
-            is BlockchainType.Monero -> {
-                accountManager.account(accountId)?.let {
-                    removeMoneroWalletFilesUseCase(it)
-                    moneroFileDao.deleteAssociatedRecord(it.id)
-                }
-            }
-
+            is BlockchainType.Monero -> accountManager.account(accountId)?.let { clearMoneroWalletData(it) }
             else -> Unit
         }
+    }
+
+    private suspend fun clearMoneroWalletData(account: Account) {
+        removeMoneroWalletFilesUseCase(account)
+        moneroFileDao.deleteAssociatedRecord(account.id)
     }
 
     private fun isWalletActive(accountId: String, token: Token): Boolean {

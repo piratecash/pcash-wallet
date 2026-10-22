@@ -61,6 +61,7 @@ import cash.p.terminal.core.managers.BeamLifecycleCoordinator
 import cash.p.terminal.core.managers.BeamSendCoordinator
 import cash.p.terminal.core.managers.BeamSessionOwner
 import cash.p.terminal.core.managers.BitcoinKitDatabaseManager
+import cash.p.terminal.core.managers.DeviceSignerFactory
 import cash.p.terminal.core.managers.BitcoinKitEnvironment
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.EvmLabelManager
@@ -718,29 +719,34 @@ class AdapterFactory(
     }
 
     companion object {
-        /** A Trezor account signs on the device; anything else signs with its own spending key. */
+        /** A device account signs on the device; anything else signs with its own spending key. */
         @JvmStatic
         @VisibleForTesting
-        internal fun buildZcashSigner(wallet: Wallet): ZcashTransactionSigner {
-            val accountType = wallet.account.type
-            if (accountType !is AccountType.TrezorDevice) {
-                return ZcashSpendingKeySigner(wallet.zcashKey() ?: throw UnsupportedAccountException())
+        internal fun buildZcashSigner(wallet: Wallet): ZcashTransactionSigner =
+            when (val accountType = wallet.account.type) {
+                is AccountType.TrezorDevice -> trezorZcashSigner(wallet, accountType)
+                is AccountType.LedgerDevice -> getKoinInstance<DeviceSignerFactory>()
+                    .ledgerZcash(wallet.account, wallet.requireDeviceKey("Ledger"))
+                else -> ZcashSpendingKeySigner(wallet.zcashKey() ?: throw UnsupportedAccountException())
             }
+
+        private fun trezorZcashSigner(wallet: Wallet, accountType: AccountType.TrezorDevice): TrezorZcashSigner {
             val trezorClient: ITrezorClient by inject(ITrezorClient::class.java)
             val identityValidator: TrezorAccountIdentityValidator
                     by inject(TrezorAccountIdentityValidator::class.java)
             val firmwareVersionRecorder: TrezorFirmwareVersionRecorder
                     by inject(TrezorFirmwareVersionRecorder::class.java)
-            val hardwareKey = wallet.hardwarePublicKey
-                ?: throw UnsupportedException("Trezor does not have a key for Zcash")
             return TrezorZcashSigner(
                 accountId = wallet.account.id,
                 deviceId = accountType.deviceId,
-                derivationPath = hardwareKey.derivationPath,
+                derivationPath = wallet.requireDeviceKey("Trezor").derivationPath,
                 trezorClient = trezorClient,
                 identityValidator = identityValidator,
                 firmwareVersionRecorder = firmwareVersionRecorder,
             )
         }
+
+        private fun Wallet.requireDeviceKey(vendor: String) =
+            hardwarePublicKey ?: throw UnsupportedException("$vendor does not have a key for Zcash")
     }
 }
