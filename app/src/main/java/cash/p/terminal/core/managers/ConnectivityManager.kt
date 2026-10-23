@@ -46,13 +46,13 @@ class ConnectivityManager(
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
-    val networkAvailabilityFlow = _networkAvailabilityFlow.asSharedFlow()
+    override val networkAvailabilityFlow = _networkAvailabilityFlow.asSharedFlow()
 
     private val _isConnected = MutableStateFlow(false)
     override val isConnected = _isConnected.asStateFlow()
 
     private val _validatedNetworksFlow = MutableStateFlow<Set<Network>>(emptySet())
-    val validatedNetworksFlow = _validatedNetworksFlow.asStateFlow()
+    override val validatedNetworksFlow = _validatedNetworksFlow.asStateFlow()
 
     override val torEnabled: Boolean
         get() = localStorage.torEnabled
@@ -65,7 +65,7 @@ class ConnectivityManager(
     private val monitoringLeases = AtomicInteger()
 
     /** Keeps validated connectivity current while a one-shot background worker is active. */
-    fun acquireMonitoringLease(): AutoCloseable {
+    override fun acquireMonitoringLease(): AutoCloseable {
         synchronized(monitoringLock) {
             monitoringLeases.incrementAndGet()
             startBackgroundMonitoring()
@@ -83,7 +83,7 @@ class ConnectivityManager(
     }
 
     /** Waits for the actor to publish the system's current validated state. */
-    suspend fun refreshAndAwaitValidation(): Boolean {
+    override suspend fun refreshAndAwaitValidation(): Boolean {
         val completion = CompletableDeferred<Boolean>()
         refreshFromSystem(forceEmit = false, completion = completion)
         return completion.await()

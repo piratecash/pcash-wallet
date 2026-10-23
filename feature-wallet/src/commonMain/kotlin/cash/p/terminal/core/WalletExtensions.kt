@@ -1,5 +1,10 @@
 package cash.p.terminal.core
 
+import cash.p.beam.BeamAddressType
+import cash.p.terminal.resources.beam_address_type_regular
+import cash.p.terminal.resources.beam_send_max_privacy
+import cash.p.terminal.resources.beam_send_offline
+import cash.p.terminal.resources.beam_send_public_offline
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.language_czech
 import cash.p.terminal.resources.language_english
@@ -20,6 +25,16 @@ import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermissions
 import java.util.Base64
 
+fun BeamAddressType.titleResId(): StringResource = when (this) {
+    BeamAddressType.Offline -> Res.string.beam_send_offline
+    BeamAddressType.PublicOffline -> Res.string.beam_send_public_offline
+    BeamAddressType.MaxPrivacy -> Res.string.beam_send_max_privacy
+    BeamAddressType.Regular -> Res.string.beam_address_type_regular
+}
+
+fun String.orHide(hidden: Boolean, hideValue: String = "*****"): String =
+    if (hidden) hideValue else this
+
 fun String.hexToByteArray(): ByteArray {
     return ByteArray(this.length / 2) {
         this.substring(it * 2, it * 2 + 2).toInt(16).toByte()
@@ -39,6 +54,14 @@ fun String.decodeBase64Lenient(): ByteArray = Base64.getDecoder().decode(replace
 
 /** Same output as android.util.Base64 with NO_WRAP. */
 fun ByteArray.encodeBase64(): String = Base64.getEncoder().encodeToString(this)
+
+private val NON_BASE64_URL_CHARS = Regex("[^A-Za-z0-9_=-]")
+
+/** URL-safe twin of [decodeBase64Lenient]: decodes like android.util.Base64 with URL_SAFE did. */
+fun String.decodeBase64UrlLenient(): ByteArray = Base64.getUrlDecoder().decode(replace(NON_BASE64_URL_CHARS, ""))
+
+/** Same output as android.util.Base64 with URL_SAFE, NO_PADDING and NO_WRAP. */
+fun ByteArray.encodeBase64Url(): String = Base64.getUrlEncoder().withoutPadding().encodeToString(this)
 
 /**
  * Normalizes a private key byte array to exactly [size] bytes.

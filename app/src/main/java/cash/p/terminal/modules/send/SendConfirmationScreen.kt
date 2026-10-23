@@ -1,5 +1,7 @@
 package cash.p.terminal.modules.send
 
+import cash.p.terminal.resources.ic_arrow_up_right_12
+import cash.p.terminal.resources.Res
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -149,7 +151,7 @@ fun SendConfirmationScreen(
                         SectionTitleCell(
                             stringResource(R.string.Send_Confirmation_YouSend),
                             coin.name,
-                            R.drawable.ic_arrow_up_right_12
+                            Res.drawable.ic_arrow_up_right_12
                         )
                     }
                     add {

@@ -134,6 +134,7 @@ private class FakeAppDatabase(
     override fun poisonAddressDao() = unsupported()
     override fun offlineSignedTransactionDao() = unsupported()
     override fun offlineBlockchainDao() = unsupported()
+    override fun stackingCacheDao() = unsupported()
 
     private fun unsupported(): Nothing = throw NotImplementedError()
     override fun createInvalidationTracker() = unsupported()

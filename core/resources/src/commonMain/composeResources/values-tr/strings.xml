@@ -60,7 +60,7 @@
     <string name="trezor_not_initialized_cta">Kurulum kılavuzu</string>
     <string name="trezor_connect_failed">Trezor\u0027a bağlanılamadı.</string>
     <string name="Button_Activate">Etkinleştir</string>
-    <string name="activation_required_dialog_description">%s almak için tokeni etkinleştirmeniz gerekir. Stellar ağı her token için bir güven hattı (trustline) kurulmasını gerektirir. Bu olmadan cüzdanınız %s alamaz — işlem reddedilir ve fonlar teslim edilmez.</string>
+    <string name="activation_required_dialog_description">%1$s almak için tokeni etkinleştirmeniz gerekir. Stellar ağı her token için bir güven hattı (trustline) kurulmasını gerektirir. Bu olmadan cüzdanınız %2$s alamaz — işlem reddedilir ve fonlar teslim edilmez.</string>
     <string name="activate_you_activate">Etkinleştirdiğiniz</string>
     <string name="activate_activating">Etkinleştiriliyor</string>
     <string name="activate_already_active_title">Zaten etkin</string>
@@ -374,7 +374,7 @@
     <string name="Balance_Error_InvalidQrCode">Tanımlanamadı</string>
     <string name="Balance_Receive_WatchAddressAlert">Bu adres izlenen hesabın adresidir</string>
     <string name="Balance_Receive_UsedAddresses">Kullanılan Adresler</string>
-    <string name="Balance_Receive_UsedAddressesDescriptoin">%s adresi gizlilik ve güvenlik nedeniyle değişiyor. Bu cüzdanın kullanılan adreslerinin bir listesi aşağıda verilmiştir.</string>
+    <string name="Balance_Receive_UsedAddressesDescriptoin">%1$s adresi gizlilik ve güvenlik nedeniyle değişiyor. Bu cüzdanın kullanılan adreslerinin bir listesi aşağıda verilmiştir.</string>
     <string name="Balance_Receive_ReceiveAddresses">Alıcının adresi</string>
     <string name="Balance_Receive_ChangeAddresses">Değişiklik Adresleri</string>
     <string name="receive_address_badge_new">Yeni</string>
@@ -699,7 +699,7 @@
     <string name="SwapInfo_PriceImpactTitle">Fiyat Etkisi</string>
     <string name="SwapInfo_PriceImpactDescription">Gösterilen bir fiyattan beklenen fiyat sapması, tipik olarak swap tutarı ile artar.</string>
     <!--Deposit-->
-    <string name="Deposit_Title">%s al</string>
+    <string name="Deposit_Title">%1$s al</string>
     <!--Transactions-->
     <string name="Transactions_Title">Hesap işlemleri</string>
     <string name="Transactions_Hide">Transactions Hide</string>
@@ -1449,6 +1449,8 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="CoinPage_TimeDuration_Month">1A</string>
     <string name="CoinPage_TimeDuration_Year">1Y</string>
     <string name="CoinPage_TimeDuration_All">Hepsi</string>
+    <string name="Timestamp_Today">Bugün</string>
+    <string name="Timestamp_Yesterday">Dün</string>
     <string name="CoinPage_TradingVolume">İşlem Hacmi</string>
     <string name="CoinPage_Audits_PoweredBy">Powered by Defiyield.app</string>
     <string name="CoinPage_Audits_Issues">Issues: %d</string>
@@ -1981,8 +1983,8 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     </plurals>
 
     <plurals name="staking_next_accrual_in_hours">
-        <item quantity="one">Sonraki tahakkuk %d saat sonra gerçekleşecek</item>
-        <item quantity="other">Sonraki tahakkuk %d saat sonra gerçekleşecek</item>
+        <item quantity="one">Sonraki tahakkuk %1$d saat sonra gerçekleşecek</item>
+        <item quantity="other">Sonraki tahakkuk %1$d saat sonra gerçekleşecek</item>
     </plurals>
     <string name="estimated_annual_interest">Tahmini yıllık faiz</string>
     <string name="accruals">Accruals</string>
@@ -2338,6 +2340,9 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="desktop_forgot_password_warning">Bu bilgisayarda tutulan cüzdanlar, kişiler, ayarlar ve geçmiş silinecek. Blok zincirindeki fonlar etkilenmez: cüzdanlar yalnızca kurtarma ifadeleriyle geri yüklenebilir.</string>
     <string name="desktop_forgot_password_action">Verileri sil</string>
     <string name="desktop_forgot_password_failed">Veriler silinemedi</string>
+    <string name="desktop_wipe_restart_manually">Veriler silindi. Uygulamayı yeniden başlatın</string>
+    <string name="desktop_restart_manually">Uygulamayı yeniden başlatın</string>
+    <string name="platform_not_supported_yet">Masaüstü sürümünde henüz desteklenmiyor</string>
     <string name="desktop_change_password_title">Şifreyi değiştir</string>
     <string name="desktop_change_password_current_hint">Mevcut şifre</string>
     <string name="desktop_change_password_new_hint">Yeni şifre</string>

@@ -8,7 +8,6 @@ import cash.p.terminal.shared.main.MainDestination
 import cash.p.terminal.shared.main.MainTabStorage
 import cash.p.terminal.wallet.balance.BalanceViewType
 import io.horizontalsystems.core.DesktopSettingsStore
-import io.horizontalsystems.core.PriceChangeIntervalProvider
 import kotlinx.coroutines.flow.StateFlow
 
 /** Same values and defaults as Android `LocalStorageManager`; [store] refreshes the flows on a wipe. */
@@ -68,9 +67,4 @@ class DesktopAppearanceSettingsStore(private val store: DesktopSettingsStore) :
         const val DASH_PEERS = "customDashPeers"
         const val MAIN_TAB = "mainTab"
     }
-}
-
-class DesktopPriceChangeIntervalProvider(store: AppearanceSettingsStore) : PriceChangeIntervalProvider {
-    override val interval get() = intervalFlow.value
-    override val intervalFlow = store.priceChangeIntervalFlow
 }

@@ -3,9 +3,6 @@ package cash.p.terminal.core
 import cash.p.terminal.entities.AppVersion
 import cash.p.terminal.entities.SyncMode
 import cash.p.terminal.modules.amount.AmountInputType
-import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
-import cash.p.terminal.modules.displayoptions.DisplayPricePeriod
-import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewMode
 import cash.p.terminal.shared.main.MainTabStorage
 import cash.p.terminal.modules.market.TimeDuration
 import cash.p.terminal.modules.premium.settings.PollingInterval
@@ -14,28 +11,18 @@ import cash.p.terminal.modules.market.favorites.WatchlistSorting
 import cash.p.terminal.modules.calculator.domain.CalculatorAutoLockOption
 import cash.p.terminal.modules.settings.appearance.AppIcon
 import cash.p.terminal.modules.settings.security.autolock.AutoLockInterval
-import cash.p.terminal.wallet.BalanceSortType
 import cash.p.terminal.wallet.Derivation
-import cash.p.terminal.wallet.entities.EncryptedString
-import cash.p.terminal.wallet.managers.TransactionDisplayLevel
 import io.horizontalsystems.core.BaseCurrencyStorage
 import io.horizontalsystems.core.ILoggingSettings
 import io.horizontalsystems.core.ISmsNotificationSettings
 import kotlinx.coroutines.flow.StateFlow
-import java.math.BigDecimal
 
 interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurrencyStorage, WalletOnboardingStorage,
-    AppearanceSettingsStore, MainTabStorage {
+    AppearanceSettingsStore, MainTabStorage,
+    BalanceSettingsStorage, TransactionSettingsStorage, NetworkSettingsStorage {
     var marketSearchRecentCoinUids: List<String>
-    var zcashAccountIds: Set<String>
-
-    /** Orchard -> Ironwood migration transactions, keyed as `accountId:canonicalTransactionHash`. */
-    var zcashIronwoodMigrationTxIds: Set<String>
 
     var autoLockInterval: AutoLockInterval
-
-    var recipientAddressBaseCheckEnabled: Boolean
-    var recipientAddressContractCheckEnabled: Boolean
 
     var chartIndicatorsEnabled: Boolean
     var amountInputType: AmountInputType?
@@ -50,28 +37,20 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurren
     var baseBinanceProvider: String?
     var baseZcashProvider: String?
     var syncMode: SyncMode?
-    var sortType: BalanceSortType
     var appVersions: List<AppVersion>
     var isAlertNotificationOn: Boolean
     var encryptedSampleText: String?
     var bitcoinDerivation: Derivation?
-    var torEnabled: Boolean
+    override var torEnabled: Boolean
     var appLaunchCount: Int
     var rateAppLastRequestTime: Long
-    var balanceHidden: Boolean
-    var balanceAutoHideEnabled: Boolean
     var balanceHideOnFlipEnabled: Boolean
     var balanceHideOnFlipInfoSuppressed: Boolean
     var securityFlipFeatureSeen: Boolean
     var swapMevProtectionEnabled: Boolean
 
-    var transactionHideEnabled: Boolean
-    var transactionDisplayLevel: TransactionDisplayLevel
-    var transactionHideSecretPin: EncryptedString?
-
     var transferPasscodeEnabled: Boolean
 
-    var balanceTotalCoinUid: String?
     var notificationId: String?
     var notificationServerTime: Long
     var changelogShownForAppVersion: String?
@@ -92,9 +71,7 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurren
     var marketFavoritesShowSignals: Boolean
     var marketFavoritesPeriod: TimeDuration?
     var relaunchBySettingChange: Boolean
-    var nonRecommendedAccountAlertDismissedAccounts: Set<String>
     var personalSupportEnabled: Boolean
-    var hideSuspiciousTransactions: Boolean
     var pinRandomized: Boolean
     var utxoExpertModeEnabled: Boolean
     var rbfEnabled: Boolean
@@ -109,39 +86,9 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurren
 
     val utxoExpertModeEnabledFlow: StateFlow<Boolean>
 
-    var isRoundingAmountMainPage: Boolean
-    var transactionFiltersEnabled: Boolean
-
-    // Display Options
-    var displayDiffPricePeriod: DisplayPricePeriod
-    val displayDiffPricePeriodFlow: StateFlow<DisplayPricePeriod>
-    var displayDiffOptionType: DisplayDiffOptionType
-    val displayDiffOptionTypeFlow: StateFlow<DisplayDiffOptionType>
-
-    var addressPoisoningViewMode: AddressPoisoningViewMode
-
-    fun getStackingUnpaid(coin: String, address: String): BigDecimal?
-    fun getStackingMint(coin: String, address: String): BigDecimal?
-    fun getStackingNextAccrualAt(coin: String, address: String): String?
-    fun getStackingNextPayoutAt(coin: String, address: String): String?
-    fun getStackingCachedBalance(coin: String, address: String): BigDecimal?
-    fun getStackingTimestamp(coin: String, address: String): Long
-    fun saveStackingData(
-        coin: String,
-        address: String,
-        unpaid: BigDecimal,
-        totalIncome: BigDecimal,
-        nextAccrualAt: String?,
-        nextPayoutAt: String?,
-        balance: BigDecimal,
-    )
-
     var isSystemPinRequired: Boolean
     // Login Logging properties inherited from ILoggingSettings
 
-    fun isNetworkFeeWarningDismissed(blockchainTypeUid: String): Boolean
-    fun dismissNetworkFeeWarning(blockchainTypeUid: String)
-    var moneroSkipNewAddressConfirm: Boolean
 
     var pushNotificationsEnabled: Boolean
     var pushPollingInterval: PollingInterval

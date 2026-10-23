@@ -71,6 +71,7 @@ kermit = "2.1.0"
 secp256k1 = "0.24.0"
 
 tonKotlin = "0.5.0" # updated for ktor 3.x compatibility
+orgJson = "20250517"
 piratecash-ton = "v2.0.0-pcash.9"
 beam-sdk = "v0.3.1"
 piratecash-bitcoin = "v0.1.0-pcash.37"
@@ -78,7 +79,7 @@ hd-wallet-kit = "1.0.1"
 stellar-kit = "v2.0.0-pcash.2"
 thorchain-kit = "1.2.0"
 trezor-kit = "1.4.0"
-piratecash-ethereum = "v1.0.0-pcash.5"
+piratecash-ethereum = "v1.0.0-pcash.6"
 piratecash-solana = "v2.0.0-pcash.6"
 monero-kit-android = "v0.18.3.4-pcash.20"
 netcipher = "2.1.0"
@@ -229,6 +230,7 @@ spek-dsl-jvm = { module = "org.spekframework.spek2:spek-dsl-jvm", version.ref = 
 spek-runner-junit5 = { module = "org.spekframework.spek2:spek-runner-junit5", version.ref = "spekRunnerJunit5" }
 stellar-sdk = { module = "network.lightsail:stellar-sdk", version.ref = "stellarSdk" }
 ton-kotlin-contract = { module = "org.ton.kotlin:ton-kotlin-contract", version.ref = "tonKotlin" }
+org-json = { module = "org.json:json", version.ref = "orgJson" }
 ton-kit = { group = "com.github.piratecash.ton-kit-android", name = "tonkit", version.ref = "piratecash-ton" }
 beam-sdk = { module = "com.github.piratecash.beam-sdk-kmp:beam-sdk", version.ref = "beam-sdk" }
 bitcoin-core = { group = "com.github.piratecash.bitcoin-kit-android", name = "bitcoincore", version.ref = "piratecash-bitcoin" }
@@ -237,6 +239,7 @@ bitcoin-cash-kit = { group = "com.github.piratecash.bitcoin-kit-android", name =
 bitcoin-ecash-kit = { group = "com.github.piratecash.bitcoin-kit-android", name = "ecashkit", version.ref = "piratecash-bitcoin" }
 bitcoin-litecoin-kit = { group = "com.github.piratecash.bitcoin-kit-android", name = "litecoinkit", version.ref = "piratecash-bitcoin" }
 bitcoin-dash-kit = { group = "com.github.piratecash.bitcoin-kit-android", name = "dashkit", version.ref = "piratecash-bitcoin" }
+bitcoin-dashlib-native = { group = "com.github.piratecash.bitcoin-kit-android", name = "dashlib-native", version.ref = "piratecash-bitcoin" }
 bitcoin-dogecoin-kit = { group = "com.github.piratecash.bitcoin-kit-android", name = "dogecoinkit", version.ref = "piratecash-bitcoin" }
 bitcoin-cosanta-kit = { group = "com.github.piratecash.bitcoin-kit-android", name = "cosantakit", version.ref = "piratecash-bitcoin" }
 bitcoin-piratecash-kit = { group = "com.github.piratecash.bitcoin-kit-android", name = "piratecashkit", version.ref = "piratecash-bitcoin" }
@@ -266,6 +269,7 @@ retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", ver
 retrofit-scalars = { group = "com.squareup.retrofit2", name = "converter-scalars", version.ref = "retrofit" }
 retrofit-rxjava2 = { group = "com.squareup.retrofit2", name = "adapter-rxjava2", version.ref = "retrofit" }
 okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp-logging-interceptor" }
+okhttp-bom = { group = "com.squareup.okhttp3", name = "okhttp-bom", version.ref = "okhttp-logging-interceptor" }
 androidx-ui-text-android = { group = "androidx.compose.ui", name = "ui-text-android" }
 android-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "android-core-ktx" }
 

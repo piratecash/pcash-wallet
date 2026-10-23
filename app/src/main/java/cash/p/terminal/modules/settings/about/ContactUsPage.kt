@@ -11,6 +11,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
 import cash.p.terminal.core.providers.AppConfigProvider
+import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.modules.settings.main.HsSettingCell
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
@@ -31,7 +32,7 @@ class ContactUsPage : HSPage() {
                     ContactOptionsSheet(
                         ContactOptionsSheet.Input(
                             titleRes = R.string.settings_contact_us_pcash_support,
-                            email = AppConfigProvider.reportEmail,
+                            email = SharedAppConfig.reportEmail,
                             telegramUrl = Translator.getString(R.string.telegram_link)
                         )
                     )

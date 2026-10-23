@@ -15,7 +15,15 @@ import cash.p.terminal.feature.market.di.marketFeatureModule
 import cash.p.terminal.modules.chart.ChartIndicatorStorage
 import cash.p.terminal.shared.desktop.DesktopChartIndicatorStorage
 import cash.p.terminal.shared.desktop.desktopFeatureModule
+import cash.p.terminal.network.binance.api.BinanceApi
+import cash.p.terminal.network.data.AppHeadersProvider
+import cash.p.terminal.network.di.networkModule
+import cash.p.terminal.network.evmlabel.api.EvmLabelApi
+import cash.p.terminal.network.pirate.domain.repository.PiratePlaceRepository
+import cash.p.terminal.network.zcash.domain.usecase.GetZcashHeightUseCase
+import cash.p.terminal.shared.desktop.vault.CreateOutcome
 import cash.p.terminal.shared.desktop.vault.DesktopPreferencesReset
+import cash.p.terminal.shared.desktop.vault.DesktopVault
 import cash.p.terminal.shared.desktop.vault.DesktopVaultFiles
 import cash.p.terminal.vault.PasswordVault
 import cash.p.terminal.wallet.MarketKitWrapper
@@ -31,12 +39,16 @@ import io.horizontalsystems.core.DefaultDispatcherProvider
 import io.horizontalsystems.core.DesktopSettingsStore
 import io.horizontalsystems.core.ILockoutStorage
 import io.horizontalsystems.core.MarketSettingsStore
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.reactivex.Single
 import java.io.File
+import java.io.IOException
 import java.math.BigDecimal
 import kotlin.io.path.createTempDirectory
+import kotlinx.coroutines.runBlocking
+import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.bind
@@ -55,20 +67,33 @@ internal object DesktopTestGraph {
         val dataDir = createTempDirectory().toFile().apply { deleteOnExit() }
         startKoin {
             modules(
+                networkModule,
                 desktopFeatureModule,
                 marketFeatureModule,
                 testModule(marketKit, dataDir),
+                networkStandIns,
             )
         }
     }
 
-    fun stop() = stopKoin()
+    /** As after the first unlock: the main page builds its view models over the open storage. */
+    fun startUnlocked() {
+        start()
+        runBlocking { check(GlobalContext.get().get<DesktopVault>().create("password".toCharArray()) == CreateOutcome.SUCCESS) }
+    }
+
+    fun stop() {
+        runBlocking { GlobalContext.get().get<DesktopVault>().close() }
+        stopKoin()
+    }
 
     fun marketKitMock(): MarketKitWrapper = mockk(relaxed = true) {
         every { marketGlobalSingle("USD") } returns Single.just(marketGlobal(USD_TOTAL_CAP))
         every { marketGlobalSingle("EUR") } returns Single.just(marketGlobal(EUR_TOTAL_CAP))
         every { topCoinsMarketInfosSingle(any(), any()) } returns Single.just(listOf(bitcoinMarketInfo()))
         every { fullCoins(listOf(BITCOIN.uid)) } returns listOf(FullCoin(BITCOIN, emptyList()))
+        // A relaxed price is zero, and the balance total divides by it.
+        every { coinPrice(any(), any()) } returns null
     }
 
     private fun testModule(marketKit: MarketKitWrapper, dataDir: File) = module {
@@ -89,6 +114,15 @@ internal object DesktopTestGraph {
         single {
             DesktopChartIndicatorStorage(File(dataDir, "indicators.preferences_pb"), Gson(), DefaultDispatcherProvider())
         } bind ChartIndicatorStorage::class
+    }
+
+    /** Over the real network module, so nothing here calls out; the headers come from `desktopApp`. */
+    val networkStandIns = module {
+        single<BinanceApi> { mockk(relaxed = true) }
+        single<PiratePlaceRepository> { mockk(relaxed = true) }
+        single<GetZcashHeightUseCase> { mockk(relaxed = true) }
+        single<AppHeadersProvider> { mockk(relaxed = true) }
+        single<EvmLabelApi> { mockk { coEvery { updatesStatus() } throws IOException("No network in tests") } }
     }
 
     private fun marketGlobal(marketCap: Long) = MarketGlobal(

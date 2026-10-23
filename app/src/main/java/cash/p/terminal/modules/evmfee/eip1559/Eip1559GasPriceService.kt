@@ -1,5 +1,8 @@
 package cash.p.terminal.modules.evmfee.eip1559
 
+import cash.p.terminal.data.repository.Eip1559FeeHistory.BLOCKS_COUNT
+import cash.p.terminal.data.repository.Eip1559FeeHistory.LAST_N_RECOMMENDED_BASE_FEES
+import cash.p.terminal.data.repository.Eip1559FeeHistory.REWARD_PERCENTILE
 import cash.p.terminal.wallet.Warning
 import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.modules.evmfee.Bound
@@ -32,10 +35,6 @@ class Eip1559GasPriceService(
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
 
     companion object {
-        const val BLOCKS_COUNT = 10L
-        val REWARD_PERCENTILE = listOf(50)
-        const val LAST_N_RECOMMENDED_BASE_FEES = 2
-
         /** Headroom for baseFee growth between the fee estimate and the broadcast. */
         private const val GAS_PRICE_HEADROOM_PERCENT = 125
     }
