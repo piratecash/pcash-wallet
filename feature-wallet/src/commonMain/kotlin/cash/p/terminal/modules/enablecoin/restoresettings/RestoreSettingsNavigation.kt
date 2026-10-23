@@ -7,6 +7,8 @@ import cash.p.terminal.modules.moneroconfigure.MoneroConfigurePage
 import cash.p.terminal.modules.mwebconfigure.MwebConfigurePage
 import cash.p.terminal.modules.zcashconfigure.ZcashConfigurePage
 import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromBottom
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.isLitecoinMweb
 import io.horizontalsystems.core.entities.BlockchainType
@@ -27,6 +29,10 @@ fun HSNavigation.openRestoreSettingsDialog(
         }
     }
 
+    val zcashLauncher = rememberResultLauncher<ZcashConfigurePage.Result> { handleResult(it.config) }
+    val moneroLauncher = rememberResultLauncher<MoneroConfigurePage.Result> { handleResult(it.config) }
+    val mwebLauncher = rememberResultLauncher<MwebConfigurePage.Result> { handleResult(it.config) }
+
     LaunchedEffect(token) {
         val tokenToConfigure = token ?: return@LaunchedEffect
         keyboard?.hide()
@@ -37,29 +43,15 @@ fun HSNavigation.openRestoreSettingsDialog(
         val initialConfig = restoreSettingsViewModel.consumeInitialConfig()
 
         when (tokenToConfigure.blockchainType) {
-            BlockchainType.Zcash -> {
-                slideFromBottomForResult<ZcashConfigurePage.Result>(
-                    ZcashConfigurePage(ZcashConfigurePage.Input(initialConfig))
-                ) { result ->
-                    handleResult(result.config)
-                }
-            }
+            BlockchainType.Zcash ->
+                zcashLauncher.slideFromBottom(ZcashConfigurePage(ZcashConfigurePage.Input(initialConfig)))
 
-            BlockchainType.Monero -> {
-                slideFromBottomForResult<MoneroConfigurePage.Result>(
-                    MoneroConfigurePage(MoneroConfigurePage.Input(initialConfig))
-                ) { result ->
-                    handleResult(result.config)
-                }
-            }
+            BlockchainType.Monero ->
+                moneroLauncher.slideFromBottom(MoneroConfigurePage(MoneroConfigurePage.Input(initialConfig)))
 
             BlockchainType.Litecoin -> {
                 if (tokenToConfigure.isLitecoinMweb) {
-                    slideFromBottomForResult<MwebConfigurePage.Result>(
-                        MwebConfigurePage(MwebConfigurePage.Input(initialConfig))
-                    ) { result ->
-                        handleResult(result.config)
-                    }
+                    mwebLauncher.slideFromBottom(MwebConfigurePage(MwebConfigurePage.Input(initialConfig)))
                 }
             }
 

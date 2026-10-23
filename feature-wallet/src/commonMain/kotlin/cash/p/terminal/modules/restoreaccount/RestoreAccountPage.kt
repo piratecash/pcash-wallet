@@ -24,6 +24,8 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpFrom
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.navigation.viewModelStoreOwnerForPage
 import io.horizontalsystems.core.Translator.getString
 import cash.p.terminal.wallet.IAccountManager
@@ -177,6 +179,9 @@ private fun DuplicateWalletContent(navigation: HSNavigation, input: ManageAccoun
     val viewModel: DuplicateWalletViewModel = koinViewModel(
         parameters = { parametersOf(accountToCopy) }
     )
+    val passphraseTermsLauncher = navigation.rememberResultLauncher<Boolean> { agreed ->
+        if (agreed) viewModel.onPassphraseTermsAgreed()
+    }
     DuplicateWalletScreen(
         uiState = viewModel.uiState,
         passphraseTermsAccepted = viewModel.passphraseTermsAgreed,
@@ -186,11 +191,7 @@ private fun DuplicateWalletContent(navigation: HSNavigation, input: ManageAccoun
         onChangePassphraseConfirmation = viewModel::onChangePassphraseConfirmation,
         onCreate = viewModel::createAccount,
         onBackClick = navigation::navigateUpSafely,
-        onOpenTerms = {
-            navigation.slideFromRightForResult<Boolean>(PassphraseTermsPage(screenshotEnabled = false)) { agreed ->
-                if (agreed) viewModel.onPassphraseTermsAgreed()
-            }
-        },
+        onOpenTerms = { passphraseTermsLauncher.slideFromRight(PassphraseTermsPage(screenshotEnabled = false)) },
         onFinish = { navigation.finishRestoreAccount(input) }
     )
 

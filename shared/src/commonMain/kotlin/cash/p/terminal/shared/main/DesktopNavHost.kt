@@ -25,7 +25,6 @@ import cash.p.terminal.navigation.BottomSheetSceneStrategy
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.LocalHostLifecycleOwner
-import cash.p.terminal.navigation.ReportPageResumed
 import cash.p.terminal.navigation.rememberSharedViewModelStoreNavEntryDecorator
 import cash.p.terminal.ui_compose.components.AppSnackbar
 import cash.p.terminal.ui_compose.components.LocalHudMessenger
@@ -73,10 +72,7 @@ fun DesktopNavHost(
                 ),
                 sceneStrategies = listOf(sheetStrategy),
                 entryProvider = { page ->
-                    NavEntry(page, page.contentKey(), page.metadata()) {
-                        ReportPageResumed(navigation, page)
-                        page.GetContent(navigation)
-                    }
+                    NavEntry(page, page.contentKey(), page.metadata()) { page.Content(navigation) }
                 },
             )
             HudSnackbar(hudMessenger, Modifier.align(Alignment.BottomCenter))

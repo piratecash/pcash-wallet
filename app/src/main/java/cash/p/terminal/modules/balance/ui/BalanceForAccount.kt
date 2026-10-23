@@ -37,7 +37,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
 import cash.p.terminal.core.Caution
 import cash.p.terminal.core.getKoinInstance
-import cash.p.terminal.navigation.openQrScanner
+import cash.p.terminal.navigation.rememberQrScannerLauncher
 import cash.p.terminal.modules.backupalert.BackupAlert
 import cash.p.terminal.modules.balance.AccountViewItem
 import cash.p.terminal.modules.balance.BalanceModule
@@ -52,7 +52,6 @@ import cash.p.terminal.modules.managewallets.ManageWalletsPage
 import cash.p.terminal.modules.transactions.TransactionItem
 import cash.p.terminal.modules.walletconnect.list.WalletConnectListViewModel
 import cash.p.terminal.modules.zcashmigration.ZcashMigrationFlow
-import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.WalletConnect_NewConnect
@@ -85,7 +84,7 @@ fun BalanceForAccount(
         viewModel.onResume()
     }
 
-    val appPages: AppPages = koinInject()
+    val qrScanner = navigation.rememberQrScannerLauncher(koinInject(), viewModel::handleScannedData)
     val scannerTitle = stringResource(R.string.qr_scanner_title_smart_scan)
     var showInvalidUrlSheet by rememberSaveable { mutableStateOf(false) }
 
@@ -138,15 +137,7 @@ fun BalanceForAccount(
                             MenuItem(
                                 title = TranslatableString.ResString(Res.string.WalletConnect_NewConnect),
                                 icon = Res.drawable.ic_qr_scan_20,
-                                onClick = {
-                                    navigation.openQrScanner(
-                                        appPages = appPages,
-                                        title = scannerTitle,
-                                        showPasteButton = true
-                                    ) { scannedText ->
-                                        viewModel.handleScannedData(scannedText)
-                                    }
-                                }
+                                onClick = { qrScanner.open(scannerTitle, showPasteButton = true) }
                             )
                         )
                     }
@@ -198,13 +189,7 @@ fun BalanceForAccount(
         InvalidUrlConnectionBottomSheet(
             onRetry = {
                 showInvalidUrlSheet = false
-                navigation.openQrScanner(
-                    appPages = appPages,
-                    title = scannerTitle,
-                    showPasteButton = true
-                ) { scannedText ->
-                    viewModel.handleScannedData(scannedText)
-                }
+                qrScanner.open(scannerTitle, showPasteButton = true)
             },
             onDismiss = { showInvalidUrlSheet = false }
         )

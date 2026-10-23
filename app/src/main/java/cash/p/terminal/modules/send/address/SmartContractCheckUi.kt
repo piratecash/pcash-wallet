@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import cash.p.terminal.R
 import cash.p.terminal.core.address.ContractAddressChecker
-import cash.p.terminal.core.premiumAction
+import cash.p.terminal.core.rememberPremiumAction
 import cash.p.terminal.ui_compose.components.SectionUniversalLawrence
 import cash.p.terminal.ui_compose.components.SwitchWithText
 import cash.p.terminal.wallet.Token
@@ -26,6 +26,9 @@ fun SmartContractCheckSection(
     addressCheckerControl: AddressCheckerControl,
     modifier: Modifier = Modifier
 ) {
+    val setSmartContractCheck = navigation.rememberPremiumAction<Boolean> {
+        addressCheckerControl.onCheckSmartContractAddressClick(it)
+    }
     val isSupported = remember(token.blockchainType, token.type) {
         isSmartContractCheckSupported(token)
     }
@@ -36,11 +39,7 @@ fun SmartContractCheckSection(
         SwitchWithText(
             text = stringResource(R.string.settings_smart_contract_check),
             checked = addressCheckerControl.uiState.addressCheckSmartContractEnabled,
-            onCheckedChange = {
-                navigation.premiumAction {
-                    addressCheckerControl.onCheckSmartContractAddressClick(it)
-                }
-            }
+            onCheckedChange = setSmartContractCheck
         )
     }
 }

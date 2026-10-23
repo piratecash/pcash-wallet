@@ -8,8 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.lifecycle.viewmodel.compose.viewModel
-import cash.p.terminal.R
-import cash.p.terminal.core.authorizedAction
+import cash.p.terminal.core.rememberAuthorizedShowAllTransactionsAction
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.usecase.GetRestoreHeightForWalletUseCase
 import cash.p.terminal.featureStacking.ui.staking.StackingPage
@@ -20,14 +19,12 @@ import cash.p.terminal.modules.balance.token.creationblock.CreationBlockScreen
 import cash.p.terminal.modules.balance.token.creationblock.CreationBlockViewModel
 import cash.p.terminal.modules.main.MainPage
 import cash.p.terminal.modules.offline.OfflineModeToggleViewModel
-import cash.p.terminal.modules.pin.ConfirmPinPage
-import cash.p.terminal.modules.pin.PinType
 import cash.p.terminal.modules.transactions.TransactionsViewModel
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.PageResumeEffect
 import cash.p.terminal.navigation.navigateUpSafely
-import cash.p.terminal.core.premiumAction
+import cash.p.terminal.core.rememberPremiumToggle
 import cash.p.terminal.navigation.viewModelStoreOwnerForPage
 import cash.p.terminal.ui.compose.BalanceHideOnFlipHandling
 import cash.p.terminal.ui_compose.components.HudHelper
@@ -51,6 +48,9 @@ class TokenBalancePage(val input: Wallet) : HSPage() {
             koinViewModel { parametersOf(input) }
 
         val context = LocalContext.current
+        val showAllTransactions = navigation.rememberAuthorizedShowAllTransactionsAction {
+            viewModel.showAllTransactions(true)
+        }
 
         OfflineModeErrorEffect(offlineModeToggleViewModel)
 
@@ -67,16 +67,7 @@ class TokenBalancePage(val input: Wallet) : HSPage() {
                     StackingPage(if (input.isPirateCash()) StackingType.PCASH else StackingType.COSANTA)
                 )
             },
-            onShowAllTransactionsClicked = {
-                navigation.authorizedAction(
-                    ConfirmPinPage.InputConfirm(
-                        descriptionResId = R.string.Unlock_EnterPasscode_Transactions_Hide,
-                        pinType = PinType.TRANSACTIONS_HIDE
-                    )
-                ) {
-                    viewModel.showAllTransactions(true)
-                }
-            },
+            onShowAllTransactionsClicked = showAllTransactions,
             onClickSubtitle = {
                 viewModel.toggleTotalType()
                 HudHelper.vibrate(context)
@@ -121,6 +112,7 @@ class AssetSettingsPage(val wallet: Wallet) : HSPage() {
             viewModelStoreOwner = navigation.viewModelStoreOwnerForPage(TokenBalancePage::class)
         ) { parametersOf(wallet) }
         OfflineModeErrorEffect(offlineModeToggleViewModel)
+        val setAmlCheckEnabled = navigation.rememberPremiumToggle(viewModel::setAmlCheckEnabled)
 
         // Zcash created-in-app wallets have no history before their creation checkpoint, so
         // editing the birthday height is meaningful only for restored (imported) Zcash wallets.
@@ -133,15 +125,7 @@ class AssetSettingsPage(val wallet: Wallet) : HSPage() {
         }
         AssetSettingsScreen(
             amlCheckEnabled = viewModel.uiState.amlCheckEnabled,
-            onAmlCheckChange = { enabled ->
-                if (enabled) {
-                    navigation.premiumAction {
-                        viewModel.setAmlCheckEnabled(true)
-                    }
-                } else {
-                    viewModel.setAmlCheckEnabled(false)
-                }
-            },
+            onAmlCheckChange = setAmlCheckEnabled,
             pricePeriod = viewModel.uiState.displayDiffPricePeriod,
             displayDiffOptionType = viewModel.uiState.displayDiffOptionType,
             isRoundingAmount = viewModel.uiState.isRoundingAmount,

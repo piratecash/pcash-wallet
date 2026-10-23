@@ -1,5 +1,6 @@
 package cash.p.terminal.shared.desktop
 
+import androidx.compose.runtime.Composable
 import cash.p.terminal.feature.wallet.AppRestarter
 import cash.p.terminal.feature.wallet.FaqTopic
 import cash.p.terminal.feature.wallet.SecretActionAuthorizer
@@ -15,6 +16,7 @@ import cash.p.terminal.navigation.BackupKeyInput
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.QrScannerInput
+import cash.p.terminal.navigation.rememberResultLauncher
 import cash.p.terminal.shared.desktop.lock.ConfirmPasswordPage
 import cash.p.terminal.ui_compose.CoinFragmentInput
 import cash.p.terminal.ui_compose.components.UrlOpener
@@ -60,10 +62,13 @@ class DesktopWalletPages(private val urlOpener: UrlOpener) : AppPages, WalletPag
 
 /** Desktop always has a password, so it is asked again before every secret (Android asks for a set PIN). */
 class DesktopSecretActionAuthorizer : SecretActionAuthorizer {
-    override fun authorize(navigation: HSNavigation, action: () -> Unit) =
-        navigation.slideFromBottomForResult<ConfirmPasswordPage.Result>(ConfirmPasswordPage()) { result ->
-            if (result.success) action()
+    @Composable
+    override fun <A> rememberAuthorization(navigation: HSNavigation, action: (A) -> Unit): (A) -> Unit {
+        val launcher = navigation.rememberResultLauncher<ConfirmPasswordPage.Result, A> { result, arg ->
+            if (result.success) action(arg)
         }
+        return { arg -> launcher.slideFromBottom(ConfirmPasswordPage(), arg) }
+    }
 }
 
 /** As Android starting a new task: the root watches [generation] and starts over with a fresh back stack. */

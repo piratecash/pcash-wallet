@@ -67,7 +67,7 @@ import cash.p.terminal.resources.ic_search
 import org.koin.compose.viewmodel.koinViewModel
 import cash.p.terminal.R
 import cash.p.terminal.core.App
-import cash.p.terminal.core.premiumAction
+import cash.p.terminal.core.rememberPremiumToggle
 import cash.p.terminal.modules.balance.BalanceAccountsViewModel
 import cash.p.terminal.modules.balance.BalanceScreenState
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewMode
@@ -133,6 +133,7 @@ fun TransactionsScreen(
     var offlineSignedSelected by rememberSaveable { mutableStateOf(false) }
     var showAmlInfoSheet by remember { mutableStateOf(false) }
     val view = LocalView.current
+    val setAmlCheckEnabled = navigation.rememberPremiumToggle(viewModel::setAmlCheckEnabled)
 
     Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column(modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding())) {
@@ -228,15 +229,7 @@ fun TransactionsScreen(
                                     ) {
                                         AmlCheckPromoBanner(
                                             amlCheckEnabled = uiState.amlCheckEnabled,
-                                            onToggleChange = { enabled ->
-                                                if (enabled) {
-                                                    navigation.premiumAction {
-                                                        viewModel.setAmlCheckEnabled(true)
-                                                    }
-                                                } else {
-                                                    viewModel.setAmlCheckEnabled(false)
-                                                }
-                                            },
+                                            onToggleChange = setAmlCheckEnabled,
                                             onInfoClick = { showAmlInfoSheet = true },
                                             onClose = {
                                                 viewModel.dismissAmlPromo()

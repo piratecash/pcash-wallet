@@ -84,7 +84,7 @@ import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.MoneroSpendReadiness
-import cash.p.terminal.core.premiumAction
+import cash.p.terminal.core.rememberPremiumToggle
 import cash.p.terminal.featureStacking.ui.staking.StackingType
 import cash.p.terminal.modules.balance.BackupRequiredError
 import cash.p.terminal.modules.balance.BalanceViewItem
@@ -198,6 +198,7 @@ fun TokenBalanceScreen(
 ) {
     val view = LocalView.current
     var showMoneroSendPreparation by rememberSaveable { mutableStateOf(false) }
+    val setAmlCheckEnabled = navigation.rememberPremiumToggle(viewModel::setAmlCheckEnabled)
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -241,13 +242,7 @@ fun TokenBalanceScreen(
             transactionsViewModel.toggleTransactionInfoHidden(it.uid)
         },
         onBottomReached = viewModel::onBottomReached,
-        onSetAmlCheckEnabled = { enabled ->
-            if (enabled) {
-                navigation.premiumAction { viewModel.setAmlCheckEnabled(true) }
-            } else {
-                viewModel.setAmlCheckEnabled(false)
-            }
-        },
+        onSetAmlCheckEnabled = setAmlCheckEnabled,
         onDismissAmlPromo = {
             viewModel.dismissAmlPromo()
             HudHelper.showPremiumMessage(

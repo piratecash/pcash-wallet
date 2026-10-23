@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.tonconnect
 
-import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,14 +15,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
-import cash.p.terminal.core.App
-import cash.p.terminal.core.authorizedAction
-import cash.p.terminal.core.getKoinInstance
+import cash.p.terminal.core.rememberAuthorizedAction
 import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
 import cash.p.terminal.modules.confirm.ConfirmTransactionScreen
-import cash.p.terminal.modules.main.MainActivity
 import cash.p.terminal.modules.xtransaction.cells.HeaderCell
 import cash.p.terminal.modules.xtransaction.helpers.TransactionInfoHelper
 import cash.p.terminal.modules.xtransaction.sections.BurnSection
@@ -49,33 +44,38 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun TonConnectSendRequestScreen(navigation: HSNavigation) {
+fun TonConnectSendRequestScreen(
+    navigation: HSNavigation,
+    viewModel: TonConnectSendRequestViewModel,
+) {
     val logger = remember { AppLogger("ton-connect request") }
-    val mainActivity = LocalActivity.current as? MainActivity
-    if (mainActivity == null) {
-        HudHelper.showErrorMessage(
-            LocalView.current,
-            R.string.unknown_error
-        )
-        navigation.navigateUp()
-        return
-    }
-    val mainActivityViewModel = mainActivity.viewModel
-    val viewModel = viewModel<TonConnectSendRequestViewModel>(initializer = {
-        val sendRequestEntity = mainActivityViewModel.tcSendRequest.replayCache.firstOrNull()
-        mainActivityViewModel.onTcSendRequestHandled()
-
-        TonConnectSendRequestViewModel(
-            sendRequestEntity,
-            App.accountManager,
-            App.tonConnectManager,
-            getKoinInstance(),
-            getKoinInstance(),
-        )
-    })
-
     val uiState = viewModel.uiState
     val view = LocalView.current
+    val coroutineScope = rememberCoroutineScope()
+    var buttonEnabled by remember { mutableStateOf(true) }
+    val confirm = navigation.rememberAuthorizedAction(input = null) {
+        coroutineScope.launch {
+            buttonEnabled = false
+            HudHelper.showInProcessMessage(
+                view,
+                R.string.Send_Sending,
+                SnackbarDuration.INDEFINITE
+            )
+
+            try {
+                logger.info("click confirm button")
+                viewModel.confirm()
+            } catch (t: Throwable) {
+                logger.warning("failed", t)
+                HudHelper.showErrorMessage(
+                    view,
+                    t.message ?: t.javaClass.simpleName
+                )
+            }
+
+            buttonEnabled = true
+        }
+    }
 
     LaunchedEffect(uiState.success) {
         if (uiState.success) {
@@ -91,8 +91,6 @@ fun TonConnectSendRequestScreen(navigation: HSNavigation) {
         onClickSettings = null,
         onClickClose = null,
         buttonsSlot = {
-            val coroutineScope = rememberCoroutineScope()
-
             if (uiState.error != null) {
                 ButtonPrimaryDefault(
                     modifier = Modifier.fillMaxWidth(),
@@ -103,37 +101,11 @@ fun TonConnectSendRequestScreen(navigation: HSNavigation) {
                     }
                 )
             } else {
-                var buttonEnabled by remember { mutableStateOf(true) }
-
                 ButtonPrimaryYellow(
                     modifier = Modifier.fillMaxWidth(),
                     title = stringResource(R.string.Button_Confirm),
                     enabled = uiState.confirmEnabled && buttonEnabled,
-                    onClick = {
-                        navigation.authorizedAction {
-                            coroutineScope.launch {
-                                buttonEnabled = false
-                                HudHelper.showInProcessMessage(
-                                    view,
-                                    R.string.Send_Sending,
-                                    SnackbarDuration.INDEFINITE
-                                )
-
-                                try {
-                                    logger.info("click confirm button")
-                                    viewModel.confirm()
-                                } catch (t: Throwable) {
-                                    logger.warning("failed", t)
-                                    HudHelper.showErrorMessage(
-                                        view,
-                                        t.message ?: t.javaClass.simpleName
-                                    )
-                                }
-
-                                buttonEnabled = true
-                            }
-                        }
-                    }
+                    onClick = confirm
                 )
                 VSpacer(16.dp)
                 ButtonPrimaryDefault(

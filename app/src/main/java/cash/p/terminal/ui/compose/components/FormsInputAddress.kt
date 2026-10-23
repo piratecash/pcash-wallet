@@ -37,6 +37,8 @@ import cash.p.terminal.R
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.contacts.ChooseContactPage
 import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
 import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
 import cash.p.terminal.ui_compose.components.HSCircularProgressIndicator
@@ -68,6 +70,9 @@ fun FormsInputAddress(
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
+    val contactLauncher = navigation.rememberResultLauncher<ChooseContactPage.Result> {
+        onValueChange(textPreprocessor.process(it.address))
+    }
     val borderColor = when (state) {
         is DataState.Error -> {
             if (state.error is FormsInputStateWarning) {
@@ -193,14 +198,7 @@ fun FormsInputAddress(
                     ButtonSecondaryCircle(
                         modifier = Modifier.padding(end = 8.dp),
                         icon = R.drawable.ic_user_20,
-                        onClick = {
-                            navigation.slideFromRightForResult<ChooseContactPage.Result>(
-                                ChooseContactPage(blockchainType)
-                            ) {
-                                val textProcessed = textPreprocessor.process(it.address)
-                                onValueChange.invoke(textProcessed)
-                            }
-                        }
+                        onClick = { contactLauncher.slideFromRight(ChooseContactPage(blockchainType)) }
                     )
                 }
                 ButtonSecondaryCircle(
