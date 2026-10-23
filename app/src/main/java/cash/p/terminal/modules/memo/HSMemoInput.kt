@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
 import cash.p.terminal.modules.address.MemoPrefill
 import cash.p.terminal.ui.compose.components.FormsInput
+import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
 @Composable
@@ -24,8 +25,7 @@ fun HSMemoInput(
     onValueChange: (String) -> Unit,
     initial: String = "",
     visible: Boolean = true,
-    prefillMaxLength: Int = maxLength,
-    prefillMaxBytes: Int? = null,
+    maxBytes: Int? = null,
 ) {
     var memo by rememberSaveable { mutableStateOf(initial) }
     var isInitialized by rememberSaveable { mutableStateOf(initial.isNotEmpty()) }
@@ -36,7 +36,7 @@ fun HSMemoInput(
         val event = currentMemoPrefill.event
         if (event != null) {
             if (!event.isNavigationPrefill || !isInitialized) {
-                memo = event.memo.takeIf { it.fitsPrefill(prefillMaxLength, prefillMaxBytes) }.orEmpty()
+                memo = event.memo.takeIf { maxBytes != null || it.length <= maxLength }.orEmpty()
                 isInitialized = true
             }
             if (visible) currentOnValueChange(memo)
@@ -49,9 +49,16 @@ fun HSMemoInput(
     }
 
     if (!visible) return
+    val fits = if (maxBytes == null) memo.length <= maxLength else memo.fitsMemoBytes(maxBytes)
+    val tooLongError = if (!fits && maxBytes != null) {
+        val message = stringResource(R.string.send_memo_too_long, memo.encodeToByteArray().size, maxBytes)
+        DataState.Error(Exception(message))
+    } else {
+        null
+    }
     FormsInput(
             modifier = Modifier.padding(horizontal = 16.dp),
-            enabled = memo.length <= maxLength,
+            enabled = fits,
             initial = memo,
             hint = stringResource(R.string.Send_DialogMemoHint),
             hintColor = ComposeAppTheme.colors.textDisabled,
@@ -61,6 +68,8 @@ fun HSMemoInput(
             pasteEnabled = false,
             singleLine = true,
             maxLength = maxLength,
+            maxBytes = maxBytes,
+            state = tooLongError,
             onValueChange = {
                 memo = it
                 isInitialized = true
@@ -69,6 +78,5 @@ fun HSMemoInput(
     )
 }
 
-private fun String.fitsPrefill(maxLength: Int, maxBytes: Int?): Boolean {
-    return length <= maxLength && (maxBytes == null || encodeToByteArray().size <= maxBytes)
-}
+/** Blank counts as no memo: every consumer drops it before sending. */
+fun String?.fitsMemoBytes(maxBytes: Int): Boolean = isNullOrBlank() || encodeToByteArray().size <= maxBytes

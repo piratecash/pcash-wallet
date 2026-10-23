@@ -16,7 +16,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
-import cash.p.terminal.core.utils.ZcashMemo.MAX_SIZE_BYTES
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.address.AddressParserModule
 import cash.p.terminal.modules.address.AddressParserViewModel
@@ -174,12 +173,11 @@ private fun SendZCashScreen(
                 VSpacer(12.dp)
             }
             HSMemoInput(
-                maxLength = viewModel.memoMaxLength,
+                maxLength = viewModel.memoMaxBytes,
                 memoPrefill = paymentAddressViewModel.addressInputState.memoPrefill,
                 onValueChange = viewModel::onEnterMemo,
                 visible = memoIsAllowed,
-                prefillMaxLength = MAX_SIZE_BYTES,
-                prefillMaxBytes = MAX_SIZE_BYTES,
+                maxBytes = viewModel.memoMaxBytes,
             )
 
             VSpacer(12.dp)
