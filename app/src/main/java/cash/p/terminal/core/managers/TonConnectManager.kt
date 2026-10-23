@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import cash.p.terminal.core.factories.AdapterFactory
 import cash.p.terminal.core.storage.AppDatabase
+import cash.p.terminal.core.storage.liveAccountIds
 import cash.p.terminal.wallet.IAccountManager
 import co.touchlab.kermit.Logger
 import com.tonapps.wallet.data.tonconnect.entities.DAppEntity
@@ -140,10 +141,8 @@ class TonConnectManager(
         }
     }
 
-    // Every access level: accountManager.accounts holds only the current level's accounts.
     private suspend fun liveAccountIds(): List<String> = withContext(dispatcherProvider.io) {
-        val accountsDao = appDatabase.accountsDao()
-        accountsDao.getIds() - accountsDao.getDeletedIds().toSet()
+        appDatabase.accountsDao().liveAccountIds()
     }
 
     private suspend fun logFailure(action: String, block: suspend () -> Unit) {

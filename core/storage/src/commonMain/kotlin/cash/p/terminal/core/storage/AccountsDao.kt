@@ -67,3 +67,6 @@ interface AccountsDao {
     @Query("SELECT COUNT(*) FROM AccountRecord WHERE deleted = 0 AND level = :level")
     fun getCountByLevel(level: Int): Int
 }
+
+// Every access level: IAccountManager.accounts holds only the current level's accounts.
+fun AccountsDao.liveAccountIds(): List<String> = getIds() - getDeletedIds().toSet()
