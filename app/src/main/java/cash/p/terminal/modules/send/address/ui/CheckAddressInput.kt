@@ -31,9 +31,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
 import cash.p.terminal.entities.Address
-import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.HSNavigation
-import cash.p.terminal.navigation.openQrScanner
+import cash.p.terminal.navigation.rememberQrScannerLauncher
 import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
 import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
 import cash.p.terminal.ui_compose.entities.DataState
@@ -56,7 +55,7 @@ fun CheckAddressInput(
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
     val scannerTitle = stringResource(R.string.qr_scanner_title_smart_scan)
-    val appPages: AppPages = koinInject()
+    val qrScanner = navigation.rememberQrScannerLauncher(koinInject(), onValueChange)
 
     val borderColor = when (state) {
         is DataState.Error -> {
@@ -129,9 +128,7 @@ fun CheckAddressInput(
                     icon = R.drawable.ic_qr_scan_20,
                     onClick = {
                         coroutineScope.launchAfterClearingFocus(focusManager) {
-                            navigation.openQrScanner(appPages, scannerTitle) { scannedText ->
-                                onValueChange.invoke(scannedText)
-                            }
+                            qrScanner.open(scannerTitle)
                         }
                     }
                 )

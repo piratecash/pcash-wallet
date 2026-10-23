@@ -10,6 +10,8 @@ import cash.p.terminal.modules.activatetoken.ActivateTokenPage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromBottom
 import cash.p.terminal.ui_compose.components.AppModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
@@ -45,24 +47,21 @@ import kotlin.reflect.KClass
 fun ReceiveStellarAssetScreen(
     navigation: HSNavigation,
     wallet: Wallet,
-    receiveEntryPoint: KClass<out HSPage>?
-) {
-    val viewModel = viewModel<ReceiveStellarAssetViewModel>(
+    receiveEntryPoint: KClass<out HSPage>?,
+    viewModel: ReceiveStellarAssetViewModel = viewModel(
         factory = ReceiveStellarAssetViewModel.Factory(wallet)
-    )
+    ),
+) {
     val uiState = viewModel.uiState
 
     val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
 
-    val runActivation = {
-        navigation.slideFromBottomForResult<ActivateTokenPage.Result>(ActivateTokenPage(wallet)) {
-            scope.launch {
-                viewModel.onActivationResult(it.activated)
-                sheetState.hide()
-            }
-        }
+    val activationLauncher = navigation.rememberResultLauncher<ActivateTokenPage.Result> { result ->
+        viewModel.onActivationResult(result.activated)
+        scope.launch { sheetState.hide() }
     }
+    val runActivation = { activationLauncher.slideFromBottom(ActivateTokenPage(wallet)) }
 
     LaunchedEffect(uiState.activationRequired) {
         if (uiState.activationRequired) {

@@ -3,10 +3,9 @@ package cash.p.terminal.modules.contacts
 import android.os.Parcelable
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
-import cash.p.terminal.R
 import cash.p.terminal.core.App
-import cash.p.terminal.core.authorizedDeleteContactsPasscodeAction
-import cash.p.terminal.core.premiumAction
+import cash.p.terminal.core.rememberAuthorizedDeleteContactsPasscodeAction
+import cash.p.terminal.core.rememberPremiumAction
 import cash.p.terminal.core.slideToDeleteContactsTerms
 import cash.p.terminal.modules.contacts.model.Contact
 import cash.p.terminal.modules.contacts.model.ContactAddress
@@ -25,8 +24,12 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpFrom
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.navigation.viewModelStoreOwnerForPage
 import kotlinx.parcelize.Parcelize
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.pin_set_for_delete_all_contacts
 
 class ContactsPage(val input: Input) : HSPage() {
 
@@ -132,6 +135,10 @@ private fun ContactContent(
     newAddress: ContactAddress?,
 ) {
     val viewModel = viewModel<ContactViewModel>(factory = ContactsModule.ContactViewModelFactory(contact, newAddress))
+    val addressEditor = navigation.rememberResultLauncher<ContactAddressResult> { result ->
+        result.addedAddress?.let(viewModel::setAddress)
+        result.deletedAddress?.let(viewModel::deleteAddress)
+    }
     ContactScreen(
         viewModel = viewModel,
         onNavigateToBack = {
@@ -142,16 +149,13 @@ private fun ContactContent(
             }
         },
         onNavigateToAddress = { address ->
-            navigation.slideFromRightForResult<ContactAddressResult>(
+            addressEditor.slideFromRight(
                 ContactAddressPage(
                     contactUid = viewModel.contact.uid,
                     contactAddress = address,
                     definedAddresses = viewModel.uiState.addressViewItems.map { it.contactAddress },
                 )
-            ) { result ->
-                result.addedAddress?.let(viewModel::setAddress)
-                result.deletedAddress?.let(viewModel::deleteAddress)
-            }
+            )
         }
     )
 }
@@ -168,6 +172,19 @@ private fun Mode.addAddress(): ContactAddress? = when (this) {
 private fun ContactsSettingsContent(navigation: HSNavigation, mode: Mode) {
     val viewModel = viewModel<ContactsViewModel>(factory = ContactsModule.ContactsViewModelFactory(mode))
     val uiState = viewModel.uiState
+    val editDeleteContactsPin = navigation.rememberAuthorizedDeleteContactsPasscodeAction {
+        navigation.slideFromRight(
+            EditPinPage(
+                SetPinPage.Input(
+                    description = Res.string.pin_set_for_delete_all_contacts,
+                    pinType = PinType.DELETE_CONTACTS
+                )
+            )
+        )
+    }
+    val openDeleteContactsTerms = navigation.rememberPremiumAction(navigation::slideToDeleteContactsTerms)
+    val disableDeleteContactsPin =
+        navigation.rememberAuthorizedDeleteContactsPasscodeAction(viewModel::disableDeleteContactsPin)
     ContactsSettingsScreen(
         deleteContactsPinEnabled = uiState.deleteContactsPinEnabled,
         hasContacts = viewModel.shouldShowRestoreWarning(),
@@ -176,28 +193,9 @@ private fun ContactsSettingsContent(navigation: HSNavigation, mode: Mode) {
         onRestore = viewModel::restore,
         onPrepareForBackup = viewModel::prepareForBackup,
         onManageDeleteContactsPasscode = {
-            if (uiState.deleteContactsPinEnabled) {
-                navigation.authorizedDeleteContactsPasscodeAction {
-                    navigation.slideFromRight(
-                        EditPinPage(
-                            SetPinPage.Input(
-                                descriptionResId = R.string.pin_set_for_delete_all_contacts,
-                                pinType = PinType.DELETE_CONTACTS
-                            )
-                        )
-                    )
-                }
-            } else {
-                navigation.premiumAction {
-                    navigation.slideToDeleteContactsTerms()
-                }
-            }
+            if (uiState.deleteContactsPinEnabled) editDeleteContactsPin() else openDeleteContactsTerms()
         },
-        onDisableDeleteContactsPasscode = {
-            navigation.authorizedDeleteContactsPasscodeAction {
-                viewModel.disableDeleteContactsPin()
-            }
-        },
+        onDisableDeleteContactsPasscode = disableDeleteContactsPin,
         onClose = navigation::navigateUpSafely
     )
 }

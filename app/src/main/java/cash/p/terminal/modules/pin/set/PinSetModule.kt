@@ -2,12 +2,12 @@ package cash.p.terminal.modules.pin.set
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import cash.p.terminal.core.App
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.managers.TransactionHiddenManager
 import cash.p.terminal.modules.pin.PinType
 import cash.p.terminal.modules.pin.hiddenwallet.HiddenWalletPinPolicy
 import cash.p.terminal.wallet.managers.UserManager
+import io.horizontalsystems.core.IPinComponent
 import org.koin.core.parameter.parametersOf
 
 object PinSetModule {
@@ -15,12 +15,13 @@ object PinSetModule {
     class Factory(private val pinType: PinType) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            val pinComponent = getKoinInstance<IPinComponent>()
             return PinSetViewModel(
-                pinComponent = App.pinComponent,
+                pinComponent = pinComponent,
                 pinType = pinType,
                 transactionHiddenManager = getKoinInstance<TransactionHiddenManager>(),
                 hiddenWalletPinPolicy = getKoinInstance<HiddenWalletPinPolicy> {
-                    parametersOf(App.pinComponent)
+                    parametersOf(pinComponent)
                 },
                 userManager = getKoinInstance<UserManager>()
             ) as T

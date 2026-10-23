@@ -1,6 +1,7 @@
 package cash.p.terminal.navigation
 
 import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.result.ResultEventBus
 import kotlin.reflect.KClass
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -8,13 +9,18 @@ import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 
 /**
- * Owns every change of [backStack]: result delivery, result registration cleanup and the root
+ * Owns every change of [backStack]: result delivery, launch cleanup and the root
  * guard live here, so the back stack must not be mutated around it.
  */
 class HSNavigation(val backStack: NavBackStack<HSPage>) {
 
-    @PublishedApi
-    internal val results = ResultRegistry(backStack)
+    internal val resultBus = ResultEventBus()
+
+    // Kept until delivered or until the caller leaves the back stack.
+    internal val launches = mutableMapOf<String, Launch>()
+
+    // Launcher key -> page that remembered it; the key's channel is closed once that page leaves the back stack.
+    internal val launcherOwners = mutableMapOf<String, HSPage>()
 
     private var resumedPage: HSPage? = null
 
@@ -22,17 +28,13 @@ class HSNavigation(val backStack: NavBackStack<HSPage>) {
 
     fun slideFromBottom(page: HSPage) = mutate { add(page, NavigationType.SlideFromBottom) }
 
-    inline fun <reified T : Any> slideFromRightForResult(page: HSPage, crossinline onResult: (T) -> Unit) {
-        results.register(page) { onResult(it as T) }
-        slideFromRight(page)
+    /** At most one result per launch reaches the caller: the first one. */
+    fun <T : Any> setResult(page: HSPage, result: T) {
+        val key = page.resultKey ?: return
+        if (key !in launches) return
+        page.resultKey = null
+        resultBus.sendResult(key, Answer(page, result))
     }
-
-    inline fun <reified T : Any> slideFromBottomForResult(page: HSPage, crossinline onResult: (T) -> Unit) {
-        results.register(page) { onResult(it as T) }
-        slideFromBottom(page)
-    }
-
-    fun <T : Any> setResult(page: HSPage, result: T) = results.setResult(page, result)
 
     fun navigateUp(): Boolean {
         if (backStack.size <= 1) return false
@@ -89,60 +91,21 @@ class HSNavigation(val backStack: NavBackStack<HSPage>) {
 
     private inline fun mutate(block: () -> Unit) {
         block()
-        results.onBackStackChanged()
+        forgetLaunchersOfRemovedPages()
+    }
+
+    private fun forgetLaunchersOfRemovedPages() {
+        launcherOwners.filterValues { !isOnBackStack(it) }.keys.forEach(::forgetLauncher)
+    }
+
+    internal fun forgetLauncher(key: String) {
+        launcherOwners.remove(key)
+        launches.remove(key)
+        resultBus.removeResult(key)
     }
 }
 
-/**
- * Results of pages opened for result, bound to the caller page. A result is kept (latest wins) and
- * handed over once, as soon as the caller is visible: on the stack with only sheets above it.
- */
-@PublishedApi
-internal class ResultRegistry(private val backStack: List<HSPage>) {
-
-    private val registrations = mutableMapOf<String, Registration>()
-
-    // A non-sheet page removes the sheets on top when pushed, so its caller is the page beneath them.
-    fun register(page: HSPage, onResult: (Any) -> Unit) {
-        val caller = checkNotNull(
-            if (page.bottomSheet) backStack.lastOrNull() else backStack.lastOrNull { !it.bottomSheet }
-        )
-        val resultKey = randomId()
-        page.resultKey = resultKey
-        registrations[resultKey] = Registration(caller, onResult)
-    }
-
-    fun setResult(page: HSPage, result: Any) {
-        val registration = page.resultKey?.let(registrations::get) ?: return
-        registration.result = result
-        deliver()
-    }
-
-    fun onBackStackChanged() {
-        registrations.values.removeAll { registration -> backStack.none { it === registration.caller } }
-        deliver()
-    }
-
-    // A callback may navigate and re-enter here, so pick one registration at a time.
-    private fun deliver() {
-        while (true) {
-            val (key, registration) = registrations.entries
-                .firstOrNull { (_, registration) -> registration.result != null && isVisible(registration.caller) }
-                ?: return
-            registrations.remove(key)
-            registration.result?.let(registration.onResult)
-        }
-    }
-
-    private fun isVisible(page: HSPage): Boolean {
-        val index = backStack.indexOfLast { it === page }
-        return index != -1 && backStack.subList(index + 1, backStack.size).all { it.bottomSheet }
-    }
-
-    private class Registration(val caller: HSPage, val onResult: (Any) -> Unit) {
-        var result: Any? = null
-    }
-}
+internal fun HSNavigation.isOnBackStack(page: HSPage): Boolean = backStack.any { it === page }
 
 // A page still animating out must not pop the page beneath it, so only a settled top may go back.
 fun HSNavigation.navigateUpSafely(): Boolean = isTopSettled() && BackNavigationGate.runIfAllowed(::navigateUp)

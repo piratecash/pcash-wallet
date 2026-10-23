@@ -1,7 +1,7 @@
 package cash.p.terminal.modules.multiswap.action
 
 import androidx.compose.runtime.Composable
-import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.ResultLauncher
 
 interface ISwapProviderAction {
     val inProgress: Boolean
@@ -15,5 +15,8 @@ interface ISwapProviderAction {
     @Composable
     fun getDescription() : String? = null
 
-    fun execute(navigation: HSNavigation, onActionCompleted: () -> Unit)
+    /** Opens the action's page with itself as the launch argument, so the result comes back with it. */
+    fun execute(launcher: ResultLauncher<ISwapProviderAction>)
+
+    fun isCompleted(result: Any): Boolean
 }

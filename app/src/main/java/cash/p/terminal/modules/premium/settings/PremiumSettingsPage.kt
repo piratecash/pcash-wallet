@@ -15,8 +15,8 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.navigation.slideFromRightSafely
-import cash.p.terminal.core.authorizedLoggingAction
-import cash.p.terminal.core.premiumAction
+import cash.p.terminal.core.rememberAuthorizedLoggingAction
+import cash.p.terminal.core.rememberPremiumAction
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HsBackButton
@@ -37,30 +37,16 @@ class PremiumSettingsPage : HSPage() {
 
         PremiumSettingsScreen(
             uiState = viewModel.uiState,
-            onCheckAddressContractClick = {
-                navigation.premiumAction {
-                    viewModel.setAddressContractChecking(it)
-                }
+            onCheckAddressContractClick = navigation.rememberPremiumAction(viewModel::setAddressContractChecking),
+            onAmlCheckReceivedClick = navigation.rememberPremiumAction(viewModel::setAmlCheckReceivedEnabled),
+            onLoginLoggingClick = navigation.rememberAuthorizedLoggingAction {
+                navigation.slideFromRight(LoginLoggingPage())
             },
-            onAmlCheckReceivedClick = {
-                navigation.premiumAction {
-                    viewModel.setAmlCheckReceivedEnabled(it)
-                }
+            onAuthorizationInfoClick = navigation.rememberAuthorizedLoggingAction {
+                navigation.slideFromRight(AuthorizationInfoPage())
             },
-            onLoginLoggingClick = {
-                navigation.authorizedLoggingAction {
-                    navigation.slideFromRight(LoginLoggingPage())
-                }
-            },
-            onAuthorizationInfoClick = {
-                navigation.authorizedLoggingAction {
-                    navigation.slideFromRight(AuthorizationInfoPage())
-                }
-            },
-            onPushNotificationsClick = {
-                navigation.premiumAction {
-                    navigation.slideFromRightSafely(PushNotificationsPage())
-                }
+            onPushNotificationsClick = navigation.rememberPremiumAction {
+                navigation.slideFromRightSafely(PushNotificationsPage())
             },
             onClose = { navigation.navigateUpSafely() }
         )

@@ -1,12 +1,22 @@
 package cash.p.terminal.feature.wallet
 
-import cash.p.terminal.core.getKoinInstance
+import androidx.compose.runtime.Composable
 import cash.p.terminal.navigation.HSNavigation
+import org.koin.compose.koinInject
 
 /** Confirms the user before a secret is shown or exported; [action] runs only once confirmed. */
 interface SecretActionAuthorizer {
-    fun authorize(navigation: HSNavigation, action: () -> Unit)
+    /** [A] is the click-time argument handed back to [action]; remember at the screen root. */
+    @Composable
+    fun <A> rememberAuthorization(navigation: HSNavigation, action: (A) -> Unit): (A) -> Unit
 }
 
-fun HSNavigation.authorizeSecretAction(action: () -> Unit) =
-    getKoinInstance<SecretActionAuthorizer>().authorize(this, action)
+@Composable
+fun <A> HSNavigation.rememberSecretAction(action: (A) -> Unit): (A) -> Unit =
+    koinInject<SecretActionAuthorizer>().rememberAuthorization(this, action)
+
+@Composable
+fun HSNavigation.rememberSecretAction(action: () -> Unit): () -> Unit {
+    val authorized = rememberSecretAction<Unit> { action() }
+    return { authorized(Unit) }
+}

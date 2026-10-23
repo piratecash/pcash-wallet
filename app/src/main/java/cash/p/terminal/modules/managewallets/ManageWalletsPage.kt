@@ -8,6 +8,8 @@ import cash.p.terminal.modules.enablecoin.restoresettings.RestoreSettingsViewMod
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromBottom
 import cash.p.terminal.ui.dialogs.CancelOrScanSheet
 
 class ManageWalletsPage : HSPage() {
@@ -17,11 +19,19 @@ class ManageWalletsPage : HSPage() {
         val vmFactory = remember { ManageWalletsModule.Factory() }
         val viewModel: ManageWalletsViewModel = viewModel(factory = vmFactory)
         val restoreSettingsViewModel: RestoreSettingsViewModel = viewModel(factory = vmFactory)
+        val scanOrCancelLauncher = navigation.rememberResultLauncher<CancelOrScanSheet.Result> { result ->
+            if (result.confirmed) {
+                viewModel.requestScanToAddTokens(true)
+            } else {
+                navigation.removeLastUntil(ManageWalletsPage::class, inclusive = true)
+            }
+        }
+        val showScanOrCancelDialog = { scanOrCancelLauncher.slideFromBottom(CancelOrScanSheet()) }
 
         // Hardware wallet: intercept the system back gesture to offer scan-or-cancel first.
         BackHandler {
             if (viewModel.showScanToAddButton) {
-                showScanOrCancelDialog(navigation, viewModel)
+                showScanOrCancelDialog()
             } else {
                 navigation.navigateUp()
             }
@@ -32,7 +42,7 @@ class ManageWalletsPage : HSPage() {
             manageWalletsCallback = viewModel,
             onBackPressed = {
                 if (viewModel.showScanToAddButton) {
-                    showScanOrCancelDialog(navigation, viewModel)
+                    showScanOrCancelDialog()
                 } else {
                     navigation.navigateUpSafely()
                 }
@@ -42,15 +52,5 @@ class ManageWalletsPage : HSPage() {
             },
             restoreSettingsViewModel = restoreSettingsViewModel
         )
-    }
-}
-
-private fun showScanOrCancelDialog(navigation: HSNavigation, viewModel: ManageWalletsViewModel) {
-    navigation.slideFromBottomForResult<CancelOrScanSheet.Result>(CancelOrScanSheet()) { result ->
-        if (result.confirmed) {
-            viewModel.requestScanToAddTokens(true)
-        } else {
-            navigation.removeLastUntil(ManageWalletsPage::class, inclusive = true)
-        }
     }
 }
