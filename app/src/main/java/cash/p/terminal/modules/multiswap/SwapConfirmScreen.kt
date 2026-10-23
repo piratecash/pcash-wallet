@@ -331,7 +331,7 @@ private fun ReadySwapButton(
     Column {
         AdapterStatus(runtime, actions.retryAdapter)
         // Disable button during swap and navigation delay (allow retry only on Failed).
-        val swapInProgress = runtime.sendResult?.let { it !is SendResult.Failed } == true
+        val swapInProgress = runtime.sendResult.isSwapInProgress
         ButtonPrimaryYellow(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(R.string.Swap),
