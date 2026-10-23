@@ -73,7 +73,6 @@
     <ID>AppSingletonAccess:EvmSwapProvider.kt$EvmSwapProvider$App.adapterManager</ID>
     <ID>AppSingletonAccess:FeeRateProviderFactory.kt$FeeRateProviderFactory$App.feeRateProvider</ID>
     <ID>AppSingletonAccess:HSFeeInput.kt$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:HardwareWalletViewModel.kt$HardwareWalletViewModel$App.accountFactory</ID>
     <ID>AppSingletonAccess:ISendTransactionService.kt$ISendTransactionService$App.currencyManager</ID>
     <ID>AppSingletonAccess:ISendTransactionService.kt$ISendTransactionService$App.marketKit</ID>
     <ID>AppSingletonAccess:LanguageSettingsModule.kt$LanguageSettingsModule.Factory$App.languageManager</ID>
@@ -546,7 +545,7 @@
     <ID>LambdaParameterInRestartableEffect:SwapSelectProviderScreen.kt$onClickClose</ID>
     <ID>LambdaParameterInRestartableEffect:TokenBalanceScreen.kt$onSyncErrorClick</ID>
     <ID>LargeClass:AdapterManagerTest.kt$AdapterManagerTest</ID>
-    <ID>LargeClass:BitcoinBaseAdapter.kt$BitcoinBaseAdapter : IAdapterITransactionsAdapterIBalanceAdapterIReceiveAdapterISendBitcoinAdapterOfflineTransactionAdapter</ID>
+    <ID>LargeClass:BitcoinBaseAdapter.kt$BitcoinBaseAdapter : IAdapterITransactionsAdapterIBalanceAdapterIReceiveAdapterISendBitcoinAdapterOfflineTransactionAdapterHardwareAddressLocator</ID>
     <ID>LargeClass:LitecoinAdapter.kt$LitecoinAdapter : BitcoinBaseAdapterListenerISendBitcoinAdapterIMwebAddressValidator</ID>
     <ID>LargeClass:LitecoinAdapterTest.kt$LitecoinAdapterTest</ID>
     <ID>LargeClass:LocalStorageManager.kt$LocalStorageManager : ILocalStorageIPinSettingsStorageILockoutStorageIThirdKeyboardIMarketStorageIUniqueCodeStorage</ID>
@@ -565,7 +564,7 @@
     <ID>LargeClass:TransactionViewItemFactory.kt$TransactionViewItemFactory</ID>
     <ID>LargeClass:TransactionViewItemFactoryCacheTest.kt$TransactionViewItemFactoryCacheTest</ID>
     <ID>LargeClass:TransactionViewItemFactoryHelper.kt$TransactionViewItemFactoryHelper</ID>
-    <ID>LargeClass:ZcashAdapter.kt$ZcashAdapter : IAdapterIBalanceAdapterIReceiveAdapterITransactionsAdapterISendZcashAdapterOneTimeReceiveAdapter</ID>
+    <ID>LargeClass:ZcashAdapter.kt$ZcashAdapter : IAdapterIBalanceAdapterIReceiveAdapterITransactionsAdapterISendZcashAdapterOneTimeReceiveAdapterHardwareAddressLocator</ID>
     <ID>LongMethod:AboutPage.kt$@Composable private fun SettingSections( viewModel: AboutViewModel, navigation: HSNavigation )</ID>
     <ID>LongMethod:ActivateSubscriptionPage.kt$@Composable fun ActivateSubscriptionScreen(navigation: HSNavigation)</ID>
     <ID>LongMethod:ActivateTokenPage.kt$@Composable fun ActivateTokenScreen( navigation: HSNavigation, wallet: Wallet, onResult: (ActivateTokenPage.Result) -&gt; Unit, )</ID>

@@ -3,6 +3,8 @@ package cash.p.terminal.modules.send.offline
 import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.policy.CompositeHardwareWalletTokenPolicy
+import cash.p.terminal.ledger.domain.LedgerAppKeyFetchers
+import cash.p.terminal.ledger.domain.LedgerHardwareWalletTokenPolicy
 import cash.p.terminal.tangem.domain.policy.TangemHardwareWalletTokenPolicy
 import cash.p.terminal.trezor.domain.policy.TrezorHardwareWalletTokenPolicy
 import cash.p.terminal.wallet.Account
@@ -43,6 +45,7 @@ class OfflineBroadcastTokenResolverTest {
     private val hardwareWalletTokenPolicy = CompositeHardwareWalletTokenPolicy(
         tangemPolicy = TangemHardwareWalletTokenPolicy(),
         trezorPolicy = TrezorHardwareWalletTokenPolicy(),
+        ledgerPolicy = LedgerHardwareWalletTokenPolicy(LedgerAppKeyFetchers(emptyList())),
     )
 
     private val resolver = OfflineBroadcastTokenResolver(

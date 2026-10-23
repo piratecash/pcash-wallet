@@ -8,6 +8,9 @@ import cash.p.terminal.core.isBlockedByProvider
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.isNetworkPaused
 import cash.p.terminal.core.tryOrNull
+import cash.p.terminal.ledger.domain.LedgerNotFoundException
+import cash.p.terminal.ledger.ui.ledgerErrorMessageOrNull
+import cash.p.terminal.ledgerkit.apdu.LedgerException
 import cash.p.terminal.modules.balance.BalanceModule.warningText
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.offline.OfflineOperationGate.Companion.availability
@@ -39,6 +42,8 @@ import cash.p.terminal.wallet.balance.BalanceViewHelper
 import cash.p.terminal.wallet.balance.BalanceViewHelper.coinValue
 import cash.p.terminal.wallet.balance.BalanceViewType
 import cash.p.terminal.wallet.balance.DeemedValue
+import com.piratecash.monero.signer.HardwareWalletErrorCode
+import com.piratecash.monero.signer.HardwareWalletOperationException
 import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.entities.Currency
@@ -71,6 +76,7 @@ data class BalanceViewItem(
     val displayDiffOptionType: DisplayDiffOptionType = DisplayDiffOptionType.BOTH,
     val offline: Boolean = false,
     val syncErrorBlockedByProvider: Boolean = false,
+    val syncErrorFromDevice: Boolean = false,
 )
 
 data class WarningText(
@@ -107,6 +113,7 @@ data class BalanceViewItem2(
     val stackingUnpaid: DeemedValue<String>?,
     val offline: Boolean = false,
     val syncErrorBlockedByProvider: Boolean = false,
+    val syncErrorFromDevice: Boolean = false,
 )
 
 enum class SyncingProgressType {
@@ -278,6 +285,10 @@ class BalanceViewItemFactory(
                 substatus,
                 state.progress,
             )
+            AdapterState.Substatus.ConfirmViewKeyExport ->
+                return Translator.getString(R.string.ledger_monero_confirm_view_key)
+            AdapterState.Substatus.WaitingForLedger ->
+                return Translator.getString(R.string.ledger_waiting_for_device)
             null -> Unit
         }
 
@@ -529,6 +540,7 @@ class BalanceViewItemFactory(
 
         val syncDisplayState = syncDisplayState(wallet, displaySyncState)
         val syncError = (displaySyncState as? AdapterState.NotSynced)?.error
+        val deviceErrorMessage = deviceSyncErrorMessage(syncError)
 
         return BalanceViewItem(
             wallet = item.wallet,
@@ -545,8 +557,9 @@ class BalanceViewItemFactory(
             badge = wallet.badge,
             swapVisible = isSwappable,
             swapAvailability = availability(state !is AdapterState.NotSynced, syncDisplayState.offline),
-            errorMessage = syncError?.message,
+            errorMessage = syncErrorMessage(syncError, deviceErrorMessage),
             syncErrorBlockedByProvider = syncError?.isBlockedByProvider() == true,
+            syncErrorFromDevice = deviceErrorMessage != null,
             isWatchAccount = watchAccount,
             warning = item.warning?.warningText,
             diff = item.coinPrice?.diffPercentage,
@@ -554,6 +567,29 @@ class BalanceViewItemFactory(
             displayDiffOptionType = displayDiffOptionType,
             offline = syncDisplayState.offline,
         )
+    }
+
+    // A hardware Monero wallet syncs only while its device is connected; a node failure is not the device's.
+    private fun deviceSyncErrorMessage(error: Throwable?): String? = when {
+        error is HardwareWalletOperationException && error.error == HardwareWalletErrorCode.ViewKeyExportDenied ->
+            Translator.getString(R.string.ledger_monero_confirm_view_key)
+
+        error is HardwareWalletOperationException && error.error == HardwareWalletErrorCode.Network -> null
+
+        error is HardwareWalletOperationException ||
+            error is LedgerNotFoundException ||
+            error is LedgerException.TransportClosed ->
+            Translator.getString(R.string.hardware_connect_device_to_sync)
+
+        else -> error?.let(::ledgerErrorMessageOrNull)
+    }
+
+    private fun syncErrorMessage(error: Throwable?, deviceMessage: String?): String? = when {
+        deviceMessage != null -> deviceMessage
+        error is HardwareWalletOperationException && error.error == HardwareWalletErrorCode.Network ->
+            Translator.getString(R.string.balance_sync_error_fixed_source)
+
+        else -> error?.message
     }
 
     private fun stackingUnpaidValue(
@@ -606,8 +642,9 @@ class BalanceViewItemFactory(
         val stackingUnpaid = stackingUnpaidValue(item, showStackingUnpaid, balanceTotalVisibility)
 
         val syncError = (displaySyncState as? AdapterState.NotSynced)?.error
+        val deviceErrorMessage = deviceSyncErrorMessage(syncError)
         val errorMessage = if (networkAvailable) {
-            syncError?.message
+            syncErrorMessage(syncError, deviceErrorMessage)
         } else {
             Translator.getString(R.string.Hud_Text_NoInternet)
         }
@@ -630,6 +667,7 @@ class BalanceViewItemFactory(
             swapAvailability = availability(state !is AdapterState.NotSynced, syncDisplayState.offline),
             errorMessage = errorMessage,
             syncErrorBlockedByProvider = networkAvailable && syncError?.isBlockedByProvider() == true,
+            syncErrorFromDevice = networkAvailable && deviceErrorMessage != null,
             isWatchAccount = watchAccount,
             isSwipeToDeleteEnabled = isSwipeToDeleteEnabled,
             stackingUnpaid = stackingUnpaid,

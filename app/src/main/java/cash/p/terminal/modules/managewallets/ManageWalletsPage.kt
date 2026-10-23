@@ -2,9 +2,11 @@ package cash.p.terminal.modules.managewallets
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.modules.enablecoin.restoresettings.RestoreSettingsViewModel
+import cash.p.terminal.modules.moneroconfigure.MoneroConfigurePage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
@@ -17,6 +19,7 @@ class ManageWalletsPage : HSPage() {
         val vmFactory = remember { ManageWalletsModule.Factory() }
         val viewModel: ManageWalletsViewModel = viewModel(factory = vmFactory)
         val restoreSettingsViewModel: RestoreSettingsViewModel = viewModel(factory = vmFactory)
+        MoneroRestoreHeightRequests(viewModel, navigation)
 
         // Hardware wallet: intercept the system back gesture to offer scan-or-cancel first.
         BackHandler {
@@ -51,6 +54,19 @@ private fun showScanOrCancelDialog(navigation: HSNavigation, viewModel: ManageWa
             viewModel.requestScanToAddTokens(true)
         } else {
             navigation.removeLastUntil(ManageWalletsPage::class, inclusive = true)
+        }
+    }
+}
+
+@Composable
+internal fun MoneroRestoreHeightRequests(viewModel: ManageWalletsViewModel, navigation: HSNavigation) {
+    LaunchedEffect(Unit) {
+        viewModel.moneroRestoreHeightRequests.collect {
+            navigation.slideFromBottomForResult<MoneroConfigurePage.Result>(
+                MoneroConfigurePage(MoneroConfigurePage.Input(initialConfig = null))
+            ) { result ->
+                viewModel.onMoneroRestoreHeightConfigured(result.config)
+            }
         }
     }
 }

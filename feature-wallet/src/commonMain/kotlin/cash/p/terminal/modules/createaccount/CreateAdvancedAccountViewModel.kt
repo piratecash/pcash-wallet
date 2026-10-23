@@ -133,7 +133,7 @@ class CreateAdvancedAccountViewModel(
         }
 
         // Prepare birthdayHeight for blockchains that require it
-        if (accountType !is AccountType.HardwareCard && accountType !is AccountType.TrezorDevice) {
+        if (accountType !is AccountType.HardwareCard && accountType !is AccountType.HardwareDevice) {
             when (accountType) {
                 is AccountType.MnemonicMonero -> {
                     // For Monero-only accounts, height is already saved above (line 107-111)

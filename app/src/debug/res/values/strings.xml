@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="App_Name" translatable="false">P.CASH DEV</string>
+    <string name="ledger_speculos_switch">Ledger via speculos</string>
+    <string name="ledger_speculos_address">Speculos address (host:port)</string>
 </resources>

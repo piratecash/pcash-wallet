@@ -10,7 +10,6 @@ import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
 import io.horizontalsystems.core.entities.BlockchainType
-import io.horizontalsystems.thorchainkit.network.Network
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
@@ -126,9 +125,7 @@ class ThorchainTransactionsPollerTest {
     }
 
     private fun realKitManager() = ThorchainKitManager(
-        Network.Mainnet,
         BlockchainType.Thorchain,
-        emptyList(),
         mockk(),
         mockk(),
         mockk<BackgroundManager> {
@@ -137,6 +134,8 @@ class ThorchainTransactionsPollerTest {
         mockk(),
         mockk(),
         mockk(relaxed = true),
+        mockk(),
+        mockk(),
     )
 
     private fun kitManagerField(manager: ThorchainKitManager, name: String): Any? =

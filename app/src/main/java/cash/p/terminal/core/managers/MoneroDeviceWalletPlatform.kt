@@ -2,6 +2,7 @@ package cash.p.terminal.core.managers
 
 import android.content.Context
 import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.useCases.MoneroWalletFiles
 import com.m2049r.xmrwallet.model.Wallet
 import com.m2049r.xmrwallet.model.WalletManager
@@ -23,7 +24,7 @@ internal interface MoneroDeviceWalletNative {
 }
 
 internal class DefaultMoneroDeviceWalletNative(
-    private val gateway: MoneroTrezorOperationGateway,
+    private val gateway: MoneroHardwareOperationGateway,
 ) : MoneroDeviceWalletNative {
     override fun requireAvailable() {
         check(WalletManager.getInstance().wallet == null) { "A Monero wallet is already open" }
@@ -40,7 +41,7 @@ internal class DefaultMoneroDeviceWalletNative(
             walletFile,
             password,
             restoreHeight,
-            Wallet.Device.Trezor,
+            if (account.type is AccountType.LedgerDevice) Wallet.Device.Ledger else Wallet.Device.Trezor,
         )
         var walletFaulted = false
         useWallet(manager, wallet, walletFaulted = { walletFaulted }) {
@@ -156,7 +157,9 @@ internal class MoneroDeviceWalletFileStore private constructor(
 ) {
     val password: String by lazy(LazyThreadSafetyMode.SYNCHRONIZED, passwordProvider)
 
-    fun baseName(accountId: String): String = "trezor-$accountId"
+    // Trezor wallets shipped under the old prefix; their files keep it.
+    fun baseName(account: Account): String =
+        "${if (account.type is AccountType.LedgerDevice) "ledger" else "trezor"}-${account.id}"
 
     fun walletFile(baseName: String): File = files(baseName).cache
 

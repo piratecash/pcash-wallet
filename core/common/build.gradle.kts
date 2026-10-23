@@ -54,6 +54,11 @@ kotlin {
                 implementation(libs.koin.core)
             }
         }
+        androidMain {
+            dependencies {
+                implementation(libs.android.core.ktx)
+            }
+        }
         getByName("desktopMain") {
             dependencies {
                 implementation(libs.datastore.preferences.core)

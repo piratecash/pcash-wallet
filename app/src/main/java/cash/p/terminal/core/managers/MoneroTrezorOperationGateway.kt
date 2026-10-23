@@ -32,11 +32,11 @@ class MoneroTrezorOperationGateway internal constructor(
     private val coordinator: TrezorUsbCoordinator,
     private val readiness: MoneroTrezorReadiness,
     private val dispatcherProvider: DispatcherProvider,
-) {
+) : MoneroHardwareOperationGateway {
     suspend fun <T> execute(block: () -> T): T =
         executeInternal(null) { block() }
 
-    suspend fun <T> execute(
+    override suspend fun <T> execute(
         account: Account,
         block: (String) -> T,
     ): T = executeInternal(account, block)

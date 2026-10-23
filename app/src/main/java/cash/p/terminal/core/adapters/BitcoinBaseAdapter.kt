@@ -31,10 +31,11 @@ import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRec
 import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.modules.transactions.TransactionLockInfo
 import cash.p.terminal.resources.Res
-import cash.p.terminal.resources.send_trezor_time_lock_not_supported
+import cash.p.terminal.resources.send_hardware_time_lock_not_supported
 import cash.p.terminal.tangem.signer.HardwareWalletEcdaSigner
 import cash.p.terminal.tangem.signer.HardwareWalletSchnorrSigner
-import cash.p.terminal.trezor.signer.KitBtcPreviousTransactionProvider
+import cash.p.terminal.ledger.bitcoin.LedgerBtcSigner
+import cash.p.terminal.ledger.domain.LedgerAppAccess
 import cash.p.terminal.trezor.signer.TrezorBtcSigner
 import cash.p.terminal.trezorkit.client.ITrezorClient
 import cash.p.terminal.wallet.AccountType
@@ -46,6 +47,9 @@ import cash.p.terminal.wallet.IReceiveAdapter
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.BalanceData
+import cash.p.terminal.wallet.entities.HardwarePublicKey
+import cash.p.terminal.wallet.hardware.HardwareAddressLocator
+import cash.p.terminal.wallet.hardware.HardwareAddressPosition
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.core.managers.NetworkErrorTracker
 import cash.p.terminal.core.managers.appendNetworkErrors
@@ -105,7 +109,7 @@ abstract class BitcoinBaseAdapter(
     protected val decimal: Int = 8,
     protected val feeRateProvider: IFeeRateProvider? = null
 ) : IAdapter, ITransactionsAdapter, IBalanceAdapter, IReceiveAdapter, ISendBitcoinAdapter,
-    OfflineTransactionAdapter<SignedOfflineBitcoinTransaction> {
+    OfflineTransactionAdapter<SignedOfflineBitcoinTransaction>, HardwareAddressLocator {
 
     private val backgroundKeepAliveManager: BackgroundKeepAliveManager
             by inject(BackgroundKeepAliveManager::class.java)
@@ -180,6 +184,17 @@ abstract class BitcoinBaseAdapter(
     override val isMainNet: Boolean = true
 
     override val isAddressHistorySupported: Boolean = true
+
+    override suspend fun locate(address: String): HardwareAddressPosition? {
+        if (address == kit.receiveAddress()) {
+            val key = kit.receivePublicKey()
+            return HardwareAddressPosition(change = !key.external, index = key.index)
+        }
+        return listOf(false, true).firstNotNullOfOrNull { change ->
+            kit.usedAddresses(change).firstOrNull { it.address == address }
+                ?.let { HardwareAddressPosition(change, it.index) }
+        }
+    }
 
     protected val balanceUpdatedSubject: PublishSubject<Unit> = PublishSubject.create()
     protected val lastBlockUpdatedSubject: PublishSubject<Unit> = PublishSubject.create()
@@ -536,16 +551,16 @@ abstract class BitcoinBaseAdapter(
         )
     }
 
-    protected val isTrezorAccount: Boolean
-        get() = wallet.account.type is AccountType.TrezorDevice
+    protected val isHardwareDeviceAccount: Boolean
+        get() = wallet.account.type is AccountType.HardwareDevice
 
     /**
-     * Trezor cannot build the time-locked P2SH script the Hodler plugin needs, so reject a
-     * Hodler-carrying send on a Trezor account instead of signing a transaction it cannot honor.
+     * A hardware device cannot build the time-locked P2SH script the Hodler plugin needs, so reject
+     * a Hodler-carrying send instead of signing a transaction it cannot honor.
      */
-    private fun rejectHodlerForTrezor(pluginData: Map<Byte, IPluginData>?) {
-        if (isTrezorAccount && pluginData?.containsKey(HodlerPlugin.id) == true) {
-            throw LocalizedException(Res.string.send_trezor_time_lock_not_supported)
+    private fun rejectHodlerForHardwareDevice(pluginData: Map<Byte, IPluginData>?) {
+        if (isHardwareDeviceAccount && pluginData?.containsKey(HodlerPlugin.id) == true) {
+            throw LocalizedException(Res.string.send_hardware_time_lock_not_supported)
         }
     }
 
@@ -561,7 +576,7 @@ abstract class BitcoinBaseAdapter(
         changeToFirstInput: Boolean,
         utxoFilters: UtxoFilters
     ): FullTransaction {
-        rejectHodlerForTrezor(pluginData)
+        rejectHodlerForHardwareDevice(pluginData)
         val sortingType = getTransactionSortingType(transactionSorting)
 
         return kit.send(
@@ -599,6 +614,7 @@ abstract class BitcoinBaseAdapter(
         val bitcoinRequest = requireNotNull(request as? OfflineBitcoinSignRequest) {
             "Unsupported offline sign request"
         }
+        rejectHodlerForHardwareDevice(bitcoinRequest.pluginData)
         val transaction = kit.createSignedTransaction(
             address = bitcoinRequest.address,
             memo = bitcoinRequest.memo,
@@ -700,7 +716,7 @@ abstract class BitcoinBaseAdapter(
     }
 
     override fun validate(address: String, pluginData: Map<Byte, IPluginData>?) {
-        rejectHodlerForTrezor(pluginData)
+        rejectHodlerForHardwareDevice(pluginData)
         kit.validateAddress(address, pluginData ?: mapOf())
     }
 
@@ -863,44 +879,18 @@ abstract class BitcoinBaseAdapter(
             accountId: String,
             blockchainType: BlockchainType,
             tokenType: TokenType
-        ): HardwareWalletEcdaSigner {
-            val hardwarePublicKeyStorage: IHardwarePublicKeyStorage
-                    by inject(IHardwarePublicKeyStorage::class.java)
-            val hardwarePublicKey = runBlocking {
-                requireNotNull(
-                    hardwarePublicKeyStorage.getKey(
-                        accountId = accountId,
-                        blockchainType = blockchainType,
-                        tokenType = tokenType
-                    )
-                )
-            }
-            return HardwareWalletEcdaSigner(
-                hardwarePublicKey = hardwarePublicKey
-            )
-        }
+        ): HardwareWalletEcdaSigner = HardwareWalletEcdaSigner(
+            hardwarePublicKey = hardwarePublicKey(accountId, blockchainType, tokenType)
+        )
 
         @JvmStatic
         protected fun buildHardwareWalletSchnorrBitcoinSigner(
             accountId: String,
             blockchainType: BlockchainType,
             tokenType: TokenType
-        ): HardwareWalletSchnorrSigner {
-            val hardwarePublicKeyStorage: IHardwarePublicKeyStorage
-                    by inject(IHardwarePublicKeyStorage::class.java)
-            val hardwarePublicKey = runBlocking {
-                requireNotNull(
-                    hardwarePublicKeyStorage.getKey(
-                        accountId = accountId,
-                        blockchainType = blockchainType,
-                        tokenType
-                    )
-                )
-            }
-            return HardwareWalletSchnorrSigner(
-                hardwarePublicKey = hardwarePublicKey
-            )
-        }
+        ): HardwareWalletSchnorrSigner = HardwareWalletSchnorrSigner(
+            hardwarePublicKey = hardwarePublicKey(accountId, blockchainType, tokenType)
+        )
 
         @JvmStatic
         @VisibleForTesting
@@ -910,30 +900,53 @@ abstract class BitcoinBaseAdapter(
             tokenType: TokenType,
             coin: String
         ): TrezorBtcSigner {
-            val hardwarePublicKeyStorage: IHardwarePublicKeyStorage
-                    by inject(IHardwarePublicKeyStorage::class.java)
             val trezorClient: ITrezorClient
                     by inject(ITrezorClient::class.java)
-            val hardwarePublicKey = runBlocking {
-                requireNotNull(
-                    hardwarePublicKeyStorage.getKey(accountId, blockchainType, tokenType)
-                )
-            }
             return TrezorBtcSigner(
                 coin = coin,
-                derivationPath = hardwarePublicKey.derivationPath,
+                derivationPath = hardwarePublicKey(accountId, blockchainType, tokenType).derivationPath,
                 trezorClient = trezorClient
             )
         }
 
         /**
-         * Wires the just-created [kit] into [signer] so the USB signer can fetch each spent input's
-         * previous transaction (needed by the Trezor firmware to verify UTXO amounts). Call after the
-         * kit is built and before it is returned.
+         * The USB signer for [wallet]'s device vendor; [trezorCoin] is the Trezor coin name. Bind the
+         * result to the kit once it is built, so the signer can read previous transactions from it.
          */
         @JvmStatic
-        protected fun bindPreviousTransactionProvider(signer: TrezorBtcSigner, kit: AbstractKit) {
-            signer.setPreviousTransactionProvider(KitBtcPreviousTransactionProvider(kit))
+        protected fun buildHardwareDeviceBtcSigner(wallet: Wallet, trezorCoin: String): HardwareDeviceBtcSigner {
+            val token = wallet.token
+            val previousTransactions = KitBtcPreviousTransactionProvider()
+            return when (wallet.account.type) {
+                is AccountType.LedgerDevice -> {
+                    val appAccess: LedgerAppAccess by inject(LedgerAppAccess::class.java)
+                    val signer = LedgerBtcSigner(
+                        appAccess = appAccess,
+                        account = wallet.account,
+                        hardwarePublicKey = hardwarePublicKey(wallet.account.id, token.blockchainType, token.type),
+                        previousTransactions = previousTransactions,
+                    )
+                    HardwareDeviceBtcSigner(signer, signer, previousTransactions)
+                }
+
+                else -> {
+                    val signer = buildTrezorBtcSigner(wallet.account.id, token.blockchainType, token.type, trezorCoin)
+                    signer.setPreviousTransactionProvider(previousTransactions)
+                    HardwareDeviceBtcSigner(signer, signer, previousTransactions)
+                }
+            }
+        }
+
+        private fun hardwarePublicKey(
+            accountId: String,
+            blockchainType: BlockchainType,
+            tokenType: TokenType
+        ): HardwarePublicKey {
+            val hardwarePublicKeyStorage: IHardwarePublicKeyStorage
+                    by inject(IHardwarePublicKeyStorage::class.java)
+            return runBlocking {
+                requireNotNull(hardwarePublicKeyStorage.getKey(accountId, blockchainType, tokenType))
+            }
         }
     }
 

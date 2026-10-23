@@ -17,6 +17,8 @@ import io.horizontalsystems.thorchainkit.ThorchainKit
 import io.horizontalsystems.thorchainkit.models.Asset
 import io.horizontalsystems.thorchainkit.models.SignedTransaction
 import io.horizontalsystems.thorchainkit.network.Network
+import io.horizontalsystems.thorchainkit.transaction.Signer
+import io.horizontalsystems.thorchainkit.transaction.ThorchainExternalSigner
 import io.horizontalsystems.thorchainkit.transaction.TransactionSender.SendError
 import io.horizontalsystems.thorchainkit.transaction.TxBuilder
 import io.mockk.coEvery
@@ -40,6 +42,7 @@ class ThorchainAdapterTest {
     private val dispatcher = UnconfinedTestDispatcher()
     private val kit = mockk<ThorchainKit>(relaxed = true)
     private lateinit var wrapper: ThorchainKitWrapper
+    private val deviceSigner = mockk<ThorchainExternalSigner>()
 
     @Test
     fun balanceData_runeBaseUnits_scaledByEightDecimals() {
@@ -69,28 +72,28 @@ class ThorchainAdapterTest {
     @Test
     fun send_rune_scalesAmountToEightDecimalBaseUnits() = runTest(dispatcher) {
         every { kit.getDenomBalance("rune") } returns BigInteger("1000000000")
-        coEvery { kit.send(any(), any(), any(), any(), any()) } returns "HASH"
+        coEvery { kit.send(any(), any(), any(), any(), any<Signer>()) } returns "HASH"
 
         val hash = adapter().send(BigDecimal("1.5"), RUNE_ADDRESS, "memo")
 
         assertEquals("HASH", hash)
-        coVerify { kit.send(any(), BigInteger("150000000"), "rune", "memo", any()) }
+        coVerify { kit.send(any(), BigInteger("150000000"), "rune", "memo", any<Signer>()) }
     }
 
     @Test
     fun send_cacao_scalesAmountToTenDecimalBaseUnits() = runTest(dispatcher) {
         every { kit.getDenomBalance("cacao") } returns BigInteger("100000000000")
-        coEvery { kit.send(any(), any(), any(), any(), any()) } returns "HASH"
+        coEvery { kit.send(any(), any(), any(), any(), any<Signer>()) } returns "HASH"
 
         adapter(Network.MayaMainnet).send(BigDecimal("1.5"), MAYA_ADDRESS, null)
 
-        coVerify { kit.send(any(), BigInteger("15000000000"), "cacao", null, any()) }
+        coVerify { kit.send(any(), BigInteger("15000000000"), "cacao", null, any<Signer>()) }
     }
 
     @Test
     fun send_possiblyAccepted_returnsItsHash() = runTest(dispatcher) {
         every { kit.getDenomBalance("rune") } returns BigInteger("1000000000")
-        coEvery { kit.send(any(), any(), any(), any(), any()) } throws SendError.PossiblyAccepted("ab12")
+        coEvery { kit.send(any(), any(), any(), any(), any<Signer>()) } throws SendError.PossiblyAccepted("ab12")
 
         assertEquals("AB12", adapter().send(BigDecimal("1"), RUNE_ADDRESS, null))
     }
@@ -98,18 +101,18 @@ class ThorchainAdapterTest {
     @Test
     fun deposit_rune_depositsAssetInBaseUnits() = runTest(dispatcher) {
         every { kit.getDenomBalance("rune") } returns BigInteger("1000000000")
-        coEvery { kit.deposit(any(), any(), any(), any()) } returns "HASH"
+        coEvery { kit.deposit(any(), any(), any(), any<Signer>()) } returns "HASH"
 
         val hash = adapter().deposit("THOR.RUNE", BigDecimal("1.5"), "=:ETH.ETH:0xabc")
 
         assertEquals("HASH", hash)
-        coVerify { kit.deposit(Asset.Rune, BigInteger("150000000"), "=:ETH.ETH:0xabc", any()) }
+        coVerify { kit.deposit(Asset.Rune, BigInteger("150000000"), "=:ETH.ETH:0xabc", any<Signer>()) }
     }
 
     @Test
     fun deposit_possiblyAccepted_returnsItsHash() = runTest(dispatcher) {
         every { kit.getDenomBalance("rune") } returns BigInteger("1000000000")
-        coEvery { kit.deposit(any(), any(), any(), any()) } throws SendError.PossiblyAccepted("cd34")
+        coEvery { kit.deposit(any(), any(), any(), any<Signer>()) } throws SendError.PossiblyAccepted("cd34")
 
         assertEquals("CD34", adapter().deposit("THOR.RUNE", BigDecimal("1"), "memo"))
     }
@@ -128,18 +131,18 @@ class ThorchainAdapterTest {
         val error = runCatchingSuspend { adapter.send(BigDecimal("1"), RUNE_ADDRESS, null) }
 
         assertEquals(Res.string.Error_InsufficientBalanceForFee, (error as LocalizedException).errorTextRes)
-        coVerify(exactly = 0) { kit.send(any(), any(), any(), any(), any()) }
+        coVerify(exactly = 0) { kit.send(any(), any(), any(), any(), any<Signer>()) }
     }
 
     @Test
     fun send_tokenWithRuneCoveringFee_sendsTokenDenom() = runTest(dispatcher) {
         every { kit.getDenomBalance("tcy") } returns BigInteger("500000000")
         every { kit.getDenomBalance("rune") } returns BigInteger("2000000")
-        coEvery { kit.send(any(), any(), any(), any(), any()) } returns "HASH"
+        coEvery { kit.send(any(), any(), any(), any(), any<Signer>()) } returns "HASH"
 
         adapter(tokenType = TokenType.ThorchainAsset("tcy")).send(BigDecimal("5"), RUNE_ADDRESS, null)
 
-        coVerify { kit.send(any(), BigInteger("500000000"), "tcy", null, any()) }
+        coVerify { kit.send(any(), BigInteger("500000000"), "tcy", null, any<Signer>()) }
     }
 
     @Test
@@ -213,7 +216,7 @@ class ThorchainAdapterTest {
     @Test
     fun signOffline_request_returnsKitRawHexAndHash() = runTest(dispatcher) {
         every { kit.getDenomBalance("rune") } returns BigInteger("1000000000")
-        coEvery { kit.signSend(any(), any(), any(), any(), any()) } returns
+        coEvery { kit.signSend(any(), any(), any<Signer>(), any(), any()) } returns
             SignedTransaction(byteArrayOf(0x0a, 0x1b), "AB12", 7, 3)
 
         val signed = adapter().signOffline(OfflineThorchainSignRequest(BigDecimal("2"), RUNE_ADDRESS, "m"))
@@ -221,7 +224,40 @@ class ThorchainAdapterTest {
         assertEquals("0a1b", signed.rawHex)
         assertEquals("AB12", signed.txHash)
         assertAmount("0.02", signed.fee)
-        coVerify { kit.signSend(any(), BigInteger("200000000"), any(), "rune", "m") }
+        coVerify { kit.signSend(any(), BigInteger("200000000"), any<Signer>(), "rune", "m") }
+    }
+
+    @Test
+    fun send_deviceAccount_signsOnDeviceSigner() = runTest(dispatcher) {
+        every { kit.getDenomBalance("rune") } returns BigInteger("1000000000")
+        coEvery { kit.send(any(), any(), any(), any(), any<ThorchainExternalSigner>()) } returns "HASH"
+
+        adapter(deviceSigner = deviceSigner).send(BigDecimal("1.5"), RUNE_ADDRESS, "memo")
+
+        coVerify { kit.send(any(), BigInteger("150000000"), "rune", "memo", deviceSigner) }
+        coVerify(exactly = 0) { kit.send(any(), any(), any(), any(), any<Signer>()) }
+    }
+
+    @Test
+    fun deposit_deviceAccount_signsOnDeviceSigner() = runTest(dispatcher) {
+        every { kit.getDenomBalance("rune") } returns BigInteger("1000000000")
+        coEvery { kit.deposit(any(), any(), any(), any<ThorchainExternalSigner>()) } returns "HASH"
+
+        adapter(deviceSigner = deviceSigner).deposit("THOR.RUNE", BigDecimal("1.5"), "=:ETH.ETH:0xabc")
+
+        coVerify { kit.deposit(Asset.Rune, BigInteger("150000000"), "=:ETH.ETH:0xabc", deviceSigner) }
+    }
+
+    @Test
+    fun signOffline_deviceAccount_signsOnDeviceSigner() = runTest(dispatcher) {
+        every { kit.getDenomBalance("rune") } returns BigInteger("1000000000")
+        coEvery { kit.signSend(any(), any(), any<ThorchainExternalSigner>(), any(), any()) } returns
+            SignedTransaction(byteArrayOf(0x0a, 0x1b), "AB12", 7, 3)
+
+        val request = OfflineThorchainSignRequest(BigDecimal("2"), RUNE_ADDRESS, "m")
+        adapter(deviceSigner = deviceSigner).signOffline(request)
+
+        coVerify { kit.signSend(any(), BigInteger("200000000"), deviceSigner, "rune", "m") }
     }
 
     @Test
@@ -262,6 +298,7 @@ class ThorchainAdapterTest {
     private fun adapter(
         network: Network = Network.Mainnet,
         tokenType: TokenType = TokenType.Native,
+        deviceSigner: ThorchainExternalSigner? = null,
     ): ThorchainAdapter {
         every { kit.network } returns network
         every { kit.receiveAddress } returns RUNE_ADDRESS
@@ -269,7 +306,7 @@ class ThorchainAdapterTest {
             every { token.type } returns tokenType
             every { account } returns ACCOUNT
         }
-        wrapper = ThorchainKitWrapper(kit)
+        wrapper = ThorchainKitWrapper(kit, deviceSigner)
         return ThorchainAdapter(
             wrapper,
             wallet,

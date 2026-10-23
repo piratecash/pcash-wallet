@@ -9,9 +9,11 @@ import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.R
 import cash.p.terminal.modules.main.Nav3Host
 import cash.p.terminal.modules.main.PlainTestPage
+import cash.p.terminal.ledger.domain.LedgerUserOperations
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.ui_compose.LocalConnectionPanelState
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -38,7 +40,12 @@ class ReceiveChooseCoinFlowTest {
         composeRule.activity.setTheme(R.style.Theme_AppTheme_DayNight)
         composeRule.setContent {
             CompositionLocalProvider(LocalConnectionPanelState provides mutableStateOf(false)) {
-                Nav3Host(navigation, isLocked = mutableStateOf(false))
+                Nav3Host(
+                    navigation,
+                    isLocked = mutableStateOf(false),
+                    ledgerUserOperations = LedgerUserOperations(),
+                    ledgerOpeningApp = MutableStateFlow(null),
+                )
             }
         }
         composeRule.waitForIdle()

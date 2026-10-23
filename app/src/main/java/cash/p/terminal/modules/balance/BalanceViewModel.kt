@@ -479,7 +479,8 @@ class BalanceViewModel(
         service.networkAvailable -> SyncError.Dialog(
             viewItem.wallet,
             viewItem.errorMessage,
-            viewItem.syncErrorBlockedByProvider
+            viewItem.syncErrorBlockedByProvider,
+            viewItem.syncErrorFromDevice
         )
         else -> SyncError.NetworkNotAvailable()
     }
@@ -648,7 +649,8 @@ class BalanceViewModel(
         class Dialog(
             val wallet: Wallet,
             val errorMessage: String?,
-            val isBlockedByProvider: Boolean
+            val isBlockedByProvider: Boolean,
+            val isDeviceError: Boolean
         ) : SyncError()
     }
 

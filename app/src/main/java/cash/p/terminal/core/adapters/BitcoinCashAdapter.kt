@@ -178,13 +178,8 @@ class BitcoinCashAdapter(
                     )
                 }
 
-                is AccountType.TrezorDevice -> {
-                    val trezorSigner = buildTrezorBtcSigner(
-                        accountId = account.id,
-                        blockchainType = wallet.token.blockchainType,
-                        tokenType = wallet.token.type,
-                        coin = "Bcash"
-                    )
+                is AccountType.HardwareDevice -> {
+                    val deviceSigner = buildHardwareDeviceBtcSigner(wallet, trezorCoin = "Bcash")
                     val kit = BitcoinCashKit(
                         dataDir = environment.dataDir,
                         databaseKey = environment.databaseKey,
@@ -194,10 +189,10 @@ class BitcoinCashAdapter(
                         syncMode = syncMode,
                         networkType = networkType,
                         confirmationsThreshold = KIT_CONFIRMATIONS_THRESHOLD,
-                        iInputSigner = trezorSigner,
-                        iSchnorrInputSigner = trezorSigner,
+                        iInputSigner = deviceSigner.inputSigner,
+                        iSchnorrInputSigner = deviceSigner.schnorrInputSigner,
                     )
-                    bindPreviousTransactionProvider(trezorSigner, kit)
+                    deviceSigner.bind(kit)
                     return kit
                 }
 
@@ -248,7 +243,7 @@ class BitcoinCashAdapter(
                 is AccountType.EvmAddress,
                 is AccountType.EvmPrivateKey,
                 is AccountType.HardwareCard,
-                is AccountType.TrezorDevice,
+                is AccountType.HardwareDevice,
                 is AccountType.MnemonicMonero,
                 is AccountType.SolanaAddress,
                 is AccountType.TonAddress,

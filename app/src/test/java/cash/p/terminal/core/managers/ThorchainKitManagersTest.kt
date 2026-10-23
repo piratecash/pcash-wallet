@@ -16,7 +16,7 @@ import org.junit.Test
 class ThorchainKitManagersTest {
 
     private val context = mockk<Context>()
-    private val managers = ThorchainKitManagers(context, mockk(), mockk(), mockk(), mockk(), mockk())
+    private val managers = ThorchainKitManagers(context, mockk(), mockk(), mockk(), mockk(), mockk(), mockk(), mockk())
 
     @After
     fun tearDown() {

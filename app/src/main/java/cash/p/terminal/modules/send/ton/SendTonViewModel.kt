@@ -30,11 +30,12 @@ import cash.p.terminal.entities.PendingTransactionDraft
 import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.send.SendConfirmationData
 import cash.p.terminal.modules.send.SendResult
+import cash.p.terminal.modules.send.isHardwareWalletCancelled
+import cash.p.terminal.modules.send.hardwareWalletCaution
 import cash.p.terminal.modules.send.offline.OfflineSignCapableViewModel
 import cash.p.terminal.modules.send.offline.OfflineSigningController
 import cash.p.terminal.modules.send.offline.OfflineTransactionFormat
 import cash.p.terminal.modules.xrate.XRateService
-import cash.p.terminal.tangem.domain.isHardwareWalletUserCancelled
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
@@ -89,7 +90,7 @@ class SendTonViewModel(
             payloadEncoder = offlineTransactionPayloadEncoder,
             repository = offlineSignedTransactionRepository,
             cautionFactory = ::createCaution,
-            isSilentCancellation = { it.isHardwareWalletUserCancelled() },
+            isSilentCancellation = { it.isHardwareWalletCancelled() },
         )
     }
 
@@ -287,7 +288,7 @@ class SendTonViewModel(
             pendingTxId?.let {
                 pendingRegistrar.deleteFailed(it)
             }
-            if (e.isHardwareWalletUserCancelled()) {
+            if (e.isHardwareWalletCancelled()) {
                 sendResult = null
                 logger.info("user cancelled")
                 return@withContext
@@ -352,7 +353,7 @@ class SendTonViewModel(
         )
     }
 
-    private fun createCaution(error: Throwable) = when (error) {
+    private fun createCaution(error: Throwable) = error.hardwareWalletCaution() ?: when (error) {
         is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
         is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
         else -> HSCaution(TranslatableString.PlainString(error.message ?: ""))

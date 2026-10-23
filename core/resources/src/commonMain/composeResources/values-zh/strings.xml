@@ -55,10 +55,43 @@
     <string name="trezor_wallet">Trezor 钱包</string>
     <string name="connect_trezor">连接 Trezor</string>
     <string name="trezor_setup_description">使用 USB 数据线连接您的 Trezor，然后在设备上确认。</string>
+    <string name="ledger_wallet">Ledger 钱包</string>
+    <string name="connect_ledger">连接 Ledger</string>
+    <string name="ledger_setup_description">使用 USB 数据线连接您的 Ledger 并解锁，然后在设备上确认打开每个应用。</string>
+    <string name="ledger_usb_permission">请在系统对话框中允许访问 Ledger</string>
+    <string name="ledger_opening_app">%1$d / %2$d：请在 Ledger 上确认打开 %3$s 应用</string>
+    <string name="ledger_not_added_title">未添加</string>
+    <string name="ledger_not_added_description">%1$s：应用未安装、版本过旧或打开被拒绝。请通过 Ledger Live 安装或更新，然后在币种管理中添加该网络。</string>
+    <string name="ledger_identity_mismatch">连接的是另一台 Ledger 或另一个密码短语</string>
+    <string name="ledger_update_app">请通过 Ledger Live 更新 %1$s 应用</string>
+    <string name="ledger_install_app">请通过 Ledger Live 安装 %1$s 应用</string>
+    <string name="ledger_install_identity_app">为确认是同一台 Ledger，请通过 Ledger Live 安装以下任一应用：%1$s</string>
+    <string name="ledger_not_found">未找到 Ledger。请用 USB 数据线连接并解锁。</string>
+    <string name="ledger_usb_permission_denied">USB 访问 Ledger 被拒绝</string>
+    <string name="ledger_device_locked">请解锁您的 Ledger</string>
+    <string name="ledger_device_not_set_up">Ledger 尚未设置。请通过 Ledger Live 完成设置并安装应用，然后重新连接</string>
+    <string name="ledger_no_supported_apps">未从此 Ledger 添加任何支持的网络</string>
+    <string name="ledger_connect_failed">连接 Ledger 失败</string>
+    <string name="ledger_rejected">已在 Ledger 上拒绝</string>
+    <string name="ledger_signing_failed">Ledger 无法签署交易</string>
+    <string name="ledger_blind_signing_required">请在 Ledger 的 %1$s 应用设置中开启 Blind signing，然后重试</string>
+    <string name="ledger_data_too_large">消息过大，Ledger 无法处理</string>
+    <string name="ledger_zcash_reopen_app">请在 Ledger 上关闭并重新打开 Zcash 应用，然后重试</string>
+    <string name="ledger_ton_single_message">Ledger 每笔 TON 交易只能签署一条消息</string>
+    <string name="ledger_tron_settings_required">请在 Ledger 的 Tron 应用设置中开启 Transactions data（用于备注）或 Custom contracts（用于其他合约调用），然后重试</string>
+    <string name="ledger_ton_blind_signing_required">请在 Ledger 的 TON 应用设置中开启 Allow blind sign，然后重试</string>
+    <string name="ledger_verify_address">在 Ledger 上验证地址</string>
+    <string name="ledger_monero_confirm_view_key">请在 Ledger 的 Monero 应用中允许导出查看密钥</string>
+    <string name="ledger_waiting_for_device">正在等待 Ledger…</string>
+    <string name="ledger_sync_paused_open_app">%1$s 同步已暂停。请在 Ledger 上打开 %1$s 应用以继续。</string>
+    <string name="ledger_sync_finishing_wait">Ledger 正在完成 %1$s 同步。您的操作将自动继续。</string>
+    <string name="ledger_device_request_wait">请在 Ledger 上确认 %1$s 请求。您的操作将自动继续。</string>
+    <string name="ledger_confirm_opening_app">请在 Ledger 上确认打开 %1$s 应用</string>
     <string name="trezor_not_initialized_title">设备未设置</string>
     <string name="trezor_not_initialized_description">此 Trezor 尚未设置。请在设备上完成设置，然后重新连接。</string>
     <string name="trezor_not_initialized_cta">设置指南</string>
     <string name="trezor_connect_failed">无法连接到 Trezor。</string>
+    <string name="hardware_connect_device_to_sync">连接设备以同步</string>
     <string name="Button_Activate">激活</string>
     <string name="activation_required_dialog_description">要接收 %s，您需要激活该代币。Stellar 网络要求为每个代币建立信任线（trustline）。没有信任线，您的钱包将无法接收 %s——交易会被拒绝，资金也不会到账。</string>
     <string name="activate_you_activate">您将激活</string>
@@ -578,6 +611,7 @@
 
     <string name="connect">连接</string>
     <string name="connect_trezor_to_add_message">您需要连接 Trezor 以添加代币</string>
+    <string name="connect_ledger_to_add_message">您需要连接 Ledger 以添加代币</string>
     <!--EthereumTransaction-->
     <string name="EthereumTransaction_Warning_Title">警告</string>
     <string name="EthereumTransaction_Error_Title">出错</string>
@@ -1231,6 +1265,7 @@
     <string name="ManageAccounts_ImportWallet">恢复自</string>
     <string name="ManageAccounts_WatchAddress">观察地址</string>
     <string name="add_via_trezor">通过 Trezor 添加</string>
+    <string name="add_via_ledger">通过 Ledger 添加</string>
     <!-- Import Wallet -->
     <string name="ImportWallet_BackupFile">从文件</string>
     <string name="ImportWallet_BackupFile_Description">从备份文件导入.</string>
@@ -2180,18 +2215,21 @@
     <string name="adding_tokens">正在添加代币</string>
     <string name="scan_to_add_message">您需要扫描卡片以添加代币</string>
     <string name="error_hardware_wallet_some_tokens_not_found">部分代币无法添加</string>
+    <string name="error_hardware_wallet_token_unavailable">%1$s 不支持此项。您可以在助记词钱包中使用</string>
     <string name="send_error_address_unavailable">地址不可用</string>
     <string name="send_error_amount_unavailable">金额不可用</string>
     <string name="send_error_fee_rate_unavailable">费率不可用</string>
     <string name="send_error_balance_unavailable">余额不可用</string>
     <string name="litecoin_mweb_invalid_amount">无效的 Litecoin MWEB 金额</string>
     <string name="litecoin_hardware_extended_public_key_required">硬件 Litecoin 钱包需要扩展公钥</string>
-    <string name="send_trezor_mweb_not_supported">Trezor 不支持 MWEB。请将莱特币发送到普通（非 MWEB）地址。</string>
-    <string name="send_trezor_time_lock_not_supported">Trezor 不支持时间锁定交易。</string>
+    <string name="send_hardware_mweb_not_supported">此硬件钱包不支持 MWEB。请将莱特币发送到普通（非 MWEB）地址。</string>
+    <string name="send_hardware_time_lock_not_supported">此硬件钱包不支持时间锁定交易。</string>
     <string name="send_trezor_zcash_memo_not_supported">Trezor 无法为 Zcash 交易添加备注。请删除备注后继续。</string>
     <string name="send_trezor_zcash_transparent_only">Trezor 只能将 Zcash 发送到透明地址。</string>
     <string name="send_trezor_zcash_unified_no_transparent_receiver">该统一地址不包含透明接收方，因此 Trezor 无法向其发送转账。</string>
     <string name="send_trezor_zcash_firmware_required">%1$s 需要 %2$s 或更高版本的固件才能发送到 Zcash 统一地址。请更新设备后重试——应用会在您下次进行 Zcash 交易时重新检查固件版本。</string>
+    <string name="send_ledger_zcash_sapling_not_supported">Ledger 无法向 Sapling 地址发送 Zcash。请使用统一地址或透明地址。</string>
+    <string name="send_ledger_zcash_transaction_too_large">该交易过大，Ledger 无法签名。请发送较小的金额。</string>
     <string name="send_failed_offline_prompt_title">交易未发送</string>
     <string name="send_failed_offline_prompt_message">离线签署交易并稍后发送？</string>
 

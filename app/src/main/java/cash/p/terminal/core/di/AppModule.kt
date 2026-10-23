@@ -9,6 +9,9 @@ import cash.p.terminal.di.swapProvidersModule
 import cash.p.terminal.modules.paycore.payCoreModule
 import cash.p.terminal.di.viewModelModule
 import cash.p.terminal.feature.logging.di.featureLoggingModule
+import cash.p.terminal.ledger.di.featureLedgerModule
+import cash.p.terminal.ledger.di.ledgerUsbModule
+import cash.p.terminal.modules.hardwarewallet.ledgerConnectorModule
 import cash.p.terminal.feature.miniapp.di.featureMiniAppModule
 import cash.p.terminal.featureStacking.di.featureStackingModule
 import cash.p.terminal.network.di.networkModule
@@ -30,6 +33,9 @@ val appModule = module {
         featureStackingModule,
         featureTangemModule,
         featureTrezorModule,
+        featureLedgerModule,
+        ledgerUsbModule,
+        ledgerConnectorModule,
         networkModule,
         swapProvidersModule,
         payCoreModule,

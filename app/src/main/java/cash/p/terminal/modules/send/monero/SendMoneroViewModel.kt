@@ -13,6 +13,7 @@ import cash.p.terminal.core.OfflineTransactionAdapter
 import cash.p.terminal.core.SignedOfflineMoneroTransaction
 import cash.p.terminal.core.ethereum.CautionViewItem
 import cash.p.terminal.core.ethereum.toCautionViewItem
+import cash.p.terminal.ledger.ui.ledgerErrorMessageOrNull
 import cash.p.terminal.core.managers.ConnectivityManager
 import cash.p.terminal.core.managers.OfflineSignedTransactionRepository
 import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
@@ -133,7 +134,7 @@ class SendMoneroViewModel(
     override val offlineSignSupported =
         offlineSignAdapter != null &&
             !wallet.account.isWatchAccount &&
-            wallet.account.type !is AccountType.TrezorDevice
+            wallet.account.type !is AccountType.HardwareDevice
 
     init {
         amountService.stateFlow.collectWith(viewModelScope) {
@@ -372,7 +373,9 @@ class SendMoneroViewModel(
         }
     }
 
-    private fun createCaution(error: Throwable) = when (error) {
+    private fun createCaution(error: Throwable) = ledgerErrorMessageOrNull(error)?.let {
+        HSCaution(TranslatableString.PlainString(it))
+    } ?: when (error) {
         is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
         is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
         is HardwareWalletOperationException ->

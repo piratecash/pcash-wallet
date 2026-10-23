@@ -179,6 +179,29 @@ class AccountCleanerTest {
     }
 
     @Test
+    fun clearWalletForAccount_hardwareMoneroInactive_keepsFilesAndAssociation() = runTest {
+        listOf(LEDGER, TREZOR).forEach { type ->
+            val account = account("acc-${type.javaClass.simpleName}").copy(type = type)
+            every { accountManager.account(account.id) } returns account
+
+            accountCleaner.clearWalletForAccount(account.id, token(BlockchainType.Monero))
+        }
+
+        coVerify(exactly = 0) { removeMoneroWalletFilesUseCase.invoke(any<Account>()) }
+        coVerify(exactly = 0) { moneroFileDao.deleteAssociatedRecord(any()) }
+    }
+
+    @Test
+    fun clearWalletForAccount_hardwareZcashInactive_clearsZcashData() = runTest {
+        val account = account("acc-ledger-zcash").copy(type = LEDGER)
+        every { accountManager.account(account.id) } returns account
+
+        accountCleaner.clearWalletForAccount(account.id, token(BlockchainType.Zcash))
+
+        coVerify(exactly = 1) { clearZCashWalletDataUseCase.invoke(account.id) }
+    }
+
+    @Test
     fun clearWalletForAccount_activeMoneroWallet_skipsClear() = runTest {
         val account = account("acc-active-monero")
         val token = token(BlockchainType.Monero)
@@ -407,4 +430,9 @@ class AccountCleanerTest {
         type = tokenType,
         decimals = 8
     )
+
+    private companion object {
+        val LEDGER = AccountType.LedgerDevice("device-id", "NanoSPlus", "wallet-key")
+        val TREZOR = AccountType.TrezorDevice("device-id", "T3T1", "2.8.10", "wallet-key")
+    }
 }

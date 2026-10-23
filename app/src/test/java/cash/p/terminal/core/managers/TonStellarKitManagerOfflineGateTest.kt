@@ -88,6 +88,7 @@ class TonKitManagerOfflineGateTest {
             networkErrorTracker = mockk(relaxed = true),
             offlineModeManager = offlineModeManager,
             tonKitDatabaseKeyProvider = mockk(relaxed = true),
+            deviceSigners = mockk(relaxed = true),
         )
         setField(manager, "tonKitWrapper", TonKitWrapper(mockTonKit, mockk<TonWallet>(relaxed = true)))
         setField(manager, "currentAccount", account)
@@ -294,7 +295,7 @@ class StellarKitManagerOfflineGateTest {
                 every { stateFlow } returns backgroundStateFlow
             },
             hardwarePublicKeyStorage = mockk(relaxed = true),
-            trezorClient = mockk(relaxed = true),
+            deviceSigners = DeviceSignerFactory(mockk(relaxed = true), mockk(relaxed = true), mockk(relaxed = true)),
             backgroundKeepAliveManager = mockk(relaxed = true),
             networkErrorTracker = mockk(relaxed = true),
             offlineModeManager = offlineModeManager,

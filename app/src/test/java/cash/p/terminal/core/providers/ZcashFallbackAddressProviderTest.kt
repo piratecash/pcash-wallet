@@ -107,6 +107,17 @@ class ZcashFallbackAddressProviderTest {
     }
 
     @Test
+    fun getAddress_ledgerUnifiedToken_returnsOrchardOnlyAddressTheDeviceShows() = runTest {
+        val hardwareKey = mockk<HardwarePublicKey> {
+            every { key } returns SecretString(UFVK)
+        }
+        val ledger = wallet(accountType = AccountType.LedgerDevice("id", "nanoSP", "key"), hardwareKey = hardwareKey)
+
+        assertEquals(ORCHARD, provider.getAddress(ledger))
+        assertEquals(UNIFIED, provider.getAddress(wallet(accountType = AccountType.ZCashUfvKey(UFVK))))
+    }
+
+    @Test
     fun getAddress_unsupportedTokenType_returnsNull() = runTest {
         assertNull(provider.getAddress(wallet(tokenType = TokenType.Eip20("0x0"))))
     }
@@ -130,10 +141,11 @@ class ZcashFallbackAddressProviderTest {
         const val UNIFIED = "u1testunifiedaddress"
         const val SAPLING = "zs1testsaplingreceiver"
         const val TRANSPARENT = "t1testtransparentreceiver"
+        const val ORCHARD = "u1testorchardonlyaddress"
         val ADDRESSES = Addresses(
             unified = UNIFIED,
             sapling = SAPLING,
-            orchard = "orchardreceiver",
+            orchard = ORCHARD,
             transparent = TRANSPARENT,
             diversifierIndex = 0,
         )

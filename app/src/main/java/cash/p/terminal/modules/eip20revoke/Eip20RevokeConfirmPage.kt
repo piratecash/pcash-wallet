@@ -18,7 +18,8 @@ import cash.p.terminal.R
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
-import cash.p.terminal.trezor.domain.TrezorCancelledException
+import cash.p.terminal.modules.send.hardwareWalletErrorMessage
+import cash.p.terminal.wallet.hardware.HardwareCancelledException
 import cash.p.terminal.modules.confirm.ConfirmTransactionScreen
 import cash.p.terminal.modules.evmfee.Cautions
 import cash.p.terminal.modules.multiswap.TokenRow
@@ -113,12 +114,12 @@ fun Eip20RevokeScreen(
                                 HudHelper.showSuccessMessage(view, R.string.Hud_Text_Done)
                                 delay(1200)
                                 Eip20RevokeConfirmPage.Result(true)
-                            } catch (e: TrezorCancelledException) {
+                            } catch (e: HardwareCancelledException) {
                                 buttonEnabled = true
                                 return@launch
                             } catch (t: Throwable) {
-                                val msg =
-                                    (t as? IllegalStateException)?.message ?: t.javaClass.simpleName
+                                val msg = t.hardwareWalletErrorMessage()
+                                    ?: (t as? IllegalStateException)?.message ?: t.javaClass.simpleName
                                 HudHelper.showErrorMessage(view, msg)
                                 Eip20RevokeConfirmPage.Result(false)
                             }

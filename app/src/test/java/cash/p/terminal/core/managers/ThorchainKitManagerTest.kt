@@ -2,9 +2,12 @@ package cash.p.terminal.core.managers
 
 import android.content.Context
 import cash.p.terminal.core.UnsupportedAccountException
+import cash.p.terminal.core.hexToByteArray
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.IHardwarePublicKeyStorage
+import cash.p.terminal.wallet.entities.HardwarePublicKey
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
 import io.horizontalsystems.core.entities.BlockchainType
@@ -12,6 +15,7 @@ import io.horizontalsystems.thorchainkit.DatabaseKeyMismatchException
 import io.horizontalsystems.thorchainkit.ThorchainKit
 import io.horizontalsystems.thorchainkit.models.Address
 import io.horizontalsystems.thorchainkit.network.Network
+import io.horizontalsystems.thorchainkit.transaction.ThorchainExternalSigner
 import io.mockk.MockKMatcherScope
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -52,7 +56,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.math.BigInteger
-import java.net.URL
 import kotlin.reflect.full.callSuspend
 import kotlin.reflect.full.declaredMemberFunctions
 import kotlin.reflect.jvm.isAccessible
@@ -64,6 +67,9 @@ class ThorchainKitManagerTest {
     private val context = mockk<Context>()
     private val kitDatabaseKeys = mockk<BitcoinKitDatabaseKeyProvider>()
     private val offlineModeManager = mockk<OfflineModeManager>(relaxed = true)
+    private val hardwarePublicKeyStorage = mockk<IHardwarePublicKeyStorage>()
+    private val deviceSigners = mockk<DeviceSignerFactory>()
+    private val ledgerAccount = account(AccountType.LedgerDevice("ledger-id", "nanoSP", "wallet-key"))
     private val databaseKey = ByteArray(KEY_SIZE) { 1 }
     private val kit = mockk<ThorchainKit>(relaxed = true)
     private val account = mnemonicAccount(ACCOUNT_ID)
@@ -151,7 +157,7 @@ class ThorchainKitManagerTest {
     @Test
     fun createKit_thorchainWatchAccountOnThorchainManager_createsKitFromWatchedAddress() = runTest {
         every { getInstance() } returns kit
-        val manager = createManager(Network.Mainnet, BlockchainType.Thorchain)
+        val manager = createManager(BlockchainType.Thorchain)
 
         manager.createKit(account(AccountType.ThorchainAddress(thorAddress)))
 
@@ -166,7 +172,7 @@ class ThorchainKitManagerTest {
 
     @Test
     fun createKit_mayachainWatchAccountOnThorchainManager_throwsUnsupportedBeforeTouchingKey() = runTest {
-        val manager = createManager(Network.Mainnet, BlockchainType.Thorchain)
+        val manager = createManager(BlockchainType.Thorchain)
 
         assertFailsWith<UnsupportedAccountException> {
             manager.createKit(account(AccountType.MayachainAddress(mayaAddress)))
@@ -187,7 +193,7 @@ class ThorchainKitManagerTest {
     }
 
     @Test
-    fun getAddress_watchAccount_returnsWatchedAddress() {
+    fun getAddress_watchAccount_returnsWatchedAddress() = runTest {
         val address = createManager().getAddress(account(AccountType.MayachainAddress(mayaAddress)))
 
         assertEquals(mayaAddress, address)
@@ -205,6 +211,55 @@ class ThorchainKitManagerTest {
                 any(), any(), any(), any(), any(),
             )
         }
+    }
+
+    @Test
+    fun createKit_ledgerAccountOnThorchainManager_createsKitFromDeviceKey() = runTest {
+        every { getInstance() } returns kit
+        coEvery { hardwarePublicKeyStorage.getKeyByBlockchain(ACCOUNT_ID, BlockchainType.Thorchain) } returns
+            ledgerKey()
+        val manager = createManager(BlockchainType.Thorchain)
+
+        manager.createKit(ledgerAccount)
+
+        verify(exactly = 1) {
+            ThorchainKit.getInstance(
+                context, Address.fromString(LEDGER_ADDRESS, Network.Mainnet), Network.Mainnet, ACCOUNT_ID,
+                any(), any(), any(), any(), any(),
+            )
+        }
+        assertEquals(LEDGER_ADDRESS, manager.getAddress(ledgerAccount))
+    }
+
+    @Test
+    fun getThorchainKitWrapper_ledgerAccount_carriesDeviceSigner() = testScope.runTest {
+        every { getInstance() } returns kit
+        val key = ledgerKey()
+        val signer = mockk<ThorchainExternalSigner>()
+        coEvery { hardwarePublicKeyStorage.getKeyByBlockchain(ACCOUNT_ID, BlockchainType.Thorchain) } returns key
+        every { deviceSigners.thorchain(ledgerAccount, ledgerAccount.type as AccountType.LedgerDevice, key) } returns
+            signer
+
+        val wrapper = createManager(BlockchainType.Thorchain).getThorchainKitWrapper(ledgerAccount)
+
+        assertSame(signer, wrapper.deviceSigner)
+    }
+
+    @Test
+    fun createKit_ledgerAccountOnMayachainManager_throwsUnsupportedBeforeTouchingKey() = runTest {
+        coEvery { hardwarePublicKeyStorage.getKeyByBlockchain(ACCOUNT_ID, BlockchainType.Mayachain) } returns null
+
+        assertFailsWith<UnsupportedAccountException> { createManager().createKit(ledgerAccount) }
+
+        coVerify(exactly = 0) { kitDatabaseKeys.awaitKey(any()) }
+        verify(exactly = 0) { getInstance() }
+    }
+
+    @Test
+    fun getThorchainKitWrapper_mnemonicAccount_hasNoDeviceSigner() = testScope.runTest {
+        every { getInstance() } returns kit
+
+        assertNull(createManager().getThorchainKitWrapper(account).deviceSigner)
     }
 
     @Test
@@ -474,13 +529,8 @@ class ThorchainKitManagerTest {
 
     private fun mismatch() = DatabaseKeyMismatchException("maya.db", IllegalStateException())
 
-    private fun createManager(
-        network: Network = Network.MayaMainnet,
-        blockchainType: BlockchainType = BlockchainType.Mayachain,
-    ) = ThorchainKitManager(
-        network,
+    private fun createManager(blockchainType: BlockchainType = BlockchainType.Mayachain) = ThorchainKitManager(
         blockchainType,
-        listOf(URL("https://node.example/")),
         context,
         kitDatabaseKeys,
         mockk<BackgroundManager>(relaxed = true) {
@@ -489,6 +539,8 @@ class ThorchainKitManagerTest {
         mockk(relaxed = true),
         mockk(relaxed = true),
         offlineModeManager,
+        hardwarePublicKeyStorage,
+        deviceSigners,
     ).also { createdManager = it }
 
     private fun createManagerWithKit() = createManager().also { manager ->
@@ -524,6 +576,12 @@ class ThorchainKitManagerTest {
 
     private companion object {
         const val ACCOUNT_ID = "account-id"
+
+        // The Ledger THORChain app's key for the default speculos seed, and its address.
+        const val LEDGER_PUBLIC_KEY = "0335f35211b872a0a6a5e0cb54885e82e8d71c7c945111d6f782db1254ba2a2d8e"
+        const val LEDGER_ADDRESS = "thor19hzdfmktztey2vuqpa3tv7dqe0kw3u24km6yca"
+
+        fun ledgerKey() = mockk<HardwarePublicKey> { every { publicKey } returns LEDGER_PUBLIC_KEY.hexToByteArray() }
         const val KEY_SIZE = 32
         const val SEED_SIZE = 64
         const val REAL_TIMEOUT_MS = 5_000L

@@ -61,7 +61,7 @@ class SolanaKitManagerOfflineGateTest {
             walletManager = mockk(relaxed = true),
             backgroundManager = mockk<BackgroundManager>(relaxed = true),
             hardwarePublicKeyStorage = mockk(relaxed = true),
-            trezorClient = mockk(relaxed = true),
+            deviceSigners = DeviceSignerFactory(mockk(relaxed = true), mockk(relaxed = true), mockk(relaxed = true)),
             backgroundKeepAliveManager = mockk(relaxed = true),
             networkErrorTracker = mockk(relaxed = true),
             offlineModeManager = offlineModeManager,

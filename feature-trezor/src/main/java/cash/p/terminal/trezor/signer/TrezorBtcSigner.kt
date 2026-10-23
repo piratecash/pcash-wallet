@@ -11,6 +11,8 @@ import cash.p.terminal.trezorkit.client.TrezorOutputScriptType
 import cash.p.terminal.trezorkit.client.TrezorPrevTx
 import cash.p.terminal.trezorkit.client.TrezorPrevTxInput
 import cash.p.terminal.trezorkit.client.TrezorPrevTxOutput
+import cash.p.terminal.wallet.hardware.HardwareAddressPosition
+import cash.p.terminal.wallet.hardware.rawTransactions
 import io.horizontalsystems.bitcoincore.extensions.hexToByteArray
 import io.horizontalsystems.bitcoincore.extensions.toHexString
 import io.horizontalsystems.bitcoincore.extensions.toReversedHex
@@ -114,18 +116,14 @@ class TrezorBtcSigner(
         val provider = requireNotNull(previousTransactionProvider) {
             "Previous-transaction provider is not set for Trezor signing"
         }
-        val prevTxByHash = mutableMapOf<String, TrezorPrevTx>()
-        for (input in inputs) {
-            // Display (reversed) txid: this is what getRawTransaction expects and also the hash the
-            // device echoes when it requests the previous transaction (prev_hash is sent in display order).
-            val displayTxid = input.input.previousOutputTxHash.toReversedHex()
-            if (prevTxByHash.containsKey(displayTxid)) continue
-            val rawHex = provider.getRawTransaction(displayTxid)
-                ?: throw TrezorSigningException("Missing previous transaction $displayTxid required by Trezor")
-            val fullTransaction = serializer.deserialize(BitcoinInputMarkable(rawHex.hexToByteArray()))
-            prevTxByHash[displayTxid] = fullTransaction.toTrezorPrevTx()
+        // Display (reversed) txid: this is what getRawTransaction expects and also the hash the
+        // device echoes when it requests the previous transaction (prev_hash is sent in display order).
+        val displayTxids = inputs.map { it.input.previousOutputTxHash.toReversedHex() }
+        return provider.rawTransactions(displayTxids) { txid ->
+            TrezorSigningException("Missing previous transaction $txid required by Trezor")
+        }.mapValues { (_, rawHex) ->
+            serializer.deserialize(BitcoinInputMarkable(rawHex.hexToByteArray())).toTrezorPrevTx()
         }
-        return prevTxByHash
     }
 
     /**
@@ -166,10 +164,8 @@ class TrezorBtcSigner(
         }
     )
 
-    private fun addressPath(publicKey: PublicKey): List<Int> {
-        val changeSegment = if (publicKey.external) 0 else 1
-        return TrezorDerivationPath.parse(derivationPath) + changeSegment + publicKey.index
-    }
+    private fun addressPath(publicKey: PublicKey): List<Int> =
+        TrezorDerivationPath.addressPath(derivationPath, HardwareAddressPosition(!publicKey.external, publicKey.index))
 
     private fun inputScriptType(scriptType: ScriptType): TrezorInputScriptType = when (scriptType) {
         ScriptType.P2PKH -> TrezorInputScriptType.SPENDADDRESS

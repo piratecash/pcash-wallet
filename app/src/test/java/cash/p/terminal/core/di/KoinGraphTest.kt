@@ -13,7 +13,14 @@ import cash.p.terminal.modules.configuredtoken.ConfiguredTokenInfoViewModel
 import cash.p.terminal.modules.evmnetwork.EvmNetworkViewModel
 import cash.p.terminal.modules.evmnetwork.addrpc.AddRpcViewModel
 import cash.p.terminal.modules.multiswap.SwapSelectCoinViewModel
+import cash.p.terminal.ledger.domain.LedgerAddressVerification
+import cash.p.terminal.ledger.domain.LedgerAppKeyFetchers
+import cash.p.terminal.ledger.ui.LedgerVerifyAddressViewModel
+import cash.p.terminal.ledger.ui.LedgerWalletViewModel
+import cash.p.terminal.ledgerkit.LedgerSession
+import cash.p.terminal.ledgerkit.transport.LedgerTransportProvider
 import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.entities.BlockchainType
 import cash.p.terminal.modules.createaccount.passphraseterms.PassphraseTermsViewModel
 import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesModule
@@ -259,6 +266,16 @@ class KoinGraphTest : KoinTest {
         definition<RestoreLocalViewModel>(String::class, BackupViewItemFactory::class),
         definition<EvmNetworkViewModel>(Blockchain::class),
         definition<AddRpcViewModel>(Blockchain::class),
+        *ledgerInjections(),
+    )
+
+    // The session is built from the build variant's LedgerConnector; verifiers come via getAll().
+    private fun ledgerInjections() = arrayOf(
+        definition<LedgerSession>(LedgerTransportProvider::class),
+        definition<LedgerAppKeyFetchers>(List::class),
+        definition<LedgerAddressVerification>(List::class),
+        definition<LedgerWalletViewModel>(String::class),
+        definition<LedgerVerifyAddressViewModel>(Wallet::class),
     )
 
     private fun marketMetricsInjections() = arrayOf(

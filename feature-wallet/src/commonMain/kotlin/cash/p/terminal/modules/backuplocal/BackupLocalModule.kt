@@ -104,6 +104,7 @@ object BackupLocalModule {
     private const val ZCASH_SAPLING_KEY = "zcash_sapling_key"
     private const val HARDWARE_CARD = "hardware_card"
     private const val TREZOR_DEVICE = "trezor_device"
+    private const val LEDGER_DEVICE = "ledger_device"
 
     //Backup Json file data structure
 
@@ -176,6 +177,7 @@ object BackupLocalModule {
         is AccountType.ZCashSaplingKey -> ZCASH_SAPLING_KEY
         is AccountType.HardwareCard -> HARDWARE_CARD
         is AccountType.TrezorDevice -> TREZOR_DEVICE
+        is AccountType.LedgerDevice -> LEDGER_DEVICE
     }
 
     @Throws(IllegalStateException::class)
@@ -272,7 +274,7 @@ object BackupLocalModule {
         is AccountType.ZCashUfvKey -> accountType.key.toByteArray(Charsets.UTF_8)
         is AccountType.ZCashSaplingKey -> accountType.key.toByteArray(Charsets.UTF_8)
         is AccountType.HardwareCard,
-        is AccountType.TrezorDevice -> null
+        is AccountType.HardwareDevice -> null
     }
 
     val kdfDefault = KdfParams(

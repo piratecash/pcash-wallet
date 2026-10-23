@@ -53,6 +53,45 @@ class AccountsStorageTest {
     }
 
     @Test
+    fun save_ledgerDevice_storesDeviceIdModelAndWalletPublicKey() {
+        val record = savedRecord(AccountType.LedgerDevice("ledger-id", "nanoSP", "wallet-key"))
+
+        assertEquals("ledger_device", record.type)
+        assertEquals("ledger-id@nanoSP", record.key?.value)
+        assertEquals("wallet-key", record.passphrase?.value)
+    }
+
+    @Test
+    fun loadAccount_ledgerDevice_restoresAllFields() {
+        val restored = roundTrip(AccountType.LedgerDevice("ledger-id", "nanoSP", "wallet-key"))
+
+        assertEquals(
+            listOf("ledger-id", "nanoSP", "wallet-key"),
+            (restored as AccountType.LedgerDevice).let { listOf(it.deviceId, it.model, it.walletPublicKey) }
+        )
+    }
+
+    @Test
+    fun save_trezorDevice_keepsExistingRecordFormat() {
+        val record = savedRecord(AccountType.TrezorDevice("trezor-id", "T3T1", "2.8.1", "wallet-key"))
+
+        assertEquals("trezor_device", record.type)
+        assertEquals("trezor-id@T3T1@2.8.1", record.key?.value)
+        assertEquals("wallet-key", record.passphrase?.value)
+    }
+
+    @Test
+    fun loadAccount_trezorDevice_restoresAllFields() {
+        val restored = roundTrip(AccountType.TrezorDevice("trezor-id", "T3T1", "2.8.1", "wallet-key"))
+
+        assertEquals(
+            listOf("trezor-id", "T3T1", "2.8.1", "wallet-key"),
+            (restored as AccountType.TrezorDevice)
+                .let { listOf(it.deviceId, it.model, it.firmwareVersion, it.walletPublicKey) }
+        )
+    }
+
+    @Test
     fun delete_databaseReplacedAfterFirstUse_writesToTheNewDatabase() {
         val newDao = mockk<AccountsDao>(relaxUnitFun = true)
         val provider = ReplaceableDatabaseProvider(databaseWith(dao))
@@ -79,10 +118,13 @@ class AccountsStorageTest {
     )
 
     private fun assertRoundTrip(accountType: AccountType) {
+        assertEquals(accountType, roundTrip(accountType))
+    }
+
+    private fun roundTrip(accountType: AccountType): AccountType? {
         val record = savedRecord(accountType)
         every { dao.loadAccount(ACCOUNT_ID) } returns record
-
-        assertEquals(accountType, storage.loadAccount(ACCOUNT_ID)?.type)
+        return storage.loadAccount(ACCOUNT_ID)?.type
     }
 
     private fun savedRecord(accountType: AccountType): AccountRecord {

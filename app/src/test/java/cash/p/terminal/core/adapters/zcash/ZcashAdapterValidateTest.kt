@@ -5,6 +5,8 @@ import cash.p.zcash.ZcashAddressKind
 import cash.p.zcash.ZcashSdk
 import cash.p.zcash.addressKind
 import cash.p.zcash.addressReceivers
+import cash.p.zcash.orchardOnlyAddress
+import cash.p.zcash.transparentAddressOfTex
 import io.mockk.every
 import io.mockk.mockkStatic
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -92,6 +94,91 @@ class ZcashAdapterValidateTest : ZcashAdapterTestFixture() {
 
     // endregion
 
+    // region Ledger account: no Sapling
+
+    @Test
+    fun validate_ledgerAccount_saplingAddress_throwsLedgerSaplingRecipient() = runTest(dispatcher) {
+        stubLedgerAccount()
+        every { ZcashSdk.addressKind(SAPLING_ADDRESS, any()) } returns ZcashAddressKind.SAPLING
+        adapter = createAdapter()
+
+        assertFailsWith<ZcashAdapter.ZcashError.LedgerSaplingRecipient> {
+            adapter.validate(SAPLING_ADDRESS)
+        }
+    }
+
+    @Test
+    fun validate_ledgerAccount_unifiedAddress_returnsUnified() = runTest(dispatcher) {
+        stubLedgerAccount()
+        every { ZcashSdk.addressKind(UNIFIED_ADDRESS, any()) } returns ZcashAddressKind.UNIFIED
+        every { ZcashSdk.orchardOnlyAddress(UNIFIED_ADDRESS, any()) } returns ORCHARD_ONLY_ADDRESS
+        adapter = createAdapter()
+
+        assertEquals(ZcashAdapter.ZCashAddressType.Unified, adapter.validate(UNIFIED_ADDRESS))
+    }
+
+    @Test
+    fun validate_ledgerAccount_unifiedAddressWithoutOrchard_throwsLedgerSaplingRecipient() = runTest(dispatcher) {
+        stubLedgerAccount()
+        every { ZcashSdk.addressKind(UNIFIED_ADDRESS, any()) } returns ZcashAddressKind.UNIFIED
+        every { ZcashSdk.orchardOnlyAddress(UNIFIED_ADDRESS, any()) } returns null
+        adapter = createAdapter()
+
+        assertFailsWith<ZcashAdapter.ZcashError.LedgerSaplingRecipient> {
+            adapter.validate(UNIFIED_ADDRESS)
+        }
+    }
+
+    @Test
+    fun validate_mnemonicAccount_unifiedAddressWithoutOrchard_returnsUnified() = runTest(dispatcher) {
+        every { ZcashSdk.addressKind(UNIFIED_ADDRESS, any()) } returns ZcashAddressKind.UNIFIED
+        every { ZcashSdk.orchardOnlyAddress(UNIFIED_ADDRESS, any()) } returns null
+        adapter = createAdapter()
+
+        assertEquals(ZcashAdapter.ZCashAddressType.Unified, adapter.validate(UNIFIED_ADDRESS))
+    }
+
+    @Test
+    fun addressShownOnDevice_ledgerAccount_unifiedAddressAsItsOrchardReceiver() = runTest(dispatcher) {
+        stubLedgerAccount()
+        every { ZcashSdk.orchardOnlyAddress(UNIFIED_ADDRESS, any()) } returns ORCHARD_ONLY_ADDRESS
+        every { ZcashSdk.orchardOnlyAddress(TRANSPARENT_ADDRESS, any()) } returns null
+        every { ZcashSdk.transparentAddressOfTex(TRANSPARENT_ADDRESS, any()) } returns null
+        adapter = createAdapter()
+
+        assertEquals(ORCHARD_ONLY_ADDRESS, adapter.addressShownOnDevice(UNIFIED_ADDRESS))
+        assertEquals(TRANSPARENT_ADDRESS, adapter.addressShownOnDevice(TRANSPARENT_ADDRESS))
+    }
+
+    @Test
+    fun addressShownOnDevice_ledgerAccount_texAddressAsItsTransparentAddress() = runTest(dispatcher) {
+        stubLedgerAccount()
+        every { ZcashSdk.orchardOnlyAddress(ZIP320_TEX_ADDRESS, any()) } returns null
+        every { ZcashSdk.transparentAddressOfTex(ZIP320_TEX_ADDRESS, any()) } returns ZIP320_TRANSPARENT_ADDRESS
+        adapter = createAdapter()
+
+        assertEquals(ZIP320_TRANSPARENT_ADDRESS, adapter.addressShownOnDevice(ZIP320_TEX_ADDRESS))
+    }
+
+    @Test
+    fun addressShownOnDevice_mnemonicAccount_texAddressUnchanged() = runTest(dispatcher) {
+        every { ZcashSdk.transparentAddressOfTex(ZIP320_TEX_ADDRESS, any()) } returns ZIP320_TRANSPARENT_ADDRESS
+        adapter = createAdapter()
+
+        assertEquals(ZIP320_TEX_ADDRESS, adapter.addressShownOnDevice(ZIP320_TEX_ADDRESS))
+    }
+
+    @Test
+    fun addressShownOnDevice_mnemonicAndTrezorAccounts_unifiedAddressUnchanged() = runTest(dispatcher) {
+        every { ZcashSdk.orchardOnlyAddress(UNIFIED_ADDRESS, any()) } returns ORCHARD_ONLY_ADDRESS
+        assertEquals(UNIFIED_ADDRESS, createAdapter().addressShownOnDevice(UNIFIED_ADDRESS))
+
+        stubTrezorAccount()
+        assertEquals(UNIFIED_ADDRESS, createAdapter().addressShownOnDevice(UNIFIED_ADDRESS))
+    }
+
+    // endregion
+
     // region Trezor account: unified address needs a transparent receiver
 
     @Test
@@ -170,6 +257,11 @@ class ZcashAdapterValidateTest : ZcashAdapterTestFixture() {
         const val TRANSPARENT_ADDRESS = "t1RecipientAddress"
         const val SAPLING_ADDRESS = "zs1RecipientAddress"
         const val UNIFIED_ADDRESS = "u1RecipientAddress"
+        const val ORCHARD_ONLY_ADDRESS = "u1OrchardOnlyAddress"
+
+        // ZIP-320 test vector.
+        const val ZIP320_TEX_ADDRESS = "tex1s2rt77ggv6q989lr49rkgzmh5slsksa9khdgte"
+        const val ZIP320_TRANSPARENT_ADDRESS = "t1VmmGiyjVNeCjxDZzg7vZmd99WyzVby9yC"
         const val TEX_ADDRESS = "tex1RecipientAddress"
     }
 }

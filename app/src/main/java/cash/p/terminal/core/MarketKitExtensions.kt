@@ -106,6 +106,11 @@ fun FullCoin.eligibleTokens(accountType: AccountType): List<Token> {
         .filter { it.supports(accountType) && it.blockchainType.supports(accountType) }
 }
 
+// Empty probe: Mnemonic support checks never derive keys from the words.
+private val seedPhraseProbe = AccountType.Mnemonic(emptyList(), "")
+
+fun FullCoin.seedPhraseTokens(): List<Token> = eligibleTokens(seedPhraseProbe)
+
 val HsPointTimePeriod.title: Int
     get() = when (this) {
         HsPointTimePeriod.Hour1 -> R.string.Coin_Analytics_Period_1h

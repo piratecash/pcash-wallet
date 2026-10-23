@@ -29,6 +29,12 @@ sealed class AdapterState {
             val downloadedBytes: Long? = null,
             val totalBytes: Long? = null,
         ) : Substatus()
+
+        /** The hardware wallet waits for the user to allow exporting the view key. */
+        data object ConfirmViewKeyExport : Substatus()
+
+        /** The operation is queued until the hardware wallet is free and its app is open. */
+        data object WaitingForLedger : Substatus()
     }
 
     enum class SnapshotRestoreStage {

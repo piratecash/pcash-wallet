@@ -23,6 +23,7 @@ import cash.p.terminal.entities.OfflineSignedTransactionDraft
 import cash.p.terminal.entities.PendingTransactionDraft
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.entities.Address
+import cash.p.terminal.ledger.ui.ledgerErrorMessageOrNull
 import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.send.SendConfirmationData
 import cash.p.terminal.modules.send.SendResult
@@ -43,7 +44,7 @@ import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.collectWith
-import cash.p.terminal.trezor.domain.TrezorCancelledException
+import cash.p.terminal.wallet.hardware.HardwareCancelledException
 import com.tangem.common.core.TangemSdkError
 import io.horizontalsystems.bitcoincore.storage.UnspentOutputInfo
 import io.horizontalsystems.bitcoincore.storage.UtxoFilters
@@ -113,7 +114,7 @@ class SendBitcoinViewModel(
         payloadEncoder = offlineTransactionPayloadEncoder,
         repository = offlineSignedTransactionRepository,
         cautionFactory = ::createCaution,
-        isSilentCancellation = { it is TangemSdkError || it is TrezorCancelledException },
+        isSilentCancellation = { it is TangemSdkError || it is HardwareCancelledException },
     )
 
     override val coinMaxAllowedDecimals = wallet.token.decimals
@@ -264,7 +265,7 @@ class SendBitcoinViewModel(
     }
 
     fun onEnterLockTimeInterval(lockTimeInterval: LockTimeInterval?) {
-        pluginService.setLockTimeInterval(lockTimeInterval.takeIf { isAdvancedSettingsAvailable })
+        pluginService.setLockTimeInterval(lockTimeInterval.takeIf { isAdvancedSettingsAvailable && isLockTimeEnabled })
     }
 
     fun updateCustomUnspentOutputs(customUnspentOutputs: List<UnspentOutputInfo>) {
@@ -453,7 +454,7 @@ class SendBitcoinViewModel(
             pendingTxId?.let { pendingRegistrar.deleteFailed(it) }
             sendResult = null
             logger.info("user cancelled")
-        } catch (e: TrezorCancelledException) {
+        } catch (e: HardwareCancelledException) {
             pendingTxId?.let { pendingRegistrar.deleteFailed(it) }
             sendResult = null
             logger.info("trezor user cancelled")
@@ -532,7 +533,7 @@ class SendBitcoinViewModel(
     private fun createCaution(error: Throwable) = when (error) {
         is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
         is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
-        else -> HSCaution(TranslatableString.PlainString(error.message ?: ""))
+        else -> HSCaution(TranslatableString.PlainString(ledgerErrorMessageOrNull(error) ?: error.message.orEmpty()))
     }
 
 }
