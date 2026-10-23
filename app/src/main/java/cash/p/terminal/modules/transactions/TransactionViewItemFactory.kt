@@ -1643,6 +1643,13 @@ class TransactionViewItemFactory(
         return swapTransactionMatcher.findMatchingSwap(incomingTransaction)
     }
 
+    private fun syncReceivedAt(swap: SwapProviderTransaction, recordUid: String, timestampSeconds: Long) {
+        val receivedAt = timestampSeconds * 1000
+        if (swap.receivedAt != receivedAt) {
+            swapProviderTransactionsStorage.syncReceivedAt(swap.date, recordUid, receivedAt)
+        }
+    }
+
     private fun createViewItemFromUserSwapProviderRecord(
         transaction: SwapProviderTransaction,
         recordUid: String,
@@ -1650,6 +1657,7 @@ class TransactionViewItemFactory(
         direct: Boolean,
         onChainProgress: Float?,
     ): TransactionViewItem {
+        if (!direct) syncReceivedAt(transaction, recordUid, timestamp)
         val iconIn = getIconForToken(
             coinUid = transaction.coinUidIn
         )

@@ -8,6 +8,7 @@ import cash.p.terminal.core.adapters.EvmTransactionsAdapter
 import cash.p.terminal.core.getKoinInstance
 import io.horizontalsystems.core.entities.CurrencyValue
 import cash.p.terminal.entities.LastBlockInfo
+import cash.p.terminal.entities.SwapDuration
 import cash.p.terminal.entities.nft.NftAssetBriefMetadata
 import cash.p.terminal.entities.nft.NftUid
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
@@ -113,6 +114,7 @@ data class TransactionInfoItem(
     val swapSubProviderId: String? = null,
     val swapTransactionId: String? = null,
     val swapTransactionStatus: TransactionStatusEnum? = null,
+    val swapDuration: SwapDuration? = null,
     val poisonStatus: PoisonStatus = PoisonStatus.BLOCKCHAIN,
     val offlineStatus: ColoredValue? = null,
     // Record equality identifies the transaction, not changes to its status or details.

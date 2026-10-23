@@ -4,10 +4,14 @@ import cash.p.beam.BeamTransactionDirection
 import cash.p.beam.BeamTransactionStatus
 import cash.p.terminal.R
 import cash.p.terminal.entities.LastBlockInfo
+import cash.p.terminal.entities.SwapDuration
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.transactions.TransactionStatus
+import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.modules.transactions.beamHistoryRecord
 import cash.p.terminal.modules.transactions.beamInteractiveHistoryRecord
+import cash.p.terminal.strings.helpers.AndroidLocalizedResources
+import cash.p.terminal.strings.helpers.LibraryInitializer
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.core.managers.AddressLabelManager
 import cash.p.terminal.core.managers.AddressMetadataManager
@@ -31,6 +35,7 @@ import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.transaction.TransactionSource
 import io.horizontalsystems.core.CoreApp
 import io.horizontalsystems.core.IAppNumberFormatter
+import io.horizontalsystems.core.LocalizedResources
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.ethereumkit.models.Transaction as EvmKitTransaction
@@ -42,13 +47,17 @@ import io.mockk.unmockkAll
 import io.mockk.verify
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
@@ -67,12 +76,17 @@ class TransactionInfoViewItemFactoryTest {
     fun setUp() {
         mockkObject(Translator)
         every { Translator.getString(any()) } answers { "string:${firstArg<Int>()}" }
+        every { Translator.getString(any(), *anyVararg()) } answers {
+            "string:${firstArg<Int>()}:${secondArg<Array<Any>>().joinToString()}"
+        }
         stopKoin()
         CoreApp.instance = RuntimeEnvironment.getApplication() as CoreApp
+        Robolectric.setupContentProvider(LibraryInitializer::class.java)
         startKoin {
             modules(
                 module {
                     single { numberFormatter }
+                    singleOf(::AndroidLocalizedResources) bind LocalizedResources::class
                     single { contactsRepository }
                     single { addressLabelManager }
                     single {
@@ -573,6 +587,54 @@ class TransactionInfoViewItemFactoryTest {
 
         assertSame(wrapper, speedUp.evmKitWrapper)
     }
+
+    @Test
+    fun getViewItemSections_swapWithExactDuration_showsRoundedDuration() {
+        stubDurationPatterns()
+
+        assertEquals("1h 2m 3s", swapDurationRow(SwapDuration(3_722_600L, approximate = false))?.value)
+    }
+
+    @Test
+    fun getViewItemSections_swapWithApproximateDuration_showsTildePrefix() {
+        stubDurationPatterns()
+        every { Translator.getString(R.string.swap_duration_approximate) } returns "~%1\$s"
+
+        assertEquals("~1m 5s", swapDurationRow(SwapDuration(65_000L, approximate = true))?.value)
+    }
+
+    @Test
+    fun getViewItemSections_swapWithoutDuration_hasNoSwapDurationRow() {
+        assertNull(swapDurationRow(null))
+    }
+
+    private fun stubDurationPatterns() {
+        every { Translator.getString(R.string.duration_short_hours) } returns "%1\$dh"
+        every { Translator.getString(R.string.duration_short_minutes) } returns "%1\$dm"
+        every { Translator.getString(R.string.duration_short_seconds) } returns "%1\$ds"
+    }
+
+    private fun swapDurationRow(swapDuration: SwapDuration?): TransactionInfoViewItem.Value? =
+        swapItems(swapDuration)
+            .filterIsInstance<TransactionInfoViewItem.Value>()
+            .singleOrNull { it.title == Translator.getString(R.string.swap_duration) }
+
+    private fun swapItems(swapDuration: SwapDuration?): List<TransactionInfoViewItem> =
+        TransactionInfoViewItemFactory(
+            offlineOperationGate = mockk(relaxed = true),
+            wallet = null,
+            blockchainType = BlockchainType.Bitcoin,
+            evmKitWrapper = null,
+        ).getViewItemSections(
+            transactionInfoItem(pendingRecord(toAddress = "")).copy(
+                swapAmountOut = BigDecimal.TEN,
+                swapAmountIn = BigDecimal.ONE,
+                swapCoinCodeOut = "ETH",
+                swapCoinCodeIn = "BTC",
+                swapProvider = SwapProvider.CHANGENOW,
+                swapDuration = swapDuration,
+            )
+        ).flatten()
 
     private fun pendingEvmItems(evmKitWrapper: EvmKitWrapper?): List<TransactionInfoViewItem> {
         val gate = mockk<OfflineOperationGate>(relaxed = true) {

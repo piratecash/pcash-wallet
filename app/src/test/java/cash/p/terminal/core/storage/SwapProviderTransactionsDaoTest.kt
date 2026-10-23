@@ -145,6 +145,41 @@ class SwapProviderTransactionsDaoTest {
         assertNull(byAddressAndAmount(amount = 18159.2))
     }
 
+    @Test
+    fun syncReceivedAt_linkedRecord_writesTimestamp() = runTest {
+        dao.insert(linkedSwap(incomingRecordUid = INCOMING_UID))
+
+        dao.syncReceivedAt(date = 1_000L, incomingRecordUid = INCOMING_UID, receivedAt = 5_000L)
+
+        assertEquals(5_000L, dao.getByDate(1_000L)?.receivedAt)
+    }
+
+    @Test
+    fun syncReceivedAt_differentIncomingRecord_doesNotWrite() = runTest {
+        dao.insert(linkedSwap(incomingRecordUid = "other-uid"))
+
+        dao.syncReceivedAt(date = 1_000L, incomingRecordUid = INCOMING_UID, receivedAt = 5_000L)
+
+        assertNull(dao.getByDate(1_000L)?.receivedAt)
+    }
+
+    @Test
+    fun syncReceivedAt_changedTimestamp_overwrites() = runTest {
+        dao.insert(linkedSwap(incomingRecordUid = INCOMING_UID))
+        dao.syncReceivedAt(date = 1_000L, incomingRecordUid = INCOMING_UID, receivedAt = 5_000L)
+
+        dao.syncReceivedAt(date = 1_000L, incomingRecordUid = INCOMING_UID, receivedAt = 6_000L)
+
+        assertEquals(6_000L, dao.getByDate(1_000L)?.receivedAt)
+    }
+
+    private fun linkedSwap(incomingRecordUid: String) = swap(
+        date = 1_000L,
+        amountOut = BigDecimal("0.02013"),
+        amountOutReal = BigDecimal("0.02011"),
+        incomingRecordUid = incomingRecordUid,
+    )
+
     private fun byAddressAndAmount(amount: Double) = dao.getByAddressAndAmount(
         address = "t1AddressOut",
         tokenQueryId = "zcash|native",
@@ -198,6 +233,7 @@ class SwapProviderTransactionsDaoTest {
     private companion object {
         const val COIN_UID = "zcash"
         const val ACCOUNT_ID = "test-account"
+        const val INCOMING_UID = "incoming-uid"
         val BLOCKCHAIN_TYPE = BlockchainType.Zcash.uid
     }
 }

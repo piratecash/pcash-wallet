@@ -7,8 +7,21 @@ import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.beam.BeamTransactionRecord
 import cash.p.terminal.core.managers.TonHelper
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.TransactionInfo_SpamWarning
+import cash.p.terminal.resources.TransactionInfo_SpeedUpDescription
+import cash.p.terminal.resources.TransactionInfo_To
+import cash.p.terminal.resources.Transactions_ContractCall
+import cash.p.terminal.resources.Transactions_OperationType
+import cash.p.terminal.resources.Transactions_OperationType_ChangeTrust
+import cash.p.terminal.resources.Transactions_OperationType_CreateAccount
+import cash.p.terminal.resources.beam_cancel_description
+import cash.p.terminal.resources.swap_duration
+import cash.p.terminal.resources.transactions_migrate
+import cash.p.terminal.resources.transactions_migrate_to_ironwood
 import cash.p.terminal.ui_compose.ColoredValue
 import cash.p.terminal.core.providers.AppConfigProvider
+import cash.p.terminal.core.utils.formatSwapDuration
 import cash.p.terminal.entities.swapProviderDisplayTitle
 import cash.p.terminal.modules.offline.OfflineOperationGate
 import cash.p.terminal.modules.offline.availabilityFor
@@ -30,9 +43,9 @@ import cash.p.terminal.modules.transactionInfo.TransactionInfoViewItem.Transacti
 import cash.p.terminal.modules.transactionInfo.TransactionViewItemFactoryHelper.getSwapEventSectionItems
 import cash.p.terminal.modules.transactions.TransactionStatus
 import cash.p.terminal.modules.transactions.TransactionViewItem
-import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.ui_compose.ColorName
 import cash.p.terminal.wallet.Wallet
+import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.entities.BlockchainType
 
 class TransactionInfoViewItemFactory(
@@ -65,7 +78,7 @@ class TransactionInfoViewItemFactory(
                 listOf(
                     TransactionInfoViewItem.WarningMessage(
                         Translator.getString(
-                            R.string.TransactionInfo_SpamWarning
+                            Res.string.TransactionInfo_SpamWarning
                         )
                     )
                 )
@@ -137,8 +150,8 @@ class TransactionInfoViewItemFactory(
                             itemSections.add(
                                 listOf(
                                     TransactionInfoViewItem.Value(
-                                        Translator.getString(R.string.Transactions_OperationType),
-                                        Translator.getString(R.string.Transactions_OperationType_CreateAccount)
+                                        Translator.getString(Res.string.Transactions_OperationType),
+                                        Translator.getString(Res.string.Transactions_OperationType_CreateAccount)
                                     )
                                 )
                             )
@@ -164,8 +177,8 @@ class TransactionInfoViewItemFactory(
                             itemSections.add(
                                 listOf(
                                     TransactionInfoViewItem.Value(
-                                        Translator.getString(R.string.Transactions_OperationType),
-                                        Translator.getString(R.string.Transactions_OperationType_CreateAccount)
+                                        Translator.getString(Res.string.Transactions_OperationType),
+                                        Translator.getString(Res.string.Transactions_OperationType_CreateAccount)
                                     )
                                 )
                             )
@@ -176,8 +189,8 @@ class TransactionInfoViewItemFactory(
                         itemSections.add(
                             listOf(
                                 TransactionInfoViewItem.Value(
-                                    Translator.getString(R.string.Transactions_OperationType),
-                                    Translator.getString(R.string.Transactions_OperationType_ChangeTrust)
+                                    Translator.getString(Res.string.Transactions_OperationType),
+                                    Translator.getString(Res.string.Transactions_OperationType_ChangeTrust)
                                 )
                             )
                         )
@@ -187,7 +200,7 @@ class TransactionInfoViewItemFactory(
                         itemSections.add(
                             listOf(
                                 TransactionInfoViewItem.Value(
-                                    Translator.getString(R.string.Transactions_OperationType),
+                                    Translator.getString(Res.string.Transactions_OperationType),
                                     transactionType.type
                                 )
                             )
@@ -543,7 +556,7 @@ class TransactionInfoViewItemFactory(
                             listOf(
                                 Transaction(
                                     transaction.transaction.contract?.label
-                                        ?: Translator.getString(R.string.Transactions_ContractCall),
+                                        ?: Translator.getString(Res.string.Transactions_ContractCall),
                                     "",
                                     TransactionViewItem.Icon.Platform.fromBlockchainType(
                                         transaction.blockchainType
@@ -798,6 +811,13 @@ class TransactionInfoViewItemFactory(
                         valueIn = valueIn,
                         blockchainType = blockchainType,
                         providerName = swapProviderDisplayTitle(provider, transactionItem.swapSubProviderId),
+                    ) + listOfNotNull(
+                        transactionItem.swapDuration?.let { duration ->
+                            TransactionInfoViewItem.Value(
+                                Translator.getString(Res.string.swap_duration),
+                                formatSwapDuration(duration)
+                            )
+                        }
                     )
                 )
             }
@@ -845,7 +865,7 @@ class TransactionInfoViewItemFactory(
                     listOf(
                         TransactionInfoViewItem.Description(
                             Translator.getString(
-                                R.string.TransactionInfo_SpeedUpDescription
+                                Res.string.TransactionInfo_SpeedUpDescription
                             )
                         )
                     )
@@ -889,7 +909,7 @@ class TransactionInfoViewItemFactory(
         return listOf(
             listOf(TransactionInfoViewItem.BeamCancel(record.transactionHash, wallet, availability)),
             listOf(
-                TransactionInfoViewItem.Description(Translator.getString(R.string.beam_cancel_description))
+                TransactionInfoViewItem.Description(Translator.getString(Res.string.beam_cancel_description))
             ),
         )
     }
@@ -914,8 +934,8 @@ private val TransactionInfoItem.hasUnknownOfflineRecipient: Boolean
 
 private fun ironwoodMigrationSectionItems() = listOf(
     Transaction(
-        Translator.getString(R.string.transactions_migrate),
-        Translator.getString(R.string.transactions_migrate_to_ironwood),
+        Translator.getString(Res.string.transactions_migrate),
+        Translator.getString(Res.string.transactions_migrate_to_ironwood),
         R.drawable.ic_migrate_24
     )
 )
@@ -938,7 +958,7 @@ private fun getUnknownOfflineSendSectionItems(
     )
 
 private fun unknownRecipientItem() =
-    TransactionInfoViewItem.Value(Translator.getString(R.string.TransactionInfo_To), UNKNOWN_VALUE)
+    TransactionInfoViewItem.Value(Translator.getString(Res.string.TransactionInfo_To), UNKNOWN_VALUE)
 
 // Offline-signed transactions replace the regular status row with a dedicated offline status. When no
 // offline status is present the list is returned unchanged.

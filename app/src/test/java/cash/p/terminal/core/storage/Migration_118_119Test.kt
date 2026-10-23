@@ -33,7 +33,10 @@ class Migration_118_119Test {
             amounts.forEachIndexed { index, amount ->
                 swapProviderTransactionsDao().insert(swap(index.toLong(), amount))
             }
-            openHelper.writableDatabase.version = 118
+            openHelper.writableDatabase.run {
+                execSQL("ALTER TABLE SwapProviderTransaction DROP COLUMN receivedAt")
+                version = 118
+            }
             close()
         }
 
