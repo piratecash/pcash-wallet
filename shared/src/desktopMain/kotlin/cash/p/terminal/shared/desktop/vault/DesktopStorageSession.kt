@@ -8,6 +8,7 @@ import androidx.sqlite.execSQL
 import cash.p.terminal.core.storage.AppDatabase
 import cash.p.terminal.core.storage.AppDatabaseConstructor
 import cash.p.terminal.core.storage.migrations.CREATE_STACKING_CACHE_TABLE
+import cash.p.terminal.core.storage.migrations.Migration_118_119
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.premium.data.database.PremiumDatabase
 import cash.p.terminal.premium.data.database.PremiumDatabaseConstructor
@@ -84,7 +85,8 @@ class DesktopStorageSession private constructor(
                     files.databaseFile,
                     driver,
                     AppDatabaseConstructor::initialize,
-                    Migration118To119,
+                    Migration_118_119,
+                    Migration119To120,
                 )
                 // Opening is what reveals a key that does not fit the file.
                 database.syncerStateDao().get("")
@@ -140,7 +142,7 @@ class DesktopStorageSession private constructor(
                 .setQueryCoroutineContext(Dispatchers.Unconfined)
                 .build()
 
-        private object Migration118To119 : Migration(118, 119) {
+        private object Migration119To120 : Migration(119, 120) {
             override fun migrate(connection: SQLiteConnection) = connection.execSQL(CREATE_STACKING_CACHE_TABLE)
         }
 

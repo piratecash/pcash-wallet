@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.manageaccount
 
 import cash.p.terminal.core.utils.MoneroGoldenSeeds
+import cash.p.terminal.modules.manageaccount.ManageAccountModule.BackupItem
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -17,7 +18,9 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.math.BigInteger
@@ -96,6 +99,34 @@ class ManageAccountViewModelTest {
         assertNull(viewModel.getMoneroSpendKey())
     }
 
+    @Test
+    fun getBackupItems_zcashSpendingKey_offersLocalBackupOnly() {
+        val viewModel = createViewModel(
+            account("zec", AccountType.ZCashSaplingKey(ZCASH_SPENDING_KEY), isBackedUp = false)
+        )
+
+        val backupItem = viewModel.viewState.backupActions.single() as BackupItem.LocalBackup
+        assertFalse(backupItem.showAttention)
+    }
+
+    @Test
+    fun getBackupItems_mnemonicWithoutBackup_offersManualBackup() {
+        val viewModel = createViewModel(
+            account("mnemonic", AccountType.Mnemonic(MNEMONIC_WORDS, ""), isBackedUp = false)
+        )
+
+        assertTrue(viewModel.viewState.backupActions.any { it is BackupItem.ManualBackup })
+    }
+
+    @Test
+    fun getBackupItems_hardwareCard_offersNoBackup() {
+        val viewModel = createViewModel(
+            account("card", AccountType.HardwareCard("card", 0, "key", 0), isBackedUp = false)
+        )
+
+        assertEquals(emptyList<BackupItem>(), viewModel.viewState.backupActions)
+    }
+
     private fun createViewModel(account: Account) = ManageAccountViewModel(account, accountManager)
 
     private fun moneroAccount(id: String, words: List<String>) = account(
@@ -108,12 +139,17 @@ class ManageAccountViewModelTest {
         )
     )
 
-    private fun account(id: String, type: AccountType) = Account(
+    private fun account(id: String, type: AccountType, isBackedUp: Boolean = true) = Account(
         id = id,
         name = "Account $id",
         type = type,
         origin = AccountOrigin.Restored,
         level = 0,
-        isBackedUp = true
+        isBackedUp = isBackedUp
     )
+
+    private companion object {
+        const val ZCASH_SPENDING_KEY = "secret-extended-key-main1qsaplingspendingkey"
+        val MNEMONIC_WORDS = List(11) { "abandon" } + "about"
+    }
 }

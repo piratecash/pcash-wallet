@@ -64,14 +64,6 @@ class UpdateSwapProviderTransactionsStatusUseCase(
         changed.get()
     }
 
-    suspend fun updateTransactionStatus(
-        transactionId: String
-    ): TransactionStatusEnum? = withContext(Dispatchers.IO) {
-        val initial = swapProviderTransactionsStorage.getTransaction(transactionId)
-            ?: return@withContext null
-        refreshAndReread(initial)
-    }
-
     suspend fun updateTransactionStatusByDate(
         date: Long
     ): TransactionStatusEnum? = withContext(Dispatchers.IO) {
@@ -106,12 +98,7 @@ class UpdateSwapProviderTransactionsStatusUseCase(
             swapProviderTransactionsStorage.updateStatusFields(
                 date = transaction.date,
                 status = result.status.name.lowercase(),
-                // Keep actual blockchain amount if already matched
-                amountOutReal = if (transaction.incomingRecordUid != null) {
-                    transaction.amountOutReal
-                } else {
-                    result.amountOutReal ?: transaction.amountOutReal
-                },
+                amountOutReal = result.amountOutReal ?: transaction.amountOutReal,
                 finishedAt = result.finishedAt ?: transaction.finishedAt
             )
             true

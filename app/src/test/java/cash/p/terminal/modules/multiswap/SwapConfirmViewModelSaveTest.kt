@@ -607,6 +607,48 @@ class SwapConfirmViewModelSaveTest : SwapConfirmViewModelTestBase() {
         verify(exactly = 1) { timerService.start(any()) }
     }
 
+    @Test
+    fun stateFlow_balanceDropsAfterSwapSent_keepsAmountAndDoesNotRefetchQuote() = runTest(dispatcher) {
+        val (state, provider, viewModel) = createLowBalanceScenario()
+        viewModel.onClickSendWithWarningCheck()
+        advanceUntilIdle()
+
+        state.emit(sendTransactionServiceState.copy(availableBalance = BigDecimal("0.1")))
+        advanceUntilIdle()
+
+        assertEquals(BigDecimal.ONE, viewModel.uiState.amountIn)
+        coVerify(exactly = 1) { provider.fetchFinalQuote(any(), any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun stateFlow_balanceBelowAmountBeforeSend_clampsAmountAndRefetchesQuote() = runTest(dispatcher) {
+        val (state, provider, _) = createLowBalanceScenario()
+        val balance = BigDecimal("0.1")
+
+        state.emit(sendTransactionServiceState.copy(availableBalance = balance))
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { provider.fetchFinalQuote(any(), any(), balance, any(), any(), any()) }
+    }
+
+    private data class LowBalanceScenario(
+        val state: MutableSharedFlow<SendTransactionServiceState>,
+        val provider: IMultiSwapProvider,
+        val viewModel: SwapConfirmViewModel,
+    )
+
+    private fun createLowBalanceScenario(): LowBalanceScenario {
+        val state = MutableSharedFlow<SendTransactionServiceState>(replay = 1)
+        state.tryEmit(sendTransactionServiceState)
+        val service = createSuccessfulSendService().also {
+            every { it.stateFlow } returns ServiceStateFlow(state.asSharedFlow())
+        }
+        val provider = mockk<IMultiSwapProvider>(relaxed = true).stubFetchFinalQuote(testTransaction)
+        val viewModel = createViewModel(provider, serviceOverride = service)
+        dispatcher.scheduler.advanceUntilIdle()
+        return LowBalanceScenario(state, provider, viewModel)
+    }
+
     private data class TimedViewModel(
         val state: MutableSharedFlow<SendTransactionServiceState>,
         val timerService: TimerService,
