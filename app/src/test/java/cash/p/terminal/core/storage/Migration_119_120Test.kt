@@ -1,74 +1,65 @@
 package cash.p.terminal.core.storage
 
 import android.content.Context
-import androidx.sqlite.db.SupportSQLiteDatabase
-import androidx.sqlite.db.SupportSQLiteOpenHelper
-import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
-import cash.p.terminal.core.storage.migrations.Migration_119_120
+import cash.p.terminal.entities.StackingCache
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.math.BigDecimal
 
 @Suppress("ClassName")
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
 class Migration_119_120Test {
 
-    private lateinit var helper: SupportSQLiteOpenHelper
-    private lateinit var db: SupportSQLiteDatabase
-
-    @Before
-    fun setUp() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val configuration = SupportSQLiteOpenHelper.Configuration.builder(context)
-            .name(null) // in-memory database
-            .callback(object : SupportSQLiteOpenHelper.Callback(START_VERSION) {
-                override fun onCreate(db: SupportSQLiteDatabase) = Unit
-                override fun onUpgrade(db: SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
-            })
-            .build()
-        helper = FrameworkSQLiteOpenHelperFactory().create(configuration)
-        db = helper.writableDatabase
-    }
+    private val context = ApplicationProvider.getApplicationContext<Context>()
 
     @After
     fun tearDown() {
-        helper.close()
+        context.deleteDatabase(APP_DATABASE_NAME)
     }
 
     @Test
-    fun migrate119To120_rowPerCoinAndAddress_replacesOnSameKey() {
-        Migration_119_120.migrate(db)
+    fun migrate119To120_rowPerCoinAndAddress_replacesOnSameKey() = runTest {
+        buildAppDatabase(context).run {
+            openHelper.writableDatabase.run {
+                execSQL("DROP TABLE StackingCache")
+                version = 119
+            }
+            close()
+        }
 
-        insertRow(coin = "pirate", address = "addr", unpaid = "1")
-        insertRow(coin = "pirate", address = "addr", unpaid = "2")
-        insertRow(coin = "cosa", address = "addr", unpaid = "3")
+        val database = buildAppDatabase(context)
+        try {
+            val dao = database.stackingCacheDao()
+            dao.save(cache(coin = "pirate", unpaid = "1"))
+            dao.save(cache(coin = "pirate", unpaid = "2"))
+            dao.save(cache(coin = "cosa", unpaid = "3"))
 
-        db.query("SELECT coin, unpaid FROM StackingCache ORDER BY coin").use { cursor ->
-            assertTrue(cursor.moveToFirst())
-            assertEquals("cosa" to "3", cursor.getString(0) to cursor.getString(1))
-            assertTrue(cursor.moveToNext())
-            assertEquals("pirate" to "2", cursor.getString(0) to cursor.getString(1))
-            assertEquals(2, cursor.count)
+            assertEquals(BigDecimal("2"), dao.get("pirate", ADDRESS)?.unpaid)
+            assertEquals(BigDecimal("3"), dao.get("cosa", ADDRESS)?.unpaid)
+        } finally {
+            database.close()
         }
     }
 
-    private fun insertRow(coin: String, address: String, unpaid: String) {
-        db.execSQL(
-            "INSERT OR REPLACE INTO StackingCache " +
-                "(coin, address, unpaid, totalIncome, nextAccrualAt, nextPayoutAt, cachedBalance, timestamp) " +
-                "VALUES (?, ?, ?, '0', NULL, NULL, '0', 0)",
-            arrayOf(coin, address, unpaid)
-        )
-    }
+    private fun cache(coin: String, unpaid: String) = StackingCache(
+        coin = coin,
+        address = ADDRESS,
+        unpaid = BigDecimal(unpaid),
+        totalIncome = BigDecimal.ZERO,
+        nextAccrualAt = null,
+        nextPayoutAt = null,
+        cachedBalance = BigDecimal.ZERO,
+        timestamp = 0,
+    )
 
     private companion object {
-        const val START_VERSION = 119
+        const val ADDRESS = "addr"
     }
 }

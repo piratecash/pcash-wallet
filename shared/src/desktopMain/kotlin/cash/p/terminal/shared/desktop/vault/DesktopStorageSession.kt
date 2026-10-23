@@ -3,12 +3,10 @@ package cash.p.terminal.shared.desktop.vault
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
-import androidx.sqlite.SQLiteConnection
-import androidx.sqlite.execSQL
 import cash.p.terminal.core.storage.AppDatabase
 import cash.p.terminal.core.storage.AppDatabaseConstructor
-import cash.p.terminal.core.storage.migrations.CREATE_STACKING_CACHE_TABLE
 import cash.p.terminal.core.storage.migrations.Migration_118_119
+import cash.p.terminal.core.storage.migrations.Migration_119_120
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.premium.data.database.PremiumDatabase
 import cash.p.terminal.premium.data.database.PremiumDatabaseConstructor
@@ -86,7 +84,7 @@ class DesktopStorageSession private constructor(
                     driver,
                     AppDatabaseConstructor::initialize,
                     Migration_118_119,
-                    Migration119To120,
+                    Migration_119_120,
                 )
                 // Opening is what reveals a key that does not fit the file.
                 database.syncerStateDao().get("")
@@ -141,10 +139,6 @@ class DesktopStorageSession private constructor(
                 // A blocking DAO nested in a transaction must reach Room's `useConnection` undispatched.
                 .setQueryCoroutineContext(Dispatchers.Unconfined)
                 .build()
-
-        private object Migration119To120 : Migration(119, 120) {
-            override fun migrate(connection: SQLiteConnection) = connection.execSQL(CREATE_STACKING_CACHE_TABLE)
-        }
 
         private fun closeInOrder(
             databases: List<RoomDatabase?>,
