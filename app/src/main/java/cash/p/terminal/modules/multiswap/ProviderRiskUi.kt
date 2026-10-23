@@ -12,7 +12,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,6 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
+import cash.p.terminal.core.utils.formatDurationShort
 import cash.p.terminal.modules.multiswap.providers.ProviderRiskType
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
@@ -110,22 +110,6 @@ fun EstimationTimeBadge(
         modifier = modifier,
         backgroundColor = ComposeAppTheme.colors.surfacePlaceholder,
     )
-}
-
-@Composable
-@ReadOnlyComposable
-fun formatDurationShort(totalSeconds: Long): String {
-    val hours = totalSeconds / 3600
-    val minutes = (totalSeconds % 3600) / 60
-    val seconds = totalSeconds % 60
-
-    val parts = mutableListOf<String>()
-    if (hours > 0) parts += stringResource(R.string.duration_short_hours, hours)
-    if (minutes > 0) parts += stringResource(R.string.duration_short_minutes, minutes)
-    if (seconds > 0 || (hours == 0L && minutes == 0L)) {
-        parts += stringResource(R.string.duration_short_seconds, seconds)
-    }
-    return parts.joinToString(" ")
 }
 
 @Preview

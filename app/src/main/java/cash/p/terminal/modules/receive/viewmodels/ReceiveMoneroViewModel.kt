@@ -1,7 +1,6 @@
 package cash.p.terminal.modules.receive.viewmodels
 
 import android.os.Parcelable
-import androidx.annotation.StringRes
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.core.IMoneroReceiveAdapter
 import cash.p.terminal.core.ILocalStorage
@@ -42,7 +41,6 @@ class ReceiveMoneroViewModel(
     private var amount: BigDecimal? = null
     private var isCreatingAddress = false
     private var isHardwareOperationInProgress = false
-    @StringRes
     private var hardwareOperationError: StringResource? = null
     private var hardwareWallet = false
     private var spendReadiness = MoneroSpendReadiness.Ready
