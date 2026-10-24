@@ -1,11 +1,13 @@
 package cash.p.terminal.modules.address
 
 import cash.p.dogecoinkit.MainNetDogecoin
+import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.supported
 import cash.p.terminal.modules.send.beam.BeamRecipient
 import io.horizontalsystems.bitcoincash.MainNetBitcoinCash
 import io.horizontalsystems.bitcoinkit.MainNet
 import io.horizontalsystems.dashkit.MainNetDash
+import io.horizontalsystems.ethereumkit.ens.EnsResolver
 import io.horizontalsystems.ecash.MainNetECash
 import io.horizontalsystems.litecoinkit.MainNetLitecoin
 import io.horizontalsystems.core.entities.BlockchainType
@@ -92,7 +94,7 @@ class AddressHandlerFactory(
             BlockchainType.Gnosis,
             BlockchainType.Fantom,
             BlockchainType.ArbitrumOne -> {
-                domainAddressHandlers.add(AddressHandlerEns(blockchainType, EnsResolverHolder.resolver))
+                domainAddressHandlers.add(AddressHandlerEns(blockchainType, getKoinInstance<EnsResolver>()))
             }
 
             else -> {}

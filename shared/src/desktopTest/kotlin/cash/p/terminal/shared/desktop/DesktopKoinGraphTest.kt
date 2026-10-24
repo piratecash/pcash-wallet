@@ -123,6 +123,7 @@ import io.horizontalsystems.chartview.chart.ChartViewModel
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.Currency
 import io.horizontalsystems.ethereumkit.core.EthereumKit
+import io.horizontalsystems.ethereumkit.models.RpcSource
 import io.ktor.client.engine.HttpClientEngine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -357,8 +358,8 @@ class DesktopKoinGraphTest {
             HttpClientEngine::class,
         )
 
-        /** Built inside the BtcBlockchainSettingsViewModel definition from its injected Blockchain. */
-        val builtFromInjectedParameters = listOf(BtcBlockchainSettingsService::class)
+        /** BtcBlockchainSettingsService is built from the injected Blockchain, RpcSource inside the EnsResolver definition. */
+        val builtFromInjectedParameters = listOf(BtcBlockchainSettingsService::class, RpcSource::class)
 
         /** GitHub release checks and the scan-to-add flow have no desktop screen that resolves them. */
         val notReachedOnDesktop = listOf(

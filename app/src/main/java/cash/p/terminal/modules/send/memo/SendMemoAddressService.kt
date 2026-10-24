@@ -19,7 +19,6 @@ class SendMemoAddressService(
         State(
             address = address,
             addressError = addressError,
-            canBeSend = addressError == null,
         )
     )
     val stateFlow = _stateFlow.asStateFlow()
@@ -49,7 +48,6 @@ class SendMemoAddressService(
             State(
                 address = address,
                 addressError = addressError,
-                canBeSend = addressError == null
             )
         }
     }
@@ -57,9 +55,11 @@ class SendMemoAddressService(
     data class State(
         val address: Address?,
         val addressError: Throwable?,
-        val canBeSend: Boolean
     ) {
         val validAddress: Address?
             get() = if (addressError == null) address else null
+
+        val canBeSend: Boolean
+            get() = validAddress != null
     }
 }

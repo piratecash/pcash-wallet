@@ -56,10 +56,11 @@ class FullAddressParserUseCase(
     private fun launchValidation(value: String, block: suspend () -> Unit) {
         parseJob?.cancel()
         _valueFlow.value = value
+        // The previous recipient must not survive while the new text resolves or after it fails.
+        _address.value = null
 
         if (value.isBlank()) {
             _inputState.value = null
-            _address.value = null
             return
         }
 

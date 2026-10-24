@@ -35,6 +35,7 @@ import cash.p.terminal.modules.manageaccount.recoveryphrase.RecoveryPhrasePage
 import cash.p.terminal.modules.manageaccount.recoveryphrase.RecoveryPhraseViewModel
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.modules.multiswap.TimerService
+import io.horizontalsystems.ethereumkit.models.RpcSource
 import cash.p.terminal.modules.pin.hiddenwallet.HiddenWalletPinPolicy
 import cash.p.terminal.modules.paycore.PayCoreTicker
 import cash.p.terminal.modules.paycore.exchange.PayCoreExchangeDetailViewModel
@@ -155,7 +156,7 @@ class KoinGraphTest : KoinTest {
             listOf(
                 Application::class,
                 Context::class,
-                File::class,
+                File::class, RpcSource::class,
                 HttpClientEngine::class,
                 TimerService::class,
                 XRateService::class,

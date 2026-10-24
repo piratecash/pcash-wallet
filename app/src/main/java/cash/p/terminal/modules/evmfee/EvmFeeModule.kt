@@ -130,6 +130,8 @@ data class Transaction(
     val transactionData: TransactionData,
     val gasData: GasData,
     val default: Boolean,
+    // The exact requested instance; differs from transactionData when a max send deducts the fee.
+    val estimatedFor: TransactionData,
     val warnings: List<Warning> = listOf(),
     val errors: List<Throwable> = listOf()
 ) {
