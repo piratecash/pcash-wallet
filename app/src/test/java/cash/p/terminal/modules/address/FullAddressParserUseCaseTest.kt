@@ -31,6 +31,12 @@ class FullAddressParserUseCaseTest {
 
     private val validAddress = "0xA94c267404479efEb91A0b504B883227fA6C23d6"
     private val parsedAddress = Address(validAddress, blockchainType = BlockchainType.Ethereum)
+    private val ensName = "bob.eth"
+    private val otherParsedAddress = Address(
+        "0x1111111111111111111111111111111111111111",
+        domain = ensName,
+        blockchainType = BlockchainType.Ethereum
+    )
 
     private lateinit var useCase: FullAddressParserUseCase
 
@@ -47,6 +53,12 @@ class FullAddressParserUseCaseTest {
             coroutineScope = testScope,
             dispatcherProvider = TestDispatcherProvider(dispatcher, testScope),
         )
+    }
+
+    private fun TestScope.acceptValidAddress() {
+        useCase.parseText(validAddress)
+        advanceUntilIdle()
+        assertEquals(parsedAddress, useCase.address.value)
     }
 
     // =========================================================================
@@ -190,6 +202,59 @@ class FullAddressParserUseCaseTest {
         assertEquals("", useCase.valueFlow.value)
         assertNull(useCase.inputState.value)
         assertNull(useCase.address.value)
+    }
+
+    // =========================================================================
+    // Replacing an accepted recipient must never keep the old one
+    // =========================================================================
+
+    @Test
+    fun parseText_replacesValidAddressWhileResolutionPending_addressIsNull() = testScope.runTest {
+        acceptValidAddress()
+        every { addressParserChain.supportedHandler(ensName) } returns handler
+        every { handler.parseAddress(ensName) } returns otherParsedAddress
+
+        useCase.parseText(ensName)
+
+        assertNull(useCase.address.value)
+        assertEquals(DataState.Loading, useCase.inputState.value)
+    }
+
+    @Test
+    fun parseText_replacesValidAddressWithUnsupported_addressIsNullAndError() = testScope.runTest {
+        acceptValidAddress()
+        every { addressParserChain.supportedHandler(ensName) } returns null
+
+        useCase.parseText(ensName)
+        advanceUntilIdle()
+
+        assertNull(useCase.address.value)
+        assertTrue(useCase.inputState.value is DataState.Error)
+    }
+
+    @Test
+    fun parseText_replacesValidAddressAndHandlerThrows_addressIsNull() = testScope.runTest {
+        acceptValidAddress()
+        every { addressParserChain.supportedHandler(ensName) } returns handler
+        every { handler.parseAddress(ensName) } throws IllegalStateException("resolve failed")
+
+        useCase.parseText(ensName)
+        advanceUntilIdle()
+
+        assertNull(useCase.address.value)
+        assertTrue(useCase.inputState.value is DataState.Error)
+    }
+
+    @Test
+    fun parseText_replacesValidAddressWithAnotherValid_addressIsNew() = testScope.runTest {
+        acceptValidAddress()
+        every { addressParserChain.supportedHandler(ensName) } returns handler
+        every { handler.parseAddress(ensName) } returns otherParsedAddress
+
+        useCase.parseText(ensName)
+        advanceUntilIdle()
+
+        assertEquals(otherParsedAddress, useCase.address.value)
     }
 
     // =========================================================================

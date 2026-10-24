@@ -50,6 +50,7 @@ import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -546,6 +547,73 @@ class SendMemoViewModelTest : KoinTest {
         assertTrue(viewModel.uiState.canBeSend)
     }
 
+    @Test
+    fun onEnterAddress_addressCleared_blocksSend() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        viewModel.onEnterAddress(address)
+        viewModel.onEnterAmount(amount)
+        assertTrue(viewModel.uiState.canBeSend)
+
+        viewModel.onEnterAddress(null)
+
+        assertFalse(viewModel.uiState.canBeSend)
+    }
+
+    @Test
+    fun onEnterAmount_hiddenPrefilledAddress_allowsSend() = runTest(dispatcher) {
+        val viewModel = createViewModel(address = address, showAddressInput = false)
+
+        viewModel.onEnterAmount(amount)
+
+        assertTrue(viewModel.uiState.canBeSend)
+    }
+
+    @Test
+    fun onEnterAmount_minimumAmountLookupPending_blocksSend() = runTest(dispatcher) {
+        coEvery { adapter.getMinimumSendAmount(address.hex) } coAnswers { CompletableDeferred<BigDecimal?>().await() }
+        val viewModel = createViewModel()
+
+        viewModel.onEnterAddress(address)
+        viewModel.onEnterAmount(amount)
+
+        assertFalse(viewModel.uiState.canBeSend)
+    }
+
+    @Test
+    fun onEnterAddress_previousLookupPending_switchesToNewAddress() = runTest(dispatcher) {
+        val lookupA = CompletableDeferred<BigDecimal?>()
+        val lookupB = CompletableDeferred<BigDecimal?>()
+        coEvery { adapter.getMinimumSendAmount(address.hex) } coAnswers { lookupA.await() }
+        coEvery { adapter.getMinimumSendAmount(OTHER_STELLAR_ADDRESS) } coAnswers { lookupB.await() }
+        val viewModel = createViewModel()
+        viewModel.onEnterAddress(address)
+        viewModel.onEnterAmount(amount)
+
+        viewModel.onEnterAddress(Address(OTHER_STELLAR_ADDRESS))
+
+        assertEquals(OTHER_STELLAR_ADDRESS, viewModel.uiState.address?.hex)
+        assertFalse(viewModel.uiState.canBeSend)
+
+        lookupB.complete(null)
+        lookupA.complete(null)
+        advanceUntilIdle()
+
+        assertEquals(OTHER_STELLAR_ADDRESS, viewModel.uiState.address?.hex)
+        assertTrue(viewModel.uiState.canBeSend)
+    }
+
+    @Test
+    fun onEnterAddress_clearedWhileLookupPending_dropsPreviousAddress() = runTest(dispatcher) {
+        coEvery { adapter.getMinimumSendAmount(address.hex) } coAnswers { CompletableDeferred<BigDecimal?>().await() }
+        val viewModel = createViewModel()
+        viewModel.onEnterAddress(address)
+        viewModel.onEnterAmount(amount)
+
+        viewModel.onEnterAddress(null)
+
+        assertEquals(null, viewModel.uiState.address)
+    }
+
     private fun createThorchainViewModel(token: Token = runeToken) = createViewModel(
         wallet = createWallet(token, mnemonicAccount),
         feeToken = runeToken,
@@ -564,6 +632,8 @@ class SendMemoViewModelTest : KoinTest {
         feeToken: Token = stellarToken,
         adapter: ISendMemoAdapter = this.adapter,
         chain: SendMemoChain = SendMemoChain.Stellar,
+        address: Address? = null,
+        showAddressInput: Boolean = true,
     ) = SendMemoViewModel(
         wallet = wallet,
         sendToken = wallet.token,
@@ -571,8 +641,8 @@ class SendMemoViewModelTest : KoinTest {
         adapter = adapter,
         coinMaxAllowedDecimals = wallet.token.decimals,
         xRateService = xRateService,
-        address = null,
-        showAddressInput = true,
+        address = address,
+        showAddressInput = showAddressInput,
         amountService = SendAmountService(amountValidator, wallet.coin.code, BigDecimal.TEN),
         addressService = SendMemoAddressService(adapter, chain),
         contactsRepo = contactsRepository,
@@ -623,5 +693,6 @@ class SendMemoViewModelTest : KoinTest {
         const val THORCHAIN_TX_HASH = "ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890"
         const val THORCHAIN_ADDRESS = "thor166n4w5039meulfa3p6ydg60ve6ueac7tlt0jws"
         const val DRAFT_ID = "draft-id"
+        const val OTHER_STELLAR_ADDRESS = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
     }
 }

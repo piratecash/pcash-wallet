@@ -491,7 +491,7 @@ dependencies {
     implementation libs.resolution.java
 
     // Ethereum Name Service
-    implementation libs.web3j.core
+    implementation libs.web3j.crypto
 
     implementation libs.twitter.text
 
