@@ -30,7 +30,6 @@ import cash.p.terminal.modules.address.AddressHandlerFactory
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.displayoptions.DisplayPricePeriod
 import cash.p.terminal.modules.sendtokenselect.PrefilledData
-import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.modules.walletconnect.list.WalletConnectListModule
 import cash.p.terminal.modules.walletconnect.list.WalletConnectListViewModel
 import cash.p.terminal.strings.helpers.Translator
@@ -85,7 +84,6 @@ class BalanceViewModel(
     private val balanceViewTypeManager: BalanceViewTypeManager,
     private val totalBalance: TotalBalance,
     private val localStorage: ILocalStorage,
-    private val wCManager: WCManager,
     private val addressHandlerFactory: AddressHandlerFactory,
     private val priceManager: PriceManager,
     private val balanceHiddenManager: IBalanceHiddenManager
@@ -151,6 +149,7 @@ class BalanceViewModel(
     private var displayDiffOptionType = localStorage.displayDiffOptionType
 
     private var refreshViewItemsJob: Job? = null
+    private var addressScanJob: Job? = null
 
     init {
         addCloseable(service)
@@ -511,11 +510,8 @@ class BalanceViewModel(
         }
     }
 
-    fun getWalletConnectSupportState(): WCManager.SupportState {
-        return wCManager.getWalletConnectSupportState()
-    }
-
     fun handleScannedData(scannedText: String) {
+        addressScanJob?.cancel()
         val wcUriVersion = WalletConnectListModule.getVersionFromUri(scannedText)
         if (wcUriVersion == 2) {
             handleWalletConnectUri(scannedText)
@@ -594,31 +590,31 @@ class BalanceViewModel(
     }
 
     private fun handleAddressData(text: String) {
-        val parsedUri = uri(text)
-        if (parsedUri != null) {
-            val (uri, allowedBlockchainTypes) = parsedUri
-            openSendTokenSelect = uri.openSendTokenSelect(
-                allowedBlockchainTypes,
-                AddressUriParser.hasUriPrefix(text),
-            )
-            emitState()
-        } else {
-            val chain = addressHandlerFactory.parserChain(null)
-            val types = chain.supportedAddressHandlers(text)
-            if (types.isEmpty()) {
-                errorMessage =
-                    Translator.getString(R.string.Balance_Error_InvalidQrCode)
-                emitState()
-                return
+        addressScanJob = viewModelScope.launch {
+            val target = withContext(dispatcherProvider.io) { resolveSendTarget(text) }
+            if (target == null) {
+                errorMessage = Translator.getString(R.string.Balance_Error_InvalidQrCode)
+            } else {
+                openSendTokenSelect = target
             }
-
-            openSendTokenSelect = OpenSendTokenSelect(
-                blockchainTypes = types.map { it.blockchainType },
-                tokenTypes = null,
-                prefilledData = PrefilledData(text)
-            )
             emitState()
         }
+    }
+
+    // Blocking: the Zcash check loads its native library on first use.
+    private fun resolveSendTarget(text: String): OpenSendTokenSelect? {
+        uri(text)?.let { (uri, allowedBlockchainTypes) ->
+            return uri.openSendTokenSelect(allowedBlockchainTypes, AddressUriParser.hasUriPrefix(text))
+        }
+
+        val types = addressHandlerFactory.parserChain(null).supportedAddressHandlers(text)
+        if (types.isEmpty()) return null
+
+        return OpenSendTokenSelect(
+            blockchainTypes = types.map { it.blockchainType },
+            tokenTypes = null,
+            prefilledData = PrefilledData(text)
+        )
     }
 
     private fun handleWalletConnectUri(scannedText: String) {

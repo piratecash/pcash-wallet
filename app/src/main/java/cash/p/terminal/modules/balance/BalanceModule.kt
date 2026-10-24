@@ -29,7 +29,6 @@ object BalanceModule {
                 balanceViewTypeManager = getKoinInstance(),
                 totalBalance = TotalBalance(totalService, getKoinInstance()),
                 localStorage = getKoinInstance(),
-                wCManager = App.wcManager,
                 addressHandlerFactory = AddressHandlerFactory(AppConfigProvider.udnApiKey),
                 priceManager = App.priceManager,
                 balanceHiddenManager = getKoinInstance<IBalanceHiddenManager>(),
