@@ -25,7 +25,6 @@
     <ID>AppSingletonAccess:AutoLockModule.kt$AutoLockModule.Factory$App.localStorage</ID>
     <ID>AppSingletonAccess:BackupConfirmKeyModule.kt$BackupConfirmKeyModule.Factory$App.accountManager</ID>
     <ID>AppSingletonAccess:BalanceModule.kt$BalanceModule.Factory$App.priceManager</ID>
-    <ID>AppSingletonAccess:BalanceModule.kt$BalanceModule.Factory$App.wcManager</ID>
     <ID>AppSingletonAccess:BalanceViewItemFactory.kt$BalanceViewItemFactory$App.numberFormatter</ID>
     <ID>AppSingletonAccess:BalanceViewModel.kt$BalanceViewModel$App.tonConnectManager</ID>
     <ID>AppSingletonAccess:BaseActivity.kt$BaseActivity$App.sqlCipherLoadFailed</ID>
