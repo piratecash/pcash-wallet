@@ -13,8 +13,10 @@ import cash.p.terminal.resources.language_spanish
 import cash.p.terminal.resources.language_traditional_chinese
 import cash.p.terminal.modules.backuplocal.BackupLocalModule
 import cash.p.terminal.modules.backuplocal.fullbackup.BackupFileValidator
+import io.horizontalsystems.ethereumkit.crypto.CryptoUtils
 import io.horizontalsystems.hdwalletkit.Language
 import org.jetbrains.compose.resources.StringResource
+import java.math.BigInteger
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermissions
@@ -50,6 +52,11 @@ fun ByteArray.toFixedSize(size: Int): ByteArray = when {
     this.size < size -> ByteArray(size - this.size) + this
     else -> this
 }
+
+private const val PRIVATE_KEY_SIZE = 32
+
+/** Raw 32-byte secp256k1 scalar; reducing by the curve order keeps the address of any wider value. */
+fun BigInteger.toPrivateKeyBytes(): ByteArray = mod(CryptoUtils.CURVE.n).toByteArray().toFixedSize(PRIVATE_KEY_SIZE)
 
 val Language.displayNameStringRes: StringResource
     get() = when (this) {

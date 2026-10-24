@@ -16,6 +16,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -83,6 +84,20 @@ class PrivateKeysViewModelTest {
         assertFalse(viewModel.viewState.hasZcashKeys)
     }
 
+    @Test
+    fun init_evmPrivateKeyWithLeadingZeroByte_shows64HexChars() {
+        val viewModel = createViewModel(AccountType.EvmPrivateKey(BigInteger(LEADING_ZERO_KEY, 16)))
+
+        assertEquals(LEADING_ZERO_KEY, viewModel.viewState.evmPrivateKey)
+    }
+
+    @Test
+    fun init_evmPrivateKeyWithHighBit_showsKeyWithoutSignByte() {
+        val viewModel = createViewModel(AccountType.EvmPrivateKey(BigInteger(HIGH_BIT_KEY, 16)))
+
+        assertEquals(HIGH_BIT_KEY, viewModel.viewState.evmPrivateKey)
+    }
+
     private fun createViewModel(words: List<String>) =
         createViewModel(AccountType.Mnemonic(words, ""))
 
@@ -100,6 +115,8 @@ class PrivateKeysViewModelTest {
     private companion object {
         const val SAPLING_SPENDING_KEY = "secret-extended-key-main1qsaplingspendingkey"
         const val SAPLING_VIEWING_KEY = "zxviews1qsaplingviewingkey"
+        const val HIGH_BIT_KEY = "f1e2d3c4b5a69788796a5b4c3d2e1f00112233445566778899aabbccddeeff01"
+        const val LEADING_ZERO_KEY = "00123456789abcdef0112233445566778899aabbccddeeff0011223344556677"
 
         val ENGLISH_WORDS = ("abandon abandon abandon abandon abandon abandon " +
                 "abandon abandon abandon abandon abandon about").split(" ")
