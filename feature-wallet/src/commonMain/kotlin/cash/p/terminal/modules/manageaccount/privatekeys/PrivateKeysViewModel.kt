@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import cash.p.terminal.core.adapters.zcash.ZcashKeyExporter
 import cash.p.terminal.core.managers.EvmBlockchains
 import cash.p.terminal.core.managers.toStellarWallet
+import cash.p.terminal.core.toPrivateKeyBytes
 import cash.p.terminal.core.toRawHexString
 import cash.p.terminal.modules.manageaccount.showextendedkey.ShowExtendedKeyModule
 import cash.p.terminal.wallet.Account
@@ -17,7 +18,6 @@ import io.horizontalsystems.ethereumkit.core.signer.Signer
 import io.horizontalsystems.hdwalletkit.HDExtendedKey
 import io.horizontalsystems.hdwalletkit.HDWallet
 import io.horizontalsystems.stellarkit.StellarKit
-import java.math.BigInteger
 
 class PrivateKeysViewModel(
     private val account: Account,
@@ -34,10 +34,10 @@ class PrivateKeysViewModel(
         val ethereumPrivateKey = when (val accountType = account.type) {
             is AccountType.Mnemonic -> {
                 val chain = evmBlockchainManager.getChain(BlockchainType.Ethereum)
-                toHexString(Signer.privateKey(accountType.seed, chain))
+                Signer.privateKey(accountType.seed, chain).toPrivateKeyBytes().toRawHexString()
             }
 
-            is AccountType.EvmPrivateKey -> toHexString(accountType.key)
+            is AccountType.EvmPrivateKey -> accountType.key.toPrivateKeyBytes().toRawHexString()
             else -> null
         }
 
@@ -79,15 +79,5 @@ class PrivateKeysViewModel(
             stellarSecretKey = stellarSecretKey,
             hasZcashKeys = zcashKeyExporter.privateKeyTypes(account.type).isNotEmpty()
         )
-    }
-
-    private fun toHexString(key: BigInteger): String {
-        return key.toByteArray().let {
-            if (it.size > 32) {
-                it.copyOfRange(1, it.size)
-            } else {
-                it
-            }.toRawHexString()
-        }
     }
 }
