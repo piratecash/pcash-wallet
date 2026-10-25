@@ -2232,8 +2232,9 @@
     <string name="image_saved_to_gallery">Зображення збережено в галерею</string>
     <string name="auth_detail_save_failed">Не вдалося зберегти зображення</string>
     <string name="auth_info_no_records">Записів про авторизацію ще немає</string>
-    <string name="send_sms_via_zec_title">Надіслати SMS через ZEC</string>
-    <string name="send_sms_via_zec_info">Цей режим дозволяє повідомити ваших близьких друзів або адвоката про те, що вас змусили відкрити додаток. Цей режим працює, якщо у вас є ZEC в гаманці. Якщо немає, додаток додасть його.</string>
+    <string name="send_sms_via_zec_title">Сповіщення про вхід</string>
+    <string name="send_sms_enabled">Надсилати сповіщення</string>
+    <string name="send_sms_via_zec_info">Повідомляє довірену особу про те, що вас змусили відкрити застосунок.\n\nКоли: лише коли застосунок розблоковується введенням пароля Режиму Duress. Звичайний вхід, неправильний пароль або розблокування за біометрією нічого не надсилають.\n\nЩо: транзакція на 0.0001 ZEC (плюс мережева комісія) з обраного кошелька на захищену (shielded) адресу Zcash отримувача з вашим повідомленням у полі memo. Це не SMS: отримувач читає повідомлення у своєму Zcash-кошельку, номер телефону не потрібен.\n\nКоли надійде: надсилається автоматично у фоновому режимі одразу після входу і зазвичай доходить до отримувача протягом кількох хвилин; кошельку може знадобитися синхронізація, через що це може зайняти більше часу.\n\nВартість: кожне сповіщення коштує 0.0001 ZEC плюс комісія. Якщо в кошельку на цей момент не вистачає ZEC, сповіщення не надсилається і повторно не надсилається — скористайтеся кнопкою тесту, щоб перевірити роботу.\n\nВимкнути сповіщення можна перемикачем у верхній частині цього екрана.</string>
     <string name="send_sms_wallet_balance_hint">Переконайтеся, що на вибраному гаманці є необхідна сума.</string>
     <string name="send_sms_syncing">Синхронізація для відправки…</string>
     <string name="send_sms_test_success">Ваше повідомлення успішно надіслано.</string>
@@ -2244,7 +2245,8 @@
     <string name="choose_wallet">Обрати гаманець</string>
     <string name="choose_wallet_none">Не обрано</string>
     <string name="required_coins_for_transaction">Необхідно монет для транзакції</string>
-    <string name="test_sms">Тест SMS</string>
+    <string name="send_sms_address_hint">Введіть захищену (shielded) адресу Zcash (починається на z або u) кошелька отримувача. Повідомлення з\u0027явиться в його Zcash-кошельку.</string>
+    <string name="test_sms">Надіслати тестове сповіщення</string>
     <string name="no_zec_wallets_available">Гаманці з токеном ZEC не знайдено</string>
     <!-- Connect Mini App -->
     <string name="connect_mini_app_title">Підключити міні-застосунок</string>

@@ -2075,8 +2075,9 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="image_saved_to_gallery">Imagem salva na galeria</string>
     <string name="auth_detail_save_failed">Falha ao salvar imagem</string>
     <string name="auth_info_no_records">Ainda não há registros de autorização</string>
-    <string name="send_sms_via_zec_title">Enviar SMS via ZEC</string>
-    <string name="send_sms_via_zec_info">Este modo permite notificar seus amigos próximos ou advogado de que você foi forçado a abrir o aplicativo. Este modo funciona se você tiver ZEC na sua carteira. Se não tiver, o aplicativo irá adicioná-lo.</string>
+    <string name="send_sms_via_zec_title">Notificação de login</string>
+    <string name="send_sms_enabled">Enviar notificação</string>
+    <string name="send_sms_via_zec_info">Notifica uma pessoa de confiança de que você foi forçado a abrir o aplicativo.\n\nQuando: apenas quando o aplicativo é desbloqueado digitando a senha do Modo de dureza. Um login normal, uma senha incorreta ou o desbloqueio por biometria não envia nada.\n\nO quê: uma transação de 0.0001 ZEC (mais a taxa de rede) da carteira escolhida para o endereço protegido (shielded) de Zcash do destinatário, com sua mensagem no memo. Não é um SMS: o destinatário lê a mensagem na carteira Zcash dele, não é necessário nenhum número de telefone.\n\nQuando chega: é enviada automaticamente em segundo plano logo após o login e geralmente chega ao destinatário em poucos minutos; a carteira pode precisar sincronizar primeiro, o que pode levar mais tempo.\n\nCusto: cada notificação custa 0.0001 ZEC mais a taxa. Se a carteira não tiver ZEC suficiente nesse momento, a notificação não é enviada nem reenviada — use o botão de teste para verificar se funciona.\n\nVocê pode desativar as notificações com o interruptor no topo desta tela.</string>
     <string name="send_sms_wallet_balance_hint">Certifique-se de que tem o valor necessário na carteira selecionada.</string>
     <string name="send_sms_syncing">Sincronizando para enviar…</string>
     <string name="send_sms_test_success">Sua mensagem foi enviada com sucesso.</string>
@@ -2087,7 +2088,8 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="choose_wallet">Escolher carteira</string>
     <string name="choose_wallet_none">Nenhuma</string>
     <string name="required_coins_for_transaction">Moedas necessárias para a transação</string>
-    <string name="test_sms">Testar SMS</string>
+    <string name="send_sms_address_hint">Digite o endereço protegido (shielded) de Zcash (começa com z ou u) da carteira do destinatário. A mensagem aparecerá na carteira Zcash dele.</string>
+    <string name="test_sms">Enviar notificação de teste</string>
     <string name="no_zec_wallets_available">Nenhuma carteira com tokens ZEC encontrada</string>
     <!-- Connect Mini App -->
     <string name="connect_mini_app_title">Conectar Mini App</string>

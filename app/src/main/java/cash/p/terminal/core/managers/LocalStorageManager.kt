@@ -863,6 +863,16 @@ class LocalStorageManager(
     override fun setSmsNotificationMemo(level: Int, memo: String?) =
         preferences.edit { putString(keyForLevel("sms_notification_memo", level), memo) }
 
+    // Never toggled (setups made before the switch existed): enabled when a configuration is saved.
+    override fun getSmsNotificationEnabled(level: Int): Boolean =
+        preferences.getBoolean(
+            keyForLevel("sms_notification_enabled", level),
+            getSmsNotificationAccountId(level) != null && !getSmsNotificationAddress(level).isNullOrBlank()
+        )
+
+    override fun setSmsNotificationEnabled(level: Int, enabled: Boolean) =
+        preferences.edit { putBoolean(keyForLevel("sms_notification_enabled", level), enabled) }
+
     override var recipientAddressBaseCheckEnabled by preferences.delegate(
         key = "recipientAddressBaseCheckEnabled",
         default = false

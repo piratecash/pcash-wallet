@@ -99,13 +99,14 @@ object HudHelper {
     fun showErrorMessage(
         contentView: View,
         text: String,
-        gravity: SnackbarGravity = SnackbarGravity.BOTTOM
+        gravity: SnackbarGravity = SnackbarGravity.BOTTOM,
+        duration: SnackbarDuration = SnackbarDuration.LONG,
     ): CustomSnackbar? {
         return showHudNotification(
             contentView = contentView,
             text = text,
             variant = AppSnackbarVariant.Error,
-            duration = SnackbarDuration.LONG,
+            duration = duration,
             gravity = gravity,
         )
     }
