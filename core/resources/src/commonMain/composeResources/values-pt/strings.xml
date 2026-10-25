@@ -2310,7 +2310,6 @@
     <string name="beam_recovery_required_title">Recuperação necessária</string>
     <string name="beam_recovery_required_description">A reposição automática está bloqueada para proteger os dados da sua carteira BEAM. Os dados foram preservados, mas o acesso à carteira antiga não pode ser garantido. O restauro com a sua frase de recuperação deve criar uma carteira separada.</string>
     <string name="beam_offline_context_unavailable">O contexto para assinatura offline não está disponível. Primeiro, sincronize esta carteira online.</string>
-    <string name="beam_wallet_state_stopped">Carteira BEAM parada</string>
     <string name="beam_wallet_state_offline">Carteira BEAM offline</string>
     <string name="beam_wallet_state_closed">Carteira BEAM fechada</string>
     <string name="beam_wallet_operation_failed">Falha na operação da carteira BEAM</string>

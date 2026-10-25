@@ -2293,7 +2293,6 @@
     <string name="beam_recovery_required_title">需要恢复</string>
     <string name="beam_recovery_required_description">为保护您的 BEAM 钱包数据，自动重置已被阻止。数据已保留，但无法保证能够访问旧钱包。使用恢复短语恢复时，必须创建一个独立的钱包。</string>
     <string name="beam_offline_context_unavailable">离线签名所需的上下文不可用。请先在线同步此钱包。</string>
-    <string name="beam_wallet_state_stopped">BEAM 钱包已停止</string>
     <string name="beam_wallet_state_offline">BEAM 钱包离线</string>
     <string name="beam_wallet_state_closed">BEAM 钱包已关闭</string>
     <string name="beam_wallet_operation_failed">BEAM 钱包操作失败</string>

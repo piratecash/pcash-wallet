@@ -2455,7 +2455,6 @@
     <string name="beam_recovery_required_title">Потрібне відновлення</string>
     <string name="beam_recovery_required_description">Автоматичне скидання заблоковано для захисту даних гаманця BEAM. Дані збережено, але доступ до старого гаманця не гарантовано. Відновлення за секретною фразою має створювати окремий гаманець.</string>
     <string name="beam_offline_context_unavailable">Контекст для офлайн-підпису недоступний. Спочатку синхронізуйте цей гаманець із мережею.</string>
-    <string name="beam_wallet_state_stopped">Гаманець BEAM зупинено</string>
     <string name="beam_wallet_state_offline">Гаманець BEAM офлайн</string>
     <string name="beam_wallet_state_closed">Гаманець BEAM закрито</string>
     <string name="beam_wallet_operation_failed">Помилка операції гаманця BEAM</string>

@@ -490,7 +490,8 @@ private fun BeamWalletState.toAdapterState(): AdapterState = when (this) {
     is BeamWalletState.Syncing -> syncing(currentHeight, targetHeight, syncDone, syncTotal)
     is BeamWalletState.Restoring -> progress.toAdapterState()
     BeamWalletState.Closed -> unavailable(Translator.getString(R.string.beam_wallet_state_closed))
-    BeamWalletState.Stopped -> unavailable(Translator.getString(R.string.beam_wallet_state_stopped))
+    // Every stop is planned; a failed start keeps its own error in observeSdkState.
+    BeamWalletState.Stopped -> AdapterState.Paused
     is BeamWalletState.Offline -> unavailable(Translator.getString(R.string.beam_wallet_state_offline))
     is BeamWalletState.Error -> failure.toSafeAdapterState()
 }

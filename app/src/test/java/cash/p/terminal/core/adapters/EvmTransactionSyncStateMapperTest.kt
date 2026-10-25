@@ -38,10 +38,25 @@ class EvmTransactionSyncStateMapperTest {
     }
 
     @Test
-    fun transactionHistoryAdapterState_txNotStarted_returnsSynced() {
+    fun transactionHistoryAdapterState_txNotStarted_returnsPaused() {
         mockState(txSyncState = SyncState.NotSynced(SyncError.NotStarted()))
 
-        assertEquals(AdapterState.Synced, repository.transactionHistoryAdapterState)
+        assertEquals(AdapterState.Paused, repository.transactionHistoryAdapterState)
+    }
+
+    @Test
+    fun transactionHistoryAdapterState_txNotStartedWhileForwardSyncing_returnsPaused() {
+        // EthereumKit.onUpdateLastBlockHeight can recompute ForwardSyncState.Syncing from the
+        // replayed stored height even while the kit itself has not started.
+        mockState(
+            txSyncState = SyncState.NotSynced(SyncError.NotStarted()),
+            forwardSyncState = ForwardSyncState.Syncing(
+                lastSyncedTip = 83_000_000,
+                chainTipBlock = 83_000_500
+            )
+        )
+
+        assertEquals(AdapterState.Paused, repository.transactionHistoryAdapterState)
     }
 
     private fun mockState(

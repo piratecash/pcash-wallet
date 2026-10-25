@@ -12,7 +12,6 @@ import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.BalanceData
 import cash.p.terminal.wallet.isStakingWallet
 import io.horizontalsystems.erc20kit.core.Erc20Kit
-import io.horizontalsystems.ethereumkit.core.EthereumKit.SyncState
 import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.DefaultBlockParameter
 import io.horizontalsystems.ethereumkit.models.TransactionData
@@ -102,7 +101,7 @@ internal class Eip20Adapter(
     // IBalanceAdapter
 
     override val balanceState: AdapterState
-        get() = convertSyncStateToAdapterState(eip20Kit.syncState)
+        get() = eip20Kit.syncState.toAdapterState()
 
     override val balanceStateUpdatedFlow: Flow<Unit>
         get() = merge(
@@ -140,11 +139,6 @@ internal class Eip20Adapter(
         return eip20Kit.buildTransferTransactionData(address, amountBigInt)
     }
 
-    private fun convertSyncStateToAdapterState(syncState: SyncState): AdapterState = when (syncState) {
-        is SyncState.Synced -> AdapterState.Synced
-        is SyncState.NotSynced -> AdapterState.NotSynced(syncState.error)
-        is SyncState.Syncing -> AdapterState.Syncing()
-    }
 
     fun allowance(
         spenderAddress: Address,

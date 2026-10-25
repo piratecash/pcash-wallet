@@ -5,6 +5,7 @@ import cash.p.terminal.core.UnsupportedAccountException
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.AdapterState
 import io.horizontalsystems.core.BackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
 import io.horizontalsystems.core.entities.BlockchainType
@@ -521,6 +522,22 @@ class ThorchainKitManagerTest {
         origin = AccountOrigin.Created,
         level = 0,
     )
+
+    @Test
+    fun toAdapterState_notStarted_returnsPaused() {
+        val state = ThorchainKit.SyncState.NotSynced(ThorchainKit.SyncError.NotStarted()).toAdapterState()
+
+        assertEquals(AdapterState.Paused, state)
+    }
+
+    @Test
+    fun toAdapterState_noNetwork_returnsNotSynced() {
+        val error = ThorchainKit.SyncError.NoNetworkConnection()
+
+        val state = ThorchainKit.SyncState.NotSynced(error).toAdapterState()
+
+        assertSame(error, (state as AdapterState.NotSynced).error)
+    }
 
     private companion object {
         const val ACCOUNT_ID = "account-id"

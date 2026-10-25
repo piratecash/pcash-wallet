@@ -2313,7 +2313,6 @@
     <string name="beam_recovery_required_title">بازیابی لازم است</string>
     <string name="beam_recovery_required_description">بازنشانی خودکار برای محافظت از داده‌های کیف پول BEAM شما مسدود شده است. داده‌ها حفظ شده‌اند، اما دسترسی به کیف پول قبلی تضمین نمی‌شود. بازیابی با عبارت بازیابی باید یک کیف پول جداگانه ایجاد کند.</string>
     <string name="beam_offline_context_unavailable">زمینهٔ امضای آفلاین در دسترس نیست. ابتدا این کیف پول را آنلاین همگام‌سازی کنید.</string>
-    <string name="beam_wallet_state_stopped">کیف پول BEAM متوقف شد</string>
     <string name="beam_wallet_state_offline">کیف پول BEAM آفلاین است</string>
     <string name="beam_wallet_state_closed">کیف پول BEAM بسته شد</string>
     <string name="beam_wallet_operation_failed">عملیات کیف پول BEAM ناموفق بود</string>
