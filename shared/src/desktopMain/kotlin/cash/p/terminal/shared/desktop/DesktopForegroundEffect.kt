@@ -6,10 +6,11 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import io.horizontalsystems.core.DesktopAppForegroundState
 import org.koin.compose.koinInject
 
-/** Mirrors window focus into [DesktopAppForegroundState]. */
+/** Mirrors window focus and minimization into [DesktopAppForegroundState]. */
 @Composable
-fun DesktopForegroundEffect() {
+fun DesktopForegroundEffect(windowMinimized: Boolean) {
     val foregroundState = koinInject<DesktopAppForegroundState>()
     val focused = LocalWindowInfo.current.isWindowFocused
     LaunchedEffect(focused) { foregroundState.setInForeground(focused) }
+    LaunchedEffect(windowMinimized) { foregroundState.setWindowMinimized(windowMinimized) }
 }

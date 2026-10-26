@@ -54,6 +54,7 @@ kotlin {
 
         val desktopTest by getting {
             dependencies {
+                implementation(project(":core:test-fixtures"))
                 implementation(libs.kotlin.test.junit)
                 implementation(libs.mockk)
                 implementation(libs.kotlinx.coroutines.test)

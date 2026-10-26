@@ -60,6 +60,7 @@ kotlin {
                 implementation(libs.junit)
                 implementation(libs.mockk)
                 implementation(libs.kotlin.test.junit)
+                implementation(libs.kotlinx.coroutines.test)
             }
         }
     }

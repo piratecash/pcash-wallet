@@ -6,7 +6,6 @@ import androidx.core.content.FileProvider
 import cash.p.terminal.BuildConfig
 import cash.p.terminal.core.tryOrNull
 import io.horizontalsystems.core.DispatcherProvider
-import io.horizontalsystems.core.logger.AppLog
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -29,7 +28,7 @@ class StatusReportFile(
         withContext(dispatcherProvider.io) {
             tryOrNull {
                 context.contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
-                    writeReport(writer, header, logTag, footer)
+                    writeStatusReport(writer, header, logTag, footer)
                 }
             } != null
         }
@@ -40,7 +39,7 @@ class StatusReportFile(
             val target = File(context.cacheDir, fileName)
             val tmp = File(context.cacheDir, "$fileName.tmp")
 
-            tmp.bufferedWriter().use { writer -> writeReport(writer, header, logTag, footer) }
+            tmp.bufferedWriter().use { writer -> writeStatusReport(writer, header, logTag, footer) }
 
             if (!tmp.renameTo(target)) {
                 throw IOException("Failed to rename $tmp to $target")
@@ -48,12 +47,6 @@ class StatusReportFile(
 
             target
         }
-
-    private suspend fun writeReport(writer: Appendable, header: String, logTag: String?, footer: String) {
-        writer.append(header)
-        AppLog.writeLog(writer, logTag)
-        writer.append(footer)
-    }
 
     private inline fun <T> exclusively(onBusy: T, block: () -> T): T {
         if (!mutex.tryLock()) return onBusy

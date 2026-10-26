@@ -11,6 +11,10 @@ class PinSecretActionAuthorizer : SecretActionAuthorizer {
     @Composable
     override fun <A> rememberAuthorization(navigation: HSNavigation, action: (A) -> Unit): (A) -> Unit =
         navigation.rememberAuthorizedAction(input = null, action = action)
+
+    @Composable
+    override fun rememberHiddenTransactionsAuthorization(navigation: HSNavigation, action: () -> Unit): () -> Unit =
+        navigation.rememberAuthorizedShowAllTransactionsAction(action)
 }
 
 class ActivityAppRestarter(private val backgroundManager: BackgroundManager) : AppRestarter {

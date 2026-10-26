@@ -1,5 +1,13 @@
 package cash.p.terminal.modules.receive.ui
 
+import cash.p.terminal.modules.receive.viewmodels.ReceiveSharedViewModel
+import io.mockk.mockk
+import org.koin.core.module.dsl.viewModel
+import org.koin.dsl.module
+import org.koin.core.context.stopKoin
+import org.koin.core.context.startKoin
+import org.junit.After
+import org.junit.Before
 import android.app.Application
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -22,6 +30,16 @@ class ReceiveChooseCoinFlowTest {
 
     @get:Rule
     val composeRule = createAndroidComposeRule<ComponentActivity>()
+
+    @Before
+    fun startKoinWithSharedViewModel() {
+        startKoin {
+            modules(module { viewModel { ReceiveSharedViewModel(mockk(relaxed = true), mockk(relaxed = true)) } })
+        }
+    }
+
+    @After
+    fun stopKoinAfterTest() = stopKoin()
 
     @Test
     fun bchAddressFormatPage_noCoinChosen_closesWholeFlowDownToEntryPage() {

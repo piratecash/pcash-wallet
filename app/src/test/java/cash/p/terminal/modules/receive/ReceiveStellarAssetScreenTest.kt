@@ -3,6 +3,8 @@ package cash.p.terminal.modules.receive
 import android.app.Application
 import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.R
+import cash.p.terminal.feature.wallet.ActivateTokenResult
+import cash.p.terminal.feature.wallet.WalletPlatformPages
 import cash.p.terminal.modules.activatetoken.ActivateTokenPage
 import cash.p.terminal.modules.main.AndroidRecomposerNavHost
 import cash.p.terminal.modules.main.PlainTestPage
@@ -13,8 +15,6 @@ import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.wallet.Wallet
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkConstructor
-import io.mockk.unmockkConstructor
 import io.mockk.verify
 import org.junit.After
 import org.junit.Assert.assertFalse
@@ -22,6 +22,10 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.core.module.dsl.viewModel
+import org.koin.dsl.module
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
@@ -62,17 +66,23 @@ class ReceiveStellarAssetScreenTest {
 
     @Before
     fun setUp() {
-        mockkConstructor(ActivateTokenViewModel.Factory::class)
-        every {
-            anyConstructed<ActivateTokenViewModel.Factory>().create(ActivateTokenViewModel::class.java)
-        } returns activateTokenViewModel
+        startKoin {
+            modules(
+                module {
+                    single<WalletPlatformPages> {
+                        mockk { every { activateToken(any()) } answers { ActivateTokenPage(firstArg()) } }
+                    }
+                    viewModel { activateTokenViewModel }
+                }
+            )
+        }
         host = AndroidRecomposerNavHost(navigation)
     }
 
     @After
     fun tearDown() {
         host.close()
-        unmockkConstructor(ActivateTokenViewModel.Factory::class)
+        stopKoin()
     }
 
     @Test
@@ -82,7 +92,7 @@ class ReceiveStellarAssetScreenTest {
         assertTrue(activateTokenPage is ActivateTokenPage)
         assertFalse(caller.composed)
 
-        navigation.setResult(activateTokenPage, ActivateTokenPage.Result(activated = true))
+        navigation.setResult(activateTokenPage, ActivateTokenResult(activated = true))
         navigation.navigateUp()
         host.advanceFrames()
 

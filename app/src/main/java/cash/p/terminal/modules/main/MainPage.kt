@@ -48,7 +48,6 @@ import cash.p.terminal.modules.sendtokenselect.SendTokenSelectPage
 import cash.p.terminal.modules.settings.main.SettingsScreen
 import cash.p.terminal.modules.transactionInfo.TransactionInfoPage
 import cash.p.terminal.modules.transactions.TransactionsFilterPage
-import cash.p.terminal.modules.transactions.TransactionsModule
 import cash.p.terminal.modules.transactions.TransactionsViewModel
 import cash.p.terminal.modules.transactions.TransactionsScreen
 import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedSheet
@@ -75,7 +74,7 @@ class MainPage : HSPage(showConnectionPanel = false) {
     override fun GetContent(navigation: HSNavigation) {
         val activityViewModel = (LocalActivity.current as MainActivity).viewModel
         val intent = activityViewModel.intentLiveData.observeAsState()
-        val transactionsViewModel = viewModel<TransactionsViewModel>(factory = TransactionsModule.Factory())
+        val transactionsViewModel = koinViewModel<TransactionsViewModel>()
 
         PageResumeEffect(
             onResume = transactionsViewModel::startStatusChecker,

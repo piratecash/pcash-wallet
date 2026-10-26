@@ -1,5 +1,6 @@
 package cash.p.terminal.entities
 
+import cash.p.terminal.modules.multiswap.providers.AndroidUnstoppableProviderTitles
 import cash.p.terminal.modules.multiswap.providers.buildSwapProviderTransaction
 import cash.p.terminal.network.swaprepository.SwapProvider
 import org.junit.Assert.assertEquals
@@ -27,12 +28,16 @@ class SwapProviderTransactionBackendSwapTest {
 
     @Test
     fun swapProviderDisplayTitle_knownBackendProvider_returnsBrandTitle() {
-        assertEquals("Changelly", swapProviderDisplayTitle(SwapProvider.PCASH_BACKEND, "changelly"))
+        val title = AndroidUnstoppableProviderTitles().swapProviderDisplayTitle(SwapProvider.PCASH_BACKEND, "changelly")
+
+        assertEquals("Changelly", title)
     }
 
     @Test
     fun swapProviderDisplayTitle_unknownBackendProvider_returnsCapitalisedName() {
-        assertEquals("Newswap", swapProviderDisplayTitle(SwapProvider.PCASH_BACKEND, "newswap"))
+        val title = AndroidUnstoppableProviderTitles().swapProviderDisplayTitle(SwapProvider.PCASH_BACKEND, "newswap")
+
+        assertEquals("Newswap", title)
     }
 
     private fun backendTransaction(providerName: String, externalId: String?) =

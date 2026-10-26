@@ -7,7 +7,6 @@ import androidx.compose.ui.unit.dp
 import cash.p.terminal.resources.Button_Cancel
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.desktop_forgot_password_action
-import cash.p.terminal.resources.desktop_forgot_password_failed
 import cash.p.terminal.resources.desktop_forgot_password_title
 import cash.p.terminal.resources.desktop_forgot_password_warning
 import cash.p.terminal.resources.desktop_unlock_data_unreadable
@@ -64,11 +63,8 @@ internal fun ForgotPasswordContent(
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(Res.string.Button_Cancel),
             onClick = onCancelClick,
+            enabled = !uiState.inProgress,
         )
-        if (uiState.failed) {
-            VSpacer(12.dp)
-            subhead2_lucian(text = stringResource(Res.string.desktop_forgot_password_failed))
-        }
     }
 }
 

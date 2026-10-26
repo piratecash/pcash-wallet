@@ -2,8 +2,11 @@ package cash.p.terminal.shared.desktop.vault
 
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
 import cash.p.terminal.core.storage.AppDatabase
 import cash.p.terminal.core.storage.AppDatabaseConstructor
+import cash.p.terminal.core.storage.migrations.Migration_118_119
+import cash.p.terminal.core.storage.migrations.Migration_119_120
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.premium.data.database.PremiumDatabase
 import cash.p.terminal.premium.data.database.PremiumDatabaseConstructor
@@ -76,7 +79,13 @@ class DesktopStorageSession private constructor(
                 secretKey = checkNotNull(vaultSession.secretFieldsKey())
                 kitWrappingKey = checkNotNull(vaultSession.kitKeysWrappingKey())
                 driver = driverFactory.create(databaseKey)
-                database = buildDatabase(files.databaseFile, driver, AppDatabaseConstructor::initialize)
+                database = buildDatabase(
+                    files.databaseFile,
+                    driver,
+                    AppDatabaseConstructor::initialize,
+                    Migration_118_119,
+                    Migration_119_120,
+                )
                 // Opening is what reveals a key that does not fit the file.
                 database.syncerStateDao().get("")
                 premiumDriver = createPremiumDriver(driverFactory, kitWrappingKey)
@@ -122,9 +131,11 @@ class DesktopStorageSession private constructor(
             file: File,
             driver: SqlCipherDriver,
             noinline factory: () -> T,
+            vararg migrations: Migration,
         ): T =
             Room.databaseBuilder<T>(name = file.absolutePath, factory = factory)
                 .setDriver(driver)
+                .addMigrations(*migrations)
                 // A blocking DAO nested in a transaction must reach Room's `useConnection` undispatched.
                 .setQueryCoroutineContext(Dispatchers.Unconfined)
                 .build()

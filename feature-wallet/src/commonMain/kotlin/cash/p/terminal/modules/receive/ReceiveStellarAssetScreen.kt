@@ -1,0 +1,178 @@
+package cash.p.terminal.modules.receive
+
+import cash.p.terminal.feature.wallet.ActivateTokenResult
+import cash.p.terminal.feature.wallet.WalletPlatformPages
+import cash.p.terminal.ui_compose.components.rememberHudMessenger
+import cash.p.terminal.ui_compose.components.showNotSupportedOnPlatform
+import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromBottom
+import cash.p.terminal.ui_compose.components.AppModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import cash.p.terminal.wallet.Wallet
+import cash.p.terminal.modules.receive.ui.ReceiveAddressScreen
+import cash.p.terminal.ui_compose.BottomSheetHeader
+import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
+import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
+import cash.p.terminal.ui_compose.components.HSpacer
+import cash.p.terminal.ui_compose.components.HsDivider
+import cash.p.terminal.ui_compose.components.HsIconButton
+import cash.p.terminal.ui_compose.components.RowUniversal
+import cash.p.terminal.ui_compose.components.TextImportantWarning
+import cash.p.terminal.ui_compose.components.VSpacer
+import cash.p.terminal.ui_compose.components.subhead1_brand
+import cash.p.terminal.ui_compose.components.subhead2_grey
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import kotlinx.coroutines.launch
+import kotlin.reflect.KClass
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ActivationRequired_DialogTitle
+import cash.p.terminal.resources.Balance_Receive_Trustline
+import cash.p.terminal.resources.Button_Activate
+import cash.p.terminal.resources.Button_Later
+import cash.p.terminal.resources.Deposit_Title
+import cash.p.terminal.resources.Hud_Text_Activate
+import cash.p.terminal.resources.activation_required_dialog_description
+import cash.p.terminal.resources.ic_attention_24
+import cash.p.terminal.resources.ic_info_20
+
+@Composable
+fun ReceiveStellarAssetScreen(
+    navigation: HSNavigation,
+    wallet: Wallet,
+    receiveEntryPoint: KClass<out HSPage>?,
+    viewModel: ReceiveStellarAssetViewModel = koinViewModel { parametersOf(wallet) },
+) {
+    val uiState = viewModel.uiState
+
+    val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
+    val scope = rememberCoroutineScope()
+
+    val platformPages = koinInject<WalletPlatformPages>()
+    val hud = rememberHudMessenger()
+    val activationLauncher = navigation.rememberResultLauncher<ActivateTokenResult> { result ->
+        viewModel.onActivationResult(result.activated)
+        scope.launch { sheetState.hide() }
+    }
+    val runActivation = {
+        val page = platformPages.activateToken(wallet)
+        if (page == null) hud.showNotSupportedOnPlatform() else activationLauncher.slideFromBottom(page)
+    }
+
+    LaunchedEffect(uiState.activationRequired) {
+        if (uiState.activationRequired) {
+            sheetState.show()
+        }
+    }
+
+    AppModalBottomSheetLayout(
+        sheetState = sheetState,
+        sheetContent = {
+            BottomSheetHeader(
+                iconPainter = painterResource(Res.drawable.ic_attention_24),
+                iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
+                title = stringResource(Res.string.ActivationRequired_DialogTitle),
+                onCloseClick = {
+                    scope.launch {
+                        sheetState.hide()
+                    }
+                }
+            ) {
+                TextImportantWarning(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                    text = stringResource(
+                        Res.string.activation_required_dialog_description,
+                        uiState.coinCode,
+                        uiState.coinCode
+                    )
+                )
+                VSpacer(12.dp)
+                ButtonPrimaryYellow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    title = stringResource(Res.string.Button_Activate),
+                    onClick = runActivation
+                )
+                VSpacer(12.dp)
+                ButtonPrimaryTransparent(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    title = stringResource(Res.string.Button_Later),
+                    onClick = {
+                        scope.launch {
+                            sheetState.hide()
+                        }
+                    }
+                )
+                VSpacer(32.dp)
+            }
+        }
+    ) {
+        ReceiveAddressScreen(
+            title = stringResource(Res.string.Deposit_Title, wallet.coin.code),
+            uiState = uiState,
+            setAmount = viewModel::setAmount,
+            onErrorClick = viewModel::onErrorClick,
+            bottomContent = {
+                if (uiState.trustlineEstablished == false) {
+                    HsDivider(modifier = Modifier.fillMaxWidth())
+                    RowUniversal(modifier = Modifier.height(48.dp)) {
+                        subhead2_grey(
+                            modifier = Modifier
+                                .padding(start = 16.dp),
+                            text = stringResource(Res.string.Balance_Receive_Trustline),
+                        )
+
+                        HSpacer(8.dp)
+                        HsIconButton(
+                            modifier = Modifier.size(20.dp),
+                            onClick = {
+                                scope.launch {
+                                    sheetState.show()
+                                }
+                            }
+                        ) {
+                            Image(
+                                painter = painterResource(Res.drawable.ic_info_20),
+                                contentDescription = null
+                            )
+                        }
+                        subhead1_brand(
+                            text = stringResource(Res.string.Hud_Text_Activate),
+                            textAlign = TextAlign.End,
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .weight(1f)
+                                .clickable(onClick = runActivation)
+                        )
+                    }
+                }
+            },
+            onBackPress = navigation::navigateUpSafely,
+            closeModule = { navigation.closeReceiveModule(receiveEntryPoint) }
+        )
+    }
+}

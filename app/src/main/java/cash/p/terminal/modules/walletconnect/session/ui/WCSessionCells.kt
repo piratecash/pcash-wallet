@@ -46,19 +46,6 @@ fun BlockchainCell(
 }
 
 @Composable
-fun TitleValueCell(title: String, value: String) {
-    RowUniversal(
-        modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .fillMaxWidth(),
-    ) {
-        subhead2_grey(text = title)
-        Spacer(Modifier.weight(1f))
-        subhead1_leah(text = value)
-    }
-}
-
-@Composable
 fun StatusCell(connectionStatus: Status?) {
     RowUniversal(
         modifier = Modifier

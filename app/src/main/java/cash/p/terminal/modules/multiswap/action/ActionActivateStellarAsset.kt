@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.multiswap.action
 
+import cash.p.terminal.feature.wallet.ActivateTokenResult
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import cash.p.terminal.R
@@ -27,7 +28,7 @@ class ActionActivateStellarAsset(
 
     override fun execute(launcher: ResultLauncher<ISwapProviderAction>) = launcher.slideFromBottom(page(), this)
 
-    override fun isCompleted(result: Any) = (result as? ActivateTokenPage.Result)?.activated == true
+    override fun isCompleted(result: Any) = (result as? ActivateTokenResult)?.activated == true
 
     private fun page() = ActivateTokenPage(wallet)
 }

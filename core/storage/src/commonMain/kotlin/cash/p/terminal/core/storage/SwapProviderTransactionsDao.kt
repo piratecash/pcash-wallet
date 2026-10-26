@@ -159,9 +159,11 @@ interface SwapProviderTransactionsDao {
     @Query("UPDATE SwapProviderTransaction SET outgoingRecordUid = :outgoingRecordUid WHERE date = :date")
     fun setOutgoingRecordUid(date: Long, outgoingRecordUid: String)
 
+    // A matched row already holds the blockchain amount; the caller's snapshot may predate the match.
     @Query(
-        "UPDATE SwapProviderTransaction SET status = :status, amountOutReal = :amountOutReal, finishedAt = " +
-                ":finishedAt WHERE date = :date"
+        "UPDATE SwapProviderTransaction SET status = :status, " +
+                "amountOutReal = CASE WHEN incomingRecordUid IS NULL THEN :amountOutReal ELSE amountOutReal END, " +
+                "finishedAt = :finishedAt WHERE date = :date"
     )
     fun updateStatusFields(date: Long, status: String, amountOutReal: BigDecimal?, finishedAt: Long?)
 

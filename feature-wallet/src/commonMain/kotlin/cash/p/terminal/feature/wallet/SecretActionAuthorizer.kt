@@ -9,6 +9,10 @@ interface SecretActionAuthorizer {
     /** [A] is the click-time argument handed back to [action]; remember at the screen root. */
     @Composable
     fun <A> rememberAuthorization(navigation: HSNavigation, action: (A) -> Unit): (A) -> Unit
+
+    /** Confirms before transactions hidden by the user are shown; remember at the screen root. */
+    @Composable
+    fun rememberHiddenTransactionsAuthorization(navigation: HSNavigation, action: () -> Unit): () -> Unit
 }
 
 @Composable
