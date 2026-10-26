@@ -2208,6 +2208,7 @@
     <string name="send_trezor_mweb_not_supported">Trezor از MWEB پشتیبانی نمی‌کند. لایت‌کوین را به یک آدرس عادی (غیر MWEB) ارسال کنید.</string>
     <string name="send_trezor_time_lock_not_supported">Trezor از تراکنش‌های زمان‌قفل پشتیبانی نمی‌کند.</string>
     <string name="send_trezor_zcash_memo_not_supported">Trezor نمی‌تواند به تراکنش Zcash یادداشت اضافه کند. برای ادامه، یادداشت را حذف کنید.</string>
+    <string name="send_memo_too_long">یادداشت بسیار طولانی است: %1$d از %2$d بایت</string>
     <string name="send_trezor_zcash_transparent_only">Trezor فقط می‌تواند Zcash را به آدرس‌های شفاف ارسال کند.</string>
     <string name="send_trezor_zcash_unified_no_transparent_receiver">این آدرس یکپارچه (unified) گیرنده شفافی ندارد، بنابراین Trezor نمی‌تواند تراکنشی به آن ارسال کند.</string>
     <string name="send_trezor_zcash_firmware_required">%1$s برای ارسال به آدرس‌های یکپارچه Zcash به فریمور %2$s یا جدیدتر نیاز دارد. دستگاه را به‌روزرسانی کنید و دوباره تلاش کنید — نسخه فریمور در تراکنش بعدی Zcash دوباره بررسی می‌شود.</string>

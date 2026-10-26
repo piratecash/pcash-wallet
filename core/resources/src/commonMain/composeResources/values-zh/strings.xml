@@ -2189,6 +2189,7 @@
     <string name="send_trezor_mweb_not_supported">Trezor 不支持 MWEB。请将莱特币发送到普通（非 MWEB）地址。</string>
     <string name="send_trezor_time_lock_not_supported">Trezor 不支持时间锁定交易。</string>
     <string name="send_trezor_zcash_memo_not_supported">Trezor 无法为 Zcash 交易添加备注。请删除备注后继续。</string>
+    <string name="send_memo_too_long">备注过长：%1$d/%2$d 字节</string>
     <string name="send_trezor_zcash_transparent_only">Trezor 只能将 Zcash 发送到透明地址。</string>
     <string name="send_trezor_zcash_unified_no_transparent_receiver">该统一地址不包含透明接收方，因此 Trezor 无法向其发送转账。</string>
     <string name="send_trezor_zcash_firmware_required">%1$s 需要 %2$s 或更高版本的固件才能发送到 Zcash 统一地址。请更新设备后重试——应用会在您下次进行 Zcash 交易时重新检查固件版本。</string>

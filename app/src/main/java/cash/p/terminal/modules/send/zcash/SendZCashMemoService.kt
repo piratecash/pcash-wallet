@@ -1,12 +1,13 @@
 package cash.p.terminal.modules.send.zcash
 
+import cash.p.terminal.core.utils.ZcashMemo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.util.Locale
 
 class SendZCashMemoService(private val memoSupportedByAccount: Boolean) {
-    val memoMaxLength = 120
+    val memoMaxBytes = ZcashMemo.MAX_SIZE_BYTES
 
     private var memo: String = ""
     private var memoIsAllowed = false
