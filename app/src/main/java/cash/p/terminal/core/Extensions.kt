@@ -10,38 +10,16 @@ import android.os.Build
 import android.os.Parcelable
 import android.provider.DocumentsContract
 import androidx.compose.ui.platform.Clipboard
-import cash.p.beam.BeamAddressType
 import cash.p.terminal.R
 import cash.p.terminal.modules.main.MainActivity
 import cash.p.terminal.modules.main.MainModule
 import cash.p.terminal.wallet.entities.FullCoin
-import io.horizontalsystems.ethereumkit.core.toRawHexString
 import io.horizontalsystems.hodler.LockTimeInterval
 import kotlin.system.exitProcess
 import kotlinx.coroutines.delay
 import java.math.BigDecimal
-import java.net.NoRouteToHostException
-import java.net.UnknownHostException
-import java.nio.channels.UnresolvedAddressException
 import java.util.Locale
 import java.util.Optional
-import retrofit2.HttpException
-
-fun Throwable.isBlockedByProvider(): Boolean =
-    generateSequence(this) { it.cause }.any { (it as? HttpException)?.code() == 403 }
-
-fun Throwable.isNoInternetException(): Boolean {
-    return generateSequence(this) { it.cause }
-        .any { throwable ->
-            throwable is UnknownHostException ||
-                throwable is NoRouteToHostException ||
-                throwable is UnresolvedAddressException ||
-                throwable.message.equals("No internet connection", ignoreCase = true)
-        }
-}
-
-fun String.orHide(hidden: Boolean, hideValue: String = "*****"): String =
-    if (hidden) hideValue else this
 
 val <T> Optional<T>.orNull: T?
     get() = when {
@@ -76,11 +54,6 @@ fun List<FullCoin>.sortedByFilter(filter: String): List<FullCoin> {
     return sortedWith(comparator)
 }
 
-fun ByteArray?.to0xHexString(): String {
-    val rawHex = this?.toRawHexString() ?: return ""
-    return "0x$rawHex"
-}
-
 // Intent & Parcelable Enum
 fun Intent.putParcelableExtra(key: String, value: Parcelable) {
     putExtra(key, value)
@@ -94,13 +67,6 @@ fun LockTimeInterval?.stringResId(): Int {
         LockTimeInterval.year -> R.string.Send_LockTime_Year
         null -> R.string.Send_LockTime_Off
     }
-}
-
-fun BeamAddressType.titleResId(): Int = when (this) {
-    BeamAddressType.Offline -> R.string.beam_send_offline
-    BeamAddressType.PublicOffline -> R.string.beam_send_public_offline
-    BeamAddressType.MaxPrivacy -> R.string.beam_send_max_privacy
-    BeamAddressType.Regular -> R.string.beam_address_type_regular
 }
 
 suspend fun <T> retryWhen(
@@ -169,18 +135,6 @@ fun String?.extractBigDecimal(): BigDecimal? =
     } else {
         "\\d+\\.\\d+".toRegex().find(this)?.value?.toBigDecimal()
     }
-
-inline fun <reified T : Enum<T>> Enum.Companion.valueOrDefault(index: Int, default: T): T {
-    return enumValues<T>().getOrNull(index) ?: default
-}
-
-fun String.splitToAddresses(): List<String> {
-    return split(",")
-        .map { it.split("\n") }.flatten()
-        .map { it.replace(Regex(":\\d+"), "") }
-        .map { it.trim() }
-        .filter { it.isNotEmpty() }
-}
 
 fun Context.hasNFC(): Boolean {
     val pm = getSystemService(Context.NFC_SERVICE) as android.nfc.NfcManager

@@ -35,6 +35,10 @@ fun HSSwipeRefresh(
             )
         },
     ) {
-        content()
+        PullOnPointerScroll(content)
     }
 }
+
+/** Lets wheel and touchpad scrolling pull to refresh where the platform does not. */
+@Composable
+internal expect fun PullOnPointerScroll(content: @Composable () -> Unit)

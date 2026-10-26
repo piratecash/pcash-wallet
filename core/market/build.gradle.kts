@@ -92,6 +92,7 @@ kotlin {
         }
         getByName("androidHostTest") {
             dependencies {
+                implementation(project(":core:test-fixtures"))
                 implementation(project(":core:network"))
                 implementation(libs.junit)
                 implementation(libs.mockk)

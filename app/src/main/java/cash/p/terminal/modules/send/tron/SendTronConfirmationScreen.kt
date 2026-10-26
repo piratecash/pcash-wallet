@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.send.tron
 
+import cash.p.terminal.resources.ic_arrow_up_right_12
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -132,7 +133,7 @@ private fun TronOnlineConfirmation(
         SendResult.Sending -> {
             HudHelper.showInProcessMessage(
                 view,
-                R.string.Send_Sending,
+                view.context.getString(R.string.Send_Sending),
                 SnackbarDuration.INDEFINITE
             )
         }
@@ -189,7 +190,7 @@ private fun TronOnlineConfirmation(
                         SectionTitleCell(
                             stringResource(R.string.Send_Confirmation_YouSend),
                             coin.name,
-                            R.drawable.ic_arrow_up_right_12
+                            Res.drawable.ic_arrow_up_right_12
                         )
                     }
                     add {

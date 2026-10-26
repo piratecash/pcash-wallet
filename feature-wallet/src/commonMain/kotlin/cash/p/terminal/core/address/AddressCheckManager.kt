@@ -1,0 +1,56 @@
+package cash.p.terminal.core.address
+
+import cash.p.terminal.core.managers.EvmSyncSourceManager
+import cash.p.terminal.core.managers.SpamManager
+import cash.p.terminal.entities.Address
+import cash.p.terminal.modules.send.address.AddressCheckResult
+import cash.p.terminal.wallet.Token
+import io.horizontalsystems.core.entities.BlockchainType
+import java.util.concurrent.ConcurrentHashMap
+
+class AddressCheckManager(
+    spamManager: SpamManager,
+    hashDitValidator: HashDitAddressValidator,
+    chainalysisValidator: ChainalysisAddressValidator,
+    evmSyncSourceManager: EvmSyncSourceManager,
+) {
+    private val checkers = mapOf(
+        AddressCheckType.SmartContract to ContractAddressChecker(),
+        AddressCheckType.Phishing to PhishingAddressChecker(spamManager),
+        AddressCheckType.Blacklist to BlacklistAddressChecker(
+            hashDitValidator,
+            Eip20AddressValidator(evmSyncSourceManager)
+        ),
+        AddressCheckType.AmlCheck to AmlAddressChecker(
+            AlphaAmlAddressValidator()
+        ),
+        AddressCheckType.Sanction to SanctionAddressChecker(chainalysisValidator)
+    )
+
+    private val cache = ConcurrentHashMap<CacheKey, AddressCheckResult>()
+
+    fun availableCheckTypes(token: Token): List<AddressCheckType> {
+        if (!supportsAddressChecks(token)) return emptyList()
+        return checkers.mapNotNull { (type, checker) -> if (checker.supports(token)) type else null }
+    }
+
+    suspend fun isClear(type: AddressCheckType, address: Address, token: Token): AddressCheckResult {
+        if (!supportsAddressChecks(token)) return AddressCheckResult.NotAvailable
+        val key = CacheKey(type, address.hex, token)
+
+        return cache[key] ?: run {
+            checkers[type]?.isClear(address, token)?.also {
+                cache[key] = it
+            } ?: AddressCheckResult.Clear
+        }
+    }
+
+    // BEAM receiver tokens are opaque payment data and must not reach address screening providers.
+    private fun supportsAddressChecks(token: Token) = token.blockchainType != BlockchainType.Beam
+
+    private data class CacheKey(
+        val type: AddressCheckType,
+        val address: String,
+        val token: Token
+    )
+}

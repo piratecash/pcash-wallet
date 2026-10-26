@@ -1,0 +1,5 @@
+package cash.p.terminal.core
+
+interface NonFatalReporter {
+    fun report(error: Throwable, message: String)
+}

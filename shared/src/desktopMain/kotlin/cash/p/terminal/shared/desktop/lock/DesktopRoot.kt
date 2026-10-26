@@ -25,7 +25,10 @@ import cash.p.terminal.modules.intro.IntroScreen
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.shared.PcashApp
+import cash.p.terminal.shared.desktop.DesktopAppExit
 import cash.p.terminal.shared.desktop.DesktopAppRestarter
+import cash.p.terminal.shared.desktop.DesktopWipeCoordinator
+import cash.p.terminal.shared.desktop.WipeProgress
 import cash.p.terminal.shared.desktop.rememberDesktopDarkTheme
 import cash.p.terminal.shared.desktop.vault.DesktopVault
 import cash.p.terminal.shared.desktop.vault.DesktopVaultState
@@ -41,12 +44,14 @@ import org.koin.compose.koinInject
  * above the two, so unlocking returns to the screen the user left.
  */
 @Composable
-fun DesktopRoot(appVersion: String, modifier: Modifier = Modifier) {
+fun DesktopRoot(appVersion: String, wipeFailed: Boolean, modifier: Modifier = Modifier) {
     val vault = koinInject<DesktopVault>()
     val languageManager = koinInject<DesktopLanguageManager>()
     val vaultState by vault.state.collectAsStateWithLifecycle()
     val localeTag by languageManager.localeTag.collectAsStateWithLifecycle()
     val appGeneration by koinInject<DesktopAppRestarter>().generation.collectAsStateWithLifecycle()
+    val wipeProgress by koinInject<DesktopWipeCoordinator>().progress.collectAsStateWithLifecycle()
+    val appExit = koinInject<DesktopAppExit>()
 
     DesktopRootContent(
         vaultState = vaultState,
@@ -54,8 +59,12 @@ fun DesktopRoot(appVersion: String, modifier: Modifier = Modifier) {
         appGeneration = appGeneration,
         rootPage = { DesktopMainPage(appVersion) },
         appContent = { navigation -> PcashApp(navigation) },
+        wipeFailed = wipeFailed,
         modifier = modifier,
     )
+    (wipeProgress as? WipeProgress.RestartManually)?.let {
+        RestartManuallyDialog(outcome = it.outcome, onConfirm = appExit::request)
+    }
 }
 
 @Composable
@@ -65,6 +74,7 @@ internal fun DesktopRootContent(
     appGeneration: Int,
     rootPage: () -> HSPage,
     appContent: @Composable (HSNavigation) -> Unit,
+    wipeFailed: Boolean,
     modifier: Modifier = Modifier,
 ) {
     var vaultGeneration by remember { mutableIntStateOf(0) }
@@ -90,7 +100,7 @@ internal fun DesktopRootContent(
                 }
                 when (vaultState) {
                     DesktopVaultState.NoVault -> LockScreen { FirstRunGate() }
-                    DesktopVaultState.Locked -> LockScreen { UnlockGate() }
+                    DesktopVaultState.Locked -> LockScreen { UnlockGate(wipeFailed) }
                     is DesktopVaultState.Unlocked -> Unit
                 }
             }
@@ -124,7 +134,7 @@ private fun FirstRunGate() {
 }
 
 @Composable
-private fun UnlockGate() {
+private fun UnlockGate(wipeFailed: Boolean) {
     var dataUnreadable by remember { mutableStateOf(false) }
     var forgotPassword by remember { mutableStateOf(false) }
     if (forgotPassword) {
@@ -137,6 +147,7 @@ private fun UnlockGate() {
         )
     } else {
         UnlockScreen(
+            wipeFailed = wipeFailed,
             onForgotPasswordClick = { forgotPassword = true },
             onDataUnreadable = {
                 dataUnreadable = true

@@ -4,6 +4,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
+import cash.p.terminal.entities.StackingCache
 import cash.p.terminal.wallet.entities.AccountRecord
 import cash.p.terminal.wallet.entities.EnabledWallet
 import cash.p.terminal.wallet.entities.SecretList
@@ -22,10 +23,11 @@ import org.koin.dsl.module
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.io.File
+import java.math.BigDecimal
 
 /**
- * Opens a pre-existing version 118 file with the production builder: a schema or identity-hash
- * drift would make Room reject the file instead of reusing it.
+ * Opens a pre-existing version 118 file with the production builder, migrating it to the current version:
+ * a schema or identity-hash drift would make Room reject the file instead of reusing it.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
@@ -97,6 +99,24 @@ class AppDatabaseUpgradeTest {
         database.logsDao().insert(LogEntry(date = 1, level = Log.INFO, actionId = "tag", message = "message"))
 
         assertEquals(listOf("message"), database.logsDao().getRecent(10).map { it.message })
+    }
+
+    @Test
+    fun stackingCacheDao_existingVersion118File_roundTripsCache() = runBlocking {
+        val cache = StackingCache(
+            coin = "pirate",
+            address = "address",
+            unpaid = BigDecimal("1.5"),
+            totalIncome = BigDecimal("10"),
+            nextAccrualAt = 1_000L,
+            nextPayoutAt = null,
+            cachedBalance = BigDecimal("100"),
+            timestamp = 2_000L,
+        )
+
+        database.stackingCacheDao().save(cache)
+
+        assertEquals(cache, database.stackingCacheDao().get("pirate", "address"))
     }
 
     /** Builds the file straight from the checked-in version 118 DDL, as a released app would leave it. */

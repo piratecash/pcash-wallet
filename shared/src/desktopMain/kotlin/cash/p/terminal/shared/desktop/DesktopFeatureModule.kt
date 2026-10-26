@@ -4,9 +4,9 @@ import cash.p.terminal.core.AppearanceSettingsStore
 import cash.p.terminal.core.managers.DefaultCurrencyManager
 import cash.p.terminal.core.managers.NumberFormatter
 import cash.p.terminal.core.IClipboardManager
+import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.modules.chart.ChartIndicatorStorage
 import cash.p.terminal.modules.coin.overview.MarketFeatureConfig
-import cash.p.terminal.modules.coin.overview.TokenWalletActions
 import cash.p.terminal.modules.market.MarketPages
 import cash.p.terminal.modules.pin.core.ILockoutManager
 import cash.p.terminal.modules.pin.core.ILockoutUntilDateFactory
@@ -40,6 +40,7 @@ import cash.p.terminal.shared.settings.SettingsPages
 import cash.p.terminal.ui_compose.components.HudMessenger
 import cash.p.terminal.ui_compose.components.UrlOpener
 import cash.p.terminal.feature.wallet.di.featureWalletModule
+import cash.p.terminal.featureStacking.di.featureStackingModule
 import cash.p.terminal.premium.di.featurePremiumModule
 import cash.p.terminal.wallet.di.walletFeatureModule
 import com.google.gson.Gson
@@ -54,12 +55,12 @@ import io.horizontalsystems.core.DesktopLanguageManager
 import io.horizontalsystems.core.DesktopSettingsStore
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.IAppNumberFormatter
+import io.horizontalsystems.core.IBackgroundManager
 import io.horizontalsystems.core.ICurrentDateProvider
 import io.horizontalsystems.core.IEncryptionManager
 import io.horizontalsystems.core.ILanguageManager
 import io.horizontalsystems.core.ILockoutStorage
 import io.horizontalsystems.core.MarketSettingsStore
-import io.horizontalsystems.core.PriceChangeIntervalProvider
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
@@ -71,7 +72,7 @@ private const val GUIDES_URL =
 
 /** Desktop implementations of the seams the shared features resolve from the host Koin graph. */
 val desktopFeatureModule = module {
-    includes(walletFeatureModule, featureWalletModule, featurePremiumModule, desktopWalletModule)
+    includes(walletFeatureModule, featureWalletModule, featureStackingModule, featurePremiumModule, desktopWalletModule)
 
     single { DesktopSettingsStore(desktopAppDataFile("settings.preferences_pb")) } binds
         arrayOf(MarketSettingsStore::class, BaseCurrencyStorage::class, ILockoutStorage::class)
@@ -85,7 +86,9 @@ val desktopFeatureModule = module {
     singleOf(::NumberFormatter) bind IAppNumberFormatter::class
     singleOf(::DesktopLanguageManager) bind ILanguageManager::class
     singleOf(::DesktopAppForegroundState) bind AppForegroundState::class
-    singleOf(::DesktopPriceChangeIntervalProvider) bind PriceChangeIntervalProvider::class
+    singleOf(::DesktopBackgroundManager) bind IBackgroundManager::class
+    single<NetworkInterfaceProbe> { SystemNetworkInterfaceProbe }
+    singleOf(::DesktopConnectivityManager) bind IConnectivityManager::class
     singleOf(::DesktopClipboardManager) bind IClipboardManager::class
     singleOf(::DefaultDispatcherProvider) bind DispatcherProvider::class
 
@@ -98,6 +101,9 @@ val desktopFeatureModule = module {
     singleOf(::DefaultSqlCipherDriverFactory) bind SqlCipherDriverFactory::class
     singleOf(::DesktopPreferencesReset)
     singleOf(::DesktopVault)
+    singleOf(::DesktopAppExit)
+    singleOf(::ProcessAppRelauncher) bind DesktopAppRelauncher::class
+    singleOf(::DesktopWipeCoordinator)
     singleOf(::DesktopSecretFieldsEncryption) bind IEncryptionManager::class
     singleOf(::DesktopInactivityLock)
     singleOf(::DesktopSettingsPages) bind SettingsPages::class
@@ -112,7 +118,6 @@ val desktopFeatureModule = module {
     viewModelOf(::DesktopLanguageSettingsViewModel)
 
     singleOf(::DesktopMarketPages) bind MarketPages::class
-    singleOf(::DesktopTokenWalletActions) bind TokenWalletActions::class
     singleOf(::DesktopHudMessenger) bind HudMessenger::class
     singleOf(::DesktopUrlOpener) bind UrlOpener::class
     singleOf(::MarketCatalogSyncer)

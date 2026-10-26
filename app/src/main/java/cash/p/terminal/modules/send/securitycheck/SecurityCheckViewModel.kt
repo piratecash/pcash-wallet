@@ -206,6 +206,7 @@ class SecurityCheckViewModel(
             val addressCheckManager = AddressCheckManager(
                 getKoinInstance(),
                 getKoinInstance(),
+                getKoinInstance(),
                 getKoinInstance()
             )
             return SecurityCheckViewModel(

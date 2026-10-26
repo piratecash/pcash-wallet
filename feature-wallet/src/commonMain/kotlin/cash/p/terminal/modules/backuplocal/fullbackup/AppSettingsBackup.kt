@@ -2,19 +2,14 @@ package cash.p.terminal.modules.backuplocal.fullbackup
 
 import cash.p.terminal.modules.chart.ChartIndicatorManager
 import cash.p.terminal.modules.chart.ChartIndicatorSetting
-import cash.p.terminal.modules.contacts.model.Contact
+import cash.p.terminal.modules.contacts.ContactsBackup
 
 /** The app-settings and contacts part of a full backup, which each platform owns differently. */
-interface AppSettingsBackup {
+interface AppSettingsBackup : ContactsBackup {
     /** `null` when this platform writes no settings into a backup. */
     fun currentSettings(cachedKey: ByteArray, passphrase: String): Settings?
     suspend fun restore(settings: Settings, passphrase: String)
     fun customRpcCount(): Int?
-
-    val contacts: List<Contact>
-    val contactsJson: String
-    fun parseContacts(json: String): List<Contact>
-    fun restoreContacts(contacts: List<Contact>)
 }
 
 fun Settings.restoreChartIndicators(

@@ -9,11 +9,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.Unlock_Title
+import cash.p.terminal.resources.desktop_forgot_password_failed
 import cash.p.terminal.resources.desktop_unlock_forgot_password
 import cash.p.terminal.resources.desktop_unlock_title
 import cash.p.terminal.shared.desktop.vault.UnlockOutcome
 import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
 import cash.p.terminal.ui_compose.components.VSpacer
+import cash.p.terminal.ui_compose.components.subhead2_lucian
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -21,12 +23,14 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 internal fun UnlockScreen(
+    wipeFailed: Boolean,
     onForgotPasswordClick: () -> Unit,
     onDataUnreadable: () -> Unit,
     viewModel: UnlockViewModel = koinViewModel(),
 ) {
     UnlockContent(
         uiState = viewModel.uiState,
+        wipeFailed = wipeFailed,
         onPasswordChange = viewModel::onPasswordChange,
         onUnlockClick = viewModel::onSubmitClick,
         onForgotPasswordClick = onForgotPasswordClick,
@@ -40,6 +44,7 @@ internal fun UnlockScreen(
 @Composable
 internal fun UnlockContent(
     uiState: PasswordCheckUiState,
+    wipeFailed: Boolean,
     onPasswordChange: (String) -> Unit,
     onUnlockClick: () -> Unit,
     onForgotPasswordClick: () -> Unit,
@@ -51,6 +56,11 @@ internal fun UnlockContent(
         if (uiState.outcome == UnlockOutcome.Corrupted) reportDataUnreadable()
     }
     LockScreenLayout(title = stringResource(Res.string.desktop_unlock_title)) {
+        // The previous instance failed to wipe and restarted the app: the slots, and so the data, are intact.
+        if (wipeFailed) {
+            subhead2_lucian(text = stringResource(Res.string.desktop_forgot_password_failed))
+            VSpacer(16.dp)
+        }
         PasswordCheckForm(
             uiState = uiState,
             submitTitle = stringResource(Res.string.Unlock_Title),
@@ -75,6 +85,7 @@ private fun UnlockContentPreview() {
                 password = "secret",
                 outcome = UnlockOutcome.WrongPassword(attemptsLeft = 3),
             ),
+            wipeFailed = false,
             onPasswordChange = {},
             onUnlockClick = {},
             onForgotPasswordClick = {},

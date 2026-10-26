@@ -60,7 +60,7 @@
     <string name="trezor_not_initialized_cta">설정 가이드</string>
     <string name="trezor_connect_failed">Trezor에 연결하지 못했습니다.</string>
     <string name="Button_Activate">활성화</string>
-    <string name="activation_required_dialog_description">%s을(를) 받으려면 토큰을 활성화해야 합니다. Stellar 네트워크는 각 토큰마다 신뢰선(trustline) 설정을 요구합니다. 신뢰선이 없으면 지갑에서 %s을(를) 받을 수 없으며, 트랜잭션이 거부되어 자금이 전달되지 않습니다.</string>
+    <string name="activation_required_dialog_description">%1$s을(를) 받으려면 토큰을 활성화해야 합니다. Stellar 네트워크는 각 토큰마다 신뢰선(trustline) 설정을 요구합니다. 신뢰선이 없으면 지갑에서 %2$s을(를) 받을 수 없으며, 트랜잭션이 거부되어 자금이 전달되지 않습니다.</string>
     <string name="activate_you_activate">활성화할 토큰</string>
     <string name="activate_activating">활성화 중</string>
     <string name="activate_already_active_title">이미 활성화됨</string>
@@ -374,7 +374,7 @@
     <string name="Balance_Error_InvalidQrCode">인식할 수 없음</string>
     <string name="Balance_Receive_WatchAddressAlert">이 주소는 관찰 중인 계정의 주소입니다</string>
     <string name="Balance_Receive_UsedAddresses">사용된 주소들</string>
-    <string name="Balance_Receive_UsedAddressesDescriptoin">%s 주소는 개인 정보 보호와 보안을 위해 변경됩니다. 이 지갑에서 사용된 주소 목록은 아래와 같습니다.</string>
+    <string name="Balance_Receive_UsedAddressesDescriptoin">%1$s 주소는 개인 정보 보호와 보안을 위해 변경됩니다. 이 지갑에서 사용된 주소 목록은 아래와 같습니다.</string>
     <string name="Balance_Receive_ReceiveAddresses">받는 주소들</string>
     <string name="Balance_Receive_ChangeAddresses">거스름돈 주소</string>
     <string name="receive_address_badge_new">새 주소</string>
@@ -699,7 +699,7 @@
     <string name="SwapInfo_PriceImpactTitle">가격 영향</string>
     <string name="SwapInfo_PriceImpactDescription">표시된 가격과의 예상 가격 편차는 일반적으로 스왑 금액에 따라 증가합니다.</string>
     <!--Deposit-->
-    <string name="Deposit_Title">수신%s</string>
+    <string name="Deposit_Title">수신%1$s</string>
     <!--Transactions-->
     <string name="Transactions_Title">거래기록</string>
     <string name="Transactions_Hide">Transactions Hide</string>
@@ -1447,6 +1447,8 @@
     <string name="CoinPage_TimeDuration_Month">1개월</string>
     <string name="CoinPage_TimeDuration_Year">1년</string>
     <string name="CoinPage_TimeDuration_All">모든</string>
+    <string name="Timestamp_Today">오늘</string>
+    <string name="Timestamp_Yesterday">어제</string>
     <string name="CoinPage_TradingVolume">거래량</string>
     <string name="CoinPage_Audits_PoweredBy">Defiyield.app 에 의해 구동됩니다</string>
     <string name="CoinPage_Audits_Issues">문제점: %d</string>
@@ -1978,7 +1980,7 @@
     </plurals>
 
     <plurals name="staking_next_accrual_in_hours">
-        <item quantity="other">다음 적립은 %d시간 후에 진행됩니다</item>
+        <item quantity="other">다음 적립은 %1$d시간 후에 진행됩니다</item>
     </plurals>
     <string name="estimated_annual_interest">예상 연간 이자율</string>
     <string name="accruals">Accruals</string>
@@ -2198,6 +2200,7 @@
     <string name="send_trezor_mweb_not_supported">Trezor는 MWEB를 지원하지 않습니다. 일반(비 MWEB) 주소로 라이트코인을 보내세요.</string>
     <string name="send_trezor_time_lock_not_supported">Trezor는 시간 잠금 거래를 지원하지 않습니다.</string>
     <string name="send_trezor_zcash_memo_not_supported">Trezor는 Zcash 트랜잭션에 메모를 첨부할 수 없습니다. 계속하려면 메모를 삭제하세요.</string>
+    <string name="send_memo_too_long">메모가 너무 길어요: %1$d/%2$d바이트</string>
     <string name="send_trezor_zcash_transparent_only">Trezor는 투명(transparent) 주소로만 Zcash를 보낼 수 있습니다.</string>
     <string name="send_trezor_zcash_unified_no_transparent_receiver">이 유니파이드(unified) 주소에는 투명 수신자가 없어 Trezor에서 전송할 수 없습니다.</string>
     <string name="send_trezor_zcash_firmware_required">%1$s에서 Zcash 유니파이드 주소로 보내려면 펌웨어 %2$s 이상이 필요합니다. 기기를 업데이트한 후 다시 시도하세요 — 다음 Zcash 거래 시 펌웨어 버전을 다시 확인합니다.</string>
@@ -2330,6 +2333,9 @@
     <string name="desktop_forgot_password_warning">이 컴퓨터에 저장된 지갑, 연락처, 설정 및 내역이 삭제됩니다. 블록체인상의 자금에는 영향이 없습니다. 지갑은 복구 문구로만 복원할 수 있습니다.</string>
     <string name="desktop_forgot_password_action">데이터 삭제</string>
     <string name="desktop_forgot_password_failed">데이터를 삭제할 수 없습니다</string>
+    <string name="desktop_wipe_restart_manually">데이터가 삭제되었습니다. 앱을 다시 시작하세요</string>
+    <string name="desktop_restart_manually">앱을 다시 시작하세요</string>
+    <string name="platform_not_supported_yet">데스크톱 버전에서는 아직 지원되지 않습니다</string>
     <string name="desktop_change_password_title">비밀번호 변경</string>
     <string name="desktop_change_password_current_hint">현재 비밀번호</string>
     <string name="desktop_change_password_new_hint">새 비밀번호</string>

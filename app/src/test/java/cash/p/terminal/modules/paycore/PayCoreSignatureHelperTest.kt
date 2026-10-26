@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.paycore
 
-import android.util.Base64
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -14,7 +13,6 @@ import io.horizontalsystems.tronkit.network.Network
 import io.horizontalsystems.tronkit.transaction.Signer as TronSigner
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -80,11 +78,6 @@ class PayCoreSignatureHelperTest {
 
     @Before
     fun setUp() {
-        mockkStatic(Base64::class)
-        every { Base64.encodeToString(any(), any()) } answers {
-            java.util.Base64.getEncoder().encodeToString(firstArg())
-        }
-
         every { accountManager.activeAccount } returns evmAccount
 
         helper = PayCoreSignatureHelper(
