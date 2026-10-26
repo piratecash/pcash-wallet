@@ -34,7 +34,9 @@ import cash.p.terminal.resources.ic_close_24
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
+import cash.p.terminal.ui_compose.components.LocalHudMessenger
 import cash.p.terminal.ui_compose.components.MenuItem
+import cash.p.terminal.ui_compose.components.openOrNotifyUnsupported
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.navigation.WalletPages
@@ -71,6 +73,7 @@ private fun ConnectMiniAppContent(
 ) {
     val appPages: AppPages = koinInject()
     val walletPages: WalletPages = koinInject()
+    val hud = LocalHudMessenger.current
     val uiState = viewModel.uiState
 
     Scaffold(
@@ -205,7 +208,7 @@ private fun ConnectMiniAppContent(
                     onBuyClick = {
                         coroutineScope.launch {
                             viewModel.getTokenForSwap()?.let { token ->
-                                navigation.slideFromRight(walletPages.swap(token))
+                                navigation.openOrNotifyUnsupported(walletPages.swap(token), hud)
                             }
                         }
                     },

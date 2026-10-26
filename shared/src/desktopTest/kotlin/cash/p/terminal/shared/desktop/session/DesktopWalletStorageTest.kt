@@ -3,10 +3,16 @@ package cash.p.terminal.shared.desktop.session
 import cash.p.terminal.core.StorageLockedException
 import cash.p.terminal.core.storage.AppDatabaseProvider
 import cash.p.terminal.core.usecase.MoneroWalletStorage
+import cash.p.terminal.modules.backuplocal.fullbackup.BackupSource
+import cash.p.terminal.modules.backuplocal.fullbackup.FullBackup
+import cash.p.terminal.modules.backuplocal.fullbackup.WalletBackupProvider
+import cash.p.terminal.modules.contacts.ContactsRepository
+import cash.p.terminal.modules.contacts.model.Contact
 import cash.p.terminal.network.pirate.domain.enity.TrialPremiumResult
 import cash.p.terminal.premium.data.database.PremiumDatabaseProvider
 import cash.p.terminal.premium.domain.usecase.SeedToEvmAddressUseCase
 import cash.p.terminal.shared.desktop.vault.CreateOutcome
+import cash.p.terminal.shared.desktop.vault.DesktopVaultFiles
 import cash.p.terminal.shared.desktop.vault.UnlockOutcome
 import cash.p.terminal.shared.desktop.vault.WipeOutcome
 import cash.p.terminal.shared.desktop.vault.password
@@ -17,8 +23,11 @@ import cash.p.terminal.wallet.ActiveAccountState
 import cash.p.terminal.wallet.managers.UserManager
 import cash.p.terminal.wallet.useCases.MoneroWalletFiles
 import io.mockk.coEvery
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import com.google.gson.Gson
 import java.io.File
 import java.util.UUID
 import kotlin.io.path.createTempDirectory
@@ -85,6 +94,7 @@ class DesktopWalletStorageTest {
         graph.wipe()
         assertNull(graph.accountManager.newAccountBackupRequiredFlow.value)
 
+        graph.restart()
         create()
         save(mnemonicAccount(isBackedUp = true))
         assertNull(graph.accountManager.newAccountBackupRequiredFlow.value)
@@ -94,7 +104,7 @@ class DesktopWalletStorageTest {
     fun create_afterWipe_writesLandInTheNewVault() = runBlocking<Unit> {
         create()
         save(mnemonicAccount(isBackedUp = true))
-        graph.wipe()
+        graph.wipeAndRelaunch()
         create()
         val restored = save(mnemonicAccount(isBackedUp = true).copy(origin = AccountOrigin.Restored))
 
@@ -122,7 +132,7 @@ class DesktopWalletStorageTest {
         assertFalse(raw.contains(TEST_WORDS.first()), "the mnemonic is stored in plaintext")
 
         graph.vault.unlock(password())
-        graph.wipe()
+        graph.wipeAndRelaunch()
         create()
         save(mnemonicAccount(isBackedUp = true))
         assertEquals(TrialPremiumResult.NeedPremium, graph.checkPremiumUseCase.checkTrialPremiumStatus())
@@ -156,6 +166,36 @@ class DesktopWalletStorageTest {
         assertNull(graph.accountManager.account(monero.id))
     }
 
+    @Test
+    fun createFullBackup_savedContact_carriesItAndRestoresItIntoANewVault() = runBlocking<Unit> {
+        create()
+        val account = save(mnemonicAccount(isBackedUp = true))
+        graph.koin.get<ContactsRepository>().restore(listOf(Contact("uid", "Alice", emptyList())), writeSynchronously = true)
+        val backupFile = graph.koin.get<WalletBackupProvider>().createFullBackup(listOf(account.id), BACKUP_PASSPHRASE)
+
+        graph.wipeAndRelaunch()
+        create()
+        val provider = graph.koin.get<WalletBackupProvider>()
+        val backupV3 = requireNotNull(provider.parseV3Backup(backupFile))
+        val (innerJson, key, kdfParams) = provider.unwrapV3FormatWithKey(backupV3, BACKUP_PASSPHRASE)
+        val decrypted = provider.decryptedFullBackupWithKey(
+            Gson().fromJson(innerJson, FullBackup::class.java), key, kdfParams, BACKUP_PASSPHRASE,
+            BackupSource.Authenticated,
+        )
+        assertEquals(listOf("Alice"), decrypted.contacts.map(Contact::name))
+        provider.restoreFullBackup(decrypted, BACKUP_PASSPHRASE)
+        // The restore writes contacts in the background; a restart before that drops them.
+        val contactsFile = graph.koin.get<DesktopVaultFiles>().contactsFile
+        withTimeout(CONTACTS_TIMEOUT_MS) { while (!contactsFile.exists()) delay(POLL_MS) }
+
+        graph.restart()
+        assertEquals(UnlockOutcome.Success, graph.vault.unlock(password()))
+        val contacts = withTimeout(CONTACTS_TIMEOUT_MS) {
+            graph.koin.get<ContactsRepository>().contactsFlow.first { it.isNotEmpty() }
+        }
+        assertEquals(listOf("Alice"), contacts.map(Contact::name))
+    }
+
     private suspend fun create() = assertEquals(CreateOutcome.SUCCESS, graph.vault.create(password()))
 
     private fun save(account: Account): Account = account.also { graph.accountManager.save(it) }
@@ -177,5 +217,8 @@ class DesktopWalletStorageTest {
     private companion object {
         const val MONERO_WORDS = 25
         const val WALLET_INNER_NAME = "monero-wallet"
+        const val BACKUP_PASSPHRASE = "backup passphrase"
+        const val CONTACTS_TIMEOUT_MS = 10_000L
+        const val POLL_MS = 10L
     }
 }

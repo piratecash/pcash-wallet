@@ -60,7 +60,7 @@
     <string name="trezor_not_initialized_cta">Guía de configuración</string>
     <string name="trezor_connect_failed">No se pudo conectar con Trezor.</string>
     <string name="Button_Activate">Activar</string>
-    <string name="activation_required_dialog_description">Para recibir %s, debe activar el token. La red Stellar requiere establecer una línea de confianza (trustline) para cada token. Sin ella, su monedero no podrá recibir %s: la transacción será rechazada y los fondos no serán entregados.</string>
+    <string name="activation_required_dialog_description">Para recibir %1$s, debe activar el token. La red Stellar requiere establecer una línea de confianza (trustline) para cada token. Sin ella, su monedero no podrá recibir %2$s: la transacción será rechazada y los fondos no serán entregados.</string>
     <string name="activate_you_activate">Usted activa</string>
     <string name="activate_activating">Activando</string>
     <string name="activate_already_active_title">Ya está activo</string>
@@ -373,7 +373,7 @@
     <string name="Balance_Error_InvalidQrCode">No se puede reconocer</string>
     <string name="Balance_Receive_WatchAddressAlert">Esta dirección es la dirección de la cuenta observada</string>
     <string name="Balance_Receive_UsedAddresses">Direcciones Utilizadas</string>
-    <string name="Balance_Receive_UsedAddressesDescriptoin">%s direcciones cambian por privacidad y seguridad. A continuación, una lista de las direcciones utilizadas en esta billetera.</string>
+    <string name="Balance_Receive_UsedAddressesDescriptoin">%1$s direcciones cambian por privacidad y seguridad. A continuación, una lista de las direcciones utilizadas en esta billetera.</string>
     <string name="Balance_Receive_ReceiveAddresses">Direcciones para recibir</string>
     <string name="Balance_Receive_ChangeAddresses">Cambiar direcciones</string>
     <string name="receive_address_badge_new">Nuevo</string>
@@ -694,7 +694,7 @@
     <string name="SwapInfo_PriceImpactTitle">Impacto en el precio</string>
     <string name="SwapInfo_PriceImpactDescription">Desviación de precio esperada de un valor mostrado, normalmente aumenta con la cantidad de swap.</string>
     <!--Deposit-->
-    <string name="Deposit_Title">Recibir %s</string>
+    <string name="Deposit_Title">Recibir %1$s</string>
     <!--Transactions-->
     <string name="Transactions_Title">Transacciones</string>
     <string name="Transactions_Hide">Transactions Hide</string>
@@ -1439,6 +1439,8 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="CoinPage_TimeDuration_Month">1M</string>
     <string name="CoinPage_TimeDuration_Year">1A</string>
     <string name="CoinPage_TimeDuration_All">Todo</string>
+    <string name="Timestamp_Today">Hoy</string>
+    <string name="Timestamp_Yesterday">Ayer</string>
     <string name="CoinPage_TradingVolume">Volumen de Comercio</string>
     <string name="CoinPage_Audits_PoweredBy">Con tecnología de Defiyield.app</string>
     <string name="CoinPage_Audits_Issues">Problemas: %d</string>
@@ -1973,8 +1975,8 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     </plurals>
 
     <plurals name="staking_next_accrual_in_hours">
-        <item quantity="one">La próxima acumulación será en %d hora</item>
-        <item quantity="other">La próxima acumulación será en %d horas</item>
+        <item quantity="one">La próxima acumulación será en %1$d hora</item>
+        <item quantity="other">La próxima acumulación será en %1$d horas</item>
     </plurals>
     <string name="estimated_annual_interest">Interés anual estimado</string>
     <string name="accruals">Accruals</string>
@@ -2198,6 +2200,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="send_trezor_mweb_not_supported">Trezor no admite MWEB. Envía Litecoin a una dirección normal (no MWEB).</string>
     <string name="send_trezor_time_lock_not_supported">Trezor no admite transacciones con bloqueo temporal.</string>
     <string name="send_trezor_zcash_memo_not_supported">Trezor no puede adjuntar un memo a una transacción de Zcash. Elimina el memo para continuar.</string>
+    <string name="send_memo_too_long">El memo es demasiado largo: %1$d de %2$d bytes</string>
     <string name="send_trezor_zcash_transparent_only">Trezor solo puede enviar Zcash a direcciones transparentes.</string>
     <string name="send_trezor_zcash_unified_no_transparent_receiver">Esta dirección unificada no tiene un receptor transparente, por lo que Trezor no puede enviarle una transferencia.</string>
     <string name="send_trezor_zcash_firmware_required">%1$s necesita el firmware %2$s o posterior para enviar a direcciones unificadas de Zcash. Actualiza el dispositivo y vuelve a intentarlo — la versión del firmware se comprobará de nuevo en tu próxima transacción de Zcash.</string>
@@ -2332,6 +2335,9 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="desktop_forgot_password_warning">Se eliminarán los monederos, contactos, configuraciones e historial guardados en este equipo. Los fondos en la blockchain no se verán afectados: los monederos solo pueden restaurarse con sus frases de recuperación.</string>
     <string name="desktop_forgot_password_action">Eliminar datos</string>
     <string name="desktop_forgot_password_failed">No se pudieron eliminar los datos</string>
+    <string name="desktop_wipe_restart_manually">Datos eliminados. Vuelva a iniciar la aplicación</string>
+    <string name="desktop_restart_manually">Vuelva a iniciar la aplicación</string>
+    <string name="platform_not_supported_yet">Aún no es compatible con la versión de escritorio</string>
     <string name="desktop_change_password_title">Cambiar contraseña</string>
     <string name="desktop_change_password_current_hint">Contraseña actual</string>
     <string name="desktop_change_password_new_hint">Nueva contraseña</string>

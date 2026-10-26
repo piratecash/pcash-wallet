@@ -86,6 +86,7 @@ fun FormsInput(
     onTrailingIconClick: (() -> Unit)? = null,
     showDeleteButton: Boolean = true,
     maxLength: Int? = null,
+    maxBytes: Int? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     textPreprocessor: TextPreprocessor = TextPreprocessorImpl,
@@ -157,7 +158,9 @@ fun FormsInput(
                         textFieldValue.copy(text = textPreprocessor.process(textFieldValue.text))
 
                     val text = textFieldValueProcessed.text
-                    if (maxLength == null || text.length <= maxLength) {
+                    val fits = (maxLength == null || text.length <= maxLength) &&
+                        (maxBytes == null || text.encodeToByteArray().size <= maxBytes)
+                    if (fits) {
                         textState = textFieldValueProcessed
                         onValueChange.invoke(text)
                     } else {

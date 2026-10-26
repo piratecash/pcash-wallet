@@ -1,5 +1,6 @@
 package cash.p.terminal.wallet.syncers
 
+import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.network.pirate.domain.model.CoinsList
 import cash.p.terminal.network.pirate.domain.model.RemoteBlockchain
 import cash.p.terminal.network.pirate.domain.model.RemoteCoin
@@ -12,7 +13,6 @@ import cash.p.terminal.wallet.storage.CoinStorage
 import cash.p.terminal.wallet.storage.CoinsData
 import cash.p.terminal.wallet.storage.MarketDatabase
 import cash.p.terminal.wallet.storage.SyncerStateDao
-import io.horizontalsystems.core.DispatcherProvider
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -38,13 +38,6 @@ private class FakeSyncerStateDao : SyncerStateDao {
     }
 
     override fun get(key: String): String? = state[key]
-}
-
-private class TestDispatcherProvider(dispatcher: kotlinx.coroutines.CoroutineDispatcher) : DispatcherProvider {
-    override val io = dispatcher
-    override val default = dispatcher
-    override val main = dispatcher
-    override val applicationScope = CoroutineScope(SupervisorJob() + dispatcher)
 }
 
 @RunWith(RobolectricTestRunner::class)
@@ -76,7 +69,7 @@ class CoinSyncerTest {
         syncerStateDao = syncerStateDao,
         virtualCoinMapper = VirtualCoinMapper(),
         mapper = CoinsListMapper(),
-        dispatcherProvider = TestDispatcherProvider(dispatcher),
+        dispatcherProvider = TestDispatcherProvider(dispatcher, CoroutineScope(SupervisorJob() + dispatcher)),
     )
 
     private val validCoinsList = CoinsList(

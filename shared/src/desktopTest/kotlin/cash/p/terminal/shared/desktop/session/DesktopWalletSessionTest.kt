@@ -1,8 +1,10 @@
 package cash.p.terminal.shared.desktop.session
 
+import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.core.ITermsManager
 import cash.p.terminal.core.StorageLockedException
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.managers.WalletServicesStarter
 import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
 import cash.p.terminal.shared.desktop.DesktopWalletSession
 import cash.p.terminal.shared.desktop.vault.DesktopVault
@@ -20,6 +22,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlin.test.assertFalse
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class DesktopWalletSessionTest {
@@ -29,7 +32,10 @@ class DesktopWalletSessionTest {
     private val userManager = mockk<UserManager>(relaxed = true)
     private val accountManager = mockk<IAccountManager>(relaxed = true)
     private val termsManager = mockk<ITermsManager>(relaxed = true)
+    private val contactsRepository = mockk<ContactsRepository>(relaxed = true)
     private val checkPremiumUseCase = mockk<CheckPremiumUseCase>(relaxed = true)
+    private val walletServicesStarter = mockk<WalletServicesStarter>(relaxed = true)
+    private val lazyCheckPremiumUseCase = lazy { checkPremiumUseCase }
 
     @Test
     fun start_everyUnlock_setsUserLevelZeroAndStartsThePremiumWarmUp() = runTest {
@@ -46,6 +52,36 @@ class DesktopWalletSessionTest {
     }
 
     @Test
+    fun start_unlockAfterALock_startsTheWalletServicesOnce() = runTest {
+        startSession()
+
+        vaultState.value = unlocked()
+        vaultState.value = DesktopVaultState.Locked
+        vaultState.value = unlocked()
+
+        coVerify(exactly = 1) { walletServicesStarter.start() }
+    }
+
+    @Test
+    fun start_noUnlock_neverStartsTheWalletServices() = runTest {
+        startSession()
+
+        vaultState.value = DesktopVaultState.NoVault
+
+        coVerify(exactly = 0) { walletServicesStarter.start() }
+    }
+
+    @Test
+    fun start_noVaultBeforeAnyUnlock_neverBuildsThePremiumUseCase() = runTest {
+        startSession()
+
+        vaultState.value = DesktopVaultState.NoVault
+
+        verify { accountManager.unload() }
+        assertFalse(lazyCheckPremiumUseCase.isInitialized())
+    }
+
+    @Test
     fun start_wipe_stopsWarmUpUnloadsAccountsAndResetsLevelAndTerms() = runTest {
         startSession()
         vaultState.value = unlocked()
@@ -58,6 +94,7 @@ class DesktopWalletSessionTest {
             userManager.resetUserLevel()
             termsManager.reload()
         }
+        verify { contactsRepository.clear() }
     }
 
     @Test
@@ -78,7 +115,9 @@ class DesktopWalletSessionTest {
             userManager = userManager,
             accountManager = accountManager,
             termsManager = termsManager,
-            checkPremiumUseCase = checkPremiumUseCase,
+            contactsRepository = contactsRepository,
+            checkPremiumUseCase = lazyCheckPremiumUseCase,
+            walletServicesStarter = lazy { walletServicesStarter },
             dispatcherProvider = TestDispatcherProvider(dispatcher, backgroundScope),
         ).start(backgroundScope)
     }

@@ -22,6 +22,7 @@ import cash.p.terminal.entities.OfflineSignedTransactionDraft
 import cash.p.terminal.entities.PendingTransactionDraft
 import cash.p.terminal.modules.amount.SendAmountService
 import cash.p.terminal.modules.contacts.ContactsRepository
+import cash.p.terminal.modules.memo.fitsMemoBytes
 import cash.p.terminal.modules.send.BaseSendViewModel
 import cash.p.terminal.modules.send.SendConfirmationData
 import cash.p.terminal.modules.send.SendErrorInsufficientBalance
@@ -213,7 +214,7 @@ class SendMemoViewModel(
 
     private fun memoFits(): Boolean {
         val maxBytes = chain.memoMaxBytes ?: return true
-        return (memo?.encodeToByteArray()?.size ?: 0) <= maxBytes
+        return memo.fitsMemoBytes(maxBytes)
     }
 
     override fun getConfirmationData(): SendConfirmationData {

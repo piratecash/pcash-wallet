@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.backuplocal
 
+import cash.p.terminal.modules.contacts.ContactsSettingsBackup
 import android.util.Base64
 import cash.p.terminal.core.IAccountFactory
 import io.horizontalsystems.ethereumkit.core.EthereumKit
@@ -135,7 +136,7 @@ internal abstract class BackupProviderRestoreTestFixture {
         chartIndicatorsBackup = ChartIndicatorsBackup(localStorage, chartIndicatorManager, chartIndicatorSettingsDao),
         baseTokenManager = baseTokenManager,
         currencyManager = currencyManager,
-        contactsRepository = contactsRepository,
+        contactsSettingsBackup = ContactsSettingsBackup(contactsRepository),
         appearanceSettingsBackup = appearanceSettingsBackup,
         blockchainSettingsBackup = blockchainSettingsBackup,
     )

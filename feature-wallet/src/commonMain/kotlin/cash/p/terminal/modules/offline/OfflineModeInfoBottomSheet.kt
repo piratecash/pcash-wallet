@@ -1,0 +1,98 @@
+package cash.p.terminal.modules.offline
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.unit.dp
+import cash.p.terminal.resources.Button_GotIt
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_checkmark_20
+import cash.p.terminal.resources.ic_close_24
+import cash.p.terminal.resources.ic_info_24
+import cash.p.terminal.resources.offline_mode_info_description
+import cash.p.terminal.resources.offline_mode_info_history
+import cash.p.terminal.resources.offline_mode_info_no_new_tx
+import cash.p.terminal.resources.offline_mode_info_no_send
+import cash.p.terminal.resources.offline_mode_info_price
+import cash.p.terminal.resources.offline_mode_info_title
+import cash.p.terminal.ui_compose.BottomSheetHeader
+import cash.p.terminal.ui_compose.TransparentModalBottomSheet
+import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
+import cash.p.terminal.ui_compose.components.HSpacer
+import cash.p.terminal.ui_compose.components.VSpacer
+import cash.p.terminal.ui_compose.components.body_leah
+import cash.p.terminal.ui_compose.components.subhead2_leah
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+
+private data class OfflineChecklistItem(val textRes: StringResource, val positive: Boolean)
+
+private val offlineChecklistItems = listOf(
+    OfflineChecklistItem(Res.string.offline_mode_info_price, positive = true),
+    OfflineChecklistItem(Res.string.offline_mode_info_history, positive = true),
+    OfflineChecklistItem(Res.string.offline_mode_info_no_new_tx, positive = false),
+    OfflineChecklistItem(Res.string.offline_mode_info_no_send, positive = false),
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun OfflineModeInfoBottomSheet(onDismiss: () -> Unit) {
+    val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val close: () -> Unit = { scope.launch { sheetState.hide() }.invokeOnCompletion { onDismiss() } }
+
+    TransparentModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+    ) {
+        BottomSheetHeader(
+            iconPainter = painterResource(Res.drawable.ic_info_24),
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.iconSecondary),
+            title = stringResource(Res.string.offline_mode_info_title),
+            onCloseClick = close,
+        ) {
+            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp)) {
+                subhead2_leah(text = stringResource(Res.string.offline_mode_info_description))
+                VSpacer(12.dp)
+                offlineChecklistItems.forEach { item ->
+                    OfflineChecklistRow(item)
+                    VSpacer(12.dp)
+                }
+            }
+            VSpacer(8.dp)
+            ButtonPrimaryTransparent(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                title = stringResource(Res.string.Button_GotIt),
+                onClick = close,
+            )
+            VSpacer(32.dp)
+        }
+    }
+}
+
+@Composable
+private fun OfflineChecklistRow(item: OfflineChecklistItem) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            painter = painterResource(if (item.positive) Res.drawable.ic_checkmark_20 else Res.drawable.ic_close_24),
+            contentDescription = null,
+            tint = if (item.positive) ComposeAppTheme.colors.statusSuccess else ComposeAppTheme.colors.statusError,
+            modifier = Modifier.size(20.dp),
+        )
+        HSpacer(12.dp)
+        body_leah(text = stringResource(item.textRes))
+    }
+}

@@ -9,6 +9,7 @@ import io.horizontalsystems.core.IKeyProvider
 import io.horizontalsystems.core.IKeyStoreCleaner
 import io.horizontalsystems.core.IKeyStoreManager
 import io.horizontalsystems.core.IPinSettingsStorage
+import io.horizontalsystems.core.logger.AppLogger
 import org.koin.java.KoinJavaComponent.inject
 import java.security.InvalidKeyException
 import java.security.KeyStore
@@ -21,7 +22,7 @@ import javax.crypto.SecretKey
 class KeyStoreManager(
     private val keyAlias: String,
     private val keyStoreCleaner: IKeyStoreCleaner,
-    private val logger: Logger,
+    private val logger: AppLogger,
 ) : IKeyStoreManager, IKeyProvider {
 
     private val ANDROID_KEY_STORE = "AndroidKeyStore"
@@ -31,11 +32,6 @@ class KeyStoreManager(
 
     private val localStoreManager: IPinSettingsStorage by inject(IPinSettingsStorage::class.java)
     private val keyStore: KeyStore = KeyStore.getInstance(ANDROID_KEY_STORE)
-
-    interface Logger {
-        fun warning(message: String, e: Throwable)
-        fun info(message: String)
-    }
 
     init {
         keyStore.load(null)

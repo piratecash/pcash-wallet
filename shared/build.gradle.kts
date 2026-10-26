@@ -66,6 +66,13 @@ kotlin {
                 implementation(project(":feature-premium"))
                 implementation(libs.hd.wallet.kit)
                 implementation(libs.monero.kit)
+                implementation(libs.bitcoin.core)
+                implementation(libs.ethereum.kit)
+                implementation(libs.solana.kit)
+                implementation(libs.stellar.kit)
+                implementation(libs.thorchain.kit)
+                implementation(libs.ton.kit)
+                implementation(libs.tron.kit)
                 implementation(libs.gson)
                 implementation(libs.rxjava)
                 implementation(libs.datastore.preferences.core)
@@ -81,6 +88,7 @@ kotlin {
 
         val desktopTest by getting {
             dependencies {
+                implementation(project(":core:test-fixtures"))
                 implementation(kotlin("test"))
                 implementation(libs.mockk)
                 implementation(libs.kotlinx.coroutines.test)
@@ -88,6 +96,7 @@ kotlin {
                 implementation(libs.ktor.client.core)
                 implementation(project(":components:chartview"))
                 implementation(libs.ethereum.kit)
+                implementation(libs.beam.sdk)
             }
         }
     }

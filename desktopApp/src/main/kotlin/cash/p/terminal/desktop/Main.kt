@@ -2,11 +2,13 @@ package cash.p.terminal.desktop
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import androidx.compose.ui.window.rememberWindowState
 import cash.p.terminal.network.data.AppHeadersProvider
 import cash.p.terminal.network.desktopAppDataFile
 import cash.p.terminal.network.di.networkModule
@@ -15,8 +17,12 @@ import cash.p.terminal.network.secureDesktopAppDataDirectory
 import cash.p.terminal.feature.market.di.marketFeatureModule
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.desktop_already_running
+import cash.p.terminal.shared.desktop.DesktopAppExit
+import cash.p.terminal.shared.desktop.DesktopBalanceAutoHide
 import cash.p.terminal.shared.desktop.DesktopForegroundEffect
+import cash.p.terminal.shared.desktop.DesktopLaunchArguments
 import cash.p.terminal.shared.desktop.DesktopWalletSession
+import cash.p.terminal.shared.desktop.DesktopWipeCoordinator
 import cash.p.terminal.shared.desktop.desktopFeatureModule
 import cash.p.terminal.shared.desktop.rememberDesktopDarkTheme
 import cash.p.terminal.shared.desktop.lock.DesktopInactivityLock
@@ -27,6 +33,7 @@ import cash.p.terminal.shared.market.MarketCatalogSyncer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.di.marketModule
+import co.touchlab.kermit.Logger
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import coil3.ImageLoader
@@ -34,10 +41,13 @@ import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.crossfade
 import coil3.svg.SvgDecoder
 import io.horizontalsystems.core.DesktopLanguageManager
+import io.horizontalsystems.dashlibnative.DashjBlsLibrary
 import io.horizontalsystems.ethereumkit.core.EthereumKit
 import io.horizontalsystems.sqlcipher.SqlCipherDriver
+import java.io.File
 import java.util.Locale
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import org.jetbrains.compose.resources.stringResource
@@ -48,18 +58,22 @@ import org.koin.dsl.module
 private const val APPLICATION_NAME = "P.CASH"
 private const val APPLICATION_VERSION = "desktop"
 private const val INSTANCE_LOCK_FILE = ".instance.lock"
+private const val BEAM_NATIVE_PATH_PROPERTY = "beam.sdk.native.path"
 
 private val applicationScope = MainScope()
 
 // Releasing the lock holder releases the lock, so it stays referenced for the whole process.
 private var instanceLock: SingleInstanceLock? = null
 
-fun main() {
-    // The packager re-signs natives inside jars, so the driver loads its copy from the app resources.
+fun main(args: Array<String>) {
+    val launchArguments = DesktopLaunchArguments.parse(args)
+    // The packager re-signs natives inside jars, so SQLCipher and BEAM load their copies from the app resources.
     System.getProperty("compose.application.resources.dir")?.let {
         System.setProperty(SqlCipherDriver.NATIVE_DIR_PROPERTY, it)
+        System.setProperty(BEAM_NATIVE_PATH_PROPERTY, File(it, System.mapLibraryName("beam_sdk_kmp")).path)
     }
     secureDesktopAppDataDirectory()
+    launchArguments.awaitPreviousInstance()
     instanceLock = SingleInstanceLock.acquire(desktopAppDataFile(INSTANCE_LOCK_FILE))
     if (instanceLock == null) {
         showAlreadyRunning()
@@ -67,6 +81,8 @@ fun main() {
     }
     // Registers the crypto provider the kits sign and derive keys with, before anything touches a key.
     EthereumKit.init()
+    // Without the native, Dash InstantSend lock votes are rejected silently.
+    if (!DashjBlsLibrary.available) Logger.withTag("Main").w { "Dash BLS native is unavailable on this platform" }
     val koin = startKoin {
         modules(networkModule, marketModule, marketFeatureModule, desktopFeatureModule, desktopModule)
     }.koin
@@ -75,10 +91,13 @@ fun main() {
     SingletonImageLoader.setSafe(::buildImageLoader)
     koin.get<MarketCatalogSyncer>().start(applicationScope)
     koin.get<DesktopWalletSession>().start(applicationScope)
+    koin.get<DesktopBalanceAutoHide>().start(applicationScope)
+    koin.get<DesktopWipeCoordinator>().start(applicationScope)
     val inactivityLock = koin.get<DesktopInactivityLock>()
     inactivityLock.start(applicationScope)
     inactivityLock.watchUserInput()
     val vault = koin.get<DesktopVault>()
+    val appExit = koin.get<DesktopAppExit>()
     application {
         val quit: () -> Unit = {
             applicationScope.launch {
@@ -89,10 +108,15 @@ fun main() {
                 }
             }
         }
-        Window(onCloseRequest = quit, title = APPLICATION_NAME) {
-            DesktopForegroundEffect()
+        val windowState = rememberWindowState()
+        Window(onCloseRequest = quit, state = windowState, title = APPLICATION_NAME) {
+            LaunchedEffect(appExit) {
+                appExit.requested.first { it }
+                quit()
+            }
+            DesktopForegroundEffect(windowState.isMinimized)
             ComposeAppTheme(darkTheme = rememberDesktopDarkTheme()) {
-                DesktopRoot(APPLICATION_VERSION)
+                DesktopRoot(APPLICATION_VERSION, launchArguments.wipeFailed)
             }
         }
     }

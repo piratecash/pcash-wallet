@@ -38,6 +38,9 @@ class DesktopVault(
     @Volatile
     private var session: DesktopStorageSession? = null
 
+    // Written and read under the mutex only.
+    private var wipeStarted = false
+
     private val _state = MutableStateFlow<DesktopVaultState>(
         if (passwordVault.exists()) DesktopVaultState.Locked else DesktopVaultState.NoVault
     )
@@ -168,6 +171,12 @@ class DesktopVault(
     }
 
     private fun <T> startSession(vaultSession: VaultSession, success: T, failure: T): T {
+        // Whatever the wipe outcome, only a new process may open the storage again.
+        if (wipeStarted) {
+            vaultSession.close()
+            logger.w { "Storage session refused: this process has started a wipe" }
+            return failure
+        }
         val opened = openStorage(vaultSession)
         session = opened
         _state.value = opened?.let(DesktopVaultState::Unlocked) ?: DesktopVaultState.Locked
@@ -197,6 +206,7 @@ class DesktopVault(
     }
 
     private suspend fun wipeInternal(): WipeOutcome {
+        wipeStarted = true
         closeSession()
         _state.value = DesktopVaultState.Locked
         // Before the erase: a restart without slots must not find the old preferences.
@@ -205,7 +215,9 @@ class DesktopVault(
         if (!delete(files.slotFiles())) return WipeOutcome.FAILED
         // Past this point the keys are gone, so a leftover file is data nobody can read.
         delete(files.databaseFiles())
-        files.kitsDirectory.deleteRecursively()
+        if (!files.kitsDirectory.deleteRecursively()) {
+            logger.w { "Kit files outlived the wipe in ${files.kitsDirectory}; the next create() deletes them" }
+        }
         preferencesReset.applySystemLanguage()
         _state.value = DesktopVaultState.NoVault
         return WipeOutcome.SUCCESS

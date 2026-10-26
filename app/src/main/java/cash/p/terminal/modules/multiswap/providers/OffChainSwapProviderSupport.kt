@@ -21,6 +21,7 @@ import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.isLitecoinMweb
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.bitcoincore.storage.UtxoFilters
 import io.horizontalsystems.core.entities.BlockchainType
@@ -180,6 +181,8 @@ class OffChainSwapProviderSupport(
             }
 
             tokenIn.blockchainType.isUtxoBased -> {
+                // An MWEB send has no OP_RETURN output: the memo would be dropped silently.
+                if (tokenIn.isLitecoinMweb && !memo.isNullOrBlank()) throw SwapDepositMemoUnsupported()
                 SendTransactionData.Btc(
                     address = depositAddress,
                     memo = memo.orEmpty(),

@@ -13,6 +13,9 @@ class DesktopVaultFiles(private val dataDirectory: File) {
 
     val kitsDirectory: File get() = File(dataDirectory, KITS_DIRECTORY_NAME)
 
+    /** Under [kitsDirectory], so wiping the vault deletes it too. */
+    val contactsFile: File get() = File(kitsDirectory, CONTACTS_FILE_NAME)
+
     /** The slot file plus any temp copy an interrupted publish left behind — each one opens the vault. */
     fun slotFiles(): List<File> = listOf(vaultFile) + orphanSlotTemps()
 
@@ -27,6 +30,7 @@ class DesktopVaultFiles(private val dataDirectory: File) {
     private companion object {
         const val VAULT_FILE_NAME = "vault.pcv"
         const val KITS_DIRECTORY_NAME = "kits"
+        const val CONTACTS_FILE_NAME = "contacts.enc"
         const val TEMP_SUFFIX = ".tmp"
         val DATABASE_SUFFIXES = listOf("", "-wal", "-shm", "-journal")
     }

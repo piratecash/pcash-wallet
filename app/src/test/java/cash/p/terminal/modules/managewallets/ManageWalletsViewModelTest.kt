@@ -1,7 +1,5 @@
 package cash.p.terminal.modules.managewallets
 
-import cash.p.terminal.core.App
-import cash.p.terminal.core.storage.HardwarePublicKeyStorage
 import cash.p.terminal.core.usecase.AddMoneroToTrezorAccountUseCase
 import cash.p.terminal.modules.offline.OfflineOperationGate
 import cash.p.terminal.tangem.domain.usecase.TangemScanUseCase
@@ -10,6 +8,7 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.IHardwarePublicKeyStorage
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.HardwarePublicKey
@@ -17,7 +16,7 @@ import cash.p.terminal.wallet.entities.HardwarePublicKeyType
 import cash.p.terminal.wallet.entities.SecretString
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.policy.HardwareWalletTokenPolicy
-import io.horizontalsystems.core.CoreApp
+import cash.p.terminal.wallet.policy.PlatformChainSupport
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.coEvery
@@ -25,8 +24,6 @@ import io.mockk.coVerify
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
-import io.mockk.unmockkObject
 import io.mockk.verify
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -46,8 +43,10 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNotSame
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
@@ -57,11 +56,14 @@ class ManageWalletsViewModelTest : KoinTest {
     private val service = mockk<ManageWalletsService>(relaxed = true)
     private val accountManager = mockk<IAccountManager>()
     private val tangemScanUseCase = mockk<TangemScanUseCase>()
-    private val hardwarePublicKeyStorage = mockk<HardwarePublicKeyStorage>(relaxed = true)
+    private val hardwarePublicKeyStorage = mockk<IHardwarePublicKeyStorage>(relaxed = true)
     private val hardwareWalletTokenPolicy = mockk<HardwareWalletTokenPolicy>()
     private val fetchTrezorPublicKeys = mockk<FetchTrezorPublicKeysUseCase>()
     private val addMonero = mockk<AddMoneroToTrezorAccountUseCase>()
     private val offlineOperationGate = mockk<OfflineOperationGate>(relaxed = true)
+    private val platformChainSupport = mockk<PlatformChainSupport> {
+        every { isSupported(any<BlockchainType>()) } returns true
+    }
     private val itemsFlow = MutableStateFlow<List<ManageWalletsService.Item>>(emptyList())
     private val restoreSettingsRejectedFlow = MutableSharedFlow<Token>()
     private val enabledTokensFlow = MutableSharedFlow<Token>()
@@ -73,12 +75,18 @@ class ManageWalletsViewModelTest : KoinTest {
         modules(
             module {
                 single<IAccountManager> { accountManager }
-                single { tangemScanUseCase }
                 single { hardwarePublicKeyStorage }
                 single<HardwareWalletTokenPolicy> { hardwareWalletTokenPolicy }
-                single<FetchTrezorPublicKeysUseCase> { fetchTrezorPublicKeys }
-                single { addMonero }
+                single<HardwareWalletKeyProvisioner> {
+                    AndroidHardwareWalletKeyProvisioner(
+                        tangemScanUseCase,
+                        fetchTrezorPublicKeys,
+                        addMonero,
+                        accountManager,
+                    )
+                }
                 single { offlineOperationGate }
+                single<PlatformChainSupport> { platformChainSupport }
             }
         )
     }
@@ -86,11 +94,6 @@ class ManageWalletsViewModelTest : KoinTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
-        mockkObject(App.Companion)
-        val app = mockk<CoreApp> {
-            every { getString(any()) } returns "Add via Trezor"
-        }
-        every { App.instance } returns app
         every { accountManager.activeAccount } returns account
         every { accountManager.account(account.id) } returns account
         every { service.accountType } returns account.type
@@ -105,7 +108,6 @@ class ManageWalletsViewModelTest : KoinTest {
 
     @After
     fun tearDown() {
-        unmockkObject(App.Companion)
         Dispatchers.resetMain()
         stopKoin()
     }
@@ -265,6 +267,36 @@ class ManageWalletsViewModelTest : KoinTest {
 
         verify(exactly = 1) { service.enable(bep20Token) }
         assertFalse(viewModel.showScanToAddButton)
+    }
+
+    @Test
+    fun requestScanToAddTokens_savingKeysFails_showsErrorAndAllowsRetry() = runTest(dispatcher) {
+        val ethToken = token(BlockchainType.Ethereum, TokenType.Native)
+        every { hardwareWalletTokenPolicy.isSupported(account, ethToken) } returns true
+        coEvery { fetchTrezorPublicKeys(any(), account.id) } returns
+            listOf(tangemKey(BlockchainType.Ethereum, TokenType.Native))
+        coEvery { hardwarePublicKeyStorage.save(any()) } throws IllegalStateException("disk full")
+        val viewModel = ManageWalletsViewModel(service, emptyList())
+        viewModel.enable(ethToken)
+
+        val failedJob = viewModel.requestScanToAddTokens(closeAfterSuccess = false)
+        failedJob.join()
+
+        assertEquals("disk full", viewModel.errorMsg)
+        assertNotSame(failedJob, viewModel.requestScanToAddTokens(closeAfterSuccess = false))
+        verify(exactly = 0) { service.enable(ethToken) }
+    }
+
+    @Test
+    fun disable_chainUnsupportedOnPlatform_showsErrorWithoutDisabling() = runTest(dispatcher) {
+        every { platformChainSupport.isSupported(BlockchainType.Bitcoin) } returns false
+        val bitcoin = token(BlockchainType.Bitcoin, TokenType.Derived(TokenType.Derivation.Bip84))
+        val viewModel = ManageWalletsViewModel(service, emptyList())
+
+        viewModel.disable(bitcoin)
+
+        assertNotNull(viewModel.errorMsg)
+        verify(exactly = 0) { service.disable(bitcoin) }
     }
 
     private val tangemAccount = Account(

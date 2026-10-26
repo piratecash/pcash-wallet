@@ -10,7 +10,6 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
-import cash.p.terminal.entities.AddressUri
 import cash.p.terminal.modules.balance.BalanceViewItem2
 import cash.p.terminal.modules.offline.OfflineBlockedBottomSheet
 import cash.p.terminal.modules.offline.OperationAvailability
@@ -25,7 +24,6 @@ import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.TokenType
 import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.parcelize.Parcelize
-import java.math.BigDecimal
 
 class SendTokenSelectPage(val input: Input?) : HSPage() {
 
@@ -51,7 +49,7 @@ class SendTokenSelectPage(val input: Input?) : HSPage() {
                     HudHelper.showWarningMessage(view, R.string.Hud_WaitForSynchronization)
 
                 viewItem.errorMessage != null ->
-                    HudHelper.showErrorMessage(view, viewItem.errorMessage)
+                    HudHelper.showErrorMessage(view, viewItem.errorMessage.orEmpty())
             }
         }
 
@@ -104,21 +102,6 @@ class SendTokenSelectPage(val input: Input?) : HSPage() {
         val tokenTypes: List<TokenType>?,
         val prefilledData: PrefilledData,
     ) : Parcelable
-}
-
-@Parcelize
-data class PrefilledData(
-    val address: String?,
-    val amount: BigDecimal? = null,
-    val memo: String? = null,
-) : Parcelable {
-    companion object {
-        fun from(addressUri: AddressUri) = PrefilledData(
-            address = addressUri.address,
-            amount = addressUri.amount,
-            memo = addressUri.value(AddressUri.Field.Memo),
-        )
-    }
 }
 
 internal fun SendTokenSelectPage.Input.toSendInput(

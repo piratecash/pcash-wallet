@@ -196,6 +196,7 @@ class DesktopRootDesktopTest {
                         appGeneration = 0,
                         rootPage = { BlankPage() },
                         appContent = {},
+                        wipeFailed = false,
                     )
                 }
             }
@@ -216,6 +217,7 @@ class DesktopRootDesktopTest {
                     appGeneration = appGeneration,
                     rootPage = { BlankPage() },
                     appContent = { AppContent() },
+                    wipeFailed = false,
                 )
             }
         }

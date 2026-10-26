@@ -1,5 +1,7 @@
 package cash.p.terminal.modules.transactionInfo.resendbitcoin
 
+import cash.p.terminal.resources.ic_arrow_up_right_12
+import cash.p.terminal.resources.Res
 import android.os.Parcelable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -100,7 +102,7 @@ class ResendBitcoinPage(val input: Input) : HSPage() {
             SendResult.Sending -> {
                 HudHelper.showInProcessMessage(
                     view,
-                    R.string.Send_Sending,
+                    view.context.getString(R.string.Send_Sending),
                     SnackbarDuration.INDEFINITE
                 )
             }
@@ -162,7 +164,7 @@ class ResendBitcoinPage(val input: Input) : HSPage() {
                         SectionTitleCell(
                             stringResource(R.string.Send_Confirmation_YouSend),
                             uiState.coin.name,
-                            R.drawable.ic_arrow_up_right_12
+                            Res.drawable.ic_arrow_up_right_12
                         )
                     }
                     add {

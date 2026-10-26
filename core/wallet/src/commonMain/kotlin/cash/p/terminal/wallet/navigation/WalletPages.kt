@@ -6,6 +6,7 @@ import cash.p.terminal.wallet.Token
 
 /** Pages of `:app` taking wallet types, opened by feature modules without depending on `:app`. */
 interface WalletPages {
-    fun swap(tokenOut: Token): HSPage
+    /** Null where swap is not supported yet. */
+    fun swap(tokenOut: Token): HSPage?
     fun backupLocal(account: Account): HSPage
 }
