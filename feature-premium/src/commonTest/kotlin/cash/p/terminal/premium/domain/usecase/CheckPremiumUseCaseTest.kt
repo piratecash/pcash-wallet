@@ -23,7 +23,7 @@ import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.managers.UserManager
 import cash.p.terminal.wallet.policy.HardwareWalletTokenPolicy
 import cash.p.terminal.premium.data.model.PremiumUser
-import cash.p.terminal.premium.domain.TestDispatcherProvider
+import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.premium.domain.premiumDatabaseProviderOf
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType

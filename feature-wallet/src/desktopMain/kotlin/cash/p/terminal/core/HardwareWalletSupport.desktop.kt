@@ -12,4 +12,12 @@ internal actual object HardwareWalletSupport {
         blockchainType: BlockchainType,
         tokenType: TokenType,
     ): Boolean = false
+
+    actual fun supportsZcashUnifiedAddress(device: AccountType.TrezorDevice): Boolean = false
+
+    actual val zcashUnifiedAddressFirmware: String = ""
+
+    actual fun trezorDisplayName(model: String?): String? = null
+
+    actual fun isUserCancellation(error: Throwable): Boolean = false
 }

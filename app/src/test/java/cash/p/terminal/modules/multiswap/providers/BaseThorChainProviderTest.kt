@@ -41,7 +41,9 @@ class BaseThorChainProviderTest {
     private val securedBtc = token(BlockchainType.Thorchain, TokenType.ThorchainAsset("btc-btc"), "BTC", 8)
     private val cacao = token(BlockchainType.Mayachain, TokenType.Native, "CACAO", 10)
     private val eth = token(BlockchainType.Ethereum, TokenType.Native, "ETH", 18)
-    private val tokens = listOf(rune, tcy, securedBtc, cacao, eth).associateBy { it.tokenQuery }
+    private val ltcBip84 = token(BlockchainType.Litecoin, TokenType.Derived(TokenType.Derivation.Bip84), "LTC", 8)
+    private val ltcMweb = token(BlockchainType.Litecoin, TokenType.Mweb, "LTC", 8)
+    private val tokens = listOf(rune, tcy, securedBtc, cacao, eth, ltcBip84, ltcMweb).associateBy { it.tokenQuery }
     private val providers = listOf(ThorChainProvider, MayaProvider)
     private val originalApis = providers.map { it.thornodeAPI }
 
@@ -56,7 +58,9 @@ class BaseThorChainProviderTest {
         mockkObject(App)
         every { App.marketKit } returns marketKit
         every { marketKit.token(any<TokenQuery>()) } answers { tokens[firstArg()] }
-        every { marketKit.tokens(any<List<TokenQuery>>()) } returns emptyList()
+        every { marketKit.tokens(any<List<TokenQuery>>()) } answers {
+            firstArg<List<TokenQuery>>().mapNotNull(tokens::get)
+        }
         providers.forEach { it.setThornodeApi(api) }
         coEvery { api.securedAssets() } returns listOf(ThornodeAPI.Response.SecuredAsset("BTC-BTC"))
     }
@@ -99,6 +103,16 @@ class BaseThorChainProviderTest {
         assertTrue(MayaProvider.supports(cacao, rune))
         assertTrue(MayaProvider.supports(eth, cacao))
         coVerify(exactly = 0) { api.securedAssets() }
+    }
+
+    @Test
+    fun start_litecoinPool_excludesMwebSource() = runTest {
+        pools("LTC.LTC")
+
+        ThorChainProvider.start()
+
+        assertTrue(ThorChainProvider.supports(ltcBip84, rune))
+        assertFalse(ThorChainProvider.supports(ltcMweb, rune))
     }
 
     @Test

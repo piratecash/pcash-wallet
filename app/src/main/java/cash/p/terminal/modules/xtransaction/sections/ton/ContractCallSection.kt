@@ -1,7 +1,7 @@
 package cash.p.terminal.modules.xtransaction.sections.ton
 
+import org.jetbrains.compose.resources.painterResource
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import cash.p.terminal.R
 import cash.p.terminal.entities.TransactionValue

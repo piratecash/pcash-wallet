@@ -6,6 +6,9 @@ import cash.p.terminal.navigation.HSNavigation
 /** Confirms the user before a secret is shown or exported; [action] runs only once confirmed. */
 interface SecretActionAuthorizer {
     fun authorize(navigation: HSNavigation, action: () -> Unit)
+
+    /** Confirms before transactions hidden by the user are shown. */
+    fun authorizeHiddenTransactions(navigation: HSNavigation, action: () -> Unit)
 }
 
 fun HSNavigation.authorizeSecretAction(action: () -> Unit) =

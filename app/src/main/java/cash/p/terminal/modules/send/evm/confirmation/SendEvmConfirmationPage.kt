@@ -110,7 +110,7 @@ private fun SendEvmConfirmationScreen(
                         buttonEnabled = false
                         val currentSnackbar = HudHelper.showInProcessMessage(
                             view,
-                            R.string.Send_Sending,
+                            view.context.getString(R.string.Send_Sending),
                             SnackbarDuration.INDEFINITE
                         )
 

@@ -31,43 +31,75 @@ dependencies {
     implementation(project(":feature-market"))
     implementation(libs.ethereum.kit)
     implementation(libs.bitcoin.kit.sqlcipher.driver)
+    implementation(libs.bitcoin.dashlib.native)
+    implementation(libs.kermit)
     implementation(libs.coil.compose)
     implementation(libs.coil.svg)
     implementation(libs.coil.network.okhttp)
+    // Same okhttp as Android: stellar-sdk and ton-kit use okhttp-sse 4.x internals that okhttp 5 removed.
+    implementation(enforcedPlatform(libs.okhttp.bom))
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.core)
     implementation(compose.desktop.currentOs)
 }
 
-val sqlCipherDriver = libs.bitcoin.kit.sqlcipher.driver.get()
-val sqlCipherDriverJar = configurations.runtimeClasspath.get().incoming.artifactView {
-    componentFilter {
-        it is ModuleComponentIdentifier && it.group == sqlCipherDriver.group && it.module == sqlCipherDriver.name
+// mwebd ships full-protobuf gencode; a second, lite copy of com.google.protobuf fails its runtime version check.
+configurations.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "com.google.protobuf" && requested.name == "protobuf-javalite") {
+            useTarget("com.google.protobuf:protobuf-java:${requested.version}")
+        }
     }
+}
+
+fun runtimeJar(group: String, module: String) = configurations.runtimeClasspath.get().incoming.artifactView {
+    componentFilter { it is ModuleComponentIdentifier && it.group == group && it.module == module }
 }.files
 
+val sqlCipherDriver = libs.bitcoin.kit.sqlcipher.driver.get()
+val sqlCipherDriverJar = runtimeJar(sqlCipherDriver.group, sqlCipherDriver.name)
+val beamSdk = libs.beam.sdk.get()
+val beamSdkDesktopJar = runtimeJar(beamSdk.group, "${beamSdk.name}-desktop")
+
+// Compose picks the app-resources subdirectory by this name; the BEAM jar names its natives by Rust target triple.
+val beamNativeResourceDirs = mapOf(
+    "aarch64-apple-darwin" to "macos-arm64",
+    "x86_64-pc-windows-msvc" to "windows-x64",
+    "x86_64-unknown-linux-gnu" to "linux-x64",
+)
+
 // The packager re-signs dylibs inside jars, which breaks the driver's own checksum: ship them as app resources.
-val stageSqlCipherNatives = tasks.register<Sync>("stageSqlCipherNatives") {
+val stageNativeResources = tasks.register<Sync>("stageNativeResources") {
     from({ sqlCipherDriverJar.map(::zipTree) }) {
         include("natives/**")
         exclude("**/*.sha256")
         eachFile { path = path.removePrefix("natives/") }
         includeEmptyDirs = false
     }
-    into(layout.buildDirectory.dir("sqlcipher-natives"))
+    from({ beamSdkDesktopJar.map(::zipTree) }) {
+        include("native/**")
+        eachFile {
+            val triple = relativePath.segments[1]
+            path = "${beamNativeResourceDirs.getValue(triple)}/$name"
+        }
+        includeEmptyDirs = false
+    }
+    into(layout.buildDirectory.dir("native-resources"))
 }
 
-val verifySqlCipherNativeResource = tasks.register("verifySqlCipherNativeResource") {
+val verifyNativeResources = tasks.register("verifyNativeResources") {
     val prepareAppResources = tasks.named<Sync>("prepareAppResources")
     dependsOn(prepareAppResources)
     doLast {
-        val native = File(prepareAppResources.get().destinationDir, System.mapLibraryName("sqlcipher_jni"))
-        check(native.isFile) { "SQLCipher native is missing from the app resources: $native" }
+        listOf("sqlcipher_jni", "beam_sdk_kmp").forEach { library ->
+            val native = File(prepareAppResources.get().destinationDir, System.mapLibraryName(library))
+            check(native.isFile) { "Native library is missing from the app resources: $native" }
+        }
     }
 }
 
 tasks.withType<AbstractJPackageTask>().configureEach {
-    dependsOn(verifySqlCipherNativeResource)
+    dependsOn(verifyNativeResources)
 }
 
 compose.desktop {
@@ -85,7 +117,7 @@ compose.desktop {
             // CI passes 1.0.<run number> so every MSI gets a new ProductCode and upgrades the previous build;
             // macOS rejects MAJOR == 0, so the Android 0.x versionName cannot be reused here.
             packageVersion = providers.gradleProperty("desktopPackageVersion").getOrElse("1.0.0")
-            appResourcesRootDir.set(layout.dir(stageSqlCipherNatives.map { it.destinationDir }))
+            appResourcesRootDir.set(layout.dir(stageNativeResources.map { it.destinationDir }))
             macOS {
                 iconFile.set(macIconFile)
             }
@@ -105,7 +137,7 @@ tasks.withType<JavaExec>().configureEach {
 
 afterEvaluate {
     tasks.named<JavaExec>("run") {
-        dependsOn(verifySqlCipherNativeResource)
+        dependsOn(verifyNativeResources)
         if (isMacOs) {
             jvmArgs("-Xdock:name=$applicationName")
         }

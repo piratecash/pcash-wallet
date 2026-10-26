@@ -2,17 +2,10 @@ package cash.p.terminal.ui_compose.components
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import cash.p.terminal.ui_compose.R
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 
@@ -25,33 +18,14 @@ fun ButtonPrimaryCircle(
     iconTint: Color? = null,
     background: Color? = null,
 ) {
-    val shape = CircleShape
-    val resolvedBackground = if (enabled) {
-        background ?: ComposeAppTheme.colors.textPrimary
-    } else {
-        ComposeAppTheme.colors.buttonPrimaryDisabledBackground
-    }
-    val resolvedTint = if (enabled) {
-        iconTint ?: ComposeAppTheme.colors.contentInverse
-    } else {
-        ComposeAppTheme.colors.iconDisabled
-    }
-
-    HsIconButton(
-        onClick = { onClick() },
-        modifier = Modifier
-            .size(50.dp)
-            .clip(shape)
-            .background(resolvedBackground),
+    ButtonPrimaryCircle(
+        painter = painterResource(id = icon),
+        onClick = onClick,
+        contentDescription = contentDescription,
         enabled = enabled,
-        rippleColor = ComposeAppTheme.colors.contentInverse
-    ) {
-        Icon(
-            painter = painterResource(id = icon),
-            contentDescription = contentDescription,
-            tint = resolvedTint
-        )
-    }
+        iconTint = iconTint,
+        background = background,
+    )
 }
 
 @Composable

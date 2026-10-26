@@ -167,7 +167,7 @@ class NftCollectionOverviewViewModel(
         collection.providerUrl?.let {
             add(
                 NftCollectionOverviewViewItem.Link(
-                    url = collection.providerUrl,
+                    url = it,
                     title = TranslatableString.PlainString(service.providerTitle),
                     icon = service.providerIcon
                 )
