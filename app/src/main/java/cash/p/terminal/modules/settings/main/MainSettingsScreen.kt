@@ -52,11 +52,11 @@ import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedSheet
 import cash.p.terminal.modules.walletconnect.WCErrorNoAccountSheet
 import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.modules.walletconnect.list.WCListPage
-import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.PageResumeEffect
-import cash.p.terminal.navigation.openQrScanner
+import cash.p.terminal.navigation.QrScannerLauncher
+import cash.p.terminal.navigation.rememberQrScannerLauncher
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.shared.settings.SettingsAction
 import cash.p.terminal.shared.settings.SettingsContent
@@ -97,12 +97,14 @@ fun SettingsScreen(
 ) {
     PageResumeEffect(onResume = viewModel::refresh, onPause = {})
     val context = LocalContext.current
-    val appPages: AppPages = koinInject()
     val view = LocalView.current
     val pinComponent: IPinComponent = koinInject()
     val rawTxScanTitle = stringResource(R.string.offline_broadcast_title)
     val walletConnectTitle = stringResource(R.string.WalletConnect_Title)
     val tonConnectTitle = stringResource(R.string.TonConnect_Title)
+    val offlineBroadcastScanner = navigation.rememberQrScannerLauncher(koinInject()) { scannedText ->
+        navigation.slideFromRight(OfflineBroadcastPage(OfflineBroadcastPage.Input(initialInput = scannedText)))
+    }
     val transactionFileLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { uri ->
@@ -132,7 +134,7 @@ fun SettingsScreen(
                     handleSettingsAction(
                         action = action,
                         navigation = navigation,
-                        appPages = appPages,
+                        offlineBroadcastScanner = offlineBroadcastScanner,
                         viewModel = viewModel,
                         context = context,
                         rawTxScanTitle = rawTxScanTitle,
@@ -151,7 +153,7 @@ fun SettingsScreen(
 internal fun handleSettingsAction(
     action: SettingsAction,
     navigation: HSNavigation,
-    appPages: AppPages,
+    offlineBroadcastScanner: QrScannerLauncher,
     viewModel: MainSettingsViewModel,
     context: Context,
     rawTxScanTitle: String,
@@ -179,7 +181,7 @@ internal fun handleSettingsAction(
             tonConnectTitle,
         )
         SettingsAction.Contacts -> navigation.slideFromRight(ContactsPage(ContactsPage.Input(Mode.Full)))
-        SettingsAction.OfflineBroadcast -> openOfflineBroadcastScanner(navigation, appPages, rawTxScanTitle)
+        SettingsAction.OfflineBroadcast -> offlineBroadcastScanner.open(rawTxScanTitle, showPasteButton = true)
         SettingsAction.ImportTransactionFile -> importTransactionFile()
         SettingsAction.AboutPremium -> navigation.slideFromBottom(AboutPremiumPage(null))
         SettingsAction.RateApp -> RateAppManager.openPlayMarket(context)
@@ -234,22 +236,6 @@ private fun openTonConnect(
                     connectionLabel = tonConnectTitle,
                 )
             )
-        )
-    }
-}
-
-private fun openOfflineBroadcastScanner(
-    navigation: HSNavigation,
-    appPages: AppPages,
-    rawTxScanTitle: String,
-) {
-    navigation.openQrScanner(
-        appPages = appPages,
-        title = rawTxScanTitle,
-        showPasteButton = true,
-    ) { scannedText ->
-        navigation.slideFromRight(
-            OfflineBroadcastPage(OfflineBroadcastPage.Input(initialInput = scannedText))
         )
     }
 }

@@ -6,6 +6,8 @@ import cash.p.terminal.modules.zcashnetwork.addserver.AddZcashServerPage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromBottom
 import cash.p.terminal.resources.EvmNetwork_Added
 import cash.p.terminal.resources.Hud_Removed
 import cash.p.terminal.resources.Res
@@ -23,6 +25,9 @@ class ZcashNetworkPage(private val blockchain: Blockchain) : HSPage() {
         val removedText = stringResource(Res.string.Hud_Removed)
         val addedText = stringResource(Res.string.EvmNetwork_Added)
         val openStatus = blockchainStatusOpener(navigation)
+        val addServerLauncher = navigation.rememberResultLauncher<AddZcashServerPage.Result> {
+            hudMessenger.showSuccess(addedText)
+        }
         ZcashNetworkScreen(
             uiState = viewModel.uiState,
             blockchain = blockchain,
@@ -34,11 +39,7 @@ class ZcashNetworkPage(private val blockchain: Blockchain) : HSPage() {
                     hudMessenger.showError(removedText)
                 },
             ),
-            onAddServerClick = {
-                navigation.slideFromBottomForResult<AddZcashServerPage.Result>(AddZcashServerPage()) {
-                    hudMessenger.showSuccess(addedText)
-                }
-            },
+            onAddServerClick = { addServerLauncher.slideFromBottom(AddZcashServerPage()) },
             onStatusClick = openStatus?.let { { it(blockchain) } },
             onClose = navigation::navigateUpSafely,
         )

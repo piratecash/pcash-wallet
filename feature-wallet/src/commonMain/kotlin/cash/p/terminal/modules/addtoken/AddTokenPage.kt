@@ -22,6 +22,8 @@ import cash.p.terminal.modules.addtoken.blockchainselector.AddTokenBlockchainSel
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.resources.Button_Add
 import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
@@ -77,6 +79,9 @@ private fun AddTokenScreen(
     val uiState = viewModel.uiState
     val hud = rememberHudMessenger()
     val doneText = stringResource(Res.string.Hud_Text_Done)
+    val blockchainLauncher = navigation.rememberResultLauncher<AddTokenBlockchainSelectorPage.Result> {
+        viewModel.onBlockchainSelect(it.blockchain)
+    }
 
     LaunchedEffect(uiState.finished) {
         if (uiState.finished) {
@@ -125,11 +130,9 @@ private fun AddTokenScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
                         onClick = {
-                            navigation.slideFromRightForResult<AddTokenBlockchainSelectorPage.Result>(
+                            blockchainLauncher.slideFromRight(
                                 AddTokenBlockchainSelectorPage(viewModel.blockchains, viewModel.selectedBlockchain)
-                            ) {
-                                viewModel.onBlockchainSelect(it.blockchain)
-                            }
+                            )
                         }
                     ) {
                         Image(

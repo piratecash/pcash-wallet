@@ -36,9 +36,9 @@ fun PageResumeEffect(onResume: () -> Unit, onPause: () -> Unit) {
     }
 }
 
-/** Must wrap every page's content: the guarded navigation acts only for the page whose entry is RESUMED. */
+/** The guarded navigation acts only for the page whose entry is RESUMED. */
 @Composable
-fun ReportPageResumed(navigation: HSNavigation, page: HSPage) {
+internal fun ReportPageResumed(navigation: HSNavigation, page: HSPage) {
     LifecycleResumeEffect(navigation, page) {
         navigation.onPageResumed(page)
         onPauseOrDispose { navigation.onPagePaused(page) }

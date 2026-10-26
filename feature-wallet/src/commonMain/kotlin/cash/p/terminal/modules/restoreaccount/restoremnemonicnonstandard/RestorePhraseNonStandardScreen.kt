@@ -57,9 +57,8 @@ import cash.p.terminal.resources.Res
 import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.modules.mnemonic.MnemonicLanguageCell
 import cash.p.terminal.modules.mnemonic.MnemonicLanguageSelectorDialog
-import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.HSNavigation
-import cash.p.terminal.navigation.openQrScanner
+import cash.p.terminal.navigation.rememberQrScannerLauncher
 import org.koin.compose.koinInject
 import cash.p.terminal.modules.restoreaccount.RestoreViewModel
 import cash.p.terminal.modules.restoreaccount.restoremnemonic.SuggestionsBar
@@ -113,12 +112,18 @@ fun RestorePhraseNonStandard(
     val hudMessenger = rememberHudMessenger()
     val isThirdPartyKeyboard = rememberThirdPartyKeyboardCheck()
     val showInputMethodPicker = rememberInputMethodPicker()
-    val appPages: AppPages = koinInject()
     val focusManager = LocalFocusManager.current
     val scannerTitle = stringResource(Res.string.Restore_RecoveryPhrase)
 
     var textState by rememberSaveable("", stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(""))
+    }
+    val qrScanner = navigation.rememberQrScannerLauncher(koinInject()) { scannedText ->
+        textState = textState.copy(
+            text = scannedText,
+            selection = TextRange(scannedText.length)
+        )
+        viewModel.onEnterMnemonicPhrase(scannedText, scannedText.length)
     }
     var showCustomKeyboardDialog by remember { mutableStateOf(false) }
     var isMnemonicPhraseInputFocused by remember { mutableStateOf(false) }
@@ -248,13 +253,7 @@ fun RestorePhraseNonStandard(
                         } else {
                             ScanQrButton {
                                 coroutineScope.launchAfterClearingFocus(focusManager) {
-                                    navigation.openQrScanner(appPages, scannerTitle) { scannedText ->
-                                        textState = textState.copy(
-                                            text = scannedText,
-                                            selection = TextRange(scannedText.length)
-                                        )
-                                        viewModel.onEnterMnemonicPhrase(scannedText, scannedText.length)
-                                    }
+                                    qrScanner.open(scannerTitle)
                                 }
                             }
 

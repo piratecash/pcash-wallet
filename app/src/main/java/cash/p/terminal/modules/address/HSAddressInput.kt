@@ -6,10 +6,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.R
-import cash.p.terminal.navigation.openQrScanner
+import cash.p.terminal.navigation.rememberQrScannerLauncher
 import cash.p.terminal.entities.Address
 import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.ui.compose.components.FormsInputAddress
@@ -79,7 +78,9 @@ fun HSAddressInput(
     }
 
     val scannerTitle = stringResource(R.string.qr_scanner_title_address, viewModel.blockchainType.title)
-    val appPages: AppPages = koinInject()
+    val qrScanner = navigation.rememberQrScannerLauncher(koinInject()) { scannedText ->
+        viewModel.parseText(textPreprocessor.process(scannedText))
+    }
 
     FormsInputAddress(
         modifier = modifier,
@@ -90,12 +91,7 @@ fun HSAddressInput(
         navigation = navigation,
         chooseContactEnable = viewModel.hasContacts(),
         blockchainType = viewModel.blockchainType,
-        onQrScanClick = {
-            navigation.openQrScanner(appPages, scannerTitle) { scannedText ->
-                val textProcessed = textPreprocessor.process(scannedText)
-                viewModel.parseText(textProcessed)
-            }
-        },
+        onQrScanClick = { qrScanner.open(scannerTitle) },
         onValueChange = {
             viewModel.parseText(it)
         },

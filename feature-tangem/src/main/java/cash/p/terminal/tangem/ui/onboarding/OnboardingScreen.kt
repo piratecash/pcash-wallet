@@ -25,6 +25,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromBottom
 import cash.p.terminal.tangem.R
 import cash.p.terminal.tangem.ui.HardwareWalletError
 import cash.p.terminal.tangem.ui.HardwareWalletOnboardingViewModel
@@ -47,6 +49,12 @@ internal fun OnboardingScreen(
     val uiState = viewModel.uiState.value
     val view = LocalView.current
     val context = LocalContext.current
+    val resetBackupLauncher = navigation.rememberResultLauncher<ResetBackupSheet.Result, String> { result, cardId ->
+        if (result.confirmed) viewModel.resetCard(cardId)
+    }
+    val accessCodeLauncher = navigation.rememberResultLauncher<AddAccessCodeSheet.Result> {
+        if (it.code.isNotEmpty()) viewModel.setAccessCode(it.code)
+    }
 
     Scaffold(
         containerColor = ComposeAppTheme.colors.backgroundBase,
@@ -83,13 +91,7 @@ internal fun OnboardingScreen(
 
                         HardwareWalletError.CardNotActivated -> null
                         is HardwareWalletError.NeedFactoryReset -> {
-                            navigation.slideFromBottomForResult<ResetBackupSheet.Result>(
-                                ResetBackupSheet()
-                            ) {
-                                if (it.confirmed) {
-                                    viewModel.resetCard(error.cardId)
-                                }
-                            }
+                            resetBackupLauncher.slideFromBottom(ResetBackupSheet(), error.cardId)
                             null
                         }
                     }
@@ -160,15 +162,7 @@ internal fun OnboardingScreen(
                     )
 
                     OnboardingStep.CREATE_ACCESS_CODE -> CreateAccessCodeScreen(
-                        onCreateCodeClick = {
-                            navigation.slideFromBottomForResult<AddAccessCodeSheet.Result>(
-                                AddAccessCodeSheet()
-                            ) {
-                                if (it.code.isNotEmpty()) {
-                                    viewModel.setAccessCode(it.code)
-                                }
-                            }
-                        }
+                        onCreateCodeClick = { accessCodeLauncher.slideFromBottom(AddAccessCodeSheet()) }
                     )
 
                     OnboardingStep.FINAL -> FinalScreen(

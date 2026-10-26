@@ -13,8 +13,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cash.p.terminal.R
 import cash.p.terminal.core.Caution
-import cash.p.terminal.core.authorizedDeleteContactsPasscodeAction
-import cash.p.terminal.core.premiumAction
+import cash.p.terminal.core.rememberAuthorizedDeleteContactsPasscodeAction
+import cash.p.terminal.core.rememberPremiumAction
 import cash.p.terminal.core.slideToDeleteContactsTerms
 import cash.p.terminal.modules.contacts.screen.ConfirmationBottomSheet
 import cash.p.terminal.modules.pin.EditPinPage
@@ -22,6 +22,8 @@ import cash.p.terminal.modules.pin.PinType
 import cash.p.terminal.modules.pin.SetPinPage
 import cash.p.terminal.modules.settings.security.ui.ManagePasscodeSection
 import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.pin_set_for_delete_all_contacts
 import cash.p.terminal.ui_compose.TransparentModalBottomSheet
 import cash.p.terminal.ui_compose.components.InfoText
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
@@ -42,12 +44,25 @@ class AndroidDeleteContactsPinSettings(private val pinComponent: IPinComponent) 
     override fun Section(navigation: HSNavigation) {
         val pinSet by pinSetFlow.collectAsStateWithLifecycle(pinComponent.isDeleteContactsPinSet())
         var showDisableConfirmation by remember { mutableStateOf(false) }
+        val editPin = navigation.rememberAuthorizedDeleteContactsPasscodeAction {
+            navigation.slideFromRight(
+                EditPinPage(
+                    SetPinPage.Input(
+                        description = Res.string.pin_set_for_delete_all_contacts,
+                        pinType = PinType.DELETE_CONTACTS
+                    )
+                )
+            )
+        }
+        val openTerms = navigation.rememberPremiumAction(navigation::slideToDeleteContactsTerms)
+        val disablePin =
+            navigation.rememberAuthorizedDeleteContactsPasscodeAction(pinComponent::disableDeleteContactsPin)
 
         ManagePasscodeSection(
             iconRes = R.drawable.ic_passcode,
             enabled = pinSet,
             editTextRes = R.string.SettingsSecurity_EditPin,
-            onManageClick = { managePin(navigation, pinSet) },
+            onManageClick = { if (pinSet) editPin() else openTerms() },
             onDisableClick = { showDisableConfirmation = true }
         )
         InfoText(text = stringResource(R.string.pin_set_for_delete_all_contacts))
@@ -67,29 +82,10 @@ class AndroidDeleteContactsPinSettings(private val pinComponent: IPinComponent) 
                     cancelText = stringResource(R.string.Button_Cancel),
                     onConfirm = {
                         showDisableConfirmation = false
-                        navigation.authorizedDeleteContactsPasscodeAction(pinComponent::disableDeleteContactsPin)
+                        disablePin()
                     },
                     onClose = { showDisableConfirmation = false }
                 )
-            }
-        }
-    }
-
-    private fun managePin(navigation: HSNavigation, pinSet: Boolean) {
-        if (pinSet) {
-            navigation.authorizedDeleteContactsPasscodeAction {
-                navigation.slideFromRight(
-                    EditPinPage(
-                        SetPinPage.Input(
-                            descriptionResId = R.string.pin_set_for_delete_all_contacts,
-                            pinType = PinType.DELETE_CONTACTS
-                        )
-                    )
-                )
-            }
-        } else {
-            navigation.premiumAction {
-                navigation.slideToDeleteContactsTerms()
             }
         }
     }

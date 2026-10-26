@@ -24,7 +24,7 @@ import cash.p.terminal.core.ISendSolanaAdapter
 import cash.p.terminal.core.ISendMoneroAdapter
 import cash.p.terminal.core.ISendMemoAdapter
 import cash.p.terminal.core.ISendTronAdapter
-import cash.p.terminal.core.authorizedAction
+import cash.p.terminal.core.rememberAuthorizedAction
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.amount.AmountInputModeModule
 import cash.p.terminal.modules.amount.AmountInputModeViewModel
@@ -65,6 +65,7 @@ import cash.p.terminal.modules.sendtokenselect.PrefilledData
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.rememberResultLauncher
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.wallet.Wallet
@@ -79,6 +80,8 @@ import cash.p.terminal.modules.send.beam.isNativeBeamSendWallet
 import org.koin.java.KoinJavaComponent.inject
 import timber.log.Timber
 import kotlin.reflect.KClass
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Unlock_EnterPasscode
 
 class SendPage(val input: Input) : HSPage() {
 
@@ -98,9 +101,10 @@ class SendPage(val input: Input) : HSPage() {
         val amountInputModeViewModel = viewModel<AmountInputModeViewModel>(
             factory = AmountInputModeModule.Factory(wallet.coin.uid)
         )
+        val openConfirm = navigation.rememberOpenConfirm(input.riskyAddress, input.sendEntryPoint, keyboardController)
 
         if (wallet.token.blockchainType == BlockchainType.Beam) {
-            BeamContent(wallet, title, navigation, keyboardController, amountInputModeViewModel)
+            BeamContent(wallet, title, navigation, amountInputModeViewModel, openConfirm)
             return
         }
 
@@ -136,7 +140,7 @@ class SendPage(val input: Input) : HSPage() {
                             prefilledData = prefilledData,
                             addressCheckerControl = addressCheckerControl,
                             onNextClick = {
-                                navigation.handleProceedAction(it, keyboardController)
+                                navigation.handleProceedAction(it, openConfirm)
                             }
                         )
                     }
@@ -167,7 +171,7 @@ class SendPage(val input: Input) : HSPage() {
                             prefilledData = prefilledData,
                             addressCheckerControl = addressCheckerControl,
                             onNextClick = {
-                                navigation.handleProceedAction(it, keyboardController)
+                                navigation.handleProceedAction(it, openConfirm)
                             }
                         )
                     }
@@ -209,7 +213,7 @@ class SendPage(val input: Input) : HSPage() {
                             amount = amount,
                             addressCheckerControl = addressCheckerControl,
                             onNextClick = {
-                                navigation.handleProceedAction(it, keyboardController)
+                                navigation.handleProceedAction(it, openConfirm)
                             }
                         )
                     }
@@ -240,7 +244,7 @@ class SendPage(val input: Input) : HSPage() {
                             prefilledData = prefilledData,
                             addressCheckerControl = addressCheckerControl,
                             onNextClick = {
-                                navigation.handleProceedAction(it, keyboardController)
+                                navigation.handleProceedAction(it, openConfirm)
                             }
                         )
                     }
@@ -271,7 +275,7 @@ class SendPage(val input: Input) : HSPage() {
                             prefilledData = prefilledData,
                             addressCheckerControl = addressCheckerControl,
                             onNextClick = {
-                                navigation.handleProceedAction(it, keyboardController)
+                                navigation.handleProceedAction(it, openConfirm)
                             }
                         )
                     }
@@ -302,7 +306,7 @@ class SendPage(val input: Input) : HSPage() {
                             prefilledData = prefilledData,
                             addressCheckerControl = addressCheckerControl,
                             onNextClick = {
-                                navigation.handleProceedAction(it, keyboardController)
+                                navigation.handleProceedAction(it, openConfirm)
                             }
                         )
                     }
@@ -333,7 +337,7 @@ class SendPage(val input: Input) : HSPage() {
                             prefilledData = prefilledData,
                             addressCheckerControl = addressCheckerControl,
                             onNextClick = {
-                                navigation.handleProceedAction(it, keyboardController)
+                                navigation.handleProceedAction(it, openConfirm)
                             }
                         )
                     }
@@ -366,7 +370,7 @@ class SendPage(val input: Input) : HSPage() {
                             prefilledData = prefilledData,
                             addressCheckerControl = addressCheckerControl,
                             onNextClick = {
-                                navigation.handleProceedAction(it, keyboardController)
+                                navigation.handleProceedAction(it, openConfirm)
                             }
                         )
                     }
@@ -393,8 +397,8 @@ class SendPage(val input: Input) : HSPage() {
         wallet: Wallet,
         title: String,
         navigation: HSNavigation,
-        keyboardController: SoftwareKeyboardController?,
         amountInputModeViewModel: AmountInputModeViewModel,
+        openConfirm: (Type, Boolean) -> Unit,
     ) {
         val owner: BeamSessionOwner = getKoinInstance()
         val session = owner.current
@@ -417,7 +421,7 @@ class SendPage(val input: Input) : HSPage() {
             inputType = amountInputModeViewModel.inputType,
             onToggleInputType = amountInputModeViewModel::onToggleInputType,
         ) {
-            navigation.handleProceedAction(it, keyboardController)
+            navigation.handleProceedAction(it, openConfirm)
         }
     }
 
@@ -438,17 +442,9 @@ class SendPage(val input: Input) : HSPage() {
 
     private fun HSNavigation.handleProceedAction(
         data: ProceedActionData,
-        keyboardController: SoftwareKeyboardController?
+        openConfirm: (type: Type, poisonAddress: Boolean) -> Unit,
     ) {
-        if (handleBeamProceed(data) {
-                openConfirm(
-                    type = Type.Beam,
-                    riskyAddress = input.riskyAddress,
-                    poisonAddress = isAddressSuspicious(data.address),
-                    keyboardController = keyboardController,
-                    sendEntryPoint = input.sendEntryPoint,
-                )
-            }) return
+        if (handleBeamProceed(data) { openConfirm(Type.Beam, isAddressSuspicious(data.address)) }) return
 
         val smartContractCheckEnabledForToken =
             addressCheckerControl.uiState.addressCheckSmartContractEnabled &&
@@ -470,13 +466,7 @@ class SendPage(val input: Input) : HSPage() {
                 )
             }
         } else {
-            openConfirm(
-                type = data.type,
-                riskyAddress = input.riskyAddress,
-                poisonAddress = isAddressSuspicious(data.address),
-                keyboardController = keyboardController,
-                sendEntryPoint = input.sendEntryPoint
-            )
+            openConfirm(data.type, isAddressSuspicious(data.address))
         }
     }
 
@@ -503,53 +493,41 @@ class SendPage(val input: Input) : HSPage() {
     )
 }
 
-internal fun HSNavigation.openConfirm(
-    type: Type,
+/** Warns about a risky or poison address first, then opens the PIN-gated confirmation. */
+@Composable
+private fun HSNavigation.rememberOpenConfirm(
     riskyAddress: Boolean,
-    keyboardController: SoftwareKeyboardController?,
     sendEntryPoint: KClass<out HSPage>?,
-    poisonAddress: Boolean = false,
-) {
-    if (riskyAddress) {
-        keyboardController?.hide()
-        slideFromBottomForResult<AddressRiskySheet.Result>(
-            AddressRiskySheet(
-                AddressRiskySheet.Input(
-                    alertText = Translator.getString(R.string.Send_RiskyAddress_AlertText)
-                )
-            )
-        ) {
-            openConfirm(type, sendEntryPoint)
+    keyboardController: SoftwareKeyboardController?,
+): (type: Type, poisonAddress: Boolean) -> Unit {
+    val openConfirmation = rememberOpenSendConfirmation(sendEntryPoint)
+    val warningLauncher = rememberResultLauncher<AddressRiskySheet.Result, Type> { _, type -> openConfirmation(type) }
+    return { type, poisonAddress ->
+        val alertText = when {
+            riskyAddress -> R.string.Send_RiskyAddress_AlertText
+            poisonAddress -> R.string.send_poison_address_alert
+            else -> null
         }
-    } else if (poisonAddress) {
-        keyboardController?.hide()
-        slideFromBottomForResult<AddressRiskySheet.Result>(
-            AddressRiskySheet(
-                AddressRiskySheet.Input(
-                    alertText = Translator.getString(R.string.send_poison_address_alert)
-                )
+        if (alertText == null) {
+            openConfirmation(type)
+        } else {
+            keyboardController?.hide()
+            warningLauncher.slideFromBottom(
+                AddressRiskySheet(AddressRiskySheet.Input(alertText = Translator.getString(alertText))),
+                type
             )
-        ) {
-            openConfirm(type, sendEntryPoint)
         }
-    } else {
-        openConfirm(type, sendEntryPoint)
     }
 }
 
-private fun HSNavigation.openConfirm(
-    type: Type,
-    sendEntryPoint: KClass<out HSPage>?
-) {
-    authorizedAction(
-        ConfirmPinPage.InputConfirm(
-            descriptionResId = R.string.Unlock_EnterPasscode,
-            pinType = PinType.TRANSFER
-        )
-    ) {
+/** Opens the send confirmation after the transfer PIN, when one is set. */
+@Composable
+internal fun HSNavigation.rememberOpenSendConfirmation(sendEntryPoint: KClass<out HSPage>?): (Type) -> Unit =
+    rememberAuthorizedAction<Type>(
+        ConfirmPinPage.InputConfirm(description = Res.string.Unlock_EnterPasscode, pinType = PinType.TRANSFER)
+    ) { type ->
         slideFromRight(SendConfirmationPage(type, sendEntryPoint))
     }
-}
 
 class SendBtcAdvancedSettingsPage : HSPage() {
     @Composable

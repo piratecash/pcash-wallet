@@ -1,5 +1,7 @@
 package cash.p.terminal.navigation
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import io.horizontalsystems.core.common.CommonParcelable
 import io.horizontalsystems.core.common.CommonParcelize
 
@@ -13,16 +15,17 @@ data class QrScannerInput(
 @CommonParcelize
 data class QrScannerResult(val text: String) : CommonParcelable
 
-fun HSNavigation.openQrScanner(
-    appPages: AppPages,
-    title: String,
-    showPasteButton: Boolean = false,
-    allowGalleryWithoutPremium: Boolean = false,
-    onResult: (String) -> Unit,
+class QrScannerLauncher internal constructor(
+    private val launcher: ResultLauncher<Unit>,
+    private val appPages: AppPages,
 ) {
-    slideFromBottomForResult<QrScannerResult>(
-        appPages.qrScanner(QrScannerInput(title, showPasteButton, allowGalleryWithoutPremium))
-    ) { result ->
-        onResult(result.text)
-    }
+    fun open(title: String, showPasteButton: Boolean = false, allowGalleryWithoutPremium: Boolean = false) =
+        launcher.slideFromBottom(appPages.qrScanner(QrScannerInput(title, showPasteButton, allowGalleryWithoutPremium)))
+}
+
+/** Remember at the screen root, see [rememberResultLauncher]. */
+@Composable
+fun HSNavigation.rememberQrScannerLauncher(appPages: AppPages, onResult: (String) -> Unit): QrScannerLauncher {
+    val launcher = rememberResultLauncher<QrScannerResult> { onResult(it.text) }
+    return remember(launcher, appPages) { QrScannerLauncher(launcher, appPages) }
 }
