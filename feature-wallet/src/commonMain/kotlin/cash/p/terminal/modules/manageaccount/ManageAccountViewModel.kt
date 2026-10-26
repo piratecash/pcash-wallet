@@ -132,36 +132,34 @@ class ManageAccountViewModel(
     }
 
     private fun getBackupItems(account: Account): List<BackupItem> {
-        if (account.isWatchAccount) {
+        if (account.isWatchAccount || !account.supportsBackup) {
             return emptyList()
         }
-        if (account.type is AccountType.HdExtendedKey
-            || account.type is AccountType.EvmPrivateKey
-            || account.type is AccountType.StellarSecretKey
-        ) {
+        if (!account.type.hasRecoveryPhrase) {
             return listOf(BackupItem.LocalBackup(false))
         }
 
-        val items = mutableListOf<BackupItem>()
-        if (account.supportsBackup) {
-            if (!account.isBackedUp && !account.isFileBackedUp) {
-                items.add(BackupItem.ManualBackup(true))
-                items.add(BackupItem.LocalBackup(true))
-                items.add(BackupItem.InfoText(Res.string.BackupRecoveryPhrase_BackupRequiredText))
-            } else {
-                items.add(
-                    BackupItem.ManualBackup(
-                        showAttention = !account.isBackedUp,
-                        completed = account.isBackedUp
-                    )
-                )
-                items.add(BackupItem.LocalBackup(false))
-                items.add(BackupItem.InfoText(Res.string.BackupRecoveryPhrase_BackupRecomendedText))
-            }
+        return if (!account.isBackedUp && !account.isFileBackedUp) {
+            listOf(
+                BackupItem.ManualBackup(true),
+                BackupItem.LocalBackup(true),
+                BackupItem.InfoText(Res.string.BackupRecoveryPhrase_BackupRequiredText),
+            )
+        } else {
+            listOf(
+                BackupItem.ManualBackup(
+                    showAttention = !account.isBackedUp,
+                    completed = account.isBackedUp
+                ),
+                BackupItem.LocalBackup(false),
+                BackupItem.InfoText(Res.string.BackupRecoveryPhrase_BackupRecomendedText),
+            )
         }
-
-        return items
     }
+
+    /** Manual backup shows words; key-based accounts have none to show. */
+    private val AccountType.hasRecoveryPhrase: Boolean
+        get() = this is AccountType.Mnemonic || this is AccountType.MnemonicMonero
 
     private suspend fun hasMoneroTokenEnabled(account: Account): Boolean {
         return walletManager.getWallets(account)

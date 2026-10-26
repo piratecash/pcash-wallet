@@ -5,6 +5,7 @@ import cash.p.terminal.core.ISendBitcoinAdapter
 import cash.p.terminal.core.LocalizedException
 import cash.p.terminal.core.OfflineTransactionAdapter
 import cash.p.terminal.core.SignedOfflineBitcoinTransaction
+import cash.p.terminal.core.adapters.BitcoinFeeInfo
 import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.OfflineSignedTransactionRepository
 import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
@@ -41,6 +42,7 @@ import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.unmockkAll
 import io.mockk.verify
+import io.mockk.verifyOrder
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,6 +53,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestCoroutineScheduler
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -63,6 +66,7 @@ import org.koin.dsl.module
 import org.koin.test.KoinTestRule
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import java.math.BigDecimal
 import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.modules.send.mockConnectivityManager
 
@@ -87,6 +91,9 @@ class SendBitcoinViewModelTest {
     private val wallet = WalletFactory.previewWallet()
     private lateinit var amountStateFlow: MutableStateFlow<SendBitcoinAmountService.State>
     private lateinit var addressStateFlow: MutableStateFlow<SendBitcoinAddressService.State>
+    private lateinit var feeRateStateFlow: MutableStateFlow<SendBitcoinFeeRateService.State>
+    private lateinit var pluginStateFlow: MutableStateFlow<SendBitcoinPluginService.State>
+    private val feeInfoFlow = MutableStateFlow<BitcoinFeeInfo?>(null)
 
     @get:Rule
     val koinRule = KoinTestRule.create {
@@ -116,7 +123,7 @@ class SendBitcoinViewModelTest {
         every { adapter.blockchainType } returns BlockchainType.Bitcoin
         every { adapterManager.getBalanceAdapterForWallet(wallet) } returns null
 
-        every { feeRateService.stateFlow } returns MutableStateFlow(
+        feeRateStateFlow = MutableStateFlow(
             SendBitcoinFeeRateService.State(
                 feeRate = null,
                 feeRateCaution = null,
@@ -124,6 +131,7 @@ class SendBitcoinViewModelTest {
                 isRecommended = false
             )
         )
+        every { feeRateService.stateFlow } returns feeRateStateFlow
         coEvery { feeRateService.start() } returns Unit
 
         amountStateFlow = MutableStateFlow(
@@ -143,15 +151,16 @@ class SendBitcoinViewModelTest {
             )
         )
         every { addressService.stateFlow } returns addressStateFlow
-        every { pluginService.stateFlow } returns MutableStateFlow(
+        pluginStateFlow = MutableStateFlow(
             SendBitcoinPluginService.State(
                 lockTimeInterval = null,
                 pluginData = null
             )
         )
+        every { pluginService.stateFlow } returns pluginStateFlow
         every { pluginService.isLockTimeEnabled } returns false
         every { pluginService.lockTimeIntervals } returns emptyList()
-        every { feeService.bitcoinFeeInfoFlow } returns MutableStateFlow(null)
+        every { feeService.bitcoinFeeInfoFlow } returns feeInfoFlow
         every { xRateService.getRate(wallet.coin.uid) } returns null
         every { xRateService.getRateFlow(wallet.coin.uid) } returns emptyFlow<CurrencyValue>()
         every { localStorage.utxoExpertModeEnabled } returns false
@@ -249,6 +258,100 @@ class SendBitcoinViewModelTest {
         verify { pluginService.setLockTimeInterval(LockTimeInterval.hour) }
     }
 
+    @Test
+    fun canBeSend_btcMemo80Bytes_isTrue() = runTest(mainDispatcher) {
+        assertEquals(true, canBeSendWithMemo(BlockchainType.Bitcoin, "a".repeat(80)))
+    }
+
+    @Test
+    fun canBeSend_btcMemo81Bytes_isFalse() = runTest(mainDispatcher) {
+        assertEquals(false, canBeSendWithMemo(BlockchainType.Bitcoin, "a".repeat(81)))
+    }
+
+    @Test
+    fun canBeSend_btcCyrillicMemo41Chars_isFalse() = runTest(mainDispatcher) {
+        assertEquals(false, canBeSendWithMemo(BlockchainType.Bitcoin, "ж".repeat(41)))
+    }
+
+    @Test
+    fun canBeSend_btcBlankMemo81Chars_isTrue() = runTest(mainDispatcher) {
+        assertEquals(true, canBeSendWithMemo(BlockchainType.Bitcoin, " ".repeat(81)))
+    }
+
+    @Test
+    fun canBeSend_bchFamilyMemo220Bytes_isTrue() = runTest(mainDispatcher) {
+        assertEquals(true, canBeSendWithMemo(BlockchainType.BitcoinCash, "a".repeat(220)))
+        assertEquals(true, canBeSendWithMemo(BlockchainType.ECash, "a".repeat(220)))
+    }
+
+    @Test
+    fun canBeSend_bchFamilyMemo221Bytes_isFalse() = runTest(mainDispatcher) {
+        assertEquals(false, canBeSendWithMemo(BlockchainType.BitcoinCash, "a".repeat(221)))
+        assertEquals(false, canBeSendWithMemo(BlockchainType.ECash, "a".repeat(221)))
+    }
+
+    @Test
+    fun handleUpdatedPluginState_lockTimeWithMemo_clearsMemoBeforePublishingPluginData() = runTest(mainDispatcher) {
+        var amountMemo: String? = null
+        var feeMemo: String? = null
+        every { amountService.setMemo(any(), any()) } answers { amountMemo = firstArg() }
+        every { feeService.setMemo(any(), any()) } answers { feeMemo = firstArg() }
+        every { amountService.setPluginData(any()) } answers {
+            amountStateFlow.value = amountStateFlow.value.copy(availableBalance = balanceFor(amountMemo))
+        }
+        every { feeService.setPluginData(any()) } answers {
+            feeInfoFlow.value = BitcoinFeeInfo(emptyList(), balanceFor(feeMemo), null, null)
+        }
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onEnterMemo("memo")
+        advanceUntilIdle()
+
+        pluginStateFlow.value = SendBitcoinPluginService.State(LockTimeInterval.hour, null)
+        advanceUntilIdle()
+
+        verifyOrder {
+            amountService.setMemo(null, forceEmit = false)
+            feeService.setMemo(null, forceEmit = false)
+            feeService.setPluginData(any())
+            amountService.setPluginData(any())
+        }
+        assertEquals(false, viewModel.uiState.isMemoAvailable)
+        assertEquals(null, viewModel.uiState.memo)
+        assertEquals(BALANCE_WITHOUT_MEMO, viewModel.uiState.availableBalance)
+        assertEquals(BALANCE_WITHOUT_MEMO, viewModel.uiState.fee)
+    }
+
+    @Test
+    fun handleUpdatedPluginState_lockTimeRemoved_memoAvailableAgain() = runTest(mainDispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        pluginStateFlow.value = SendBitcoinPluginService.State(LockTimeInterval.hour, null)
+        advanceUntilIdle()
+        assertEquals(false, viewModel.uiState.isMemoAvailable)
+
+        pluginStateFlow.value = SendBitcoinPluginService.State(null, null)
+        advanceUntilIdle()
+
+        assertEquals(true, viewModel.uiState.isMemoAvailable)
+    }
+
+    private fun balanceFor(memo: String?) = if (memo == null) BALANCE_WITHOUT_MEMO else BigDecimal.ONE
+
+    private fun TestScope.canBeSendWithMemo(blockchainType: BlockchainType, memo: String): Boolean {
+        every { adapter.blockchainType } returns blockchainType
+        feeRateStateFlow.value = feeRateStateFlow.value.copy(feeRate = 1, canBeSend = true)
+        amountStateFlow.value = amountStateFlow.value.copy(amount = BigDecimal.ONE, canBeSend = true)
+        addressStateFlow.value = SendBitcoinAddressService.State(Address("bc1qrecipient"), null, true)
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.onEnterMemo(memo)
+        advanceUntilIdle()
+
+        return viewModel.uiState.canBeSend
+    }
+
     private fun createViewModel(
         adapter: ISendBitcoinAdapter = this.adapter,
         wallet: Wallet = this.wallet,
@@ -297,6 +400,10 @@ class SendBitcoinViewModelTest {
                 hardwarePublicKey = null,
             )
         )
+    }
+
+    private companion object {
+        val BALANCE_WITHOUT_MEMO = BigDecimal.TEN
     }
 
     private class SplitDispatcherProvider(

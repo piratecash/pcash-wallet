@@ -235,12 +235,13 @@ class SwapConfirmViewModel(
 
         viewModelScope.launch {
             sendTransactionService.stateFlow.collectLatest {
+                val availableBalance = it.availableBalance ?: return@collectLatest
                 if (
                     direction == SwapAmountDirection.In &&
-                    it.availableBalance != null &&
-                    it.availableBalance < amountIn
+                    !sendResult.isSwapInProgress &&
+                    availableBalance < amountIn
                 ) {
-                    amountIn = it.availableBalance
+                    amountIn = availableBalance
                     fiatServiceIn.setAmount(amountIn)
                     refresh()
                 }
@@ -824,6 +825,9 @@ data class SwapConfirmUiState(
     val moneroPreparationError: StringResource? = null,
     val moneroPreparationRetryAvailable: Boolean = false,
 )
+
+internal val SendResult?.isSwapInProgress: Boolean
+    get() = this != null && this !is SendResult.Failed
 
 private enum class MoneroPreparationActivity {
     Idle,

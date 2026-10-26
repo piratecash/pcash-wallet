@@ -1,9 +1,13 @@
 package cash.p.terminal.modules.backuplocal
 
+import cash.p.terminal.core.hexToByteArray
 import cash.p.terminal.wallet.AccountType
 import com.google.gson.GsonBuilder
+import io.horizontalsystems.ethereumkit.core.EthereumKit
+import io.horizontalsystems.ethereumkit.core.signer.Signer
 import io.horizontalsystems.thorchainkit.ThorchainKit
 import io.horizontalsystems.thorchainkit.network.Network
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -135,15 +139,46 @@ class BackupLocalModuleTest {
 
     // region EvmPrivateKey Encoding/Decoding
 
+    private val evmKeyHexes = listOf(HIGH_BIT_KEY, LEADING_ZERO_KEY, REGULAR_KEY)
+
     @Test
-    fun `getDataForEncryption encodes EvmPrivateKey as byte array`() {
-        val key = BigInteger("123456789")
-        val accountType = AccountType.EvmPrivateKey(key)
-        val data = BackupLocalModule.getDataForEncryption(accountType)
-        // Verify data is not empty and matches expected byte array from BigInteger
-        assertNotNull(data)
-        assertTrue(data!!.isNotEmpty())
-        assertTrue(data.contentEquals(key.toByteArray()))
+    fun getDataForEncryption_evmPrivateKey_writesRaw32Bytes() {
+        for (hex in evmKeyHexes) {
+            val data = BackupLocalModule.getDataForEncryption(AccountType.EvmPrivateKey(BigInteger(hex, 16)))
+
+            assertArrayEquals(hex, hex.hexToByteArray(), data)
+        }
+    }
+
+    @Test
+    fun getAccountTypeFromData_evmPrivateKey_roundTrips() = runBlockingSuspend {
+        for (hex in evmKeyHexes) {
+            assertRoundTrip(AccountType.EvmPrivateKey(BigInteger(hex, 16)), "private_key")
+        }
+    }
+
+    @Test
+    fun getDataForEncryption_evmPrivateKeyWiderThan256Bits_keepsSameAddress() = runBlockingSuspend {
+        // Signer.address needs the kit's Keccak provider, registered at app startup.
+        EthereumKit.init()
+        val key = BigInteger.ONE.shiftLeft(256).add(BigInteger.ONE)
+
+        val data = requireNotNull(BackupLocalModule.getDataForEncryption(AccountType.EvmPrivateKey(key)))
+        val restored = BackupLocalModule.getAccountTypeFromData("private_key", data) as AccountType.EvmPrivateKey
+
+        assertEquals(32, data.size)
+        assertEquals(Signer.address(key), Signer.address(restored.key))
+    }
+
+    @Test
+    fun getAccountTypeFromData_legacyEvmPrivateKeyBackup_restoresSameKey() = runBlockingSuspend {
+        for (hex in evmKeyHexes) {
+            val key = BigInteger(hex, 16)
+
+            val restored = BackupLocalModule.getAccountTypeFromData("private_key", key.toByteArray())
+
+            assertEquals(AccountType.EvmPrivateKey(key), restored)
+        }
     }
 
     // endregion
@@ -472,4 +507,10 @@ class BackupLocalModuleTest {
     }
 
     // endregion
+
+    private companion object {
+        const val HIGH_BIT_KEY = "f1e2d3c4b5a69788796a5b4c3d2e1f00112233445566778899aabbccddeeff01"
+        const val LEADING_ZERO_KEY = "00123456789abcdef0112233445566778899aabbccddeeff0011223344556677"
+        const val REGULAR_KEY = "4c0883a69102937d6231471b5dbb6204fe5129617082792ae468d01a3f362318"
+    }
 }

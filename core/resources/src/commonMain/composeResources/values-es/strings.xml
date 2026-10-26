@@ -2232,6 +2232,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="send_hardware_mweb_not_supported">Este monedero hardware no admite MWEB. Envía Litecoin a una dirección normal (no MWEB).</string>
     <string name="send_hardware_time_lock_not_supported">Este monedero hardware no admite transacciones con bloqueo temporal.</string>
     <string name="send_trezor_zcash_memo_not_supported">Trezor no puede adjuntar un memo a una transacción de Zcash. Elimina el memo para continuar.</string>
+    <string name="send_memo_too_long">El memo es demasiado largo: %1$d de %2$d bytes</string>
     <string name="send_trezor_zcash_transparent_only">Trezor solo puede enviar Zcash a direcciones transparentes.</string>
     <string name="send_trezor_zcash_unified_no_transparent_receiver">Esta dirección unificada no tiene un receptor transparente, por lo que Trezor no puede enviarle una transferencia.</string>
     <string name="send_trezor_zcash_firmware_required">%1$s necesita el firmware %2$s o posterior para enviar a direcciones unificadas de Zcash. Actualiza el dispositivo y vuelve a intentarlo — la versión del firmware se comprobará de nuevo en tu próxima transacción de Zcash.</string>

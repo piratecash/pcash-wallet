@@ -2673,6 +2673,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="send_hardware_mweb_not_supported">This hardware wallet doesn\u0027t support MWEB. Send Litecoin to a regular (non-MWEB) address.</string>
     <string name="send_hardware_time_lock_not_supported">This hardware wallet doesn\u0027t support time-locked transactions.</string>
     <string name="send_trezor_zcash_memo_not_supported">Trezor can\u0027t attach a memo to a Zcash transaction. Remove the memo to continue.</string>
+    <string name="send_memo_too_long">Memo is too long: %1$d of %2$d bytes</string>
     <string name="send_trezor_zcash_transparent_only">Trezor can only send Zcash to transparent addresses.</string>
     <string name="send_trezor_zcash_unified_no_transparent_receiver">This unified address has no transparent receiver, so Trezor can\u0027t send to it.</string>
     <string name="send_trezor_zcash_firmware_required">%1$s needs firmware %2$s or later to send to unified Zcash addresses. Update it, then try again — the app checks the firmware version again on your next Zcash transaction.</string>

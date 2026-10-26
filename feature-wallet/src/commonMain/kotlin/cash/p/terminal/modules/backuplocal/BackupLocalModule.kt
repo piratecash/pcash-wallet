@@ -3,6 +3,7 @@ package cash.p.terminal.modules.backuplocal
 import androidx.annotation.Keep
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.managers.RestoreSettingType
+import cash.p.terminal.core.toPrivateKeyBytes
 import cash.p.terminal.core.usecase.MoneroWalletUseCase
 import cash.p.terminal.modules.address.AddressHandlerThorchain
 import cash.p.terminal.wallet.AccountType
@@ -260,7 +261,7 @@ object BackupLocalModule {
             combined.toByteArray(Charsets.UTF_8)
         }
 
-        is AccountType.EvmPrivateKey -> accountType.key.toByteArray()
+        is AccountType.EvmPrivateKey -> accountType.key.toPrivateKeyBytes()
         is AccountType.StellarSecretKey -> accountType.key.toByteArray(Charsets.UTF_8)
         is AccountType.EvmAddress -> accountType.address.toByteArray(Charsets.UTF_8)
         is AccountType.SolanaAddress -> accountType.address.toByteArray(Charsets.UTF_8)

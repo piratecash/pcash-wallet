@@ -1,5 +1,7 @@
 package cash.p.terminal.modules.walletconnect
 
+import cash.p.terminal.core.storage.AppDatabase
+import cash.p.terminal.core.storage.liveAccountIds
 import cash.p.terminal.core.utils.Utils
 import com.reown.walletkit.client.Wallet
 import cash.p.terminal.wallet.IAccountManager
@@ -7,8 +9,7 @@ import cash.p.terminal.wallet.ActiveAccountState
 import cash.p.terminal.modules.walletconnect.storage.WCSessionStorage
 import cash.p.terminal.modules.walletconnect.storage.WalletConnectV2Session
 import com.reown.walletkit.client.WalletKit
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -18,9 +19,9 @@ import kotlinx.coroutines.reactive.asFlow
 class WCSessionManager(
     private val accountManager: IAccountManager,
     private val storage: WCSessionStorage,
+    private val appDatabase: AppDatabase,
+    private val dispatcherProvider: DispatcherProvider,
 ) {
-
-    private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     private val _sessionsFlow = MutableStateFlow<List<Wallet.Model.Session>>(emptyList())
     val sessionsFlow: StateFlow<List<Wallet.Model.Session>>
@@ -50,7 +51,7 @@ class WCSessionManager(
         }
 
 
-        coroutineScope.launch {
+        dispatcherProvider.applicationScope.launch {
             accountManager.activeAccountStateFlow.collect { activeAccountState ->
                 if (activeAccountState is ActiveAccountState.ActiveAccount) {
                     syncSessions()
@@ -58,19 +59,19 @@ class WCSessionManager(
             }
         }
 
-        coroutineScope.launch {
+        dispatcherProvider.applicationScope.launch {
             WCDelegate.pendingRequestEvents.collect {
                 syncPendingRequest()
             }
         }
 
-        coroutineScope.launch {
+        dispatcherProvider.applicationScope.launch {
             accountManager.accountsDeletedFlowable.asFlow().collect {
                 handleDeletedAccount()
             }
         }
 
-        coroutineScope.launch {
+        dispatcherProvider.applicationScope.launch {
             WCDelegate.walletEvents.collect {
                 syncSessions()
             }
@@ -83,11 +84,12 @@ class WCSessionManager(
     }
 
     private fun syncSessions() {
+        val currentSessions = WCDelegate.getActiveSessions()
+        val allDbSessions = storage.getAllSessions()
+        disconnectOrphanedSessions(currentSessions, allDbSessions)
+
         val accountId = accountManager.activeAccount?.id ?: return
 
-        val currentSessions = WCDelegate.getActiveSessions()
-
-        val allDbSessions = storage.getAllSessions()
         val allDbTopics = allDbSessions.map { it.topic }
 
         val newSessions = currentSessions.filter { !allDbTopics.contains(it.topic) }
@@ -102,6 +104,19 @@ class WCSessionManager(
         syncPendingRequest()
 
         syncRequests()
+    }
+
+    // A deleted account's rows are kept until its live sessions are disconnected,
+    // otherwise syncSessions would bind them to the active account.
+    private fun disconnectOrphanedSessions(
+        currentSessions: List<Wallet.Model.Session>,
+        dbSessions: List<WalletConnectV2Session>,
+    ) {
+        val liveIds = appDatabase.accountsDao().liveAccountIds().toSet()
+        val liveTopics = currentSessions.map { it.topic }.toSet()
+        dbSessions
+            .filter { it.accountId !in liveIds && it.topic in liveTopics }
+            .forEach { WCDelegate.deleteSession(it.topic) }
     }
 
     private fun syncRequests() {
@@ -134,9 +149,6 @@ class WCSessionManager(
     }
 
     private fun handleDeletedAccount() {
-        val existingAccountIds = accountManager.accounts.map { it.id }
-        storage.deleteSessionsExcept(accountIds = existingAccountIds)
-
         syncSessions()
     }
 

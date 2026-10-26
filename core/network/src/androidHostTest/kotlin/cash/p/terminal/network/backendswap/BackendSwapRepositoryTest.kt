@@ -66,6 +66,13 @@ class BackendSwapRepositoryTest {
     }
 
     @Test
+    fun getTransactionStatus_zeroAmountToActual_returnsNullAmountOutReal() = runTest {
+        listOf("0", "0.00").forEach { amount ->
+            assertNull("amount=$amount", statusFor(""","amountToActual":"$amount"""")?.amountOutReal)
+        }
+    }
+
+    @Test
     fun getTransactionStatus_requestsSwapByIdPath() = runTest {
         lateinit var seen: HttpRequestData
         val repository = backendSwapRepository { request ->
