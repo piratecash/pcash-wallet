@@ -9,14 +9,10 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.core.content.IntentCompat
 import cash.p.terminal.ui_compose.parcelable
-import java.io.File
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.time.Duration
-import java.time.Instant
 import java.util.Locale
 import kotlin.math.absoluteValue
-import kotlin.math.ceil
 
 fun View.hideKeyboard(context: Context) {
     val imm = context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -79,32 +75,5 @@ fun BigDecimal.scaleUp(scale: Int): BigInteger {
     }
 }
 
-fun Double.smartFormat(): String {
-    val hasDecimalPart = this % 1 != 0.0
-    return if (hasDecimalPart) {
-        String.format("%.1f", this)
-    } else {
-        String.format("%.0f", this)
-    }
-}
-
 fun String.toBigDecimalOrNullExt(): BigDecimal? =
     toBigDecimalOrNull() ?: replace(',', '.').toBigDecimalOrNull()
-
-fun File?.sizeInMb(): String {
-    if (this == null || !this.exists()) {
-        return "n/a"
-    }
-
-    val sizeInMb = this.length().toDouble() / (1024 * 1024)
-    val roundedSize = String.format("%.2f", sizeInMb)
-
-    return "$roundedSize MB"
-}
-
-fun Instant.hoursUntil(now: Instant = Instant.now()): Int? {
-    val seconds = Duration.between(now, this).seconds
-    if (seconds <= 0) return null
-
-    return maxOf(1, ceil(seconds / 3600.0).toInt())
-}

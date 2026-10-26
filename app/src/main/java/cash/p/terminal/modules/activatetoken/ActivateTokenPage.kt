@@ -1,6 +1,8 @@
 package cash.p.terminal.modules.activatetoken
 
-import android.os.Parcelable
+import org.koin.core.parameter.parametersOf
+import org.koin.compose.viewmodel.koinViewModel
+import cash.p.terminal.feature.wallet.ActivateTokenResult
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -46,7 +48,6 @@ import cash.p.terminal.ui_compose.components.SectionUniversalLawrence
 import cash.p.terminal.ui_compose.components.SnackbarDuration
 import cash.p.terminal.ui_compose.components.HudHelper
 import kotlinx.coroutines.launch
-import kotlinx.parcelize.Parcelize
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.ic_attention_20
 
@@ -58,9 +59,6 @@ class ActivateTokenPage(val input: Wallet) : HSPage() {
             navigation.navigateUp()
         }
     }
-
-    @Parcelize
-    data class Result(val activated: Boolean) : Parcelable
 }
 
 
@@ -68,10 +66,10 @@ class ActivateTokenPage(val input: Wallet) : HSPage() {
 fun ActivateTokenScreen(
     navigation: HSNavigation,
     wallet: Wallet,
-    onResult: (ActivateTokenPage.Result) -> Unit,
+    onResult: (ActivateTokenResult) -> Unit,
 ) {
     val viewModel =
-        viewModel<ActivateTokenViewModel>(factory = ActivateTokenViewModel.Factory(wallet))
+        koinViewModel<ActivateTokenViewModel> { parametersOf(wallet) }
 
     val uiState = viewModel.uiState
     val token = uiState.token
@@ -93,7 +91,7 @@ fun ActivateTokenScreen(
                         buttonEnabled = false
                         HudHelper.showInProcessMessage(
                             view,
-                            R.string.activate_activating,
+                            view.context.getString(R.string.activate_activating),
                             SnackbarDuration.INDEFINITE
                         )
 
@@ -101,13 +99,13 @@ fun ActivateTokenScreen(
                             viewModel.activate()
 
                             HudHelper.showSuccessMessage(view, R.string.Hud_Text_Done)
-                            ActivateTokenPage.Result(true)
+                            ActivateTokenResult(true)
                         } catch (e: OfflineOperationBlockedException) {
                             HudHelper.showErrorMessage(view, e.message.orEmpty())
-                            ActivateTokenPage.Result(false)
+                            ActivateTokenResult(false)
                         } catch (t: Throwable) {
                             HudHelper.showErrorMessage(view, t.javaClass.simpleName)
-                            ActivateTokenPage.Result(false)
+                            ActivateTokenResult(false)
                         }
 
                         buttonEnabled = true

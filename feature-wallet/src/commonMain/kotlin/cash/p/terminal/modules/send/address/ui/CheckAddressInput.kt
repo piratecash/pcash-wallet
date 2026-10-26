@@ -1,0 +1,162 @@
+package cash.p.terminal.modules.send.address.ui
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import cash.p.terminal.core.launchAfterClearingFocus
+import cash.p.terminal.entities.Address
+import cash.p.terminal.feature.wallet.qrScannerAvailable
+import cash.p.terminal.navigation.AppPages
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.openQrScanner
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Send_Button_Paste
+import cash.p.terminal.resources.ic_delete_20
+import cash.p.terminal.resources.ic_qr_scan_20
+import cash.p.terminal.resources.qr_scanner_title_smart_scan
+import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
+import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
+import cash.p.terminal.ui_compose.entities.DataState
+import cash.p.terminal.ui_compose.entities.FormsInputStateWarning
+import cash.p.terminal.ui_compose.theme.ColoredTextStyle
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
+
+@Composable
+fun CheckAddressInput(
+    modifier: Modifier = Modifier,
+    value: String,
+    hint: String,
+    navigation: HSNavigation,
+    state: DataState<Address>? = null,
+    onValueChange: (String) -> Unit,
+) {
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+    val coroutineScope = rememberCoroutineScope()
+    val scannerTitle = stringResource(Res.string.qr_scanner_title_smart_scan)
+    val appPages: AppPages = koinInject()
+    val qrScannerAvailable = qrScannerAvailable()
+
+    val borderColor = when (state) {
+        is DataState.Error -> {
+            if (state.error is FormsInputStateWarning) {
+                ComposeAppTheme.colors.statusWarning50
+            } else {
+                ComposeAppTheme.colors.statusError50
+            }
+        }
+        else -> ComposeAppTheme.colors.borderDefault
+    }
+
+    Column(modifier) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .defaultMinSize(minHeight = 44.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .border(0.5.dp, borderColor, RoundedCornerShape(12.dp))
+                .background(ComposeAppTheme.colors.surfacePrimary),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            BasicTextField(
+                modifier = Modifier
+                    .focusRequester(focusRequester)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .weight(1f),
+                enabled = true,
+                value = value,
+                onValueChange = { value ->
+                    onValueChange.invoke(value.trim())
+                },
+                textStyle = ColoredTextStyle(
+                    color = ComposeAppTheme.colors.textPrimary,
+                    textStyle = ComposeAppTheme.typography.body
+                ),
+                singleLine = false,
+                cursorBrush = SolidColor(ComposeAppTheme.colors.brandDefault),
+                decorationBox = { innerTextField ->
+                    if (value.isEmpty()) {
+                        Text(
+                            hint,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 1,
+                            color = ComposeAppTheme.colors.textSecondary,
+                            style = ComposeAppTheme.typography.body
+                        )
+                    }
+                    innerTextField()
+                },
+                visualTransformation = VisualTransformation.None,
+                keyboardOptions = KeyboardOptions.Default,
+            )
+
+            Spacer(modifier = Modifier.width(28.dp))
+
+            if (value.isNotEmpty()) {
+                ButtonSecondaryCircle(
+                    modifier = Modifier.padding(end = 16.dp),
+                    icon = Res.drawable.ic_delete_20,
+                    onClick = {
+                        onValueChange.invoke("")
+                        focusRequester.requestFocus()
+                    }
+                )
+            } else {
+                if (qrScannerAvailable) {
+                    ButtonSecondaryCircle(
+                        modifier = Modifier.padding(end = 8.dp),
+                        icon = Res.drawable.ic_qr_scan_20,
+                        onClick = {
+                            coroutineScope.launchAfterClearingFocus(focusManager) {
+                                navigation.openQrScanner(appPages, scannerTitle) { scannedText ->
+                                    onValueChange.invoke(scannedText)
+                                }
+                            }
+                        }
+                    )
+                }
+
+                val clipboardManager = LocalClipboardManager.current
+                ButtonSecondaryDefault(
+                    modifier = Modifier
+                        .padding(end = 16.dp)
+                        .height(28.dp),
+                    title = stringResource(Res.string.Send_Button_Paste),
+                    onClick = {
+                        clipboardManager.getText()?.text?.let { textInClipboard ->
+                            onValueChange.invoke(textInClipboard)
+                        }
+                    },
+                )
+            }
+        }
+    }
+}

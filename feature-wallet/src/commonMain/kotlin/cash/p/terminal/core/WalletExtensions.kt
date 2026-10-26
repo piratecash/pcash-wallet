@@ -1,5 +1,10 @@
 package cash.p.terminal.core
 
+import cash.p.beam.BeamAddressType
+import cash.p.terminal.resources.beam_address_type_regular
+import cash.p.terminal.resources.beam_send_max_privacy
+import cash.p.terminal.resources.beam_send_offline
+import cash.p.terminal.resources.beam_send_public_offline
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.language_czech
 import cash.p.terminal.resources.language_english
@@ -13,12 +18,24 @@ import cash.p.terminal.resources.language_spanish
 import cash.p.terminal.resources.language_traditional_chinese
 import cash.p.terminal.modules.backuplocal.BackupLocalModule
 import cash.p.terminal.modules.backuplocal.fullbackup.BackupFileValidator
+import io.horizontalsystems.ethereumkit.crypto.CryptoUtils
 import io.horizontalsystems.hdwalletkit.Language
 import org.jetbrains.compose.resources.StringResource
+import java.math.BigInteger
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermissions
 import java.util.Base64
+
+fun BeamAddressType.titleResId(): StringResource = when (this) {
+    BeamAddressType.Offline -> Res.string.beam_send_offline
+    BeamAddressType.PublicOffline -> Res.string.beam_send_public_offline
+    BeamAddressType.MaxPrivacy -> Res.string.beam_send_max_privacy
+    BeamAddressType.Regular -> Res.string.beam_address_type_regular
+}
+
+fun String.orHide(hidden: Boolean, hideValue: String = "*****"): String =
+    if (hidden) hideValue else this
 
 fun String.hexToByteArray(): ByteArray {
     return ByteArray(this.length / 2) {
@@ -40,6 +57,14 @@ fun String.decodeBase64Lenient(): ByteArray = Base64.getDecoder().decode(replace
 /** Same output as android.util.Base64 with NO_WRAP. */
 fun ByteArray.encodeBase64(): String = Base64.getEncoder().encodeToString(this)
 
+private val NON_BASE64_URL_CHARS = Regex("[^A-Za-z0-9_=-]")
+
+/** URL-safe twin of [decodeBase64Lenient]: decodes like android.util.Base64 with URL_SAFE did. */
+fun String.decodeBase64UrlLenient(): ByteArray = Base64.getUrlDecoder().decode(replace(NON_BASE64_URL_CHARS, ""))
+
+/** Same output as android.util.Base64 with URL_SAFE, NO_PADDING and NO_WRAP. */
+fun ByteArray.encodeBase64Url(): String = Base64.getUrlEncoder().withoutPadding().encodeToString(this)
+
 /**
  * Normalizes a private key byte array to exactly [size] bytes.
  * BigInteger.toByteArray() may return fewer bytes (leading zeros stripped)
@@ -50,6 +75,11 @@ fun ByteArray.toFixedSize(size: Int): ByteArray = when {
     this.size < size -> ByteArray(size - this.size) + this
     else -> this
 }
+
+private const val PRIVATE_KEY_SIZE = 32
+
+/** Raw 32-byte secp256k1 scalar; reducing by the curve order keeps the address of any wider value. */
+fun BigInteger.toPrivateKeyBytes(): ByteArray = mod(CryptoUtils.CURVE.n).toByteArray().toFixedSize(PRIVATE_KEY_SIZE)
 
 val Language.displayNameStringRes: StringResource
     get() = when (this) {

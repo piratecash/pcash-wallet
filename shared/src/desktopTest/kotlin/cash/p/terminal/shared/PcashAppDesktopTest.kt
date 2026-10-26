@@ -36,7 +36,7 @@ import kotlin.test.assertTrue
 class PcashAppDesktopTest {
 
     @BeforeTest
-    fun setUp() = DesktopTestGraph.start()
+    fun setUp() = DesktopTestGraph.startUnlocked()
 
     @AfterTest
     fun tearDown() = DesktopTestGraph.stop()

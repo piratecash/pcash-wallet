@@ -6,7 +6,6 @@ import cash.p.terminal.entities.LaunchPage
 import cash.p.terminal.entities.TransactionDataSortMode
 import cash.p.terminal.modules.backuplocal.fullbackup.toChartIndicators
 import cash.p.terminal.modules.contacts.model.Contact
-import cash.p.terminal.shared.desktop.DesktopAppSettingsBackup
 import cash.p.terminal.shared.desktop.backup.DesktopSettingsBackupFixture.Companion.CUSTOM_AUTH
 import cash.p.terminal.shared.desktop.backup.DesktopSettingsBackupFixture.Companion.CUSTOM_RPC
 import cash.p.terminal.shared.desktop.backup.DesktopSettingsBackupFixture.Companion.PASSPHRASE
@@ -20,6 +19,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -42,7 +42,7 @@ class DesktopAppSettingsBackupTest {
                 indicatorStorage.all().map { it.copy(enabled = !it.enabled) }
             )
             balanceHiddenManager.setBalanceAutoHidden(true)
-            settingsStore.setString(DesktopAppSettingsBackup.CONVERSION_TOKEN_QUERY_ID, expected.conversionTokenQueryId)
+            baseTokenManager.setBaseTokenQueryId(requireNotNull(expected.conversionTokenQueryId))
             languageManager.currentLocaleTag = expected.language
             launchScreenService.setLaunchScreen(LaunchPage.Watchlist)
             appearanceStore.marketsTabEnabled = false
@@ -73,10 +73,7 @@ class DesktopAppSettingsBackupTest {
             assertTrue(chartIndicatorManager.isEnabled)
             assertEquals(settings.chartIndicators, indicatorStorage.all().toChartIndicators())
             assertTrue(balanceHiddenManager.balanceAutoHidden)
-            assertEquals(
-                settings.conversionTokenQueryId,
-                settingsStore.string(DesktopAppSettingsBackup.CONVERSION_TOKEN_QUERY_ID),
-            )
+            assertEquals(settings.conversionTokenQueryId, baseTokenManager.token?.tokenQuery?.id)
             assertEquals(settings.language, languageManager.currentLocaleTag)
             assertEquals(settings.launchScreen, launchScreenService.selectedLaunchScreen)
             assertEquals(settings.marketsTabEnabled, appearanceStore.marketsTabEnabled)
@@ -113,10 +110,12 @@ class DesktopAppSettingsBackupTest {
     }
 
     @Test
-    fun contacts_desktop_noneKeptOrRestored() {
+    fun contacts_restored_keptSealedInTheVaultDirectory() {
         backup.restoreContacts(listOf(Contact("uid", "Alice", emptyList())))
+        fixture.contactsRepository.restore(backup.contacts, writeSynchronously = true)
 
-        assertTrue(backup.contacts.isEmpty())
-        assertTrue(backup.parseContacts("""[{"uid":"uid","name":"Alice","addresses":[]}]""").isEmpty())
+        assertEquals(listOf("Alice"), backup.contacts.map { it.name })
+        assertEquals(listOf("Alice"), backup.parseContacts(backup.contactsJson).map { it.name })
+        assertFalse(fixture.vaultFiles.contactsFile.readText().contains("Alice"))
     }
 }

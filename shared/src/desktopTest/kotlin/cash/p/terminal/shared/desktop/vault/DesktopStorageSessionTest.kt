@@ -1,5 +1,7 @@
 package cash.p.terminal.shared.desktop.vault
 
+import androidx.sqlite.execSQL
+import cash.p.terminal.entities.StackingCache
 import cash.p.terminal.vault.VaultSession
 import cash.p.terminal.wallet.entities.AccountRecord
 import cash.p.terminal.wallet.entities.SecretList
@@ -14,8 +16,10 @@ import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import java.io.IOException
+import java.math.BigDecimal
 import kotlin.test.AfterTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
@@ -48,6 +52,35 @@ class DesktopStorageSessionTest {
         assertFalse(fileBytes.decodeToString().contains(MNEMONIC_WORD))
         assertFalse(fileBytes.decodeToString().contains(PASSPHRASE))
         assertFailsWith<Exception> { readAccountsWith(ByteArray(KEY_SIZE) { 9 }) }
+    }
+
+    @Test
+    fun open_version118Database_migratesAndStoresStackingCache() = runTest {
+        val keys = mutableListOf<ByteArray>()
+        val keyCapturingVault = fixture.vault(driverFactory = object : SqlCipherDriverFactory {
+            override fun create(key: ByteArray): SqlCipherDriver =
+                DefaultSqlCipherDriverFactory().create(key).also { keys += key.copyOf() }
+        })
+        keyCapturingVault.create(password())
+        keyCapturingVault.close()
+        downgradeToVersion118(appDatabaseKey = keys.first())
+        val cache = StackingCache(
+            coin = "pirate",
+            address = "address",
+            unpaid = BigDecimal("1.5"),
+            totalIncome = BigDecimal("10"),
+            nextAccrualAt = 1_000L,
+            nextPayoutAt = null,
+            cachedBalance = BigDecimal("100"),
+            timestamp = 2_000L,
+        )
+
+        keyCapturingVault.unlock(password())
+        val database = assertIs<DesktopVaultState.Unlocked>(keyCapturingVault.state.value).session.database
+        database.stackingCacheDao().save(cache)
+
+        assertEquals(cache, database.stackingCacheDao().get("pirate", "address"))
+        keyCapturingVault.close()
     }
 
     @Test
@@ -98,6 +131,14 @@ class DesktopStorageSessionTest {
         SqlCipherDriver(key).use { driver ->
             driver.open(fixture.files.databaseFile.absolutePath).use { connection ->
                 connection.prepare("SELECT name FROM AccountRecord").use { statement -> statement.step() }
+            }
+        }
+
+    private fun downgradeToVersion118(appDatabaseKey: ByteArray) =
+        SqlCipherDriver(appDatabaseKey).use { driver ->
+            driver.open(fixture.files.databaseFile.absolutePath).use { connection ->
+                connection.execSQL("DROP TABLE StackingCache")
+                connection.execSQL("PRAGMA user_version = 118")
             }
         }
 

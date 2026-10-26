@@ -3,15 +3,12 @@ package cash.p.terminal.screenshots
 import android.app.Application
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import com.github.takahirom.roborazzi.captureRoboImage
-import cash.p.terminal.modules.balance.token.creationblock.CreationBlockScreen
-import cash.p.terminal.modules.balance.token.creationblock.CreationBlockUiState
-import cash.p.terminal.ui_compose.theme.ComposeAppTheme
-import io.horizontalsystems.core.entities.BlockchainType
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
+import sergio.sastre.composable.preview.scanner.android.AndroidComposablePreviewScanner
 
 /**
  * Renders the Creation Block screen to a PNG on the JVM (Robolectric, no emulator) for local
@@ -31,22 +28,12 @@ class CreationBlockPreviewScreenshotTest {
 
     @Test
     fun snapshot() {
+        val preview = AndroidComposablePreviewScanner()
+            .scanPackageTrees("cash.p.terminal.modules.balance.token.creationblock")
+            .getPreviews()
+            .single { it.methodName == "CreationBlockScreenPreview" }
         captureRoboImage(filePath = "build/outputs/roborazzi/CreationBlockScreen.png") {
-            ComposeAppTheme {
-                CreationBlockScreen(
-                    uiState = CreationBlockUiState(
-                        blockchainType = BlockchainType.Monero,
-                        heightText = "2975499",
-                        blockDateText = "9 августа 2024 г.",
-                        changed = true,
-                    ),
-                    onHeightChange = {},
-                    onDatePick = {},
-                    onRescanConfirm = {},
-                    onClose = {},
-                    onRescanStart = {},
-                )
-            }
+            preview()
         }
     }
 }

@@ -85,26 +85,6 @@ internal class DefaultMoneroDeviceWalletNative(
     )
 }
 
-internal fun storeMoneroWalletSafely(
-    failureMessage: String,
-    store: () -> Int,
-    onNativeFault: (HardwareWalletOperationException) -> Unit,
-) {
-    val status = store()
-    if (status == MONERO_STORE_OK) return
-    val failure = HardwareWalletOperationException(
-        HardwareWalletErrorCode.StoreFailed,
-        failureMessage,
-    )
-    if (status == MONERO_STORE_NATIVE_FAULT) {
-        onNativeFault(failure)
-    }
-    throw failure
-}
-
-internal const val MONERO_STORE_OK = 0
-internal const val MONERO_STORE_NATIVE_FAULT = 2
-
 internal class MoneroDeviceWalletOwnershipRetainedException(
     cause: Throwable,
 ) : RuntimeException(cause.message, cause)
@@ -142,13 +122,6 @@ private fun closeMoneroDeviceWallet(
     } catch (error: Throwable) {
         error
     }
-
-internal fun Wallet.Status?.toHardwareWalletCloseFailure(
-    fallbackDetail: String,
-) = HardwareWalletOperationException(
-    this?.hardwareWalletError ?: HardwareWalletErrorCode.Protocol,
-    this?.errorString?.takeIf(String::isNotBlank) ?: fallbackDetail,
-)
 
 internal class MoneroDeviceWalletFileStore private constructor(
     private val root: File,

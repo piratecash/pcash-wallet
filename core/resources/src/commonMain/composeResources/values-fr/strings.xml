@@ -60,7 +60,7 @@
     <string name="Button_Delete">Supprimer</string>
     <string name="Button_LearnMore">En savoir plus</string>
     <string name="Button_Activate">Activer</string>
-    <string name="activation_required_dialog_description">Pour recevoir %s, vous devez activer le jeton. Le réseau Stellar exige l’établissement d’une ligne de confiance (trustline) pour chaque jeton. Sans elle, votre portefeuille ne peut pas recevoir %s : la transaction sera rejetée et les fonds ne seront pas livrés.</string>
+    <string name="activation_required_dialog_description">Pour recevoir %1$s, vous devez activer le jeton. Le réseau Stellar exige l’établissement d’une ligne de confiance (trustline) pour chaque jeton. Sans elle, votre portefeuille ne peut pas recevoir %2$s : la transaction sera rejetée et les fonds ne seront pas livrés.</string>
     <string name="activate_you_activate">Vous activez</string>
     <string name="activate_activating">Activation en cours</string>
     <string name="activate_already_active_title">Déjà actif</string>
@@ -374,7 +374,7 @@
     <string name="Balance_Error_InvalidQrCode">Impossible de reconnaître</string>
     <string name="Balance_Receive_WatchAddressAlert">Cette adresse est l\u0027adresse du compte surveillé</string>
     <string name="Balance_Receive_UsedAddresses">Adresses utilisées</string>
-    <string name="Balance_Receive_UsedAddressesDescriptoin">%s adresses changent pour des raisons de confidentialité et de sécurité. Ci-dessous, une liste des adresses utilisées dans ce portefeuille.</string>
+    <string name="Balance_Receive_UsedAddressesDescriptoin">%1$s adresses changent pour des raisons de confidentialité et de sécurité. Ci-dessous, une liste des adresses utilisées dans ce portefeuille.</string>
     <string name="Balance_Receive_ReceiveAddresses">Adresses de réception</string>
     <string name="Balance_Receive_ChangeAddresses">Adresses de changement</string>
     <string name="receive_address_badge_new">Nouveau</string>
@@ -695,7 +695,7 @@
     <string name="SwapInfo_PriceImpactTitle">Impact prix</string>
     <string name="SwapInfo_PriceImpactDescription">L\u0027écart de prix attendu par rapport à un prix affiché, augmente généralement avec le montant de l\u0027échange.</string>
     <!--Deposit-->
-    <string name="Deposit_Title">Recevoir %s</string>
+    <string name="Deposit_Title">Recevoir %1$s</string>
     <!--Transactions-->
     <string name="Transactions_Title">Virements</string>
     <string name="Transactions_Hide">Transactions Hide</string>
@@ -1445,6 +1445,8 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="CoinPage_TimeDuration_Month">1M</string>
     <string name="CoinPage_TimeDuration_Year">1J</string>
     <string name="CoinPage_TimeDuration_All">Tout</string>
+    <string name="Timestamp_Today">Aujourd\u0027hui</string>
+    <string name="Timestamp_Yesterday">Hier</string>
     <string name="CoinPage_TradingVolume">Volume de trading</string>
     <string name="CoinPage_Audits_PoweredBy">Propulsé par Defiyield.app</string>
     <string name="CoinPage_Audits_Issues">Problèmes : %d</string>
@@ -1979,8 +1981,8 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     </plurals>
 
     <plurals name="staking_next_accrual_in_hours">
-        <item quantity="one">La prochaine accumulation aura lieu dans %d heure</item>
-        <item quantity="other">La prochaine accumulation aura lieu dans %d heures</item>
+        <item quantity="one">La prochaine accumulation aura lieu dans %1$d heure</item>
+        <item quantity="other">La prochaine accumulation aura lieu dans %1$d heures</item>
     </plurals>
     <string name="estimated_annual_interest">Intérêt annuel estimé</string>
     <string name="accruals">Accruals</string>
@@ -2202,6 +2204,7 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="send_trezor_mweb_not_supported">Trezor ne prend pas en charge MWEB. Envoyez des Litecoins vers une adresse classique (non MWEB).</string>
     <string name="send_trezor_time_lock_not_supported">Trezor ne prend pas en charge les transactions à verrouillage temporel.</string>
     <string name="send_trezor_zcash_memo_not_supported">Trezor ne peut pas joindre de mémo à une transaction Zcash. Supprimez le mémo pour continuer.</string>
+    <string name="send_memo_too_long">Le mémo est trop long : %1$d sur %2$d octets</string>
     <string name="send_trezor_zcash_transparent_only">Trezor ne peut envoyer des Zcash qu\u0027à des adresses transparentes.</string>
     <string name="send_trezor_zcash_unified_no_transparent_receiver">Cette adresse unifiée ne contient pas de destinataire transparent, Trezor ne peut donc pas y envoyer de transfert.</string>
     <string name="send_trezor_zcash_firmware_required">%1$s nécessite le firmware %2$s ou une version ultérieure pour envoyer vers des adresses unifiées Zcash. Mettez à jour l\u0027appareil, puis réessayez — la version du firmware sera vérifiée à nouveau lors de votre prochaine transaction Zcash.</string>
@@ -2336,6 +2339,9 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="desktop_forgot_password_warning">Les portefeuilles, contacts, paramètres et l\u0027historique conservés sur cet ordinateur seront supprimés. Les fonds sur la blockchain ne sont pas affectés : les portefeuilles ne peuvent être restaurés qu\u0027à partir de leurs phrases de récupération.</string>
     <string name="desktop_forgot_password_action">Supprimer les données</string>
     <string name="desktop_forgot_password_failed">Impossible de supprimer les données</string>
+    <string name="desktop_wipe_restart_manually">Données supprimées. Relancez l\u0027application</string>
+    <string name="desktop_restart_manually">Relancez l\u0027application</string>
+    <string name="platform_not_supported_yet">Pas encore pris en charge dans la version de bureau</string>
     <string name="desktop_change_password_title">Changer le mot de passe</string>
     <string name="desktop_change_password_current_hint">Mot de passe actuel</string>
     <string name="desktop_change_password_new_hint">Nouveau mot de passe</string>

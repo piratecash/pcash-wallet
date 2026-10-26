@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.tonconnect
 
+import cash.p.terminal.ui_compose.components.TitleValueCell
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -31,7 +32,6 @@ import cash.p.terminal.core.authorizedAction
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
 import cash.p.terminal.modules.walletconnect.session.ui.DropDownCell
-import cash.p.terminal.modules.walletconnect.session.ui.TitleValueCell
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.resources.Button_Close

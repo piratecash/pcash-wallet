@@ -1,5 +1,73 @@
 package cash.p.terminal.shared.desktop
 
+import androidx.lifecycle.viewmodel.CreationExtras
+import cash.p.terminal.core.AppearanceSettingsStore
+import cash.p.terminal.core.ICoinManager
+import cash.p.terminal.core.StorageLockedException
+import cash.p.terminal.core.managers.AmlStatusManager
+import cash.p.terminal.core.managers.BeamAccountDeletionPreflight
+import cash.p.terminal.core.managers.BeamKitDatabaseKeyProvider
+import cash.p.terminal.core.managers.BeamLifecycleCoordinator
+import cash.p.terminal.core.managers.BeamSendCoordinator
+import cash.p.terminal.core.managers.BeamSessionOwner
+import cash.p.terminal.core.managers.BtcBlockchainManager
+import cash.p.terminal.core.managers.EvmBlockchainManager
+import cash.p.terminal.core.managers.MoneroHardwareGateway
+import cash.p.terminal.core.managers.MoneroKitManager
+import cash.p.terminal.shared.desktop.vault.DesktopBeamKitDatabaseKeyProvider
+import cash.p.terminal.wallet.AccountDeletionPreflight
+import cash.p.terminal.core.managers.NetworkErrorTracker
+import cash.p.terminal.core.managers.OfflineModeManager
+import cash.p.terminal.core.managers.PoisonAddressManager
+import cash.p.terminal.core.managers.SeedPhraseQrCrypto
+import cash.p.terminal.core.managers.SolanaKitManager
+import cash.p.terminal.core.managers.StellarKitManager
+import cash.p.terminal.core.managers.ThorchainKitManagers
+import cash.p.terminal.core.managers.TonKitManager
+import cash.p.terminal.core.managers.TransactionAdapterManager
+import cash.p.terminal.core.managers.TronKitManager
+import cash.p.terminal.core.managers.UserDeletedWalletManager
+import cash.p.terminal.core.managers.WalletServicesStarter
+import cash.p.terminal.core.storage.PendingMultiSwapStorage
+import cash.p.terminal.core.usecase.GetRestoreHeightForWalletUseCase
+import cash.p.terminal.core.usecase.OfflineModeUseCase
+import cash.p.terminal.core.usecase.RescanMoneroUseCase
+import cash.p.terminal.modules.balance.BalanceAccountsViewModel
+import cash.p.terminal.modules.balance.BalanceViewModel
+import cash.p.terminal.modules.contacts.DeleteContactsPinSettings
+import cash.p.terminal.modules.managewallets.ManageWalletsModule
+import cash.p.terminal.modules.managewallets.ManageWalletsViewModel
+import cash.p.terminal.modules.send.offline.OfflineSignedTransactionsViewModel
+import cash.p.terminal.modules.settings.addresschecker.AddressCheckerViewModel
+import cash.p.terminal.modules.settings.addresschecker.ui.AddressCheckBlockchainSelectorViewModel
+import cash.p.terminal.modules.syncerror.SyncErrorViewModel
+import cash.p.terminal.modules.transactions.TransactionsViewModel
+import cash.p.terminal.ui.compose.BalanceHideOnFlipHandler
+import cash.p.terminal.wallet.IAdapterManager
+import cash.p.terminal.wallet.policy.PlatformChainSupport
+import cash.p.terminal.wallet.policy.PlatformOperationSupport
+import cash.p.terminal.wallet.useCases.WalletUseCase
+import io.horizontalsystems.core.IAppNumberFormatter
+import org.koin.core.error.InstanceCreationException
+import kotlin.test.assertIs
+import kotlin.test.assertTrue
+import cash.p.terminal.modules.xrate.XRateService
+import cash.p.terminal.modules.premium.settings.PremiumPlatformSettings
+import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.Token
+import cash.p.terminal.modules.configuredtoken.ConfiguredTokenInfoViewModel
+import cash.p.terminal.modules.transactions.SelectContactViewModel
+import cash.p.terminal.modules.receive.viewmodels.DerivationSelectViewModel
+import cash.p.terminal.modules.receive.viewmodels.BchAddressTypeSelectViewModel
+import cash.p.terminal.modules.receive.viewmodels.ReceiveTokenSelectViewModel
+import cash.p.terminal.modules.receive.viewmodels.NetworkSelectViewModel
+import cash.p.terminal.modules.receive.ActivateTokenViewModel
+import cash.p.terminal.modules.receive.ReceiveStellarAssetViewModel
+import cash.p.terminal.modules.receive.viewmodels.ReceiveMoneroViewModel
+import cash.p.terminal.modules.receive.viewmodels.ReceiveAddressViewModel
+import cash.p.terminal.modules.receive.FullCoinsProvider
+import cash.p.terminal.modules.transactionInfo.TransactionInfoViewItemFactory
+import cash.p.terminal.modules.transactionInfo.TransactionInfoService
 import cash.p.terminal.core.IRandomProvider
 import cash.p.terminal.core.IAccountFactory
 import cash.p.terminal.core.IClipboardManager
@@ -12,28 +80,55 @@ import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.TokenAutoEnableManager
 import cash.p.terminal.core.managers.ZcashBirthdayProvider
 import cash.p.terminal.core.providers.AddressResolutionConfig
+import cash.p.terminal.core.providers.ZcashDbMarker
 import cash.p.terminal.core.usecase.MoneroWalletUseCase
 import cash.p.terminal.feature.wallet.AppRestarter
 import cash.p.terminal.feature.wallet.BackupFileLauncher
 import cash.p.terminal.feature.wallet.LocalizedAssetReader
 import cash.p.terminal.feature.wallet.SecretActionAuthorizer
 import cash.p.terminal.feature.wallet.WalletPlatformPages
+import cash.p.terminal.feature.wallet.WalletSendPages
+import cash.p.terminal.featureStacking.ui.staking.StackingType
 import cash.p.terminal.navigation.AppPages
-import cash.p.terminal.network.binance.api.BinanceApi
-import cash.p.terminal.network.pirate.domain.repository.PiratePlaceRepository
 import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
 import cash.p.terminal.shared.DesktopTestGraph
 import cash.p.terminal.ui_compose.components.UrlOpener
+import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.WalletFactory
 import cash.p.terminal.wallet.navigation.WalletPages
 import cash.p.terminal.wallet.useCases.GetHardwarePublicKeyForWalletUseCase
 import io.horizontalsystems.core.DispatcherProvider
+import cash.p.terminal.modules.blockchainstatus.BlockchainStatusProvider
+import cash.p.terminal.modules.blockchainstatus.BlockchainStatusViewModel
+import cash.p.terminal.modules.contacts.ChooseContactViewModel
+import cash.p.terminal.modules.contacts.Mode
+import cash.p.terminal.modules.contacts.model.Contact
+import cash.p.terminal.modules.contacts.model.ContactAddress
+import cash.p.terminal.modules.contacts.viewmodel.AddressViewModel
+import cash.p.terminal.modules.contacts.viewmodel.ContactViewModel
+import cash.p.terminal.modules.contacts.viewmodel.ContactsViewModel
+import cash.p.terminal.modules.offline.OfflineModeToggleViewModel
+import cash.p.terminal.modules.settings.addresschecker.UnifiedAddressCheckerViewModel
+import cash.p.terminal.modules.settings.addresschecker.ui.AddressCheckTokenSelectorViewModel
+import cash.p.terminal.modules.syncerror.SyncErrorService
+import cash.p.terminal.core.storage.EnabledWalletsCacheDao
+import cash.p.terminal.modules.balance.DefaultBalanceService
+import cash.p.terminal.modules.balance.TotalBalance
+import cash.p.terminal.modules.balance.token.TokenBalanceService
+import cash.p.terminal.modules.balance.token.TokenBalanceViewModel
+import cash.p.terminal.modules.balance.token.TokenTransactionsService
+import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewModel
+import cash.p.terminal.modules.balance.token.creationblock.CreationBlockViewModel
+import cash.p.terminal.wallet.Wallet
+import io.horizontalsystems.core.entities.BlockchainType
+import cash.p.terminal.core.address.Eip20AddressValidator
+import cash.p.terminal.modules.address.AddressHandlerFactory
 import io.mockk.mockk
 import org.koin.core.context.GlobalContext
-import org.koin.core.context.loadKoinModules
 import cash.p.terminal.feature.market.di.marketFeatureModule
 import cash.p.terminal.modules.address.AddressParserChain
 import cash.p.terminal.modules.backuplocal.fullbackup.BackupViewItemFactory
@@ -110,13 +205,50 @@ import cash.p.terminal.modules.watchaddress.selectblockchains.SelectBlockchainsV
 import cash.p.terminal.network.data.AppHeadersProvider
 import cash.p.terminal.network.di.networkModule
 import cash.p.terminal.network.github.data.GithubApiConfig
-import cash.p.terminal.network.zcash.domain.usecase.GetZcashHeightUseCase
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IDeletedWalletRestorer
 import cash.p.terminal.wallet.PassphraseValidator
 import cash.p.terminal.wallet.di.marketModule
 import cash.p.terminal.wallet.entities.FullCoin
-import cash.p.terminal.wallet.useCases.ScanToAddUseCase
+import cash.p.terminal.core.managers.AddressLabelManager
+import cash.p.terminal.modules.balance.BalancePlatformActions
+import cash.p.terminal.modules.chart.ChartIndicatorManager
+import cash.p.terminal.core.managers.CoinManager
+import cash.p.terminal.wallet.providers.CryptoCompareProvider
+import io.horizontalsystems.core.CurrencyManager
+import cash.p.terminal.core.managers.DeletedAccountsCleanup
+import cash.p.terminal.shared.main.DesktopHudMessenger
+import cash.p.terminal.core.managers.EvmHardwareSigners
+import cash.p.terminal.core.managers.EvmSignerFactory
+import cash.p.terminal.data.repository.EvmTransactionRepository
+import cash.p.terminal.network.pirate.domain.useCase.FiatCurrencyRateService
+import cash.p.terminal.modules.market.tvl.GlobalMarketRepository
+import cash.p.terminal.modules.managewallets.HardwareWalletKeyProvisioner
+import cash.p.terminal.wallet.policy.HardwareWalletTokenPolicy
+import cash.p.terminal.wallet.IAccountCleaner
+import cash.p.terminal.core.IBackupManager
+import cash.p.terminal.manager.IConnectivityManager
+import io.horizontalsystems.core.IEncryptionManager
+import cash.p.terminal.wallet.IHardwarePublicKeyStorage
+import io.horizontalsystems.core.ILanguageManager
+import cash.p.terminal.modules.transactions.ITransactionRecordRepository
+import cash.p.terminal.shared.main.MainTabStorage
+import cash.p.terminal.modules.market.MarketPages
+import cash.p.terminal.modules.offline.OfflineOperationGate
+import cash.p.terminal.core.managers.PendingTransactionMatcher
+import cash.p.terminal.core.managers.PendingTransactionRegistrar
+import cash.p.terminal.network.pirate.domain.repository.PiratePlaceRepository
+import io.horizontalsystems.core.PriceChangeIntervalProvider
+import cash.p.terminal.core.managers.PriceManager
+import cash.p.terminal.core.usecase.ResolvePayCoreNavigationUseCase
+import cash.p.terminal.wallet.providers.RetrofitUtils
+import cash.p.terminal.shared.settings.SettingsPages
+import cash.p.terminal.modules.blockchainstatus.StatusReportExporter
+import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
+import cash.p.terminal.core.usecase.SyncPendingMultiSwapUseCase
+import cash.p.terminal.modules.coin.overview.TokenWalletActions
+import cash.p.terminal.core.usecase.UpdateSwapProviderTransactionsStatusUseCase
+import cash.p.terminal.network.alphaaml.api.AlphaAmlApi
 import io.horizontalsystems.chartview.chart.AbstractChartService
 import io.horizontalsystems.chartview.chart.ChartModule
 import io.horizontalsystems.chartview.chart.ChartViewModel
@@ -182,7 +314,8 @@ class DesktopKoinGraphTest {
         }
 
         desktopGraph.verify(
-            extraTypes = providedOutsideTheGraph + builtFromInjectedParameters + notReachedOnDesktop,
+            extraTypes = providedOutsideTheGraph + builtFromInjectedParameters + stakingPageParameters +
+                notReachedOnDesktop + absentOnDesktop,
             injections = injectedParameters(
                 definition<PassphraseTermsViewModel>(Array<String>::class),
                 definition<SafetyRulesViewModel>(SafetyRulesModule.SafetyRulesMode::class, List::class),
@@ -198,6 +331,7 @@ class DesktopKoinGraphTest {
                 definition<AddRpcViewModel>(Blockchain::class),
                 *marketInjections(),
                 *coinPageInjections(),
+                *walletPageInjections(),
             ),
         )
     }
@@ -212,14 +346,65 @@ class DesktopKoinGraphTest {
         Dispatchers.setMain(StandardTestDispatcher())
         DesktopTestGraph.start()
         try {
-            loadKoinModules(listOf(networkModule, networkStandIns))
             val koin = GlobalContext.get()
             lookedUpByWalletScreens.forEach { type -> koin.get<Any>(type) }
             viewModelsOfDesktopScreens().forEach { (type, parameters) -> koin.get<Any>(type, parameters = parameters) }
+            lookedUpAfterTheFirstUnlock.forEach { type -> assertStopsOnlyAtTheLockedStorage(type) { koin.get<Any>(type) } }
+            viewModelsBuiltAfterTheFirstUnlock().forEach { (type, parameters) ->
+                assertStopsOnlyAtTheLockedStorage(type) { koin.get<Any>(type, parameters = parameters) }
+            }
+            assertStopsOnlyAtTheLockedStorage(ManageWalletsViewModel::class) {
+                ManageWalletsModule.Factory().create(ManageWalletsViewModel::class, CreationExtras.Empty)
+            }
         } finally {
             DesktopTestGraph.stop()
             Dispatchers.resetMain()
         }
+    }
+
+    /** Locked, these stop at the storage before reaching every dependency; open, each must build in full. */
+    @Test
+    fun get_typesLookedUpAfterTheFirstUnlock_buildOverTheOpenStorage() {
+        EthereumKit.init()
+        DesktopTestGraph.startUnlocked()
+        try {
+            val koin = GlobalContext.get()
+            lookedUpAfterTheFirstUnlock.forEach { type -> koin.get<Any>(type) }
+            assertIs<BeamAccountDeletionPreflight>(koin.get<AccountDeletionPreflight>())
+            assertIs<DesktopBeamKitDatabaseKeyProvider>(koin.get<BeamKitDatabaseKeyProvider>())
+        } finally {
+            DesktopTestGraph.stop()
+        }
+    }
+
+    /** The storage opens at the first unlock: until then these may stop at it, and at nothing else. */
+    private fun assertStopsOnlyAtTheLockedStorage(type: KClass<*>, resolve: () -> Unit) {
+        try {
+            resolve()
+        } catch (e: InstanceCreationException) {
+            val causes = generateSequence<Throwable>(e) { it.cause }
+            assertTrue(causes.any { it is StorageLockedException }, "$type: ${causes.last()}")
+        }
+    }
+
+    /** Pages behind the unlock gate, built over storage-backed services. */
+    private fun viewModelsBuiltAfterTheFirstUnlock(): List<Pair<KClass<*>, ParametersDefinition?>> {
+        val wallet = mockk<Wallet>(relaxed = true)
+        return listOf(
+            AboutPremiumViewModel::class to null,
+            ManageAccountsViewModel::class to { parametersOf(ManageAccountsModule.Mode.Manage) },
+            BalanceViewModel::class to null,
+            BalanceAccountsViewModel::class to null,
+            TransactionsViewModel::class to null,
+            OfflineSignedTransactionsViewModel::class to null,
+            TokenBalanceViewModel::class to { parametersOf(wallet) },
+            SyncErrorViewModel::class to { parametersOf(wallet) },
+            ContactsViewModel::class to { parametersOf(Mode.Full) },
+            AddressCheckerViewModel::class to null,
+            AddressCheckBlockchainSelectorViewModel::class to null,
+            UnifiedAddressCheckerViewModel::class to { parametersOf("address") },
+            // Not BlockchainStatusViewModel: its init reads the locked log DB on IO; verify() covers it.
+        )
     }
 
     private fun marketInjections() = arrayOf(
@@ -257,6 +442,30 @@ class DesktopKoinGraphTest {
         definition<CoinRankViewModel>(RankType::class, Currency::class),
     )
 
+    private fun walletPageInjections() = arrayOf(
+        definition<OfflineModeToggleViewModel>(Wallet::class),
+        definition<TokenBalanceViewModel>(Wallet::class),
+        definition<CreationBlockViewModel>(Wallet::class),
+        definition<AddressPoisoningViewModel>(String::class, Boolean::class, BlockchainType::class),
+        definition<ReceiveAddressViewModel>(Wallet::class),
+        definition<ReceiveMoneroViewModel>(Wallet::class),
+        definition<ReceiveStellarAssetViewModel>(Wallet::class),
+        definition<ActivateTokenViewModel>(Wallet::class, Token::class),
+        definition<NetworkSelectViewModel>(Account::class, FullCoin::class),
+        definition<ReceiveTokenSelectViewModel>(Account::class),
+        definition<BchAddressTypeSelectViewModel>(String::class),
+        definition<DerivationSelectViewModel>(String::class),
+        definition<SelectContactViewModel>(Contact::class, BlockchainType::class),
+        definition<ConfiguredTokenInfoViewModel>(Token::class),
+        definition<BlockchainStatusViewModel>(BlockchainStatusProvider::class),
+        definition<ContactsViewModel>(Mode::class),
+        definition<ContactViewModel>(Contact::class, ContactAddress::class),
+        definition<AddressViewModel>(String::class, ContactAddress::class, List::class),
+        definition<ChooseContactViewModel>(BlockchainType::class),
+        definition<AddressCheckTokenSelectorViewModel>(Blockchain::class),
+        definition<UnifiedAddressCheckerViewModel>(String::class),
+    )
+
     /** What desktop pages ask `koinViewModel` for, with representative parameters. */
     private fun viewModelsOfDesktopScreens(): List<Pair<KClass<*>, ParametersDefinition?>> {
         val account = mnemonicAccount(isBackedUp = true)
@@ -276,10 +485,8 @@ class DesktopKoinGraphTest {
             WatchAddressViewModel::class to null,
             BackupAlertViewModel::class to null,
             // Not SelectBackupItemsViewModel: its init reads the locked vault DB on IO; verify() covers it.
-            AboutPremiumViewModel::class to null,
             BaseCurrencySettingsViewModel::class to null,
             AppearanceViewModel::class to null,
-            ManageAccountsViewModel::class to { parametersOf(ManageAccountsModule.Mode.Manage) },
             SelectBlockchainsViewModel::class to { parametersOf(account.type, account.name) },
             DuplicateWalletViewModel::class to { parametersOf(account) },
             ManageAccountViewModel::class to { parametersOf(account) },
@@ -312,6 +519,10 @@ class DesktopKoinGraphTest {
     private companion object {
         val lookedUpByWalletScreens = listOf(
             WalletPlatformPages::class,
+            WalletSendPages::class,
+            IBalanceHiddenManager::class,
+            ContactsRepository::class,
+            IDeletedWalletRestorer::class,
             SecretActionAuthorizer::class,
             AppRestarter::class,
             DesktopAppRestarter::class,
@@ -324,7 +535,6 @@ class DesktopKoinGraphTest {
             IClipboardManager::class,
             DispatcherProvider::class,
             AddressResolutionConfig::class,
-            CheckPremiumUseCase::class,
             GetHardwarePublicKeyForWalletUseCase::class,
             IAccountFactory::class,
             IAccountManager::class,
@@ -339,14 +549,91 @@ class DesktopKoinGraphTest {
             ZcashAddressDeriver::class,
             ZcashBirthdayProvider::class,
             ZcashKeyExporter::class,
+            ZcashDbMarker::class,
+            MoneroHardwareGateway::class,
+            AddressLabelManager::class,
+            BalancePlatformActions::class,
+            ChartIndicatorManager::class,
+            CoinManager::class,
+            CryptoCompareProvider::class,
+            CurrencyManager::class,
+            DesktopHudMessenger::class,
+            EvmHardwareSigners::class,
+            EvmSignerFactory::class,
+            FiatCurrencyRateService::class,
+            GlobalMarketRepository::class,
+            HardwareWalletKeyProvisioner::class,
+            HardwareWalletTokenPolicy::class,
+            IBackupManager::class,
+            IConnectivityManager::class,
+            IEncryptionManager::class,
+            IHardwarePublicKeyStorage::class,
+            ILanguageManager::class,
+            MainTabStorage::class,
+            MarketPages::class,
+            PendingTransactionMatcher::class,
+            PendingTransactionRegistrar::class,
+            PiratePlaceRepository::class,
+            PriceChangeIntervalProvider::class,
+            PriceManager::class,
+            RetrofitUtils::class,
+            SettingsPages::class,
+            StatusReportExporter::class,
+            SwapProviderTransactionsStorage::class,
+            TokenWalletActions::class,
+            UpdateSwapProviderTransactionsStatusUseCase::class,
+            AlphaAmlApi::class,
+            // Built at startup, before any unlock.
+            DesktopWalletSession::class,
+            DesktopWipeCoordinator::class,
+            DesktopAppExit::class,
+            DesktopAppRelauncher::class,
         )
 
-        /** Over the real network module, so nothing here calls out. */
-        val networkStandIns = module {
-            single<BinanceApi> { mockk(relaxed = true) }
-            single<PiratePlaceRepository> { mockk(relaxed = true) }
-            single<GetZcashHeightUseCase> { mockk(relaxed = true) }
-        }
+        val lookedUpAfterTheFirstUnlock = listOf(
+            CheckPremiumUseCase::class,
+            IAdapterManager::class,
+            TransactionAdapterManager::class,
+            WalletServicesStarter::class,
+            WalletUseCase::class,
+            RescanMoneroUseCase::class,
+            UserDeletedWalletManager::class,
+            OfflineModeManager::class,
+            OfflineModeUseCase::class,
+            EvmBlockchainManager::class,
+            BtcBlockchainManager::class,
+            PlatformChainSupport::class,
+            PlatformOperationSupport::class,
+            PoisonAddressManager::class,
+            AmlStatusManager::class,
+            NetworkErrorTracker::class,
+            PendingMultiSwapStorage::class,
+            SeedPhraseQrCrypto::class,
+            GetRestoreHeightForWalletUseCase::class,
+            DeleteContactsPinSettings::class,
+            BalanceHideOnFlipHandler::class,
+            AppearanceSettingsStore::class,
+            ICoinManager::class,
+            IAppNumberFormatter::class,
+            TronKitManager::class,
+            TonKitManager::class,
+            StellarKitManager::class,
+            SolanaKitManager::class,
+            MoneroKitManager::class,
+            ThorchainKitManagers::class,
+            DeletedAccountsCleanup::class,
+            EvmTransactionRepository::class,
+            IAccountCleaner::class,
+            ITransactionRecordRepository::class,
+            OfflineOperationGate::class,
+            ResolvePayCoreNavigationUseCase::class,
+            SyncPendingMultiSwapUseCase::class,
+            BeamSessionOwner::class,
+            BeamLifecycleCoordinator::class,
+            BeamSendCoordinator::class,
+            BeamKitDatabaseKeyProvider::class,
+            AccountDeletionPreflight::class,
+        )
 
         /** Headers and the premium URL come from `desktopApp`; files, flags and the engine are passed by the definitions. */
         val providedOutsideTheGraph = listOf(
@@ -358,14 +645,32 @@ class DesktopKoinGraphTest {
             HttpClientEngine::class,
         )
 
-        /** BtcBlockchainSettingsService is built from the injected Blockchain, RpcSource inside the EnsResolver definition. */
-        val builtFromInjectedParameters = listOf(BtcBlockchainSettingsService::class, RpcSource::class)
-
-        /** GitHub release checks and the scan-to-add flow have no desktop screen that resolves them. */
-        val notReachedOnDesktop = listOf(
-            GithubApiConfig::class,
-            IDeletedWalletRestorer::class,
-            ScanToAddUseCase::class,
+        /** Built inside the view model definitions from their injected parameters. */
+        val builtFromInjectedParameters = listOf(
+            BtcBlockchainSettingsService::class,
+            SyncErrorService::class,
+            AddressHandlerFactory::class,
+            Eip20AddressValidator::class,
+            TransactionInfoService::class,
+            TransactionInfoViewItemFactory::class,
+            FullCoinsProvider::class,
+            XRateService::class,
+            DefaultBalanceService::class,
+            TotalBalance::class,
+            TokenBalanceService::class,
+            TokenTransactionsService::class,
+            EnabledWalletsCacheDao::class,
+            // Built inside the EnsResolver definition.
+            RpcSource::class,
         )
+
+        /** The staking view model is internal; its optional initial tab comes as a parameter. */
+        val stakingPageParameters = listOf(StackingType::class)
+
+        /** GitHub release checks have no desktop screen that resolves them. */
+        val notReachedOnDesktop = listOf(GithubApiConfig::class)
+
+        /** Resolved with `getOrNull`: desktop has no such feature and hides what needs it. */
+        val absentOnDesktop = listOf(PremiumPlatformSettings::class)
     }
 }

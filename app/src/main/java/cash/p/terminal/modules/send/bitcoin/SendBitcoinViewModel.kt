@@ -24,6 +24,7 @@ import cash.p.terminal.entities.PendingTransactionDraft
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.contacts.ContactsRepository
+import cash.p.terminal.modules.memo.fitsMemoBytes
 import cash.p.terminal.modules.send.SendConfirmationData
 import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.bitcoin.SendBitcoinModule.rbfSupported
@@ -86,6 +87,10 @@ class SendBitcoinViewModel(
             BlockchainType.Cosanta,
             BlockchainType.PirateCash
         )
+
+        // Node relay policy limits for OP_RETURN data (data-carrier size).
+        const val MEMO_MAX_BYTES = 80
+        const val MEMO_MAX_BYTES_BCH_FAMILY = 220
     }
 
     private data class SendRequest(
@@ -122,6 +127,10 @@ class SendBitcoinViewModel(
     override val offlineSignSupported = offlineSignAdapter != null
 
     val blockchainType by adapter::blockchainType
+    val memoMaxBytes = when (blockchainType) {
+        BlockchainType.BitcoinCash, BlockchainType.ECash -> MEMO_MAX_BYTES_BCH_FAMILY
+        else -> MEMO_MAX_BYTES
+    }
     val feeRateChangeable by feeRateService::feeRateChangeable
     val isLockTimeEnabled by pluginService::isLockTimeEnabled
     val lockTimeIntervals by pluginService::lockTimeIntervals
@@ -209,8 +218,8 @@ class SendBitcoinViewModel(
             addressError = addressState.addressError,
             amountCaution = amountState.amountCaution,
             feeRateCaution = feeRateState.feeRateCaution,
-            canBeSend = amountState.canBeSend && addressState.canBeSend && feeRateState.canBeSend && (!poison ||
-                    riskAccepted),
+            canBeSend = amountState.canBeSend && addressState.canBeSend && feeRateState.canBeSend &&
+                    memo.fitsMemoBytes(memoMaxBytes) && (!poison || riskAccepted),
             showAddressInput = showAddressInput,
             utxoData = if (utxoExpertModeEnabled && isAdvancedSettingsAvailable) utxoData else null,
             isAdvancedSettingsAvailable = isAdvancedSettingsAvailable,
@@ -309,18 +318,16 @@ class SendBitcoinViewModel(
 
     private fun refreshFeatureAvailability() {
         val mwebTransaction = isMwebTransaction(addressState.validAddress)
-        isMemoAvailable = !mwebTransaction && blockchainType !in BLOCKCHAINS_NOT_SUPPORTING_EXTRA_SETTINGS
         isAdvancedSettingsAvailable = !mwebTransaction && blockchainType !in BLOCKCHAINS_NOT_SUPPORTING_EXTRA_SETTINGS
+        isMemoAvailable = isAdvancedSettingsAvailable && pluginState.lockTimeInterval == null
 
-        if (mwebTransaction) {
-            if (memo != null) {
-                memo = null
-                amountService.setMemo(null, forceEmit = false)
-                feeService.setMemo(null, forceEmit = false)
-            }
-            if (pluginState.lockTimeInterval != null) {
-                pluginService.setLockTimeInterval(null)
-            }
+        if (!isMemoAvailable && memo != null) {
+            memo = null
+            amountService.setMemo(null, forceEmit = false)
+            feeService.setMemo(null, forceEmit = false)
+        }
+        if (mwebTransaction && pluginState.lockTimeInterval != null) {
+            pluginService.setLockTimeInterval(null)
         }
     }
 
@@ -342,6 +349,8 @@ class SendBitcoinViewModel(
     private fun handleUpdatedPluginState(pluginState: SendBitcoinPluginService.State) {
         this.pluginState = pluginState
 
+        // Must run before setPluginData: those calls publish fee and amount recalculated without the memo.
+        refreshFeatureAvailability()
         feeService.setPluginData(pluginState.pluginData)
         amountService.setPluginData(pluginState.pluginData)
         addressService.setPluginData(pluginState.pluginData)

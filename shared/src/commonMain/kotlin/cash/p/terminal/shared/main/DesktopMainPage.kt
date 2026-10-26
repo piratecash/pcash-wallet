@@ -1,7 +1,6 @@
 package cash.p.terminal.shared.main
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,7 +14,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -23,29 +21,39 @@ import cash.p.terminal.core.AppearanceSettingsStore
 import cash.p.terminal.core.IBackupManager
 import cash.p.terminal.entities.LaunchPage
 import cash.p.terminal.modules.backuplocal.fullbackup.BackupManagerPage
-import cash.p.terminal.modules.balance.ui.BalanceNoAccount
+import cash.p.terminal.modules.balance.ui.BalanceScreen
 import cash.p.terminal.modules.basecurrency.BaseCurrencySettingsPage
 import cash.p.terminal.modules.blockchainsettings.BlockchainSettingsPage
+import cash.p.terminal.modules.contacts.ContactsPage
+import cash.p.terminal.modules.contacts.Mode
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.manageaccounts.ManageAccountsPage
 import cash.p.terminal.modules.market.MarketScreen
 import cash.p.terminal.modules.premium.about.AboutPremiumPage
+import cash.p.terminal.modules.premium.settings.PremiumSettingsPage
+import cash.p.terminal.modules.settings.addresschecker.AddressCheckerPage
 import cash.p.terminal.modules.settings.appearance.AppearancePage
+import cash.p.terminal.modules.transactionInfo.TransactionInfoPage
+import cash.p.terminal.modules.transactions.TransactionsScreen
+import cash.p.terminal.modules.transactions.TransactionsViewModel
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.viewModelStoreOwnerForPage
 import cash.p.terminal.shared.settings.MainSettingUiState
 import cash.p.terminal.shared.settings.SettingsAction
 import cash.p.terminal.shared.settings.SettingsContent
 import cash.p.terminal.shared.settings.settingsAlertPainter
 import cash.p.terminal.shared.settings.SettingsPages
 import cash.p.terminal.shared.settings.currentLanguageName
+import cash.p.terminal.ui_compose.components.LocalHudMessenger
+import cash.p.terminal.ui_compose.components.showNotSupportedOnPlatform
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
-import cash.p.terminal.wallet.ActiveAccountState
 import cash.p.terminal.wallet.IAccountManager
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.ILanguageManager
 import kotlinx.coroutines.flow.map
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 
 /** Root of the desktop back stack: the main tabs; pages opened from them stack above it. */
 class DesktopMainPage(private val appVersion: String) : HSPage() {
@@ -80,35 +88,43 @@ class DesktopMainPage(private val appVersion: String) : HSPage() {
             when (destination) {
                 MainDestination.Balance -> BalancePane(navigation)
                 MainDestination.Market -> MarketScreen(navigation, PaddingValues())
+                MainDestination.Transactions -> TransactionsPane(navigation)
                 MainDestination.Settings -> SettingsPane(navigation, appVersion)
-                else -> DestinationPlaceholder(destination)
             }
         }
     }
 }
 
-/** As Android, the create/import screen when there is no wallet; the wallet list waits for the chain adapters. */
 @Composable
 private fun BalancePane(navigation: HSNavigation) {
-    val accountManager = koinInject<IAccountManager>()
-    val accountState by accountManager.activeAccountStateFlow
-        .collectAsStateWithLifecycle(ActiveAccountState.NotLoaded)
-    when (val state = accountState) {
-        ActiveAccountState.NotLoaded -> Unit
-        is ActiveAccountState.ActiveAccount -> if (state.account == null) {
-            BalanceNoAccount(navigation, PaddingValues())
-        } else {
-            DestinationPlaceholder(MainDestination.Balance)
-        }
-    }
+    val transactionsViewModel = rememberMainPageTransactionsViewModel(navigation)
+    BalanceScreen(
+        navigation = navigation,
+        paddingValues = PaddingValues(),
+        onOpenTransactionInfo = { item ->
+            transactionsViewModel.tmpItemToShow = item
+            navigation.slideFromBottom(TransactionInfoPage())
+        },
+    )
 }
 
 @Composable
-private fun DestinationPlaceholder(destination: MainDestination) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(MainDestinationTitle(destination))
-    }
+private fun TransactionsPane(navigation: HSNavigation) {
+    val hud = LocalHudMessenger.current
+    TransactionsScreen(
+        navigation = navigation,
+        paddingValues = PaddingValues(),
+        viewModel = rememberMainPageTransactionsViewModel(navigation),
+        onShowAllTransactionsClicked = hud::showNotSupportedOnPlatform,
+    )
 }
+
+@Composable
+private fun rememberMainPageTransactionsViewModel(navigation: HSNavigation): TransactionsViewModel =
+    // As Android: owned by the main page, which the transaction info page reads it from.
+    koinViewModel<TransactionsViewModel>(
+        viewModelStoreOwner = navigation.viewModelStoreOwnerForPage(DesktopMainPage::class)
+    )
 
 @Composable
 private fun SettingsPane(navigation: HSNavigation, appVersion: String) {
@@ -142,6 +158,9 @@ private fun SettingsPane(navigation: HSNavigation, appVersion: String) {
                     SettingsAction.AboutPremium -> navigation.slideFromBottom(AboutPremiumPage(null))
                     SettingsAction.Appearance -> navigation.slideFromRight(AppearancePage())
                     SettingsAction.BlockchainSettings -> navigation.slideFromRight(BlockchainSettingsPage())
+                    SettingsAction.Contacts -> navigation.slideFromRight(ContactsPage(ContactsPage.Input(Mode.Full)))
+                    SettingsAction.AddressChecker -> navigation.slideFromRight(AddressCheckerPage())
+                    SettingsAction.PremiumSettings -> navigation.slideFromRight(PremiumSettingsPage())
                     else -> Unit
                 }
             },

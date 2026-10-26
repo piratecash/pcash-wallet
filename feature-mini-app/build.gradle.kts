@@ -37,6 +37,7 @@ dependencies {
     implementation(project(":core:navigation"))
     implementation(project(":core:wallet"))
     implementation(project(":core:network"))
+    implementation(project(":core:storage"))
     implementation(project(":feature-premium"))
 
     // DI
@@ -68,6 +69,7 @@ dependencies {
     implementation(libs.timber)
 
     // Testing
+    testImplementation(project(":core:test-fixtures"))
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)

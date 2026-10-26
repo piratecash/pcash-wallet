@@ -20,6 +20,38 @@ val copyChangelogs by tasks.registering(Copy::class) {
 }
 tasks.matching { it.name.endsWith("ForCommonMain") }.configureEach { dependsOn(copyChangelogs) }
 
+// Kit versions printed in Blockchain Status reports, taken from the catalog the build resolves.
+val generateKitVersions by tasks.registering {
+    val versions = mapOf(
+        "BITCOIN_KIT" to libs.versions.piratecash.bitcoin.get(),
+        "ETHEREUM_KIT" to libs.versions.piratecash.ethereum.get(),
+        "SOLANA_KIT" to libs.versions.piratecash.solana.get(),
+        "TON_KIT" to libs.versions.piratecash.ton.get(),
+        "TRON_KIT" to libs.versions.piratecash.tron.get(),
+        "MONERO_KIT" to libs.versions.monero.kit.android.get(),
+        "STELLAR_KIT" to libs.versions.stellar.kit.get(),
+        "THORCHAIN_KIT" to libs.versions.thorchain.kit.get(),
+        "ZCASH_SDK" to libs.versions.zcashSdkKmp.get(),
+        "BEAM_SDK" to libs.versions.beam.sdk.get(),
+    )
+    val outputDir = layout.buildDirectory.dir("generated/kitVersions/kotlin")
+    inputs.property("versions", versions)
+    outputs.dir(outputDir)
+    doLast {
+        val file = outputDir.get().file("cash/p/terminal/modules/blockchainstatus/KitVersions.kt").asFile
+        file.parentFile.mkdirs()
+        file.writeText(
+            buildString {
+                appendLine("package cash.p.terminal.modules.blockchainstatus")
+                appendLine()
+                appendLine("internal object KitVersions {")
+                versions.forEach { (name, version) -> appendLine("    const val $name = \"$version\"") }
+                appendLine("}")
+            }
+        )
+    }
+}
+
 // KMP source directories must be configured explicitly or Detekt reports NO-SOURCE.
 detekt {
     source.setFrom("src/commonMain/kotlin", "src/androidMain/kotlin", "src/desktopMain/kotlin")
@@ -57,6 +89,7 @@ kotlin {
 
     sourceSets {
         commonMain {
+            kotlin.srcDir(generateKitVersions)
             dependencies {
                 api(project(":core:common"))
                 implementation(project(":core:market"))
@@ -69,6 +102,8 @@ kotlin {
                 implementation(project(":core:vault"))
                 implementation(project(":feature-market"))
                 implementation(project(":feature-premium"))
+                // AdapterFactory takes StackingManager in its public constructor.
+                api(project(":feature-stacking"))
                 implementation(project(":components:chartview"))
 
                 implementation(libs.compose.multiplatform.runtime)
@@ -97,6 +132,13 @@ kotlin {
                 implementation(libs.kermit)
                 implementation(libs.androidx.annotation)
                 implementation(libs.gson)
+                implementation(libs.retrofit)
+                implementation(libs.retrofit.gson)
+                implementation(libs.retrofit.scalars)
+                implementation(libs.retrofit.rxjava2)
+                implementation(libs.okhttp.logging.interceptor)
+                implementation(libs.rxjava)
+                implementation(libs.ktor.client.core)
                 implementation(libs.bouncycastle.bcprov)
                 implementation(libs.bitcoinj)
                 implementation(libs.web3j.crypto)
@@ -113,12 +155,18 @@ kotlin {
                 implementation(libs.bitcoin.piratecash.kit)
                 implementation(libs.hd.wallet.kit)
                 implementation(libs.ethereum.kit)
+                implementation(libs.ethereum.kit.erc20)
+                implementation(libs.ethereum.kit.nft)
+                implementation(libs.ethereum.kit.merkleio)
+                implementation(libs.ethereum.kit.uniswap)
+                implementation(libs.ethereum.kit.oneinch)
                 implementation(libs.solana.kit)
                 implementation(libs.stellar.kit)
                 implementation(libs.thorchain.kit)
                 implementation(libs.monero.kit)
                 implementation(libs.tron.kit)
                 implementation(libs.ton.kit)
+                implementation(libs.ton.kotlin.contract)
                 implementation(libs.zcash.sdk.kmp)
                 implementation(libs.beam.sdk)
             }
@@ -126,6 +174,9 @@ kotlin {
 
         androidMain {
             dependencies {
+                implementation(project(":core:core"))
+                implementation(project(":feature-tangem"))
+                implementation(project(":feature-mini-app"))
                 implementation(project(":feature-trezor"))
                 implementation(libs.android.core.ktx)
                 implementation(libs.appcompat)
@@ -134,8 +185,16 @@ kotlin {
             }
         }
 
+        getByName("desktopMain") {
+            dependencies {
+                // Android ships org.json in the framework; bundling it there would shadow the platform classes.
+                implementation(libs.org.json)
+            }
+        }
+
         commonTest {
             dependencies {
+                implementation(project(":core:test-fixtures"))
                 implementation(libs.junit)
                 implementation(libs.mockk)
                 implementation(libs.kotlinx.coroutines.test)

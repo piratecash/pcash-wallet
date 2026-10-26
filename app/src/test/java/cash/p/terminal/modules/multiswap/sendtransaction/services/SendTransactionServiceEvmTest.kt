@@ -171,6 +171,7 @@ class SendTransactionServiceEvmTest : KoinTest {
             signer = signer,
             merkleTransactionAdapter = null,
             databaseKey = ByteArray(32),
+            hardwareSigners = mockk { coEvery { signReconciled(any(), any()) } returns null },
         )
         val evmKitManager = mockk<EvmKitManager>(relaxed = true) {
             every { this@mockk.evmKitWrapper } returns evmKitWrapper

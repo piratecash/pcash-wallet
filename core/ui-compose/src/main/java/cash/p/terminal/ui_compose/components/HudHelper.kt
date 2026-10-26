@@ -14,14 +14,14 @@ object HudHelper {
 
     fun showInProcessMessage(
         contenView: View,
-        resId: Int,
+        text: String,
         duration: SnackbarDuration = SnackbarDuration.SHORT,
         gravity: SnackbarGravity = SnackbarGravity.BOTTOM,
         showProgressBar: Boolean = true
     ): CustomSnackbar? {
         return showHudNotification(
             contentView = contenView,
-            text = contenView.context.getString(resId),
+            text = text,
             variant = if (showProgressBar) AppSnackbarVariant.InProgress else AppSnackbarVariant.Message,
             duration = duration,
             gravity = gravity,
@@ -77,6 +77,7 @@ object HudHelper {
         duration: SnackbarDuration = SnackbarDuration.SHORT,
         gravity: SnackbarGravity = SnackbarGravity.BOTTOM,
         @DrawableRes icon: Int? = null,
+        iconResource: DrawableResource? = null,
     ): CustomSnackbar? {
         return showHudNotification(
             contentView = contentView,
@@ -85,6 +86,7 @@ object HudHelper {
             duration = duration,
             gravity = gravity,
             icon = icon,
+            iconResource = iconResource,
         )
     }
 
@@ -152,13 +154,13 @@ object HudHelper {
 
     fun showPremiumMessage(
         contentView: View,
-        resId: Int,
+        text: String,
         duration: SnackbarDuration = SnackbarDuration.SHORT,
         gravity: SnackbarGravity = SnackbarGravity.BOTTOM
     ): CustomSnackbar? {
         return showHudNotification(
             contentView = contentView,
-            text = contentView.context.getString(resId),
+            text = text,
             variant = AppSnackbarVariant.Premium,
             duration = duration,
             gravity = gravity,

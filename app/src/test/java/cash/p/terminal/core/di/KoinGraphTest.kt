@@ -1,5 +1,24 @@
 package cash.p.terminal.core.di
 
+import cash.p.terminal.core.storage.EnabledWalletsCacheDao
+import cash.p.terminal.modules.balance.DefaultBalanceService
+import cash.p.terminal.modules.balance.TotalBalance
+import cash.p.terminal.modules.balance.token.TokenBalanceService
+import cash.p.terminal.modules.balance.token.TokenBalanceViewModel
+import cash.p.terminal.modules.balance.token.TokenTransactionsService
+import cash.p.terminal.modules.balance.token.creationblock.CreationBlockViewModel
+import cash.p.terminal.modules.transactions.SelectContactViewModel
+import cash.p.terminal.modules.receive.viewmodels.DerivationSelectViewModel
+import cash.p.terminal.modules.receive.viewmodels.BchAddressTypeSelectViewModel
+import cash.p.terminal.modules.receive.viewmodels.ReceiveTokenSelectViewModel
+import cash.p.terminal.modules.receive.viewmodels.NetworkSelectViewModel
+import cash.p.terminal.modules.receive.ActivateTokenViewModel
+import cash.p.terminal.modules.receive.ReceiveStellarAssetViewModel
+import cash.p.terminal.modules.receive.viewmodels.ReceiveMoneroViewModel
+import cash.p.terminal.modules.receive.viewmodels.ReceiveAddressViewModel
+import cash.p.terminal.modules.receive.FullCoinsProvider
+import cash.p.terminal.modules.transactionInfo.TransactionInfoViewItemFactory
+import cash.p.terminal.modules.transactionInfo.TransactionInfoService
 import android.app.Application
 import android.content.Context
 import cash.p.terminal.feature.miniapp.ui.connect.ConnectMiniAppDeeplinkInput
@@ -7,6 +26,20 @@ import cash.p.terminal.feature.miniapp.ui.connect.ConnectMiniAppViewModel
 import cash.p.terminal.featureStacking.ui.staking.StackingType
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusViewModel
+import cash.p.terminal.modules.contacts.ChooseContactViewModel
+import cash.p.terminal.modules.contacts.Mode
+import cash.p.terminal.modules.contacts.model.Contact
+import cash.p.terminal.modules.contacts.model.ContactAddress
+import cash.p.terminal.modules.contacts.viewmodel.AddressViewModel
+import cash.p.terminal.modules.contacts.viewmodel.ContactViewModel
+import cash.p.terminal.modules.contacts.viewmodel.ContactsViewModel
+import cash.p.terminal.modules.offline.OfflineModeToggleViewModel
+import cash.p.terminal.modules.settings.addresschecker.UnifiedAddressCheckerViewModel
+import cash.p.terminal.modules.settings.addresschecker.ui.AddressCheckTokenSelectorViewModel
+import cash.p.terminal.modules.syncerror.SyncErrorService
+import cash.p.terminal.modules.address.AddressHandlerFactory
+import cash.p.terminal.core.address.Eip20AddressValidator
+import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewModel
 import cash.p.terminal.modules.btcblockchainsettings.BtcBlockchainSettingsService
 import cash.p.terminal.modules.configuredtoken.ConfiguredTokenInfoViewModel
@@ -55,6 +88,7 @@ import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedViewModel
 import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.wallet.Token
 import io.horizontalsystems.core.IPinComponent
+import io.horizontalsystems.core.logger.AppLogger
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.okhttp.OkHttp
 import io.mockk.mockk
@@ -152,18 +186,15 @@ class KoinGraphTest : KoinTest {
             includes(appModule, testOverrides)
         }
 
-        val extraTypes =
-            listOf(
-                Application::class,
-                Context::class,
-                File::class, RpcSource::class,
-                HttpClientEngine::class,
-                TimerService::class,
-                XRateService::class,
-                StackingType::class,
-                // Built inside the BtcBlockchainSettingsViewModel definition from its injected Blockchain.
-                BtcBlockchainSettingsService::class,
-            )
+        val extraTypes = listOf(
+            Application::class,
+            Context::class,
+            File::class, RpcSource::class,
+            HttpClientEngine::class,
+            TimerService::class,
+            XRateService::class,
+            StackingType::class,
+        ) + builtInsideDefinitions
         val injections = injectedParameters(
             definition<AccountTypeNotSupportedViewModel>(AccountTypeNotSupportedSheet.Input::class),
             definition<HiddenWalletPinPolicy>(IPinComponent::class),
@@ -250,6 +281,15 @@ class KoinGraphTest : KoinTest {
         return graph.keys.firstNotNullOfOrNull(::visit)
     }
 
+    /** Built inside view model and KeyStoreManager definitions. */
+    private val builtInsideDefinitions = listOf(
+        BtcBlockchainSettingsService::class, AppLogger::class, SyncErrorService::class,
+        AddressHandlerFactory::class, Eip20AddressValidator::class,
+        TransactionInfoService::class, TransactionInfoViewItemFactory::class, FullCoinsProvider::class,
+        EnabledWalletsCacheDao::class, DefaultBalanceService::class, TotalBalance::class,
+        TokenBalanceService::class, TokenTransactionsService::class,
+    )
+
     private fun walletInjections() = arrayOf(
         definition<WatchAddressViewModel>(AddressParserChain::class),
         definition<SelectBlockchainsViewModel>(AccountType::class),
@@ -260,6 +300,24 @@ class KoinGraphTest : KoinTest {
         definition<RestoreLocalViewModel>(String::class, BackupViewItemFactory::class),
         definition<EvmNetworkViewModel>(Blockchain::class),
         definition<AddRpcViewModel>(Blockchain::class),
+        definition<OfflineModeToggleViewModel>(Wallet::class),
+        definition<TokenBalanceViewModel>(Wallet::class),
+        definition<CreationBlockViewModel>(Wallet::class),
+        definition<ReceiveAddressViewModel>(Wallet::class),
+        definition<ReceiveMoneroViewModel>(Wallet::class),
+        definition<ReceiveStellarAssetViewModel>(Wallet::class),
+        definition<ActivateTokenViewModel>(Wallet::class, Token::class),
+        definition<NetworkSelectViewModel>(Account::class, FullCoin::class),
+        definition<ReceiveTokenSelectViewModel>(Account::class),
+        definition<BchAddressTypeSelectViewModel>(String::class),
+        definition<DerivationSelectViewModel>(String::class),
+        definition<SelectContactViewModel>(Contact::class, BlockchainType::class),
+        definition<ContactsViewModel>(Mode::class),
+        definition<ContactViewModel>(Contact::class, ContactAddress::class),
+        definition<AddressViewModel>(String::class, ContactAddress::class, List::class),
+        definition<ChooseContactViewModel>(BlockchainType::class),
+        definition<AddressCheckTokenSelectorViewModel>(Blockchain::class),
+        definition<UnifiedAddressCheckerViewModel>(String::class),
     )
 
     private fun marketMetricsInjections() = arrayOf(
