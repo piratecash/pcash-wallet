@@ -572,6 +572,13 @@ dependencies {
     implementation libs.google.play.app.update.ktx
 
     implementation libs.tangem.sdk
+
+    components {
+        // spongycastle's POM leaks junit 4.12 into runtime, which pins the androidTest classpath against androidx.test's 4.13.2.
+        withModule("com.madgag.spongycastle:prov") {
+            allVariants { withDependencies { removeAll { it.group == "junit" } } }
+        }
+    }
 }
 
 configurations.all {
