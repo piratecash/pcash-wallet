@@ -2,6 +2,7 @@ package cash.p.terminal.modules.nft.asset
 
 import cash.p.terminal.core.adapters.nft.INftAdapter
 import cash.p.terminal.core.managers.NftAdapterManager
+import cash.p.terminal.R
 import cash.p.terminal.core.providers.nft.INftProvider
 import io.horizontalsystems.core.entities.CurrencyValue
 import cash.p.terminal.entities.nft.NftAssetMetadata
@@ -35,7 +36,7 @@ class NftAssetService(
     val serviceDataFlow = _serviceDataFlow.filterNotNull()
 
     val providerTitle = provider.title
-    val providerIcon = provider.icon
+    val providerIcon = R.drawable.ic_opensea_20
 
     suspend fun start() = withContext(Dispatchers.IO) {
         launch {

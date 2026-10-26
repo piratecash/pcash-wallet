@@ -196,10 +196,11 @@ internal fun SendBitcoinScreen(
                         VSpacer(12.dp)
                     }
                     HSMemoInput(
-                        maxLength = 120,
+                        maxLength = viewModel.memoMaxBytes,
                         memoPrefill = paymentAddressViewModel.addressInputState.memoPrefill,
                         onValueChange = viewModel::onEnterMemo,
                         visible = uiState.isMemoAvailable,
+                        maxBytes = viewModel.memoMaxBytes,
                     )
 
                     uiState.utxoData?.let { utxoData ->

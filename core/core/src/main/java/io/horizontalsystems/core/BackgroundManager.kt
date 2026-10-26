@@ -12,17 +12,17 @@ import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import java.util.concurrent.Executors
 
-class BackgroundManager(application: Application) : Application.ActivityLifecycleCallbacks {
+class BackgroundManager(application: Application) : Application.ActivityLifecycleCallbacks, IBackgroundManager {
 
     private val scope = CoroutineScope(Executors.newFixedThreadPool(2).asCoroutineDispatcher())
     private val _stateFlow: MutableStateFlow<BackgroundManagerState> = MutableStateFlow(BackgroundManagerState.Unknown)
-    val stateFlow: StateFlow<BackgroundManagerState>
+    override val stateFlow: StateFlow<BackgroundManagerState>
         get() = _stateFlow
 
     private val _foregroundEpoch = MutableStateFlow(0)
 
     /** Raised synchronously with [foregroundActivityCount], so it never lags [inForeground]. */
-    val foregroundEpoch: StateFlow<Int>
+    override val foregroundEpoch: StateFlow<Int>
         get() = _foregroundEpoch
 
     var onBeforeEnterBackground: (() -> Unit)? = null
@@ -39,7 +39,7 @@ class BackgroundManager(application: Application) : Application.ActivityLifecycl
 
     private var foregroundActivityCount: Int = 0
 
-    val inForeground: Boolean
+    override val inForeground: Boolean
         @Synchronized get() = foregroundActivityCount > 0
     private var aliveActivityCount: Int = 0
 
@@ -95,11 +95,4 @@ class BackgroundManager(application: Application) : Application.ActivityLifecycl
 
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
 
-}
-
-enum class BackgroundManagerState {
-    Unknown,
-    EnterForeground,
-    EnterBackground,
-    AllActivitiesDestroyed
 }

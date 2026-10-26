@@ -18,9 +18,12 @@ import androidx.compose.runtime.setValue
 import cash.p.terminal.shared.desktop.DesktopForegroundEffect
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.core.AppForegroundState
+import io.horizontalsystems.core.BackgroundManagerState
+import io.horizontalsystems.core.IBackgroundManager
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.koin.mp.KoinPlatform
@@ -29,7 +32,7 @@ import org.koin.mp.KoinPlatform
 class DesktopHostTest {
 
     @BeforeTest
-    fun setUp() = DesktopTestGraph.start()
+    fun setUp() = DesktopTestGraph.startUnlocked()
 
     @AfterTest
     fun tearDown() = DesktopTestGraph.stop()
@@ -86,23 +89,47 @@ class DesktopHostTest {
     }
 
     @Test
-    fun windowFocus_lost_marksAppAsBackground() = runDesktopComposeUiTest {
+    fun windowFocus_lost_marksAppInactiveButKeepsWalletRunning() = runDesktopComposeUiTest {
         var focused by mutableStateOf(true)
-        val windowInfo = object : WindowInfo {
-            override val isWindowFocused get() = focused
-        }
-        setContent {
-            CompositionLocalProvider(LocalWindowInfo provides windowInfo) { DesktopForegroundEffect() }
-        }
+        var minimized by mutableStateOf(false)
+        setWindowContent(focused = { focused }, minimized = { minimized })
         val foreground = KoinPlatform.getKoin().get<AppForegroundState>()
         waitForIdle()
         assertTrue(foreground.inForeground.value)
 
         focused = false
-        waitForIdle()
+        minimized = true
+        waitUntilWallet(BackgroundManagerState.EnterBackground)
+        minimized = false
 
+        waitUntilWallet(BackgroundManagerState.EnterForeground)
         assertFalse(foreground.inForeground.value)
     }
+
+    @Test
+    fun windowMinimized_movesWalletToBackground() = runDesktopComposeUiTest {
+        var minimized by mutableStateOf(false)
+        setWindowContent(focused = { !minimized }, minimized = { minimized })
+        waitForIdle()
+        assertEquals(BackgroundManagerState.EnterForeground, backgroundManager().stateFlow.value)
+
+        minimized = true
+        waitUntilWallet(BackgroundManagerState.EnterBackground)
+    }
+
+    private fun ComposeUiTest.waitUntilWallet(state: BackgroundManagerState) =
+        waitUntil(timeoutMillis = TIMEOUT_MS) { backgroundManager().stateFlow.value == state }
+
+    private fun ComposeUiTest.setWindowContent(focused: () -> Boolean, minimized: () -> Boolean) {
+        val windowInfo = object : WindowInfo {
+            override val isWindowFocused get() = focused()
+        }
+        setContent {
+            CompositionLocalProvider(LocalWindowInfo provides windowInfo) { DesktopForegroundEffect(minimized()) }
+        }
+    }
+
+    private fun backgroundManager() = KoinPlatform.getKoin().get<IBackgroundManager>()
 
     private fun ComposeUiTest.waitForText(text: String) =
         waitUntil(timeoutMillis = TIMEOUT_MS) { onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty() }

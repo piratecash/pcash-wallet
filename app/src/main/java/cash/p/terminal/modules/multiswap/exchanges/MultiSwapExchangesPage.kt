@@ -31,7 +31,6 @@ import cash.p.terminal.modules.multiswap.providersettings.SwapProvidersSettingsP
 import cash.p.terminal.modules.paycore.exchange.PayCoreExchangeDetailScreen
 import cash.p.terminal.modules.paycore.exchange.PayCoreExchangeDetailViewModel
 import cash.p.terminal.modules.transactionInfo.TransactionInfoPage
-import cash.p.terminal.modules.transactions.TransactionsModule
 import cash.p.terminal.modules.transactions.TransactionsViewModel
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
@@ -261,9 +260,8 @@ private fun ExchangeDetailContent(
     navigation: HSNavigation,
 ) {
     val detailOwner = detailPage::class
-    val transactionsViewModel = viewModel<TransactionsViewModel>(
+    val transactionsViewModel = koinViewModel<TransactionsViewModel>(
         viewModelStoreOwner = navigation.viewModelStoreOwnerForPage(MainPage::class),
-        factory = TransactionsModule.Factory(),
     )
     val viewModel = koinViewModel<MultiSwapExchangeViewModel> {
         parametersOf(swapId)

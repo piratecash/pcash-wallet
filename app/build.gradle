@@ -85,16 +85,6 @@ android {
         versionCode 260
         versionName "1.0.260"
         buildConfigField "String", "GIT_HASH", "\"${getGitVersionSuffix()}\""
-        buildConfigField "String", "BITCOIN_KIT_VERSION", "\"${libs.versions.piratecash.bitcoin.get()}\""
-        buildConfigField "String", "ETHEREUM_KIT_VERSION", "\"${libs.versions.piratecash.ethereum.get()}\""
-        buildConfigField "String", "SOLANA_KIT_VERSION", "\"${libs.versions.piratecash.solana.get()}\""
-        buildConfigField "String", "TON_KIT_VERSION", "\"${libs.versions.piratecash.ton.get()}\""
-        buildConfigField "String", "TRON_KIT_VERSION", "\"${libs.versions.piratecash.tron.get()}\""
-        buildConfigField "String", "MONERO_KIT_VERSION", "\"${libs.versions.monero.kit.android.get()}\""
-        buildConfigField "String", "STELLAR_KIT_VERSION", "\"${libs.versions.stellar.kit.get()}\""
-        buildConfigField "String", "THORCHAIN_KIT_VERSION", "\"${libs.versions.thorchain.kit.get()}\""
-        buildConfigField "String", "ZCASH_SDK_VERSION", "\"${libs.versions.zcashSdkKmp.get()}\""
-        buildConfigField "String", "BEAM_SDK_VERSION", "\"${libs.versions.beam.sdk.get()}\""
         buildConfigField "String", "GIT_BRANCH", "\"${gitBranchProvider.getOrElse("unknown")}\""
         // True only for the disposable baseline-profile generation build type (see baselinegen).
         buildConfigField "boolean", "BASELINE_PROFILE_MODE", "false"
@@ -122,9 +112,7 @@ android {
         resValue "string", "appTwitterLink", "https://twitter.com/PirateCash_NET"
         resValue "string", "appTelegramLink", "https://t.me/pcash"
         resValue "string", "appRedditLink", "https://www.reddit.com/r/PirateCash/"
-        resValue "string", "reportEmail", "i@p.cash"
         resValue "string", "payCoreSupportEmail", "support@paycore.pw"
-        resValue "string", "payCoreSupportUrl", "https://t.me/paycore_supp"
         resValue "string", "walletConnectAppMetaDataName", "pcash"
         resValue "string", "walletConnectAppMetaDataUrl", "p.cash"
         resValue "string", "walletConnectAppMetaDataIcon", "https://raw.githubusercontent.com/piratecash/pcash-wallet-ios/master/UnstoppableWallet/UnstoppableWallet/AppIcon.xcassets/AppIcon.appiconset/p.cash_1024.png"
@@ -175,9 +163,6 @@ android {
         buildType.resValue "string", "coinsJsonUrl", "https://raw.githubusercontent.com/horizontalsystems/cryptocurrencies/master/coins.json"
         buildType.resValue "string", "providerCoinsJsonUrl", "https://raw.githubusercontent.com/horizontalsystems/cryptocurrencies/master/provider.coins.json"
         buildType.resValue "string", "blocksDecodedEthereumRpc", "https://api-dev.blocksdecoded.com/v1/ethereum-rpc/mainnet"
-        buildType.resValue "string", "chainalysisBaseUrl", "https://public.chainalysis.com/api/v1/"
-        buildType.resValue "string", "hashDitBaseUrl", "https://service.hashdit.io/v2/hashdit/"
-        buildType.resValue "string", "alphaAmlBaseUrl", "https://api.alpha-aml.com"
     }
 
     buildTypes {
@@ -213,9 +198,6 @@ android {
             resValue "string", "marketApiBaseUrl", "https://api.blocksdecoded.com"
 //            resValue "string", "marketApiKey", "IQf1uAjkthZp1i2pYzkXFDom"
             resValue "string", "blocksDecodedEthereumRpc", "https://api.blocksdecoded.com/v1/ethereum-rpc/mainnet"
-            resValue "string", "chainalysisBaseUrl", "https://public.chainalysis.com/api/v1/"
-            resValue "string", "hashDitBaseUrl", "https://service.hashdit.io/v2/hashdit/"
-            resValue "string", "alphaAmlBaseUrl", "https://api.alpha-aml.com"
         }
 
         qa {
@@ -545,6 +527,7 @@ dependencies {
     androidTestImplementation libs.androidx.runner
 
     // optional - Test helpers for LiveData
+    testImplementation project(":core:test-fixtures")
     testImplementation libs.junit
     testImplementation libs.androidx.core.testing
     testImplementation libs.mockk

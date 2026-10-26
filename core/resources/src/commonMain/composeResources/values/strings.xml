@@ -423,7 +423,7 @@
     <string name="Balance_Error_InvalidQrCode">Can\u0027t recognize</string>
     <string name="Balance_Receive_WatchAddressAlert">This address is the address of the watched account</string>
     <string name="Balance_Receive_UsedAddresses">Used Addresses</string>
-    <string name="Balance_Receive_UsedAddressesDescriptoin">%s addresses change for privacy and security. Below a list of used addresses in this wallet.</string>
+    <string name="Balance_Receive_UsedAddressesDescriptoin">%1$s addresses change for privacy and security. Below a list of used addresses in this wallet.</string>
     <string name="Balance_Receive_ReceiveAddresses">Receive Addresses</string>
     <string name="Balance_Receive_ChangeAddresses">Change Addresses</string>
     <string name="receive_address_badge_new">New</string>
@@ -895,14 +895,14 @@ Proceed only if you\u0027re sure.</string>
 
     <!-- Swap Confirmation -->
     <string name="ActivationRequired_DialogTitle">Activate Token</string>
-    <string name="activation_required_dialog_description">To receive %s, you need to activate the token. The Stellar network requires a trustline to be established for each token. Without it, your wallet cannot receive %s — the transaction will be rejected and the funds will not be delivered.</string>
+    <string name="activation_required_dialog_description">To receive %1$s, you need to activate the token. The Stellar network requires a trustline to be established for each token. Without it, your wallet cannot receive %2$s — the transaction will be rejected and the funds will not be delivered.</string>
 
     <string name="activate_you_activate">You Activate</string>
     <string name="activate_activating">Activating</string>
     <string name="activate_already_active_title">Already Active</string>
     <string name="activate_already_active_description">The token is already active.</string>
     <string name="activate_insufficient_balance_title">Insufficient Balance</string>
-    <string name="activate_insufficient_balance_description">You don\’t have enough XLM balance to activate this token.</string>
+    <string name="activate_insufficient_balance_description">You don’t have enough XLM balance to activate this token.</string>
 
     <!--Approve-->
     <string name="Approve_RevokeAndApproveInfo">You can exchange %s, or you need to revoke and approve the new amount</string>
@@ -919,17 +919,17 @@ Proceed only if you\u0027re sure.</string>
 
     <!--Uniswap Info -->
     <string name="SwapInfo_AllowanceTitle">Allowance</string>
-    <string name="SwapInfo_AllowanceDescription">The amount an exchange can spend on a user\’s behalf when executing token swaps. A proceeding transaction setting sufficient allowance is required before an actual swap transaction can take place.</string>
+    <string name="SwapInfo_AllowanceDescription">The amount an exchange can spend on a user’s behalf when executing token swaps. A proceeding transaction setting sufficient allowance is required before an actual swap transaction can take place.</string>
     <string name="SwapInfo_PriceImpactTitle">Price Impact</string>
     <string name="SwapInfo_PriceImpactDescription">The expected price deviation from a shown price, typically increases with the swap amount.</string>
 
     <!--Deposit-->
-    <string name="Deposit_Title">Receive %s</string>
+    <string name="Deposit_Title">Receive %1$s</string>
 
     <!--Transactions-->
     <string name="Transactions_Title">Transactions</string>
     <string name="Transactions_Hide">Transactions Hide</string>
-    <string name="Transactions_EmptyList">You don\’t have any pending or past transactions yet</string>
+    <string name="Transactions_EmptyList">You don’t have any pending or past transactions yet</string>
     <string name="Transactions_WaitForSync">Please wait for the sync to finish.</string>
     <string name="Transactions_Pending">Pending</string>
     <string name="Transactions_Receive">Received</string>
@@ -1889,6 +1889,8 @@ Proceed only if you\u0027re sure.</string>
     <string name="CoinPage_TimeDuration_Month">1M</string>
     <string name="CoinPage_TimeDuration_Year">1Y</string>
     <string name="CoinPage_TimeDuration_All">All</string>
+    <string name="Timestamp_Today">Today</string>
+    <string name="Timestamp_Yesterday">Yesterday</string>
 
     <string name="CoinPage_TradingVolume">Trading Volume</string>
     <string name="CoinPage_Audits_PoweredBy">Powered by Defiyield.app</string>
@@ -2350,8 +2352,8 @@ Proceed only if you\u0027re sure.</string>
     </plurals>
 
     <plurals name="staking_next_accrual_in_hours">
-        <item quantity="one">Next accrual will be in %d hour</item>
-        <item quantity="other">Next accrual will be in %d hours</item>
+        <item quantity="one">Next accrual will be in %1$d hour</item>
+        <item quantity="other">Next accrual will be in %1$d hours</item>
     </plurals>
     <string name="estimated_annual_interest">Estimated Annual Interest</string>
     <string name="accruals">Accruals</string>
@@ -2640,6 +2642,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="send_trezor_mweb_not_supported">Trezor doesn\u0027t support MWEB. Send Litecoin to a regular (non-MWEB) address.</string>
     <string name="send_trezor_time_lock_not_supported">Trezor doesn\u0027t support time-locked transactions.</string>
     <string name="send_trezor_zcash_memo_not_supported">Trezor can\u0027t attach a memo to a Zcash transaction. Remove the memo to continue.</string>
+    <string name="send_memo_too_long">Memo is too long: %1$d of %2$d bytes</string>
     <string name="send_trezor_zcash_transparent_only">Trezor can only send Zcash to transparent addresses.</string>
     <string name="send_trezor_zcash_unified_no_transparent_receiver">This unified address has no transparent receiver, so Trezor can\u0027t send to it.</string>
     <string name="send_trezor_zcash_firmware_required">%1$s needs firmware %2$s or later to send to unified Zcash addresses. Update it, then try again — the app checks the firmware version again on your next Zcash transaction.</string>
@@ -2772,6 +2775,9 @@ Proceed only if you\u0027re sure.</string>
     <string name="desktop_forgot_password_warning">The wallets, contacts, settings and history kept on this computer will be deleted. The funds on the blockchain are not affected: the wallets can only be restored from their recovery phrases.</string>
     <string name="desktop_forgot_password_action">Delete data</string>
     <string name="desktop_forgot_password_failed">Could not delete the data</string>
+    <string name="desktop_wipe_restart_manually">Data deleted. Start the app again</string>
+    <string name="desktop_restart_manually">Start the app again</string>
+    <string name="platform_not_supported_yet">Not supported in the desktop version yet</string>
     <string name="desktop_change_password_title">Change password</string>
     <string name="desktop_change_password_current_hint">Current password</string>
     <string name="desktop_change_password_new_hint">New password</string>

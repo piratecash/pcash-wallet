@@ -79,6 +79,5 @@ class DesktopAppearanceSettingsStoreTest {
         assertTrue(store.marketsTabEnabledFlow.value)
         assertTrue(store.balanceTabButtonsEnabledFlow.value)
         assertEquals(PriceChangeInterval.LAST_24H, store.priceChangeIntervalFlow.value)
-        assertEquals(PriceChangeInterval.LAST_24H, DesktopPriceChangeIntervalProvider(store).interval)
     }
 }

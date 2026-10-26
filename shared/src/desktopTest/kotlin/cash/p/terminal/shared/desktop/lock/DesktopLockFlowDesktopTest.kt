@@ -22,19 +22,21 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import cash.p.terminal.shared.DesktopTestGraph
 import cash.p.terminal.shared.TestWindowHost
+import cash.p.terminal.shared.desktop.DesktopWipeCoordinator
+import cash.p.terminal.shared.desktop.WipeProgress
 import cash.p.terminal.shared.desktop.vault.DesktopVault
 import cash.p.terminal.shared.desktop.vault.DesktopVaultFiles
-import cash.p.terminal.shared.desktop.vault.WipeOutcome
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
-import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import java.util.Locale
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.minutes
 import org.koin.core.context.GlobalContext
 
@@ -100,20 +102,17 @@ class DesktopLockFlowDesktopTest {
 
     @Test
     fun forgotPassword_checkbox_gatesDeletionAndExposesItsState() = runDesktopComposeUiTest {
-        var wipes = 0
-        val vault = mockk<DesktopVault> {
-            coEvery { wipe() } coAnswers {
-                wipes++
-                WipeOutcome.SUCCESS
-            }
+        val wipeCoordinator = mockk<DesktopWipeCoordinator>(relaxed = true) {
+            every { progress } returns MutableStateFlow(WipeProgress.Idle)
         }
+        val viewModel = ForgotPasswordViewModel(wipeCoordinator)
         setContent {
             TestWindowHost {
                 ComposeAppTheme {
                     ForgotPasswordScreen(
                         dataUnreadable = false,
                         onCancelClick = {},
-                        viewModel = ForgotPasswordViewModel(vault),
+                        viewModel = viewModel,
                     )
                 }
             }
@@ -121,20 +120,20 @@ class DesktopLockFlowDesktopTest {
 
         onNodeWithText(DELETE_DATA).performScrollTo().performClick()
         drainMainDispatcher()
-        assertEquals(0, wipes)
+        verify(exactly = 0) { wipeCoordinator.wipe() }
 
         onNodeWithText(UNDERSTAND).assert(hasRole(Role.Checkbox)).assertIsOff()
         onNodeWithText(UNDERSTAND).performScrollTo().performClick()
         onNodeWithText(UNDERSTAND).assertIsOn()
         onNodeWithText(DELETE_DATA).performClick()
         drainMainDispatcher()
-        assertEquals(1, wipes)
+        verify(exactly = 1) { wipeCoordinator.wipe() }
     }
 
     private fun ComposeUiTest.createPasswordAndLock() {
         setContent {
             TestWindowHost {
-                ComposeAppTheme { DesktopRoot(appVersion = "test") }
+                ComposeAppTheme { DesktopRoot(appVersion = "test", wipeFailed = false) }
             }
         }
 

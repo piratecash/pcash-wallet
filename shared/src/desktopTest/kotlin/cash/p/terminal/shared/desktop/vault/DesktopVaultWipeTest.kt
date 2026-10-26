@@ -12,7 +12,7 @@ import cash.p.terminal.modules.settings.appearance.PriceChangeInterval
 import cash.p.terminal.modules.theme.ThemeService
 import cash.p.terminal.modules.theme.ThemeType
 import cash.p.terminal.shared.desktop.DesktopAppearanceSettingsStore
-import cash.p.terminal.shared.desktop.DesktopBalanceHiddenManager
+import cash.p.terminal.shared.desktop.balanceHiddenManager
 import cash.p.terminal.shared.desktop.backup.DesktopSettingsBackupFixture
 import cash.p.terminal.wallet.balance.BalanceViewType
 import cash.p.terminal.modules.chart.ChartIndicatorSetting
@@ -39,11 +39,15 @@ import java.nio.file.Files
 import java.nio.file.attribute.PosixFileAttributeView
 import java.nio.file.attribute.PosixFilePermission
 import java.util.Locale
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class DesktopVaultWipeTest {
@@ -73,6 +77,7 @@ class DesktopVaultWipeTest {
 
         vault.create(password())
         session(vault).database.syncerStateDao().insert(SyncerState("height", "42"))
+        fixture.files.contactsFile.apply { parentFile?.mkdirs() }.writeText("sealed")
         settingsStore.launchPage = "market"
         currencyManager.setBaseCurrencyCode("EUR")
         favoritesManager.add("bitcoin")
@@ -84,6 +89,7 @@ class DesktopVaultWipeTest {
         assertEquals(DesktopVaultState.NoVault, vault.state.value)
         assertFalse(fixture.files.vaultFile.exists())
         assertFalse(fixture.files.databaseFile.exists())
+        assertFalse(fixture.files.contactsFile.exists())
         assertEquals(null, settingsStore.launchPage)
         assertEquals(emptySet(), favoritesManager.favoriteCoinUids.first())
         assertEquals(DefaultCurrencyManager.DEFAULT_CURRENCY_CODE, currencyManager.baseCurrency.code)
@@ -95,7 +101,8 @@ class DesktopVaultWipeTest {
         assertEquals(systemLocaleTag, Locale.getDefault().toLanguageTag())
         assertTrue(publicCache.exists())
 
-        assertEquals(CreateOutcome.SUCCESS, vault.create(password()))
+        val nextProcessVault = vault(settingsStore, favoritesManager, currencyManager, chartIndicatorManager, languageManager)
+        assertEquals(CreateOutcome.SUCCESS, nextProcessVault.create(password()))
         assertTrue(fixture.files.vaultFile.exists())
     }
 
@@ -106,7 +113,7 @@ class DesktopVaultWipeTest {
         val themeService = ThemeService(appearanceStore)
         val launchScreenService = LaunchScreenService(appearanceStore)
         val balanceViewTypeManager = BalanceViewTypeManager(appearanceStore)
-        val balanceHiddenManager = DesktopBalanceHiddenManager(settingsStore)
+        val balanceHiddenManager = balanceHiddenManager(settingsStore, dispatcherProvider)
         val vault = vault(
             settingsStore = settingsStore,
             themeService = themeService,
@@ -142,6 +149,7 @@ class DesktopVaultWipeTest {
             assertNotEquals(defaults, backupFixture.export())
 
             assertEquals(WipeOutcome.SUCCESS, backupFixture.vault.wipe())
+            backupFixture.relaunchVault()
             assertEquals(CreateOutcome.SUCCESS, backupFixture.vault.create(password()))
 
             assertEquals(defaults, backupFixture.export())
@@ -211,6 +219,24 @@ class DesktopVaultWipeTest {
 
         assertEquals(WipeOutcome.SUCCESS, vault.wipe())
         assertEquals(DesktopVaultState.NoVault, vault.state.value)
+    }
+
+    @Test
+    fun wipe_failsWithAnUnlockQueuedBehindIt_neverOpensTheStorageAgain() = runTest {
+        val settingsStore = mockk<DesktopSettingsStore>(relaxed = true)
+        val vault = vault(settingsStore = settingsStore)
+        vault.create(password())
+        lateinit var queuedUnlock: Deferred<UnlockOutcome>
+        every { settingsStore.clearAll() } answers {
+            queuedUnlock = async(start = CoroutineStart.UNDISPATCHED) { vault.unlock(password()) }
+            throw IOException("datastore is busy")
+        }
+
+        assertEquals(WipeOutcome.FAILED, vault.wipe())
+
+        assertEquals(UnlockOutcome.StorageUnavailable, queuedUnlock.await())
+        assertNull(vault.openSession())
+        assertEquals(DesktopVaultState.Locked, vault.state.value)
     }
 
     @Test

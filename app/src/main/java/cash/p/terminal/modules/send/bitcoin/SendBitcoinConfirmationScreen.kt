@@ -7,7 +7,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.LifecycleResumeEffect
-import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.modules.btcblockchainsettings.BtcBlockchainSettingsPage
 import cash.p.terminal.modules.send.SendConfirmationScreen
 import cash.p.terminal.modules.send.offline.OfflineSignableConfirmationHost
@@ -15,6 +14,8 @@ import cash.p.terminal.modules.syncerror.SyncErrorModule
 import cash.p.terminal.modules.syncerror.SyncErrorViewModel
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 import kotlin.reflect.KClass
 
 @Composable
@@ -23,9 +24,7 @@ fun SendBitcoinConfirmationScreen(
     sendViewModel: SendBitcoinViewModel,
     sendEntryPoint: KClass<out HSPage>?
 ) {
-    val syncErrorViewModel = viewModel<SyncErrorViewModel>(
-        factory = SyncErrorModule.Factory(sendViewModel.wallet)
-    )
+    val syncErrorViewModel = koinViewModel<SyncErrorViewModel> { parametersOf(sendViewModel.wallet) }
     OfflineSignableConfirmationHost(
         navigation = navigation,
         sendViewModel = sendViewModel,

@@ -61,6 +61,7 @@ import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.ic_attention_20
+import org.jetbrains.compose.resources.stringResource
 
 class SecurityCheckPage(val input: SecurityCheckInput) : HSPage() {
 

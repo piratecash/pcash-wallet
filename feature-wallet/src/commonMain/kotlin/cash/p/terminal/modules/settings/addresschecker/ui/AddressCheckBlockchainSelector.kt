@@ -1,0 +1,154 @@
+package cash.p.terminal.modules.settings.addresschecker.ui
+
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.SettingsAddressChecker_SelectBlockchain
+import cash.p.terminal.resources.ic_checkmark_20
+import cash.p.terminal.resources.ic_platform_placeholder_32
+import cash.p.terminal.ui.compose.components.SearchBar
+import cash.p.terminal.ui_compose.components.CellUniversal
+import cash.p.terminal.ui_compose.components.HsDivider
+import cash.p.terminal.ui_compose.components.VSpacer
+import cash.p.terminal.ui_compose.components.body_leah
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.wallet.IWalletManager
+import coil3.compose.rememberAsyncImagePainter
+import io.horizontalsystems.core.ViewModelUiState
+import io.horizontalsystems.core.entities.Blockchain
+import io.horizontalsystems.core.imageUrl
+import kotlinx.coroutines.launch
+import org.koin.compose.viewmodel.koinViewModel
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun AddressCheckBlockchainSelectorScreen(
+    onSelect: (Blockchain) -> Unit,
+    onClose: () -> Unit,
+) {
+    val viewModel = koinViewModel<AddressCheckBlockchainSelectorViewModel>()
+    val uiState = viewModel.uiState
+
+    Scaffold(
+        topBar = {
+            SearchBar(
+                title = stringResource(Res.string.SettingsAddressChecker_SelectBlockchain),
+                menuItems = listOf(),
+                onClose = onClose,
+                onSearchTextChanged = { text ->
+                    viewModel.updateFilter(text)
+                }
+            )
+        },
+        containerColor = ComposeAppTheme.colors.backgroundBase
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(it)
+                .verticalScroll(rememberScrollState())
+        ) {
+            Spacer(Modifier.height(12.dp))
+            uiState.blockchains.forEachIndexed { _, item ->
+                BlockchainCell(
+                    blockchain = item,
+                    checked = false,
+                ) {
+                    onSelect.invoke(item)
+                }
+            }
+            if (uiState.blockchains.isNotEmpty()) {
+                HsDivider()
+            }
+            VSpacer(32.dp)
+        }
+    }
+}
+
+@Composable
+private fun BlockchainCell(
+    blockchain: Blockchain,
+    checked: Boolean,
+    onToggle: () -> Unit,
+) {
+    CellUniversal(
+        borderTop = true,
+        onClick = onToggle
+    ) {
+        Image(
+            painter = rememberAsyncImagePainter(
+                model = blockchain.type.imageUrl,
+                error = painterResource(Res.drawable.ic_platform_placeholder_32)
+            ),
+            contentDescription = null,
+            modifier = Modifier.size(32.dp)
+        )
+        body_leah(
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .weight(1f),
+            text = blockchain.name,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        if (checked) {
+            Icon(
+                painter = painterResource(Res.drawable.ic_checkmark_20),
+                tint = ComposeAppTheme.colors.brandDefault,
+                contentDescription = null,
+            )
+        }
+    }
+}
+
+class AddressCheckBlockchainSelectorViewModel(
+    walletManager: IWalletManager,
+) : ViewModelUiState<AddressCheckBlockchainSelectorUiState>() {
+
+    private var blockchains = emptyList<Blockchain>()
+    private var filteredBlockchains = emptyList<Blockchain>()
+
+    init {
+        viewModelScope.launch {
+            blockchains = walletManager.activeWallets
+                .map { it.token.blockchain }
+                .distinctBy { it.type }
+            filteredBlockchains = blockchains
+            emitState()
+        }
+    }
+
+    override fun createState() = AddressCheckBlockchainSelectorUiState(
+        blockchains = filteredBlockchains
+    )
+
+    fun updateFilter(text: String) {
+        filteredBlockchains = if (text.isBlank()) {
+            blockchains
+        } else {
+            blockchains.filter { it.name.contains(text, ignoreCase = true) }
+        }
+
+        emitState()
+    }
+
+}
+
+data class AddressCheckBlockchainSelectorUiState(
+    val blockchains: List<Blockchain>
+)

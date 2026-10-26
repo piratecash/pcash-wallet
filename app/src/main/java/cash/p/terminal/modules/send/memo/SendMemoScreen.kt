@@ -274,7 +274,7 @@ private fun MemoInputSection(
         maxLength = state.memoMaxLength,
         memoPrefill = memoPrefill,
         onValueChange = onEnterMemo,
-        prefillMaxBytes = state.memoMaxBytes,
+        maxBytes = state.memoMaxBytes,
     )
     VSpacer(12.dp)
 }

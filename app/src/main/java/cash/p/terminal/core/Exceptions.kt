@@ -1,43 +1,12 @@
 package cash.p.terminal.core
 
-import androidx.compose.runtime.Composable
 import cash.p.terminal.R
-import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.strings.helpers.Translator
 import io.horizontalsystems.ethereumkit.api.jsonrpc.JsonRpc
 import io.horizontalsystems.ethereumkit.core.AddressValidator
-import org.jetbrains.compose.resources.StringResource
-
-open class HSCaution(
-    val s: TranslatableString,
-    val type: Type = Type.Error,
-    val description: TranslatableString? = null
-) {
-    @Composable
-    fun getString() = s.getString()
-
-    @Composable
-    fun getDescription() = description?.getString()
-
-    enum class Type {
-        Error, Warning
-    }
-
-    fun isError() = type == Type.Error
-    fun isWarning() = type == Type.Warning
-}
 
 class NotEnoughData() : Exception()
-class UnsupportedException(override val message: String?) : Exception()
-class UnsupportedAccountException : Exception()
-class LocalizedException(val errorTextRes: StringResource, vararg val formatArgs: Any) : Exception()
-class MoneroRescanException(override val message: String?) : Exception()
-class ZcashRescanException(override val message: String?) : Exception()
 
-fun LocalizedException.toResString(): TranslatableString =
-    TranslatableString.ResString(errorTextRes, *formatArgs)
-
-fun LocalizedException.toLocalizedString(): String = toResString().toString()
 class AdapterErrorWrongParameters(override val message: String) : Exception()
 class NoFeeSendTransactionError : Exception()
 class FailedTransaction(errorMessage: String?) : RuntimeException(errorMessage) {

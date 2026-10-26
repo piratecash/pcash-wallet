@@ -1,5 +1,6 @@
 package cash.p.terminal.domain.usecase
 
+import cash.p.terminal.core.managers.AndroidKitPlatformContexts
 import android.content.Context
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.adapters.zcash.session.ZcashDatabaseFiles
@@ -28,7 +29,9 @@ class ClearLegacyZcashDataUseCaseTest {
     @Before
     fun setUp() {
         noBackupDir = Files.createTempDirectory("zcash-legacy").toFile()
-        databaseFiles = ZcashDatabaseFiles(mockk<Context> { every { noBackupFilesDir } returns noBackupDir })
+        databaseFiles = ZcashDatabaseFiles(
+            AndroidKitPlatformContexts(mockk<Context> { every { noBackupFilesDir } returns noBackupDir })
+        )
         databaseFiles.legacyDir.mkdirs()
     }
 
