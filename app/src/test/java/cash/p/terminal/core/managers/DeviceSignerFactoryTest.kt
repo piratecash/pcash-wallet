@@ -15,7 +15,12 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import kotlin.test.assertContentEquals
 import kotlin.test.assertFailsWith
 
@@ -35,7 +40,22 @@ class DeviceSignerFactoryTest {
         }
     }
     private val clearSigning = mockk<LedgerSolanaClearSigning>(relaxed = true)
-    private val factory = DeviceSignerFactory(mockk(), appAccess, clearSigning)
+    private val factory = DeviceSignerFactory(mockk(), mockk(), mockk())
+
+    @Before
+    fun setUp() {
+        startKoin {
+            modules(module {
+                single { appAccess }
+                single { clearSigning }
+            })
+        }
+    }
+
+    @After
+    fun tearDown() {
+        stopKoin()
+    }
 
     @Test
     fun solana_ledgerOfflineSigning_neverAsksForClearSigningData() {

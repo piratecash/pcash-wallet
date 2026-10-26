@@ -1,6 +1,6 @@
 package cash.p.terminal.modules.paycore
 
-import android.util.Base64
+import cash.p.terminal.core.encodeBase64
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
@@ -28,7 +28,7 @@ class PayCoreSignatureHelper(
         val payload = "$url\n$timestamp\n${signer.address}".toByteArray()
 
         return mapOf(
-            X_SIGNATURE to Base64.encodeToString(signer.sign(payload), Base64.NO_WRAP),
+            X_SIGNATURE to signer.sign(payload).encodeBase64(),
             X_TIMESTAMP to timestamp,
             X_WALLET to signer.address,
         )

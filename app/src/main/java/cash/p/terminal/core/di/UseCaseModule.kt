@@ -11,20 +11,11 @@ import cash.p.terminal.core.usecase.CreateTrezorWalletUseCase
 import cash.p.terminal.core.usecase.HardwareAccountActivator
 import cash.p.terminal.ledger.domain.ICreateLedgerWalletUseCase
 import cash.p.terminal.core.usecase.GetMoneroWalletFilesNameUseCase
-import cash.p.terminal.core.usecase.GetRestoreHeightForWalletUseCase
 import cash.p.terminal.core.usecase.FetchSwapQuotesUseCase
 import cash.p.terminal.core.usecase.IterativeExactOutSearch
 import cash.p.terminal.core.usecase.MoneroRestoreHeightResolver
 import cash.p.terminal.core.usecase.MoneroWalletStorage
-import cash.p.terminal.core.usecase.OfflineModeUseCase
-import cash.p.terminal.core.usecase.RescanMoneroUseCase
-import cash.p.terminal.core.usecase.RescanZcashUseCase
-import cash.p.terminal.core.usecase.ResolvePayCoreNavigationUseCase
-import cash.p.terminal.core.usecase.ResolveTransactionItemUseCase
-import cash.p.terminal.core.usecase.SyncPendingMultiSwapUseCase
-import cash.p.terminal.core.usecase.UpdateSwapProviderTransactionsStatusUseCase
 import cash.p.terminal.domain.usecase.ClearLegacyZcashDataUseCase
-import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
 import cash.p.terminal.domain.usecase.DeleteAllContactsUseCase
 import cash.p.terminal.domain.usecase.ResetUseCase
 import cash.p.terminal.manager.ITorConnectionStatusUseCase
@@ -44,28 +35,19 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val useCaseModule = module {
-    singleOf(::UpdateSwapProviderTransactionsStatusUseCase)
-    singleOf(::SyncPendingMultiSwapUseCase)
     factoryOf(::FetchSwapQuotesUseCase)
     factoryOf(::IterativeExactOutSearch)
-    factoryOf(::ResolveTransactionItemUseCase)
-    factoryOf(::ResolvePayCoreNavigationUseCase)
     factoryOf(::MoneroRestoreHeightResolver) bind TrezorMoneroRestoreHeightResolver::class
     factoryOf(::AndroidMoneroWalletStorage) bind MoneroWalletStorage::class
     singleOf(::AddMoneroToTrezorAccountUseCase)
     factoryOf(::CheckGooglePlayUpdateUseCase) bind GooglePlayUpdateAvailabilityProvider::class
-    factoryOf(::GetRestoreHeightForWalletUseCase)
-    factoryOf(::RescanMoneroUseCase)
-    factoryOf(::RescanZcashUseCase)
     factoryOf(::CreateHardwareWalletUseCase) bind ICreateHardwareWalletUseCase::class
     factoryOf(::CreateTrezorWalletUseCase) bind ICreateTrezorWalletUseCase::class
     factoryOf(::CreateLedgerWalletUseCase) bind ICreateLedgerWalletUseCase::class
     factoryOf(::HardwareAccountActivator)
     factoryOf(::GetMoneroWalletFilesNameUseCase) bind IGetMoneroWalletFilesNameUseCase::class
     singleOf(::TorConnectionStatusUseCase) bind ITorConnectionStatusUseCase::class
-    singleOf(::ClearZCashWalletDataUseCase)
     factoryOf(::ClearLegacyZcashDataUseCase)
-    singleOf(::OfflineModeUseCase)
     singleOf(::DeleteAllContactsUseCase)
     singleOf(::ResetUseCase)
     singleOf(::SendZecOnDuressUseCase)

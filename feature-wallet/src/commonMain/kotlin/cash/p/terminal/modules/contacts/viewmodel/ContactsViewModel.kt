@@ -1,0 +1,87 @@
+package cash.p.terminal.modules.contacts.viewmodel
+
+import androidx.lifecycle.viewModelScope
+import cash.p.terminal.modules.contacts.ContactsRepository
+import cash.p.terminal.modules.contacts.Mode
+import cash.p.terminal.modules.contacts.model.Contact
+import cash.p.terminal.resources.Contacts_AddAddress_ReplaceWarning
+import cash.p.terminal.resources.Res
+import cash.p.terminal.strings.helpers.shorten
+import cash.p.terminal.strings.helpers.TranslatableString
+import io.horizontalsystems.core.ViewModelUiState
+import kotlinx.coroutines.launch
+
+class ContactsViewModel(
+    private val repository: ContactsRepository,
+    private val mode: Mode,
+) : ViewModelUiState<ContactsViewModel.UiState>() {
+
+    private val readOnly = mode != Mode.Full
+    private val showAddContact = !readOnly
+    private val showSettings = !readOnly
+
+    private var nameQuery: String = ""
+    private val contacts: List<Contact>
+        get() = repository.getContactsFiltered(nameQuery = nameQuery)
+
+    val backupFileName: String
+        get() = "UW_Contacts_${System.currentTimeMillis() / 1000}.json"
+
+    init {
+        viewModelScope.launch {
+            repository.contactsFlow.collect {
+                emitState()
+            }
+        }
+    }
+
+    override fun createState() = UiState(
+        contacts = contacts,
+        nameQuery = nameQuery,
+        searchMode = nameQuery.isNotEmpty(),
+        showAddContact = showAddContact,
+        showSettings = showSettings,
+        hasContacts = contacts.isNotEmpty(),
+        backupJson = repository.asJsonString,
+    )
+
+    fun onEnterQuery(query: String) {
+        nameQuery = query
+        emitState()
+    }
+
+    fun restore(json: String) {
+        repository.restore(json)
+    }
+
+    fun shouldShowReplaceWarning(contact: Contact): Boolean {
+        val addAddressMode = mode as? Mode.AddAddressToExistingContact ?: return false
+        return contact.addresses.any { it.blockchain.type == addAddressMode.blockchainType }
+    }
+
+    fun replaceWarningMessage(contact: Contact): TranslatableString? {
+        val addAddressMode = mode as? Mode.AddAddressToExistingContact ?: return null
+        val blockchainType = addAddressMode.blockchainType
+        val address = addAddressMode.address
+        val oldAddress =
+            contact.addresses.find { it.blockchain.type == blockchainType } ?: return null
+
+        return TranslatableString.ResString(
+            Res.string.Contacts_AddAddress_ReplaceWarning,
+            oldAddress.blockchain.name,
+            oldAddress.address.shorten(),
+            address.shorten()
+        )
+    }
+
+    data class UiState(
+        val contacts: List<Contact>,
+        val nameQuery: String?,
+        val searchMode: Boolean,
+        val showAddContact: Boolean,
+        val showSettings: Boolean,
+        val hasContacts: Boolean,
+        val backupJson: String,
+    )
+
+}

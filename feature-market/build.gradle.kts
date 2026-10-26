@@ -83,6 +83,7 @@ kotlin {
 
         commonTest {
             dependencies {
+                implementation(project(":core:test-fixtures"))
                 implementation(libs.junit)
                 implementation(libs.mockk)
                 implementation(libs.kotlinx.coroutines.test)

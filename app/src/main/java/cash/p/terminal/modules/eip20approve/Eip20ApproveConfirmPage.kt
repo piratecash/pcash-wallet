@@ -129,7 +129,7 @@ private fun Eip20ApproveConfirmButtons(
                         buttonEnabled = false
                         val currentSnackbar = HudHelper.showInProcessMessage(
                             view,
-                            R.string.Swap_Approving,
+                            view.context.getString(R.string.Swap_Approving),
                             SnackbarDuration.INDEFINITE
                         )
 

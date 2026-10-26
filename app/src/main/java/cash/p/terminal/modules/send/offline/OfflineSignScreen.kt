@@ -164,7 +164,7 @@ private fun OfflineSignEffect(
                 currentOnSnackbarChange(
                     HudHelper.showInProcessMessage(
                         view,
-                        R.string.offline_transaction_signing,
+                        view.context.getString(R.string.offline_transaction_signing),
                         SnackbarDuration.INDEFINITE,
                     )
                 )

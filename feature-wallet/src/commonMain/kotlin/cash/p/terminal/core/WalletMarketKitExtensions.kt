@@ -1,7 +1,9 @@
 package cash.p.terminal.core
 
+import cash.p.terminal.core.managers.PriceManager
 import cash.p.terminal.core.managers.RestoreSettingType
 import cash.p.terminal.ledger.di.ledgerAppKeyFetchers
+import cash.p.terminal.modules.displayoptions.DisplayPricePeriod
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.Derivation
 import cash.p.terminal.wallet.Token
@@ -12,11 +14,14 @@ import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.isCompatibleWith
 import cash.p.terminal.wallet.isLitecoinMweb
+import cash.p.terminal.wallet.models.CoinPrice
 import cash.p.terminal.wallet.zcashAddressSpecTokenQueries
+import cash.p.terminal.wallet.zcashDefaultTokenQuery
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.hdwalletkit.ExtendedKeyCoinType
 import io.horizontalsystems.hdwalletkit.HDWallet
+import java.math.BigDecimal
 
 val Blockchain.description: String
     get() = when (type) {
@@ -295,6 +300,24 @@ val BlockchainType.nativeTokenQueries: List<TokenQuery>
         }
     }
 
+val BlockchainType.defaultTokenQuery: TokenQuery
+    get() = when (this) {
+        BlockchainType.Bitcoin,
+        BlockchainType.Litecoin -> {
+            TokenQuery(this, TokenType.Derived(TokenType.Derivation.Bip84))
+        }
+
+        BlockchainType.BitcoinCash -> {
+            TokenQuery(this, TokenType.AddressTyped(TokenType.AddressType.Type145))
+        }
+
+        BlockchainType.Zcash -> zcashDefaultTokenQuery
+
+        else -> {
+            TokenQuery(this, TokenType.Native)
+        }
+    }
+
 val TokenType.isDefault
     get() = when (this) {
         is TokenType.Derived -> derivation.accountTypeDerivation == Derivation.default
@@ -334,3 +357,49 @@ val BlockchainType.Companion.supported: List<BlockchainType>
         BlockchainType.Thorchain,
         BlockchainType.Mayachain,
     )
+
+val BlockchainType.isBtcLike: Boolean
+    get() = when (this) {
+        BlockchainType.Bitcoin,
+        BlockchainType.BitcoinCash,
+        BlockchainType.Dash,
+        BlockchainType.ECash,
+        BlockchainType.Litecoin,
+        BlockchainType.Dogecoin,
+        BlockchainType.PirateCash,
+        BlockchainType.Cosanta
+            -> true
+
+        BlockchainType.ArbitrumOne,
+        BlockchainType.Avalanche,
+        BlockchainType.Base,
+        BlockchainType.BinanceSmartChain,
+        BlockchainType.Ethereum,
+        BlockchainType.Fantom,
+        BlockchainType.Gnosis,
+        BlockchainType.Optimism,
+        BlockchainType.Polygon,
+        BlockchainType.RobinhoodChain,
+        BlockchainType.ZkSync,
+        BlockchainType.Solana,
+        BlockchainType.Stellar,
+        BlockchainType.Ton,
+        BlockchainType.Tron,
+        is BlockchainType.Unsupported,
+        BlockchainType.Zcash,
+        BlockchainType.Beam,
+        BlockchainType.Monero,
+        BlockchainType.Thorchain,
+        BlockchainType.Mayachain
+            -> false
+    }
+
+val CoinPrice.diffPercentage: BigDecimal?
+    get() = when (getKoinInstance<PriceManager>().displayPricePeriod) {
+        DisplayPricePeriod.ONE_HOUR -> diff1h
+        DisplayPricePeriod.ONE_DAY -> diff24h
+        DisplayPricePeriod.ONE_WEEK -> diff7d
+        DisplayPricePeriod.ONE_MONTH -> diff30d
+        DisplayPricePeriod.ONE_YEAR -> diff1y
+        DisplayPricePeriod.ALL -> diffAll
+    }

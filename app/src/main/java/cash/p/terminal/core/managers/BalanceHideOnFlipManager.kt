@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.ui.compose.BalanceHideOnFlipHandler
 import cash.p.terminal.core.App
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.ui_compose.components.HudHelper
@@ -33,14 +34,14 @@ class BalanceHideOnFlipManager(
     private val localStorage: ILocalStorage,
     private val pinComponent: IPinComponent,
     dispatcherProvider: DispatcherProvider,
-) {
+) : BalanceHideOnFlipHandler {
     val isSupported = deviceFlipDetector.isSupported
 
     private val _enabled = MutableStateFlow(false)
     val enabled: StateFlow<Boolean> = _enabled.asStateFlow()
 
     private val _pendingInfo = MutableStateFlow(false)
-    val pendingInfo: StateFlow<Boolean> = _pendingInfo.asStateFlow()
+    override val pendingInfo: StateFlow<Boolean> = _pendingInfo.asStateFlow()
 
     private val handlingOwners = MutableStateFlow<Set<Any>>(emptySet())
     private var flipEventsJob: Job? = null
@@ -85,7 +86,7 @@ class BalanceHideOnFlipManager(
         if (!newEnabled) _pendingInfo.value = false
     }
 
-    fun setHandlingAllowed(owner: Any, allowed: Boolean) {
+    override fun setHandlingAllowed(owner: Any, allowed: Boolean) {
         val currentOwners = handlingOwners.value
         val updatedOwners = if (allowed) currentOwners + owner else currentOwners - owner
         if (updatedOwners == currentOwners) return
@@ -96,11 +97,11 @@ class BalanceHideOnFlipManager(
         }
     }
 
-    fun consumeInfo() {
+    override fun consumeInfo() {
         _pendingInfo.value = false
     }
 
-    fun suppressInfo() {
+    override fun suppressInfo() {
         localStorage.balanceHideOnFlipInfoSuppressed = true
         _pendingInfo.value = false
     }

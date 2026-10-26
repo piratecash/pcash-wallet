@@ -4,8 +4,8 @@ import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.managers.BaseTokenManager
 import cash.p.terminal.core.managers.LanguageManager
-import cash.p.terminal.modules.contacts.ContactsRepository
-import cash.p.terminal.modules.contacts.model.Contact
+import cash.p.terminal.modules.contacts.ContactsBackup
+import cash.p.terminal.modules.contacts.ContactsSettingsBackup
 import cash.p.terminal.modules.settings.appearance.AppIcon
 import cash.p.terminal.modules.settings.appearance.AppIconService
 import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
@@ -22,24 +22,12 @@ class AndroidAppSettingsBackup(
     private val chartIndicatorsBackup: ChartIndicatorsBackup,
     private val baseTokenManager: BaseTokenManager,
     private val currencyManager: CurrencyManager,
-    private val contactsRepository: ContactsRepository,
+    contactsSettingsBackup: ContactsSettingsBackup,
     private val appearanceSettingsBackup: AppearanceSettingsBackup,
     private val blockchainSettingsBackup: BlockchainSettingsBackup,
-) : AppSettingsBackup {
+) : AppSettingsBackup, ContactsBackup by contactsSettingsBackup {
 
     private val logger = Logger.withTag("AndroidAppSettingsBackup")
-
-    override val contacts: List<Contact>
-        get() = contactsRepository.contacts
-
-    override val contactsJson: String
-        get() = contactsRepository.asJsonString
-
-    override fun parseContacts(json: String): List<Contact> = contactsRepository.parseFromJson(json)
-
-    override fun restoreContacts(contacts: List<Contact>) {
-        contactsRepository.restore(contacts)
-    }
 
     override fun customRpcCount(): Int? = blockchainSettingsBackup.customRpcCount()
 

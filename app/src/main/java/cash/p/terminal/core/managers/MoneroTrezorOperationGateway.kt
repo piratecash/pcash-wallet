@@ -14,15 +14,11 @@ import cash.p.terminal.wallet.AccountType
 import com.piratecash.monero.signer.ExternalSigner
 import com.piratecash.monero.signer.ExternalSignerChannel
 import com.piratecash.monero.signer.ExternalSignerException
-import com.piratecash.monero.signer.ExternalSignerRegistration
 import com.piratecash.monero.signer.HardwareWalletErrorCode
 import com.piratecash.monero.signer.HardwareWalletOperationException
 import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.InternalCoroutinesApi
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.job
 import kotlinx.coroutines.runInterruptible
 
 /**
@@ -32,7 +28,7 @@ class MoneroTrezorOperationGateway internal constructor(
     private val coordinator: TrezorUsbCoordinator,
     private val readiness: MoneroTrezorReadiness,
     private val dispatcherProvider: DispatcherProvider,
-) : MoneroHardwareOperationGateway {
+) : MoneroHardwareGateway {
     suspend fun <T> execute(block: () -> T): T =
         executeInternal(null) { block() }
 
@@ -162,58 +158,6 @@ private class BorrowedRawChannelTransport(
     override suspend fun readPacket(): ByteArray = runInterruptible(dispatcher) {
         channel.readPacket()
     }
-}
-
-@OptIn(InternalCoroutinesApi::class)
-internal suspend fun <T> withExternalSignerRegistration(
-    registration: ExternalSignerRegistration,
-    block: suspend () -> T,
-): T {
-    val cancellationHandle = currentCoroutineContext().job.invokeOnCompletion(
-        onCancelling = true,
-        invokeImmediately = true,
-    ) { cause ->
-        if (cause is CancellationException) {
-            try {
-                registration.signalCancellation()
-            } catch (error: Throwable) {
-                cause.addSuppressed(error)
-            }
-        }
-    }
-    return try {
-        val outcome = try {
-            RegistrationOutcome.Success(block())
-        } catch (error: Throwable) {
-            RegistrationOutcome.Failure(error)
-        }
-        val cleanupFailure = try {
-            registration.release()
-            null
-        } catch (error: Throwable) {
-            error
-        }
-        when (outcome) {
-            is RegistrationOutcome.Success -> {
-                if (cleanupFailure != null) {
-                    throw cleanupFailure
-                }
-                outcome.value
-            }
-
-            is RegistrationOutcome.Failure -> {
-                cleanupFailure?.let(outcome.error::addSuppressed)
-                throw outcome.error
-            }
-        }
-    } finally {
-        cancellationHandle.dispose()
-    }
-}
-
-private sealed interface RegistrationOutcome<out T> {
-    data class Success<T>(val value: T) : RegistrationOutcome<T>
-    data class Failure(val error: Throwable) : RegistrationOutcome<Nothing>
 }
 
 internal class TrezorExternalSignerChannel(

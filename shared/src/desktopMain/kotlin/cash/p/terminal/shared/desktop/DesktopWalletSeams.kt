@@ -1,66 +1,73 @@
 package cash.p.terminal.shared.desktop
 
+import androidx.compose.runtime.Composable
+import cash.p.terminal.core.NonFatalReporter
+import cash.p.terminal.core.UnsupportedAccountException
 import cash.p.terminal.core.WalletOnboardingStorage
+import cash.p.terminal.core.adapters.BitcoinDeviceSigner
+import cash.p.terminal.core.adapters.BitcoinHardwareSigners
+import cash.p.terminal.core.adapters.zcash.ZcashHardwareSigners
+import cash.p.terminal.core.adapters.zcash.ZcashTransactionSigner
+import cash.p.terminal.core.managers.BeamResetMarker
+import cash.p.terminal.core.managers.EvmHardwareSigners
+import cash.p.terminal.core.managers.MoneroHardwareGateway
+import cash.p.terminal.core.managers.PlatformAccountDataCleaner
+import cash.p.terminal.core.managers.SolanaHardwareSigners
+import cash.p.terminal.core.managers.StellarHardwareSigners
+import cash.p.terminal.core.managers.TonHardwareSigners
+import cash.p.terminal.core.managers.TronHardwareSigners
 import cash.p.terminal.core.providers.AddressResolutionConfig
-import cash.p.terminal.core.providers.ZcashDbMarker
 import cash.p.terminal.core.storage.AppDatabaseProvider
 import cash.p.terminal.core.usecase.MoneroWalletStorage
 import cash.p.terminal.feature.wallet.PinStateInfo
+import cash.p.terminal.modules.balance.BalancePlatformActions
+import cash.p.terminal.modules.contacts.DeleteContactsPinSettings
+import cash.p.terminal.modules.managewallets.HardwareWalletKeyProvisioner
+import cash.p.terminal.modules.managewallets.ProvisionResult
+import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.network.data.EncodedSecrets
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.platform_not_supported_yet
 import cash.p.terminal.shared.desktop.vault.DesktopVaultFiles
+import cash.p.terminal.tangem.domain.model.AddressBytesWithPublicKey
 import cash.p.terminal.wallet.Account
-import cash.p.terminal.wallet.AccountDeletionPreflight
-import cash.p.terminal.wallet.IAdapter
-import cash.p.terminal.wallet.IAdapterManager
-import cash.p.terminal.wallet.IBalanceAdapter
+import cash.p.terminal.wallet.AccountDeletionBlockedException
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IDeletedWalletChecker
 import cash.p.terminal.wallet.IHardwarePublicKeyStorage
-import cash.p.terminal.wallet.IReceiveAdapter
-import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
-import cash.p.terminal.wallet.entities.BalanceData
 import cash.p.terminal.wallet.entities.HardwarePublicKey
+import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
-import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import cash.p.terminal.wallet.policy.HardwareWalletTokenPolicy
 import cash.p.terminal.wallet.useCases.IGetMoneroWalletFilesNameUseCase
 import cash.p.terminal.wallet.useCases.IRemoveMoneroWalletFilesUseCase
 import cash.p.terminal.wallet.useCases.MoneroWalletFiles
+import cash.p.terminal.wallet.useCases.ScanToAddUseCase
+import co.touchlab.kermit.Logger
+import com.solana.core.Account as SolanaAccount
+import com.solana.core.PublicKey
+import com.tonapps.blockchain.ton.contract.HashSigner
+import io.horizontalsystems.bitcoincore.transactions.builder.IInputSigner
+import io.horizontalsystems.bitcoincore.transactions.builder.ISchnorrInputSigner
 import io.horizontalsystems.core.DesktopSettingsStore
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.IThirdKeyboard
+import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.entities.BlockchainType
-import io.reactivex.Flowable
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
+import io.horizontalsystems.ethereumkit.core.signer.Signer
+import io.horizontalsystems.ethereumkit.models.Chain
+import io.horizontalsystems.ethereumkit.models.RawTransaction
+import io.horizontalsystems.ethereumkit.models.Signature
+import io.horizontalsystems.stellarkit.Signer as StellarSigner
+import io.horizontalsystems.tronkit.transaction.Signer as TronSigner
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.IOException
 import java.security.SecureRandom
-
-/** No chain adapters on desktop yet: no wallet has one, so premium resolves through the API, as on Android. */
-class DesktopAdapterManager : IAdapterManager {
-    override val adaptersReadyObservable: Flowable<Map<Wallet, IAdapter>> = Flowable.just(emptyMap())
-    override val initializationInProgressFlow: StateFlow<Boolean> = MutableStateFlow(false)
-    override val walletBalanceUpdatedFlow: SharedFlow<Wallet> = MutableSharedFlow()
-
-    override fun startAdapterManager() = Unit
-    override suspend fun refresh() = Unit
-    override suspend fun <T> awaitAdapterForWallet(wallet: Wallet, timeoutMs: Long): T? = null
-    override fun <T> getAdapterForWallet(wallet: Wallet): T? = null
-    override fun getAdapterForWalletOld(wallet: Wallet): IAdapter? = null
-    override fun <T> getAdapterForToken(token: Token): T? = null
-    override fun getBalanceAdapterForWallet(wallet: Wallet): IBalanceAdapter? = null
-    override fun getReceiveAdapterForWallet(wallet: Wallet): IReceiveAdapter? = null
-    override fun refreshAdapters(wallets: List<Wallet>) = Unit
-    override fun refreshByWallet(wallet: Wallet) = Unit
-    override fun getAdjustedBalanceData(wallet: Wallet): BalanceData? = null
-    override fun getAdjustedBalanceDataForToken(token: Token): BalanceData? = null
-    override suspend fun getReceiveAddressForWallet(wallet: Wallet): String? = null
-}
 
 /** Desktop has no hardware wallets: no account ever reaches the hardware keys or token policy. */
 object DesktopNoHardwareWallets : IHardwarePublicKeyStorage, HardwareWalletTokenPolicy {
@@ -77,6 +84,112 @@ object DesktopNoHardwareWallets : IHardwarePublicKeyStorage, HardwareWalletToken
 
     override suspend fun getAllPublicKeys(accountId: String): List<HardwarePublicKey> = emptyList()
     override fun isSupported(blockchainType: BlockchainType, tokenType: TokenType) = false
+}
+
+object DesktopNoHardwareKeyProvisioner : HardwareWalletKeyProvisioner {
+    override suspend fun provisionPublicKeys(
+        account: Account,
+        tokenQueries: List<TokenQuery>,
+        moneroRestoreHeight: Long?,
+    ) = ProvisionResult.Failed(Translator.getString(Res.string.platform_not_supported_yet))
+}
+
+/** No device to scan on desktop, so a scan never adds a token. */
+object DesktopNoHardwareScanToAdd : ScanToAddUseCase {
+    override suspend fun addTokensByScan(blockchainsToDerive: List<TokenQuery>, cardId: String, accountId: String) =
+        false
+}
+
+/** No scanner, dApp connections or store rating on desktop; the app content is not composed while locked. */
+object DesktopBalancePlatformActions : BalancePlatformActions {
+    override val appLocked: StateFlow<Boolean> = MutableStateFlow(false)
+
+    override fun openConnectionLink(
+        text: String,
+        scope: CoroutineScope,
+        onPairingResult: (paired: Boolean) -> Unit,
+    ) = false
+
+    override fun isOfflineTransaction(text: String) = false
+    override fun onBalancePageActive() = Unit
+    override fun onBalancePageInactive() = Unit
+}
+
+/** Unreachable: [DesktopPlatformChainSupport] keeps hardware accounts away from the kits. */
+object DesktopNoHardwareSigners :
+    EvmHardwareSigners,
+    BitcoinHardwareSigners,
+    SolanaHardwareSigners,
+    TronHardwareSigners,
+    StellarHardwareSigners,
+    TonHardwareSigners,
+    ZcashHardwareSigners,
+    MoneroHardwareGateway {
+    override suspend fun <T> execute(account: Account, block: (String) -> T): T =
+        throw UnsupportedAccountException()
+
+    override fun cardSigner(publicKey: HardwarePublicKey, key: AddressBytesWithPublicKey, chain: Chain): Signer =
+        throw UnsupportedAccountException()
+
+    override fun trezorSigner(
+        device: AccountType.TrezorDevice,
+        publicKey: HardwarePublicKey,
+        key: AddressBytesWithPublicKey,
+        chain: Chain,
+    ): Signer = throw UnsupportedAccountException()
+
+    override suspend fun signReconciled(
+        signer: Signer,
+        rawTransaction: RawTransaction,
+    ): Pair<RawTransaction, Signature>? = null
+
+    override fun cardEcdsaSigner(
+        accountId: String,
+        blockchainType: BlockchainType,
+        tokenType: TokenType,
+    ): IInputSigner = throw UnsupportedAccountException()
+
+    override fun cardSchnorrSigner(
+        accountId: String,
+        blockchainType: BlockchainType,
+        tokenType: TokenType,
+    ): ISchnorrInputSigner = throw UnsupportedAccountException()
+
+    override fun trezorSigner(
+        accountId: String,
+        blockchainType: BlockchainType,
+        tokenType: TokenType,
+        coin: String,
+    ): BitcoinDeviceSigner = throw UnsupportedAccountException()
+
+    override fun cardAccount(publicKey: PublicKey, hardwarePublicKey: HardwarePublicKey): SolanaAccount =
+        throw UnsupportedAccountException()
+
+    override fun trezorAccount(publicKey: PublicKey, hardwarePublicKey: HardwarePublicKey): SolanaAccount =
+        throw UnsupportedAccountException()
+
+    override fun cardSigner(hardwarePublicKey: HardwarePublicKey, expectedPublicKeyBytes: ByteArray): TronSigner =
+        throw UnsupportedAccountException()
+
+    override fun trezorSigner(expectedAddressBase58: String, derivationPath: String): TronSigner =
+        throw UnsupportedAccountException()
+
+    override fun cardSigner(hardwarePublicKey: HardwarePublicKey): StellarSigner =
+        throw UnsupportedAccountException()
+
+    override fun trezorSigner(publicKey: ByteArray, derivationPath: String, networkPassphrase: String): StellarSigner =
+        throw UnsupportedAccountException()
+
+    override fun cardHashSigner(hardwarePublicKey: HardwarePublicKey): HashSigner =
+        throw UnsupportedAccountException()
+
+    override fun trezorSigner(wallet: Wallet, device: AccountType.TrezorDevice): ZcashTransactionSigner =
+        throw UnsupportedAccountException()
+}
+
+/** The SMS notification settings this would clear exist only on Android. */
+object DesktopPlatformAccountDataCleaner : PlatformAccountDataCleaner {
+    override fun clear(accountId: String) = Unit
 }
 
 /** Readable before the vault exists (the intro needs it) and cleared by the wipe with the other settings. */
@@ -128,11 +241,19 @@ object DesktopPinStateInfo : PinStateInfo {
     override val isPinSet = false
     override fun isDuressPinSet() = false
     override fun getDuressLevel() = 0
+    override fun validateCurrentLevel(pin: String) = false
 }
 
-/** No Zcash sync runs on desktop yet, so there is no first sync to shorten. */
-object DesktopZcashDbMarker : ZcashDbMarker {
-    override fun markPristine(accountId: String) = Unit
+object DesktopDeleteContactsPinSettings : DeleteContactsPinSettings {
+    @Composable
+    override fun Section(navigation: HSNavigation) = Unit
+}
+
+/** No crash reporting service on desktop: the report goes to the log. */
+object DesktopNonFatalReporter : NonFatalReporter {
+    private val logger = Logger.withTag("NonFatal")
+
+    override fun report(error: Throwable, message: String) = logger.w(error) { message }
 }
 
 /** Desktop has no build types: the release endpoint, as the Android release build. */
@@ -145,35 +266,6 @@ object DesktopAddressResolutionConfig : AddressResolutionConfig {
 class DesktopDeletedWalletChecker(private val databases: AppDatabaseProvider) : IDeletedWalletChecker {
     override suspend fun getDeletedTokenQueryIds(accountId: String): Set<String> =
         databases.database.userDeletedWalletDao().getDeletedTokenQueryIds(accountId).toSet()
-}
-
-/** Desktop has no balance hiding yet: everything is shown, only the auto-hide flag is kept for the backup. */
-class DesktopBalanceHiddenManager(private val settingsStore: DesktopSettingsStore) : IBalanceHiddenManager {
-    private val shown: StateFlow<Boolean> = MutableStateFlow(false)
-
-    override val balanceHidden = false
-    override val balanceAutoHidden get() = settingsStore.flag(BALANCE_AUTO_HIDDEN) ?: false
-    override val balanceHiddenFlow = shown
-    override val anyWalletVisibilityChangedFlow: Flow<Unit> = emptyFlow()
-    override val anyTransactionVisibilityChangedFlow: Flow<Unit> = emptyFlow()
-
-    override fun toggleBalanceHidden() = Unit
-    override fun setBalanceHidden(hidden: Boolean) = Unit
-    override fun setBalanceAutoHidden(enabled: Boolean) = settingsStore.setFlag(BALANCE_AUTO_HIDDEN, enabled)
-    override fun walletBalanceHiddenFlow(walletUid: String) = shown
-    override fun toggleWalletBalanceHidden(walletUid: String) = Unit
-    override fun isWalletBalanceHidden(walletUid: String) = false
-    override fun setWalletBalanceHidden(walletUid: String, hidden: Boolean) = Unit
-    override fun transactionInfoHiddenFlow(transactionId: String) = shown
-    override fun transactionInfoHiddenFlowForWallet(transactionId: String, walletUid: String) = shown
-    override fun toggleTransactionInfoHidden(transactionId: String) = Unit
-    override fun isTransactionInfoHidden(transactionId: String) = false
-    override fun isTransactionInfoHiddenForWallet(transactionId: String, walletUid: String) = false
-    override fun clearSessionState() = Unit
-
-    private companion object {
-        const val BALANCE_AUTO_HIDDEN = "balanceAutoHidden"
-    }
 }
 
 /** A desktop keyboard is never a third-party IME, so there is nothing to warn about. */
@@ -197,13 +289,21 @@ class DesktopRemoveMoneroWalletFilesUseCase(
     }
 }
 
-/** No desktop kit keeps data that must outlive an account, so nothing ever blocks a deletion or reset. */
-object DesktopAccountDeletionPreflight : AccountDeletionPreflight {
-    override suspend fun ensureCanDelete(accountIds: List<String>) = Unit
-    override suspend fun cleanupDeleted(accountIds: List<String>) = Unit
-    override suspend fun prepareExplicitReset() = Unit
-    override suspend fun resumePendingReset() = Unit
-    override suspend fun ensureExplicitResetCleaned() = Unit
-    override suspend fun finishExplicitReset() = Unit
-    override fun ensureCanReset() = Unit
+/** Outside the vault database, like the Android marker, and dropped by the wipe with the other settings. */
+class DesktopBeamResetMarker(private val settingsStore: DesktopSettingsStore) : BeamResetMarker {
+    override val isSet: Boolean get() = settingsStore.flag(RESET_PENDING) == true
+
+    override fun set() = write(true)
+
+    override fun clear() = write(false)
+
+    private fun write(value: Boolean) = try {
+        settingsStore.setFlag(RESET_PENDING, value)
+    } catch (e: IOException) {
+        throw AccountDeletionBlockedException(e)
+    }
+
+    private companion object {
+        const val RESET_PENDING = "beamResetPending"
+    }
 }

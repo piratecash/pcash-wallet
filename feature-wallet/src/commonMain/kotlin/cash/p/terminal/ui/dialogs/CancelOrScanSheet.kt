@@ -1,0 +1,104 @@
+package cash.p.terminal.ui.dialogs
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.unit.dp
+import cash.p.terminal.core.getKoinInstance
+import cash.p.terminal.navigation.HSBottomSheet
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Button_Cancel
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.adding_tokens
+import cash.p.terminal.resources.connect
+import cash.p.terminal.resources.connect_ledger_to_add_message
+import cash.p.terminal.resources.connect_trezor_to_add_message
+import cash.p.terminal.resources.scan
+import cash.p.terminal.resources.scan_to_add_message
+import cash.p.terminal.ui_compose.components.InfoTextBody
+import cash.p.terminal.ui_compose.BottomSheetHeader
+import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
+import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.IAccountManager
+import org.jetbrains.compose.resources.stringResource
+
+class CancelOrScanSheet : HSBottomSheet() {
+
+    @Composable
+    override fun GetContent(navigation: HSNavigation) {
+        val accountManager = remember { getKoinInstance<IAccountManager>() }
+        CancelOrScanScreen(
+            accountType = accountManager.activeAccount?.type,
+            onClose = navigation::navigateUpSafely,
+            onConfirm = {
+                navigation.setResult(this, Result(true))
+                navigation.navigateUpSafely()
+            },
+            onCancel = {
+                navigation.setResult(this, Result(false))
+                navigation.navigateUpSafely()
+            }
+        )
+    }
+
+    data class Result(val confirmed: Boolean)
+}
+
+@Composable
+private fun CancelOrScanScreen(
+    accountType: AccountType?,
+    onClose: () -> Unit,
+    onConfirm: () -> Unit,
+    onCancel: () -> Unit,
+) {
+    val isHardwareDevice = accountType is AccountType.HardwareDevice
+    val bodyText = stringResource(
+        when (accountType) {
+            is AccountType.TrezorDevice -> Res.string.connect_trezor_to_add_message
+            is AccountType.LedgerDevice -> Res.string.connect_ledger_to_add_message
+            else -> Res.string.scan_to_add_message
+        }
+    )
+    val confirmText = stringResource(
+        if (isHardwareDevice) Res.string.connect else Res.string.scan
+    )
+
+    ComposeAppTheme {
+        BottomSheetHeader(
+            iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusError),
+            title = stringResource(Res.string.adding_tokens),
+            onCloseClick = onClose
+        ) {
+            InfoTextBody(text = bodyText)
+            Spacer(Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.padding(horizontal = 24.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ButtonPrimaryYellow(
+                    modifier = Modifier
+                        .weight(1f),
+                    title = confirmText,
+                    onClick = onConfirm
+                )
+                ButtonPrimaryDefault(
+                    modifier = Modifier.weight(1f),
+                    title = stringResource(Res.string.Button_Cancel),
+                    onClick = onCancel
+                )
+            }
+            Spacer(Modifier.height(32.dp))
+        }
+    }
+}

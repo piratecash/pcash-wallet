@@ -39,8 +39,8 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 @Composable
-internal fun TorStatusView(
-    modifier: Modifier = Modifier
+internal actual fun TorStatusView(
+    modifier: Modifier
 ) {
     val torConnectionUseCase: ITorConnectionStatusUseCase = koinInject()
 

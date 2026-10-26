@@ -1,6 +1,7 @@
 package cash.p.terminal.network.data
 
 import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -28,19 +29,32 @@ internal fun buildNetworkClient(debug: Boolean) = HttpClient(OkHttp) {
         })
     }
 
-    if (debug) {
-        install(Logging) {
-            logger = object : Logger {
-                private val logTag = "KtorHttpLogger: "
-                override fun log(message: String) {
-                    message.lineSequence().forEach { line ->
-                        println(logTag + line)
-                    }
-                }
+    if (debug) installSanitizedLogging()
+}
+
+internal fun HttpClientConfig<*>.installSanitizedLogging(sink: (String) -> Unit = ::println) {
+    install(Logging) {
+        sanitizeHeader { name -> name.lowercase() in CREDENTIAL_HEADERS }
+        logger = object : Logger {
+            override fun log(message: String) {
+                message.lineSequence().forEach { line -> sink(LOG_TAG + line.redactQueryCredentials()) }
             }
         }
     }
 }
+
+private const val LOG_TAG = "KtorHttpLogger: "
+private val CREDENTIAL_HEADERS = setOf(
+    HttpHeaders.Authorization.lowercase(),
+    HttpHeaders.ProxyAuthorization.lowercase(),
+    HttpHeaders.Cookie.lowercase(),
+    HttpHeaders.SetCookie.lowercase(),
+    "x-api-key",
+    "api-key",
+)
+private val QUERY_CREDENTIAL = Regex("([?&](?:api_key|apikey)=)[^&\\s]+", RegexOption.IGNORE_CASE)
+
+private fun String.redactQueryCredentials() = replace(QUERY_CREDENTIAL, "$1***")
 
 inline fun <reified T> HttpRequestBuilder.setJsonBody(body: T) {
     header(HttpHeaders.ContentType, ContentType.Application.Json)

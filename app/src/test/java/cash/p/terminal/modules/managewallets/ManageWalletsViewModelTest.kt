@@ -1,9 +1,6 @@
 package cash.p.terminal.modules.managewallets
 
-import cash.p.terminal.core.App
-import cash.p.terminal.core.storage.HardwarePublicKeyStorage
 import cash.p.terminal.core.usecase.AddMoneroToTrezorAccountUseCase
-import cash.p.terminal.core.R
 import cash.p.terminal.ledger.domain.LedgerAppMissingException
 import cash.p.terminal.ledger.domain.LedgerKey
 import cash.p.terminal.ledger.domain.LedgerKeyRead
@@ -14,6 +11,8 @@ import cash.p.terminal.ledger.monero.LEDGER_MONERO_APP
 import cash.p.terminal.ledgerkit.apdu.LedgerException
 import cash.p.terminal.modules.enablecoin.restoresettings.TokenConfig
 import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.error_hardware_wallet_some_tokens_not_found
+import cash.p.terminal.resources.error_hardware_wallet_token_unavailable
 import cash.p.terminal.resources.ledger_install_app
 import cash.p.terminal.resources.ledger_update_app
 import cash.p.terminal.modules.offline.OfflineOperationGate
@@ -23,6 +22,7 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.IHardwarePublicKeyStorage
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.HardwarePublicKey
@@ -30,7 +30,7 @@ import cash.p.terminal.wallet.entities.HardwarePublicKeyType
 import cash.p.terminal.wallet.entities.SecretString
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.policy.HardwareWalletTokenPolicy
-import io.horizontalsystems.core.CoreApp
+import cash.p.terminal.wallet.policy.PlatformChainSupport
 import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
@@ -77,12 +77,15 @@ class ManageWalletsViewModelTest : KoinTest {
     private val service = mockk<ManageWalletsService>(relaxed = true)
     private val accountManager = mockk<IAccountManager>()
     private val tangemScanUseCase = mockk<TangemScanUseCase>()
-    private val hardwarePublicKeyStorage = mockk<HardwarePublicKeyStorage>(relaxed = true)
+    private val hardwarePublicKeyStorage = mockk<IHardwarePublicKeyStorage>(relaxed = true)
     private val hardwareWalletTokenPolicy = mockk<HardwareWalletTokenPolicy>()
     private val fetchTrezorPublicKeys = mockk<FetchTrezorPublicKeysUseCase>()
     private val addMonero = mockk<AddMoneroToTrezorAccountUseCase>()
     private val offlineOperationGate = mockk<OfflineOperationGate>(relaxed = true)
     private val ledgerScanToAdd = mockk<LedgerScanToAddUseCase>()
+    private val platformChainSupport = mockk<PlatformChainSupport> {
+        every { isSupported(any<BlockchainType>()) } returns true
+    }
     private val itemsFlow = MutableStateFlow<List<ManageWalletsService.Item>>(emptyList())
     private val restoreSettingsRejectedFlow = MutableSharedFlow<Token>()
     private val enabledTokensFlow = MutableSharedFlow<Token>()
@@ -94,13 +97,21 @@ class ManageWalletsViewModelTest : KoinTest {
         modules(
             module {
                 single<IAccountManager> { accountManager }
-                single { tangemScanUseCase }
                 single { hardwarePublicKeyStorage }
                 single<HardwareWalletTokenPolicy> { hardwareWalletTokenPolicy }
-                single<FetchTrezorPublicKeysUseCase> { fetchTrezorPublicKeys }
-                single { addMonero }
+                single<HardwareWalletKeyProvisioner> {
+                    AndroidHardwareWalletKeyProvisioner(
+                        tangemScanUseCase,
+                        fetchTrezorPublicKeys,
+                        addMonero,
+                        accountManager,
+                        ledgerScanToAdd,
+                        hardwarePublicKeyStorage,
+                    )
+                }
                 single { offlineOperationGate }
                 single { ledgerScanToAdd }
+                single<PlatformChainSupport> { platformChainSupport }
             }
         )
     }
@@ -108,19 +119,14 @@ class ManageWalletsViewModelTest : KoinTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
-        mockkObject(App.Companion)
         mockkObject(Translator)
         every { Translator.getString(Res.string.ledger_install_app, "TON") } returns INSTALL_TON
         every { Translator.getString(Res.string.ledger_install_app, LEDGER_MONERO_APP) } returns INSTALL_MONERO
         every { Translator.getString(Res.string.ledger_update_app, "TON") } returns UPDATE_TON
-        val app = mockk<CoreApp> {
-            every { getString(any()) } returns "Add via Trezor"
-            every { getString(R.string.error_hardware_wallet_some_tokens_not_found) } returns GENERIC_NOT_FOUND
-            every { getString(R.string.error_hardware_wallet_token_unavailable, any()) } answers {
-                NOT_AVAILABLE_ON + (args[1] as Array<*>).single()
-            }
+        every { Translator.getString(Res.string.error_hardware_wallet_some_tokens_not_found) } returns GENERIC_NOT_FOUND
+        every { Translator.getString(Res.string.error_hardware_wallet_token_unavailable, any()) } answers {
+            NOT_AVAILABLE_ON + (args[1] as Array<*>).single()
         }
-        every { App.instance } returns app
         every { accountManager.activeAccount } returns account
         every { accountManager.account(account.id) } returns account
         every { service.accountType } returns account.type
@@ -136,7 +142,6 @@ class ManageWalletsViewModelTest : KoinTest {
     @After
     fun tearDown() {
         unmockkObject(Translator)
-        unmockkObject(App.Companion)
         Dispatchers.resetMain()
         stopKoin()
     }
@@ -594,6 +599,36 @@ class ManageWalletsViewModelTest : KoinTest {
         origin = AccountOrigin.Created,
         level = 0,
     )
+
+    @Test
+    fun requestScanToAddTokens_savingKeysFails_showsErrorAndAllowsRetry() = runTest(dispatcher) {
+        val ethToken = token(BlockchainType.Ethereum, TokenType.Native)
+        every { hardwareWalletTokenPolicy.isSupported(account, ethToken) } returns true
+        coEvery { fetchTrezorPublicKeys(any(), account.id) } returns
+            listOf(hardwareKey(BlockchainType.Ethereum, TokenType.Native))
+        coEvery { hardwarePublicKeyStorage.save(any()) } throws IllegalStateException("disk full")
+        val viewModel = ManageWalletsViewModel(service, emptyList())
+        viewModel.enable(ethToken)
+
+        val failedJob = viewModel.requestScanToAddTokens(closeAfterSuccess = false)
+        failedJob.join()
+
+        assertEquals("disk full", viewModel.errorMsg)
+        assertNotSame(failedJob, viewModel.requestScanToAddTokens(closeAfterSuccess = false))
+        verify(exactly = 0) { service.enable(ethToken) }
+    }
+
+    @Test
+    fun disable_chainUnsupportedOnPlatform_showsErrorWithoutDisabling() = runTest(dispatcher) {
+        every { platformChainSupport.isSupported(BlockchainType.Bitcoin) } returns false
+        val bitcoin = token(BlockchainType.Bitcoin, TokenType.Derived(TokenType.Derivation.Bip84))
+        val viewModel = ManageWalletsViewModel(service, emptyList())
+
+        viewModel.disable(bitcoin)
+
+        assertNotNull(viewModel.errorMsg)
+        verify(exactly = 0) { service.disable(bitcoin) }
+    }
 
     private val tangemAccount = Account(
         id = "tangem-id",

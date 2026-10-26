@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.zcashmigration
 
+import cash.p.terminal.resources.ic_migrate_24
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -95,7 +96,7 @@ private fun MigrationDetails(
                 SectionTitleCell(
                     title = stringResource(R.string.transactions_migrate),
                     value = stringResource(R.string.transactions_migrate_to_ironwood),
-                    iconResId = R.drawable.ic_migrate_24
+                    iconResId = Res.drawable.ic_migrate_24
                 )
             }, {
                 ConfirmAmountCell(uiState.amountFiat, uiState.amount, coin)

@@ -11,6 +11,8 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.PageResumeEffect
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Appearance_BalanceAutoHide
+import cash.p.terminal.resources.Appearance_BalanceAutoHide_Description
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.Settings_AutoLock
 import cash.p.terminal.resources.Settings_SecurityCenter
@@ -22,6 +24,9 @@ import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HsBackButton
 import cash.p.terminal.ui_compose.components.HsSettingCell
+import cash.p.terminal.ui_compose.components.InfoText
+import cash.p.terminal.ui_compose.components.SectionUniversalLawrence
+import cash.p.terminal.ui_compose.components.SwitchWithText
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import org.jetbrains.compose.resources.painterResource
@@ -38,6 +43,8 @@ class DesktopSecurityPage : HSPage() {
         PageResumeEffect(onResume = viewModel::onResume, onPause = {})
         DesktopSecurityContent(
             autoLockInterval = viewModel.autoLockInterval,
+            balanceAutoHideEnabled = viewModel.balanceAutoHideEnabled,
+            onBalanceAutoHideChange = viewModel::onBalanceAutoHideChange,
             onAutoLockClick = { navigation.slideFromRight(DesktopAutoLockIntervalsPage()) },
             onChangePasswordClick = { navigation.slideFromRight(ChangePasswordPage()) },
             onLockClick = viewModel::onLockClick,
@@ -49,6 +56,8 @@ class DesktopSecurityPage : HSPage() {
 @Composable
 internal fun DesktopSecurityContent(
     autoLockInterval: AutoLockInterval,
+    balanceAutoHideEnabled: Boolean,
+    onBalanceAutoHideChange: (Boolean) -> Unit,
     onAutoLockClick: () -> Unit,
     onChangePasswordClick: () -> Unit,
     onLockClick: () -> Unit,
@@ -91,6 +100,15 @@ internal fun DesktopSecurityContent(
                     },
                 )
             )
+            VSpacer(32.dp)
+            SectionUniversalLawrence {
+                SwitchWithText(
+                    text = stringResource(Res.string.Appearance_BalanceAutoHide),
+                    checked = balanceAutoHideEnabled,
+                    onCheckedChange = onBalanceAutoHideChange,
+                )
+            }
+            InfoText(text = stringResource(Res.string.Appearance_BalanceAutoHide_Description))
         }
     }
 }
@@ -101,6 +119,8 @@ private fun DesktopSecurityContentPreview() {
     ComposeAppTheme {
         DesktopSecurityContent(
             autoLockInterval = AutoLockInterval.AFTER_1_MIN,
+            balanceAutoHideEnabled = true,
+            onBalanceAutoHideChange = {},
             onAutoLockClick = {},
             onChangePasswordClick = {},
             onLockClick = {},

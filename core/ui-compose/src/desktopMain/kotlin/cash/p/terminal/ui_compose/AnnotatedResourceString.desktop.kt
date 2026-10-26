@@ -1,11 +1,14 @@
 package cash.p.terminal.ui_compose
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 private val tokenRegex = Regex("<(/?)([a-zA-Z]+)([^>]*)>|[^<]+")
 private val hrefRegex = Regex("href\\s*=\\s*[\"']([^\"']*)[\"']")
@@ -41,3 +44,6 @@ private fun AnnotatedString.Builder.endsWithParagraph() = toAnnotatedString().te
 
 private fun String.decodeEntities(): String =
     entities.entries.fold(this) { text, (entity, char) -> text.replace(entity, char) }.replace("&amp;", "&")
+
+@Composable
+actual fun annotatedStringResource(resource: StringResource): AnnotatedString = AnnotatedString(stringResource(resource))

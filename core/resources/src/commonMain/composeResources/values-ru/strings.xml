@@ -393,7 +393,7 @@
     <string name="Balance_Error_InvalidQrCode">Не удалось распознать</string>
     <string name="Balance_Receive_WatchAddressAlert">Этот адрес является адресом наблюдаемого аккаунта</string>
     <string name="Balance_Receive_UsedAddresses">Использованные адреса</string>
-    <string name="Balance_Receive_UsedAddressesDescriptoin">%s адреса изменяються для повышения конфиденциальности и безопасности. Ниже приведен список использованных адресов в этом кошельке.</string>
+    <string name="Balance_Receive_UsedAddressesDescriptoin">%1$s адреса изменяються для повышения конфиденциальности и безопасности. Ниже приведен список использованных адресов в этом кошельке.</string>
     <string name="Balance_Receive_ReceiveAddresses">Адреса для получения</string>
     <string name="Balance_Receive_ChangeAddresses">Адрес-сдача</string>
     <string name="receive_address_badge_new">Новый</string>
@@ -734,7 +734,7 @@
     <string name="SwapInfo_PriceImpactTitle">Отклонение от рын. цены</string>
     <string name="SwapInfo_PriceImpactDescription">Ожидаемое отклонение цены от указанной цены, обычно увеличивается при увеличении суммы обмена.</string>
     <!--Deposit-->
-    <string name="Deposit_Title">Получить %s</string>
+    <string name="Deposit_Title">Получить %1$s</string>
     <!--Transactions-->
     <string name="Transactions_Title">Транзакции</string>
     <string name="Transactions_Hide">Скрытие транзакций</string>
@@ -1509,6 +1509,8 @@
     <string name="CoinPage_TimeDuration_Month">1М</string>
     <string name="CoinPage_TimeDuration_Year">1Г</string>
     <string name="CoinPage_TimeDuration_All">Все</string>
+    <string name="Timestamp_Today">Сегодня</string>
+    <string name="Timestamp_Yesterday">Вчера</string>
     <string name="CoinPage_TradingVolume">Объем торговли</string>
     <string name="CoinPage_Audits_PoweredBy">При поддержке Defiyield.app</string>
     <string name="CoinPage_Audits_Issues">Запросы: %d</string>
@@ -1918,10 +1920,10 @@
     </plurals>
 
     <plurals name="staking_next_accrual_in_hours">
-        <item quantity="one">Следующее начисление будет через %d час</item>
-        <item quantity="few">Следующее начисление будет через %d часа</item>
-        <item quantity="many">Следующее начисление будет через %d часов</item>
-        <item quantity="other">Следующее начисление будет через %d часа</item>
+        <item quantity="one">Следующее начисление будет через %1$d час</item>
+        <item quantity="few">Следующее начисление будет через %1$d часа</item>
+        <item quantity="many">Следующее начисление будет через %1$d часов</item>
+        <item quantity="other">Следующее начисление будет через %1$d часа</item>
     </plurals>
     <string name="estimated_annual_interest">Предполагаемый годовой процент</string>
     <string name="accruals">Начисления</string>
@@ -2062,7 +2064,7 @@
     <string name="SwapWarning_SlippageNotApplicable_Title">Проскальзывание не применяется.</string>
     <string name="Fee_OutboundFee">Комиссия за вывод</string>
     <string name="ActivationRequired_DialogTitle">Активировать токен</string>
-    <string name="activation_required_dialog_description">Чтобы получить %s, необходимо активировать токен. Сеть Stellar требует установку доверительной линии (trustline) для каждого токена. Без неё ваш кошелёк не сможет принять %s — транзакция будет отклонена, и средства не будут доставлены.</string>
+    <string name="activation_required_dialog_description">Чтобы получить %1$s, необходимо активировать токен. Сеть Stellar требует установку доверительной линии (trustline) для каждого токена. Без неё ваш кошелёк не сможет принять %2$s — транзакция будет отклонена, и средства не будут доставлены.</string>
     <string name="activate_you_activate">Вы активируете</string>
     <string name="activate_activating">Активация</string>
     <string name="activate_already_active_title">Уже активирован</string>
@@ -2547,6 +2549,9 @@
     <string name="desktop_forgot_password_warning">Кошельки, контакты, настройки и история, хранящиеся на этом компьютере, будут удалены. Средства в блокчейне не пострадают: кошельки можно восстановить только по фразам восстановления.</string>
     <string name="desktop_forgot_password_action">Удалить данные</string>
     <string name="desktop_forgot_password_failed">Не удалось удалить данные</string>
+    <string name="desktop_wipe_restart_manually">Данные удалены. Запустите приложение заново</string>
+    <string name="desktop_restart_manually">Запустите приложение заново</string>
+    <string name="platform_not_supported_yet">Пока не поддерживается в версии для компьютера</string>
     <string name="desktop_change_password_title">Изменить пароль</string>
     <string name="desktop_change_password_current_hint">Текущий пароль</string>
     <string name="desktop_change_password_new_hint">Новый пароль</string>

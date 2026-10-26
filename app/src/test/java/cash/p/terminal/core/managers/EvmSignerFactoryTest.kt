@@ -33,11 +33,15 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import java.math.BigInteger
 
 class EvmSignerFactoryTest {
@@ -50,8 +54,7 @@ class EvmSignerFactoryTest {
     private val hardwarePublicKeyStorage: IHardwarePublicKeyStorage = mockk()
     private val trezorClient: ITrezorClient = mockk()
     private val ledgerAppAccess: LedgerAppAccess = mockk()
-    private val factory =
-        EvmSignerFactory(hardwarePublicKeyStorage, trezorClient, ledgerAppAccess, mockk<LedgerTokenDescriptorStore>())
+    private val factory = EvmSignerFactory(hardwarePublicKeyStorage, AndroidEvmHardwareSigners(trezorClient))
 
     private val hardwareAccount = Account(
         id = "hardware-account-id",
@@ -92,10 +95,21 @@ class EvmSignerFactoryTest {
 
     @Before
     fun setUp() {
+        startKoin {
+            modules(module {
+                single { ledgerAppAccess }
+                single { mockk<LedgerTokenDescriptorStore>() }
+            })
+        }
         EthereumKit.init()
         coEvery {
             hardwarePublicKeyStorage.getKey(hardwareAccount.id, BlockchainType.Ethereum, TokenType.Native)
         } returns hardwarePublicKey
+    }
+
+    @After
+    fun tearDown() {
+        stopKoin()
     }
 
     @Test

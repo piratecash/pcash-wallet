@@ -93,7 +93,7 @@
     <string name="trezor_connect_failed">Não foi possível conectar ao Trezor.</string>
     <string name="hardware_connect_device_to_sync">Conecte o dispositivo para sincronizar</string>
     <string name="Button_Activate">Ativar</string>
-    <string name="activation_required_dialog_description">Para receber %s, tem de ativar o token. A rede Stellar exige o estabelecimento de uma linha de confiança (trustline) para cada token. Sem ela, a sua carteira não pode receber %s — a transação será rejeitada e os fundos não serão entregues.</string>
+    <string name="activation_required_dialog_description">Para receber %1$s, tem de ativar o token. A rede Stellar exige o estabelecimento de uma linha de confiança (trustline) para cada token. Sem ela, a sua carteira não pode receber %2$s — a transação será rejeitada e os fundos não serão entregues.</string>
     <string name="activate_you_activate">Vai ativar</string>
     <string name="activate_activating">A ativar</string>
     <string name="activate_already_active_title">Já está ativo</string>
@@ -407,7 +407,7 @@
     <string name="Balance_Error_InvalidQrCode">Não foi possível reconhecer</string>
     <string name="Balance_Receive_WatchAddressAlert">This address is the address of the watched account</string>
     <string name="Balance_Receive_UsedAddresses">Used Addresses</string>
-    <string name="Balance_Receive_UsedAddressesDescriptoin">%s addresses change for privacy and security. Below a list of used addresses in this wallet.</string>
+    <string name="Balance_Receive_UsedAddressesDescriptoin">%1$s addresses change for privacy and security. Below a list of used addresses in this wallet.</string>
     <string name="Balance_Receive_ReceiveAddresses">Receive Addresses</string>
     <string name="Balance_Receive_ChangeAddresses">Change Addresses</string>
     <string name="receive_address_badge_new">Novo</string>
@@ -733,7 +733,7 @@
     <string name="SwapInfo_PriceImpactTitle">Impacto de preço</string>
     <string name="SwapInfo_PriceImpactDescription">O desvio de preço esperado de um valor mostrado, normalmente aumenta com o montante de swap.</string>
     <!--Deposit-->
-    <string name="Deposit_Title">Receber %s</string>
+    <string name="Deposit_Title">Receber %1$s</string>
     <!--Transactions-->
     <string name="Transactions_Title">Transações</string>
     <string name="Transactions_Hide">Transactions Hide</string>
@@ -1482,6 +1482,8 @@
     <string name="CoinPage_TimeDuration_Month">1M</string>
     <string name="CoinPage_TimeDuration_Year">1A</string>
     <string name="CoinPage_TimeDuration_All">Todas</string>
+    <string name="Timestamp_Today">Hoje</string>
+    <string name="Timestamp_Yesterday">Ontem</string>
     <string name="CoinPage_TradingVolume">Volume de Operações</string>
     <string name="CoinPage_Audits_PoweredBy">Desenvolvido por Defiyield.app</string>
     <string name="CoinPage_Audits_Issues">Problemas: %d</string>
@@ -2016,8 +2018,8 @@
     </plurals>
 
     <plurals name="staking_next_accrual_in_hours">
-        <item quantity="one">O próximo acúmulo será em %d hora</item>
-        <item quantity="other">O próximo acúmulo será em %d horas</item>
+        <item quantity="one">O próximo acúmulo será em %1$d hora</item>
+        <item quantity="other">O próximo acúmulo será em %1$d horas</item>
     </plurals>
     <string name="estimated_annual_interest">Juro anual estimado</string>
     <string name="accruals">Accruals</string>
@@ -2377,6 +2379,9 @@
     <string name="desktop_forgot_password_warning">As carteiras, contactos, configurações e histórico guardados neste computador serão eliminados. Os fundos na blockchain não são afetados: as carteiras só podem ser restauradas através das suas frases de recuperação.</string>
     <string name="desktop_forgot_password_action">Eliminar dados</string>
     <string name="desktop_forgot_password_failed">Não foi possível eliminar os dados</string>
+    <string name="desktop_wipe_restart_manually">Dados eliminados. Inicie a aplicação novamente</string>
+    <string name="desktop_restart_manually">Inicie a aplicação novamente</string>
+    <string name="platform_not_supported_yet">Ainda não suportado na versão para computador</string>
     <string name="desktop_change_password_title">Alterar senha</string>
     <string name="desktop_change_password_current_hint">Senha atual</string>
     <string name="desktop_change_password_new_hint">Nova senha</string>

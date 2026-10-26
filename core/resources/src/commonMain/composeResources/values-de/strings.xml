@@ -93,7 +93,7 @@
     <string name="trezor_connect_failed">Verbindung mit Trezor fehlgeschlagen.</string>
     <string name="hardware_connect_device_to_sync">Verbinden Sie das Gerät zur Synchronisierung</string>
     <string name="Button_Activate">Aktivieren</string>
-    <string name="activation_required_dialog_description">Um %s zu erhalten, müssen Sie den Token aktivieren. Das Stellar-Netzwerk verlangt für jeden Token eine Vertrauenslinie (Trustline). Ohne sie kann Ihre Wallet %s nicht empfangen — die Transaktion wird abgelehnt und die Gelder werden nicht zugestellt.</string>
+    <string name="activation_required_dialog_description">Um %1$s zu erhalten, müssen Sie den Token aktivieren. Das Stellar-Netzwerk verlangt für jeden Token eine Vertrauenslinie (Trustline). Ohne sie kann Ihre Wallet %2$s nicht empfangen — die Transaktion wird abgelehnt und die Gelder werden nicht zugestellt.</string>
     <string name="activate_you_activate">Sie aktivieren</string>
     <string name="activate_activating">Wird aktiviert</string>
     <string name="activate_already_active_title">Bereits aktiv</string>
@@ -405,7 +405,7 @@
     <string name="Balance_Error_InvalidQrCode">Konnte nicht erkannt werden</string>
     <string name="Balance_Receive_WatchAddressAlert">Diese Adresse ist die Adresse des überwachten Kontos</string>
     <string name="Balance_Receive_UsedAddresses">Verwendete Adressen</string>
-    <string name="Balance_Receive_UsedAddressesDescriptoin">%s Adressen werden aus Datenschutz- und Sicherheitsgründen geändert. Unten finden Sie eine Liste der verwendeten Adressen in diesem Wallet.</string>
+    <string name="Balance_Receive_UsedAddressesDescriptoin">%1$s Adressen werden aus Datenschutz- und Sicherheitsgründen geändert. Unten finden Sie eine Liste der verwendeten Adressen in diesem Wallet.</string>
     <string name="Balance_Receive_ReceiveAddresses">Empfängeraddressen</string>
     <string name="Balance_Receive_ChangeAddresses">Wechselgeldadressen</string>
     <string name="receive_address_badge_new">Neu</string>
@@ -726,7 +726,7 @@
     <string name="SwapInfo_PriceImpactTitle">Preisauswirkungen</string>
     <string name="SwapInfo_PriceImpactDescription">Erwartete Preisabweichung von einem angezeigten Preis, steigt normalerweise mit dem Tauschbetrag.</string>
     <!--Deposit-->
-    <string name="Deposit_Title">%s Anfordern</string>
+    <string name="Deposit_Title">%1$s Anfordern</string>
     <!--Transactions-->
     <string name="Transactions_Title">Transaktionen</string>
     <string name="Transactions_Hide">Transactions Hide</string>
@@ -1473,6 +1473,8 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="CoinPage_TimeDuration_Month">1M</string>
     <string name="CoinPage_TimeDuration_Year">1J</string>
     <string name="CoinPage_TimeDuration_All">Alle</string>
+    <string name="Timestamp_Today">Heute</string>
+    <string name="Timestamp_Yesterday">Gestern</string>
     <string name="CoinPage_TradingVolume">Handelsvolumen</string>
     <string name="CoinPage_Audits_PoweredBy">Angetrieben von Defiyield.app</string>
     <string name="CoinPage_Audits_Issues">Probleme: %d</string>
@@ -2008,8 +2010,8 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     </plurals>
 
     <plurals name="staking_next_accrual_in_hours">
-        <item quantity="one">Nächste Gutschrift erfolgt in %d Stunde</item>
-        <item quantity="other">Nächste Gutschrift erfolgt in %d Stunden</item>
+        <item quantity="one">Nächste Gutschrift erfolgt in %1$d Stunde</item>
+        <item quantity="other">Nächste Gutschrift erfolgt in %1$d Stunden</item>
     </plurals>
     <string name="estimated_annual_interest">Geschätzter Jahreszins</string>
     <string name="accruals">Accruals</string>
@@ -2368,6 +2370,9 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="desktop_forgot_password_warning">Die auf diesem Computer gespeicherten Wallets, Kontakte, Einstellungen und der Verlauf werden gelöscht. Die Gelder in der Blockchain sind nicht betroffen: Die Wallets können nur mit ihren Wiederherstellungsphrasen wiederhergestellt werden.</string>
     <string name="desktop_forgot_password_action">Daten löschen</string>
     <string name="desktop_forgot_password_failed">Die Daten konnten nicht gelöscht werden</string>
+    <string name="desktop_wipe_restart_manually">Daten gelöscht. Starten Sie die App erneut</string>
+    <string name="desktop_restart_manually">Starten Sie die App erneut</string>
+    <string name="platform_not_supported_yet">In der Desktop-Version noch nicht unterstützt</string>
     <string name="desktop_change_password_title">Passwort ändern</string>
     <string name="desktop_change_password_current_hint">Aktuelles Passwort</string>
     <string name="desktop_change_password_new_hint">Neues Passwort</string>

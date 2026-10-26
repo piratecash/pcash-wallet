@@ -69,12 +69,6 @@ object SendModule {
 }
 
 
-sealed class SendResult {
-    data object Sending : SendResult()
-    data class Sent(val recordUid: String? = null) : SendResult()
-    data class SentButQueued(val recordUid: String? = null) : SendResult()
-    class Failed(val caution: HSCaution) : SendResult()
-}
 
 object SendErrorFetchFeeRateFailed : HSCaution(
     TranslatableString.ResString(Res.string.Send_Error_FetchFeeRateFailed),

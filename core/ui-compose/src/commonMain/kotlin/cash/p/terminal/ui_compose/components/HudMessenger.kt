@@ -7,8 +7,11 @@ import org.jetbrains.compose.resources.DrawableResource
 interface HudMessenger {
     fun showSuccess(text: String, duration: SnackbarDuration = SnackbarDuration.SHORT)
     fun showSuccess(text: String, icon: DrawableResource)
+    fun showMessage(text: String, icon: DrawableResource, duration: SnackbarDuration)
+    fun showInProgress(text: String, duration: SnackbarDuration)
     fun showError(text: String)
-    fun showWarning(text: String)
+    fun showWarning(text: String, duration: SnackbarDuration = SnackbarDuration.SHORT)
+    fun showPremium(text: String, duration: SnackbarDuration)
     fun vibrate()
 }
 

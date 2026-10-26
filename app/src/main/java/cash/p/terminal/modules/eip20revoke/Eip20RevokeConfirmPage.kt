@@ -104,7 +104,7 @@ fun Eip20RevokeScreen(
                             buttonEnabled = false
                             HudHelper.showInProcessMessage(
                                 view,
-                                R.string.Swap_Revoking,
+                                view.context.getString(R.string.Swap_Revoking),
                                 SnackbarDuration.INDEFINITE
                             )
 
