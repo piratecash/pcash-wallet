@@ -2,6 +2,7 @@ package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.UnsupportedAccountException
 import cash.p.terminal.ledger.account.LedgerStellarSigner
+import cash.p.terminal.ledger.domain.LedgerAppAccess
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -40,6 +41,9 @@ import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import org.stellar.sdk.KeyPair
 import kotlin.test.assertFailsWith
 
@@ -58,6 +62,7 @@ class StellarKitManagerDatabaseTest {
 
     @Before
     fun setUp() {
+        startKoin { modules(module { single { mockk<LedgerAppAccess>(relaxed = true) } }) }
         mockkObject(StellarKit.Companion)
         coEvery { StellarKit.migrateDatabase(any(), any(), any(), any()) } returns DatabaseMigrationResult(0, 1)
         every { StellarKit.clear(any(), any(), any()) } returns Unit
@@ -84,6 +89,7 @@ class StellarKitManagerDatabaseTest {
             (scopeField.get(manager) as CoroutineScope).cancel()
         }
         unmockkAll()
+        stopKoin()
     }
 
     @Test
