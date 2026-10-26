@@ -59,7 +59,7 @@ class DesktopMainPageDesktopTest {
     @BeforeTest
     fun setUp() {
         Locale.setDefault(Locale.ENGLISH)
-        DesktopTestGraph.start()
+        DesktopTestGraph.startUnlocked()
         loadKoinModules(
             module {
                 single<IAccountManager> {
@@ -67,6 +67,7 @@ class DesktopMainPageDesktopTest {
                         every { activeAccountStateFlow } returns activeAccountState
                         every { accounts } answers { accountList.value }
                         every { accountsFlow } returns accountList
+                        every { newAccountBackupRequiredFlow } returns MutableStateFlow(null)
                     }
                 }
             }

@@ -1,0 +1,1162 @@
+package cash.p.terminal.ui.compose.components
+
+import cash.p.terminal.feature.wallet.WalletSendPages
+import cash.p.terminal.modules.manageaccount.ui.rememberCopyWithHud
+import cash.p.terminal.ui_compose.components.HudMessenger
+import cash.p.terminal.ui_compose.components.LocalUrlOpener
+import cash.p.terminal.ui_compose.components.openOrNotifyUnsupported
+import cash.p.terminal.ui_compose.components.rememberHudMessenger
+import cash.p.terminal.ui_compose.components.rememberTextShare
+import org.jetbrains.compose.resources.DrawableResource
+import org.koin.compose.koinInject
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import cash.p.terminal.core.managers.EvmKitWrapper
+import cash.p.terminal.modules.contacts.ContactsModule
+import cash.p.terminal.modules.contacts.ContactsPage
+import cash.p.terminal.modules.contacts.Mode
+import cash.p.terminal.modules.info.TransactionDoubleSpendInfoPage
+import cash.p.terminal.modules.info.TransactionLockTimeInfoPage
+import cash.p.terminal.modules.info.TransactionStatusInfoPage
+import cash.p.terminal.modules.offline.OperationAvailability
+import cash.p.terminal.modules.offline.rememberOfflineGatedAction
+import cash.p.terminal.modules.transactionInfo.AmountType
+import cash.p.terminal.modules.transactionInfo.TransactionInfoViewItem
+import cash.p.terminal.modules.transactionInfo.options.SpeedUpCancelType
+import cash.p.terminal.modules.transactions.AmlStatus
+import cash.p.terminal.modules.transactions.TransactionStatus
+import cash.p.terminal.modules.transactions.riskColor
+import cash.p.terminal.modules.transactions.riskTextRes
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.strings.helpers.shorten
+import cash.p.terminal.ui_compose.ColorName
+import cash.p.terminal.ui_compose.ColoredValue
+import cash.p.terminal.ui_compose.components.AppSelectorDialog
+import cash.p.terminal.ui_compose.components.AppSelectorItem
+import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
+import cash.p.terminal.ui_compose.components.ButtonSecondaryCustom
+import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
+import cash.p.terminal.ui_compose.components.HFillSpacer
+import cash.p.terminal.ui_compose.components.HSCircularProgressIndicator
+import cash.p.terminal.ui_compose.components.HSpacer
+import cash.p.terminal.ui_compose.components.HsCheckbox
+import cash.p.terminal.ui_compose.components.HsIconButton
+import cash.p.terminal.ui_compose.components.HsImage
+import cash.p.terminal.ui_compose.components.RowUniversal
+import cash.p.terminal.ui_compose.components.SectionUniversalLawrence
+import cash.p.terminal.modules.transactions.poison_status.CopyWarningBottomSheet
+import cash.p.terminal.modules.transactions.poison_status.SuspiciousAddressAction
+import cash.p.terminal.ui_compose.components.TextImportantError
+import cash.p.terminal.ui_compose.components.TextImportantWarning
+import cash.p.terminal.ui_compose.components.VSpacer
+import cash.p.terminal.ui_compose.components.body_brand
+import cash.p.terminal.ui_compose.components.body_leah
+import cash.p.terminal.ui_compose.components.body_lucian
+import cash.p.terminal.ui_compose.components.caption_grey
+import cash.p.terminal.ui_compose.components.subhead1_grey
+import cash.p.terminal.ui_compose.components.subhead1_brand
+import cash.p.terminal.ui_compose.components.subhead1_leah
+import cash.p.terminal.ui_compose.components.subhead1_lucian
+import cash.p.terminal.ui_compose.components.subhead1_remus
+import cash.p.terminal.ui_compose.components.subhead2_grey
+import cash.p.terminal.ui_compose.components.subhead2_brand
+import cash.p.terminal.ui_compose.components.subhead2_leah
+import cash.p.terminal.ui_compose.components.subhead2_lucian
+import cash.p.terminal.ui_compose.components.subhead2_remus
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.wallet.Wallet
+import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.core.helpers.DateHelper
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_attention_24
+import cash.p.terminal.resources.CoinPlatforms_Native
+import cash.p.terminal.resources.Contacts_AddAddress
+import cash.p.terminal.resources.Send_Rbf
+import cash.p.terminal.resources.Send_RbfDisabled
+import cash.p.terminal.resources.Send_RbfEnabled
+import cash.p.terminal.resources.TransactionInfo_Approved
+import cash.p.terminal.resources.TransactionInfo_ContactName
+import cash.p.terminal.resources.TransactionInfo_DoubleSpendNote
+import cash.p.terminal.resources.TransactionInfo_Id
+import cash.p.terminal.resources.TransactionInfo_RawTransaction
+import cash.p.terminal.resources.TransactionInfo_Received
+import cash.p.terminal.resources.TransactionInfo_Sent
+import cash.p.terminal.resources.TransactionInfo_SentToSelfNote
+import cash.p.terminal.resources.TransactionInfo_SpeedUp
+import cash.p.terminal.resources.TransactionInfo_Status
+import cash.p.terminal.resources.TransactionInfo_YouGot
+import cash.p.terminal.resources.TransactionInfo_YouSent
+import cash.p.terminal.resources.Transactions_Completed
+import cash.p.terminal.resources.Transactions_Failed
+import cash.p.terminal.resources.Transactions_Pending
+import cash.p.terminal.resources.Transactions_Processing
+import cash.p.terminal.resources.alpha_aml_title
+import cash.p.terminal.resources.beam_cancel_transaction
+import cash.p.terminal.resources.ic_arrow_medium2_up_24
+import cash.p.terminal.resources.ic_arrow_return_20
+import cash.p.terminal.resources.ic_arrow_right
+import cash.p.terminal.resources.ic_arrow_swap3_20
+import cash.p.terminal.resources.ic_attention_20
+import cash.p.terminal.resources.ic_checkmark_20
+import cash.p.terminal.resources.ic_copy_20
+import cash.p.terminal.resources.ic_double_spend_20
+import cash.p.terminal.resources.ic_info_20
+import cash.p.terminal.resources.ic_language
+import cash.p.terminal.resources.ic_outgoingraw_24
+import cash.p.terminal.resources.ic_share_20
+import cash.p.terminal.resources.ic_star_filled_20
+import cash.p.terminal.resources.icon_20_user_plus
+import cash.p.terminal.resources.poison_warning_body
+import cash.p.terminal.resources.poison_warning_title
+import cash.p.terminal.resources.send_poison_accept_risk
+
+@Composable
+fun SectionTitleCell(
+    title: String,
+    value: String,
+    iconResId: DrawableResource?
+) {
+    RowUniversal(
+        modifier = Modifier.padding(horizontal = 16.dp),
+    ) {
+        iconResId?.let {
+            Icon(
+                modifier = Modifier.padding(end = 16.dp),
+                painter = painterResource(iconResId),
+                tint = ComposeAppTheme.colors.iconSecondary,
+                contentDescription = null,
+            )
+        }
+
+        body_leah(text = title)
+
+        subhead1_grey(
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 8.dp),
+            text = value,
+            textAlign = TextAlign.End,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+fun WarningMessageCell(message: String) {
+    TextImportantWarning(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        text = message
+    )
+}
+
+@Composable
+fun PoisonWarningCell(
+    modifier: Modifier = Modifier,
+    onInfoClick: (() -> Unit)? = null,
+) {
+    TextImportantError(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        title = stringResource(Res.string.poison_warning_title),
+        icon = Res.drawable.ic_attention_24,
+        text = stringResource(Res.string.poison_warning_body),
+        onInfoClick = onInfoClick,
+    )
+}
+
+@Composable
+fun PoisonAddressRiskSection(
+    isPoisonAddress: Boolean,
+    riskAccepted: Boolean,
+    onRiskAcceptedChange: (Boolean) -> Unit,
+) {
+    if (isPoisonAddress) {
+        Spacer(modifier = Modifier.height(8.dp))
+        SectionUniversalLawrence {
+            RowUniversal(
+                modifier = Modifier.padding(horizontal = 16.dp),
+            ) {
+                HsCheckbox(
+                    checked = riskAccepted,
+                    onCheckedChange = onRiskAcceptedChange,
+                )
+                HSpacer(16.dp)
+                body_leah(
+                    text = stringResource(Res.string.send_poison_accept_risk),
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun DescriptionCell(text: String) {
+    subhead2_grey(
+        modifier = Modifier.padding(start = 32.dp, end = 32.dp, bottom = 12.dp),
+        text = text
+    )
+}
+
+@Composable
+fun TransactionNftAmountCell(
+    title: String,
+    amount: ColoredValue,
+    nftName: String?,
+    iconUrl: String?,
+    iconPlaceholder: DrawableResource?,
+    badge: String?,
+) {
+    RowUniversal(
+        modifier = Modifier.padding(horizontal = 16.dp),
+    ) {
+        HsImage(
+            url = iconUrl,
+            placeholder = iconPlaceholder,
+            modifier = Modifier
+                .size(32.dp)
+                .clip(RoundedCornerShape(CornerSize(4.dp)))
+        )
+        HSpacer(16.dp)
+        Column {
+            subhead2_leah(text = title)
+            VSpacer(height = 1.dp)
+            caption_grey(text = badge ?: stringResource(Res.string.CoinPlatforms_Native))
+        }
+        HSpacer(8.dp)
+        Column(
+            modifier = Modifier.weight(1f),
+            horizontalAlignment = Alignment.End
+        ) {
+            SubHead1ColoredValue(value = amount)
+            nftName?.let {
+                VSpacer(height = 1.dp)
+                subhead2_grey(
+                    text = it,
+                    textAlign = TextAlign.End,
+                    maxLines = 1,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun TransactionAmountCell(
+    amountType: AmountType,
+    fiatAmount: ColoredValue?,
+    coinAmount: ColoredValue,
+    coinIconUrl: String?,
+    alternativeCoinIconUrl: String?,
+    badge: String?,
+    coinIconPlaceholder: DrawableResource?,
+    onValueClick: () -> Unit,
+    onClick: (() -> Unit)? = null
+) {
+    val title = when (amountType) {
+        AmountType.YouSent -> stringResource(Res.string.TransactionInfo_YouSent)
+        AmountType.YouGot -> stringResource(Res.string.TransactionInfo_YouGot)
+        AmountType.Received -> stringResource(Res.string.TransactionInfo_Received)
+        AmountType.Sent -> stringResource(Res.string.TransactionInfo_Sent)
+        AmountType.Approved -> stringResource(Res.string.TransactionInfo_Approved)
+    }
+    RowUniversal(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        onClick = onClick
+    ) {
+        HsImage(
+            url = coinIconUrl,
+            alternativeUrl = alternativeCoinIconUrl,
+            placeholder = coinIconPlaceholder,
+            modifier = Modifier.size(32.dp)
+        )
+        HSpacer(16.dp)
+        Column {
+            subhead2_leah(text = title)
+            VSpacer(height = 1.dp)
+            caption_grey(text = badge ?: stringResource(Res.string.CoinPlatforms_Native))
+        }
+        HFillSpacer(minWidth = 8.dp)
+        Column(horizontalAlignment = Alignment.End) {
+            SubHead1ColoredValue(
+                value = coinAmount,
+                modifier = Modifier.clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onValueClick,
+                )
+            )
+            fiatAmount?.let {
+                VSpacer(height = 1.dp)
+                SubHead2ColoredValue(
+                    value = it,
+                    modifier = Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = onValueClick,
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun PriceWithToggleCell(
+    title: String,
+    valueOne: String,
+    valueTwo: String,
+) {
+    var showValueOne by remember { mutableStateOf(true) }
+
+    RowUniversal(
+        modifier = Modifier.padding(horizontal = 16.dp),
+    ) {
+        subhead2_grey(text = title, modifier = Modifier.padding(end = 16.dp))
+        subhead1_leah(
+            text = if (showValueOne) valueOne else valueTwo,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(1f)
+        )
+        HSpacer(8.dp)
+        HsIconButton(
+            onClick = {
+                showValueOne = !showValueOne
+            },
+            modifier = Modifier
+                .size(28.dp)
+                .clip(CircleShape),
+        ) {
+            Icon(
+                painter = painterResource(Res.drawable.ic_arrow_swap3_20),
+                contentDescription = null,
+                tint = ComposeAppTheme.colors.iconSecondary,
+            )
+        }
+    }
+}
+
+@Composable
+fun TransactionInfoAddressCell(
+    title: String,
+    value: String,
+    showAdd: Boolean,
+    blockchainType: BlockchainType?,
+    textAlign: TextAlign = TextAlign.End,
+    navigation: HSNavigation? = null,
+    onCopy: (() -> Unit)? = null,
+    onAddToExisting: (() -> Unit)? = null,
+    onAddToNew: (() -> Unit)? = null,
+    onValueClick: (() -> Unit)? = null,
+    showCopyWarning: Boolean = false,
+    collapseAddress: Boolean = false,
+    collapsedMaxLines: Int = 1,
+) {
+    val copyWithHud = rememberCopyWithHud()
+    var dialogState by remember { mutableStateOf<AddressDialogState>(AddressDialogState.Hidden) }
+    val copyAddress: () -> Unit = {
+        copyWithHud(value)
+        onCopy?.invoke()
+    }
+
+    TransactionInfoAddressRow(
+        title = title,
+        showAdd = showAdd,
+        onAddClick = {
+            dialogState = if (showCopyWarning) {
+                AddressDialogState.AddWarning
+            } else {
+                AddressDialogState.SaveAddress
+            }
+        },
+        onCopyClick = {
+            if (showCopyWarning) {
+                dialogState = AddressDialogState.CopyWarning
+            } else {
+                copyAddress()
+            }
+        },
+    ) {
+        ExpandableAddressValue(
+            text = value,
+            textAlign = textAlign,
+            onValueClick = onValueClick,
+            collapsible = collapseAddress,
+            collapsedMaxLines = collapsedMaxLines,
+            modifier = Modifier.weight(1f),
+        )
+    }
+    TransactionInfoAddressDialogs(
+        state = dialogState,
+        onCopyAddress = copyAddress,
+        onStateChange = { dialogState = it },
+    ) {
+        SaveAddressDialog(
+            value = value,
+            blockchainType = blockchainType,
+            navigation = navigation,
+            onAddToExisting = onAddToExisting,
+            onAddToNew = onAddToNew,
+            onDismiss = { dialogState = AddressDialogState.Hidden },
+        )
+    }
+}
+
+@Composable
+private fun TransactionInfoAddressRow(
+    title: String,
+    showAdd: Boolean,
+    onAddClick: () -> Unit,
+    onCopyClick: () -> Unit,
+    addressContent: @Composable RowScope.() -> Unit,
+) {
+    RowUniversal(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .animateContentSize(
+                animationSpec = tween(
+                    durationMillis = 1000,
+                    easing = LinearOutSlowInEasing
+                )
+            ),
+    ) {
+        subhead2_grey(text = title)
+
+        HSpacer(16.dp)
+        addressContent()
+
+        if (showAdd) {
+            HSpacer(16.dp)
+            ButtonSecondaryCircle(
+                icon = Res.drawable.icon_20_user_plus,
+                onClick = onAddClick,
+            )
+        }
+
+        HSpacer(16.dp)
+        ButtonSecondaryCircle(
+            icon = Res.drawable.ic_copy_20,
+            onClick = onCopyClick,
+        )
+    }
+}
+
+@Composable
+private fun TransactionInfoAddressDialogs(
+    state: AddressDialogState,
+    onCopyAddress: () -> Unit,
+    onStateChange: (AddressDialogState) -> Unit,
+    saveAddressDialog: @Composable () -> Unit,
+) {
+    when (state) {
+        AddressDialogState.Hidden -> {}
+
+        AddressDialogState.CopyWarning -> {
+            CopyWarningBottomSheet(
+                onCopyAnyway = {
+                    onStateChange(AddressDialogState.Hidden)
+                    onCopyAddress()
+                },
+                onDismiss = { onStateChange(AddressDialogState.Hidden) },
+            )
+        }
+
+        AddressDialogState.AddWarning -> {
+            CopyWarningBottomSheet(
+                action = SuspiciousAddressAction.ADD_TO_CONTACTS,
+                onCopyAnyway = {
+                    onStateChange(AddressDialogState.SaveAddress)
+                },
+                onDismiss = { onStateChange(AddressDialogState.Hidden) },
+            )
+        }
+
+        AddressDialogState.SaveAddress -> {
+            saveAddressDialog()
+        }
+    }
+}
+
+@Composable
+private fun SaveAddressDialog(
+    value: String,
+    blockchainType: BlockchainType?,
+    navigation: HSNavigation?,
+    onAddToExisting: (() -> Unit)?,
+    onAddToNew: (() -> Unit)?,
+    onDismiss: () -> Unit,
+) {
+    AppSelectorDialog(
+        title = stringResource(Res.string.Contacts_AddAddress),
+        items = ContactsModule.AddAddressAction.values().map {
+            AppSelectorItem(stringResource(it.title), false, it)
+        },
+        onDismiss = onDismiss,
+        onSelect = { action ->
+            blockchainType?.let {
+                val mode = when (action) {
+                    ContactsModule.AddAddressAction.AddToNewContact -> {
+                        onAddToNew?.invoke()
+                        Mode.AddAddressToNewContact(blockchainType, value)
+                    }
+
+                    ContactsModule.AddAddressAction.AddToExistingContact -> {
+                        onAddToExisting?.invoke()
+                        Mode.AddAddressToExistingContact(blockchainType, value)
+                    }
+                }
+                navigation?.slideFromRight(ContactsPage(ContactsPage.Input(mode)))
+            }
+        },
+    )
+}
+
+@Composable
+private fun ExpandableAddressValue(
+    text: String,
+    textAlign: TextAlign,
+    onValueClick: (() -> Unit)?,
+    collapsible: Boolean,
+    collapsedMaxLines: Int,
+    modifier: Modifier = Modifier,
+) {
+    var showFullAddress by remember(text) { mutableStateOf(false) }
+    val expanded = showFullAddress || !collapsible
+    val onClick = onValueClick ?: {
+        showFullAddress = !showFullAddress
+    }
+
+    subhead1_leah(
+        text = text,
+        textAlign = textAlign,
+        overflow = when {
+            expanded -> TextOverflow.Clip
+            // Android draws a middle ellipsis on single-line text only; multi-line would clip silently.
+            collapsedMaxLines > 1 -> TextOverflow.Ellipsis
+            else -> TextOverflow.MiddleEllipsis
+        },
+        maxLines = if (expanded) Int.MAX_VALUE else collapsedMaxLines,
+        modifier = modifier.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null,
+            onClick = onClick,
+        ),
+    )
+}
+
+private sealed interface AddressDialogState {
+    data object Hidden : AddressDialogState
+    data object CopyWarning : AddressDialogState
+    data object AddWarning : AddressDialogState
+    data object SaveAddress : AddressDialogState
+}
+
+@Composable
+fun TransactionInfoContactCell(name: String) {
+    RowUniversal(
+        modifier = Modifier.padding(horizontal = 16.dp),
+    ) {
+        subhead2_grey(text = stringResource(Res.string.TransactionInfo_ContactName))
+        HSpacer(16.dp)
+        subhead1_leah(
+            modifier = Modifier.weight(1f),
+            text = name,
+            textAlign = TextAlign.Right
+        )
+    }
+}
+
+@Composable
+fun TransactionInfoStatusCell(
+    status: TransactionStatus,
+    navigation: HSNavigation,
+    onPendingTap: (() -> Unit)? = null
+) {
+    RowUniversal(
+        modifier = Modifier.padding(horizontal = 16.dp),
+    ) {
+        subhead2_grey(
+            text = stringResource(Res.string.TransactionInfo_Status),
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        HsIconButton(
+            modifier = Modifier.size(20.dp),
+            onClick = {
+                navigation.slideFromBottom(TransactionStatusInfoPage())
+            }
+        ) {
+            Image(
+                painter = painterResource(Res.drawable.ic_info_20),
+                contentDescription = null
+            )
+        }
+        Spacer(
+            Modifier
+                .weight(1f)
+                .defaultMinSize(minWidth = 8.dp)
+        )
+        subhead1_leah(
+            text = stringResource(statusTitle(status)),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(end = 8.dp)
+                .clickable(
+                    enabled = status == TransactionStatus.Pending,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onPendingTap ?: { }
+                )
+        )
+
+        when (status) {
+            TransactionStatus.Completed -> {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_checkmark_20),
+                    contentDescription = null,
+                    tint = ComposeAppTheme.colors.statusSuccess
+                )
+            }
+
+            TransactionStatus.Failed -> {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_attention_20),
+                    contentDescription = null,
+                    tint = ComposeAppTheme.colors.statusError
+                )
+            }
+
+            TransactionStatus.Pending -> {
+                HSCircularProgressIndicator(progress = 0.15f, size = 20.dp)
+            }
+
+            is TransactionStatus.Processing -> {
+                HSCircularProgressIndicator(progress = status.progress, size = 20.dp)
+            }
+        }
+    }
+}
+
+@Composable
+fun TransactionInfoOfflineStatusCell(
+    status: ColoredValue,
+    navigation: HSNavigation,
+    modifier: Modifier = Modifier,
+) {
+    RowUniversal(
+        modifier = modifier.padding(horizontal = 16.dp),
+    ) {
+        subhead2_grey(
+            text = stringResource(Res.string.TransactionInfo_Status),
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        HsIconButton(
+            modifier = Modifier.size(20.dp),
+            onClick = {
+                navigation.slideFromBottom(TransactionStatusInfoPage())
+            }
+        ) {
+            Image(
+                painter = painterResource(Res.drawable.ic_info_20),
+                contentDescription = null
+            )
+        }
+        Spacer(
+            Modifier
+                .weight(1f)
+                .defaultMinSize(minWidth = 8.dp)
+        )
+        subhead1_leah(
+            text = status.value,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(end = 8.dp)
+        )
+        Icon(
+            painter = painterResource(Res.drawable.ic_attention_20),
+            contentDescription = null,
+            tint = status.color.compose(),
+        )
+    }
+}
+
+@Composable
+fun TransactionInfoSpeedUpCell(
+    transactionHash: String,
+    blockchainType: BlockchainType,
+    availability: OperationAvailability,
+    wallet: Wallet?,
+    evmKitWrapper: EvmKitWrapper?,
+    navigation: HSNavigation
+) {
+    val offlineGatedAction = rememberOfflineGatedAction(wallet)
+    val sendPages = koinInject<WalletSendPages>()
+    val hud = rememberHudMessenger()
+
+    RowUniversal(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        onClick = {
+            offlineGatedAction.onClick(availability) {
+                navigation.openTransactionOptions(
+                    SpeedUpCancelType.SpeedUp,
+                    transactionHash,
+                    blockchainType,
+                    evmKitWrapper,
+                    sendPages,
+                    hud,
+                )
+            }
+        }
+    ) {
+        Icon(
+            painter = painterResource(Res.drawable.ic_arrow_medium2_up_24),
+            contentDescription = null,
+            tint = ComposeAppTheme.colors.brandDefault
+        )
+        Spacer(Modifier.width(16.dp))
+        body_brand(text = stringResource(Res.string.TransactionInfo_SpeedUp))
+    }
+
+    offlineGatedAction.Sheet()
+}
+
+@Composable
+fun TransactionInfoBeamCancelCell(
+    availability: OperationAvailability,
+    wallet: Wallet?,
+    onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val offlineGatedAction = rememberOfflineGatedAction(wallet)
+
+    RowUniversal(
+        modifier = modifier.padding(horizontal = 16.dp),
+        onClick = { offlineGatedAction.onClick(availability, onCancel) }
+    ) {
+        Icon(
+            painter = painterResource(Res.drawable.ic_outgoingraw_24),
+            contentDescription = null,
+            tint = ComposeAppTheme.colors.statusError
+        )
+        Spacer(Modifier.width(16.dp))
+        body_lucian(text = stringResource(Res.string.beam_cancel_transaction))
+    }
+
+    offlineGatedAction.Sheet()
+}
+
+@Composable
+fun TransactionInfoRbfCell(
+    rbfEnabled: Boolean
+) {
+    RowUniversal {
+        subhead2_grey(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            text = stringResource(Res.string.Send_Rbf),
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        val enabledText = if (rbfEnabled) {
+            stringResource(Res.string.Send_RbfEnabled)
+        } else {
+            stringResource(Res.string.Send_RbfDisabled)
+        }
+        subhead1_leah(text = enabledText)
+        Spacer(modifier = Modifier.width(16.dp))
+    }
+}
+
+
+@Composable
+fun TransactionInfoTransactionHashCell(transactionHash: String) {
+    val copyWithHud = rememberCopyWithHud()
+    val textShare = rememberTextShare()
+
+    RowUniversal(
+        modifier = Modifier.padding(horizontal = 16.dp),
+    ) {
+        subhead2_grey(
+            text = stringResource(Res.string.TransactionInfo_Id),
+            modifier = Modifier.padding(end = 16.dp)
+        )
+        Row(
+            modifier = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            ButtonSecondaryDefault(
+                title = transactionHash.shorten(),
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .height(28.dp),
+                overflow = TextOverflow.MiddleEllipsis,
+                onClick = { copyWithHud(transactionHash) }
+            )
+            if (textShare.isAvailable) {
+                Spacer(modifier = Modifier.width(8.dp))
+                ButtonSecondaryCircle(
+                    icon = Res.drawable.ic_share_20,
+                    onClick = { textShare.share(transactionHash) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun TransactionInfoExplorerCell(
+    title: String,
+    url: String,
+    iconResId: DrawableResource = Res.drawable.ic_language,
+) {
+    val urlOpener = LocalUrlOpener.current
+    RowUniversal(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        onClick = { urlOpener.open(url) }
+    ) {
+        Image(
+            modifier = Modifier.size(20.dp),
+            painter = painterResource(iconResId),
+            contentDescription = null,
+        )
+        body_leah(
+            text = title,
+            maxLines = 1,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+        Spacer(Modifier.weight(1f))
+        Image(
+            modifier = Modifier.size(20.dp),
+            painter = painterResource(Res.drawable.ic_arrow_right),
+            contentDescription = null,
+        )
+    }
+}
+
+@Composable
+fun TransactionInfoRawTransaction(rawTransaction: () -> String?) {
+    val copyWithHud = rememberCopyWithHud()
+    RowUniversal(
+        modifier = Modifier.padding(horizontal = 16.dp),
+    ) {
+        subhead2_grey(
+            text = stringResource(Res.string.TransactionInfo_RawTransaction),
+            modifier = Modifier.padding(end = 16.dp)
+        )
+        Spacer(Modifier.weight(1f))
+        ButtonSecondaryCircle(
+            icon = Res.drawable.ic_copy_20,
+            onClick = {
+                rawTransaction()?.let(copyWithHud)
+            }
+        )
+    }
+}
+
+@Composable
+fun TransactionInfoBtcLockCell(
+    lockState: TransactionInfoViewItem.LockState,
+    navigation: HSNavigation
+) {
+    RowUniversal(
+        modifier = Modifier.padding(horizontal = 16.dp),
+    ) {
+        Icon(
+            modifier = Modifier.padding(end = 16.dp),
+            painter = painterResource(lockState.leftIcon),
+            tint = ComposeAppTheme.colors.iconSecondary,
+            contentDescription = null,
+        )
+        subhead2_grey(text = lockState.title, modifier = Modifier.padding(end = 16.dp))
+        Spacer(modifier = Modifier.weight(1f))
+        if (lockState.showLockInfo) {
+            HsIconButton(
+                modifier = Modifier.size(20.dp),
+                onClick = {
+                    val lockTime = DateHelper.getFullDate(lockState.date)
+
+                    navigation.slideFromBottom(
+                        TransactionLockTimeInfoPage(TransactionLockTimeInfoPage.Input(lockTime))
+                    )
+                }
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_info_20),
+                    tint = ComposeAppTheme.colors.iconSecondary,
+                    contentDescription = null,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun TransactionInfoDoubleSpendCell(
+    transactionHash: String,
+    conflictingHash: String,
+    navigation: HSNavigation
+) {
+    RowUniversal(
+        modifier = Modifier.padding(horizontal = 16.dp),
+    ) {
+        Icon(
+            modifier = Modifier.padding(end = 16.dp),
+            painter = painterResource(Res.drawable.ic_double_spend_20),
+            tint = ComposeAppTheme.colors.iconSecondary,
+            contentDescription = null,
+        )
+        subhead2_grey(
+            text = stringResource(Res.string.TransactionInfo_DoubleSpendNote),
+            modifier = Modifier.padding(end = 16.dp)
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        HsIconButton(
+            modifier = Modifier.size(20.dp),
+            onClick = {
+                navigation.slideFromBottom(
+                    TransactionDoubleSpendInfoPage(
+                        TransactionDoubleSpendInfoPage.Input(
+                            transactionHash,
+                            conflictingHash
+                        )
+                    )
+                )
+            }
+        ) {
+            Icon(
+                painter = painterResource(Res.drawable.ic_info_20),
+                tint = ComposeAppTheme.colors.iconSecondary,
+                contentDescription = null,
+            )
+        }
+
+    }
+}
+
+@Composable
+fun TransactionInfoSentToSelfCell() {
+    RowUniversal(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+    ) {
+        Icon(
+            modifier = Modifier.padding(end = 16.dp),
+            painter = painterResource(Res.drawable.ic_arrow_return_20),
+            tint = ComposeAppTheme.colors.iconSecondary,
+            contentDescription = null,
+        )
+        subhead2_grey(text = stringResource(Res.string.TransactionInfo_SentToSelfNote))
+    }
+}
+
+@Composable
+fun TransactionInfoCell(title: String, value: String) {
+    RowUniversal(
+        modifier = Modifier.padding(horizontal = 16.dp),
+    ) {
+        subhead2_grey(text = title)
+        HSpacer(16.dp)
+        subhead1_leah(
+            modifier = Modifier.weight(1f),
+            text = value,
+            textAlign = TextAlign.Right
+        )
+    }
+}
+
+@Composable
+fun TransactionInfoAmlCheckCell(
+    status: AmlStatus,
+    onInfoClick: () -> Unit,
+    onRiskClick: () -> Unit
+) {
+    RowUniversal(
+        modifier = Modifier.padding(horizontal = 16.dp),
+    ) {
+        Icon(
+            painter = painterResource(Res.drawable.ic_star_filled_20),
+            contentDescription = null,
+            tint = ComposeAppTheme.colors.statusWarning,
+            modifier = Modifier.size(20.dp)
+        )
+        HSpacer(16.dp)
+        subhead2_grey(text = stringResource(Res.string.alpha_aml_title))
+        HSpacer(8.dp)
+        HsIconButton(
+            modifier = Modifier.size(20.dp),
+            onClick = onInfoClick
+        ) {
+            Icon(
+                painter = painterResource(Res.drawable.ic_info_20),
+                contentDescription = null,
+                tint = ComposeAppTheme.colors.iconSecondary
+            )
+        }
+        Spacer(Modifier.weight(1f))
+        when (status) {
+            AmlStatus.Loading -> {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    strokeWidth = 2.dp,
+                    color = ComposeAppTheme.colors.textSecondary
+                )
+            }
+
+            else -> {
+                ButtonSecondaryCustom(
+                    modifier = Modifier.height(28.dp),
+                    title = stringResource(status.riskTextRes),
+                    textColor = status.riskColor(),
+                    onClick = onRiskClick
+                )
+            }
+        }
+    }
+}
+
+private fun HSNavigation.openTransactionOptions(
+    type: SpeedUpCancelType,
+    transactionHash: String,
+    blockchainType: BlockchainType,
+    evmKitWrapper: EvmKitWrapper?,
+    sendPages: WalletSendPages,
+    hud: HudMessenger,
+) {
+    when (blockchainType) {
+        BlockchainType.Bitcoin,
+        BlockchainType.BitcoinCash,
+        BlockchainType.ECash,
+        BlockchainType.Litecoin,
+        BlockchainType.Dogecoin,
+        BlockchainType.Cosanta,
+        BlockchainType.PirateCash,
+        BlockchainType.Dash -> {
+            openOrNotifyUnsupported(sendPages.resendBitcoin(type), hud)
+        }
+
+        BlockchainType.Ethereum,
+        BlockchainType.BinanceSmartChain,
+        BlockchainType.Polygon,
+        BlockchainType.Avalanche,
+        BlockchainType.Optimism,
+        BlockchainType.Base,
+        BlockchainType.ZkSync,
+        BlockchainType.ArbitrumOne -> {
+            evmKitWrapper?.let {
+                openOrNotifyUnsupported(sendPages.speedUpCancel(blockchainType, type, transactionHash, it), hud)
+            }
+        }
+
+        BlockchainType.Zcash,
+        BlockchainType.Solana,
+        BlockchainType.Gnosis,
+        BlockchainType.Fantom,
+        BlockchainType.RobinhoodChain,
+        BlockchainType.Monero,
+        BlockchainType.Tron,
+        BlockchainType.Ton,
+        BlockchainType.Stellar,
+        BlockchainType.Thorchain,
+        BlockchainType.Mayachain,
+        BlockchainType.Beam,
+        is BlockchainType.Unsupported -> Unit
+    }
+}
+
+private fun statusTitle(status: TransactionStatus) = when (status) {
+    TransactionStatus.Completed -> Res.string.Transactions_Completed
+    TransactionStatus.Failed -> Res.string.Transactions_Failed
+    TransactionStatus.Pending -> Res.string.Transactions_Pending
+    is TransactionStatus.Processing -> Res.string.Transactions_Processing
+}
+
+@Composable
+private fun SubHead2ColoredValue(value: ColoredValue, modifier: Modifier = Modifier) {
+    when (value.color) {
+        ColorName.Remus -> {
+            subhead2_remus(text = value.value, modifier = modifier)
+        }
+
+        ColorName.Lucian -> {
+            subhead2_lucian(text = value.value, modifier = modifier)
+        }
+
+        ColorName.Secondary -> {
+            subhead2_grey(text = value.value, modifier = modifier)
+        }
+
+        ColorName.Primary -> {
+            subhead2_leah(text = value.value, modifier = modifier)
+        }
+
+        ColorName.Brand -> {
+            subhead2_brand(text = value.value, modifier = modifier)
+        }
+    }
+}
+
+
+@Composable
+private fun SubHead1ColoredValue(value: ColoredValue, modifier: Modifier = Modifier) {
+    when (value.color) {
+        ColorName.Remus -> {
+            subhead1_remus(text = value.value, modifier = modifier)
+        }
+
+        ColorName.Lucian -> {
+            subhead1_lucian(text = value.value, modifier = modifier)
+        }
+
+        ColorName.Secondary -> {
+            subhead1_grey(text = value.value, modifier = modifier)
+        }
+
+        ColorName.Primary -> {
+            subhead2_leah(text = value.value, modifier = modifier)
+        }
+
+        ColorName.Brand -> {
+            subhead1_brand(text = value.value, modifier = modifier)
+        }
+    }
+}
+
+
+

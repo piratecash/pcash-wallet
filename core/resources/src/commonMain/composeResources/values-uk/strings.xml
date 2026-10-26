@@ -356,7 +356,7 @@
     <string name="Balance_Error_InvalidQrCode">Не вдалося розпізнати</string>
     <string name="Balance_Receive_WatchAddressAlert">Ця адреса є адресою спостережуваного акаунта</string>
     <string name="Balance_Receive_UsedAddresses">Використані адреси</string>
-    <string name="Balance_Receive_UsedAddressesDescriptoin">%s адреси змінюються для підвищення конфіденційності та безпеки. Нижче наведено список використаних адрес у цьому гаманці.</string>
+    <string name="Balance_Receive_UsedAddressesDescriptoin">%1$s адреси змінюються для підвищення конфіденційності та безпеки. Нижче наведено список використаних адрес у цьому гаманці.</string>
     <string name="Balance_Receive_ReceiveAddresses">Адреси для отримання</string>
     <string name="Balance_Receive_ChangeAddresses">Адреса-решта</string>
     <string name="receive_address_badge_new">Новий</string>
@@ -680,7 +680,7 @@
     <string name="SwapInfo_PriceImpactTitle">Відхилення від рин. ціни</string>
     <string name="SwapInfo_PriceImpactDescription">Очікуване відхилення ціни від зазначеної ціни, зазвичай збільшується при збільшенні суми обміну.</string>
     <!--Deposit-->
-    <string name="Deposit_Title">Отримати %s</string>
+    <string name="Deposit_Title">Отримати %1$s</string>
     <!--Transactions-->
     <string name="Transactions_Title">Транзакції</string>
     <string name="Transactions_Hide">Приховування транзакцій</string>
@@ -1455,6 +1455,8 @@
     <string name="CoinPage_TimeDuration_Month">1М</string>
     <string name="CoinPage_TimeDuration_Year">1Р</string>
     <string name="CoinPage_TimeDuration_All">Все</string>
+    <string name="Timestamp_Today">Сьогодні</string>
+    <string name="Timestamp_Yesterday">Вчора</string>
     <string name="CoinPage_TradingVolume">Обсяг торгівлі</string>
     <string name="CoinPage_Audits_PoweredBy">За підтримки Defiyield.app</string>
     <string name="CoinPage_Audits_Issues">Запити: %d</string>
@@ -1864,10 +1866,10 @@
     </plurals>
 
     <plurals name="staking_next_accrual_in_hours">
-        <item quantity="one">Наступне нарахування буде через %d годину</item>
-        <item quantity="few">Наступне нарахування буде через %d години</item>
-        <item quantity="many">Наступне нарахування буде через %d годин</item>
-        <item quantity="other">Наступне нарахування буде через %d години</item>
+        <item quantity="one">Наступне нарахування буде через %1$d годину</item>
+        <item quantity="few">Наступне нарахування буде через %1$d години</item>
+        <item quantity="many">Наступне нарахування буде через %1$d годин</item>
+        <item quantity="other">Наступне нарахування буде через %1$d години</item>
     </plurals>
     <string name="estimated_annual_interest">Передбачуваний річний відсоток</string>
     <string name="accruals">Нарахування</string>
@@ -2004,7 +2006,7 @@
     <string name="SwapWarning_SlippageNotApplicable_Title">Прослизання не застосовується.</string>
     <string name="Fee_OutboundFee">Комісія за виведення</string>
     <string name="ActivationRequired_DialogTitle">Активувати токен</string>
-    <string name="activation_required_dialog_description">Щоб отримати %s, необхідно активувати токен. Мережа Stellar вимагає встановлення довірчої лінії (trustline) для кожного токена. Без неї ваш гаманець не зможе прийняти %s — транзакція буде відхилена, і кошти не будуть доставлені.</string>
+    <string name="activation_required_dialog_description">Щоб отримати %1$s, необхідно активувати токен. Мережа Stellar вимагає встановлення довірчої лінії (trustline) для кожного токена. Без неї ваш гаманець не зможе прийняти %2$s — транзакція буде відхилена, і кошти не будуть доставлені.</string>
     <string name="activate_you_activate">Ви активуєте</string>
     <string name="activate_activating">Активація</string>
     <string name="activate_already_active_title">Вже активовано</string>
@@ -2349,6 +2351,7 @@
     <string name="send_trezor_mweb_not_supported">Trezor не підтримує MWEB. Надішліть Litecoin на звичайну (не MWEB) адресу.</string>
     <string name="send_trezor_time_lock_not_supported">Trezor не підтримує транзакції з часовим блокуванням.</string>
     <string name="send_trezor_zcash_memo_not_supported">Trezor не може додати memo до транзакції Zcash. Видаліть memo, щоб продовжити.</string>
+    <string name="send_memo_too_long">Memo занадто довге: %1$d із %2$d байт</string>
     <string name="send_trezor_zcash_transparent_only">Trezor може надсилати Zcash лише на прозорі адреси.</string>
     <string name="send_trezor_zcash_unified_no_transparent_receiver">Ця unified-адреса не містить прозорого отримувача, тому Trezor не може надіслати на неї переказ.</string>
     <string name="send_trezor_zcash_firmware_required">%1$s потребує прошивку %2$s або новішу для надсилання на unified-адреси Zcash. Оновіть пристрій і спробуйте ще раз — версія прошивки буде перевірена знову під час наступної транзакції Zcash.</string>
@@ -2482,6 +2485,9 @@
     <string name="desktop_forgot_password_warning">Гаманці, контакти, налаштування та історія, що зберігаються на цьому комп\u0027ютері, будуть видалені. Кошти в блокчейні не постраждають: гаманці можна відновити лише за фразами відновлення.</string>
     <string name="desktop_forgot_password_action">Видалити дані</string>
     <string name="desktop_forgot_password_failed">Не вдалося видалити дані</string>
+    <string name="desktop_wipe_restart_manually">Дані видалено. Запустіть застосунок знову</string>
+    <string name="desktop_restart_manually">Запустіть застосунок знову</string>
+    <string name="platform_not_supported_yet">Поки що не підтримується в настільній версії</string>
     <string name="desktop_change_password_title">Змінити пароль</string>
     <string name="desktop_change_password_current_hint">Поточний пароль</string>
     <string name="desktop_change_password_new_hint">Новий пароль</string>

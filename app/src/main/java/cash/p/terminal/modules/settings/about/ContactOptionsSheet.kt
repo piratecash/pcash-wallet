@@ -15,7 +15,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
-import cash.p.terminal.core.providers.AppConfigProvider
+import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.navigation.HSBottomSheet
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.navigateUpSafely
@@ -41,7 +41,7 @@ class ContactOptionsSheet(val input: Input?) : HSBottomSheet() {
 
     private fun defaultInput() = Input(
         titleRes = R.string.SettingsContact_Title,
-        email = AppConfigProvider.reportEmail,
+        email = SharedAppConfig.reportEmail,
         telegramUrl = Translator.getString(R.string.telegram_link)
     )
 

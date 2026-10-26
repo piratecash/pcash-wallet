@@ -1,0 +1,167 @@
+package cash.p.terminal.core.adapters
+
+import cash.p.terminal.core.ICoinManager
+import cash.p.terminal.core.INativeBalanceProvider
+import cash.p.terminal.core.managers.EvmLabelManager
+import cash.p.terminal.core.managers.StackingManager
+import cash.p.terminal.data.repository.EvmTransactionRepository
+import cash.p.terminal.entities.transactionrecords.TransactionRecord
+import cash.p.terminal.wallet.AdapterState
+import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.Wallet
+import cash.p.terminal.wallet.entities.BalanceData
+import cash.p.terminal.wallet.isStakingWallet
+import io.horizontalsystems.erc20kit.core.Erc20Kit
+import io.horizontalsystems.ethereumkit.models.Address
+import io.horizontalsystems.ethereumkit.models.DefaultBlockParameter
+import io.horizontalsystems.ethereumkit.models.TransactionData
+import io.reactivex.Single
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.reactive.asFlow
+import java.math.BigDecimal
+import java.math.BigInteger
+
+class Eip20Adapter(
+    private val eip20Kit: Erc20Kit,
+    evmTransactionRepository: EvmTransactionRepository,
+    contractAddress: String,
+    baseToken: Token,
+    coinManager: ICoinManager,
+    private val wallet: Wallet,
+    evmLabelManager: EvmLabelManager,
+    private val stackingManager: StackingManager,
+    coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
+) : BaseEvmAdapter(evmTransactionRepository, wallet.decimal, coinManager), INativeBalanceProvider {
+
+    private val transactionConverter = EvmTransactionConverter(
+        coinManager = coinManager,
+        evmTransactionRepository = evmTransactionRepository,
+        source = wallet.transactionSource,
+        baseToken = baseToken,
+        evmLabelManager = evmLabelManager
+    )
+
+    private val contractAddress: Address = Address(contractAddress)
+
+    suspend fun pendingTransactions(): List<TransactionRecord> =
+        eip20Kit.getPendingTransactions().map { transactionConverter.transactionRecord(it) }
+
+    private val scope = CoroutineScope(SupervisorJob() + coroutineDispatcher)
+    private var balanceSubscriptionJob: Job? = null
+
+    // IAdapter
+
+    override fun attachLocalData() = Unit
+
+    override fun resumeNetwork() {
+        // started via EthereumKitManager
+        if (!wallet.isStakingWallet()) return
+        refreshStaking()
+        balanceSubscriptionJob?.cancel()
+        balanceSubscriptionJob = scope.launch {
+            eip20Kit.balanceFlowable.asFlow().collect { refreshStaking() }
+        }
+    }
+
+    override fun pauseNetwork() {
+        balanceSubscriptionJob?.cancel()
+        balanceSubscriptionJob = null
+    }
+
+    override fun stop() {
+        pauseNetwork()
+        // stopped via EthereumKitManager
+    }
+
+    override suspend fun refresh() {
+        eip20Kit.refresh()
+        if (wallet.isStakingWallet()) refreshStaking(forceRefresh = true)
+    }
+
+    private fun refreshStaking(forceRefresh: Boolean = false) {
+        stackingManager.loadInvestmentData(
+            wallet = wallet,
+            address = receiveAddress,
+            currentBalance = balanceData.available,
+            forceRefresh = forceRefresh,
+        )
+    }
+
+    // IBalanceAdapter
+
+    override val balanceState: AdapterState
+        get() = eip20Kit.syncState.toAdapterState()
+
+    override val balanceStateUpdatedFlow: Flow<Unit>
+        get() = merge(
+            eip20Kit.syncStateFlowable.asFlow().map { },
+            stackingManager.unpaidFlow(wallet).filterNotNull().map { }
+        )
+
+    override val balanceData: BalanceData
+        get() = BalanceData(
+            available = balanceInBigDecimal(eip20Kit.balance, decimal),
+            stackingUnpaid = stackingManager.unpaidFor(wallet)
+        )
+
+    override val balanceUpdatedFlow: Flow<Unit>
+        get() = merge(
+            eip20Kit.balanceFlowable.asFlow(),
+            stackingManager.unpaidFlow(wallet).filterNotNull()
+        ).map { }
+
+    // ISendEthereumAdapter
+
+    // For ERC-20 tokens, fee is paid in native token, not the token itself
+    override val fee: StateFlow<BigDecimal> = MutableStateFlow(BigDecimal.ZERO)
+
+    // INativeBalanceProvider
+
+    override val nativeBalanceData: BalanceData
+        get() = BalanceData(balanceInBigDecimal(evmTransactionRepository.accountState?.balance, EvmAdapter.decimal))
+
+    override val nativeBalanceUpdatedFlow: Flow<Unit>
+        get() = evmTransactionRepository.accountStateFlowable.map { }.asFlow()
+
+    override fun getTransactionData(amount: BigDecimal, address: Address): TransactionData {
+        val amountBigInt = amount.movePointRight(decimal).toBigInteger()
+        return eip20Kit.buildTransferTransactionData(address, amountBigInt)
+    }
+
+
+    fun allowance(
+        spenderAddress: Address,
+        defaultBlockParameter: DefaultBlockParameter
+    ): Single<BigDecimal> {
+        return eip20Kit.getAllowanceAsync(spenderAddress, defaultBlockParameter)
+            .map {
+                scaleDown(it.toBigDecimal())
+            }
+    }
+
+    fun buildRevokeTransactionData(spenderAddress: Address): TransactionData {
+        return eip20Kit.buildApproveTransactionData(spenderAddress, BigInteger.ZERO)
+    }
+
+    fun buildApproveTransactionData(spenderAddress: Address, amount: BigDecimal): TransactionData {
+        val amountBigInt = amount.movePointRight(decimal).toBigInteger()
+        return eip20Kit.buildApproveTransactionData(spenderAddress, amountBigInt)
+    }
+
+    fun buildApproveUnlimitedTransactionData(spenderAddress: Address): TransactionData {
+        val max = BigInteger.ONE.shiftLeft(256).subtract(BigInteger.ONE)
+        return eip20Kit.buildApproveTransactionData(spenderAddress, max)
+    }
+
+}

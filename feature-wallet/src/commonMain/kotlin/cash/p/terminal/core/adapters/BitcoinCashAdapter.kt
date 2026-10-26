@@ -1,0 +1,265 @@
+package cash.p.terminal.core.adapters
+
+import cash.p.terminal.core.IFeeRateProvider
+import cash.p.terminal.core.ISendBitcoinAdapter
+import cash.p.terminal.core.UnsupportedAccountException
+import cash.p.terminal.core.bitcoinCashCoinType
+import cash.p.terminal.core.managers.BitcoinKitEnvironment
+import cash.p.terminal.wallet.entities.UsedAddress
+import cash.p.terminal.core.kitCoinType
+import cash.p.terminal.entities.transactionrecords.TransactionRecord
+import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.Wallet
+import io.horizontalsystems.bitcoincash.BitcoinCashKit
+import io.horizontalsystems.bitcoincash.BitcoinCashKit.NetworkType
+import io.horizontalsystems.bitcoincash.MainNetBitcoinCash
+import io.horizontalsystems.bitcoincore.BitcoinCore
+import io.horizontalsystems.bitcoincore.models.BalanceInfo
+import io.horizontalsystems.bitcoincore.models.BlockInfo
+import io.horizontalsystems.bitcoincore.models.TransactionInfo
+import io.horizontalsystems.core.IBackgroundManager
+import io.horizontalsystems.core.entities.BlockchainType
+import cash.p.terminal.wallet.entities.TokenType
+import kotlinx.coroutines.launch
+
+class BitcoinCashAdapter(
+    override val kit: BitcoinCashKit,
+    syncMode: BitcoinCore.SyncMode,
+    backgroundManager: IBackgroundManager,
+    wallet: Wallet,
+    feeRateProvider: IFeeRateProvider? = null
+) : BitcoinBaseAdapter(
+    kit, syncMode, backgroundManager, wallet, DISPLAY_CONFIRMATIONS_THRESHOLD, feeRateProvider = feeRateProvider
+), BitcoinCashKit.Listener, ISendBitcoinAdapter {
+
+    constructor(
+        wallet: Wallet,
+        syncMode: BitcoinCore.SyncMode,
+        backgroundManager: IBackgroundManager,
+        addressType: TokenType.AddressType,
+        environment: BitcoinKitEnvironment,
+        feeRateProvider: IFeeRateProvider? = null
+    ) : this(
+        createKit(wallet, syncMode, addressType, environment),
+        syncMode,
+        backgroundManager,
+        wallet,
+        feeRateProvider,
+    )
+
+    init {
+        kit.listener = this
+    }
+
+    //
+    // BitcoinCashKit Listener
+    //
+
+    override val explorerTitle: String
+        get() = "blockchair.com"
+
+    override fun getTransactionUrl(transactionHash: String): String =
+        "https://blockchair.com/bitcoin-cash/transaction/$transactionHash"
+
+    override fun onBalanceUpdate(balance: BalanceInfo) {
+        scope.launch {
+            estimateFeeForMax()
+            balanceUpdatedSubject.onNext(Unit)
+        }
+    }
+
+    override fun onLastBlockInfoUpdate(blockInfo: BlockInfo) {
+        lastBlockUpdatedSubject.onNext(Unit)
+    }
+
+    override fun onKitStateUpdate(state: BitcoinCore.KitState) {
+        setState(state)
+    }
+
+    override fun onTransactionsUpdate(inserted: List<TransactionInfo>, updated: List<TransactionInfo>) {
+        val records = mutableListOf<TransactionRecord>()
+
+        for (info in inserted) {
+            records.add(transactionRecord(info))
+        }
+
+        for (info in updated) {
+            records.add(transactionRecord(info))
+        }
+
+        transactionRecordsSubject.onNext(records)
+    }
+
+    override fun onTransactionsDelete(hashes: List<String>) {
+        onTransactionsDeleted()
+    }
+
+    override val blockchainType = BlockchainType.BitcoinCash
+
+    override fun usedAddresses(change: Boolean): List<UsedAddress> =
+        kit.usedAddresses(change)
+            .map { UsedAddress(it.index, it.address, "https://blockchair.com/bitcoin-cash/address/${it.address}") }
+
+    companion object {
+        private const val KIT_CONFIRMATIONS_THRESHOLD = 1
+        private const val DISPLAY_CONFIRMATIONS_THRESHOLD = 3
+
+        @Suppress("LongMethod")
+        private fun createKit(
+            wallet: Wallet,
+            syncMode: BitcoinCore.SyncMode,
+            addressType: TokenType.AddressType,
+            environment: BitcoinKitEnvironment,
+        ): BitcoinCashKit {
+            val account = wallet.account
+            val networkType = getNetworkType(addressType.kitCoinType)
+            when (val accountType = account.type) {
+                is AccountType.HdExtendedKey -> {
+                    return BitcoinCashKit(
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        extendedKey = accountType.hdExtendedKey,
+                        walletId = account.id,
+                        syncMode = syncMode,
+                        networkType = networkType,
+                        confirmationsThreshold = KIT_CONFIRMATIONS_THRESHOLD
+                    )
+                }
+
+                is AccountType.Mnemonic -> {
+                    return BitcoinCashKit(
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        seed = accountType.seed,
+                        walletId = account.id,
+                        syncMode = syncMode,
+                        networkType = networkType,
+                        confirmationsThreshold = KIT_CONFIRMATIONS_THRESHOLD
+                    )
+                }
+
+                is AccountType.BitcoinAddress -> {
+                    return BitcoinCashKit(
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        watchAddress = accountType.address,
+                        walletId = account.id,
+                        syncMode = syncMode,
+                        networkType = networkType,
+                        confirmationsThreshold = KIT_CONFIRMATIONS_THRESHOLD,
+                    )
+                }
+
+                is AccountType.HardwareCard -> {
+                    val hardwareWalletEcdaBitcoinSigner = hardwareSigners.cardEcdsaSigner(
+                        accountId = account.id,
+                        blockchainType = wallet.token.blockchainType,
+                        tokenType = wallet.token.type
+                    )
+                    val hardwareWalletSchnorrSigner = hardwareSigners.cardSchnorrSigner(
+                        accountId = account.id,
+                        blockchainType = wallet.token.blockchainType,
+                        tokenType = wallet.token.type,
+                    )
+                    return BitcoinCashKit(
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        extendedKey = requireNotNull(wallet.getHDExtendedKey()),
+                        walletId = account.id,
+                        syncMode = syncMode,
+                        networkType = networkType,
+                        confirmationsThreshold = KIT_CONFIRMATIONS_THRESHOLD,
+                        iInputSigner = hardwareWalletEcdaBitcoinSigner,
+                        iSchnorrInputSigner = hardwareWalletSchnorrSigner
+                    )
+                }
+
+                is AccountType.TrezorDevice -> {
+                    val trezorSigner = hardwareSigners.trezorSigner(
+                        accountId = account.id,
+                        blockchainType = wallet.token.blockchainType,
+                        tokenType = wallet.token.type,
+                        coin = "Bcash"
+                    )
+                    val kit = BitcoinCashKit(
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        extendedKey = requireNotNull(wallet.getHDExtendedKey()),
+                        walletId = account.id,
+                        syncMode = syncMode,
+                        networkType = networkType,
+                        confirmationsThreshold = KIT_CONFIRMATIONS_THRESHOLD,
+                        iInputSigner = trezorSigner.inputSigner,
+                        iSchnorrInputSigner = trezorSigner.schnorrInputSigner,
+                    )
+                    trezorSigner.bindKit(kit)
+                    return kit
+                }
+
+                else -> throw UnsupportedAccountException()
+            }
+
+        }
+
+        private fun getNetworkType(kitCoinType: MainNetBitcoinCash.CoinType = MainNetBitcoinCash.CoinType.Type145) =
+            NetworkType.MainNet(kitCoinType)
+
+        fun firstAddress(accountType: AccountType, tokenType: TokenType): String {
+            val bitcoinCashCoinType = tokenType.bitcoinCashCoinType ?: throw IllegalArgumentException()
+
+            val kitCoinType = when (bitcoinCashCoinType) {
+                TokenType.AddressType.Type0 -> MainNetBitcoinCash.CoinType.Type0
+                TokenType.AddressType.Type145 -> MainNetBitcoinCash.CoinType.Type145
+            }
+
+            val networkType = NetworkType.MainNet(kitCoinType)
+
+            when (accountType) {
+                is AccountType.Mnemonic -> {
+                    val seed = accountType.seed
+
+                    val address = BitcoinCashKit.firstAddress(
+                        seed,
+                        networkType
+                    )
+
+                    return address.stringValue
+                }
+
+                is AccountType.HdExtendedKey -> {
+                    val key = accountType.hdExtendedKey
+                    val address = BitcoinCashKit.firstAddress(
+                        key,
+                        networkType
+                    )
+
+                    return address.stringValue
+                }
+
+                is AccountType.BitcoinAddress -> {
+                    return accountType.address
+                }
+
+                is AccountType.EvmAddress,
+                is AccountType.EvmPrivateKey,
+                is AccountType.HardwareCard,
+                is AccountType.TrezorDevice,
+                is AccountType.MnemonicMonero,
+                is AccountType.SolanaAddress,
+                is AccountType.TonAddress,
+                is AccountType.TronAddress,
+                is AccountType.StellarAddress,
+                is AccountType.ThorchainAddress,
+                is AccountType.MayachainAddress,
+                is AccountType.StellarSecretKey,
+                is AccountType.ZCashUfvKey,
+                is AccountType.ZCashSaplingKey -> throw UnsupportedAccountException()
+            }
+        }
+    }
+}

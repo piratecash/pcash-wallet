@@ -30,6 +30,7 @@ import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.isLitecoinMweb
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import com.google.gson.annotations.SerializedName
 import io.horizontalsystems.bitcoincore.storage.UtxoFilters
@@ -139,10 +140,10 @@ abstract class BaseThorChainProvider(
                     -> {
                     var nativeTokenQueries = blockchainType.nativeTokenQueries
 
-                    // filter out taproot for ltc
+                    // filter out taproot for ltc; MWEB can't carry the swap memo
                     if (blockchainType == BlockchainType.Litecoin) {
                         nativeTokenQueries = nativeTokenQueries.filterNot {
-                            it.tokenType.derivation == TokenType.Derivation.Bip86
+                            it.tokenType.derivation == TokenType.Derivation.Bip86 || it.isLitecoinMweb
                         }
                     }
 

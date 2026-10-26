@@ -6,8 +6,10 @@ import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.entities.Blockchain
 import org.koin.compose.koinInject
+import kotlin.reflect.KClass
 
 /**
  * Pages and hardware-card flows of the wallet screens that only a platform provides.
@@ -36,7 +38,24 @@ interface WalletPlatformPages {
     suspend fun accessCodeRecovery(): HSPage?
     suspend fun changeAccessCode()
     suspend fun forgotAccessCode(cardId: String)
+
+    /** Owns the view models the wallet tabs share with their child pages. */
+    val mainPage: KClass<out HSPage>
+
+    /** Reports [ActivateTokenResult]. */
+    fun activateToken(wallet: Wallet): HSPage?
+
+    /** A warning sheet; [onConfirm] runs when its action button is tapped. */
+    fun confirmation(
+        title: String,
+        warningText: String,
+        actionButtonTitle: String,
+        transparentButtonTitle: String,
+        onConfirm: () -> Unit,
+    ): HSPage?
 }
+
+data class ActivateTokenResult(val activated: Boolean)
 
 fun HSNavigation.openFaq(topic: FaqTopic) {
     getKoinInstance<WalletPlatformPages>().faq(topic)?.let { slideFromBottom(it) }

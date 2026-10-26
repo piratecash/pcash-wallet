@@ -1,5 +1,6 @@
 package io.horizontalsystems.chartview.chart
 
+import cash.p.terminal.core.TestDispatcherProvider
 import io.horizontalsystems.chartview.ChartViewType
 import io.horizontalsystems.chartview.models.ChartPoint
 import io.horizontalsystems.core.CurrencyManager

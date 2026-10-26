@@ -60,7 +60,7 @@
     <string name="trezor_not_initialized_cta">设置指南</string>
     <string name="trezor_connect_failed">无法连接到 Trezor。</string>
     <string name="Button_Activate">激活</string>
-    <string name="activation_required_dialog_description">要接收 %s，您需要激活该代币。Stellar 网络要求为每个代币建立信任线（trustline）。没有信任线，您的钱包将无法接收 %s——交易会被拒绝，资金也不会到账。</string>
+    <string name="activation_required_dialog_description">要接收 %1$s，您需要激活该代币。Stellar 网络要求为每个代币建立信任线（trustline）。没有信任线，您的钱包将无法接收 %2$s——交易会被拒绝，资金也不会到账。</string>
     <string name="activate_you_activate">您将激活</string>
     <string name="activate_activating">正在激活</string>
     <string name="activate_already_active_title">已激活</string>
@@ -374,7 +374,7 @@
     <string name="Balance_Error_InvalidQrCode">无法识别</string>
     <string name="Balance_Receive_WatchAddressAlert">该地址是被监视账户的地址</string>
     <string name="Balance_Receive_UsedAddresses">已使用地址</string>
-    <string name="Balance_Receive_UsedAddressesDescriptoin">%s 地址用于隐私和安全。以下是此钱包中已使用的地址列表。</string>
+    <string name="Balance_Receive_UsedAddressesDescriptoin">%1$s 地址用于隐私和安全。以下是此钱包中已使用的地址列表。</string>
     <string name="Balance_Receive_ReceiveAddresses">接收地址</string>
     <string name="Balance_Receive_ChangeAddresses">找零地址</string>
     <string name="receive_address_badge_new">新的</string>
@@ -695,7 +695,7 @@
     <string name="SwapInfo_PriceImpactTitle">价格影响</string>
     <string name="SwapInfo_PriceImpactDescription">预期价格和显示价格的偏差通常会增加互兑金额。</string>
     <!--Deposit-->
-    <string name="Deposit_Title">收到%s</string>
+    <string name="Deposit_Title">收到%1$s</string>
     <!--Transactions-->
     <string name="Transactions_Title">交易</string>
     <string name="Transactions_Hide">Transactions Hide</string>
@@ -1438,6 +1438,8 @@
     <string name="CoinPage_TimeDuration_Month">1月</string>
     <string name="CoinPage_TimeDuration_Year">1年</string>
     <string name="CoinPage_TimeDuration_All">所有</string>
+    <string name="Timestamp_Today">今天</string>
+    <string name="Timestamp_Yesterday">昨天</string>
     <string name="CoinPage_TradingVolume">成交量</string>
     <string name="CoinPage_Audits_PoweredBy">由 Defiyield.app 提供支持</string>
     <string name="CoinPage_Audits_Issues">发布: %d</string>
@@ -1969,7 +1971,7 @@
     </plurals>
 
     <plurals name="staking_next_accrual_in_hours">
-        <item quantity="other">下次计提将在 %d 小时后进行</item>
+        <item quantity="other">下次计提将在 %1$d 小时后进行</item>
     </plurals>
     <string name="estimated_annual_interest">预估年化利率</string>
     <string name="accruals">Accruals</string>
@@ -2189,6 +2191,7 @@
     <string name="send_trezor_mweb_not_supported">Trezor 不支持 MWEB。请将莱特币发送到普通（非 MWEB）地址。</string>
     <string name="send_trezor_time_lock_not_supported">Trezor 不支持时间锁定交易。</string>
     <string name="send_trezor_zcash_memo_not_supported">Trezor 无法为 Zcash 交易添加备注。请删除备注后继续。</string>
+    <string name="send_memo_too_long">备注过长：%1$d/%2$d 字节</string>
     <string name="send_trezor_zcash_transparent_only">Trezor 只能将 Zcash 发送到透明地址。</string>
     <string name="send_trezor_zcash_unified_no_transparent_receiver">该统一地址不包含透明接收方，因此 Trezor 无法向其发送转账。</string>
     <string name="send_trezor_zcash_firmware_required">%1$s 需要 %2$s 或更高版本的固件才能发送到 Zcash 统一地址。请更新设备后重试——应用会在您下次进行 Zcash 交易时重新检查固件版本。</string>
@@ -2320,6 +2323,9 @@
     <string name="desktop_forgot_password_warning">此计算机上保存的钱包、联系人、设置和历史记录将被删除。区块链上的资金不受影响：钱包只能通过其恢复短语恢复。</string>
     <string name="desktop_forgot_password_action">删除数据</string>
     <string name="desktop_forgot_password_failed">无法删除数据</string>
+    <string name="desktop_wipe_restart_manually">数据已删除。请重新启动应用</string>
+    <string name="desktop_restart_manually">请重新启动应用</string>
+    <string name="platform_not_supported_yet">桌面版暂不支持</string>
     <string name="desktop_change_password_title">更改密码</string>
     <string name="desktop_change_password_current_hint">当前密码</string>
     <string name="desktop_change_password_new_hint">新密码</string>

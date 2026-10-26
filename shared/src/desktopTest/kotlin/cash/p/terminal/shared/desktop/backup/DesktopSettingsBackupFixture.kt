@@ -1,6 +1,13 @@
 package cash.p.terminal.shared.desktop.backup
 
+import cash.p.terminal.modules.contacts.ContactsRepository
+import cash.p.terminal.modules.contacts.ContactsSettingsBackup
+import cash.p.terminal.shared.desktop.DesktopContactsFileStorage
+import cash.p.terminal.shared.desktop.balanceHiddenManager
+import cash.p.terminal.shared.desktop.vault.DesktopSecretFieldsEncryption
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.ICoinManager
+import cash.p.terminal.core.managers.BaseTokenManager
 import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.DefaultCurrencyManager
 import cash.p.terminal.core.managers.EncryptDecryptManager
@@ -34,13 +41,18 @@ import cash.p.terminal.modules.theme.ThemeType
 import cash.p.terminal.shared.desktop.DesktopAddressResolutionConfig
 import cash.p.terminal.shared.desktop.DesktopAppSettingsBackup
 import cash.p.terminal.shared.desktop.DesktopAppearanceSettingsStore
-import cash.p.terminal.shared.desktop.DesktopBalanceHiddenManager
 import cash.p.terminal.shared.desktop.DesktopChartIndicatorStorage
+import cash.p.terminal.shared.desktop.DesktopWalletSettingsStorage
 import cash.p.terminal.shared.desktop.vault.DesktopAppDatabaseProvider
+import cash.p.terminal.core.storage.AppDatabase
+import cash.p.terminal.core.storage.AppDatabaseProvider
 import cash.p.terminal.shared.desktop.vault.DesktopPreferencesReset
 import cash.p.terminal.shared.desktop.vault.DesktopVaultFixture
 import cash.p.terminal.shared.desktop.vault.password
 import cash.p.terminal.wallet.MarketKitWrapper
+import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.entities.Coin
+import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.balance.BalanceViewType
 import com.google.gson.Gson
 import io.horizontalsystems.core.DesktopLanguageManager
@@ -75,7 +87,7 @@ internal class DesktopSettingsBackupFixture {
     val themeService = ThemeService(appearanceStore)
     val launchScreenService = LaunchScreenService(appearanceStore)
     val balanceViewTypeManager = BalanceViewTypeManager(appearanceStore)
-    val balanceHiddenManager = DesktopBalanceHiddenManager(settingsStore)
+    val balanceHiddenManager = balanceHiddenManager(settingsStore, dispatcherProvider)
     val languageManager = DesktopLanguageManager(settingsStore)
     val currencyManager = DefaultCurrencyManager(settingsStore)
     val indicatorStorage = DesktopChartIndicatorStorage(
@@ -84,6 +96,11 @@ internal class DesktopSettingsBackupFixture {
         dispatcherProvider,
     )
     val chartIndicatorManager = ChartIndicatorManager(indicatorStorage, settingsStore, dispatcherProvider)
+    private val coinManager = mockk<ICoinManager> {
+        every { getToken(any()) } answers { token(firstArg()) }
+    }
+    var baseTokenManager = newBaseTokenManager()
+        private set
 
     private val vaultFixture = DesktopVaultFixture(
         dataDirectory = dataDirectory,
@@ -98,21 +115,50 @@ internal class DesktopSettingsBackupFixture {
             balanceViewTypeManager = balanceViewTypeManager,
         ),
     )
-    val vault = vaultFixture.vault()
+    var vault = vaultFixture.vault()
+        private set
+    val vaultFiles get() = vaultFixture.files
 
-    private val databaseProvider = DesktopAppDatabaseProvider(vault)
+    // Through the current vault, so the stores follow relaunchVault().
+    private val databaseProvider = object : AppDatabaseProvider {
+        override val database: AppDatabase get() = DesktopAppDatabaseProvider(vault).database
+    }
     val blockchainSettingsStorage = BlockchainSettingsStorage(databaseProvider)
     val evmSyncSourceStorage = EvmSyncSourceStorage(databaseProvider)
     val btcBlockchainManager = BtcBlockchainManager(blockchainSettingsStorage, marketKit)
     val evmSyncSourceManager =
         EvmSyncSourceManager(blockchainSettingsStorage, evmSyncSourceStorage, DesktopAddressResolutionConfig)
 
-    val backup = DesktopAppSettingsBackup(
+    val contactsRepository = ContactsRepository(
+        marketKit,
+        DesktopContactsFileStorage(vaultFixture.files, DesktopSecretFieldsEncryption(vault)),
+    )
+
+    var backup = newBackup()
+        private set
+
+    init {
+        // The real keys are decoded through Koin; the explorer is irrelevant to the backup.
+        mockkObject(EvmExplorerApiKeys)
+        every { EvmExplorerApiKeys.etherscan } returns emptyList()
+        runBlocking { vault.create(password()) }
+    }
+
+    /** A wiping process never opens the storage again: the next vault belongs to a new process. */
+    fun relaunchVault() {
+        vault = vaultFixture.vault()
+        baseTokenManager = newBaseTokenManager()
+        backup = newBackup()
+    }
+
+    private fun newBaseTokenManager() = BaseTokenManager(coinManager, DesktopWalletSettingsStorage(settingsStore))
+
+    private fun newBackup() = DesktopAppSettingsBackup(
         languageManager = languageManager,
         currencyManager = currencyManager,
         chartIndicatorManager = chartIndicatorManager,
         chartIndicatorStorage = indicatorStorage,
-        settingsStore = settingsStore,
+        baseTokenManager = baseTokenManager,
         appearanceSettingsBackup = AppearanceSettingsBackup(
             themeService = themeService,
             balanceViewTypeManager = balanceViewTypeManager,
@@ -129,14 +175,8 @@ internal class DesktopSettingsBackupFixture {
             blockchainSettingsStorage = blockchainSettingsStorage,
             solanaRpcSourceManager = SolanaRpcSourceManager(blockchainSettingsStorage, marketKit),
         ),
+        contactsSettingsBackup = ContactsSettingsBackup(contactsRepository),
     )
-
-    init {
-        // The real keys are decoded through Koin; the explorer is irrelevant to the backup.
-        mockkObject(EvmExplorerApiKeys)
-        every { EvmExplorerApiKeys.etherscan } returns emptyList()
-        runBlocking { vault.create(password()) }
-    }
 
     fun export(): Settings = backup.currentSettings(cachedKey, PASSPHRASE)
 
@@ -162,6 +202,13 @@ internal class DesktopSettingsBackupFixture {
 
         val cachedKey: ByteArray =
             requireNotNull(EncryptDecryptManager.getKey(PASSPHRASE, BackupLocalModule.kdfDefault))
+
+        private fun token(query: TokenQuery) = Token(
+            coin = Coin(uid = query.blockchainType.uid, name = query.blockchainType.uid, code = query.blockchainType.uid),
+            blockchain = Blockchain(query.blockchainType, query.blockchainType.uid, null),
+            type = query.tokenType,
+            decimals = 8,
+        )
 
         private val BLOCKCHAINS = listOf(
             Blockchain(BlockchainType.Bitcoin, "Bitcoin", null),

@@ -46,6 +46,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -220,6 +221,31 @@ class SendZCashViewModelTest : KoinTest {
         assertFalse(viewModel.offlineSignSupported)
     }
 
+    @Test
+    fun canBeSend_multiByteMemo512Bytes_isTrue() = runTest(dispatcher) {
+        assertTrue(canBeSendWithMemo(address, "ж".repeat(256)))
+    }
+
+    @Test
+    fun canBeSend_multiByteMemo513Bytes_isFalse() = runTest(dispatcher) {
+        assertFalse(canBeSendWithMemo(address, "ж".repeat(256) + "a"))
+    }
+
+    @Test
+    fun canBeSend_overLimitMemoOnTransparentAddress_isTrue() = runTest(dispatcher) {
+        assertTrue(canBeSendWithMemo(Address(TRANSPARENT_ADDRESS), "ж".repeat(257)))
+    }
+
+    private fun TestScope.canBeSendWithMemo(address: Address, memo: String): Boolean {
+        every { adapter.maxSpendableBalance } returns BigDecimal.TEN
+        val viewModel = createViewModel()
+        viewModel.onEnterAddress(address)
+        viewModel.onEnterAmount(amount)
+        viewModel.onEnterMemo(memo)
+        advanceUntilIdle()
+        return viewModel.uiState.canBeSend
+    }
+
     private fun createViewModel(
         wallet: Wallet = this.wallet,
         seededAvailableBalance: BigDecimal = BigDecimal.TEN,
@@ -268,6 +294,7 @@ class SendZCashViewModelTest : KoinTest {
 
     private companion object {
         const val ZCASH_ADDRESS = "zs1recipient000000000000000000000000000000000000000000000000000000000000"
+        const val TRANSPARENT_ADDRESS = "t1recipient0000000000000000000000000"
         const val ZCASH_TX_HASH = "456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123"
         val FEE: BigDecimal = BigDecimal("0.0001")
         val RECALCULATED_FEE: BigDecimal = BigDecimal("0.0003")

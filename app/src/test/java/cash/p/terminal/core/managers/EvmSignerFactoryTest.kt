@@ -40,7 +40,7 @@ class EvmSignerFactoryTest {
 
     private val hardwarePublicKeyStorage: IHardwarePublicKeyStorage = mockk()
     private val trezorClient: ITrezorClient = mockk()
-    private val factory = EvmSignerFactory(hardwarePublicKeyStorage, trezorClient)
+    private val factory = EvmSignerFactory(hardwarePublicKeyStorage, AndroidEvmHardwareSigners(trezorClient))
 
     private val hardwareAccount = Account(
         id = "hardware-account-id",

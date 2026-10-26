@@ -9,7 +9,6 @@ import cash.p.terminal.BuildConfig
 import cash.p.terminal.core.di.appModule
 import cash.p.terminal.core.factories.AccountFactory
 import cash.p.terminal.core.managers.AdapterManager
-import cash.p.terminal.core.managers.AddressLabelManager
 import cash.p.terminal.core.notifications.TransactionNotificationCoordinator
 import cash.p.terminal.core.notifications.TransactionNotificationManager
 import cash.p.terminal.core.managers.AppVersionManager
@@ -18,29 +17,23 @@ import cash.p.terminal.core.managers.BaseTokenManager
 import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.ConnectivityManager
 import cash.p.terminal.core.managers.DefaultUserManager
-import cash.p.terminal.core.managers.DeletedAccountsCleanup
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.EvmLabelManager
 import cash.p.terminal.core.managers.EvmSyncSourceManager
 import cash.p.terminal.core.managers.LanguageManager
-import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
-import cash.p.terminal.core.managers.NftMetadataSyncer
 import cash.p.terminal.core.managers.PriceManager
 import cash.p.terminal.core.managers.ReleaseNotesManager
-import cash.p.terminal.core.managers.StellarAccountManager
-import cash.p.terminal.core.managers.ThorchainAccountManager
-import cash.p.terminal.core.managers.ThorchainKitManagers
 import cash.p.terminal.core.managers.TokenAutoEnableManager
-import cash.p.terminal.core.managers.TonAccountManager
 import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TransactionAdapterManager
-import cash.p.terminal.core.managers.TronAccountManager
+import cash.p.terminal.core.managers.WalletServicesStarter
 import cash.p.terminal.core.managers.TronKitManager
 import cash.p.terminal.core.managers.WalletActivator
 import cash.p.terminal.core.managers.WordsManager
 import cash.p.terminal.core.managers.ZcashBirthdayProvider
 import cash.p.terminal.core.providers.AppConfigProvider
+import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.core.providers.FeeRateProvider
 import cash.p.terminal.core.storage.AppDatabase
 import cash.p.terminal.core.storage.BlockchainSettingsStorage
@@ -103,11 +96,9 @@ import io.horizontalsystems.core.logger.AppLog
 import io.horizontalsystems.core.security.KeyStoreManager
 import io.horizontalsystems.ethereumkit.core.EthereumKit
 import io.reactivex.plugins.RxJavaPlugins
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
@@ -173,10 +164,7 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
     }
 
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val addressLabelManager: AddressLabelManager by inject(AddressLabelManager::class.java)
-    private val locallyCreatedTransactionRepository: LocallyCreatedTransactionRepository by inject(
-        LocallyCreatedTransactionRepository::class.java
-    )
+    private val walletServicesStarter: WalletServicesStarter by inject(WalletServicesStarter::class.java)
 
     override fun onCreate() {
         super.onCreate()
@@ -412,60 +400,19 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
         localeAwareContext(this)
     }
 
-    override val isSwapEnabled = true
-
-    private fun startAccountManagers() {
-        TronAccountManager(
-            accountManager = accountManager,
-            walletManager = walletManager,
-            marketKit = get(),
-            tronKitManager = tronKitManager,
-            tokenAutoEnableManager = tokenAutoEnableManager,
-            userDeletedWalletManager = get()
-        ).start()
-
-        TonAccountManager(
-            accountManager = accountManager,
-            walletManager = walletManager,
-            tonKitManager = tonKitManager,
-            tokenAutoEnableManager = tokenAutoEnableManager,
-            userDeletedWalletManager = get(),
-            marketKit = get()
-        ).start()
-
-        StellarAccountManager(
-            accountManager = accountManager,
-            walletManager = walletManager,
-            stellarKitManager = get(),
-            tokenAutoEnableManager = tokenAutoEnableManager,
-            userDeletedWalletManager = get(),
-            marketKit = get()
-        ).start()
-
-        get<ThorchainKitManagers>().all.forEach { thorchainKitManager ->
-            ThorchainAccountManager(
-                accountManager = accountManager,
-                walletManager = walletManager,
-                thorchainKitManager = thorchainKitManager,
-                tokenAutoEnableManager = tokenAutoEnableManager,
-                userDeletedWalletManager = get(),
-                marketKit = get(),
-                dispatcherProvider = get(),
-            ).start()
-        }
-    }
+    override val isSwapEnabled = SharedAppConfig.isSwapEnabled
 
     private fun startTasks() {
         coroutineScope.launch {
             initCipherForMonero()
 
-            startAccountManagers()
+            walletServicesStarter.startChainAccountManagers()
 
             initializeWalletConnectV2()
             WCDelegate.initialize()
 
             EthereumKit.init()
-            adapterManager.startAdapterManager()
+            walletServicesStarter.startAdapters()
             launch {
                 backgroundManager.stateFlow
                     .filter { it == BackgroundManagerState.EnterForeground }
@@ -473,12 +420,11 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
                     .collectLatest { marketKit.sync(tryOrNull { needForceUpdateCoins() } ?: false) }
             }
             rateAppManager.onAppLaunch()
-            get<NftMetadataSyncer>().start()
+            walletServicesStarter.startNftMetadataSync()
             if (!pinComponent.isPinSet) {
                 pinComponent.initDefaultPinLevel()
             }
-            trimLocallyCreatedTransactions()
-            clearDeletedAccounts()
+            walletServicesStarter.scheduleAccountDataCleanup()
             wcSessionManager.start()
 
             AppVersionManager(get(), localStorage).apply { storeAppVersion() }
@@ -489,30 +435,9 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
                 MarketWidgetWorker.cancel(instance)
             }
 
-            addressLabelManager.initialize()
-            contactsRepository.initialize()
-            evmLabelManager.sync()
+            walletServicesStarter.syncLabels()
             AppLog.cleanupOldLogs()
             get<ClearLegacyZcashDataUseCase>().invoke()
-        }
-    }
-
-    private fun clearDeletedAccounts() {
-        coroutineScope.launch {
-            delay(3000)
-            try {
-                getKoinInstance<DeletedAccountsCleanup>().invoke()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                KermitLogger.w(e) { "Failed to clear deleted accounts; retrying on next start" }
-            }
-        }
-    }
-
-    private fun trimLocallyCreatedTransactions() {
-        coroutineScope.launch {
-            locallyCreatedTransactionRepository.trimAllAccounts()
         }
     }
 
