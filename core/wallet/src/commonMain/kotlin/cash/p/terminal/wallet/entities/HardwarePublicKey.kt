@@ -65,11 +65,24 @@ class HardwarePublicKey(
     }
 }
 
-/** Contract tokens of an account-based chain sign with the chain's single key. */
+/** Contract tokens of an account-based chain and TON W5 wallets sign with the chain's single key. */
 val TokenType.usesChainKey: Boolean
     get() = when (this) {
-        is TokenType.Eip20, is TokenType.Spl, is TokenType.Jetton, is TokenType.Asset -> true
-        else -> false
+        is TokenType.Eip20,
+        is TokenType.Spl,
+        is TokenType.Jetton,
+        is TokenType.Asset,
+        TokenType.TonW5Native,
+        is TokenType.TonW5Jetton -> true
+
+        TokenType.Native,
+        TokenType.Mweb,
+        is TokenType.Derived,
+        is TokenType.AddressTyped,
+        is TokenType.AddressSpecTyped,
+        is TokenType.Trc10,
+        is TokenType.ThorchainAsset,
+        is TokenType.Unsupported -> false
     }
 
 fun HardwarePublicKey.serves(blockchainType: BlockchainType, tokenType: TokenType): Boolean =

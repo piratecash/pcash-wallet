@@ -52,4 +52,12 @@ class HardwarePublicKeyServesTest {
         publicKey = byteArrayOf(1, 2, 3),
         derivedPublicKey = byteArrayOf(4, 5, 6)
     )
+
+    @Test
+    fun serves_tonChainKeyForW5Assets_true() {
+        val tonKey = key(BlockchainType.Ton, TokenType.Native)
+
+        assertTrue(tonKey.serves(BlockchainType.Ton, TokenType.TonW5Native))
+        assertTrue(tonKey.serves(BlockchainType.Ton, TokenType.TonW5Jetton("master")))
+    }
 }

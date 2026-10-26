@@ -5,6 +5,7 @@ import cash.p.terminal.core.derivation
 import cash.p.terminal.core.isEvm
 import cash.p.terminal.core.isUtxoBased
 import cash.p.terminal.core.nativeTokenQueries
+import cash.p.terminal.core.walletVersionQueries
 import cash.p.terminal.entities.Address
 import cash.p.terminal.entities.SwapProviderTransaction
 import cash.p.terminal.modules.multiswap.ISwapFinalQuote
@@ -119,8 +120,11 @@ internal class UnstoppableTokenResolver(
             blockchainType == BlockchainType.Solana ->
                 addSingle(map, blockchainType, contractOrNative(address, TokenType::Spl), identifier)
 
-            blockchainType == BlockchainType.Ton ->
-                addSingle(map, blockchainType, contractOrNative(address, TokenType::Jetton), identifier)
+            blockchainType == BlockchainType.Ton -> addAll(
+                map,
+                TokenQuery(blockchainType, contractOrNative(address, TokenType::Jetton)).walletVersionQueries,
+                identifier,
+            )
 
             // Non-native Stellar assets aren't exposed here in a decomposable (code, issuer) shape by
             // this endpoint, so only native XLM is resolved; THORChain/Maya list natives only.
@@ -158,6 +162,10 @@ internal class UnstoppableTokenResolver(
                 queries
             }
         }
+        addAll(map, queries, identifier)
+    }
+
+    private fun addAll(map: MutableMap<Token, String>, queries: List<TokenQuery>, identifier: String) {
         marketKit.tokens(queries).forEach { map[it] = identifier }
     }
 

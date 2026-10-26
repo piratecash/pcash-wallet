@@ -333,4 +333,51 @@ class CoinsListMapperTest {
     }
 
     // endregion
+
+    @Test
+    fun twinTonTokens_tonNativeAndJetton_addsW5TwinOfSameCoin() {
+        val native = createToken("the-open-network", "the-open-network", decimals = 9)
+        val jetton = createToken("tether", "the-open-network", type = "the-open-network", decimals = 6, reference = "EQusdt")
+
+        val result = mapper.twinTonTokens(listOf(native, jetton))
+
+        assertEquals(
+            listOf(
+                native,
+                jetton,
+                native.copy(type = "ton_w5_native"),
+                jetton.copy(type = "ton_w5_jetton"),
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun twinTonTokens_otherChainsAndExistingW5Rows_notTwinned() {
+        val tokens = listOf(
+            createToken("ethereum", "ethereum"),
+            createToken("tether", "ethereum", type = "eip20", reference = "0xusdt"),
+            createToken("the-open-network", "the-open-network", type = "ton_w5_native", decimals = 9),
+        )
+
+        assertEquals(tokens, mapper.twinTonTokens(tokens))
+    }
+
+    @Test
+    fun map_tonTokens_w5TwinsKeptWithDistinctPrimaryKeys() {
+        val list = CoinsList(
+            blockchains = listOf(RemoteBlockchain("the-open-network", "TON", null)),
+            coins = listOf(
+                remoteCoin("the-open-network", "ton", tokens = listOf(remoteToken("the-open-network", decimals = 9))),
+                remoteCoin(
+                    "tether", "usdt",
+                    tokens = listOf(remoteToken("the-open-network", "the-open-network", 6, "EQusdt"))
+                ),
+            )
+        )
+
+        val types = mapper.map(list, emptyMap(), virtualCoinMapper).tokens.map { it.type }
+
+        assertEquals(listOf("native", "the-open-network", "ton_w5_native", "ton_w5_jetton"), types)
+    }
 }

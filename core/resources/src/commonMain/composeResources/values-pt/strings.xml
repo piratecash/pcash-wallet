@@ -544,6 +544,9 @@
     <string name="TonConnect_Unnamed">Sem nome</string>
     <string name="TonConnect_Wallet">Carteira</string>
     <string name="TonConnect_ChooseWallet">Escolher carteira</string>
+    <string name="ton_wallet_version_v4r2_description">Endereço de carteira TON da versão v4R2. Usado por padrão.</string>
+    <string name="ton_wallet_version_w5_description">Carteira TON versão W5. Um endereço e saldo separados a partir da mesma frase.</string>
+    <string name="tonconnect_wallet_version">Versão da carteira</string>
     <string name="manifest_loading">A carregar manifesto…</string>
     <string name="account_not_supported_by">O seu tipo de carteira atual %1$s não suporta %2$s</string>
     <!--WalletConnect-->

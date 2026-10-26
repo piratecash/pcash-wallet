@@ -173,7 +173,9 @@ class AdapterManager(
 
         if (BlockchainType.Solana !in pausedChains) solanaKitManager.solanaKitWrapper?.solanaKit?.refresh()
         if (BlockchainType.Tron !in pausedChains) tronKitManager.tronKitWrapper?.tronKit?.refresh()
-        if (BlockchainType.Ton !in pausedChains) tonKitManager.tonKitWrapper?.tonKit?.refresh()
+        if (BlockchainType.Ton !in pausedChains) {
+            tonKitManager.startedKitsFlow.value.values.forEach { it.tonKit.refresh() }
+        }
         if (BlockchainType.Monero !in pausedChains) moneroKitManager.moneroKitWrapper?.refresh()
         if (BlockchainType.Stellar !in pausedChains) stellarKitManager.stellarKitWrapper?.stellarKit?.refresh()
         thorchainKitManagers.all

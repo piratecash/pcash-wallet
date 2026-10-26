@@ -6,6 +6,7 @@ import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.nativeTokenQuery
 
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.BlockchainType
@@ -56,8 +57,8 @@ class MultiSwapRouteResolver(
 
     @VisibleForTesting
     internal fun buildCandidateIntermediates(tokenIn: Token, tokenOut: Token): List<Token> {
-        val intermediateA = if (!tokenIn.isRouteNative) marketKit.nativeToken(tokenIn.blockchainType) else null
-        val intermediateB = if (!tokenOut.isRouteNative) marketKit.nativeToken(tokenOut.blockchainType) else null
+        val intermediateA = if (!tokenIn.isRouteNative) marketKit.token(tokenIn.nativeTokenQuery) else null
+        val intermediateB = if (!tokenOut.isRouteNative) marketKit.token(tokenOut.nativeTokenQuery) else null
 
         return buildList {
             if (intermediateA != null && intermediateA != tokenOut) add(intermediateA)

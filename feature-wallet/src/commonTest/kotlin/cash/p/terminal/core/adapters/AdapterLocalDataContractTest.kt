@@ -14,6 +14,7 @@ import cash.p.terminal.core.managers.TronKitWrapper
 import cash.p.terminal.data.repository.EvmTransactionRepository
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.WalletFactory
+import cash.p.terminal.wallet.entities.TonWalletVersion
 import io.horizontalsystems.bitcoincore.BitcoinCore
 import io.horizontalsystems.bitcoinkit.BitcoinKit
 import io.horizontalsystems.core.IBackgroundManager
@@ -71,7 +72,7 @@ class AdapterLocalDataContractTest : ZcashAdapterTestFixture() {
     @Test
     fun attachLocalData_tonAdapter_doesNotTouchNetwork() {
         val tonKit = mockk<TonKit>(relaxed = true)
-        val adapter = TonAdapter(TonKitWrapper(tonKit, mockk<TonWallet>(relaxed = true)))
+        val adapter = TonAdapter(TonKitWrapper(tonKit, mockk<TonWallet>(relaxed = true), TonWalletVersion.V4R2))
         clearMocks(tonKit, answers = false)
 
         adapter.attachLocalData()
@@ -89,7 +90,7 @@ class AdapterLocalDataContractTest : ZcashAdapterTestFixture() {
         every { coinManager.getToken(any()) } returns mockk<Token>(relaxed = true)
         val adapter = JettonAdapter(
             coinManager = coinManager,
-            tonKitWrapper = TonKitWrapper(tonKit, mockk<TonWallet>(relaxed = true)),
+            tonKitWrapper = TonKitWrapper(tonKit, mockk<TonWallet>(relaxed = true), TonWalletVersion.V4R2),
             addressStr = TON_ADDRESS,
             wallet = WalletFactory.previewWallet(),
         )

@@ -64,7 +64,7 @@ class TonConnectManager(
         dispatcherProvider.applicationScope.launch {
             accountManager.accountsDeletedFlowable.asFlow().collect {
                 logFailure("remove dApps of deleted accounts") {
-                    kit().removeDAppsExcept(liveAccountIds())
+                    kit().removeDAppsExcept(liveWalletIds())
                 }
             }
         }
@@ -111,7 +111,7 @@ class TonConnectManager(
         withContext(NonCancellable) { prepareDatabase(databaseKey) }
         val kit = TonConnectKit.getInstance(context, databaseKey.bytes, appName, appVersion)
         // Sessions of accounts deleted before this version would otherwise stay subscribed.
-        kit.removeDAppsExcept(liveAccountIds())
+        kit.removeDAppsExcept(liveWalletIds())
         kit.start()
         return kit
     }
@@ -141,8 +141,8 @@ class TonConnectManager(
         }
     }
 
-    private suspend fun liveAccountIds(): List<String> = withContext(dispatcherProvider.io) {
-        appDatabase.accountsDao().liveAccountIds()
+    private suspend fun liveWalletIds(): List<String> = withContext(dispatcherProvider.io) {
+        appDatabase.accountsDao().liveAccountIds().flatMap(TonConnectWalletId::allOf)
     }
 
     private suspend fun logFailure(action: String, block: suspend () -> Unit) {

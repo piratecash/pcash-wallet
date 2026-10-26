@@ -4,6 +4,7 @@ import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.Blockchain
@@ -53,7 +54,18 @@ class MultiSwapRouteResolverTest {
             every { this@mockk.blockchain } returns blockchain
             every { this@mockk.blockchainType } returns blockchain.type
             every { this@mockk.type } returns type
+            every { this@mockk.tokenQuery } returns TokenQuery(blockchain.type, type)
         }
+
+    @Test
+    fun buildCandidateIntermediates_w5Jetton_routesThroughW5Native() {
+        val w5Jetton = mockToken("pirate", tonBlockchain, TokenType.TonW5Jetton("addr1"))
+        val w5Native = mockToken("ton", tonBlockchain, TokenType.TonW5Native)
+        every { marketKit.token(TokenQuery(BlockchainType.Ton, TokenType.TonW5Native)) } returns w5Native
+        every { marketKit.token(TokenQuery(BlockchainType.Ethereum, TokenType.Native)) } returns null
+
+        assertEquals(listOf(w5Native), resolver.buildCandidateIntermediates(w5Jetton, usdtErc20))
+    }
 
     // --- Both native → empty (guarded by findRoute, but also by buildCandidateIntermediates) ---
 
@@ -70,7 +82,7 @@ class MultiSwapRouteResolverTest {
     @Test
     fun buildCandidateIntermediates_tokenInNative_onlyTriesTokenOutBlockchain() {
         // TON (native) → COSA (BEP-20): skip TON intermediate, try BNB
-        every { marketKit.nativeToken(BlockchainType.BinanceSmartChain) } returns bnbNative
+        every { marketKit.token(TokenQuery(BlockchainType.BinanceSmartChain, TokenType.Native)) } returns bnbNative
 
         val result = resolver.buildCandidateIntermediates(tonNative, cosaBep20)
         assertEquals(listOf(bnbNative), result)
@@ -81,7 +93,7 @@ class MultiSwapRouteResolverTest {
     @Test
     fun buildCandidateIntermediates_tokenOutNative_onlyTriesTokenInBlockchain() {
         // PIRATE (Jetton) → BNB (native): try TON intermediate, skip BNB
-        every { marketKit.nativeToken(BlockchainType.Ton) } returns tonNative
+        every { marketKit.token(TokenQuery(BlockchainType.Ton, TokenType.Native)) } returns tonNative
 
         val result = resolver.buildCandidateIntermediates(pirateJetton, bnbNative)
         assertEquals(listOf(tonNative), result)
@@ -92,8 +104,8 @@ class MultiSwapRouteResolverTest {
     @Test
     fun buildCandidateIntermediates_differentBlockchains_returnsTwoCandidates() {
         // PIRATE (Jetton/TON) → COSA (BEP-20/BSC): try TON and BNB
-        every { marketKit.nativeToken(BlockchainType.Ton) } returns tonNative
-        every { marketKit.nativeToken(BlockchainType.BinanceSmartChain) } returns bnbNative
+        every { marketKit.token(TokenQuery(BlockchainType.Ton, TokenType.Native)) } returns tonNative
+        every { marketKit.token(TokenQuery(BlockchainType.BinanceSmartChain, TokenType.Native)) } returns bnbNative
 
         val result = resolver.buildCandidateIntermediates(pirateJetton, cosaBep20)
         assertEquals(listOf(tonNative, bnbNative), result)
@@ -105,7 +117,7 @@ class MultiSwapRouteResolverTest {
     fun buildCandidateIntermediates_sameBlockchain_returnsOnlyOne() {
         // Two BEP-20 tokens on BSC: only BNB as intermediate
         val wdashBep20 = mockToken("wdash", bscBlockchain, TokenType.Eip20("addr4"))
-        every { marketKit.nativeToken(BlockchainType.BinanceSmartChain) } returns bnbNative
+        every { marketKit.token(TokenQuery(BlockchainType.BinanceSmartChain, TokenType.Native)) } returns bnbNative
 
         val result = resolver.buildCandidateIntermediates(cosaBep20, wdashBep20)
         assertEquals(listOf(bnbNative), result)
@@ -117,7 +129,7 @@ class MultiSwapRouteResolverTest {
     fun buildCandidateIntermediates_intermediateAEqualsTokenOut_skipsIt() {
         // USDT (ERC-20) → ETH (native): intermediateA = ETH = tokenOut, skip it
         // intermediateB skipped because tokenOut is native
-        every { marketKit.nativeToken(BlockchainType.Ethereum) } returns ethNative
+        every { marketKit.token(TokenQuery(BlockchainType.Ethereum, TokenType.Native)) } returns ethNative
 
         val result = resolver.buildCandidateIntermediates(usdtErc20, ethNative)
         assertTrue(result.isEmpty())
@@ -129,7 +141,7 @@ class MultiSwapRouteResolverTest {
     fun buildCandidateIntermediates_intermediateBEqualsTokenIn_skipsIt() {
         // ETH (native) → USDT (ERC-20): tokenIn is native → skip intermediateA
         // intermediateB = ETH = tokenIn, skip it
-        every { marketKit.nativeToken(BlockchainType.Ethereum) } returns ethNative
+        every { marketKit.token(TokenQuery(BlockchainType.Ethereum, TokenType.Native)) } returns ethNative
 
         val result = resolver.buildCandidateIntermediates(ethNative, usdtErc20)
         assertTrue(result.isEmpty())
@@ -139,8 +151,8 @@ class MultiSwapRouteResolverTest {
 
     @Test
     fun buildCandidateIntermediates_marketKitReturnsNull_skips() {
-        every { marketKit.nativeToken(BlockchainType.Ton) } returns null
-        every { marketKit.nativeToken(BlockchainType.BinanceSmartChain) } returns null
+        every { marketKit.token(TokenQuery(BlockchainType.Ton, TokenType.Native)) } returns null
+        every { marketKit.token(TokenQuery(BlockchainType.BinanceSmartChain, TokenType.Native)) } returns null
 
         val result = resolver.buildCandidateIntermediates(pirateJetton, cosaBep20)
         assertTrue(result.isEmpty())
@@ -148,8 +160,8 @@ class MultiSwapRouteResolverTest {
 
     @Test
     fun buildCandidateIntermediates_oneNullOneValid_returnsValid() {
-        every { marketKit.nativeToken(BlockchainType.Ton) } returns null
-        every { marketKit.nativeToken(BlockchainType.BinanceSmartChain) } returns bnbNative
+        every { marketKit.token(TokenQuery(BlockchainType.Ton, TokenType.Native)) } returns null
+        every { marketKit.token(TokenQuery(BlockchainType.BinanceSmartChain, TokenType.Native)) } returns bnbNative
 
         val result = resolver.buildCandidateIntermediates(pirateJetton, cosaBep20)
         assertEquals(listOf(bnbNative), result)
@@ -157,8 +169,8 @@ class MultiSwapRouteResolverTest {
 
     @Test
     fun buildCandidateIntermediates_mwebInput_treatsMwebAsRouteNonNative() {
-        every { marketKit.nativeToken(BlockchainType.Litecoin) } returns litecoinPublic
-        every { marketKit.nativeToken(BlockchainType.Ethereum) } returns ethNative
+        every { marketKit.token(TokenQuery(BlockchainType.Litecoin, TokenType.Native)) } returns litecoinPublic
+        every { marketKit.token(TokenQuery(BlockchainType.Ethereum, TokenType.Native)) } returns ethNative
 
         val result = resolver.buildCandidateIntermediates(litecoinMweb, usdtErc20)
 
@@ -174,8 +186,8 @@ class MultiSwapRouteResolverTest {
         val testScope = CoroutineScope(testDispatcher)
         val testResolver = MultiSwapRouteResolver(marketKit, TestDispatcherProvider(testDispatcher, testScope))
 
-        every { marketKit.nativeToken(BlockchainType.Ton) } returns tonNative
-        every { marketKit.nativeToken(BlockchainType.BinanceSmartChain) } returns bnbNative
+        every { marketKit.token(TokenQuery(BlockchainType.Ton, TokenType.Native)) } returns tonNative
+        every { marketKit.token(TokenQuery(BlockchainType.BinanceSmartChain, TokenType.Native)) } returns bnbNative
 
         // Provider A supports the route but cannot quote the first leg.
         val providerA = mockk<IMultiSwapProvider>(relaxed = true) {
@@ -219,8 +231,8 @@ class MultiSwapRouteResolverTest {
         val testScope = CoroutineScope(testDispatcher)
         val testResolver = MultiSwapRouteResolver(marketKit, TestDispatcherProvider(testDispatcher, testScope))
 
-        every { marketKit.nativeToken(BlockchainType.Ton) } returns tonNative
-        every { marketKit.nativeToken(BlockchainType.BinanceSmartChain) } returns bnbNative
+        every { marketKit.token(TokenQuery(BlockchainType.Ton, TokenType.Native)) } returns tonNative
+        every { marketKit.token(TokenQuery(BlockchainType.BinanceSmartChain, TokenType.Native)) } returns bnbNative
 
         // TON route is buildable but produces a smaller final output.
         val providerA = routeProvider(tonNative, leg1AmountOut = BigDecimal("5"), leg2AmountOut = BigDecimal("200"))
@@ -248,8 +260,8 @@ class MultiSwapRouteResolverTest {
         val testScope = CoroutineScope(testDispatcher)
         val testResolver = MultiSwapRouteResolver(marketKit, TestDispatcherProvider(testDispatcher, testScope))
 
-        every { marketKit.nativeToken(BlockchainType.Ton) } returns null
-        every { marketKit.nativeToken(BlockchainType.BinanceSmartChain) } returns bnbNative
+        every { marketKit.token(TokenQuery(BlockchainType.Ton, TokenType.Native)) } returns null
+        every { marketKit.token(TokenQuery(BlockchainType.BinanceSmartChain, TokenType.Native)) } returns bnbNative
 
         val bestLeg1Provider = routeProvider(bnbNative, leg1AmountOut = BigDecimal("10"))
         val preferredLeg1Provider = routeProvider(bnbNative, leg1AmountOut = BigDecimal("6"))
@@ -276,8 +288,8 @@ class MultiSwapRouteResolverTest {
         val testScope = CoroutineScope(testDispatcher)
         val testResolver = MultiSwapRouteResolver(marketKit, TestDispatcherProvider(testDispatcher, testScope))
 
-        every { marketKit.nativeToken(BlockchainType.Ton) } returns tonNative
-        every { marketKit.nativeToken(BlockchainType.BinanceSmartChain) } returns bnbNative
+        every { marketKit.token(TokenQuery(BlockchainType.Ton, TokenType.Native)) } returns tonNative
+        every { marketKit.token(TokenQuery(BlockchainType.BinanceSmartChain, TokenType.Native)) } returns bnbNative
 
         val preferredProvider = routeProvider(
             tonNative,

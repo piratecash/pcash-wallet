@@ -3,7 +3,12 @@ package cash.p.terminal.wallet.syncers
 import cash.p.terminal.network.pirate.domain.model.CoinsList
 import cash.p.terminal.network.pirate.domain.model.RemoteBlockchain
 import cash.p.terminal.network.pirate.domain.model.RemoteCoin
+import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.TonWalletVersion
+import cash.p.terminal.wallet.entities.tokenType
+import cash.p.terminal.wallet.entities.tonAsset
+import cash.p.terminal.wallet.entities.withVersion
 import cash.p.terminal.wallet.managers.VirtualCoinMapper
 import cash.p.terminal.wallet.storage.BlockchainRecord
 import cash.p.terminal.wallet.storage.CoinRecord
@@ -14,7 +19,7 @@ import io.horizontalsystems.core.entities.BlockchainType
 /**
  * Single source of truth for turning the V2 coins-list response into storage records.
  * Used both by the live [CoinSyncer] and by the initial-coins-list generator, so the
- * mapping pipeline (flatten -> transform -> filterValidTokens -> injectVirtualTokens)
+ * mapping pipeline (flatten -> transform -> filterValidTokens -> twinTonTokens -> injectVirtualTokens)
  * exists in exactly one place.
  */
 class CoinsListMapper {
@@ -38,8 +43,8 @@ class CoinsListMapper {
 
     /**
      * Token pipeline before the final keep-last dedup. Exposed separately so the dump
-     * generator can detect primary-key collisions introduced by [transform] or
-     * [injectVirtualTokens], as opposed to collisions already present upstream.
+     * generator can detect primary-key collisions introduced by [transform], [twinTonTokens]
+     * or [injectVirtualTokens], as opposed to collisions already present upstream.
      */
     internal fun tokenPipeline(
         remoteCoins: List<RemoteCoin>,
@@ -49,7 +54,8 @@ class CoinsListMapper {
         val tokens = flattenTokens(remoteCoins)
         val transformedTokens = transform(tokens)
         val validTokens = filterValidTokens(transformedTokens, blockchains)
-        return injectVirtualTokens(remoteCoins.map { it.coingeckoId }.toSet(), validTokens, virtualCoinMapper)
+        val twinnedTokens = twinTonTokens(validTokens)
+        return injectVirtualTokens(remoteCoins.map { it.coingeckoId }.toSet(), twinnedTokens, virtualCoinMapper)
     }
 
     internal fun primaryKey(token: TokenRecord): List<String> =
@@ -96,6 +102,26 @@ class CoinsListMapper {
         }
 
         return tokens + virtualTokens
+    }
+
+    /** The API lists TON assets once; every V4R2 row gets a W5 row of the same coin. */
+    internal fun twinTonTokens(tokens: List<TokenRecord>): List<TokenRecord> =
+        tokens + tokens.mapNotNull(::tonW5Twin)
+
+    private fun tonW5Twin(token: TokenRecord): TokenRecord? {
+        val tokenQuery = TokenQuery(
+            BlockchainType.fromUid(token.blockchainUid),
+            TokenType.fromType(token.type, token.reference)
+        )
+        val asset = tokenQuery.tonAsset ?: return null
+        return when (asset.version) {
+            TonWalletVersion.V4R2 -> {
+                val (type, reference) = asset.withVersion(TonWalletVersion.W5).tokenType.values
+                token.copy(type = type, reference = reference)
+            }
+
+            TonWalletVersion.W5 -> null
+        }
     }
 
     internal fun transform(tokens: List<TokenRecord>): List<TokenRecord> {

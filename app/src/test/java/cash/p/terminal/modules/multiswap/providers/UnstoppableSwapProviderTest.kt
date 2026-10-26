@@ -14,6 +14,7 @@ import cash.p.terminal.network.unstoppable.domain.repository.UnstoppableReposito
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.core.entities.BlockchainType
@@ -122,6 +123,25 @@ class UnstoppableSwapProviderTest {
     }
 
     @Test
+    fun supports_tonJettonInCatalog_supportsItInBothWalletVersions() = runTest(dispatcher) {
+        coEvery { repository.getTokens("NEAR") } returns UnstoppableProviderTokens(
+            tokens = listOf(
+                UnstoppableToken(chain = "ton", chainId = "ton", address = TON_MASTER, identifier = "TON.USDT"),
+            ),
+            supportedChainIds = emptyList(),
+        )
+        val v4r2 = yiFiTestToken(BlockchainType.Ton, TokenType.Jetton(TON_MASTER), "USDT")
+        val w5 = yiFiTestToken(BlockchainType.Ton, TokenType.TonW5Jetton(TON_MASTER), "USDT")
+        every {
+            marketKit.tokens(listOf(TokenQuery(BlockchainType.Ton, v4r2.type), TokenQuery(BlockchainType.Ton, w5.type)))
+        } returns listOf(v4r2, w5)
+        val resolver = UnstoppableTokenResolver(UnstoppableProvider.Near, repository, marketKit)
+
+        assertEquals("TON.USDT", resolver.resolve(v4r2)?.identifier)
+        assertEquals("TON.USDT", resolver.resolve(w5)?.identifier)
+    }
+
+    @Test
     fun chainId_thorchainAndMaya_mapBackToCatalogChainIds() {
         val resolver = UnstoppableTokenResolver(UnstoppableProvider.StealthEx, repository, marketKit)
 
@@ -198,5 +218,6 @@ class UnstoppableSwapProviderTest {
         const val THOR_ADDRESS = "thor1user"
         const val MAYA_ADDRESS = "maya1user"
         const val USDT_CONTRACT = "0xdac17f958d2ee523a2206206994597c13d831ec7"
+        const val TON_MASTER = "EQmaster"
     }
 }
