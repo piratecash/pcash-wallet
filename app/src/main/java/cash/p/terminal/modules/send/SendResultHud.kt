@@ -48,7 +48,7 @@ fun SendResultHud(
         when (sendResult) {
             SendResult.Sending -> sendingSnackbar = HudHelper.showInProcessMessage(
                 view,
-                sendingTextRes,
+                view.context.getString(sendingTextRes),
                 SnackbarDuration.INDEFINITE,
             )
 

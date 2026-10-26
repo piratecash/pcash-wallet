@@ -1,7 +1,9 @@
 package cash.p.terminal.ui_compose
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import org.jetbrains.compose.resources.StringResource
 
 object AnnotatedResourceString {
     fun htmlToAnnotatedString(
@@ -15,3 +17,7 @@ object AnnotatedResourceString {
 }
 
 internal expect fun parseHtml(html: String, linkStyle: SpanStyle?): AnnotatedString
+
+/** Keeps the resource's `<b>` spans where the platform resources keep them (Compose resources drop markup). */
+@Composable
+expect fun annotatedStringResource(resource: StringResource): AnnotatedString

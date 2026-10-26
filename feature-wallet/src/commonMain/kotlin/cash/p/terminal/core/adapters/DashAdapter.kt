@@ -1,0 +1,262 @@
+package cash.p.terminal.core.adapters
+
+import co.touchlab.kermit.Logger
+import cash.p.terminal.core.IFeeRateProvider
+import cash.p.terminal.core.ISendBitcoinAdapter
+import cash.p.terminal.core.UnsupportedAccountException
+import cash.p.terminal.core.managers.BitcoinKitEnvironment
+import cash.p.terminal.core.splitToAddresses
+import cash.p.terminal.core.utils.Utils.getIpByUrl
+import cash.p.terminal.entities.transactionrecords.TransactionRecord
+import cash.p.terminal.network.pirate.domain.repository.MasterNodesRepository
+import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.Wallet
+import cash.p.terminal.wallet.entities.UsedAddress
+import io.horizontalsystems.bitcoincore.BitcoinCore
+import io.horizontalsystems.bitcoincore.models.BalanceInfo
+import io.horizontalsystems.bitcoincore.models.BlockInfo
+import io.horizontalsystems.bitcoincore.models.TransactionInfo
+import io.horizontalsystems.core.IBackgroundManager
+import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.dashkit.DashKit
+import io.horizontalsystems.dashkit.DashKit.NetworkType
+import io.horizontalsystems.dashkit.MainNetDash
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+
+class DashAdapter(
+    override val kit: DashKit,
+    syncMode: BitcoinCore.SyncMode,
+    backgroundManager: IBackgroundManager,
+    wallet: Wallet,
+    feeRateProvider: IFeeRateProvider? = null
+) : BitcoinBaseAdapter(
+    kit, syncMode, backgroundManager, wallet, DISPLAY_CONFIRMATIONS_THRESHOLD, feeRateProvider = feeRateProvider
+),
+    DashKit.Listener, ISendBitcoinAdapter {
+
+    constructor(
+        wallet: Wallet,
+        syncMode: BitcoinCore.SyncMode,
+        backgroundManager: IBackgroundManager,
+        customPeers: String,
+        masterNodesRepository: MasterNodesRepository,
+        environment: BitcoinKitEnvironment,
+        feeRateProvider: IFeeRateProvider? = null
+    ) : this(
+        kit = createKit(wallet, syncMode, customPeers, masterNodesRepository, environment),
+        syncMode = syncMode,
+        backgroundManager = backgroundManager,
+        wallet = wallet,
+        feeRateProvider = feeRateProvider
+    )
+
+    init {
+        kit.listener = this
+    }
+
+    //
+    // DashKit Listener
+    //
+
+    override val explorerTitle: String
+        get() = "blockchair.com"
+
+    override fun getTransactionUrl(transactionHash: String): String =
+        "https://blockchair.com/dash/transaction/$transactionHash"
+
+    override fun onBalanceUpdate(balance: BalanceInfo) {
+        scope.launch {
+            estimateFeeForMax()
+            balanceUpdatedSubject.onNext(Unit)
+        }
+    }
+
+    override fun onLastBlockInfoUpdate(blockInfo: BlockInfo) {
+        lastBlockUpdatedSubject.onNext(Unit)
+    }
+
+    override fun onKitStateUpdate(state: BitcoinCore.KitState) {
+        setState(state)
+    }
+
+    override fun onTransactionsUpdate(
+        inserted: List<TransactionInfo>,
+        updated: List<TransactionInfo>
+    ) {
+        val records = mutableListOf<TransactionRecord>()
+
+        for (info in inserted) {
+            records.add(transactionRecord(info))
+        }
+
+        for (info in updated) {
+            records.add(transactionRecord(info))
+        }
+
+        transactionRecordsSubject.onNext(records)
+    }
+
+    override fun onTransactionsDelete(hashes: List<String>) {
+        onTransactionsDeleted()
+    }
+
+    override val blockchainType = BlockchainType.Dash
+
+    override fun usedAddresses(change: Boolean): List<UsedAddress> =
+        kit.usedAddresses(change).map {
+            UsedAddress(
+                index = it.index,
+                address = it.address,
+                explorerUrl = "https://blockchair.com/dash/address/${it.address}"
+            )
+        }
+
+    companion object {
+        private const val KIT_CONFIRMATIONS_THRESHOLD = 1
+        private const val DISPLAY_CONFIRMATIONS_THRESHOLD = 3
+        private const val MIN_CONNECTED_PEER_TO_SEND_SIZE = 1
+        private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+        @Suppress("LongMethod")
+        private fun createKit(
+            wallet: Wallet,
+            syncMode: BitcoinCore.SyncMode,
+            userPeers: String,
+            masterNodesRepository: MasterNodesRepository,
+            environment: BitcoinKitEnvironment,
+        ): DashKit {
+            val account = wallet.account
+
+            return when (val accountType = account.type) {
+                is AccountType.HdExtendedKey -> {
+                    DashKit(
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        extendedKey = accountType.hdExtendedKey,
+                        walletId = account.id,
+                        syncMode = syncMode,
+                        networkType = NetworkType.MainNet,
+                        confirmationsThreshold = KIT_CONFIRMATIONS_THRESHOLD,
+                        initWithEmptySeeds = true,
+                        minConnectedPeerSize = MIN_CONNECTED_PEER_TO_SEND_SIZE
+                    )
+                }
+
+                is AccountType.Mnemonic -> {
+                    DashKit(
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        seed = accountType.seed,
+                        walletId = account.id,
+                        syncMode = syncMode,
+                        networkType = NetworkType.MainNet,
+                        confirmationsThreshold = KIT_CONFIRMATIONS_THRESHOLD,
+                        initWithEmptySeeds = true,
+                        minConnectedPeerSize = MIN_CONNECTED_PEER_TO_SEND_SIZE
+                    )
+                }
+
+                is AccountType.BitcoinAddress -> {
+                    DashKit(
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        watchAddress = accountType.address,
+                        walletId = account.id,
+                        syncMode = syncMode,
+                        networkType = NetworkType.MainNet,
+                        confirmationsThreshold = KIT_CONFIRMATIONS_THRESHOLD,
+                        initWithEmptySeeds = true,
+                        minConnectedPeerSize = MIN_CONNECTED_PEER_TO_SEND_SIZE
+                    )
+                }
+
+                is AccountType.HardwareCard -> {
+                    val hardwareWalletEcdaBitcoinSigner = hardwareSigners.cardEcdsaSigner(
+                        accountId = account.id,
+                        blockchainType = wallet.token.blockchainType,
+                        tokenType = wallet.token.type,
+                    )
+                    val hardwareWalletSchnorrSigner = hardwareSigners.cardSchnorrSigner(
+                        accountId = account.id,
+                        blockchainType = wallet.token.blockchainType,
+                        tokenType = wallet.token.type,
+                    )
+                    DashKit(
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        extendedKey = requireNotNull(wallet.getHDExtendedKey()),
+                        walletId = account.id,
+                        syncMode = syncMode,
+                        networkType = NetworkType.MainNet,
+                        confirmationsThreshold = KIT_CONFIRMATIONS_THRESHOLD,
+                        initWithEmptySeeds = true,
+                        iInputSigner = hardwareWalletEcdaBitcoinSigner,
+                        iSchnorrInputSigner = hardwareWalletSchnorrSigner,
+                        minConnectedPeerSize = MIN_CONNECTED_PEER_TO_SEND_SIZE
+                    )
+                }
+
+                is AccountType.TrezorDevice -> {
+                    val trezorSigner = hardwareSigners.trezorSigner(
+                        accountId = account.id,
+                        blockchainType = wallet.token.blockchainType,
+                        tokenType = wallet.token.type,
+                        coin = "Dash"
+                    )
+                    val kit = DashKit(
+                        dataDir = environment.dataDir,
+                        databaseKey = environment.databaseKey,
+                        connectionManager = environment.connectionManager,
+                        extendedKey = requireNotNull(wallet.getHDExtendedKey()),
+                        walletId = account.id,
+                        syncMode = syncMode,
+                        networkType = NetworkType.MainNet,
+                        confirmationsThreshold = KIT_CONFIRMATIONS_THRESHOLD,
+                        initWithEmptySeeds = true,
+                        iInputSigner = trezorSigner.inputSigner,
+                        iSchnorrInputSigner = trezorSigner.schnorrInputSigner,
+                        minConnectedPeerSize = MIN_CONNECTED_PEER_TO_SEND_SIZE
+                    )
+                    trezorSigner.bindKit(kit)
+                    kit
+                }
+
+                else -> throw UnsupportedAccountException()
+            }.apply {
+                setupPeers(masterNodesRepository, userPeers)
+            }
+        }
+
+        private fun DashKit.setupPeers(
+            masterNodesRepository: MasterNodesRepository,
+            userPeers: String
+        ) {
+            coroutineScope.launch(CoroutineExceptionHandler { _, throwable ->
+                throwable.printStackTrace()
+                Logger.withTag("DashAdapter").d(throwable) { "Failed to set peers" }
+            }) {
+                trySetPeers(userPeers.splitToAddresses()) ||
+                        trySetPeers(MainNetDash.defaultSeeds) ||
+                        trySetPeers(masterNodesRepository.getMasterNodes().ips)
+            }
+        }
+
+        private fun DashKit.trySetPeers(peers: List<String>) =
+            peers.mapNotNull(::getIpByUrl).flatten().run {
+                if (isNotEmpty()) {
+                    addPeers(this)
+                    true
+                } else {
+                    false
+                }
+            }
+    }
+}

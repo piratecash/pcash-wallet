@@ -1,5 +1,6 @@
 package cash.p.terminal.core.utils
 
+import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
@@ -9,6 +10,7 @@ import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.entities.SwapProviderTransaction
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.network.swaprepository.SwapProvider
+import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
@@ -32,7 +34,10 @@ import java.math.BigDecimal
 class SwapTransactionMatcherTest {
 
     private val storage = mockk<SwapProviderTransactionsStorage>(relaxed = true)
-    private val matcher = SwapTransactionMatcher(storage)
+    private val accountManager = mockk<IAccountManager> {
+        every { activeAccount } returns mockk { every { id } returns "acc-1" }
+    }
+    private val matcher = SwapTransactionMatcher(storage, accountManager)
 
     private val onChainAmount = BigDecimal("0.01965841")
 
@@ -69,7 +74,6 @@ class SwapTransactionMatcherTest {
         timestamp = 1_000L,
         token = litecoinToken,
         addresses = addresses,
-        accountId = "acc-1",
     )
 
     @Test
@@ -149,14 +153,14 @@ class SwapTransactionMatcherTest {
         try {
             val dispatcher = UnconfinedTestDispatcher()
             val realStorage = SwapProviderTransactionsStorage(
-                dao = database.swapProviderTransactionsDao(),
+                databaseProvider = StaticAppDatabaseProvider(database),
                 dispatcherProvider = TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher)),
             )
             realStorage.save(
                 swap().copy(coinUidOut = "renamed-litecoin", tokenQueryIdOut = litecoinToken.tokenQuery.id)
             )
 
-            val result = SwapTransactionMatcher(realStorage).findMatchingSwap(incoming())
+            val result = SwapTransactionMatcher(realStorage, accountManager).findMatchingSwap(incoming())
 
             assertEquals("tx-1", result?.transactionId)
         } finally {

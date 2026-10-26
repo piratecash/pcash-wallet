@@ -1,5 +1,6 @@
 package cash.p.terminal.feature.miniapp.domain.usecase
 
+import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.feature.miniapp.data.api.EvmNonceResponseDto
 import cash.p.terminal.feature.miniapp.data.api.MiniAppApi
 import cash.p.terminal.feature.miniapp.data.api.PCashWalletRequestDto
@@ -8,13 +9,11 @@ import cash.p.terminal.feature.miniapp.domain.storage.IUniqueCodeStorage
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
-import io.horizontalsystems.core.DispatcherProvider
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.mockk
 import io.mockk.slot
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -24,18 +23,11 @@ import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-private class TestDispatcherProvider(dispatcher: CoroutineDispatcher) : DispatcherProvider {
-    override val io: CoroutineDispatcher = dispatcher
-    override val default: CoroutineDispatcher = dispatcher
-    override val main: CoroutineDispatcher = dispatcher
-    override val applicationScope: CoroutineScope = CoroutineScope(dispatcher)
-}
-
 @OptIn(ExperimentalCoroutinesApi::class)
 class ConnectMiniAppWalletUseCaseTest {
 
     private val dispatcher = UnconfinedTestDispatcher()
-    private val dispatcherProvider = TestDispatcherProvider(dispatcher)
+    private val dispatcherProvider = TestDispatcherProvider(dispatcher, CoroutineScope(dispatcher))
 
     private val miniAppApi = mockk<MiniAppApi>()
     private val evmPersonalSigner = mockk<EvmPersonalSigner>()

@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.settings.appstatus
 
 import android.net.Uri
+import cash.p.terminal.core.TestCoreApp
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.KoinLogsDao
 import cash.p.terminal.core.TestDispatcherProvider
@@ -15,7 +16,6 @@ import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TronKitManager
 import cash.p.terminal.feature.miniapp.domain.storage.IUniqueCodeStorage
 import cash.p.terminal.modules.blockchainstatus.StatusReportFile
-import cash.p.terminal.modules.blockchainstatus.TestCoreApp
 import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapterManager

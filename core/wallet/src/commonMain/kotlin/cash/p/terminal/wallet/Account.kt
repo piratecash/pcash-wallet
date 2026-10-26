@@ -40,7 +40,7 @@ data class Account(
 
     @CommonIgnoredOnParcel
     val isHardwareWalletAccount: Boolean
-        get() = type is AccountType.HardwareCard || type is AccountType.TrezorDevice
+        get() = type.isHardwareWalletType
 
     @CommonIgnoredOnParcel
     val hasAnyBackup = isBackedUp || isFileBackedUp
@@ -458,6 +458,9 @@ sealed class AccountType : CommonParcelable {
         else -> null
     }
 }
+
+val AccountType.isHardwareWalletType: Boolean
+    get() = this is AccountType.HardwareCard || this is AccountType.TrezorDevice
 
 val HDWallet.Purpose.derivation: Derivation
     get() = when (this) {

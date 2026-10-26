@@ -7,9 +7,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.test.swipeDown
@@ -59,6 +61,47 @@ class HSSwipeRefreshDesktopTest {
     }
 
     @Test
+    fun mouseScrollUp_pastThresholdOnTopContent_invokesOnRefreshOnceScrollStops() = runComposeUiTest {
+        var refreshes = 0
+        setScrollableContent { refreshes++ }
+
+        onNodeWithTag(LIST_TAG).performMouseInput { repeat(10) { scroll(-1f) } }
+        waitForScrollEnd()
+
+        assertEquals(1, refreshes)
+    }
+
+    @Test
+    fun mouseScrollUp_momentumCarriedContentToTop_doesNotRefresh() = runComposeUiTest {
+        var refreshes = 0
+        setScrollableContent { refreshes++ }
+        onNodeWithTag(LIST_TAG).performMouseInput { scroll(10f) }
+        waitForScrollEnd()
+        mainClock.autoAdvance = false
+
+        repeat(40) {
+            onNodeWithTag(LIST_TAG).performMouseInput { scroll(-1f) }
+            mainClock.advanceTimeBy(NOTCH_GAP_MS)
+        }
+        waitForScrollEnd()
+
+        assertEquals(0, refreshes)
+    }
+
+    @Test
+    fun mouseScrollUp_singleEventCrossingTop_doesNotRefresh() = runComposeUiTest {
+        var refreshes = 0
+        setScrollableContent { refreshes++ }
+        onNodeWithTag(LIST_TAG).performMouseInput { scroll(10f) }
+        waitForScrollEnd()
+
+        onNodeWithTag(LIST_TAG).performMouseInput { scroll(-30f) }
+        waitForScrollEnd()
+
+        assertEquals(0, refreshes)
+    }
+
+    @Test
     fun refreshingFlag_doesNotInvokeOnRefresh() = runComposeUiTest {
         var refreshes = 0
         setContent {
@@ -71,7 +114,31 @@ class HSSwipeRefreshDesktopTest {
         assertEquals(0, refreshes)
     }
 
+    private fun ComposeUiTest.setScrollableContent(onRefresh: () -> Unit) = setContent {
+        ComposeAppTheme {
+            HSSwipeRefresh(refreshing = false, onRefresh = onRefresh) {
+                Box(
+                    Modifier
+                        .testTag(LIST_TAG)
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Box(Modifier.fillMaxWidth().height(2000.dp))
+                }
+            }
+        }
+    }
+
+    private fun ComposeUiTest.waitForScrollEnd() {
+        mainClock.advanceTimeBy(SCROLL_END_MS)
+        waitForIdle()
+    }
+
     private companion object {
         const val LIST_TAG = "list"
+        const val SCROLL_END_MS = 1_000L
+
+        // Outlasts the wheel's own scroll animation so later notches reach the top unconsumed.
+        const val NOTCH_GAP_MS = 100L
     }
 }

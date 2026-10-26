@@ -60,7 +60,7 @@
     <string name="trezor_not_initialized_cta">راهنمای راه‌اندازی</string>
     <string name="trezor_connect_failed">اتصال به Trezor برقرار نشد.</string>
     <string name="Button_Activate">فعال‌سازی</string>
-    <string name="activation_required_dialog_description">برای دریافت %s باید توکن را فعال کنید. شبکه Stellar برای هر توکن به ایجاد خط اعتماد (trustline) نیاز دارد. بدون آن، کیف پول شما نمی‌تواند %s را دریافت کند — تراکنش رد می‌شود و وجوه تحویل داده نمی‌شوند.</string>
+    <string name="activation_required_dialog_description">برای دریافت %1$s باید توکن را فعال کنید. شبکه Stellar برای هر توکن به ایجاد خط اعتماد (trustline) نیاز دارد. بدون آن، کیف پول شما نمی‌تواند %2$s را دریافت کند — تراکنش رد می‌شود و وجوه تحویل داده نمی‌شوند.</string>
     <string name="activate_you_activate">شما فعال می‌کنید</string>
     <string name="activate_activating">در حال فعال‌سازی</string>
     <string name="activate_already_active_title">از قبل فعال است</string>
@@ -374,7 +374,7 @@
     <string name="Balance_Error_InvalidQrCode">قابل تشخیص نیست</string>
     <string name="Balance_Receive_WatchAddressAlert">This address is the address of the watched account</string>
     <string name="Balance_Receive_UsedAddresses">Used Addresses</string>
-    <string name="Balance_Receive_UsedAddressesDescriptoin">%s addresses change for privacy and security. Below a list of used addresses in this wallet.</string>
+    <string name="Balance_Receive_UsedAddressesDescriptoin">%1$s addresses change for privacy and security. Below a list of used addresses in this wallet.</string>
     <string name="Balance_Receive_ReceiveAddresses">Receive Addresses</string>
     <string name="Balance_Receive_ChangeAddresses">Change Addresses</string>
     <string name="receive_address_badge_new">جدید</string>
@@ -695,11 +695,11 @@
     <string name="Swap_Unlock_Unlimited">Unlimited</string>
     <!--Uniswap Info -->
     <string name="SwapInfo_AllowanceTitle">مستمری</string>
-    <string name="SwapInfo_AllowanceDescription">The amount an exchange can spend on a user\’s behalf when executing token swaps. A proceeding transaction setting sufficient allowance is required before an actual swap transaction can take place.</string>
+    <string name="SwapInfo_AllowanceDescription">The amount an exchange can spend on a user’s behalf when executing token swaps. A proceeding transaction setting sufficient allowance is required before an actual swap transaction can take place.</string>
     <string name="SwapInfo_PriceImpactTitle">تأثیر قیمت</string>
     <string name="SwapInfo_PriceImpactDescription">The expected price deviation from a shown price, typically increases with the swap amount.</string>
     <!--Deposit-->
-    <string name="Deposit_Title">دریافت %s</string>
+    <string name="Deposit_Title">دریافت %1$s</string>
     <!--Transactions-->
     <string name="Transactions_Title">تراکنش ها</string>
     <string name="Transactions_Hide">Transactions Hide</string>
@@ -1451,6 +1451,8 @@
     <string name="CoinPage_TimeDuration_Month">1M</string>
     <string name="CoinPage_TimeDuration_Year">1Y</string>
     <string name="CoinPage_TimeDuration_All">All</string>
+    <string name="Timestamp_Today">امروز</string>
+    <string name="Timestamp_Yesterday">ديروز</string>
     <string name="CoinPage_TradingVolume">Trading Volume</string>
     <string name="CoinPage_Audits_PoweredBy">Powered by Defiyield.app</string>
     <string name="CoinPage_Audits_Issues">Issues: %d</string>
@@ -1984,8 +1986,8 @@
     </plurals>
 
     <plurals name="staking_next_accrual_in_hours">
-        <item quantity="one">تجمیع بعدی %d ساعت دیگر انجام خواهد شد</item>
-        <item quantity="other">تجمیع بعدی %d ساعت دیگر انجام خواهد شد</item>
+        <item quantity="one">تجمیع بعدی %1$d ساعت دیگر انجام خواهد شد</item>
+        <item quantity="other">تجمیع بعدی %1$d ساعت دیگر انجام خواهد شد</item>
     </plurals>
     <string name="estimated_annual_interest">سود سالانه تخمینی</string>
     <string name="accruals">Accruals</string>
@@ -2342,6 +2344,9 @@
     <string name="desktop_forgot_password_warning">کیف‌پول‌ها، مخاطبین، تنظیمات و تاریخچه ذخیره‌شده روی این کامپیوتر حذف خواهند شد. وجوه موجود در بلاک‌چین تحت تأثیر قرار نمی‌گیرند: کیف‌پول‌ها فقط با عبارت بازیابی خود قابل بازیابی هستند.</string>
     <string name="desktop_forgot_password_action">حذف داده‌ها</string>
     <string name="desktop_forgot_password_failed">حذف داده‌ها ممکن نشد</string>
+    <string name="desktop_wipe_restart_manually">داده‌ها حذف شد. برنامه را دوباره اجرا کنید</string>
+    <string name="desktop_restart_manually">برنامه را دوباره اجرا کنید</string>
+    <string name="platform_not_supported_yet">هنوز در نسخه دسکتاپ پشتیبانی نمی‌شود</string>
     <string name="desktop_change_password_title">تغییر رمز عبور</string>
     <string name="desktop_change_password_current_hint">رمز عبور فعلی</string>
     <string name="desktop_change_password_new_hint">رمز عبور جدید</string>

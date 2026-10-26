@@ -15,12 +15,24 @@ class HudHelperMessenger(private val view: View) : HudMessenger {
         HudHelper.showSuccessMessage(view, text, icon)
     }
 
+    override fun showMessage(text: String, icon: DrawableResource, duration: SnackbarDuration) {
+        HudHelper.showMessage(view, text, duration, iconResource = icon)
+    }
+
+    override fun showInProgress(text: String, duration: SnackbarDuration) {
+        HudHelper.showInProcessMessage(view, text, duration)
+    }
+
     override fun showError(text: String) {
         HudHelper.showErrorMessage(view, text)
     }
 
-    override fun showWarning(text: String) {
-        HudHelper.showWarningMessage(view, text)
+    override fun showWarning(text: String, duration: SnackbarDuration) {
+        HudHelper.showWarningMessage(view, text, duration)
+    }
+
+    override fun showPremium(text: String, duration: SnackbarDuration) {
+        HudHelper.showPremiumMessage(view, text, duration)
     }
 
     override fun vibrate() = HudHelper.vibrate(view.context)

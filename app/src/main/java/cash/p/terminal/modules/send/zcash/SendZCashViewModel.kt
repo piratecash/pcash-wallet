@@ -28,12 +28,10 @@ import cash.p.terminal.modules.send.offline.OfflineSignCapableViewModel
 import cash.p.terminal.modules.send.offline.OfflineSigningController
 import cash.p.terminal.modules.send.offline.OfflineTransactionFormat
 import cash.p.terminal.modules.xrate.XRateService
-import cash.p.terminal.resources.Hud_Text_NoInternet
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.offline_broadcast_unsupported_blockchain
 import cash.p.terminal.resources.send_error_address_unavailable
 import cash.p.terminal.resources.send_error_amount_unavailable
-import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Wallet
@@ -43,7 +41,6 @@ import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.math.BigDecimal
-import java.net.UnknownHostException
 
 @Suppress("LongParameterList")
 class SendZCashViewModel(
@@ -81,7 +78,7 @@ class SendZCashViewModel(
             dispatcherProvider = dispatcherProvider,
             payloadEncoder = offlineTransactionPayloadEncoder,
             repository = offlineSignedTransactionRepository,
-            cautionFactory = ::createCaution,
+            cautionFactory = ::zcashSendCaution,
             isSilentCancellation = { false },
         )
     }
@@ -128,14 +125,6 @@ class SendZCashViewModel(
         }
         viewModelScope.launch {
             addressService.setAddress(address)
-        }
-    }
-
-    companion object {
-        fun createCaution(error: Throwable) = when (error) {
-            is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
-            is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
-            else -> HSCaution(TranslatableString.PlainString(error.message ?: ""))
         }
     }
 
@@ -283,7 +272,7 @@ class SendZCashViewModel(
             zcashLogger.i { "Send completed" }
         } catch (e: Throwable) {
             zcashLogger.e { "Send failed error=${e.zcashErrorName}" }
-            sendResult = SendResult.Failed(createCaution(e))
+            sendResult = SendResult.Failed(zcashSendCaution(e))
         }
     }
 }

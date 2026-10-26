@@ -1,15 +1,9 @@
 package cash.p.terminal.di
 
-import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewModel
-import cash.p.terminal.modules.balance.token.creationblock.CreationBlockViewModel
-import cash.p.terminal.modules.blockchainstatus.BlockchainStatusViewModel
-import cash.p.terminal.modules.configuredtoken.ConfiguredTokenInfoViewModel
-import cash.p.terminal.modules.addtoken.AddTokenViewModel
 import cash.p.terminal.modules.multiswap.TimerService
 import cash.p.terminal.modules.multiswap.exchange.MultiSwapExchangeViewModel
 import cash.p.terminal.modules.multiswap.exchanges.MultiSwapExchangesViewModel
 import cash.p.terminal.modules.multiswap.providersettings.SwapProvidersSettingsViewModel
-import cash.p.terminal.modules.displayoptions.DisplayOptionsViewModel
 import cash.p.terminal.modules.hardwarewallet.HardwareWalletViewModel
 import cash.p.terminal.modules.main.MainActivityViewModel
 import cash.p.terminal.modules.main.MainViewModel
@@ -19,15 +13,12 @@ import cash.p.terminal.modules.softwareupdate.history.VersionHistoryViewModel
 import cash.p.terminal.modules.pin.unlock.PinUnlockViewModel
 import cash.p.terminal.modules.markdown.localreader.MarkdownLocalViewModel
 import cash.p.terminal.modules.premium.settings.PushNotificationsViewModel
-import cash.p.terminal.modules.premium.settings.PremiumSettingsViewModel
 import cash.p.terminal.modules.premium.smsnotification.SendSmsNotificationViewModel
-import cash.p.terminal.modules.receive.viewmodels.ReceiveMoneroViewModel
 import cash.p.terminal.modules.qrscanner.QRScannerViewModel
 import cash.p.terminal.modules.qrscanner.QrCodeImageDecoder
 import cash.p.terminal.modules.releasenotes.ReleaseNotesViewModel
 import cash.p.terminal.modules.resettofactorysettings.ResetToFactorySettingsViewModel
 import cash.p.terminal.modules.send.offline.OfflineBroadcastViewModel
-import cash.p.terminal.modules.send.offline.OfflineSignedTransactionsViewModel
 import cash.p.terminal.modules.calculator.autolock.CalculatorAutoLockViewModel
 import cash.p.terminal.modules.calculator.lockscreen.CalculatorLockScreenViewModel
 import cash.p.terminal.modules.calculator.pinsettings.CalculatorPinSettingsViewModel
@@ -39,20 +30,16 @@ import cash.p.terminal.modules.settings.appcache.AppCacheViewModel
 import cash.p.terminal.modules.settings.appstatus.AppStatusViewModel
 import cash.p.terminal.modules.settings.displaytransactions.DisplayTransactionsViewModel
 import cash.p.terminal.modules.settings.guides.GuidesViewModel
-import cash.p.terminal.modules.balance.BalanceAccountsViewModel
-import cash.p.terminal.modules.rateapp.RateAppViewModel
 import cash.p.terminal.modules.subscription.ActivateSubscriptionViewModel
 import cash.p.terminal.modules.walletconnect.request.WCRequestEvmViewModel
 import cash.p.terminal.modules.settings.main.MainSettingsViewModel
 import cash.p.terminal.modules.settings.privacy.PrivacyViewModel
 import cash.p.terminal.modules.settings.security.passcode.SecuritySettingsViewModel
 import cash.p.terminal.modules.tonconnect.TonConnectListViewModel
-import cash.p.terminal.modules.transactions.TransactionsRateRepository
 import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedSheet
 import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedViewModel
 import cash.p.terminal.modules.zcashmigration.ZcashMigrationViewModel
 import cash.p.terminal.modules.multiswap.SwapSelectCoinViewModel
-import cash.p.terminal.modules.offline.OfflineModeToggleViewModel
 import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Token
@@ -63,7 +50,6 @@ import io.horizontalsystems.core.DispatcherProvider
 import cash.p.terminal.modules.pin.SetDuressPinIntroViewModel
 import cash.p.terminal.modules.settings.about.AboutViewModel
 import cash.p.terminal.modules.settings.appearance.AppIconViewModel
-import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
@@ -73,7 +59,6 @@ import org.koin.dsl.module
 val viewModelModule = module {
     singleOf(::DefaultDispatcherProvider) bind DispatcherProvider::class
     singleOf(::QrCodeImageDecoder)
-    factoryOf(::TransactionsRateRepository)
 
     viewModelOf(::MainViewModel)
     viewModelOf(::MainActivityViewModel)
@@ -82,12 +67,9 @@ val viewModelModule = module {
     viewModel { params -> VersionChangelogViewModel(params.get(), get(), get()) }
     viewModelOf(::DisplayTransactionsViewModel)
     viewModelOf(::OfflineBroadcastViewModel)
-    viewModelOf(::OfflineSignedTransactionsViewModel)
     viewModelOf(::GuidesViewModel)
     viewModelOf(::ActivateSubscriptionViewModel)
     viewModelOf(::WCRequestEvmViewModel)
-    viewModelOf(::RateAppViewModel)
-    viewModelOf(::BalanceAccountsViewModel)
     viewModelOf(::PrivacyViewModel)
     viewModelOf(::AboutViewModel)
     viewModelOf(::SetDuressPinIntroViewModel)
@@ -99,34 +81,14 @@ val viewModelModule = module {
     viewModelOf(::ReleaseNotesViewModel)
     viewModelOf(::MarkdownLocalViewModel)
     viewModelOf(::AppStatusViewModel)
-    viewModel { params -> AddressPoisoningViewModel(params[0], params[1], params[2], get(), get(), get(), get()) }
-    viewModel { params -> CreationBlockViewModel(params[0], get(), get(), get(), get(), get()) }
-    viewModel { params ->
-        BlockchainStatusViewModel(
-            provider = params.get(),
-            dispatcherProvider = get(),
-            systemInfoManager = get(),
-            statusReportFile = get(),
-        )
-    }
     viewModelOf(::AppCacheViewModel)
-    viewModelOf(::PremiumSettingsViewModel)
     viewModelOf(::PushNotificationsViewModel)
     viewModelOf(::SendSmsNotificationViewModel)
-    viewModelOf(::DisplayOptionsViewModel)
     viewModelOf(::TonConnectListViewModel)
     viewModelOf(::QRScannerViewModel)
-    viewModelOf(::AddTokenViewModel)
     viewModelOf(::PinUnlockViewModel)
     viewModel { (input: AccountTypeNotSupportedSheet.Input) ->
         AccountTypeNotSupportedViewModel(input = input, accountManager = get())
-    }
-    viewModel { (token: Token) ->
-        ConfiguredTokenInfoViewModel(
-            token = token,
-            accountManager = get(),
-            restoreSettingsManager = get()
-        )
     }
     viewModelOf(::AdvancedSecurityViewModel)
     viewModelOf(::CalculatorPinSettingsViewModel)
@@ -167,29 +129,12 @@ val viewModelModule = module {
         )
     }
     viewModel { (wallet: Wallet) ->
-        ReceiveMoneroViewModel(
-            wallet = wallet,
-            adapterManager = get(),
-            localStorage = get(),
-            dispatcherProvider = get()
-        )
-    }
-    viewModel { (wallet: Wallet) ->
         ZcashMigrationViewModel(
             wallet = wallet,
             pendingRegistrar = get(),
             numberFormatter = get(),
             adapterManager = get(),
             xRateService = XRateService(get(), get<CurrencyManager>().baseCurrency)
-        )
-    }
-    viewModel { (wallet: Wallet) ->
-        OfflineModeToggleViewModel(
-            wallet = wallet,
-            offlineModeManager = get(),
-            offlineModeUseCase = get(),
-            walletManager = get(),
-            adapterManager = get(),
         )
     }
 }
