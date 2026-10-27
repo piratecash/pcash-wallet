@@ -9,6 +9,8 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.ui.NavDisplay
 import kotlin.uuid.ExperimentalUuidApi
@@ -48,7 +50,17 @@ abstract class HSPage(
 
     @Composable
     abstract fun GetContent(navigation: HSNavigation)
+
+    /** How every host renders a page: reports its resume state and binds result launchers to it. */
+    @Composable
+    fun Content(navigation: HSNavigation) {
+        ReportPageResumed(navigation, this)
+        CompositionLocalProvider(LocalHSPage provides this) { GetContent(navigation) }
+    }
 }
+
+/** The page being composed; null outside any page (root-level content). */
+internal val LocalHSPage = staticCompositionLocalOf<HSPage?> { null }
 
 abstract class HSBottomSheet : HSPage(bottomSheet = true)
 

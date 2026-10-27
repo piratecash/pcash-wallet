@@ -1018,6 +1018,8 @@ Proceed only if you\u0027re sure.</string>
     <string name="TransactionInfo_AnnouncedAmount">Announced Amount</string>
     <string name="transaction_info_executed_amount">Executed Amount</string>
     <string name="TransactionInfo_PriceImpact">Price Impact</string>
+    <string name="swap_duration">Swap time</string>
+    <string name="swap_duration_approximate">~%1$s</string>
     <string name="TransactionInfo_ExecutedRate">Executed Rate</string>
     <string name="TransactionInfo_YouGot">You Got</string>
     <string name="TransactionInfo_YouSent">You Sent</string>

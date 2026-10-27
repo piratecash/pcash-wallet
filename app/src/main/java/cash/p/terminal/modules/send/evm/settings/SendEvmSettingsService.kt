@@ -72,6 +72,7 @@ class SendEvmSettingsService(
                         gasData = feeData.gasData,
                         nonce = nonceData.nonce,
                         default = feeData.default && nonceData.default,
+                        estimatedFor = feeData.estimatedFor,
                         warnings = warnings,
                         errors = errors
                     )
@@ -91,6 +92,7 @@ class SendEvmSettingsService(
         val gasData: GasData,
         val nonce: Long?,
         val default: Boolean,
+        val estimatedFor: TransactionData,
         val warnings: List<Warning> = listOf(),
         val errors: List<Throwable> = listOf()
     )

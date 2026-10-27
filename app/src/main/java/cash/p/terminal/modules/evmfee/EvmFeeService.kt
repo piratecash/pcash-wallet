@@ -8,17 +8,21 @@ import io.horizontalsystems.ethereumkit.core.EthereumKit
 import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.GasPrice
 import io.horizontalsystems.ethereumkit.models.TransactionData
+import io.reactivex.Single
+import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx2.await
+import kotlinx.coroutines.withContext
 import java.math.BigInteger
 
 class EvmFeeService(
@@ -30,7 +34,9 @@ class EvmFeeService(
 
     private var gasLimit: Long? = null
     private var gasPriceInfoState: DataState<GasPriceInfo> = DataState.Loading
-    private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    // One lane: cancelling a stale estimate and publishing a result cannot interleave.
+    private val serialDispatcher = Dispatchers.Default.limitedParallelism(1)
+    private val coroutineScope = CoroutineScope(SupervisorJob() + serialDispatcher)
     private var gasPriceInfoJob: Job? = null
 
     private val evmBalance: BigInteger
@@ -81,6 +87,7 @@ class EvmFeeService(
             gasPriceInfoJob = coroutineScope.launch {
                 try {
                     val transaction = feeDataSingle(gasPriceInfo, transactionData)
+                    ensureActive()
                     sync(transaction)
                 } catch (e: CancellationException) {
                     // do nothing
@@ -112,12 +119,18 @@ class EvmFeeService(
                 val transactionDataAdjusted =
                     TransactionData(transactionData.to, adjustedValue, byteArrayOf())
                 val allWarnings = warnings + listOfNotNull(gasData.warning)
-                Transaction(transactionDataAdjusted, gasData, default, allWarnings, errors)
+                Transaction(
+                    transactionDataAdjusted, gasData, default,
+                    estimatedFor = transactionData, warnings = allWarnings, errors = errors
+                )
             }
         } else {
             val gasData = gasDataSingle(gasPrice, gasPriceDefault, null, transactionData)
             val allWarnings = warnings + listOfNotNull(gasData.warning)
-            Transaction(transactionData, gasData, default, allWarnings, errors)
+            Transaction(
+                transactionData, gasData, default,
+                estimatedFor = transactionData, warnings = allWarnings, errors = errors
+            )
         }
     }
 
@@ -138,14 +151,14 @@ class EvmFeeService(
                 gasPrice,
                 transactionData,
                 stubAmount
-            ).await()
+            ).awaitOffLane()
         } catch (error: Throwable) {
             if (error.convertedError == EvmError.LowerThanBaseGasLimit) {
                 val gasData = gasDataService.estimatedGasDataAsync(
                     gasPriceDefault,
                     transactionData,
                     stubAmount
-                ).await()
+                ).awaitOffLane()
                 gasData.gasPrice = gasPrice
                 gasData
             } else if (error is io.horizontalsystems.ethereumkit.api.jsonrpc.JsonRpc.ResponseError.RpcError) {
@@ -155,7 +168,7 @@ class EvmFeeService(
                         transactionData = transactionData,
                         stubAmount = stubAmount,
                         toAddress = Address(TransactionViewItemFactoryHelper.zeroAddress)
-                    ).await().apply {
+                    ).awaitOffLane().apply {
                         this.warning = CalculateWarning.Reverted
                     }
                 } else {
@@ -166,6 +179,9 @@ class EvmFeeService(
             }
         }
     }
+
+    // The RPC blocks its subscribing thread; keep it off the serial lane.
+    private suspend fun Single<GasData>.awaitOffLane(): GasData = subscribeOn(Schedulers.io()).await()
 
     private fun sync(transaction: Transaction) {
         _transactionStatusFlow.tryEmit(
@@ -179,13 +195,16 @@ class EvmFeeService(
         )
     }
 
-    fun setGasLimit(gasLimit: Long?) {
-        this.gasLimit = gasLimit
+    suspend fun setGasLimit(gasLimit: Long?) = withContext(serialDispatcher) {
+        this@EvmFeeService.gasLimit = gasLimit
         sync()
     }
 
-    fun setTransactionData(transactionData: TransactionData) {
-        this.transactionData = transactionData
+    suspend fun setTransactionData(transactionData: TransactionData) = withContext(serialDispatcher) {
+        this@EvmFeeService.transactionData = transactionData
+        // The estimate for the previous data must not stay sendable while the new one runs.
+        _transactionStatusFlow.tryEmit(DataState.Loading)
+        gasPriceInfoJob?.cancel()
         sync()
     }
 

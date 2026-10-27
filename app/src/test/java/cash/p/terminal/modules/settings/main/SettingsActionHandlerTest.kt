@@ -40,6 +40,8 @@ import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.LocalHostLifecycleOwner
 import cash.p.terminal.navigation.NavigationType
 import cash.p.terminal.navigation.QrScannerInput
+import cash.p.terminal.navigation.QrScannerLauncher
+import cash.p.terminal.navigation.rememberQrScannerLauncher
 import cash.p.terminal.shared.settings.SettingsAction
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Account
@@ -79,6 +81,11 @@ class SettingsActionHandlerTest {
     private var walletConnectSupport: WCManager.SupportState = WCManager.SupportState.Supported
     private var tonConnectSupported = true
     private var importTransactionFileCalls = 0
+    private val offlineBroadcastScanner: QrScannerLauncher by lazy {
+        lateinit var launcher: QrScannerLauncher
+        compose.setContent { launcher = navigation.rememberQrScannerLauncher(appPages) {} }
+        launcher
+    }
     private val viewModel = mockk<MainSettingsViewModel>(relaxed = true) {
         every { uiState } returns settingsContentTestState
         every { appVersion } returns "1.2.3"
@@ -219,7 +226,7 @@ class SettingsActionHandlerTest {
         handleSettingsAction(
             action,
             navigation,
-            appPages,
+            offlineBroadcastScanner,
             viewModel,
             context,
             rawTxScanTitle = "Raw transaction",

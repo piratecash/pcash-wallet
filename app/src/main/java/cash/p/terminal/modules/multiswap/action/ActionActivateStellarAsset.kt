@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import cash.p.terminal.R
 import cash.p.terminal.modules.activatetoken.ActivateTokenPage
-import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.ResultLauncher
 import cash.p.terminal.wallet.Wallet
 
 class ActionActivateStellarAsset(
@@ -26,9 +26,9 @@ class ActionActivateStellarAsset(
         wallet.coin.code,
     )
 
-    override fun execute(navigation: HSNavigation, onActionCompleted: () -> Unit) {
-        navigation.slideFromBottomForResult<ActivateTokenResult>(ActivateTokenPage(wallet)) {
-            if (it.activated) onActionCompleted()
-        }
-    }
+    override fun execute(launcher: ResultLauncher<ISwapProviderAction>) = launcher.slideFromBottom(page(), this)
+
+    override fun isCompleted(result: Any) = (result as? ActivateTokenResult)?.activated == true
+
+    private fun page() = ActivateTokenPage(wallet)
 }

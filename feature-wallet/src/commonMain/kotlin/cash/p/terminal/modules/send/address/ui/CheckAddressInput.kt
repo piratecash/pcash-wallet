@@ -31,9 +31,8 @@ import androidx.compose.ui.unit.dp
 import cash.p.terminal.core.launchAfterClearingFocus
 import cash.p.terminal.entities.Address
 import cash.p.terminal.feature.wallet.qrScannerAvailable
-import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.HSNavigation
-import cash.p.terminal.navigation.openQrScanner
+import cash.p.terminal.navigation.rememberQrScannerLauncher
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.Send_Button_Paste
 import cash.p.terminal.resources.ic_delete_20
@@ -61,8 +60,8 @@ fun CheckAddressInput(
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
     val scannerTitle = stringResource(Res.string.qr_scanner_title_smart_scan)
-    val appPages: AppPages = koinInject()
     val qrScannerAvailable = qrScannerAvailable()
+    val qrScanner = navigation.rememberQrScannerLauncher(koinInject(), onValueChange)
 
     val borderColor = when (state) {
         is DataState.Error -> {
@@ -136,9 +135,7 @@ fun CheckAddressInput(
                         icon = Res.drawable.ic_qr_scan_20,
                         onClick = {
                             coroutineScope.launchAfterClearingFocus(focusManager) {
-                                navigation.openQrScanner(appPages, scannerTitle) { scannedText ->
-                                    onValueChange.invoke(scannedText)
-                                }
+                                qrScanner.open(scannerTitle)
                             }
                         }
                     )

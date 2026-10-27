@@ -10,9 +10,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
-import cash.p.terminal.core.authorizedAction
-import cash.p.terminal.core.ensurePinSet
+import cash.p.terminal.core.rememberAuthorizedAction
+import cash.p.terminal.core.rememberEnsurePinSet
 import cash.p.terminal.modules.pin.EditPinPage
+import cash.p.terminal.modules.pin.PinType
 import cash.p.terminal.modules.pin.SetPinPage
 import cash.p.terminal.modules.settings.security.SecurityCenterCell
 import cash.p.terminal.modules.settings.security.autolock.AutoLockIntervalsPage
@@ -27,6 +28,7 @@ import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import org.jetbrains.compose.resources.stringResource
+import cash.p.terminal.resources.PinSet_ForBiometrics
 
 @Composable
 fun PasscodeBlock(
@@ -34,6 +36,15 @@ fun PasscodeBlock(
     navigation: HSNavigation,
 ) {
     val uiState = viewModel.uiState
+    val openEditPin = navigation.rememberAuthorizedAction(input = null) {
+        navigation.slideFromRight(EditPinPage(null))
+    }
+    val disablePin = navigation.rememberAuthorizedAction(input = null, action = viewModel::disablePin)
+    val enableBiometrics = navigation.rememberEnsurePinSet(
+        Res.string.PinSet_ForBiometrics,
+        PinType.REGULAR,
+        viewModel::enableBiometrics
+    )
 
     VSpacer(height = 8.dp)
     ManagePasscodeSection(
@@ -45,16 +56,10 @@ fun PasscodeBlock(
             if (!uiState.pinEnabled) {
                 navigation.slideFromRight(SetPinPage(null))
             } else {
-                navigation.authorizedAction {
-                    navigation.slideFromRight(EditPinPage(null))
-                }
+                openEditPin()
             }
         },
-        onDisableClick = {
-            navigation.authorizedAction {
-                viewModel.disablePin()
-            }
-        }
+        onDisableClick = disablePin
     )
 
     if (uiState.pinEnabled) {
@@ -97,9 +102,7 @@ fun PasscodeBlock(
                         checked = uiState.biometricsEnabled,
                         onCheckedChange = { enabled ->
                             if (enabled) {
-                                navigation.ensurePinSet(R.string.PinSet_ForBiometrics) {
-                                    viewModel.enableBiometrics()
-                                }
+                                enableBiometrics()
                             } else {
                                 viewModel.disableBiometrics()
                             }

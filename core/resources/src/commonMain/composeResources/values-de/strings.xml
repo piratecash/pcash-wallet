@@ -772,6 +772,8 @@
     <string name="TransactionInfo_AnnouncedAmount">Angekündigter Betrag</string>
     <string name="transaction_info_executed_amount">Ausgeführter Betrag</string>
     <string name="TransactionInfo_PriceImpact">Preisauswirkung</string>
+    <string name="swap_duration">Tauschdauer</string>
+    <string name="swap_duration_approximate">~%1$s</string>
     <string name="TransactionInfo_ExecutedRate">Ausgeführter Kurs</string>
     <string name="TransactionInfo_Fee">Gebühr</string>
     <string name="TransactionInfo_FeeEstimated">Gebühr (est.)</string>

@@ -779,6 +779,8 @@
     <string name="TransactionInfo_AnnouncedAmount">مبلغ اعلام شده</string>
     <string name="transaction_info_executed_amount">مبلغ اجرا شده</string>
     <string name="TransactionInfo_PriceImpact">تأثیر قیمت</string>
+    <string name="swap_duration">مدت جایگزینی</string>
+    <string name="swap_duration_approximate">~%1$s</string>
     <string name="TransactionInfo_ExecutedRate">نرخ اجرا شده</string>
     <string name="TransactionInfo_Fee">قیمت</string>
     <string name="TransactionInfo_FeeEstimated">قیمت (تخمینی)</string>

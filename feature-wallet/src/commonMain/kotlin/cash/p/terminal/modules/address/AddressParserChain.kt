@@ -6,6 +6,7 @@ import cash.p.terminal.entities.Address
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.TokenQuery
 import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.ethereumkit.ens.EnsResolver
 
 class AddressParserChain(
     handlers: List<IAddressHandler> = emptyList(),
@@ -23,7 +24,7 @@ class AddressParserChain(
 
         fun build(tokenQuery: TokenQuery, coinCode: String?): AddressParserChain {
             val ensHandler =
-                AddressHandlerEns(tokenQuery.blockchainType, EnsResolverHolder.resolver)
+                AddressHandlerEns(tokenQuery.blockchainType, getKoinInstance<EnsResolver>())
             val udnHandler =
                 AddressHandlerUdn(tokenQuery, coinCode, getKoinInstance<AddressResolutionConfig>().udnApiKey)
             val addressParserChain =

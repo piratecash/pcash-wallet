@@ -16,10 +16,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.core.Caution
-import cash.p.terminal.core.navigateWithTermsAccepted
+import cash.p.terminal.core.rememberTermsAcceptedAction
 import cash.p.terminal.core.validateAndSaveBackup
 import cash.p.terminal.feature.wallet.BackupFileLauncher
-import cash.p.terminal.feature.wallet.authorizeSecretAction
+import cash.p.terminal.feature.wallet.rememberSecretAction
 import cash.p.terminal.modules.contacts.screen.ConfirmationBottomSheet
 import cash.p.terminal.modules.backuplocal.BackupLocalPage
 import cash.p.terminal.modules.restorelocal.RestoreLocalPage
@@ -55,29 +55,25 @@ class BackupManagerPage : HSPage() {
 
     @Composable
     override fun GetContent(navigation: HSNavigation) {
+        val openAfterTerms = navigation.rememberTermsAcceptedAction<HSPage>(navigation::slideFromBottom)
+        val createBackup = navigation.rememberSecretAction { navigation.slideFromRight(BackupLocalPage(null)) }
         BackupManagerScreen(
             onBackClick = {
                 navigation.navigateUpSafely()
             },
             onRestoreBackup = { backupFilePath, fileName ->
-                navigation.navigateWithTermsAccepted {
-                    navigation.slideFromBottom(
-                        RestoreLocalPage(
-                            RestoreLocalPage.Input(
-                                BackupManagerPage::class,
-                                false,
-                                backupFilePath,
-                                fileName,
-                            )
+                openAfterTerms(
+                    RestoreLocalPage(
+                        RestoreLocalPage.Input(
+                            BackupManagerPage::class,
+                            false,
+                            backupFilePath,
+                            fileName,
                         )
                     )
-                }
+                )
             },
-            onCreateBackup = {
-                navigation.authorizeSecretAction {
-                    navigation.slideFromRight(BackupLocalPage(null))
-                }
-            }
+            onCreateBackup = createBackup
         )
     }
 }

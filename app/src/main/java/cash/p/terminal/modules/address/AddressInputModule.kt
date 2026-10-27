@@ -3,11 +3,13 @@ package cash.p.terminal.modules.address
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import cash.p.terminal.core.App
+import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.core.utils.AddressUriParser
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.send.beam.BeamRecipient
 import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.ethereumkit.ens.EnsResolver
 import cash.p.terminal.wallet.entities.TokenQuery
 
 object AddressInputModule {
@@ -17,7 +19,7 @@ object AddressInputModule {
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            val ensHandler = AddressHandlerEns(tokenQuery.blockchainType, EnsResolverHolder.resolver)
+            val ensHandler = AddressHandlerEns(tokenQuery.blockchainType, getKoinInstance<EnsResolver>())
             val udnHandler = AddressHandlerUdn(tokenQuery, coinCode, AppConfigProvider.udnApiKey)
             val addressParserChain = AddressParserChain(domainHandlers = listOf(ensHandler, udnHandler))
 
@@ -94,7 +96,7 @@ object AddressInputModule {
     class FactoryNft(private val blockchainType: BlockchainType) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            val ensHandler = AddressHandlerEns(blockchainType, EnsResolverHolder.resolver)
+            val ensHandler = AddressHandlerEns(blockchainType, getKoinInstance<EnsResolver>())
             val addressParserChain = AddressParserChain(domainHandlers = listOf(ensHandler))
 
             when (blockchainType) {

@@ -19,6 +19,8 @@ import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.tangem.ui.HardwareWalletError
 import cash.p.terminal.tangem.ui.HardwareWalletOnboardingPage
 import cash.p.terminal.trezor.ui.onboarding.TrezorSetupPage
@@ -44,16 +46,20 @@ class HardwareWalletPage(val input: ManageAccountsModule.Input?) : HSPage() {
         val viewModel = koinViewModel<HardwareWalletViewModel>()
 
         val view = LocalView.current
+        val onboardingLauncher = navigation.rememberResultLauncher<HardwareWalletOnboardingPage.Result> {
+            viewModel.success = it.success
+        }
+        val trezorLauncher = navigation.rememberResultLauncher<TrezorSetupPage.Result> {
+            viewModel.success = it.success
+        }
 
         LaunchedEffect(Unit) {
             viewModel.errorEvents.collect { error ->
                 when (error) {
                     HardwareWalletError.CardNotActivated -> {
-                        navigation.slideFromRightForResult<HardwareWalletOnboardingPage.Result>(
+                        onboardingLauncher.slideFromRight(
                             HardwareWalletOnboardingPage(HardwareWalletOnboardingPage.Input(viewModel.accountName))
-                        ) {
-                            viewModel.success = it.success
-                        }
+                        )
                     }
 
                     HardwareWalletError.WalletsNotCreated -> {
@@ -81,11 +87,7 @@ class HardwareWalletPage(val input: ManageAccountsModule.Input?) : HSPage() {
             navigation = navigation,
             onScanCard = viewModel::scanCard,
             onConnectTrezor = {
-                navigation.slideFromRightForResult<TrezorSetupPage.Result>(
-                    TrezorSetupPage(TrezorSetupPage.Input(viewModel.accountName))
-                ) {
-                    viewModel.success = it.success
-                }
+                trezorLauncher.slideFromRight(TrezorSetupPage(TrezorSetupPage.Input(viewModel.accountName)))
             },
             onFinish = { navigation.removeLastUntil(popUpToInclusiveId, inclusive) },
             viewModel = viewModel,

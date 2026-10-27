@@ -27,6 +27,8 @@ import cash.p.terminal.R
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromBottom
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
@@ -51,6 +53,9 @@ class WCPairingsPage : HSPage() {
 fun WCPairingsScreen(navigation: HSNavigation) {
     val viewModel = viewModel<WCPairingsViewModel>(factory = WCPairingsViewModel.Factory())
     val uiState = viewModel.uiState
+    val deleteAllLauncher = navigation.rememberResultLauncher<ConfirmDeleteAllPairingsSheet.Result> { result ->
+        if (result.confirmed) viewModel.deleteAll()
+    }
 
     LaunchedEffect(uiState.closeScreen) {
         if (uiState.closeScreen) {
@@ -89,15 +94,7 @@ fun WCPairingsScreen(navigation: HSNavigation) {
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                             .fillMaxWidth(),
-                        onClick = {
-                            navigation.slideFromBottomForResult<ConfirmDeleteAllPairingsSheet.Result>(
-                                ConfirmDeleteAllPairingsSheet()
-                            ) { result ->
-                                if (result.confirmed) {
-                                    viewModel.deleteAll()
-                                }
-                            }
-                        }
+                        onClick = { deleteAllLauncher.slideFromBottom(ConfirmDeleteAllPairingsSheet()) }
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_delete_20),

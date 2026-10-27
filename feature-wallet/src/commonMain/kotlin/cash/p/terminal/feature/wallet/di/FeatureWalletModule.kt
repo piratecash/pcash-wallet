@@ -88,6 +88,9 @@ import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import org.koin.core.module.dsl.viewModel
 import cash.p.terminal.wallet.managers.UserManager
+import io.horizontalsystems.ethereumkit.ens.EnsResolver
+import io.horizontalsystems.ethereumkit.models.RpcSource
+import java.net.URI
 import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.address.AddressCheckManager
 import cash.p.terminal.core.factories.AdapterFactory
@@ -401,6 +404,7 @@ val featureWalletModule = module {
     singleOf(::SeedPhraseQrCrypto)
     singleOf(::TokenAutoEnableManager)
     singleOf(::ZcashAddressDeriver)
+    single { EnsResolver(RpcSource.Http(listOf(URI(get<AddressResolutionConfig>().blocksDecodedEthereumRpc)), null)) }
     singleOf(::ZcashKeyExporter)
     singleOf(::ZcashBirthdayProvider)
     singleOf(::LitecoinBirthdayProvider)

@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.premium.settings
 
-import cash.p.terminal.core.authorizedLoggingAction
+import androidx.compose.runtime.Composable
+import cash.p.terminal.core.rememberAuthorizedLoggingAction
 import cash.p.terminal.feature.logging.domain.usecase.LogLoginAttemptUseCase
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
@@ -10,11 +11,13 @@ class AndroidPremiumPlatformSettings(
 ) : PremiumPlatformSettings {
     override suspend fun shouldShowLoggingAlert(): Boolean = logLoginAttemptUseCase.shouldShowLoggingAlert()
 
-    override fun openLoginLogging(navigation: HSNavigation) =
-        navigation.authorizedLoggingAction { navigation.slideFromRight(LoginLoggingPage()) }
+    @Composable
+    override fun rememberLoginLoggingAction(navigation: HSNavigation) =
+        navigation.rememberAuthorizedLoggingAction { navigation.slideFromRight(LoginLoggingPage()) }
 
-    override fun openAuthorizationInfo(navigation: HSNavigation) =
-        navigation.authorizedLoggingAction { navigation.slideFromRight(AuthorizationInfoPage()) }
+    @Composable
+    override fun rememberAuthorizationInfoAction(navigation: HSNavigation) =
+        navigation.rememberAuthorizedLoggingAction { navigation.slideFromRight(AuthorizationInfoPage()) }
 
     override fun pushNotificationsPage(): HSPage = PushNotificationsPage()
 }

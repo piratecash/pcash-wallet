@@ -25,8 +25,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import cash.p.terminal.core.authorizedAction
 import cash.p.terminal.core.description
+import cash.p.terminal.core.rememberAuthorizedAction
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
 import cash.p.terminal.modules.walletconnect.session.ui.DropDownCell
@@ -75,6 +75,7 @@ fun TonConnectNewScreen(
         )
     })
 
+    val connect = navigation.rememberAuthorizedAction(input = null) { viewModel.connect() }
     val context = LocalContext.current
     val uiState = viewModel.uiState
 
@@ -232,11 +233,7 @@ fun TonConnectNewScreen(
                         } else {
                             stringResource(Res.string.Button_Connect)
                         },
-                        onClick = {
-                            navigation.authorizedAction {
-                                viewModel.connect()
-                            }
-                        },
+                        onClick = connect,
                         enabled = uiState.connectEnabled && uiState.manifest != null,
                         loadingIndicator = manifestLoading || uiState.connecting
                     )

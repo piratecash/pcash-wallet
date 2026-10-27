@@ -6,7 +6,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import cash.p.terminal.core.getKoinInstance
-import cash.p.terminal.core.premiumAction
 import cash.p.terminal.core.usecase.GetRestoreHeightForWalletUseCase
 import cash.p.terminal.feature.wallet.SecretActionAuthorizer
 import cash.p.terminal.feature.wallet.WalletPlatformPages
@@ -22,6 +21,7 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.PageResumeEffect
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.core.rememberPremiumToggle
 import cash.p.terminal.navigation.viewModelStoreOwnerForPage
 import cash.p.terminal.ui.compose.BalanceHideOnFlipHandling
 import cash.p.terminal.resources.Button_Cancel
@@ -53,6 +53,9 @@ class TokenBalancePage(val input: Wallet) : HSPage() {
             koinViewModel { parametersOf(input) }
         val secretActionAuthorizer: SecretActionAuthorizer = koinInject()
         val hud = rememberHudMessenger()
+        val showAllTransactions = secretActionAuthorizer.rememberHiddenTransactionsAuthorization(navigation) {
+            viewModel.showAllTransactions(true)
+        }
 
         OfflineModeErrorEffect(offlineModeToggleViewModel)
 
@@ -69,11 +72,7 @@ class TokenBalancePage(val input: Wallet) : HSPage() {
                     StackingPage(if (input.isPirateCash()) StackingType.PCASH else StackingType.COSANTA)
                 )
             },
-            onShowAllTransactionsClicked = {
-                secretActionAuthorizer.authorizeHiddenTransactions(navigation) {
-                    viewModel.showAllTransactions(true)
-                }
-            },
+            onShowAllTransactionsClicked = showAllTransactions,
             onClickSubtitle = {
                 viewModel.toggleTotalType()
                 hud.vibrate()
@@ -117,6 +116,7 @@ class AssetSettingsPage(val wallet: Wallet) : HSPage() {
             viewModelStoreOwner = navigation.viewModelStoreOwnerForPage(TokenBalancePage::class)
         ) { parametersOf(wallet) }
         OfflineModeErrorEffect(offlineModeToggleViewModel)
+        val setAmlCheckEnabled = navigation.rememberPremiumToggle(viewModel::setAmlCheckEnabled)
 
         // Zcash created-in-app wallets have no history before their creation checkpoint, so
         // editing the birthday height is meaningful only for restored (imported) Zcash wallets.
@@ -129,15 +129,7 @@ class AssetSettingsPage(val wallet: Wallet) : HSPage() {
         }
         AssetSettingsScreen(
             amlCheckEnabled = viewModel.uiState.amlCheckEnabled,
-            onAmlCheckChange = { enabled ->
-                if (enabled) {
-                    navigation.premiumAction {
-                        viewModel.setAmlCheckEnabled(true)
-                    }
-                } else {
-                    viewModel.setAmlCheckEnabled(false)
-                }
-            },
+            onAmlCheckChange = setAmlCheckEnabled,
             pricePeriod = viewModel.uiState.displayDiffPricePeriod,
             displayDiffOptionType = viewModel.uiState.displayDiffOptionType,
             isRoundingAmount = viewModel.uiState.isRoundingAmount,
