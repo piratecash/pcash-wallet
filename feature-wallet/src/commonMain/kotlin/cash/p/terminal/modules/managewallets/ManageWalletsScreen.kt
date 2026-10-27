@@ -58,6 +58,8 @@ import cash.p.terminal.modules.enablecoin.restoresettings.IRestoreSettingsUi
 import cash.p.terminal.modules.enablecoin.restoresettings.openRestoreSettingsDialog
 import cash.p.terminal.modules.restoreaccount.restoreblockchains.CoinViewItem
 import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.resources.ManageCoins_AddToken
 import cash.p.terminal.resources.ManageCoins_NoResults
 import cash.p.terminal.resources.ManageCoins_title
@@ -113,6 +115,16 @@ internal fun ManageWalletsScreen(
     val density = LocalDensity.current
     var initialLoading by remember { mutableStateOf(true) }
     var infoToken by remember { mutableStateOf<Token?>(null) }
+    val addTokenLauncher = navigation.rememberResultLauncher<AddTokenPage.Result> { result ->
+        val tokenToEnable = result.tokenToEnable
+        if (tokenToEnable != null) {
+            // Hardware wallet: enqueue the token for the scan pipeline
+            // (shows "Scan card to add") and stay on this screen.
+            manageWalletsCallback.enable(tokenToEnable)
+        } else if (result.success) {
+            navigation.removeLastUntil(mainPage, false)
+        }
+    }
 
     LaunchedEffect(groupsList) {
         if (groupsList.isNotEmpty()) {
@@ -143,20 +155,7 @@ internal fun ManageWalletsScreen(
                         MenuItem(
                             title = TranslatableString.ResString(Res.string.ManageCoins_AddToken),
                             icon = Res.drawable.ic_add_yellow,
-                            onClick = {
-                                navigation.slideFromRightForResult<AddTokenPage.Result>(
-                                    AddTokenPage()
-                                ) { result ->
-                                    val tokenToEnable = result.tokenToEnable
-                                    if (tokenToEnable != null) {
-                                        // Hardware wallet: enqueue the token for the scan pipeline
-                                        // (shows "Scan card to add") and stay on this screen.
-                                        manageWalletsCallback.enable(tokenToEnable)
-                                    } else if (result.success) {
-                                        navigation.removeLastUntil(mainPage, false)
-                                    }
-                                }
-                            }
+                            onClick = { addTokenLauncher.slideFromRight(AddTokenPage()) }
                         ))
                 } else {
                     listOf()

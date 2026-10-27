@@ -39,7 +39,7 @@ import cash.p.terminal.navigation.BackupKeyInput
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.QrScannerInput
-import cash.p.terminal.navigation.openQrScanner
+import cash.p.terminal.navigation.rememberQrScannerLauncher
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.offline.OperationAvailability
 import cash.p.terminal.modules.offline.rememberOfflineGatedAction
@@ -94,6 +94,7 @@ fun SendSmsNotificationScreen(
     var showWalletSheet by remember { mutableStateOf(false) }
     val view = LocalView.current
     val scannerTitle = stringResource(R.string.qr_scanner_title_address, BlockchainType.Zcash.title)
+    val qrScanner = navigation.rememberQrScannerLauncher(appPages, onAddressChanged)
     val offlineGatedAction = rememberOfflineGatedAction(uiState.selectedWallet?.wallet)
 
     // Handle back press - cancel test if syncing
@@ -219,11 +220,7 @@ fun SendSmsNotificationScreen(
                 navigation = navigation,
                 chooseContactEnable = false,
                 blockchainType = BlockchainType.Zcash,
-                onQrScanClick = {
-                    navigation.openQrScanner(appPages, scannerTitle) { scannedText ->
-                        onAddressChanged(scannedText)
-                    }
-                },
+                onQrScanClick = { qrScanner.open(scannerTitle) },
                 onValueChange = onAddressChanged
             )
 

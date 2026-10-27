@@ -70,6 +70,7 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpFrom
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.rememberResultLauncher
 import cash.p.terminal.navigation.viewModelStoreOwnerForPage
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.SwapSettings_Title
@@ -592,7 +593,10 @@ private fun SwapMainScreen(
             }
         }
     }
-    val controller = remember(viewModel, navigation, manageWalletsViewModel) {
+    val actionLauncher = navigation.rememberResultLauncher<Any, ISwapProviderAction> { result, action ->
+        if (action.isCompleted(result)) viewModel.onActionCompleted()
+    }
+    val controller = remember(viewModel, navigation, manageWalletsViewModel, actionLauncher) {
         SwapScreenController(
             input = SwapInputController(
                 enterAmount = viewModel::onEnterAmount,
@@ -614,7 +618,7 @@ private fun SwapMainScreen(
                 refreshQuote = viewModel::reQuote,
                 proceed = { navigation.slideFromRight(buildNextPage(viewModel.uiState)) },
                 toggleBalance = viewModel::toggleHideBalance,
-                executeAction = { action, actionNavigation ->
+                executeAction = { action ->
                     viewModel.onActionStarted()
                     when (action) {
                         is ActionCreate -> {
@@ -626,7 +630,7 @@ private fun SwapMainScreen(
                         }
                         is PayCoreSelectBankAction -> openSettings()
                         is PayCoreVerificationAction -> openVerification()
-                        else -> action.execute(actionNavigation, viewModel::onActionCompleted)
+                        else -> action.execute(actionLauncher)
                     }
                 },
             ),
@@ -664,9 +668,7 @@ private class SwapScreenController(
     fun proceed() = operations.proceed()
     fun toggleBalance() = operations.toggleBalance()
 
-    fun executeAction(action: ISwapProviderAction, navigation: HSNavigation) {
-        operations.executeAction(action, navigation)
-    }
+    fun executeAction(action: ISwapProviderAction) = operations.executeAction(action)
 }
 
 private data class SwapInputController(
@@ -691,7 +693,7 @@ private data class SwapOperationsController(
     val refreshQuote: () -> Unit,
     val proceed: () -> Unit,
     val toggleBalance: () -> Unit,
-    val executeAction: (ISwapProviderAction, HSNavigation) -> Unit,
+    val executeAction: (ISwapProviderAction) -> Unit,
 )
 
 @Composable
@@ -771,7 +773,7 @@ private fun SwapScreenContent(
         VSpacer(height = 12.dp)
         SwapInput(uiState, controller, onFocusChange)
         VSpacer(height = 12.dp)
-        SwapStepButton(uiState, controller, navigation)
+        SwapStepButton(uiState, controller)
         VSpacer(height = 12.dp)
         SwapFeeInfo(uiState, controller)
         VSpacer(height = 12.dp)
@@ -785,7 +787,6 @@ private fun SwapScreenContent(
 private fun SwapStepButton(
     uiState: SwapUiState,
     controller: SwapScreenController,
-    navigation: HSNavigation,
 ) {
     when (val currentStep = uiState.currentStep) {
         is SwapStep.InputRequired -> DisabledSwapButton(inputRequiredTitle(currentStep.inputType))
@@ -797,7 +798,7 @@ private fun SwapStepButton(
                 modifier = swapButtonModifier(),
                 title = if (action.inProgress) action.getTitleInProgress() else action.getTitle(),
                 enabled = !action.inProgress,
-                onClick = { controller.executeAction(action, navigation) },
+                onClick = { controller.executeAction(action) },
             )
         }
         SwapStep.Proceed -> ButtonPrimaryYellow(

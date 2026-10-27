@@ -22,6 +22,9 @@ import cash.p.terminal.modules.zcashconfigure.ZcashConfigurePage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromBottom
+import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.tangem.ui.HardwareWalletError
 import cash.p.terminal.tangem.ui.HardwareWalletOnboardingPage
 import cash.p.terminal.trezor.ui.onboarding.TrezorSetupPage
@@ -47,16 +50,23 @@ class HardwareWalletPage(val input: ManageAccountsModule.Input?) : HSPage() {
         val viewModel = koinViewModel<HardwareWalletViewModel>()
 
         val view = LocalView.current
+        val onboardingLauncher = navigation.rememberResultLauncher<HardwareWalletOnboardingPage.Result> {
+            viewModel.success = it.success
+        }
+        val trezorLauncher = navigation.rememberResultLauncher<TrezorSetupPage.Result> {
+            viewModel.onHardwareSetupFinished(it.success)
+        }
+        val ledgerLauncher = navigation.rememberResultLauncher<LedgerSetupPage.Result> {
+            viewModel.onHardwareSetupFinished(it.success)
+        }
 
         LaunchedEffect(Unit) {
             viewModel.errorEvents.collect { error ->
                 when (error) {
                     HardwareWalletError.CardNotActivated -> {
-                        navigation.slideFromRightForResult<HardwareWalletOnboardingPage.Result>(
+                        onboardingLauncher.slideFromRight(
                             HardwareWalletOnboardingPage(HardwareWalletOnboardingPage.Input(viewModel.accountName))
-                        ) {
-                            viewModel.success = it.success
-                        }
+                        )
                     }
 
                     HardwareWalletError.WalletsNotCreated -> {
@@ -85,18 +95,10 @@ class HardwareWalletPage(val input: ManageAccountsModule.Input?) : HSPage() {
             navigation = navigation,
             onScanCard = viewModel::scanCard,
             onConnectTrezor = {
-                navigation.slideFromRightForResult<TrezorSetupPage.Result>(
-                    TrezorSetupPage(TrezorSetupPage.Input(viewModel.accountName))
-                ) {
-                    viewModel.onHardwareSetupFinished(it.success)
-                }
+                trezorLauncher.slideFromRight(TrezorSetupPage(TrezorSetupPage.Input(viewModel.accountName)))
             },
             onConnectLedger = {
-                navigation.slideFromRightForResult<LedgerSetupPage.Result>(
-                    LedgerSetupPage(viewModel.accountName)
-                ) {
-                    viewModel.onHardwareSetupFinished(it.success)
-                }
+                ledgerLauncher.slideFromRight(LedgerSetupPage(viewModel.accountName))
             },
             onFinish = { navigation.removeLastUntil(popUpToInclusiveId, inclusive) },
             viewModel = viewModel,
@@ -106,20 +108,22 @@ class HardwareWalletPage(val input: ManageAccountsModule.Input?) : HSPage() {
 
 @Composable
 private fun RestoreHeightRequests(viewModel: HardwareWalletViewModel, navigation: HSNavigation) {
+    val zcashLauncher = navigation.rememberResultLauncher<ZcashConfigurePage.Result> { result ->
+        viewModel.onRestoreHeightConfigured(RestoreHeightChain.Zcash, result.config)
+    }
+    val moneroLauncher = navigation.rememberResultLauncher<MoneroConfigurePage.Result> { result ->
+        viewModel.onRestoreHeightConfigured(RestoreHeightChain.Monero, result.config)
+    }
     LaunchedEffect(Unit) {
         viewModel.restoreHeightRequests.collect { chain ->
             when (chain) {
-                RestoreHeightChain.Zcash -> navigation.slideFromBottomForResult<ZcashConfigurePage.Result>(
+                RestoreHeightChain.Zcash -> zcashLauncher.slideFromBottom(
                     ZcashConfigurePage(ZcashConfigurePage.Input(initialConfig = null))
-                ) { result ->
-                    viewModel.onRestoreHeightConfigured(chain, result.config)
-                }
+                )
 
-                RestoreHeightChain.Monero -> navigation.slideFromBottomForResult<MoneroConfigurePage.Result>(
+                RestoreHeightChain.Monero -> moneroLauncher.slideFromBottom(
                     MoneroConfigurePage(MoneroConfigurePage.Input(initialConfig = null))
-                ) { result ->
-                    viewModel.onRestoreHeightConfigured(chain, result.config)
-                }
+                )
             }
         }
     }

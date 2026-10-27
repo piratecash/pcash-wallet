@@ -255,6 +255,7 @@ import io.horizontalsystems.chartview.chart.ChartViewModel
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.Currency
 import io.horizontalsystems.ethereumkit.core.EthereumKit
+import io.horizontalsystems.ethereumkit.models.RpcSource
 import io.ktor.client.engine.HttpClientEngine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -659,6 +660,8 @@ class DesktopKoinGraphTest {
             TokenBalanceService::class,
             TokenTransactionsService::class,
             EnabledWalletsCacheDao::class,
+            // Built inside the EnsResolver definition.
+            RpcSource::class,
         )
 
         /** The staking view model is internal; its optional initial tab comes as a parameter. */

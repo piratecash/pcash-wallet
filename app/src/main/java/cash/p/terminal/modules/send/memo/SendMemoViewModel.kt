@@ -49,6 +49,7 @@ import cash.p.terminal.wallet.getMaxSendableBalance
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.logger.AppLogger
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -137,7 +138,7 @@ class SendMemoViewModel(
             }
         }
         viewModelScope.launch(dispatcherProvider.default) {
-            addressService.stateFlow.collect {
+            addressService.stateFlow.collectLatest {
                 handleUpdatedAddressState(it)
             }
         }

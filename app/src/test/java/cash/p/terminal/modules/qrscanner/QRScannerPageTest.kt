@@ -2,26 +2,25 @@ package cash.p.terminal.modules.qrscanner
 
 import android.app.Application
 import androidx.activity.ComponentActivity
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.lifecycle.Lifecycle
 import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.core.deeplink.DeeplinkParser
 import cash.p.terminal.core.managers.TonConnectManager
-import cash.p.terminal.modules.main.Nav3Host
 import cash.p.terminal.modules.main.PlainTestPage
-import cash.p.terminal.ledger.domain.LedgerUserOperations
+import cash.p.terminal.modules.main.TestNav3Host
+import cash.p.terminal.modules.main.ScreenTestPage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.QrScannerInput
 import cash.p.terminal.navigation.QrScannerResult
+import cash.p.terminal.navigation.ResultLauncher
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.tangem.domain.sdk.CardSdkConfigRepository
-import cash.p.terminal.ui_compose.LocalConnectionPanelState
 import io.horizontalsystems.core.IPinComponent
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -43,12 +42,15 @@ class QRScannerPageTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<ComponentActivity>()
 
+    private var deliveredResult: QrScannerResult? = null
+    private lateinit var launcher: ResultLauncher<Unit>
     private val root = PlainTestPage()
-    private val caller = PlainTestPage()
+    private val caller = ScreenTestPage { navigation ->
+        launcher = navigation.rememberResultLauncher<QrScannerResult> { deliveredResult = it }
+    }
     private val scanner = QRScannerPage(QrScannerInput(title = ""))
     private val navigation = HSNavigation(NavBackStack<HSPage>(root, caller))
     private var scannerViewModel: QRScannerViewModel? = null
-    private var deliveredResult: QrScannerResult? = null
 
     @Before
     fun setUp() {
@@ -65,18 +67,10 @@ class QRScannerPageTest {
             )
         }
         composeRule.setContent {
-            CompositionLocalProvider(LocalConnectionPanelState provides mutableStateOf(false)) {
-                Nav3Host(
-                    navigation,
-                    isLocked = mutableStateOf(false),
-                    ledgerUserOperations = LedgerUserOperations(),
-                    ledgerOpeningApp = MutableStateFlow(null),
-                )
-            }
+            TestNav3Host(navigation)
         }
-        composeRule.runOnUiThread {
-            navigation.slideFromRightForResult<QrScannerResult>(scanner) { deliveredResult = it }
-        }
+        composeRule.waitForIdle()
+        composeRule.runOnUiThread { launcher.slideFromRight(scanner) }
         composeRule.waitForIdle()
     }
 

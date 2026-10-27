@@ -2,14 +2,11 @@ package cash.p.terminal.navigation
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation3.runtime.NavBackStack
-import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
-import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
@@ -31,23 +28,6 @@ class DesktopNavDisplayTest {
         runOnIdle { navigation.navigateUp() }
         waitForIdle()
         assertEquals(listOf(RootPage::class), backStack.map { it::class })
-    }
-
-    @Test
-    fun setResult_calleeClosed_deliversResultToCaller() = runComposeUiTest {
-        setContent { WithBackDispatcher { TestNavDisplay(navigation) } }
-        val callee = SendPage()
-        var received: String? = null
-
-        runOnIdle { navigation.slideFromRightForResult<String>(callee) { received = it } }
-        waitForIdle()
-        runOnIdle {
-            navigation.setResult(callee, "done")
-            navigation.navigateUp()
-        }
-        waitForIdle()
-
-        assertEquals("done", received)
     }
 
     @Test
@@ -76,15 +56,6 @@ class DesktopNavDisplayTest {
 
         assertSame(rootOwners.last().viewModelStore, childOwners.last().viewModelStore)
     }
-}
-
-// The test scene has no window host, which NavDisplay's back handling expects to find.
-@Composable
-private fun WithBackDispatcher(content: @Composable () -> Unit) {
-    CompositionLocalProvider(
-        LocalNavigationEventDispatcherOwner provides rememberNavigationEventDispatcherOwner(parent = null),
-        content = content,
-    )
 }
 
 private class LabeledSheet(private val label: String) : HSBottomSheet() {

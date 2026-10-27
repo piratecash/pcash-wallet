@@ -142,7 +142,7 @@ kotlin {
                 implementation(libs.ktor.client.core)
                 implementation(libs.bouncycastle.bcprov)
                 implementation(libs.bitcoinj)
-                implementation(libs.web3j.core)
+                implementation(libs.web3j.crypto)
                 implementation(libs.resolution.java)
 
                 implementation(libs.bitcoin.core)

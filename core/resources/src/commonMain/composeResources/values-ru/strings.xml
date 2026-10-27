@@ -814,6 +814,8 @@
     <string name="TransactionInfo_AnnouncedAmount">Объявленная сумма</string>
     <string name="transaction_info_executed_amount">Реальная сумма</string>
     <string name="TransactionInfo_PriceImpact">Влияние на цену</string>
+    <string name="swap_duration">Время обмена</string>
+    <string name="swap_duration_approximate">~%1$s</string>
     <string name="TransactionInfo_ExecutedRate">Исполненный курс</string>
     <string name="TransactionInfo_Fee">Комиссия</string>
     <string name="TransactionInfo_FeeEstimated">Комиссия (прим.)</string>

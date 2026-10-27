@@ -62,7 +62,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.core.MoneroSpendReadiness
-import cash.p.terminal.core.premiumAction
+import cash.p.terminal.core.rememberPremiumToggle
 import cash.p.terminal.featureStacking.ui.staking.StackingType
 import cash.p.terminal.feature.wallet.WalletSendPages
 import cash.p.terminal.modules.balance.BackupRequiredError
@@ -240,6 +240,7 @@ fun TokenBalanceScreen(
     val hud = rememberHudMessenger()
     val pages = koinInject<WalletSendPages>()
     var showMoneroSendPreparation by rememberSaveable { mutableStateOf(false) }
+    val setAmlCheckEnabled = navigation.rememberPremiumToggle(viewModel::setAmlCheckEnabled)
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -283,13 +284,7 @@ fun TokenBalanceScreen(
             transactionsViewModel.toggleTransactionInfoHidden(it.uid)
         },
         onBottomReached = viewModel::onBottomReached,
-        onSetAmlCheckEnabled = { enabled ->
-            if (enabled) {
-                navigation.premiumAction { viewModel.setAmlCheckEnabled(true) }
-            } else {
-                viewModel.setAmlCheckEnabled(false)
-            }
-        },
+        onSetAmlCheckEnabled = setAmlCheckEnabled,
         onDismissAmlPromo = {
             viewModel.dismissAmlPromo()
             hud.showPremium(Translator.getString(Res.string.aml_promo_dismiss_hud), SnackbarDuration.LONG)

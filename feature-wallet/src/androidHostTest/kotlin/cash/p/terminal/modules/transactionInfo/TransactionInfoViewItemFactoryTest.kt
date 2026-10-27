@@ -6,8 +6,10 @@ import cash.p.terminal.wallet.policy.PlatformOperationSupport
 import cash.p.beam.BeamTransactionDirection
 import cash.p.beam.BeamTransactionStatus
 import cash.p.terminal.entities.LastBlockInfo
+import cash.p.terminal.entities.SwapDuration
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.transactions.TransactionStatus
+import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.modules.transactions.beamHistoryRecord
 import cash.p.terminal.modules.transactions.beamInteractiveHistoryRecord
 import io.horizontalsystems.core.Translator
@@ -47,6 +49,7 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Before
 import org.junit.Test
@@ -74,6 +77,11 @@ import cash.p.terminal.resources.beam_history_kernel_id
 import cash.p.terminal.resources.beam_history_registering
 import cash.p.terminal.resources.beam_history_waiting_for_receiver
 import cash.p.terminal.resources.beam_history_waiting_for_sender
+import cash.p.terminal.resources.duration_short_hours
+import cash.p.terminal.resources.duration_short_minutes
+import cash.p.terminal.resources.duration_short_seconds
+import cash.p.terminal.resources.swap_duration
+import cash.p.terminal.resources.swap_duration_approximate
 import cash.p.terminal.resources.transaction_swap_status_confirming
 import cash.p.terminal.resources.transaction_swap_status_unknown
 
@@ -93,6 +101,9 @@ class TransactionInfoViewItemFactoryTest {
     fun setUp() {
         mockkObject(Translator)
         every { Translator.getString(any()) } answers { "string:${firstArg<StringResource>().key}" }
+        every { Translator.getString(any(), *anyVararg()) } answers {
+            "string:${firstArg<StringResource>().key}:${secondArg<Array<Any>>().joinToString()}"
+        }
         stopKoin()
         CoreApp.instance = RuntimeEnvironment.getApplication() as CoreApp
         startKoin {
@@ -603,6 +614,60 @@ class TransactionInfoViewItemFactoryTest {
 
         assertSame(wrapper, speedUp.evmKitWrapper)
     }
+
+    @Test
+    fun getViewItemSections_swapWithExactDuration_showsRoundedDuration() {
+        stubDurationPatterns()
+
+        assertEquals("1h 2m 3s", swapDurationRow(SwapDuration(3_722_600L, approximate = false))?.value)
+    }
+
+    @Test
+    fun getViewItemSections_swapWithApproximateDuration_showsTildePrefix() {
+        stubDurationPatterns()
+        stubPattern(Res.string.swap_duration_approximate, "~%1\$s")
+
+        assertEquals("~1m 5s", swapDurationRow(SwapDuration(65_000L, approximate = true))?.value)
+    }
+
+    @Test
+    fun getViewItemSections_swapWithoutDuration_hasNoSwapDurationRow() {
+        assertNull(swapDurationRow(null))
+    }
+
+    private fun stubDurationPatterns() {
+        stubPattern(Res.string.duration_short_hours, "%1\$dh")
+        stubPattern(Res.string.duration_short_minutes, "%1\$dm")
+        stubPattern(Res.string.duration_short_seconds, "%1\$ds")
+    }
+
+    private fun stubPattern(res: StringResource, pattern: String) {
+        every { Translator.getString(res, *anyVararg()) } answers { pattern.format(*secondArg<Array<Any>>()) }
+    }
+
+    private fun swapDurationRow(swapDuration: SwapDuration?): TransactionInfoViewItem.Value? =
+        swapItems(swapDuration)
+            .filterIsInstance<TransactionInfoViewItem.Value>()
+            .singleOrNull { it.title == Translator.getString(Res.string.swap_duration) }
+
+    private fun swapItems(swapDuration: SwapDuration?): List<TransactionInfoViewItem> =
+        TransactionInfoViewItemFactory(
+            offlineOperationGate = mockk(relaxed = true),
+            wallet = null,
+            blockchainType = BlockchainType.Bitcoin,
+            evmKitWrapper = null,
+            platformOperationSupport = allOperationsSupported,
+            unstoppableProviderTitles = mockk(relaxed = true),
+        ).getViewItemSections(
+            transactionInfoItem(pendingRecord(toAddress = "")).copy(
+                swapAmountOut = BigDecimal.TEN,
+                swapAmountIn = BigDecimal.ONE,
+                swapCoinCodeOut = "ETH",
+                swapCoinCodeIn = "BTC",
+                swapProvider = SwapProvider.CHANGENOW,
+                swapDuration = swapDuration,
+            )
+        ).flatten()
 
     private fun pendingEvmItems(evmKitWrapper: EvmKitWrapper?): List<TransactionInfoViewItem> {
         val gate = mockk<OfflineOperationGate>(relaxed = true) {

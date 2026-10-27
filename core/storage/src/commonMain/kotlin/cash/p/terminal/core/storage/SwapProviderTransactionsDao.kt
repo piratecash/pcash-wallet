@@ -156,6 +156,12 @@ interface SwapProviderTransactionsDao {
     )
     fun setIncomingRecordUid(date: Long, incomingRecordUid: String, amountOutReal: BigDecimal)
 
+    @Query(
+        "UPDATE SwapProviderTransaction SET receivedAt = :receivedAt " +
+                "WHERE date = :date AND incomingRecordUid = :incomingRecordUid AND receivedAt IS NOT :receivedAt"
+    )
+    fun syncReceivedAt(date: Long, incomingRecordUid: String, receivedAt: Long)
+
     @Query("UPDATE SwapProviderTransaction SET outgoingRecordUid = :outgoingRecordUid WHERE date = :date")
     fun setOutgoingRecordUid(date: Long, outgoingRecordUid: String)
 

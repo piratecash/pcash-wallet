@@ -29,7 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
-import cash.p.terminal.core.authorizedAction
+import cash.p.terminal.core.rememberAuthorizedShowAllTransactionsAction
 import cash.p.terminal.core.managers.RateAppManager
 import cash.p.terminal.core.notifications.TransactionNotificationManager
 import cash.p.terminal.core.usecase.ResolveTransactionItemUseCase
@@ -39,8 +39,6 @@ import cash.p.terminal.shared.main.MainDestinationIcon
 import cash.p.terminal.shared.main.MainDestinationTitle
 import cash.p.terminal.modules.manageaccount.dialogs.BackupRequiredSheet
 import cash.p.terminal.modules.market.MarketScreen
-import cash.p.terminal.modules.pin.ConfirmPinPage
-import cash.p.terminal.modules.pin.PinType
 import cash.p.terminal.modules.rateapp.RateApp
 import cash.p.terminal.modules.releasenotes.ReleaseNotesPage
 import cash.p.terminal.modules.rooteddevice.RootedDeviceModule
@@ -143,6 +141,10 @@ private fun MainScreen(
         viewModel.onSelect(MainDestination.Balance)
     }
 
+    val showAllTransactions = navigation.rememberAuthorizedShowAllTransactionsAction {
+        transactionsViewModel.showAllTransactions(true)
+    }
+
     var showWalletSheet by remember { mutableStateOf(false) }
     BalanceHideOnFlipHandling(
         allowed = !showWalletSheet && when (uiState.mainNavItems[selectedPage].mainNavItem) {
@@ -237,16 +239,7 @@ private fun MainScreen(
                         navigation = navigation,
                         paddingValues = paddingValues,
                         viewModel = transactionsViewModel,
-                        onShowAllTransactionsClicked = {
-                            navigation.authorizedAction(
-                                ConfirmPinPage.InputConfirm(
-                                    descriptionResId = R.string.Unlock_EnterPasscode_Transactions_Hide,
-                                    pinType = PinType.TRANSACTIONS_HIDE
-                                )
-                            ) {
-                                transactionsViewModel.showAllTransactions(true)
-                            }
-                        }
+                        onShowAllTransactionsClicked = showAllTransactions
                     )
 
                     MainDestination.Settings -> SettingsScreen(

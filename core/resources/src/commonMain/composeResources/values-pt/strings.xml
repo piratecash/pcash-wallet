@@ -810,6 +810,8 @@
     <string name="TransactionInfo_AnnouncedAmount">Montante anunciado</string>
     <string name="transaction_info_executed_amount">Montante executado</string>
     <string name="TransactionInfo_PriceImpact">Impacto no preço</string>
+    <string name="swap_duration">Duração da troca</string>
+    <string name="swap_duration_approximate">~%1$s</string>
     <string name="TransactionInfo_ExecutedRate">Taxa executada</string>
     <string name="TransactionInfo_Fee">Taxa</string>
     <string name="TransactionInfo_FeeEstimated">Taxa (est.)</string>

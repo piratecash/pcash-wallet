@@ -8,7 +8,10 @@ import android.view.View.VISIBLE
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -20,8 +23,9 @@ import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.BaseActivity
 import cash.p.terminal.core.ILocalStorage
-import cash.p.terminal.core.navigateWithTermsAccepted
+import cash.p.terminal.core.managers.DAppRequest
 import cash.p.terminal.core.notifications.TransactionNotificationManager
+import cash.p.terminal.core.rememberTermsAcceptedAction
 import cash.p.terminal.ledger.domain.LedgerUserOperations
 import cash.p.terminal.ledgerkit.LedgerSession
 import cash.p.terminal.modules.calculator.lockscreen.CalculatorLockScreen
@@ -38,6 +42,7 @@ import cash.p.terminal.modules.tonconnect.TonConnectSendRequestPage
 import cash.p.terminal.modules.walletconnect.request.WCRequestPage
 import cash.p.terminal.modules.walletconnect.session.WCSessionPage
 import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.rememberResultLauncher
 import cash.p.terminal.tangem.domain.sdk.CardSdkProvider
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import com.reown.walletkit.client.Wallet
@@ -88,6 +93,7 @@ open class MainActivity : BaseActivity() {
     private val pinLockScreenState = mutableStateOf(false)
     private var showPinLockScreen by pinLockScreenState
     private var externalActivitySnapshotSecured = false
+    private var openCreateAccountWithTerms: () -> Unit = {}
 
     override fun onResume() {
         super.onResume()
@@ -158,6 +164,10 @@ open class MainActivity : BaseActivity() {
         setContentView(R.layout.activity_main)
 
         findViewById<ComposeView>(R.id.navHostComposeView).setContent {
+            // Root-level: the hidden wallet PIN page asking for it may already be popped by the user level change.
+            val openCreateAccount = navigation.rememberTermsAcceptedAction(::openCreateAccount)
+            SideEffect { openCreateAccountWithTerms = openCreateAccount }
+            TonConnectDAppRequestEffect()
             Nav3Host(
                 navigation,
                 isLocked = pinLockScreenState,
@@ -196,24 +206,6 @@ open class MainActivity : BaseActivity() {
                 if (tcEvent != null) {
                     navigation.slideFromBottom(TonConnectSendRequestPage())
                 }
-            }
-        }
-
-        viewModel.tcDappRequest.observe(this) { request ->
-            if (request != null) {
-                navigation.slideFromBottomForResult<TonConnectNewPage.Result>(
-                    TonConnectNewPage(request.uri)
-                ) { result ->
-                    if (request.closeAppOnResult) {
-                        if (result.approved) {
-                            //Need delay to get connected before closing activity
-                            closeAfterDelay()
-                        } else {
-                            finish()
-                        }
-                    }
-                }
-                viewModel.onTcDappRequestHandled()
             }
         }
 
@@ -267,6 +259,27 @@ open class MainActivity : BaseActivity() {
             }
         }
         observeLockState()
+    }
+
+    @Composable
+    private fun TonConnectDAppRequestEffect() {
+        val launcher = navigation.rememberResultLauncher<TonConnectNewPage.Result, DAppRequest> { result, request ->
+            if (request.closeAppOnResult) {
+                if (result.approved) {
+                    //Need delay to get connected before closing activity
+                    closeAfterDelay()
+                } else {
+                    finish()
+                }
+            }
+        }
+        val request by viewModel.tcDappRequest.observeAsState()
+        LaunchedEffect(request) {
+            request?.let {
+                launcher.slideFromBottom(TonConnectNewPage(it.uri), it)
+                viewModel.onTcDappRequestHandled()
+            }
+        }
     }
 
     private fun closeAfterDelay() {
@@ -364,17 +377,19 @@ open class MainActivity : BaseActivity() {
         viewModel.selectBalanceTabOnNextLaunch()
         // Set flag to select Balance tab when returning to main screen
         // Open create wallet screen after PIN is created, clearing back stack to main screen
-        navigation.navigateWithTermsAccepted {
-            navigation.slideFromRightClearingBackStack(
-                page = CreateAccountPage(
-                    CreateAccountPage.Input(
-                        popOffOnSuccess = MainPage::class,
-                        popOffInclusive = false
-                    )
-                ),
-                popUpTo = MainPage::class
-            )
-        }
+        openCreateAccountWithTerms()
+    }
+
+    private fun openCreateAccount() {
+        navigation.slideFromRightClearingBackStack(
+            page = CreateAccountPage(
+                CreateAccountPage.Input(
+                    popOffOnSuccess = MainPage::class,
+                    popOffInclusive = false
+                )
+            ),
+            popUpTo = MainPage::class
+        )
     }
 }
 

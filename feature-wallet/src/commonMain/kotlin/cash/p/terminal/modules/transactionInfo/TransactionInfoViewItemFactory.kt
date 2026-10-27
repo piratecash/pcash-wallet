@@ -11,6 +11,7 @@ import cash.p.terminal.entities.transactionrecords.beam.BeamTransactionRecord
 import cash.p.terminal.core.managers.TonHelper
 import cash.p.terminal.ui_compose.ColoredValue
 import cash.p.terminal.core.providers.SharedAppConfig
+import cash.p.terminal.core.utils.formatSwapDuration
 import cash.p.terminal.entities.swapProviderDisplayTitle
 import cash.p.terminal.modules.offline.OfflineOperationGate
 import cash.p.terminal.modules.offline.availabilityFor
@@ -48,6 +49,7 @@ import cash.p.terminal.resources.beam_cancel_description
 import cash.p.terminal.resources.ic_language
 import cash.p.terminal.resources.ic_migrate_24
 import cash.p.terminal.resources.ic_support_24
+import cash.p.terminal.resources.swap_duration
 import cash.p.terminal.resources.transactions_migrate
 import cash.p.terminal.resources.transactions_migrate_to_ironwood
 
@@ -819,6 +821,13 @@ class TransactionInfoViewItemFactory(
                             provider,
                             transactionItem.swapSubProviderId,
                         ),
+                    ) + listOfNotNull(
+                        transactionItem.swapDuration?.let { duration ->
+                            TransactionInfoViewItem.Value(
+                                Translator.getString(Res.string.swap_duration),
+                                formatSwapDuration(duration)
+                            )
+                        }
                     )
                 )
             }

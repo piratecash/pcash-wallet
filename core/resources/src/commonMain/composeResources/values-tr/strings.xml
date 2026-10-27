@@ -810,6 +810,8 @@
     <string name="TransactionInfo_AnnouncedAmount">Duyurulan miktar</string>
     <string name="transaction_info_executed_amount">Gerçekleşen miktar</string>
     <string name="TransactionInfo_PriceImpact">Fiyat etkisi</string>
+    <string name="swap_duration">Takas süresi</string>
+    <string name="swap_duration_approximate">~%1$s</string>
     <string name="TransactionInfo_ExecutedRate">Gerçekleşen kur</string>
     <string name="TransactionInfo_Fee">Masraf</string>
     <string name="TransactionInfo_FeeEstimated">Ücret (tahmini)</string>

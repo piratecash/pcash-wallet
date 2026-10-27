@@ -22,9 +22,8 @@ import cash.p.terminal.R
 import cash.p.terminal.core.Caution
 import cash.p.terminal.modules.contacts.screen.ConfirmationBottomSheet
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
-import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.navigateUpSafely
-import cash.p.terminal.navigation.openQrScanner
+import cash.p.terminal.navigation.rememberQrScannerLauncher
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui.compose.components.ListEmptyView
 import cash.p.terminal.ui_compose.components.AppBar
@@ -69,7 +68,7 @@ fun TonConnectMainScreen(
     }
 
     val scannerTitle = stringResource(R.string.TonConnect_Title)
-    val appPages: AppPages = koinInject()
+    val qrScanner = navigation.rememberQrScannerLauncher(koinInject(), viewModel::setConnectionUri)
 
     AppModalBottomSheetLayout(
         sheetState = invalidUrlBottomSheetState,
@@ -85,13 +84,7 @@ fun TonConnectMainScreen(
                 onConfirm = {
                     coroutineScope.launch {
                         invalidUrlBottomSheetState.hide()
-                        navigation.openQrScanner(
-                            appPages = appPages,
-                            title = scannerTitle,
-                            showPasteButton = true
-                        ) { scannedText ->
-                            viewModel.setConnectionUri(scannedText)
-                        }
+                        qrScanner.open(scannerTitle, showPasteButton = true)
                     }
                 },
                 onClose = {
@@ -136,15 +129,7 @@ fun TonConnectMainScreen(
                             .padding(start = 16.dp, end = 16.dp)
                             .fillMaxWidth(),
                         title = stringResource(R.string.TonConnect_NewConnect),
-                        onClick = {
-                            navigation.openQrScanner(
-                                appPages = appPages,
-                                title = scannerTitle,
-                                showPasteButton = true
-                            ) { scannedText ->
-                                viewModel.setConnectionUri(scannedText)
-                            }
-                        }
+                        onClick = { qrScanner.open(scannerTitle, showPasteButton = true) }
                     )
                 }
             }

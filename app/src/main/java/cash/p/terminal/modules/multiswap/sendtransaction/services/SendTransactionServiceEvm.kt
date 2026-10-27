@@ -138,6 +138,8 @@ internal class SendTransactionServiceEvm(
     override val mevProtectionAvailable = evmKitWrapper.merkleTransactionAdapter != null
 
     private var transaction: SendEvmSettingsService.Transaction? = null
+    @Volatile
+    private var requestedData: TransactionData? = null
     private var feeAmountData: SendModule.AmountData? = null
     private var cautions: List<CautionViewItem> = listOf()
     private var sendable = false
@@ -201,6 +203,8 @@ internal class SendTransactionServiceEvm(
     }
 
     private fun handleTransactionState(transactionState: DataState<SendEvmSettingsService.Transaction>) {
+        // A late estimate for replaced data must neither become sendable nor discard the current one.
+        if (transactionState is DataState.Success && !transactionState.data.isForRequestedData()) return
         loading = transactionState.loading
         transaction = transactionState.dataOrNull
         feeAmountData = transaction?.let {
@@ -244,6 +248,8 @@ internal class SendTransactionServiceEvm(
         emitState()
     }
 
+    private fun SendEvmSettingsService.Transaction.isForRequestedData() = estimatedFor === requestedData
+
     /**
      * Checks if the error is related to MEV protection
      */
@@ -255,6 +261,8 @@ internal class SendTransactionServiceEvm(
         check(data is SendTransactionData.Evm)
 
         sendAmount = data.amount
+        requestedData = data.transactionData
+        handleTransactionState(DataState.Loading)
         feeService.setGasLimit(data.gasLimit)
         feeService.setTransactionData(data.transactionData)
 
@@ -323,6 +331,7 @@ internal class SendTransactionServiceEvm(
 
     private fun requireValidTransaction(): SendEvmSettingsService.Transaction {
         val transaction = checkNotNull(transaction) { "Transaction is empty" }
+        check(transaction.isForRequestedData()) { "Transaction was estimated for replaced data" }
         if (transaction.errors.isNotEmpty()) {
             throw IllegalStateException(transaction.errors.firstOrNull()?.cause)
         }

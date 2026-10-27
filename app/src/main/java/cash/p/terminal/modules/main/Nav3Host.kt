@@ -36,7 +36,6 @@ import cash.p.terminal.navigation.BottomSheetSceneStrategy
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.LocalHostLifecycleOwner
-import cash.p.terminal.navigation.ReportPageResumed
 import cash.p.terminal.navigation.rememberSharedViewModelStoreNavEntryDecorator
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.ui_compose.LocalConnectionPanelState
@@ -174,11 +173,10 @@ private class ActivityUrlOpener(private val activity: Activity) : UrlOpener {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun PageChrome(page: HSPage, navigation: HSNavigation, screenshotFlag: ScreenshotFlagController) {
-    ReportPageResumed(navigation, page)
     if (page.bottomSheet) {
         // Runs in the sheet's own window, like BaseComposableBottomSheetFragment did.
         ModalOverlayTracker.TrackForeground()
-        page.GetContent(navigation)
+        page.Content(navigation)
         return
     }
     if (!page.screenshotEnabled) {
@@ -194,7 +192,7 @@ private fun PageChrome(page: HSPage, navigation: HSNavigation, screenshotFlag: S
             .fillMaxSize()
             .semantics { testTagsAsResourceId = true }
     ) {
-        page.GetContent(navigation)
+        page.Content(navigation)
         if (page.showConnectionPanel && LocalConnectionPanelState.current.value) {
             ConnectionStatusView(
                 modifier = Modifier
