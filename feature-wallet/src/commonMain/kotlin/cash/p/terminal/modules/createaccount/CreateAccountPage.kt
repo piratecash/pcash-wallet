@@ -39,6 +39,8 @@ import kotlinx.coroutines.delay
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.reflect.KClass
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.resources.Button_Advanced
 import cash.p.terminal.resources.Hud_Text_Created
 import cash.p.terminal.resources.ManageAccount_Name
@@ -101,6 +103,12 @@ private fun HSNavigation.finishCreateAccount(input: CreateAccountPage.Input?) {
 @Composable
 private fun CreateAccountAdvancedContent(navigation: HSNavigation, input: CreateAccountPage.Input?) {
     val viewModel: CreateAdvancedAccountViewModel = koinViewModel()
+    val passphraseTermsLauncher = navigation.rememberResultLauncher<Boolean> { agreed ->
+        if (agreed) viewModel.setPassphraseEnabledState(true)
+    }
+    val mnemonicTermsLauncher = navigation.rememberResultLauncher<Boolean> { confirmed ->
+        if (confirmed) viewModel.createMnemonicAccount()
+    }
 
     CreateAccountAdvancedScreen(
         viewModel = viewModel,
@@ -108,15 +116,9 @@ private fun CreateAccountAdvancedContent(navigation: HSNavigation, input: Create
         passphraseTermsAccepted = viewModel.passphraseTermsAgreed,
         onBackClick = navigation::navigateUpSafely,
         onFinish = { navigation.finishCreateAccount(input) },
-        onOpenTerms = {
-            navigation.slideFromRightForResult<Boolean>(PassphraseTermsPage(screenshotEnabled = true)) { agreed ->
-                if (agreed) viewModel.setPassphraseEnabledState(true)
-            }
-        },
+        onOpenTerms = { passphraseTermsLauncher.slideFromRight(PassphraseTermsPage(screenshotEnabled = true)) },
         onOpenNonEnglishMnemonicTerms = { language ->
-            navigation.slideFromRightForResult<Boolean>(NonEnglishMnemonicTermsPage(language)) { confirmed ->
-                if (confirmed) viewModel.createMnemonicAccount()
-            }
+            mnemonicTermsLauncher.slideFromRight(NonEnglishMnemonicTermsPage(language))
         }
     )
 }

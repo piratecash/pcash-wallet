@@ -162,6 +162,9 @@ class SwapProviderTransactionsStorage(
     fun setIncomingRecordUid(date: Long, incomingRecordUid: String, amountOutReal: BigDecimal) =
         dao.setIncomingRecordUid(date, incomingRecordUid, amountOutReal)
 
+    fun syncReceivedAt(date: Long, incomingRecordUid: String, receivedAt: Long) =
+        dao.syncReceivedAt(date, incomingRecordUid, receivedAt)
+
     fun setOutgoingRecordUid(date: Long, outgoingRecordUid: String) =
         dao.setOutgoingRecordUid(date, outgoingRecordUid)
 

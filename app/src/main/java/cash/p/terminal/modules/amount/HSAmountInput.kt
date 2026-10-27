@@ -121,9 +121,13 @@ fun HSAmountInput(
         textState = textState.copy(text = text, selection = TextRange(text.length))
     }
 
+    // Re-entering the screen must not re-apply a prefill the user has already edited.
+    var appliedAmountId by rememberSaveable { mutableStateOf<Long?>(null) }
+
     LaunchedEffect(amountUnique) {
-        amountUnique?.let {
-            viewModel.setExternalCoinAmount(amountUnique.amount, inputType, onClickHint)
+        amountUnique?.takeIf { it.id != appliedAmountId }?.let {
+            appliedAmountId = it.id
+            viewModel.setExternalCoinAmount(it.amount, inputType, onClickHint)
 
             val text = viewModel.getEnterAmount()
             textState = textState.copy(text = text, selection = TextRange(text.length))

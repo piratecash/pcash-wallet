@@ -7,6 +7,7 @@ import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.core.managers.PendingTransactionRegistrar
 import cash.p.terminal.modules.evmfee.GasData
+import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionData
 import cash.p.terminal.modules.offline.OfflineOperationGate
 import cash.p.terminal.modules.send.evm.settings.SendEvmSettingsService
 import cash.p.terminal.wallet.IAdapterManager
@@ -20,6 +21,7 @@ import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.policy.HardwareWalletTokenPolicy
+import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.IAppNumberFormatter
@@ -29,6 +31,7 @@ import io.horizontalsystems.ethereumkit.core.EthereumKit
 import io.horizontalsystems.ethereumkit.core.signer.Signer
 import io.horizontalsystems.ethereumkit.decorations.TransactionDecoration
 import io.horizontalsystems.ethereumkit.models.Address as EvmAddress
+import io.horizontalsystems.ethereumkit.models.Chain
 import io.horizontalsystems.ethereumkit.models.FullTransaction
 import io.horizontalsystems.ethereumkit.models.GasPrice
 import io.horizontalsystems.ethereumkit.models.RawTransaction
@@ -48,12 +51,16 @@ import io.reactivex.Single
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertSame
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -112,6 +119,7 @@ class SendTransactionServiceEvmTest : KoinTest {
     private val signedHashString = "0x" + signedHash.joinToString("") { "%02x".format(it) }
 
     private val transactionData = TransactionData(to = toAddress, value = BigInteger.ONE, input = ByteArray(0))
+    private val replacementData = TransactionData(to = ownAddress, value = BigInteger.TWO, input = ByteArray(0))
     private val rawTransaction = RawTransaction(
         gasPrice = GasPrice.Legacy(1_000_000_000),
         gasLimit = 21_000,
@@ -237,6 +245,93 @@ class SendTransactionServiceEvmTest : KoinTest {
         coVerify(exactly = 0) { pendingRegistrar.updateTxId(PENDING_TX_ID, foreignHashString) }
     }
 
+    @Test
+    fun requireValidTransaction_cachedTransactionForReplacedData_cannotBeSigned() = runTest(dispatcher) {
+        val service = createRequestingService()
+        service.setSendTransactionData(SendTransactionData.Evm(transactionData, null))
+        service.setSendTransactionData(SendTransactionData.Evm(replacementData, null))
+
+        // A collector on another thread can store A just after the switch to B cleared the state.
+        service.setPrivateField("transaction", settingsTransaction(estimatedFor = transactionData))
+
+        assertThrows(IllegalStateException::class.java) { service.offlineSignRequest() }
+        assertThrows(IllegalStateException::class.java) { runBlocking { service.send() } }
+        coVerify(exactly = 0) { signer.signature(any()) }
+    }
+
+    @Test
+    fun setSendTransactionData_replacedAfterEstimate_stopsBeingSendableImmediately() = runTest(dispatcher) {
+        val service = createRequestingService()
+        service.setSendTransactionData(SendTransactionData.Evm(transactionData, null))
+        service.handleTransactionState(DataState.Success(settingsTransaction(estimatedFor = transactionData)))
+        assertTrue(service.stateFlow.value.sendable)
+
+        service.setSendTransactionData(SendTransactionData.Evm(replacementData, null))
+
+        assertFalse(service.stateFlow.value.sendable)
+        assertTrue(service.stateFlow.value.loading)
+    }
+
+    @Test
+    fun handleTransactionState_lateEstimateForReplacedData_isNotSendable() = runTest(dispatcher) {
+        val service = createRequestingService()
+        service.setSendTransactionData(SendTransactionData.Evm(transactionData, null))
+        service.setSendTransactionData(SendTransactionData.Evm(replacementData, null))
+
+        service.handleTransactionState(DataState.Success(settingsTransaction(estimatedFor = transactionData)))
+
+        assertFalse(service.stateFlow.value.sendable)
+        assertThrows(IllegalStateException::class.java) { service.offlineSignRequest() }
+    }
+
+    @Test
+    fun handleTransactionState_lateEstimateAfterCurrentAccepted_keepsCurrentSendable() = runTest(dispatcher) {
+        val service = createRequestingService()
+        service.setSendTransactionData(SendTransactionData.Evm(transactionData, null))
+        service.setSendTransactionData(SendTransactionData.Evm(replacementData, null))
+        service.handleTransactionState(DataState.Success(settingsTransaction(estimatedFor = replacementData)))
+
+        service.handleTransactionState(DataState.Success(settingsTransaction(estimatedFor = transactionData)))
+
+        assertTrue(service.stateFlow.value.sendable)
+        assertSame(replacementData, service.offlineSignRequest().transactionData)
+    }
+
+    @Test
+    fun handleTransactionState_estimateForRequestedData_isSendable() = runTest(dispatcher) {
+        val service = createRequestingService()
+        service.setSendTransactionData(SendTransactionData.Evm(transactionData, null))
+        service.setSendTransactionData(SendTransactionData.Evm(replacementData, null))
+
+        service.handleTransactionState(DataState.Success(settingsTransaction(estimatedFor = replacementData)))
+
+        assertTrue(service.stateFlow.value.sendable)
+        assertSame(replacementData, service.offlineSignRequest().transactionData)
+    }
+
+    private fun createRequestingService(): SendTransactionServiceEvm {
+        every { evmKit.chain } returns Chain.BinanceSmartChain
+        return SendTransactionServiceEvm(bnbToken)
+    }
+
+    // The settings pipeline needs a live EvmKit; feed its output directly instead.
+    private fun SendTransactionServiceEvm.handleTransactionState(
+        state: DataState<SendEvmSettingsService.Transaction>
+    ) {
+        SendTransactionServiceEvm::class.java
+            .getDeclaredMethod("handleTransactionState", DataState::class.java)
+            .apply { isAccessible = true }
+            .invoke(this, state)
+    }
+
+    private fun settingsTransaction(estimatedFor: TransactionData) = SendEvmSettingsService.Transaction(
+        transactionData = estimatedFor,
+        gasData = GasData(gasLimit = 21_000, gasPrice = GasPrice.Legacy(1_000_000_000)),
+        nonce = 7,
+        default = true,
+        estimatedFor = estimatedFor,
+    )
+
     private fun createService(): SendTransactionServiceEvm {
         val service = spyk(SendTransactionServiceEvm(bnbToken), recordPrivateCalls = true)
         every { service["requireValidTransaction"]() } returns SendEvmSettingsService.Transaction(
@@ -244,6 +339,7 @@ class SendTransactionServiceEvmTest : KoinTest {
             gasData = GasData(gasLimit = 21_000, gasPrice = GasPrice.Legacy(1_000_000_000)),
             nonce = 7,
             default = true,
+            estimatedFor = transactionData,
         )
         // Only reachable through the fee pipeline, which needs a live EvmKit; without it the
         // service would skip pending-draft registration and leave updateTxId untested.

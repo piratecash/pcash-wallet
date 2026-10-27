@@ -43,8 +43,21 @@ data class SwapProviderTransaction(
     // TokenQuery.id of each side; null for the PayCore RUB side and for rows saved before it existed.
     val tokenQueryIdIn: String? = null,
     val tokenQueryIdOut: String? = null,
+    // Blockchain time (ms) of the matched incoming payout record.
+    val receivedAt: Long? = null,
 ) {
     fun isFinished() = status in FINISHED_STATUSES
+
+    fun swapDuration(): SwapDuration? {
+        if (status != TransactionStatusEnum.FINISHED.name.lowercase()) return null
+        receivedAt?.takeIf { it > date }?.let { return SwapDuration(it - date, approximate = false) }
+        // Until the payout is matched, the provider's finish time stands in; it trails the payout block.
+        return providerFinishedAt()?.takeIf { it > date }?.let { SwapDuration(it - date, approximate = true) }
+    }
+
+    // THORChain/Maya store the poll time as finishedAt, not the payout time.
+    private fun providerFinishedAt() =
+        finishedAt.takeUnless { provider == SwapProvider.THORCHAIN || provider == SwapProvider.MAYA }
 
     companion object {
         val FINISHED_STATUSES = listOf(
@@ -54,3 +67,5 @@ data class SwapProviderTransaction(
         )
     }
 }
+
+data class SwapDuration(val millis: Long, val approximate: Boolean)

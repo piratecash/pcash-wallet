@@ -14,7 +14,7 @@ import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.address.AddressHandlerEns
 import cash.p.terminal.modules.address.AddressHandlerUdn
 import cash.p.terminal.modules.address.AddressParserChain
-import cash.p.terminal.modules.address.EnsResolverHolder
+import io.horizontalsystems.ethereumkit.ens.EnsResolver
 import cash.p.terminal.modules.send.address.AddressCheckResult
 import cash.p.terminal.modules.send.address.AddressExtractor
 import cash.p.terminal.modules.send.address.EnterAddressValidator
@@ -196,7 +196,7 @@ class SecurityCheckViewModel(
             val blockchainType = token.blockchainType
             val coinCode = token.coin.code
             val tokenQuery = TokenQuery(blockchainType, token.type)
-            val ensHandler = AddressHandlerEns(blockchainType, EnsResolverHolder.resolver)
+            val ensHandler = AddressHandlerEns(blockchainType, getKoinInstance<EnsResolver>())
             val udnHandler =
                 AddressHandlerUdn(tokenQuery, coinCode, AppConfigProvider.udnApiKey)
             val addressParserChain =

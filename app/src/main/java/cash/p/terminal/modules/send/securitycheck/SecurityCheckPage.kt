@@ -33,12 +33,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
 import cash.p.terminal.core.adapters.stellar.StellarAssetAdapter
 import cash.p.terminal.core.address.AddressCheckType
-import cash.p.terminal.core.authorizedAction
 import cash.p.terminal.modules.address.HSAddressCell
-import cash.p.terminal.modules.pin.ConfirmPinPage
-import cash.p.terminal.modules.pin.PinType
 import cash.p.terminal.modules.premium.about.AboutPremiumPage
 import cash.p.terminal.modules.send.SendConfirmationPage
+import cash.p.terminal.modules.send.rememberOpenSendConfirmation
 import cash.p.terminal.modules.send.address.AddressCheckResult
 import cash.p.terminal.modules.send.address.AddressEnterInfoBottomSheet
 import cash.p.terminal.modules.send.address.AddressValidationError
@@ -92,6 +90,7 @@ fun SecurityCheckScreen(
         )
     )
 
+    val openConfirmation = navigation.rememberOpenSendConfirmation(input.sendEntryPoint)
     val coroutineScope = rememberCoroutineScope()
     val infoModalBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var checkTypeInfoBottomSheet by remember { mutableStateOf<AddressCheckType?>(null) }
@@ -148,18 +147,7 @@ fun SecurityCheckScreen(
                     stringResource(R.string.Send_Address_Error_InvalidAddress)
                 else
                     stringResource(R.string.Button_Next),
-                onClick = {
-                    navigation.authorizedAction(
-                        ConfirmPinPage.InputConfirm(
-                            descriptionResId = R.string.Unlock_EnterPasscode,
-                            pinType = PinType.TRANSFER
-                        )
-                    ) {
-                        navigation.slideFromRight(
-                            SendConfirmationPage(input.type, input.sendEntryPoint)
-                        )
-                    }
-                },
+                onClick = { openConfirmation(input.type) },
                 enabled = uiState.canBeSendToAddress
             )
         }

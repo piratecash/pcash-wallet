@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.size
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromBottom
 import cash.p.terminal.ui_compose.components.AppModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
@@ -59,9 +61,9 @@ import cash.p.terminal.resources.ic_info_20
 fun ReceiveStellarAssetScreen(
     navigation: HSNavigation,
     wallet: Wallet,
-    receiveEntryPoint: KClass<out HSPage>?
+    receiveEntryPoint: KClass<out HSPage>?,
+    viewModel: ReceiveStellarAssetViewModel = koinViewModel { parametersOf(wallet) },
 ) {
-    val viewModel = koinViewModel<ReceiveStellarAssetViewModel> { parametersOf(wallet) }
     val uiState = viewModel.uiState
 
     val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
@@ -69,18 +71,13 @@ fun ReceiveStellarAssetScreen(
 
     val platformPages = koinInject<WalletPlatformPages>()
     val hud = rememberHudMessenger()
+    val activationLauncher = navigation.rememberResultLauncher<ActivateTokenResult> { result ->
+        viewModel.onActivationResult(result.activated)
+        scope.launch { sheetState.hide() }
+    }
     val runActivation = {
         val page = platformPages.activateToken(wallet)
-        if (page == null) {
-            hud.showNotSupportedOnPlatform()
-        } else {
-            navigation.slideFromBottomForResult<ActivateTokenResult>(page) {
-                scope.launch {
-                    viewModel.onActivationResult(it.activated)
-                    sheetState.hide()
-                }
-            }
-        }
+        if (page == null) hud.showNotSupportedOnPlatform() else activationLauncher.slideFromBottom(page)
     }
 
     LaunchedEffect(uiState.activationRequired) {

@@ -31,8 +31,10 @@ import org.koin.compose.koinInject
 import cash.p.terminal.modules.premium.settings.PremiumSettingsPage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
-import cash.p.terminal.core.premiumAction
+import cash.p.terminal.core.rememberPremiumToggle
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.navigation.viewModelStoreOwnerForPage
 import cash.p.terminal.resources.Button_Reset
 import cash.p.terminal.resources.Res
@@ -99,6 +101,10 @@ internal fun FilterScreen(
     val filterContact by viewModel.filterContactFlow.collectAsStateWithLifecycle()
     val uiState = viewModel.uiState
     var showAmlInfoSheet by remember { mutableStateOf(false) }
+    val contactLauncher = navigation.rememberResultLauncher<SelectContactPage.Result> {
+        viewModel.onEnterContact(it.contact)
+    }
+    val setAmlCheckEnabled = navigation.rememberPremiumToggle(viewModel::setAmlCheckEnabled)
 
     val filterCoin = filterCoins?.find { it.selected }?.item
     val coinCode = filterCoin?.token?.coin?.code
@@ -123,22 +129,12 @@ internal fun FilterScreen(
         onBlockchainClick = { navigation.slideFromRight(FilterBlockchainPage()) },
         onCoinClick = { navigation.slideFromRight(FilterCoinPage()) },
         onContactClick = {
-            navigation.slideFromRightForResult<SelectContactPage.Result>(
+            contactLauncher.slideFromRight(
                 SelectContactPage(SelectContactPage.Input(filterContact, filterBlockchain?.type))
-            ) {
-                viewModel.onEnterContact(it.contact)
-            }
+            )
         },
         onHideSuspiciousTxChange = viewModel::updateFilterHideSuspiciousTx,
-        onAmlCheckChange = { enabled ->
-            if (enabled) {
-                navigation.premiumAction {
-                    viewModel.setAmlCheckEnabled(true)
-                }
-            } else {
-                viewModel.setAmlCheckEnabled(false)
-            }
-        },
+        onAmlCheckChange = setAmlCheckEnabled,
         onAmlInfoClick = { showAmlInfoSheet = true },
         onApply = navigation::navigateUpSafely,
         onBack = navigation::navigateUpSafely

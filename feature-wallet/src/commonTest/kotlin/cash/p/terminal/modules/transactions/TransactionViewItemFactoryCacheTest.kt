@@ -18,6 +18,7 @@ import cash.p.terminal.entities.transactionrecords.PendingTransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
+import cash.p.terminal.entities.transactionrecords.evm.TransferEvent
 import cash.p.terminal.entities.transactionrecords.monero.MoneroTransactionRecord
 import cash.p.terminal.entities.transactionrecords.solana.SolanaTransactionRecord
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewMode
@@ -265,6 +266,57 @@ class TransactionViewItemFactoryCacheTest {
             viewItem.progress ?: 0f,
             0.0001f,
         )
+    }
+
+    @Test
+    fun convertToViewItemCached_incomingLinkedSwapWithoutReceivedAt_syncsReceivedAt() = runTest {
+        val swap = createSwapProviderTransaction(outgoingRecordUid = null)
+
+        factory.convertToViewItemCached(
+            transactionItem = createTransactionItem(createMoneroIncomingRecord(7, TransactionInfo.CONFIRMATION)),
+            matchedSwap = swap,
+        )
+
+        verify(exactly = 1) {
+            swapProviderTransactionsStorage.syncReceivedAt(swap.date, TX_HASH, PENDING_TIMESTAMP * 1_000)
+        }
+    }
+
+    @Test
+    fun convertToViewItemCached_incomingSwapReceivedAtUpToDate_doesNotSync() = runTest {
+        val swap = createSwapProviderTransaction(outgoingRecordUid = null)
+            .copy(receivedAt = PENDING_TIMESTAMP * 1_000)
+
+        factory.convertToViewItemCached(
+            transactionItem = createTransactionItem(createMoneroIncomingRecord(7, TransactionInfo.CONFIRMATION)),
+            matchedSwap = swap,
+        )
+
+        verify(exactly = 0) { swapProviderTransactionsStorage.syncReceivedAt(any(), any(), any()) }
+    }
+
+    @Test
+    fun convertToViewItemCached_outgoingSwap_doesNotSync() = runTest {
+        val swap = createSwapProviderTransaction(outgoingRecordUid = TX_HASH)
+        every { swapProviderTransactionsStorage.getByOutgoingRecordUid(TX_HASH) } returns swap
+
+        val viewItem = factory.convertToViewItemCached(createTransactionItem(createPendingRecord(TX_HASH)))
+
+        assertEquals(swap.transactionId, viewItem.changeNowTransactionId)
+        verify(exactly = 0) { swapProviderTransactionsStorage.syncReceivedAt(any(), any(), any()) }
+    }
+
+    @Test
+    fun convertToViewItemCached_externalContractCallIncomingOnly_syncsReceivedAt() = runTest {
+        val record = createExternalContractCallIncomingRecord()
+        val swap = createSwapProviderTransaction(outgoingRecordUid = null)
+
+        val viewItem = factory.convertToViewItemCached(createTransactionItem(record), matchedSwap = swap)
+
+        assertEquals(swap.transactionId, viewItem.changeNowTransactionId)
+        verify(exactly = 1) {
+            swapProviderTransactionsStorage.syncReceivedAt(swap.date, record.uid, record.timestamp * 1_000)
+        }
     }
 
     @Test
@@ -615,6 +667,27 @@ class TransactionViewItemFactoryCacheTest {
             ),
         )
     }
+
+    private fun createExternalContractCallIncomingRecord() = EvmTransactionRecord(
+        transaction = createEvmTransaction("evm-external-contract-call"),
+        token = mockk(relaxed = true),
+        source = createBscSource(),
+        protected = false,
+        transactionRecordType = TransactionRecordType.EVM_EXTERNAL_CONTRACT_CALL,
+        incomingEvents = listOf(
+            TransferEvent(
+                address = BRIDGE_ADDRESS,
+                addressForIncomingAddress = RECIPIENT_ADDRESS,
+                value = TransactionValue.TokenValue(
+                    tokenName = "Cosanta",
+                    tokenCode = "COSA",
+                    tokenDecimals = 8,
+                    value = BigDecimal.ONE,
+                ),
+            )
+        ),
+        outgoingEvents = emptyList(),
+    )
 
     private fun createEvmTransaction(
         uid: String,

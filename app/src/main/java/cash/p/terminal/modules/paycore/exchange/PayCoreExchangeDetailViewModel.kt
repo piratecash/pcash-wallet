@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
+import cash.p.terminal.core.utils.formatSwapDuration
 import cash.p.terminal.modules.paycore.PayCoreAssetResolver
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.network.changenow.domain.entity.toStatus
@@ -49,6 +50,7 @@ class PayCoreExchangeDetailViewModel(
                     priceFormatted = price,
                     priceInvFormatted = priceInv,
                     dateFormatted = formatDate(tx.date),
+                    durationFormatted = tx.swapDuration()?.let(::formatSwapDuration),
                     status = status,
                     transactionId = tx.transactionId,
                     supportUrl = AppConfigProvider.payCoreSupportUrl,
@@ -87,4 +89,5 @@ data class PayCoreExchangeDetailUiState(
     val status: TransactionStatusEnum,
     val transactionId: String,
     val supportUrl: String,
+    val durationFormatted: String? = null,
 )

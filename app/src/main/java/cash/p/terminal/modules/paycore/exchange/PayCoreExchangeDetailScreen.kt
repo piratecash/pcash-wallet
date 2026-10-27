@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,6 +27,23 @@ import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.modules.fee.QuoteInfoRow
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.network.swaprepository.SwapProvider
+import cash.p.terminal.resources.Button_Copy
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Swap
+import cash.p.terminal.resources.Swap_Price
+import cash.p.terminal.resources.Swap_YouGet
+import cash.p.terminal.resources.Swap_YouPay
+import cash.p.terminal.resources.TransactionInfo_Date
+import cash.p.terminal.resources.TransactionInfo_Id
+import cash.p.terminal.resources.TransactionInfo_Status
+import cash.p.terminal.resources.Transactions_Failed
+import cash.p.terminal.resources.ic_arrow_right
+import cash.p.terminal.resources.ic_checkmark_20
+import cash.p.terminal.resources.multi_swap_completed
+import cash.p.terminal.resources.paycore_service
+import cash.p.terminal.resources.paycore_support
+import cash.p.terminal.resources.swap_duration
+import cash.p.terminal.resources.transaction_swap_status_refunded
 import cash.p.terminal.ui.helpers.LinkHelper
 import cash.p.terminal.ui.helpers.TextHelper
 import cash.p.terminal.ui_compose.components.AppBar
@@ -44,6 +60,8 @@ import cash.p.terminal.ui_compose.components.subhead2_leah
 import cash.p.terminal.ui_compose.components.subhead2_lucian
 import cash.p.terminal.ui_compose.components.subhead2_remus
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun PayCoreExchangeDetailScreen(
@@ -54,7 +72,7 @@ internal fun PayCoreExchangeDetailScreen(
         containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
-                title = stringResource(R.string.Swap),
+                title = stringResource(Res.string.Swap),
                 navigationIcon = { HsBackButton(onClick = onBack) },
             )
         }
@@ -70,13 +88,13 @@ internal fun PayCoreExchangeDetailScreen(
 
             SectionUniversalLawrence {
                 AmountRow(
-                    title = stringResource(R.string.Swap_YouPay),
+                    title = stringResource(Res.string.Swap_YouPay),
                     amount = state.amountSentFormatted,
                     isNegative = true,
                     borderTop = false,
                 )
                 AmountRow(
-                    title = stringResource(R.string.Swap_YouGet),
+                    title = stringResource(Res.string.Swap_YouGet),
                     amount = state.amountGotFormatted,
                     isNegative = false,
                     borderTop = true,
@@ -87,6 +105,7 @@ internal fun PayCoreExchangeDetailScreen(
                     priceInvFormatted = state.priceInvFormatted,
                 )
                 DateRow(dateFormatted = state.dateFormatted)
+                state.durationFormatted?.let { DurationRow(durationFormatted = it) }
                 StatusRow(status = state.status)
                 TransactionIdRow(transactionId = state.transactionId)
             }
@@ -126,7 +145,7 @@ private fun AmountRow(
 private fun ServiceRow() {
     QuoteInfoRow(
         borderTop = true,
-        title = { subhead2_grey(text = stringResource(R.string.paycore_service)) },
+        title = { subhead2_grey(text = stringResource(Res.string.paycore_service)) },
         value = { subhead2_leah(text = SwapProvider.PAYCORE.title) }
     )
 }
@@ -139,7 +158,7 @@ private fun PriceRow(
     var showRegular by remember { mutableStateOf(true) }
     QuoteInfoRow(
         borderTop = true,
-        title = { subhead2_grey(text = stringResource(R.string.Swap_Price)) },
+        title = { subhead2_grey(text = stringResource(Res.string.Swap_Price)) },
         value = {
             Row(
                 modifier = Modifier.clickable(
@@ -169,8 +188,17 @@ private fun PriceRow(
 private fun DateRow(dateFormatted: String) {
     QuoteInfoRow(
         borderTop = true,
-        title = { subhead2_grey(text = stringResource(R.string.TransactionInfo_Date)) },
+        title = { subhead2_grey(text = stringResource(Res.string.TransactionInfo_Date)) },
         value = { subhead2_leah(text = dateFormatted) }
+    )
+}
+
+@Composable
+private fun DurationRow(durationFormatted: String) {
+    QuoteInfoRow(
+        borderTop = true,
+        title = { subhead2_grey(text = stringResource(Res.string.swap_duration)) },
+        value = { subhead2_leah(text = durationFormatted) }
     )
 }
 
@@ -178,17 +206,17 @@ private fun DateRow(dateFormatted: String) {
 private fun StatusRow(status: TransactionStatusEnum) {
     QuoteInfoRow(
         borderTop = true,
-        title = { subhead2_grey(text = stringResource(R.string.TransactionInfo_Status)) },
+        title = { subhead2_grey(text = stringResource(Res.string.TransactionInfo_Status)) },
         value = {
             when (status) {
                 TransactionStatusEnum.FINISHED -> {
                     Icon(
-                        painter = painterResource(R.drawable.ic_checkmark_20),
+                        painter = painterResource(Res.drawable.ic_checkmark_20),
                         contentDescription = null,
                         tint = ComposeAppTheme.colors.statusSuccess,
                     )
                     HSpacer(width = 4.dp)
-                    subhead2_remus(text = stringResource(R.string.multi_swap_completed))
+                    subhead2_remus(text = stringResource(Res.string.multi_swap_completed))
                 }
                 TransactionStatusEnum.FAILED -> {
                     Icon(
@@ -197,10 +225,10 @@ private fun StatusRow(status: TransactionStatusEnum) {
                         tint = ComposeAppTheme.colors.statusError,
                     )
                     HSpacer(width = 4.dp)
-                    subhead2_lucian(text = stringResource(R.string.Transactions_Failed))
+                    subhead2_lucian(text = stringResource(Res.string.Transactions_Failed))
                 }
                 TransactionStatusEnum.REFUNDED -> {
-                    subhead2_lucian(text = stringResource(R.string.transaction_swap_status_refunded))
+                    subhead2_lucian(text = stringResource(Res.string.transaction_swap_status_refunded))
                 }
                 else -> {
                     subhead2_leah(text = status.name.lowercase().replaceFirstChar { it.uppercase() })
@@ -214,7 +242,7 @@ private fun StatusRow(status: TransactionStatusEnum) {
 private fun TransactionIdRow(transactionId: String) {
     val view = LocalView.current
     CellUniversal(borderTop = true) {
-        subhead2_grey(text = stringResource(R.string.TransactionInfo_Id))
+        subhead2_grey(text = stringResource(Res.string.TransactionInfo_Id))
         HSpacer(width = 16.dp)
         subhead2_leah(
             modifier = Modifier.weight(1f),
@@ -226,7 +254,7 @@ private fun TransactionIdRow(transactionId: String) {
         HSpacer(width = 8.dp)
         ButtonSecondaryCircle(
             icon = R.drawable.ic_copy_20,
-            contentDescription = stringResource(R.string.Button_Copy),
+            contentDescription = stringResource(Res.string.Button_Copy),
             onClick = {
                 TextHelper.copyText(transactionId)
                 HudHelper.showSuccessMessage(view, R.string.Hud_Text_Copied)
@@ -250,11 +278,11 @@ private fun SupportRow(url: String) {
         HSpacer(width = 16.dp)
         body_leah(
             modifier = Modifier.weight(1f),
-            text = stringResource(R.string.paycore_support),
+            text = stringResource(Res.string.paycore_support),
         )
         HSpacer(width = 8.dp)
         Icon(
-            painter = painterResource(R.drawable.ic_arrow_right),
+            painter = painterResource(Res.drawable.ic_arrow_right),
             contentDescription = null,
             tint = ComposeAppTheme.colors.iconSecondary,
         )
@@ -275,6 +303,7 @@ private fun PayCoreExchangeDetailScreenPreview() {
                 priceFormatted = "1 RUB = 0.01055 USDT",
                 priceInvFormatted = "1 USDT = 94.78 RUB",
                 dateFormatted = "Mar 30, 2026, 14:30",
+                durationFormatted = "5m 12s",
                 status = TransactionStatusEnum.EXCHANGING,
                 transactionId = "abc-123-def-456",
                 supportUrl = AppConfigProvider.payCoreSupportUrl,
