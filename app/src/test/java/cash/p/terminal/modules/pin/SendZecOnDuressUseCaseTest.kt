@@ -94,6 +94,7 @@ class SendZecOnDuressUseCaseTest {
         MockKAnnotations.init(this, relaxUnitFun = true)
         testScope = TestScope()
         every { dispatcherProvider.applicationScope } returns testScope
+        every { smsNotificationSettings.getSmsNotificationEnabled(any()) } returns true
         coEvery { offlineModeUseCase.withTemporaryOnline<Any?>(any(), any(), any()) } coAnswers {
             thirdArg<suspend () -> Any?>().invoke()
         }
@@ -142,6 +143,24 @@ class SendZecOnDuressUseCaseTest {
         testScope.advanceUntilIdle()
 
         verify(exactly = 0) { smsNotificationSettings.getSmsNotificationAccountId(any()) }
+    }
+
+    @Test
+    fun sendIfEnabled_notificationDisabled_doesNotSend() {
+        val account = createTestAccount()
+        val wallet = createTestWallet(account)
+        val adapter = createMockAdapter(balance = BigDecimal("1.0"), synced = true)
+
+        stubSmsNotificationSettings(level = 0)
+        stubWalletLookup(account, wallet)
+        stubExistingAdapter(wallet, adapter)
+        every { smsNotificationSettings.getSmsNotificationEnabled(0) } returns false
+
+        useCase.sendIfEnabled(userLevel = 1)
+        testScope.advanceUntilIdle()
+
+        coVerify(exactly = 0) { accountsStorage.loadAccount(any()) }
+        coVerify(exactly = 0) { adapter.send(any(), any(), any()) }
     }
 
     @Test

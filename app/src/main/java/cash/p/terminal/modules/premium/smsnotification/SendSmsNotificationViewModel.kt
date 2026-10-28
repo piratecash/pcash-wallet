@@ -102,7 +102,8 @@ class SendSmsNotificationViewModel(
         uiState = uiState.copy(
             address = savedAddress,
             memo = savedMemo,
-            memoBytesUsed = savedMemo.toByteArray(Charsets.UTF_8).size
+            memoBytesUsed = savedMemo.toByteArray(Charsets.UTF_8).size,
+            isEnabled = smsNotificationSettings.getSmsNotificationEnabled(currentLevel)
         )
         updateButtonStates()
     }
@@ -127,6 +128,13 @@ class SendSmsNotificationViewModel(
         }
 
         updateButtonStates()
+    }
+
+    fun onEnabledChange(enabled: Boolean) {
+        smsNotificationSettings.setSmsNotificationEnabled(currentLevel, enabled)
+        uiState = uiState.copy(isEnabled = enabled)
+        updateButtonStates()
+        if (!enabled) cancelTestTransaction()
     }
 
     fun onAccountSelected(account: Account) {
@@ -198,7 +206,7 @@ class SendSmsNotificationViewModel(
     private fun updateButtonStates() {
         val hasWallet = uiState.selectedWallet != null
         val hasValidAddress = uiState.address.isNotBlank() && uiState.addressError == null
-        val canSend = hasWallet && hasValidAddress
+        val canSend = uiState.isEnabled && hasWallet && hasValidAddress
 
         uiState = uiState.copy(
             isSaveEnabled = canSend,
@@ -207,6 +215,7 @@ class SendSmsNotificationViewModel(
     }
 
     fun onSaveClick() {
+        if (!uiState.isEnabled) return
         val accountId = uiState.selectedWallet?.accountId ?: return
         val address = uiState.address
         val memo = uiState.memo
@@ -229,6 +238,7 @@ class SendSmsNotificationViewModel(
     }
 
     fun onTestSmsClick() {
+        if (!uiState.isEnabled) return
         val wallet = uiState.selectedWallet?.wallet ?: return
         val address = uiState.address
         val memo = uiState.memo
@@ -277,7 +287,8 @@ data class SendSmsNotificationUiState(
     val isSaveEnabled: Boolean = false,
     val testAvailability: OperationAvailability = OperationAvailability.Unavailable,
     val saveSuccess: Boolean = false,
-    val testResult: TestResult? = null
+    val testResult: TestResult? = null,
+    val isEnabled: Boolean = false
 ) {
     val selectedAccount: Account?
         get() = selectedWallet?.wallet?.account

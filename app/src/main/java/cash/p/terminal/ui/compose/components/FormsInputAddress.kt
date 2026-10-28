@@ -29,7 +29,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -39,6 +39,13 @@ import cash.p.terminal.modules.contacts.ChooseContactPage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.rememberResultLauncher
 import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Send_Button_Paste
+import cash.p.terminal.resources.ic_attention_20
+import cash.p.terminal.resources.ic_check_20
+import cash.p.terminal.resources.ic_delete_20
+import cash.p.terminal.resources.ic_qr_scan_20
+import cash.p.terminal.resources.ic_user_20
 import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
 import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
 import cash.p.terminal.ui_compose.components.HSCircularProgressIndicator
@@ -49,6 +56,7 @@ import cash.p.terminal.ui_compose.theme.ColoredTextStyle
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.core.launchAfterClearingFocus
 import io.horizontalsystems.core.entities.BlockchainType
+import org.jetbrains.compose.resources.painterResource
 
 private const val ADDRESS_INPUT_MAX_LINES = 5
 
@@ -147,7 +155,7 @@ fun FormsInputAddress(
                     if (showStateIcon) {
                         Icon(
                             modifier = Modifier.padding(end = 8.dp),
-                            painter = painterResource(id = R.drawable.ic_attention_20),
+                            painter = painterResource(Res.drawable.ic_attention_20),
                             contentDescription = null,
                             tint = cautionColor
                         )
@@ -168,7 +176,7 @@ fun FormsInputAddress(
                         } else {
                             Icon(
                                 modifier = Modifier.padding(end = 8.dp),
-                                painter = painterResource(id = R.drawable.ic_check_20),
+                                painter = painterResource(Res.drawable.ic_check_20),
                                 contentDescription = null,
                                 tint = ComposeAppTheme.colors.statusSuccess
                             )
@@ -186,7 +194,7 @@ fun FormsInputAddress(
             if (value.isNotEmpty()) {
                 ButtonSecondaryCircle(
                     modifier = Modifier.padding(end = 16.dp),
-                    icon = R.drawable.ic_delete_20,
+                    icon = Res.drawable.ic_delete_20,
                     onClick = {
                         val text = textPreprocessor.process("")
                         onValueChange.invoke(text)
@@ -197,13 +205,13 @@ fun FormsInputAddress(
                 if (chooseContactEnable && blockchainType != null) {
                     ButtonSecondaryCircle(
                         modifier = Modifier.padding(end = 8.dp),
-                        icon = R.drawable.ic_user_20,
+                        icon = Res.drawable.ic_user_20,
                         onClick = { contactLauncher.slideFromRight(ChooseContactPage(blockchainType)) }
                     )
                 }
                 ButtonSecondaryCircle(
                     modifier = Modifier.padding(end = 8.dp),
-                    icon = R.drawable.ic_qr_scan_20,
+                    icon = Res.drawable.ic_qr_scan_20,
                     onClick = {
                         coroutineScope.launchAfterClearingFocus(focusManager) {
                             onQrScanClick()
@@ -216,7 +224,7 @@ fun FormsInputAddress(
                     modifier = Modifier
                         .padding(end = 16.dp)
                         .height(28.dp),
-                    title = stringResource(id = R.string.Send_Button_Paste),
+                    title = stringResource(Res.string.Send_Button_Paste),
                     onClick = {
                         clipboardManager.getText()?.text?.let { textInClipboard ->
                             val textProcessed = textPreprocessor.process(textInClipboard)

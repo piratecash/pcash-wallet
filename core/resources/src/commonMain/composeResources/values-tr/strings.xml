@@ -2079,8 +2079,9 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="image_saved_to_gallery">Görsel galeriye kaydedildi</string>
     <string name="auth_detail_save_failed">Görsel kaydedilemedi</string>
     <string name="auth_info_no_records">Henüz yetkilendirme kaydı yok</string>
-    <string name="send_sms_via_zec_title">ZEC ile SMS Gönder</string>
-    <string name="send_sms_via_zec_info">Bu mod, uygulamayı zorla açtığınızı yakın arkadaşlarınıza veya avukatınıza bildirmenizi sağlar. Bu mod, cüzdanınızda ZEC varsa çalışır. Yoksa uygulama ekleyecektir.</string>
+    <string name="send_sms_via_zec_title">Giriş bildirimi</string>
+    <string name="send_sms_enabled">Bildirim Gönder</string>
+    <string name="send_sms_via_zec_info">Güvendiğiniz bir kişiye uygulamayı zorla açtığınızı bildirir.\n\nNe zaman: yalnızca uygulama Duress Modu şifresi girilerek kilidi açıldığında gönderilir. Normal bir giriş, yanlış şifre veya biyometrik kilit açma hiçbir şey göndermez.\n\nNe: seçilen cüzdandan alıcının korumalı (shielded) Zcash adresine, memo alanında mesajınızla birlikte 0.0001 ZEC (artı ağ ücreti) tutarında bir işlem. Bu bir SMS değildir: alıcı mesajı kendi Zcash cüzdanında okur, telefon numarasına ihtiyaç yoktur.\n\nNe zaman ulaşır: giriş yapıldıktan hemen sonra arka planda otomatik olarak gönderilir ve genellikle alıcıya birkaç dakika içinde ulaşır; cüzdanın önce senkronize olması gerekebilir, bu da daha uzun sürebilir.\n\nMaliyet: her bildirim 0.0001 ZEC artı ücrete mal olur. Cüzdanda o anda yeterli ZEC yoksa bildirim gönderilmez ve yeniden denenmez — çalıştığını kontrol etmek için test düğmesini kullanın.\n\nBildirimleri bu ekranın üst kısmındaki anahtarla kapatabilirsiniz.</string>
     <string name="send_sms_wallet_balance_hint">Seçili cüzdanda gerekli miktarın olduğundan emin olun.</string>
     <string name="send_sms_syncing">Göndermek için senkronize ediliyor…</string>
     <string name="send_sms_test_success">Mesajınız başarıyla gönderildi.</string>
@@ -2091,7 +2092,8 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="choose_wallet">Cüzdan Seç</string>
     <string name="choose_wallet_none">Yok</string>
     <string name="required_coins_for_transaction">İşlem için gerekli coinler</string>
-    <string name="test_sms">SMS Test Et</string>
+    <string name="send_sms_address_hint">Alıcının cüzdanının korumalı (shielded) Zcash adresini (z veya u ile başlar) girin. Mesaj alıcının Zcash cüzdanında görünecektir.</string>
+    <string name="test_sms">Test Bildirimi Gönder</string>
     <string name="no_zec_wallets_available">ZEC tokeni olan cüzdan bulunamadı</string>
     <!-- Connect Mini App -->
     <string name="connect_mini_app_title">Mini Uygulamayı Bağla</string>
