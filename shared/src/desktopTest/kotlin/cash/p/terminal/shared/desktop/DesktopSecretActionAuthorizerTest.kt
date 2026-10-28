@@ -14,6 +14,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.navigation3.runtime.NavBackStack
+import cash.p.terminal.core.TransactionSettingsStorage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.shared.TestWindowHost
@@ -28,6 +29,7 @@ import cash.p.terminal.ui_compose.components.UrlOpener
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.core.ICurrentDateProvider
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -51,6 +53,10 @@ class DesktopSecretActionAuthorizerTest {
 
     private val navigation = HSNavigation(NavBackStack<HSPage>(BlankPage()))
     private val arguments = mutableListOf<String>()
+    private var transferPasswordEnabled = false
+    private val authorizer = DesktopSecretActionAuthorizer(
+        mockk<TransactionSettingsStorage> { every { transferPasscodeEnabled } answers { transferPasswordEnabled } }
+    )
     private val systemLocale: Locale = Locale.getDefault()
 
     @AfterTest
@@ -106,9 +112,15 @@ class DesktopSecretActionAuthorizerTest {
     }
 
     /** Hosts a caller that remembers the authorization and launches it with [ARGUMENT]. */
-    private fun ComposeUiTest.rememberAuthorizationAndLaunch(): ConfirmPasswordPage {
+    private fun ComposeUiTest.rememberAuthorizationAndLaunch(transfer: Boolean = false): ConfirmPasswordPage {
+        launchAuthorization(transfer)
+        assertEquals(emptyList(), arguments)
+        return assertIs<ConfirmPasswordPage>(navigation.lastOrNull())
+    }
+
+    private fun ComposeUiTest.launchAuthorization(transfer: Boolean) {
         startConfirmPasswordGraph(CompletableDeferred())
-        val caller = AuthorizationCallerPage()
+        val caller = AuthorizationCallerPage(transfer)
         navigation.slideFromRight(caller)
         setContent {
             TestWindowHost {
@@ -119,17 +131,18 @@ class DesktopSecretActionAuthorizerTest {
         }
         runOnIdle { caller.authorize(ARGUMENT) }
         waitForIdle()
-        assertEquals(emptyList(), arguments)
-        return assertIs<ConfirmPasswordPage>(navigation.lastOrNull())
     }
 
-    private inner class AuthorizationCallerPage : HSPage() {
+    private inner class AuthorizationCallerPage(private val transfer: Boolean = false) : HSPage() {
         lateinit var authorize: (String) -> Unit
 
         @Composable
         override fun GetContent(navigation: HSNavigation) {
-            val authorization = DesktopSecretActionAuthorizer().rememberAuthorization<String>(navigation) {
-                arguments += it
+            val record: (String) -> Unit = { arguments += it }
+            val authorization = if (transfer) {
+                authorizer.rememberTransferAuthorization(navigation, record)
+            } else {
+                authorizer.rememberAuthorization(navigation, record)
             }
             SideEffect { authorize = authorization }
         }
@@ -137,6 +150,40 @@ class DesktopSecretActionAuthorizerTest {
 
     private object NoUrlOpener : UrlOpener {
         override fun open(url: String) = Unit
+    }
+
+    @Test
+    fun rememberTransferAuthorization_passwordNotRequired_runsTheActionWithoutThePasswordPage() =
+        runDesktopComposeUiTest {
+            launchAuthorization(transfer = true)
+
+            assertEquals(listOf(ARGUMENT), arguments)
+            assertIs<AuthorizationCallerPage>(navigation.lastOrNull())
+        }
+
+    @Test
+    fun rememberTransferAuthorization_passwordRequiredAndConfirmed_runsTheActionOnce() = runDesktopComposeUiTest {
+        transferPasswordEnabled = true
+        val page = rememberAuthorizationAndLaunch(transfer = true)
+
+        runOnIdle {
+            navigation.setResult(page, ConfirmPasswordPage.Result(success = true))
+            navigation.navigateUp()
+        }
+        waitForIdle()
+
+        assertEquals(listOf(ARGUMENT), arguments)
+    }
+
+    @Test
+    fun rememberTransferAuthorization_passwordRequiredAndCancelled_doesNotRunTheAction() = runDesktopComposeUiTest {
+        transferPasswordEnabled = true
+        rememberAuthorizationAndLaunch(transfer = true)
+
+        runOnIdle { navigation.navigateUp() }
+        waitForIdle()
+
+        assertEquals(emptyList(), arguments)
     }
 
     /** Leaves the check pending until the returned deferred completes. */

@@ -28,10 +28,14 @@ import cash.p.terminal.core.managers.KitPlatformContexts
 import cash.p.terminal.wallet.policy.PlatformChainSupport
 import cash.p.terminal.wallet.policy.AndroidPlatformChainSupport
 import cash.p.terminal.wallet.policy.AndroidPlatformOperationSupport
-import cash.p.terminal.entities.UnstoppableProviderTitles
 import cash.p.terminal.modules.premium.settings.AndroidPremiumPlatformSettings
 import cash.p.terminal.modules.premium.settings.PremiumPlatformSettings
-import cash.p.terminal.modules.multiswap.providers.AndroidUnstoppableProviderTitles
+import cash.p.terminal.modules.multiswap.providers.AndroidSwapProvidersStorage
+import cash.p.terminal.modules.multiswap.providers.SwapProvidersStorage
+import cash.p.terminal.modules.paycore.AndroidPayCorePreferences
+import cash.p.terminal.modules.paycore.PayCorePreferences
+import cash.p.terminal.modules.paycore.webview.AndroidPayCoreWebPage
+import cash.p.terminal.modules.paycore.webview.PayCoreWebPage
 import cash.p.terminal.wallet.policy.PlatformOperationSupport
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.preference.PreferenceManager
@@ -64,7 +68,6 @@ import cash.p.terminal.core.managers.AndroidBitcoinKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.DeviceFlipDetector
 import cash.p.terminal.core.managers.EffectiveMonitoredChains
-import cash.p.terminal.modules.send.offline.OfflineBroadcastTokenResolver
 import android.content.Context
 import android.net.ConnectivityManager as AndroidConnectivityManager
 import cash.p.terminal.core.managers.ConnectivityManager
@@ -115,7 +118,6 @@ import cash.p.terminal.core.managers.MoneroTrezorReadiness
 import cash.p.terminal.core.managers.MoneroTrezorOperationGateway
 import cash.p.terminal.core.managers.MoneroHardwareGateway
 import cash.p.terminal.core.managers.RateAppManager
-import cash.p.terminal.core.managers.RecentAddressManager
 import cash.p.terminal.core.managers.ReleaseNotesManager
 import cash.p.terminal.core.managers.SilentCameraManager
 import cash.p.terminal.core.managers.SolanaKitDatabaseKeyProvider
@@ -173,7 +175,6 @@ import cash.p.terminal.feature.wallet.SecretActionAuthorizer
 import cash.p.terminal.feature.wallet.WalletPlatformPages
 import cash.p.terminal.feature.wallet.WalletSendPages
 import cash.p.terminal.modules.market.MarketPages
-import cash.p.terminal.modules.multiswap.AssetFiatRateService
 import cash.p.terminal.modules.pin.PinComponent
 import cash.p.terminal.modules.pin.core.ILockoutManager
 import cash.p.terminal.modules.pin.core.ILockoutUntilDateFactory
@@ -186,9 +187,10 @@ import cash.p.terminal.modules.calculator.domain.CalculatorExpressionEvaluator
 import cash.p.terminal.modules.calculator.domain.CalculatorModeService
 import cash.p.terminal.modules.calculator.domain.CalculatorPinAttemptThrottle
 import cash.p.terminal.modules.pin.unlock.AttemptPinUnlockUseCase
+import cash.p.terminal.modules.send.offline.AndroidOfflineTransactionFiles
 import cash.p.terminal.modules.send.offline.OfflineQrCodeSaver
-import cash.p.terminal.modules.send.offline.OfflineTransactionFileTransfer
-import cash.p.terminal.modules.send.offline.BeamOfflineTransactionRelay
+import cash.p.terminal.modules.send.offline.OfflineQrImageSaver
+import cash.p.terminal.modules.send.offline.OfflineTransactionFiles
 import cash.p.terminal.modules.settings.appearance.AppIconService
 import cash.p.terminal.modules.settings.appearance.LaunchScreenService
 import cash.p.terminal.modules.theme.ThemeService
@@ -313,7 +315,9 @@ val managerModule = module {
     single<EvmBlockchains> { get<EvmBlockchainManager>() }
     single<PlatformChainSupport> { AndroidPlatformChainSupport }
     single<PlatformOperationSupport> { AndroidPlatformOperationSupport }
-    singleOf(::AndroidUnstoppableProviderTitles) bind UnstoppableProviderTitles::class
+    singleOf(::AndroidSwapProvidersStorage) bind SwapProvidersStorage::class
+    singleOf(::AndroidPayCorePreferences) bind PayCorePreferences::class
+    singleOf(::AndroidPayCoreWebPage) bind PayCoreWebPage::class
     singleOf(::AndroidPremiumPlatformSettings) bind PremiumPlatformSettings::class
     singleOf(::AndroidAppForegroundState) bind AppForegroundState::class
     singleOf(::AndroidMarketSettingsStore) bind MarketSettingsStore::class
@@ -361,7 +365,6 @@ val managerModule = module {
     singleOf(::EvmSyncSourceManager)
     singleOf(::AndroidEvmKitDatabaseKeyProvider) bind EvmKitDatabaseKeyProvider::class
     singleOf(::BtcBlockchainManager)
-    singleOf(::OfflineBroadcastTokenResolver)
     singleOf(::AndroidSolanaKitDatabaseKeyProvider) bind SolanaKitDatabaseKeyProvider::class
     singleOf(::AndroidStellarKitDatabaseKeyProvider) bind StellarKitDatabaseKeyProvider::class
     singleOf(::AndroidTonKitDatabaseKeyProvider) bind TonKitDatabaseKeyProvider::class
@@ -372,7 +375,6 @@ val managerModule = module {
     singleOf(::CreateRequiredTokensUseCaseImpl) bind CreateRequiredTokensUseCase::class
     singleOf(::EvmPersonalSignerImpl) bind EvmPersonalSigner::class
     singleOf(::AndroidTronKitDatabaseKeyProvider) bind TronKitDatabaseKeyProvider::class
-    singleOf(::RecentAddressManager)
     single {
         PinComponent(
             pinSettingsStorage = get(),
@@ -517,14 +519,12 @@ val managerModule = module {
     single<MarketFavoritesMigration> {
         MarketFavoritesDataMigration(get<AppDatabase>().marketFavoritesDao(), get())
     }
-    singleOf(::AssetFiatRateService)
 
     // Guides
     single { GuidesManager }
     singleOf(::GuidesRepository)
 
     // Pending transactions
-    singleOf(::OfflineQrCodeSaver)
-    singleOf(::OfflineTransactionFileTransfer)
-    singleOf(::BeamOfflineTransactionRelay)
+    singleOf(::OfflineQrCodeSaver) bind OfflineQrImageSaver::class
+    singleOf(::AndroidOfflineTransactionFiles) bind OfflineTransactionFiles::class
 }

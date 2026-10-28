@@ -17,6 +17,8 @@ object SharedAppConfig {
     const val reportEmail = "i@p.cash"
     const val payCoreSupportUrl = "https://t.me/paycore_supp"
     const val isSwapEnabled = true
+    const val isPayCoreEnabled = true
+    const val fiatDecimal: Int = 2
 
     val chainalysisApiKey by lazy { EncodedSecrets.CHAINALYSIS_API_KEY }
     val hashDitApiKey by lazy { EncodedSecrets.HASH_DIT_API_KEY }

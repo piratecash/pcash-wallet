@@ -20,8 +20,11 @@ import cash.p.terminal.modules.backuplocal.fullbackup.BackupManagerPage
 import cash.p.terminal.modules.blockchainsettings.BlockchainSettingsPage
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.manageaccounts.ManageAccountsPage
+import cash.p.terminal.modules.multiswap.providersettings.SwapProvidersSettingsPage
 import cash.p.terminal.modules.premium.about.AboutPremiumPage
+import cash.p.terminal.modules.send.offline.OfflineBroadcastInputPage
 import cash.p.terminal.modules.settings.appearance.AppearancePage
+import cash.p.terminal.modules.settings.donate.DonateTokenSelectPage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.shared.DesktopTestGraph
@@ -144,6 +147,27 @@ class DesktopMainPageDesktopTest {
     }
 
     @Test
+    fun settings_donate_opensDonateTokenSelect() = runDesktopComposeUiTest {
+        openSetting(DONATE)
+
+        assertIs<DonateTokenSelectPage>(navigation.lastOrNull())
+    }
+
+    @Test
+    fun settings_swapProviders_opensSwapProviderSettings() = runDesktopComposeUiTest {
+        openSetting(SWAP_PROVIDERS)
+
+        assertIs<SwapProvidersSettingsPage>(navigation.lastOrNull())
+    }
+
+    @Test
+    fun settings_offlineBroadcast_opensOfflineBroadcastInput() = runDesktopComposeUiTest {
+        openSetting(SEND_RAW_TX)
+
+        assertIs<OfflineBroadcastInputPage>(navigation.lastOrNull())
+    }
+
+    @Test
     fun marketsTab_disabled_isHiddenFromTheNavigation() = runDesktopComposeUiTest {
         appearanceStore().marketsTabEnabled = false
         showApp()
@@ -190,6 +214,12 @@ class DesktopMainPageDesktopTest {
         assertTrue(onNodeWithText(MANAGE_WALLETS).shows(statusError))
     }
 
+    private fun ComposeUiTest.openSetting(title: String) {
+        showApp()
+        onNodeWithContentDescription(SETTINGS).performClick()
+        onNodeWithText(title).performScrollTo().performClick()
+    }
+
     private fun appearanceStore() = GlobalContext.get().get<AppearanceSettingsStore>()
 
     private fun ComposeUiTest.showApp() = setContent {
@@ -215,5 +245,8 @@ class DesktopMainPageDesktopTest {
         const val MANAGE_WALLETS = "Manage Wallets"
         const val BACKUP_MANAGER = "Backup Manager"
         const val ABOUT_PREMIUM = "About Premium"
+        const val DONATE = "Donate"
+        const val SWAP_PROVIDERS = "Swap Providers"
+        const val SEND_RAW_TX = "Send RAW TX"
     }
 }

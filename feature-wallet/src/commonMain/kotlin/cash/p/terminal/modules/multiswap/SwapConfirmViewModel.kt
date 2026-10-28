@@ -1,0 +1,842 @@
+package cash.p.terminal.modules.multiswap
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.CreationExtras
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.core.HSCaution
+import cash.p.terminal.core.TransactionSettingsStorage
+import cash.p.terminal.core.MoneroSpendReadiness
+import cash.p.terminal.core.requiresTrezorPreparation
+import cash.p.terminal.core.ethereum.CautionViewItem
+import cash.p.terminal.core.ethereum.toCautionViewItem
+import cash.p.terminal.core.getKoinInstance
+import cash.p.terminal.core.storage.PendingMultiSwapStorage
+import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
+import cash.p.terminal.entities.PendingMultiSwap
+import cash.p.terminal.entities.SwapProviderTransaction
+import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
+import cash.p.terminal.modules.multiswap.providers.IExactOutSwapProvider
+import cash.p.terminal.modules.multiswap.providers.InsufficientAllowanceCaution
+import cash.p.terminal.modules.multiswap.providers.OffChainSwapProvider
+import cash.p.terminal.modules.multiswap.providers.SwapDepositMemoUnsupported
+import cash.p.terminal.modules.multiswap.providers.isOffChain
+import cash.p.terminal.modules.multiswap.providers.requiredInput
+import cash.p.terminal.modules.multiswap.sendtransaction.ISendTransactionService
+import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionData
+import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionResult
+import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionServiceState
+import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionSettings
+import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceMonero
+import cash.p.terminal.modules.multiswap.sendtransaction.SwapTransactionServiceFactory
+import cash.p.terminal.modules.multiswap.ui.DataField
+import cash.p.terminal.modules.send.BaseSendViewModel
+import cash.p.terminal.modules.send.hardwareWalletUserMessageRes
+import cash.p.terminal.modules.send.SendModule
+import cash.p.terminal.modules.send.SendResult
+import cash.p.terminal.modules.send.isHardwareWalletCancelled
+import cash.p.terminal.network.backendswap.data.entity.BackendSwapError
+import cash.p.terminal.network.changenow.data.entity.BackendChangeNowResponseError
+import cash.p.terminal.network.exolix.data.entity.BackendExolixResponseError
+import cash.p.terminal.network.yifi.data.entity.BackendYiFiResponseError
+import cash.p.terminal.resources.Button_Refresh
+import cash.p.terminal.resources.Error
+import cash.p.terminal.resources.EthereumTransaction_Error_InsufficientBalance_Title
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Swap_ErrorInsufficientBalance
+import cash.p.terminal.resources.swap_provider_order_failed
+import cash.p.terminal.resources.swap_yifi_memo_unsupported
+import cash.p.terminal.resources.unexpected_error
+import cash.p.terminal.resources.unsupported_address
+import cash.p.terminal.resources.unsupported_refund_address
+import cash.p.terminal.strings.helpers.TranslatableString
+import cash.p.terminal.wallet.IAdapterManager
+import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.Wallet
+import co.touchlab.kermit.Logger
+import com.piratecash.monero.signer.HardwareWalletOperationException
+import io.horizontalsystems.bitcoincore.managers.SendValueErrors
+import io.horizontalsystems.core.CurrencyManager
+import io.horizontalsystems.core.DispatcherProvider
+import io.horizontalsystems.core.Translator
+import io.horizontalsystems.core.entities.Currency
+import io.horizontalsystems.ethereumkit.api.jsonrpc.JsonRpc.ResponseError
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.jetbrains.compose.resources.StringResource
+import org.koin.java.KoinJavaComponent.inject
+import java.math.BigDecimal
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.cancellation.CancellationException
+import cash.p.terminal.resources.unsupported_token
+import kotlin.reflect.KClass
+import cash.p.terminal.core.HardwareWalletSupport
+import cash.p.terminal.ui_compose.components.HudMessenger
+import cash.p.terminal.wallet.IWalletManager
+
+private val logger = Logger.withTag("SwapConfirmViewModel")
+
+class SwapConfirmViewModel(
+    private val request: SwapConfirmRequest,
+    currencyManager: CurrencyManager,
+    private val fiatServices: SwapConfirmFiatServices,
+    val sendTransactionService: ISendTransactionService<*>,
+    private val timerService: TimerService,
+    private val priceImpactService: PriceImpactService,
+    wallet: Wallet,
+    adapterManager: IAdapterManager,
+    private val dispatcherProvider: DispatcherProvider,
+) : BaseSendViewModel<SwapConfirmUiState>(wallet, adapterManager) {
+    private val swapProvider = request.provider
+    private val swapQuote = request.quote
+    private val swapSettings = request.settings
+    private val fiatServiceIn = fiatServices.input
+    private val fiatServiceOut = fiatServices.output
+    private val fiatServiceOutMin = fiatServices.outputMinimum
+    private val executionMode = request.executionMode
+    private val direction = request.direction
+    private val requestedAmountOut = request.requestedAmountOut
+    private val multiSwapLegInfo = request.multiSwapLegInfo
+    private val accountId: String = wallet.account.id
+    private val localStorage: TransactionSettingsStorage by inject(TransactionSettingsStorage::class.java)
+    private val pendingMultiSwapStorage: PendingMultiSwapStorage by inject(PendingMultiSwapStorage::class.java)
+    private val swapProviderTransactionsStorage: SwapProviderTransactionsStorage by inject(
+        SwapProviderTransactionsStorage::class.java
+    )
+
+    var sendResult by mutableStateOf<SendResult?>(null)
+        private set
+
+    var completedMultiSwapId by mutableStateOf<String?>(null)
+        private set
+
+    override fun getEstimatedFee(): BigDecimal? = sendTransactionState.networkFee?.primary?.value
+    override fun onSendRequested() = executeSwap()
+
+    private var sendTransactionSettings: SendTransactionSettings? = null
+    private val currency = currencyManager.baseCurrency
+    private val tokenIn = swapQuote.tokenIn
+    private val tokenOut = swapQuote.tokenOut
+    private var amountIn = swapQuote.amountIn
+    private var fiatAmountIn: BigDecimal? = null
+
+    private var fiatAmountOut: BigDecimal? = null
+    private var fiatAmountOutMin: BigDecimal? = null
+
+    private var loading = true
+    private var timerState = timerService.stateFlow.value
+    private var sendTransactionState = sendTransactionService.stateFlow.value
+    private var priceImpactState = priceImpactService.stateFlow.value
+
+    private var amountOut: BigDecimal? = null
+    private var amountOutMin: BigDecimal? = null
+    private var amountInMax: BigDecimal? = swapQuote.amountInMax
+    private var finalQuoteCautions: List<HSCaution> = emptyList()
+    private var quoteFields: List<DataField> = listOf()
+    private var criticalError: String? = null
+    private var swapProviderTransaction: SwapProviderTransaction? = null
+    private var swapRecipientAddress: String? = null
+    private var isAdvancedSettingsAvailable: Boolean = sendTransactionService.hasSettings()
+    private var fetchJob: Job? = null
+    // The timer tracks quote freshness, so it starts once per new quote, not on fee/balance re-emissions.
+    private val quoteAwaitingTimer = AtomicBoolean(false)
+    private var moneroPreparationJob: Job? = null
+    private var moneroPreparationAutoStarted = false
+    private var moneroPreparationActivity = MoneroPreparationActivity.Idle
+    private var moneroPreparationError: StringResource? = null
+    private val mevProtectionAvailable =
+        swapProvider.mevProtectionAvailable && sendTransactionService.mevProtectionAvailable
+
+    init {
+        fiatServiceIn.setCurrency(currency)
+        fiatServiceIn.setToken(tokenIn)
+        fiatServiceIn.setAmount(amountIn)
+        addCloseable(fiatServiceIn)
+
+        fiatServiceOut.setCurrency(currency)
+        fiatServiceOut.setToken(tokenOut)
+        fiatServiceOut.setAmount(amountOut)
+        addCloseable(fiatServiceOut)
+
+        fiatServiceOutMin.setCurrency(currency)
+        fiatServiceOutMin.setToken(tokenOut)
+        fiatServiceOutMin.setAmount(amountOutMin)
+        addCloseable(fiatServiceOutMin)
+
+        viewModelScope.launch {
+            fiatServiceIn.stateFlow.collect {
+                fiatAmountIn = it.fiatAmount
+                emitState()
+            }
+        }
+
+        viewModelScope.launch {
+            fiatServiceOut.stateFlow.collect {
+                fiatAmountOut = it.fiatAmount
+                emitState()
+            }
+        }
+
+        viewModelScope.launch {
+            fiatServiceOutMin.stateFlow.collect {
+                fiatAmountOutMin = it.fiatAmount
+                emitState()
+            }
+        }
+
+        viewModelScope.launch {
+            sendTransactionService.sendTransactionSettingsFlow.collect {
+                sendTransactionSettings = it
+
+                fetchFinalQuote()
+            }
+        }
+
+        viewModelScope.launch {
+            sendTransactionService.stateFlow.collect { transactionState ->
+                sendTransactionState = transactionState
+
+                loading = transactionState.loading
+
+                emitState()
+                prepareMoneroSpendIfNeeded(transactionState.moneroSpendReadiness, automatic = true)
+
+                if (needUseTimer() && isSendable() && quoteAwaitingTimer.compareAndSet(true, false)) {
+                    timerService.start(10)
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            timerService.stateFlow.collect {
+                timerState = it
+
+                emitState()
+            }
+        }
+
+        viewModelScope.launch {
+            priceImpactService.stateFlow.collect {
+                handleUpdatedPriceImpactState(it)
+            }
+        }
+
+        viewModelScope.launch {
+            sendTransactionService.stateFlow.collectLatest {
+                val availableBalance = it.availableBalance ?: return@collectLatest
+                if (
+                    direction == SwapAmountDirection.In &&
+                    !sendResult.isSwapInProgress &&
+                    availableBalance < amountIn
+                ) {
+                    amountIn = availableBalance
+                    fiatServiceIn.setAmount(amountIn)
+                    refresh()
+                }
+            }
+        }
+
+        sendTransactionService.start(viewModelScope)
+    }
+
+    private fun handleUpdatedPriceImpactState(priceImpactState: PriceImpactService.State) {
+        this.priceImpactState = priceImpactState
+
+        emitState()
+    }
+
+    override fun createState(): SwapConfirmUiState {
+        val cautions = buildCautions()
+
+        return SwapConfirmUiState(
+            expiresIn = timerState.remaining.takeIf { needUseTimer() },
+            expired = timerState.timeout,
+            loading = loading,
+            tokenIn = tokenIn,
+            tokenOut = tokenOut,
+            amountIn = amountIn,
+            amountInMax = amountInMax,
+            amountOut = amountOut,
+            amountOutMin = amountOutMin,
+            fiatAmountIn = fiatAmountIn,
+            fiatAmountOut = fiatAmountOut,
+            fiatAmountOutMin = fiatAmountOutMin,
+            currency = currency,
+            networkFee = sendTransactionState.networkFee,
+            cautions = cautions,
+            feeCaution = sendTransactionState.feeCaution,
+            validQuote = isSendable(cautions),
+            reapprovalRequired = finalQuoteCautions.any { it is InsufficientAllowanceCaution },
+            priceImpact = priceImpactState.priceImpact,
+            priceImpactLevel = priceImpactState.priceImpactLevel,
+            quoteFields = quoteFields,
+            transactionFields = sendTransactionState.fields,
+            criticalError = criticalError,
+            isAdvancedSettingsAvailable = isAdvancedSettingsAvailable,
+            mevProtectionAvailable = mevProtectionAvailable,
+            mevProtectionEnabled = localStorage.swapMevProtectionEnabled && mevProtectionAvailable,
+            moneroSpendReadiness = sendTransactionState.moneroSpendReadiness,
+            moneroPreparationInProgress = moneroPreparationActivity == MoneroPreparationActivity.InProgress,
+            moneroPreparationError = moneroPreparationError,
+            moneroPreparationRetryAvailable =
+                sendTransactionState.moneroSpendReadiness?.requiresTrezorPreparation() == true &&
+                    moneroPreparationActivity != MoneroPreparationActivity.InProgress,
+        )
+    }
+
+    private fun buildCautions(): List<CautionViewItem> {
+        val quoteCautions = finalQuoteCautions.map(HSCaution::toCautionViewItem)
+        val priceImpactCaution = listOfNotNull(
+            priceImpactState.priceImpactCaution?.toCautionViewItem()
+        )
+        val balanceCaution = if (hasInsufficientInputBalance()) {
+            listOf(
+                HSCaution(
+                    TranslatableString.ResString(Res.string.Swap_ErrorInsufficientBalance),
+                    HSCaution.Type.Error,
+                ).toCautionViewItem()
+            )
+        } else {
+            emptyList()
+        }
+        val criticalErrorCaution = criticalError?.let {
+            listOf(
+                HSCaution(
+                    s = TranslatableString.ResString(Res.string.Error),
+                    type = HSCaution.Type.Error,
+                    description = TranslatableString.PlainString(it),
+                ).toCautionViewItem()
+            )
+        } ?: emptyList()
+        return sendTransactionState.cautions + quoteCautions + priceImpactCaution + balanceCaution +
+            criticalErrorCaution
+    }
+
+    private fun isSendable(cautions: List<CautionViewItem> = buildCautions()): Boolean {
+        val transactionSendable =
+            swapProvider.isOffChain && !sendTransactionService.requiresSendableState ||
+                sendTransactionState.sendable
+        return transactionSendable && cautions.none { it.type == CautionViewItem.Type.Error }
+    }
+
+    private fun hasInsufficientInputBalance(): Boolean {
+        val availableBalance = sendTransactionState.availableBalance ?: return false
+        return requiredInput(amountIn, amountInMax) > availableBalance
+    }
+
+    private fun needUseTimer() =
+        !swapProvider.isOffChain
+
+    fun retryMoneroPreparation() {
+        prepareMoneroSpendIfNeeded(sendTransactionState.moneroSpendReadiness, automatic = false)
+    }
+
+    private fun prepareMoneroSpendIfNeeded(
+        readiness: MoneroSpendReadiness?,
+        automatic: Boolean,
+    ) {
+        if (readiness?.requiresTrezorPreparation() != true) {
+            moneroPreparationAutoStarted = false
+            return
+        }
+        if (moneroPreparationJob?.isActive == true) return
+        if (automatic && moneroPreparationAutoStarted) return
+        val service = sendTransactionService as? SendTransactionServiceMonero ?: return
+        moneroPreparationAutoStarted = true
+        moneroPreparationError = null
+        moneroPreparationActivity = MoneroPreparationActivity.InProgress
+        moneroPreparationJob = viewModelScope.launch {
+            try {
+                service.updateWithTrezor()
+            } catch (error: CancellationException) {
+                moneroPreparationActivity = MoneroPreparationActivity.Cancelled
+                throw error
+            } catch (error: Exception) {
+                moneroPreparationActivity = MoneroPreparationActivity.Failed
+                if (!error.isHardwareWalletCancelled()) {
+                    logger.e(error) { "Monero Live Refresh failed" }
+                    moneroPreparationError = error.hardwareWalletUserMessageRes()
+                }
+            } finally {
+                if (moneroPreparationActivity == MoneroPreparationActivity.InProgress) {
+                    moneroPreparationActivity = MoneroPreparationActivity.Completed
+                }
+                emitState()
+            }
+        }
+        emitState()
+    }
+
+    override fun onCleared() {
+        timerService.stop()
+    }
+
+    fun refresh() {
+        loading = true
+        emitState()
+
+        fetchFinalQuote()
+    }
+
+    private fun fetchFinalQuote() {
+        fetchJob?.cancel()
+        swapRecipientAddress = null
+        fetchJob = viewModelScope.launch(dispatcherProvider.io) {
+            try {
+                val finalQuote = fetchFinalQuoteByExecutionMode()
+
+                amountIn = finalQuote.amountIn
+                amountInMax = finalQuote.amountInMax
+                amountOut = finalQuote.amountOut
+                amountOutMin = finalQuote.amountOutMin
+                quoteFields = finalQuote.fields
+                finalQuoteCautions = finalQuote.cautions
+                criticalError = null
+                swapProviderTransaction = finalQuote.swapProviderTransaction
+                swapRecipientAddress = finalQuote.sendTransactionData.recipientAddress
+                    ?.takeIf { swapProvider.isOffChain && it.isNotBlank() }
+
+                fiatServiceIn.setAmount(amountIn)
+                fiatServiceOut.setAmount(amountOut)
+                fiatServiceOutMin.setAmount(amountOutMin)
+                quoteAwaitingTimer.set(true)
+                sendTransactionService.setSendTransactionData(finalQuote.sendTransactionData)
+
+                priceImpactService.setPriceImpact(finalQuote.priceImpact?.negate(), swapProvider.title)
+                startDepositDeadlineTimer(finalQuote.validUntilMillis)
+
+                emitState()
+            } catch (e: BackendChangeNowResponseError) {
+                setCriticalError(e.changeNowCriticalError)
+            } catch (e: BackendExolixResponseError) {
+                setCriticalError(criticalErrorOf(e.message, e.error))
+            } catch (e: BackendYiFiResponseError) {
+                logger.w { "YiFi final quote failed: code=${e.code}, status=${e.statusCode}" }
+                setCriticalError(e.yiFiCriticalError)
+            } catch (e: BackendSwapError) {
+                setCriticalError(criticalErrorOf(e.message, e.code))
+            } catch (_: SwapDepositMemoUnsupported) {
+                setCriticalError(Translator.getString(Res.string.swap_yifi_memo_unsupported))
+            } catch (_: CancellationException) {
+                logger.w { "fetchFinalQuote was cancelled" }
+            } catch (t: Throwable) {
+                setCriticalError(finalQuoteCriticalError(t))
+            }
+        }
+    }
+
+    // Off-chain deposit orders expire server-side; on-chain quotes keep their own short timer.
+    private suspend fun startDepositDeadlineTimer(validUntilMillis: Long?) {
+        if (!swapProvider.isOffChain) return
+        withContext(dispatcherProvider.main) {
+            if (validUntilMillis == null) {
+                timerService.reset()
+            } else {
+                val remainingSeconds = (validUntilMillis - System.currentTimeMillis()) / 1000
+                timerService.start(remainingSeconds.coerceAtLeast(0))
+            }
+        }
+    }
+
+    private fun finalQuoteCriticalError(error: Throwable): String =
+        when (val hardwareError = error.toHardwareWalletError()) {
+            HardwareWalletError.Cancelled -> Translator.getString(Res.string.Button_Refresh)
+            is HardwareWalletError.Failed -> Translator.getString(hardwareError.messageRes)
+            null -> {
+                logger.e(error) { "fetchFinalQuote error" }
+                Translator.getString(Res.string.unexpected_error)
+            }
+        }
+
+    private suspend fun fetchFinalQuoteByExecutionMode(): ISwapFinalQuote =
+        when (executionMode) {
+            SwapExecutionMode.ExactIn -> swapProvider.fetchFinalQuote(
+                tokenIn = tokenIn,
+                tokenOut = tokenOut,
+                amountIn = amountIn,
+                swapSettings = swapSettings,
+                sendTransactionSettings = sendTransactionSettings,
+                swapQuote = swapQuote,
+            )
+
+            SwapExecutionMode.NativeExactOut -> {
+                val exactOutProvider = swapProvider as IExactOutSwapProvider
+                exactOutProvider.fetchFinalQuoteExactOut(
+                    tokenIn = tokenIn,
+                    tokenOut = tokenOut,
+                    amountOut = checkNotNull(requestedAmountOut),
+                    swapSettings = swapSettings,
+                    sendTransactionSettings = sendTransactionSettings,
+                    swapQuote = swapQuote,
+                )
+            }
+        }
+
+    private val BackendChangeNowResponseError.changeNowCriticalError: String
+        get() = when (error) {
+            BackendChangeNowResponseError.NOT_VALID_REFUND_ADDRESS -> {
+                Translator.getString(Res.string.unsupported_refund_address)
+            }
+
+            BackendChangeNowResponseError.NOT_VALID_ADDRESS -> {
+                Translator.getString(Res.string.unsupported_address)
+            }
+
+            else -> {
+                Translator.getString(Res.string.unexpected_error)
+            }
+        }
+
+    private fun criticalErrorOf(vararg candidates: String?): String =
+        candidates.firstOrNull { !it.isNullOrBlank() } ?: Translator.getString(Res.string.unexpected_error)
+
+    private val BackendYiFiResponseError.yiFiCriticalError: String
+        get() = when (code) {
+            BackendYiFiResponseError.INVALID_RECEIVE_ADDRESS -> {
+                Translator.getString(Res.string.unsupported_address)
+            }
+
+            BackendYiFiResponseError.INVALID_REFUND_ADDRESS -> {
+                Translator.getString(Res.string.unsupported_refund_address)
+            }
+
+            else -> {
+                Translator.getString(Res.string.swap_provider_order_failed)
+            }
+        }
+
+    private fun setCriticalError(error: String) {
+        loading = false
+        criticalError = error
+        swapRecipientAddress = null
+        emitState()
+    }
+
+    suspend fun swap() = withContext(dispatcherProvider.default) {
+        sendTransactionService.send(uiState.mevProtectionEnabled)
+    }
+
+    fun toggleMevProtection(enabled: Boolean) {
+        localStorage.swapMevProtectionEnabled = enabled
+
+        emitState()
+    }
+
+    private fun executeSwap() {
+        if (sendResult == SendResult.Sending) return
+        sendResult = SendResult.Sending
+
+        viewModelScope.launch {
+            try {
+                val recipientAddress = swapRecipientAddress
+                // Leaving the screen must not drop tracking of a transaction the node may already hold.
+                val result = withContext(NonCancellable) {
+                    val sent = swap()
+                    onSendSuccess(recipientAddress)
+                    handleMultiSwapCompletion(sent)
+                    onTransactionCompleted(sent)
+                    sent
+                }
+
+                val queued = result is SendTransactionResult.Btc && result.isQueued ||
+                    result is SendTransactionResult.Beam && result.result is SendResult.SentButQueued
+                sendResult = if (queued) {
+                    SendResult.SentButQueued()
+                } else {
+                    SendResult.Sent()
+                }
+            } catch (e: ResponseError.RpcError) {
+                val caution = HSCaution(TranslatableString.PlainString(e.error.message))
+                sendResult = SendResult.Failed(caution)
+            } catch (t: Throwable) {
+                sendResult = when (val hardwareError = t.toHardwareWalletError()) {
+                    // A cancel on the device, or any other Tangem error, just resets the state.
+                    HardwareWalletError.Cancelled -> null
+                    is HardwareWalletError.Failed ->
+                        SendResult.Failed(HSCaution(TranslatableString.ResString(hardwareError.messageRes)))
+                    null -> SendResult.Failed(sendFailureCaution(t))
+                }
+            }
+        }
+    }
+
+    private fun sendFailureCaution(error: Throwable): HSCaution =
+        if (error.cause is SendValueErrors.InsufficientUnspentOutputs) {
+            HSCaution(TranslatableString.ResString(Res.string.EthereumTransaction_Error_InsufficientBalance_Title))
+        } else {
+            HSCaution(TranslatableString.PlainString(error.javaClass.simpleName))
+        }
+
+    private sealed interface HardwareWalletError {
+        data object Cancelled : HardwareWalletError
+        class Failed(val messageRes: StringResource) : HardwareWalletError
+    }
+
+    private fun Throwable.toHardwareWalletError(): HardwareWalletError? = when {
+        isHardwareWalletCancelled() || HardwareWalletSupport.isReportedBySdk(this) -> HardwareWalletError.Cancelled
+        this is HardwareWalletOperationException || HardwareWalletSupport.isSigningFailure(this) ->
+            HardwareWalletError.Failed(hardwareWalletUserMessageRes())
+        else -> null
+    }
+
+    private suspend fun handleMultiSwapCompletion(result: SendTransactionResult) {
+        val legInfo = multiSwapLegInfo ?: return
+        when (legInfo) {
+            is MultiSwapLegInfo.Leg1 -> createPendingMultiSwap(legInfo, result)
+            is MultiSwapLegInfo.Leg2 -> updatePendingMultiSwapLeg2(legInfo)
+        }
+    }
+
+    private suspend fun createPendingMultiSwap(
+        legInfo: MultiSwapLegInfo.Leg1,
+        result: SendTransactionResult,
+    ) {
+        val id = UUID.randomUUID().toString()
+        val record = PendingMultiSwap(
+            id = id,
+            accountId = accountId,
+            createdAt = System.currentTimeMillis(),
+            coinUidIn = legInfo.coinUidIn,
+            blockchainTypeIn = legInfo.blockchainTypeIn,
+            tokenQueryIdIn = legInfo.tokenQueryIdIn,
+            amountIn = legInfo.amountIn,
+            coinUidIntermediate = legInfo.coinUidIntermediate,
+            blockchainTypeIntermediate = legInfo.blockchainTypeIntermediate,
+            tokenQueryIdIntermediate = legInfo.tokenQueryIdIntermediate,
+            coinUidOut = legInfo.coinUidOut,
+            blockchainTypeOut = legInfo.blockchainTypeOut,
+            tokenQueryIdOut = legInfo.tokenQueryIdOut,
+            leg1ProviderId = legInfo.leg1ProviderId,
+            leg1IsOffChain = swapProvider.isOffChain,
+            leg1TransactionId = result.getRecordUid(),
+            leg1AmountOut = amountOut,
+            leg1Status = PendingMultiSwap.STATUS_EXECUTING,
+            leg2ProviderId = legInfo.leg2ProviderId,
+            leg2IsOffChain = legInfo.leg2IsOffChain,
+            leg2TransactionId = null,
+            leg2AmountOut = null,
+            leg2Status = PendingMultiSwap.STATUS_PENDING,
+            expectedAmountOut = legInfo.expectedAmountOut,
+        )
+        pendingMultiSwapStorage.insert(record)
+        swapProviderTransaction?.transactionId?.takeIf { it.isNotBlank() }?.let { providerTxId ->
+            pendingMultiSwapStorage.setLeg1ProviderTransactionId(id, providerTxId)
+        }
+        completedMultiSwapId = id
+    }
+
+    private suspend fun updatePendingMultiSwapLeg2(
+        legInfo: MultiSwapLegInfo.Leg2,
+    ) {
+        pendingMultiSwapStorage.delete(legInfo.pendingMultiSwapId)
+        completedMultiSwapId = legInfo.pendingMultiSwapId
+    }
+
+    fun onTransactionCompleted(result: SendTransactionResult) {
+        swapProvider.onTransactionCompleted(result)
+        val transaction = swapProviderTransaction ?: return
+        val offChainProvider = swapProvider as? OffChainSwapProvider
+        if (offChainProvider != null) {
+            offChainProvider.onTransactionCompleted(transaction, result)
+        } else {
+            // On-chain provider (Thorchain/Maya) has no completion hook: finalize the record here.
+            // outgoingRecordUid matches the outgoing history record; transactionId = canonical hash for status polling.
+            swapProviderTransactionsStorage.save(
+                transaction.copy(
+                    outgoingRecordUid = result.getRecordUid(),
+                    transactionId = result.getCanonicalTxHash() ?: transaction.transactionId,
+                    date = System.currentTimeMillis(),
+                )
+            )
+        }
+    }
+
+    companion object {
+
+        fun provideFactory(
+            quote: SwapProviderQuote,
+            settings: Map<String, Any?>,
+            navigation: SwapConfirmNavigation,
+            hud: HudMessenger,
+            direction: SwapAmountDirection = SwapAmountDirection.In,
+            requestedAmountOut: BigDecimal? = null,
+            multiSwapLegInfo: MultiSwapLegInfo? = null,
+        ) = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(
+                modelClass: KClass<T>,
+                extras: CreationExtras
+            ): T {
+                val activeWallets = getKoinInstance<IWalletManager>().activeWallets
+                val wallet = activeWallets.find { it.token == quote.tokenIn }
+                val sendTransactionService = createSendTransactionService(quote, wallet, navigation, hud)
+
+                // When wallet is null the dummy service above (sendable=false)
+                // prevents any swap execution while the screen navigates back.
+                val assetFiatRateService: AssetFiatRateService = getKoinInstance()
+                val dispatcherProvider: DispatcherProvider = getKoinInstance()
+                return SwapConfirmViewModel(
+                    request = SwapConfirmRequest(
+                        provider = quote.provider,
+                        quote = quote.swapQuote,
+                        settings = settings,
+                        executionMode = quote.executionMode,
+                        direction = direction,
+                        requestedAmountOut = requestedAmountOut,
+                        multiSwapLegInfo = multiSwapLegInfo,
+                    ),
+                    currencyManager = getKoinInstance<CurrencyManager>(),
+                    fiatServices = SwapConfirmFiatServices(
+                        input = FiatService(assetFiatRateService),
+                        output = FiatService(assetFiatRateService),
+                        outputMinimum = FiatService(assetFiatRateService),
+                    ),
+                    sendTransactionService = sendTransactionService,
+                    timerService = TimerService(getKoinInstance()),
+                    priceImpactService = PriceImpactService(),
+                    wallet = wallet ?: activeWallets.first(),
+                    adapterManager = getKoinInstance<IAdapterManager>(),
+                    dispatcherProvider = dispatcherProvider,
+                ) as T
+            }
+        }
+
+        private fun createSendTransactionService(
+            quote: SwapProviderQuote,
+            wallet: Wallet?,
+            navigation: SwapConfirmNavigation,
+            hud: HudMessenger,
+        ): ISendTransactionService<*> = try {
+            checkNotNull(wallet) { "Wallet not found for ${quote.tokenIn}" }
+            SwapTransactionServiceFactory.create(quote.tokenIn, quote.provider)
+        } catch (e: Exception) {
+            hud.showError(Translator.getString(Res.string.unsupported_token))
+            navigation.exitFlow()
+            unavailableSendTransactionService(quote.tokenIn)
+        }
+
+        // The dummy service keeps the ViewModel inoperable while the screen navigates back after
+        // a missing or unsupported wallet is detected.
+        private fun unavailableSendTransactionService(token: Token) =
+            object : ISendTransactionService<Nothing>(token) {
+                override fun start(coroutineScope: CoroutineScope) = Unit
+                override suspend fun setSendTransactionData(data: SendTransactionData) = Unit
+                override fun hasSettings(): Boolean = false
+
+                @Composable
+                override fun GetSettingsContent(navigation: HSNavigation) = Unit
+
+                override suspend fun sendTransaction(
+                    mevProtectionEnabled: Boolean,
+                ): SendTransactionResult = SendTransactionResult.Solana(SendResult.Sending)
+
+                override val sendTransactionSettingsFlow: StateFlow<SendTransactionSettings>
+                    get() = MutableStateFlow(SendTransactionSettings.Common)
+
+                override fun createState() = SendTransactionServiceState(
+                    availableBalance = null,
+                    networkFee = null,
+                    cautions = emptyList(),
+                    sendable = false,
+                    loading = false,
+                    fields = emptyList(),
+                    extraFees = emptyMap(),
+                )
+            }
+    }
+}
+
+data class SwapConfirmRequest(
+    val provider: IMultiSwapProvider,
+    val quote: ISwapQuote,
+    val settings: Map<String, Any?>,
+    val executionMode: SwapExecutionMode = SwapExecutionMode.ExactIn,
+    val direction: SwapAmountDirection = SwapAmountDirection.In,
+    val requestedAmountOut: BigDecimal? = null,
+    val multiSwapLegInfo: MultiSwapLegInfo? = null,
+)
+
+data class SwapConfirmFiatServices(
+    val input: FiatService,
+    val output: FiatService,
+    val outputMinimum: FiatService,
+)
+
+sealed class MultiSwapLegInfo {
+    data class Leg1(
+        val coinUidIn: String,
+        val blockchainTypeIn: String,
+        val tokenQueryIdIn: String?,
+        val amountIn: BigDecimal,
+        val coinUidIntermediate: String,
+        val blockchainTypeIntermediate: String,
+        val tokenQueryIdIntermediate: String?,
+        val coinUidOut: String,
+        val blockchainTypeOut: String,
+        val tokenQueryIdOut: String?,
+        val leg1ProviderId: String,
+        val leg2ProviderId: String,
+        val leg2IsOffChain: Boolean,
+        val expectedAmountOut: BigDecimal,
+    ) : MultiSwapLegInfo()
+
+    data class Leg2(
+        val pendingMultiSwapId: String,
+    ) : MultiSwapLegInfo()
+}
+
+data class SwapConfirmUiState(
+    val expiresIn: Long?,
+    val expired: Boolean,
+    val loading: Boolean,
+    val tokenIn: Token,
+    val tokenOut: Token,
+    val amountIn: BigDecimal,
+    val amountInMax: BigDecimal?,
+    val amountOut: BigDecimal?,
+    val amountOutMin: BigDecimal?,
+    val fiatAmountIn: BigDecimal?,
+    val fiatAmountOut: BigDecimal?,
+    val fiatAmountOutMin: BigDecimal?,
+    val currency: Currency,
+    val networkFee: SendModule.AmountData?,
+    val cautions: List<CautionViewItem>,
+    val feeCaution: CautionViewItem?,
+    val validQuote: Boolean,
+    val reapprovalRequired: Boolean,
+    val priceImpact: BigDecimal?,
+    val priceImpactLevel: PriceImpactLevel?,
+    val quoteFields: List<DataField>,
+    val transactionFields: List<DataField>,
+    val criticalError: String?,
+    var isAdvancedSettingsAvailable: Boolean,
+    val mevProtectionAvailable: Boolean,
+    val mevProtectionEnabled: Boolean,
+    val moneroSpendReadiness: MoneroSpendReadiness? = null,
+    val moneroPreparationInProgress: Boolean = false,
+    val moneroPreparationError: StringResource? = null,
+    val moneroPreparationRetryAvailable: Boolean = false,
+)
+
+internal val SendResult?.isSwapInProgress: Boolean
+    get() = this != null && this !is SendResult.Failed
+
+private enum class MoneroPreparationActivity {
+    Idle,
+    InProgress,
+    Completed,
+    Failed,
+    Cancelled,
+}

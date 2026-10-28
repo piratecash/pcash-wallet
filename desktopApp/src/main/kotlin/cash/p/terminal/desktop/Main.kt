@@ -9,6 +9,7 @@ import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import cash.p.terminal.core.installRxErrorHandler
 import cash.p.terminal.network.data.AppHeadersProvider
 import cash.p.terminal.network.desktopAppDataFile
 import cash.p.terminal.network.di.networkModule
@@ -86,6 +87,7 @@ fun main(args: Array<String>) {
     val koin = startKoin {
         modules(networkModule, marketModule, marketFeatureModule, desktopFeatureModule, desktopModule)
     }.koin
+    installRxErrorHandler(koin.get())
     // Applies the stored language before the first request reads Locale.getDefault() for its headers.
     koin.get<DesktopLanguageManager>()
     SingletonImageLoader.setSafe(::buildImageLoader)

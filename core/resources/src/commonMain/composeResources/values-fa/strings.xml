@@ -403,7 +403,7 @@
     <string name="SendNft_Title">ارسال</string>
     <string name="SendNft_Error_NotEnoughtBalance">Not Enough Balance</string>
     <!--Send-->
-    <string name="Send_Title">ارسال %s</string>
+    <string name="Send_Title">ارسال %1$s</string>
     <string name="Send_Hint_Address">آدرس یا دامنه</string>
     <string name="Send_Fee">هزينه</string>
     <string name="Send_Fee_Info">Blockchains require users to pay network fees when sending transactions. The fees are higher when a lot of transactions are taking place on the network.</string>
@@ -437,7 +437,7 @@
     <string name="ScanQr_CameraPermissionDeniedText">Access to your camera for this app was denied, you can go to settings and allow access</string>
     <string name="ScanQr_GoToSettings">برو به تنظیمات</string>
     <string name="scan_qr_camera_initialization_failed">دوربین در دسترس نیست. لطفاً دوباره امتحان کنید یا از دستگاه دیگری استفاده کنید.</string>
-    <string name="qr_scanner_title_address">آدرس %s</string>
+    <string name="qr_scanner_title_address">آدرس %1$s</string>
     <string name="qr_scanner_title_smart_scan">اسکن هوشمند</string>
     <string name="choose_from_photos">انتخاب از عکس‌ها</string>
     <string name="image_decode_failed">خواندن کد QR از تصویر انتخاب‌شده امکان‌پذیر نبود</string>
@@ -508,23 +508,23 @@
     <string name="FeeInfo_TronResourcesConsumed_Description">Bandwidth is the unit that measures the size of the transaction bytes stored in the blockchain database. The larger the transaction, the more bandwidth resources will be consumed.\n\nEnergy is the unit that measures the amount of computation required by the TRON virtual machine to perform specific operations on the TRON network.\n\nSince smart contract transactions require computing resources to execute, each smart contract transaction requires to pay for the energy fee.</string>
 
     <!--Network Fee Warning-->
-    <string name="network_fee_warning_title">کارمزد شبکه %s</string>
+    <string name="network_fee_warning_title">کارمزد شبکه %1$s</string>
     <string name="token_balance_need_native_coin_title">برای استفاده از %2$s به %1$s نیاز دارید</string>
     <string name="token_balance_need_native_coin_body">%2$s روی %3$s اجرا می‌شود.\nکارمزد شبکه با %1$s پرداخت می‌شود.\nموجودی %1$s شما: %4$s</string>
     <string name="network_fee_warning_body_protocol">پروتکل شبکه %1$s مقرر می‌کند که حداقل %2$s برای پرداخت کارمزد شبکه این تراکنش لازم است.</string>
-    <string name="network_fee_warning_body_balance">موجودی شما کمتر از %s است.</string>
-    <string name="network_fee_warning_body_protocol_bold">حداقل %s</string>
-    <string name="network_fee_warning_body_balance_bold">کمتر از %s</string>
+    <string name="network_fee_warning_body_balance">موجودی شما کمتر از %1$s است.</string>
+    <string name="network_fee_warning_body_protocol_bold">حداقل %1$s</string>
+    <string name="network_fee_warning_body_balance_bold">کمتر از %1$s</string>
     <string name="network_fee_warning_body_case_not_completed_prefix">اما </string>
     <string name="network_fee_warning_body_case_not_sent_prefix">و </string>
     <string name="network_fee_warning_body_risk">با این موجودی، خطر آن وجود دارد که کارمزد واقعی بیشتر از حد انتظار باشد.</string>
     <string name="network_fee_warning_body_risk_bold">بیشتر از حد انتظار</string>
     <string name="network_fee_warning_body_case_intro">در این صورت:</string>
-    <string name="network_fee_warning_body_case_debited">%s از موجودی شما کسر خواهد شد،</string>
+    <string name="network_fee_warning_body_case_debited">%1$s از موجودی شما کسر خواهد شد،</string>
     <string name="network_fee_warning_body_case_not_completed">ممکن است تراکنش تکمیل نشود،</string>
     <string name="network_fee_warning_body_case_not_sent">سکه‌ها به گیرنده ارسال نخواهند شد.</string>
     <string name="network_fee_warning_body_confirm_intro">با ادامه دادن، شما تایید می‌کنید که:</string>
-    <string name="network_fee_warning_body_confirm_understand">جزئیات نحوه عملکرد شبکه %s را درک می‌کنید،</string>
+    <string name="network_fee_warning_body_confirm_understand">جزئیات نحوه عملکرد شبکه %1$s را درک می‌کنید،</string>
     <string name="network_fee_warning_body_confirm_risk">از خطر از دست دادن کارمزد آگاه هستید،</string>
     <string name="network_fee_warning_body_confirm_accept">عواقب احتمالی یک تراکنش ناموفق را می‌پذیرید.</string>
     <string name="network_fee_warning_points_header">موارد قابل پذیرش:</string>
@@ -604,8 +604,8 @@
     <string name="Swap_Allowance">کمک هزینه</string>
     <string name="Swap_Price">قیمت</string>
     <string name="Swap_AvailableBalance">موجودی در دسترس</string>
-    <string name="swap_insufficient_fee_balance">موجودی فعلی %s کمتر از مبلغ مورد نیاز برای پردازش این تراکنش، شامل کارمزد تراکنش، است.</string>
-    <string name="fee_warning_low_balance">موجودی کمتر از حد لازم است. ممکن است تا %s کارمزد پرداخت کنید.</string>
+    <string name="swap_insufficient_fee_balance">موجودی فعلی %1$s کمتر از مبلغ مورد نیاز برای پردازش این تراکنش، شامل کارمزد تراکنش، است.</string>
+    <string name="fee_warning_low_balance">موجودی کمتر از حد لازم است. ممکن است تا %1$s کارمزد پرداخت کنید.</string>
     <string name="swap_balance_for_fees">موجودی برای کارمزدها</string>
     <string name="fee">کارمزد</string>
     <string name="estimated_fee">کارمزد تخمینی</string>
@@ -618,7 +618,7 @@
     <string name="Swap_ErrorNoProviders">ارائه‌دهنده‌ای موجود نیست</string>
     <string name="Swap_ErrorNoQuote">No Quote</string>
     <string name="Swap_ErrorInsufficientBalance">موجودی ناکافی</string>
-    <string name="swap_out_of_min_amount">کمتر از حداقل مبلغ %s</string>
+    <string name="swap_out_of_min_amount">کمتر از حداقل مبلغ %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">تأثیر بالای قیمت</string>
     <string name="Swap_ErrorWalletSyncing">کیف پول در حال همگام‌سازی است</string>
     <string name="Swap_ErrorWalletNotSynced">کیف پول همگام‌سازی نشده</string>
@@ -645,7 +645,7 @@
     <string name="Swap_YouPay">شما می پردازید</string>
     <string name="Swap_YouGet">شما دریافت می کنید</string>
     <string name="Swap_Confirm_Title">تاييد</string>
-    <string name="SwapConfirm_QuoteExpiresIn">قیمت پیشنهادی در %d منقضی می‌شود</string>
+    <string name="SwapConfirm_QuoteExpiresIn">قیمت پیشنهادی در %1$d منقضی می‌شود</string>
     <string name="SwapConfirm_QuoteExpired">قیمت پیشنهادی منقضی شده است</string>
     <string name="SwapConfirm_QuoteIsInvalid">قیمت پیشنهادی نامعتبر است</string>
     <string name="SwapConfirm_FetchingFinalQuote">Fetching final quote</string>
@@ -684,7 +684,7 @@
     <string name="swap_no_providers_for_this_amount">هیچ ارائه‌دهنده‌ای برای این مبلغ وجود ندارد</string>
 
     <!--Approve-->
-    <string name="Approve_RevokeAndApproveInfo">You can exchange %s, or you need to revoke and approve the new amount</string>
+    <string name="Approve_RevokeAndApproveInfo">You can exchange %1$s, or you need to revoke and approve the new amount</string>
     <string name="Approve_Spender">خرج کننده</string>
     <string name="Approve_YouApprove">شما تایید کردید</string>
     <string name="Approve_YouRevoke">You Revoke</string>
@@ -1080,6 +1080,7 @@
     <string name="offline_transaction_signed_transaction_unavailable">تراکنش امضاشده دیگر در دسترس نیست. دوباره آن را امضا کنید.</string>
     <string name="offline_broadcast_title">ارسال RAW TX</string>
     <string name="offline_broadcast_import_file">وارد کردن فایل تراکنش</string>
+    <string name="offline_broadcast_input_hint">یک تراکنش امضاشده RAW یا P.cash را جای‌گذاری کنید</string>
     <string name="offline_broadcast_file_read_failed">خواندن فایل تراکنش ممکن نشد. فایل را بررسی و دوباره تلاش کنید.</string>
     <string name="offline_broadcast_invalid_input">تراکنش شناسایی نشد. قالب را بررسی کنید و دوباره تلاش کنید.</string>
     <string name="offline_broadcast_check_title">بررسی تراکنش</string>
@@ -2136,15 +2137,15 @@
     <string name="scan_card_to_add">اسکن کارت برای افزودن توکن</string>
     <!--Multi-Swap-->
     <string name="multi_swap_completed">مبادله انجام شد</string>
-    <string name="multi_swap_via">مبادله از طریق %s</string>
-    <string name="multi_swap_completed_via">انجام‌شده از طریق %s</string>
+    <string name="multi_swap_via">مبادله از طریق %1$s</string>
+    <string name="multi_swap_completed_via">انجام‌شده از طریق %1$s</string>
     <string name="multi_swap_no_providers">هیچ ارائه‌دهنده‌ای موجود نیست</string>
     <string name="multi_swap_finding_best_provider">جستجوی بهترین ارائه‌دهنده…</string>
     <string name="multi_swap_continue">ادامه مبادله</string>
     <string name="multi_swap_route_explanation">برای دریافت بهترین نرخ، از مسیری از طریق %2$s استفاده می‌شود. مبادله در دو مرحلهٔ پیاپی انجام می‌شود: ابتدا %1$s → %2$s، سپس %2$s → %3$s.</string>
     <string name="multi_swap_route_title">مسیر مبادله</string>
     <string name="multi_swap_execution_title">مبادله</string>
-    <string name="multi_swap_step">مرحلهٔ %d</string>
+    <string name="multi_swap_step">مرحلهٔ %1$d</string>
     <string name="multi_swap_understood_continue">متوجه شدم، ادامه</string>
     <string name="multi_swap_unfinished">مبادله ناتمام</string>
     <string name="multi_swap_unfinished_plural">مبادلات ناتمام (%d)</string>
@@ -2191,6 +2192,9 @@
     <string name="paycore_banks_unavailable">بانک‌ها موقتاً در دسترس نیستند. لطفاً بعداً دوباره امتحان کنید.</string>
     <string name="paycore_delete_restricted_warning">این تراکنش قابل حذف نیست زیرا توسط یک سرویس شخص ثالث پردازش می‌شود.</string>
     <string name="paycore_delete_to_complete_select_bank">برای تکمیل سواپ، یک بانک انتخاب کنید.</string>
+    <string name="paycore_browser_verification_done">احراز هویت را تکمیل کردم</string>
+    <string name="paycore_browser_payment_done">پرداخت کردم</string>
+    <string name="paycore_browser_open_again">باز کردن دوباره</string>
     <string name="swap_provider_type_info_title">انواع ارائه‌دهندگان مبادله</string>
     <string name="swap_provider_type_info_description">برچسب‌های زیر نحوه عملکرد انواع مختلف ارائه‌دهندگان مبادله را توضیح می‌دهند. آن‌ها به شما کمک می‌کنند تا بفهمید مبادله چگونه انجام می‌شود و چه بررسی‌ها یا شرایط اضافی ممکن است اعمال شود.</string>
     <string name="swap_provider_type_auto_description">اجرای خودکار مبادله. اگر مبادله قابل تکمیل نباشد، معمولاً وجوه به‌طور خودکار و بدون نیاز به هیچ اقدامی از سوی کاربر بازگردانده می‌شوند.</string>
@@ -2356,4 +2360,6 @@
     <string name="desktop_change_password_corrupted">فایل کلید آسیب دیده است: پس از قفل شدن برنامه نمی‌توانید وارد شوید. از هر عبارت بازیابی یک نسخه پشتیبان ذخیره کنید.</string>
     <string name="desktop_change_password_success">رمز عبور تغییر یافت</string>
     <string name="desktop_security_lock_now">اکنون قفل کن</string>
+    <string name="desktop_transfer_password">رمز عبور پیش از ارسال</string>
+    <string name="desktop_transfer_password_description">پیش از هر ارسال، رمز عبور برنامه درخواست می‌شود تا اگر کسی هنگام باز بودن قفل برنامه به رایانهٔ شما دسترسی پیدا کند، دارایی‌هایتان محافظت شوند.</string>
 </resources>

@@ -14,6 +14,7 @@ import cash.p.terminal.core.managers.MoneroHardwareGateway
 import cash.p.terminal.core.managers.PlatformAccountDataCleaner
 import cash.p.terminal.core.managers.SolanaHardwareSigners
 import cash.p.terminal.core.managers.StellarHardwareSigners
+import cash.p.terminal.core.managers.SystemLanguageProvider
 import cash.p.terminal.core.managers.TonHardwareSigners
 import cash.p.terminal.core.managers.TronHardwareSigners
 import cash.p.terminal.core.providers.AddressResolutionConfig
@@ -35,6 +36,7 @@ import cash.p.terminal.wallet.AccountDeletionBlockedException
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IDeletedWalletChecker
 import cash.p.terminal.wallet.IHardwarePublicKeyStorage
+import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.HardwarePublicKey
 import cash.p.terminal.wallet.entities.TokenQuery
@@ -84,6 +86,7 @@ object DesktopNoHardwareWallets : IHardwarePublicKeyStorage, HardwareWalletToken
 
     override suspend fun getAllPublicKeys(accountId: String): List<HardwarePublicKey> = emptyList()
     override fun isSupported(blockchainType: BlockchainType, tokenType: TokenType) = false
+    override fun isSupported(account: Account, token: Token) = !account.isHardwareWalletAccount
 }
 
 object DesktopNoHardwareKeyProvisioner : HardwareWalletKeyProvisioner {
@@ -257,6 +260,11 @@ object DesktopNonFatalReporter : NonFatalReporter {
 object DesktopAddressResolutionConfig : AddressResolutionConfig {
     override val udnApiKey: String get() = EncodedSecrets.UDN_API_KEY
     override val blocksDecodedEthereumRpc = "https://api.blocksdecoded.com/v1/ethereum-rpc/mainnet"
+}
+
+/** The app language overwrites the default locale; `user.language` keeps the OS one captured at JVM start. */
+object DesktopSystemLanguageProvider : SystemLanguageProvider {
+    override val language: String get() = System.getProperty("user.language").orEmpty()
 }
 
 /** Reads the open session per call, so a wipe and a new vault never serve the old rows. */

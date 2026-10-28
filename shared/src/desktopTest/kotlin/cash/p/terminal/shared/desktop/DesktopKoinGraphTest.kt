@@ -1,5 +1,13 @@
 package cash.p.terminal.shared.desktop
 
+import cash.p.terminal.core.IFeeRateProvider
+import cash.p.terminal.core.adapters.BitcoinBaseAdapter
+import cash.p.terminal.core.managers.EvmKitWrapper
+import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
+import cash.p.terminal.modules.transactionInfo.options.SpeedUpCancelType
+import cash.p.terminal.modules.transactionInfo.resendbitcoin.ResendBitcoinViewModel
+import cash.p.terminal.modules.zcashmigration.ZcashMigrationViewModel
+import io.horizontalsystems.bitcoincore.rbf.ReplacementTransactionInfo
 import androidx.lifecycle.viewmodel.CreationExtras
 import cash.p.terminal.core.AppearanceSettingsStore
 import cash.p.terminal.core.ICoinManager
@@ -60,6 +68,8 @@ import cash.p.terminal.modules.transactions.SelectContactViewModel
 import cash.p.terminal.modules.receive.viewmodels.DerivationSelectViewModel
 import cash.p.terminal.modules.receive.viewmodels.BchAddressTypeSelectViewModel
 import cash.p.terminal.modules.receive.viewmodels.ReceiveTokenSelectViewModel
+import cash.p.terminal.modules.balance.BalanceSorter
+import cash.p.terminal.modules.tokenselect.TokenSelectViewModel
 import cash.p.terminal.modules.receive.viewmodels.NetworkSelectViewModel
 import cash.p.terminal.modules.receive.ActivateTokenViewModel
 import cash.p.terminal.modules.receive.ReceiveStellarAssetViewModel
@@ -117,7 +127,6 @@ import cash.p.terminal.modules.settings.addresschecker.ui.AddressCheckTokenSelec
 import cash.p.terminal.modules.syncerror.SyncErrorService
 import cash.p.terminal.core.storage.EnabledWalletsCacheDao
 import cash.p.terminal.modules.balance.DefaultBalanceService
-import cash.p.terminal.modules.balance.TotalBalance
 import cash.p.terminal.modules.balance.token.TokenBalanceService
 import cash.p.terminal.modules.balance.token.TokenBalanceViewModel
 import cash.p.terminal.modules.balance.token.TokenTransactionsService
@@ -129,6 +138,17 @@ import cash.p.terminal.core.address.Eip20AddressValidator
 import cash.p.terminal.modules.address.AddressHandlerFactory
 import io.mockk.mockk
 import org.koin.core.context.GlobalContext
+import org.koin.core.qualifier.named
+import cash.p.terminal.network.swaprepository.SwapProviderTransactionStatusRepository
+import cash.p.terminal.network.swaprepository.SwapProvider
+import cash.p.terminal.modules.multiswap.SwapSelectCoinViewModel
+import cash.p.terminal.modules.paycore.PayCoreTicker
+import cash.p.terminal.modules.paycore.exchange.PayCoreExchangeDetailViewModel
+import cash.p.terminal.modules.paycore.payment.PayCorePaymentParams
+import cash.p.terminal.modules.paycore.payment.PayCorePaymentViewModel
+import cash.p.terminal.modules.paycore.verification.PayCoreVerificationViewModel
+import cash.p.terminal.modules.multiswap.TimerService
+import cash.p.terminal.modules.multiswap.providers.ThorChainSwapStatusRepository
 import cash.p.terminal.feature.market.di.marketFeatureModule
 import cash.p.terminal.modules.address.AddressParserChain
 import cash.p.terminal.modules.backuplocal.fullbackup.BackupViewItemFactory
@@ -266,6 +286,7 @@ import java.io.File
 import kotlin.test.Test
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.module
+import org.koin.test.verify.ParameterTypeInjection
 import org.koin.test.verify.definition
 import org.koin.test.verify.injectedParameters
 import org.koin.test.verify.verify
@@ -303,6 +324,60 @@ import kotlin.io.path.createTempDirectory
 import kotlin.reflect.KClass
 import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.parameter.parametersOf
+import cash.p.terminal.modules.amount.AmountInputModeViewModel
+import cash.p.terminal.modules.amount.AmountInputViewModel2
+import cash.p.terminal.modules.amount.AmountInputType
+import cash.p.terminal.modules.address.AddressParserViewModel
+import cash.p.terminal.core.IAddressParser
+import cash.p.terminal.modules.sendtokenselect.PrefilledData
+import cash.p.terminal.entities.Address
+import cash.p.terminal.modules.send.bitcoin.SendBitcoinViewModel
+import cash.p.terminal.modules.send.zcash.SendZCashViewModel
+import cash.p.terminal.modules.send.solana.SendSolanaViewModel
+import cash.p.terminal.modules.send.ton.SendTonViewModel
+import cash.p.terminal.modules.send.tron.SendTronViewModel
+import cash.p.terminal.modules.send.monero.SendMoneroViewModel
+import cash.p.terminal.modules.send.memo.SendMemoViewModel
+import cash.p.terminal.modules.send.beam.BeamOfflineOperations
+import cash.p.terminal.modules.send.bitcoin.advanced.SendBtcAdvancedSettingsViewModel
+import cash.p.terminal.modules.send.bitcoin.utxoexpert.UtxoExpertModeViewModel
+import cash.p.terminal.modules.send.securitycheck.SecurityCheckViewModel
+import cash.p.terminal.modules.send.evm.SendEvmData
+import io.horizontalsystems.ethereumkit.models.TransactionData
+import cash.p.terminal.core.ISendBitcoinAdapter
+import cash.p.terminal.core.ISendZcashAdapter
+import cash.p.terminal.core.ISendEthereumAdapter
+import cash.p.terminal.core.ISendSolanaAdapter
+import cash.p.terminal.core.ISendTonAdapter
+import cash.p.terminal.core.ISendTronAdapter
+import cash.p.terminal.core.ISendMoneroAdapter
+import cash.p.terminal.core.ISendMemoAdapter
+import java.math.BigDecimal
+import cash.p.terminal.modules.send.bitcoin.SendBitcoinFeeRateService
+import cash.p.terminal.modules.send.bitcoin.SendBitcoinFeeService
+import cash.p.terminal.modules.send.bitcoin.SendBitcoinAmountService
+import cash.p.terminal.modules.send.bitcoin.SendBitcoinAddressService
+import cash.p.terminal.modules.send.bitcoin.SendBitcoinPluginService
+import cash.p.terminal.modules.amount.SendAmountService
+import cash.p.terminal.modules.send.zcash.SendZCashAddressService
+import cash.p.terminal.modules.send.zcash.SendZCashMemoService
+import cash.p.terminal.modules.send.evm.SendEvmAddressService
+import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceEvm
+import cash.p.terminal.modules.send.solana.SendSolanaAddressService
+import cash.p.terminal.modules.send.ton.SendTonAmountService
+import cash.p.terminal.modules.send.ton.SendTonAddressService
+import cash.p.terminal.modules.send.ton.SendTonFeeService
+import cash.p.terminal.modules.send.ton.TonOfflineAnchorService
+import cash.p.terminal.modules.send.tron.SendTronAddressService
+import cash.p.terminal.modules.send.monero.SendMoneroAddressService
+import cash.p.terminal.modules.send.memo.SendMemoAddressService
+import cash.p.terminal.modules.send.memo.SendMemoMinimumAmountService
+import cash.p.terminal.modules.send.memo.SendMemoChain
+import cash.p.terminal.core.utils.AddressUriParser
+import cash.p.terminal.modules.send.address.EnterAddressValidator
+import cash.p.terminal.core.address.AddressCheckManager
+import cash.p.terminal.modules.sendevmtransaction.SendEvmTransactionViewItemFactory
+import cash.p.terminal.modules.address.AddressViewModel as SendAddressViewModel
 
 class DesktopKoinGraphTest {
 
@@ -329,9 +404,14 @@ class DesktopKoinGraphTest {
                 definition<RestoreLocalViewModel>(String::class, BackupViewItemFactory::class),
                 definition<EvmNetworkViewModel>(Blockchain::class),
                 definition<AddRpcViewModel>(Blockchain::class),
+                definition<SwapSelectCoinViewModel>(Token::class, Account::class),
+                definition<PayCoreVerificationViewModel>(PayCoreTicker::class, String::class),
+                definition<PayCorePaymentViewModel>(PayCorePaymentParams::class),
+                definition<PayCoreExchangeDetailViewModel>(Long::class),
                 *marketInjections(),
                 *coinPageInjections(),
                 *walletPageInjections(),
+                *sendInjections(),
             ),
         )
     }
@@ -359,6 +439,22 @@ class DesktopKoinGraphTest {
         } finally {
             DesktopTestGraph.stop()
             Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun get_thorChainAndMayaStatusRepositories_resolveOnDesktop() {
+        DesktopTestGraph.start()
+        try {
+            val koin = GlobalContext.get()
+            listOf(SwapProvider.THORCHAIN, SwapProvider.MAYA).forEach { provider ->
+                assertIs<ThorChainSwapStatusRepository>(
+                    koin.get<SwapProviderTransactionStatusRepository>(named(provider)),
+                    "$provider",
+                )
+            }
+        } finally {
+            DesktopTestGraph.stop()
         }
     }
 
@@ -442,6 +538,51 @@ class DesktopKoinGraphTest {
         definition<CoinRankViewModel>(RankType::class, Currency::class),
     )
 
+    private fun sendInjections() = arrayOf(
+        definition<AmountInputModeViewModel>(String::class),
+        definition<AmountInputViewModel2>(String::class, Int::class, AmountInputType::class),
+        definition<AddressParserViewModel>(IAddressParser::class, PrefilledData::class),
+        definition<SendAddressViewModel>(BlockchainType::class, Address::class),
+        definition<SendBitcoinViewModel>(ISendBitcoinAdapter::class, Wallet::class, Address::class, Boolean::class),
+        definition<SendZCashViewModel>(ISendZcashAdapter::class, Wallet::class, Address::class, Boolean::class),
+        ParameterTypeInjection(
+            internalClass("send.evm.SendEvmViewModel"),
+            listOf(
+                Wallet::class, Token::class, ISendEthereumAdapter::class, Int::class, Boolean::class, Address::class,
+            ),
+        ),
+        definition<SendSolanaViewModel>(
+            Wallet::class, Token::class, BigDecimal::class, ISendSolanaAdapter::class, Int::class, Boolean::class,
+            Address::class,
+        ),
+        definition<SendTonViewModel>(
+            Wallet::class, Token::class, ISendTonAdapter::class, Int::class, Boolean::class, Address::class,
+        ),
+        definition<SendTronViewModel>(
+            Wallet::class, Token::class, ISendTronAdapter::class, Int::class, Boolean::class, Address::class,
+        ),
+        definition<SendMoneroViewModel>(
+            Wallet::class, Token::class, ISendMoneroAdapter::class, Int::class, Boolean::class, Address::class,
+        ),
+        definition<SendMemoViewModel>(
+            Wallet::class, Token::class, ISendMemoAdapter::class, Int::class, Address::class, Boolean::class,
+        ),
+        ParameterTypeInjection(
+            internalClass("send.beam.BeamSendViewModel"),
+            listOf(Wallet::class, internalClass("send.beam.BeamSendSession")),
+        ),
+        definition<SendBtcAdvancedSettingsViewModel>(BlockchainType::class),
+        definition<UtxoExpertModeViewModel>(ISendBitcoinAdapter::class, Token::class, List::class),
+        definition<SecurityCheckViewModel>(Token::class, String::class, Boolean::class),
+        ParameterTypeInjection(
+            internalClass("send.evm.confirmation.SendEvmConfirmationViewModel"),
+            listOf(TransactionData::class, SendEvmData.AdditionalInfo::class),
+        ),
+    )
+
+    /** These send classes are internal to feature-wallet; a rename fails here with ClassNotFoundException. */
+    private fun internalClass(name: String) = Class.forName("cash.p.terminal.modules.$name").kotlin
+
     private fun walletPageInjections() = arrayOf(
         definition<OfflineModeToggleViewModel>(Wallet::class),
         definition<TokenBalanceViewModel>(Wallet::class),
@@ -453,6 +594,7 @@ class DesktopKoinGraphTest {
         definition<ActivateTokenViewModel>(Wallet::class, Token::class),
         definition<NetworkSelectViewModel>(Account::class, FullCoin::class),
         definition<ReceiveTokenSelectViewModel>(Account::class),
+        definition<TokenSelectViewModel>(List::class, Function1::class, BalanceSorter::class),
         definition<BchAddressTypeSelectViewModel>(String::class),
         definition<DerivationSelectViewModel>(String::class),
         definition<SelectContactViewModel>(Contact::class, BlockchainType::class),
@@ -464,6 +606,15 @@ class DesktopKoinGraphTest {
         definition<ChooseContactViewModel>(BlockchainType::class),
         definition<AddressCheckTokenSelectorViewModel>(Blockchain::class),
         definition<UnifiedAddressCheckerViewModel>(String::class),
+        definition<ZcashMigrationViewModel>(Wallet::class),
+        definition<ResendBitcoinViewModel>(
+            SpeedUpCancelType::class, BitcoinTransactionRecord::class, ReplacementTransactionInfo::class,
+            BitcoinBaseAdapter::class, IFeeRateProvider::class,
+        ),
+        ParameterTypeInjection(
+            internalClass("transactionInfo.options.TransactionSpeedUpCancelViewModel"),
+            listOf(String::class, EvmKitWrapper::class, SpeedUpCancelType::class),
+        ),
     )
 
     /** What desktop pages ask `koinViewModel` for, with representative parameters. */
@@ -656,8 +807,34 @@ class DesktopKoinGraphTest {
             FullCoinsProvider::class,
             XRateService::class,
             DefaultBalanceService::class,
-            TotalBalance::class,
+            SendBitcoinFeeRateService::class,
+            SendBitcoinFeeService::class,
+            SendBitcoinAmountService::class,
+            SendBitcoinAddressService::class,
+            SendBitcoinPluginService::class,
+            SendAmountService::class,
+            SendZCashAddressService::class,
+            SendZCashMemoService::class,
+            SendEvmAddressService::class,
+            SendTransactionServiceEvm::class,
+            SendSolanaAddressService::class,
+            SendTonAmountService::class,
+            SendTonAddressService::class,
+            SendTonFeeService::class,
+            TonOfflineAnchorService::class,
+            SendTronAddressService::class,
+            SendMoneroAddressService::class,
+            SendMemoAddressService::class,
+            SendMemoMinimumAmountService::class,
+            SendMemoChain::class,
+            BeamOfflineOperations::class,
+            AddressUriParser::class,
+            AddressParserChain::class,
+            EnterAddressValidator::class,
+            AddressCheckManager::class,
+            SendEvmTransactionViewItemFactory::class,
             TokenBalanceService::class,
+            TimerService::class,
             TokenTransactionsService::class,
             EnabledWalletsCacheDao::class,
             // Built inside the EnsResolver definition.

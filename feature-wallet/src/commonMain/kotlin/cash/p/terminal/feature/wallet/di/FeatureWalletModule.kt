@@ -154,6 +154,7 @@ import cash.p.terminal.core.managers.PendingTransactionRegistrar
 import cash.p.terminal.core.managers.PendingTransactionRegistrarImpl
 import cash.p.terminal.core.managers.PendingTransactionRepository
 import cash.p.terminal.core.managers.PoisonAddressManager
+import cash.p.terminal.core.managers.RecentAddressManager
 import cash.p.terminal.core.managers.PriceManager
 import cash.p.terminal.core.managers.TransactionHiddenManager
 import cash.p.terminal.core.managers.UserDeletedWalletManager
@@ -243,6 +244,7 @@ import cash.p.terminal.core.usecase.ResolveTransactionItemUseCase
 import cash.p.terminal.modules.balance.BalanceAccountsViewModel
 import cash.p.terminal.modules.balance.BalanceAdapterRepository
 import cash.p.terminal.modules.balance.BalanceCache
+import cash.p.terminal.modules.balance.BalanceSorter
 import cash.p.terminal.modules.balance.BalanceViewItemFactory
 import cash.p.terminal.modules.balance.balanceViewModel
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewModel
@@ -268,6 +270,10 @@ import cash.p.terminal.core.storage.ZcashSingleUseAddressStorage
 import cash.p.terminal.domain.usecase.ClearZCashWalletDataUseCase
 import cash.p.terminal.modules.balance.DefaultBalanceService
 import cash.p.terminal.modules.balance.DefaultBalanceXRateRepository
+import cash.p.terminal.modules.balance.TotalBalance
+import cash.p.terminal.modules.balance.TotalService
+import cash.p.terminal.modules.tokenselect.TokenSelectViewModel
+import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.balance.BalanceService
 import cash.p.terminal.wallet.balance.BalanceXRateRepository
@@ -275,11 +281,54 @@ import org.koin.core.qualifier.named
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
+import cash.p.terminal.di.swapProvidersModule
+import cash.p.terminal.modules.paycore.payCoreModule
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import cash.p.terminal.core.ISendBitcoinAdapter
+import cash.p.terminal.core.utils.AddressUriParser
+import cash.p.terminal.entities.Address
+import cash.p.terminal.modules.address.AddressParserViewModel
+import cash.p.terminal.modules.address.NFT_ADDRESS_VIEW_MODEL
+import cash.p.terminal.modules.address.nftAddressViewModel
+import cash.p.terminal.modules.address.tokenAddressViewModel
+import cash.p.terminal.modules.amount.AmountInputViewModel2
+import cash.p.terminal.modules.amount.amountInputModeViewModel
+import cash.p.terminal.modules.send.address.AddressCheckerControl
+import cash.p.terminal.modules.send.address.AddressCheckerControlImpl
+import cash.p.terminal.modules.send.beam.beamSendViewModel
+import cash.p.terminal.modules.send.bitcoin.advanced.sendBtcAdvancedSettingsViewModel
+import cash.p.terminal.modules.send.bitcoin.sendBitcoinViewModel
+import cash.p.terminal.modules.send.bitcoin.utxoexpert.utxoExpertModeViewModel
+import cash.p.terminal.modules.send.evm.SendEvmData
+import cash.p.terminal.modules.send.evm.confirmation.sendEvmConfirmationViewModel
+import cash.p.terminal.modules.send.evm.sendEvmViewModel
+import cash.p.terminal.modules.send.memo.sendMemoViewModel
+import cash.p.terminal.modules.send.monero.sendMoneroViewModel
+import cash.p.terminal.modules.send.offline.BeamOfflineTransactionRelay
+import cash.p.terminal.modules.send.offline.OfflineBroadcastTokenResolver
+import cash.p.terminal.modules.send.offline.OfflineBroadcastViewModel
+import cash.p.terminal.modules.send.offline.OfflineTransactionFileTransfer
+import cash.p.terminal.modules.transactionInfo.options.SpeedUpCancelType
+import cash.p.terminal.modules.transactionInfo.options.transactionSpeedUpCancelViewModel
+import cash.p.terminal.modules.transactionInfo.resendbitcoin.resendBitcoinViewModel
+import cash.p.terminal.modules.zcashmigration.ZcashMigrationViewModel
+import cash.p.terminal.modules.xrate.XRateService
+import io.horizontalsystems.core.CurrencyManager
+import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
+import cash.p.terminal.wallet.transaction.TransactionSource
+import cash.p.terminal.modules.send.securitycheck.securityCheckViewModel
+import cash.p.terminal.modules.send.solana.sendSolanaViewModel
+import cash.p.terminal.modules.send.ton.sendTonViewModel
+import cash.p.terminal.modules.send.tron.sendTronViewModel
+import cash.p.terminal.modules.send.zcash.sendZCashViewModel
+import cash.p.terminal.modules.sendtokenselect.PrefilledData
+import cash.p.terminal.wallet.entities.TokenQuery
+import io.horizontalsystems.bitcoincore.storage.UnspentOutputInfo
+import io.horizontalsystems.ethereumkit.models.TransactionData
 
 val featureWalletModule = module {
-    includes(contractValidatorModule)
+    includes(contractValidatorModule, swapProvidersModule, payCoreModule)
     singleOf(::OfflineModeManager)
     singleOf(::OfflineModeUseCase)
     singleOf(::AdapterFactory)
@@ -360,6 +409,7 @@ val featureWalletModule = module {
     factoryOf(::EvmTransactionRepository)
     singleOf(::NftMetadataManager)
     singleOf(::PoisonAddressManager)
+    singleOf(::RecentAddressManager)
     singleOf(::BalanceHiddenManager) bind IBalanceHiddenManager::class
     singleOf(::BaseTokenManager)
     singleOf(::TransactionHiddenManager) bind ITransactionHiddenManager::class
@@ -551,8 +601,23 @@ val featureWalletModule = module {
     factoryOf(::BalanceAdapterRepository)
     factoryOf(::BalanceViewItemFactory)
     factoryOf(::ManageWalletsTokenWalletActions) bind TokenWalletActions::class
+    factoryOf(::TotalService)
+    factoryOf(::TotalBalance)
     viewModel { balanceViewModel() }
     viewModel { (wallet: Wallet) -> tokenBalanceViewModel(wallet) }
+    viewModel { (blockchainTypes: List<BlockchainType>?, tokenTypes: List<TokenType>?) ->
+        TokenSelectViewModel(
+            service = DefaultBalanceService.getInstance("wallet"),
+            balanceViewItemFactory = get(),
+            balanceViewTypeManager = get(),
+            itemsFilter = { !it.wallet.account.isWatchAccount },
+            balanceSorter = BalanceSorter(),
+            balanceHiddenManager = get(),
+            blockchainTypes = blockchainTypes,
+            tokenTypes = tokenTypes,
+            totalBalance = get(),
+        )
+    }
     viewModelOf(::BalanceAccountsViewModel)
     viewModelOf(::DisplayOptionsViewModel)
     viewModel { (coinUid: String, isPirate: Boolean, blockchainType: BlockchainType) ->
@@ -564,5 +629,53 @@ val featureWalletModule = module {
     viewModel { (termTitles: Array<String>) -> PassphraseTermsViewModel(termTitles, get()) }
     viewModel { (mode: SafetyRulesModule.SafetyRulesMode, termTitles: List<String>) ->
         SafetyRulesViewModel(mode, termTitles, get())
+    }
+    factoryOf(::AddressCheckerControlImpl) bind AddressCheckerControl::class
+    singleOf(::OfflineBroadcastTokenResolver)
+    singleOf(::BeamOfflineTransactionRelay)
+    singleOf(::OfflineTransactionFileTransfer)
+    viewModelOf(::OfflineBroadcastViewModel)
+    viewModel { (coinUid: String) -> amountInputModeViewModel(coinUid) }
+    viewModel { params -> AmountInputViewModel2(params[0], params[1], params[2], params[3]) }
+    viewModel { (token: Token, prefilledData: PrefilledData?) ->
+        AddressParserViewModel(AddressUriParser(token.blockchainType, token.type), prefilledData)
+    }
+    viewModel { (tokenQuery: TokenQuery, coinCode: String, initial: Address?) ->
+        tokenAddressViewModel(tokenQuery, coinCode, initial)
+    }
+    viewModel(named(NFT_ADDRESS_VIEW_MODEL)) { (blockchainType: BlockchainType) -> nftAddressViewModel(blockchainType) }
+    viewModel { params -> sendBitcoinViewModel(params[0], params[1], params[2], params[3]) }
+    viewModel { params -> sendZCashViewModel(params[0], params[1], params[2], params[3]) }
+    viewModel { params -> sendEvmViewModel(params[0], params[1], params[2], params[3]) }
+    viewModel { params -> sendSolanaViewModel(params[0], params[1], params[2], params[3]) }
+    viewModel { params -> sendTonViewModel(params[0], params[1], params[2], params[3]) }
+    viewModel { params -> sendTronViewModel(params[0], params[1], params[2], params[3]) }
+    viewModel { params -> sendMoneroViewModel(params[0], params[1], params[2], params[3]) }
+    viewModel { params -> sendMemoViewModel(params[0], params[1], params[2], params[3]) }
+    viewModel { params -> beamSendViewModel(params[0], params[1], params[2], params[3], params[4]) }
+    viewModel { (blockchainType: BlockchainType) -> sendBtcAdvancedSettingsViewModel(blockchainType) }
+    viewModel { (adapter: ISendBitcoinAdapter, token: Token, customUnspentOutputs: List<UnspentOutputInfo>?) ->
+        utxoExpertModeViewModel(adapter, token, customUnspentOutputs)
+    }
+    viewModel { (token: Token, address: String, addressCheckerSkippable: Boolean) ->
+        securityCheckViewModel(token, address, addressCheckerSkippable)
+    }
+    viewModel { (transactionData: TransactionData, additionalInfo: SendEvmData.AdditionalInfo?,
+            blockchainType: BlockchainType) ->
+        sendEvmConfirmationViewModel(transactionData, additionalInfo, blockchainType)
+    }
+    viewModel { params -> transactionSpeedUpCancelViewModel(params[0], params[1], params[2], params[3]) }
+    viewModel { (optionType: SpeedUpCancelType, transactionRecord: BitcoinTransactionRecord,
+            source: TransactionSource) ->
+        resendBitcoinViewModel(optionType, transactionRecord, source)
+    }
+    viewModel { (wallet: Wallet) ->
+        ZcashMigrationViewModel(
+            wallet = wallet,
+            pendingRegistrar = get(),
+            numberFormatter = get(),
+            adapterManager = get(),
+            xRateService = XRateService(get(), get<CurrencyManager>().baseCurrency)
+        )
     }
 }

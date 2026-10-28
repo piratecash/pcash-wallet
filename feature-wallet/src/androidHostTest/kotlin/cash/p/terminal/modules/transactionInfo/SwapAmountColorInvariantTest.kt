@@ -19,7 +19,7 @@ import cash.p.terminal.modules.transactions.TransactionItem
 import cash.p.terminal.modules.transactions.TransactionViewItemFactory
 import cash.p.terminal.modules.transactions.poison_status.PoisonStatus
 import io.horizontalsystems.core.Translator
-import cash.p.terminal.entities.RawUnstoppableProviderTitles
+import cash.p.terminal.modules.multiswap.providers.AndroidUnstoppableProviderTitles
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.transaction.TransactionSource
@@ -120,7 +120,7 @@ class SwapAmountColorInvariantTest {
             marketKit = marketKit,
             localStorage = localStorage,
             poisonAddressManager = poisonAddressManager,
-            unstoppableProviderTitles = RawUnstoppableProviderTitles,
+            unstoppableProviderTitles = AndroidUnstoppableProviderTitles(),
         )
     }
 

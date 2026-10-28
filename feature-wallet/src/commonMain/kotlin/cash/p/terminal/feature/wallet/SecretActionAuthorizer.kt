@@ -13,6 +13,10 @@ interface SecretActionAuthorizer {
     /** Confirms before transactions hidden by the user are shown; remember at the screen root. */
     @Composable
     fun rememberHiddenTransactionsAuthorization(navigation: HSNavigation, action: () -> Unit): () -> Unit
+
+    /** Confirms before a transfer, only when the user enabled confirmation for transfers; remember at the screen root. */
+    @Composable
+    fun <A> rememberTransferAuthorization(navigation: HSNavigation, action: (A) -> Unit): (A) -> Unit
 }
 
 @Composable
@@ -24,3 +28,7 @@ fun HSNavigation.rememberSecretAction(action: () -> Unit): () -> Unit {
     val authorized = rememberSecretAction<Unit> { action() }
     return { authorized(Unit) }
 }
+
+@Composable
+fun <A> HSNavigation.rememberTransferAction(action: (A) -> Unit): (A) -> Unit =
+    koinInject<SecretActionAuthorizer>().rememberTransferAuthorization(this, action)

@@ -4,8 +4,6 @@ import cash.p.terminal.core.MoneroSpendReadiness
 import cash.p.terminal.featureStacking.ui.staking.StackingType
 import cash.p.terminal.modules.balance.BalanceViewItem
 import cash.p.terminal.modules.balance.DefaultBalanceXRateRepository
-import cash.p.terminal.modules.balance.TotalBalance
-import cash.p.terminal.modules.balance.TotalService
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.displayoptions.DisplayPricePeriod
 import cash.p.terminal.modules.transactions.Filter
@@ -16,7 +14,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.koin.core.scope.Scope
 
 fun Scope.tokenBalanceViewModel(wallet: Wallet) = TokenBalanceViewModel(
-    totalBalance = TotalBalance(TotalService(get(), get(), get(), get()), get()),
+    totalBalance = get(),
     wallet = wallet,
     balanceService = TokenBalanceService(
         wallet = wallet,

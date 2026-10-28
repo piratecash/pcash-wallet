@@ -1,8 +1,10 @@
 package cash.p.terminal.shared.desktop
 
-import cash.p.terminal.entities.RawUnstoppableProviderTitles
+import cash.p.terminal.modules.multiswap.providers.SwapProvidersStorage
+import cash.p.terminal.modules.paycore.PayCorePreferences
+import cash.p.terminal.modules.paycore.webview.PayCoreWebPage
 import cash.p.terminal.ui.compose.BalanceHideOnFlipHandler
-import cash.p.terminal.entities.UnstoppableProviderTitles
+import cash.p.terminal.core.managers.SystemLanguageProvider
 import cash.p.terminal.modules.contacts.ContactsFileStorage
 import cash.p.terminal.modules.contacts.DeleteContactsPinSettings
 import cash.p.terminal.core.BalanceSettingsStorage
@@ -62,6 +64,8 @@ import cash.p.terminal.modules.balance.BalanceViewTypeManager
 import cash.p.terminal.modules.blockchainstatus.StatusReportBuildInfo
 import cash.p.terminal.modules.blockchainstatus.StatusReportExporter
 import cash.p.terminal.modules.settings.appearance.LaunchScreenService
+import cash.p.terminal.modules.send.offline.OfflineQrImageSaver
+import cash.p.terminal.modules.send.offline.OfflineTransactionFiles
 import cash.p.terminal.modules.theme.ThemeService
 import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.premium.data.database.PremiumDatabaseProvider
@@ -125,6 +129,8 @@ internal val desktopWalletModule = module {
     singleOf(::DesktopAppSettingsBackup) bind AppSettingsBackup::class
     singleOf(::DesktopContactsFileStorage) bind ContactsFileStorage::class
     singleOf(::DesktopBackupFileLauncher) bind BackupFileLauncher::class
+    singleOf(::DesktopOfflineTransactionFiles) binds
+        arrayOf(OfflineTransactionFiles::class, OfflineQrImageSaver::class)
     singleOf(::WalletBackupProvider)
     single {
         // Lazy: the adapters behind these read the storage, which opens only at the first unlock.
@@ -156,11 +162,14 @@ internal val desktopWalletModule = module {
         arrayOf(AppPages::class, WalletPages::class, WalletPlatformPages::class, WalletSendPages::class)
     singleOf(::DesktopSecretActionAuthorizer) bind SecretActionAuthorizer::class
     singleOf(::DesktopAppRestarter) bind AppRestarter::class
-    singleOf(::DesktopWalletSettingsStorage) binds
-        arrayOf(BalanceSettingsStorage::class, TransactionSettingsStorage::class, NetworkSettingsStorage::class)
+    singleOf(::DesktopWalletSettingsStorage) binds arrayOf(
+        BalanceSettingsStorage::class, TransactionSettingsStorage::class, NetworkSettingsStorage::class,
+        SwapProvidersStorage::class, PayCorePreferences::class,
+    )
+    single<SystemLanguageProvider> { DesktopSystemLanguageProvider }
+    single<PayCoreWebPage> { DesktopPayCoreWebPage }
     single<PlatformChainSupport> { DesktopPlatformChainSupport }
     single<PlatformOperationSupport> { DesktopPlatformOperationSupport }
-    single<UnstoppableProviderTitles> { RawUnstoppableProviderTitles }
     single<BalanceHideOnFlipHandler> { DesktopBalanceHideOnFlipHandler }
     single<HardwareWalletKeyProvisioner> { DesktopNoHardwareKeyProvisioner }
     single<ScanToAddUseCase> { DesktopNoHardwareScanToAdd }

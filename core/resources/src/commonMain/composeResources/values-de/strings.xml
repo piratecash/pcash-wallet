@@ -401,7 +401,7 @@
     <string name="SendNft_Title">Senden</string>
     <string name="SendNft_Error_NotEnoughtBalance">Nicht genügend Guthaben</string>
     <!--Send-->
-    <string name="Send_Title">%s senden</string>
+    <string name="Send_Title">%1$s senden</string>
     <string name="Send_Hint_Address">Adresse oder Domäne</string>
     <string name="Send_Fee">Gebühr</string>
     <string name="Send_Fee_Info">Blockchains verlangen, dass Nutzer Netzwerkgebühren beim Versenden von Transaktionen bezahlen. Die Gebühren sind höher, wenn viele Transaktionen im Netzwerk stattfinden.</string>
@@ -435,7 +435,7 @@
     <string name="ScanQr_CameraPermissionDeniedText">Zugriff auf Ihre Kamera für diese App wurde verweigert, Sie können zu Einstellungen gehen und den Zugriff erlauben</string>
     <string name="ScanQr_GoToSettings">Zu den Einstellungen</string>
     <string name="scan_qr_camera_initialization_failed">Kamera nicht verfügbar. Bitte versuchen Sie es erneut oder verwenden Sie ein anderes Gerät.</string>
-    <string name="qr_scanner_title_address">%s-Adresse</string>
+    <string name="qr_scanner_title_address">%1$s-Adresse</string>
     <string name="qr_scanner_title_smart_scan">SMART-SCAN</string>
     <string name="choose_from_photos">Aus Fotos auswählen</string>
     <string name="image_decode_failed">Der QR-Code im ausgewählten Bild konnte nicht gelesen werden</string>
@@ -502,23 +502,23 @@
     <string name="FeeInfo_TronResourcesConsumed_Description">Bandbreite ist die Einheit, die die Größe der in der Blockchain-Datenbank gespeicherten Transaktionsbytes misst. Je größer die Transaktion, desto mehr Ressourcen werden verbraucht.\n\nEnergie ist die Einheit, die die Anzahl der Berechnungen misst, die von der virtuellen TRON-Maschine benötigt werden, um bestimmte Operationen im TRON-Netzwerk durchzuführen.\n\nDa intelligente Vertragsabschlüsse die Verwendung von Rechnerressourcen erfordern, muss für jeden Smart Contract eine Energiegebühr bezahlt werden.</string>
 
     <!--Network Fee Warning-->
-    <string name="network_fee_warning_title">%s Netzwerkgebühr</string>
+    <string name="network_fee_warning_title">%1$s Netzwerkgebühr</string>
     <string name="token_balance_need_native_coin_title">Sie benötigen %1$s um %2$s zu verwenden</string>
     <string name="token_balance_need_native_coin_body">%2$s läuft auf %3$s.\nNetzwerkgebühren werden in %1$s bezahlt.\nIhr %1$s Guthaben: %4$s</string>
     <string name="network_fee_warning_body_protocol">Das %1$s-Netzwerkprotokoll sieht vor, dass mindestens %2$s zur Zahlung der Netzwerkgebühr für diese Transaktion erforderlich ist.</string>
-    <string name="network_fee_warning_body_balance">Sie haben weniger als %s in Ihrem Guthaben.</string>
-    <string name="network_fee_warning_body_protocol_bold">mindestens %s</string>
-    <string name="network_fee_warning_body_balance_bold">weniger als %s</string>
+    <string name="network_fee_warning_body_balance">Sie haben weniger als %1$s in Ihrem Guthaben.</string>
+    <string name="network_fee_warning_body_protocol_bold">mindestens %1$s</string>
+    <string name="network_fee_warning_body_balance_bold">weniger als %1$s</string>
     <string name="network_fee_warning_body_case_not_completed_prefix">aber </string>
     <string name="network_fee_warning_body_case_not_sent_prefix">und </string>
     <string name="network_fee_warning_body_risk">Bei diesem Guthaben besteht das Risiko, dass die tatsächliche Gebühr höher als erwartet ausfallen kann.</string>
     <string name="network_fee_warning_body_risk_bold">höher als erwartet ausfallen kann</string>
     <string name="network_fee_warning_body_case_intro">In diesem Fall:</string>
-    <string name="network_fee_warning_body_case_debited">%s wird von Ihrem Guthaben abgebucht,</string>
+    <string name="network_fee_warning_body_case_debited">%1$s wird von Ihrem Guthaben abgebucht,</string>
     <string name="network_fee_warning_body_case_not_completed">die Transaktion wird möglicherweise nicht abgeschlossen,</string>
     <string name="network_fee_warning_body_case_not_sent">die Coins werden nicht an den Empfänger gesendet.</string>
     <string name="network_fee_warning_body_confirm_intro">Durch Fortfahren bestätigen Sie, dass Sie:</string>
-    <string name="network_fee_warning_body_confirm_understand">die Besonderheiten der Funktionsweise des %s-Netzwerks verstehen,</string>
+    <string name="network_fee_warning_body_confirm_understand">die Besonderheiten der Funktionsweise des %1$s-Netzwerks verstehen,</string>
     <string name="network_fee_warning_body_confirm_risk">sich des Risikos eines Gebührenverlusts bewusst sind,</string>
     <string name="network_fee_warning_body_confirm_accept">die möglichen Folgen einer fehlgeschlagenen Transaktion akzeptieren.</string>
     <string name="network_fee_warning_points_header">Punkte, denen Sie zustimmen müssen:</string>
@@ -598,8 +598,8 @@
     <string name="Swap_Allowance">Vergütung</string>
     <string name="Swap_Price">Preis</string>
     <string name="Swap_AvailableBalance">Verfügbares Guthaben</string>
-    <string name="swap_insufficient_fee_balance">Das aktuelle %s-Guthaben ist niedriger als der für diese Transaktion erforderliche Betrag einschließlich der Transaktionsgebühr.</string>
-    <string name="fee_warning_low_balance">Das Guthaben ist niedriger als erforderlich. Die Gebühren könnten bis zu %s betragen.</string>
+    <string name="swap_insufficient_fee_balance">Das aktuelle %1$s-Guthaben ist niedriger als der für diese Transaktion erforderliche Betrag einschließlich der Transaktionsgebühr.</string>
+    <string name="fee_warning_low_balance">Das Guthaben ist niedriger als erforderlich. Die Gebühren könnten bis zu %1$s betragen.</string>
     <string name="swap_balance_for_fees">Guthaben für Gebühren</string>
     <string name="fee">Gebühr</string>
     <string name="estimated_fee">Geschätzte Gebühr</string>
@@ -612,7 +612,7 @@
     <string name="Swap_ErrorNoProviders">Keine Anbieter</string>
     <string name="Swap_ErrorNoQuote">Keine Angebote</string>
     <string name="Swap_ErrorInsufficientBalance">Ungenügendes Guthaben</string>
-    <string name="swap_out_of_min_amount">Unter Mindestbetrag %s</string>
+    <string name="swap_out_of_min_amount">Unter Mindestbetrag %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">Hohe Preisauswirkung</string>
     <string name="Swap_ErrorWalletSyncing">Wallet wird synchronisiert</string>
     <string name="Swap_ErrorWalletNotSynced">Wallet nicht synchronisiert</string>
@@ -639,7 +639,7 @@
     <string name="Swap_YouPay">Sie bezahlen</string>
     <string name="Swap_YouGet">Sie erhalten</string>
     <string name="Swap_Confirm_Title">Bestätigen</string>
-    <string name="SwapConfirm_QuoteExpiresIn">Angebot läuft in %d ab</string>
+    <string name="SwapConfirm_QuoteExpiresIn">Angebot läuft in %1$d ab</string>
     <string name="SwapConfirm_QuoteExpired">Angebot abgelaufen</string>
     <string name="SwapConfirm_QuoteIsInvalid">Angebot ist ungültig</string>
     <string name="SwapConfirm_FetchingFinalQuote">Abrufen des endgültigen Angebots</string>
@@ -677,7 +677,7 @@
     <string name="swap_reapprove_action">Aktualisiertes Limit genehmigen</string>
     <string name="swap_no_providers_for_this_amount">Keine Anbieter für diesen Betrag</string>
     <!--Approve-->
-    <string name="Approve_RevokeAndApproveInfo">Sie können %s tauschen, oder Sie müssen den neuen Betrag widerrufen und genehmigen</string>
+    <string name="Approve_RevokeAndApproveInfo">Sie können %1$s tauschen, oder Sie müssen den neuen Betrag widerrufen und genehmigen</string>
     <string name="Approve_Spender">Spender</string>
     <string name="Approve_YouApprove">Sie genehmigen</string>
     <string name="Approve_YouRevoke">Du widerrufen</string>
@@ -1073,6 +1073,7 @@
     <string name="offline_transaction_signed_transaction_unavailable">Die signierte Transaktion ist nicht mehr verfügbar. Signieren Sie sie erneut.</string>
     <string name="offline_broadcast_title">RAW-TX senden</string>
     <string name="offline_broadcast_import_file">Transaktionsdatei importieren</string>
+    <string name="offline_broadcast_input_hint">Signierte RAW- oder P.cash-Transaktion einfügen</string>
     <string name="offline_broadcast_file_read_failed">Transaktionsdatei konnte nicht gelesen werden. Prüfe die Datei und versuche es erneut.</string>
     <string name="offline_broadcast_invalid_input">Transaktion konnte nicht erkannt werden. Überprüfen Sie das Format und versuchen Sie es erneut.</string>
     <string name="offline_broadcast_check_title">Transaktion prüfen</string>
@@ -2124,15 +2125,15 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="scan_card_to_add">Karte scannen, um Token hinzuzufügen</string>
     <!--Multi-Swap-->
     <string name="multi_swap_completed">Tausch abgeschlossen</string>
-    <string name="multi_swap_via">Tausch über %s</string>
-    <string name="multi_swap_completed_via">Abgeschlossen über %s</string>
+    <string name="multi_swap_via">Tausch über %1$s</string>
+    <string name="multi_swap_completed_via">Abgeschlossen über %1$s</string>
     <string name="multi_swap_no_providers">Keine Anbieter verfügbar</string>
     <string name="multi_swap_finding_best_provider">Besten Anbieter suchen…</string>
     <string name="multi_swap_continue">Tausch fortsetzen</string>
     <string name="multi_swap_route_explanation">Für den besten Kurs wird eine Route über %2$s verwendet. Der Tausch erfolgt in zwei Schritten: zuerst %1$s → %2$s, dann %2$s → %3$s.</string>
     <string name="multi_swap_route_title">Tauschroute</string>
     <string name="multi_swap_execution_title">Tausch</string>
-    <string name="multi_swap_step">%d. Schritt</string>
+    <string name="multi_swap_step">%1$d. Schritt</string>
     <string name="multi_swap_understood_continue">Verstanden, weiter</string>
     <string name="multi_swap_unfinished">Unvollständiger Tausch</string>
     <string name="multi_swap_unfinished_plural">Unvollständige Tausche (%d)</string>
@@ -2179,6 +2180,9 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="paycore_banks_unavailable">Banken sind vorübergehend nicht verfügbar. Versuche es später erneut.</string>
     <string name="paycore_delete_restricted_warning">Diese Transaktion kann nicht gelöscht werden, da sie von einem Drittanbieter abgewickelt wird.</string>
     <string name="paycore_delete_to_complete_select_bank">Wähle eine Bank aus, um den Swap abzuschließen.</string>
+    <string name="paycore_browser_verification_done">Ich habe die Verifizierung abgeschlossen</string>
+    <string name="paycore_browser_payment_done">Ich habe bezahlt</string>
+    <string name="paycore_browser_open_again">Erneut öffnen</string>
     <string name="swap_provider_type_info_title">Tausch-Anbietertypen</string>
     <string name="swap_provider_type_info_description">Die folgenden Kennzeichnungen erklären, wie verschiedene Arten von Tausch-Anbietern arbeiten. Sie helfen zu verstehen, wie der Tausch ausgeführt wird und welche zusätzlichen Prüfungen oder Bedingungen gelten können.</string>
     <string name="swap_provider_type_auto_description">Automatische Ausführung des Tauschs. Wenn der Tausch nicht abgeschlossen werden kann, werden die Mittel in der Regel automatisch zurückerstattet, ohne dass der Nutzer etwas tun muss.</string>
@@ -2344,4 +2348,6 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="desktop_change_password_corrupted">Die Schlüsseldatei ist beschädigt: Sobald die App gesperrt ist, können Sie sich nicht mehr anmelden. Speichern Sie eine Sicherungskopie jeder Wiederherstellungsphrase.</string>
     <string name="desktop_change_password_success">Passwort geändert</string>
     <string name="desktop_security_lock_now">Jetzt sperren</string>
+    <string name="desktop_transfer_password">Passwort vor dem Senden</string>
+    <string name="desktop_transfer_password_description">Vor jeder Überweisung wird das App-Passwort abgefragt. Das schützt Ihre Guthaben, falls jemand bei entsperrter App Zugriff auf Ihren Computer erhält.</string>
 </resources>

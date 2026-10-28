@@ -391,7 +391,7 @@
     <string name="SendNft_Error_NotEnoughtBalance">Недостаточно средств</string>
     <!--Send-->
     <string name="Send_EnterAddress">Укажите адрес</string>
-    <string name="Send_Title">Отправить %s</string>
+    <string name="Send_Title">Отправить %1$s</string>
     <string name="Send_Hint_Address">Адрес или домен</string>
     <string name="Send_Fee">Комиссия</string>
     <string name="Send_Fee_Info">Блокчейн требует от пользователей оплаты сетевых сборов при отправке транзакций. Эти сборы выше, когда в сети происходит много транзакций.</string>
@@ -425,7 +425,7 @@
     <string name="ScanQr_CameraPermissionDeniedText">Доступ к камере для этого приложения запрещен, вы можете перейти в настройки и разрешить доступ</string>
     <string name="ScanQr_GoToSettings">Перейти в настройки</string>
     <string name="scan_qr_camera_initialization_failed">Камера недоступна. Попробуйте еще раз или используйте другое устройство.</string>
-    <string name="qr_scanner_title_address">Адрес %s</string>
+    <string name="qr_scanner_title_address">Адрес %1$s</string>
     <string name="qr_scanner_title_smart_scan">УМНОЕ СКАНИРОВАНИЕ</string>
     <string name="choose_from_photos">Выбрать из фото</string>
     <string name="image_decode_failed">Не удалось распознать QR-код на выбранном изображении</string>
@@ -492,23 +492,23 @@
     <string name="FeeInfo_TronResourcesConsumed_Description">Bandwidth - это единица, которая измеряет размер байт транзакции, хранящихся в базе данных блокчейна. Чем больше транзакция, тем больше bandwidth будет потребляться.\n\nEnergy — это единица, измеряющая количество вычислений, требуемых виртуальной машиной TRON для выполнения конкретных операций в сети TRON.\n\nПоскольку транзакции смарт-контракта требуют выполнения вычислительных ресурсов, каждая сделка по контракту требует оплаты energy комиссии.</string>
 
     <!--Network Fee Warning-->
-    <string name="network_fee_warning_title">Комиссия сети %s</string>
+    <string name="network_fee_warning_title">Комиссия сети %1$s</string>
     <string name="token_balance_need_native_coin_title">Вам нужен %1$s для использования %2$s</string>
     <string name="token_balance_need_native_coin_body">%2$s работает на %3$s.\nКомиссия сети оплачивается в %1$s.\nВаш баланс %1$s: %4$s</string>
     <string name="network_fee_warning_body_protocol">Протокол сети %1$s сообщает, что для выполнения данной транзакции требуется не менее %2$s для оплаты сетевой комиссии.</string>
-    <string name="network_fee_warning_body_balance">На вашем балансе менее %s.</string>
-    <string name="network_fee_warning_body_protocol_bold">не менее %s</string>
-    <string name="network_fee_warning_body_balance_bold">менее %s</string>
+    <string name="network_fee_warning_body_balance">На вашем балансе менее %1$s.</string>
+    <string name="network_fee_warning_body_protocol_bold">не менее %1$s</string>
+    <string name="network_fee_warning_body_balance_bold">менее %1$s</string>
     <string name="network_fee_warning_body_case_not_completed_prefix">но </string>
     <string name="network_fee_warning_body_case_not_sent_prefix">и </string>
     <string name="network_fee_warning_body_risk">При таком балансе существует риск, что фактическая комиссия может быть выше ожидаемой.</string>
     <string name="network_fee_warning_body_risk_bold">быть выше ожидаемой</string>
     <string name="network_fee_warning_body_case_intro">В этом случае:</string>
-    <string name="network_fee_warning_body_case_debited">%s будут списаны с вашего баланса,</string>
+    <string name="network_fee_warning_body_case_debited">%1$s будут списаны с вашего баланса,</string>
     <string name="network_fee_warning_body_case_not_completed">транзакция может не быть выполнена,</string>
     <string name="network_fee_warning_body_case_not_sent">монеты не будут отправлены получателю.</string>
     <string name="network_fee_warning_body_confirm_intro">Продолжая, вы подтверждаете, что:</string>
-    <string name="network_fee_warning_body_confirm_understand">понимаете особенности работы сети %s,</string>
+    <string name="network_fee_warning_body_confirm_understand">понимаете особенности работы сети %1$s,</string>
     <string name="network_fee_warning_body_confirm_risk">осознаёте риск потери комиссии,</string>
     <string name="network_fee_warning_body_confirm_accept">принимаете возможные последствия неуспешной транзакции.</string>
     <string name="network_fee_warning_points_header">Необходимо подтвердить:</string>
@@ -585,8 +585,8 @@
     <string name="Swap_Allowance">Разрешение</string>
     <string name="Swap_Price">Цена</string>
     <string name="Swap_AvailableBalance">Доступный баланс</string>
-    <string name="swap_insufficient_fee_balance">Текущий баланс %s ниже суммы, необходимой для проведения этой транзакции, включая комиссию.</string>
-    <string name="fee_warning_low_balance">Баланс ниже необходимого уровня. Комиссия может составить до %s.</string>
+    <string name="swap_insufficient_fee_balance">Текущий баланс %1$s ниже суммы, необходимой для проведения этой транзакции, включая комиссию.</string>
+    <string name="fee_warning_low_balance">Баланс ниже необходимого уровня. Комиссия может составить до %1$s.</string>
     <string name="swap_balance_for_fees">Баланс для комиссий</string>
     <string name="fee">Комиссия</string>
     <string name="estimated_fee">Примерная комиссия</string>
@@ -599,7 +599,7 @@
     <string name="Swap_ErrorNoProviders">Нет провайдеров</string>
     <string name="Swap_ErrorNoQuote">Нет предложений</string>
     <string name="Swap_ErrorInsufficientBalance">Недостаточный баланс</string>
-    <string name="swap_out_of_min_amount">Меньше мин. суммы %s</string>
+    <string name="swap_out_of_min_amount">Меньше мин. суммы %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">Высокое отклонение цены</string>
     <string name="Swap_ErrorWalletSyncing">Синхронизация кошелька</string>
     <string name="Swap_ErrorWalletNotSynced">Кошелек не синхронизирован</string>
@@ -641,7 +641,7 @@
     <string name="Swap_YouPay">Вы платите</string>
     <string name="Swap_YouGet">Вы получите</string>
     <string name="Swap_Confirm_Title">Подтвердить</string>
-    <string name="SwapConfirm_QuoteExpiresIn">Котировка истекает через %d</string>
+    <string name="SwapConfirm_QuoteExpiresIn">Котировка истекает через %1$d</string>
     <string name="SwapConfirm_QuoteExpired">Котировка истекла</string>
     <string name="SwapConfirm_QuoteIsInvalid">Котировка недействительна</string>
     <string name="SwapConfirm_FetchingFinalQuote">Получение котировки</string>
@@ -686,7 +686,7 @@
     <!-- Swap Confirmation -->
     <string name="activate_insufficient_balance_description">У вас недостаточно баланса XLM для активации этого токена.</string>
     <!--Approve-->
-    <string name="Approve_RevokeAndApproveInfo">Вы можете обменять %s, или вы должны отменить и одобрить новую сумму</string>
+    <string name="Approve_RevokeAndApproveInfo">Вы можете обменять %1$s, или вы должны отменить и одобрить новую сумму</string>
     <string name="Approve_Spender">Покупатель</string>
     <string name="Approve_YouApprove">Вы разрешаете</string>
     <string name="Approve_YouRevoke">Вы отменяете</string>
@@ -1088,6 +1088,7 @@
     <string name="offline_transaction_signed_transaction_unavailable">Подписанная транзакция больше недоступна. Подпишите её ещё раз.</string>
     <string name="offline_broadcast_title">Отправка RAW TX</string>
     <string name="offline_broadcast_import_file">Импортировать файл транзакции</string>
+    <string name="offline_broadcast_input_hint">Вставьте подписанную RAW- или P.cash-транзакцию</string>
     <string name="offline_broadcast_file_read_failed">Не удалось прочитать файл транзакции. Проверьте файл и попробуйте ещё раз.</string>
     <string name="offline_broadcast_invalid_input">Не удалось распознать транзакцию. Проверьте формат и попробуйте снова.</string>
     <string name="offline_broadcast_check_title">Проверка транзакции</string>
@@ -2328,15 +2329,15 @@
 
     <!--Multi-Swap-->
     <string name="multi_swap_completed">Обмен завершён</string>
-    <string name="multi_swap_via">Обмен через %s</string>
-    <string name="multi_swap_completed_via">Завершено через %s</string>
+    <string name="multi_swap_via">Обмен через %1$s</string>
+    <string name="multi_swap_completed_via">Завершено через %1$s</string>
     <string name="multi_swap_no_providers">Нет доступных провайдеров</string>
     <string name="multi_swap_finding_best_provider">Поиск лучшего провайдера…</string>
     <string name="multi_swap_continue">Продолжить обмен</string>
     <string name="multi_swap_route_explanation">Для получения наиболее выгодного курса используется маршрут через %2$s. Обмен будет выполнен в два последовательных шага: сначала %1$s → %2$s, затем %2$s → %3$s.</string>
     <string name="multi_swap_route_title">Маршрут обмена</string>
     <string name="multi_swap_execution_title">Обмен</string>
-    <string name="multi_swap_step">%d шаг</string>
+    <string name="multi_swap_step">%1$d шаг</string>
     <string name="multi_swap_understood_continue">Понятно, продолжить</string>
     <string name="multi_swap_unfinished">Незавершенный обмен</string>
     <string name="multi_swap_unfinished_plural">Незавершенные обмены (%d)</string>
@@ -2373,6 +2374,9 @@
     <string name="paycore_banks_unavailable">Банки временно недоступны. Попробуйте позже.</string>
     <string name="paycore_delete_restricted_warning">Данную транзакцию удалить нельзя так как она совершается на стороннем сервисе.</string>
     <string name="paycore_delete_to_complete_select_bank">Для завершения обмена выберите банк.</string>
+    <string name="paycore_browser_verification_done">Я прошёл верификацию</string>
+    <string name="paycore_browser_payment_done">Я оплатил</string>
+    <string name="paycore_browser_open_again">Открыть снова</string>
     <string name="duration_short_hours">%1$dч</string>
     <string name="duration_short_minutes">%1$dмин</string>
     <string name="duration_short_seconds">%1$dс</string>
@@ -2524,4 +2528,6 @@
     <string name="desktop_change_password_corrupted">Файл ключа повреждён: после блокировки приложения вы не сможете войти. Сохраните резервную копию каждой фразы восстановления.</string>
     <string name="desktop_change_password_success">Пароль изменён</string>
     <string name="desktop_security_lock_now">Заблокировать сейчас</string>
+    <string name="desktop_transfer_password">Пароль перед отправкой</string>
+    <string name="desktop_transfer_password_description">Перед каждой отправкой запрашивается пароль приложения. Это защитит ваши средства, если кто-то получит доступ к компьютеру с разблокированным приложением.</string>
 </resources>

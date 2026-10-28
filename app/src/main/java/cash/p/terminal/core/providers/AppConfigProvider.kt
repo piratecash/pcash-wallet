@@ -93,7 +93,7 @@ object AppConfigProvider : AddressResolutionConfig {
 
     val merkleIoKey get() = SharedAppConfig.merkleIoKey
 
-    val fiatDecimal: Int = 2
+    val fiatDecimal: Int get() = SharedAppConfig.fiatDecimal
 
     val currencies: List<Currency> = Currencies.all
 

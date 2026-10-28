@@ -2,7 +2,6 @@ package cash.p.terminal.core
 
 import cash.p.terminal.entities.AppVersion
 import cash.p.terminal.entities.SyncMode
-import cash.p.terminal.modules.amount.AmountInputType
 import cash.p.terminal.shared.main.MainTabStorage
 import cash.p.terminal.modules.market.TimeDuration
 import cash.p.terminal.modules.premium.settings.PollingInterval
@@ -25,7 +24,6 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurren
     var autoLockInterval: AutoLockInterval
 
     var chartIndicatorsEnabled: Boolean
-    var amountInputType: AmountInputType?
     var authToken: String?
     val appId: String?
 
@@ -47,9 +45,6 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurren
     var balanceHideOnFlipEnabled: Boolean
     var balanceHideOnFlipInfoSuppressed: Boolean
     var securityFlipFeatureSeen: Boolean
-    var swapMevProtectionEnabled: Boolean
-
-    var transferPasscodeEnabled: Boolean
 
     var notificationId: String?
     var notificationServerTime: Long
@@ -73,8 +68,6 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurren
     var relaunchBySettingChange: Boolean
     var personalSupportEnabled: Boolean
     var pinRandomized: Boolean
-    var utxoExpertModeEnabled: Boolean
-    var rbfEnabled: Boolean
     var statsLastSyncTime: Long
     var shareCrashDataEnabled: Boolean
     var showChangelogAfterUpdate: Boolean
@@ -83,8 +76,6 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurren
     var updateCheckInterval: UpdateCheckInterval
     var lastUpdateCheckTimestamp: Long
     var latestKnownVersion: String?
-
-    val utxoExpertModeEnabledFlow: StateFlow<Boolean>
 
     var isSystemPinRequired: Boolean
     // Login Logging properties inherited from ILoggingSettings

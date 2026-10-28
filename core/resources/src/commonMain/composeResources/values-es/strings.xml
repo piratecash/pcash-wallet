@@ -402,7 +402,7 @@
     <string name="SendNft_Title">Enviar</string>
     <string name="SendNft_Error_NotEnoughtBalance">Saldo insuficiente</string>
     <!--Send-->
-    <string name="Send_Title">Enviar %s</string>
+    <string name="Send_Title">Enviar %1$s</string>
     <string name="Send_Hint_Address">Dominio o dirección</string>
     <string name="Send_Fee">Comisión</string>
     <string name="Send_Fee_Info">Blockchains requiere que los usuarios paguen comisiones de red al enviar transacciones. Las comisiones son más altas cuando muchas transacciones tienen lugar en la red.</string>
@@ -436,7 +436,7 @@
     <string name="ScanQr_CameraPermissionDeniedText">Se ha denegado el acceso a tu cámara para esta aplicación, puedes ir a ajustes y permitir el acceso</string>
     <string name="ScanQr_GoToSettings">Ir a Ajustes</string>
     <string name="scan_qr_camera_initialization_failed">La cámara no está disponible. Por favor, inténtelo de nuevo o use otro dispositivo.</string>
-    <string name="qr_scanner_title_address">Dirección %s</string>
+    <string name="qr_scanner_title_address">Dirección %1$s</string>
     <string name="qr_scanner_title_smart_scan">ESCANEO INTELIGENTE</string>
     <string name="choose_from_photos">Elegir desde Fotos</string>
     <string name="image_decode_failed">No se pudo leer un código QR de la imagen seleccionada</string>
@@ -503,23 +503,23 @@
     <string name="FeeInfo_TronResourcesConsumed_Description">El bandwidth es la unidad que mide el tamaño de los bytes de transacción almacenados en la base de datos de la cadena de bloques. Cuanto más grande sea la transacción, más recursos de ancho de banda se consumirán.\n\nEnerge es la unidad que mide la cantidad de computación requerida por la máquina virtual TRON para realizar operaciones específicas en la red TRON.\n\nDado que las transacciones de contratos inteligentes requieren recursos informáticos para ejecutarse, cada transacción de contrato inteligente debe pagar la tarifa de energy.</string>
 
     <!--Network Fee Warning-->
-    <string name="network_fee_warning_title">Comisión de red %s</string>
+    <string name="network_fee_warning_title">Comisión de red %1$s</string>
     <string name="token_balance_need_native_coin_title">Necesitas %1$s para usar %2$s</string>
     <string name="token_balance_need_native_coin_body">%2$s funciona en %3$s.\nLa comisión de red se paga en %1$s.\nTu saldo de %1$s: %4$s</string>
     <string name="network_fee_warning_body_protocol">El protocolo de la red %1$s establece que se requiere al menos %2$s para pagar la comisión de red de esta transacción.</string>
-    <string name="network_fee_warning_body_balance">Tiene menos de %s en su saldo.</string>
-    <string name="network_fee_warning_body_protocol_bold">al menos %s</string>
-    <string name="network_fee_warning_body_balance_bold">menos de %s</string>
+    <string name="network_fee_warning_body_balance">Tiene menos de %1$s en su saldo.</string>
+    <string name="network_fee_warning_body_protocol_bold">al menos %1$s</string>
+    <string name="network_fee_warning_body_balance_bold">menos de %1$s</string>
     <string name="network_fee_warning_body_case_not_completed_prefix">pero </string>
     <string name="network_fee_warning_body_case_not_sent_prefix">y </string>
     <string name="network_fee_warning_body_risk">Con este saldo, existe el riesgo de que la comisión real sea superior a la esperada.</string>
     <string name="network_fee_warning_body_risk_bold">superior a la esperada</string>
     <string name="network_fee_warning_body_case_intro">En este caso:</string>
-    <string name="network_fee_warning_body_case_debited">se debitarán %s de su saldo,</string>
+    <string name="network_fee_warning_body_case_debited">se debitarán %1$s de su saldo,</string>
     <string name="network_fee_warning_body_case_not_completed">es posible que la transacción no se complete,</string>
     <string name="network_fee_warning_body_case_not_sent">las monedas no se enviarán al destinatario.</string>
     <string name="network_fee_warning_body_confirm_intro">Al continuar, usted confirma que:</string>
-    <string name="network_fee_warning_body_confirm_understand">comprende las particularidades del funcionamiento de la red %s,</string>
+    <string name="network_fee_warning_body_confirm_understand">comprende las particularidades del funcionamiento de la red %1$s,</string>
     <string name="network_fee_warning_body_confirm_risk">es consciente del riesgo de perder la comisión,</string>
     <string name="network_fee_warning_body_confirm_accept">acepta las posibles consecuencias de una transacción fallida.</string>
     <string name="network_fee_warning_points_header">Puntos con los que debe estar de acuerdo:</string>
@@ -599,8 +599,8 @@
     <string name="Swap_Allowance">Permiso de acceso</string>
     <string name="Swap_Price">Precio</string>
     <string name="Swap_AvailableBalance">Saldo disponible</string>
-    <string name="swap_insufficient_fee_balance">El saldo actual de %s es inferior al monto requerido para procesar esta transacción, incluida la comisión.</string>
-    <string name="fee_warning_low_balance">El saldo es menor de lo necesario. Podrías pagar hasta %s en comisiones.</string>
+    <string name="swap_insufficient_fee_balance">El saldo actual de %1$s es inferior al monto requerido para procesar esta transacción, incluida la comisión.</string>
+    <string name="fee_warning_low_balance">El saldo es menor de lo necesario. Podrías pagar hasta %1$s en comisiones.</string>
     <string name="swap_balance_for_fees">Saldo para comisiones</string>
     <string name="fee">Comisión</string>
     <string name="estimated_fee">Tarifa estimada</string>
@@ -613,7 +613,7 @@
     <string name="Swap_ErrorNoProviders">No hay proveedores</string>
     <string name="Swap_ErrorNoQuote">Sin ofertas</string>
     <string name="Swap_ErrorInsufficientBalance">Saldo insuficiente</string>
-    <string name="swap_out_of_min_amount">Por debajo del monto mínimo %s</string>
+    <string name="swap_out_of_min_amount">Por debajo del monto mínimo %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">Impacto de precio alto</string>
     <string name="Swap_ErrorWalletSyncing">La cartera está sincronizando</string>
     <string name="Swap_ErrorWalletNotSynced">Cartera no sincronizada</string>
@@ -640,7 +640,7 @@
     <string name="Swap_YouPay">Usted paga</string>
     <string name="Swap_YouGet">Obtienes</string>
     <string name="Swap_Confirm_Title">Confirmar</string>
-    <string name="SwapConfirm_QuoteExpiresIn">La cotización expira en %d</string>
+    <string name="SwapConfirm_QuoteExpiresIn">La cotización expira en %1$d</string>
     <string name="SwapConfirm_QuoteExpired">Cotización expirada</string>
     <string name="SwapConfirm_QuoteIsInvalid">Cotización no válida</string>
     <string name="SwapConfirm_FetchingFinalQuote">Recuperando la comilla final</string>
@@ -679,7 +679,7 @@
     <string name="swap_no_providers_for_this_amount">Sin proveedores para este importe</string>
 
     <!--Approve-->
-    <string name="Approve_RevokeAndApproveInfo">Puedes cambiar %so necesitas revocar y aprobar la nueva cantidad</string>
+    <string name="Approve_RevokeAndApproveInfo">Puedes cambiar %1$so necesitas revocar y aprobar la nueva cantidad</string>
     <string name="Approve_Spender">Gastador</string>
     <string name="Approve_YouApprove">Apruebas</string>
     <string name="Approve_YouRevoke">Revocas</string>
@@ -1076,6 +1076,7 @@
     <string name="offline_transaction_signed_transaction_unavailable">La transacción firmada ya no está disponible. Fírmala de nuevo.</string>
     <string name="offline_broadcast_title">Enviar RAW TX</string>
     <string name="offline_broadcast_import_file">Importar archivo de transacción</string>
+    <string name="offline_broadcast_input_hint">Pega una transacción RAW o P.cash firmada</string>
     <string name="offline_broadcast_file_read_failed">No se pudo leer el archivo de transacción. Comprueba el archivo e inténtalo de nuevo.</string>
     <string name="offline_broadcast_invalid_input">No se pudo reconocer la transacción. Comprueba el formato e inténtalo de nuevo.</string>
     <string name="offline_broadcast_check_title">Verificar transacción</string>
@@ -2124,15 +2125,15 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="scan_card_to_add">Escanear tarjeta para agregar token</string>
     <!--Multi-Swap-->
     <string name="multi_swap_completed">Intercambio completado</string>
-    <string name="multi_swap_via">Intercambio vía %s</string>
-    <string name="multi_swap_completed_via">Completado vía %s</string>
+    <string name="multi_swap_via">Intercambio vía %1$s</string>
+    <string name="multi_swap_completed_via">Completado vía %1$s</string>
     <string name="multi_swap_no_providers">No hay proveedores disponibles</string>
     <string name="multi_swap_finding_best_provider">Buscando el mejor proveedor…</string>
     <string name="multi_swap_continue">Continuar intercambio</string>
     <string name="multi_swap_route_explanation">Para obtener la mejor tasa, se usa una ruta a través de %2$s. El intercambio se realizará en dos pasos consecutivos: primero %1$s → %2$s y luego %2$s → %3$s.</string>
     <string name="multi_swap_route_title">Ruta de intercambio</string>
     <string name="multi_swap_execution_title">Intercambio</string>
-    <string name="multi_swap_step">Paso %d</string>
+    <string name="multi_swap_step">Paso %1$d</string>
     <string name="multi_swap_understood_continue">Entendido, continuar</string>
     <string name="multi_swap_unfinished">Intercambio sin terminar</string>
     <string name="multi_swap_unfinished_plural">Intercambios sin terminar (%d)</string>
@@ -2179,6 +2180,9 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="paycore_banks_unavailable">Los bancos no están disponibles temporalmente. Inténtalo más tarde.</string>
     <string name="paycore_delete_restricted_warning">Esta transacción no se puede eliminar porque la procesa un servicio externo.</string>
     <string name="paycore_delete_to_complete_select_bank">Selecciona un banco para completar el swap.</string>
+    <string name="paycore_browser_verification_done">He completado la verificación</string>
+    <string name="paycore_browser_payment_done">He pagado</string>
+    <string name="paycore_browser_open_again">Abrir de nuevo</string>
     <string name="swap_provider_type_info_title">Tipos de proveedores de intercambio</string>
     <string name="swap_provider_type_info_description">Las siguientes etiquetas explican cómo funcionan los distintos tipos de proveedores de intercambio. Te ayudan a entender cómo se ejecutará el intercambio y qué comprobaciones o condiciones adicionales pueden aplicarse.</string>
     <string name="swap_provider_type_auto_description">Ejecución automática del intercambio. Si el intercambio no puede completarse, los fondos suelen reembolsarse automáticamente sin necesidad de ninguna acción por parte del usuario.</string>
@@ -2345,4 +2349,6 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="desktop_change_password_corrupted">El archivo de claves está dañado: una vez que la aplicación se bloquee, no podrás iniciar sesión. Guarda una copia de seguridad de cada frase de recuperación.</string>
     <string name="desktop_change_password_success">Contraseña cambiada</string>
     <string name="desktop_security_lock_now">Bloquear ahora</string>
+    <string name="desktop_transfer_password">Contraseña antes de enviar</string>
+    <string name="desktop_transfer_password_description">Se solicita la contraseña de la aplicación antes de cada envío, lo que protege tus activos si alguien accede a tu ordenador con la aplicación desbloqueada.</string>
 </resources>
