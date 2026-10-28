@@ -14,8 +14,8 @@ import cash.p.terminal.modules.pin.unlock.PinUnlockViewModel
 import cash.p.terminal.modules.markdown.localreader.MarkdownLocalViewModel
 import cash.p.terminal.modules.premium.settings.PushNotificationsViewModel
 import cash.p.terminal.modules.premium.smsnotification.SendSmsNotificationViewModel
-import cash.p.terminal.modules.qrscanner.QRScannerViewModel
 import cash.p.terminal.modules.qrscanner.QrCodeImageDecoder
+import cash.p.terminal.modules.qrscanner.QrCodeImageDecoderImpl
 import cash.p.terminal.modules.releasenotes.ReleaseNotesViewModel
 import cash.p.terminal.modules.resettofactorysettings.ResetToFactorySettingsViewModel
 import cash.p.terminal.modules.send.offline.OfflineBroadcastViewModel
@@ -58,7 +58,7 @@ import org.koin.dsl.module
 
 val viewModelModule = module {
     singleOf(::DefaultDispatcherProvider) bind DispatcherProvider::class
-    singleOf(::QrCodeImageDecoder)
+    singleOf(::QrCodeImageDecoderImpl) bind QrCodeImageDecoder::class
 
     viewModelOf(::MainViewModel)
     viewModelOf(::MainActivityViewModel)
@@ -85,7 +85,6 @@ val viewModelModule = module {
     viewModelOf(::PushNotificationsViewModel)
     viewModelOf(::SendSmsNotificationViewModel)
     viewModelOf(::TonConnectListViewModel)
-    viewModelOf(::QRScannerViewModel)
     viewModelOf(::PinUnlockViewModel)
     viewModel { (input: AccountTypeNotSupportedSheet.Input) ->
         AccountTypeNotSupportedViewModel(input = input, accountManager = get())

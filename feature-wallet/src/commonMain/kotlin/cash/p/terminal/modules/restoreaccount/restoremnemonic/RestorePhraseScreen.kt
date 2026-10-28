@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.restoreaccount.restoremnemonic
 
-import cash.p.terminal.feature.wallet.qrScannerAvailable
 import cash.p.terminal.ui_compose.components.rememberHudMessenger
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -621,7 +620,6 @@ private fun BottomSection(
 
 @Composable
 internal fun ScanQrButton(onClick: () -> Unit) {
-    if (!qrScannerAvailable()) return
     ButtonSecondaryCircle(
         modifier = Modifier.padding(end = 8.dp),
         icon = Res.drawable.ic_qr_scan_20,

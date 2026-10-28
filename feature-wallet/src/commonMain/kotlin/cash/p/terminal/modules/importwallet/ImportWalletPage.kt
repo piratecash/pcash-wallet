@@ -18,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import cash.p.terminal.core.Caution
 import cash.p.terminal.core.rememberTermsAcceptedAction
 import cash.p.terminal.feature.wallet.BackupFileLauncher
-import cash.p.terminal.feature.wallet.qrScannerAvailable
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
@@ -195,15 +194,13 @@ private fun ImportWalletScreen(
                     icon = Res.drawable.ic_download_24,
                     onClick = openBackupFilePicker,
                 )
-                if (qrScannerAvailable()) {
-                    VSpacer(12.dp)
-                    ImportOption(
-                        title = stringResource(Res.string.import_wallet_from_qr),
-                        description = stringResource(Res.string.import_wallet_from_qr_description),
-                        icon = Res.drawable.ic_qr_scan_24,
-                        onClick = { qrScanner.open(scannerTitle) }
-                    )
-                }
+                VSpacer(12.dp)
+                ImportOption(
+                    title = stringResource(Res.string.import_wallet_from_qr),
+                    description = stringResource(Res.string.import_wallet_from_qr_description),
+                    icon = Res.drawable.ic_qr_scan_24,
+                    onClick = { qrScanner.open(scannerTitle) }
+                )
                 VSpacer(12.dp)
             }
         }

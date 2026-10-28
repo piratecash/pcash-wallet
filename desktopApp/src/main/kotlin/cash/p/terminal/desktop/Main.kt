@@ -67,10 +67,14 @@ private var instanceLock: SingleInstanceLock? = null
 
 fun main(args: Array<String>) {
     val launchArguments = DesktopLaunchArguments.parse(args)
-    // The packager re-signs natives inside jars, so SQLCipher and BEAM load their copies from the app resources.
+    // The packager re-signs natives inside jars, so SQLCipher, BEAM and JNA load their copies from the app resources.
     System.getProperty("compose.application.resources.dir")?.let {
         System.setProperty(SqlCipherDriver.NATIVE_DIR_PROPERTY, it)
         System.setProperty(BEAM_NATIVE_PATH_PROPERTY, File(it, System.mapLibraryName("beam_sdk_kmp")).path)
+        System.setProperty("jna.boot.library.path", it)
+        System.setProperty("jna.library.path", it)
+        // Never unpack a jar's copy into a temp directory: only the packaged natives may load.
+        System.setProperty("jna.nounpack", "true")
     }
     secureDesktopAppDataDirectory()
     launchArguments.awaitPreviousInstance()

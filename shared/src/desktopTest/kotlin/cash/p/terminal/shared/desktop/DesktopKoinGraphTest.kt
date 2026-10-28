@@ -297,6 +297,8 @@ import cash.p.terminal.shared.desktop.lock.UnlockViewModel
 import cash.p.terminal.shared.desktop.session.mnemonicAccount
 import cash.p.terminal.shared.desktop.settings.DesktopAutoLockIntervalsViewModel
 import cash.p.terminal.shared.desktop.settings.DesktopLanguageSettingsViewModel
+import cash.p.terminal.shared.desktop.qrscanner.DesktopQrScannerViewModel
+import cash.p.terminal.modules.qrscanner.QRScannerViewModel
 import cash.p.terminal.shared.desktop.settings.DesktopSecurityViewModel
 import com.google.gson.Gson
 import kotlin.io.path.createTempDirectory
@@ -513,6 +515,8 @@ class DesktopKoinGraphTest {
             DesktopSecurityViewModel::class to null,
             DesktopAutoLockIntervalsViewModel::class to null,
             DesktopLanguageSettingsViewModel::class to null,
+            QRScannerViewModel::class to null,
+            DesktopQrScannerViewModel::class to null,
         )
     }
 

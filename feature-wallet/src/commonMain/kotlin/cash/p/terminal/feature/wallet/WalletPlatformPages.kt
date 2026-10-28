@@ -1,6 +1,5 @@
 package cash.p.terminal.feature.wallet
 
-import androidx.compose.runtime.Composable
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.navigation.HSNavigation
@@ -8,7 +7,6 @@ import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.entities.Blockchain
-import org.koin.compose.koinInject
 import kotlin.reflect.KClass
 
 /**
@@ -17,9 +15,6 @@ import kotlin.reflect.KClass
  */
 interface WalletPlatformPages {
     fun hardwareWallet(input: ManageAccountsModule.Input?): HSPage?
-
-    /** Hides the QR-scan entries when the platform has no scanner; the page itself comes from AppPages. */
-    val isQrScannerAvailable: Boolean
 
     /** Reports [ResetToFactoryResult]. */
     fun resetToFactory(account: Account): HSPage?
@@ -60,9 +55,6 @@ data class ActivateTokenResult(val activated: Boolean)
 fun HSNavigation.openFaq(topic: FaqTopic) {
     getKoinInstance<WalletPlatformPages>().faq(topic)?.let { slideFromBottom(it) }
 }
-
-@Composable
-fun qrScannerAvailable(): Boolean = koinInject<WalletPlatformPages>().isQrScannerAvailable
 
 data class ResetToFactoryResult(val success: Boolean)
 

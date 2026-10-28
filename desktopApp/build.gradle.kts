@@ -60,12 +60,22 @@ val sqlCipherDriver = libs.bitcoin.kit.sqlcipher.driver.get()
 val sqlCipherDriverJar = runtimeJar(sqlCipherDriver.group, sqlCipherDriver.name)
 val beamSdk = libs.beam.sdk.get()
 val beamSdkDesktopJar = runtimeJar(beamSdk.group, "${beamSdk.name}-desktop")
+val openpnpCapture = libs.openpnp.capture.java.get()
+val openpnpCaptureJar = runtimeJar(openpnpCapture.group, openpnpCapture.name)
+val jnaJar = runtimeJar("net.java.dev.jna", "jna")
 
 // Compose picks the app-resources subdirectory by this name; the BEAM jar names its natives by Rust target triple.
 val beamNativeResourceDirs = mapOf(
     "aarch64-apple-darwin" to "macos-arm64",
     "x86_64-pc-windows-msvc" to "windows-x64",
     "x86_64-unknown-linux-gnu" to "linux-x64",
+)
+
+// openpnp-capture and JNA name their natives by JNA platform prefix.
+val jnaNativeResourceDirs = mapOf(
+    "darwin-aarch64" to "macos-arm64",
+    "win32-x86-64" to "windows-x64",
+    "linux-x86-64" to "linux-x64",
 )
 
 // The packager re-signs dylibs inside jars, which breaks the driver's own checksum: ship them as app resources.
@@ -84,15 +94,44 @@ val stageNativeResources = tasks.register<Sync>("stageNativeResources") {
         }
         includeEmptyDirs = false
     }
+    from({ openpnpCaptureJar.map(::zipTree) }) {
+        include(jnaNativeResourceDirs.keys.map { "$it/*" })
+        eachFile { path = "${jnaNativeResourceDirs.getValue(relativePath.segments[0])}/$name" }
+        includeEmptyDirs = false
+    }
+    // JNA loads its own native from jna.boot.library.path instead of unpacking it into a temp directory.
+    from({ jnaJar.map(::zipTree) }) {
+        include(jnaNativeResourceDirs.keys.map { "com/sun/jna/$it/*jnidispatch*" })
+        eachFile { path = "${jnaNativeResourceDirs.getValue(relativePath.segments[3])}/$name" }
+        includeEmptyDirs = false
+    }
     into(layout.buildDirectory.dir("native-resources"))
 }
 
+// Every target's natives are staged on every build host, so each target dir is checked with its own file names.
+val targetNativeFiles = mapOf(
+    "macos-arm64" to listOf(
+        "libsqlcipher_jni.dylib", "libbeam_sdk_kmp.dylib", "libopenpnp-capture.dylib", "libjnidispatch.jnilib",
+    ),
+    "linux-x64" to listOf("libsqlcipher_jni.so", "libbeam_sdk_kmp.so", "libopenpnp-capture.so", "libjnidispatch.so"),
+    "windows-x64" to listOf("sqlcipher_jni.dll", "beam_sdk_kmp.dll", "openpnp-capture.dll", "jnidispatch.dll"),
+)
+
 val verifyNativeResources = tasks.register("verifyNativeResources") {
     val prepareAppResources = tasks.named<Sync>("prepareAppResources")
-    dependsOn(prepareAppResources)
+    dependsOn(prepareAppResources, stageNativeResources)
     doLast {
-        listOf("sqlcipher_jni", "beam_sdk_kmp").forEach { library ->
-            val native = File(prepareAppResources.get().destinationDir, System.mapLibraryName(library))
+        targetNativeFiles.forEach { (target, fileNames) ->
+            fileNames.forEach { fileName ->
+                val native = File(stageNativeResources.get().destinationDir, "$target/$fileName")
+                check(native.isFile) { "Native library is missing from the staged resources: $native" }
+            }
+        }
+        val nativeFiles = listOf("sqlcipher_jni", "beam_sdk_kmp", "openpnp-capture").map(System::mapLibraryName) +
+            // JNA names its macOS native .jnilib, the name jna.boot.library.path looks for first.
+            System.mapLibraryName("jnidispatch").replace(".dylib", ".jnilib")
+        nativeFiles.forEach { fileName ->
+            val native = File(prepareAppResources.get().destinationDir, fileName)
             check(native.isFile) { "Native library is missing from the app resources: $native" }
         }
     }
@@ -120,6 +159,15 @@ compose.desktop {
             appResourcesRootDir.set(layout.dir(stageNativeResources.map { it.destinationDir }))
             macOS {
                 iconFile.set(macIconFile)
+                // Compose's default entitlements plus the camera: the hardened runtime denies the camera without it.
+                entitlementsFile.set(project.file("macos-entitlements.plist"))
+                // Without a usage description macOS terminates the app on its first camera access.
+                infoPlist {
+                    extraKeysRawXml = """
+                        <key>NSCameraUsageDescription</key>
+                        <string>P.CASH uses the camera to scan QR codes.</string>
+                    """.trimIndent()
+                }
             }
             windows {
                 iconFile.set(project.file("icons/p-cash.ico"))

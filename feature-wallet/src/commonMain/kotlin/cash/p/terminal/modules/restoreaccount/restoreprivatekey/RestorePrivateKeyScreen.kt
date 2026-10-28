@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.restoreaccount.restoreprivatekey
 
-import cash.p.terminal.feature.wallet.qrScannerAvailable
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -91,8 +90,7 @@ fun RestorePrivateKey(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 hint = stringResource(Res.string.Restore_PrivateKeyHint),
                 state = viewModel.inputState,
-                qrScannerEnabled = qrScannerAvailable(),
-                navigation = navigation,
+                qrScannerNavigation = navigation,
                 qrScannerTitle = stringResource(Res.string.Restore_PrivateKey),
                 onValueChange = {
                     viewModel.onEnterPrivateKey(it)

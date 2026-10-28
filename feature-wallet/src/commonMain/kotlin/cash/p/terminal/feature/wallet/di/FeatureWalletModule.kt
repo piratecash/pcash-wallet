@@ -66,6 +66,7 @@ import cash.p.terminal.modules.manageaccounts.ManageAccountsViewModel
 import cash.p.terminal.modules.moneroconfigure.MoneroConfigureViewModel
 import cash.p.terminal.modules.mwebconfigure.MwebConfigureViewModel
 import cash.p.terminal.modules.premium.about.AboutPremiumViewModel
+import cash.p.terminal.modules.qrscanner.QRScannerViewModel
 import cash.p.terminal.modules.restoreaccount.duplicatewallet.DuplicateWalletViewModel
 import cash.p.terminal.modules.restoreaccount.restoremnemonic.RestoreMnemonicViewModel
 import cash.p.terminal.modules.restoreaccount.restoremnemonicnonstandard.RestoreMnemonicNonStandardViewModel
@@ -418,6 +419,7 @@ val featureWalletModule = module {
     factoryOf(::BlockchainSettingsBackup)
     viewModelOf(::TermsViewModel)
     viewModelOf(::AppearanceViewModel)
+    viewModelOf(::QRScannerViewModel)
     factoryOf(::WatchAddressService)
     factoryOf(::BlockchainSettingsService)
     viewModelOf(::BlockchainSettingsViewModel)

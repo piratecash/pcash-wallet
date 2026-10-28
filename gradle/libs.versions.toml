@@ -74,6 +74,7 @@ tonKotlin = "0.5.0" # updated for ktor 3.x compatibility
 orgJson = "20250517"
 piratecash-ton = "v2.0.0-pcash.9"
 beam-sdk = "v0.3.1"
+openpnp-capture-java = "v0.0.30-2-pcash.2"
 piratecash-bitcoin = "v0.1.0-pcash.38"
 hd-wallet-kit = "1.0.1"
 stellar-kit = "v2.0.0-pcash.3"
@@ -233,6 +234,7 @@ ton-kotlin-contract = { module = "org.ton.kotlin:ton-kotlin-contract", version.r
 org-json = { module = "org.json:json", version.ref = "orgJson" }
 ton-kit = { group = "com.github.piratecash.ton-kit-android", name = "tonkit", version.ref = "piratecash-ton" }
 beam-sdk = { module = "com.github.piratecash.beam-sdk-kmp:beam-sdk", version.ref = "beam-sdk" }
+openpnp-capture-java = { group = "com.github.piratecash", name = "openpnp-capture-java", version.ref = "openpnp-capture-java" }
 bitcoin-core = { group = "com.github.piratecash.bitcoin-kit-android", name = "bitcoincore", version.ref = "piratecash-bitcoin" }
 bitcoin-kit = { group = "com.github.piratecash.bitcoin-kit-android", name = "bitcoinkit", version.ref = "piratecash-bitcoin" }
 bitcoin-cash-kit = { group = "com.github.piratecash.bitcoin-kit-android", name = "bitcoincashkit", version.ref = "piratecash-bitcoin" }

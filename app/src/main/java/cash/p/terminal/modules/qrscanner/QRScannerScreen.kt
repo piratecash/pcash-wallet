@@ -1,7 +1,6 @@
 package cash.p.terminal.modules.qrscanner
 
 import android.Manifest
-import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Size
@@ -14,12 +13,6 @@ import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -34,10 +27,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -50,14 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -70,16 +54,11 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.R
 import cash.p.terminal.core.getKoinInstance
-import cash.p.terminal.core.rememberPremiumAction
 import cash.p.terminal.navigation.HSNavigation
-import cash.p.terminal.ui.helpers.TextHelper
-import cash.p.terminal.ui_compose.components.ButtonPrimaryDefaultWithIcon
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefaults
-import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
 import cash.p.terminal.ui_compose.components.AppDialog
 import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
-import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.title3_leah
@@ -93,9 +72,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import androidx.compose.ui.tooling.preview.Preview as ComposePreview
-import cash.p.terminal.resources.Res
-import cash.p.terminal.resources.star_filled_yellow_16
-import org.jetbrains.compose.resources.painterResource
 
 // Both thresholds were already exceeded before the paste callback was added; the detekt baseline
 // suppressed them by signature, so changing the signature re-keyed those entries.
@@ -111,7 +87,7 @@ fun QRScannerScreen(
     onPaste: (String) -> Unit,
     onCloseClick: () -> Unit,
     onCameraPermissionSettingsClick: () -> Unit,
-    onGalleryImagePicked: (Uri) -> Unit,
+    onGalleryImagePicked: (String) -> Unit,
     onErrorMessageConsumed: () -> Unit,
     allowGalleryWithoutPremium: Boolean = false,
     windowInsets: WindowInsets = NavigationBarDefaults.windowInsets,
@@ -122,19 +98,17 @@ fun QRScannerScreen(
             cameraPermissionState.status != PermissionStatus.Granted
         )
     }
-    val view = LocalView.current
     val pinComponent = remember { getKoinInstance<IPinComponent>() }
 
     val galleryLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-            uri?.let(onGalleryImagePicked)
+            uri?.let { onGalleryImagePicked(it.toString()) }
         }
     val openGallery = {
         pinComponent.launchExternalActivity {
             galleryLauncher.launch(GALLERY_MIME_TYPE)
         }
     }
-    val openGalleryWithPremium = navigation.rememberPremiumAction(openGallery)
 
     if (showPermissionNeededDialog) {
         PermissionNeededDialog(
@@ -148,12 +122,7 @@ fun QRScannerScreen(
         )
     }
 
-    LaunchedEffect(uiState.errorMessageRes) {
-        uiState.errorMessageRes?.let { errorRes ->
-            HudHelper.showErrorMessage(view, errorRes)
-            onErrorMessageConsumed()
-        }
-    }
+    QrScannerErrorEffect(uiState.errorMessageRes, onErrorHandle = onErrorMessageConsumed)
 
     ComposeAppTheme {
         Box(
@@ -185,77 +154,22 @@ fun QRScannerScreen(
                 )
             }
 
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 24.dp)
-                    .align(Alignment.BottomCenter),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                if (showPasteButton) {
-                    ButtonPrimaryYellow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
-                        title = stringResource(R.string.Send_Button_Paste),
-                        enabled = !uiState.isDecodingFromImage,
-                        onClick = {
-                            onPaste(TextHelper.getCopiedText())
-                        }
-                    )
-                }
-
-                if (allowGalleryWithoutPremium) {
-                    ButtonPrimaryDefault(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
-                        title = stringResource(R.string.choose_from_photos),
-                        enabled = !uiState.isDecodingFromImage,
-                        onClick = openGallery
-                    )
-                } else {
-                    ButtonPrimaryDefaultWithIcon(
-                        icon = painterResource(Res.drawable.star_filled_yellow_16),
-                        iconTint = ComposeAppTheme.colors.statusWarning,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
-                        title = stringResource(R.string.choose_from_photos),
-                        enabled = !uiState.isDecodingFromImage,
-                        onClick = openGalleryWithPremium
-                    )
-                }
-
-                ButtonPrimaryDefault(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    title = stringResource(R.string.Button_Cancel),
-                    enabled = !uiState.isDecodingFromImage,
-                    onClick = onCloseClick
-                )
-                Spacer(Modifier.height(48.dp))
-            }
+            QrScannerButtons(
+                navigation = navigation,
+                isDecodingFromImage = uiState.isDecodingFromImage,
+                showPasteButton = showPasteButton,
+                galleryTitle = stringResource(R.string.choose_from_photos),
+                onPaste = onPaste,
+                onOpenImage = openGallery,
+                onCloseClick = onCloseClick,
+                modifier = Modifier.align(Alignment.BottomCenter),
+                allowGalleryWithoutPremium = allowGalleryWithoutPremium,
+            )
 
             if (uiState.isDecodingFromImage) {
                 LoadingOverlay()
             }
         }
-    }
-}
-
-@Composable
-private fun LoadingOverlay() {
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(ComposeAppTheme.colors.backgroundBase.copy(alpha = 0.7f)),
-        contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator(
-            modifier = Modifier.size(48.dp),
-            color = ComposeAppTheme.colors.textPrimary
-        )
     }
 }
 
@@ -387,131 +301,6 @@ private fun createQrCodeAnalyzer(
         if (!disposed.get()) {
             onScan(result)
         }
-    }
-}
-
-@Composable
-private fun CameraErrorOverlay(errorMessage: String) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(ComposeAppTheme.colors.scannerBackground),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(horizontal = 40.dp)
-        ) {
-            subhead2_grey(
-                textAlign = TextAlign.Center,
-                text = errorMessage
-            )
-        }
-    }
-}
-
-@Composable
-private fun ScannerOverlay() {
-    val density = LocalDensity.current
-    val scanWindowSize = with(density) { 250.dp.toPx() }
-    val cornerLength = with(density) { 30.dp.toPx() }
-    val strokeWidth = with(density) { 4.dp.toPx() }
-    val cornerColor = ComposeAppTheme.colors.brandDefault
-
-    // Animated scan line
-    val infiniteTransition = rememberInfiniteTransition(label = "scanLine")
-    val scanLinePosition by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "scanLinePosition"
-    )
-
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        val canvasWidth = size.width
-        val canvasHeight = size.height
-
-        // Calculate scan window position (centered)
-        val scanLeft = (canvasWidth - scanWindowSize) / 2
-        val scanTop = (canvasHeight - scanWindowSize) / 2
-        val scanRight = scanLeft + scanWindowSize
-        val scanBottom = scanTop + scanWindowSize
-
-        val overlayColor = Color.Black.copy(alpha = 0.6f)
-
-        // Create cutout path for the scan window
-        val cutoutPath = Path().apply {
-            addRect(androidx.compose.ui.geometry.Rect(scanLeft, scanTop, scanRight, scanBottom))
-        }
-
-        // Draw overlay with cutout using clipPath with Difference operation
-        clipPath(cutoutPath, clipOp = androidx.compose.ui.graphics.ClipOp.Difference) {
-            drawRect(color = overlayColor)
-        }
-
-        // Draw corner brackets (orange) - L-shapes with rounded corners
-        val halfStroke = strokeWidth / 2
-
-        // Top-left corner bracket
-        val topLeftPath = Path().apply {
-            moveTo(scanLeft + halfStroke, scanTop + cornerLength)
-            lineTo(scanLeft + halfStroke, scanTop + halfStroke)
-            quadraticTo(
-                scanLeft + halfStroke, scanTop + halfStroke,
-                scanLeft + halfStroke, scanTop + halfStroke
-            )
-            lineTo(scanLeft + cornerLength, scanTop + halfStroke)
-        }
-        drawPath(topLeftPath, cornerColor, style = Stroke(width = strokeWidth))
-
-        // Top-right corner bracket
-        val topRightPath = Path().apply {
-            moveTo(scanRight - cornerLength, scanTop + halfStroke)
-            lineTo(scanRight - halfStroke, scanTop + halfStroke)
-            quadraticTo(
-                scanRight - halfStroke, scanTop + halfStroke,
-                scanRight - halfStroke, scanTop + halfStroke
-            )
-            lineTo(scanRight - halfStroke, scanTop + cornerLength)
-        }
-        drawPath(topRightPath, cornerColor, style = Stroke(width = strokeWidth))
-
-        // Bottom-left corner bracket
-        val bottomLeftPath = Path().apply {
-            moveTo(scanLeft + halfStroke, scanBottom - cornerLength)
-            lineTo(scanLeft + halfStroke, scanBottom - halfStroke)
-            quadraticTo(
-                scanLeft + halfStroke, scanBottom - halfStroke,
-                scanLeft + halfStroke, scanBottom - halfStroke
-            )
-            lineTo(scanLeft + cornerLength, scanBottom - halfStroke)
-        }
-        drawPath(bottomLeftPath, cornerColor, style = Stroke(width = strokeWidth))
-
-        // Bottom-right corner bracket
-        val bottomRightPath = Path().apply {
-            moveTo(scanRight - cornerLength, scanBottom - halfStroke)
-            lineTo(scanRight - halfStroke, scanBottom - halfStroke)
-            quadraticTo(
-                scanRight - halfStroke, scanBottom - halfStroke,
-                scanRight - halfStroke, scanBottom - halfStroke
-            )
-            lineTo(scanRight - halfStroke, scanBottom - cornerLength)
-        }
-        drawPath(bottomRightPath, cornerColor, style = Stroke(width = strokeWidth))
-
-        // Draw animated red scan line
-        val padding = 16.dp.toPx()
-        val lineY = scanTop + padding + (scanWindowSize - 2 * padding) * scanLinePosition
-        drawLine(
-            color = Color.Red,
-            start = Offset(scanLeft + padding, lineY),
-            end = Offset(scanRight - padding, lineY),
-            strokeWidth = 2.dp.toPx()
-        )
     }
 }
 

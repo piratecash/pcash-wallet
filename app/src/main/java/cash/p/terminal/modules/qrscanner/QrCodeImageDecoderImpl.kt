@@ -4,15 +4,10 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import androidx.core.net.toUri
 import cash.p.terminal.core.openInputStreamSafe
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.BinaryBitmap
-import com.google.zxing.DecodeHintType
-import com.google.zxing.MultiFormatReader
-import com.google.zxing.NotFoundException
+import cash.p.terminal.core.tryOrNull
 import com.google.zxing.RGBLuminanceSource
-import com.google.zxing.ReaderException
-import com.google.zxing.common.HybridBinarizer
 import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.withContext
 import kotlin.math.floor
@@ -20,63 +15,41 @@ import kotlin.math.ln
 import kotlin.math.max
 import kotlin.math.pow
 
-class QrCodeImageDecoder(
+class QrCodeImageDecoderImpl(
     private val context: Context,
     private val dispatcherProvider: DispatcherProvider,
-) {
+) : QrCodeImageDecoder {
 
-    suspend fun decode(uri: Uri): Result<String> = withContext(dispatcherProvider.default) {
-        runCatching {
-            decodeFirstMatch(uri)
-        }.mapCatching { result ->
-            result.text?.takeIf { it.isNotBlank() } ?: error("QR code has no textual content")
-        }
+    override suspend fun decode(imageRef: String): String? = withContext(dispatcherProvider.default) {
+        tryOrNull { decodeFirstMatch(imageRef.toUri()) }
     }
 
     /**
      * A dense QR photographed by a camera survives only a mild downscale, so a miss at the
      * smallest target is not proof the image has no code: retry at a higher resolution.
      */
-    private fun decodeFirstMatch(uri: Uri): com.google.zxing.Result {
+    private fun decodeFirstMatch(uri: Uri): String? {
         val bounds = decodeBounds(uri)
         val sampleSizes = DECODE_DIMENSIONS
             .map { calculateInSampleSize(bounds.outWidth, bounds.outHeight, it) }
             .distinct()
 
-        var failure: ReaderException? = null
+        val reader = QrCodeReader()
         for (sampleSize in sampleSizes) {
             val bitmap = decodeBitmap(uri, sampleSize)
             try {
-                return decodeFromBitmap(bitmap)
-            } catch (e: ReaderException) {
-                failure = e
+                reader.decode(bitmap.toLuminanceSource())?.let { return it }
             } finally {
                 bitmap.recycle()
             }
         }
-        throw failure ?: NotFoundException.getNotFoundInstance()
+        return null
     }
 
-    private fun decodeFromBitmap(bitmap: Bitmap): com.google.zxing.Result {
-        val width = bitmap.width
-        val height = bitmap.height
+    private fun Bitmap.toLuminanceSource(): RGBLuminanceSource {
         val pixels = IntArray(width * height)
-        bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
-
-        val source = RGBLuminanceSource(width, height, pixels)
-        val binaryBitmap = BinaryBitmap(HybridBinarizer(source))
-        val reader = MultiFormatReader().apply {
-            setHints(
-                mapOf(
-                    DecodeHintType.POSSIBLE_FORMATS to listOf(BarcodeFormat.QR_CODE),
-                    DecodeHintType.TRY_HARDER to true
-                )
-            )
-        }
-
-        return reader.decodeWithState(binaryBitmap).also {
-            reader.reset()
-        }
+        getPixels(pixels, 0, width, 0, 0, width, height)
+        return RGBLuminanceSource(width, height, pixels)
     }
 
     private fun decodeBounds(uri: Uri): BitmapFactory.Options {
@@ -105,15 +78,11 @@ class QrCodeImageDecoder(
         imageHeight: Int,
         requiredDimension: Int
     ): Int {
-        if (imageWidth <= 0 ||
-            imageHeight <= 0 ||
-            (imageWidth <= requiredDimension && imageHeight <= requiredDimension)
-        ) {
-            return 1
-        }
+        if (imageWidth <= 0 || imageHeight <= 0) return 1
+        val largestDimension = max(imageWidth, imageHeight)
+        if (largestDimension <= requiredDimension) return 1
 
         // Calculate the ratio of the larger dimension to the required dimension.
-        val largestDimension = max(imageWidth, imageHeight)
         val ratio = largestDimension.toFloat() / requiredDimension.toFloat()
 
         // Find the nearest power of 2 for the sample size.

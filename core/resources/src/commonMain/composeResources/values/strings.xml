@@ -546,6 +546,12 @@ Proceed only if you\u0027re sure.</string>
     <string name="scan_qr_camera_initialization_failed">Camera is not available. Please try again or use a different device.</string>
     <string name="qr_scanner_title_address">%s address</string>
     <string name="qr_scanner_title_smart_scan">SMART SCAN</string>
+    <string name="qr_scanner_open_image">Open Image</string>
+    <string name="qr_scanner_select_camera">Camera</string>
+    <string name="qr_scanner_no_camera">Camera not found or access denied</string>
+    <string name="qr_scanner_no_camera_hint_macos">Allow camera access in System Settings → Privacy &amp; Security → Camera, then try again.</string>
+    <string name="qr_scanner_no_camera_hint_windows">Allow camera access in Settings → Privacy &amp; security → Camera, then try again.</string>
+    <string name="qr_scanner_no_camera_hint_linux">Make sure a camera is connected (/dev/video*) and your user is in the video group, then try again.</string>
     <string name="choose_from_photos">Choose from Photos</string>
     <string name="image_decode_failed">Could not read a QR code from the selected image</string>
 

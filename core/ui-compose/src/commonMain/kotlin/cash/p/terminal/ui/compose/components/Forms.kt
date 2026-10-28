@@ -77,9 +77,8 @@ fun FormsInput(
     hintStyle: TextStyle = ComposeAppTheme.typography.body,
     singleLine: Boolean = false,
     state: DataState<Any>? = null,
-    qrScannerEnabled: Boolean = false,
     qrScannerTitle: String? = null,
-    navigation: HSNavigation? = null,
+    qrScannerNavigation: HSNavigation? = null,
     pasteEnabled: Boolean = true,
     trailingIcon: DrawableResource? = null,
     onTrailingIconClick: (() -> Unit)? = null,
@@ -136,7 +135,7 @@ fun FormsInput(
             }
 
             // After LaunchedEffect(initial): on re-entry the initial sync must not overwrite a buffered scan.
-            val qrScanner = navigation?.rememberQrScannerLauncher(koinInject()) { scannedText ->
+            val qrScanner = qrScannerNavigation?.rememberQrScannerLauncher(koinInject()) { scannedText ->
                 val textProcessed = textPreprocessor.process(scannedText)
                 textState = TextFieldValue(
                     text = textProcessed,
@@ -249,14 +248,14 @@ fun FormsInput(
                     }
                 )
             } else {
-                if (qrScannerEnabled) {
+                if (qrScanner != null) {
                     val scannerTitle = qrScannerTitle ?: stringResource(Res.string.qr_scanner_title_smart_scan)
                     ButtonSecondaryCircle(
                         modifier = Modifier.padding(end = if (pasteEnabled) 8.dp else 16.dp),
                         icon = Res.drawable.ic_qr_scan_20,
                         onClick = {
                             coroutineScope.launchAfterClearingFocus(focusManager) {
-                                checkNotNull(qrScanner).open(scannerTitle)
+                                qrScanner.open(scannerTitle)
                             }
                         }
                     )
@@ -307,9 +306,8 @@ fun FormsInputMultiline(
     hintStyle: TextStyle = ComposeAppTheme.typography.body,
     state: DataState<Any>? = null,
     pasteEnabled: Boolean = true,
-    qrScannerEnabled: Boolean = false,
     qrScannerTitle: String? = null,
-    navigation: HSNavigation? = null,
+    qrScannerNavigation: HSNavigation? = null,
     textPreprocessor: TextPreprocessor = TextPreprocessorImpl,
     onChangeFocus: ((Boolean) -> Unit)? = null,
     maxLength: Int? = null,
@@ -361,7 +359,7 @@ fun FormsInputMultiline(
             }
 
             // After LaunchedEffect(initial): on re-entry the initial sync must not overwrite a buffered scan.
-            val qrScanner = navigation?.rememberQrScannerLauncher(koinInject()) { scannedText ->
+            val qrScanner = qrScannerNavigation?.rememberQrScannerLauncher(koinInject()) { scannedText ->
                 val textProcessed = textPreprocessor.process(scannedText)
                 textState = textState.copy(
                     text = textProcessed,
@@ -465,14 +463,14 @@ fun FormsInputMultiline(
                         }
                     )
                 } else {
-                    if (qrScannerEnabled) {
+                    if (qrScanner != null) {
                         val scannerTitle = qrScannerTitle ?: stringResource(Res.string.qr_scanner_title_smart_scan)
                         ButtonSecondaryCircle(
                             modifier = Modifier.padding(end = if (pasteEnabled) 8.dp else 16.dp),
                             icon = Res.drawable.ic_qr_scan_20,
                             onClick = {
                                 coroutineScope.launchAfterClearingFocus(focusManager) {
-                                    checkNotNull(qrScanner).open(scannerTitle)
+                                    qrScanner.open(scannerTitle)
                                     onScanQR?.invoke()
                                 }
                             }

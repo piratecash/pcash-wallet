@@ -105,6 +105,7 @@ kotlin {
                 // AdapterFactory takes StackingManager in its public constructor.
                 api(project(":feature-stacking"))
                 implementation(project(":components:chartview"))
+                implementation(project(":core:qr-multipart"))
 
                 implementation(libs.compose.multiplatform.runtime)
                 implementation(libs.compose.multiplatform.ui)
