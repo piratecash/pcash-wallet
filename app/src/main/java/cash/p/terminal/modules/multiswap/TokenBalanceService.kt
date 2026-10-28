@@ -111,6 +111,7 @@ class TokenBalanceService(
             is AdapterState.SearchingTxs -> WalletSyncing()
             is AdapterState.Syncing -> WalletSyncing()
             is AdapterState.NotSynced -> WalletNotSynced()
+            is AdapterState.Paused -> WalletNotSynced()
             AdapterState.Synced -> {
                 if (amount > balance) {
                     SwapError.InsufficientBalanceFrom

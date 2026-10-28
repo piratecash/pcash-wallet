@@ -2313,7 +2313,6 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="beam_recovery_required_title">Récupération nécessaire</string>
     <string name="beam_recovery_required_description">La réinitialisation automatique est bloquée pour protéger les données de votre portefeuille BEAM. Les données sont conservées, mais l’accès à l’ancien portefeuille ne peut pas être garanti. La restauration avec votre phrase de récupération doit créer un portefeuille distinct.</string>
     <string name="beam_offline_context_unavailable">Le contexte de signature hors ligne est indisponible. Synchronisez ce portefeuille en ligne au préalable.</string>
-    <string name="beam_wallet_state_stopped">Portefeuille BEAM arrêté</string>
     <string name="beam_wallet_state_offline">Portefeuille BEAM hors ligne</string>
     <string name="beam_wallet_state_closed">Portefeuille BEAM fermé</string>
     <string name="beam_wallet_operation_failed">Échec de l’opération du portefeuille BEAM</string>

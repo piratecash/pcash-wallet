@@ -2486,7 +2486,6 @@
     <string name="beam_recovery_required_title">Требуется восстановление</string>
     <string name="beam_recovery_required_description">Автоматический сброс заблокирован для защиты данных кошелька BEAM. Данные сохранены, но доступ к старому кошельку не гарантирован. Восстановление по секретной фразе должно создавать отдельный кошелёк.</string>
     <string name="beam_offline_context_unavailable">Контекст для офлайн-подписи недоступен. Сначала синхронизируйте кошелёк с сетью.</string>
-    <string name="beam_wallet_state_stopped">Кошелёк BEAM остановлен</string>
     <string name="beam_wallet_state_offline">Кошелёк BEAM не в сети</string>
     <string name="beam_wallet_state_closed">Кошелёк BEAM закрыт</string>
     <string name="beam_wallet_operation_failed">Сбой операции кошелька BEAM</string>

@@ -2307,7 +2307,6 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="beam_recovery_required_title">Se requiere recuperación</string>
     <string name="beam_recovery_required_description">El restablecimiento automático está bloqueado para proteger los datos de tu monedero BEAM. Los datos se han conservado, pero no se puede garantizar el acceso al monedero anterior. La recuperación con tu frase de recuperación debe crear un monedero separado.</string>
     <string name="beam_offline_context_unavailable">El contexto para firmar sin conexión no está disponible. Sincroniza primero esta cartera en línea.</string>
-    <string name="beam_wallet_state_stopped">Monedero BEAM detenido</string>
     <string name="beam_wallet_state_offline">Monedero BEAM sin conexión</string>
     <string name="beam_wallet_state_closed">Monedero BEAM cerrado</string>
     <string name="beam_wallet_operation_failed">Error en la operación del monedero BEAM</string>

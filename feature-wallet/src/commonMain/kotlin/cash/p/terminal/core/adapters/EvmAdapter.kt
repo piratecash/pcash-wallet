@@ -71,7 +71,7 @@ class EvmAdapter(evmTransactionRepository: EvmTransactionRepository, coinManager
     // IBalanceAdapter
 
     override val balanceState: AdapterState
-        get() = balanceSyncStateToAdapterState(evmTransactionRepository.syncState)
+        get() = evmTransactionRepository.syncState.toAdapterState()
 
     override val balanceStateUpdatedFlow: Flow<Unit>
         get() = evmTransactionRepository.syncStateFlowable.map { }.asFlow()
@@ -81,15 +81,6 @@ class EvmAdapter(evmTransactionRepository: EvmTransactionRepository, coinManager
 
     override val balanceUpdatedFlow: Flow<Unit>
         get() = evmTransactionRepository.accountStateFlowable.map { }.asFlow()
-
-    private fun balanceSyncStateToAdapterState(syncState: EthereumKit.SyncState): AdapterState =
-        when (syncState) {
-            is EthereumKit.SyncState.Synced -> AdapterState.Synced
-            is EthereumKit.SyncState.Syncing -> AdapterState.Syncing()
-            is EthereumKit.SyncState.NotSynced ->
-                if (syncState.error is EthereumKit.SyncError.NotStarted) AdapterState.Connecting
-                else AdapterState.NotSynced(syncState.error)
-        }
 
     // ISendEthereumAdapter
 
@@ -102,4 +93,13 @@ class EvmAdapter(evmTransactionRepository: EvmTransactionRepository, coinManager
         const val decimal = 18
     }
 
+}
+
+// A kit stopped on purpose (background, offline pause) is not a sync failure.
+internal fun EthereumKit.SyncState.toAdapterState(): AdapterState = when (this) {
+    is EthereumKit.SyncState.Synced -> AdapterState.Synced
+    is EthereumKit.SyncState.Syncing -> AdapterState.Syncing()
+    is EthereumKit.SyncState.NotSynced ->
+        if (error is EthereumKit.SyncError.NotStarted) AdapterState.Paused
+        else AdapterState.NotSynced(error)
 }

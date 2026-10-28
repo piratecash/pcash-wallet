@@ -104,6 +104,17 @@ class BaseSendViewModelAdapterSyncTest {
     }
 
     @Test
+    fun handleAdapterState_initialPaused_noRefreshNoError() = runTest(dispatcher) {
+        currentAdapterState = AdapterState.Paused
+        val vm = createViewModel()
+        advanceUntilIdle()
+
+        assertFalse(vm.isSynced)
+        assertFalse(vm.hasAdapterError)
+        verify(exactly = 0) { adapterManager.refreshByWallet(wallet) }
+    }
+
+    @Test
     fun handleAdapterState_connectingAfterError_clearsErrorKeepsAutoRetried() = runTest(dispatcher) {
         currentAdapterState = AdapterState.NotSynced(Exception("fail"))
         val vm = createViewModel()

@@ -2747,7 +2747,6 @@ Proceed only if you\u0027re sure.</string>
     <string name="beam_recovery_required_title">Recovery required</string>
     <string name="beam_recovery_required_description">Automatic reset is blocked to protect your BEAM wallet data. The stored data has been kept, but access to the old wallet cannot be guaranteed. Restoring from your recovery phrase must create a separate wallet.</string>
     <string name="beam_offline_context_unavailable">Offline signing context is unavailable. Synchronize this wallet online first.</string>
-    <string name="beam_wallet_state_stopped">BEAM wallet stopped</string>
     <string name="beam_wallet_state_offline">BEAM wallet offline</string>
     <string name="beam_wallet_state_closed">BEAM wallet closed</string>
     <string name="beam_wallet_operation_failed">BEAM wallet operation failed</string>
