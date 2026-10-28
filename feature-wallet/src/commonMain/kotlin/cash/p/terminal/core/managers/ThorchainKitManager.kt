@@ -320,7 +320,9 @@ internal fun AccountType.thorchainSeed(): ByteArray = when (this) {
 
 fun ThorchainKit.SyncState.toAdapterState(): AdapterState = when (this) {
     is ThorchainKit.SyncState.Synced -> AdapterState.Synced
-    is ThorchainKit.SyncState.NotSynced -> AdapterState.NotSynced(error)
+    is ThorchainKit.SyncState.NotSynced ->
+        if (error is ThorchainKit.SyncError.NotStarted) AdapterState.Paused
+        else AdapterState.NotSynced(error)
     is ThorchainKit.SyncState.Syncing -> AdapterState.Syncing()
 }
 

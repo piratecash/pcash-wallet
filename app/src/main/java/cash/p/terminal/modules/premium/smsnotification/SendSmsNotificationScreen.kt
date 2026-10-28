@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.premium.smsnotification
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -27,13 +28,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavBackStack
-import cash.p.terminal.R
 import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.BackupKeyInput
 import cash.p.terminal.navigation.HSNavigation
@@ -43,9 +43,28 @@ import cash.p.terminal.navigation.rememberQrScannerLauncher
 import cash.p.terminal.entities.Address
 import cash.p.terminal.modules.offline.OperationAvailability
 import cash.p.terminal.modules.offline.rememberOfflineGatedAction
+import cash.p.terminal.resources.Button_Save
+import cash.p.terminal.resources.Hud_Text_Done
 import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Send_DialogMemoHint
+import cash.p.terminal.resources.Send_Hint_Address
 import cash.p.terminal.resources.button_info
+import cash.p.terminal.resources.choose_wallet
+import cash.p.terminal.resources.choose_wallet_none
+import cash.p.terminal.resources.ic_down_arrow_20
 import cash.p.terminal.resources.ic_info_20
+import cash.p.terminal.resources.qr_scanner_title_address
+import cash.p.terminal.resources.required_coins_for_transaction
+import cash.p.terminal.resources.send_sms_address_hint
+import cash.p.terminal.resources.send_sms_enabled
+import cash.p.terminal.resources.send_sms_insufficient_balance
+import cash.p.terminal.resources.send_sms_syncing
+import cash.p.terminal.resources.send_sms_test_error
+import cash.p.terminal.resources.send_sms_test_success
+import cash.p.terminal.resources.send_sms_via_zec_info
+import cash.p.terminal.resources.send_sms_via_zec_title
+import cash.p.terminal.resources.send_sms_wallet_balance_hint
+import cash.p.terminal.resources.test_sms
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.FormsInputAddress
 import cash.p.terminal.ui.extensions.WalletSwitchBottomSheet
@@ -59,7 +78,9 @@ import cash.p.terminal.ui_compose.components.InfoBottomSheet
 import cash.p.terminal.ui_compose.components.InfoText
 import cash.p.terminal.ui_compose.components.MenuItem
 import cash.p.terminal.ui_compose.components.RowUniversal
+import cash.p.terminal.ui_compose.components.SectionUniversalLawrence
 import cash.p.terminal.ui_compose.components.SnackbarDuration
+import cash.p.terminal.ui_compose.components.SwitchWithText
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_disabled
@@ -80,6 +101,7 @@ fun SendSmsNotificationScreen(
     navigation: HSNavigation,
     appPages: AppPages,
     uiState: SendSmsNotificationUiState,
+    onEnabledChange: (Boolean) -> Unit,
     onAccountSelected: (Account) -> Unit,
     onAddressChanged: (String) -> Unit,
     onMemoChanged: (String) -> Unit,
@@ -93,7 +115,7 @@ fun SendSmsNotificationScreen(
     var showInfoSheet by remember { mutableStateOf(false) }
     var showWalletSheet by remember { mutableStateOf(false) }
     val view = LocalView.current
-    val scannerTitle = stringResource(R.string.qr_scanner_title_address, BlockchainType.Zcash.title)
+    val scannerTitle = stringResource(Res.string.qr_scanner_title_address, BlockchainType.Zcash.title)
     val qrScanner = navigation.rememberQrScannerLauncher(appPages, onAddressChanged)
     val offlineGatedAction = rememberOfflineGatedAction(uiState.selectedWallet?.wallet)
 
@@ -109,7 +131,7 @@ fun SendSmsNotificationScreen(
     if (uiState.saveSuccess) {
         HudHelper.showSuccessMessage(
             contenView = view,
-            resId = R.string.Hud_Text_Done
+            text = stringResource(Res.string.Hud_Text_Done)
         )
         onSaveSuccessShown()
     }
@@ -120,22 +142,24 @@ fun SendSmsNotificationScreen(
             is TestResult.Success -> {
                 HudHelper.showSuccessMessage(
                     contenView = view,
-                    resId = R.string.send_sms_test_success,
+                    text = stringResource(Res.string.send_sms_test_success),
                     duration = SnackbarDuration.LONG
                 )
             }
 
             is TestResult.InsufficientBalance -> {
                 HudHelper.showErrorMessage(
-                    contenView = view,
-                    resId = R.string.send_sms_insufficient_balance
+                    contentView = view,
+                    text = stringResource(Res.string.send_sms_insufficient_balance),
+                    duration = SnackbarDuration.SHORT
                 )
             }
 
             is TestResult.Failed -> {
                 HudHelper.showErrorMessage(
-                    contenView = view,
-                    resId = R.string.send_sms_test_error
+                    contentView = view,
+                    text = stringResource(Res.string.send_sms_test_error),
+                    duration = SnackbarDuration.SHORT
                 )
             }
 
@@ -152,7 +176,7 @@ fun SendSmsNotificationScreen(
         containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
-                title = stringResource(R.string.send_sms_via_zec_title),
+                title = stringResource(Res.string.send_sms_via_zec_title),
                 navigationIcon = {
                     HsBackButton(onClick = onClose)
                 },
@@ -174,125 +198,139 @@ fun SendSmsNotificationScreen(
         ) {
             VSpacer(height = 12.dp)
 
-            // Choose Wallet Section
-            CellUniversalLawrenceSection(
-                listOf {
-                    RowUniversal(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        onClick = { showWalletSheet = true }
-                    ) {
-                        body_leah(text = stringResource(R.string.choose_wallet))
-                        Spacer(modifier = Modifier.weight(1f))
-                        subhead1_grey(
-                            text = uiState.selectedWallet?.accountName
-                                ?: stringResource(R.string.choose_wallet_none)
-                        )
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_down_arrow_20),
-                            contentDescription = null,
-                            tint = ComposeAppTheme.colors.iconSecondary
-                        )
-                    }
-                }
-            )
-
-            VSpacer(height = 12.dp)
-
-            // Address hint text
-            InfoText(
-                text = stringResource(R.string.send_sms_address_hint)
-            )
-
-            VSpacer(height = 12.dp)
-
-            // Address Input
-            FormsInputAddress(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                value = uiState.address,
-                hint = stringResource(R.string.Send_Hint_Address),
-                state = when {
-                    uiState.addressError != null -> DataState.Error(uiState.addressError)
-                    uiState.address.isNotBlank() -> DataState.Success(Address(uiState.address))
-                    else -> null
-                },
-                navigation = navigation,
-                chooseContactEnable = false,
-                blockchainType = BlockchainType.Zcash,
-                onQrScanClick = { qrScanner.open(scannerTitle) },
-                onValueChange = onAddressChanged
-            )
-
-            VSpacer(height = 24.dp)
-
-            // Memo Input
-            MemoInputField(
-                value = uiState.memo,
-                onValueChange = onMemoChanged
-            )
-
-            // Byte counter
-            caption_grey(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 4.dp),
-                text = "${uiState.memoBytesUsed}/${SendSmsNotificationUiState.MAX_MEMO_BYTES}",
-                textAlign = TextAlign.End
-            )
-
-            VSpacer(height = 8.dp)
-
-            // Required coins for transaction
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            ) {
-                subhead2_grey(text = stringResource(R.string.required_coins_for_transaction))
-                Spacer(modifier = Modifier.weight(1f))
-                subhead2_leah(
-                    text = "${formatAmount(uiState.requiredCoins)} ZEC"
+            SectionUniversalLawrence {
+                SwitchWithText(
+                    text = stringResource(Res.string.send_sms_enabled),
+                    checked = uiState.isEnabled,
+                    onCheckedChange = onEnabledChange
                 )
             }
 
-            VSpacer(height = 12.dp)
+            AnimatedVisibility(visible = uiState.isEnabled) {
+                Column {
+                    VSpacer(height = 12.dp)
 
-            TextImportantWarning(
-                text = stringResource(R.string.send_sms_wallet_balance_hint),
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
+                    // Choose Wallet Section
+                    CellUniversalLawrenceSection(
+                        listOf {
+                            RowUniversal(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                                onClick = { showWalletSheet = true }
+                            ) {
+                                body_leah(text = stringResource(Res.string.choose_wallet))
+                                Spacer(modifier = Modifier.weight(1f))
+                                subhead1_grey(
+                                    text = uiState.selectedWallet?.accountName
+                                        ?: stringResource(Res.string.choose_wallet_none)
+                                )
+                                Icon(
+                                    painter = painterResource(Res.drawable.ic_down_arrow_20),
+                                    contentDescription = null,
+                                    tint = ComposeAppTheme.colors.iconSecondary
+                                )
+                            }
+                        }
+                    )
 
-            Spacer(modifier = Modifier.weight(1f))
+                    VSpacer(height = 12.dp)
 
-            VSpacer(height = 24.dp)
+                    // Address hint text
+                    InfoText(
+                        text = stringResource(Res.string.send_sms_address_hint)
+                    )
 
-            // Save Button
-            ButtonPrimaryYellow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                title = stringResource(R.string.Button_Save),
-                onClick = onSaveClick,
-                enabled = uiState.isSaveEnabled
-            )
+                    VSpacer(height = 12.dp)
 
-            VSpacer(height = 16.dp)
+                    // Address Input
+                    FormsInputAddress(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        value = uiState.address,
+                        hint = stringResource(Res.string.Send_Hint_Address),
+                        state = when {
+                            uiState.addressError != null -> DataState.Error(uiState.addressError)
+                            uiState.address.isNotBlank() -> DataState.Success(Address(uiState.address))
+                            else -> null
+                        },
+                        navigation = navigation,
+                        chooseContactEnable = false,
+                        blockchainType = BlockchainType.Zcash,
+                        onQrScanClick = { qrScanner.open(scannerTitle) },
+                        onValueChange = onAddressChanged
+                    )
 
-            // Test SMS Button
-            val isSyncing = uiState.testResult is TestResult.Syncing
-            ButtonPrimaryTransparent(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                title = if (isSyncing) {
-                    stringResource(R.string.send_sms_syncing)
-                } else {
-                    stringResource(R.string.test_sms)
-                },
-                onClick = { offlineGatedAction.onClick(uiState.testAvailability, onTestSmsClick) },
-                enabled = uiState.testAvailability.clickable && !isSyncing
-            )
+                    VSpacer(height = 24.dp)
+
+                    // Memo Input
+                    MemoInputField(
+                        value = uiState.memo,
+                        onValueChange = onMemoChanged
+                    )
+
+                    // Byte counter
+                    caption_grey(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp, vertical = 4.dp),
+                        text = "${uiState.memoBytesUsed}/${SendSmsNotificationUiState.MAX_MEMO_BYTES}",
+                        textAlign = TextAlign.End
+                    )
+
+                    VSpacer(height = 8.dp)
+
+                    // Required coins for transaction
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        subhead2_grey(text = stringResource(Res.string.required_coins_for_transaction))
+                        Spacer(modifier = Modifier.weight(1f))
+                        subhead2_leah(
+                            text = "${formatAmount(uiState.requiredCoins)} ZEC"
+                        )
+                    }
+
+                    VSpacer(height = 12.dp)
+
+                    TextImportantWarning(
+                        text = stringResource(Res.string.send_sms_wallet_balance_hint),
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    VSpacer(height = 24.dp)
+
+                    // Save Button
+                    ButtonPrimaryYellow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        title = stringResource(Res.string.Button_Save),
+                        onClick = onSaveClick,
+                        enabled = uiState.isSaveEnabled
+                    )
+
+                    VSpacer(height = 16.dp)
+
+                    // Test SMS Button
+                    val isSyncing = uiState.testResult is TestResult.Syncing
+                    ButtonPrimaryTransparent(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        title = if (isSyncing) {
+                            stringResource(Res.string.send_sms_syncing)
+                        } else {
+                            stringResource(Res.string.test_sms)
+                        },
+                        onClick = { offlineGatedAction.onClick(uiState.testAvailability, onTestSmsClick) },
+                        enabled = uiState.testAvailability.clickable && !isSyncing
+                    )
+                }
+            }
 
             VSpacer(height = 32.dp)
         }
@@ -308,15 +346,15 @@ fun SendSmsNotificationScreen(
             selectedAccount = uiState.selectedAccount,
             onSelectListener = onAccountSelected,
             onDismiss = { showWalletSheet = false },
-            title = stringResource(R.string.choose_wallet)
+            title = stringResource(Res.string.choose_wallet)
         )
     }
 
     // Info Bottom Sheet
     if (showInfoSheet) {
         InfoBottomSheet(
-            title = stringResource(R.string.send_sms_via_zec_title),
-            text = stringResource(R.string.send_sms_via_zec_info),
+            title = stringResource(Res.string.send_sms_via_zec_title),
+            text = stringResource(Res.string.send_sms_via_zec_info),
             onDismiss = { showInfoSheet = false }
         )
     }
@@ -351,7 +389,7 @@ private fun MemoInputField(
             decorationBox = { innerTextField ->
                 Box {
                     if (value.isEmpty()) {
-                        body_disabled(text = stringResource(R.string.Send_DialogMemoHint))
+                        body_disabled(text = stringResource(Res.string.Send_DialogMemoHint))
                     }
                     innerTextField()
                 }
@@ -384,6 +422,7 @@ private fun SendSmsNotificationScreenEmptyPreview() {
             navigation = HSNavigation(NavBackStack()),
             appPages = previewAppPages,
             uiState = SendSmsNotificationUiState(),
+            onEnabledChange = {},
             onAccountSelected = {},
             onAddressChanged = {},
             onMemoChanged = {},
@@ -410,8 +449,10 @@ private fun SendSmsNotificationScreenWithAddressPreview() {
                 memoBytesUsed = 22,
                 requiredCoins = BigDecimal("0.0001"),
                 isSaveEnabled = true,
-                testAvailability = OperationAvailability.Available
+                testAvailability = OperationAvailability.Available,
+                isEnabled = true
             ),
+            onEnabledChange = {},
             onAccountSelected = {},
             onAddressChanged = {},
             onMemoChanged = {},
@@ -435,8 +476,10 @@ private fun SendSmsNotificationScreenWithErrorPreview() {
             uiState = SendSmsNotificationUiState(
                 address = "invalid_address",
                 addressError = Exception("Invalid Zcash address"),
-                requiredCoins = BigDecimal("0.0001")
+                requiredCoins = BigDecimal("0.0001"),
+                isEnabled = true
             ),
+            onEnabledChange = {},
             onAccountSelected = {},
             onAddressChanged = {},
             onMemoChanged = {},

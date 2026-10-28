@@ -174,6 +174,26 @@ class BalanceViewItemFactoryDisplaySyncStateTest {
     }
 
     @Test
+    fun viewItem_pausedOnline_noFailedIconNoSpinnerNoSyncError() {
+        every { offlineModeManager.isNetworkPaused(any<OfflineKey>()) } returns false
+
+        val viewItem = factory.viewItem(
+            item = balanceItem(state = AdapterState.Paused),
+            currency = currency,
+            hideBalance = false,
+            watchAccount = false,
+            balanceViewType = BalanceViewType.CoinThenFiat,
+            isSwappable = true,
+            displayDiffOptionType = DisplayDiffOptionType.BOTH,
+        )
+
+        assertFalse(viewItem.failedIconVisible)
+        assertEquals(null, viewItem.syncingProgress.type)
+        assertEquals(null, viewItem.syncingTextValue)
+        assertEquals(null, viewItem.errorMessage)
+    }
+
+    @Test
     fun viewItem_notSynced403_marksBlockedByProvider() {
         assertTrue(viewItemWithTxError(httpException403()).syncErrorBlockedByProvider)
     }

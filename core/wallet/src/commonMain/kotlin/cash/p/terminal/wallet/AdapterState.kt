@@ -11,6 +11,9 @@ val AdapterState.isAdapterStopped: Boolean
 sealed class AdapterState {
     object Synced : AdapterState()
     object Connecting : AdapterState()
+
+    /** The network was stopped on purpose; not a failure, not connecting — the shown data is the last known. */
+    data object Paused : AdapterState()
     data class Syncing(
         val progress: Double? = null,
         val lastBlockDate: Date? = null,
@@ -51,6 +54,7 @@ sealed class AdapterState {
         return when (this) {
             is Synced -> "Synced"
             is Connecting -> "Connecting"
+            is Paused -> "Paused"
             is Syncing -> {
                 val sub = substatus?.let { " substatus: $it" }.orEmpty()
                 "Syncing ${

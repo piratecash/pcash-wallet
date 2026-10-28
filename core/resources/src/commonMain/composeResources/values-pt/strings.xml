@@ -2114,8 +2114,9 @@
     <string name="image_saved_to_gallery">Imagem guardada na galeria</string>
     <string name="auth_detail_save_failed">Falha ao guardar imagem</string>
     <string name="auth_info_no_records">Ainda não existem registos de autorização</string>
-    <string name="send_sms_via_zec_title">Enviar SMS via ZEC</string>
-    <string name="send_sms_via_zec_info">Este modo permite notificar os seus amigos próximos ou advogado de que foi forçado a abrir a aplicação. Este modo funciona se tiver ZEC na sua carteira. Se não tiver, a aplicação irá adicioná-lo.</string>
+    <string name="send_sms_via_zec_title">Aviso de início de sessão</string>
+    <string name="send_sms_enabled">Enviar notificação</string>
+    <string name="send_sms_via_zec_info">Notifica uma pessoa de confiança de que foi forçado a abrir a aplicação.\n\nQuando: apenas quando a aplicação é desbloqueada ao introduzir o código do Duress Mode. Um início de sessão normal, um código incorreto ou o desbloqueio por biometria não envia nada.\n\nO quê: uma transação de 0.0001 ZEC (mais a taxa de rede) da carteira escolhida para o endereço protegido (shielded) de Zcash do destinatário, com a sua mensagem no memo. Não é um SMS: o destinatário lê a mensagem na sua carteira Zcash, não é necessário nenhum número de telefone.\n\nQuando chega: é enviada automaticamente em segundo plano logo após o início de sessão e normalmente chega ao destinatário em poucos minutos; a carteira pode precisar de sincronizar primeiro, o que pode demorar mais tempo.\n\nCusto: cada notificação custa 0.0001 ZEC mais a taxa. Se a carteira não tiver ZEC suficiente nesse momento, a notificação não é enviada nem repetida — utilize o botão de teste para verificar se funciona.\n\nPode desativar as notificações através do interruptor no topo deste ecrã.</string>
     <string name="send_sms_wallet_balance_hint">Certifique-se de que tem o valor necessário na carteira selecionada.</string>
     <string name="send_sms_syncing">Sincronizando para enviar…</string>
     <string name="send_sms_test_success">A sua mensagem foi enviada com sucesso.</string>
@@ -2126,7 +2127,8 @@
     <string name="choose_wallet">Escolher carteira</string>
     <string name="choose_wallet_none">Nenhuma</string>
     <string name="required_coins_for_transaction">Moedas necessárias para a transação</string>
-    <string name="test_sms">Testar SMS</string>
+    <string name="send_sms_address_hint">Introduza o endereço protegido (shielded) de Zcash (começa por z ou u) da carteira do destinatário. A mensagem aparecerá na carteira Zcash dele.</string>
+    <string name="test_sms">Enviar notificação de teste</string>
     <string name="no_zec_wallets_available">Nenhuma carteira com tokens ZEC encontrada</string>
     <!-- Connect Mini App -->
     <string name="connect_mini_app_title">Conectar Mini App</string>
@@ -2353,7 +2355,6 @@
     <string name="beam_recovery_required_title">Recuperação necessária</string>
     <string name="beam_recovery_required_description">A reposição automática está bloqueada para proteger os dados da sua carteira BEAM. Os dados foram preservados, mas o acesso à carteira antiga não pode ser garantido. O restauro com a sua frase de recuperação deve criar uma carteira separada.</string>
     <string name="beam_offline_context_unavailable">O contexto para assinatura offline não está disponível. Primeiro, sincronize esta carteira online.</string>
-    <string name="beam_wallet_state_stopped">Carteira BEAM parada</string>
     <string name="beam_wallet_state_offline">Carteira BEAM offline</string>
     <string name="beam_wallet_state_closed">Carteira BEAM fechada</string>
     <string name="beam_wallet_operation_failed">Falha na operação da carteira BEAM</string>

@@ -2099,8 +2099,9 @@
     <string name="image_saved_to_gallery">图片已保存到相册</string>
     <string name="auth_detail_save_failed">保存图片失败</string>
     <string name="auth_info_no_records">暂无授权记录</string>
-    <string name="send_sms_via_zec_title">通过 ZEC 发送短信</string>
-    <string name="send_sms_via_zec_info">此模式允许您通知您的亲密朋友或律师您被迫打开了该应用程序。此模式在您的钱包中有 ZEC 时才能正常工作。如果没有，应用程序将添加它。</string>
+    <string name="send_sms_via_zec_title">登录通知</string>
+    <string name="send_sms_enabled">发送通知</string>
+    <string name="send_sms_via_zec_info">通知您信任的人，您是被迫打开此应用的。\n\n何时发送：仅当使用胁迫模式密码解锁应用时才会发送。正常登录、输错密码或使用生物识别解锁均不会发送任何内容。\n\n发送内容：从所选钱包向收款人的屏蔽（shielded）Zcash 地址发送一笔 0.0001 ZEC 的交易（外加网络手续费），并在备注（memo）中附上您的消息。这不是短信：收款人在其 Zcash 钱包中阅读该消息，无需电话号码。\n\n送达时间：登录后会自动在后台发送，通常几分钟内即可送达收款人；钱包可能需要先同步，这会花费更长时间。\n\n费用：每条通知花费 0.0001 ZEC 外加手续费。如果钱包当时没有足够的 ZEC，通知将不会发送，也不会重试—请使用测试按钮检查功能是否正常。\n\n您可以通过此屏幕顶部的开关关闭通知。</string>
     <string name="send_sms_wallet_balance_hint">请确保所选钱包中有足够的金额。</string>
     <string name="send_sms_syncing">正在同步以发送…</string>
     <string name="send_sms_test_success">您的消息已成功发送。</string>
@@ -2111,7 +2112,8 @@
     <string name="choose_wallet">选择钱包</string>
     <string name="choose_wallet_none">无</string>
     <string name="required_coins_for_transaction">交易所需代币</string>
-    <string name="test_sms">测试短信</string>
+    <string name="send_sms_address_hint">输入收款人钱包的屏蔽（shielded）Zcash 地址（以 z 或 u 开头）。消息将显示在对方的 Zcash 钱包中。</string>
+    <string name="test_sms">发送测试通知</string>
     <string name="no_zec_wallets_available">未找到包含 ZEC 代币的钱包</string>
     <!-- Connect Mini App -->
     <string name="connect_mini_app_title">连接迷你应用</string>
@@ -2336,7 +2338,6 @@
     <string name="beam_recovery_required_title">需要恢复</string>
     <string name="beam_recovery_required_description">为保护您的 BEAM 钱包数据，自动重置已被阻止。数据已保留，但无法保证能够访问旧钱包。使用恢复短语恢复时，必须创建一个独立的钱包。</string>
     <string name="beam_offline_context_unavailable">离线签名所需的上下文不可用。请先在线同步此钱包。</string>
-    <string name="beam_wallet_state_stopped">BEAM 钱包已停止</string>
     <string name="beam_wallet_state_offline">BEAM 钱包离线</string>
     <string name="beam_wallet_state_closed">BEAM 钱包已关闭</string>
     <string name="beam_wallet_operation_failed">BEAM 钱包操作失败</string>

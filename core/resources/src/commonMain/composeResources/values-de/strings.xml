@@ -2106,8 +2106,9 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="image_saved_to_gallery">Bild in Galerie gespeichert</string>
     <string name="auth_detail_save_failed">Bild konnte nicht gespeichert werden</string>
     <string name="auth_info_no_records">Noch keine Autorisierungsdatensätze</string>
-    <string name="send_sms_via_zec_title">SMS über ZEC senden</string>
-    <string name="send_sms_via_zec_info">Dieser Modus ermöglicht es Ihnen, Ihre engen Freunde oder Ihren Anwalt zu benachrichtigen, dass Sie gezwungen wurden, die App zu öffnen. Dieser Modus funktioniert, wenn Sie ZEC in Ihrer Wallet haben. Falls nicht, wird die App es hinzufügen.</string>
+    <string name="send_sms_via_zec_title">Anmeldehinweis</string>
+    <string name="send_sms_enabled">Benachrichtigung senden</string>
+    <string name="send_sms_via_zec_info">Benachrichtigt eine Vertrauensperson darüber, dass Sie gezwungen wurden, die App zu öffnen.\n\nWann: nur wenn die App durch Eingabe des Duress-Modus-Passcodes entsperrt wird. Eine normale Anmeldung, ein falscher Passcode oder das Entsperren per Biometrie sendet nichts.\n\nWas: eine Transaktion über 0.0001 ZEC (plus Netzwerkgebühr) von der gewählten Wallet an die geschützte (shielded) Zcash-Adresse des Empfängers, mit Ihrer Nachricht im Memo. Es ist keine SMS: Der Empfänger liest die Nachricht in seiner Zcash-Wallet, es wird keine Telefonnummer benötigt.\n\nWann sie ankommt: Sie wird automatisch im Hintergrund direkt nach der Anmeldung gesendet und erreicht den Empfänger meist innerhalb weniger Minuten; die Wallet muss unter Umständen zuerst synchronisieren, was länger dauern kann.\n\nKosten: Jede Benachrichtigung kostet 0.0001 ZEC plus Gebühr. Wenn die Wallet zu diesem Zeitpunkt nicht genug ZEC hat, wird die Benachrichtigung nicht gesendet und nicht erneut versucht — verwenden Sie die Testschaltfläche, um zu prüfen, ob es funktioniert.\n\nSie können Benachrichtigungen über den Schalter oben auf diesem Bildschirm deaktivieren.</string>
     <string name="send_sms_wallet_balance_hint">Stellen Sie sicher, dass Sie den erforderlichen Betrag in der ausgewählten Wallet haben.</string>
     <string name="send_sms_syncing">Synchronisiere zum Senden…</string>
     <string name="send_sms_test_success">Ihre Nachricht wurde erfolgreich gesendet.</string>
@@ -2118,7 +2119,8 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="choose_wallet">Wallet auswählen</string>
     <string name="choose_wallet_none">Keine</string>
     <string name="required_coins_for_transaction">Erforderliche Coins für Transaktion</string>
-    <string name="test_sms">SMS testen</string>
+    <string name="send_sms_address_hint">Geben Sie die geschützte (shielded) Zcash-Adresse (beginnt mit z oder u) der Wallet des Empfängers ein. Die Nachricht wird in dessen Zcash-Wallet angezeigt.</string>
+    <string name="test_sms">Testbenachrichtigung senden</string>
     <string name="no_zec_wallets_available">Keine Wallets mit ZEC-Token gefunden</string>
     <!-- Connect Mini App -->
     <string name="connect_mini_app_title">Mini-App verbinden</string>
@@ -2344,7 +2346,6 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="beam_recovery_required_title">Wiederherstellung erforderlich</string>
     <string name="beam_recovery_required_description">Das automatische Zurücksetzen ist zum Schutz Ihrer BEAM-Wallet-Daten gesperrt. Die Daten bleiben erhalten, der Zugriff auf die alte Wallet kann jedoch nicht garantiert werden. Bei der Wiederherstellung mit Ihrer Wiederherstellungsphrase muss eine separate Wallet erstellt werden.</string>
     <string name="beam_offline_context_unavailable">Der Kontext für die Offline-Signatur ist nicht verfügbar. Synchronisieren Sie zuerst diese Wallet online.</string>
-    <string name="beam_wallet_state_stopped">BEAM-Wallet gestoppt</string>
     <string name="beam_wallet_state_offline">BEAM-Wallet offline</string>
     <string name="beam_wallet_state_closed">BEAM-Wallet geschlossen</string>
     <string name="beam_wallet_operation_failed">BEAM-Wallet-Vorgang fehlgeschlagen</string>

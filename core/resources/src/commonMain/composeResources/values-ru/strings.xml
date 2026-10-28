@@ -2251,8 +2251,9 @@
     <string name="notification_permission_revoked_message">Разрешение на уведомления не предоставлено. Нажмите, чтобы открыть настройки.</string>
 
     <!-- SMS Notification via ZEC -->
-    <string name="send_sms_via_zec_title">Отправить SMS через ZEC</string>
-    <string name="send_sms_via_zec_info">Этот режим позволяет уведомить ваших близких друзей или адвоката о том, что вас принудили открыть приложение. Этот режим работает, если у вас есть ZEC в кошельке. Если нет, приложение добавит его.</string>
+    <string name="send_sms_via_zec_title">Уведомление о входе</string>
+    <string name="send_sms_enabled">Отправлять уведомление</string>
+    <string name="send_sms_via_zec_info">Уведомляет доверенное лицо о том, что вас вынудили открыть приложение.\n\nКогда: только при разблокировке приложения вводом Duress кода. Обычный вход, неверный код или разблокировка по биометрии ничего не отправляют.\n\nЧто: транзакция на 0.0001 ZEC (плюс комиссия сети) с выбранного кошелька на защищённый (shielded) адрес Zcash получателя с вашим сообщением в поле memo. Это не SMS: получатель читает сообщение в своём Zcash-кошельке, номер телефона не требуется.\n\nКогда придёт: отправляется автоматически в фоне сразу после входа и обычно доходит до получателя в течение нескольких минут; кошельку может потребоваться синхронизация, из-за чего это может занять больше времени.\n\nСтоимость: каждое уведомление стоит 0.0001 ZEC плюс комиссия. Если в кошельке в этот момент не хватает ZEC, уведомление не отправляется, и повторной попытки не будет — используйте кнопку теста, чтобы проверить работоспособность.\n\nОтключить уведомления можно переключателем в верхней части этого экрана.</string>
     <string name="send_sms_wallet_balance_hint">Убедитесь, что на выбранном кошельке достаточно средств.</string>
     <string name="send_sms_syncing">Синхронизация для отправки…</string>
     <string name="send_sms_test_success">Ваше сообщение успешно отправлено.</string>
@@ -2263,8 +2264,8 @@
     <string name="choose_wallet">Выбрать кошелёк</string>
     <string name="choose_wallet_none">Не выбран</string>
     <string name="required_coins_for_transaction">Необходимо монет для транзакции</string>
-    <string name="send_sms_address_hint">Укажите адрес, на который будет отправлено сообщение.</string>
-    <string name="test_sms">Тест SMS</string>
+    <string name="send_sms_address_hint">Введите защищённый (shielded) адрес Zcash (начинается с z или u) кошелька получателя. Сообщение появится в его Zcash-кошельке.</string>
+    <string name="test_sms">Отправить тестовое уведомление</string>
     <string name="no_zec_wallets_available">Кошельки с токеном ZEC не найдены</string>
 
     <string name="Send_Confirmation_YouReceive">Вы получаете</string>
@@ -2523,7 +2524,6 @@
     <string name="beam_recovery_required_title">Требуется восстановление</string>
     <string name="beam_recovery_required_description">Автоматический сброс заблокирован для защиты данных кошелька BEAM. Данные сохранены, но доступ к старому кошельку не гарантирован. Восстановление по секретной фразе должно создавать отдельный кошелёк.</string>
     <string name="beam_offline_context_unavailable">Контекст для офлайн-подписи недоступен. Сначала синхронизируйте кошелёк с сетью.</string>
-    <string name="beam_wallet_state_stopped">Кошелёк BEAM остановлен</string>
     <string name="beam_wallet_state_offline">Кошелёк BEAM не в сети</string>
     <string name="beam_wallet_state_closed">Кошелёк BEAM закрыт</string>
     <string name="beam_wallet_operation_failed">Сбой операции кошелька BEAM</string>
