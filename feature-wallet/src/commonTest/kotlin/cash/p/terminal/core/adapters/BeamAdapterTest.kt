@@ -413,7 +413,7 @@ class BeamAdapterTest {
         val adapter = adapter(StandardTestDispatcher(testScheduler))
         try {
             adapter.attachLocalData()
-            listOf(BeamWalletState.Closed, BeamWalletState.Stopped, BeamWalletState.Offline(10),
+            listOf(BeamWalletState.Closed, BeamWalletState.Offline(10),
                 BeamWalletState.Error(BeamFailure.Node("private-sdk-detail"))).forEach {
                 sdkState.value = it
                 runCurrent()

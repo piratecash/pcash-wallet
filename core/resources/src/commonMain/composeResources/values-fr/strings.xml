@@ -2078,8 +2078,9 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="image_saved_to_gallery">Image enregistrée dans la galerie</string>
     <string name="auth_detail_save_failed">Échec de l\u0027enregistrement de l\u0027image</string>
     <string name="auth_info_no_records">Aucun enregistrement d\u0027autorisation pour le moment</string>
-    <string name="send_sms_via_zec_title">Envoyer un SMS via ZEC</string>
-    <string name="send_sms_via_zec_info">Ce mode vous permet de notifier vos amis proches ou votre avocat que vous avez été contraint d\u0027ouvrir l\u0027application. Ce mode fonctionne si vous avez du ZEC dans votre portefeuille. Sinon, l\u0027application l\u0027ajoutera.</string>
+    <string name="send_sms_via_zec_title">Notification de connexion</string>
+    <string name="send_sms_enabled">Envoyer la notification</string>
+    <string name="send_sms_via_zec_info">Notifie une personne de confiance que vous avez été contraint d\u0027ouvrir l\u0027application.\n\nQuand : uniquement lorsque l\u0027application est déverrouillée en saisissant le code du Mode de Duress. Une connexion normale, un code incorrect ou un déverrouillage par biométrie n\u0027envoie rien.\n\nQuoi : une transaction de 0.0001 ZEC (plus les frais de réseau) depuis le portefeuille choisi vers l\u0027adresse Zcash protégée (shielded) du destinataire, avec votre message dans le memo. Ce n\u0027est pas un SMS : le destinataire lit le message dans son portefeuille Zcash, aucun numéro de téléphone n\u0027est nécessaire.\n\nQuand elle arrive : elle est envoyée automatiquement en arrière-plan juste après la connexion et atteint généralement le destinataire en quelques minutes ; le portefeuille peut d\u0027abord devoir se synchroniser, ce qui peut prendre plus de temps.\n\nCoût : chaque notification coûte 0.0001 ZEC plus les frais. Si le portefeuille ne dispose pas de suffisamment de ZEC à ce moment-là, la notification n\u0027est pas envoyée et n\u0027est pas réessayée — utilisez le bouton de test pour vérifier que cela fonctionne.\n\nVous pouvez désactiver les notifications avec l\u0027interrupteur en haut de cet écran.</string>
     <string name="send_sms_wallet_balance_hint">Assurez-vous d\u0027avoir le montant requis dans le portefeuille sélectionné.</string>
     <string name="send_sms_syncing">Synchronisation pour envoi…</string>
     <string name="send_sms_test_success">Votre message a été envoyé avec succès.</string>
@@ -2090,7 +2091,8 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="choose_wallet">Choisir le portefeuille</string>
     <string name="choose_wallet_none">Aucun</string>
     <string name="required_coins_for_transaction">Jetons requis pour la transaction</string>
-    <string name="test_sms">Tester SMS</string>
+    <string name="send_sms_address_hint">Saisissez l\u0027adresse Zcash protégée (shielded, commence par z ou u) du portefeuille du destinataire. Le message apparaîtra dans son portefeuille Zcash.</string>
+    <string name="test_sms">Envoyer une notification de test</string>
     <string name="no_zec_wallets_available">Aucun portefeuille avec des tokens ZEC trouvé</string>
     <!-- Connect Mini App -->
     <string name="connect_mini_app_title">Connecter Mini App</string>
@@ -2317,7 +2319,6 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="beam_recovery_required_title">Récupération nécessaire</string>
     <string name="beam_recovery_required_description">La réinitialisation automatique est bloquée pour protéger les données de votre portefeuille BEAM. Les données sont conservées, mais l’accès à l’ancien portefeuille ne peut pas être garanti. La restauration avec votre phrase de récupération doit créer un portefeuille distinct.</string>
     <string name="beam_offline_context_unavailable">Le contexte de signature hors ligne est indisponible. Synchronisez ce portefeuille en ligne au préalable.</string>
-    <string name="beam_wallet_state_stopped">Portefeuille BEAM arrêté</string>
     <string name="beam_wallet_state_offline">Portefeuille BEAM hors ligne</string>
     <string name="beam_wallet_state_closed">Portefeuille BEAM fermé</string>
     <string name="beam_wallet_operation_failed">Échec de l’opération du portefeuille BEAM</string>

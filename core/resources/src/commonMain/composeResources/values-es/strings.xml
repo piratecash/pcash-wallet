@@ -2072,8 +2072,9 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="image_saved_to_gallery">Imagen guardada en la galería</string>
     <string name="auth_detail_save_failed">Error al guardar la imagen</string>
     <string name="auth_info_no_records">Aún no hay registros de autorización</string>
-    <string name="send_sms_via_zec_title">Enviar SMS vía ZEC</string>
-    <string name="send_sms_via_zec_info">Este modo te permite notificar a tus amigos cercanos o abogado que has sido obligado a abrir la aplicación. Este modo funciona si tienes ZEC en tu billetera. Si no lo tienes, la aplicación lo añadirá.</string>
+    <string name="send_sms_via_zec_title">Aviso de inicio de sesión</string>
+    <string name="send_sms_enabled">Enviar notificación</string>
+    <string name="send_sms_via_zec_info">Notifica a una persona de confianza que te has visto obligado a abrir la aplicación.\n\nCuándo: solo cuando la aplicación se desbloquea introduciendo el código del Modo Duración. Un inicio de sesión normal, un código incorrecto o el desbloqueo por biometría no envían nada.\n\nQué: una transacción de 0.0001 ZEC (más la comisión de red) desde la billetera elegida a la dirección protegida (shielded) de Zcash del destinatario, con tu mensaje en el memo. No es un SMS: el destinatario lee el mensaje en su billetera Zcash, no se necesita número de teléfono.\n\nCuándo llega: se envía automáticamente en segundo plano justo después de iniciar sesión y normalmente llega al destinatario en pocos minutos; la billetera puede necesitar sincronizarse primero, lo que puede tardar más.\n\nCoste: cada notificación cuesta 0.0001 ZEC más la comisión. Si la billetera no tiene suficiente ZEC en ese momento, la notificación no se envía ni se reintenta — usa el botón de prueba para comprobar que funciona.\n\nPuedes desactivar las notificaciones con el interruptor en la parte superior de esta pantalla.</string>
     <string name="send_sms_wallet_balance_hint">Asegúrese de tener el monto requerido en la billetera seleccionada.</string>
     <string name="send_sms_syncing">Sincronizando para enviar…</string>
     <string name="send_sms_test_success">Su mensaje ha sido enviado exitosamente.</string>
@@ -2084,7 +2085,8 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="choose_wallet">Elegir billetera</string>
     <string name="choose_wallet_none">Ninguna</string>
     <string name="required_coins_for_transaction">Monedas requeridas para la transacción</string>
-    <string name="test_sms">Probar SMS</string>
+    <string name="send_sms_address_hint">Introduce la dirección protegida (shielded) de Zcash (empieza por z o u) de la billetera del destinatario. El mensaje aparecerá en su billetera Zcash.</string>
+    <string name="test_sms">Enviar notificación de prueba</string>
     <string name="no_zec_wallets_available">No se encontraron billeteras con tokens ZEC</string>
     <!-- Connect Mini App -->
     <string name="connect_mini_app_title">Conectar Mini App</string>
@@ -2311,7 +2313,6 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="beam_recovery_required_title">Se requiere recuperación</string>
     <string name="beam_recovery_required_description">El restablecimiento automático está bloqueado para proteger los datos de tu monedero BEAM. Los datos se han conservado, pero no se puede garantizar el acceso al monedero anterior. La recuperación con tu frase de recuperación debe crear un monedero separado.</string>
     <string name="beam_offline_context_unavailable">El contexto para firmar sin conexión no está disponible. Sincroniza primero esta cartera en línea.</string>
-    <string name="beam_wallet_state_stopped">Monedero BEAM detenido</string>
     <string name="beam_wallet_state_offline">Monedero BEAM sin conexión</string>
     <string name="beam_wallet_state_closed">Monedero BEAM cerrado</string>
     <string name="beam_wallet_operation_failed">Error en la operación del monedero BEAM</string>

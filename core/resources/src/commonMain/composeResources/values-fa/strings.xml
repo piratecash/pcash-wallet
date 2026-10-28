@@ -2083,8 +2083,9 @@
     <string name="image_saved_to_gallery">تصویر در گالری ذخیره شد</string>
     <string name="auth_detail_save_failed">ذخیره تصویر ناموفق بود</string>
     <string name="auth_info_no_records">هنوز رکوردی از مجوزها ثبت نشده است</string>
-    <string name="send_sms_via_zec_title">ارسال پیامک از طریق ZEC</string>
-    <string name="send_sms_via_zec_info">این حالت به شما امکان می‌دهد به دوستان نزدیک یا وکیل خود اطلاع دهید که مجبور به باز کردن برنامه شده‌اید. این حالت در صورتی کار می‌کند که ZEC در کیف پول خود داشته باشید. اگر ندارید، برنامه آن را اضافه خواهد کرد.</string>
+    <string name="send_sms_via_zec_title">اعلان ورود</string>
+    <string name="send_sms_enabled">ارسال اعلان</string>
+    <string name="send_sms_via_zec_info">به یک فرد مورد اعتماد اطلاع می‌دهد که شما مجبور به باز کردن برنامه شده‌اید.\n\nچه زمانی: فقط زمانی که برنامه با وارد کردن رمز حالت Duress باز قفل شود. ورود عادی، رمز اشتباه یا باز کردن قفل با بیومتریک چیزی ارسال نمی‌کند.\n\nچه چیزی: یک تراکنش 0.0001 ZEC (به‌علاوه کارمزد شبکه) از کیف پول انتخاب‌شده به آدرس محافظت‌شده (shielded) Zcash گیرنده، همراه با پیام شما در memo. این یک پیامک نیست: گیرنده پیام را در کیف پول Zcash خود می‌خواند و نیازی به شماره تلفن نیست.\n\nزمان رسیدن: به‌طور خودکار در پس‌زمینه بلافاصله پس از ورود ارسال می‌شود و معمولاً در عرض چند دقیقه به گیرنده می‌رسد؛ ممکن است کیف پول ابتدا نیاز به همگام‌سازی داشته باشد که می‌تواند بیشتر طول بکشد.\n\nهزینه: هر اعلان 0.0001 ZEC به‌علاوه کارمزد هزینه دارد. اگر کیف پول در آن لحظه ZEC کافی نداشته باشد، اعلان ارسال نمی‌شود و دوباره تلاش نمی‌شود — برای بررسی عملکرد از دکمه آزمایشی استفاده کنید.\n\nمی‌توانید اعلان‌ها را با کلید بالای این صفحه خاموش کنید.</string>
     <string name="send_sms_wallet_balance_hint">مطمئن شوید که مبلغ مورد نیاز در کیف پول انتخاب شده موجود است.</string>
     <string name="send_sms_syncing">در حال همگام‌سازی برای ارسال…</string>
     <string name="send_sms_test_success">پیام شما با موفقیت ارسال شد.</string>
@@ -2095,7 +2096,8 @@
     <string name="choose_wallet">انتخاب کیف پول</string>
     <string name="choose_wallet_none">هیچکدام</string>
     <string name="required_coins_for_transaction">سکه‌های مورد نیاز برای تراکنش</string>
-    <string name="test_sms">تست پیامک</string>
+    <string name="send_sms_address_hint">آدرس محافظت‌شده (shielded) Zcash (که با z یا u شروع می‌شود) کیف پول گیرنده را وارد کنید. پیام در کیف پول Zcash او نمایش داده می‌شود.</string>
+    <string name="test_sms">ارسال اعلان آزمایشی</string>
     <string name="no_zec_wallets_available">کیف پولی با توکن ZEC یافت نشد</string>
     <!-- Connect Mini App -->
     <string name="connect_mini_app_title">اتصال مینی اپلیکیشن</string>
@@ -2322,7 +2324,6 @@
     <string name="beam_recovery_required_title">بازیابی لازم است</string>
     <string name="beam_recovery_required_description">بازنشانی خودکار برای محافظت از داده‌های کیف پول BEAM شما مسدود شده است. داده‌ها حفظ شده‌اند، اما دسترسی به کیف پول قبلی تضمین نمی‌شود. بازیابی با عبارت بازیابی باید یک کیف پول جداگانه ایجاد کند.</string>
     <string name="beam_offline_context_unavailable">زمینهٔ امضای آفلاین در دسترس نیست. ابتدا این کیف پول را آنلاین همگام‌سازی کنید.</string>
-    <string name="beam_wallet_state_stopped">کیف پول BEAM متوقف شد</string>
     <string name="beam_wallet_state_offline">کیف پول BEAM آفلاین است</string>
     <string name="beam_wallet_state_closed">کیف پول BEAM بسته شد</string>
     <string name="beam_wallet_operation_failed">عملیات کیف پول BEAM ناموفق بود</string>

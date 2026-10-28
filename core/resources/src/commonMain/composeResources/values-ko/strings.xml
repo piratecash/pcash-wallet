@@ -2074,8 +2074,9 @@
     <string name="image_saved_to_gallery">갤러리에 이미지 저장됨</string>
     <string name="auth_detail_save_failed">이미지 저장 실패</string>
     <string name="auth_info_no_records">아직 인증 기록이 없습니다</string>
-    <string name="send_sms_via_zec_title">ZEC로 SMS 보내기</string>
-    <string name="send_sms_via_zec_info">이 모드는 앱을 강제로 열어야 했음을 가까운 친구나 변호사에게 알릴 수 있게 해줍니다. 이 모드는 지갑에 ZEC가 있어야 작동합니다. 없으면 앱에서 추가합니다.</string>
+    <string name="send_sms_via_zec_title">로그인 알림</string>
+    <string name="send_sms_enabled">알림 보내기</string>
+    <string name="send_sms_via_zec_info">신뢰하는 사람에게 앱을 강제로 열어야 했음을 알립니다.\n\n시점: 긴급 상황 모드 비밀번호를 입력해 앱을 잠금 해제할 때만 전송됩니다. 일반 로그인, 잘못된 비밀번호, 생체 인증 잠금 해제 시에는 아무것도 전송되지 않습니다.\n\n내용: 선택한 지갑에서 수신자의 보호된(shielded) Zcash 주소로 0.0001 ZEC 트랜잭션(네트워크 수수료 포함)을 보내며, 메모에 회원님의 메시지가 담깁니다. 이것은 SMS가 아닙니다. 수신자는 자신의 Zcash 지갑에서 메시지를 읽으며, 전화번호가 필요하지 않습니다.\n\n도착 시점: 로그인 직후 백그라운드에서 자동으로 전송되며 보통 몇 분 안에 수신자에게 도착합니다. 지갑이 먼저 동기화되어야 할 수 있으며 이 경우 더 오래 걸릴 수 있습니다.\n\n비용: 알림마다 0.0001 ZEC와 수수료가 소요됩니다. 그 순간 지갑에 ZEC가 충분하지 않으면 알림이 전송되지 않고 재시도되지도 않습니다 — 테스트 버튼으로 정상 작동 여부를 확인하세요.\n\n이 화면 상단의 스위치로 알림을 끌 수 있습니다.</string>
     <string name="send_sms_wallet_balance_hint">선택한 지갑에 필요한 금액이 있는지 확인하세요.</string>
     <string name="send_sms_syncing">전송을 위해 동기화 중…</string>
     <string name="send_sms_test_success">메시지가 성공적으로 전송되었습니다.</string>
@@ -2086,7 +2087,8 @@
     <string name="choose_wallet">지갑 선택</string>
     <string name="choose_wallet_none">없음</string>
     <string name="required_coins_for_transaction">트랜잭션에 필요한 코인</string>
-    <string name="test_sms">SMS 테스트</string>
+    <string name="send_sms_address_hint">수신자 지갑의 보호된(shielded) Zcash 주소(z 또는 u로 시작)를 입력하세요. 메시지는 수신자의 Zcash 지갑에 표시됩니다.</string>
+    <string name="test_sms">테스트 알림 보내기</string>
     <string name="no_zec_wallets_available">ZEC 토큰이 있는 지갑을 찾을 수 없습니다</string>
     <!-- Connect Mini App -->
     <string name="connect_mini_app_title">미니 앱 연결</string>
@@ -2311,7 +2313,6 @@
     <string name="beam_recovery_required_title">복구 필요</string>
     <string name="beam_recovery_required_description">BEAM 지갑 데이터를 보호하기 위해 자동 초기화가 차단되었습니다. 데이터는 보존되었지만 기존 지갑에 대한 접근은 보장할 수 없습니다. 복구 문구로 복원할 때는 별도의 지갑을 생성해야 합니다.</string>
     <string name="beam_offline_context_unavailable">오프라인 서명에 필요한 정보를 사용할 수 없습니다. 먼저 이 지갑을 온라인으로 동기화하세요.</string>
-    <string name="beam_wallet_state_stopped">BEAM 지갑이 중지됨</string>
     <string name="beam_wallet_state_offline">BEAM 지갑이 오프라인 상태임</string>
     <string name="beam_wallet_state_closed">BEAM 지갑이 닫힘</string>
     <string name="beam_wallet_operation_failed">BEAM 지갑 작업 실패</string>

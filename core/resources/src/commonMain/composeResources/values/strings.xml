@@ -2516,8 +2516,9 @@ Proceed only if you\u0027re sure.</string>
     <string name="notification_permission_revoked_message">Notification permission is not granted. Tap to open settings.</string>
 
     <!-- SMS Notification via ZEC -->
-    <string name="send_sms_via_zec_title">Send SMS via ZEC</string>
-    <string name="send_sms_via_zec_info">This mode allows you to notify your close friends or lawyer that you have been forced to open the app. This mode works if you have ZEC in your wallet. If you don\u0027t, the app will add it.</string>
+    <string name="send_sms_via_zec_title">Login notification</string>
+    <string name="send_sms_enabled">Send notification</string>
+    <string name="send_sms_via_zec_info">Notifies a trusted person that you were forced to open the app.\n\nWhen: only when the app is unlocked by entering the Duress Mode passcode. A normal login, a wrong passcode or unlocking with biometrics sends nothing.\n\nWhat: a 0.0001 ZEC transaction (plus network fee) from the chosen wallet to the recipient\u0027s shielded Zcash address, with your message in the memo. It is not an SMS: the recipient reads the message in their Zcash wallet, no phone number is needed.\n\nWhen it arrives: it is sent automatically in the background right after login and usually reaches the recipient within a few minutes; the wallet may need to sync first, which can take longer.\n\nCost: each notification costs 0.0001 ZEC plus the fee. If the wallet does not have enough ZEC at that moment, the notification is not sent and is not retried — use the test button to check that it works.\n\nYou can turn notifications off with the switch at the top of this screen.</string>
     <string name="send_sms_wallet_balance_hint">Make sure you have the required amount in the selected wallet.</string>
     <string name="send_sms_syncing">Syncing to send…</string>
     <string name="send_sms_test_success">Your message has been successfully sent.</string>
@@ -2528,8 +2529,8 @@ Proceed only if you\u0027re sure.</string>
     <string name="choose_wallet">Choose Wallet</string>
     <string name="choose_wallet_none">None</string>
     <string name="required_coins_for_transaction">Required coins for transaction</string>
-    <string name="send_sms_address_hint">Please specify the address where the message should be sent.</string>
-    <string name="test_sms">Test SMS</string>
+    <string name="send_sms_address_hint">Enter the shielded Zcash address (starts with z or u) of the recipient\u0027s wallet. The message will appear in their Zcash wallet.</string>
+    <string name="test_sms">Send test notification</string>
     <string name="no_zec_wallets_available">No wallets with ZEC tokens found</string>
 
     <plurals name="options_count">
@@ -2751,7 +2752,6 @@ Proceed only if you\u0027re sure.</string>
     <string name="beam_recovery_required_title">Recovery required</string>
     <string name="beam_recovery_required_description">Automatic reset is blocked to protect your BEAM wallet data. The stored data has been kept, but access to the old wallet cannot be guaranteed. Restoring from your recovery phrase must create a separate wallet.</string>
     <string name="beam_offline_context_unavailable">Offline signing context is unavailable. Synchronize this wallet online first.</string>
-    <string name="beam_wallet_state_stopped">BEAM wallet stopped</string>
     <string name="beam_wallet_state_offline">BEAM wallet offline</string>
     <string name="beam_wallet_state_closed">BEAM wallet closed</string>
     <string name="beam_wallet_operation_failed">BEAM wallet operation failed</string>

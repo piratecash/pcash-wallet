@@ -68,6 +68,23 @@ class TransactionSyncStateRepositoryTest {
     }
 
     @Test
+    fun setTransactionWallets_pausedAdapter_reportsNotSyncing() = runBlocking {
+        val initializationFlow = MutableStateFlow(true)
+        val pausedSource = mockk<TransactionSource>()
+        val repository = createRepository(initializationFlow)
+
+        every { adapterManager.getAdapter(pausedSource) } returns adapter(AdapterState.Paused)
+
+        try {
+            repository.setTransactionWallets(listOf(TransactionWallet(null, pausedSource, null)))
+
+            awaitNotSyncing(repository)
+        } finally {
+            repository.clear()
+        }
+    }
+
+    @Test
     fun setTransactionWallets_cancelledSetup_doesNotStartOldMonitoring() = runBlocking {
         val initializationFlow = MutableStateFlow(true)
         val oldSource = mockk<TransactionSource>()

@@ -29,6 +29,7 @@ class AndroidPlatformAccountDataCleanerTest {
         verify(exactly = 1) { smsNotificationSettings.setSmsNotificationAccountId(1, null) }
         verify(exactly = 1) { smsNotificationSettings.setSmsNotificationAddress(1, null) }
         verify(exactly = 1) { smsNotificationSettings.setSmsNotificationMemo(1, null) }
+        verify(exactly = 1) { smsNotificationSettings.setSmsNotificationEnabled(1, false) }
         verify(exactly = 0) { smsNotificationSettings.setSmsNotificationAccountId(2, null) }
     }
 
@@ -44,5 +45,6 @@ class AndroidPlatformAccountDataCleanerTest {
         verify(exactly = 0) { smsNotificationSettings.setSmsNotificationAccountId(any(), any()) }
         verify(exactly = 0) { smsNotificationSettings.setSmsNotificationAddress(any(), any()) }
         verify(exactly = 0) { smsNotificationSettings.setSmsNotificationMemo(any(), any()) }
+        verify(exactly = 0) { smsNotificationSettings.setSmsNotificationEnabled(any(), any()) }
     }
 }

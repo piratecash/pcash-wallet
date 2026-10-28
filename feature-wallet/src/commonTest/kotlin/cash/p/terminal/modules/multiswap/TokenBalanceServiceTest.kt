@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.multiswap
 
 import cash.p.terminal.core.ISendZcashAdapter
+import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.MarketKitWrapper
@@ -21,6 +22,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.math.BigDecimal
 
@@ -92,6 +94,31 @@ class TokenBalanceServiceTest {
         } finally {
             serviceScope.cancel()
         }
+    }
+
+    @Test
+    fun setAmount_pausedSourceAdapter_setsWalletNotSyncedError() {
+        val nativeToken = Token(
+            coin = Coin(uid = "native", name = "Native", code = "NATIVE"),
+            blockchain = Blockchain(BlockchainType.Ethereum, "Ethereum", null),
+            type = TokenType.Native,
+            decimals = 18,
+        )
+        val pausedAdapter = mockk<IBalanceAdapter>(relaxed = true) {
+            every { balanceState } returns AdapterState.Paused
+            every { fee } returns MutableStateFlow(BigDecimal.ZERO)
+            every { maxSpendableBalance } returns BigDecimal.TEN
+        }
+        every { adapterManager.getAdapterForToken<IBalanceAdapter>(nativeToken) } returns pausedAdapter
+        every { adapterManager.getAdjustedBalanceDataForToken(nativeToken) } returns
+            BalanceData(available = BigDecimal.TEN)
+        every { marketKit.token(any()) } returns nativeToken
+
+        val service = TokenBalanceService(adapterManager, marketKit)
+        service.setToken(nativeToken)
+        service.setAmount(BigDecimal.ONE)
+
+        assertTrue(service.stateFlow.value.error is WalletNotSynced)
     }
 
     private fun stubZcashBalance() {
