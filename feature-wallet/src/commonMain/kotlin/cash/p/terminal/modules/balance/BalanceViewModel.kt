@@ -146,6 +146,7 @@ class BalanceViewModel(
     private var displayDiffOptionType = localStorage.displayDiffOptionType
 
     private var refreshViewItemsJob: Job? = null
+    private var addressScanJob: Job? = null
 
     init {
         addCloseable(service)
@@ -500,6 +501,7 @@ class BalanceViewModel(
     }
 
     fun handleScannedData(scannedText: String) {
+        addressScanJob?.cancel()
         val connectionLink = platformActions.openConnectionLink(scannedText, viewModelScope) { paired ->
             walletConnectPairingFailed = !paired
         }
@@ -573,31 +575,31 @@ class BalanceViewModel(
     }
 
     private fun handleAddressData(text: String) {
-        val parsedUri = uri(text)
-        if (parsedUri != null) {
-            val (uri, allowedBlockchainTypes) = parsedUri
-            openSendTokenSelect = uri.openSendTokenSelect(
-                allowedBlockchainTypes,
-                AddressUriParser.hasUriPrefix(text),
-            )
-            emitState()
-        } else {
-            val chain = addressHandlerFactory.parserChain(null)
-            val types = chain.supportedAddressHandlers(text)
-            if (types.isEmpty()) {
-                errorMessage =
-                    Translator.getString(Res.string.Balance_Error_InvalidQrCode)
-                emitState()
-                return
+        addressScanJob = viewModelScope.launch {
+            val target = withContext(dispatcherProvider.io) { resolveSendTarget(text) }
+            if (target == null) {
+                errorMessage = Translator.getString(Res.string.Balance_Error_InvalidQrCode)
+            } else {
+                openSendTokenSelect = target
             }
-
-            openSendTokenSelect = OpenSendTokenSelect(
-                blockchainTypes = types.map { it.blockchainType },
-                tokenTypes = null,
-                prefilledData = PrefilledData(text)
-            )
             emitState()
         }
+    }
+
+    // Blocking: the Zcash check loads its native library on first use.
+    private fun resolveSendTarget(text: String): OpenSendTokenSelect? {
+        uri(text)?.let { (uri, allowedBlockchainTypes) ->
+            return uri.openSendTokenSelect(allowedBlockchainTypes, AddressUriParser.hasUriPrefix(text))
+        }
+
+        val types = addressHandlerFactory.parserChain(null).supportedAddressHandlers(text)
+        if (types.isEmpty()) return null
+
+        return OpenSendTokenSelect(
+            blockchainTypes = types.map { it.blockchainType },
+            tokenTypes = null,
+            prefilledData = PrefilledData(text)
+        )
     }
 
     fun onSendOpened() {
