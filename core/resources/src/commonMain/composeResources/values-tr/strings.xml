@@ -544,6 +544,9 @@
     <string name="TonConnect_Unnamed">İsimsiz</string>
     <string name="TonConnect_Wallet">Cüzdan</string>
     <string name="TonConnect_ChooseWallet">Cüzdan Seçin</string>
+    <string name="ton_wallet_version_v4r2_description">v4R2 sürümüne ait TON cüzdan adresi. Varsayılan olarak kullanılır.</string>
+    <string name="ton_wallet_version_w5_description">W5 sürümü TON cüzdanı. Aynı ifadeden ayrı bir adres ve bakiye.</string>
+    <string name="tonconnect_wallet_version">Cüzdan sürümü</string>
     <string name="manifest_loading">Manifest yükleniyor…</string>
     <string name="account_not_supported_by">Mevcut cüzdan türünüz %1$s, %2$s\u0027i desteklemiyor</string>
     <!--WalletConnect-->

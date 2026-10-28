@@ -198,7 +198,7 @@ class TonBlockchainStatusProvider(
     override val logFilterTag: String = BlockchainType.Ton.uid
 
     override val kitStarted: Boolean
-        get() = tonKitManager.kitStartedFlow.value
+        get() = tonKitManager.startedKitsFlow.value.isNotEmpty()
 
     override fun getStatus() = statusFromMap(blockchainName, tonKitManager.statusInfo)
 }

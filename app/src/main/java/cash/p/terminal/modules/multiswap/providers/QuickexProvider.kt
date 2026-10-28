@@ -3,6 +3,7 @@ package cash.p.terminal.modules.multiswap.providers
 import androidx.collection.LruCache
 import cash.p.terminal.core.cache.accountScoped
 import cash.p.terminal.core.isEvm
+import cash.p.terminal.core.versionFreeTokenType
 import cash.p.terminal.entities.Address
 import cash.p.terminal.entities.SwapProviderTransaction
 import cash.p.terminal.modules.multiswap.ISwapFinalQuote
@@ -152,13 +153,14 @@ class QuickexProvider(
             if (networkOverride != null) return networkOverride
         }
 
-        return when (token.type) {
+        val versionFreeToken = token.copy(type = token.tokenQuery.versionFreeTokenType)
+        return when (versionFreeToken.type) {
             is TokenType.Native,
             is TokenType.Derived,
             is TokenType.AddressTyped,
             is TokenType.AddressSpecTyped -> ticker
 
-            else -> token.badge ?: ticker
+            else -> versionFreeToken.badge ?: ticker
         }
     }
 

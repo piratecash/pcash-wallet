@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
 import cash.p.terminal.modules.walletconnect.list.ui.ActionsRow
+import cash.p.terminal.ui.compose.components.Badge
 import com.tonapps.wallet.data.tonconnect.entities.DAppManifestEntity
 import cash.p.terminal.ui_compose.components.DraggableCardSimple
 import cash.p.terminal.ui_compose.components.HeaderText
@@ -53,7 +54,7 @@ import com.tonapps.wallet.data.tonconnect.entities.DAppEntity
 
 @Composable
 fun TonConnectSessionList(
-    dapps: Map<String, List<DAppEntity>>,
+    dapps: Map<String, List<TonConnectSession>>,
     onDelete: (DAppEntity) -> Unit
 ) {
     var revealedCardId by remember(dapps) { mutableStateOf<String?>(null) }
@@ -87,15 +88,16 @@ fun TonConnectSessionList(
 }
 
 private fun LazyListScope.TCSection(
-    dapps: List<DAppEntity>,
+    sessions: List<TonConnectSession>,
     revealedCardId: String?,
     onReveal: (String) -> Unit,
     onConceal: () -> Unit,
     onDelete: (DAppEntity) -> Unit
 ) {
-    itemsIndexed(dapps, key = { _, item -> item.uniqueId }) { index, dapp ->
-        val showDivider = showDivider(dapps.size, index)
-        val shape = getShape(dapps.size, index)
+    itemsIndexed(sessions, key = { _, item -> item.dapp.uniqueId }) { index, session ->
+        val dapp = session.dapp
+        val showDivider = showDivider(sessions.size, index)
+        val shape = getShape(sessions.size, index)
         Box(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
@@ -128,6 +130,7 @@ private fun LazyListScope.TCSection(
                         shape = shape,
                         showDivider = showDivider,
                         dapp = dapp,
+                        walletVersionLabel = session.walletVersionLabel,
                     )
                 }
             )
@@ -139,8 +142,9 @@ private fun LazyListScope.TCSection(
 @Composable
 fun TCSessionCell(
     shape: Shape,
-    showDivider: Boolean = false,
     dapp: DAppEntity,
+    walletVersionLabel: String?,
+    showDivider: Boolean = false,
 ) {
     Box(
         modifier = Modifier
@@ -171,11 +175,17 @@ fun TCSessionCell(
                     else -> stringResource(id = R.string.TonConnect_Unnamed)
                 }
 
-                headline2_leah(
-                    text = title,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    headline2_leah(
+                        modifier = Modifier.weight(1f, fill = false),
+                        text = title,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    walletVersionLabel?.let {
+                        Badge(modifier = Modifier.padding(start = 6.dp), text = it)
+                    }
+                }
                 subhead2_grey(text = dapp.manifest.host)
             }
         }

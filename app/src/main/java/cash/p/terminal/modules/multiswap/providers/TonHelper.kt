@@ -147,13 +147,14 @@ internal fun buildJettonToTonPayloadV2(
     router: AddrStd,
     ptonWallet: AddrStd,
     refundAddress: AddrStd,
+    receiver: AddrStd,
     excessesAddress: AddrStd = refundAddress,
     minOut: BigInteger,
     forwardGas: BigInteger,
     queryId: Long = System.currentTimeMillis(),
     deadline: Long = (System.currentTimeMillis() / 1000L) + (15 * 60), // +15 min
     refFee: Int = 10,               // 0.1%
-    referralAddress: AddrStd?
+    referralAddress: AddrStd? = null
 ): Cell {
 
     // JettonTransfer → router
@@ -179,7 +180,7 @@ internal fun buildJettonToTonPayloadV2(
                 storeRef(
                     buildCell {
                         storeCoins(minOut.toTonBigInt())
-                        storeAddress(refundAddress)
+                        storeAddress(receiver)
                         storeCoins(0)        // fwd_gas
                         storeBoolean(false)               // dexCustomPayload
                         storeCoins(0)                 // refund_fwd_gas
@@ -198,6 +199,7 @@ internal fun buildJettonToTonPayloadV1(
     router: AddrStd,
     routerPtonWallet: AddrStd,
     refundAddress: AddrStd,
+    receiver: AddrStd,
     minOut: BigInteger,
     queryId: Long = System.currentTimeMillis(),
     referralAddress: AddrStd? = null,
@@ -217,7 +219,7 @@ internal fun buildJettonToTonPayloadV1(
                 storeUInt(0x25938561, 32)     // swap opcode
                 storeAddress(routerPtonWallet)// token_wallet1 (router wallet TON/pTON)
                 storeCoins(minOut.toTonBigInt())            // min_out
-                storeAddress(refundAddress)   // to_address
+                storeAddress(receiver)        // to_address
                 referralAddress?.let {
                     storeBoolean(true)            // has_ref
                     storeAddress(it)

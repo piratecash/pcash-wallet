@@ -83,9 +83,41 @@ class AddressParserViewModelTest {
         )
         assertEquals("4address", AddressUriParser.addressUri("monero:4address?tx_amount=2.5")?.address)
         val tonUri = requireNotNull(AddressUriParser.addressUri("ton://transfer/UQaddress?amount=1000000000"))
-        assertEquals(listOf(TokenType.Native), tonUri.openSendTokenSelect().tokenTypes)
+        assertEquals(listOf(TokenType.Native, TokenType.TonW5Native), tonUri.openSendTokenSelect().tokenTypes)
         assertNull(AddressUriParser.addressUri("Xaddress?callback=https://example.com//pay&amount=1"))
     }
+    @Test
+    fun openSendTokenSelect_tonJettonQr_offersThatJettonInBothWalletVersions() {
+        val uri = requireNotNull(
+            AddressUriParser.addressUri(
+                "toncoin:UQaddress?amount=1&blockchain_uid=the-open-network&token_uid=the-open-network:EQmaster"
+            )
+        )
+
+        assertEquals(
+            listOf(TokenType.Jetton("EQmaster"), TokenType.TonW5Jetton("EQmaster")),
+            uri.openSendTokenSelect().tokenTypes,
+        )
+    }
+
+    @Test
+    fun openSendTokenSelect_tonNativeQrWithTokenUid_offersNativeOfBothWalletVersions() {
+        val uri = requireNotNull(
+            AddressUriParser.addressUri("toncoin:UQaddress?amount=1&blockchain_uid=the-open-network&token_uid=native")
+        )
+
+        assertEquals(listOf(TokenType.Native, TokenType.TonW5Native), uri.openSendTokenSelect().tokenTypes)
+    }
+
+    @Test
+    fun openSendTokenSelect_erc20Qr_offersThatTokenNotNativeCoin() {
+        val uri = requireNotNull(
+            AddressUriParser.addressUri("ethereum:0xaddress?value=1&blockchain_uid=ethereum&token_uid=eip20:0xtoken")
+        )
+
+        assertEquals(listOf(TokenType.Eip20("0xtoken")), uri.openSendTokenSelect().tokenTypes)
+    }
+
     @Test fun process_nativeTonTransferUri_prefillsNormalizedAmountAndMemo() {
         val viewModel = createViewModel(BlockchainType.Ton)
         val processed = viewModel.process("ton://transfer/UQaddress?amount=1200000000&text=note&exp=123")

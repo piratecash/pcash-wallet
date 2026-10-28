@@ -14,6 +14,7 @@ import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.PriceManager
 import cash.p.terminal.core.managers.SeedPhraseQrCrypto
 import cash.p.terminal.core.managers.toSeedQrErrorMessage
+import cash.p.terminal.core.walletVersionQueries
 import cash.p.terminal.core.storage.PendingMultiSwapStorage
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.core.providers.SharedAppConfig
@@ -659,12 +660,23 @@ fun AddressUri.openSendTokenSelect(
     hasExplicitScheme: Boolean = true,
 ) = OpenSendTokenSelect(
     blockchainTypes,
-    listOf(TokenType.Native).takeIf { hasExplicitScheme && scheme in NATIVE_TOKEN_URI_SCHEMES }
-        ?: value<String>(AddressUri.Field.TokenUid)
-            ?.let { TokenType.fromId(it).normalizedFor(blockchainTypes) }
-            ?.let(::listOf),
+    requestedTokenType(blockchainTypes, hasExplicitScheme)?.paymentUriTokenTypes(blockchainTypes),
     PrefilledData.from(this),
 )
+
+private fun AddressUri.requestedTokenType(
+    blockchainTypes: List<BlockchainType>?,
+    hasExplicitScheme: Boolean,
+): TokenType? = value<String>(AddressUri.Field.TokenUid)
+    ?.let { TokenType.fromId(it).normalizedFor(blockchainTypes) }
+    ?: TokenType.Native.takeIf { hasExplicitScheme && scheme in NATIVE_TOKEN_URI_SCHEMES }
+
+private fun TokenType.paymentUriTokenTypes(blockchainTypes: List<BlockchainType>?): List<TokenType> =
+    blockchainTypes
+        ?.flatMap { TokenQuery(it, this).walletVersionQueries }
+        ?.map { it.tokenType }
+        ?.distinct()
+        ?: listOf(this)
 
 private fun TokenType.normalizedFor(blockchainTypes: List<BlockchainType>?) = if (this is TokenType.Eip20) {
     blockchainTypes?.firstOrNull()?.let { TokenQuery.eip20(it, address).tokenType } ?: this

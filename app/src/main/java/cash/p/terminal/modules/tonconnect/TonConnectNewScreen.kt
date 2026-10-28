@@ -23,20 +23,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import cash.p.terminal.R
+import cash.p.terminal.core.description
 import cash.p.terminal.core.rememberAuthorizedAction
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
 import cash.p.terminal.modules.walletconnect.session.ui.DropDownCell
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Button_Cancel
 import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.Button_Connect
 import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.TonConnect_ChooseWallet
+import cash.p.terminal.resources.TonConnect_Error_InvalidUrl
+import cash.p.terminal.resources.TonConnect_Title
+import cash.p.terminal.resources.TonConnect_Url
+import cash.p.terminal.resources.TonConnect_Wallet
+import cash.p.terminal.resources.WalletConnect_Approve_Hint
+import cash.p.terminal.resources.WalletConnect_Error_NoSuitableAccount
 import cash.p.terminal.resources.ic_close_24
+import cash.p.terminal.resources.ic_platform_placeholder_24
+import cash.p.terminal.resources.manifest_loading
+import cash.p.terminal.resources.tonconnect_wallet_version
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.components.AppSelectorDialog
 import cash.p.terminal.ui_compose.components.AppSelectorItem
@@ -49,6 +59,8 @@ import cash.p.terminal.ui_compose.components.TextImportantError
 import cash.p.terminal.ui_compose.components.TextImportantWarning
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun TonConnectNewScreen(
@@ -84,7 +96,7 @@ fun TonConnectNewScreen(
         containerColor = ComposeAppTheme.colors.backgroundBase,
         topBar = {
             AppBar(
-                title = stringResource(R.string.TonConnect_Title),
+                title = stringResource(Res.string.TonConnect_Title),
                 menuItems = listOf(
                     MenuItem(
                         title = TranslatableString.ResString(Res.string.Button_Close),
@@ -112,7 +124,7 @@ fun TonConnectNewScreen(
                         .clip(RoundedCornerShape(15.dp)),
                     painter = uiState.manifest?.let {
                         rememberDAppIconPainter(it)
-                    } ?: painterResource(R.drawable.ic_platform_placeholder_24),
+                    } ?: painterResource(Res.drawable.ic_platform_placeholder_24),
                     contentDescription = null,
                 )
                 Text(
@@ -126,7 +138,7 @@ fun TonConnectNewScreen(
             var showSortTypeSelectorDialog by remember { mutableStateOf(false) }
             if (showSortTypeSelectorDialog) {
                 AppSelectorDialog(
-                    title = stringResource(R.string.TonConnect_ChooseWallet),
+                    title = stringResource(Res.string.TonConnect_ChooseWallet),
                     items = uiState.accounts.map { account ->
                         AppSelectorItem(
                             title = account.name,
@@ -141,23 +153,53 @@ fun TonConnectNewScreen(
                 )
             }
 
+            var showWalletVersionSelector by remember { mutableStateOf(false) }
+            if (showWalletVersionSelector) {
+                AppSelectorDialog(
+                    title = stringResource(Res.string.tonconnect_wallet_version),
+                    items = uiState.walletVersions.map { version ->
+                        AppSelectorItem(
+                            title = version.title,
+                            selected = version == uiState.walletVersion,
+                            item = version,
+                            subtitle = version.description,
+                        )
+                    },
+                    onDismiss = {
+                        showWalletVersionSelector = false
+                    },
+                    onSelect = viewModel::onSelectWalletVersion
+                )
+            }
 
             CellUniversalLawrenceSection(
                 buildList<@Composable () -> Unit> {
                     add {
                         val url = uiState.manifest?.host ?: ""
-                        TitleValueCell(stringResource(R.string.TonConnect_Url), url)
+                        TitleValueCell(stringResource(Res.string.TonConnect_Url), url)
                     }
                     add {
                         DropDownCell(
-                            stringResource(R.string.TonConnect_Wallet),
+                            stringResource(Res.string.TonConnect_Wallet),
                             uiState.account?.name
-                                ?: stringResource(R.string.TonConnect_ChooseWallet),
+                                ?: stringResource(Res.string.TonConnect_ChooseWallet),
                             enabled = true,
                             onSelect = {
                                 showSortTypeSelectorDialog = true
                             }
                         )
+                    }
+                    if (uiState.walletVersions.isNotEmpty()) {
+                        add {
+                            DropDownCell(
+                                stringResource(Res.string.tonconnect_wallet_version),
+                                uiState.walletVersion.title,
+                                enabled = true,
+                                onSelect = {
+                                    showWalletVersionSelector = true
+                                }
+                            )
+                        }
                     }
                 }
             )
@@ -168,15 +210,15 @@ fun TonConnectNewScreen(
                 TextImportantError(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     text = when (uiState.error) {
-                        is InvalidRequestError -> stringResource(R.string.TonConnect_Error_InvalidUrl)
-                        is NoTonAccountError -> stringResource(R.string.WalletConnect_Error_NoSuitableAccount)
+                        is InvalidRequestError -> stringResource(Res.string.TonConnect_Error_InvalidUrl)
+                        is NoTonAccountError -> stringResource(Res.string.WalletConnect_Error_NoSuitableAccount)
                         else -> uiState.error.message?.nullIfBlank() ?: uiState.error.javaClass.simpleName
                     }
                 )
             } else {
                 TextImportantWarning(
                     modifier = Modifier.padding(horizontal = 16.dp),
-                    text = stringResource(R.string.WalletConnect_Approve_Hint)
+                    text = stringResource(Res.string.WalletConnect_Approve_Hint)
                 )
             }
 
@@ -187,9 +229,9 @@ fun TonConnectNewScreen(
                     ButtonPrimaryYellow(
                         modifier = Modifier.fillMaxWidth(),
                         title = if(manifestLoading) {
-                            stringResource(R.string.manifest_loading)
+                            stringResource(Res.string.manifest_loading)
                         } else {
-                            stringResource(R.string.Button_Connect)
+                            stringResource(Res.string.Button_Connect)
                         },
                         onClick = connect,
                         enabled = uiState.connectEnabled && uiState.manifest != null,
@@ -198,7 +240,7 @@ fun TonConnectNewScreen(
                     VSpacer(16.dp)
                     ButtonPrimaryDefault(
                         modifier = Modifier.fillMaxWidth(),
-                        title = stringResource(R.string.Button_Cancel),
+                        title = stringResource(Res.string.Button_Cancel),
                         enabled = !uiState.connecting,
                         onClick = {
                             viewModel.reject()

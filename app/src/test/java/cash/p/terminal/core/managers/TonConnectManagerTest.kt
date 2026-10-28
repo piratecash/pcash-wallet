@@ -94,7 +94,7 @@ class TonConnectManagerTest {
             keyProvider.awaitDatabaseKey(TonConnectManager.TON_CONNECT_DATABASE_ID)
             TonConnectKit.migrateDatabase(context, databaseKey)
             TonConnectKit.getInstance(context, databaseKey, any(), any())
-            kit.removeDAppsExcept(listOf(VISIBLE_ID, HIDDEN_ID))
+            kit.removeDAppsExcept(LIVE_WALLET_IDS)
             kit.start()
         }
         assertSame(kit, manager.kitState.value)
@@ -307,7 +307,7 @@ class TonConnectManagerTest {
         runCurrent()
 
         // Once at startup and once for the deletion; the hidden wallet of another level stays.
-        coVerify(exactly = 2) { kit.removeDAppsExcept(listOf(VISIBLE_ID, HIDDEN_ID)) }
+        coVerify(exactly = 2) { kit.removeDAppsExcept(LIVE_WALLET_IDS) }
     }
 
     @Test
@@ -396,6 +396,7 @@ class TonConnectManagerTest {
     private companion object {
         const val VISIBLE_ID = "visible-account"
         const val HIDDEN_ID = "hidden-account"
+        val LIVE_WALLET_IDS = listOf(VISIBLE_ID, "$VISIBLE_ID-w5", HIDDEN_ID, "$HIDDEN_ID-w5")
         const val DELETED_ID = "deleted-account"
         const val VALID_URI = "tc://?v=2&id=client&r=%7B%7D"
         const val MALFORMED_URI = "tc://?v=2"

@@ -81,8 +81,7 @@ class OfflineNetworkController(
             BlockchainType.Tron ->
                 isDisconnected(tronKitManager.currentAccount, account, tronKitManager.tronKitWrapper?.networkStarted)
 
-            BlockchainType.Ton ->
-                isDisconnected(tonKitManager.currentAccount, account, tonKitManager.tonKitWrapper?.networkStarted)
+            BlockchainType.Ton -> !tonKitManager.isNetworkStarted(account)
 
             BlockchainType.Stellar ->
                 isDisconnected(

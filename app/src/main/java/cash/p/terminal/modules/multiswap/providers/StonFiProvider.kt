@@ -23,7 +23,8 @@ import cash.p.terminal.network.stonfi.domain.repository.StonFiRepository
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.ic_ston_fi
 import cash.p.terminal.wallet.Token
-import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.TonAsset
+import cash.p.terminal.wallet.entities.tonAsset
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import com.tonapps.blockchain.ton.extensions.toByteArray
 import io.horizontalsystems.core.entities.BlockchainType
@@ -229,9 +230,9 @@ class StonFiProvider(
         val addressFrom = walletUseCase.getReceiveAddress(tokenIn)
         val receiverOwnerAddress = settingRecipient.value?.hex ?: walletUseCase.getReceiveAddress(tokenOut)
         val routerInfo = stonFiRepository.getRouter(response.routerAddress)
-        val ptonWalletAddress = ptonWalletAddress(tokenIn, receiverOwnerAddress, routerInfo)
+        val ptonWalletAddress = ptonWalletAddress(tokenIn, addressFrom, routerInfo)
         val destinationAddress = when {
-            finalSimulation.dexVersion == 1 && tokenIn.type == TokenType.Native -> response.offerJettonWallet
+            finalSimulation.dexVersion == 1 && tokenIn.tonAsset is TonAsset.Native -> response.offerJettonWallet
                 .takeUnless { it.isBlank() }
                 ?: error("STON.fi v1: missing offer jetton wallet")
             else -> ptonWalletAddress
@@ -346,22 +347,22 @@ class StonFiProvider(
         fields = fields,
     )
 
+    /** The input jetton is debited from the sender's own jetton wallet, never the recipient's. */
     private suspend fun ptonWalletAddress(
         tokenIn: Token,
-        receiverOwnerAddress: String,
+        ownerAddress: String,
         routerInfo: RouterInfo,
-    ): String? = when (val tokenType = tokenIn.type) {
-        is TokenType.Jetton -> tryOrNull {
-            stonFiRepository.getJettonAddress(tokenType.address, receiverOwnerAddress)
+    ): String? = when (val asset = tokenIn.tonAsset) {
+        is TonAsset.Jetton -> tryOrNull {
+            stonFiRepository.getJettonAddress(asset.masterAddress, ownerAddress)
         }
-        else -> routerInfo.ptonWalletAddress
+        is TonAsset.Native, null -> routerInfo.ptonWalletAddress
     }
 
     private fun tonSwapPayload(request: TonSwapPayloadRequest): TonSwapPayload =
-        if (request.tokenIn.type is TokenType.Jetton) {
-            jettonSwapPayload(request)
-        } else {
-            nativeTonSwapPayload(request)
+        when (request.tokenIn.tonAsset) {
+            is TonAsset.Jetton -> jettonSwapPayload(request)
+            is TonAsset.Native, null -> nativeTonSwapPayload(request)
         }
 
     private fun jettonSwapPayload(request: TonSwapPayloadRequest): TonSwapPayload {
@@ -372,6 +373,7 @@ class StonFiProvider(
                 cell = buildJettonToTonPayloadV1(
                     router = AddrStd(response.routerAddress),
                     refundAddress = AddrStd(request.addressFrom),
+                    receiver = AddrStd(request.receiverOwnerAddress),
                     routerPtonWallet = AddrStd(request.routerInfo.ptonWalletAddress),
                     amount = amountUnits,
                     minOut = request.minimumAskUnits,
@@ -387,6 +389,7 @@ class StonFiProvider(
                     router = AddrStd(response.routerAddress),
                     ptonWallet = AddrStd(response.askJettonWallet),
                     refundAddress = AddrStd(request.addressFrom),
+                    receiver = AddrStd(request.receiverOwnerAddress),
                     minOut = request.minimumAskUnits,
                     forwardGas = response.gasParams.forwardGas,
                     queryId = request.queryId,
@@ -565,12 +568,10 @@ class StonFiProvider(
         val minimumAskUnits: BigInteger,
     )
 
-    private fun getTokenAddress(token: Token): String {
-        return when (val tokenType = token.type) {
-            TokenType.Native -> TON_NATIVE_ADDRESS
-            is TokenType.Jetton -> tokenType.address
-            else -> throw IllegalArgumentException("Unsupported token type for STON.fi: $tokenType")
-        }
+    private fun getTokenAddress(token: Token): String = when (val asset = token.tonAsset) {
+        is TonAsset.Native -> TON_NATIVE_ADDRESS
+        is TonAsset.Jetton -> asset.masterAddress
+        null -> throw IllegalArgumentException("Unsupported token type for STON.fi: ${token.type}")
     }
 }
 

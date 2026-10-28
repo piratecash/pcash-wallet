@@ -5,6 +5,8 @@ import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.modules.transactions.TransactionStatus
 import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.entities.TonWalletVersion
+import cash.p.terminal.wallet.tonWalletVersion
 import cash.p.terminal.wallet.transaction.TransactionSource
 import io.horizontalsystems.tonkit.models.Event
 import kotlin.math.absoluteValue
@@ -15,7 +17,7 @@ class TonTransactionRecord(
     token: Token,
     val actions: List<Action>
 ) : TransactionRecord(
-    uid = event.id,
+    uid = recordUid(event.id, source),
     transactionHash = event.id,
     transactionIndex = 0,
     blockHeight = null,
@@ -116,3 +118,10 @@ class TonTransactionRecord(
         }
     }
 }
+
+/** V4R2 keeps the bare event id so uids stored before W5 stay valid; W5 sees the same event as a separate record. */
+private fun recordUid(eventId: String, source: TransactionSource): String =
+    when (source.tonWalletVersion) {
+        TonWalletVersion.V4R2, null -> eventId
+        TonWalletVersion.W5 -> "$eventId:w5"
+    }

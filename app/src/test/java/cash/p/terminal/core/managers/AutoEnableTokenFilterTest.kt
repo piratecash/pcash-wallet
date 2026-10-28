@@ -25,6 +25,7 @@ class AutoEnableTokenFilterTest {
     private val stellarBlockchain = Blockchain(BlockchainType.Stellar, "Stellar", null)
     private val tronBlockchain = Blockchain(BlockchainType.Tron, "Tron", null)
     private val solanaBlockchain = Blockchain(BlockchainType.Solana, "Solana", null)
+    private val tonBlockchain = Blockchain(BlockchainType.Ton, "The Open Network", null)
 
     private fun token(
         type: TokenType,
@@ -185,6 +186,37 @@ class AutoEnableTokenFilterTest {
         val result = marketKit.curatedIds(listOf(query.id))
 
         assertEquals(listOf(query.id), result)
+    }
+
+    @Test
+    fun curatedEnabledWallets_w5RowsNextToV4R2Jetton_restoresEachVersionSeparately() = runTest {
+        val jettonAddress = "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
+        val v4Jetton = TokenQuery(BlockchainType.Ton, TokenType.Jetton(jettonAddress))
+        val w5Jetton = TokenQuery(BlockchainType.Ton, TokenType.TonW5Jetton(jettonAddress))
+        val w5Native = TokenQuery(BlockchainType.Ton, TokenType.TonW5Native)
+        val marketKit = marketKitResolving(
+            v4Jetton to token(v4Jetton.tokenType, "Tether", "USDT", decimals = 6, blockchain = tonBlockchain),
+            w5Jetton to token(w5Jetton.tokenType, "Tether", "USDT", decimals = 6, blockchain = tonBlockchain),
+            w5Native to token(w5Native.tokenType, "Gram", "GRAM", decimals = 9, blockchain = tonBlockchain),
+        )
+
+        val result = marketKit.curatedIds(listOf(v4Jetton.id, w5Jetton.id, w5Native.id))
+
+        assertEquals(listOf(v4Jetton.id, w5Jetton.id, w5Native.id), result)
+    }
+
+    @Test
+    fun curatedEnabledWallets_w5JettonMissingFromCatalog_isNotRestoredAsV4R2Jetton() = runTest {
+        val jettonAddress = "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
+        val v4Jetton = TokenQuery(BlockchainType.Ton, TokenType.Jetton(jettonAddress))
+        val w5Jetton = TokenQuery(BlockchainType.Ton, TokenType.TonW5Jetton(jettonAddress))
+        // A resolver matching by reference alone hands back the v4R2 token for the W5 query.
+        val v4Token = token(v4Jetton.tokenType, "Tether", "USDT", decimals = 6, blockchain = tonBlockchain)
+        val marketKit = marketKitResolving(w5Jetton to v4Token)
+
+        val result = marketKit.curatedIds(listOf(w5Jetton.id))
+
+        assertEquals(emptyList(), result)
     }
 
     // MarketKit's suffix fallback resolves an old checksummed reference to the lowercase curated token.
