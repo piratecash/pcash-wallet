@@ -1,5 +1,6 @@
 package cash.p.terminal.modules.addtoken
 
+import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.customCoinUid
 import io.horizontalsystems.core.entities.Blockchain
@@ -24,7 +25,7 @@ class AddTonTokenBlockchainService(private val blockchain: Blockchain) : IAddTok
     }
 
     override suspend fun token(reference: String): Token {
-        val jetton = TonKit.getJetton(Network.MainNet, Address.parse(reference))
+        val jetton = TonKit.getJetton(Network.MainNet, Address.parse(reference), SharedAppConfig.tonApiKeys)
 
         val tokenQuery = tokenQuery(reference)
         return cash.p.terminal.wallet.Token(

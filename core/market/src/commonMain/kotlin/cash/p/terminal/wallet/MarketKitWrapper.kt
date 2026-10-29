@@ -62,6 +62,10 @@ class MarketKitWrapper(
     fun nativeToken(blockchainType: BlockchainType): Token? =
         token(TokenQuery(blockchainType, TokenType.Native))
 
+    /** W5 twins are built during coin-list sync, so a catalog stored before them needs a forced resync. */
+    fun isTonW5NativeTokenMissing(): Boolean =
+        token(TokenQuery(BlockchainType.Ton, TokenType.TonW5Native)) == null
+
     fun tokens(queries: List<TokenQuery>) = marketKit.tokens(queries)
 
     fun tokens(reference: String) = marketKit.tokens(reference)

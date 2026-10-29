@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.managers.TonConnectManager
+import cash.p.terminal.core.managers.TonConnectWalletId
 import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TonKitWrapper
 import cash.p.terminal.core.managers.toTonWalletFullAccess
@@ -12,8 +13,8 @@ import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
 import cash.p.terminal.modules.offline.OfflineOperationGate
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.wallet.IAccountManager
-import cash.p.terminal.wallet.entities.TokenQuery
-import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.TonAsset
+import cash.p.terminal.wallet.entities.tokenQuery
 import cash.p.terminal.wallet.meta
 import cash.p.terminal.wallet.transaction.TransactionSource
 import co.touchlab.kermit.Logger
@@ -135,7 +136,8 @@ class TonConnectSendRequestViewModel(
             return
         }
 
-        val (accountId, _) = sendRequestEntity.dAppId.split(":", limit = 2)
+        val (walletId, _) = sendRequestEntity.dAppId.split(":", limit = 2)
+        val (accountId, version) = TonConnectWalletId.parse(walletId)
         val account = accountManager.account(accountId)
 
         if (account == null) {
@@ -156,12 +158,14 @@ class TonConnectSendRequestViewModel(
         }
 
         val tonWallet = account.toTonWalletFullAccess(
+            version,
             hardwarePublicKeyStorage,
             BlockchainType.Ton,
         )
         val tonKitWrapper = try {
             tonKitManager.getNonActiveTonKitWrapper(
                 account = account,
+                version = version,
                 blockchainType = BlockchainType.Ton,
             )
         } catch (e: CancellationException) {
@@ -195,7 +199,7 @@ class TonConnectSendRequestViewModel(
             return
         }
 
-        val token = App.coinManager.getToken(TokenQuery(BlockchainType.Ton, TokenType.Native))
+        val token = App.coinManager.getToken(TonAsset.Native(version).tokenQuery)
         if (token == null) {
             error = TonConnectSendRequestError.Other("Token Ton not found")
             return

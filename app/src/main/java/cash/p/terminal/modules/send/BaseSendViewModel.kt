@@ -21,8 +21,7 @@ import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.tokenQueryId
-import cash.p.terminal.wallet.entities.TokenQuery
-import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.nativeTokenQuery
 import cash.p.terminal.core.managers.PoisonAddressManager
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
@@ -132,7 +131,7 @@ abstract class BaseSendViewModel<T>(
         if (token.type.isNative) {
             token
         } else {
-            marketKit.token(TokenQuery(token.blockchainType, TokenType.Native)) ?: token
+            marketKit.token(token.nativeTokenQuery) ?: token
         }
     }
 

@@ -84,4 +84,27 @@ class AccountTypeTokenCompatibilityTest {
             }
         }
     }
+
+    @Test
+    fun isCompatibleWith_tonAddress_onlyV4R2Assets() {
+        val tonAddress = AccountType.TonAddress("ton-address")
+
+        assertTrue(tonAddress.isCompatibleWith(BlockchainType.Ton, TokenType.Native))
+        assertTrue(tonAddress.isCompatibleWith(BlockchainType.Ton, TokenType.Jetton("master")))
+        assertFalse(tonAddress.isCompatibleWith(BlockchainType.Ton, TokenType.TonW5Native))
+        assertFalse(tonAddress.isCompatibleWith(BlockchainType.Ton, TokenType.TonW5Jetton("master")))
+    }
+
+    @Test
+    fun isCompatibleWith_mnemonicAndHardwareCard_allowTonW5() {
+        val accountTypes = listOf(
+            AccountType.Mnemonic(listOf("word"), ""),
+            AccountType.HardwareCard("card-id", 0, "public-key", 0),
+        )
+
+        for (accountType in accountTypes) {
+            assertTrue(accountType.isCompatibleWith(BlockchainType.Ton, TokenType.TonW5Native))
+            assertTrue(accountType.isCompatibleWith(BlockchainType.Ton, TokenType.TonW5Jetton("master")))
+        }
+    }
 }

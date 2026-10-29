@@ -14,12 +14,10 @@ import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.PriceManager
 import cash.p.terminal.core.managers.SeedPhraseQrCrypto
 import cash.p.terminal.core.managers.toSeedQrErrorMessage
+import cash.p.terminal.core.walletVersionQueries
 import cash.p.terminal.core.storage.PendingMultiSwapStorage
-import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.core.supported
-import cash.p.terminal.core.usecase.PayCoreNavigationTarget
-import cash.p.terminal.core.usecase.ResolvePayCoreNavigationUseCase
 import cash.p.terminal.core.utils.AddressUriParser
 import cash.p.terminal.core.utils.AddressUriResult
 import cash.p.terminal.entities.AddressUri
@@ -27,7 +25,6 @@ import cash.p.terminal.modules.address.AddressHandlerFactory
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.displayoptions.DisplayPricePeriod
 import cash.p.terminal.modules.sendtokenselect.PrefilledData
-import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.resources.Balance_Error_InvalidQrCode
 import cash.p.terminal.resources.Res
 import cash.p.terminal.ui_compose.entities.ViewState
@@ -59,16 +56,11 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent.inject
@@ -105,27 +97,11 @@ class BalanceViewModel(
     private val walletUseCase: WalletUseCase by inject(WalletUseCase::class.java)
     private val seedPhraseQrCrypto: SeedPhraseQrCrypto by inject(SeedPhraseQrCrypto::class.java)
     private val pendingMultiSwapStorage: PendingMultiSwapStorage by inject(PendingMultiSwapStorage::class.java)
-    private val swapProviderTransactionsStorage: SwapProviderTransactionsStorage by inject(
-        SwapProviderTransactionsStorage::class.java
-    )
-    private val resolvePayCoreNavigation: ResolvePayCoreNavigationUseCase by inject(
-        ResolvePayCoreNavigationUseCase::class.java
-    )
     private val offlineModeManager: OfflineModeManager by inject(OfflineModeManager::class.java)
     private val dispatcherProvider: DispatcherProvider by inject(DispatcherProvider::class.java)
 
     private var pendingSwapCount = 0
     private var singlePendingSwapId: String? = null
-    private var singlePayCoreSwapDate: Long? = null
-    private var singlePayCoreSwapRecordUid: String? = null
-    private var payCoreNavigationInFlight = false
-
-    private val _payCoreNavigationEvents = Channel<PayCoreNavigationTarget>(
-        capacity = Channel.BUFFERED,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST,
-    )
-    val payCoreNavigationEvents: Flow<PayCoreNavigationTarget> =
-        _payCoreNavigationEvents.receiveAsFlow()
 
     private val sortTypes =
         listOf(BalanceSortType.Value, BalanceSortType.Name, BalanceSortType.PercentGrowth)
@@ -210,28 +186,12 @@ class BalanceViewModel(
         }
 
         viewModelScope.launch {
-            combine(
-                pendingMultiSwapStorage.observeForActiveAccount(accountManager.activeAccountStateFlow),
-                swapProviderTransactionsStorage.observeForActiveAccount(accountManager.activeAccountStateFlow)
-            ) { swaps, providerTxs ->
-                val payCoreUnfinished =
-                    providerTxs.filter { it.provider == SwapProvider.PAYCORE && !it.isFinished() }
-                val singlePayCore = payCoreUnfinished.singleOrNull()
-                PendingSwapsSnapshot(
-                    totalCount = swaps.size + payCoreUnfinished.size,
-                    singleMultiSwapId = swaps.singleOrNull()?.id,
-                    singlePayCoreDate = singlePayCore?.date,
-                    singlePayCoreRecordUid = singlePayCore?.let {
-                        it.outgoingRecordUid ?: it.incomingRecordUid
-                    },
-                )
-            }.collect { snapshot ->
-                pendingSwapCount = snapshot.totalCount
-                singlePendingSwapId = snapshot.singleMultiSwapId
-                singlePayCoreSwapDate = snapshot.singlePayCoreDate
-                singlePayCoreSwapRecordUid = snapshot.singlePayCoreRecordUid
-                emitState()
-            }
+            pendingMultiSwapStorage.observeForActiveAccount(accountManager.activeAccountStateFlow)
+                .collect { swaps ->
+                    pendingSwapCount = swaps.size
+                    singlePendingSwapId = swaps.singleOrNull()?.id
+                    emitState()
+                }
         }
 
         service.start()
@@ -265,8 +225,6 @@ class BalanceViewModel(
         displayPricePeriod = displayDiffPricePeriod,
         pendingSwapCount = pendingSwapCount,
         singlePendingSwapId = singlePendingSwapId,
-        singlePayCoreSwapDate = singlePayCoreSwapDate,
-        singlePayCoreSwapLoading = payCoreNavigationInFlight,
         // The alert signs and pays a fee from its own account, so it must never be shown for
         // another one - the account can change while the balance collector is selecting a wallet.
         zcashMigrationAlertWallet = zcashMigrationAlertWallet
@@ -291,22 +249,6 @@ class BalanceViewModel(
 
     fun onBalanceClick(item: BalanceViewItem2) {
         balanceHiddenManager.toggleWalletBalanceHidden(item.wallet.tokenQueryId)
-    }
-
-    fun onSinglePayCoreSwapClick() {
-        val date = singlePayCoreSwapDate ?: return
-        if (payCoreNavigationInFlight) return
-        payCoreNavigationInFlight = true
-        emitState()
-        viewModelScope.launch {
-            try {
-                val target = resolvePayCoreNavigation(date, singlePayCoreSwapRecordUid)
-                _payCoreNavigationEvents.trySend(target)
-            } finally {
-                payCoreNavigationInFlight = false
-                emitState()
-            }
-        }
     }
 
     override fun toggleBalanceVisibility() {
@@ -635,13 +577,6 @@ sealed class BackupRequirementState {
 
 class BackupRequiredError(val account: Account, val coinTitle: String) : Error("Backup Required")
 
-private data class PendingSwapsSnapshot(
-    val totalCount: Int,
-    val singleMultiSwapId: String?,
-    val singlePayCoreDate: Long?,
-    val singlePayCoreRecordUid: String?,
-)
-
 fun parsePrefixlessAddressUri(
     text: String,
     blockchainTypes: List<BlockchainType>
@@ -659,12 +594,23 @@ fun AddressUri.openSendTokenSelect(
     hasExplicitScheme: Boolean = true,
 ) = OpenSendTokenSelect(
     blockchainTypes,
-    listOf(TokenType.Native).takeIf { hasExplicitScheme && scheme in NATIVE_TOKEN_URI_SCHEMES }
-        ?: value<String>(AddressUri.Field.TokenUid)
-            ?.let { TokenType.fromId(it).normalizedFor(blockchainTypes) }
-            ?.let(::listOf),
+    requestedTokenType(blockchainTypes, hasExplicitScheme)?.paymentUriTokenTypes(blockchainTypes),
     PrefilledData.from(this),
 )
+
+private fun AddressUri.requestedTokenType(
+    blockchainTypes: List<BlockchainType>?,
+    hasExplicitScheme: Boolean,
+): TokenType? = value<String>(AddressUri.Field.TokenUid)
+    ?.let { TokenType.fromId(it).normalizedFor(blockchainTypes) }
+    ?: TokenType.Native.takeIf { hasExplicitScheme && scheme in NATIVE_TOKEN_URI_SCHEMES }
+
+private fun TokenType.paymentUriTokenTypes(blockchainTypes: List<BlockchainType>?): List<TokenType> =
+    blockchainTypes
+        ?.flatMap { TokenQuery(it, this).walletVersionQueries }
+        ?.map { it.tokenType }
+        ?.distinct()
+        ?: listOf(this)
 
 private fun TokenType.normalizedFor(blockchainTypes: List<BlockchainType>?) = if (this is TokenType.Eip20) {
     blockchainTypes?.firstOrNull()?.let { TokenQuery.eip20(it, address).tokenType } ?: this
@@ -697,8 +643,6 @@ data class BalanceUiState(
     val displayPricePeriod: DisplayPricePeriod,
     val pendingSwapCount: Int = 0,
     val singlePendingSwapId: String? = null,
-    val singlePayCoreSwapDate: Long? = null,
-    val singlePayCoreSwapLoading: Boolean = false,
     val zcashMigrationAlertWallet: Wallet? = null,
 )
 

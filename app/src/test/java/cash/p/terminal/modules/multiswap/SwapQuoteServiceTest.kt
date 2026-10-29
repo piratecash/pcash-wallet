@@ -253,7 +253,7 @@ class SwapQuoteServiceTest : SwapQuoteServiceTestFixture() {
     @Test
     fun setAmount_singleProviderThrowsAmountOutOfRange_emitsSwapAmountOutOfRange() = runTest {
         val provider = mockk<IMultiSwapProvider>(relaxed = true) {
-            every { id } returns "paycore"
+            every { id } returns "range-limited"
             coEvery { supports(tokenIn, tokenOut) } returns true
             coEvery { fetchQuote(tokenIn, tokenOut, any(), any()) } throws SwapAmountOutOfRange()
         }
@@ -276,7 +276,7 @@ class SwapQuoteServiceTest : SwapQuoteServiceTestFixture() {
     fun setAmount_someProvidersSucceedAndOneAmountOutOfRange_errorCleared() = runTest {
         val succeeding = mockProvider(providerId = "ok", quoteAmountOut = BigDecimal("5"))
         val failing = mockk<IMultiSwapProvider>(relaxed = true) {
-            every { id } returns "paycore"
+            every { id } returns "range-limited"
             coEvery { supports(tokenIn, tokenOut) } returns true
             coEvery { fetchQuote(tokenIn, tokenOut, any(), any()) } throws SwapAmountOutOfRange()
         }
@@ -300,7 +300,7 @@ class SwapQuoteServiceTest : SwapQuoteServiceTestFixture() {
             coEvery { fetchQuote(tokenIn, tokenOut, any(), any()) } throws RuntimeException("offline")
         }
         val amountFailing = mockk<IMultiSwapProvider>(relaxed = true) {
-            every { id } returns "paycore"
+            every { id } returns "range-limited"
             coEvery { supports(tokenIn, tokenOut) } returns true
             coEvery { fetchQuote(tokenIn, tokenOut, any(), any()) } throws SwapAmountOutOfRange()
         }
@@ -326,7 +326,7 @@ class SwapQuoteServiceTest : SwapQuoteServiceTestFixture() {
             coEvery { fetchQuote(tokenIn, tokenOut, any(), any()) } throws SwapDepositTooSmall(BigDecimal("0.001"))
         }
         val amountOutOfRange = mockk<IMultiSwapProvider>(relaxed = true) {
-            every { id } returns "paycore"
+            every { id } returns "range-limited"
             coEvery { supports(tokenIn, tokenOut) } returns true
             coEvery { fetchQuote(tokenIn, tokenOut, any(), any()) } throws SwapAmountOutOfRange()
         }

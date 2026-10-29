@@ -240,7 +240,6 @@ import cash.p.terminal.core.managers.PendingTransactionRegistrar
 import cash.p.terminal.network.pirate.domain.repository.PiratePlaceRepository
 import io.horizontalsystems.core.PriceChangeIntervalProvider
 import cash.p.terminal.core.managers.PriceManager
-import cash.p.terminal.core.usecase.ResolvePayCoreNavigationUseCase
 import cash.p.terminal.wallet.providers.RetrofitUtils
 import cash.p.terminal.shared.settings.SettingsPages
 import cash.p.terminal.modules.blockchainstatus.StatusReportExporter
@@ -630,7 +629,6 @@ class DesktopKoinGraphTest {
             IAccountCleaner::class,
             ITransactionRecordRepository::class,
             OfflineOperationGate::class,
-            ResolvePayCoreNavigationUseCase::class,
             SyncPendingMultiSwapUseCase::class,
             BeamSessionOwner::class,
             BeamLifecycleCoordinator::class,

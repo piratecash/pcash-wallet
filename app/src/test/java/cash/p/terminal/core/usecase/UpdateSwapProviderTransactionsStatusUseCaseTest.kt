@@ -5,10 +5,12 @@ import cash.p.terminal.modules.multiswap.providers.buildSwapProviderTransaction
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.network.swaprepository.SwapProviderStatusRequest
 import cash.p.terminal.network.swaprepository.SwapProviderTransactionStatusRepository
+import cash.p.terminal.wallet.Token
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -42,7 +44,7 @@ class UpdateSwapProviderTransactionsStatusUseCaseTest {
     fun invoke_backendSwapTransaction_passesStoredWalletAddress() = runTest {
         val transaction = buildSwapProviderTransaction(SwapProvider.PCASH_BACKEND, "order-1")
             .copy(providerWalletAddress = WALLET_ADDRESS)
-        every { storage.getAllUnfinishedByAccount(any(), any(), any()) } returns listOf(transaction)
+        every { storage.getAllUnfinishedByAccount(any(), any(), any(), any()) } returns listOf(transaction)
         val request = slot<SwapProviderStatusRequest>()
         coEvery { statusRepository.getTransactionStatus(capture(request)) } returns null
 
@@ -50,6 +52,35 @@ class UpdateSwapProviderTransactionsStatusUseCaseTest {
 
         assertEquals("order-1", request.captured.transactionId)
         assertEquals(WALLET_ADDRESS, request.captured.walletAddress)
+    }
+
+    @Test
+    fun invoke_byAccount_excludesPayCoreFromPolling() = runTest {
+        UpdateSwapProviderTransactionsStatusUseCase(storage)("acc-A")
+
+        verify {
+            storage.getAllUnfinishedByAccount(
+                accountId = "acc-A",
+                statusesExcluded = any(),
+                providersExcluded = listOf(SwapProvider.PAYCORE),
+                limit = any()
+            )
+        }
+    }
+
+    @Test
+    fun invoke_byToken_excludesPayCoreFromPolling() = runTest {
+        UpdateSwapProviderTransactionsStatusUseCase(storage)(mockk<Token>(relaxed = true), "addr")
+
+        verify {
+            storage.getAll(
+                token = any(),
+                address = "addr",
+                statusesExcluded = any(),
+                providersExcluded = listOf(SwapProvider.PAYCORE),
+                limit = any()
+            )
+        }
     }
 
     private companion object {

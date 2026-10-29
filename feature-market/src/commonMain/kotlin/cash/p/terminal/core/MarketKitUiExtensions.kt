@@ -19,6 +19,8 @@ import cash.p.terminal.resources.robinhood_chain
 import cash.p.terminal.resources.stellar_asset
 import cash.p.terminal.resources.the_open_network_jetton
 import cash.p.terminal.resources.token_type_litecoin_mweb
+import cash.p.terminal.resources.ton_wallet_version_v4r2_description
+import cash.p.terminal.resources.ton_wallet_version_w5_description
 import cash.p.terminal.resources.tron_trc20
 import cash.p.terminal.resources.zksync_erc20
 import cash.p.terminal.wallet.Derivation
@@ -28,6 +30,8 @@ import cash.p.terminal.wallet.bitcoinCashCoinType
 import cash.p.terminal.wallet.entities.FullCoin
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.TonWalletVersion
+import cash.p.terminal.wallet.entities.tonAsset
 import cash.p.terminal.wallet.isLitecoinMweb
 import cash.p.terminal.wallet.models.CoinCategory
 import cash.p.terminal.wallet.models.CoinInvestment
@@ -97,9 +101,7 @@ val TokenQuery.isSupported: Boolean
             tokenType is TokenType.Native || tokenType is TokenType.Eip20
         }
 
-        BlockchainType.Ton -> {
-            tokenType is TokenType.Native || tokenType is TokenType.Jetton
-        }
+        BlockchainType.Ton -> tonAsset != null
 
         BlockchainType.Stellar -> {
             tokenType is TokenType.Native || tokenType is TokenType.Asset
@@ -192,6 +194,7 @@ val TokenType.order: Int
     get() {
         return when (this) {
             TokenType.Native -> 0
+            TokenType.TonW5Native -> 1
             is TokenType.Derived -> derivation.accountTypeDerivation.order
             is TokenType.AddressTyped -> type.bitcoinCashCoinType.ordinal
             TokenType.Mweb -> Derivation.bip86.order + 1
@@ -224,6 +227,12 @@ val FullCoin.iconPlaceholder: DrawableResource
         }
     }
 
+val Token.title: String
+    get() = tokenQuery.title
+
+val TokenQuery.title: String
+    get() = tonAsset?.version?.title ?: tokenType.title
+
 val TokenType.title: String
     get() = when (this) {
         TokenType.Mweb -> "MWEB"
@@ -232,6 +241,20 @@ val TokenType.title: String
         is TokenType.AddressSpecTyped -> type.name
         else -> ""
     }
+
+val Token.description: String
+    get() = tokenQuery.description
+
+val TokenQuery.description: String
+    get() = tonAsset?.version?.description ?: tokenType.description
+
+val TonWalletVersion.description: String
+    get() = Translator.getString(
+        when (this) {
+            TonWalletVersion.V4R2 -> Res.string.ton_wallet_version_v4r2_description
+            TonWalletVersion.W5 -> Res.string.ton_wallet_version_w5_description
+        }
+    )
 
 val TokenType.description: String
     get() = when (this) {

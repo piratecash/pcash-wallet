@@ -83,6 +83,10 @@ import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
+import cash.p.terminal.wallet.entities.TonAsset
+import cash.p.terminal.wallet.entities.tokenQuery
+import cash.p.terminal.wallet.entities.tonAsset
+import cash.p.terminal.wallet.tonWalletVersion
 import cash.p.terminal.wallet.isStakingWallet
 import cash.p.terminal.wallet.litecoinMwebAccountIds
 import cash.p.terminal.wallet.policy.PlatformChainSupport
@@ -230,18 +234,23 @@ class AdapterFactory(
         return Trc20Adapter(tronKitWrapper, address, wallet, baseToken)
     }
 
-    private suspend fun getJettonAdapter(wallet: Wallet, address: String): IAdapter {
+    private suspend fun getTonAdapter(wallet: Wallet): IAdapter {
+        val tonAsset = requireNotNull(wallet.token.tonAsset)
         val tonKitWrapper = tonKitManager.getTonKitWrapper(
             account = wallet.account,
+            version = tonAsset.version,
             blockchainType = wallet.token.blockchainType,
         )
 
-        return JettonAdapter(
-            coinManager = coinManager,
-            tonKitWrapper = tonKitWrapper,
-            addressStr = address,
-            wallet = wallet
-        )
+        return when (tonAsset) {
+            is TonAsset.Native -> TonAdapter(tonKitWrapper)
+            is TonAsset.Jetton -> JettonAdapter(
+                coinManager = coinManager,
+                tonKitWrapper = tonKitWrapper,
+                addressStr = tonAsset.masterAddress,
+                wallet = wallet
+            )
+        }
     }
 
     private suspend fun getStellarAssetAdapter(wallet: Wallet, code: String, issuer: String): IAdapter {
@@ -497,14 +506,7 @@ class AdapterFactory(
                     TronAdapter(tronKitManager.getTronKitWrapper(wallet.account))
                 }
 
-                BlockchainType.Ton -> {
-                    TonAdapter(
-                        tonKitManager.getTonKitWrapper(
-                            account = wallet.account,
-                            blockchainType = wallet.token.blockchainType,
-                        )
-                    )
-                }
+                BlockchainType.Ton -> getTonAdapter(wallet)
 
                 BlockchainType.Stellar -> {
                     StellarAdapter(stellarKitManager.getStellarKitWrapper(wallet.account))
@@ -529,7 +531,9 @@ class AdapterFactory(
             }
 
             is TokenType.Spl -> getSplAdapter(wallet, tokenType.address)
-            is TokenType.Jetton -> getJettonAdapter(wallet, tokenType.address)
+            TokenType.TonW5Native,
+            is TokenType.Jetton,
+            is TokenType.TonW5Jetton -> getTonAdapter(wallet)
             is TokenType.Asset -> getStellarAssetAdapter(wallet, tokenType.code, tokenType.issuer)
             is TokenType.Trc10 -> null
             is TokenType.ThorchainAsset -> getThorchainAdapter(wallet)
@@ -602,6 +606,7 @@ class AdapterFactory(
     suspend fun tonTransactionsAdapter(source: TransactionSource): ITransactionsAdapter? {
         val tonKitWrapper = tonKitManager.getTonKitWrapper(
             account = source.account,
+            version = source.requireTonWalletVersion(),
             blockchainType = source.blockchain.type,
         )
         val address = tonKitWrapper.tonKit.receiveAddress
@@ -654,13 +659,14 @@ class AdapterFactory(
         address: Address,
         source: TransactionSource,
     ): TonTransactionConverter? {
-        val query = TokenQuery(BlockchainType.Ton, TokenType.Native)
-        val baseToken = coinManager.getToken(query) ?: return null
+        val version = source.requireTonWalletVersion()
+        val baseToken = coinManager.getToken(TonAsset.Native(version).tokenQuery) ?: return null
         return TonTransactionConverter(
             address,
             coinManager,
             source,
-            baseToken
+            baseToken,
+            version,
         )
     }
 
@@ -700,7 +706,7 @@ class AdapterFactory(
         when (val blockchainType = transactionSource.blockchain.type) {
             BlockchainType.Solana -> solanaKitManager.unlink(account)
             BlockchainType.Tron -> tronKitManager.unlink(account)
-            BlockchainType.Ton -> tonKitManager.unlink(account)
+            BlockchainType.Ton -> tonKitManager.unlink(account, transactionSource.requireTonWalletVersion())
             BlockchainType.Monero -> moneroKitManager.unlink(account)
             BlockchainType.Stellar -> stellarKitManager.unlink(account)
             BlockchainType.Thorchain,
@@ -710,6 +716,8 @@ class AdapterFactory(
             else -> Unit
         }
     }
+
+    private fun TransactionSource.requireTonWalletVersion() = requireNotNull(tonWalletVersion)
 
     companion object {
         /** A Trezor account signs on the device; anything else signs with its own spending key. */

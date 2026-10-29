@@ -550,6 +550,9 @@
     <string name="TonConnect_Unnamed">Sem nome</string>
     <string name="TonConnect_Wallet">Carteira</string>
     <string name="TonConnect_ChooseWallet">Escolher carteira</string>
+    <string name="ton_wallet_version_v4r2_description">Endereço de carteira TON da versão v4R2. Usado por padrão.</string>
+    <string name="ton_wallet_version_w5_description">Carteira TON versão W5. Um endereço e saldo separados a partir da mesma frase.</string>
+    <string name="tonconnect_wallet_version">Versão da carteira</string>
     <string name="manifest_loading">Carregando manifesto…</string>
     <string name="account_not_supported_by">Seu tipo de carteira atual %1$s não é compatível com %2$s</string>
     <!--WalletConnect-->
@@ -2162,39 +2165,6 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="multi_swap_cancel_swap">Cancelar troca</string>
     <string name="multi_swap_cancel_swap_warning">A primeira troca já foi concluída. As moedas intermediárias estão na sua carteira e continuarão suas. Apenas a segunda etapa da troca será cancelada.</string>
     <string name="swap_leg_title">Troca %d</string>
-    <!--PayCore-->
-    <string name="paycore_verify_phone">Verificar telefone</string>
-    <string name="paycore_verifying">Verificando…</string>
-    <string name="paycore_service_fee">Taxa de serviço</string>
-    <string name="paycore_network">Rede</string>
-    <string name="paycore_verification_title">PayCore</string>
-    <string name="paycore_verification_phone_placeholder">(___)___-__-__</string>
-    <string name="paycore_verification_continue">Continuar</string>
-    <string name="paycore_verification_processing">Em processamento…</string>
-    <string name="settings_contact_us_pcash_support">Suporte P.Cash</string>
-    <string name="settings_contact_us_paycore_support">Suporte Paycore</string>
-    <string name="paycore_verification_not_verified">Número não verificado</string>
-    <string name="paycore_verification_pass_kyc">Concluir KYC</string>
-    <string name="paycore_verification_verified_title">Sua verificação foi concluída</string>
-    <string name="paycore_verification_warning_title">ATENÇÃO</string>
-    <string name="paycore_verification_warning_text">A TRANSFERÊNCIA DE FUNDOS É PERMITIDA EXCLUSIVAMENTE DA CONTA QUE LHE PERTENCE, COM NÚMERO DE TELEFONE E IDENTIDADE VERIFICADOS.</string>
-    <string name="paycore_verification_warning_detail">Transferências de outras contas não serão creditadas, os fundos enviados serão perdidos!</string>
-    <string name="paycore_verification_back">Voltar</string>
-    <string name="paycore_verification_error">Não foi possível concluir o login. Verifique o número de telefone e tente novamente.</string>
-    <string name="paycore_generic_error">Não foi possível concluir a operação. Tente mais tarde ou entre em contato com o suporte.</string>
-    <string name="paycore_verification_retry">Tentar novamente</string>
-    <string name="paycore_verification_phone_label">Número de telefone:</string>
-    <string name="paycore_verification_contact_support">A recuperação automática falhou. Por favor, entre em contato com o suporte.</string>
-    <string name="paycore_verification_support_line"><![CDATA[Suporte técnico 24/7: <a href="mailto:support@paycore.pw">support@paycore.pw</a>, <a href="https://t.me/paycore_supp">@paycore_supp</a>]]></string>
-    <string name="paycore_service">Serviço</string>
-    <string name="paycore_support">Suporte PayCore</string>
-    <string name="paycore_section_currency">Moeda</string>
-    <string name="paycore_section_crypto">Criptomoedas</string>
-    <string name="paycore_select_bank">Selecionar banco</string>
-    <string name="paycore_select_bank_error">Não foi possível abrir a seleção de banco. Tente novamente mais tarde.</string>
-    <string name="paycore_banks_unavailable">Os bancos estão temporariamente indisponíveis. Tente novamente mais tarde.</string>
-    <string name="paycore_delete_restricted_warning">Esta transação não pode ser excluída porque é processada por um serviço terceirizado.</string>
-    <string name="paycore_delete_to_complete_select_bank">Selecione um banco para concluir o swap.</string>
     <string name="swap_provider_type_info_title">Tipos de provedores de troca</string>
     <string name="swap_provider_type_info_description">Os rótulos abaixo explicam como funcionam os diferentes tipos de provedores de troca. Eles ajudam a entender como a troca será executada e quais verificações ou condições adicionais podem ser aplicadas.</string>
     <string name="swap_provider_type_auto_description">Execução automática da troca. Se a troca não puder ser concluída, os fundos geralmente são reembolsados automaticamente, sem necessidade de qualquer ação por parte do usuário.</string>

@@ -550,6 +550,9 @@
     <string name="TonConnect_Unnamed">بدون نام</string>
     <string name="TonConnect_Wallet">کیف پول</string>
     <string name="TonConnect_ChooseWallet">انتخاب کیف پول</string>
+    <string name="ton_wallet_version_v4r2_description">آدرس کیف پول TON نسخه v4R2. به‌طور پیش‌فرض استفاده می‌شود.</string>
+    <string name="ton_wallet_version_w5_description">کیف پول TON نسخه W5. آدرس و موجودی جدا از همان عبارت.</string>
+    <string name="tonconnect_wallet_version">نسخه کیف پول</string>
     <string name="manifest_loading">در حال بارگذاری مانیفست…</string>
     <string name="account_not_supported_by">نوع کیف پول فعلی شما %1$s از %2$s پشتیبانی نمی‌کند</string>
     <!--WalletConnect-->
@@ -2166,39 +2169,6 @@
     <string name="multi_swap_cancel_swap">لغو تبادل</string>
     <string name="multi_swap_cancel_swap_warning">اولین تبادل قبلاً انجام شده است. سکه‌های واسطه در کیف پول شما هستند و متعلق به شما باقی می‌مانند. فقط مرحله دوم تبادل لغو خواهد شد.</string>
     <string name="swap_leg_title">مبادله %d</string>
-    <!--PayCore-->
-    <string name="paycore_verify_phone">تأیید تلفن</string>
-    <string name="paycore_verifying">در حال تأیید…</string>
-    <string name="paycore_service_fee">کارمزد خدمات</string>
-    <string name="paycore_network">شبکه</string>
-    <string name="paycore_verification_title">PayCore</string>
-    <string name="paycore_verification_phone_placeholder">(___)___-__-__</string>
-    <string name="paycore_verification_continue">ادامه</string>
-    <string name="paycore_verification_processing">در حال پردازش…</string>
-    <string name="settings_contact_us_pcash_support">پشتیبانی P.Cash</string>
-    <string name="settings_contact_us_paycore_support">پشتیبانی Paycore</string>
-    <string name="paycore_verification_not_verified">شماره تأیید نشده است</string>
-    <string name="paycore_verification_pass_kyc">انجام KYC</string>
-    <string name="paycore_verification_verified_title">تأیید شما کامل شد</string>
-    <string name="paycore_verification_warning_title">هشدار</string>
-    <string name="paycore_verification_warning_text">انتقال وجوه فقط از حساب متعلق به شما، با شماره تلفن و هویت تأیید شده مجاز است.</string>
-    <string name="paycore_verification_warning_detail">انتقال از حساب‌های دیگر اعتبار نخواهد داشت، وجوه ارسالی از بین خواهد رفت!</string>
-    <string name="paycore_verification_back">بازگشت</string>
-    <string name="paycore_verification_error">ورود ناموفق بود. شماره تلفن را بررسی کنید و دوباره تلاش کنید.</string>
-    <string name="paycore_generic_error">انجام عملیات ناموفق بود. لطفاً بعداً دوباره تلاش کنید یا با پشتیبانی تماس بگیرید.</string>
-    <string name="paycore_verification_retry">تلاش مجدد</string>
-    <string name="paycore_verification_phone_label">شماره تلفن:</string>
-    <string name="paycore_verification_contact_support">بازیابی خودکار ناموفق بود. لطفاً با پشتیبانی تماس بگیرید.</string>
-    <string name="paycore_verification_support_line"><![CDATA[پشتیبانی فنی ۲۴/۷: <a href="mailto:support@paycore.pw">support@paycore.pw</a>, <a href="https://t.me/paycore_supp">@paycore_supp</a>]]></string>
-    <string name="paycore_service">سرویس</string>
-    <string name="paycore_support">پشتیبانی PayCore</string>
-    <string name="paycore_section_currency">ارز</string>
-    <string name="paycore_section_crypto">رمزارزها</string>
-    <string name="paycore_select_bank">انتخاب بانک</string>
-    <string name="paycore_select_bank_error">باز کردن انتخاب بانک ناموفق بود. لطفاً بعداً دوباره امتحان کنید.</string>
-    <string name="paycore_banks_unavailable">بانک‌ها موقتاً در دسترس نیستند. لطفاً بعداً دوباره امتحان کنید.</string>
-    <string name="paycore_delete_restricted_warning">این تراکنش قابل حذف نیست زیرا توسط یک سرویس شخص ثالث پردازش می‌شود.</string>
-    <string name="paycore_delete_to_complete_select_bank">برای تکمیل سواپ، یک بانک انتخاب کنید.</string>
     <string name="swap_provider_type_info_title">انواع ارائه‌دهندگان مبادله</string>
     <string name="swap_provider_type_info_description">برچسب‌های زیر نحوه عملکرد انواع مختلف ارائه‌دهندگان مبادله را توضیح می‌دهند. آن‌ها به شما کمک می‌کنند تا بفهمید مبادله چگونه انجام می‌شود و چه بررسی‌ها یا شرایط اضافی ممکن است اعمال شود.</string>
     <string name="swap_provider_type_auto_description">اجرای خودکار مبادله. اگر مبادله قابل تکمیل نباشد، معمولاً وجوه به‌طور خودکار و بدون نیاز به هیچ اقدامی از سوی کاربر بازگردانده می‌شوند.</string>

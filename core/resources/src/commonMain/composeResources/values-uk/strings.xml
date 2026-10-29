@@ -530,6 +530,9 @@
     <string name="TonConnect_Unnamed">Без назви</string>
     <string name="TonConnect_Wallet">Гаманець</string>
     <string name="TonConnect_ChooseWallet">Виберіть гаманець</string>
+    <string name="ton_wallet_version_v4r2_description">Адреса гаманця TON версії v4R2. Використовується за замовчуванням.</string>
+    <string name="ton_wallet_version_w5_description">Гаманець TON версії W5. Окрема адреса та баланс з тієї самої фрази.</string>
+    <string name="tonconnect_wallet_version">Версія гаманця</string>
     <string name="manifest_loading">Завантаження маніфесту…</string>
     <string name="account_not_supported_by">Ваш поточний тип гаманця %1$s не підтримує %2$s</string>
     <!--WalletConnect-->
@@ -2317,39 +2320,6 @@
     <string name="multi_swap_cancel_swap">Скасувати обмін</string>
     <string name="multi_swap_cancel_swap_warning">Перший обмін вже завершено. Проміжні монети знаходяться у вашому гаманці та залишаться вашими. Буде скасовано лише другий крок обміну.</string>
     <string name="swap_leg_title">Обмін %d</string>
-    <!--PayCore-->
-    <string name="paycore_verify_phone">Підтвердити телефон</string>
-    <string name="paycore_verifying">Перевірка…</string>
-    <string name="paycore_service_fee">Комісія за послугу</string>
-    <string name="paycore_network">Мережа</string>
-    <string name="paycore_verification_title">PayCore</string>
-    <string name="paycore_verification_phone_placeholder">(___)___-__-__</string>
-    <string name="paycore_verification_continue">Продовжити</string>
-    <string name="paycore_verification_processing">В обробці…</string>
-    <string name="settings_contact_us_pcash_support">P.Cash Підтримка</string>
-    <string name="settings_contact_us_paycore_support">Paycore Підтримка</string>
-    <string name="paycore_verification_not_verified">Номер не верифіковано</string>
-    <string name="paycore_verification_pass_kyc">Пройти KYC</string>
-    <string name="paycore_verification_verified_title">Вашу верифікацію пройдено</string>
-    <string name="paycore_verification_warning_title">УВАГА</string>
-    <string name="paycore_verification_warning_text">ДОЗВОЛЕНО ПЕРЕКАЗ ГРОШОВИХ КОШТІВ ВИКЛЮЧНО З РАХУНКУ, ЩО НАЛЕЖИТЬ ВАМ, З ВЕРИФІКОВАНИМ НОМЕРОМ ТЕЛЕФОНУ ТА ОСОБОЮ.</string>
-    <string name="paycore_verification_warning_detail">Перекази з інших рахунків не зараховуються, відправлені кошти будуть втрачені!</string>
-    <string name="paycore_verification_back">Назад</string>
-    <string name="paycore_verification_error">Не вдалося завершити вхід. Перевірте номер телефону та спробуйте ще раз.</string>
-    <string name="paycore_generic_error">Не вдалося виконати операцію. Спробуйте пізніше або зверніться до підтримки.</string>
-    <string name="paycore_verification_retry">Повторити</string>
-    <string name="paycore_verification_phone_label">Номер телефону:</string>
-    <string name="paycore_verification_contact_support">Автоматичне відновлення не вдалося. Зверніться до служби підтримки.</string>
-    <string name="paycore_verification_support_line"><![CDATA[Технічна підтримка 24/7: <a href="mailto:support@paycore.pw">support@paycore.pw</a>, <a href="https://t.me/paycore_supp">@paycore_supp</a>]]></string>
-    <string name="paycore_service">Сервіс</string>
-    <string name="paycore_support">Підтримка PayCore</string>
-    <string name="paycore_section_currency">Валюта</string>
-    <string name="paycore_section_crypto">Криптовалюти</string>
-    <string name="paycore_select_bank">Виберіть банк</string>
-    <string name="paycore_select_bank_error">Не вдалося відкрити вибір банку. Спробуйте пізніше.</string>
-    <string name="paycore_banks_unavailable">Банки тимчасово недоступні. Спробуйте пізніше.</string>
-    <string name="paycore_delete_restricted_warning">Цю транзакцію не можна видалити, оскільки вона виконується стороннім сервісом.</string>
-    <string name="paycore_delete_to_complete_select_bank">Для завершення обміну виберіть банк.</string>
     <string name="swap_provider_type_info_title">Типи обмінних провайдерів</string>
     <string name="swap_provider_type_info_description">Нижче наведено особливості роботи різних типів обмінних провайдерів. Ці позначки допомагають зрозуміти, як виконуватиметься обмін і які додаткові перевірки чи умови можуть застосовуватися.</string>
     <string name="swap_provider_type_auto_description">Автоматичне виконання обміну. Якщо обмін не може бути завершений, кошти зазвичай повертаються автоматично без додаткових дій з боку користувача.</string>

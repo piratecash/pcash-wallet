@@ -1,0 +1,200 @@
+package cash.p.terminal.modules.multiswap
+
+import cash.p.terminal.modules.multiswap.action.ISwapProviderAction
+import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
+import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.entities.Coin
+import cash.p.terminal.wallet.entities.TokenType
+import io.horizontalsystems.core.entities.Blockchain
+import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.core.entities.Currency
+import io.mockk.every
+import io.mockk.mockk
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import java.math.BigDecimal
+
+class SwapNavigationTest {
+
+    private val bitcoinToken = sampleToken()
+    private val usdtToken = Token(
+        coin = Coin(
+            uid = "tether",
+            name = "Tether",
+            code = "USDT",
+            marketCapRank = null,
+            image = null,
+        ),
+        blockchain = Blockchain(BlockchainType.Ethereum, "Ethereum", null),
+        type = TokenType.Eip20("0xdac17f958d2ee523a2206206994597c13d831ec7"),
+        decimals = 6,
+    )
+    private val provider = mockk<IMultiSwapProvider> {
+        every { id } returns "provider"
+    }
+
+    @Test
+    fun buildNextPage_twoStepRoute_opensRouteInfo() {
+        assertEquals("SwapRouteInfoPage", buildNextPage(stateWithRoute()).javaClass.simpleName)
+    }
+
+    @Test
+    fun buildNextPage_oneStepRoute_opensConfirmation() {
+        assertEquals(
+            "SwapConfirmPage",
+            buildNextPage(exactOutState(BigDecimal.ONE)).javaClass.simpleName,
+        )
+    }
+
+    @Test
+    fun isMultiSwapRouteReady_requotingRoute_cannotContinue() {
+        val routeState = stateWithRoute()
+
+        assertFalse(isMultiSwapRouteReady(true, false, routeState.multiSwapRoute, tokenOutAction = null))
+        assertTrue(isMultiSwapRouteReady(false, false, routeState.multiSwapRoute, tokenOutAction = null))
+    }
+
+    @Test
+    fun isMultiSwapRouteReady_tokenOutActionPending_cannotContinue() {
+        assertFalse(
+            isMultiSwapRouteReady(
+                quoting = false,
+                timeout = false,
+                route = multiSwapRouteFixture(),
+                tokenOutAction = mockk<ISwapProviderAction>(),
+            )
+        )
+    }
+
+    @Test
+    fun currentStep_tokenOutActionPending_blocksProceed() {
+        val action = mockk<ISwapProviderAction>()
+
+        val step = exactOutState(BigDecimal.ONE).copy(tokenOutAction = action).currentStep
+
+        assertEquals(SwapStep.ActionRequired(action), step)
+    }
+
+    @Test
+    fun currentStep_providerAndTokenOutActions_providerActionWins() {
+        val providerAction = mockk<ISwapProviderAction>()
+        val state = exactOutState(BigDecimal.ONE)
+        val quote = requireNotNull(state.quote)
+        val quoteWithAction = quote.copy(
+            swapQuote = mockk(relaxed = true) { every { actionRequired } returns providerAction },
+        )
+
+        val step = state.copy(quote = quoteWithAction, tokenOutAction = mockk()).currentStep
+
+        assertEquals(SwapStep.ActionRequired(providerAction), step)
+    }
+
+    @Test
+    fun currentStep_noActions_proceeds() {
+        assertEquals(SwapStep.Proceed, exactOutState(BigDecimal.ONE).currentStep)
+    }
+
+    @Test
+    fun isMultiSwapRouteReady_expiredRoute_cannotContinue() {
+        assertFalse(isMultiSwapRouteReady(false, true, multiSwapRouteFixture(), tokenOutAction = null))
+    }
+
+    @Test
+    fun shouldRefreshMultiSwapRoute_expiredIdleRoute_returnsTrue() {
+        assertTrue(shouldRefreshMultiSwapRoute(quoting = false, timeout = true, route = multiSwapRouteFixture()))
+    }
+
+    @Test
+    fun shouldRefreshMultiSwapRoute_refreshInProgress_returnsFalse() {
+        assertFalse(shouldRefreshMultiSwapRoute(quoting = true, timeout = true, route = multiSwapRouteFixture()))
+    }
+
+    private fun stateWithRoute(): SwapUiState = exactOutState(BigDecimal.ONE).copy(
+        multiSwapRoute = multiSwapRouteFixture(),
+    )
+
+    private fun exactOutState(
+        targetAmount: BigDecimal,
+        provider: IMultiSwapProvider = this.provider,
+    ): SwapUiState {
+        val quote = SwapProviderQuote(
+            provider = provider,
+            swapQuote = mockk<ISwapQuote>(relaxed = true) {
+                every { amountOut } returns targetAmount
+                every { tokenIn } returns bitcoinToken
+                every { tokenOut } returns usdtToken
+                every { amountIn } returns BigDecimal("1000")
+                every { actionRequired } returns null
+            },
+            executionMode = SwapExecutionMode.NativeExactOut,
+        )
+        return SwapUiState(
+            amountIn = quote.amountIn,
+            displayAmountOut = targetAmount,
+            tokenIn = bitcoinToken,
+            tokenOut = usdtToken,
+            quoting = false,
+            quotes = listOf(quote),
+            preferredProvider = provider,
+            quote = quote,
+            error = null,
+            availableBalance = null,
+            displayBalance = null,
+            networkFee = null,
+            networkFeeFiatAmount = null,
+            feeToken = null,
+            feeCoinBalance = null,
+            insufficientFeeBalance = false,
+            balanceHidden = false,
+            warningMessage = null,
+            priceImpact = null,
+            priceImpactLevel = null,
+            priceImpactCaution = null,
+            fiatAmountIn = null,
+            fiatAmountOut = null,
+            fiatPriceImpact = null,
+            currency = Currency("RUB", "₽", 2),
+            fiatAmountInInputEnabled = false,
+            fiatAmountOutInputEnabled = false,
+            fiatPriceImpactLevel = null,
+            timeout = false,
+            multiSwapRoute = null,
+            direction = SwapAmountDirection.Out,
+            requestedAmountOut = targetAmount,
+            amountInMax = null,
+            amountOutAccuracy = SwapAmountAccuracy.Exact,
+            quoteCautions = emptyList(),
+        )
+    }
+}
+
+private fun sampleToken() = Token(
+    coin = Coin(uid = "bitcoin", name = "Bitcoin", code = "BTC", marketCapRank = null, image = null),
+    blockchain = Blockchain(BlockchainType.Bitcoin, "Bitcoin", null),
+    type = TokenType.Native,
+    decimals = 8,
+)
+
+internal fun multiSwapRouteFixture(): MultiSwapRoute {
+    val token = sampleToken()
+    val provider = mockk<IMultiSwapProvider>(relaxed = true) {
+        every { title } returns "Provider"
+    }
+    val quote = mockk<SwapProviderQuote>(relaxed = true) {
+        every { this@mockk.provider } returns provider
+        every { tokenIn } returns token
+        every { tokenOut } returns token
+        every { amountIn } returns BigDecimal.ONE
+        every { amountOut } returns BigDecimal.ONE
+    }
+    return MultiSwapRoute(
+        intermediateCoin = token,
+        leg1Quotes = listOf(quote),
+        leg2Quotes = listOf(quote),
+        commissionReserve = BigDecimal.ZERO,
+        selectedLeg1Quote = quote,
+        selectedLeg2Quote = quote,
+    )
+}

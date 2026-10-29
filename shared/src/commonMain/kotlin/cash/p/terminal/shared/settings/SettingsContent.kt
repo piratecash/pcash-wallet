@@ -353,7 +353,7 @@ private fun ApplicationSettingsSection(
                 SettingsCell(
                     title = Res.string.SettingsContact_Title,
                     icon = Res.drawable.ic_mail_24,
-                    onClick = onAction.callbackFor(SettingsAction.Contact(uiState.isPayCoreEnabled)),
+                    onClick = onAction.callbackFor(SettingsAction.Contact),
                 )
             },
         )

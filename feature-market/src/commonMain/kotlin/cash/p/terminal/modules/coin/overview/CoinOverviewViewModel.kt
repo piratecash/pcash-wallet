@@ -196,16 +196,17 @@ class CoinOverviewViewModel(
                             )
                         )
                     }
-                    is TokenType.Jetton -> {
+                    is TokenType.Jetton, is TokenType.TonW5Jetton -> {
+                        val address = tokenType.values.reference
                         val inWallet =
                             canAddToWallet && activeWallets.any { it.token == token }
                         items.add(
                             TokenVariant(
-                                value = tokenType.address.shorten(),
-                                copyValue = tokenType.address,
+                                value = address.shorten(),
+                                copyValue = address,
                                 imgUrl = token.blockchainType.imageUrl,
-                                explorerUrl = token.blockchain.jettonUrl(tokenType.address),
-                                name = token.blockchain.name,
+                                explorerUrl = token.blockchain.jettonUrl(address),
+                                name = token.variantName,
                                 token = token,
                                 canAddToWallet = canAddToWallet,
                                 inWallet = inWallet
@@ -329,7 +330,7 @@ class CoinOverviewViewModel(
                         )
                     }
 
-                    TokenType.Native -> {
+                    TokenType.Native, TokenType.TonW5Native -> {
                         val inWallet =
                             canAddToWallet && activeWallets.any { it.token == token }
                         items.add(
@@ -338,7 +339,7 @@ class CoinOverviewViewModel(
                                 copyValue = null,
                                 imgUrl = token.blockchainType.imageUrl,
                                 explorerUrl = null,
-                                name = token.blockchain.name,
+                                name = token.variantName,
                                 token = token,
                                 canAddToWallet = canAddToWallet,
                                 inWallet = inWallet
@@ -376,6 +377,9 @@ class CoinOverviewViewModel(
     }
 
 }
+
+private val Token.variantName: String
+    get() = listOf(blockchain.name, title).filter(String::isNotEmpty).joinToString(" ")
 
 data class ChartIndicatorsState(val hasActiveSubscription: Boolean, val enabled: Boolean)
 

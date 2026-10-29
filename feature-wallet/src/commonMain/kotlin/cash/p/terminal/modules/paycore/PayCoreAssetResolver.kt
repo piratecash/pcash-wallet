@@ -1,15 +1,7 @@
 package cash.p.terminal.modules.paycore
 
-import cash.p.terminal.modules.paycore.PayCoreAssets.RUB_COIN_UID
-
 object PayCoreAssetResolver {
-    fun coinCode(coinUid: String): String? = when (coinUid) {
-        RUB_COIN_UID -> "RUB"
-        else -> null
-    }
+    private const val RUB_COIN_UID = "rub"
 
-    fun coinName(coinUid: String): String? = when (coinUid) {
-        RUB_COIN_UID -> "Russian Ruble"
-        else -> null
-    }
+    fun coinCode(coinUid: String): String? = if (coinUid == RUB_COIN_UID) "RUB" else null
 }

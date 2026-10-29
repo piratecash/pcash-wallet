@@ -2,6 +2,7 @@ package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.onPollingStarted
 import cash.p.terminal.core.onPollingStopped
+import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.core.UnsupportedException
 import cash.p.terminal.core.toFixedSize
 import cash.p.terminal.wallet.IHardwarePublicKeyStorage
@@ -11,13 +12,18 @@ import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.entities.HardwarePublicKeyType
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.TonAsset
+import cash.p.terminal.wallet.entities.TonWalletVersion
+import cash.p.terminal.wallet.entities.tokenType
 import io.horizontalsystems.core.IBackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.hdwalletkit.Curve
 import io.horizontalsystems.hdwalletkit.HDWallet
+import io.horizontalsystems.tonkit.core.TonHttpClient
 import io.horizontalsystems.tonkit.core.TonKit
 import io.horizontalsystems.tonkit.core.TonWallet
+import io.horizontalsystems.tonkit.core.TonWalletVersion as KitTonWalletVersion
 import io.horizontalsystems.tonkit.models.Jetton
 import io.horizontalsystems.tonkit.models.Network
 import io.horizontalsystems.tonkit.models.SyncState
@@ -32,7 +38,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -57,118 +62,148 @@ class TonKitManager(
     private val lifecycleMutex = Mutex()
     private val pollingSessionCount = AtomicInteger(0)
     private val scope = CoroutineScope(Dispatchers.Default)
-    private var job: Job? = null
-    private val _kitStartedFlow = MutableStateFlow(false)
-    val kitStartedFlow: StateFlow<Boolean> = _kitStartedFlow
+    private val _startedKitsFlow = MutableStateFlow<Map<TonWalletVersion, TonKitWrapper>>(emptyMap())
 
-    var tonKitWrapper: TonKitWrapper? = null
-        private set(value) {
+    /** Kits of [currentAccount], one per wallet version in use. */
+    val startedKitsFlow: StateFlow<Map<TonWalletVersion, TonKitWrapper>> = _startedKitsFlow
+
+    // Written only under lifecycleMutex; replaced as a whole so lock-free readers see a consistent map.
+    @Volatile
+    private var entries: Map<TonWalletVersion, Entry> = emptyMap()
+        set(value) {
             field = value
-
-            _kitStartedFlow.update { value != null }
+            _startedKitsFlow.value = value.mapValues { it.value.wrapper }
         }
 
-    private var useCount = 0
+    // Shared by the kits of the current account: one API key rotation state and connection pool.
+    private var httpClient: TonHttpClient? = null
+
     var currentAccount: Account? = null
         private set
 
     val statusInfo: Map<String, Any>?
         get() = networkErrorTracker.mergedStatusInfo(
-            tonKitWrapper?.tonKit?.statusInfo(),
+            kitsStatusInfo(),
             BlockchainType.Ton,
             currentAccount?.id,
         )
 
+    private fun kitsStatusInfo(): Map<String, Any>? = entries.takeIf { it.isNotEmpty() }?.let { kits ->
+        buildMap {
+            kits.forEach { (version, entry) ->
+                entry.wrapper.tonKit.statusInfo().forEach { (key, value) -> put("${version.title} $key", value) }
+            }
+        }
+    }
+
     suspend fun getTonKitWrapper(
         account: Account,
+        version: TonWalletVersion,
         blockchainType: BlockchainType?,
     ): TonKitWrapper = lifecycleMutex.withLock {
-        if (this.tonKitWrapper != null && currentAccount != account) {
-            stop()
+        if (entries.isNotEmpty() && currentAccount != account) {
+            stop(entries.keys)
         }
 
-        if (this.tonKitWrapper == null) {
-            val wrapper = createKitInstance(
-                account.toTonWallet(
-                    hardwarePublicKeyStorage,
-                    blockchainType,
-                ), account
-            )
-            this.tonKitWrapper = wrapper
-            job = scope.launch {
-                start(account, wrapper)
-            }
-            useCount = 0
-            currentAccount = account
-        }
-
-        useCount++
-        requireNotNull(this.tonKitWrapper)
+        val entry = entries[version] ?: createEntry(account, version, blockchainType)
+        entry.useCount++
+        entry.wrapper
     }
 
     fun getTonWallet(
         account: Account,
+        version: TonWalletVersion,
         blockchainType: BlockchainType?,
     ) = account.toTonWallet(
+        version,
         hardwarePublicKeyStorage,
         blockchainType,
     )
 
+    /** Derives the key, so call it off the main thread. */
+    fun getReceiveAddress(account: Account, version: TonWalletVersion): String =
+        getTonWallet(account, version, BlockchainType.Ton).address(Network.MainNet).toUserFriendly(false)
+
     // Under the lifecycle lock so it cannot interleave with clear() of the same account.
     suspend fun getNonActiveTonKitWrapper(
         account: Account,
+        version: TonWalletVersion,
         blockchainType: BlockchainType?,
     ) = lifecycleMutex.withLock {
-        createKitInstance(
-            getTonWallet(
-                account,
-                blockchainType,
-            ), account
-        )
+        val tonWallet = getTonWallet(account, version, blockchainType)
+        createKitInstance(account, version, tonWallet, createHttpClient(account))
     }
 
-    private fun eventListenerFactory(account: Account): NetworkErrorEventListener.Factory =
-        NetworkErrorEventListener.Factory(BlockchainType.Ton, account.id, networkErrorTracker)
+    fun isNetworkStarted(account: Account): Boolean =
+        account == currentAccount && entries.values.any { it.wrapper.networkStarted }
+
+    private suspend fun createEntry(
+        account: Account,
+        version: TonWalletVersion,
+        blockchainType: BlockchainType?,
+    ): Entry {
+        val tonWallet = getTonWallet(account, version, blockchainType)
+        val client = httpClient ?: createHttpClient(account)
+        val wrapper = createKitInstance(account, version, tonWallet, client)
+        val entry = Entry(wrapper, scope.launch { start(account, wrapper) })
+        httpClient = client
+        currentAccount = account
+        entries = entries + (version to entry)
+        return entry
+    }
+
+    private fun createHttpClient(account: Account): TonHttpClient = TonKit.createHttpClient(
+        apiKeys = SharedAppConfig.tonApiKeys,
+        eventListenerFactory = NetworkErrorEventListener.Factory(BlockchainType.Ton, account.id, networkErrorTracker),
+    )
 
     // Takes a TonWallet, so only supported account types reach the database key.
     private suspend fun createKitInstance(
-        tonWallet: TonWallet,
         account: Account,
+        version: TonWalletVersion,
+        tonWallet: TonWallet,
+        httpClient: TonHttpClient,
     ): TonKitWrapper {
+        val walletId = tonKitWalletId(account.id, version)
         return TonKitWrapper(
             TonKit.getInstance(
                 tonWallet,
                 Network.MainNet,
                 platformContexts.ton,
-                account.id,
-                databaseKey = prepareDatabase(account),
-                eventListenerFactory = eventListenerFactory(account),
+                walletId,
+                databaseKey = prepareDatabase(account.id, walletId),
+                httpClient = httpClient,
             ),
-            tonWallet
+            tonWallet,
+            version,
         )
     }
 
-    private suspend fun prepareDatabase(account: Account): ByteArray {
-        val databaseKey = tonKitDatabaseKeyProvider.awaitKey(account.id)
-        TonKit.migrateDatabase(platformContexts.ton, Network.MainNet, account.id, databaseKey)
+    // Both wallet versions of an account share the account's database key.
+    private suspend fun prepareDatabase(accountId: String, walletId: String): ByteArray {
+        val databaseKey = tonKitDatabaseKeyProvider.awaitKey(accountId)
+        TonKit.migrateDatabase(platformContexts.ton, Network.MainNet, walletId, databaseKey)
         return databaseKey
     }
 
     suspend fun clear(accountId: String) = lifecycleMutex.withLock {
         if (currentAccount?.id == accountId) {
-            stop()
+            stop(entries.keys)
         }
-        Network.entries.forEach { TonKit.clear(platformContexts.ton, it, accountId) }
+        TonWalletVersion.entries.forEach { version ->
+            val walletId = tonKitWalletId(accountId, version)
+            Network.entries.forEach { TonKit.clear(platformContexts.ton, it, walletId) }
+        }
         tonKitDatabaseKeyProvider.remove(accountId)
     }
 
-    suspend fun unlink(account: Account) = lifecycleMutex.withLock {
-        if (account == currentAccount) {
-            useCount -= 1
+    suspend fun unlink(account: Account, version: TonWalletVersion) = lifecycleMutex.withLock {
+        if (account != currentAccount) return@withLock
+        val entry = entries[version] ?: return@withLock
+        entry.useCount -= 1
 
-            if (useCount < 1) {
-                stop()
-            }
+        if (entry.useCount < 1) {
+            stop(setOf(version))
         }
     }
 
@@ -176,9 +211,9 @@ class TonKitManager(
         pollingSessionCount.onPollingStarted {
             val account = currentAccount
             if (account == null || !isNetworkPaused(account)) {
-                tonKitWrapper?.let { wrapper ->
-                    wrapper.startNetwork()
-                    wrapper.tonKit.refresh()
+                entries.values.forEach { entry ->
+                    entry.wrapper.startNetwork()
+                    entry.wrapper.tonKit.refresh()
                 }
             }
         }
@@ -186,44 +221,51 @@ class TonKitManager(
 
     suspend fun stopForPolling() = lifecycleMutex.withLock {
         pollingSessionCount.onPollingStopped(backgroundManager) {
-            tonKitWrapper?.stopNetwork()
+            entries.values.forEach { it.wrapper.stopNetwork() }
         }
     }
 
     suspend fun pauseNetwork(account: Account) = lifecycleMutex.withLock {
         if (account != currentAccount) return@withLock
-        val wrapper = tonKitWrapper ?: return@withLock
-        if (!wrapper.networkStarted) return@withLock
-        wrapper.stopNetwork()
+        entries.values
+            .map { it.wrapper }
+            .filter { it.networkStarted }
+            .forEach { it.stopNetwork() }
     }
 
     suspend fun resumeNetwork(account: Account) = lifecycleMutex.withLock {
         if (account != currentAccount) return@withLock
-        val wrapper = tonKitWrapper ?: return@withLock
-        if (wrapper.networkStarted) return@withLock
-        wrapper.startNetwork()
-        wrapper.tonKit.refresh()
+        entries.values
+            .map { it.wrapper }
+            .filterNot { it.networkStarted }
+            .forEach { wrapper ->
+                wrapper.startNetwork()
+                wrapper.tonKit.refresh()
+            }
     }
 
     suspend fun refresh() = lifecycleMutex.withLock {
         val account = currentAccount ?: return@withLock
         if (isNetworkPaused(account)) return@withLock
-        tonKitWrapper?.tonKit?.refresh()
+        entries.values.forEach { it.wrapper.tonKit.refresh() }
     }
 
     // Ownership is invalidated before the suspending teardown, so a cancellation here cannot leave a
     // half-stopped wrapper published. The teardown runs under NonCancellable and cancels the start
     // job first: a start still in flight would otherwise resurrect the SSE listener, which lives in
     // its own scope and outlives this job.
-    private suspend fun stop() {
-        val stoppingJob = job
-        val wrapper = tonKitWrapper
-        job = null
-        tonKitWrapper = null
-        currentAccount = null
+    private suspend fun stop(versions: Set<TonWalletVersion>) {
+        val stopping = entries.filterKeys { it in versions }.values.toList()
+        entries = entries - versions
+        if (entries.isEmpty()) {
+            httpClient = null
+            currentAccount = null
+        }
         withContext(NonCancellable) {
-            stoppingJob?.cancelAndJoin()
-            wrapper?.tonKit?.stop()
+            stopping.forEach { entry ->
+                entry.job.cancelAndJoin()
+                entry.wrapper.tonKit.stop()
+            }
         }
         // NonCancellable does not rethrow on exit, so without this a cancelled account switch would
         // go on to create and start the abandoned account's kit.
@@ -244,8 +286,8 @@ class TonKitManager(
     private fun isNetworkPaused(account: Account): Boolean =
         offlineModeManager.isNetworkPaused(account, BlockchainType.Ton)
 
-    // Runs inside `job` and drives the kit it was created with: a later account switch cancels this
-    // job, so the gate can never be evaluated for one account against another account's kit.
+    // Runs inside the entry's job and drives the kit it was created with: a later account switch cancels
+    // this job, so the gate can never be evaluated for one account against another account's kit.
     private suspend fun start(account: Account, wrapper: TonKitWrapper) {
         logger.d { "TonKitManager start" }
         val kit = wrapper.tonKit
@@ -258,7 +300,12 @@ class TonKitManager(
                 logger.d { "TonKitManager EnterForeground" }
                 if (!isNetworkPaused(account)) {
                     delay(1000)
-                    if (!isNetworkPaused(account)) kit.refresh()
+                    lifecycleMutex.withLock {
+                        if (!isNetworkPaused(account)) {
+                            if (!wrapper.networkStarted) wrapper.startNetwork()
+                            kit.refresh()
+                        }
+                    }
                 }
             } else if (state == BackgroundManagerState.EnterBackground) {
                 if (pollingSessionCount.get() == 0 && !backgroundKeepAliveManager.isKeepAlive(BlockchainType.Ton)) {
@@ -269,9 +316,26 @@ class TonKitManager(
             }
         }
     }
+
+    private class Entry(val wrapper: TonKitWrapper, val job: Job) {
+        var useCount = 0
+    }
 }
 
-class TonKitWrapper(val tonKit: TonKit, val tonWallet: TonWallet) {
+internal fun tonKitWalletId(accountId: String, version: TonWalletVersion): String =
+    accountId + version.walletIdSuffix
+
+/**
+ * Persisted in kit database names and TON Connect sessions, so it must never change.
+ * V4R2 keeps the bare account id: data created before W5 support stays in use.
+ */
+val TonWalletVersion.walletIdSuffix: String
+    get() = when (this) {
+        TonWalletVersion.V4R2 -> ""
+        TonWalletVersion.W5 -> "-w5"
+    }
+
+class TonKitWrapper(val tonKit: TonKit, val tonWallet: TonWallet, val version: TonWalletVersion) {
     /** True once [TonKit.startListener] has been called and no matching [TonKit.stop] followed it. */
     var networkStarted: Boolean = false
 }
@@ -282,8 +346,8 @@ fun TonKit.statusInfo() = buildMap {
     put("Jetton Sync State", jettonSyncStateFlow.value.toAdapterState())
 }
 
-val Jetton.tokenType
-    get() = TokenType.Jetton(address.toUserFriendly(true))
+fun Jetton.tokenType(version: TonWalletVersion): TokenType =
+    TonAsset.Jetton(address.toUserFriendly(true), version).tokenType
 
 fun SyncState.toAdapterState(): AdapterState = when (this) {
     is SyncState.NotSynced -> AdapterState.NotSynced(error)
@@ -292,18 +356,20 @@ fun SyncState.toAdapterState(): AdapterState = when (this) {
 }
 
 fun Account.toTonWalletFullAccess(
+    version: TonWalletVersion,
     hardwarePublicKeyStorage: IHardwarePublicKeyStorage,
     blockchainType: BlockchainType?,
 ): TonWallet.FullAccess {
-    val toTonWallet = toTonWallet(hardwarePublicKeyStorage, blockchainType)
+    val toTonWallet = toTonWallet(version, hardwarePublicKeyStorage, blockchainType)
 
     return toTonWallet as? TonWallet.FullAccess ?: throw IllegalArgumentException("Watch Only")
 }
 
 fun Account.toTonWallet(
+    version: TonWalletVersion,
     hardwarePublicKeyStorage: IHardwarePublicKeyStorage,
     blockchainType: BlockchainType?,
-) = when (this.type) {
+): TonWallet = when (this.type) {
     is AccountType.Mnemonic -> {
         val hdWallet = HDWallet(
             (this.type as AccountType.Mnemonic).seed,
@@ -312,11 +378,13 @@ fun Account.toTonWallet(
             Curve.Ed25519
         )
         val privateKey = hdWallet.privateKey(0)
-        TonWallet.Seed(privateKey.privKeyBytes.toFixedSize(32))
+        TonWallet.Seed(privateKey.privKeyBytes.toFixedSize(32), version.kitVersion)
     }
 
-    is AccountType.TonAddress -> {
-        TonWallet.WatchOnly((this.type as AccountType.TonAddress).address)
+    // isCompatibleWith keeps W5 tokens off watched addresses, so no W5 wallet reaches this.
+    is AccountType.TonAddress -> when (version) {
+        TonWalletVersion.V4R2 -> TonWallet.WatchOnly((this.type as AccountType.TonAddress).address)
+        TonWalletVersion.W5 -> throw IllegalArgumentException("A watched TON address has no W5 wallet")
     }
 
     is AccountType.HardwareCard -> {
@@ -340,7 +408,8 @@ fun Account.toTonWallet(
             }
             TonWallet.FullAccess(
                 PublicKeyEd25519(ByteString(hardwarePublicKey.key.value.hexStringToByteArray())),
-                get<TonHardwareSigners>(TonHardwareSigners::class.java).cardHashSigner(hardwarePublicKey)
+                get<TonHardwareSigners>(TonHardwareSigners::class.java).cardHashSigner(hardwarePublicKey),
+                version.kitVersion,
             )
         }
     }
@@ -349,3 +418,9 @@ fun Account.toTonWallet(
         "Account type ${this.javaClass.simpleName} can not be converted to TonKit.WalletType"
     )
 }
+
+private val TonWalletVersion.kitVersion: KitTonWalletVersion
+    get() = when (this) {
+        TonWalletVersion.V4R2 -> KitTonWalletVersion.V4R2
+        TonWalletVersion.W5 -> KitTonWalletVersion.W5
+    }
