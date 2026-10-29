@@ -34,7 +34,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
 import cash.p.terminal.modules.multiswap.exchange.CancelSwapBottomSheet
-import cash.p.terminal.modules.multiswap.exchange.PayCoreDeleteRestrictedBottomSheet
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.DraggableCardSimple
 import cash.p.terminal.ui_compose.components.HSpacer
@@ -52,31 +51,19 @@ internal fun MultiSwapExchangesScreen(
     uiState: MultiSwapExchangesUiState,
     onSelect: (ExchangeCardItem) -> Unit,
     onDelete: (ExchangeCardItem) -> Unit,
-    onPayCoreSelectBank: (ExchangeCardItem) -> Unit,
     onBack: () -> Unit,
 ) {
     var revealedCardId by remember { mutableStateOf<String?>(null) }
     var deleteConfirmationItem by remember { mutableStateOf<ExchangeCardItem?>(null) }
 
     deleteConfirmationItem?.let { item ->
-        if (item.isPayCore) {
-            PayCoreDeleteRestrictedBottomSheet(
-                requiresBankSelection = item.requiresBankSelection,
-                onSelectBank = {
-                    deleteConfirmationItem = null
-                    onPayCoreSelectBank(item)
-                },
-                onDismiss = { deleteConfirmationItem = null },
-            )
-        } else {
-            CancelSwapBottomSheet(
-                onConfirm = {
-                    deleteConfirmationItem = null
-                    onDelete(item)
-                },
-                onDismiss = { deleteConfirmationItem = null },
-            )
-        }
+        CancelSwapBottomSheet(
+            onConfirm = {
+                deleteConfirmationItem = null
+                onDelete(item)
+            },
+            onDismiss = { deleteConfirmationItem = null },
+        )
     }
 
     Scaffold(
@@ -174,18 +161,11 @@ private fun ExchangeCardContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                if (item.isPayCore) {
-                    CoinIconPair(
-                        coinIconUrlIn = item.coinIconUrlIn,
-                        coinIconUrlOut = item.coinIconUrlOut,
-                    )
-                } else {
-                    CoinIconChain(
-                        coinIconUrlIn = item.coinIconUrlIn,
-                        coinIconUrlIntermediate = item.coinIconUrlIntermediate,
-                        coinIconUrlOut = item.coinIconUrlOut,
-                    )
-                }
+                CoinIconChain(
+                    coinIconUrlIn = item.coinIconUrlIn,
+                    coinIconUrlIntermediate = item.coinIconUrlIntermediate,
+                    coinIconUrlOut = item.coinIconUrlOut,
+                )
                 VSpacer(height = 8.dp)
                 subhead2_leah(text = item.statusText)
             }
@@ -209,24 +189,6 @@ private fun CoinIconChain(
         HsImageCircle(
             modifier = Modifier.size(24.dp),
             url = coinIconUrlIntermediate,
-        )
-        DashSeparator()
-        HsImageCircle(
-            modifier = Modifier.size(24.dp),
-            url = coinIconUrlOut,
-        )
-    }
-}
-
-@Composable
-private fun CoinIconPair(
-    coinIconUrlIn: String?,
-    coinIconUrlOut: String?,
-) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        HsImageCircle(
-            modifier = Modifier.size(24.dp),
-            url = coinIconUrlIn,
         )
         DashSeparator()
         HsImageCircle(
@@ -300,7 +262,6 @@ private fun MultiSwapExchangesScreenPreview() {
             ),
             onSelect = {},
             onDelete = {},
-            onPayCoreSelectBank = {},
             onBack = {},
         )
     }

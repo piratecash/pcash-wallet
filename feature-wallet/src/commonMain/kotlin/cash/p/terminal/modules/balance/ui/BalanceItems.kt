@@ -19,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,7 +30,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import cash.p.terminal.core.usecase.PayCoreNavigationTarget
 import cash.p.terminal.feature.wallet.FaqTopic
 import cash.p.terminal.feature.wallet.WalletPlatformPages
 import cash.p.terminal.feature.wallet.WalletSendPages
@@ -50,7 +48,6 @@ import cash.p.terminal.modules.manageaccount.dialogs.showBackupRequiredDialog
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.receive.ui.ReceiveChooseCoinPage
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
-import cash.p.terminal.modules.transactions.TransactionItem
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.resources.AccountRecovery_MigrationRecommended
@@ -101,7 +98,6 @@ fun BalanceItems(
     navigation: HSNavigation,
     uiState: BalanceUiState,
     totalState: TotalUIState,
-    onOpenTransactionInfo: (TransactionItem) -> Unit,
 ) {
     val platformActions: BalancePlatformActions = koinInject()
     val pages: WalletSendPages = koinInject()
@@ -113,17 +109,6 @@ fun BalanceItems(
         platformActions.onBalancePageActive()
         onDispose {
             platformActions.onBalancePageInactive()
-        }
-    }
-
-    LaunchedEffect(viewModel) {
-        viewModel.payCoreNavigationEvents.collect { event ->
-            when (event) {
-                is PayCoreNavigationTarget.OpenTransactionInfo ->
-                    onOpenTransactionInfo(event.transactionItem)
-                is PayCoreNavigationTarget.OpenPayCoreDetail ->
-                    navigation.openOrNotifyUnsupported(pages.multiSwapExchanges(null, event.date), hud)
-            }
         }
     }
 
@@ -307,21 +292,9 @@ fun BalanceItems(
                     PendingSwapBanner(
                         count = uiState.pendingSwapCount,
                         modifier = Modifier.padding(vertical = 22.dp, horizontal = 16.dp),
-                        showSpinner = uiState.singlePayCoreSwapLoading,
                         onClick = {
-                            if (uiState.pendingSwapCount == 1) {
-                                val payCoreDate = uiState.singlePayCoreSwapDate
-                                val swapId = uiState.singlePendingSwapId
-                                when {
-                                    payCoreDate != null -> viewModel.onSinglePayCoreSwapClick()
-                                    else -> navigation.openOrNotifyUnsupported(
-                                        pages.multiSwapExchanges(swapId, null),
-                                        hud,
-                                    )
-                                }
-                            } else {
-                                navigation.openOrNotifyUnsupported(pages.multiSwapExchanges(null, null), hud)
-                            }
+                            val swapId = uiState.singlePendingSwapId.takeIf { uiState.pendingSwapCount == 1 }
+                            navigation.openOrNotifyUnsupported(pages.multiSwapExchanges(swapId), hud)
                         }
                     )
                 }
@@ -480,7 +453,6 @@ private fun NoCoinsBlock() {
 private fun PendingSwapBanner(
     count: Int,
     modifier: Modifier,
-    showSpinner: Boolean,
     onClick: () -> Unit,
 ) {
     val shape = RoundedCornerShape(12.dp)
@@ -496,7 +468,6 @@ private fun PendingSwapBanner(
             } else {
                 stringResource(Res.string.multi_swap_unfinished_plural).format(count)
             },
-            showSpinner = showSpinner,
             onClick = onClick
         )
     }

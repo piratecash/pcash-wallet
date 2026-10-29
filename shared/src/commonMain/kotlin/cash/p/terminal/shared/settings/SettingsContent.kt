@@ -354,11 +354,11 @@ private fun ApplicationSettingsSection(
                     onClick = onAction.callbackFor(SettingsAction.ShareApp),
                 )
             },
-            SettingsAction.Contact(uiState.isPayCoreEnabled) to {
+            SettingsAction.Contact to {
                 SettingsCell(
                     title = Res.string.SettingsContact_Title,
                     icon = Res.drawable.ic_mail_24,
-                    onClick = onAction.callbackFor(SettingsAction.Contact(uiState.isPayCoreEnabled)),
+                    onClick = onAction.callbackFor(SettingsAction.Contact),
                 )
             },
         )

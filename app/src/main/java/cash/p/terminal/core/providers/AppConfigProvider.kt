@@ -28,8 +28,6 @@ object AppConfigProvider : AddressResolutionConfig {
     val appTwitterLink = SharedAppConfig.appTwitterLink
     val appTelegramLink = SharedAppConfig.appTelegramLink
     val appRedditLink = SharedAppConfig.appRedditLink
-    val payCoreSupportEmail by lazy { Translator.getString(R.string.payCoreSupportEmail) }
-    val payCoreSupportUrl get() = SharedAppConfig.payCoreSupportUrl
     const val walletConnectUrl = "relay.walletconnect.com"
     val walletConnectProjectId by lazy { EncodedSecrets.WALLET_CONNECT_V2_KEY }
     val walletConnectAppMetaDataName by lazy { Translator.getString(R.string.walletConnectAppMetaDataName) }

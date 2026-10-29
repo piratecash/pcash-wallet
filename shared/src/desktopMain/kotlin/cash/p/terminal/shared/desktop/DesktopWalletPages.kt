@@ -100,7 +100,7 @@ class DesktopWalletPages(private val urlOpener: UrlOpener) :
     ): HSPage? = null
 
     override fun swapFrom(tokenIn: Token?): HSPage? = null
-    override fun multiSwapExchanges(pendingMultiSwapId: String?, payCoreDate: Long?): HSPage? = null
+    override fun multiSwapExchanges(pendingMultiSwapId: String?): HSPage? = null
     override fun offlineBroadcast(initialInput: String): HSPage? = null
 
     @Composable

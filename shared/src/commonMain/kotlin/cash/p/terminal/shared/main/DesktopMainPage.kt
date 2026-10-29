@@ -40,7 +40,6 @@ import cash.p.terminal.modules.releasenotes.ReleaseNotesPage
 import cash.p.terminal.modules.premium.settings.PremiumSettingsPage
 import cash.p.terminal.modules.settings.addresschecker.AddressCheckerPage
 import cash.p.terminal.modules.settings.appearance.AppearancePage
-import cash.p.terminal.modules.transactionInfo.TransactionInfoPage
 import cash.p.terminal.modules.transactions.TransactionsScreen
 import cash.p.terminal.modules.transactions.TransactionsViewModel
 import cash.p.terminal.navigation.HSNavigation
@@ -138,15 +137,7 @@ private fun ShowReleaseNotesAfterUpdate(navigation: HSNavigation) {
 
 @Composable
 private fun BalancePane(navigation: HSNavigation) {
-    val transactionsViewModel = rememberMainPageTransactionsViewModel(navigation)
-    BalanceScreen(
-        navigation = navigation,
-        paddingValues = PaddingValues(),
-        onOpenTransactionInfo = { item ->
-            transactionsViewModel.tmpItemToShow = item
-            navigation.slideFromBottom(TransactionInfoPage())
-        },
-    )
+    BalanceScreen(navigation = navigation, paddingValues = PaddingValues())
 }
 
 @Composable
@@ -235,7 +226,7 @@ private fun openAboutSetting(
 ) {
     when (action) {
         SettingsAction.AboutApp -> navigation.slideFromRight(AboutPage())
-        is SettingsAction.Contact -> navigation.slideFromBottom(ContactOptionsSheet(null))
+        SettingsAction.Contact -> navigation.slideFromBottom(ContactOptionsSheet(null))
         SettingsAction.ShareApp -> shareApp()
         SettingsAction.CompanyWebsite -> urlOpener.open(SharedAppConfig.companyWebPageLink)
         else -> Unit
@@ -274,6 +265,5 @@ private fun rememberSettingsUiState(): MainSettingUiState {
         aboutAppShowAlert = !allTermsAccepted,
         wcCounterType = null,
         premiumSettingsShowAlert = false,
-        isPayCoreEnabled = false,
     )
 }

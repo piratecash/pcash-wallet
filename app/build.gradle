@@ -89,7 +89,6 @@ android {
         // True only for the disposable baseline-profile generation build type (see baselinegen).
         buildConfigField "boolean", "BASELINE_PROFILE_MODE", "false"
         buildConfigField "boolean", "DIAGNOSTIC_LOGGING", "false"
-        buildConfigField "boolean", "PAYCORE_ENABLED", "true"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         ksp {
@@ -105,7 +104,6 @@ android {
         resValue "string", "githubRawBaseUrl", "https://raw.githubusercontent.com/piratecash/pcash-wallet/master"
         resValue "string", "githubApiProxyBaseUrl", "https://p.cash/api/github"
         resValue "string", "githubRawProxyBaseUrl", "https://p.cash/api/github-raw"
-        resValue "string", "payCoreSupportEmail", "support@paycore.pw"
         resValue "string", "walletConnectAppMetaDataName", "pcash"
         resValue "string", "walletConnectAppMetaDataUrl", "p.cash"
         resValue "string", "walletConnectAppMetaDataIcon", "https://raw.githubusercontent.com/piratecash/pcash-wallet-ios/master/UnstoppableWallet/UnstoppableWallet/AppIcon.xcassets/AppIcon.appiconset/p.cash_1024.png"
