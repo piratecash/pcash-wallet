@@ -67,8 +67,8 @@ class DesktopWalletPages(private val urlOpener: UrlOpener) :
 
     override val mainPage = DesktopMainPage::class
     override fun swapFrom(tokenIn: Token?): HSPage = SwapPage(tokenIn = tokenIn)
-    override fun multiSwapExchanges(pendingMultiSwapId: String?, payCoreDate: Long?): HSPage =
-        MultiSwapExchangesPage(pendingMultiSwapId, payCoreDate)
+    override fun multiSwapExchanges(pendingMultiSwapId: String?): HSPage =
+        MultiSwapExchangesPage(pendingMultiSwapId)
 }
 
 /** Desktop always has a password, so it is asked again before every secret (Android asks for a set PIN). */

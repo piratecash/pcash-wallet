@@ -363,8 +363,8 @@ class IterativeExactOutSearchTest {
         }
 
     private fun mockRates(priceIn: BigDecimal?, priceOut: BigDecimal?) {
-        coEvery { rateService.rate(tokenIn, currency) } returns priceIn
-        coEvery { rateService.rate(tokenOut, currency) } returns priceOut
+        every { rateService.rate(tokenIn, currency) } returns priceIn
+        every { rateService.rate(tokenOut, currency) } returns priceOut
     }
 
     private fun provider(output: suspend (BigDecimal) -> BigDecimal): IMultiSwapProvider =

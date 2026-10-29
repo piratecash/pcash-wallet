@@ -2,7 +2,6 @@ package cash.p.terminal.modules.multiswap.providers
 
 import cash.p.terminal.modules.multiswap.providers.backendswap.BackendSwapProvidersFactory
 import cash.p.terminal.modules.multiswap.providers.backendswap.BackendSwapProvidersRepository
-import cash.p.terminal.modules.paycore.PayCoreProvider
 
 class SwapProvidersRegistry(
     changeNowProvider: ChangeNowProvider,
@@ -10,7 +9,6 @@ class SwapProvidersRegistry(
     exolixProvider: ExolixProvider,
     yiFiProvider: YiFiProvider,
     stonFiProvider: StonFiProvider,
-    payCoreProvider: PayCoreProvider,
     unstoppableProvidersFactory: UnstoppableProvidersFactory,
     private val backendSwapProvidersRepository: BackendSwapProvidersRepository,
     private val backendSwapProvidersFactory: BackendSwapProvidersFactory,
@@ -29,8 +27,7 @@ class SwapProvidersRegistry(
         ThorChainProvider,
         MayaProvider,
         AllBridgeProvider,
-        stonFiProvider,
-        payCoreProvider
+        stonFiProvider
     ) + unstoppableProvidersFactory.create()
 
     val providers: List<IMultiSwapProvider>

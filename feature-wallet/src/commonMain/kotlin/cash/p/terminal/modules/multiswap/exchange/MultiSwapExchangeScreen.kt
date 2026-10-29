@@ -109,9 +109,6 @@ import cash.p.terminal.resources.multi_swap_route_title
 import cash.p.terminal.resources.multi_swap_step
 import cash.p.terminal.resources.multi_swap_understood_continue
 import cash.p.terminal.resources.multi_swap_via
-import cash.p.terminal.resources.paycore_delete_restricted_warning
-import cash.p.terminal.resources.paycore_delete_to_complete_select_bank
-import cash.p.terminal.resources.paycore_select_bank
 import cash.p.terminal.resources.swap_continue_later
 import cash.p.terminal.resources.swap_you_receive
 import cash.p.terminal.resources.swap_you_send
@@ -756,63 +753,6 @@ internal fun CancelSwapBottomSheet(
                     scope.launch { sheetState.hide() }.invokeOnCompletion { onDismiss() }
                 },
             )
-            VSpacer(32.dp)
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-internal fun PayCoreDeleteRestrictedBottomSheet(
-    requiresBankSelection: Boolean,
-    onSelectBank: () -> Unit,
-    onDismiss: () -> Unit,
-) {
-    val scope = rememberCoroutineScope()
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val dismiss = { scope.launch { sheetState.hide() }.invokeOnCompletion { onDismiss() } }
-
-    TransparentModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-    ) {
-        BottomSheetHeader(
-            iconPainter = painterResource(Res.drawable.ic_attention_24),
-            iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
-            title = stringResource(Res.string.Alert_TitleWarning),
-            onCloseClick = { dismiss() },
-        ) {
-            VSpacer(12.dp)
-            val warningText = if (requiresBankSelection) {
-                stringResource(Res.string.paycore_delete_restricted_warning) + " " +
-                        stringResource(Res.string.paycore_delete_to_complete_select_bank)
-            } else {
-                stringResource(Res.string.paycore_delete_restricted_warning)
-            }
-            TextImportantWarning(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                text = warningText,
-            )
-            VSpacer(32.dp)
-            if (requiresBankSelection) {
-                ButtonPrimaryYellow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
-                    title = stringResource(Res.string.paycore_select_bank),
-                    onClick = {
-                        scope.launch { sheetState.hide() }.invokeOnCompletion { onSelectBank() }
-                    },
-                )
-            } else {
-                ButtonPrimaryYellow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
-                    title = stringResource(Res.string.Button_Close),
-                    onClick = { dismiss() },
-                )
-            }
             VSpacer(32.dp)
         }
     }

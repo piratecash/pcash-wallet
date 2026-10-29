@@ -1,6 +1,10 @@
 package cash.p.terminal.modules.multiswap
 
-import cash.p.terminal.modules.paycore.PayCoreAssets
+import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.entities.Coin
+import cash.p.terminal.wallet.entities.TokenType
+import io.horizontalsystems.core.entities.Blockchain
+import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.entities.Currency
 import io.mockk.every
 import io.mockk.mockk
@@ -23,7 +27,12 @@ class FiatServiceTest {
 
     private val assetFiatRateService = mockk<AssetFiatRateService>()
     private val currency = Currency("USD", "$", 2)
-    private val token = PayCoreAssets.rubToken
+    private val token = Token(
+        coin = Coin(uid = "test-coin", name = "Test Coin", code = "TST", marketCapRank = null, image = null),
+        blockchain = Blockchain(BlockchainType.Ethereum, "Ethereum", null),
+        type = TokenType.Native,
+        decimals = 2,
+    )
 
     @After
     fun tearDown() {

@@ -14,7 +14,6 @@ import cash.p.terminal.core.managers.MoneroHardwareGateway
 import cash.p.terminal.core.managers.PlatformAccountDataCleaner
 import cash.p.terminal.core.managers.SolanaHardwareSigners
 import cash.p.terminal.core.managers.StellarHardwareSigners
-import cash.p.terminal.core.managers.SystemLanguageProvider
 import cash.p.terminal.core.managers.TonHardwareSigners
 import cash.p.terminal.core.managers.TronHardwareSigners
 import cash.p.terminal.core.providers.AddressResolutionConfig
@@ -260,11 +259,6 @@ object DesktopNonFatalReporter : NonFatalReporter {
 object DesktopAddressResolutionConfig : AddressResolutionConfig {
     override val udnApiKey: String get() = EncodedSecrets.UDN_API_KEY
     override val blocksDecodedEthereumRpc = "https://api.blocksdecoded.com/v1/ethereum-rpc/mainnet"
-}
-
-/** The app language overwrites the default locale; `user.language` keeps the OS one captured at JVM start. */
-object DesktopSystemLanguageProvider : SystemLanguageProvider {
-    override val language: String get() = System.getProperty("user.language").orEmpty()
 }
 
 /** Reads the open session per call, so a wipe and a new vault never serve the old rows. */

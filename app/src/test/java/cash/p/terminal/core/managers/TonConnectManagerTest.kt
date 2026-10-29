@@ -2,6 +2,7 @@ package cash.p.terminal.core.managers
 
 import android.content.Context
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.core.storage.AccountsDao
 import cash.p.terminal.core.storage.AppDatabase
 import cash.p.terminal.wallet.Account
@@ -66,7 +67,8 @@ class TonConnectManagerTest {
 
     @Before
     fun setUp() {
-        mockkObject(TonKit.Companion)
+        mockkObject(TonKit.Companion, SharedAppConfig)
+        every { SharedAppConfig.tonApiKeys } returns listOf("api-key")
         every { TonKit.getTonApi(any(), any()) } returns mockk()
         every { TonKit.getTransactionSigner(any()) } returns mockk()
         mockkObject(TonConnectKit.Companion)

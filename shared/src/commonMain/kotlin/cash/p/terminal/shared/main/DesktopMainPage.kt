@@ -37,7 +37,6 @@ import cash.p.terminal.modules.send.offline.rememberImportTransactionFile
 import cash.p.terminal.modules.settings.addresschecker.AddressCheckerPage
 import cash.p.terminal.modules.settings.appearance.AppearancePage
 import cash.p.terminal.modules.settings.donate.DonateTokenSelectPage
-import cash.p.terminal.modules.transactionInfo.TransactionInfoPage
 import cash.p.terminal.modules.transactions.TransactionsScreen
 import cash.p.terminal.modules.transactions.TransactionsViewModel
 import cash.p.terminal.navigation.HSNavigation
@@ -101,15 +100,7 @@ class DesktopMainPage(private val appVersion: String) : HSPage() {
 
 @Composable
 private fun BalancePane(navigation: HSNavigation) {
-    val transactionsViewModel = rememberMainPageTransactionsViewModel(navigation)
-    BalanceScreen(
-        navigation = navigation,
-        paddingValues = PaddingValues(),
-        onOpenTransactionInfo = { item ->
-            transactionsViewModel.tmpItemToShow = item
-            navigation.slideFromBottom(TransactionInfoPage())
-        },
-    )
+    BalanceScreen(navigation = navigation, paddingValues = PaddingValues())
 }
 
 @Composable
@@ -213,6 +204,5 @@ private fun rememberSettingsUiState(): MainSettingUiState {
         aboutAppShowAlert = false,
         wcCounterType = null,
         premiumSettingsShowAlert = false,
-        isPayCoreEnabled = false,
     )
 }

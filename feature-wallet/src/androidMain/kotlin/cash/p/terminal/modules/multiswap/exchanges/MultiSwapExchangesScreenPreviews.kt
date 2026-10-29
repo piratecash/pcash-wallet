@@ -38,7 +38,6 @@ private fun MultiSwapExchangesScreenPreview() {
             ),
             onSelect = {},
             onDelete = {},
-            onPayCoreSelectBank = {},
             onBack = {},
         )
     }

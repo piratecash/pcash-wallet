@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -26,6 +27,7 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -38,6 +40,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.reflect.full.callSuspend
 import kotlin.reflect.full.declaredMemberFunctions
@@ -81,7 +84,8 @@ class TonKitManagerOfflineGateTest {
 
     @Before
     fun setUp() {
-        mockkObject(TonKit.Companion)
+        mockkObject(TonKit.Companion, SharedAppConfig)
+        every { SharedAppConfig.tonApiKeys } returns listOf("api-key")
         coEvery { TonKit.migrateDatabase(any(), any(), any(), any()) } returns DatabaseMigrationResult(0, 1)
         every { TonKit.createHttpClient(any(), any()) } returns mockk()
         coEvery { TonKit.getInstance(any(), any(), any(), account.id, any(), any()) } returns mockTonKit
@@ -265,6 +269,45 @@ class TonKitManagerOfflineGateTest {
 
         coVerify(timeout = 5_000, exactly = 1) { nextKit.stop() }
         coVerify(exactly = 1) { mockTonKit.stop() }
+    }
+
+    @Test
+    fun getTonKitWrapper_foregroundAfterBackground_restartsListener() = testScope.runTest {
+        every { offlineModeManager.isNetworkPaused(offlineKey) } returns false
+        createManager().getTonKitWrapper(account, TonWalletVersion.V4R2, BlockchainType.Ton)
+        coVerify(timeout = 5_000, exactly = 1) { mockTonKit.startListener() }
+
+        backgroundStateFlow.value = BackgroundManagerState.EnterBackground
+        coVerify(timeout = 5_000, exactly = 1) { mockTonKit.stop() }
+        backgroundStateFlow.value = BackgroundManagerState.EnterForeground
+
+        coVerify(timeout = 5_000, exactly = 2) { mockTonKit.startListener() }
+    }
+
+    @Test
+    fun getTonKitWrapper_pausedWhileForegroundWaitsForLock_staysOffline() = testScope.runTest {
+        val paused = AtomicBoolean(false)
+        every { offlineModeManager.isNetworkPaused(offlineKey) } answers { paused.get() }
+        val manager = createManager()
+        manager.getTonKitWrapper(account, TonWalletVersion.V4R2, BlockchainType.Ton)
+        backgroundStateFlow.value = BackgroundManagerState.EnterBackground
+        coVerify(timeout = 5_000, exactly = 1) { mockTonKit.stop() }
+
+        // An offline transition lands while the foreground branch, past its delay, waits for the lock.
+        val lifecycleMutex = TonKitManager::class.java.getDeclaredField("lifecycleMutex").apply {
+            isAccessible = true
+        }.get(manager) as Mutex
+        lifecycleMutex.lock()
+        backgroundStateFlow.value = BackgroundManagerState.EnterForeground
+        Thread.sleep(1_500)
+        paused.set(true)
+        lifecycleMutex.unlock()
+        // Handled only after the foreground branch returns, so the checks below see its final effect.
+        backgroundStateFlow.value = BackgroundManagerState.EnterBackground
+        coVerify(timeout = 5_000, exactly = 2) { mockTonKit.stop() }
+
+        coVerify(exactly = 1) { mockTonKit.startListener() }
+        coVerify(exactly = 1) { mockTonKit.refresh() }
     }
 
     @Test

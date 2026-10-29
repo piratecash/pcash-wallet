@@ -8,20 +8,18 @@ import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningVi
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.displayoptions.DisplayPricePeriod
 import cash.p.terminal.modules.multiswap.providers.SwapProvidersStorage
-import cash.p.terminal.modules.paycore.PayCorePreferences
 import cash.p.terminal.wallet.BalanceSortType
 import cash.p.terminal.wallet.entities.EncryptedString
 import cash.p.terminal.wallet.managers.TransactionDisplayLevel
 import io.horizontalsystems.core.DesktopSettingsStore
 import kotlinx.coroutines.flow.StateFlow
 
-/** Same defaults as Android `LocalStorageManager`; the PIN and PayCore values arrive already encrypted. Tor is Android-only. */
+/** Same defaults as Android `LocalStorageManager`; the PIN arrives already encrypted. Tor is Android-only. */
 class DesktopWalletSettingsStorage(private val store: DesktopSettingsStore) :
     BalanceSettingsStorage,
     TransactionSettingsStorage,
     NetworkSettingsStorage,
-    SwapProvidersStorage,
-    PayCorePreferences {
+    SwapProvidersStorage {
 
     override var sortType: BalanceSortType
         get() = BalanceSortType.getTypeFromString(store.string(SORT_TYPE) ?: BalanceSortType.Value.getAsString())
@@ -137,10 +135,6 @@ class DesktopWalletSettingsStorage(private val store: DesktopSettingsStore) :
         get() = store.string(BACKEND_SWAP_PROVIDERS)
         set(value) = store.setString(BACKEND_SWAP_PROVIDERS, value)
 
-    override fun getString(key: String): String? = store.string("$PAYCORE_PREFIX$key")
-
-    override fun putStringDurably(key: String, value: String) = store.setString("$PAYCORE_PREFIX$key", value)
-
     override fun isNetworkFeeWarningDismissed(blockchainTypeUid: String): Boolean =
         store.flag(networkFeeWarningKey(blockchainTypeUid)) ?: false
 
@@ -186,6 +180,5 @@ class DesktopWalletSettingsStorage(private val store: DesktopSettingsStore) :
         const val NETWORK_FEE_WARNING_PREFIX = "networkFeeWarningDismissed_"
         const val DISABLED_SWAP_PROVIDERS = "disabledSwapProviders"
         const val BACKEND_SWAP_PROVIDERS = "backendSwapProviders"
-        const val PAYCORE_PREFIX = "paycore_"
     }
 }

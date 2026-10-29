@@ -26,8 +26,6 @@ import cash.p.terminal.modules.multiswap.providers.SwapProvidersRepository
 import cash.p.terminal.modules.multiswap.exchange.MultiSwapExchangeScreen
 import cash.p.terminal.modules.multiswap.exchange.MultiSwapExchangeViewModel
 import cash.p.terminal.modules.multiswap.providersettings.SwapProvidersSettingsPage
-import cash.p.terminal.modules.paycore.exchange.PayCoreExchangeDetailScreen
-import cash.p.terminal.modules.paycore.exchange.PayCoreExchangeDetailViewModel
 import cash.p.terminal.modules.transactionInfo.TransactionInfoPage
 import cash.p.terminal.modules.transactions.TransactionsViewModel
 import cash.p.terminal.navigation.HSNavigation
@@ -50,31 +48,19 @@ import cash.p.terminal.ui_compose.components.rememberHudMessenger
 
 class MultiSwapExchangesPage(
     val pendingMultiSwapId: String? = null,
-    val payCoreDate: Long? = null,
 ) : HSPage() {
 
     @Composable
     override fun GetContent(navigation: HSNavigation) {
-        val directPayCoreDate = payCoreDate?.takeIf { it > 0 }
-        val viewModel = koinViewModel<MultiSwapExchangesViewModel>()
-
-        PayCoreNavigationHandler(
-            viewModel = viewModel,
-            navigation = navigation,
-        )
-
-        when {
-            pendingMultiSwapId != null -> ExchangeDetailContent(
+        if (pendingMultiSwapId != null) {
+            ExchangeDetailContent(
                 swapId = pendingMultiSwapId,
                 detailPage = this,
                 navigation = navigation,
             )
-            directPayCoreDate != null -> PayCoreExchangeDetailContent(
-                date = directPayCoreDate,
-                onBack = navigation::navigateUp,
-            )
-            else -> ExchangesListContent(
-                viewModel = viewModel,
+        } else {
+            ExchangesListContent(
+                viewModel = koinViewModel<MultiSwapExchangesViewModel>(),
                 navigation = navigation,
                 page = this,
             )
@@ -89,16 +75,6 @@ private class MultiSwapExchangeDetailPage(private val swapId: String) : HSPage()
             swapId = swapId,
             detailPage = this,
             navigation = navigation,
-        )
-    }
-}
-
-private class PayCoreExchangeDetailPage(private val date: Long) : HSPage() {
-    @Composable
-    override fun GetContent(navigation: HSNavigation) {
-        PayCoreExchangeDetailContent(
-            date = date,
-            onBack = navigation::navigateUp,
         )
     }
 }
@@ -213,22 +189,6 @@ private fun CloseDetailEffect(
 }
 
 @Composable
-private fun PayCoreNavigationHandler(
-    viewModel: MultiSwapExchangesViewModel,
-    navigation: HSNavigation,
-) {
-    LaunchedEffect(viewModel) {
-        viewModel.events.collect { effect ->
-            when (effect) {
-                is PayCoreNavigationEffect.OpenPayCoreDetail -> {
-                    navigation.slideFromRight(PayCoreExchangeDetailPage(effect.date))
-                }
-            }
-        }
-    }
-}
-
-@Composable
 private fun ExchangesListContent(
     viewModel: MultiSwapExchangesViewModel,
     navigation: HSNavigation,
@@ -243,15 +203,8 @@ private fun ExchangesListContent(
 
     MultiSwapExchangesScreen(
         uiState = viewModel.uiState,
-        onSelect = { item ->
-            if (item.isPayCore) {
-                viewModel.onPayCoreItemClick(item)
-            } else {
-                navigation.slideFromRight(MultiSwapExchangeDetailPage(item.id))
-            }
-        },
+        onSelect = { item -> navigation.slideFromRight(MultiSwapExchangeDetailPage(item.id)) },
         onDelete = viewModel::onDelete,
-        onPayCoreSelectBank = viewModel::onPayCoreItemClick,
         onBack = navigation::navigateUpSafely,
     )
 }
@@ -315,19 +268,5 @@ private fun ExchangeDetailContent(
                 navigation.slideFromBottom(TransactionInfoPage())
             }
         },
-    )
-}
-
-@Composable
-private fun PayCoreExchangeDetailContent(
-    date: Long,
-    onBack: () -> Unit,
-) {
-    val viewModel = koinViewModel<PayCoreExchangeDetailViewModel> {
-        parametersOf(date)
-    }
-    PayCoreExchangeDetailScreen(
-        uiState = viewModel.uiState,
-        onBack = onBack,
     )
 }

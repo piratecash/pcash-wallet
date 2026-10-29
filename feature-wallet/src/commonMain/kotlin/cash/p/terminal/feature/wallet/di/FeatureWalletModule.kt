@@ -239,7 +239,6 @@ import cash.p.terminal.core.storage.AppDatabaseProvider
 import cash.p.terminal.core.usecase.GetRestoreHeightForWalletUseCase
 import cash.p.terminal.core.usecase.RescanMoneroUseCase
 import cash.p.terminal.core.usecase.RescanZcashUseCase
-import cash.p.terminal.core.usecase.ResolvePayCoreNavigationUseCase
 import cash.p.terminal.core.usecase.ResolveTransactionItemUseCase
 import cash.p.terminal.modules.balance.BalanceAccountsViewModel
 import cash.p.terminal.modules.balance.BalanceAdapterRepository
@@ -282,7 +281,6 @@ import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import cash.p.terminal.di.swapProvidersModule
-import cash.p.terminal.modules.paycore.payCoreModule
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import cash.p.terminal.core.ISendBitcoinAdapter
@@ -328,7 +326,7 @@ import io.horizontalsystems.bitcoincore.storage.UnspentOutputInfo
 import io.horizontalsystems.ethereumkit.models.TransactionData
 
 val featureWalletModule = module {
-    includes(contractValidatorModule, swapProvidersModule, payCoreModule)
+    includes(contractValidatorModule, swapProvidersModule)
     singleOf(::OfflineModeManager)
     singleOf(::OfflineModeUseCase)
     singleOf(::AdapterFactory)
@@ -593,7 +591,6 @@ val featureWalletModule = module {
         ReceiveTokenSelectViewModel(get(), activeAccount, FullCoinsProvider(get(), activeAccount), get())
     }
     factoryOf(::ResolveTransactionItemUseCase)
-    factoryOf(::ResolvePayCoreNavigationUseCase)
     factoryOf(::GetRestoreHeightForWalletUseCase)
     factoryOf(::RescanMoneroUseCase)
     factoryOf(::RescanZcashUseCase)

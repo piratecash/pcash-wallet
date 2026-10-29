@@ -72,4 +72,7 @@ object EncodedSecrets : KoinComponent {
         "ICgGJBBiPRQQHiEEVD0kIDQdJhkuTSwmAQgCBWQlSy8qBEUmVjheHEMzDw==",
         "MiwNCQ9cOiAHKzAGGDVWOEVGXDQJTTgEGUUQF283ZyU2FAg8AkdbfAEEBEAcIEICBSQCRCo9IFleWQwFIQwfG0xEQhQxERgJBhs0Oic6GlZ9ORQUFhg9XjQqCT4VPSgVXAJmDwosNTAmGSFGOg=="
     ))
+    val TONAPI_KEY = decoder.decode(listOf(
+        "MSVWJi5mNTwwKS4gGj0oMjI2LjkiVzQ6NzM2I2w2eiM2KSJVJEUidDMlJiA9KX4yNjdFNSMnIicjKj5GNyNrM3Q+IlUmKzA="
+    ))
 }

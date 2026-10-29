@@ -142,11 +142,6 @@ import org.koin.core.qualifier.named
 import cash.p.terminal.network.swaprepository.SwapProviderTransactionStatusRepository
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.modules.multiswap.SwapSelectCoinViewModel
-import cash.p.terminal.modules.paycore.PayCoreTicker
-import cash.p.terminal.modules.paycore.exchange.PayCoreExchangeDetailViewModel
-import cash.p.terminal.modules.paycore.payment.PayCorePaymentParams
-import cash.p.terminal.modules.paycore.payment.PayCorePaymentViewModel
-import cash.p.terminal.modules.paycore.verification.PayCoreVerificationViewModel
 import cash.p.terminal.modules.multiswap.TimerService
 import cash.p.terminal.modules.multiswap.providers.ThorChainSwapStatusRepository
 import cash.p.terminal.feature.market.di.marketFeatureModule
@@ -260,7 +255,6 @@ import cash.p.terminal.core.managers.PendingTransactionRegistrar
 import cash.p.terminal.network.pirate.domain.repository.PiratePlaceRepository
 import io.horizontalsystems.core.PriceChangeIntervalProvider
 import cash.p.terminal.core.managers.PriceManager
-import cash.p.terminal.core.usecase.ResolvePayCoreNavigationUseCase
 import cash.p.terminal.wallet.providers.RetrofitUtils
 import cash.p.terminal.shared.settings.SettingsPages
 import cash.p.terminal.modules.blockchainstatus.StatusReportExporter
@@ -405,9 +399,6 @@ class DesktopKoinGraphTest {
                 definition<EvmNetworkViewModel>(Blockchain::class),
                 definition<AddRpcViewModel>(Blockchain::class),
                 definition<SwapSelectCoinViewModel>(Token::class, Account::class),
-                definition<PayCoreVerificationViewModel>(PayCoreTicker::class, String::class),
-                definition<PayCorePaymentViewModel>(PayCorePaymentParams::class),
-                definition<PayCoreExchangeDetailViewModel>(Long::class),
                 *marketInjections(),
                 *coinPageInjections(),
                 *walletPageInjections(),
@@ -777,7 +768,6 @@ class DesktopKoinGraphTest {
             IAccountCleaner::class,
             ITransactionRecordRepository::class,
             OfflineOperationGate::class,
-            ResolvePayCoreNavigationUseCase::class,
             SyncPendingMultiSwapUseCase::class,
             BeamSessionOwner::class,
             BeamLifecycleCoordinator::class,

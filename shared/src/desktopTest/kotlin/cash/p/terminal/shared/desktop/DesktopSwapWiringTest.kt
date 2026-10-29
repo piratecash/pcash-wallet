@@ -39,9 +39,8 @@ class DesktopSwapWiringTest {
 
     @Test
     fun multiSwapExchanges_pendingSwap_opensExchangesPageForIt() {
-        val page = assertIs<MultiSwapExchangesPage>(pages.multiSwapExchanges("swap-id", 42L))
+        val page = assertIs<MultiSwapExchangesPage>(pages.multiSwapExchanges("swap-id"))
 
         assertEquals("swap-id", page.pendingMultiSwapId)
-        assertEquals(42L, page.payCoreDate)
     }
 }

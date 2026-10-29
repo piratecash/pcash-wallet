@@ -42,7 +42,7 @@ interface WalletSendPages {
     ): HSPage? = SendPage(SendPage.Input(wallet, title, sendEntryPoint, prefilledData))
 
     fun swapFrom(tokenIn: Token?): HSPage?
-    fun multiSwapExchanges(pendingMultiSwapId: String?, payCoreDate: Long?): HSPage?
+    fun multiSwapExchanges(pendingMultiSwapId: String?): HSPage?
     fun offlineBroadcast(initialInput: String): HSPage? =
         OfflineBroadcastPage(OfflineBroadcastPage.Input(initialInput = initialInput))
 

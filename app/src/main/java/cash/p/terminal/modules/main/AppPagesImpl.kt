@@ -64,8 +64,8 @@ class AppPagesImpl(
 
     override val mainPage = MainPage::class
     override fun swapFrom(tokenIn: Token?): HSPage = SwapPage(tokenIn = tokenIn)
-    override fun multiSwapExchanges(pendingMultiSwapId: String?, payCoreDate: Long?): HSPage =
-        MultiSwapExchangesPage(pendingMultiSwapId, payCoreDate)
+    override fun multiSwapExchanges(pendingMultiSwapId: String?): HSPage =
+        MultiSwapExchangesPage(pendingMultiSwapId)
 
     override suspend fun accessCodeRecovery(): HSPage? {
         var page: HSPage? = null

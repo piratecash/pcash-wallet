@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import cash.p.terminal.modules.paycore.PayCoreAssets
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.Coin
@@ -17,11 +16,6 @@ import io.horizontalsystems.core.entities.BlockchainType
 @Preview(showBackground = true)
 @Composable
 private fun CoinBalanceRowPreview() {
-    val rubItem = CoinBalanceItem(
-        token = PayCoreAssets.rubToken,
-        balance = null,
-        fiatBalanceValue = null
-    )
     val usdtItem = CoinBalanceItem(
         token = Token(
             coin = Coin(
@@ -40,7 +34,6 @@ private fun CoinBalanceRowPreview() {
     )
     ComposeAppTheme {
         Column(modifier = Modifier.background(ComposeAppTheme.colors.backgroundBase)) {
-            CoinBalanceRow(rubItem) {}
             CoinBalanceRow(usdtItem) {}
         }
     }

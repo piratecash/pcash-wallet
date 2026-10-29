@@ -69,12 +69,4 @@ class DesktopWalletSettingsStorageTest {
         assertEquals(setOf("oneinch", "changenow"), storage.disabledProviderIds)
         assertEquals("""[{"name":"changelly"}]""", storage.backendProviders)
     }
-
-    @Test
-    fun payCorePreferences_written_areReadBackPerKey() {
-        storage.putStringDurably("phone_0", "encrypted-phone")
-
-        assertEquals("encrypted-phone", storage.getString("phone_0"))
-        assertNull(storage.getString("phone_1"))
-    }
 }

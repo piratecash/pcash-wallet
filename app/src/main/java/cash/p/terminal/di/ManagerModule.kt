@@ -32,10 +32,6 @@ import cash.p.terminal.modules.premium.settings.AndroidPremiumPlatformSettings
 import cash.p.terminal.modules.premium.settings.PremiumPlatformSettings
 import cash.p.terminal.modules.multiswap.providers.AndroidSwapProvidersStorage
 import cash.p.terminal.modules.multiswap.providers.SwapProvidersStorage
-import cash.p.terminal.modules.paycore.AndroidPayCorePreferences
-import cash.p.terminal.modules.paycore.PayCorePreferences
-import cash.p.terminal.modules.paycore.webview.AndroidPayCoreWebPage
-import cash.p.terminal.modules.paycore.webview.PayCoreWebPage
 import cash.p.terminal.wallet.policy.PlatformOperationSupport
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.preference.PreferenceManager
@@ -101,8 +97,6 @@ import cash.p.terminal.core.managers.GetTonAddressUseCaseImpl
 import cash.p.terminal.core.managers.GuidesManager
 import cash.p.terminal.core.managers.KeyStoreCleaner
 import cash.p.terminal.core.managers.LanguageManager
-import cash.p.terminal.core.managers.SystemLanguageProvider
-import cash.p.terminal.core.managers.SystemLanguageProviderImpl
 import cash.p.terminal.strings.helpers.AndroidLocalizedResources
 import cash.p.terminal.core.managers.LocalStorageManager
 import cash.p.terminal.modules.blockchainstatus.AndroidStatusReportBuildInfo
@@ -267,7 +261,6 @@ val managerModule = module {
     singleOf(::AndroidStatusReportBuildInfo) bind StatusReportBuildInfo::class
     singleOf(::SystemInfoManager) bind ISystemInfoManager::class
     singleOf(::LanguageManager) bind ILanguageManager::class
-    singleOf(::SystemLanguageProviderImpl) bind SystemLanguageProvider::class
     singleOf(::AndroidLocalizedResources) bind LocalizedResources::class
     singleOf(::AppHeadersProviderImpl) bind AppHeadersProvider::class
     singleOf(::DefaultCurrencyManager) bind CurrencyManager::class
@@ -316,8 +309,6 @@ val managerModule = module {
     single<PlatformChainSupport> { AndroidPlatformChainSupport }
     single<PlatformOperationSupport> { AndroidPlatformOperationSupport }
     singleOf(::AndroidSwapProvidersStorage) bind SwapProvidersStorage::class
-    singleOf(::AndroidPayCorePreferences) bind PayCorePreferences::class
-    singleOf(::AndroidPayCoreWebPage) bind PayCoreWebPage::class
     singleOf(::AndroidPremiumPlatformSettings) bind PremiumPlatformSettings::class
     singleOf(::AndroidAppForegroundState) bind AppForegroundState::class
     singleOf(::AndroidMarketSettingsStore) bind MarketSettingsStore::class

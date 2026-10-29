@@ -1,10 +1,7 @@
 package cash.p.terminal.shared.desktop
 
 import cash.p.terminal.modules.multiswap.providers.SwapProvidersStorage
-import cash.p.terminal.modules.paycore.PayCorePreferences
-import cash.p.terminal.modules.paycore.webview.PayCoreWebPage
 import cash.p.terminal.ui.compose.BalanceHideOnFlipHandler
-import cash.p.terminal.core.managers.SystemLanguageProvider
 import cash.p.terminal.modules.contacts.ContactsFileStorage
 import cash.p.terminal.modules.contacts.DeleteContactsPinSettings
 import cash.p.terminal.core.BalanceSettingsStorage
@@ -164,10 +161,8 @@ internal val desktopWalletModule = module {
     singleOf(::DesktopAppRestarter) bind AppRestarter::class
     singleOf(::DesktopWalletSettingsStorage) binds arrayOf(
         BalanceSettingsStorage::class, TransactionSettingsStorage::class, NetworkSettingsStorage::class,
-        SwapProvidersStorage::class, PayCorePreferences::class,
+        SwapProvidersStorage::class,
     )
-    single<SystemLanguageProvider> { DesktopSystemLanguageProvider }
-    single<PayCoreWebPage> { DesktopPayCoreWebPage }
     single<PlatformChainSupport> { DesktopPlatformChainSupport }
     single<PlatformOperationSupport> { DesktopPlatformOperationSupport }
     single<BalanceHideOnFlipHandler> { DesktopBalanceHideOnFlipHandler }

@@ -1,7 +1,6 @@
 package cash.p.terminal.modules.transactionInfo
 
 import cash.p.terminal.core.managers.TransactionAdapterManager
-import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import org.koin.core.scope.Scope
 import cash.p.terminal.core.adapters.EvmTransactionsAdapter
@@ -28,15 +27,12 @@ import cash.p.terminal.resources.Transactions_Completed
 import cash.p.terminal.resources.Transactions_Failed
 import cash.p.terminal.resources.Transactions_Pending
 import cash.p.terminal.resources.Transactions_Processing
-import cash.p.terminal.resources.ic_language
 
 object TransactionInfoModule {
 
     data class ExplorerData(
         val title: String,
         val url: String?,
-        val useDirectTitle: Boolean = false,
-        val iconResId: DrawableResource = Res.drawable.ic_language,
     )
 }
 

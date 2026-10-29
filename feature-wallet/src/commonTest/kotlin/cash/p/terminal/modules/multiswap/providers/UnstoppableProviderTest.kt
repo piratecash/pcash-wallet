@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.multiswap.providers
 
-import cash.p.terminal.modules.paycore.PayCoreProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -47,7 +46,6 @@ class UnstoppableProviderTest {
             MayaProvider.id,
             AllBridgeProvider.id,
             "stonfi",
-            PayCoreProvider.ID,
         )
 
         val unstoppableIds = UnstoppableProvider.registrable().map { it.id }
