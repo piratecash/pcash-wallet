@@ -76,11 +76,6 @@ import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.modules.multiswap.TimerService
 import io.horizontalsystems.ethereumkit.models.RpcSource
 import cash.p.terminal.modules.pin.hiddenwallet.HiddenWalletPinPolicy
-import cash.p.terminal.modules.paycore.PayCoreTicker
-import cash.p.terminal.modules.paycore.exchange.PayCoreExchangeDetailViewModel
-import cash.p.terminal.modules.paycore.payment.PayCorePaymentParams
-import cash.p.terminal.modules.paycore.payment.PayCorePaymentViewModel
-import cash.p.terminal.modules.paycore.verification.PayCoreVerificationViewModel
 import cash.p.terminal.modules.settings.advancedsecurity.AdvancedSecurityViewModel
 import cash.p.terminal.modules.settings.advancedsecurity.securereset.SecureResetTermsViewModel
 import cash.p.terminal.modules.settings.advancedsecurity.terms.DeleteContactsTermsViewModel
@@ -216,9 +211,6 @@ class KoinGraphTest : KoinTest {
             definition<BlockchainStatusViewModel>(BlockchainStatusProvider::class),
             definition<SwapSelectCoinViewModel>(Token::class, Account::class),
             definition<AddressPoisoningViewModel>(String::class, Boolean::class, BlockchainType::class),
-            definition<PayCoreVerificationViewModel>(PayCoreTicker::class, String::class),
-            definition<PayCorePaymentViewModel>(PayCorePaymentParams::class),
-            definition<PayCoreExchangeDetailViewModel>(Long::class),
             definition<MarketTopCoinsViewModel>(TopMarket::class, SortingField::class),
             definition<MarketFiltersViewModel>(MarketFiltersService::class),
             definition<MarketFiltersResultViewModel>(MarketFiltersResultService::class),

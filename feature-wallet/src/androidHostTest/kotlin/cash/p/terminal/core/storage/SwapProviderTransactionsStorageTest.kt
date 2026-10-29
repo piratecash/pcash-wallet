@@ -93,7 +93,9 @@ class SwapProviderTransactionsStorageTest {
     )
 
     private fun getAllByAddressIn(token: Token) =
-        roomStorage.getAll(token, "addr-in", statusesExcluded = emptyList(), limit = 10)
+        roomStorage.getAll(
+            token, "addr-in", statusesExcluded = emptyList(), providersExcluded = emptyList(), limit = 10
+        )
 
     private fun swap(
         date: Long = 1_000L,
@@ -200,12 +202,13 @@ class SwapProviderTransactionsStorageTest {
     fun getAllUnfinishedByAccount_delegatesToDao() {
         val transactions = listOf(swap(accountId = "acc-A"))
         val excluded = SwapProviderTransaction.FINISHED_STATUSES
-        every { dao.getAllUnfinishedByAccount("acc-A", excluded, 10) } returns transactions
+        val providersExcluded = listOf(SwapProvider.PAYCORE)
+        every { dao.getAllUnfinishedByAccount("acc-A", excluded, providersExcluded, 10) } returns transactions
 
-        val result = storage.getAllUnfinishedByAccount("acc-A", excluded, 10)
+        val result = storage.getAllUnfinishedByAccount("acc-A", excluded, providersExcluded, 10)
 
         assertEquals(transactions, result)
-        verify { dao.getAllUnfinishedByAccount("acc-A", excluded, 10) }
+        verify { dao.getAllUnfinishedByAccount("acc-A", excluded, providersExcluded, 10) }
     }
 
     @Test
@@ -225,7 +228,10 @@ class SwapProviderTransactionsStorageTest {
         assertEquals(listOf(swap), getAllByAddressIn(bitcoinBip44))
         assertEquals(
             emptyList<SwapProviderTransaction>(),
-            roomStorage.getAll(bitcoinBip44, "other-address", statusesExcluded = emptyList(), limit = 10)
+            roomStorage.getAll(
+                bitcoinBip44, "other-address",
+                statusesExcluded = emptyList(), providersExcluded = emptyList(), limit = 10
+            )
         )
     }
 

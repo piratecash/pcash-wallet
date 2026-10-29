@@ -124,7 +124,6 @@ val viewModelModule = module {
         SwapSelectCoinViewModel(
             otherSelectedToken = otherSelectedToken,
             activeAccount = activeAccount,
-            payCoreFeatureToggle = get(),
             dispatcherProvider = get()
         )
     }

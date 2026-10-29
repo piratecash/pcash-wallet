@@ -45,7 +45,6 @@ import cash.p.terminal.modules.contacts.screen.ConfirmationBottomSheet
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.manageaccounts.ManageAccountsPage
 import cash.p.terminal.modules.managewallets.ManageWalletsPage
-import cash.p.terminal.modules.transactions.TransactionItem
 import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.resources.Button_Cancel
@@ -80,7 +79,6 @@ fun BalanceForAccount(
     navigation: HSNavigation,
     accountViewItem: AccountViewItem,
     paddingValuesParent: PaddingValues,
-    onOpenTransactionInfo: (TransactionItem) -> Unit,
 ) {
     val viewModel = koinViewModel<BalanceViewModel>()
 
@@ -180,7 +178,6 @@ fun BalanceForAccount(
                         navigation = navigation,
                         uiState = uiState,
                         totalState = viewModel.totalUiState,
-                        onOpenTransactionInfo = onOpenTransactionInfo,
                     )
                 }
 

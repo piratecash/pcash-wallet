@@ -3,12 +3,8 @@ package cash.p.terminal.modules.multiswap.providersettings
 import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
 import cash.p.terminal.modules.multiswap.providers.SwapProvidersRegistry
 import cash.p.terminal.modules.multiswap.providers.SwapProvidersRepository
-import cash.p.terminal.core.managers.SystemLanguageProvider
-import cash.p.terminal.modules.paycore.PayCoreFeatureToggle
-import cash.p.terminal.modules.paycore.PayCoreProvider
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.ic_swap_24
-import io.horizontalsystems.core.ILanguageManager
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
@@ -19,8 +15,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.After
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 
@@ -32,7 +27,7 @@ class SwapProvidersSettingsViewModelTest {
 
     private val registry = mockk<SwapProvidersRegistry> {
         every { providers } returns listOf(
-            provider(PayCoreProvider.ID, "PayCore"),
+            provider("exolix", "Exolix"),
             provider("quickex", "Quickex"),
         )
     }
@@ -41,7 +36,6 @@ class SwapProvidersSettingsViewModelTest {
         every { isDisabled(any()) } returns false
         every { isMandatory(any()) } returns false
     }
-    private val payCoreFeatureToggle = mockk<PayCoreFeatureToggle>()
 
     @Before
     fun setUp() {
@@ -55,35 +49,10 @@ class SwapProvidersSettingsViewModelTest {
     }
 
     @Test
-    fun createState_payCoreDisabled_excludesPayCore() {
-        every { payCoreFeatureToggle.isEnabled() } returns false
+    fun createState_registryProviders_listsEveryProvider() {
+        val viewModel = SwapProvidersSettingsViewModel(registry, repository)
 
-        val viewModel = SwapProvidersSettingsViewModel(registry, repository, payCoreFeatureToggle)
-
-        assertFalse(viewModel.uiState.items.any { it.id == PayCoreProvider.ID })
-        assertTrue(viewModel.uiState.items.any { it.id == "quickex" })
-    }
-
-    @Test
-    fun createState_payCoreEnabled_includesPayCore() {
-        every { payCoreFeatureToggle.isEnabled() } returns true
-
-        val viewModel = SwapProvidersSettingsViewModel(registry, repository, payCoreFeatureToggle)
-
-        assertTrue(viewModel.uiState.items.any { it.id == PayCoreProvider.ID })
-        assertTrue(viewModel.uiState.items.any { it.id == "quickex" })
-    }
-
-    @Test
-    fun createState_appEnglishSystemUkrainian_excludesPayCore() {
-        val languageManager = mockk<ILanguageManager> { every { currentLanguage } returns "en" }
-        val systemLanguageProvider = mockk<SystemLanguageProvider> { every { language } returns "uk" }
-        val realToggle = PayCoreFeatureToggle(languageManager, systemLanguageProvider)
-
-        val viewModel = SwapProvidersSettingsViewModel(registry, repository, realToggle)
-
-        assertFalse(viewModel.uiState.items.any { it.id == PayCoreProvider.ID })
-        assertTrue(viewModel.uiState.items.any { it.id == "quickex" })
+        assertEquals(listOf("exolix", "quickex"), viewModel.uiState.items.map { it.id })
     }
 
     private fun provider(providerId: String, providerTitle: String): IMultiSwapProvider =

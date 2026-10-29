@@ -3,6 +3,7 @@ package cash.p.terminal.core.managers
 import android.content.Context
 import android.net.Uri
 import cash.p.terminal.core.factories.AdapterFactory
+import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.core.storage.AppDatabase
 import cash.p.terminal.core.storage.liveAccountIds
 import cash.p.terminal.wallet.IAccountManager
@@ -47,7 +48,7 @@ class TonConnectManager(
     private val _kitState = MutableStateFlow<TonConnectKit?>(null)
     val kitState: StateFlow<TonConnectKit?> = _kitState.asStateFlow()
 
-    val transactionSigner = TonKit.getTransactionSigner(TonKit.getTonApi(Network.MainNet))
+    val transactionSigner = TonKit.getTransactionSigner(TonKit.getTonApi(Network.MainNet, SharedAppConfig.tonApiKeys))
 
     val sendRequestFlow: Flow<SignTransaction> =
         kitState.flatMapLatest { it?.sendRequestFlow ?: emptyFlow() }

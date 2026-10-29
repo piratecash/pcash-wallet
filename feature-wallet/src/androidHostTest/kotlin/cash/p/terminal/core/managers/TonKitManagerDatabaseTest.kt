@@ -1,5 +1,6 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -52,7 +53,8 @@ class TonKitManagerDatabaseTest {
 
     @Before
     fun setUp() {
-        mockkObject(TonKit.Companion)
+        mockkObject(TonKit.Companion, SharedAppConfig)
+        every { SharedAppConfig.tonApiKeys } returns listOf("api-key")
         coEvery { TonKit.migrateDatabase(any(), any(), any(), any()) } returns DatabaseMigrationResult(0, 1)
         coEvery { TonKit.clear(any(), any(), any()) } just runs
         every { TonKit.createHttpClient(any(), any()) } returns mockk()

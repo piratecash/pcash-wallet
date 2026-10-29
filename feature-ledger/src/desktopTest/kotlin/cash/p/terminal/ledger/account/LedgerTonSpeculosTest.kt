@@ -19,6 +19,7 @@ import io.horizontalsystems.tonkit.api.TonApi
 import io.horizontalsystems.tonkit.core.TonExternalSignerException
 import io.horizontalsystems.tonkit.core.TonWallet
 import io.horizontalsystems.tonkit.core.TransactionSigner
+import io.horizontalsystems.tonkit.models.Network
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -57,7 +58,7 @@ class LedgerTonSpeculosTest {
         val key = fetchStoredKey(session, ton).key.value
 
         assertEquals(TON_PUBLIC_KEY, key)
-        assertEquals(Address.parse(TON_RAW_ADDRESS), TonWallet.ExternalSigner(publicKey, mockk()).address)
+        assertEquals(Address.parse(TON_RAW_ADDRESS), TonWallet.ExternalSigner(publicKey, mockk()).address(Network.MainNet))
     }
 
     @Test

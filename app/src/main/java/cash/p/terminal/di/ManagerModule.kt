@@ -100,8 +100,6 @@ import cash.p.terminal.core.managers.GetTonAddressUseCaseImpl
 import cash.p.terminal.core.managers.GuidesManager
 import cash.p.terminal.core.managers.KeyStoreCleaner
 import cash.p.terminal.core.managers.LanguageManager
-import cash.p.terminal.core.managers.SystemLanguageProvider
-import cash.p.terminal.core.managers.SystemLanguageProviderImpl
 import cash.p.terminal.strings.helpers.AndroidLocalizedResources
 import cash.p.terminal.core.managers.LocalStorageManager
 import cash.p.terminal.modules.blockchainstatus.AndroidStatusReportBuildInfo
@@ -269,7 +267,6 @@ val managerModule = module {
     singleOf(::AndroidStatusReportBuildInfo) bind StatusReportBuildInfo::class
     singleOf(::SystemInfoManager) bind ISystemInfoManager::class
     singleOf(::LanguageManager) bind ILanguageManager::class
-    singleOf(::SystemLanguageProviderImpl) bind SystemLanguageProvider::class
     singleOf(::AndroidLocalizedResources) bind LocalizedResources::class
     singleOf(::AppHeadersProviderImpl) bind AppHeadersProvider::class
     singleOf(::DefaultCurrencyManager) bind CurrencyManager::class

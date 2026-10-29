@@ -226,14 +226,7 @@ private fun MainScreen(
             ) { page ->
                 when (uiState.mainNavItems[page].mainNavItem) {
                     MainDestination.Market -> MarketScreen(navigation, paddingValues)
-                    MainDestination.Balance -> BalanceScreen(
-                        navigation = navigation,
-                        paddingValues = paddingValues,
-                        onOpenTransactionInfo = { item ->
-                            transactionsViewModel.tmpItemToShow = item
-                            navigation.slideFromBottom(TransactionInfoPage())
-                        },
-                    )
+                    MainDestination.Balance -> BalanceScreen(navigation, paddingValues)
 
                     MainDestination.Transactions -> TransactionsScreen(
                         navigation = navigation,

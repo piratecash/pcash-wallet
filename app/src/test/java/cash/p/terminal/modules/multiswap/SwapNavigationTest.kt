@@ -2,9 +2,6 @@ package cash.p.terminal.modules.multiswap
 
 import cash.p.terminal.modules.multiswap.action.ISwapProviderAction
 import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
-import cash.p.terminal.modules.paycore.PayCoreAssets
-import cash.p.terminal.modules.paycore.PayCoreQuote
-import cash.p.terminal.modules.paycore.PayCoreTicker
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
@@ -19,9 +16,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.math.BigDecimal
 
-class SwapPayCoreNavigationTest {
+class SwapNavigationTest {
 
-    private val rubToken = PayCoreAssets.rubToken
+    private val bitcoinToken = sampleToken()
     private val usdtToken = Token(
         coin = Coin(
             uid = "tether",
@@ -35,27 +32,7 @@ class SwapPayCoreNavigationTest {
         decimals = 6,
     )
     private val provider = mockk<IMultiSwapProvider> {
-        every { id } returns "paycore"
-    }
-    private val nonPayCoreProvider = mockk<IMultiSwapProvider> {
         every { id } returns "provider"
-    }
-
-    @Test
-    fun buildPayCorePaymentPage_exactOut_preservesRequestedAmountInParams() {
-        val targetAmount = BigDecimal("12.5")
-        val page = requireNotNull(
-            buildPayCorePaymentPage(
-                exactOutState(targetAmount),
-            ),
-        )
-
-        val params = page.input.toPaymentParams("0xReceiveAddress")
-
-        assertEquals(SwapAmountDirection.Out, params.direction)
-        assertEquals(0, targetAmount.compareTo(requireNotNull(params.requestedAmountOut)))
-        assertEquals("0xReceiveAddress", params.addressOut)
-        assertEquals(PayCoreTicker.USDT_ERC20, params.networkType)
     }
 
     @Test
@@ -67,17 +44,7 @@ class SwapPayCoreNavigationTest {
     fun buildNextPage_oneStepRoute_opensConfirmation() {
         assertEquals(
             "SwapConfirmPage",
-            buildNextPage(exactOutState(BigDecimal.ONE, nonPayCoreProvider)).javaClass.simpleName,
-        )
-    }
-
-    @Test
-    fun buildNextPage_payCoreRoute_opensPaymentBeforeRouteInfo() {
-        assertEquals(
-            "PayCorePaymentPage",
-            buildNextPage(
-                exactOutState(BigDecimal.ONE).copy(multiSwapRoute = multiSwapRouteFixture()),
-            ).javaClass.simpleName,
+            buildNextPage(exactOutState(BigDecimal.ONE)).javaClass.simpleName,
         )
     }
 
@@ -144,7 +111,7 @@ class SwapPayCoreNavigationTest {
         assertFalse(shouldRefreshMultiSwapRoute(quoting = true, timeout = true, route = multiSwapRouteFixture()))
     }
 
-    private fun stateWithRoute(): SwapUiState = exactOutState(BigDecimal.ONE, nonPayCoreProvider).copy(
+    private fun stateWithRoute(): SwapUiState = exactOutState(BigDecimal.ONE).copy(
         multiSwapRoute = multiSwapRouteFixture(),
     )
 
@@ -154,22 +121,19 @@ class SwapPayCoreNavigationTest {
     ): SwapUiState {
         val quote = SwapProviderQuote(
             provider = provider,
-            swapQuote = PayCoreQuote(
-                amountOut = targetAmount,
-                priceImpact = null,
-                fields = emptyList(),
-                tokenIn = rubToken,
-                tokenOut = usdtToken,
-                amountIn = BigDecimal("1000"),
-                serviceFee = BigDecimal.ZERO,
-                actionRequired = null,
-            ),
+            swapQuote = mockk<ISwapQuote>(relaxed = true) {
+                every { amountOut } returns targetAmount
+                every { tokenIn } returns bitcoinToken
+                every { tokenOut } returns usdtToken
+                every { amountIn } returns BigDecimal("1000")
+                every { actionRequired } returns null
+            },
             executionMode = SwapExecutionMode.NativeExactOut,
         )
         return SwapUiState(
             amountIn = quote.amountIn,
             displayAmountOut = targetAmount,
-            tokenIn = rubToken,
+            tokenIn = bitcoinToken,
             tokenOut = usdtToken,
             quoting = false,
             quotes = listOf(quote),
@@ -206,8 +170,15 @@ class SwapPayCoreNavigationTest {
     }
 }
 
+private fun sampleToken() = Token(
+    coin = Coin(uid = "bitcoin", name = "Bitcoin", code = "BTC", marketCapRank = null, image = null),
+    blockchain = Blockchain(BlockchainType.Bitcoin, "Bitcoin", null),
+    type = TokenType.Native,
+    decimals = 8,
+)
+
 internal fun multiSwapRouteFixture(): MultiSwapRoute {
-    val token = PayCoreAssets.rubToken
+    val token = sampleToken()
     val provider = mockk<IMultiSwapProvider>(relaxed = true) {
         every { title } returns "Provider"
     }
