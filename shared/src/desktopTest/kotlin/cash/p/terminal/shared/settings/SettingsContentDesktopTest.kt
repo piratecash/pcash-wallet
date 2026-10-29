@@ -1,5 +1,6 @@
 package cash.p.terminal.shared.settings
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -47,7 +48,47 @@ class SettingsContentDesktopTest {
         )
     }
 
+    @Test
+    fun settingsContent_hiddenActions_rowsAreNotDisplayed() = runComposeUiTest {
+        setContent { ComposeAppTheme { SettingsContent(hiddenActions = hiddenRows.keys) } }
+
+        hiddenRows.values.forEach { title -> onNodeWithText(title).assertDoesNotExist() }
+        onNodeWithText("About App").assertExists()
+        onNodeWithText("Tell Friends").assertExists()
+        onNodeWithText("Donate").assertExists()
+    }
+
+    @Test
+    fun settingsContent_noHiddenActions_allRowsAreDisplayed() = runComposeUiTest {
+        setContent { ComposeAppTheme { SettingsContent() } }
+
+        hiddenRows.values.forEach { title -> onNodeWithText(title).performScrollTo().assertExists() }
+    }
+
+    @Composable
+    private fun SettingsContent(hiddenActions: Set<SettingsAction> = emptySet()) = SettingsContent(
+        uiState = state,
+        appVersion = "1.2.3",
+        onAction = {},
+        alertPainter = ColorPainter(Color.Red),
+        hiddenActions = hiddenActions,
+    )
+
+    @Test
+    fun appShareText_introAndLink_endsWithNewline() {
+        assertEquals("Be Free\nhttps://p.cash/\n", appShareText("Be Free", "https://p.cash/"))
+    }
+
     private companion object {
+        val hiddenRows = mapOf(
+            SettingsAction.MiniApp to "Mini App",
+            SettingsAction.WalletConnect to "WalletConnect",
+            SettingsAction.TonConnect to "Ton Connect",
+            SettingsAction.SoftwareUpdate to "Software Updates",
+            SettingsAction.AdvancedSecurity to "Advanced Security",
+            SettingsAction.RateApp to "Rate Us",
+        )
+
         val state = MainSettingUiState(
             isUpdateAvailable = true,
             currentLanguage = "English",

@@ -16,6 +16,7 @@ import cash.p.terminal.core.App
 import io.horizontalsystems.core.IPinComponent
 import io.horizontalsystems.core.launchExternalActivity
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 
 internal fun reportBuildInfo(appVersion: String, gitBranch: String): Map<String, String> =
     linkedMapOf(
@@ -50,7 +51,7 @@ class AndroidStatusReportExporter(
                 val intent = Intent(Intent.ACTION_SEND).apply {
                     type = "text/plain"
                     putExtra(Intent.EXTRA_STREAM, uri)
-                    putExtra(Intent.EXTRA_TEXT, context.getString(R.string.blockchain_status))
+                    putExtra(Intent.EXTRA_TEXT, getString(report.shareText))
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
                 context.startActivity(Intent.createChooser(intent, null))

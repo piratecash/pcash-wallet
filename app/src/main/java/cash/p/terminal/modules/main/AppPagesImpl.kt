@@ -29,6 +29,7 @@ import cash.p.terminal.modules.send.offline.OfflineBroadcastPage
 import cash.p.terminal.modules.sendtokenselect.PrefilledData
 import cash.p.terminal.modules.sendtokenselect.SendTokenSelectPage
 import cash.p.terminal.modules.settings.appearance.AppIconPage
+import cash.p.terminal.modules.settings.privacy.PrivacyPage
 import cash.p.terminal.modules.subscription.SubscriptionInfoPage
 import cash.p.terminal.modules.transactionInfo.options.SpeedUpCancelType
 import cash.p.terminal.modules.transactionInfo.options.TransactionSpeedUpCancelPage
@@ -73,6 +74,7 @@ class AppPagesImpl(
         ResetToFactorySettingsPage(ResetToFactorySettingsPage.Input(account))
     override fun faq(topic: FaqTopic): HSPage = FaqManager.faqPage(topic)
     override fun appIcon(): HSPage = AppIconPage()
+    override fun privacy(): HSPage = PrivacyPage()
     override val isBlockchainStatusAvailable = true
     override fun blockchainStatus(blockchain: Blockchain): HSPage = BlockchainStatusPage(blockchain)
     override fun openMarkdownOrWeblink(navigation: HSNavigation, url: String) =

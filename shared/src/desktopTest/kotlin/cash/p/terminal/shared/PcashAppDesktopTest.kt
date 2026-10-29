@@ -24,19 +24,29 @@ import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.test.click
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import cash.p.terminal.core.providers.SharedAppConfig
+import cash.p.terminal.ui_compose.components.UrlOpener
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.ui_compose.theme.darkPalette
 import cash.p.terminal.ui_compose.theme.lightPalette
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.koin.core.context.loadKoinModules
+import org.koin.dsl.module
 
 @OptIn(ExperimentalTestApi::class)
 class PcashAppDesktopTest {
 
+    private val openedUrls = mutableListOf<String>()
+
     @BeforeTest
-    fun setUp() = DesktopTestGraph.startUnlocked()
+    fun setUp() {
+        DesktopTestGraph.startUnlocked()
+        loadKoinModules(module { single<UrlOpener> { RecordingUrlOpener() } })
+    }
 
     @AfterTest
     fun tearDown() = DesktopTestGraph.stop()
@@ -71,7 +81,7 @@ class PcashAppDesktopTest {
 
         onNodeWithContentDescription("Settings").performClick()
         onNodeWithText("Donate").performClick()
-        onNodeWithText("P.CASH DESKTOP").performScrollTo().assertExists()
+        onNodeWithText("P.CASH 1.0.0").performScrollTo().assertExists()
         val company = onNodeWithText("PirateCash and Cosanta Foundation")
         company.performScrollTo().assertExists()
         val companyBounds = company.fetchSemanticsNode().boundsInRoot
@@ -79,6 +89,7 @@ class PcashAppDesktopTest {
             click(Offset(companyBounds.center.x, companyBounds.top - 28.dp.toPx()))
         }
         onNodeWithText("Settings").assertExists()
+        assertEquals(listOf(SharedAppConfig.companyWebPageLink), openedUrls)
 
         // Balance shows the wallet state, which this graph never loads; Transactions is still a plain title.
         onNodeWithContentDescription("Transactions").performClick()
@@ -111,6 +122,12 @@ class PcashAppDesktopTest {
 
     private fun ComposeUiTest.rootCornerColor() =
         onRoot().captureToImage().toPixelMap()[NARROW.width - 1, 0]
+
+    private inner class RecordingUrlOpener : UrlOpener {
+        override fun open(url: String) {
+            openedUrls += url
+        }
+    }
 
     private companion object {
         val WIDE = IntSize(800, 600)

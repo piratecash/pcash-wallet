@@ -48,6 +48,7 @@ import io.horizontalsystems.core.AppForegroundState
 import io.horizontalsystems.core.BaseCurrencyStorage
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.CurrentDateProvider
+import cash.p.terminal.modules.markdown.desktopMarkdownModule
 import io.horizontalsystems.core.DefaultDispatcherProvider
 import io.horizontalsystems.core.DesktopAppForegroundState
 import io.horizontalsystems.core.DesktopClipboardManager
@@ -68,11 +69,18 @@ import org.koin.dsl.binds
 import org.koin.dsl.module
 
 private const val GUIDES_URL =
-    "https://raw.githubusercontent.com/horizontalsystems/Unstoppable-Wallet-Website/refs/tags/v1.4/src/edu.json"
+    "https://raw.githubusercontent.com/horizontalsystems/blockchain-crypto-guides/v1.2/index.json"
 
 /** Desktop implementations of the seams the shared features resolve from the host Koin graph. */
 val desktopFeatureModule = module {
-    includes(walletFeatureModule, featureWalletModule, featureStackingModule, featurePremiumModule, desktopWalletModule)
+    includes(
+        walletFeatureModule,
+        featureWalletModule,
+        featureStackingModule,
+        featurePremiumModule,
+        desktopWalletModule,
+        desktopMarkdownModule,
+    )
 
     single { DesktopSettingsStore(desktopAppDataFile("settings.preferences_pb")) } binds
         arrayOf(MarketSettingsStore::class, BaseCurrencyStorage::class, ILockoutStorage::class)

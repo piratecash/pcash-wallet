@@ -16,6 +16,9 @@ import cash.p.terminal.modules.settings.main.HsSettingCell
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.settings_contact_us_paycore_support
+import cash.p.terminal.resources.settings_contact_us_pcash_support
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
@@ -31,7 +34,7 @@ class ContactUsPage : HSPage() {
                 navigation.slideFromBottom(
                     ContactOptionsSheet(
                         ContactOptionsSheet.Input(
-                            titleRes = R.string.settings_contact_us_pcash_support,
+                            title = Res.string.settings_contact_us_pcash_support,
                             email = SharedAppConfig.reportEmail,
                             telegramUrl = Translator.getString(R.string.telegram_link)
                         )
@@ -42,7 +45,7 @@ class ContactUsPage : HSPage() {
                 navigation.slideFromBottom(
                     ContactOptionsSheet(
                         ContactOptionsSheet.Input(
-                            titleRes = R.string.settings_contact_us_paycore_support,
+                            title = Res.string.settings_contact_us_paycore_support,
                             email = AppConfigProvider.payCoreSupportEmail,
                             telegramUrl = AppConfigProvider.payCoreSupportUrl
                         )

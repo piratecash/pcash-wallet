@@ -4,6 +4,8 @@ import cash.p.terminal.ui.compose.BalanceHideOnFlipHandler
 import cash.p.terminal.core.BalanceSettingsStorage
 import cash.p.terminal.core.TransactionSettingsStorage
 import cash.p.terminal.core.NetworkSettingsStorage
+import cash.p.terminal.core.ReleaseNotesStorage
+import cash.p.terminal.core.AppVersionStorage
 import io.horizontalsystems.core.IBackgroundManager
 import cash.p.terminal.core.managers.AndroidEvmHardwareSigners
 import cash.p.terminal.core.managers.AndroidPlatformAccountDataCleaner
@@ -107,6 +109,10 @@ import cash.p.terminal.modules.blockchainstatus.AndroidStatusReportExporter
 import cash.p.terminal.modules.blockchainstatus.StatusReportBuildInfo
 import cash.p.terminal.modules.blockchainstatus.StatusReportExporter
 import cash.p.terminal.modules.blockchainstatus.StatusReportFile
+import cash.p.terminal.modules.settings.appcache.AndroidPlatformCacheCleaner
+import cash.p.terminal.modules.settings.appcache.PlatformCacheCleaner
+import cash.p.terminal.modules.settings.appstatus.AndroidAppStatusPlatformInfo
+import cash.p.terminal.modules.settings.appstatus.AppStatusPlatformInfo
 import cash.p.terminal.core.managers.MoneroNativeWalletRuntime
 import cash.p.terminal.core.managers.MoneroDeviceWalletNative
 import cash.p.terminal.core.managers.MoneroDeviceWalletFileStore
@@ -116,7 +122,6 @@ import cash.p.terminal.core.managers.MoneroTrezorOperationGateway
 import cash.p.terminal.core.managers.MoneroHardwareGateway
 import cash.p.terminal.core.managers.RateAppManager
 import cash.p.terminal.core.managers.RecentAddressManager
-import cash.p.terminal.core.managers.ReleaseNotesManager
 import cash.p.terminal.core.managers.SilentCameraManager
 import cash.p.terminal.core.managers.SolanaKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.AndroidSolanaKitDatabaseKeyProvider
@@ -133,6 +138,8 @@ import cash.p.terminal.core.managers.TronKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.AndroidTronKitDatabaseKeyProvider
 import cash.p.terminal.core.INetworkManager
 import cash.p.terminal.core.managers.NetworkManager
+import cash.p.terminal.modules.markdown.MarkdownSource
+import cash.p.terminal.modules.markdown.NetworkManagerMarkdownSource
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.modules.softwareupdate.AppUpdateChecker
 import cash.p.terminal.modules.softwareupdate.domain.CheckAppUpdateUseCase
@@ -260,9 +267,12 @@ private const val KEY_STORE_LOG_SCOPE = "key-store"
 
 val managerModule = module {
     singleOf(::NetworkManager) bind INetworkManager::class
+    singleOf(::NetworkManagerMarkdownSource) bind MarkdownSource::class
     singleOf(::StatusReportFile)
     singleOf(::AndroidStatusReportExporter) bind StatusReportExporter::class
     singleOf(::AndroidStatusReportBuildInfo) bind StatusReportBuildInfo::class
+    singleOf(::AndroidAppStatusPlatformInfo) bind AppStatusPlatformInfo::class
+    singleOf(::AndroidPlatformCacheCleaner) bind PlatformCacheCleaner::class
     singleOf(::SystemInfoManager) bind ISystemInfoManager::class
     singleOf(::LanguageManager) bind ILanguageManager::class
     singleOf(::SystemLanguageProviderImpl) bind SystemLanguageProvider::class
@@ -298,6 +308,8 @@ val managerModule = module {
         bind<BalanceSettingsStorage>()
         bind<TransactionSettingsStorage>()
         bind<NetworkSettingsStorage>()
+        bind<ReleaseNotesStorage>()
+        bind<AppVersionStorage>()
     }
     single { PreferenceManager.getDefaultSharedPreferences(get()) }
     singleOf(::BackgroundManager) bind IBackgroundManager::class
@@ -389,7 +401,6 @@ val managerModule = module {
     singleOf(::AndroidBackupFileLauncher) bind BackupFileLauncher::class
     singleOf(::AndroidDeleteContactsPinSettings) bind DeleteContactsPinSettings::class
     singleOf(::RateAppManager) bind IRateAppManager::class
-    singleOf(::ReleaseNotesManager)
     singleOf(::WCSessionStorage)
     singleOf(::WCPairingMetadataStorage)
     single {

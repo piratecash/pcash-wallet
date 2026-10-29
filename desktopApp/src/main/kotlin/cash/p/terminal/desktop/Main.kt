@@ -18,6 +18,7 @@ import cash.p.terminal.feature.market.di.marketFeatureModule
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.desktop_already_running
 import cash.p.terminal.shared.desktop.DesktopAppExit
+import cash.p.terminal.shared.desktop.DesktopAppVersion
 import cash.p.terminal.shared.desktop.DesktopBalanceAutoHide
 import cash.p.terminal.shared.desktop.DesktopForegroundEffect
 import cash.p.terminal.shared.desktop.DesktopLaunchArguments
@@ -56,7 +57,6 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 private const val APPLICATION_NAME = "P.CASH"
-private const val APPLICATION_VERSION = "desktop"
 private const val INSTANCE_LOCK_FILE = ".instance.lock"
 private const val BEAM_NATIVE_PATH_PROPERTY = "beam.sdk.native.path"
 
@@ -116,7 +116,7 @@ fun main(args: Array<String>) {
             }
             DesktopForegroundEffect(windowState.isMinimized)
             ComposeAppTheme(darkTheme = rememberDesktopDarkTheme()) {
-                DesktopRoot(APPLICATION_VERSION, launchArguments.wipeFailed)
+                DesktopRoot(launchArguments.wipeFailed)
             }
         }
     }
@@ -150,9 +150,10 @@ private fun buildImageLoader(context: PlatformContext): ImageLoader {
 }
 
 private val desktopModule = module {
+    single { DesktopAppVersion(APP_VERSION_NAME) }
     single<AppHeadersProvider> {
         object : AppHeadersProvider {
-            override val appVersion = APPLICATION_VERSION
+            override val appVersion = "desktop-$APP_VERSION_NAME"
             override val currentLanguage: String
                 get() = Locale.getDefault().language.ifEmpty { "en" }
             override val appSignature: String? = null

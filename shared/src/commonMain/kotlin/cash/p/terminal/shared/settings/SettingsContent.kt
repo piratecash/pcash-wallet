@@ -15,12 +15,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.resources.BackupManager_Title
 import cash.p.terminal.resources.BlockchainSettings_Title
 import cash.p.terminal.resources.Contacts
+import cash.p.terminal.modules.settings.main.SettingsCell
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.SettingsAboutApp_Title
 import cash.p.terminal.resources.SettingsContact_Title
@@ -42,8 +42,6 @@ import cash.p.terminal.resources.address_checker_title
 import cash.p.terminal.resources.advanced_security
 import cash.p.terminal.resources.badge_new
 import cash.p.terminal.resources.ic_about_app_20
-import cash.p.terminal.resources.ic_arrow_right
-import cash.p.terminal.resources.ic_attention_red_20
 import cash.p.terminal.resources.ic_blocks_20
 import cash.p.terminal.resources.ic_brush_20
 import cash.p.terminal.resources.ic_company_logo
@@ -76,15 +74,11 @@ import cash.p.terminal.resources.star_filled_yellow_16
 import cash.p.terminal.resources.swap_providers_title
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HsDivider
-import cash.p.terminal.ui_compose.components.HsSettingCell
 import cash.p.terminal.ui_compose.components.PremiumHeader
 import cash.p.terminal.ui_compose.components.SectionPremiumUniversalLawrence
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.caption_grey
-import cash.p.terminal.ui_compose.components.tinted
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
-import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -95,21 +89,25 @@ fun SettingsContent(
     onAction: (SettingsAction) -> Unit,
     alertPainter: Painter?,
     modifier: Modifier = Modifier,
+    hiddenActions: Set<SettingsAction> = emptySet(),
 ) {
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         Spacer(modifier = Modifier.height(12.dp))
-        DonateAndMiniAppSections(onAction)
-        WalletConnectionsSection(uiState, alertPainter, onAction)
+        DonateAndMiniAppSections(hiddenActions, onAction)
+        WalletConnectionsSection(uiState, alertPainter, hiddenActions, onAction)
         GeneralSettingsSection(uiState, alertPainter, onAction)
         ToolsSettingsSections(onAction)
-        PremiumSettingsSection(uiState, alertPainter, onAction)
-        ApplicationSettingsSection(uiState, alertPainter, onAction)
+        PremiumSettingsSection(uiState, alertPainter, hiddenActions, onAction)
+        ApplicationSettingsSection(uiState, alertPainter, hiddenActions, onAction)
         SettingsFooter(appVersion, onAction)
     }
 }
 
 @Composable
-private fun DonateAndMiniAppSections(onAction: (SettingsAction) -> Unit) {
+private fun DonateAndMiniAppSections(
+    hiddenActions: Set<SettingsAction>,
+    onAction: (SettingsAction) -> Unit,
+) {
     CellUniversalLawrenceSection {
         SettingsCell(
             title = Res.string.Settings_Donate,
@@ -119,25 +117,28 @@ private fun DonateAndMiniAppSections(onAction: (SettingsAction) -> Unit) {
         )
     }
     VSpacer(32.dp)
-    CellUniversalLawrenceSection {
-        SettingsCell(
-            title = Res.string.settings_mini_app,
-            icon = Res.drawable.ic_uwt2_24,
-            onClick = onAction.callbackFor(SettingsAction.MiniApp),
-        )
+    if (SettingsAction.MiniApp !in hiddenActions) {
+        CellUniversalLawrenceSection {
+            SettingsCell(
+                title = Res.string.settings_mini_app,
+                icon = Res.drawable.ic_uwt2_24,
+                onClick = onAction.callbackFor(SettingsAction.MiniApp),
+            )
+        }
+        VSpacer(32.dp)
     }
-    VSpacer(32.dp)
 }
 
 @Composable
 private fun WalletConnectionsSection(
     uiState: MainSettingUiState,
     alertPainter: Painter?,
+    hiddenActions: Set<SettingsAction>,
     onAction: (SettingsAction) -> Unit,
 ) {
     CellUniversalLawrenceSection(
-        listOf(
-            {
+        hiddenActions.visibleRows(
+            SettingsAction.ManageWallets to {
                 SettingsCell(
                     title = Res.string.SettingsSecurity_ManageKeys,
                     icon = Res.drawable.ic_wallet_20,
@@ -145,14 +146,14 @@ private fun WalletConnectionsSection(
                     onClick = onAction.callbackFor(SettingsAction.ManageWallets),
                 )
             },
-            {
+            SettingsAction.BlockchainSettings to {
                 SettingsCell(
                     title = Res.string.BlockchainSettings_Title,
                     icon = Res.drawable.ic_blocks_20,
                     onClick = onAction.callbackFor(SettingsAction.BlockchainSettings),
                 )
             },
-            {
+            SettingsAction.WalletConnect to {
                 SettingsCell(
                     title = Res.string.Settings_WalletConnect,
                     icon = Res.drawable.ic_wallet_connect_20,
@@ -163,14 +164,14 @@ private fun WalletConnectionsSection(
                     onClick = onAction.callbackFor(SettingsAction.WalletConnect),
                 )
             },
-            {
+            SettingsAction.TonConnect to {
                 SettingsCell(
                     title = Res.string.Settings_TonConnect,
                     icon = Res.drawable.ic_ton_connect_24,
                     onClick = onAction.callbackFor(SettingsAction.TonConnect),
                 )
             },
-            {
+            SettingsAction.BackupManager to {
                 SettingsCell(
                     title = Res.string.BackupManager_Title,
                     icon = Res.drawable.ic_file_24,
@@ -284,6 +285,7 @@ private fun ToolsSettingsSections(onAction: (SettingsAction) -> Unit) {
 private fun PremiumSettingsSection(
     uiState: MainSettingUiState,
     alertPainter: Painter?,
+    hiddenActions: Set<SettingsAction>,
     onAction: (SettingsAction) -> Unit,
 ) {
     PremiumHeader(starPainter = painterResource(Res.drawable.star_filled_yellow_16))
@@ -301,12 +303,14 @@ private fun PremiumSettingsSection(
             alertPainter = alertPainter.takeIf { uiState.premiumSettingsShowAlert },
             onClick = onAction.callbackFor(SettingsAction.PremiumSettings),
         )
-        SettingsCell(
-            title = Res.string.advanced_security,
-            icon = Res.drawable.ic_shield_24,
-            iconTint = ComposeAppTheme.colors.brandDefault,
-            onClick = onAction.callbackFor(SettingsAction.AdvancedSecurity),
-        )
+        if (SettingsAction.AdvancedSecurity !in hiddenActions) {
+            SettingsCell(
+                title = Res.string.advanced_security,
+                icon = Res.drawable.ic_shield_24,
+                iconTint = ComposeAppTheme.colors.brandDefault,
+                onClick = onAction.callbackFor(SettingsAction.AdvancedSecurity),
+            )
+        }
     }
     VSpacer(32.dp)
 }
@@ -315,11 +319,12 @@ private fun PremiumSettingsSection(
 private fun ApplicationSettingsSection(
     uiState: MainSettingUiState,
     alertPainter: Painter?,
+    hiddenActions: Set<SettingsAction>,
     onAction: (SettingsAction) -> Unit,
 ) {
     CellUniversalLawrenceSection(
-        listOf(
-            {
+        hiddenActions.visibleRows(
+            SettingsAction.SoftwareUpdate to {
                 SettingsCell(
                     title = Res.string.software_update_title,
                     icon = Res.drawable.ic_refresh,
@@ -327,7 +332,7 @@ private fun ApplicationSettingsSection(
                     onClick = onAction.callbackFor(SettingsAction.SoftwareUpdate),
                 )
             },
-            {
+            SettingsAction.AboutApp to {
                 SettingsCell(
                     title = Res.string.SettingsAboutApp_Title,
                     icon = Res.drawable.ic_about_app_20,
@@ -335,21 +340,21 @@ private fun ApplicationSettingsSection(
                     onClick = onAction.callbackFor(SettingsAction.AboutApp),
                 )
             },
-            {
+            SettingsAction.RateApp to {
                 SettingsCell(
                     title = Res.string.Settings_RateUs,
                     icon = Res.drawable.ic_star_20,
                     onClick = onAction.callbackFor(SettingsAction.RateApp),
                 )
             },
-            {
+            SettingsAction.ShareApp to {
                 SettingsCell(
                     title = Res.string.Settings_ShareThisWallet,
                     icon = Res.drawable.ic_share_20,
                     onClick = onAction.callbackFor(SettingsAction.ShareApp),
                 )
             },
-            {
+            SettingsAction.Contact(uiState.isPayCoreEnabled) to {
                 SettingsCell(
                     title = Res.string.SettingsContact_Title,
                     icon = Res.drawable.ic_mail_24,
@@ -402,34 +407,12 @@ private fun SettingsFooter(
     }
 }
 
-/** The mark on a settings row that needs the user's attention. */
-@Composable
-fun settingsAlertPainter(): Painter =
-    painterResource(Res.drawable.ic_attention_red_20).tinted(ComposeAppTheme.colors.statusError)
+private fun Set<SettingsAction>.visibleRows(
+    vararg rows: Pair<SettingsAction, @Composable () -> Unit>,
+): List<@Composable () -> Unit> = rows.filter { (action, _) -> action !in this }.map { it.second }
 
-@Composable
-private fun SettingsCell(
-    title: StringResource,
-    onClick: () -> Unit,
-    icon: DrawableResource? = null,
-    iconTint: Color? = null,
-    value: String? = null,
-    counterBadge: String? = null,
-    newBadgeText: String? = null,
-    alertPainter: Painter? = null,
-) {
-    HsSettingCell(
-        title = stringResource(title),
-        arrowPainter = painterResource(Res.drawable.ic_arrow_right),
-        leadingPainter = icon?.let { painterResource(it) },
-        iconTint = iconTint,
-        value = value,
-        counterBadge = counterBadge,
-        newBadgeText = newBadgeText,
-        alertPainter = alertPainter,
-        onClick = onClick,
-    )
-}
+/** The text the app is shared with; the same on every platform. */
+fun appShareText(intro: String, appLink: String): String = intro + "\n" + appLink + "\n"
 
 private fun ((SettingsAction) -> Unit).callbackFor(action: SettingsAction): () -> Unit = {
     invoke(action)

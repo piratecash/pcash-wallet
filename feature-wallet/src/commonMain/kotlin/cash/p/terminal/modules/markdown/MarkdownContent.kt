@@ -47,12 +47,14 @@ fun MarkdownContent(
     addFooter: Boolean,
     onRetryClick: () -> Unit,
     onUrlClick: (String) -> Unit,
+    baseUrl: String? = null,
 ) {
     // Parse markdown to AstNode locally using remember (not saveable) to avoid Parcel issues
-    val markdownBlocks = remember(markdownContent) {
+    val markdownBlocks = remember(markdownContent, baseUrl) {
         markdownContent?.let {
             val parser = CommonmarkAstNodeParser(CommonMarkdownParseOptions.Default)
-            parser.parse(it)
+            val astNode = parser.parse(it)
+            baseUrl?.let(astNode::withUrlsResolvedAgainst) ?: astNode
         }
     }
     val colors = ComposeAppTheme.colors

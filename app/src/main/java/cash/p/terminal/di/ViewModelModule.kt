@@ -16,7 +16,6 @@ import cash.p.terminal.modules.premium.settings.PushNotificationsViewModel
 import cash.p.terminal.modules.premium.smsnotification.SendSmsNotificationViewModel
 import cash.p.terminal.modules.qrscanner.QRScannerViewModel
 import cash.p.terminal.modules.qrscanner.QrCodeImageDecoder
-import cash.p.terminal.modules.releasenotes.ReleaseNotesViewModel
 import cash.p.terminal.modules.resettofactorysettings.ResetToFactorySettingsViewModel
 import cash.p.terminal.modules.send.offline.OfflineBroadcastViewModel
 import cash.p.terminal.modules.calculator.autolock.CalculatorAutoLockViewModel
@@ -26,8 +25,6 @@ import cash.p.terminal.modules.settings.advancedsecurity.AdvancedSecurityViewMod
 import cash.p.terminal.modules.settings.advancedsecurity.terms.DeleteContactsTermsViewModel
 import cash.p.terminal.modules.settings.advancedsecurity.securereset.SecureResetTermsViewModel
 import cash.p.terminal.modules.settings.advancedsecurity.terms.HiddenWalletTermsViewModel
-import cash.p.terminal.modules.settings.appcache.AppCacheViewModel
-import cash.p.terminal.modules.settings.appstatus.AppStatusViewModel
 import cash.p.terminal.modules.settings.displaytransactions.DisplayTransactionsViewModel
 import cash.p.terminal.modules.settings.guides.GuidesViewModel
 import cash.p.terminal.modules.subscription.ActivateSubscriptionViewModel
@@ -48,7 +45,6 @@ import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.DefaultDispatcherProvider
 import io.horizontalsystems.core.DispatcherProvider
 import cash.p.terminal.modules.pin.SetDuressPinIntroViewModel
-import cash.p.terminal.modules.settings.about.AboutViewModel
 import cash.p.terminal.modules.settings.appearance.AppIconViewModel
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
@@ -71,17 +67,13 @@ val viewModelModule = module {
     viewModelOf(::ActivateSubscriptionViewModel)
     viewModelOf(::WCRequestEvmViewModel)
     viewModelOf(::PrivacyViewModel)
-    viewModelOf(::AboutViewModel)
     viewModelOf(::SetDuressPinIntroViewModel)
     viewModelOf(::AppIconViewModel)
     viewModelOf(::HardwareWalletViewModel)
     viewModelOf(::ResetToFactorySettingsViewModel)
     viewModelOf(::SecuritySettingsViewModel)
     viewModelOf(::MainSettingsViewModel)
-    viewModelOf(::ReleaseNotesViewModel)
     viewModelOf(::MarkdownLocalViewModel)
-    viewModelOf(::AppStatusViewModel)
-    viewModelOf(::AppCacheViewModel)
     viewModelOf(::PushNotificationsViewModel)
     viewModelOf(::SendSmsNotificationViewModel)
     viewModelOf(::TonConnectListViewModel)

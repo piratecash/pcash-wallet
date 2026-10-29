@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.settings.appstatus
 
-import android.net.Uri
 import cash.p.terminal.core.TestCoreApp
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.KoinLogsDao
@@ -15,7 +14,7 @@ import cash.p.terminal.core.managers.ThorchainKitManagers
 import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TronKitManager
 import cash.p.terminal.feature.miniapp.domain.storage.IUniqueCodeStorage
-import cash.p.terminal.modules.blockchainstatus.StatusReportFile
+import cash.p.terminal.modules.settings.appstatus.AppStatusModule.BlockContent
 import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapterManager
@@ -24,8 +23,6 @@ import cash.p.terminal.wallet.MarketKitWrapper
 import io.horizontalsystems.core.CoreApp
 import io.horizontalsystems.core.ISystemInfoManager
 import io.horizontalsystems.core.storage.LogsDao
-import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -47,7 +44,6 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -61,7 +57,7 @@ import java.util.concurrent.Executors
  * Every manager/kit dependency is a relaxed mock: list/map-returning properties default to
  * empty, so none of the real per-blockchain status providers touch kit internals during init.
  * Robolectric is required for [android.os.Build] fields, a real ApplicationInfo, and the locale
- * data that init touches via reportBuildInfo()/DateHelper.formatDate()/getDeviceClass().
+ * data that init touches via reportBuildInfo()/DateHelper.formatDate()/deviceInfo().
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(application = TestCoreApp::class)
@@ -70,7 +66,6 @@ class AppStatusViewModelTest {
     private val dispatcher = UnconfinedTestDispatcher()
     private val logsDao = mockk<LogsDao>(relaxed = true)
     private lateinit var koinLogsDao: KoinLogsDao
-    private val statusReportFile = mockk<StatusReportFile>(relaxed = true)
 
     @Before
     fun setUp() {
@@ -90,11 +85,16 @@ class AppStatusViewModelTest {
     private fun createViewModel(
         accountManager: IAccountManager = mockk(relaxed = true),
         io: CoroutineDispatcher = dispatcher,
+        systemInfoManager: ISystemInfoManager = mockk(relaxed = true),
     ): AppStatusViewModel = AppStatusViewModel(
-        context = CoreApp.instance,
-        systemInfoManager = mockk<ISystemInfoManager>(relaxed = true),
-        localStorage = mockk<ILocalStorage>(relaxed = true),
-        uniqueCodeStorage = mockk<IUniqueCodeStorage>(relaxed = true),
+        systemInfoManager = systemInfoManager,
+        appVersionStorage = mockk<ILocalStorage>(relaxed = true),
+        platformInfo = AndroidAppStatusPlatformInfo(
+            context = CoreApp.instance,
+            systemInfoManager = systemInfoManager,
+            localStorage = mockk<ILocalStorage>(relaxed = true),
+            uniqueCodeStorage = mockk<IUniqueCodeStorage>(relaxed = true),
+        ),
         accountManager = accountManager,
         walletManager = mockk<IWalletManager>(relaxed = true),
         adapterManager = mockk<IAdapterManager>(relaxed = true),
@@ -110,7 +110,6 @@ class AppStatusViewModelTest {
         checkPremiumUseCase = mockk<CheckPremiumUseCase>(relaxed = true),
         networkErrorTracker = mockk<NetworkErrorTracker>(relaxed = true),
         dispatcherProvider = TestDispatcherProvider(dispatcher, TestScope(dispatcher), io),
-        statusReportFile = statusReportFile,
     )
 
     /** AppLog.getLog() switches to the real Dispatchers.IO, so init completion needs a real-time wait. */
@@ -124,40 +123,55 @@ class AppStatusViewModelTest {
 
         viewModel.awaitInitLoaded()
         assertNotNull(viewModel.uiState.value.appStatusAsText)
+        assertNotNull(viewModel.uiState.value.report)
 
         verify(exactly = 0) { logsDao.getGroupedPage(any(), any(), any()) }
         verify(exactly = 0) { logsDao.getGroupedPageByTag(any(), any(), any(), any()) }
-        coVerify(exactly = 0) { statusReportFile.share(any(), any(), any(), any()) }
-        coVerify(exactly = 0) { statusReportFile.write(any(), any(), any(), any()) }
     }
 
     @Test
-    fun prepareShareUri_calledWhileFirstExportInProgress_returnsNullAndKeepsFlagUntilFirstCompletes() =
-        runTest(dispatcher) {
-        val viewModel = createViewModel()
+    fun appInfoBlock_androidPlatformInfo_keepsRowOrder() {
+        val systemInfoManager = mockk<ISystemInfoManager>(relaxed = true)
+        every { systemInfoManager.getSigningCertFingerprint() } returns "fingerprint"
+        val viewModel = createViewModel(systemInfoManager = systemInfoManager)
         viewModel.awaitInitLoaded()
 
-        val shareUri = mockk<Uri>()
-        val resumeExport = CompletableDeferred<Uri>()
-        coEvery { statusReportFile.share(any(), any(), any(), any()) } coAnswers { resumeExport.await() }
+        val appInfo = viewModel.uiState.value.blockViewItems.first { it.title == "App Info" }
 
-        val firstCall = async { viewModel.prepareShareUri() }
-        advanceUntilIdle()
-        assertTrue(viewModel.uiState.value.shareInProgress)
-
-        val secondResult = viewModel.prepareShareUri()
-
-        assertNull(secondResult)
-        assertTrue(viewModel.uiState.value.shareInProgress)
-        coVerify(exactly = 1) { statusReportFile.share(any(), any(), any(), any()) }
-
-        resumeExport.complete(shareUri)
-        assertEquals(shareUri, firstCall.await())
-        assertFalse(viewModel.uiState.value.shareInProgress)
+        assertEquals(
+            listOf(
+                "Report Time", "App Version", "Version Code", "Build Type", "Git Branch", "Git Hash",
+                "Mapping ID", "Native ABI", "App Signature", "Device Model", "OS Version",
+                "App Heap Limit", "Performance Class", "System pin required", "Premium Status", "Unique Code",
+            ),
+            appInfo.content.map { (it as BlockContent.TitleValue).title }
+        )
     }
 
     @Test
-    fun prepareShareUri_calledFromCallerThread_buildsReportSectionsOnIo() {
+    fun share_calledWhileFirstExportInProgress_skipsSecondExportAndKeepsFlagUntilFirstCompletes() =
+        runTest(dispatcher) {
+            val viewModel = createViewModel()
+            viewModel.awaitInitLoaded()
+
+            val resumeExport = CompletableDeferred<Unit>()
+            var exports = 0
+            val firstCall = async { viewModel.share { exports++; resumeExport.await() } }
+            advanceUntilIdle()
+            assertTrue(viewModel.uiState.value.shareInProgress)
+
+            viewModel.share { exports++ }
+
+            assertEquals(1, exports)
+            assertTrue(viewModel.uiState.value.shareInProgress)
+
+            resumeExport.complete(Unit)
+            firstCall.await()
+            assertFalse(viewModel.uiState.value.shareInProgress)
+        }
+
+    @Test
+    fun share_calledFromCallerThread_buildsReportSectionsOnIo() {
         val ioExecutor = Executors.newSingleThreadExecutor { Thread(it, "share-io") }
         val accountReadThreads = mutableListOf<String>()
         val accountManager = mockk<IAccountManager>(relaxed = true)
@@ -170,7 +184,7 @@ class AppStatusViewModelTest {
             viewModel.awaitInitLoaded()
             accountReadThreads.clear()
 
-            runBlocking { viewModel.prepareShareUri() }
+            runBlocking { viewModel.share { } }
 
             assertTrue(accountReadThreads.isNotEmpty())
             assertTrue(accountReadThreads.toString(), accountReadThreads.all { it.startsWith("share-io") })

@@ -60,7 +60,7 @@ import cash.p.terminal.navigation.rememberQrScannerLauncher
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.shared.settings.SettingsAction
 import cash.p.terminal.shared.settings.SettingsContent
-import cash.p.terminal.shared.settings.settingsAlertPainter
+import cash.p.terminal.shared.settings.appShareText
 import cash.p.terminal.ui.helpers.LinkHelper
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellSingleLineLawrenceSection
@@ -273,7 +273,7 @@ fun HsSettingCell(
 }
 
 private fun shareAppLink(appLink: String, context: Context) {
-    val shareMessage = Translator.getString(R.string.SettingsShare_Text) + "\n" + appLink + "\n"
+    val shareMessage = appShareText(Translator.getString(R.string.SettingsShare_Text), appLink)
     val shareIntent = Intent(Intent.ACTION_SEND)
     shareIntent.type = "text/plain"
     shareIntent.putExtra(Intent.EXTRA_TEXT, shareMessage)

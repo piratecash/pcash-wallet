@@ -1,8 +1,14 @@
 package cash.p.terminal.shared.desktop
 
+import cash.p.terminal.core.AppVersionStorage
 import cash.p.terminal.core.BalanceSettingsStorage
 import cash.p.terminal.core.NetworkSettingsStorage
+import cash.p.terminal.core.ReleaseNotesStorage
 import cash.p.terminal.core.TransactionSettingsStorage
+import cash.p.terminal.core.tryOrNull
+import cash.p.terminal.entities.AppVersion
+import cash.p.terminal.entities.decodeAppVersions
+import cash.p.terminal.entities.encodeToJson
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewMode
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.displayoptions.DisplayPricePeriod
@@ -14,7 +20,8 @@ import kotlinx.coroutines.flow.StateFlow
 
 /** Same defaults as Android `LocalStorageManager`; the PIN arrives already encrypted. Tor is Android-only. */
 class DesktopWalletSettingsStorage(private val store: DesktopSettingsStore) :
-    BalanceSettingsStorage, TransactionSettingsStorage, NetworkSettingsStorage {
+    BalanceSettingsStorage, TransactionSettingsStorage, NetworkSettingsStorage, ReleaseNotesStorage,
+    AppVersionStorage {
 
     override var sortType: BalanceSortType
         get() = BalanceSortType.getTypeFromString(store.string(SORT_TYPE) ?: BalanceSortType.Value.getAsString())
@@ -100,6 +107,18 @@ class DesktopWalletSettingsStorage(private val store: DesktopSettingsStore) :
         get() = store.flag(MONERO_SKIP_NEW_ADDRESS_CONFIRM) ?: false
         set(value) = store.setFlag(MONERO_SKIP_NEW_ADDRESS_CONFIRM, value)
 
+    override var changelogShownForAppVersion: String?
+        get() = store.string(CHANGELOG_SHOWN_FOR_APP_VERSION)
+        set(value) = store.setString(CHANGELOG_SHOWN_FOR_APP_VERSION, value)
+
+    override var showChangelogAfterUpdate: Boolean
+        get() = store.flag(SHOW_CHANGELOG_AFTER_UPDATE) ?: true
+        set(value) = store.setFlag(SHOW_CHANGELOG_AFTER_UPDATE, value)
+
+    override var appVersions: List<AppVersion>
+        get() = store.string(APP_VERSIONS)?.let { tryOrNull { it.decodeAppVersions() } }.orEmpty()
+        set(value) = store.setString(APP_VERSIONS, value.encodeToJson())
+
     override fun isNetworkFeeWarningDismissed(blockchainTypeUid: String): Boolean =
         store.flag(networkFeeWarningKey(blockchainTypeUid)) ?: false
 
@@ -118,6 +137,7 @@ class DesktopWalletSettingsStorage(private val store: DesktopSettingsStore) :
 
     private companion object {
         const val SEPARATOR = ","
+        const val APP_VERSIONS = "appVersions"
         const val SORT_TYPE = "balanceSortType"
         const val BALANCE_HIDDEN = "balanceHidden"
         const val BALANCE_AUTO_HIDE = "balanceAutoHideEnabled"
@@ -137,6 +157,8 @@ class DesktopWalletSettingsStorage(private val store: DesktopSettingsStore) :
         const val ZCASH_IRONWOOD_TX_IDS = "zcashIronwoodMigrationTxIds"
         const val ZCASH_ACCOUNT_IDS = "zcashAccountIds"
         const val MONERO_SKIP_NEW_ADDRESS_CONFIRM = "moneroSkipNewAddressConfirm"
+        const val CHANGELOG_SHOWN_FOR_APP_VERSION = "changelogShownForAppVersion"
+        const val SHOW_CHANGELOG_AFTER_UPDATE = "showChangelogAfterUpdate"
         const val NETWORK_FEE_WARNING_PREFIX = "networkFeeWarningDismissed_"
     }
 }

@@ -32,6 +32,8 @@ interface WalletPlatformPages {
     val isBlockchainStatusAvailable: Boolean
     fun blockchainStatus(blockchain: Blockchain): HSPage?
 
+    fun privacy(): HSPage
+
     fun openMarkdownOrWeblink(navigation: HSNavigation, url: String)
 
     /** Scans the card; its access-code recovery page, or `null` when the scan did not succeed. */
