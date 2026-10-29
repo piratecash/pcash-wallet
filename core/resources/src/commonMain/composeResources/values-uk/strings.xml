@@ -557,6 +557,9 @@
     <string name="TonConnect_Unnamed">Без назви</string>
     <string name="TonConnect_Wallet">Гаманець</string>
     <string name="TonConnect_ChooseWallet">Виберіть гаманець</string>
+    <string name="ton_wallet_version_v4r2_description">Адреса гаманця TON версії v4R2. Використовується за замовчуванням.</string>
+    <string name="ton_wallet_version_w5_description">Гаманець TON версії W5. Окрема адреса та баланс з тієї самої фрази.</string>
+    <string name="tonconnect_wallet_version">Версія гаманця</string>
     <string name="manifest_loading">Завантаження маніфесту…</string>
     <string name="account_not_supported_by">Ваш поточний тип гаманця %1$s не підтримує %2$s</string>
     <!--WalletConnect-->

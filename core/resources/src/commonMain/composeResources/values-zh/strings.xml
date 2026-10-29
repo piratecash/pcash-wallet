@@ -573,6 +573,9 @@
     <string name="TonConnect_Unnamed">未命名</string>
     <string name="TonConnect_Wallet">钱包</string>
     <string name="TonConnect_ChooseWallet">选择钱包</string>
+    <string name="ton_wallet_version_v4r2_description">v4R2 版本的 TON 钱包地址。默认使用。</string>
+    <string name="ton_wallet_version_w5_description">W5 版本的 TON 钱包。来自同一短语的独立地址和余额。</string>
+    <string name="tonconnect_wallet_version">钱包版本</string>
     <string name="manifest_loading">正在加载清单…</string>
     <string name="account_not_supported_by">您当前的钱包类型 %1$s 不支持 %2$s</string>
     <!--WalletConnect-->

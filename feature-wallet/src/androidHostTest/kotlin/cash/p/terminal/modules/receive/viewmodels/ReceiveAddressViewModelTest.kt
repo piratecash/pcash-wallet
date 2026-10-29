@@ -17,7 +17,9 @@ import cash.p.terminal.wallet.IReceiveAdapter
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.Coin
+import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.TonWalletVersion
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.coEvery
@@ -27,6 +29,7 @@ import io.mockk.mockk
 import io.reactivex.processors.PublishProcessor
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
+import junit.framework.TestCase.assertNull
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CancellationException
@@ -650,6 +653,26 @@ class ReceiveAddressViewModelTest {
         assertEquals("", viewModel.uiState.uri)
     }
 
+    @Test
+    fun init_tonSeedAccount_showsWalletVersion() = runTest(dispatcher) {
+        val viewModel = createViewModel(tonNativeWallet(AccountType.Mnemonic(List(12) { "word$it" }, "")))
+
+        assertEquals(TonWalletVersion.V4R2.title, viewModel.uiState.addressFormat)
+    }
+
+    @Test
+    fun init_tonWatchAddressAccount_showsNoWalletVersion() = runTest(dispatcher) {
+        val viewModel = createViewModel(tonNativeWallet(AccountType.TonAddress(TON_ADDRESS)))
+
+        assertNull(viewModel.uiState.addressFormat)
+    }
+
+    private fun tonNativeWallet(accountType: AccountType): Wallet {
+        every { token.blockchainType } returns BlockchainType.Ton
+        every { token.tokenQuery } returns TokenQuery(BlockchainType.Ton, TokenType.Native)
+        return walletFor(account("ton-account", accountType))
+    }
+
     private fun walletFor(account: Account) = mockk<Wallet>(relaxed = true) {
         every { this@mockk.account } returns account
         every { this@mockk.coin } returns this@ReceiveAddressViewModelTest.coin
@@ -673,6 +696,7 @@ class ReceiveAddressViewModelTest {
 
     private companion object {
         const val ADAPTER_ADDRESS = "u1adapteraddress"
+        const val TON_ADDRESS = "UQAzWZa6nM5mJev91wGc7VCSfBoIsYRqKJpV78N8Add9-RKY"
         const val FALLBACK_ADDRESS = "u1fallbackaddress"
         const val VERIFIED_ADDRESS = "t1verified"
         const val DERIVED_ADDRESS = "t1derived"

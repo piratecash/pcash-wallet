@@ -6,6 +6,8 @@ import cash.p.terminal.wallet.entities.HardwarePublicKeyType
 import cash.p.terminal.wallet.entities.SecretString
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.TonWalletVersion
+import cash.p.terminal.wallet.entities.tonAsset
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.hdwalletkit.HDExtendedKey
 import io.horizontalsystems.hdwalletkit.HDWallet
@@ -55,9 +57,9 @@ object HardwarePublicKeySpecs {
         BlockchainType.Stellar -> fixedPath(query, HardwareKeyCoin.Stellar, "m/44'/148'/0'")
         BlockchainType.Tron -> fixedPath(query, HardwareKeyCoin.Tron, "m/44'/195'/0'/0/0")
         BlockchainType.Zcash -> zcash(query, vendor)
-        // Trezor has no TON or THORChain app.
-        BlockchainType.Ton ->
-            fixedPath(query, HardwareKeyCoin.Ton, "m/44'/607'/0'/0'/0'/0'").takeIf { vendor == HardwareVendor.Ledger }
+        // Trezor has no TON or THORChain app; the kit's external signer drives only the v4R2 contract.
+        BlockchainType.Ton -> fixedPath(query, HardwareKeyCoin.Ton, "m/44'/607'/0'/0'/0'/0'")
+            .takeIf { vendor == HardwareVendor.Ledger && query.tonAsset?.version != TonWalletVersion.W5 }
         BlockchainType.Thorchain ->
             fixedPath(query, HardwareKeyCoin.Thorchain, "m/44'/931'/0'/0/0").takeIf { vendor == HardwareVendor.Ledger }
         // Trezor keeps Monero in its own cold-signing wallet, outside the public key store.

@@ -18,6 +18,9 @@ import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.every
 import io.mockk.mockk
+import org.ton.block.AddrStd
+import org.ton.cell.Cell
+import org.ton.cell.CellSlice
 import java.math.BigDecimal
 
 internal fun buildTestAccount(id: String) = Account(
@@ -93,3 +96,48 @@ internal fun MarketKitWrapper.stubZcashTransparentToken(token: Token) {
         })
     } returns token
 }
+
+internal data class JettonSwapParties(val responseDestination: AddrStd, val receiver: AddrStd)
+
+/** Reads who gets the excess TON and who gets the swap output from a STON.fi jetton swap transfer. */
+internal fun Cell.stonFiJettonSwapParties(dexVersion: Int): JettonSwapParties {
+    val transfer = beginParse()
+    transfer.loadUInt(OPCODE_BITS)
+    transfer.loadUInt(QUERY_ID_BITS)
+    transfer.loadCoins()
+    transfer.loadAddress()
+    val responseDestination = transfer.loadAddress()
+    transfer.loadBit()
+    transfer.loadCoins()
+    transfer.loadBit()
+    val swap = transfer.loadRef().beginParse()
+    swap.loadUInt(OPCODE_BITS)
+    val receiver = if (dexVersion == 1) {
+        swap.loadAddress()
+        swap.loadCoins()
+        swap.loadAddress()
+    } else {
+        repeat(3) { swap.loadAddress() }
+        swap.loadUInt(DEADLINE_BITS)
+        val crossSwap = swap.loadRef().beginParse()
+        crossSwap.loadCoins()
+        crossSwap.loadAddress()
+    }
+    return JettonSwapParties(responseDestination, receiver)
+}
+
+private fun CellSlice.loadCoins() = loadUInt(loadUInt(COINS_LENGTH_BITS).toInt() * Byte.SIZE_BITS)
+
+private fun CellSlice.loadAddress(): AddrStd {
+    loadUInt(ADDRESS_TAG_BITS)
+    loadBit()
+    val workchainId = loadInt(Byte.SIZE_BITS).toInt()
+    return AddrStd(workchainId, loadBits(ADDRESS_BITS))
+}
+
+private const val OPCODE_BITS = 32
+private const val QUERY_ID_BITS = 64
+private const val DEADLINE_BITS = 64
+private const val COINS_LENGTH_BITS = 4
+private const val ADDRESS_TAG_BITS = 2
+private const val ADDRESS_BITS = 256

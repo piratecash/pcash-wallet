@@ -577,6 +577,9 @@
     <string name="TonConnect_Unnamed">بدون نام</string>
     <string name="TonConnect_Wallet">کیف پول</string>
     <string name="TonConnect_ChooseWallet">انتخاب کیف پول</string>
+    <string name="ton_wallet_version_v4r2_description">آدرس کیف پول TON نسخه v4R2. به‌طور پیش‌فرض استفاده می‌شود.</string>
+    <string name="ton_wallet_version_w5_description">کیف پول TON نسخه W5. آدرس و موجودی جدا از همان عبارت.</string>
+    <string name="tonconnect_wallet_version">نسخه کیف پول</string>
     <string name="manifest_loading">در حال بارگذاری مانیفست…</string>
     <string name="account_not_supported_by">نوع کیف پول فعلی شما %1$s از %2$s پشتیبانی نمی‌کند</string>
     <!--WalletConnect-->

@@ -573,6 +573,9 @@
     <string name="TonConnect_Unnamed">Sans nom</string>
     <string name="TonConnect_Wallet">Portefeuille</string>
     <string name="TonConnect_ChooseWallet">Choisir un portefeuille</string>
+    <string name="ton_wallet_version_v4r2_description">Adresse de portefeuille TON de version v4R2. Utilisée par défaut.</string>
+    <string name="ton_wallet_version_w5_description">Portefeuille TON version W5. Une adresse et un solde distincts à partir de la même phrase.</string>
+    <string name="tonconnect_wallet_version">Version du portefeuille</string>
     <string name="manifest_loading">Chargement du manifeste…</string>
     <string name="account_not_supported_by">Votre type de portefeuille actuel %1$s ne prend pas en charge %2$s</string>
     <!--WalletConnect-->

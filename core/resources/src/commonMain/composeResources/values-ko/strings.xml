@@ -577,6 +577,9 @@
     <string name="TonConnect_Unnamed">이름 없음</string>
     <string name="TonConnect_Wallet">지갑</string>
     <string name="TonConnect_ChooseWallet">지갑 선택</string>
+    <string name="ton_wallet_version_v4r2_description">v4R2 버전의 TON 지갑 주소입니다. 기본적으로 사용됩니다.</string>
+    <string name="ton_wallet_version_w5_description">W5 버전의 TON 지갑입니다. 동일한 구문에서 별도의 주소와 잔액을 사용합니다.</string>
+    <string name="tonconnect_wallet_version">지갑 버전</string>
     <string name="manifest_loading">매니페스트 로딩 중…</string>
     <string name="account_not_supported_by">현재 지갑 유형 %1$s에서는 %2$s을(를) 지원하지 않습니다</string>
     <!--WalletConnect-->

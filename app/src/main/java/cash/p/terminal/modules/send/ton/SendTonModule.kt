@@ -17,9 +17,7 @@ import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.getMaxSendableBalance
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.DispatcherProvider
-import io.horizontalsystems.core.entities.BlockchainType
-import cash.p.terminal.wallet.entities.TokenQuery
-import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.nativeTokenQuery
 import org.koin.java.KoinJavaComponent.inject
 
 object SendTonModule {
@@ -58,7 +56,7 @@ object SendTonModule {
                     val addressService = SendTonAddressService()
                     val feeService = SendTonFeeService(adapter)
                     val xRateService = XRateService(App.marketKit, App.currencyManager.baseCurrency)
-                    val feeToken = App.coinManager.getToken(TokenQuery(BlockchainType.Ton, TokenType.Native))
+                    val feeToken = App.coinManager.getToken(wallet.token.nativeTokenQuery)
                         ?: throw IllegalArgumentException()
 
                     SendTonViewModel(

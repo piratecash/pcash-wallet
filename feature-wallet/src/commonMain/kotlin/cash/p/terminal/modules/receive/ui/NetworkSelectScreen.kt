@@ -80,8 +80,8 @@ fun NetworkSelectScreen(
                 VSpacer(20.dp)
                 CellUniversalLawrenceSection(viewModel.eligibleTokens) { token ->
                     val blockchain = token.blockchain
-                    val description = if (token.type.title.isNotBlank()) {
-                        "${blockchain.description} ${token.type.title}"
+                    val description = if (token.title.isNotBlank()) {
+                        "${blockchain.description} ${token.title}"
                     } else {
                         blockchain.description
                     }

@@ -184,6 +184,22 @@ class QuickexProviderTest {
         }
     }
 
+    @Test
+    fun supports_tonW5Tokens_matchSameInstrumentsAsV4r2() = runTest {
+        coEvery { quickexRepository.getAvailablePairs() } returns listOf(
+            instrument("TON"),
+            instrument("USDT").copy(networkTitle = "TON", contractAddress = TON_JETTON_MASTER),
+        )
+        val provider = createProvider().apply { start() }
+
+        assertTrue(provider.supports(nativeTestToken(BlockchainType.Ton, "TON").copy(type = TokenType.TonW5Native)))
+        assertTrue(
+            provider.supports(
+                nativeTestToken(BlockchainType.Ton, "USDT").copy(type = TokenType.TonW5Jetton(TON_JETTON_MASTER))
+            )
+        )
+    }
+
     private suspend fun createStartedProviderWithRune() = createProvider().apply {
         coEvery { quickexRepository.getAvailablePairs() } returns
             listOf(instrument("RUNE", requiresMemo = true), instrument("BTC"), instrument("LTC"))
@@ -232,5 +248,6 @@ class QuickexProviderTest {
 
     private companion object {
         const val THOR_ADDRESS = "thor1user"
+        const val TON_JETTON_MASTER = "EQmaster"
     }
 }

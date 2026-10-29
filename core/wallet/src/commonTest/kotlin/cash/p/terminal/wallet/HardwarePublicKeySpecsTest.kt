@@ -63,6 +63,14 @@ class HardwarePublicKeySpecsTest {
         assertNull(HardwarePublicKeySpecs.specFor(maya, HardwareVendor.Ledger))
     }
 
+    // The kit's external signer drives only the v4R2 contract.
+    @Test
+    fun specFor_tonW5Tokens_noLedgerSpec() {
+        listOf(TokenType.TonW5Native, TokenType.TonW5Jetton("EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs")).forEach {
+            assertNull(HardwarePublicKeySpecs.specFor(TokenQuery(BlockchainType.Ton, it), HardwareVendor.Ledger))
+        }
+    }
+
     @Test
     fun specFor_zcash_ledgerViewingKeyWithoutSaplingTrezorTransparentOnly() {
         fun zcash(type: TokenType.AddressSpecType) = TokenQuery(BlockchainType.Zcash, TokenType.AddressSpecTyped(type))

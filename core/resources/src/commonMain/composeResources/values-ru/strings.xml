@@ -561,6 +561,9 @@
     <string name="TonConnect_Unnamed">Безымянный</string>
     <string name="TonConnect_Wallet">Кошелек</string>
     <string name="TonConnect_ChooseWallet">Выберите кошелек</string>
+    <string name="ton_wallet_version_v4r2_description">Адрес кошелька TON версии v4R2. Используется по умолчанию.</string>
+    <string name="ton_wallet_version_w5_description">Кошелёк TON версии W5. Отдельный адрес и баланс от той же фразы.</string>
+    <string name="tonconnect_wallet_version">Версия кошелька</string>
     <string name="account_not_supported_by">Ваш текущий тип кошелька %1$s не поддерживает %2$s</string>
     <!--WalletConnect-->
     <string name="WalletConnect_Status">Статус</string>

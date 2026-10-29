@@ -21,6 +21,8 @@ import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.TonWalletVersion
+import cash.p.terminal.wallet.meta
 import cash.p.terminal.wallet.transaction.TransactionSource
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
@@ -131,7 +133,17 @@ class AdapterFactoryUnlinkTest {
     fun unlinkAdapter_nonEvmTransactionsAdapter_unlinksSameKitAsTransactionSource() = runTest {
         factory.unlinkAdapter(transactionSource(BlockchainType.Ton), mockk<ITransactionsAdapter>())
 
-        coVerify(exactly = 1) { tonKitManager.unlink(account) }
+        coVerify(exactly = 1) { tonKitManager.unlink(account, TonWalletVersion.V4R2) }
+    }
+
+    @Test
+    fun unlinkAdapter_tonW5TransactionSource_unlinksW5Kit() = runTest {
+        val w5Source = transactionSource(BlockchainType.Ton).copy(meta = TokenType.TonW5Native.meta)
+
+        factory.unlinkAdapter(w5Source)
+
+        coVerify(exactly = 1) { tonKitManager.unlink(account, TonWalletVersion.W5) }
+        coVerify(exactly = 0) { tonKitManager.unlink(account, TonWalletVersion.V4R2) }
     }
 
     @Test
@@ -143,7 +155,7 @@ class AdapterFactoryUnlinkTest {
         coVerify(exactly = 1) { tronKitManager.unlink(account) }
 
         factory.unlinkAdapter(transactionSource(BlockchainType.Ton))
-        coVerify(exactly = 1) { tonKitManager.unlink(account) }
+        coVerify(exactly = 1) { tonKitManager.unlink(account, TonWalletVersion.V4R2) }
 
         factory.unlinkAdapter(transactionSource(BlockchainType.Monero))
         coVerify(exactly = 1) { moneroKitManager.unlink(account) }

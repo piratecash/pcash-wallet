@@ -453,6 +453,8 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
 
         if (!hasZcashShielded) return true
 
+        if (marketKit.isTonW5NativeTokenMissing()) return true
+
         // Check if Tether has a BSC token (virtual USDT BEP-20)
         val tetherFullCoin = marketKit.fullCoins(listOf("tether")).firstOrNull()
         val hasTetherOnBsc = tetherFullCoin?.tokens?.any {

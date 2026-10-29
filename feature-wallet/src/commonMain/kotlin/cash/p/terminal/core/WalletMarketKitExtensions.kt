@@ -12,6 +12,10 @@ import cash.p.terminal.wallet.bitcoinCashCoinType
 import cash.p.terminal.wallet.entities.BitcoinCashCoinType
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.TonAsset
+import cash.p.terminal.wallet.entities.TonWalletVersion
+import cash.p.terminal.wallet.entities.tokenQuery
+import cash.p.terminal.wallet.entities.tonAsset
 import cash.p.terminal.wallet.isCompatibleWith
 import cash.p.terminal.wallet.isLitecoinMweb
 import cash.p.terminal.wallet.models.CoinPrice
@@ -45,7 +49,7 @@ val Blockchain.description: String
         BlockchainType.Gnosis -> "xDAI, ERC20 tokens"
         BlockchainType.Fantom -> "FTM, ERC20 tokens"
         BlockchainType.Tron -> "TRX, TRC20 tokens"
-        BlockchainType.Ton -> "TON"
+        BlockchainType.Ton -> "TON (V4R2, W5)"
         BlockchainType.Stellar -> "XLM, Stellar assets"
         BlockchainType.Cosanta -> "COSA"
         BlockchainType.Dogecoin -> "DOGE"
@@ -211,7 +215,8 @@ fun Token.supports(accountType: AccountType): Boolean {
 
         is AccountType.HardwareCard,
         is AccountType.Mnemonic,
-        is AccountType.MnemonicMonero -> accountType.isCompatibleWith(blockchainType, type)
+        is AccountType.MnemonicMonero,
+        is AccountType.TonAddress -> accountType.isCompatibleWith(blockchainType, type)
 
         is AccountType.TrezorDevice -> HardwareWalletSupport.supports(accountType, blockchainType, type)
 
@@ -295,6 +300,8 @@ val BlockchainType.nativeTokenQueries: List<TokenQuery>
 
         BlockchainType.Zcash -> zcashAddressSpecTokenQueries
 
+        BlockchainType.Ton -> TonWalletVersion.entries.map { TonAsset.Native(it).tokenQuery }
+
         else -> {
             listOf(TokenQuery(this, TokenType.Native))
         }
@@ -316,6 +323,13 @@ val BlockchainType.defaultTokenQuery: TokenQuery
         else -> {
             TokenQuery(this, TokenType.Native)
         }
+    }
+
+val Token.isDefault: Boolean
+    get() = when (tonAsset?.version) {
+        TonWalletVersion.V4R2 -> true
+        TonWalletVersion.W5 -> false
+        null -> type.isDefault
     }
 
 val TokenType.isDefault

@@ -3,7 +3,11 @@ package cash.p.terminal.wallet
 import cash.p.terminal.wallet.entities.BitcoinCashCoinType
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.TonAsset
+import cash.p.terminal.wallet.entities.TonWalletVersion
 import cash.p.terminal.wallet.entities.ZCashCoinType
+import cash.p.terminal.wallet.entities.tonAsset
+import cash.p.terminal.wallet.transaction.TransactionSource
 import io.horizontalsystems.core.entities.BlockchainType
 
 fun Token.isMonero() =
@@ -82,7 +86,7 @@ val Token.protocolType: String?
     get() = tokenQuery.protocolType
 
 val TokenQuery.protocolType: String?
-    get() = when (tokenType) {
+    get() = tonAsset?.protocolType ?: when (tokenType) {
         TokenType.Mweb -> {
             "MWEB"
         }
@@ -92,7 +96,6 @@ val TokenQuery.protocolType: String?
                 BlockchainType.Ethereum,
                 BlockchainType.BinanceSmartChain,
                 BlockchainType.Tron,
-                BlockchainType.Ton,
                 BlockchainType.Thorchain,
                 BlockchainType.Mayachain -> null
 
@@ -110,8 +113,16 @@ val TokenQuery.protocolType: String?
         }
 
         is TokenType.Trc10 -> "TRC10"
-        is TokenType.Jetton -> "JETTON"
         else -> blockchainType.title
+    }
+
+private val TonAsset.protocolType: String
+    get() = when (this) {
+        is TonAsset.Native -> version.title
+        is TonAsset.Jetton -> when (version) {
+            TonWalletVersion.V4R2 -> "JETTON"
+            TonWalletVersion.W5 -> "JETTON ${version.title}"
+        }
     }
 
 val BlockchainType.title: String
@@ -153,7 +164,29 @@ val TokenType.meta: String?
         is TokenType.Derived -> this.derivation.name
         is TokenType.AddressTyped -> this.type.name
         is TokenType.AddressSpecTyped -> this.type.name
-        else -> null
+        TokenType.TonW5Native, is TokenType.TonW5Jetton -> TonWalletVersion.W5.transactionSourceMeta
+        TokenType.Native,
+        is TokenType.Eip20,
+        is TokenType.Trc10,
+        is TokenType.Spl,
+        is TokenType.Jetton,
+        is TokenType.Asset,
+        is TokenType.ThorchainAsset,
+        is TokenType.Unsupported -> null
+    }
+
+/** V4R2 keeps `null` so transaction sources stored before W5 keep their identity. */
+private val TonWalletVersion.transactionSourceMeta: String?
+    get() = when (this) {
+        TonWalletVersion.V4R2 -> null
+        TonWalletVersion.W5 -> "w5"
+    }
+
+val TransactionSource.tonWalletVersion: TonWalletVersion?
+    get() = if (blockchain.type == BlockchainType.Ton) {
+        TonWalletVersion.entries.firstOrNull { it.transactionSourceMeta == meta }
+    } else {
+        null
     }
 
 fun Wallet.isPirateCash() = (token.type == TokenType.Eip20(PirateContracts.PIRATE_CONTRACT) ||
