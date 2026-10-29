@@ -10,6 +10,7 @@ object SharedAppConfig {
     val merkleIoKey by lazy { EncodedSecrets.MERKLE_IO_KEY }
     val openSeaApiKey by lazy { EncodedSecrets.OPEN_SEA_API_KEY }
     val trongridApiKeys: List<String> by lazy { EncodedSecrets.TRONGRID_API_KEYS.toKeyList() }
+    val tonApiKeys: List<String> by lazy { EncodedSecrets.TONAPI_KEY.toKeyList() }
     val alchemySolanaApiKeys: List<String> by lazy { EncodedSecrets.ALCHEMY_SOLANA_API_KEYS.toKeyList() }
     const val chainalysisBaseUrl = "https://public.chainalysis.com/api/v1/"
     const val hashDitBaseUrl = "https://service.hashdit.io/v2/hashdit/"

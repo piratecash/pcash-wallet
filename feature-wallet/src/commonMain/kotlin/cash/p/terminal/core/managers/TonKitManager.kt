@@ -2,6 +2,7 @@ package cash.p.terminal.core.managers
 
 import cash.p.terminal.core.onPollingStarted
 import cash.p.terminal.core.onPollingStopped
+import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.core.UnsupportedException
 import cash.p.terminal.core.toFixedSize
 import cash.p.terminal.wallet.IHardwarePublicKeyStorage
@@ -152,6 +153,7 @@ class TonKitManager(
     }
 
     private fun createHttpClient(account: Account): TonHttpClient = TonKit.createHttpClient(
+        apiKeys = SharedAppConfig.tonApiKeys,
         eventListenerFactory = NetworkErrorEventListener.Factory(BlockchainType.Ton, account.id, networkErrorTracker),
     )
 
@@ -298,7 +300,12 @@ class TonKitManager(
                 logger.d { "TonKitManager EnterForeground" }
                 if (!isNetworkPaused(account)) {
                     delay(1000)
-                    if (!isNetworkPaused(account)) kit.refresh()
+                    lifecycleMutex.withLock {
+                        if (!isNetworkPaused(account)) {
+                            if (!wrapper.networkStarted) wrapper.startNetwork()
+                            kit.refresh()
+                        }
+                    }
                 }
             } else if (state == BackgroundManagerState.EnterBackground) {
                 if (pollingSessionCount.get() == 0 && !backgroundKeepAliveManager.isKeepAlive(BlockchainType.Ton)) {
