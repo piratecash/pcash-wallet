@@ -23,13 +23,11 @@ import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.iconPlaceholder
-import cash.p.terminal.modules.paycore.PayCoreAssets
 import cash.p.terminal.ui.compose.components.Badge
 import cash.p.terminal.ui.compose.components.MultitextM1
 import cash.p.terminal.ui.compose.components.SearchBar
 import cash.p.terminal.ui_compose.components.B2
 import cash.p.terminal.ui_compose.components.D1
-import cash.p.terminal.ui_compose.components.HeaderStick
 import cash.p.terminal.ui_compose.components.HsImage
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.SectionUniversalItem
@@ -53,8 +51,6 @@ fun SelectSwapCoinDialogScreen(
     onSearchTextChanged: (String) -> Unit,
     onClose: () -> Unit,
     onClickItem: (CoinBalanceItem) -> Unit,
-    fiatItems: List<CoinBalanceItem> = emptyList(),
-    hasFiatSection: Boolean = false,
 ) {
     Column(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
         SearchBar(
@@ -78,23 +74,6 @@ fun SelectSwapCoinDialogScreen(
         }
 
         LazyColumn {
-            if (hasFiatSection && fiatItems.isNotEmpty()) {
-                item {
-                    HeaderStick(
-                        borderTop = false,
-                        text = stringResource(R.string.paycore_section_currency)
-                    )
-                }
-                items(fiatItems) { coinItem ->
-                    CoinBalanceRow(coinItem, onClickItem)
-                }
-                item {
-                    HeaderStick(
-                        borderTop = false,
-                        text = stringResource(R.string.paycore_section_crypto)
-                    )
-                }
-            }
             items(coinBalanceItems) { coinItem ->
                 CoinBalanceRow(coinItem, onClickItem)
             }
@@ -110,7 +89,6 @@ private fun CoinBalanceRow(
     coinItem: CoinBalanceItem,
     onClickItem: (CoinBalanceItem) -> Unit
 ) {
-    val isFiat = PayCoreAssets.isFiat(coinItem.token)
     SectionUniversalItem(borderTop = true) {
         RowUniversal(
             modifier = Modifier
@@ -130,30 +108,21 @@ private fun CoinBalanceRow(
             MultitextM1(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        val text = if (isFiat) {
-                            coinItem.token.coin.name
-                        } else {
-                            coinItem.token.coin.code
-                        }
-                        B2(text = text)
-                        if (!isFiat) {
-                            coinItem.token.badge?.let {
-                                Badge(
-                                    modifier = Modifier.padding(start = 6.dp),
-                                    text = it
-                                )
-                            }
+                        B2(text = coinItem.token.coin.code)
+                        coinItem.token.badge?.let {
+                            Badge(
+                                modifier = Modifier.padding(start = 6.dp),
+                                text = it
+                            )
                         }
                     }
                 },
                 subtitle = {
-                    if (!isFiat) {
-                        D1(
-                            text = coinItem.token.coin.name,
-                            overflow = TextOverflow.Ellipsis,
-                            maxLines = 1
-                        )
-                    }
+                    D1(
+                        text = coinItem.token.coin.name,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1
+                    )
                 },
                 modifier = Modifier.weight(1f)
             )
@@ -192,11 +161,6 @@ private fun CoinBalanceRow(
 @Preview(showBackground = true)
 @Composable
 private fun CoinBalanceRowPreview() {
-    val rubItem = CoinBalanceItem(
-        token = PayCoreAssets.rubToken,
-        balance = null,
-        fiatBalanceValue = null
-    )
     val usdtItem = CoinBalanceItem(
         token = Token(
             coin = Coin(
@@ -215,7 +179,6 @@ private fun CoinBalanceRowPreview() {
     )
     ComposeAppTheme {
         Column(modifier = Modifier.background(ComposeAppTheme.colors.backgroundBase)) {
-            CoinBalanceRow(rubItem) {}
             CoinBalanceRow(usdtItem) {}
         }
     }

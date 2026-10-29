@@ -31,7 +31,5 @@ fun SwapSelectCoinScreen(
         onSearchTextChanged = viewModel::setQuery,
         onClose = navigation::navigateUpSafely,
         onClickItem = { onSelect(it.token) },
-        fiatItems = uiState.fiatItems,
-        hasFiatSection = uiState.hasFiatSection,
     )
 }

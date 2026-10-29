@@ -28,7 +28,6 @@ import cash.p.terminal.modules.multiswap.action.ActionCreate
 import cash.p.terminal.modules.multiswap.sideIn
 import cash.p.terminal.modules.multiswap.sideIntermediate
 import cash.p.terminal.modules.multiswap.sideOut
-import cash.p.terminal.modules.paycore.PayCoreAssets
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IWalletManager
@@ -314,7 +313,7 @@ class MultiSwapExchangeViewModel(
         }
     }
 
-    private suspend fun fiatAmount(token: Token?, amount: BigDecimal?): BigDecimal? {
+    private fun fiatAmount(token: Token?, amount: BigDecimal?): BigDecimal? {
         if (amount == null) return null
         val token = token ?: return null
         val rate = assetFiatRateService.rate(token, currency) ?: return null
@@ -322,7 +321,6 @@ class MultiSwapExchangeViewModel(
     }
 
     private fun resolveToken(side: SwapSide): Token? {
-        if (PayCoreAssets.isRub(side.coinUid)) return PayCoreAssets.rubToken
         side.tokenQueryId?.let { id -> return TokenQuery.fromId(id)?.let(marketKit::token) }
 
         val blockchainType = BlockchainType.fromUid(side.blockchainTypeUid)
@@ -362,7 +360,7 @@ class MultiSwapExchangeViewModel(
         }
     }
 
-    private suspend fun mapToUiState(swap: PendingMultiSwap): MultiSwapExchangeUiState {
+    private fun mapToUiState(swap: PendingMultiSwap): MultiSwapExchangeUiState {
         val tokenIn = resolveToken(swap.sideIn)
         val tokenIntermediate = resolveToken(swap.sideIntermediate)
         val tokenOut = resolveToken(swap.sideOut)

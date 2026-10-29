@@ -39,7 +39,6 @@ import cash.p.terminal.modules.premium.settings.PremiumSettingsPage
 import cash.p.terminal.modules.send.offline.OfflineBroadcastPage
 import cash.p.terminal.modules.settings.about.AboutPage
 import cash.p.terminal.modules.settings.about.ContactOptionsSheet
-import cash.p.terminal.modules.settings.about.ContactUsPage
 import cash.p.terminal.modules.settings.addresschecker.AddressCheckerPage
 import cash.p.terminal.modules.settings.advancedsecurity.AdvancedSecurityPage
 import cash.p.terminal.modules.settings.appearance.AppearancePage
@@ -186,7 +185,7 @@ internal fun handleSettingsAction(
         SettingsAction.AboutPremium -> navigation.slideFromBottom(AboutPremiumPage(null))
         SettingsAction.RateApp -> RateAppManager.openPlayMarket(context)
         SettingsAction.ShareApp -> shareAppLink(viewModel.uiState.appWebPageLink, context)
-        is SettingsAction.Contact -> navigation.slideFromContact(action.isPayCoreEnabled)
+        SettingsAction.Contact -> navigation.slideFromBottom(ContactOptionsSheet(null))
         SettingsAction.CompanyWebsite -> LinkHelper.openLinkInAppBrowser(context, viewModel.companyWebPage)
         else -> Unit
     }
@@ -237,14 +236,6 @@ private fun openTonConnect(
                 )
             )
         )
-    }
-}
-
-private fun HSNavigation.slideFromContact(isPayCoreEnabled: Boolean) {
-    if (isPayCoreEnabled) {
-        slideFromRight(ContactUsPage())
-    } else {
-        slideFromBottom(ContactOptionsSheet(null))
     }
 }
 

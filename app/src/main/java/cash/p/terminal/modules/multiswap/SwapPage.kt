@@ -105,7 +105,6 @@ import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.badge
-import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.core.entities.Currency
 import cash.p.terminal.core.App
 import cash.p.terminal.core.ethereum.toCautionViewItem
@@ -128,23 +127,8 @@ import cash.p.terminal.ui_compose.components.InfoBottomSheet
 import cash.p.terminal.modules.multiswap.settings.SwapSettingsScreen
 import cash.p.terminal.modules.offline.OfflineBlockedBottomSheet
 import cash.p.terminal.modules.offline.OfflineOperationGate
-import cash.p.terminal.modules.paycore.PayCoreAssets
-import cash.p.terminal.modules.paycore.PayCoreQuote
-import cash.p.terminal.modules.paycore.PayCoreSelectBankAction
-import cash.p.terminal.modules.paycore.PayCoreVerificationAction
-import cash.p.terminal.modules.paycore.payment.PayCorePaymentDisplayParams
-import cash.p.terminal.modules.paycore.payment.PayCorePaymentParams
-import cash.p.terminal.modules.paycore.payment.PayCorePaymentScreen
-import cash.p.terminal.modules.paycore.payment.PayCorePaymentViewModel
-import cash.p.terminal.modules.paycore.verification.PayCoreVerificationScreen
 import androidx.annotation.Keep
-import cash.p.terminal.modules.paycore.PayCoreNetworkMapper.toTicker
-import cash.p.terminal.modules.paycore.PayCoreTicker
-import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
 import kotlin.reflect.KClass
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 import cash.p.terminal.resources.ic_attention_20
 
 class SwapPage(val tokenIn: Token? = null, val tokenOut: Token? = null) : HSPage() {
@@ -365,88 +349,6 @@ internal class SwapTransactionSettingsPage(private val confirmPage: KClass<out H
     }
 }
 
-private class PayCoreVerificationPage(
-    private val networkType: PayCoreTicker,
-    private val walletAddress: String,
-) : HSPage() {
-    @Composable
-    override fun GetContent(navigation: HSNavigation) {
-        val viewModel = navigation.swapViewModel()
-        PayCoreVerificationScreen(
-            networkType = networkType,
-            walletAddress = walletAddress,
-            onClose = navigation::navigateUpSafely,
-            onComplete = {
-                viewModel.onActionCompleted()
-                navigation.navigateUpSafely()
-            }
-        )
-    }
-}
-
-internal class PayCorePaymentPage(val input: Input) : HSPage() {
-    @Composable
-    override fun GetContent(navigation: HSNavigation) {
-        val viewModel = navigation.swapViewModel()
-        val tokenIn = viewModel.uiState.tokenIn ?: run {
-            LaunchedEffect(Unit) { navigation.navigateUpFrom(this@PayCorePaymentPage) }
-            return
-        }
-        val tokenOut = viewModel.uiState.tokenOut ?: run {
-            LaunchedEffect(Unit) { navigation.navigateUpFrom(this@PayCorePaymentPage) }
-            return
-        }
-        val paymentParams = remember(this, tokenOut) {
-            input.toPaymentParams(
-                addressOut = tryOrNull {
-                    getKoinInstance<WalletUseCase>().getReceiveAddress(tokenOut)
-                }.orEmpty(),
-            )
-        }
-        val paymentViewModel = koinViewModel<PayCorePaymentViewModel>(
-            key = listOf(
-                input.amountIn,
-                input.amountOut,
-                input.direction,
-                input.requestedAmountOut,
-                input.networkType,
-            ).joinToString("|"),
-        ) { parametersOf(paymentParams) }
-        PayCorePaymentScreen(
-            uiState = paymentViewModel.uiState,
-            displayParams = PayCorePaymentDisplayParams(
-                amountIn = paymentViewModel.amountIn,
-                amountOut = paymentViewModel.amountOut,
-                serviceFee = input.serviceFee.toBigDecimal(),
-                networkType = paymentViewModel.networkType,
-                tokenIn = tokenIn,
-                tokenOut = tokenOut,
-                currency = viewModel.uiState.currency,
-            ),
-            onConfirm = paymentViewModel::onConfirm,
-            onOpenWebView = paymentViewModel::onWebViewOpened,
-            onCompleteWebView = paymentViewModel::onWebViewCompleted,
-            onCloseWebView = paymentViewModel::onWebViewClosed,
-            onClose = navigation::navigateUpSafely
-        )
-    }
-
-    @Parcelize
-    data class Input(
-        val amountIn: String,
-        val amountOut: String,
-        val serviceFee: String,
-        val networkType: PayCoreTicker,
-        val tokenInUid: String,
-        val tokenOutUid: String,
-        val blockchainTypeIn: String,
-        val blockchainTypeOut: String,
-        val tokenQueryIdOut: String,
-        val direction: SwapAmountDirection,
-        val requestedAmountOut: String?,
-    ) : Parcelable
-}
-
 /** Listed in r8-critical-classes.txt; navigation no longer resolves it by name. */
 @Keep
 private enum class SwapCoinDirection { From, To }
@@ -464,57 +366,8 @@ fun SwapScreen(navigation: HSNavigation, tokenIn: Token?, tokenOut: Token?) {
     )
 }
 
-internal fun buildNextPage(uiState: SwapUiState): HSPage {
-    return buildPayCorePaymentPage(uiState)
-        ?: if (uiState.multiSwapRoute != null) SwapRouteInfoPage() else SwapConfirmPage()
-}
-
-internal fun buildPayCorePaymentPage(uiState: SwapUiState): PayCorePaymentPage? {
-    val quote = uiState.quote
-    val tokenIn = uiState.tokenIn
-    if (quote == null || tokenIn == null) return null
-    val tokenOut = uiState.tokenOut
-    val amountIn = uiState.amountIn
-    if (tokenOut == null || amountIn == null) return null
-
-    val isPayCoreRubPayment = quote.provider.id == "paycore" && PayCoreAssets.isRub(tokenIn)
-    if (!isPayCoreRubPayment) return null
-
-    val networkType = tokenOut.toTicker() ?: return null
-    return PayCorePaymentPage(
-        PayCorePaymentPage.Input(
-            amountIn = amountIn.toPlainString(),
-            amountOut = quote.amountOut.toPlainString(),
-            serviceFee = payCoreQuoteServiceFee(quote).toPlainString(),
-            networkType = networkType,
-            tokenInUid = tokenIn.coin.uid,
-            tokenOutUid = tokenOut.coin.uid,
-            blockchainTypeIn = tokenIn.blockchainType.uid,
-            blockchainTypeOut = tokenOut.blockchainType.uid,
-            tokenQueryIdOut = tokenOut.tokenQuery.id,
-            direction = uiState.direction,
-            requestedAmountOut = uiState.requestedAmountOut?.toPlainString(),
-        )
-    )
-}
-
-internal fun PayCorePaymentPage.Input.toPaymentParams(addressOut: String) = PayCorePaymentParams(
-    amountIn = amountIn.toBigDecimal(),
-    amountOut = amountOut.toBigDecimal(),
-    networkType = networkType,
-    tokenInUid = tokenInUid,
-    tokenOutUid = tokenOutUid,
-    blockchainTypeIn = blockchainTypeIn,
-    blockchainTypeOut = blockchainTypeOut,
-    tokenQueryIdOut = tokenQueryIdOut,
-    addressOut = addressOut,
-    direction = direction,
-    requestedAmountOut = requestedAmountOut?.toBigDecimal(),
-)
-
-private fun payCoreQuoteServiceFee(quote: SwapProviderQuote): BigDecimal {
-    return (quote.swapQuote as? PayCoreQuote)?.serviceFee ?: BigDecimal.ZERO
-}
+internal fun buildNextPage(uiState: SwapUiState): HSPage =
+    if (uiState.multiSwapRoute != null) SwapRouteInfoPage() else SwapConfirmPage()
 
 private fun SwapUiState.otherToken(direction: SwapCoinDirection): Token? = when (direction) {
     SwapCoinDirection.From -> tokenOut
@@ -577,20 +430,6 @@ private fun SwapMainScreen(
     val openSettings = remember(navigation) {
         { navigation.slideFromRight(SwapSettingsPage()) }
     }
-    val openVerification = remember(navigation) {
-        {
-            val tokenIn = viewModel.uiState.tokenIn
-            val tokenOut = viewModel.uiState.tokenOut
-            val usdtToken = if (tokenIn != null && PayCoreAssets.isRub(tokenIn)) tokenOut else tokenIn
-            val networkType = usdtToken?.toTicker()
-            val walletAddress = usdtToken?.let { token ->
-                tryOrNull { getKoinInstance<WalletUseCase>().getReceiveAddress(token) }
-            }
-            if (networkType != null && !walletAddress.isNullOrBlank()) {
-                navigation.slideFromRight(PayCoreVerificationPage(networkType, walletAddress))
-            }
-        }
-    }
     val actionLauncher = navigation.rememberResultLauncher<Any, ISwapProviderAction> { result, action ->
         if (action.isCompleted(result)) viewModel.onActionCompleted()
     }
@@ -626,8 +465,6 @@ private fun SwapMainScreen(
                             }
                             viewModel.createMissingTokens(action.tokensToAdd)
                         }
-                        is PayCoreSelectBankAction -> openSettings()
-                        is PayCoreVerificationAction -> openVerification()
                         else -> action.execute(actionLauncher)
                     }
                 },

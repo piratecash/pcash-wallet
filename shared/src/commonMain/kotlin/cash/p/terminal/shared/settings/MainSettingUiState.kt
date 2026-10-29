@@ -14,7 +14,6 @@ data class MainSettingUiState(
     val aboutAppShowAlert: Boolean,
     val wcCounterType: CounterType?,
     val premiumSettingsShowAlert: Boolean,
-    val isPayCoreEnabled: Boolean,
 ) {
     val manageWalletShowAlert: Boolean get() = !allBackedUp || hasNonStandardAccount
 }

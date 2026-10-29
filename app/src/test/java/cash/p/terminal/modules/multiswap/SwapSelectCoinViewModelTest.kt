@@ -2,9 +2,6 @@ package cash.p.terminal.modules.multiswap
 
 import cash.p.terminal.core.App
 import cash.p.terminal.core.TestDispatcherProvider
-import cash.p.terminal.core.managers.SystemLanguageProvider
-import cash.p.terminal.modules.paycore.PayCoreAssets
-import cash.p.terminal.modules.paycore.PayCoreFeatureToggle
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAdapterManager
@@ -15,7 +12,6 @@ import cash.p.terminal.wallet.entities.FullCoin
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.Token
 import io.horizontalsystems.core.CurrencyManager
-import io.horizontalsystems.core.ILanguageManager
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.entities.Currency
@@ -48,13 +44,6 @@ class SwapSelectCoinViewModelTest {
     private val currencyManager = mockk<CurrencyManager>(relaxed = true)
     private val tron = Blockchain(BlockchainType.Tron, "TRON", null)
 
-    private val usdtErc20 = Token(
-        coin = Coin(uid = "tether", name = "Tether", code = "USDT"),
-        blockchain = Blockchain(BlockchainType.Ethereum, "Ethereum", null),
-        type = TokenType.Eip20("0xdac17f958d2ee523a2206206994597c13d831ec7"),
-        decimals = 6
-    )
-
     private val mnemonicAccount = mockk<Account> {
         every { type } returns mockk<AccountType.Mnemonic>()
     }
@@ -78,23 +67,6 @@ class SwapSelectCoinViewModelTest {
     }
 
     @Test
-    fun uiState_otherUsdtAppEnglishSystemUkrainian_hidesRubFiatOption() {
-        val languageManager = mockk<ILanguageManager> { every { currentLanguage } returns "en" }
-        val systemLanguageProvider = mockk<SystemLanguageProvider> { every { language } returns "uk" }
-        val realToggle = PayCoreFeatureToggle(languageManager, systemLanguageProvider)
-
-        val viewModel = SwapSelectCoinViewModel(
-            otherSelectedToken = usdtErc20,
-            activeAccount = mnemonicAccount,
-            payCoreFeatureToggle = realToggle,
-            dispatcherProvider = dispatcherProvider
-        )
-
-        assertFalse(viewModel.uiState.hasFiatSection)
-        assertFalse(viewModel.uiState.fiatItems.any { PayCoreAssets.isRub(it.token) })
-    }
-
-    @Test
     fun uiState_suggestedTrc10_excludesUnsupportedToken() {
         val trx = tronToken("tron", "TRX", TokenType.Native, decimals = 6)
         val trc10 = tronToken("trc10", "T10", TokenType.Trc10("1005114"), decimals = 0)
@@ -107,7 +79,6 @@ class SwapSelectCoinViewModelTest {
         val viewModel = SwapSelectCoinViewModel(
             otherSelectedToken = trx,
             activeAccount = mnemonicAccount,
-            payCoreFeatureToggle = mockk(relaxed = true),
             dispatcherProvider = dispatcherProvider,
         )
 

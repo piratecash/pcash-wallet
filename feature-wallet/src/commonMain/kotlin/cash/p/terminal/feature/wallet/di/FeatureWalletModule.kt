@@ -238,7 +238,6 @@ import cash.p.terminal.core.storage.AppDatabaseProvider
 import cash.p.terminal.core.usecase.GetRestoreHeightForWalletUseCase
 import cash.p.terminal.core.usecase.RescanMoneroUseCase
 import cash.p.terminal.core.usecase.RescanZcashUseCase
-import cash.p.terminal.core.usecase.ResolvePayCoreNavigationUseCase
 import cash.p.terminal.core.usecase.ResolveTransactionItemUseCase
 import cash.p.terminal.modules.balance.BalanceAccountsViewModel
 import cash.p.terminal.modules.balance.BalanceAdapterRepository
@@ -543,7 +542,6 @@ val featureWalletModule = module {
         ReceiveTokenSelectViewModel(get(), activeAccount, FullCoinsProvider(get(), activeAccount), get())
     }
     factoryOf(::ResolveTransactionItemUseCase)
-    factoryOf(::ResolvePayCoreNavigationUseCase)
     factoryOf(::GetRestoreHeightForWalletUseCase)
     factoryOf(::RescanMoneroUseCase)
     factoryOf(::RescanZcashUseCase)

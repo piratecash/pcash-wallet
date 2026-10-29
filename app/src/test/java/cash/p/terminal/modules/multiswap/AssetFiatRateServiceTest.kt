@@ -1,7 +1,5 @@
 package cash.p.terminal.modules.multiswap
 
-import cash.p.terminal.modules.paycore.PayCoreAssets
-import cash.p.terminal.network.pirate.domain.useCase.FiatCurrencyRateService
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.Coin
@@ -10,12 +8,9 @@ import cash.p.terminal.wallet.models.CoinPrice
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.entities.Currency
-import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
-import io.mockk.verify
 import io.reactivex.Observable
 import java.math.BigDecimal
 import kotlinx.coroutines.flow.first
@@ -27,22 +22,11 @@ import org.junit.Test
 class AssetFiatRateServiceTest {
 
     private val marketKit = mockk<MarketKitWrapper>(relaxed = true)
-    private val fiatCurrencyRateService = mockk<FiatCurrencyRateService>(relaxed = true)
     private val currency = Currency("USD", "$", 2)
 
     @After
     fun tearDown() {
         unmockkAll()
-    }
-
-    @Test
-    fun rate_fiatToken_usesFiatCurrencyRateService() = runTest {
-        coEvery { fiatCurrencyRateService.rate("RUB", "USD") } returns BigDecimal("0.01")
-        val service = createService()
-
-        assertBigDecimalEquals(BigDecimal("0.01"), service.rate(PayCoreAssets.rubToken, currency))
-        coVerify(exactly = 1) { fiatCurrencyRateService.rate("RUB", "USD") }
-        verify(exactly = 0) { marketKit.coinPrice(any(), any()) }
     }
 
     @Test
@@ -52,15 +36,6 @@ class AssetFiatRateServiceTest {
         val service = createService()
 
         assertBigDecimalEquals(BigDecimal("1.00"), service.rate(token, currency))
-        coVerify(exactly = 0) { fiatCurrencyRateService.rate(any(), any()) }
-    }
-
-    @Test
-    fun rateFlow_fiatToken_emitsFiatRate() = runTest {
-        coEvery { fiatCurrencyRateService.rate("RUB", "USD") } returns BigDecimal("0.01")
-        val service = createService()
-
-        assertBigDecimalEquals(BigDecimal("0.01"), service.rateFlow("tag", PayCoreAssets.rubToken, currency).first())
     }
 
     @Test
@@ -75,7 +50,6 @@ class AssetFiatRateServiceTest {
 
     private fun createService() = AssetFiatRateService(
         marketKit = marketKit,
-        fiatCurrencyRateService = fiatCurrencyRateService,
     )
 
     private fun usdtToken() = Token(

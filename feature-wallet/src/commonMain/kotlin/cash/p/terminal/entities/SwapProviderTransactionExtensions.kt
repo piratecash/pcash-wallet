@@ -1,6 +1,5 @@
 package cash.p.terminal.entities
 
-import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.modules.multiswap.providers.backendswap.BackendSwapBranding
 import cash.p.terminal.network.backendswap.api.BackendSwapHelper
 import cash.p.terminal.network.changenow.api.ChangeNowHelper
@@ -8,9 +7,6 @@ import cash.p.terminal.network.exolix.api.ExolixHelper
 import cash.p.terminal.network.quickex.api.QuickexHelper
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.network.yifi.api.YiFiHelper
-import io.horizontalsystems.core.Translator
-import cash.p.terminal.resources.Res
-import cash.p.terminal.resources.paycore_support
 
 fun SwapProviderTransaction.toStatusUrl(): Pair<String, String>? = when (provider) {
     SwapProvider.CHANGENOW -> ChangeNowHelper.CHANGE_NOW_URL to ChangeNowHelper.getViewTransactionUrl(transactionId)
@@ -18,12 +14,12 @@ fun SwapProviderTransaction.toStatusUrl(): Pair<String, String>? = when (provide
         transactionId, addressOut
     )
 
-    SwapProvider.PAYCORE -> Translator.getString(Res.string.paycore_support) to SharedAppConfig.payCoreSupportUrl
     SwapProvider.EXOLIX -> ExolixHelper.EXOLIX_URL to ExolixHelper.getViewTransactionUrl(transactionId)
     SwapProvider.YIFI -> YiFiHelper.YIFI_URL to YiFiHelper.getViewTransactionUrl(
         transactionId, addressOut
     )
     SwapProvider.PCASH_BACKEND -> BackendSwapHelper.trackUrl(subProviderId, providerExternalId)
+    SwapProvider.PAYCORE,
     SwapProvider.THORCHAIN,
     SwapProvider.MAYA,
     SwapProvider.UNSTOPPABLE -> null

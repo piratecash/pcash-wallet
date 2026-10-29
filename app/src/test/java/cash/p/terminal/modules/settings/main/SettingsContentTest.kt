@@ -36,7 +36,6 @@ internal val settingsContentTestState = MainSettingUiState(
     aboutAppShowAlert = true,
     wcCounterType = CounterType.PendingRequestCounter(7),
     premiumSettingsShowAlert = true,
-    isPayCoreEnabled = true,
 )
 
 @RunWith(RobolectricTestRunner::class)
@@ -74,7 +73,7 @@ class SettingsContentTest {
             R.string.SettingsAboutApp_Title to SettingsAction.AboutApp,
             R.string.Settings_RateUs to SettingsAction.RateApp,
             R.string.Settings_ShareThisWallet to SettingsAction.ShareApp,
-            R.string.SettingsContact_Title to SettingsAction.Contact(true),
+            R.string.SettingsContact_Title to SettingsAction.Contact,
         )
 
         expectedRows.forEach { (title, _) ->
@@ -90,7 +89,7 @@ class SettingsContentTest {
     @Test
     fun settingsContent_populatedState_showsValuesBadgesAndContactAction() {
         val emitted = mutableListOf<SettingsAction>()
-        setContent(emitted::add, settingsContentTestState.copy(isPayCoreEnabled = false))
+        setContent(emitted::add, settingsContentTestState)
 
         compose.onNodeWithText("USD").assertExists()
         compose.onNodeWithText("English").assertExists()
@@ -100,7 +99,7 @@ class SettingsContentTest {
             .performScrollTo()
             .performClick()
 
-        assertEquals(listOf(SettingsAction.Contact(false)), emitted)
+        assertEquals(listOf(SettingsAction.Contact), emitted)
     }
 
     @Test

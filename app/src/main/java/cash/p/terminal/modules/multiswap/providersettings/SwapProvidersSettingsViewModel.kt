@@ -3,8 +3,6 @@ package cash.p.terminal.modules.multiswap.providersettings
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.modules.multiswap.providers.SwapProvidersRegistry
 import cash.p.terminal.modules.multiswap.providers.SwapProvidersRepository
-import cash.p.terminal.modules.paycore.PayCoreFeatureToggle
-import cash.p.terminal.modules.paycore.PayCoreProvider
 import io.horizontalsystems.core.ViewModelUiState
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
@@ -12,7 +10,6 @@ import org.jetbrains.compose.resources.DrawableResource
 class SwapProvidersSettingsViewModel(
     private val registry: SwapProvidersRegistry,
     private val repository: SwapProvidersRepository,
-    private val payCoreFeatureToggle: PayCoreFeatureToggle,
 ) : ViewModelUiState<SwapProvidersSettingsUiState>() {
 
     init {
@@ -24,7 +21,6 @@ class SwapProvidersSettingsViewModel(
     override fun createState(): SwapProvidersSettingsUiState =
         SwapProvidersSettingsUiState(
             items = registry.providers
-                .filter { payCoreFeatureToggle.isEnabled() || it.id != PayCoreProvider.ID }
                 .sortedBy { it.title.lowercase() }
                 .map { provider ->
                     SwapProviderItem(
