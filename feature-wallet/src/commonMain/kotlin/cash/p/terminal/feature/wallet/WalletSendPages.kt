@@ -28,7 +28,7 @@ interface WalletSendPages {
         prefilledData: PrefilledData,
     ): HSPage?
     fun swapFrom(tokenIn: Token?): HSPage?
-    fun multiSwapExchanges(pendingMultiSwapId: String?, payCoreDate: Long?): HSPage?
+    fun multiSwapExchanges(pendingMultiSwapId: String?): HSPage?
     fun offlineBroadcast(initialInput: String): HSPage?
 
     /** The Zcash pool migration flow; [onClose] runs once it is over. */

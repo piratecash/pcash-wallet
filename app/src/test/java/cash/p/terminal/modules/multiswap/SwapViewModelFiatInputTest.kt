@@ -1,8 +1,12 @@
 package cash.p.terminal.modules.multiswap
 
+import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.entities.Coin
+import cash.p.terminal.wallet.entities.TokenType
+import io.horizontalsystems.core.entities.Blockchain
+import io.horizontalsystems.core.entities.BlockchainType
 import androidx.lifecycle.ViewModelStore
 import cash.p.terminal.core.ServiceStateFlow
-import cash.p.terminal.modules.paycore.PayCoreAssets
 import cash.p.terminal.modules.multiswap.exchange.ButtonState
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
@@ -45,7 +49,12 @@ class SwapViewModelFiatInputTest {
 
     private lateinit var dispatcher: TestDispatcher
     private val currency = Currency("USD", "$", 2)
-    private val tokenOut = PayCoreAssets.rubToken
+    private val tokenOut = Token(
+        coin = Coin(uid = "test-coin", name = "Test Coin", code = "TST", marketCapRank = null, image = null),
+        blockchain = Blockchain(BlockchainType.Ethereum, "Ethereum", null),
+        type = TokenType.Native,
+        decimals = 2,
+    )
     private val rateFlow = MutableStateFlow<BigDecimal?>(BigDecimal("0.25"))
     private val quoteStateFlow = MutableStateFlow(
         SwapQuoteService.State(

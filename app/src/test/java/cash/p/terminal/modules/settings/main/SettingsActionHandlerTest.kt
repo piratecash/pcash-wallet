@@ -22,7 +22,6 @@ import cash.p.terminal.modules.multiswap.providersettings.SwapProvidersSettingsP
 import cash.p.terminal.modules.premium.settings.PremiumSettingsPage
 import cash.p.terminal.modules.settings.about.AboutPage
 import cash.p.terminal.modules.settings.about.ContactOptionsSheet
-import cash.p.terminal.modules.settings.about.ContactUsPage
 import cash.p.terminal.modules.settings.addresschecker.AddressCheckerPage
 import cash.p.terminal.modules.settings.advancedsecurity.AdvancedSecurityPage
 import cash.p.terminal.modules.settings.appearance.AppearancePage
@@ -211,13 +210,12 @@ class SettingsActionHandlerTest {
     }
 
     @Test
-    fun handleSettingsAction_contactPayCoreState_opensMatchingDestination() {
-        handle(SettingsAction.Contact(true))
-        handle(SettingsAction.Contact(false))
+    fun handleSettingsAction_contact_opensContactOptionsSheetWithDefaultInput() {
+        handle(SettingsAction.Contact)
 
         val pages = openedPages()
-        assertEquals(listOf(ContactUsPage::class, ContactOptionsSheet::class), pages.map { it::class })
-        assertNull((pages[1] as ContactOptionsSheet).input)
+        assertEquals(listOf(ContactOptionsSheet::class), pages.map { it::class })
+        assertNull((pages.single() as ContactOptionsSheet).input)
     }
 
     private fun openedPages(): List<HSPage> = navigation.backStack.drop(1)

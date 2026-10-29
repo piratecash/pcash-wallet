@@ -102,8 +102,8 @@ class AppPagesImpl(
     ): HSPage = SendPage(SendPage.Input(wallet, title, sendEntryPoint, prefilledData))
 
     override fun swapFrom(tokenIn: Token?): HSPage = SwapPage(tokenIn = tokenIn)
-    override fun multiSwapExchanges(pendingMultiSwapId: String?, payCoreDate: Long?): HSPage =
-        MultiSwapExchangesPage(pendingMultiSwapId, payCoreDate)
+    override fun multiSwapExchanges(pendingMultiSwapId: String?): HSPage =
+        MultiSwapExchangesPage(pendingMultiSwapId)
 
     override fun offlineBroadcast(initialInput: String): HSPage =
         OfflineBroadcastPage(OfflineBroadcastPage.Input(initialInput = initialInput))

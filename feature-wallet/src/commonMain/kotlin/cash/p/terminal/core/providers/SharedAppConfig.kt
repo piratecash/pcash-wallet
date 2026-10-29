@@ -16,7 +16,6 @@ object SharedAppConfig {
     const val hashDitBaseUrl = "https://service.hashdit.io/v2/hashdit/"
     const val alphaAmlBaseUrl = "https://api.alpha-aml.com"
     const val reportEmail = "i@p.cash"
-    const val payCoreSupportUrl = "https://t.me/paycore_supp"
     const val isSwapEnabled = true
 
     val chainalysisApiKey by lazy { EncodedSecrets.CHAINALYSIS_API_KEY }

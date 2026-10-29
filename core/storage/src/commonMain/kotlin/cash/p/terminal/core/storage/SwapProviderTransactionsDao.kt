@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import cash.p.terminal.entities.SwapProviderTransaction
+import cash.p.terminal.network.swaprepository.SwapProvider
 import kotlinx.coroutines.flow.Flow
 import java.math.BigDecimal
 
@@ -24,7 +25,8 @@ interface SwapProviderTransactionsDao {
 
     @Query(
         "SELECT * FROM SwapProviderTransaction WHERE $TOKEN_AND_ADDRESS_MATCH AND " +
-                "status not in (:statusesExcluded) ORDER BY date DESC LIMIT :limit"
+                "status not in (:statusesExcluded) AND provider NOT IN (:providersExcluded) " +
+                "ORDER BY date DESC LIMIT :limit"
     )
     fun getAll(
         tokenQueryId: String,
@@ -32,6 +34,7 @@ interface SwapProviderTransactionsDao {
         blockchainType: String,
         address: String,
         statusesExcluded: List<String>,
+        providersExcluded: List<SwapProvider>,
         limit: Int
     ): List<SwapProviderTransaction>
 
@@ -39,11 +42,13 @@ interface SwapProviderTransactionsDao {
     @Query(
         "SELECT * FROM SwapProviderTransaction WHERE " +
                 "accountId IN ('', :accountId) AND " +
-                "status not in (:statusesExcluded) ORDER BY date DESC LIMIT :limit"
+                "status not in (:statusesExcluded) AND provider NOT IN (:providersExcluded) " +
+                "ORDER BY date DESC LIMIT :limit"
     )
     fun getAllUnfinishedByAccount(
         accountId: String,
         statusesExcluded: List<String>,
+        providersExcluded: List<SwapProvider>,
         limit: Int
     ): List<SwapProviderTransaction>
 

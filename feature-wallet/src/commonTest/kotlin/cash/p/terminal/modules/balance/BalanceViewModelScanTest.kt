@@ -7,8 +7,6 @@ import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.PriceManager
 import cash.p.terminal.core.managers.SeedPhraseQrCrypto
 import cash.p.terminal.core.storage.PendingMultiSwapStorage
-import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
-import cash.p.terminal.core.usecase.ResolvePayCoreNavigationUseCase
 import cash.p.terminal.modules.address.AddressHandlerFactory
 import cash.p.terminal.modules.address.AddressParserChain
 import cash.p.terminal.modules.address.IAddressHandler
@@ -81,10 +79,6 @@ class BalanceViewModelScanTest : KoinTest {
                 single<PendingMultiSwapStorage> {
                     mockk(relaxed = true) { every { observeForActiveAccount(any()) } returns flowOf(emptyList()) }
                 }
-                single<SwapProviderTransactionsStorage> {
-                    mockk(relaxed = true) { every { observeForActiveAccount(any()) } returns flowOf(emptyList()) }
-                }
-                single<ResolvePayCoreNavigationUseCase> { mockk(relaxed = true) }
                 single<OfflineModeManager> {
                     mockk(relaxed = true) { every { effectiveFlow } returns MutableStateFlow(emptySet()) }
                 }
