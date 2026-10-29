@@ -8,9 +8,7 @@ import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.getMaxSendableBalance
 import cash.p.terminal.wallet.Wallet
-import io.horizontalsystems.core.entities.BlockchainType
-import cash.p.terminal.wallet.entities.TokenQuery
-import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.nativeTokenQuery
 import io.horizontalsystems.core.CurrencyManager
 import org.koin.core.scope.Scope
 import cash.p.terminal.core.ICoinManager
@@ -35,7 +33,7 @@ internal fun Scope.sendTonViewModel(
     val addressService = SendTonAddressService()
     val feeService = SendTonFeeService(adapter)
     val xRateService = XRateService(get(), get<CurrencyManager>().baseCurrency)
-    val feeToken = get<ICoinManager>().getToken(TokenQuery(BlockchainType.Ton, TokenType.Native))
+    val feeToken = get<ICoinManager>().getToken(wallet.token.nativeTokenQuery)
         ?: throw IllegalArgumentException()
 
     return SendTonViewModel(

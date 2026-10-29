@@ -119,7 +119,9 @@ object SendTransactionServiceFactory {
             }
 
             is TokenType.Spl -> SendTransactionServiceSolana(token)
-            is TokenType.Jetton -> SendTransactionServiceTon(token)
+            TokenType.TonW5Native,
+            is TokenType.Jetton,
+            is TokenType.TonW5Jetton -> SendTransactionServiceTon(token)
             is TokenType.ThorchainAsset -> SendTransactionServiceThorchain(token)
 
             is TokenType.Asset -> stellarService(token)

@@ -2,10 +2,10 @@ package cash.p.terminal.modules.receive.viewmodels
 
 import cash.p.terminal.core.ServiceState
 import cash.p.terminal.core.factories.uriScheme
+import cash.p.terminal.core.paymentUriTokenUid
 import cash.p.terminal.core.utils.AddressUriParser
 import cash.p.terminal.entities.AddressUri
 import cash.p.terminal.wallet.Token
-import cash.p.terminal.wallet.entities.TokenType
 import java.math.BigDecimal
 
 class AddressUriService(val token: Token) : ServiceState<AddressUriService.State>() {
@@ -44,9 +44,7 @@ class AddressUriService(val token: Token) : ServiceState<AddressUriService.State
             addressUri.parameters[AddressUri.Field.amountField(token.blockchainType)] =
                 tmpAmount.toString()
             addressUri.parameters[AddressUri.Field.BlockchainUid] = token.blockchainType.uid
-            if (token.type !is TokenType.Derived && token.type !is TokenType.AddressTyped) {
-                addressUri.parameters[AddressUri.Field.TokenUid] = token.type.id
-            }
+            token.tokenQuery.paymentUriTokenUid?.let { addressUri.parameters[AddressUri.Field.TokenUid] = it }
 
             parser.uri(addressUri)
         }

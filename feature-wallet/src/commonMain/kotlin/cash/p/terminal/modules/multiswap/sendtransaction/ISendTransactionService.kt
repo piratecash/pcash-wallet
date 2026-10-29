@@ -23,8 +23,7 @@ import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.Coin
-import cash.p.terminal.wallet.entities.TokenQuery
-import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.nativeTokenQuery
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import com.piratecash.monero.signer.HardwareWalletOperationException
 import io.horizontalsystems.core.CurrencyManager
@@ -74,7 +73,7 @@ abstract class ISendTransactionService<T>(protected val token: Token) :
         }
 
     protected val feeToken: Token
-        get() = marketKit.token(TokenQuery(token.blockchainType, TokenType.Native)) ?: token
+        get() = marketKit.token(token.nativeTokenQuery) ?: token
 
     private val dispatcherProvider: DispatcherProvider by inject(DispatcherProvider::class.java)
     protected val coroutineScope by lazy { CoroutineScope(dispatcherProvider.io) }

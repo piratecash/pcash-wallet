@@ -160,9 +160,15 @@ class ManageWalletsService(
         is TokenType.AddressSpecTyped,
         is TokenType.Eip20,
         is TokenType.Spl,
-        is TokenType.Jetton -> true
+        is TokenType.Jetton,
+        TokenType.TonW5Native,
+        is TokenType.TonW5Jetton -> true
 
-        else -> false
+        TokenType.Native,
+        is TokenType.Trc10,
+        is TokenType.Asset,
+        is TokenType.ThorchainAsset,
+        is TokenType.Unsupported -> false
     }
 
     private fun syncState() {

@@ -10,8 +10,7 @@ import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IBalanceAdapter
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
-import cash.p.terminal.wallet.entities.TokenQuery
-import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.nativeTokenQuery
 import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -145,7 +144,7 @@ class TokenBalanceService(
         displayBalance = adjusted
 
         if (currentToken != null) {
-            feeToken = marketKit.token(TokenQuery(currentToken.blockchainType, TokenType.Native))
+            feeToken = marketKit.token(currentToken.nativeTokenQuery)
                 ?: currentToken
 
             if (currentToken.type.isNative) {

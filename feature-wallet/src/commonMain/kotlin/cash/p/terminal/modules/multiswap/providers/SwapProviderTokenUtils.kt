@@ -2,15 +2,19 @@ package cash.p.terminal.modules.multiswap.providers
 
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.TonAsset
+import cash.p.terminal.wallet.entities.tonAsset
 import io.horizontalsystems.core.entities.BlockchainType
 
-internal fun Token.contractAddress(): String =
-    when (val tokenType = type) {
+internal fun Token.contractAddress(): String = when (val tonAsset = tonAsset) {
+    is TonAsset.Jetton -> tonAsset.masterAddress
+    is TonAsset.Native -> ""
+    null -> when (val tokenType = type) {
         is TokenType.Eip20 -> tokenType.address
         is TokenType.Spl -> tokenType.address
-        is TokenType.Jetton -> tokenType.address
         else -> ""
     }
+}
 
 internal val Token.isZcashShielded: Boolean
     get() = blockchainType == BlockchainType.Zcash &&
@@ -32,13 +36,15 @@ internal enum class SwapAssetKind { NATIVE, CONTRACT }
 internal val Token.swapAssetKind: SwapAssetKind?
     get() = when (type) {
         TokenType.Native,
+        TokenType.TonW5Native,
         is TokenType.Derived,
         is TokenType.AddressTyped,
         is TokenType.AddressSpecTyped -> SwapAssetKind.NATIVE.takeUnless { isZcashShielded }
 
         is TokenType.Eip20,
         is TokenType.Spl,
-        is TokenType.Jetton -> SwapAssetKind.CONTRACT
+        is TokenType.Jetton,
+        is TokenType.TonW5Jetton -> SwapAssetKind.CONTRACT
 
         TokenType.Mweb,
         is TokenType.Trc10,

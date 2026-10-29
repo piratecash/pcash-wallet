@@ -12,6 +12,7 @@ class TonHelperKtTest {
 
     private val USER_WALLET_ADDRESS = "UQAQnxLqlX2B6w4jQzzzPWA8eyWZVZBz6Y0D_8noARLOaEAn"
     private val ASK_JETTON_WALLET_ADDRESS = "kQB_TOJSB7q3-Jm1O8s0jKFtqLElZDPjATs5uJGsujcjznq3"
+    private val receiverAddress = "0:b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4"
 
     private val DEFAULT_DEADLINE = 15 * 60L
     private val DEFAULT_QUERY_ID = 1L
@@ -85,6 +86,7 @@ class TonHelperKtTest {
             router = addrStd(USER_WALLET_ADDRESS),
             ptonWallet = addrStd(USER_WALLET_ADDRESS),
             refundAddress = addrStd(USER_WALLET_ADDRESS),
+            receiver = addrStd(USER_WALLET_ADDRESS),
             minOut = BigInteger.valueOf(100_000_000L),
             forwardGas = BigInteger.valueOf(2000L),
             queryId = DEFAULT_QUERY_ID,
@@ -102,6 +104,7 @@ class TonHelperKtTest {
             router = addrStd(USER_WALLET_ADDRESS),
             ptonWallet = addrStd(USER_WALLET_ADDRESS),
             refundAddress = addrStd(USER_WALLET_ADDRESS),
+            receiver = addrStd(USER_WALLET_ADDRESS),
             excessesAddress = addrStd(USER_WALLET_ADDRESS),
             minOut = BigInteger.valueOf(200_000_000L),
             forwardGas = BigInteger.valueOf(3000L),
@@ -121,6 +124,7 @@ class TonHelperKtTest {
             router = addrStd(USER_WALLET_ADDRESS),
             ptonWallet = addrStd(USER_WALLET_ADDRESS),
             refundAddress = addrStd(USER_WALLET_ADDRESS),
+            receiver = addrStd(USER_WALLET_ADDRESS),
             minOut = BigInteger.valueOf(50_000_000L),
             forwardGas = BigInteger.valueOf(5000L),
             queryId = 123L,
@@ -129,5 +133,42 @@ class TonHelperKtTest {
         )
         val expected = "te6ccgEBAwEA+QABrA+KfqUAAAAAAAAAe0KbknAIACE+JdUq+wPWHEaGeeZ6wHj2SzKrIOfTGgf/k9ACJZzRAAQnxLqlX2B6w4jQzzzPWA8eyWZVZBz6Y0D/8noARLOaBCcRAQHhZmTeKoACE+JdUq+wPWHEaGeeZ6wHj2SzKrIOfTGgf/k9ACJZzRAAQnxLqlX2B6w4jQzzzPWA8eyWZVZBz6Y0D/8noARLOaIACE+JdUq+wPWHEaGeeZ6wHj2SzKrIOfTGgf/k9ACJZzQAAAAAAAABwkACAFNAL68ICAAhPiXVKvsD1hxGhnnmesB49ksyqyDn0xoH/5PQAiWc0AAABRA="
         assertEquals(expected, bocBase64(payload))
+    }
+
+    @Test
+    fun jettonToTonV2_receiverDiffersFromRefund_paysReceiverAndRefundsSender() {
+        val payload = buildJettonToTonPayloadV2(
+            amount = BigInteger.valueOf(500_000_000L),
+            router = addrStd(ASK_JETTON_WALLET_ADDRESS),
+            ptonWallet = addrStd(ASK_JETTON_WALLET_ADDRESS),
+            refundAddress = addrStd(USER_WALLET_ADDRESS),
+            receiver = addrStd(receiverAddress),
+            minOut = BigInteger.ONE,
+            forwardGas = BigInteger.ONE,
+            referralAddress = null,
+        )
+
+        assertEquals(
+            JettonSwapParties(addrStd(USER_WALLET_ADDRESS), addrStd(receiverAddress)),
+            payload.stonFiJettonSwapParties(dexVersion = 2),
+        )
+    }
+
+    @Test
+    fun jettonToTonV1_receiverDiffersFromRefund_paysReceiverAndRefundsSender() {
+        val payload = buildJettonToTonPayloadV1(
+            amount = BigInteger.valueOf(500_000_000L),
+            router = addrStd(ASK_JETTON_WALLET_ADDRESS),
+            routerPtonWallet = addrStd(ASK_JETTON_WALLET_ADDRESS),
+            refundAddress = addrStd(USER_WALLET_ADDRESS),
+            receiver = addrStd(receiverAddress),
+            minOut = BigInteger.ONE,
+            forwardTonAmount = BigInteger.ONE,
+        )
+
+        assertEquals(
+            JettonSwapParties(addrStd(USER_WALLET_ADDRESS), addrStd(receiverAddress)),
+            payload.stonFiJettonSwapParties(dexVersion = 1),
+        )
     }
 }

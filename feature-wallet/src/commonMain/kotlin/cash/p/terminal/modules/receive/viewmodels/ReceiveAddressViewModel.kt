@@ -7,6 +7,7 @@ import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.IReceiveAdapter
 import cash.p.terminal.wallet.entities.UsedAddress
 import cash.p.terminal.core.factories.uriScheme
+import cash.p.terminal.core.paymentUriTokenUid
 import cash.p.terminal.core.title
 import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.core.utils.AddressUriParser
@@ -15,11 +16,13 @@ import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.modules.receive.ReceiveModule
 import cash.p.terminal.modules.receive.ReceiveModule.AdditionalData
 import io.horizontalsystems.core.Translator
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.ViewModelUiState
 import cash.p.terminal.wallet.accountTypeDerivation
 import cash.p.terminal.wallet.bitcoinCashCoinType
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.tonAsset
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.coroutines.CancellationException
@@ -146,11 +149,14 @@ class ReceiveAddressViewModel internal constructor(
             }
 
             TokenType.Mweb -> {
-                addressFormat = tokenType.title
+                addressFormat = wallet.token.title
             }
 
             else -> {
                 blockchainName = wallet.token.blockchain.name
+                // A watched address may be any version, while its token is always the plain Native one.
+                addressFormat = wallet.token.tonAsset?.version
+                    ?.takeIf { wallet.account.type !is AccountType.TonAddress }?.title
             }
         }
         emitState()
@@ -256,9 +262,7 @@ class ReceiveAddressViewModel internal constructor(
             addressUri.address = newUri
             addressUri.parameters[AddressUri.Field.amountField(wallet.token.blockchainType)] = it.toString()
             addressUri.parameters[AddressUri.Field.BlockchainUid] = wallet.token.blockchainType.uid
-            if (wallet.token.type !is TokenType.Derived && wallet.token.type !is TokenType.AddressTyped) {
-                addressUri.parameters[AddressUri.Field.TokenUid] = wallet.token.type.id
-            }
+            wallet.token.tokenQuery.paymentUriTokenUid?.let { addressUri.parameters[AddressUri.Field.TokenUid] = it }
             newUri = parser.uri(addressUri)
         }
 

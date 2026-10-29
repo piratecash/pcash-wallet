@@ -539,6 +539,9 @@
     <string name="TonConnect_Unnamed">Sin nombre</string>
     <string name="TonConnect_Wallet">Billetera</string>
     <string name="TonConnect_ChooseWallet">Elegir billetera</string>
+    <string name="ton_wallet_version_v4r2_description">Dirección de billetera TON de la versión v4R2. Se usa de forma predeterminada.</string>
+    <string name="ton_wallet_version_w5_description">Billetera TON versión W5. Una dirección y un saldo independientes a partir de la misma frase.</string>
+    <string name="tonconnect_wallet_version">Versión de la billetera</string>
     <string name="manifest_loading">Cargando manifiesto…</string>
     <string name="account_not_supported_by">Tu tipo de billetera actual %1$s no admite %2$s</string>
     <!--WalletConnect-->
