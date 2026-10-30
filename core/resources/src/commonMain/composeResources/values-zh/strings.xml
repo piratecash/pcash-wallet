@@ -401,7 +401,6 @@
     <string name="Balance_ReceiveHint_Search">查询</string>
     <!--Send NFT-->
     <string name="SendNft_Title">发送​​</string>
-    <string name="SendNft_Error_NotEnoughtBalance">余额不足</string>
     <!--Send-->
     <string name="Send_Title">发送%s</string>
     <string name="Send_Hint_Address">地址或域名</string>
@@ -1782,62 +1781,6 @@
     <string name="notification_permission_revoked_title">通知不可用</string>
     <string name="notification_permission_revoked_message">未授予通知权限。点击打开设置。</string>
 
-    <string name="Nfts_PriceType_Days_7">平均7天</string>
-    <string name="Nfts_PriceType_Days_30">平均30天</string>
-    <string name="Nfts_PriceType_LastSale">收盘价</string>
-    <string name="Nfts_Asset_OnSale">在售</string>
-    <string name="Nfts_Asset_OnAuction">在拍卖时</string>
-    <string name="Nfts_Asset_OnSaleUntil">直到 %s</string>
-    <string name="Nfts_Empty">你的钱包中没有 NFT</string>
-    <string name="Nfts_PriceMode">价格模式</string>
-    <string name="NftAsset_Overview">行情</string>
-    <string name="NftAsset_Activity">活动</string>
-    <string name="NftAsset_Action_Share">分享</string>
-    <string name="NftAsset_Action_Save">保存</string>
-    <string name="NftAsset_Price_Purchase">购买价格</string>
-    <string name="NftAsset_Price_Average7d">平均7天</string>
-    <string name="NftAsset_Price_Average30d">平均30天</string>
-    <string name="NftAsset_Price_Floor">底价</string>
-    <string name="NftAsset_Price_BuyNow">立即购买</string>
-    <string name="NftAsset_Price_MinimumBid">最低出价</string>
-    <string name="NftAsset_Price_BestOffer">最佳报价</string>
-    <string name="NftAsset_Properties">属性</string>
-    <string name="NftAsset_Description">描述</string>
-    <string name="NftAsset_Details">详细信息</string>
-    <string name="NftAsset_Links">链接</string>
-    <string name="NftAsset_ContractAddress">智能合约地址</string>
-    <string name="NftAsset_TokenId">代币 ID</string>
-    <string name="NftAsset_TokenStandard">代币标准</string>
-    <string name="NftAsset_Blockchain">区块链</string>
-    <string name="NftAsset_Links_Website">网站</string>
-    <string name="PoweredBy_OpenSeaAPI">由 OpenSea API 提供支持</string>
-    <string name="Nft_TopCollections">前列 NFT 收藏</string>
-    <string name="Nft_TopCollections_Description">按交易量排列的主要NFT收藏。</string>
-    <!-- NFT Collection -->
-    <string name="NftCollection_Overview">行情</string>
-    <string name="NftCollection_Items">项目</string>
-    <string name="NftCollection_Activity">活动</string>
-    <string name="NftCollection_Owners">所有者</string>
-    <string name="NftCollection_TodaysSales">今天的卖家</string>
-    <string name="NftCollection_TodaysSalesCount">%s NFT</string>
-    <string name="NftCollection_Royalty">荣耀</string>
-    <string name="NftCollection_InceptionDate">起始日期</string>
-    <!-- NFT Collection Events -->
-    <string name="NftCollection_EventType_SelectorTitle">选择事件类型</string>
-    <string name="NftCollection_EventType_All">所有</string>
-    <string name="NftCollection_EventType_List">列表</string>
-    <string name="NftCollection_EventType_Sale">出售</string>
-    <string name="NftCollection_EventType_Cancelled">取消</string>
-    <string name="NftCollection_EventType_BidEntered">已输入出价</string>
-    <string name="NftCollection_EventType_BidWithdrawn">已撤回出价</string>
-    <string name="NftCollection_EventType_Transfer">转帐</string>
-    <string name="NftCollection_EventType_OfferEntered">已输入报价</string>
-    <string name="NftCollection_EventType_Approve">批准</string>
-    <string name="NftCollection_EventType_Custom">自定义</string>
-    <string name="NftCollection_EventType_Payout">支出</string>
-    <string name="NftCollection_EventType_BulkCancel">批量取消</string>
-    <string name="NftCollection_EventType_Mint">薄荷绿</string>
-    <string name="NftCollection_EventType_Unknown">未知</string>
     <!--Rate list-->
     <string name="RateList_TopGainers">涨幅最大者</string>
     <string name="RateList_TopLosers">跌幅最大者</string>
@@ -1861,7 +1804,6 @@
     <string name="Hud_Text_Activate">激活</string>
     <!--Widget-->
     <string name="WidgetList_Config_Title">选择类型</string>
-    <string name="NftAssetActivity_Empty">还没有项目活动</string>
     <string name="Widget_EnableAutostartWarning">为了确保这个部件正常工作，您应该启用自动启动。</string>
     <!--Alert-->
     <string name="alert_keys_invalidated_title">Android密钥库错误</string>

@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.send.evm
 
-import android.os.Parcelable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import cash.p.terminal.core.App
@@ -15,52 +14,10 @@ import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.getMaxSendableBalance
 import io.horizontalsystems.core.DispatcherProvider
-import io.horizontalsystems.ethereumkit.models.TransactionData
-import kotlinx.parcelize.Parcelize
 import org.koin.java.KoinJavaComponent.inject
-import java.math.BigInteger
 import java.math.RoundingMode
 
-
-data class SendEvmData(
-    val transactionData: TransactionData,
-    val additionalInfo: AdditionalInfo? = null
-) {
-    sealed class AdditionalInfo : Parcelable {
-        @Parcelize
-        class Send(val info: SendInfo) : AdditionalInfo()
-
-        val sendInfo: SendInfo?
-            get() = (this as? Send)?.info
-    }
-
-    @Parcelize
-    data class SendInfo(
-        val nftShortMeta: NftShortMeta? = null
-    ) : Parcelable
-
-    @Parcelize
-    data class NftShortMeta(
-        val nftName: String,
-        val previewImageUrl: String?
-    ) : Parcelable
-}
-
 object SendEvmModule {
-
-    @Parcelize
-    data class TransactionDataParcelable(
-        val toAddress: String,
-        val value: BigInteger,
-        val input: ByteArray
-    ) : Parcelable {
-        constructor(transactionData: TransactionData) : this(
-            transactionData.to.hex,
-            transactionData.value,
-            transactionData.input
-        )
-    }
-
 
     internal class Factory(
         private val wallet: Wallet,

@@ -29,7 +29,6 @@ fun Scope.tokenBalanceViewModel(wallet: Wallet) = TokenBalanceViewModel(
         rateRepository = get(),
         transactionSyncStateRepository = get(),
         transactionAdapterManager = get(),
-        nftMetadataService = get(),
         spamManager = get(),
     ),
     transactionViewItem2Factory = get(),

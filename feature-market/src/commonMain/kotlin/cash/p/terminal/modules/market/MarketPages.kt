@@ -6,5 +6,4 @@ import cash.p.terminal.navigation.HSPage
 interface MarketPages {
     fun markdown(url: String): HSPage?
     fun subscriptionInfo(): HSPage?
-    fun nftCollection(collectionUid: String, blockchainUid: String): HSPage?
 }

@@ -4,7 +4,6 @@ import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.managers.SolanaKitWrapper
 import cash.p.terminal.core.managers.SpamTransferDetector
 import cash.p.terminal.entities.TransactionValue
-import cash.p.terminal.entities.nft.NftUid
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.evm.TransferEvent
 import cash.p.terminal.entities.transactionrecords.solana.SolanaTransactionRecord
@@ -68,7 +67,7 @@ class SolanaTransactionConverter(
                 token != null -> TransactionValue.CoinValue(token, amount.movePointLeft(token.decimals))
 
                 mintAccount.isNft -> TransactionValue.NftValue(
-                    NftUid.Solana(mintAccount.address),
+                    mintAccount.address,
                     amount,
                     mintAccount.name,
                     mintAccount.symbol

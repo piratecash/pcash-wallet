@@ -151,7 +151,6 @@ class SwapAmountColorInvariantTest {
             record = record,
             currencyValue = null,
             lastBlockInfo = null,
-            nftMetadata = emptyMap(),
         )
         return requireNotNull(listFactory.convertToViewItemCached(item).primaryValue).color
     }
@@ -171,7 +170,6 @@ class SwapAmountColorInvariantTest {
                 lastBlockInfo = null,
                 explorerData = emptyList(),
                 rates = emptyMap(),
-                nftMetadata = emptyMap(),
                 hideAmount = false,
                 offlineStatus = null,
             )

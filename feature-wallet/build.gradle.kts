@@ -156,7 +156,6 @@ kotlin {
                 implementation(libs.hd.wallet.kit)
                 implementation(libs.ethereum.kit)
                 implementation(libs.ethereum.kit.erc20)
-                implementation(libs.ethereum.kit.nft)
                 implementation(libs.ethereum.kit.merkleio)
                 implementation(libs.ethereum.kit.uniswap)
                 implementation(libs.ethereum.kit.oneinch)

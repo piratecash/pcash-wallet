@@ -1,5 +1,7 @@
 package cash.p.terminal.modules.transactions
 
+import cash.p.terminal.core.ICoinManager
+import cash.p.terminal.core.adapters.SolanaTransactionConverterTestFixture
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.thorchain.ThorchainTransactionRecord
 import cash.p.terminal.wallet.Token
@@ -59,9 +61,31 @@ class TransactionRecordSearchMatcherTest {
         assertTrue(matcher.matches(record, SENDER))
     }
 
+    @Test
+    fun matches_solanaNftTransfer_findsMintAddress() {
+        val coinManager = mockk<ICoinManager>(relaxed = true) {
+            every { getToken(any()) } returns null
+        }
+        val record = SolanaTransactionConverterTestFixture.createConverter(coinManager).transactionRecord(
+            SolanaTransactionConverterTestFixture.tokenTransferTransaction(
+                hash = "HASH",
+                from = SENDER,
+                to = SolanaTransactionConverterTestFixture.USER_ADDRESS,
+                mint = NFT_MINT,
+                incoming = true,
+                amount = BigDecimal.ONE,
+                decimals = 0,
+                isNft = true,
+            )
+        )
+
+        assertTrue(matcher.matches(record, NFT_MINT))
+    }
+
     private companion object {
         const val MEMO = "=:ETH.ETH:0xabc"
         const val RECIPIENT = "thor1recipientaddress"
         const val SENDER = "thor1senderaddress"
+        const val NFT_MINT = "NftMint11111111111111111111111111111111111"
     }
 }

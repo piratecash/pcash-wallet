@@ -394,7 +394,6 @@ class TransactionsViewModelWalletSwitchTest : KoinTest {
             record = record,
             currencyValue = null,
             lastBlockInfo = null,
-            nftMetadata = emptyMap(),
         )
     }
 

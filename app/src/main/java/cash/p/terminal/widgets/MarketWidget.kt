@@ -181,10 +181,6 @@ class MarketWidget : GlanceAppWidget() {
                 "pcash://coin-page?uid=${item.uid}".toUri()
             }
 
-            MarketWidgetType.TopNfts -> {
-                "pcash://nft-collection?uid=${item.uid}&blockchainTypeUid=${item.blockchainTypeUid}".toUri()
-            }
-
             MarketWidgetType.TopPlatforms -> {
                 "pcash://top-platforms?uid=${item.uid}&title=${item.title}".toUri()
             }
@@ -202,7 +198,6 @@ class MarketWidget : GlanceAppWidget() {
                 MarketWidgetType.Watchlist,
                 MarketWidgetType.TopGainers -> GlanceModifier.size(32.dp).cornerRadius(16.dp)
 
-                MarketWidgetType.TopNfts,
                 MarketWidgetType.TopPlatforms -> GlanceModifier.size(32.dp)
             }
 

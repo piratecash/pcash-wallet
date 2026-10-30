@@ -384,7 +384,6 @@
     <!--Send NFT-->
     <string name="Info_Reserved_Title">Зарезервовано</string>
     <string name="SendNft_Title">Надіслати</string>
-    <string name="SendNft_Error_NotEnoughtBalance">Недостатньо коштів</string>
     <!--Send-->
     <string name="Send_EnterAddress">Вкажіть адресу</string>
     <string name="Send_Title">Надіслати %s</string>
@@ -1673,62 +1672,6 @@
     <string name="SubscriptionInfo_PersonalSupport_Info">Зв\u0027яжіться з нашою командою безпосередньо через Telegram для отримання особистої допомоги.</string>
     <string name="SubscriptionInfo_GetPremium">Отримайте преміум</string>
     <string name="SubscriptionInfo_HavePremium">У мене вже є преміум</string>
-    <string name="Nfts_PriceType_Days_7">7Д сер.</string>
-    <string name="Nfts_PriceType_Days_30">30Д сер.</string>
-    <string name="Nfts_PriceType_LastSale">Останній продаж</string>
-    <string name="Nfts_Asset_OnSale">У продажу</string>
-    <string name="Nfts_Asset_OnAuction">На аукціоні</string>
-    <string name="Nfts_Asset_OnSaleUntil">до %s</string>
-    <string name="Nfts_Empty">У вас немає NFT у вашому гаманці</string>
-    <string name="Nfts_PriceMode">Режим ціни</string>
-    <string name="NftAsset_Overview">Огляд</string>
-    <string name="NftAsset_Activity">Активність</string>
-    <string name="NftAsset_Action_Share">Поділитися</string>
-    <string name="NftAsset_Action_Save">Зберегти</string>
-    <string name="NftAsset_Price_Purchase">Ціна покупки</string>
-    <string name="NftAsset_Price_Average7d">Сер. 7Д</string>
-    <string name="NftAsset_Price_Average30d">Сер. 30Д</string>
-    <string name="NftAsset_Price_Floor">Мінімальна ціна</string>
-    <string name="NftAsset_Price_BuyNow">Купити зараз</string>
-    <string name="NftAsset_Price_MinimumBid">Мін. ставка</string>
-    <string name="NftAsset_Price_BestOffer">Найкраща пропозиція</string>
-    <string name="NftAsset_Properties">Параметри</string>
-    <string name="NftAsset_Description">Опис</string>
-    <string name="NftAsset_Details">Деталі</string>
-    <string name="NftAsset_Links">Посилання</string>
-    <string name="NftAsset_ContractAddress">Адреса контракту</string>
-    <string name="NftAsset_TokenId">ID токена</string>
-    <string name="NftAsset_TokenStandard">Стандарт токена</string>
-    <string name="NftAsset_Blockchain">Блокчейн</string>
-    <string name="NftAsset_Links_Website">Веб-сайт</string>
-    <string name="PoweredBy_OpenSeaAPI">За підтримки OpenSea API</string>
-    <string name="Nft_TopCollections">Топ NFT колекції</string>
-    <string name="Nft_TopCollections_Description">Провідні колекції NFT за обсягом торгів.</string>
-    <!-- NFT Collection -->
-    <string name="NftCollection_Overview">Огляд</string>
-    <string name="NftCollection_Items">Елементи</string>
-    <string name="NftCollection_Activity">Активність</string>
-    <string name="NftCollection_Owners">Власники</string>
-    <string name="NftCollection_TodaysSales">Сьогоднішні продажі</string>
-    <string name="NftCollection_TodaysSalesCount">%s NFT</string>
-    <string name="NftCollection_Royalty">Роялті</string>
-    <string name="NftCollection_InceptionDate">Дата створення</string>
-    <!-- NFT Collection Events -->
-    <string name="NftCollection_EventType_SelectorTitle">Виберіть тип події</string>
-    <string name="NftCollection_EventType_All">Усі</string>
-    <string name="NftCollection_EventType_List">Лістинг</string>
-    <string name="NftCollection_EventType_Sale">Продаж</string>
-    <string name="NftCollection_EventType_Cancelled">Скасовано</string>
-    <string name="NftCollection_EventType_BidEntered">Ставку зроблено</string>
-    <string name="NftCollection_EventType_BidWithdrawn">Ставку відкликано</string>
-    <string name="NftCollection_EventType_Transfer">Переказ</string>
-    <string name="NftCollection_EventType_OfferEntered">Пропозицію зроблено</string>
-    <string name="NftCollection_EventType_Approve">Схвалення</string>
-    <string name="NftCollection_EventType_Custom">Користувацька</string>
-    <string name="NftCollection_EventType_Payout">Виплата</string>
-    <string name="NftCollection_EventType_BulkCancel">Масове скасування</string>
-    <string name="NftCollection_EventType_Mint">Карбування</string>
-    <string name="NftCollection_EventType_Unknown">Невідома</string>
     <!--Rate list-->
     <string name="RateList_TopGainers">Зростаючі активи</string>
     <string name="RateList_TopLosers">Падаючі активи</string>
@@ -1753,7 +1696,6 @@
     <string name="Hud_Text_Activate">Активувати</string>
     <!--Widget-->
     <string name="WidgetList_Config_Title">Вибрати тип</string>
-    <string name="NftAssetActivity_Empty">Немає активності</string>
     <string name="Widget_EnableAutostartWarning">Щоб переконатися, що цей віджет працює правильно, необхідно увімкнути автозапуск.</string>
     <!--Alert-->
     <string name="alert_keys_invalidated_title">Помилка Android Keystore</string>
@@ -1886,7 +1828,6 @@
     <string name="week_period">Тиждень</string>
     <string name="month_period">Місяць</string>
     <string name="year_period">Рік</string>
-    <string name="unknown_send_error">Невідома помилка надсилання</string>
     <string name="WalletConnect_info"># Які ризики при використанні WalletConnect?\n\nСлід зазначити, що WalletConnect лише виступає в ролі моста між сайтом DeFi-сервісу та гаманцем користувача (наприклад, P.CASH).\n\nКоли користувач ініціює будь-яку дію на сайті DeFi-сервісу, що вимагає переказу коштів, гаманець P.CASH відображає вікно підтвердження для схвалення/відхилення відповідної транзакції. Гаманець P.CASH майже не має можливості зрозуміти контекст транзакції і просто надає інструмент для її схвалення або відхилення.\n\nВажливо використовувати сайти DeFi-сервісів від надійних організацій. Якщо зловмисник захопить сайт сервісу, можливо, що користувачеві буде показано вікно підтвердження, що виходить за рамки його намірів — і він може цього не помітити. Тому використовуйте лише перевірені та широко відомі DeFi-сервіси.</string>
     <string name="scan">Сканувати</string>
     <string name="connect">Підключити</string>

@@ -14,8 +14,6 @@ import cash.p.terminal.modules.market.favorites.MarketFavoritesMenuService
 import cash.p.terminal.modules.market.favorites.WatchlistSorting
 import cash.p.terminal.modules.market.favorites.period
 import cash.p.terminal.modules.market.sort
-import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsRepository
-import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsViewItemFactory
 import cash.p.terminal.modules.market.topplatforms.TopPlatformsRepository
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.IAppNumberFormatter
@@ -27,8 +25,6 @@ class MarketWidgetRepository(
     private val marketKit: MarketKitWrapper,
     private val favoritesManager: MarketFavoritesManager,
     private val favoritesMenuService: MarketFavoritesMenuService,
-    private val topNftCollectionsRepository: TopNftCollectionsRepository,
-    private val topNftCollectionsViewItemFactory: TopNftCollectionsViewItemFactory,
     private val topPlatformsRepository: TopPlatformsRepository,
     private val currencyManager: CurrencyManager,
     private val numberFormatter: IAppNumberFormatter
@@ -53,10 +49,6 @@ class MarketWidgetRepository(
 
             MarketWidgetType.TopGainers -> {
                 getTopGainers()
-            }
-
-            MarketWidgetType.TopNfts -> {
-                getTopNtfs()
             }
 
             MarketWidgetType.TopPlatforms -> {
@@ -89,30 +81,6 @@ class MarketWidgetRepository(
                 diff = item.changeDiff,
                 blockchainTypeUid = null,
                 imageRemoteUrl = item.platform.iconUrl
-            )
-        }
-    }
-
-    private suspend fun getTopNtfs(): List<MarketWidgetItem> {
-        val nftCollectionViewItems = topNftCollectionsRepository.get(
-            sortingField = SortingField.HighestVolume,
-            timeDuration = TimeDuration.SevenDay,
-            forceRefresh = true,
-            limit = itemsLimit
-        ).mapIndexed { index, item ->
-            topNftCollectionsViewItemFactory.viewItem(item, TimeDuration.SevenDay, index + 1)
-        }
-
-        return nftCollectionViewItems.map {
-            MarketWidgetItem(
-                uid = it.uid,
-                title = it.name,
-                subtitle = it.floorPrice,
-                label = it.order.toString(),
-                value = it.volume,
-                diff = it.volumeDiff,
-                blockchainTypeUid = it.blockchainType.uid,
-                imageRemoteUrl = it.imageUrl ?: ""
             )
         }
     }

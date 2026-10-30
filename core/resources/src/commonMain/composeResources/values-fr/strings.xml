@@ -401,7 +401,6 @@
     <string name="Balance_ReceiveHint_Search">Chercher</string>
     <!--Send NFT-->
     <string name="SendNft_Title">Envoyer</string>
-    <string name="SendNft_Error_NotEnoughtBalance">Solde insuffisant</string>
     <!--Send-->
     <string name="Send_Title">Envoyer %s</string>
     <string name="Send_Hint_Address">Adresse ou domaine</string>
@@ -1791,62 +1790,6 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="notification_permission_revoked_title">Notifications indisponibles</string>
     <string name="notification_permission_revoked_message">L\u0027autorisation de notification n\u0027est pas accordée. Appuyez pour ouvrir les paramètres.</string>
 
-    <string name="Nfts_PriceType_Days_7">Moy. 7D</string>
-    <string name="Nfts_PriceType_Days_30">Moy. 30D</string>
-    <string name="Nfts_PriceType_LastSale">Dernière vente</string>
-    <string name="Nfts_Asset_OnSale">En Vente</string>
-    <string name="Nfts_Asset_OnAuction">Mise aux enchères</string>
-    <string name="Nfts_Asset_OnSaleUntil">jusqu\u0027à: %s</string>
-    <string name="Nfts_Empty">Vous n\u0027avez pas de NFT dans votre portefeuille</string>
-    <string name="Nfts_PriceMode">Mode prix</string>
-    <string name="NftAsset_Overview">Synthèse</string>
-    <string name="NftAsset_Activity">Activité</string>
-    <string name="NftAsset_Action_Share">Partager</string>
-    <string name="NftAsset_Action_Save">Sauvegarder</string>
-    <string name="NftAsset_Price_Purchase">Prix d\u0027achat</string>
-    <string name="NftAsset_Price_Average7d">Moyenne 7D</string>
-    <string name="NftAsset_Price_Average30d">Moyenne 30D</string>
-    <string name="NftAsset_Price_Floor">Prix plancher</string>
-    <string name="NftAsset_Price_BuyNow">Acheter Maintenant</string>
-    <string name="NftAsset_Price_MinimumBid">Enchère minimale</string>
-    <string name="NftAsset_Price_BestOffer">Meilleure offre</string>
-    <string name="NftAsset_Properties">Propriétés</string>
-    <string name="NftAsset_Description">Libellé</string>
-    <string name="NftAsset_Details">Détailles</string>
-    <string name="NftAsset_Links">Liens</string>
-    <string name="NftAsset_ContractAddress">Adresse du contrat</string>
-    <string name="NftAsset_TokenId">Identifiant du token</string>
-    <string name="NftAsset_TokenStandard">Standard du token</string>
-    <string name="NftAsset_Blockchain">Filtrer par blockchain</string>
-    <string name="NftAsset_Links_Website">Site Web</string>
-    <string name="PoweredBy_OpenSeaAPI">Propulsé par OpenSea API</string>
-    <string name="Nft_TopCollections">Top des collections NFT</string>
-    <string name="Nft_TopCollections_Description">Meilleures collections NFT en termes de volume de trading.</string>
-    <!-- NFT Collection -->
-    <string name="NftCollection_Overview">Synthèse</string>
-    <string name="NftCollection_Items">Éléments</string>
-    <string name="NftCollection_Activity">Activité</string>
-    <string name="NftCollection_Owners">Propriétaires</string>
-    <string name="NftCollection_TodaysSales">Vendeurs d\u0027aujourd\u0027hui</string>
-    <string name="NftCollection_TodaysSalesCount">%s NFT</string>
-    <string name="NftCollection_Royalty">Redevance</string>
-    <string name="NftCollection_InceptionDate">Date de création</string>
-    <!-- NFT Collection Events -->
-    <string name="NftCollection_EventType_SelectorTitle">Sélectionnez le type d\u0027événement</string>
-    <string name="NftCollection_EventType_All">Tout</string>
-    <string name="NftCollection_EventType_List">Liste</string>
-    <string name="NftCollection_EventType_Sale">Vente</string>
-    <string name="NftCollection_EventType_Cancelled">Annuler</string>
-    <string name="NftCollection_EventType_BidEntered">Enchère saisie</string>
-    <string name="NftCollection_EventType_BidWithdrawn">Enchère retirée</string>
-    <string name="NftCollection_EventType_Transfer">Transfert</string>
-    <string name="NftCollection_EventType_OfferEntered">Offre saisie</string>
-    <string name="NftCollection_EventType_Approve">Approuver</string>
-    <string name="NftCollection_EventType_Custom">Personnalisé</string>
-    <string name="NftCollection_EventType_Payout">Versement</string>
-    <string name="NftCollection_EventType_BulkCancel">Annuler en bloc</string>
-    <string name="NftCollection_EventType_Mint">Mint</string>
-    <string name="NftCollection_EventType_Unknown">Inconnu</string>
     <!--Rate list-->
     <string name="RateList_TopGainers">Gagnants</string>
     <string name="RateList_TopLosers">Perdants</string>
@@ -1870,7 +1813,6 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="Hud_Text_Activate">Activer</string>
     <!--Widget-->
     <string name="WidgetList_Config_Title">Choisir le type</string>
-    <string name="NftAssetActivity_Empty">Aucune activité pour l\u0027instant</string>
     <string name="Widget_EnableAutostartWarning">Pour vous assurer que ce widget fonctionne correctement, vous devez activer le démarrage automatique.</string>
     <!--Alert-->
     <string name="alert_keys_invalidated_title">Erreur de Keystore Android</string>

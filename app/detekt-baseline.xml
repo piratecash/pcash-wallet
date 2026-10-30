@@ -3,7 +3,6 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <ID>AppSingletonAccess:AddRpcModule.kt$AddRpcModule.Factory$App.evmSyncSourceManager</ID>
-    <ID>AppSingletonAccess:AddressInputModule.kt$AddressInputModule.FactoryNft$App.contactsRepository</ID>
     <ID>AppSingletonAccess:AddressInputModule.kt$AddressInputModule.FactoryToken$App.contactsRepository</ID>
     <ID>AppSingletonAccess:AddressValidatorFactory.kt$AddressValidatorFactory$App.adapterManager</ID>
     <ID>AppSingletonAccess:AllBridgeProvider.kt$AllBridgeProvider$App.marketKit</ID>
@@ -61,20 +60,6 @@
     <ID>AppSingletonAccess:MarketWidgetManager.kt$MarketWidgetManager.Companion$App.localStorage</ID>
     <ID>AppSingletonAccess:NavController.kt$App.pinComponent</ID>
     <ID>AppSingletonAccess:NetworkFeeWarningScreen.kt$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:NftAssetModule.kt$NftAssetModule.Factory$App.accountManager</ID>
-    <ID>AppSingletonAccess:NftAssetModule.kt$NftAssetModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:NftAssetModule.kt$NftAssetModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:NftCollectionAssetsModule.kt$NftCollectionAssetsModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:NftCollectionAssetsModule.kt$NftCollectionAssetsModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:NftCollectionEventsModule.kt$NftCollectionEventsModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:NftCollectionEventsModule.kt$NftCollectionEventsModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:NftCollectionModule.kt$NftCollectionModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:NftCollectionModule.kt$NftCollectionModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:NftCollectionModule.kt$NftCollectionModule.Factory$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:NftHoldingsModule.kt$NftHoldingsModule.Factory$App.balanceHiddenManager</ID>
-    <ID>AppSingletonAccess:NftHoldingsModule.kt$NftHoldingsModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:NftHoldingsModule.kt$NftHoldingsModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:NftHoldingsPage.kt$App.accountManager</ID>
     <ID>AppSingletonAccess:OfflineSignScreen.kt$App.numberFormatter</ID>
     <ID>AppSingletonAccess:PersonalSupportModule.kt$PersonalSupportModule.Factory$App.localStorage</ID>
     <ID>AppSingletonAccess:PersonalSupportModule.kt$PersonalSupportModule.Factory$App.marketKit</ID>
@@ -108,12 +93,6 @@
     <ID>AppSingletonAccess:SendBtcSettingsViewModel.kt$SendBtcSettingsViewModel$App.currencyManager</ID>
     <ID>AppSingletonAccess:SendBtcSettingsViewModel.kt$SendBtcSettingsViewModel$App.marketKit</ID>
     <ID>AppSingletonAccess:SendConfirmationScreen.kt$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:SendEvmConfirmationViewModel.kt$SendEvmConfirmationViewModel.Factory$App.coinManager</ID>
-    <ID>AppSingletonAccess:SendEvmConfirmationViewModel.kt$SendEvmConfirmationViewModel.Factory$App.contactsRepository</ID>
-    <ID>AppSingletonAccess:SendEvmConfirmationViewModel.kt$SendEvmConfirmationViewModel.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:SendEvmConfirmationViewModel.kt$SendEvmConfirmationViewModel.Factory$App.evmBlockchainManager</ID>
-    <ID>AppSingletonAccess:SendEvmConfirmationViewModel.kt$SendEvmConfirmationViewModel.Factory$App.evmLabelManager</ID>
-    <ID>AppSingletonAccess:SendEvmConfirmationViewModel.kt$SendEvmConfirmationViewModel.Factory$App.marketKit</ID>
     <ID>AppSingletonAccess:SendEvmModule.kt$SendEvmModule.Factory$App.currencyManager</ID>
     <ID>AppSingletonAccess:SendEvmModule.kt$SendEvmModule.Factory$App.marketKit</ID>
     <ID>AppSingletonAccess:SendMemoModule.kt$SendMemoModule.Factory$App.coinManager</ID>
@@ -125,7 +104,6 @@
     <ID>AppSingletonAccess:SendMoneroModule.kt$SendMoneroModule.Factory$App.contactsRepository</ID>
     <ID>AppSingletonAccess:SendMoneroModule.kt$SendMoneroModule.Factory$App.currencyManager</ID>
     <ID>AppSingletonAccess:SendMoneroModule.kt$SendMoneroModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:SendNftPage.kt$App.accountManager</ID>
     <ID>AppSingletonAccess:SendPage.kt$SendPage$App.adapterManager</ID>
     <ID>AppSingletonAccess:SendSolanaModule.kt$SendSolanaModule.Factory$App.coinManager</ID>
     <ID>AppSingletonAccess:SendSolanaModule.kt$SendSolanaModule.Factory$App.currencyManager</ID>
@@ -266,7 +244,6 @@
     <ID>ComposableParamOrder:HSAmountInput.kt$HSAmountInput</ID>
     <ID>ComposableParamOrder:HSFeeInput.kt$HSFeeRaw</ID>
     <ID>ComposableParamOrder:HeaderCell.kt$HeaderCell</ID>
-    <ID>ComposableParamOrder:NftAssetPage.kt$ChipVerticalGrid</ID>
     <ID>ComposableParamOrder:OfflineBroadcastScreen.kt$BlockchainPicker</ID>
     <ID>ComposableParamOrder:PinNumpad.kt$ImageKey</ID>
     <ID>ComposableParamOrder:PinNumpad.kt$PinNumpad</ID>
@@ -300,8 +277,6 @@
     <ID>CyclomaticComplexMethod:Migration_45_46.kt$CoinType.Companion$fun fromId(id: String): CoinType</ID>
     <ID>CyclomaticComplexMethod:Migration_45_46.kt$Migration_45_46$private fun getTokenQueryForCoinId(coinId: String)</ID>
     <ID>CyclomaticComplexMethod:MultiSwapExchangeViewModel.kt$MultiSwapExchangeViewModel$private suspend fun mapToUiState(swap: PendingMultiSwap): MultiSwapExchangeUiState</ID>
-    <ID>CyclomaticComplexMethod:NftAssetPage.kt$@Composable private fun AssetContent( painter: AsyncImagePainter, viewItem: NftAssetViewModel.ViewItem?, nftUid: NftUid, navigation: HSNavigation, coroutineScope: CoroutineScope, )</ID>
-    <ID>CyclomaticComplexMethod:NftCollectionEventsViewModel.kt$NftEventTypeWrapper.Companion$fun title(eventType: EventType): TranslatableString</ID>
     <ID>CyclomaticComplexMethod:PinSetViewModel.kt$PinSetViewModel$fun onKeyClick(number: Int)</ID>
     <ID>CyclomaticComplexMethod:PushNotificationsPage.kt$PushNotificationsPage$@Composable override fun GetContent(navigation: HSNavigation)</ID>
     <ID>CyclomaticComplexMethod:QuickexProvider.kt$QuickexProvider$private fun getQuickexNetwork(token: Token): String?</ID>
@@ -347,7 +322,6 @@
     <ID>InstanceOfCheckForException:EvmFeeService.kt$EvmFeeService$error is io.horizontalsystems.ethereumkit.api.jsonrpc.JsonRpc.ResponseError.RpcError</ID>
     <ID>InstanceOfCheckForException:MarketWidgetManager.kt$MarketWidgetManager$exception is UnknownHostException</ID>
     <ID>InstanceOfCheckForException:SendBitcoinViewModel.kt$SendBitcoinViewModel$e is TangemSdkError</ID>
-    <ID>InstanceOfCheckForException:SendEvmConfirmationPage.kt$t is JsonRpc.ResponseError.RpcError</ID>
     <ID>InstanceOfCheckForException:SendTonFeeService.kt$SendTonFeeService$e is ClientException</ID>
     <ID>InvalidPackageDeclaration:BalancePresenterTest.kt$package cash.p.terminal.modules.balance</ID>
     <ID>InvalidPackageDeclaration:BalanceSorterTest.kt$package cash.p.terminal.modules.balance</ID>
@@ -410,14 +384,6 @@
     <ID>LongMethod:MultiSwapExchangeViewModel.kt$MultiSwapExchangeViewModel$private suspend fun mapToUiState(swap: PendingMultiSwap): MultiSwapExchangeUiState</ID>
     <ID>LongMethod:NetworkFeeWarningScreen.kt$@Composable private fun NetworkFeeWarningContent( networkName: String, feeAmount: String, balanceThreshold: String, feeCoinCode: String, onConfirm: () -&gt; Unit, onCancel: () -&gt; Unit, )</ID>
     <ID>LongMethod:NetworkFeeWarningScreen.kt$@Composable private fun buildWarningText( networkName: String, feeAmount: String, balanceThreshold: String, feeCoinCode: String, ): AnnotatedString</ID>
-    <ID>LongMethod:NftAssetPage.kt$@Composable private fun AssetContent( painter: AsyncImagePainter, viewItem: NftAssetViewModel.ViewItem?, nftUid: NftUid, navigation: HSNavigation, coroutineScope: CoroutineScope, )</ID>
-    <ID>LongMethod:NftCollectionEventsScreen.kt$@Composable private fun ContractBottomSheet( contractSelect: SelectOptional&lt;ContractInfo&gt;?, onSelect: (ContractInfo) -&gt; Unit, onClose: (() -&gt; Unit) )</ID>
-    <ID>LongMethod:NftCollectionEventsScreen.kt$@OptIn(ExperimentalMaterialApi::class) @Composable fun NftEvents( viewModel: NftCollectionEventsViewModel, navigation: HSNavigation?, hideEventIcon: Boolean = false, )</ID>
-    <ID>LongMethod:NftCollectionOverviewScreen.kt$@Composable fun NftCollectionOverviewScreen( viewModel: NftCollectionOverviewViewModel, onCopyText: (String) -&gt; Unit, onOpenUrl: (String) -&gt; Unit )</ID>
-    <ID>LongMethod:NftCollectionOverviewScreen.kt$@Composable private fun Stats(collection: NftCollectionOverviewViewItem)</ID>
-    <ID>LongMethod:NftHoldingsPage.kt$@Composable fun NftHoldingsScreen(navigation: HSNavigation)</ID>
-    <ID>LongMethod:NftHoldingsPage.kt$fun LazyListScope.nftsCollectionSection( collection: NftCollectionViewItem, viewModel: NftHoldingsViewModel, onClickAsset: (NftAssetViewItem) -&gt; Unit )</ID>
-    <ID>LongMethod:NftPreview.kt$@Composable fun NftAssetPreview( name: String, imageUrl: String?, onSale: Boolean, coinPrice: CoinValue?, currencyPrice: CurrencyValue?, onClick: () -&gt; Unit )</ID>
     <ID>LongMethod:PasscodeBlock.kt$@Composable fun PasscodeBlock( viewModel: SecuritySettingsViewModel, navigation: HSNavigation, )</ID>
     <ID>LongMethod:PinNumpad.kt$@Composable fun PinNumpad( showFingerScanner: Boolean = false, pinRandomized: Boolean? = null, onNumberClick: (Int) -&gt; Unit, onDeleteClick: () -&gt; Unit, showBiometricPrompt: (() -&gt; Unit)? = null, inputState: InputState = InputState.Enabled(), updatePinRandomized: ((Boolean) -&gt; Unit)? = null, )</ID>
     <ID>LongMethod:PinTopBlock.kt$@Composable fun PinTopBlock( modifier: Modifier = Modifier, title: String, error: String? = null, enteredCount: Int, showShakeAnimation: Boolean = false, inputState: InputState = InputState.Enabled(), onShakeAnimationFinish: (() -&gt; Unit)? = null )</ID>
@@ -443,10 +409,6 @@
     <ID>LongMethod:SendBtcAdvancedSettingsScreen.kt$@Composable fun SendBtcAdvancedSettingsScreen( navigation: HSNavigation, sendBitcoinViewModel: SendBitcoinViewModel, amountInputType: AmountInputType, )</ID>
     <ID>LongMethod:SendConfirmationPage.kt$SendConfirmationPage$@Composable override fun GetContent(navigation: HSNavigation)</ID>
     <ID>LongMethod:SendConfirmationScreen.kt$@Composable fun SendConfirmationScreen( navigation: HSNavigation, coinMaxAllowedDecimals: Int, feeCoinMaxAllowedDecimals: Int, rate: CurrencyValue?, feeCoinRate: CurrencyValue?, sendResult: SendResult?, blockchainType: BlockchainType, coin: Coin, feeCoin: Coin, amount: BigDecimal, address: Address, contact: Contact?, fee: BigDecimal?, lockTimeInterval: LockTimeInterval?, memo: String?, rbfEnabled: Boolean?, onClickSend: () -&gt; Unit, sendEntryPoint: KClass&lt;out HSPage&gt;?, isSynced: Boolean, hasAdapterError: Boolean, onRetrySync: () -&gt; Unit, sendEnabled: Boolean = isSynced, onSignOfflineOnFailure: (() -&gt; Unit)? = null, sendToken: Token? = null, feeToken: Token? = null, feeCoinBalance: BigDecimal? = null, displayBalance: BigDecimal? = null, insufficientFeeBalance: Boolean = false, balanceHidden: Boolean = false, onBalanceClicked: () -&gt; Unit = {}, feeWarningData: NetworkFeeWarningData? = null, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, )</ID>
-    <ID>LongMethod:SendEip1155Screen.kt$@Composable fun SendEip1155Screen( navigation: HSNavigation, viewModel: SendEip1155ViewModel, addressViewModel: AddressViewModel, addressParserViewModel: AddressParserViewModel, sendEntryPoint: KClass&lt;out HSPage&gt;, )</ID>
-    <ID>LongMethod:SendEip1155Screen.kt$@Composable private fun ItemCountInput( initial: Int = 1, state: DataState&lt;Any&gt;? = null, onValueChange: (Int) -&gt; Unit, )</ID>
-    <ID>LongMethod:SendEip721Screen.kt$@Composable fun SendEip721Screen( navigation: HSNavigation, viewModel: SendEip721ViewModel, addressViewModel: AddressViewModel, addressParserViewModel: AddressParserViewModel, sendEntryPoint: KClass&lt;out HSPage&gt;, )</ID>
-    <ID>LongMethod:SendEvmConfirmationPage.kt$@Composable private fun SendEvmConfirmationScreen( navigation: HSNavigation, input: SendEvmConfirmationPage.Input )</ID>
     <ID>LongMethod:SendEvmScreen.kt$@Composable private fun SendEvmScreen( title: String, navigation: HSNavigation, viewModel: SendEvmViewModel, amountInputModeViewModel: AmountInputModeViewModel, wallet: Wallet, amount: BigDecimal?, addressCheckerControl: AddressCheckerControl, actions: SendEvmScreenActions, )</ID>
     <ID>LongMethod:SendEvmTransactionViewItemFactory.kt$SendEvmTransactionViewItemFactory$private fun getUniswapViewItems( amountIn: SwapDecoration.Amount, amountOut: SwapDecoration.Amount, tokenIn: SwapDecoration.Token, tokenOut: SwapDecoration.Token, recipient: Address? ): List&lt;SectionViewItem&gt;?</ID>
     <ID>LongMethod:SendPage.kt$SendPage$@Composable override fun GetContent(navigation: HSNavigation)</ID>
@@ -520,7 +482,6 @@
     <ID>LongParameterList:SwapViewModel.kt$SwapViewModel$( private val quoteService: SwapQuoteService, private val balanceService: TokenBalanceService, private val priceImpactService: PriceImpactService, currencyManager: CurrencyManager, private val fiatServiceIn: FiatService, private val fiatServiceOut: FiatService, private val timerService: TimerService, private val networkAvailabilityService: NetworkAvailabilityService, private val marketKit: MarketKitWrapper, tokenIn: Token?, tokenOut: Token? )</ID>
     <ID>LongParameterList:TransferCoinSection.kt$( amountTitle: String, transactionValue: TransactionValue, coinAmountColor: AmountColor, coinAmountSign: AmountSign, addressTitle: String, address: String, comment: String?, navigation: HSNavigation, transactionInfoHelper: TransactionInfoHelper, blockchainType: BlockchainType, )</ID>
     <ID>LongParameterList:UtxoExpertModeScreen.kt$( id: String, selected: Boolean, showTopBorder: Boolean, title: String, subtitle: String, value: String, subValue: String?, onItemClicked: (String) -&gt; Unit, topRoundedCorners: Boolean, bottomRoundedCorners: Boolean )</ID>
-    <ID>LoopWithTooManyJumpStatements:NftHoldingsService.kt$NftHoldingsService$for</ID>
     <ID>Material2:AddressEnterBottomSheet.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:AmountCell.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:BlockchainSettingsPage.kt$import androidx.compose.material.Surface</ID>
@@ -544,11 +505,6 @@
     <ID>Material2:HsSlider.kt$import androidx.compose.material.Slider</ID>
     <ID>Material2:HsSlider.kt$import androidx.compose.material.SliderDefaults</ID>
     <ID>Material2:MainPage.kt$import androidx.compose.material.BadgedBox</ID>
-    <ID>Material2:NftAssetPage.kt$import androidx.compose.material.Text</ID>
-    <ID>Material2:NftCollectionEventsScreen.kt$import androidx.compose.material.*</ID>
-    <ID>Material2:NftCollectionOverviewScreen.kt$import androidx.compose.material.Card</ID>
-    <ID>Material2:NftCollectionOverviewScreen.kt$import androidx.compose.material.Text</ID>
-    <ID>Material2:NftPreview.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:PrivacyScreen.kt$import androidx.compose.material.Divider</ID>
     <ID>Material2:PrivacyScreen.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:SearchBarV2.kt$import androidx.compose.material.OutlinedTextField</ID>
@@ -634,7 +590,6 @@
     <ID>ModifierMissing:BlockchainSettingsPage.kt$BlockchainSettingsBlock</ID>
     <ID>ModifierMissing:CardTabs.kt$CardTabs</ID>
     <ID>ModifierMissing:CardsSwapInfo.kt$CardsSwapInfo</ID>
-    <ID>ModifierMissing:CellLink.kt$CellLink</ID>
     <ID>ModifierMissing:CellTweet.kt$CellTweet</ID>
     <ID>ModifierMissing:CoinTweetsScreen.kt$CoinTweetsScreen</ID>
     <ID>ModifierMissing:Composables.kt$Cautions</ID>
@@ -659,12 +614,6 @@
     <ID>ModifierMissing:MainSettingsScreen.kt$SettingsScreen</ID>
     <ID>ModifierMissing:ManagePasscodeSection.kt$ManagePasscodeSection</ID>
     <ID>ModifierMissing:MessageToSign.kt$MessageToSign</ID>
-    <ID>ModifierMissing:NftAssetPage.kt$NftAssetScreen</ID>
-    <ID>ModifierMissing:NftCollectionEventsScreen.kt$NftEvent</ID>
-    <ID>ModifierMissing:NftCollectionEventsScreen.kt$NftEvents</ID>
-    <ID>ModifierMissing:NftCollectionOverviewScreen.kt$NftCollectionOverviewScreen</ID>
-    <ID>ModifierMissing:NftHoldingsPage.kt$NftHoldingsScreen</ID>
-    <ID>ModifierMissing:NftPreview.kt$NftAssetPreview</ID>
     <ID>ModifierMissing:PasscodeBlock.kt$PasscodeBlock</ID>
     <ID>ModifierMissing:PinConfirm.kt$PinConfirm</ID>
     <ID>ModifierMissing:PinNumpad.kt$PinNumpad</ID>
@@ -689,8 +638,6 @@
     <ID>ModifierMissing:SendConfirmationScreen.kt$ConfirmAmountCell</ID>
     <ID>ModifierMissing:SendConfirmationScreen.kt$MemoCell</ID>
     <ID>ModifierMissing:SendConfirmationScreen.kt$SendConfirmationScreen</ID>
-    <ID>ModifierMissing:SendEip1155Screen.kt$SendEip1155Screen</ID>
-    <ID>ModifierMissing:SendEip721Screen.kt$SendEip721Screen</ID>
     <ID>ModifierMissing:SendEvmTransactionView.kt$SendEvmTransactionView</ID>
     <ID>ModifierMissing:SendEvmTransactionView.kt$TitleValue</ID>
     <ID>ModifierMissing:SendScreen.kt$SendScreen</ID>
@@ -754,7 +701,6 @@
     <ID>MultipleEmitters:FeeInfoSection.kt$FeeInfoSection</ID>
     <ID>MultipleEmitters:MainPage.kt$MainScreen</ID>
     <ID>MultipleEmitters:SecurityCheckPage.kt$AddressCheck</ID>
-    <ID>MultipleEmitters:SendEip1155Screen.kt$ItemCountInput</ID>
     <ID>MultipleEmitters:SendTronConfirmationScreen.kt$Cautions</ID>
     <ID>MutableStateAutoboxing:CardTabs.kt$mutableStateOf(0)</ID>
     <ID>NestedBlockDepth:AllBridgeProvider.kt$AllBridgeProvider$override suspend fun start()</ID>
@@ -770,7 +716,6 @@
     <ID>ParameterNaming:FeeInfoSection.kt$onBalanceClicked</ID>
     <ID>ParameterNaming:HardwareWalletBiometricBlock.kt$onValueChanged</ID>
     <ID>ParameterNaming:KeyStoreActivity.kt$onTermsAccepted</ID>
-    <ID>ParameterNaming:NftCollectionAssetsScreen.kt$onBottomReached</ID>
     <ID>ParameterNaming:QRScannerScreen.kt$onErrorMessageConsumed</ID>
     <ID>ParameterNaming:QRScannerScreen.kt$onGalleryImagePicked</ID>
     <ID>ParameterNaming:ReleaseNotesPage.kt$onWhatsNewShown</ID>
@@ -808,7 +753,6 @@
     <ID>PrintStackTrace:SendEvmNonceService.kt$SendEvmNonceService$e</ID>
     <ID>PrintStackTrace:SendTransactionServiceFactory.kt$SendTransactionServiceFactory$e</ID>
     <ID>PrintStackTrace:SwapTransactionServiceFactory.kt$SwapTransactionServiceFactory$e</ID>
-    <ID>ReturnCount:SendNftPage.kt$private fun getFactory(nftUidString: String): SendNftModule.Factory?</ID>
     <ID>ReturnCount:TonConnectSendRequestViewModel.kt$TonConnectSendRequestViewModel$private suspend fun prepareEnv()</ID>
     <ID>ReturnCount:TorOperator.kt$TorOperator$@Throws(Exception::class) private fun runTorShellCmd(fileTor: File, fileTorrc: File): Boolean</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:ActivateSubscriptionViewModel.kt$ActivateSubscriptionViewModel$IllegalStateException()</ID>
@@ -820,7 +764,6 @@
     <ID>ThrowingExceptionsWithoutMessageOrCause:SendEvmViewModel.kt$SendEvmViewModel$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:SendMemoModule.kt$SendMemoModule.Factory$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:SendMoneroModule.kt$SendMoneroModule.Factory$IllegalArgumentException()</ID>
-    <ID>ThrowingExceptionsWithoutMessageOrCause:SendNftModule.kt$SendNftModule.Factory$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:SendSolanaModule.kt$SendSolanaModule.Factory$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:SendTonModule.kt$SendTonModule.Factory$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:SendTronModule.kt$SendTronModule.Factory$IllegalArgumentException()</ID>
@@ -875,7 +818,6 @@
     <ID>UnusedParameter:HSFeeInput.kt$navigation: HSNavigation</ID>
     <ID>UnusedParameter:MarketWidget.kt$MarketWidget$deeplinkScheme: String</ID>
     <ID>UnusedParameter:MultiSwapExchangeScreen.kt$leg: LegUiState</ID>
-    <ID>UnusedParameter:NftPreview.kt$onSale: Boolean</ID>
     <ID>UnusedPrivateMember:CrossSlide.kt$@Composable private fun CrossSlideExample()</ID>
     <ID>UnusedPrivateMember:GeneralTermsScreen.kt$@Preview(showBackground = true) @Composable private fun Preview_GeneralTermsDialog()</ID>
     <ID>UnusedPrivateMember:HSHodlerInput.kt$@Preview(showBackground = true) @Composable private fun Preview_HSHodler()</ID>
@@ -883,7 +825,6 @@
     <ID>UnusedPrivateMember:KeyStoreActivity.kt$@Preview @Composable private fun Preview_NoSystemWarning()</ID>
     <ID>UnusedPrivateMember:KeyStoreActivity.kt$@Preview(showBackground = true) @Composable private fun Preview_KeysInvalidatedDialog()</ID>
     <ID>UnusedPrivateMember:MainSettingsScreen.kt$@Preview @Composable private fun previewSettingsScreen()</ID>
-    <ID>UnusedPrivateMember:NftCollectionAssetsService.kt$NftCollectionAssetsService$private fun handle( assets: List&lt;NftAssetMetadata&gt;, paginationData: PaginationData? ): Result&lt;List&lt;Item&gt;&gt;</ID>
     <ID>UnusedPrivateMember:RateAppDialog.kt$@Preview @Composable private fun Preview_RateApp()</ID>
     <ID>UnusedPrivateMember:SendEvmTransactionView.kt$@Composable private fun NonceView(nonceViewModel: SendEvmNonceViewModel)</ID>
     <ID>UnusedPrivateMember:SendEvmTransactionView.kt$@Preview @Composable private fun Preview_Amount()</ID>
@@ -892,9 +833,6 @@
     <ID>UnusedPrivateMember:SendEvmTransactionView.kt$@Preview @Composable private fun Preview_TitleValue()</ID>
     <ID>UnusedPrivateMember:SendEvmTransactionView.kt$@Preview @Composable private fun Preview_TitleValueHex()</ID>
     <ID>UnusedPrivateProperty:BalanceSorterTest.kt$BalanceSorterTest$private val sorter = BalanceSorter()</ID>
-    <ID>UnusedPrivateProperty:NftCollectionAssetsService.kt$NftCollectionAssetsService$private val blockchainType: BlockchainType</ID>
-    <ID>UnusedPrivateProperty:NftCollectionAssetsService.kt$NftCollectionAssetsService$private val collectionUid: String</ID>
-    <ID>UnusedPrivateProperty:NftCollectionAssetsService.kt$NftCollectionAssetsService$private val provider: INftProvider</ID>
     <ID>UnusedPrivateProperty:SendTransactionServiceSolanaTest.kt$SendTransactionServiceSolanaTest$val solanaKitManager = mockk&lt;SolanaKitManager&gt;(relaxed = true) { every { this@mockk.solanaKitWrapper } returns solanaKitWrapper }</ID>
     <ID>UnusedPrivateProperty:WalletConnectListViewModel.kt$WalletConnectListViewModel$private val evmBlockchainManager: EvmBlockchainManager</ID>
     <ID>UseCheckOrError:ActivateSubscriptionViewModel.kt$ActivateSubscriptionViewModel$throw IllegalStateException()</ID>
@@ -905,7 +843,6 @@
     <ID>UseCheckOrError:ISendTransactionService.kt$ISendTransactionService$throw IllegalStateException("Adapter not available for ${token.coin.code}")</ID>
     <ID>UseCheckOrError:MarketWidgetRepository.kt$MarketWidgetRepository$throw IllegalStateException("Manual sorting should be handled separately")</ID>
     <ID>UseCheckOrError:NavController.kt$throw IllegalStateException("Unsupported pin type for ensurePinSet: $pinType")</ID>
-    <ID>UseCheckOrError:NftAssetPage.kt$throw IllegalStateException("No URL!")</ID>
     <ID>UseCheckOrError:OffChainSwapProviderSupport.kt$OffChainSwapProviderSupport$throw IllegalStateException("Can't find ZCASH transparent wallet")</ID>
     <ID>UseCheckOrError:OffChainSwapProviderSupport.kt$OffChainSwapProviderSupport$throw IllegalStateException("Ethereum adapter not found")</ID>
     <ID>UseCheckOrError:OneInchProvider.kt$OneInchProvider$throw IllegalStateException("Unsupported tokenType: $tokenType")</ID>
@@ -934,17 +871,12 @@
     <ID>ViewModelForwarding:IntroActivity.kt$StaticContent(viewModel, pagerState, closeActivity, pageCount)</ID>
     <ID>ViewModelForwarding:MainPage.kt$MainScreen( transactionsViewModel = transactionsViewModel, navigation = navigation, intentLiveData = intent, intentHandled = intentHandled )</ID>
     <ID>ViewModelForwarding:MainPage.kt$TransactionsScreen( navigation = navigation, paddingValues = paddingValues, viewModel = transactionsViewModel, onShowAllTransactionsClicked = showAllTransactions )</ID>
-    <ID>ViewModelForwarding:NftAssetPage.kt$NftAssetEvents(viewModel)</ID>
-    <ID>ViewModelForwarding:NftAssetPage.kt$NftAssetInfo(viewModel, navigation, coroutineScope)</ID>
-    <ID>ViewModelForwarding:NftCollectionPage.kt$NftCollectionOverviewScreen( viewModel, onCopyText = { TextHelper.copyText(it) HudHelper.showSuccessMessage(view, R.string.Hud_Text_Copied) }, onOpenUrl = { LinkHelper.openLinkInAppBrowser(context, it) } )</ID>
     <ID>ViewModelForwarding:SecuritySettingsPage.kt$DuressPasscodeBlock( securitySettingsViewModel, navigation )</ID>
     <ID>ViewModelForwarding:SecuritySettingsPage.kt$PasscodeBlock( securitySettingsViewModel, navigation )</ID>
     <ID>ViewModelForwarding:SecuritySettingsPage.kt$TorBlock( torViewModel, showAppRestartAlert, )</ID>
     <ID>ViewModelForwarding:SendBitcoinConfirmationScreen.kt$BitcoinOnlineConfirmation( navigation = navigation, sendViewModel = sendViewModel, sendEntryPoint = sendEntryPoint, onRequestOfflineSign = onRequestOfflineSign, )</ID>
     <ID>ViewModelForwarding:SendBitcoinConfirmationScreen.kt$LifecycleResumeEffect(sendViewModel) { if (refresh) { confirmationData = sendViewModel.getConfirmationData() } onPauseOrDispose { refresh = true } }</ID>
     <ID>ViewModelForwarding:SendBitcoinConfirmationScreen.kt$OfflineSignableConfirmationHost( navigation = navigation, sendViewModel = sendViewModel, sourceChangeable = syncErrorViewModel.sourceChangeable, onChangeSourceClick = { navigation.openBitcoinSourceSettings(syncErrorViewModel.blockchainWrapper) }, ) { onRequestOfflineSign -&gt; BitcoinOnlineConfirmation( navigation = navigation, sendViewModel = sendViewModel, sendEntryPoint = sendEntryPoint, onRequestOfflineSign = onRequestOfflineSign, ) }</ID>
-    <ID>ViewModelForwarding:SendEip1155Screen.kt$HSAddressInput( modifier = Modifier.padding(horizontal = 16.dp), viewModel = addressViewModel, inputState = addressViewModel.inputState.collectAsStateWithLifecycle().value, address = addressViewModel.address.collectAsStateWithLifecycle().value, value = addressViewModel.value.collectAsStateWithLifecycle().value, error = viewModel.uiState.addressError, textPreprocessor = addressParserViewModel, navigation = navigation, onValueChange = { address -&gt; viewModel.onEnterAddress(address) }, )</ID>
-    <ID>ViewModelForwarding:SendEip721Screen.kt$HSAddressInput( modifier = Modifier.padding(horizontal = 16.dp), viewModel = addressViewModel, inputState = addressViewModel.inputState.collectAsStateWithLifecycle().value, address = addressViewModel.address.collectAsStateWithLifecycle().value, value = addressViewModel.value.collectAsStateWithLifecycle().value, error = viewModel.uiState.addressError, textPreprocessor = addressParserViewModel, navigation = navigation, onValueChange = { address -&gt; viewModel.onEnterAddress(address) }, )</ID>
     <ID>ViewModelForwarding:SendEvmConfirmationScreen.kt$EvmOnlineConfirmation( navigation = navigation, sendViewModel = sendViewModel, sendEntryPoint = sendEntryPoint, onRequestOfflineSign = onRequestOfflineSign, )</ID>
     <ID>ViewModelForwarding:SendEvmConfirmationScreen.kt$LifecycleResumeEffect(sendViewModel) { if (refresh) { confirmationData = sendViewModel.getConfirmationData() } onPauseOrDispose { refresh = true } }</ID>
     <ID>ViewModelForwarding:SendEvmConfirmationScreen.kt$OfflineSignableConfirmationHost( navigation = navigation, sendViewModel = sendViewModel, sourceChangeable = false, onChangeSourceClick = {}, ) { onRequestOfflineSign -&gt; EvmOnlineConfirmation( navigation = navigation, sendViewModel = sendViewModel, sendEntryPoint = sendEntryPoint, onRequestOfflineSign = onRequestOfflineSign, ) }</ID>
@@ -980,24 +912,15 @@
     <ID>ViewModelInjection:HSAddressInput.kt$viewModel</ID>
     <ID>ViewModelInjection:HSAmountInput.kt$viewModel</ID>
     <ID>ViewModelInjection:MultiSwapExchangesPage.kt$transactionsViewModel</ID>
-    <ID>ViewModelInjection:NftAssetPage.kt$viewModel</ID>
-    <ID>ViewModelInjection:NftCollectionAssetsScreen.kt$viewModel</ID>
-    <ID>ViewModelInjection:NftCollectionEventsScreen.kt$viewModel</ID>
-    <ID>ViewModelInjection:NftHoldingsPage.kt$viewModel</ID>
     <ID>ViewModelInjection:PersonalSupportPage.kt$viewModel</ID>
     <ID>ViewModelInjection:PinConfirm.kt$viewModel</ID>
     <ID>ViewModelInjection:SecurityCheckPage.kt$viewModel</ID>
     <ID>ViewModelInjection:SendBitcoinConfirmationScreen.kt$syncErrorViewModel</ID>
     <ID>ViewModelInjection:SendBitcoinScreen.kt$paymentAddressViewModel</ID>
     <ID>ViewModelInjection:SendBtcAdvancedSettingsScreen.kt$viewModel</ID>
-    <ID>ViewModelInjection:SendEvmConfirmationPage.kt$viewModel</ID>
     <ID>ViewModelInjection:SendEvmScreen.kt$paymentAddressViewModel</ID>
     <ID>ViewModelInjection:SendMemoScreen.kt$paymentAddressViewModel</ID>
     <ID>ViewModelInjection:SendMoneroScreen.kt$paymentAddressViewModel</ID>
-    <ID>ViewModelInjection:SendNftPage.kt$SendNftPage$addressParserViewModel</ID>
-    <ID>ViewModelInjection:SendNftPage.kt$SendNftPage$addressViewModel</ID>
-    <ID>ViewModelInjection:SendNftPage.kt$SendNftPage$eip1155ViewModel</ID>
-    <ID>ViewModelInjection:SendNftPage.kt$SendNftPage$eip721ViewModel</ID>
     <ID>ViewModelInjection:SendPage.kt$SendPage$viewModel</ID>
     <ID>ViewModelInjection:SendSolanaScreen.kt$paymentAddressViewModel</ID>
     <ID>ViewModelInjection:SendTonScreen.kt$paymentAddressViewModel</ID>

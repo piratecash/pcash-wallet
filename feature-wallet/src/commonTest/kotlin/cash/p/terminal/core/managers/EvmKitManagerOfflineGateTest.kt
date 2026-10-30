@@ -82,7 +82,6 @@ class EvmKitManagerOfflineGateTest {
         setField(
             manager, "evmKitWrapper", EvmKitWrapper(
                 evmKit = mockEvmKit,
-                nftKit = null,
                 blockchainType = blockchainType,
                 signer = null,
                 merkleTransactionAdapter = null,
