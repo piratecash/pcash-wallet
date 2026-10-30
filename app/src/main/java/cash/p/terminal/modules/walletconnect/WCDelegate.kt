@@ -6,9 +6,7 @@ import com.reown.walletkit.client.Wallet
 import com.reown.walletkit.client.WalletKit
 import cash.p.terminal.core.App
 import cash.p.terminal.core.getKoinInstance
-import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.core.utils.Utils
-import cash.p.terminal.modules.walletconnect.storage.WCPairingMetadataStorage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -25,9 +23,6 @@ object WCDelegate : WalletKit.WalletDelegate, CoreClient.CoreDelegate {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val _coreEvents: MutableSharedFlow<Core.Model> = MutableSharedFlow()
     val coreEvents: SharedFlow<Core.Model> = _coreEvents.asSharedFlow()
-
-    private val _pairingEvents: MutableSharedFlow<Unit> = MutableSharedFlow()
-    val pairingEvents: SharedFlow<Unit> = _pairingEvents.asSharedFlow()
 
     private val _walletEvents: MutableSharedFlow<Wallet.Model> = MutableSharedFlow()
     val walletEvents: SharedFlow<Wallet.Model> = _walletEvents.asSharedFlow()
@@ -99,31 +94,9 @@ object WCDelegate : WalletKit.WalletDelegate, CoreClient.CoreDelegate {
     ) {
         Timber.d("WCDelegate onSessionProposal")
         sessionProposalEvent = Pair(sessionProposal, verifyContext)
-        persistPairingMetadata(sessionProposal)
 
         scope.launch {
             _walletEvents.emit(sessionProposal)
-        }
-    }
-
-    // The SDK persists dApp metadata only on the short-lived session/proposal records, so the
-    // pairings screen loses the name once the session is disconnected. Cache it here keyed by the
-    // pairing topic. Save synchronously so the row exists before this returns (the pairings screen,
-    // opened later, then finds it). The values are stored app-private and never leave the device
-    // (not logged, not reported, not shown as text), so they are persisted as-is. Metadata is a
-    // supplementary UI cache: failures are swallowed so they never block the proposal event.
-    private fun persistPairingMetadata(sessionProposal: Wallet.Model.SessionProposal) {
-        val storage = getKoinInstance<WCPairingMetadataStorage>()
-        tryOrNull {
-            storage.save(
-                topic = sessionProposal.pairingTopic,
-                name = sessionProposal.name,
-                url = sessionProposal.url,
-                icon = sessionProposal.icons.lastOrNull()?.toString(),
-            )
-        }
-        scope.launch {
-            tryOrNull { storage.reconcile { CoreClient.Pairing.getPairings().map { it.topic } } }
         }
     }
 
@@ -192,10 +165,6 @@ object WCDelegate : WalletKit.WalletDelegate, CoreClient.CoreDelegate {
 //            }
 //    }
 
-    fun getPairings(): List<Core.Model.Pairing> {
-        return CoreClient.Pairing.getPairings()
-    }
-
     fun getActiveSessions(): List<Wallet.Model.Session> {
         return WalletKit.getListOfActiveSessions()
     }
@@ -205,9 +174,6 @@ object WCDelegate : WalletKit.WalletDelegate, CoreClient.CoreDelegate {
         CoreClient.Pairing.disconnect(params, onError = {
             onError.invoke(it.throwable)
         })
-        scope.launch {
-            _pairingEvents.emit(Unit)
-        }
     }
 
     fun deleteAllPairings(onError: (Throwable) -> Unit = {}) {
@@ -217,9 +183,6 @@ object WCDelegate : WalletKit.WalletDelegate, CoreClient.CoreDelegate {
             }
         } catch (e: Exception) {
             onError.invoke(e)
-        }
-        scope.launch {
-            _pairingEvents.emit(Unit)
         }
     }
 

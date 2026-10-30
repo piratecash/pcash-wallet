@@ -476,7 +476,6 @@
     <ID>LongMethod:TransactionSpeedUpCancelPage.kt$@Composable private fun TransactionSpeedUpCancelScreen( navigation: HSNavigation, page: TransactionSpeedUpCancelPage, input: TransactionSpeedUpCancelPage.Input, evmKitWrapper: EvmKitWrapper, )</ID>
     <ID>LongMethod:TweetsPageResponse.kt$TweetsPageResponse$fun tweets(user: TwitterUser): List&lt;Tweet&gt;</ID>
     <ID>LongMethod:UtxoExpertModeScreen.kt$@Composable fun UtxoExpertModeScreen( adapter: ISendBitcoinAdapter, token: Token, customUnspentOutputs: List&lt;UnspentOutputInfo&gt;?, updateUnspentOutputs: (List&lt;UnspentOutputInfo&gt;) -&gt; Unit, onBackClick: () -&gt; Unit )</ID>
-    <ID>LongMethod:WCPairingsPage.kt$@Composable fun WCPairingsScreen(navigation: HSNavigation)</ID>
     <ID>LongMethod:WCRequestPage.kt$WCRequestPage$@Composable fun WcRequestEvm(navigation: HSNavigation)</ID>
     <ID>LongMethod:WCSendEthScreen.kt$@Composable fun WCSendEthRequestScreen( navigation: HSNavigation, logger: AppLogger, blockchainType: BlockchainType, transaction: WalletConnectTransaction, peerName: String, )</ID>
     <ID>LongMethod:WCSessionCell.kt$@Composable fun WCSessionCell( shape: Shape, showDivider: Boolean = false, session: WalletConnectListModule.SessionViewItem, navigation: HSNavigation, )</ID>
@@ -642,7 +641,6 @@
     <ID>ModifierMissing:Composables.kt$Eip1559FeeSettings</ID>
     <ID>ModifierMissing:Composables.kt$FeeInfoCell</ID>
     <ID>ModifierMissing:Composables.kt$LegacyFeeSettings</ID>
-    <ID>ModifierMissing:ConfirmDeleteAllPairingsSheet.kt$ConfirmDeleteAllScreen</ID>
     <ID>ModifierMissing:ConfirmTransactionScreen.kt$ConfirmTransactionScreen</ID>
     <ID>ModifierMissing:DataFieldFee.kt$DataFieldFee</ID>
     <ID>ModifierMissing:DonateAddressesPage.kt$DonateScreen</ID>
@@ -724,8 +722,6 @@
     <ID>ModifierMissing:TransactionInputSortModeInfoSceen.kt$BtcTransactionInputSortInfoScreen</ID>
     <ID>ModifierMissing:UtxoExpertModeScreen.kt$UtxoExpertModeScreen</ID>
     <ID>ModifierMissing:WCErrorNoAccountSheet.kt$WalletConnectErrorNoAccount</ID>
-    <ID>ModifierMissing:WCPairingsPage.kt$Pairing</ID>
-    <ID>ModifierMissing:WCPairingsPage.kt$WCPairingsScreen</ID>
     <ID>ModifierMissing:WCRequestPage.kt$ActionButtons</ID>
     <ID>ModifierMissing:WCRequestPage.kt$WCNewSignRequestScreen</ID>
     <ID>ModifierMissing:WCRequestPage.kt$WCRequestPage$WcRequestEvm</ID>
@@ -1017,7 +1013,6 @@
     <ID>ViewModelInjection:TransactionSpeedUpCancelPage.kt$viewModel</ID>
     <ID>ViewModelInjection:UtxoExpertModeScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:WCEvmTransactionSettingsPage.kt$viewModel</ID>
-    <ID>ViewModelInjection:WCPairingsPage.kt$viewModel</ID>
     <ID>ViewModelInjection:WCSendEthScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:WCSessionScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:WCSignEthereumTransactionRequestScreen.kt$viewModel</ID>

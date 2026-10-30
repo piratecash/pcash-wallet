@@ -572,12 +572,7 @@
     <string name="WalletConnect_PendingRequests">待处理请求</string>
     <string name="WalletConnect_ActiveWallet">当前钱包</string>
     <string name="WalletConnect_Unnamed">未命名</string>
-    <string name="WalletConnect_Pairings">配对</string>
-    <string name="WalletConnect_PairedDApps">已配对 dApp</string>
     <string name="delete_all">全部删除</string>
-    <string name="WalletConnect_Pairings_ConfirmationDeleteAll">你要删除所有已配对的 dApp 吗？</string>
-    <string name="WalletConnect_Pairings_Delete">删除</string>
-    <string name="WalletConnect_DeleteAllPairs">删除所有对</string>
 
     <string name="connect">连接</string>
     <string name="connect_trezor_to_add_message">您需要连接 Trezor 以添加代币</string>

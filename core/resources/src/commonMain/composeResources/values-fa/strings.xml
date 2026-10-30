@@ -578,12 +578,7 @@
     <string name="connect">اتصال</string>
     <string name="connect_trezor_to_add_message">برای افزودن توکن‌ها باید Trezor را متصل کنید</string>
     <string name="WalletConnect_Unnamed">بدون نام</string>
-    <string name="WalletConnect_Pairings">جفت‌سازی‌ها</string>
-    <string name="WalletConnect_PairedDApps">dAppهای جفت‌شده</string>
     <string name="delete_all">حذف همه</string>
-    <string name="WalletConnect_Pairings_ConfirmationDeleteAll">آیا می‌خواهید همه dAppهای جفت‌شده را حذف کنید؟</string>
-    <string name="WalletConnect_Pairings_Delete">حذف</string>
-    <string name="WalletConnect_DeleteAllPairs">حذف همه جفت‌سازی‌ها</string>
 
     <!--EthereumTransaction-->
     <string name="EthereumTransaction_Warning_Title">هشدار</string>
