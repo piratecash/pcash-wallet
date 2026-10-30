@@ -616,7 +616,7 @@
     <string name="Swap_ErrorNoProviders">Sağlayıcı Yok</string>
     <string name="Swap_ErrorNoQuote">Teklif Yok</string>
     <string name="Swap_ErrorInsufficientBalance">Yetersiz bakiye</string>
-    <string name="swap_out_of_min_amount">Minimum tutarın altında %s</string>
+    <string name="swap_out_of_min_amount">Minimum tutarın altında %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">Yüksek fiyat etkisi</string>
     <string name="Swap_ErrorWalletSyncing">Cüzdan senkronize ediliyor</string>
     <string name="Swap_ErrorWalletNotSynced">Cüzdan Senkronize Edilmedi</string>
@@ -2133,15 +2133,15 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="scan_card_to_add">Token eklemek için kartı tarayın</string>
     <!--Multi-Swap-->
     <string name="multi_swap_completed">Takas tamamlandı</string>
-    <string name="multi_swap_via">%s üzerinden takas</string>
-    <string name="multi_swap_completed_via">%s üzerinden tamamlandı</string>
+    <string name="multi_swap_via">%1$s üzerinden takas</string>
+    <string name="multi_swap_completed_via">%1$s üzerinden tamamlandı</string>
     <string name="multi_swap_no_providers">Kullanılabilir sağlayıcı yok</string>
     <string name="multi_swap_finding_best_provider">En iyi sağlayıcı aranıyor…</string>
     <string name="multi_swap_continue">Takasa devam et</string>
     <string name="multi_swap_route_explanation">En iyi kur için %2$s üzerinden bir rota kullanılır. Takas iki ardışık adımda tamamlanır: önce %1$s → %2$s, ardından %2$s → %3$s.</string>
     <string name="multi_swap_route_title">Takas rotası</string>
     <string name="multi_swap_execution_title">Takas</string>
-    <string name="multi_swap_step">%d. adım</string>
+    <string name="multi_swap_step">%1$d. adım</string>
     <string name="multi_swap_understood_continue">Anladım, devam et</string>
     <string name="multi_swap_unfinished">Tamamlanmamış takas</string>
     <string name="multi_swap_unfinished_plural">Tamamlanmamış takaslar (%d)</string>
@@ -2319,4 +2319,20 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="desktop_change_password_corrupted">Anahtar dosyası zarar görmüş: uygulama kilitlendiğinde oturum açamayacaksınız. Her kurtarma ifadesinin bir yedeğini kaydedin.</string>
     <string name="desktop_change_password_success">Şifre değiştirildi</string>
     <string name="desktop_security_lock_now">Şimdi kilitle</string>
+    <string name="swap_progress_title">Takas ilerlemesi</string>
+    <string name="swap_progress_step_of">Adım %1$d / %2$d</string>
+    <string name="swap_progress_step_header">Adım %1$d · %2$s</string>
+    <string name="swap_progress_leg_send">%1$s gönderiliyor</string>
+    <string name="swap_progress_leg_receive">%1$s alınıyor</string>
+    <string name="swap_progress_leg_swap">%1$s, %2$s karşılığında takas ediliyor</string>
+    <string name="swap_progress_leg_transfer">%1$s transferi</string>
+    <string name="swap_progress_action_required_aml">Sağlayıcı, AML kontrolü için takası duraklattı.</string>
+    <string name="swap_progress_action_required_frozen">Sağlayıcı takası dondurdu.</string>
+    <string name="swap_progress_action_required_overdue">Para yatırma, teklifin süresi dolduktan sonra ulaştı.</string>
+    <string name="swap_progress_action_required_default">Takas duraklatıldı ve işleminizi bekliyor.</string>
+    <string name="swap_progress_contact_support">Aşağıdan sağlayıcının destek ekibiyle iletişime geçin.</string>
+    <string name="swap_support_telegram">%1$s desteği · Telegram</string>
+    <string name="swap_support_email">%1$s desteği · E-posta</string>
+    <string name="swap_support_email_deposit_tx">Para yatırma işlemi: %1$s</string>
+    <string name="swap_support_email_deposit_address">Para yatırma adresi: %1$s</string>
 </resources>

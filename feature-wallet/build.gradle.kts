@@ -112,6 +112,7 @@ kotlin {
                 implementation(libs.compose.multiplatform.material)
                 implementation(libs.compose.multiplatform.material3)
                 implementation(libs.compose.multiplatform.resources)
+                implementation(libs.compose.multiplatform.ui.tooling.preview)
                 implementation(libs.qrose)
                 implementation(libs.richtext.markdown)
                 implementation(libs.richtext.ui.material3)

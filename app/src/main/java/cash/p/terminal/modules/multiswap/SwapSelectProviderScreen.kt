@@ -31,13 +31,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import cash.p.terminal.R
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.modules.multiswap.action.ISwapProviderAction
 import cash.p.terminal.modules.multiswap.providers.IMultiSwapProvider
@@ -69,6 +66,14 @@ import cash.p.terminal.ui_compose.components.subhead2_leah
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Token
 import java.math.BigDecimal
+import cash.p.terminal.resources.Balance_Sort_PopupTitle
+import cash.p.terminal.resources.Swap_FiatPriceImpact
+import cash.p.terminal.resources.Swap_Providers
+import cash.p.terminal.resources.ic_arrow_swap3_20
+import cash.p.terminal.resources.ic_circle_minus_24
+import cash.p.terminal.resources.ic_down_arrow_20
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SwapSelectProviderScreen(
@@ -97,7 +102,7 @@ fun SwapSelectProviderScreen(
     Scaffold(
         topBar = {
             AppBar(
-                title = stringResource(R.string.Swap_Providers),
+                title = stringResource(Res.string.Swap_Providers),
                 menuItems = listOf(
                     MenuItem(
                         title = TranslatableString.ResString(Res.string.swap_providers_title),
@@ -188,7 +193,7 @@ private fun SwipableProviderItem(
             onClick = onToggle,
             content = {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_circle_minus_24),
+                    painter = painterResource(Res.drawable.ic_circle_minus_24),
                     tint = ComposeAppTheme.colors.iconSecondary,
                     contentDescription = "toggle provider",
                 )
@@ -261,7 +266,7 @@ private fun ProviderItem(
                             HSpacer(width = 4.dp)
                             Text(
                                 text = stringResource(
-                                    R.string.Swap_FiatPriceImpact,
+                                    Res.string.Swap_FiatPriceImpact,
                                     diff.toPlainString()
                                 ),
                                 style = ComposeAppTheme.typography.subhead2,
@@ -330,7 +335,7 @@ private fun ExchangeBlock(
             text = from
         )
         Icon(
-            painter = painterResource(id = R.drawable.ic_arrow_swap3_20),
+            painter = painterResource(Res.drawable.ic_arrow_swap3_20),
             contentDescription = "invert price",
             tint = ComposeAppTheme.colors.brandDefault
         )
@@ -350,13 +355,13 @@ private fun ProviderSortingSelector(
 
     ButtonSecondaryWithIcon(
         title = stringResource(sortType.titleRes),
-        iconRight = painterResource(R.drawable.ic_down_arrow_20),
+        iconRight = painterResource(Res.drawable.ic_down_arrow_20),
         onClick = { showSortTypeSelectorDialog = true }
     )
 
     if (showSortTypeSelectorDialog) {
         AppSelectorDialog(
-            title = stringResource(R.string.Balance_Sort_PopupTitle),
+            title = stringResource(Res.string.Balance_Sort_PopupTitle),
             items = sortTypes.map {
                 AppSelectorItem(stringResource(it.titleRes), it == sortType, it)
             },

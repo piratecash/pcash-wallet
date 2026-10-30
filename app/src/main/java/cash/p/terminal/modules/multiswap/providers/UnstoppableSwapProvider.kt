@@ -8,6 +8,7 @@ import cash.p.terminal.core.nativeTokenQueries
 import cash.p.terminal.core.walletVersionQueries
 import cash.p.terminal.entities.Address
 import cash.p.terminal.entities.SwapProviderTransaction
+import cash.p.terminal.entities.UnstoppableChainIds
 import cash.p.terminal.modules.multiswap.ISwapFinalQuote
 import cash.p.terminal.modules.multiswap.ISwapQuote
 import cash.p.terminal.modules.multiswap.SwapFinalQuoteEvm
@@ -65,7 +66,7 @@ internal class UnstoppableTokenResolver(
     suspend fun supports(token: Token): Boolean = resolve(token) != null
 
     /** Chain-id string for [blockchainType] in the same space as `/v2/tokens`' `chainId` field. */
-    fun chainId(blockchainType: BlockchainType): String? = chainIdByBlockchainType[blockchainType]
+    fun chainId(blockchainType: BlockchainType): String? = UnstoppableChainIds.chainId(blockchainType)
 
     suspend fun resolve(token: Token): ResolvedAsset? = when (val d = getData()) {
         is ProviderData.TokenMap -> d.map[token]?.let { ResolvedAsset(it, chainId = null) }
@@ -74,7 +75,7 @@ internal class UnstoppableTokenResolver(
                 null
             } else {
                 deriveIdentifier(token)?.let {
-                    ResolvedAsset(it, chainId = chainIdByBlockchainType[token.blockchainType])
+                    ResolvedAsset(it, chainId = UnstoppableChainIds.chainId(token.blockchainType))
                 }
             }
         }
@@ -95,13 +96,13 @@ internal class UnstoppableTokenResolver(
     private suspend fun fetchProviderData(): ProviderData {
         val response = repository.getTokens(descriptor.apiId)
         if (response.tokens.isEmpty()) {
-            val ids = response.supportedChainIds.mapNotNull { blockchainTypeByChainId[it] }.toSet()
+            val ids = response.supportedChainIds.mapNotNull { UnstoppableChainIds.blockchainType(it) }.toSet()
             return ProviderData.ChainIds(ids)
         }
 
         val map = mutableMapOf<Token, String>()
         for (remoteToken in response.tokens) {
-            val blockchainType = blockchainTypeByChainId[remoteToken.chainId] ?: continue
+            val blockchainType = UnstoppableChainIds.blockchainType(remoteToken.chainId) ?: continue
             addTokens(map, blockchainType, remoteToken.address, remoteToken.identifier)
         }
         return ProviderData.TokenMap(map)
@@ -181,32 +182,6 @@ internal class UnstoppableTokenResolver(
     private companion object {
         const val CACHE_DURATION = 1000L * 60 * 30
         const val NATIVE_EVM_PLACEHOLDER = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
-
-        val blockchainTypeByChainId = mapOf(
-            "1" to BlockchainType.Ethereum,
-            "10" to BlockchainType.Optimism,
-            "56" to BlockchainType.BinanceSmartChain,
-            "100" to BlockchainType.Gnosis,
-            "137" to BlockchainType.Polygon,
-            "8453" to BlockchainType.Base,
-            "42161" to BlockchainType.ArbitrumOne,
-            "43114" to BlockchainType.Avalanche,
-            "4663" to BlockchainType.RobinhoodChain,
-            "728126428" to BlockchainType.Tron,
-            "solana" to BlockchainType.Solana,
-            "bitcoin" to BlockchainType.Bitcoin,
-            "bitcoincash" to BlockchainType.BitcoinCash,
-            "litecoin" to BlockchainType.Litecoin,
-            "zcash" to BlockchainType.Zcash,
-            "dash" to BlockchainType.Dash,
-            "ecash" to BlockchainType.ECash,
-            "stellar" to BlockchainType.Stellar,
-            "ton" to BlockchainType.Ton,
-            "monero" to BlockchainType.Monero,
-            "thorchain-1" to BlockchainType.Thorchain,
-            "mayachain-mainnet-v1" to BlockchainType.Mayachain,
-        )
-        val chainIdByBlockchainType = blockchainTypeByChainId.entries.associate { (k, v) -> v to k }
     }
 }
 

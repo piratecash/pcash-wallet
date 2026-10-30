@@ -22,7 +22,14 @@ import cash.p.terminal.modules.transactions.TransactionStatus
 import cash.p.terminal.modules.transactions.beamHistoryRecord
 import cash.p.terminal.modules.transactions.poison_status.PoisonStatus
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
+import cash.p.terminal.modules.swapprogress.SupportContact
+import cash.p.terminal.modules.swapprogress.SwapProgressSummary
 import cash.p.terminal.network.swaprepository.SwapProvider
+import cash.p.terminal.network.unstoppable.domain.entity.UnstoppableProviderContacts
+import cash.p.terminal.network.unstoppable.domain.entity.UnstoppableProviderInfo
+import cash.p.terminal.network.unstoppable.domain.entity.UnstoppableTrack
+import cash.p.terminal.network.unstoppable.domain.entity.UnstoppableTrackLeg
+import cash.p.terminal.network.unstoppable.domain.repository.UnstoppableRepository
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.MarketKitWrapper
@@ -42,6 +49,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.unmockkAll
+import io.mockk.verify
 import io.reactivex.subjects.PublishSubject
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.CoroutineScope
@@ -83,6 +91,8 @@ class TransactionInfoServiceTest : KoinTest {
         mockk<UpdateSwapProviderTransactionsStatusUseCase>(relaxed = true)
     private val swapProviderTransactionsStorage =
         mockk<SwapProviderTransactionsStorage>(relaxed = true)
+    private val unstoppableRepository = mockk<UnstoppableRepository>(relaxed = true)
+    private val trackFlow = MutableStateFlow<UnstoppableTrack?>(null)
     private val transactionRecord = mockk<TransactionRecord>(relaxed = true)
     private val balanceHiddenManager = mockk<IBalanceHiddenManager>(relaxUnitFun = true)
     private val pendingTransactionMatcher = spyk(PendingTransactionMatcher())
@@ -126,6 +136,7 @@ class TransactionInfoServiceTest : KoinTest {
         } returns MutableStateFlow(emptyList())
         every { nftMetadataService.assetsBriefMetadataFlow } returns MutableStateFlow(emptyMap())
         every { swapProviderTransactionsStorage.observeByDate(any()) } returns emptyFlow()
+        every { unstoppableRepository.observeTrack(any()) } returns trackFlow
         val hiddenFlow = MutableStateFlow(false)
         every { balanceHiddenManager.transactionInfoHiddenFlow(any()) } returns hiddenFlow
         every { balanceHiddenManager.transactionInfoHiddenFlow(any(), any()) } returns hiddenFlow
@@ -176,6 +187,7 @@ class TransactionInfoServiceTest : KoinTest {
         nftMetadataService = nftMetadataService,
         updateSwapProviderTransactionsStatusUseCase = updateSwapProviderTransactionsStatusUseCase,
         swapProviderTransactionsStorage = swapProviderTransactionsStorage,
+        unstoppableRepository = unstoppableRepository,
         dispatcherProvider = dispatcherProvider,
         transactionStatusUrl = null,
         offlineStatus = null,
@@ -310,6 +322,109 @@ class TransactionInfoServiceTest : KoinTest {
         assertEquals("RUB", item.swapCoinCodeIn)
         assertEquals(SwapProvider.PAYCORE, item.swapProvider)
     }
+
+    @Test
+    fun start_unstoppableSwap_itemCarriesSwapDate() = runTest(dispatcher) {
+        val service = startedUnstoppableService()
+
+        assertEquals(1000L, service.transactionInfoItemFlow.first().swapDate)
+    }
+
+    @Test
+    fun start_unstoppableSwapTrackEmitted_updatesSwapProgress() = runTest(dispatcher) {
+        val service = startedUnstoppableService()
+        assertEquals(null, service.transactionInfoItemFlow.first().swapProgress)
+
+        trackFlow.value = track(UnstoppableTrackLeg.Status.Completed, UnstoppableTrackLeg.Status.InProgress)
+        advanceUntilIdle()
+
+        assertEquals(
+            SwapProgressSummary(currentStep = 2, totalSteps = 2, allCompleted = false),
+            service.transactionInfoItemFlow.first().swapProgress,
+        )
+    }
+
+    @Test
+    fun start_unstoppableSwap_contactsMatchedBySubProviderId() = runTest(dispatcher) {
+        coEvery { unstoppableRepository.getProviders() } returns listOf(
+            provider("OTHER", UnstoppableProviderContacts("other@example.com", null, null, null)),
+            provider("PEGASUS", UnstoppableProviderContacts("support@pegasus.io", "@pegasus", null, null)),
+        )
+
+        val service = startedUnstoppableService(subProviderId = "PEGASUS")
+
+        assertEquals(
+            listOf(SupportContact.Telegram("https://t.me/pegasus"), SupportContact.Email("support@pegasus.io")),
+            service.transactionInfoItemFlow.first().swapSupportContacts,
+        )
+    }
+
+    @Test
+    fun start_unstoppableSwapProvidersFail_contactsStayEmpty() = runTest(dispatcher) {
+        coEvery { unstoppableRepository.getProviders() } throws object : Throwable("backend") {}
+
+        val service = startedUnstoppableService()
+
+        assertEquals(emptyList<SupportContact>(), service.transactionInfoItemFlow.first().swapSupportContacts)
+    }
+
+    @Test
+    fun start_unstoppableSwapProvidersFail_trackStillUpdatesSwapProgress() = runTest(dispatcher) {
+        coEvery { unstoppableRepository.getProviders() } throws object : Throwable("backend") {}
+        val service = startedUnstoppableService()
+
+        trackFlow.value = track(UnstoppableTrackLeg.Status.Completed)
+        advanceUntilIdle()
+
+        assertEquals(
+            SwapProgressSummary(currentStep = 1, totalSteps = 1, allCompleted = true),
+            service.transactionInfoItemFlow.first().swapProgress,
+        )
+    }
+
+    @Test
+    fun start_changeNowSwap_neverQueriesUnstoppable() = runTest(dispatcher) {
+        coEvery { swapProviderTransactionsStorage.getTransaction("cn-tx-1") } returns createFinishedSwapTransaction()
+
+        val service = createService(userSwapTransactionId = "cn-tx-1")
+        backgroundScope.launch { service.start() }
+        advanceUntilIdle()
+
+        verify(exactly = 0) { unstoppableRepository.observeTrack(any()) }
+        coVerify(exactly = 0) { unstoppableRepository.getProviders() }
+    }
+
+    private suspend fun TestScope.startedUnstoppableService(subProviderId: String? = "PEGASUS"): TransactionInfoService {
+        coEvery { swapProviderTransactionsStorage.getTransaction("cn-tx-1") } returns
+            createFinishedSwapTransaction().copy(provider = SwapProvider.UNSTOPPABLE, subProviderId = subProviderId)
+        val service = createService(userSwapTransactionId = "cn-tx-1")
+        backgroundScope.launch { service.start() }
+        advanceUntilIdle()
+        return service
+    }
+
+    private fun provider(id: String, contacts: UnstoppableProviderContacts) =
+        UnstoppableProviderInfo(id, null, emptyList(), null, null, contacts)
+
+    private fun track(vararg statuses: UnstoppableTrackLeg.Status) = UnstoppableTrack(
+        status = null,
+        actionRequired = false,
+        pauseReason = null,
+        toAmount = null,
+        legs = statuses.map {
+            UnstoppableTrackLeg(
+                type = UnstoppableTrackLeg.Type.Swap,
+                status = it,
+                hash = null,
+                chainId = null,
+                fromAsset = null,
+                fromAmount = null,
+                toAsset = null,
+                toAmount = null,
+                toAddress = null,
+            )
+        },
+    )
 
     @Test
     fun blockUpdate_completedSwap_doesNotRefetchStatus() = runTest(dispatcher) {

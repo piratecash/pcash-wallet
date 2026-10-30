@@ -1,10 +1,11 @@
 package cash.p.terminal.modules.multiswap
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -12,23 +13,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import cash.p.terminal.R
 import cash.p.terminal.core.utils.formatDurationShort
 import cash.p.terminal.modules.multiswap.providers.ProviderRiskType
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.clock_filled_24
+import org.jetbrains.compose.resources.DrawableResource
 
 @Composable
 internal fun ProviderRiskType.color(): Color = when (this) {
@@ -40,7 +40,7 @@ internal fun ProviderRiskType.color(): Color = when (this) {
 
 @Composable
 internal fun BadgePill(
-    iconRes: Int,
+    iconRes: DrawableResource,
     text: String,
     contentColor: Color,
     modifier: Modifier = Modifier,
@@ -104,28 +104,10 @@ fun EstimationTimeBadge(
     modifier: Modifier = Modifier,
 ) {
     BadgePill(
-        iconRes = R.drawable.clock_filled_24,
+        iconRes = Res.drawable.clock_filled_24,
         text = formatDurationShort(seconds),
         contentColor = ComposeAppTheme.colors.textSecondary,
         modifier = modifier,
         backgroundColor = ComposeAppTheme.colors.surfacePlaceholder,
     )
-}
-
-@Preview
-@Composable
-private fun ProviderRiskBadgesPreview() {
-    ComposeAppTheme {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            ProviderRiskType.entries.forEach { type ->
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    EstimationTimeBadge(seconds = 793)
-                    ProviderRiskBadge(riskType = type)
-                }
-            }
-        }
-    }
 }

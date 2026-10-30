@@ -594,7 +594,7 @@
     <string name="Swap_ErrorNoProviders">Немає провайдерів</string>
     <string name="Swap_ErrorNoQuote">Немає пропозицій</string>
     <string name="Swap_ErrorInsufficientBalance">Недостатній баланс</string>
-    <string name="swap_out_of_min_amount">Менше мін. суми %s</string>
+    <string name="swap_out_of_min_amount">Менше мін. суми %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">Високе відхилення ціни</string>
     <string name="Swap_ErrorWalletSyncing">Синхронізація гаманця</string>
     <string name="Swap_ErrorWalletNotSynced">Гаманець не синхронізовано</string>
@@ -2287,15 +2287,15 @@
     <string name="native_library_error_close">Закрити</string>
     <!--Multi-Swap-->
     <string name="multi_swap_completed">Обмін завершено</string>
-    <string name="multi_swap_via">Обмін через %s</string>
-    <string name="multi_swap_completed_via">Завершено через %s</string>
+    <string name="multi_swap_via">Обмін через %1$s</string>
+    <string name="multi_swap_completed_via">Завершено через %1$s</string>
     <string name="multi_swap_no_providers">Немає доступних провайдерів</string>
     <string name="multi_swap_finding_best_provider">Пошук найкращого провайдера…</string>
     <string name="multi_swap_continue">Продовжити обмін</string>
     <string name="multi_swap_route_explanation">Для отримання найвигіднішого курсу використовується маршрут через %2$s. Обмін буде виконано у два послідовні кроки: спочатку %1$s → %2$s, потім %2$s → %3$s.</string>
     <string name="multi_swap_route_title">Маршрут обміну</string>
     <string name="multi_swap_execution_title">Обмін</string>
-    <string name="multi_swap_step">Крок %d</string>
+    <string name="multi_swap_step">Крок %1$d</string>
     <string name="multi_swap_understood_continue">Зрозуміло, продовжити</string>
     <string name="multi_swap_unfinished">Незавершений обмін</string>
     <string name="multi_swap_unfinished_plural">Незавершені обміни (%d)</string>
@@ -2464,4 +2464,20 @@
     <string name="desktop_change_password_corrupted">Файл ключа пошкоджено: після блокування застосунку ви не зможете увійти. Збережіть резервну копію кожної фрази відновлення.</string>
     <string name="desktop_change_password_success">Пароль змінено</string>
     <string name="desktop_security_lock_now">Заблокувати зараз</string>
+    <string name="swap_progress_title">Хід обміну</string>
+    <string name="swap_progress_step_of">Крок %1$d з %2$d</string>
+    <string name="swap_progress_step_header">%1$d крок · %2$s</string>
+    <string name="swap_progress_leg_send">Надсилання %1$s</string>
+    <string name="swap_progress_leg_receive">Отримання %1$s</string>
+    <string name="swap_progress_leg_swap">Обмін %1$s на %2$s</string>
+    <string name="swap_progress_leg_transfer">Переказ %1$s</string>
+    <string name="swap_progress_action_required_aml">Провайдер призупинив обмін для AML-перевірки.</string>
+    <string name="swap_progress_action_required_frozen">Провайдер заморозив обмін.</string>
+    <string name="swap_progress_action_required_overdue">Депозит надійшов після закінчення терміну котирування.</string>
+    <string name="swap_progress_action_required_default">Обмін призупинено, потрібна ваша дія.</string>
+    <string name="swap_progress_contact_support">Зверніться до підтримки провайдера нижче.</string>
+    <string name="swap_support_telegram">Підтримка %1$s · Telegram</string>
+    <string name="swap_support_email">Підтримка %1$s · Email</string>
+    <string name="swap_support_email_deposit_tx">Транзакція депозиту: %1$s</string>
+    <string name="swap_support_email_deposit_address">Адреса депозиту: %1$s</string>
 </resources>

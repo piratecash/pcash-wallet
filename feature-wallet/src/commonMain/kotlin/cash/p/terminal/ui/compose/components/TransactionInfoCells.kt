@@ -846,9 +846,23 @@ fun TransactionInfoExplorerCell(
     iconResId: DrawableResource = Res.drawable.ic_language,
 ) {
     val urlOpener = LocalUrlOpener.current
+    TransactionInfoLinkCell(
+        title = title,
+        iconResId = iconResId,
+        onClick = { urlOpener.open(url) },
+    )
+}
+
+@Composable
+fun TransactionInfoLinkCell(
+    title: String,
+    iconResId: DrawableResource,
+    onClick: () -> Unit,
+    value: String? = null,
+) {
     RowUniversal(
         modifier = Modifier.padding(horizontal = 16.dp),
-        onClick = { urlOpener.open(url) }
+        onClick = onClick
     ) {
         Image(
             modifier = Modifier.size(20.dp),
@@ -861,6 +875,13 @@ fun TransactionInfoExplorerCell(
             modifier = Modifier.padding(horizontal = 16.dp)
         )
         Spacer(Modifier.weight(1f))
+        value?.let {
+            subhead1_grey(
+                text = it,
+                maxLines = 1,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+        }
         Image(
             modifier = Modifier.size(20.dp),
             painter = painterResource(Res.drawable.ic_arrow_right),
@@ -1100,7 +1121,7 @@ private fun HSNavigation.openTransactionOptions(
     }
 }
 
-private fun statusTitle(status: TransactionStatus) = when (status) {
+internal fun statusTitle(status: TransactionStatus) = when (status) {
     TransactionStatus.Completed -> Res.string.Transactions_Completed
     TransactionStatus.Failed -> Res.string.Transactions_Failed
     TransactionStatus.Pending -> Res.string.Transactions_Pending
