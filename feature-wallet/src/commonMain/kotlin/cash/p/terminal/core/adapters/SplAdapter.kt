@@ -85,7 +85,7 @@ class SplAdapter(
         val solanaRequest = requireNotNull(request as? OfflineSolanaSignRequest) {
             "OfflineSolanaSignRequest is required"
         }
-        val signer = signer ?: throw SolanaSignerNotInitializedException()
+        val signer = offlineSigner ?: throw SolanaSignerNotInitializedException()
         val signed = solanaKitWrapper.solanaKit.signedSplTransaction(
             mintAddress = mintAddress,
             toAddress = Address(solanaRequest.address),

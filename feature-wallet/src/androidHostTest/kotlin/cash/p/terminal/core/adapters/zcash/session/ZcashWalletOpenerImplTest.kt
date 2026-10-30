@@ -106,6 +106,21 @@ class ZcashWalletOpenerImplTest {
     }
 
     @Test
+    fun open_createdAccountWithStoredZero_restoresFromZero() = runTest {
+        every { restoreSettingsManager.settings(any(), any()) } returns RestoreSettings().apply { birthdayHeight = 0 }
+        CapturedAppLog().use { appLog ->
+            opener().open(wallet(origin = AccountOrigin.Created))
+            appLog.awaitEntry { it.message.startsWith("open: done") }
+
+            assertTrue(appLog.messages.contains("restore: birthSource=setting birth=0"))
+        }
+        coVerify(exactly = 1) {
+            zcashWallet.restoreAccount(name = any(), key = any(), birthHeight = 0, passphrase = any())
+        }
+        verify(exactly = 0) { birthdayProvider.getLatestCheckpointBlockHeight() }
+    }
+
+    @Test
     fun open_blankPassphrase_restoresWithItVerbatim() = runTest {
         opener().open(wallet(passphrase = "  "))
 
@@ -301,12 +316,13 @@ class ZcashWalletOpenerImplTest {
     private fun wallet(
         passphrase: String = "",
         words: List<String> = listOf("one", "two", "three"),
+        origin: AccountOrigin = AccountOrigin.Restored,
     ) = mockk<Wallet>(relaxed = true) {
         every { account } returns Account(
             id = ACCOUNT_ID,
             name = "Zcash",
             type = AccountType.Mnemonic(words, passphrase),
-            origin = AccountOrigin.Restored,
+            origin = origin,
             level = 0,
         )
     }

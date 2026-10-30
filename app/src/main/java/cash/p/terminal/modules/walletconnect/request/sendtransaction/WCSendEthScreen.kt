@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
 import cash.p.terminal.modules.confirm.ConfirmTransactionScreen
+import cash.p.terminal.modules.send.signingErrorText
 import cash.p.terminal.modules.sendevmtransaction.SendEvmTransactionView
 import cash.p.terminal.modules.walletconnect.request.WCEvmTransactionSettingsPage
 import cash.p.terminal.modules.walletconnect.request.WCRequestPage
@@ -82,7 +83,7 @@ fun WCSendEthRequestScreen(
                             delay(1200)
                         } catch (t: Throwable) {
                             logger.warning("failed", t)
-                            HudHelper.showErrorMessage(view, t.javaClass.simpleName)
+                            t.signingErrorText(t.javaClass.simpleName)?.let { HudHelper.showErrorMessage(view, it) }
                         }
 
                         buttonEnabled = true

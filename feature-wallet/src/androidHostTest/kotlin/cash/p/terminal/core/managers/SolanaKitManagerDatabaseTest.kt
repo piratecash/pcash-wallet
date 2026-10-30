@@ -185,6 +185,7 @@ class SolanaKitManagerDatabaseTest {
         walletManager = mockk(relaxed = true),
         backgroundManager = mockk(relaxed = true),
         hardwarePublicKeyStorage = mockk(relaxed = true),
+        deviceSigners = DeviceSignerFactory(mockk(relaxed = true), mockk(relaxed = true), mockk(relaxed = true)),
         platformContexts = mockk(relaxed = true),
         backgroundKeepAliveManager = mockk(relaxed = true),
         networkErrorTracker = mockk(relaxed = true),

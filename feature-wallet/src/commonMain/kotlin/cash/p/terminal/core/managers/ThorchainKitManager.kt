@@ -6,6 +6,8 @@ import cash.p.terminal.core.onPollingStopped
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.AdapterState
+import cash.p.terminal.wallet.IHardwarePublicKeyStorage
+import cash.p.terminal.wallet.entities.HardwarePublicKey
 import io.horizontalsystems.core.IBackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
 import io.horizontalsystems.core.entities.BlockchainType
@@ -13,6 +15,7 @@ import io.horizontalsystems.thorchainkit.DatabaseKeyMismatchException
 import io.horizontalsystems.thorchainkit.ThorchainKit
 import io.horizontalsystems.thorchainkit.models.Address
 import io.horizontalsystems.thorchainkit.network.Network
+import io.horizontalsystems.thorchainkit.transaction.ThorchainExternalSigner
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,16 +41,18 @@ import java.util.concurrent.atomic.AtomicInteger
 private val logger = Logger.withTag("ThorchainKitManager")
 
 class ThorchainKitManager(
-    private val network: Network,
     val blockchainType: BlockchainType,
-    private val thornodeUrls: List<URL>,
     private val platformContexts: KitPlatformContexts,
     private val kitDatabaseKeys: BitcoinKitDatabaseKeyProvider,
     private val backgroundManager: IBackgroundManager,
     private val backgroundKeepAliveManager: BackgroundKeepAliveManager,
     private val networkErrorTracker: NetworkErrorTracker,
     private val offlineModeManager: OfflineModeManager,
+    private val hardwarePublicKeyStorage: IHardwarePublicKeyStorage,
+    private val deviceSigners: DeviceSignerFactory,
 ) {
+    private val network = blockchainType.thorchainNetwork
+    private val thornodeUrls = if (network == Network.Mainnet) THORCHAIN_THORNODE_URLS else network.thornodeUrls
     private val lifecycleMutex = Mutex()
     private val pollingSessionCount = AtomicInteger(0)
     private val scope = CoroutineScope(Dispatchers.Default)
@@ -80,7 +85,7 @@ class ThorchainKitManager(
             }
 
             if (this.thorchainKitWrapper == null) {
-                val wrapper = ThorchainKitWrapper(createKit(account))
+                val wrapper = ThorchainKitWrapper(createKit(account), deviceSigner(account))
                 this.thorchainKitWrapper = wrapper
                 job = scope.launch {
                     start(account, wrapper)
@@ -219,7 +224,7 @@ class ThorchainKitManager(
     }
 
     internal suspend fun createKit(account: Account): ThorchainKit {
-        val address = kitAddress(account.type)
+        val address = kitAddress(account)
         val databaseKey = kitDatabaseKeys.awaitKey(account.id)
         try {
             return try {
@@ -235,7 +240,7 @@ class ThorchainKitManager(
         }
     }
 
-    fun getAddress(account: Account): String = kitAddress(account.type).toString()
+    suspend fun getAddress(account: Account): String = kitAddress(account).toString()
 
     suspend fun clear(accountId: String) = lifecycleMutex.withLock {
         if (currentAccount?.id == accountId) {
@@ -246,12 +251,22 @@ class ThorchainKitManager(
 
     private fun clearFiles(accountId: String) = ThorchainKit.clear(platformContexts.thorchain, network, accountId)
 
-    private fun kitAddress(accountType: AccountType): Address = when (accountType) {
-        is AccountType.Mnemonic -> ThorchainKit.getAddress(accountType.seed, network)
-        is AccountType.ThorchainAddress -> watchedAddress(accountType.address, BlockchainType.Thorchain)
-        is AccountType.MayachainAddress -> watchedAddress(accountType.address, BlockchainType.Mayachain)
+    private suspend fun kitAddress(account: Account): Address = when (val type = account.type) {
+        is AccountType.Mnemonic -> ThorchainKit.getAddress(type.seed, network)
+        is AccountType.ThorchainAddress -> watchedAddress(type.address, BlockchainType.Thorchain)
+        is AccountType.MayachainAddress -> watchedAddress(type.address, BlockchainType.Mayachain)
+        is AccountType.HardwareDevice -> Address.fromPublicKey(deviceKey(account).publicKey, network)
         else -> throw UnsupportedAccountException()
     }
+
+    private suspend fun deviceSigner(account: Account): ThorchainExternalSigner? {
+        val type = account.type as? AccountType.HardwareDevice ?: return null
+        return deviceSigners.thorchain(account, type, deviceKey(account))
+    }
+
+    // Secured assets sign with the chain key, so any stored key of the chain serves.
+    private suspend fun deviceKey(account: Account): HardwarePublicKey =
+        hardwarePublicKeyStorage.getKeyByBlockchain(account.id, blockchainType) ?: throw UnsupportedAccountException()
 
     private fun watchedAddress(address: String, addressBlockchainType: BlockchainType): Address {
         if (addressBlockchainType != blockchainType) throw UnsupportedAccountException()
@@ -273,6 +288,12 @@ class ThorchainKitManager(
 
     private companion object {
         const val SYNC_INTERVAL_SECONDS = 15L
+
+        // The kit fails over in list order.
+        val THORCHAIN_THORNODE_URLS = listOf(
+            URL("https://lcd-thorchain.keplr.app/"),
+            URL("https://gateway.liquify.com/chain/thorchain_api/"),
+        )
     }
 }
 
@@ -291,7 +312,7 @@ internal fun AccountType.thorchainSeed(): ByteArray = when (this) {
     is AccountType.StellarSecretKey,
     is AccountType.ThorchainAddress,
     is AccountType.TonAddress,
-    is AccountType.TrezorDevice,
+    is AccountType.HardwareDevice,
     is AccountType.TronAddress,
     is AccountType.ZCashSaplingKey,
     is AccountType.ZCashUfvKey -> throw UnsupportedAccountException()
@@ -305,7 +326,8 @@ fun ThorchainKit.SyncState.toAdapterState(): AdapterState = when (this) {
     is ThorchainKit.SyncState.Syncing -> AdapterState.Syncing()
 }
 
-class ThorchainKitWrapper(val thorchainKit: ThorchainKit) {
+/** [deviceSigner] signs for a hardware device account; a seed account derives its signer per send. */
+class ThorchainKitWrapper(val thorchainKit: ThorchainKit, val deviceSigner: ThorchainExternalSigner? = null) {
     /** True once [ThorchainKit.start] has been called and no matching [ThorchainKit.stop] followed it. */
     var networkStarted: Boolean = false
     internal var feeJob: Job? = null

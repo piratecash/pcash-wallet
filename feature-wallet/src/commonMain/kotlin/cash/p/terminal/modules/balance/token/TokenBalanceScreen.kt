@@ -79,6 +79,7 @@ import cash.p.terminal.modules.offline.OperationAvailability
 import cash.p.terminal.modules.premium.settings.PremiumSettingsPage
 import cash.p.terminal.modules.receive.ReceivePage
 import cash.p.terminal.modules.send.SendResult
+import cash.p.terminal.modules.syncerror.closeSyncErrorDialogUnlessFailing
 import cash.p.terminal.modules.sendtokenselect.PrefilledData
 import cash.p.terminal.modules.syncerror.showSyncErrorDialog
 import cash.p.terminal.modules.transactionInfo.TransactionInfoPage
@@ -139,6 +140,7 @@ import cash.p.terminal.resources.ic_star_filled_20
 import cash.p.terminal.resources.ic_swap_24
 import cash.p.terminal.resources.monero_full_wallet_recovery
 import cash.p.terminal.resources.monero_full_wallet_recovery_warning
+import cash.p.terminal.resources.hardware_connect_device_to_sync
 import cash.p.terminal.resources.monero_prepare_trezor_description
 import cash.p.terminal.resources.monero_prepare_trezor_title
 import cash.p.terminal.resources.monero_updating_with_trezor
@@ -316,11 +318,14 @@ fun TokenBalanceScreen(
     )
 
     if (showMoneroSendPreparation) {
+        val ledgerWallet = viewModel.uiState.moneroLedgerWallet
         MoneroSendPreparationBottomSheet(
+            ledgerWallet = ledgerWallet,
             syncInProgress = viewModel.uiState.moneroKeyImageSyncInProgress,
             error = viewModel.uiState.moneroKeyImageSyncError,
             fullWalletRecoveryAvailable = viewModel.uiState.moneroFullWalletRecoveryAvailable,
-            onSync = viewModel::syncMoneroKeyImages,
+            // A Ledger is ready once an ordinary sync through it succeeds; there is no key image step.
+            onSync = if (ledgerWallet) onRefresh else viewModel::syncMoneroKeyImages,
             onFullWalletRecovery = viewModel::fullMoneroWalletRecovery,
             onDismiss = {
                 viewModel.cancelMoneroKeyImageSync()
@@ -377,6 +382,8 @@ internal fun TokenBalanceScreenContent(
             )
         ) {
             onSyncErrorClick(viewItem)
+        } else if (!failedIconVisible) {
+            navigation.closeSyncErrorDialogUnlessFailing(emptyList())
         }
     }
 
@@ -1373,7 +1380,12 @@ private fun onSyncErrorClicked(
             val wallet = syncErrorDetails.wallet
             val errorMessage = syncErrorDetails.errorMessage
 
-            navigation.showSyncErrorDialog(wallet, errorMessage, syncErrorDetails.isBlockedByProvider)
+            navigation.showSyncErrorDialog(
+                wallet,
+                errorMessage,
+                syncErrorDetails.isBlockedByProvider,
+                syncErrorDetails.isDeviceError
+            )
         }
 
         is BalanceViewModel.SyncError.NetworkNotAvailable -> Unit // We already show this at bottom panel
@@ -1418,6 +1430,7 @@ private fun onSwapClicked(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoneroSendPreparationBottomSheet(
+    ledgerWallet: Boolean,
     syncInProgress: Boolean,
     error: StringResource?,
     fullWalletRecoveryAvailable: Boolean,
@@ -1434,10 +1447,13 @@ fun MoneroSendPreparationBottomSheet(
         BottomSheetHeader(
             iconPainter = painterResource(Res.drawable.ic_attention_24),
             iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusWarning),
-            title = stringResource(Res.string.monero_prepare_trezor_title),
+            title = stringResource(
+                if (ledgerWallet) Res.string.hardware_connect_device_to_sync else Res.string.monero_prepare_trezor_title
+            ),
             onCloseClick = onDismiss,
         ) {
             MoneroSendPreparationContent(
+                ledgerWallet = ledgerWallet,
                 syncInProgress = syncInProgress,
                 error = error,
                 fullWalletRecoveryAvailable = fullWalletRecoveryAvailable,
@@ -1451,6 +1467,7 @@ fun MoneroSendPreparationBottomSheet(
 
 @Composable
 private fun MoneroSendPreparationContent(
+    ledgerWallet: Boolean,
     syncInProgress: Boolean,
     error: StringResource?,
     fullWalletRecoveryAvailable: Boolean,
@@ -1459,10 +1476,12 @@ private fun MoneroSendPreparationContent(
     onDismiss: () -> Unit,
 ) {
     Column {
-        body_leah(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-            text = stringResource(Res.string.monero_prepare_trezor_description),
-        )
+        if (!ledgerWallet) {
+            body_leah(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                text = stringResource(Res.string.monero_prepare_trezor_description),
+            )
+        }
         error?.let {
             TextImportantWarning(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),

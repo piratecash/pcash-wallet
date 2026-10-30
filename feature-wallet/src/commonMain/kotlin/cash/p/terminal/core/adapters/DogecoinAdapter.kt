@@ -154,13 +154,8 @@ class DogecoinAdapter(
                     )
                 }
 
-                is AccountType.TrezorDevice -> {
-                    val trezorSigner = hardwareSigners.trezorSigner(
-                        accountId = account.id,
-                        blockchainType = wallet.token.blockchainType,
-                        tokenType = wallet.token.type,
-                        coin = "Dogecoin"
-                    )
+                is AccountType.HardwareDevice -> {
+                    val deviceSigner = buildHardwareDeviceBtcSigner(wallet, trezorCoin = "Dogecoin")
                     val kit = DogecoinKit(
                         dataDir = environment.dataDir,
                         databaseKey = environment.databaseKey,
@@ -170,10 +165,10 @@ class DogecoinAdapter(
                         syncMode = syncMode,
                         networkType = DogecoinKit.NetworkType.MainNet,
                         confirmationsThreshold = KIT_CONFIRMATIONS_THRESHOLD,
-                        iInputSigner = trezorSigner.inputSigner,
-                        iSchnorrInputSigner = trezorSigner.schnorrInputSigner,
+                        iInputSigner = deviceSigner.inputSigner,
+                        iSchnorrInputSigner = deviceSigner.schnorrInputSigner,
                     )
-                    trezorSigner.bindKit(kit)
+                    deviceSigner.bindKit(kit)
                     return kit
                 }
 

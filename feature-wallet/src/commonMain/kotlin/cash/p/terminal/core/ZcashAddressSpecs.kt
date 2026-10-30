@@ -1,6 +1,9 @@
 package cash.p.terminal.core
 
+import cash.p.terminal.ledger.di.ledgerAppKeyFetchers
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.entities.TokenQuery
+import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
 import cash.p.zcash.Pool
 import cash.p.zcash.ZcashNetwork
@@ -27,6 +30,10 @@ fun AccountType.zcashAddressSpecs(): Set<AddressSpecType> = when (this) {
         } else {
             emptySet()
         }
+
+    is AccountType.LedgerDevice -> AddressSpecType.entries.filterTo(mutableSetOf()) {
+        ledgerAppKeyFetchers.supports(TokenQuery(BlockchainType.Zcash, TokenType.AddressSpecTyped(it)))
+    }
 
     is AccountType.BitcoinAddress,
     is AccountType.EvmAddress,

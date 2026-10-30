@@ -7,6 +7,7 @@ import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.isNetworkPaused
 import cash.p.terminal.core.storage.MoneroFileDao
 import cash.p.terminal.wallet.Account
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.useCases.IRemoveMoneroWalletFilesUseCase
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.BlockchainType
@@ -34,18 +35,23 @@ class RescanMoneroUseCase(
             }
             if (moneroKitManager.rescanIfActive(account, newHeight)) return@withContext
 
-            resetInactiveWallet(account, newHeight)
+            // Only its device can recreate a device wallet, so its files stay.
+            if (account.type !is AccountType.HardwareDevice) removeInactiveWallet(account)
+            saveRestoreHeight(account, newHeight)
         }
 
     // Same fail-loud ordering as MoneroKitWrapper.resetWalletAndRestart: require the old files to be
     // gone before deleting the DAO record and committing the new height, so a failed removal can
     // never leave a stale wallet file behind a claimed new height.
-    private suspend fun resetInactiveWallet(account: Account, newHeight: Long) {
+    private suspend fun removeInactiveWallet(account: Account) {
         val removed = removeMoneroWalletFilesUseCase(account)
         if (!removed) {
             throw MoneroRescanException("Failed to remove Monero wallet files for account ${account.id}")
         }
         moneroFileDao.deleteAssociatedRecord(account.id)
+    }
+
+    private fun saveRestoreHeight(account: Account, newHeight: Long) {
         val restoreSettings = restoreSettingsManager.settings(account, BlockchainType.Monero)
         restoreSettings.birthdayHeight = newHeight
         restoreSettingsManager.save(restoreSettings, account, BlockchainType.Monero)

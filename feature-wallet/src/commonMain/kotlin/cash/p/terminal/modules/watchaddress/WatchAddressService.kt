@@ -35,7 +35,7 @@ class WatchAddressService(
                 is AccountType.Mnemonic,
                 is AccountType.MnemonicMonero,
                 is AccountType.HardwareCard,
-                is AccountType.TrezorDevice,
+                is AccountType.HardwareDevice,
                 is AccountType.StellarSecretKey,
                 is AccountType.EvmPrivateKey -> Unit // N/A
 

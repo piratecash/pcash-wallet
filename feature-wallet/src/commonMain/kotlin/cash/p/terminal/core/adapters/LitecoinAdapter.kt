@@ -31,7 +31,7 @@ import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.litecoin_hardware_extended_public_key_required
 import cash.p.terminal.resources.litecoin_mweb_invalid_amount
-import cash.p.terminal.resources.send_trezor_mweb_not_supported
+import cash.p.terminal.resources.send_hardware_mweb_not_supported
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.AdapterState
@@ -893,7 +893,7 @@ class LitecoinAdapter(
         return when {
             mwebMode -> LitecoinSendSource.Mweb
             kit.isMwebAddress(destination) -> {
-                rejectMwebForTrezor()
+                rejectMwebForHardwareDevice()
                 LitecoinSendSource.Public
             }
 
@@ -902,13 +902,13 @@ class LitecoinAdapter(
     }
 
     /**
-     * A Trezor wallet runs public-only (it can never enter MWEB mode), and the device cannot produce
-     * the MWEB commitment/kernel signature required to peg funds into MWEB. Block MWEB destinations
-     * for Trezor accounts instead of building a transaction the device can't sign.
+     * A hardware device wallet runs public-only (it can never enter MWEB mode), and the device cannot
+     * produce the MWEB commitment/kernel signature required to peg funds into MWEB. Block MWEB
+     * destinations instead of building a transaction the device can't sign.
      */
-    private fun rejectMwebForTrezor() {
-        if (isTrezorAccount) {
-            throw LocalizedException(Res.string.send_trezor_mweb_not_supported)
+    private fun rejectMwebForHardwareDevice() {
+        if (isHardwareDeviceAccount) {
+            throw LocalizedException(Res.string.send_hardware_mweb_not_supported)
         }
     }
 
@@ -958,7 +958,7 @@ class LitecoinAdapter(
 
     override fun validate(address: String, pluginData: Map<Byte, IPluginData>?) {
         if (kit.isMwebAddress(address)) {
-            rejectMwebForTrezor()
+            rejectMwebForHardwareDevice()
             return
         }
         super.validate(address, pluginData)
@@ -1523,7 +1523,7 @@ class LitecoinAdapter(
                 is AccountType.Mnemonic -> createMnemonicKit(accountType, context)
                 is AccountType.BitcoinAddress -> createWatchAddressKit(accountType, context)
                 is AccountType.HardwareCard -> createHardwareKit(context)
-                is AccountType.TrezorDevice -> createTrezorKit(context)
+                is AccountType.HardwareDevice -> createHardwareDeviceKit(context)
                 else -> throw UnsupportedAccountException()
             }
         }
@@ -1621,14 +1621,8 @@ class LitecoinAdapter(
             )
         }
 
-        private fun createTrezorKit(context: LitecoinKitCreateContext): LitecoinKit {
-            val token = context.wallet.token
-            val trezorSigner = hardwareSigners.trezorSigner(
-                accountId = context.account.id,
-                blockchainType = token.blockchainType,
-                tokenType = token.type,
-                coin = "Litecoin"
-            )
+        private fun createHardwareDeviceKit(context: LitecoinKitCreateContext): LitecoinKit {
+            val deviceSigner = buildHardwareDeviceBtcSigner(context.wallet, trezorCoin = "Litecoin")
             val kit = LitecoinKit(
                 dataDir = context.environment.dataDir,
                 mwebDataDir = context.environment.mwebDataDir,
@@ -1640,12 +1634,12 @@ class LitecoinAdapter(
                 syncMode = context.syncMode,
                 networkType = NetworkType.MainNet,
                 confirmationsThreshold = KIT_CONFIRMATIONS_THRESHOLD,
-                iInputSigner = trezorSigner.inputSigner,
-                iSchnorrInputSigner = trezorSigner.schnorrInputSigner,
+                iInputSigner = deviceSigner.inputSigner,
+                iSchnorrInputSigner = deviceSigner.schnorrInputSigner,
                 sharedPeerGroupHolder = context.sharedPeerGroupHolder,
                 mwebPublicSendConfig = mwebPublicSendConfig(context.dispatcherProvider)
             )
-            trezorSigner.bindKit(kit)
+            deviceSigner.bindKit(kit)
             return kit
         }
 
@@ -1709,7 +1703,7 @@ class LitecoinAdapter(
                 is AccountType.EvmAddress,
                 is AccountType.EvmPrivateKey,
                 is AccountType.HardwareCard,
-                is AccountType.TrezorDevice,
+                is AccountType.HardwareDevice,
                 is AccountType.MnemonicMonero,
                 is AccountType.SolanaAddress,
                 is AccountType.TonAddress,

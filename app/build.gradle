@@ -234,6 +234,13 @@ android {
 
     }
 
+    // Debug-only code (speculos Ledger transport) has a no-op twin here, so release builds never contain it.
+    sourceSets {
+        release.kotlin.srcDir 'src/nonDebug/java'
+        qa.kotlin.srcDir 'src/nonDebug/java'
+        baselinegen.kotlin.srcDir 'src/nonDebug/java'
+    }
+
     compileOptions {
         coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_17
@@ -493,6 +500,7 @@ dependencies {
     implementation project(':feature-stacking')
     implementation project(':feature-tangem')
     implementation project(':feature-trezor')
+    implementation project(':feature-ledger')
     implementation project(':feature-premium')
     implementation project(':feature-logging')
     implementation project(':feature-mini-app')

@@ -10,8 +10,9 @@ import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.send_error_address_unavailable
 import cash.p.terminal.resources.send_error_amount_unavailable
 import io.horizontalsystems.core.collectWith
+import cash.p.terminal.modules.send.hardwareWalletCaution
 import cash.p.terminal.modules.send.isHardwareWalletCancelled
-import cash.p.terminal.trezor.domain.TrezorCancelledException
+import cash.p.terminal.wallet.hardware.HardwareCancelledException
 import cash.p.terminal.core.EvmError
 import cash.p.terminal.core.HSCaution
 import cash.p.terminal.core.ISendSolanaAdapter
@@ -236,7 +237,7 @@ class SendSolanaViewModel(
             sendResult = SendResult.Sent()
 
             recentAddressManager.setRecentAddress(address, BlockchainType.Solana)
-        } catch (e: TrezorCancelledException) {
+        } catch (e: HardwareCancelledException) {
             pendingTxId?.let { pendingRegistrar.deleteFailed(it) }
             sendResult = null
         } catch (e: Throwable) {
@@ -283,7 +284,7 @@ class SendSolanaViewModel(
         )
     }
 
-    private fun createCaution(error: Throwable) = when (error) {
+    private fun createCaution(error: Throwable) = error.hardwareWalletCaution() ?: when (error) {
         is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
         is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
         is EvmError.InsufficientBalanceWithFee -> SendErrorInsufficientBalance(

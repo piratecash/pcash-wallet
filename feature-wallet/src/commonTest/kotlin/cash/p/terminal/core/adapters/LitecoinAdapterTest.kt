@@ -1248,6 +1248,90 @@ class LitecoinAdapterTest {
     }
 
     @Test
+    fun validate_ledgerHodlerPlugin_throwsUnsupported() {
+        val adapter = createPublicAdapter(account = ledgerAccount())
+        every { kit.isMwebAddress(PUBLIC_ADDRESS) } returns false
+
+        assertFailsWith<LocalizedException> {
+            adapter.validate(PUBLIC_ADDRESS, hodlerPluginData())
+        }
+        verify(exactly = 0) { kit.validateAddress(any(), any()) }
+    }
+
+    @Test
+    fun send_ledgerHodlerPlugin_throwsUnsupported() = runTest {
+        val adapter = createPublicAdapter(account = ledgerAccount())
+        every { kit.isMwebAddress(PUBLIC_ADDRESS) } returns false
+
+        assertFailsWith<LocalizedException> {
+            adapter.send(
+                amount = BigDecimal.ONE,
+                address = PUBLIC_ADDRESS,
+                memo = null,
+                feeRate = 1,
+                unspentOutputs = null,
+                pluginData = hodlerPluginData(),
+                transactionSorting = null,
+                rbfEnabled = false,
+                changeToFirstInput = false,
+                utxoFilters = UtxoFilters()
+            )
+        }
+        coVerify(exactly = 0) {
+            kit.send(
+                address = any(),
+                memo = any(),
+                value = any(),
+                senderPay = any(),
+                feeRate = any(),
+                sortType = any(),
+                unspentOutputs = any(),
+                pluginData = any(),
+                rbfEnabled = any(),
+                changeToFirstInput = any(),
+                filters = any(),
+            )
+        }
+    }
+
+    @Test
+    fun signOffline_trezorHodlerPlugin_throwsUnsupported() = runTest {
+        assertSignOfflineRejectsHodler(trezorAccount())
+    }
+
+    @Test
+    fun signOffline_ledgerHodlerPlugin_throwsUnsupported() = runTest {
+        assertSignOfflineRejectsHodler(ledgerAccount())
+    }
+
+    private suspend fun assertSignOfflineRejectsHodler(account: Account) {
+        val adapter = createPublicAdapter(account = account)
+        every { kit.isMwebAddress(PUBLIC_ADDRESS) } returns false
+
+        assertFailsWith<LocalizedException> {
+            adapter.signOffline(
+                OfflineBitcoinSignRequest(
+                    amount = BigDecimal.ONE,
+                    address = PUBLIC_ADDRESS,
+                    memo = null,
+                    feeRate = 1,
+                    unspentOutputs = null,
+                    pluginData = hodlerPluginData(),
+                    transactionSorting = TransactionDataSortMode.Shuffle,
+                    rbfEnabled = false,
+                    changeToFirstInput = false,
+                    utxoFilters = UtxoFilters(),
+                )
+            )
+        }
+        coVerify(exactly = 0) {
+            kit.createSignedTransaction(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+        }
+    }
+
+    private fun hodlerPluginData() = mapOf(HodlerPlugin.id to mockk<IPluginData>(relaxed = true))
+
+    @Test
     fun validate_publicInvalidNonMwebDestination_delegatesToPublicValidation() {
         val adapter = createPublicAdapter()
         every { kit.isMwebAddress(INVALID_ADDRESS) } returns false
@@ -2328,6 +2412,18 @@ class LitecoinAdapterTest {
         level = 0,
         isBackedUp = false,
         isFileBackedUp = false
+    )
+
+    private fun ledgerAccount() = Account(
+        id = "ledger-account-id",
+        name = "Ledger",
+        type = AccountType.LedgerDevice(
+            deviceId = "ledger-device-1",
+            model = "nanoSP",
+            walletPublicKey = "ledger-public-key"
+        ),
+        origin = AccountOrigin.Created,
+        level = 0,
     )
 
     private fun mwebState(

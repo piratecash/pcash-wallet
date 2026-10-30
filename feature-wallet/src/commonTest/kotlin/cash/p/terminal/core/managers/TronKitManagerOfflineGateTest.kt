@@ -62,6 +62,7 @@ class TronKitManagerOfflineGateTest {
             backgroundKeepAliveManager = mockk(relaxed = true),
             networkErrorTracker = mockk(relaxed = true),
             hardwareSigners = mockk(relaxed = true),
+            deviceSigners = DeviceSignerFactory(mockk(relaxed = true), mockk(relaxed = true), mockk(relaxed = true)),
             platformContexts = mockk(relaxed = true),
             offlineModeManager = offlineModeManager,
             tronKitDatabaseKeyProvider = mockk(relaxed = true),

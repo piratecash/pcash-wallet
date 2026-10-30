@@ -5,6 +5,7 @@ import android.content.res.Configuration
 import android.os.Build
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
+import cash.p.terminal.ledger.ethereum.LedgerTokenDescriptorSync
 import cash.p.terminal.BuildConfig
 import cash.p.terminal.core.di.appModule
 import cash.p.terminal.core.factories.AccountFactory
@@ -421,6 +422,7 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
             }
             rateAppManager.onAppLaunch()
             walletServicesStarter.startNftMetadataSync()
+            get<LedgerTokenDescriptorSync>().start()
             if (!pinComponent.isPinSet) {
                 pinComponent.initDefaultPinLevel()
             }

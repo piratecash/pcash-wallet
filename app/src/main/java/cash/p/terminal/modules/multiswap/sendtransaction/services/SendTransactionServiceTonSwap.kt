@@ -284,7 +284,7 @@ class SendTransactionServiceTonSwap(
             pendingTxId?.let {
                 pendingRegistrar.deleteFailed(it)
             }
-            cautions = listOf(createCaution(e))
+            cautions = failureCautions(e)
             emitState()
             throw e
         }

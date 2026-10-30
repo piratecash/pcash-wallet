@@ -5,10 +5,12 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import cash.p.terminal.ledger.domain.LedgerUserOperations
 import cash.p.terminal.navigation.HSBottomSheet
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.ui_compose.LocalConnectionPanelState
+import kotlinx.coroutines.flow.MutableStateFlow
 
 internal open class PlainTestPage(screenshotEnabled: Boolean = true) :
     HSPage(screenshotEnabled = screenshotEnabled, showConnectionPanel = false) {
@@ -55,7 +57,14 @@ internal class TestSheet : HSBottomSheet() {
 internal fun TestNav3Host(navigation: HSNavigation) {
     val connectionPanelState = remember { mutableStateOf(false) }
     val isLocked = remember { mutableStateOf(false) }
+    val ledgerUserOperations = remember { LedgerUserOperations() }
+    val ledgerOpeningApp = remember { MutableStateFlow<String?>(null) }
     CompositionLocalProvider(LocalConnectionPanelState provides connectionPanelState) {
-        Nav3Host(navigation, isLocked = isLocked)
+        Nav3Host(
+            navigation,
+            isLocked = isLocked,
+            ledgerUserOperations = ledgerUserOperations,
+            ledgerOpeningApp = ledgerOpeningApp,
+        )
     }
 }

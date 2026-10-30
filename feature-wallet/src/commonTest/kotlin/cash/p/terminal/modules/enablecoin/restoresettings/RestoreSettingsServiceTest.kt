@@ -163,6 +163,44 @@ class RestoreSettingsServiceTest : KoinTest {
         assertEquals(0, requestObserver.valueCount())
     }
 
+    @Test
+    fun approveSettings_zcashHardwareCreatedAccount_requestsHeight() {
+        val account = account(
+            origin = AccountOrigin.Created,
+            type = AccountType.LedgerDevice("device-id", "NanoSPlus", "wallet-key"),
+        )
+        every { manager.settings(account, BlockchainType.Zcash) } returns RestoreSettings()
+        val service = service()
+        val approveObserver = service.approveSettingsObservable.test()
+        val requestObserver = service.requestObservable.test()
+
+        service.approveSettings(zcashToken(), account)
+
+        assertEquals(0, approveObserver.valueCount())
+        assertEquals(account.id, requestObserver.values().single().accountId)
+    }
+
+    @Test
+    fun approveSettings_moneroHardwareCreatedAccountWithStoredHeight_prefillsStoredHeight() {
+        val account = account(
+            origin = AccountOrigin.Created,
+            type = AccountType.TrezorDevice("device-id", "T3T1", "2.8.10", "wallet-key"),
+        )
+        every { manager.settings(account, BlockchainType.Monero) } returns
+            RestoreSettings().apply { birthdayHeight = MONERO_STORED_HEIGHT }
+        val service = service()
+        val approveObserver = service.approveSettingsObservable.test()
+        val requestObserver = service.requestObservable.test()
+
+        service.approveSettings(moneroToken(), account, forceRequest = true)
+
+        assertEquals(0, approveObserver.valueCount())
+        assertEquals(
+            TokenConfig(birthdayHeight = MONERO_STORED_HEIGHT.toString(), restoreAsNew = false),
+            requestObserver.values().single().initialConfig,
+        )
+    }
+
     private fun service() = RestoreSettingsService(
         manager = manager,
         zcashBirthdayProvider = zcashBirthdayProvider,
@@ -183,10 +221,20 @@ class RestoreSettingsServiceTest : KoinTest {
         decimals = 8
     )
 
-    private fun account(origin: AccountOrigin = AccountOrigin.Restored) = Account(
+    private fun moneroToken() = Token(
+        coin = Coin("monero", "Monero", "XMR"),
+        blockchain = Blockchain(BlockchainType.Monero, "Monero", null),
+        type = TokenType.Native,
+        decimals = 12
+    )
+
+    private fun account(
+        origin: AccountOrigin = AccountOrigin.Restored,
+        type: AccountType = AccountType.Mnemonic(List(12) { "word" }, ""),
+    ) = Account(
         id = "account-id",
         name = "Account",
-        type = AccountType.Mnemonic(List(12) { "word" }, ""),
+        type = type,
         origin = origin,
         level = 0
     )
@@ -194,5 +242,6 @@ class RestoreSettingsServiceTest : KoinTest {
     private companion object {
         const val LITECOIN_CHECKPOINT = 3_000_000L
         const val ZCASH_CHECKPOINT = 2_000_000L
+        const val MONERO_STORED_HEIGHT = 3_100_000L
     }
 }

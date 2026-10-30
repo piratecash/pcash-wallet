@@ -37,6 +37,7 @@ class TronKitManager(
     private val backgroundKeepAliveManager: BackgroundKeepAliveManager,
     private val networkErrorTracker: NetworkErrorTracker,
     private val hardwareSigners: TronHardwareSigners,
+    private val deviceSigners: DeviceSignerFactory,
     private val platformContexts: KitPlatformContexts,
     private val offlineModeManager: OfflineModeManager,
     private val tronKitDatabaseKeyProvider: TronKitDatabaseKeyProvider,
@@ -89,8 +90,8 @@ class TronKitManager(
                 is AccountType.HardwareCard ->
                     createKitInstance(account, databaseKey)
 
-                is AccountType.TrezorDevice ->
-                    createTrezorKitInstance(account, databaseKey)
+                is AccountType.HardwareDevice ->
+                    createDeviceKitInstance(account, accountType, databaseKey)
 
                 else -> throw UnsupportedAccountException()
             }
@@ -146,14 +147,14 @@ class TronKitManager(
         return createAddressKitInstance(addressAndPublicKey.address, account, signer, databaseKey)
     }
 
-    private fun createTrezorKitInstance(account: Account, databaseKey: ByteArray): TronKitWrapper {
-        val key = getHardwareKey(account, "Trezor does not have a key for Tron")
-        val address = key.key.value
-        val signer = hardwareSigners.trezorSigner(
-            expectedAddressBase58 = address,
-            derivationPath = key.derivationPath
-        )
-        return createAddressKitInstance(Address.fromBase58(address), account, signer, databaseKey)
+    private fun createDeviceKitInstance(
+        account: Account,
+        accountType: AccountType.HardwareDevice,
+        databaseKey: ByteArray,
+    ): TronKitWrapper {
+        val key = getHardwareKey(account, "Hardware device does not have a key for Tron")
+        val signer = deviceSigners.tron(account, accountType, key)
+        return createAddressKitInstance(Address.fromBase58(key.key.value), account, signer, databaseKey)
     }
 
     private fun getHardwareKey(account: Account, missingKeyMessage: String) = runBlocking {

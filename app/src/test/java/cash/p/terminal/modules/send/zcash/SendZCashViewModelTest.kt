@@ -6,18 +6,23 @@ import cash.p.terminal.core.SignedOfflineZcashTransaction
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.adapters.zcash.ZcashAdapter
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
+import cash.p.terminal.core.managers.NotBroadcastException
 import cash.p.terminal.core.managers.OfflineSignedTransactionRepository
 import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
 import cash.p.terminal.core.managers.PendingTransactionRegistrar
 import cash.p.terminal.core.managers.PoisonAddressManager
 import cash.p.terminal.entities.Address
+import cash.p.terminal.ledger.domain.LedgerRejectedException
+import cash.p.terminal.ledgerkit.apdu.LedgerException
 import cash.p.terminal.entities.OfflineSignedTransactionDraft
 import cash.p.terminal.modules.amount.AmountValidator
 import cash.p.terminal.modules.amount.SendAmountService
 import cash.p.terminal.modules.contacts.ContactsRepository
+import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.send.offline.OfflineSignState
 import cash.p.terminal.modules.send.offline.OfflineTransactionFormat
 import cash.p.terminal.modules.xrate.XRateService
+import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -31,6 +36,7 @@ import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.managers.IBalanceHiddenManager
 import cash.p.terminal.wallet.policy.HardwareWalletTokenPolicy
+import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.entities.CurrencyValue
@@ -38,6 +44,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.slot
 import io.mockk.unmockkAll
 import kotlinx.coroutines.CoroutineScope
@@ -52,9 +59,11 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.jetbrains.compose.resources.StringResource
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Before
@@ -222,6 +231,60 @@ class SendZCashViewModelTest : KoinTest {
     }
 
     @Test
+    fun offlineSignSupported_ledgerAccount_returnsFalse() {
+        val ledgerWallet = createWallet(zcashToken, account(AccountType.LedgerDevice("device", "nanoSP", "key")))
+
+        assertFalse(createViewModel(wallet = ledgerWallet).offlineSignSupported)
+    }
+
+    @Test
+    fun onClickSend_rejectedOnDevice_clearsResultWithoutCaution() = runTest(dispatcher) {
+        coEvery { adapter.send(any(), any(), any()) } throws NotBroadcastException(LedgerRejectedException())
+        val viewModel = createViewModel()
+        viewModel.onEnterAddress(address)
+        viewModel.onEnterAmount(amount)
+        advanceUntilIdle()
+
+        viewModel.onClickSend()
+        advanceUntilIdle()
+
+        assertNull(viewModel.sendResult)
+        coVerify { pendingRegistrar.deleteFailed(any()) }
+    }
+
+    @Test
+    fun getConfirmationData_deviceShowsAnotherForm_showsItButSendsToTheEnteredAddress() = runTest(dispatcher) {
+        every { adapter.addressShownOnDevice(ZCASH_ADDRESS) } returns DEVICE_FORM
+        val viewModel = createViewModel()
+        viewModel.onEnterAddress(address)
+        viewModel.onEnterAmount(amount)
+        advanceUntilIdle()
+
+        assertEquals(DEVICE_FORM, viewModel.getConfirmationData().address.hex)
+        viewModel.onClickSend()
+        advanceUntilIdle()
+
+        coVerify { adapter.send(amount, ZCASH_ADDRESS, any()) }
+    }
+
+    @Test
+    fun onClickSend_deviceOutOfKeyDerivations_asksToReopenTheApp() = runTest(dispatcher) {
+        mockkObject(Translator)
+        every { Translator.getString(any(), *anyVararg()) } answers { firstArg<StringResource>().key }
+        coEvery { adapter.send(any(), any(), any()) } throws NotBroadcastException(LedgerException.KeyDerivationLimit())
+        val viewModel = createViewModel()
+        viewModel.onEnterAddress(address)
+        viewModel.onEnterAmount(amount)
+        advanceUntilIdle()
+
+        viewModel.onClickSend()
+        advanceUntilIdle()
+
+        val caution = (viewModel.sendResult as SendResult.Failed).caution.s
+        assertEquals("ledger_zcash_reopen_app", (caution as TranslatableString.PlainString).text)
+    }
+
+    @Test
     fun canBeSend_multiByteMemo512Bytes_isTrue() = runTest(dispatcher) {
         assertTrue(canBeSendWithMemo(address, "ж".repeat(256)))
     }
@@ -294,6 +357,7 @@ class SendZCashViewModelTest : KoinTest {
 
     private companion object {
         const val ZCASH_ADDRESS = "zs1recipient000000000000000000000000000000000000000000000000000000000000"
+        const val DEVICE_FORM = "u1orchardonly"
         const val TRANSPARENT_ADDRESS = "t1recipient0000000000000000000000000"
         const val ZCASH_TX_HASH = "456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123"
         val FEE: BigDecimal = BigDecimal("0.0001")

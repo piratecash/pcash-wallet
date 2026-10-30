@@ -29,7 +29,8 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.tangem.domain.isHardwareWalletUserCancelled
-import cash.p.terminal.trezor.domain.TrezorCancelledException
+import cash.p.terminal.modules.send.hardwareWalletErrorMessage
+import cash.p.terminal.wallet.hardware.HardwareCancelledException
 import cash.p.terminal.ui.compose.components.TransactionInfoAddressCell
 import cash.p.terminal.ui.compose.components.TransactionInfoContactCell
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
@@ -138,14 +139,15 @@ private fun Eip20ApproveConfirmButtons(
                             HudHelper.showSuccessMessage(view, R.string.Hud_Text_Done)
                             delay(1200)
                             Eip20ApproveConfirmPage.Result(true)
-                        } catch (e: TrezorCancelledException) {
+                        } catch (e: HardwareCancelledException) {
                             currentSnackbar?.dismiss()
                             Eip20ApproveConfirmPage.Result(false)
                         } catch (t: Throwable) {
                             if (t.isHardwareWalletUserCancelled()) {
                                 currentSnackbar?.dismiss()
                             } else {
-                                val msg = (t as? IllegalStateException)?.message ?: t.javaClass.simpleName
+                                val msg = t.hardwareWalletErrorMessage()
+                                    ?: (t as? IllegalStateException)?.message ?: t.javaClass.simpleName
                                 HudHelper.showErrorMessage(view, msg)
                             }
                             Eip20ApproveConfirmPage.Result(false)

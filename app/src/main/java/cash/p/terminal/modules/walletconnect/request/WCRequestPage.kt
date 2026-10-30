@@ -21,6 +21,7 @@ import cash.p.terminal.R
 import cash.p.terminal.core.isEvm
 import cash.p.terminal.modules.coin.overview.ui.Loading
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
+import cash.p.terminal.modules.send.signingErrorText
 import cash.p.terminal.modules.sendevmtransaction.TitleValue
 import cash.p.terminal.modules.sendevmtransaction.ValueType
 import cash.p.terminal.modules.sendevmtransaction.ViewItem
@@ -76,10 +77,7 @@ class WCRequestPage : HSPage() {
     }
 
     private fun showError(view: View, e: Throwable) {
-        HudHelper.showErrorMessage(
-            view,
-            e.message ?: e::class.java.simpleName
-        )
+        e.signingErrorText(e.message ?: e::class.java.simpleName)?.let { HudHelper.showErrorMessage(view, it) }
     }
 
     @Composable

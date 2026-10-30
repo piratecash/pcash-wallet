@@ -87,8 +87,11 @@ object DesktopNoHardwareWallets : IHardwarePublicKeyStorage, HardwareWalletToken
 }
 
 object DesktopNoHardwareKeyProvisioner : HardwareWalletKeyProvisioner {
-    override suspend fun provisionPublicKeys(account: Account, tokenQueries: List<TokenQuery>) =
-        ProvisionResult.Failed(Translator.getString(Res.string.platform_not_supported_yet))
+    override suspend fun provisionPublicKeys(
+        account: Account,
+        tokenQueries: List<TokenQuery>,
+        moneroRestoreHeight: Long?,
+    ) = ProvisionResult.Failed(Translator.getString(Res.string.platform_not_supported_yet))
 }
 
 /** No device to scan on desktop, so a scan never adds a token. */

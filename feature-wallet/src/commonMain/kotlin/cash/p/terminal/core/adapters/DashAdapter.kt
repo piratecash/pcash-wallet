@@ -204,13 +204,8 @@ class DashAdapter(
                     )
                 }
 
-                is AccountType.TrezorDevice -> {
-                    val trezorSigner = hardwareSigners.trezorSigner(
-                        accountId = account.id,
-                        blockchainType = wallet.token.blockchainType,
-                        tokenType = wallet.token.type,
-                        coin = "Dash"
-                    )
+                is AccountType.HardwareDevice -> {
+                    val deviceSigner = buildHardwareDeviceBtcSigner(wallet, trezorCoin = "Dash")
                     val kit = DashKit(
                         dataDir = environment.dataDir,
                         databaseKey = environment.databaseKey,
@@ -221,11 +216,11 @@ class DashAdapter(
                         networkType = NetworkType.MainNet,
                         confirmationsThreshold = KIT_CONFIRMATIONS_THRESHOLD,
                         initWithEmptySeeds = true,
-                        iInputSigner = trezorSigner.inputSigner,
-                        iSchnorrInputSigner = trezorSigner.schnorrInputSigner,
+                        iInputSigner = deviceSigner.inputSigner,
+                        iSchnorrInputSigner = deviceSigner.schnorrInputSigner,
                         minConnectedPeerSize = MIN_CONNECTED_PEER_TO_SEND_SIZE
                     )
-                    trezorSigner.bindKit(kit)
+                    deviceSigner.bindKit(kit)
                     kit
                 }
 

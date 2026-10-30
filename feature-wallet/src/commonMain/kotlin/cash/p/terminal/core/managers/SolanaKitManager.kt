@@ -42,6 +42,7 @@ class SolanaKitManager(
     private val walletManager: SolanaWalletManager,
     private val backgroundManager: IBackgroundManager,
     private val hardwarePublicKeyStorage: IHardwarePublicKeyStorage,
+    private val deviceSigners: DeviceSignerFactory,
     private val platformContexts: KitPlatformContexts,
     private val backgroundKeepAliveManager: BackgroundKeepAliveManager,
     private val networkErrorTracker: NetworkErrorTracker,
@@ -99,7 +100,7 @@ class SolanaKitManager(
         is AccountType.Mnemonic -> Signer.address(accountType.seed)
         is AccountType.SolanaAddress -> accountType.address
         is AccountType.HardwareCard,
-        is AccountType.TrezorDevice -> {
+        is AccountType.HardwareDevice -> {
             val key = getHardwarePublicKey(account.id)
             Base58.encode(key.key.value.hexToByteArray())
         }
@@ -139,8 +140,8 @@ class SolanaKitManager(
             is AccountType.HardwareCard -> {
                 createKitInstance(account.id)
             }
-            is AccountType.TrezorDevice -> {
-                createTrezorKitInstance(account.id)
+            is AccountType.HardwareDevice -> {
+                createDeviceKitInstance(account, accountType)
             }
             else -> throw UnsupportedAccountException()
         }
@@ -183,26 +184,29 @@ class SolanaKitManager(
         return createHardwareKitInstance(accountId, hardwarePublicKey, account)
     }
 
-    private suspend fun createTrezorKitInstance(
-        accountId: String
+    private suspend fun createDeviceKitInstance(
+        account: Account,
+        accountType: AccountType.HardwareDevice
     ): SolanaKitWrapper {
-        val hardwarePublicKey = getHardwarePublicKey(accountId)
-        val account = hardwareSigners.trezorAccount(
-            publicKey = PublicKey(hardwarePublicKey.key.value.hexToByteArray()),
-            hardwarePublicKey = hardwarePublicKey
+        val hardwarePublicKey = getHardwarePublicKey(account.id)
+        return createHardwareKitInstance(
+            account.id,
+            hardwarePublicKey,
+            deviceSigners.solana(account, accountType, hardwarePublicKey, online = true),
+            deviceSigners.solana(account, accountType, hardwarePublicKey, online = false),
         )
-        return createHardwareKitInstance(accountId, hardwarePublicKey, account)
     }
 
     private suspend fun createHardwareKitInstance(
         accountId: String,
         hardwarePublicKey: HardwarePublicKey,
-        account: com.solana.core.Account
+        account: com.solana.core.Account,
+        offlineAccount: com.solana.core.Account = account,
     ): SolanaKitWrapper {
-        val signer = Signer(account)
         return SolanaKitWrapper(
             createKit(Base58.encode(hardwarePublicKey.key.value.hexToByteArray()), accountId),
-            signer
+            Signer(account),
+            Signer(offlineAccount),
         )
     }
 
@@ -349,7 +353,8 @@ class SolanaKitManager(
     }
 }
 
-class SolanaKitWrapper(val solanaKit: SolanaKit, val signer: Signer?) {
+/** [offlineSigner] signs for offline export: it must not reach the network. */
+class SolanaKitWrapper(val solanaKit: SolanaKit, val signer: Signer?, val offlineSigner: Signer? = signer) {
     /** True once [SolanaKit.start] has been called and no matching [SolanaKit.stop] followed it. */
     var networkStarted: Boolean = false
 }

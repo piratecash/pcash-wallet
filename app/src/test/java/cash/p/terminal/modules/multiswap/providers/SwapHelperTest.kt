@@ -13,6 +13,7 @@ import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.TokenType
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -77,7 +78,16 @@ class SwapHelperTest {
     fun getReceiveAddressForToken_thorchainWithoutWalletMnemonic_returnsKitAddress() = runTest {
         val account = account(AccountType.Mnemonic(List(11) { "abandon" } + "about", ""))
         mockActiveAccount(account)
-        every { thorchainKitManagers.forType(BlockchainType.Thorchain).getAddress(account) } returns THOR_ADDRESS
+        coEvery { thorchainKitManagers.forType(BlockchainType.Thorchain).getAddress(account) } returns THOR_ADDRESS
+
+        assertEquals(THOR_ADDRESS, SwapHelper.getReceiveAddressForToken(runeToken))
+    }
+
+    @Test
+    fun getReceiveAddressForToken_thorchainWithoutWalletLedger_returnsKitAddress() = runTest {
+        val account = account(AccountType.LedgerDevice("ledger-id", "nanoSP", "wallet-key"))
+        mockActiveAccount(account)
+        coEvery { thorchainKitManagers.forType(BlockchainType.Thorchain).getAddress(account) } returns THOR_ADDRESS
 
         assertEquals(THOR_ADDRESS, SwapHelper.getReceiveAddressForToken(runeToken))
     }

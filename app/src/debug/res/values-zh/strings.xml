@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ledger_speculos_switch">通过 speculos 连接 Ledger</string>
+    <string name="ledger_speculos_address">speculos 地址（主机:端口）</string>
+</resources>

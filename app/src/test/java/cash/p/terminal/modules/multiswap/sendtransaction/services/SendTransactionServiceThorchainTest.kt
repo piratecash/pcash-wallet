@@ -33,6 +33,7 @@ import io.horizontalsystems.thorchainkit.ThorchainKit
 import io.horizontalsystems.thorchainkit.models.CoinTransfer
 import io.horizontalsystems.thorchainkit.models.Transaction
 import io.horizontalsystems.thorchainkit.network.Network
+import io.horizontalsystems.thorchainkit.transaction.Signer
 import io.horizontalsystems.thorchainkit.transaction.TransactionSender.SendError
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -133,7 +134,7 @@ class SendTransactionServiceThorchainTest : KoinTest {
     @Test
     fun send_depositPossiblyAccepted_returnsSubmittedHash() = runTest(dispatcher) {
         every { kit.getDenomBalance("rune") } returns BigInteger("1000000000")
-        coEvery { kit.deposit(any(), any(), any(), any()) } throws SendError.PossiblyAccepted("ab12")
+        coEvery { kit.deposit(any(), any(), any(), any<Signer>()) } throws SendError.PossiblyAccepted("ab12")
         val service = service(rune)
         service.setSendTransactionData(SendTransactionData.Thorchain.Deposit("THOR.RUNE", BigDecimal.ONE, MEMO))
 
@@ -146,18 +147,18 @@ class SendTransactionServiceThorchainTest : KoinTest {
     @Test
     fun send_sendData_transfersToInboundVault() = runTest(dispatcher) {
         every { kit.getDenomBalance("rune") } returns BigInteger("1000000000")
-        coEvery { kit.send(any(), any(), any(), any(), any()) } returns "HASH"
+        coEvery { kit.send(any(), any(), any(), any(), any<Signer>()) } returns "HASH"
         val service = service(rune)
         service.setSendTransactionData(SendTransactionData.Thorchain.Send(VAULT, BigDecimal.ONE, MEMO))
 
         assertEquals(SendTransactionResult.Thorchain("HASH", "HASH-rune"), service.send())
-        coVerify { kit.send(any(), BigInteger("100000000"), "rune", MEMO, any()) }
+        coVerify { kit.send(any(), BigInteger("100000000"), "rune", MEMO, any<Signer>()) }
     }
 
     @Test
     fun send_runeDeposit_recordUidMatchesHistoryRecord() = runTest(dispatcher) {
         every { kit.getDenomBalance("rune") } returns BigInteger("1000000000")
-        coEvery { kit.deposit(any(), any(), any(), any()) } returns HASH
+        coEvery { kit.deposit(any(), any(), any(), any<Signer>()) } returns HASH
         val service = service(rune)
         service.setSendTransactionData(SendTransactionData.Thorchain.Deposit("THOR.RUNE", BigDecimal.ONE, MEMO))
 
@@ -168,7 +169,7 @@ class SendTransactionServiceThorchainTest : KoinTest {
     fun send_tokenSend_recordUidMatchesHistoryRecord() = runTest(dispatcher) {
         every { kit.getDenomBalance("tcy") } returns BigInteger("500000000")
         every { kit.getDenomBalance("rune") } returns BigInteger("1000000000")
-        coEvery { kit.send(any(), any(), any(), any(), any()) } returns HASH
+        coEvery { kit.send(any(), any(), any(), any(), any<Signer>()) } returns HASH
         val service = service(tcy)
         service.setSendTransactionData(SendTransactionData.Thorchain.Send(VAULT, BigDecimal.ONE, MEMO))
 
@@ -178,7 +179,7 @@ class SendTransactionServiceThorchainTest : KoinTest {
     @Test
     fun send_sendData_canonicalTxHashIsBareHash() = runTest(dispatcher) {
         every { kit.getDenomBalance("rune") } returns BigInteger("1000000000")
-        coEvery { kit.send(any(), any(), any(), any(), any()) } returns HASH
+        coEvery { kit.send(any(), any(), any(), any(), any<Signer>()) } returns HASH
         val service = service(rune)
         service.setSendTransactionData(SendTransactionData.Thorchain.Send(VAULT, BigDecimal.ONE, MEMO))
 

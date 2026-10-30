@@ -52,6 +52,11 @@ fun FullCoin.eligibleTokens(accountType: AccountType): List<Token> {
         .filter { it.supports(accountType) && it.blockchainType.supports(accountType) }
 }
 
+// Empty probe: Mnemonic support checks never derive keys from the words.
+private val seedPhraseProbe = AccountType.Mnemonic(emptyList(), "")
+
+fun FullCoin.seedPhraseTokens(): List<Token> = eligibleTokens(seedPhraseProbe)
+
 val TokenType.AddressType.kitCoinType: MainNetBitcoinCash.CoinType
     get() = when (this) {
         TokenType.AddressType.Type0 -> MainNetBitcoinCash.CoinType.Type0

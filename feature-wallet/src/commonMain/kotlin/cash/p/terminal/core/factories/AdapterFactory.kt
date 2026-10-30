@@ -8,6 +8,7 @@ import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.ISendEthereumAdapter
 import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.UnsupportedAccountException
+import cash.p.terminal.core.UnsupportedException
 import cash.p.terminal.core.adapters.BitcoinAdapter
 import cash.p.terminal.core.adapters.BeamAdapter
 import cash.p.terminal.core.adapters.BitcoinCashAdapter
@@ -59,6 +60,7 @@ import cash.p.terminal.core.managers.BeamLifecycleCoordinator
 import cash.p.terminal.core.managers.BeamSendCoordinator
 import cash.p.terminal.core.managers.BeamSessionOwner
 import cash.p.terminal.core.managers.BitcoinKitDatabaseManager
+import cash.p.terminal.core.managers.DeviceSignerFactory
 import cash.p.terminal.core.managers.BitcoinKitEnvironment
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.EvmLabelManager
@@ -720,14 +722,17 @@ class AdapterFactory(
     private fun TransactionSource.requireTonWalletVersion() = requireNotNull(tonWalletVersion)
 
     companion object {
-        /** A Trezor account signs on the device; anything else signs with its own spending key. */
+        /** A device account signs on the device; anything else signs with its own spending key. */
         @VisibleForTesting
-        internal fun buildZcashSigner(wallet: Wallet, hardwareSigners: ZcashHardwareSigners): ZcashTransactionSigner {
-            val accountType = wallet.account.type
-            if (accountType !is AccountType.TrezorDevice) {
-                return ZcashSpendingKeySigner(wallet.zcashKey() ?: throw UnsupportedAccountException())
+        internal fun buildZcashSigner(wallet: Wallet, hardwareSigners: ZcashHardwareSigners): ZcashTransactionSigner =
+            when (val accountType = wallet.account.type) {
+                is AccountType.TrezorDevice -> hardwareSigners.trezorSigner(wallet, accountType)
+                is AccountType.LedgerDevice -> getKoinInstance<DeviceSignerFactory>()
+                    .ledgerZcash(wallet.account, wallet.requireDeviceKey("Ledger"))
+                else -> ZcashSpendingKeySigner(wallet.zcashKey() ?: throw UnsupportedAccountException())
             }
-            return hardwareSigners.trezorSigner(wallet, accountType)
-        }
+
+        private fun Wallet.requireDeviceKey(vendor: String) =
+            hardwarePublicKey ?: throw UnsupportedException("$vendor does not have a key for Zcash")
     }
 }

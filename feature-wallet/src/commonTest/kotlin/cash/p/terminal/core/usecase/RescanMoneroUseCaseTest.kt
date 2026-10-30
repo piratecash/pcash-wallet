@@ -65,7 +65,7 @@ class RescanMoneroUseCaseTest {
         } returns offline
     }
 
-    private fun givenActiveAccount(active: Boolean) {
+    private fun givenActiveAccount(active: Boolean, account: Account = this.account) {
         coEvery { moneroKitManager.rescanIfActive(account, HEIGHT) } returns active
     }
 
@@ -97,6 +97,33 @@ class RescanMoneroUseCaseTest {
             moneroFileDao.deleteAssociatedRecord(account.id)
             restoreSettingsManager.save(restoreSettings, account, BlockchainType.Monero)
         }
+        assertEquals(HEIGHT, restoreSettings.birthdayHeight)
+    }
+
+    @Test
+    fun invoke_inactiveTrezorAccount_keepsWalletFilesAndPersistsHeight() = runTest(dispatcher) {
+        assertInactiveDeviceWalletKeepsFiles(
+            AccountType.TrezorDevice("device-id", "T3T1", "2.8.10", "wallet-key")
+        )
+    }
+
+    @Test
+    fun invoke_inactiveLedgerAccount_keepsWalletFilesAndPersistsHeight() = runTest(dispatcher) {
+        assertInactiveDeviceWalletKeepsFiles(AccountType.LedgerDevice("device-id", "NanoSPlus", "wallet-key"))
+    }
+
+    private suspend fun assertInactiveDeviceWalletKeepsFiles(type: AccountType) {
+        val deviceAccount = account.copy(type = type)
+        givenOffline(false)
+        givenActiveAccount(false, deviceAccount)
+        val restoreSettings = RestoreSettings()
+        every { restoreSettingsManager.settings(deviceAccount, BlockchainType.Monero) } returns restoreSettings
+
+        useCase(deviceAccount, HEIGHT)
+
+        coVerify(exactly = 0) { removeMoneroWalletFilesUseCase(any<Account>()) }
+        coVerify(exactly = 0) { moneroFileDao.deleteAssociatedRecord(any()) }
+        coVerify(exactly = 1) { restoreSettingsManager.save(restoreSettings, deviceAccount, BlockchainType.Monero) }
         assertEquals(HEIGHT, restoreSettings.birthdayHeight)
     }
 

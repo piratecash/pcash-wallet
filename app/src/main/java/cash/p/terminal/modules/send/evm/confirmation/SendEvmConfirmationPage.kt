@@ -18,10 +18,11 @@ import cash.p.terminal.modules.send.evm.settings.SendEvmSettingsPage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
-import cash.p.terminal.trezor.domain.TrezorCancelledException
+import cash.p.terminal.wallet.hardware.HardwareCancelledException
 import cash.p.terminal.core.App
 import cash.p.terminal.modules.confirm.ConfirmTransactionScreen
 import cash.p.terminal.modules.send.evm.SendEvmData
+import cash.p.terminal.modules.send.hardwareWalletErrorMessage
 import cash.p.terminal.modules.send.evm.SendEvmModule
 import cash.p.terminal.modules.sendevmtransaction.SendEvmTransactionView
 import cash.p.terminal.tangem.domain.isHardwareWalletUserCancelled
@@ -123,7 +124,7 @@ private fun SendEvmConfirmationScreen(
                             delay(1200)
 
                             navigation.removeLastUntil(input.sendEntryPoint, true)
-                        } catch (e: TrezorCancelledException) {
+                        } catch (e: HardwareCancelledException) {
                             logger.info("trezor user cancelled")
                             currentSnackbar?.dismiss()
                         } catch (t: Throwable) {
@@ -132,11 +133,12 @@ private fun SendEvmConfirmationScreen(
                                 currentSnackbar?.dismiss()
                             } else {
                                 logger.warning("failed", t)
-                                val errorMsg = if (t is JsonRpc.ResponseError.RpcError) {
-                                    t.error.message
-                                } else {
-                                    t.message ?: App.instance.getString(R.string.unknown_send_error)
-                                }
+                                val errorMsg = t.hardwareWalletErrorMessage()
+                                    ?: if (t is JsonRpc.ResponseError.RpcError) {
+                                        t.error.message
+                                    } else {
+                                        t.message ?: App.instance.getString(R.string.unknown_send_error)
+                                    }
                                 HudHelper.showErrorMessage(view, errorMsg)
                             }
                         }

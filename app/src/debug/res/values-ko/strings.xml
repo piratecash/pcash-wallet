@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ledger_speculos_switch">speculos를 통한 Ledger</string>
+    <string name="ledger_speculos_address">speculos 주소(호스트:포트)</string>
+</resources>

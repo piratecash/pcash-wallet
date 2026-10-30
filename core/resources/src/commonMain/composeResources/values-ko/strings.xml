@@ -55,10 +55,43 @@
     <string name="trezor_wallet">Trezor 지갑</string>
     <string name="connect_trezor">Trezor 연결</string>
     <string name="trezor_setup_description">USB 케이블로 Trezor를 연결한 뒤 기기에서 확인하세요.</string>
+    <string name="ledger_wallet">Ledger 지갑</string>
+    <string name="connect_ledger">Ledger 연결</string>
+    <string name="ledger_setup_description">USB 케이블로 Ledger를 연결하고 잠금을 해제한 뒤 기기에서 각 앱 열기를 확인하세요.</string>
+    <string name="ledger_usb_permission">시스템 대화상자에서 Ledger 접근을 허용하세요</string>
+    <string name="ledger_opening_app">%1$d/%2$d: Ledger에서 %3$s 앱 열기를 확인하세요</string>
+    <string name="ledger_not_added_title">추가되지 않음</string>
+    <string name="ledger_not_added_description">%1$s: 앱이 없거나 오래되었거나 앱 열기가 거부되었습니다. Ledger Live에서 설치하거나 업데이트한 뒤 코인 관리에서 네트워크를 추가하세요.</string>
+    <string name="ledger_identity_mismatch">다른 Ledger 또는 다른 패스프레이즈가 연결되어 있습니다</string>
+    <string name="ledger_update_app">Ledger Live에서 %1$s 앱을 업데이트하세요</string>
+    <string name="ledger_install_app">Ledger Live에서 %1$s 앱을 설치하세요</string>
+    <string name="ledger_install_identity_app">같은 Ledger인지 확인하려면 Ledger Live에서 다음 앱 중 하나를 설치하세요: %1$s</string>
+    <string name="ledger_not_found">Ledger를 찾을 수 없습니다. USB 케이블로 연결하고 잠금을 해제하세요.</string>
+    <string name="ledger_usb_permission_denied">Ledger에 대한 USB 접근이 거부되었습니다</string>
+    <string name="ledger_device_locked">Ledger 잠금을 해제하세요</string>
+    <string name="ledger_device_not_set_up">Ledger가 아직 설정되지 않았습니다. Ledger Live에서 설정하고 앱을 설치한 후 다시 연결하세요</string>
+    <string name="ledger_no_supported_apps">이 Ledger에서 추가된 지원 네트워크가 없습니다</string>
+    <string name="ledger_connect_failed">Ledger 연결에 실패했습니다</string>
+    <string name="ledger_rejected">Ledger에서 거부되었습니다</string>
+    <string name="ledger_signing_failed">Ledger에서 거래에 서명하지 못했습니다</string>
+    <string name="ledger_blind_signing_required">Ledger의 %1$s 앱 설정에서 Blind signing을 켠 뒤 다시 시도하세요</string>
+    <string name="ledger_data_too_large">메시지가 너무 커서 Ledger에서 처리할 수 없습니다</string>
+    <string name="ledger_zcash_reopen_app">Ledger에서 Zcash 앱을 닫았다가 다시 연 후 다시 시도하세요</string>
+    <string name="ledger_ton_single_message">Ledger는 TON 거래당 하나의 메시지만 서명할 수 있습니다</string>
+    <string name="ledger_tron_settings_required">Ledger의 Tron 앱 설정에서 Transactions data(메모용) 또는 Custom contracts(기타 컨트랙트 호출용)를 켠 뒤 다시 시도하세요</string>
+    <string name="ledger_ton_blind_signing_required">Ledger의 TON 앱 설정에서 Allow blind sign을 켠 뒤 다시 시도하세요</string>
+    <string name="ledger_verify_address">Ledger에서 주소 확인</string>
+    <string name="ledger_monero_confirm_view_key">Ledger의 Monero 앱에서 보기 키 내보내기를 허용하세요</string>
+    <string name="ledger_waiting_for_device">Ledger 대기 중…</string>
+    <string name="ledger_sync_paused_open_app">%1$s 동기화가 일시 중지되었습니다. 계속하려면 Ledger에서 %1$s 앱을 여세요.</string>
+    <string name="ledger_sync_finishing_wait">Ledger가 %1$s 동기화를 마무리하고 있습니다. 작업이 자동으로 계속됩니다.</string>
+    <string name="ledger_device_request_wait">Ledger에서 %1$s 요청을 승인하세요. 작업이 자동으로 계속됩니다.</string>
+    <string name="ledger_confirm_opening_app">Ledger에서 %1$s 앱 열기를 승인하세요</string>
     <string name="trezor_not_initialized_title">기기가 설정되지 않음</string>
     <string name="trezor_not_initialized_description">이 Trezor는 아직 설정되지 않았습니다. 기기에서 설정을 완료한 뒤 다시 연결하세요.</string>
     <string name="trezor_not_initialized_cta">설정 가이드</string>
     <string name="trezor_connect_failed">Trezor에 연결하지 못했습니다.</string>
+    <string name="hardware_connect_device_to_sync">동기화하려면 기기를 연결하세요</string>
     <string name="Button_Activate">활성화</string>
     <string name="activation_required_dialog_description">%1$s을(를) 받으려면 토큰을 활성화해야 합니다. Stellar 네트워크는 각 토큰마다 신뢰선(trustline) 설정을 요구합니다. 신뢰선이 없으면 지갑에서 %2$s을(를) 받을 수 없으며, 트랜잭션이 거부되어 자금이 전달되지 않습니다.</string>
     <string name="activate_you_activate">활성화할 토큰</string>
@@ -580,6 +613,7 @@
 
     <string name="connect">연결</string>
     <string name="connect_trezor_to_add_message">토큰을 추가하려면 Trezor를 연결해야 합니다</string>
+    <string name="connect_ledger_to_add_message">토큰을 추가하려면 Ledger를 연결해야 합니다</string>
     <!--EthereumTransaction-->
     <string name="EthereumTransaction_Warning_Title">경고</string>
     <string name="EthereumTransaction_Error_Title">오류</string>
@@ -1239,6 +1273,7 @@
     <string name="ManageAccounts_ImportWallet">다음에서 복원하기</string>
     <string name="ManageAccounts_WatchAddress">주소 관찰</string>
     <string name="add_via_trezor">Trezor로 추가</string>
+    <string name="add_via_ledger">Ledger로 추가</string>
     <!-- Import Wallet -->
     <string name="ImportWallet_BackupFile">파일에서</string>
     <string name="ImportWallet_BackupFile_Description">백업 파일에서 가져오기.</string>
@@ -2160,19 +2195,22 @@
     <string name="adding_tokens">토큰 추가 중</string>
     <string name="scan_to_add_message">토큰을 추가하려면 카드를 스캔해야 합니다</string>
     <string name="error_hardware_wallet_some_tokens_not_found">일부 토큰을 추가할 수 없습니다</string>
+    <string name="error_hardware_wallet_token_unavailable">%1$s에서는 사용할 수 없습니다. 시드 문구 지갑에서 사용할 수 있습니다</string>
     <string name="send_error_address_unavailable">주소를 사용할 수 없습니다</string>
     <string name="send_error_amount_unavailable">금액을 사용할 수 없습니다</string>
     <string name="send_error_fee_rate_unavailable">수수료율을 사용할 수 없습니다</string>
     <string name="send_error_balance_unavailable">잔액을 사용할 수 없습니다</string>
     <string name="litecoin_mweb_invalid_amount">Litecoin MWEB 금액이 올바르지 않습니다</string>
     <string name="litecoin_hardware_extended_public_key_required">하드웨어 Litecoin 지갑에는 확장 공개 키가 필요합니다</string>
-    <string name="send_trezor_mweb_not_supported">Trezor는 MWEB를 지원하지 않습니다. 일반(비 MWEB) 주소로 라이트코인을 보내세요.</string>
-    <string name="send_trezor_time_lock_not_supported">Trezor는 시간 잠금 거래를 지원하지 않습니다.</string>
+    <string name="send_hardware_mweb_not_supported">이 하드웨어 지갑은 MWEB를 지원하지 않습니다. 일반(비 MWEB) 주소로 라이트코인을 보내세요.</string>
+    <string name="send_hardware_time_lock_not_supported">이 하드웨어 지갑은 시간 잠금 거래를 지원하지 않습니다.</string>
     <string name="send_trezor_zcash_memo_not_supported">Trezor는 Zcash 트랜잭션에 메모를 첨부할 수 없습니다. 계속하려면 메모를 삭제하세요.</string>
     <string name="send_memo_too_long">메모가 너무 길어요: %1$d/%2$d바이트</string>
     <string name="send_trezor_zcash_transparent_only">Trezor는 투명(transparent) 주소로만 Zcash를 보낼 수 있습니다.</string>
     <string name="send_trezor_zcash_unified_no_transparent_receiver">이 유니파이드(unified) 주소에는 투명 수신자가 없어 Trezor에서 전송할 수 없습니다.</string>
     <string name="send_trezor_zcash_firmware_required">%1$s에서 Zcash 유니파이드 주소로 보내려면 펌웨어 %2$s 이상이 필요합니다. 기기를 업데이트한 후 다시 시도하세요 — 다음 Zcash 거래 시 펌웨어 버전을 다시 확인합니다.</string>
+    <string name="send_ledger_zcash_sapling_not_supported">Ledger는 Sapling 주소로 Zcash를 보낼 수 없습니다. 유니파이드(unified) 주소나 투명 주소를 사용하세요.</string>
+    <string name="send_ledger_zcash_transaction_too_large">이 트랜잭션은 Ledger에서 처리하기에 너무 큽니다. 더 적은 금액을 보내세요.</string>
     <string name="send_failed_offline_prompt_title">거래가 전송되지 않음</string>
     <string name="send_failed_offline_prompt_message">거래를 오프라인으로 서명하고 나중에 전송하시겠습니까?</string>
 

@@ -6,7 +6,10 @@ import cash.p.terminal.core.usecase.AddMoneroToTrezorAccountUseCase
 import cash.p.terminal.core.usecase.AndroidMoneroWalletStorage
 import cash.p.terminal.core.usecase.CheckGooglePlayUpdateUseCase
 import cash.p.terminal.core.usecase.CreateHardwareWalletUseCase
+import cash.p.terminal.core.usecase.CreateLedgerWalletUseCase
 import cash.p.terminal.core.usecase.CreateTrezorWalletUseCase
+import cash.p.terminal.core.usecase.HardwareAccountActivator
+import cash.p.terminal.ledger.domain.ICreateLedgerWalletUseCase
 import cash.p.terminal.core.usecase.GetMoneroWalletFilesNameUseCase
 import cash.p.terminal.core.usecase.FetchSwapQuotesUseCase
 import cash.p.terminal.core.usecase.IterativeExactOutSearch
@@ -40,6 +43,8 @@ val useCaseModule = module {
     factoryOf(::CheckGooglePlayUpdateUseCase) bind GooglePlayUpdateAvailabilityProvider::class
     factoryOf(::CreateHardwareWalletUseCase) bind ICreateHardwareWalletUseCase::class
     factoryOf(::CreateTrezorWalletUseCase) bind ICreateTrezorWalletUseCase::class
+    factoryOf(::CreateLedgerWalletUseCase) bind ICreateLedgerWalletUseCase::class
+    factoryOf(::HardwareAccountActivator)
     factoryOf(::GetMoneroWalletFilesNameUseCase) bind IGetMoneroWalletFilesNameUseCase::class
     singleOf(::TorConnectionStatusUseCase) bind ITorConnectionStatusUseCase::class
     factoryOf(::ClearLegacyZcashDataUseCase)
@@ -52,6 +57,7 @@ val useCaseModule = module {
             get(),
             get(named("tangem")),
             get(named("trezor")),
+            get(named("ledger")),
             get(),
         )
     }

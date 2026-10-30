@@ -25,7 +25,7 @@ internal class GetBnbAddressUseCaseImpl(
                 seedToEvmAddressUseCase(mnemonicType.words, mnemonicType.passphrase)
             }
 
-            is AccountType.TrezorDevice,
+            is AccountType.HardwareDevice,
             is AccountType.HardwareCard -> {
                 val address =
                     withContext(Dispatchers.IO) { bnbPremiumAddressDao.getByAccount(account.id)?.address }

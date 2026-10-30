@@ -18,7 +18,8 @@ class ThorchainKitManagersTest {
 
     private val context = mockk<Context>()
     private val platformContexts = mockk<KitPlatformContexts> { every { thorchain } returns context }
-    private val managers = ThorchainKitManagers(platformContexts, mockk(), mockk(), mockk(), mockk(), mockk())
+    private val managers =
+        ThorchainKitManagers(platformContexts, mockk(), mockk(), mockk(), mockk(), mockk(), mockk(), mockk())
 
     @After
     fun tearDown() {

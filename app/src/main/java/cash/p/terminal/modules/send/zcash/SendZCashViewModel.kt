@@ -24,6 +24,7 @@ import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.memo.fitsMemoBytes
 import cash.p.terminal.modules.send.SendConfirmationData
 import cash.p.terminal.modules.send.SendResult
+import cash.p.terminal.modules.send.isHardwareWalletCancelled
 import cash.p.terminal.modules.send.offline.OfflineSignCapableViewModel
 import cash.p.terminal.modules.send.offline.OfflineSigningController
 import cash.p.terminal.modules.send.offline.OfflineTransactionFormat
@@ -186,8 +187,14 @@ class SendZCashViewModel(
         emitState()
     }
 
+    // The screen shows the recipient as the signing device will, so the user can compare the two.
     override fun getConfirmationData(): SendConfirmationData {
         val address = destinationAddress
+        val shown = Address(adapter.addressShownOnDevice(address.hex), address.domain, address.blockchainType)
+        return confirmationData(address).copy(address = shown)
+    }
+
+    private fun confirmationData(address: Address): SendConfirmationData {
         val contact = contactsRepo.getContactsFiltered(
             blockchainType,
             addressQuery = address.hex
@@ -219,7 +226,7 @@ class SendZCashViewModel(
     }
 
     private suspend fun signedOfflineTransaction(): OfflineSignResult {
-        val confirmationData = getConfirmationData()
+        val confirmationData = confirmationData(destinationAddress)
         val signingAdapter = offlineSignAdapter
             ?: throw LocalizedException(Res.string.offline_broadcast_unsupported_blockchain)
         return OfflineSignResult(
@@ -271,6 +278,11 @@ class SendZCashViewModel(
             sendResult = SendResult.Sent(txId)
             zcashLogger.i { "Send completed" }
         } catch (e: Throwable) {
+            if (e.isHardwareWalletCancelled()) {
+                zcashLogger.i { "Send cancelled on the device" }
+                sendResult = null
+                return@withContext
+            }
             zcashLogger.e { "Send failed error=${e.zcashErrorName}" }
             sendResult = SendResult.Failed(zcashSendCaution(e))
         }

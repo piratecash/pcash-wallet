@@ -139,6 +139,7 @@ import cash.p.terminal.core.managers.DefaultBitcoinKitDatabaseOperations
 import io.horizontalsystems.bitcoincore.core.IConnectionManager
 import cash.p.terminal.core.managers.EvmLabelManager
 import cash.p.terminal.core.managers.EvmSignerFactory
+import cash.p.terminal.core.managers.DeviceSignerFactory
 import cash.p.terminal.data.repository.EvmTransactionRepository
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.core.managers.NetworkErrorTracker
@@ -349,6 +350,7 @@ val featureWalletModule = module {
     singleOf(::DefaultBitcoinKitDatabaseOperations) bind BitcoinKitDatabaseOperations::class
     singleOf(::BitcoinKitDatabaseManager)
     factoryOf(::SolanaWalletManager)
+    singleOf(::DeviceSignerFactory)
     singleOf(::SolanaKitManager)
     singleOf(::StellarKitManager)
     singleOf(::ThorchainKitManagers)

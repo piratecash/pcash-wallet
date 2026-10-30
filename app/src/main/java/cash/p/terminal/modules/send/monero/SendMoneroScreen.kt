@@ -448,7 +448,9 @@ private fun MoneroLiveRefreshPreparation(
     }
 
     if (showPreparation && spendReadiness.requiresTrezorPreparation()) {
+        // Only Trezor readiness needs this preparation.
         MoneroSendPreparationBottomSheet(
+            ledgerWallet = false,
             syncInProgress = preparationInProgress,
             error = preparationError,
             fullWalletRecoveryAvailable = fullWalletRecoveryAvailable,

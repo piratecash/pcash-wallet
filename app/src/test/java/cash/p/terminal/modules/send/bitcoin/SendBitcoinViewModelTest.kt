@@ -237,6 +237,28 @@ class SendBitcoinViewModelTest {
     }
 
     @Test
+    fun onEnterLockTimeInterval_lockTimeDisabled_dropsInterval() = runTest(mainDispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.onEnterLockTimeInterval(LockTimeInterval.hour)
+
+        verify { pluginService.setLockTimeInterval(null) }
+        verify(exactly = 0) { pluginService.setLockTimeInterval(LockTimeInterval.hour) }
+    }
+
+    @Test
+    fun onEnterLockTimeInterval_lockTimeEnabled_setsInterval() = runTest(mainDispatcher) {
+        every { pluginService.isLockTimeEnabled } returns true
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.onEnterLockTimeInterval(LockTimeInterval.hour)
+
+        verify { pluginService.setLockTimeInterval(LockTimeInterval.hour) }
+    }
+
+    @Test
     fun canBeSend_btcMemo80Bytes_isTrue() = runTest(mainDispatcher) {
         assertEquals(true, canBeSendWithMemo(BlockchainType.Bitcoin, "a".repeat(80)))
     }

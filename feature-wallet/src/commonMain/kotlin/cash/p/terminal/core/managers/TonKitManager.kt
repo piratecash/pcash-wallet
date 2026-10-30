@@ -58,6 +58,7 @@ class TonKitManager(
     private val networkErrorTracker: NetworkErrorTracker,
     private val offlineModeManager: OfflineModeManager,
     private val tonKitDatabaseKeyProvider: TonKitDatabaseKeyProvider,
+    private val deviceSigners: DeviceSignerFactory,
 ) {
     private val lifecycleMutex = Mutex()
     private val pollingSessionCount = AtomicInteger(0)
@@ -110,18 +111,31 @@ class TonKitManager(
         entry.wrapper
     }
 
-    fun getTonWallet(
+    suspend fun getTonWallet(
         account: Account,
         version: TonWalletVersion,
         blockchainType: BlockchainType?,
-    ) = account.toTonWallet(
-        version,
-        hardwarePublicKeyStorage,
-        blockchainType,
-    )
+    ): TonWallet = when (val type = account.type) {
+        is AccountType.HardwareDevice -> deviceTonWallet(account, type, version)
+        else -> account.toTonWallet(version, hardwarePublicKeyStorage, blockchainType)
+    }
+
+    // Jettons share the TON key, so whichever of the chain's keys was stored first serves.
+    private suspend fun deviceTonWallet(
+        account: Account,
+        type: AccountType.HardwareDevice,
+        version: TonWalletVersion,
+    ): TonWallet {
+        // The kit's external signer drives only the v4R2 contract; HardwarePublicKeySpecs keeps W5 tokens off devices.
+        require(version == TonWalletVersion.V4R2) { "A hardware device has no W5 wallet" }
+        val key = hardwarePublicKeyStorage.getKeyByBlockchain(account.id, BlockchainType.Ton)
+            ?: throw UnsupportedException("Hardware device does not have a key for TON")
+        val publicKey = PublicKeyEd25519(ByteString(key.key.value.hexStringToByteArray()))
+        return TonWallet.ExternalSigner(publicKey, deviceSigners.ton(account, type, key))
+    }
 
     /** Derives the key, so call it off the main thread. */
-    fun getReceiveAddress(account: Account, version: TonWalletVersion): String =
+    suspend fun getReceiveAddress(account: Account, version: TonWalletVersion): String =
         getTonWallet(account, version, BlockchainType.Ton).address(Network.MainNet).toUserFriendly(false)
 
     // Under the lifecycle lock so it cannot interleave with clear() of the same account.

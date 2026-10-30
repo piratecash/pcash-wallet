@@ -1,11 +1,5 @@
 package cash.p.terminal.trezor.client
 
-import android.app.Activity
-import android.os.Bundle
+import io.horizontalsystems.core.common.usb.UsbAttachActivity
 
-class TrezorUsbAttachActivity : Activity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        finish()
-    }
-}
+class TrezorUsbAttachActivity : UsbAttachActivity()

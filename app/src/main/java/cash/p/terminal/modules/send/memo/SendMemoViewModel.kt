@@ -27,6 +27,7 @@ import cash.p.terminal.modules.send.BaseSendViewModel
 import cash.p.terminal.modules.send.SendConfirmationData
 import cash.p.terminal.modules.send.SendErrorInsufficientBalance
 import cash.p.terminal.modules.send.SendResult
+import cash.p.terminal.modules.send.hardwareWalletCaution
 import cash.p.terminal.modules.send.hasInsufficientFeeTokenBalance
 import cash.p.terminal.modules.send.offline.OfflineSignCapableViewModel
 import cash.p.terminal.modules.send.offline.OfflineSigningController
@@ -40,7 +41,7 @@ import cash.p.terminal.resources.send_error_amount_unavailable
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.tangem.domain.isHardwareWalletUserCancelled
 import cash.p.terminal.modules.send.isHardwareWalletCancelled
-import cash.p.terminal.trezor.domain.TrezorCancelledException
+import cash.p.terminal.wallet.hardware.HardwareCancelledException
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
@@ -276,7 +277,7 @@ class SendMemoViewModel(
     }
 
     private fun onSendFailed(error: Throwable) {
-        if (error is TrezorCancelledException || error.isHardwareWalletUserCancelled()) {
+        if (error is HardwareCancelledException || error.isHardwareWalletUserCancelled()) {
             sendResult = null
             logger.info("user cancelled")
             return
@@ -342,7 +343,7 @@ class SendMemoViewModel(
         )
     }
 
-    private fun createCaution(error: Throwable) = when (error) {
+    private fun createCaution(error: Throwable) = error.hardwareWalletCaution() ?: when (error) {
         is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
         is LocalizedException -> HSCaution(error.toResString())
         else -> HSCaution(TranslatableString.PlainString(error.message ?: ""))

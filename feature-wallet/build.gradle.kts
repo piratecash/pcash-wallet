@@ -102,6 +102,7 @@ kotlin {
                 implementation(project(":core:vault"))
                 implementation(project(":feature-market"))
                 implementation(project(":feature-premium"))
+                implementation(project(":feature-ledger"))
                 // AdapterFactory takes StackingManager in its public constructor.
                 api(project(":feature-stacking"))
                 implementation(project(":components:chartview"))

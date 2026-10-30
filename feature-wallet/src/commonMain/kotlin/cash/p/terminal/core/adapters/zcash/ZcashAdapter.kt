@@ -48,6 +48,8 @@ import cash.p.terminal.resources.send_trezor_zcash_memo_not_supported
 import cash.p.terminal.resources.send_trezor_zcash_transparent_only
 import cash.p.terminal.resources.send_trezor_zcash_unified_no_transparent_receiver
 import cash.p.terminal.resources.zcash_migration_error_nothing_to_migrate
+import cash.p.terminal.resources.send_ledger_zcash_sapling_not_supported
+import cash.p.terminal.resources.send_ledger_zcash_transaction_too_large
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.AdapterStoppedException
@@ -61,9 +63,12 @@ import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.BalanceData
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
+import cash.p.terminal.wallet.hardware.HardwareAddressLocator
+import cash.p.terminal.wallet.hardware.HardwareAddressPosition
 import cash.p.zcash.Addresses
 import cash.p.zcash.Balance
 import cash.p.zcash.BroadcastResult
+import cash.p.zcash.ExternalSigningRefusal
 import cash.p.zcash.MigrationEvent
 import cash.p.zcash.MigrationPhase
 import cash.p.zcash.MigrationStatus
@@ -81,6 +86,8 @@ import cash.p.zcash.ZcashNetwork
 import cash.p.zcash.ZcashSdk
 import cash.p.zcash.ZcashWallet
 import cash.p.zcash.addressReceivers
+import cash.p.zcash.orchardOnlyAddress
+import cash.p.zcash.transparentAddressOfTex
 import cash.p.zcash.transactionId
 import io.horizontalsystems.core.IBackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
@@ -123,10 +130,11 @@ class ZcashAdapter(
     private val signer: ZcashTransactionSigner,
     private val dispatcherProvider: DispatcherProvider,
 ) : IAdapter, IBalanceAdapter, IReceiveAdapter, ITransactionsAdapter, ISendZcashAdapter,
-    OneTimeReceiveAdapter {
+    OneTimeReceiveAdapter, HardwareAddressLocator {
 
     private val zcashKey = wallet.zcashKey() ?: throw UnsupportedAccountException()
     private val isTrezorAccount = wallet.account.type is AccountType.TrezorDevice
+    private val isLedgerAccount = wallet.account.type is AccountType.LedgerDevice
 
     private val scope = CoroutineScope(SupervisorJob() + dispatcherProvider.io)
     private val logger = zcashAppLogger(wallet.account.id)
@@ -173,7 +181,7 @@ class ZcashAdapter(
     }
 
     override val receiveAddress: String =
-        ownAddresses?.let { addressSpecTyped.selectZcashReceiver(it) }.orEmpty()
+        ownAddresses?.let { addressSpecTyped.selectZcashReceiver(it, wallet.account.type) }.orEmpty()
     override val isMainNet: Boolean = true
 
     /**
@@ -694,11 +702,29 @@ class ZcashAdapter(
         if (address == receiveAddress) throw ZcashError.SendToSelfNotAllowed
         val kind = zcashAddressKind(address) ?: throw ZcashError.InvalidAddress
         if (isTrezorAccount) validateTrezorRecipient(kind, address)
+        if (isLedgerAccount) validateLedgerRecipient(kind, address)
         return when (kind) {
             ZcashAddressKind.TRANSPARENT -> ZCashAddressType.Transparent
             ZcashAddressKind.SAPLING, ZcashAddressKind.TEX -> ZCashAddressType.Shielded
             ZcashAddressKind.UNIFIED -> ZCashAddressType.Unified
         }
+    }
+
+    /** Ledger shows a shielded recipient as its Orchard receiver, so one without it is refused. */
+    private fun validateLedgerRecipient(kind: ZcashAddressKind, address: String) {
+        val refused = when (kind) {
+            ZcashAddressKind.SAPLING -> true
+            ZcashAddressKind.UNIFIED -> ZcashSdk.orchardOnlyAddress(address, ZcashNetwork.MAIN) == null
+            ZcashAddressKind.TRANSPARENT, ZcashAddressKind.TEX -> false
+        }
+        if (refused) throw ZcashError.LedgerSaplingRecipient
+    }
+
+    override fun addressShownOnDevice(address: String): String {
+        if (!isLedgerAccount) return address
+        return ZcashSdk.orchardOnlyAddress(address, ZcashNetwork.MAIN)
+            ?: ZcashSdk.transparentAddressOfTex(address, ZcashNetwork.MAIN)
+            ?: address
     }
 
     /** Trezor can only sign a transparent bundle - refuse anything that could route around it. */
@@ -726,10 +752,7 @@ class ZcashAdapter(
     ): String {
         zcashLogger.d { "Send started" }
         val recipient = beforeBroadcast { recipient(amount, address, memo) }
-        return broadcastSigned(
-            listOf(recipient),
-            PaymentOptions(sourcePools = sourcePools, hardwareSigning = isTrezorAccount),
-        )
+        return broadcastSigned(listOf(recipient), PaymentOptions(sourcePools = sourcePools))
     }
 
     /**
@@ -753,18 +776,25 @@ class ZcashAdapter(
         return result.message
     }
 
-    /** The native layer reports every planning failure as [ZcashException], message included. */
+    /**
+     * Plans for whatever signs this account. The native layer reports every planning failure as
+     * [ZcashException], message included.
+     */
     private suspend fun ZcashWallet.prepareOrInsufficient(
         account: Int,
         recipients: List<Recipient>,
         options: PaymentOptions,
     ): PreparedTransaction = try {
-        prepare(account, recipients, options)
+        prepare(
+            account,
+            recipients,
+            options.copy(hardwareSigning = isTrezorAccount, externalPcztSigning = isLedgerAccount),
+        )
     } catch (e: ZcashException) {
         if (e.message?.contains(NO_FEASIBLE_SELECTION) == true) {
             throw LocalizedException(Res.string.Swap_ErrorInsufficientBalance)
         }
-        throw e
+        throw e.externalSigningRefusal?.toZcashError() ?: e
     }
 
     private suspend fun <T> beforeBroadcast(block: suspend () -> T): T = try {
@@ -789,7 +819,7 @@ class ZcashAdapter(
             val prepared = zcash.prepareOrInsufficient(
                 account = id,
                 recipients = listOf(recipient),
-                options = PaymentOptions(sourcePools = sourcePools, hardwareSigning = isTrezorAccount),
+                options = PaymentOptions(sourcePools = sourcePools),
             )
             val fee = zcash.plan(prepared).fee
             val raw = zcash.extract(signer.sign(zcash, id, prepared))
@@ -835,6 +865,10 @@ class ZcashAdapter(
 
     override suspend fun getOwnAddresses(): List<String> =
         listOfNotNull(ownAddresses?.sapling, ownAddresses?.unified)
+
+    override suspend fun locate(address: String): HardwareAddressPosition? =
+        walletOrNull { zcash, id -> zcash.transparentAddressIndex(id, address) }
+            ?.let { HardwareAddressPosition(change = false, index = it) }
 
     /** Resolved before the pending row is registered, so the caller knows what is about to move. */
     suspend fun shieldingTarget(): ShieldingTarget = requireWallet { zcash, id ->
@@ -1075,6 +1109,17 @@ class ZcashAdapter(
                 get() = Translator.getString(Res.string.send_trezor_zcash_unified_no_transparent_receiver)
         }
 
+        object LedgerSaplingRecipient : ZcashError() {
+            override val message: String
+                get() = Translator.getString(Res.string.send_ledger_zcash_sapling_not_supported)
+        }
+
+        /** Too many inputs or outputs for the Ledger app to sign at once. */
+        object LedgerTransactionTooLarge : ZcashError() {
+            override val message: String
+                get() = Translator.getString(Res.string.send_ledger_zcash_transaction_too_large)
+        }
+
         /** [deviceModel] is the account's stored internal model id; null when metadata is absent or unrecognized. */
         class TrezorFirmwareRequired(private val deviceModel: String?) : ZcashError() {
             override val message: String
@@ -1102,6 +1147,13 @@ class ZcashAdapter(
         val MINERS_FEE: BigDecimal = MINERS_FEE_ZATOSHI.convertZatoshiToZec()
     }
 }
+
+private fun ExternalSigningRefusal.toZcashError(): ZcashAdapter.ZcashError =
+    if (this == ExternalSigningRefusal.SAPLING) {
+        ZcashAdapter.ZcashError.LedgerSaplingRecipient
+    } else {
+        ZcashAdapter.ZcashError.LedgerTransactionTooLarge
+    }
 
 /** Which pools an address spec spends from; Unified holds Orchard and its Ironwood change. */
 internal fun AddressSpecType?.pools(): PoolSet = when (this) {

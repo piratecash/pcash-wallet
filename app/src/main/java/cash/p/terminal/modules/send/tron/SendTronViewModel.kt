@@ -36,6 +36,7 @@ import cash.p.terminal.modules.send.offline.OfflineSignCapableViewModel
 import cash.p.terminal.modules.send.offline.OfflineSigningController
 import cash.p.terminal.modules.send.offline.OfflineTransactionFormat
 import cash.p.terminal.modules.xrate.XRateService
+import cash.p.terminal.modules.send.hardwareWalletCaution
 import cash.p.terminal.modules.send.isHardwareWalletCancelled
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui_compose.entities.ViewState
@@ -463,7 +464,7 @@ class SendTronViewModel(
             addressQuery = address.hex
         ).firstOrNull()
 
-    private fun createCaution(error: Throwable) = when (error) {
+    private fun createCaution(error: Throwable) = error.hardwareWalletCaution() ?: when (error) {
         is UnknownHostException -> HSCaution(TranslatableString.ResString(Res.string.Hud_Text_NoInternet))
         is LocalizedException -> HSCaution(TranslatableString.ResString(error.errorTextRes))
         else -> HSCaution(TranslatableString.PlainString(error.message ?: ""))

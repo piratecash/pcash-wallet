@@ -1,5 +1,8 @@
 package cash.p.terminal.core.managers
 
+import cash.p.terminal.ledger.domain.LedgerAppAccess
+import cash.p.terminal.ledger.ethereum.LedgerEvmSigner
+import cash.p.terminal.ledger.ethereum.LedgerTokenDescriptorStore
 import cash.p.terminal.tangem.common.CustomXPubKeyAddressParser
 import cash.p.terminal.tangem.domain.model.AddressBytesWithPublicKey
 import cash.p.terminal.wallet.Account
@@ -11,6 +14,7 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.ethereumkit.core.signer.Signer
 import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.Chain
+import org.koin.java.KoinJavaComponent.inject
 
 /**
  * Resolves EVM addresses and builds [Signer] instances without starting
@@ -23,13 +27,16 @@ class EvmSignerFactory(
     private val hardwarePublicKeyStorage: IHardwarePublicKeyStorage,
     private val hardwareSigners: EvmHardwareSigners,
 ) {
+    // Lazy: desktop has neither Ledger bindings nor Ledger accounts.
+    private val ledgerAppAccess: LedgerAppAccess by inject(LedgerAppAccess::class.java)
+    private val ledgerTokenDescriptors: LedgerTokenDescriptorStore by inject(LedgerTokenDescriptorStore::class.java)
 
     suspend fun resolveAddress(account: Account, blockchainType: BlockchainType, chain: Chain): Address? =
         when (val type = account.type) {
             is AccountType.Mnemonic -> Signer.address(type.seed, chain)
             is AccountType.EvmPrivateKey -> Signer.address(type.key)
             is AccountType.EvmAddress -> Address(type.address)
-            is AccountType.HardwareCard, is AccountType.TrezorDevice -> hardwareAddress(account.id, blockchainType)
+            is AccountType.HardwareCard, is AccountType.HardwareDevice -> hardwareAddress(account.id, blockchainType)
             else -> null
         }
 
@@ -47,6 +54,19 @@ class EvmSignerFactory(
                 account.id, blockchainType
             )?.let { (publicKey, addressWithPublicKey) ->
                 hardwareSigners.trezorSigner(type, publicKey, addressWithPublicKey, chain)
+            }
+
+            is AccountType.LedgerDevice -> hardwareKey(
+                account.id, blockchainType
+            )?.let { (publicKey, addressWithPublicKey) ->
+                LedgerEvmSigner(
+                    appAccess = ledgerAppAccess,
+                    tokenDescriptors = ledgerTokenDescriptors,
+                    account = account,
+                    hardwarePublicKey = publicKey,
+                    address = Address(addressWithPublicKey.addressBytes),
+                    chain = chain,
+                )
             }
 
             else -> null // EvmAddress (watch) and unsupported account types have no signer

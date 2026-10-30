@@ -115,6 +115,7 @@ class TonKitManagerOfflineGateTest {
         tonKitDatabaseKeyProvider = mockk(relaxed = true) {
             coEvery { awaitKey(any()) } returns ByteArray(32)
         },
+        deviceSigners = mockk(relaxed = true),
     ).also { createdManager = it }
 
     // Opens the kits while the pair is offline and waits for their lifecycle jobs to go idle, so later
@@ -377,6 +378,7 @@ class StellarKitManagerOfflineGateTest {
             },
             hardwarePublicKeyStorage = mockk(relaxed = true),
             hardwareSigners = mockk(relaxed = true),
+            deviceSigners = DeviceSignerFactory(mockk(relaxed = true), mockk(relaxed = true), mockk(relaxed = true)),
             platformContexts = mockk(relaxed = true),
             backgroundKeepAliveManager = mockk(relaxed = true),
             networkErrorTracker = mockk(relaxed = true),

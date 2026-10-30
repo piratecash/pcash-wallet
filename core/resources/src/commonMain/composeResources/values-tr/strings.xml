@@ -55,10 +55,43 @@
     <string name="trezor_wallet">Trezor Cüzdan</string>
     <string name="connect_trezor">Trezor Bağla</string>
     <string name="trezor_setup_description">Trezor\u0027unuzu USB kablosuyla bağlayın ve cihazda onaylayın.</string>
+    <string name="ledger_wallet">Ledger Cüzdan</string>
+    <string name="connect_ledger">Ledger Bağla</string>
+    <string name="ledger_setup_description">Ledger\u0027ınızı USB kablosuyla bağlayın, kilidini açın ve cihazda her uygulamanın açılmasını onaylayın.</string>
+    <string name="ledger_usb_permission">Sistem penceresinde Ledger erişimine izin verin</string>
+    <string name="ledger_opening_app">%1$d / %2$d: Ledger üzerinde %3$s uygulamasının açılmasını onaylayın</string>
+    <string name="ledger_not_added_title">Eklenmedi</string>
+    <string name="ledger_not_added_description">%1$s: uygulama yüklü değil, güncel değil veya açılması reddedildi. Ledger Live üzerinden yükleyin ya da güncelleyin, ardından ağı Coin Yöneticisi\u0027nden ekleyin.</string>
+    <string name="ledger_identity_mismatch">Başka bir Ledger veya başka bir parola ifadesi bağlı</string>
+    <string name="ledger_update_app">%1$s uygulamasını Ledger Live üzerinden güncelleyin</string>
+    <string name="ledger_install_app">%1$s uygulamasını Ledger Live üzerinden yükleyin</string>
+    <string name="ledger_install_identity_app">Bunun aynı Ledger olduğunu doğrulamak için şu uygulamalardan herhangi birini Ledger Live üzerinden yükleyin: %1$s</string>
+    <string name="ledger_not_found">Ledger bulunamadı. USB kablosuyla bağlayın ve kilidini açın.</string>
+    <string name="ledger_usb_permission_denied">Ledger\u0027a USB erişimi reddedildi</string>
+    <string name="ledger_device_locked">Ledger\u0027ınızın kilidini açın</string>
+    <string name="ledger_device_not_set_up">Ledger henüz kurulmadı. Ledger Live ile kurun ve uygulamaları yükleyin, ardından yeniden bağlayın</string>
+    <string name="ledger_no_supported_apps">Bu Ledger\u0027dan desteklenen hiçbir ağ eklenmedi</string>
+    <string name="ledger_connect_failed">Ledger bağlanamadı</string>
+    <string name="ledger_rejected">Ledger\u0027da reddedildi</string>
+    <string name="ledger_signing_failed">Ledger işlemi imzalayamadı</string>
+    <string name="ledger_blind_signing_required">Ledger\u0027daki %1$s uygulamasının ayarlarından Blind signing\u0027i açın ve tekrar deneyin</string>
+    <string name="ledger_data_too_large">Mesaj Ledger için çok büyük</string>
+    <string name="ledger_zcash_reopen_app">Ledger’ınızdaki Zcash uygulamasını kapatıp yeniden açın, ardından tekrar deneyin</string>
+    <string name="ledger_ton_single_message">Ledger, TON işlemi başına yalnızca bir mesaj imzalayabilir</string>
+    <string name="ledger_tron_settings_required">Ledger\u0027daki Tron uygulamasının ayarlarından Transactions data\u0027yı (not için) veya Custom contracts\u0027ı (diğer sözleşme çağrıları için) açın ve tekrar deneyin</string>
+    <string name="ledger_ton_blind_signing_required">Ledger’daki TON uygulamasının ayarlarından Allow blind sign seçeneğini açın ve tekrar deneyin</string>
+    <string name="ledger_verify_address">Adresi Ledger üzerinde doğrula</string>
+    <string name="ledger_monero_confirm_view_key">Ledger’daki Monero uygulamasında görüntüleme anahtarının dışa aktarılmasına izin verin</string>
+    <string name="ledger_waiting_for_device">Ledger bekleniyor…</string>
+    <string name="ledger_sync_paused_open_app">%1$s senkronizasyonu duraklatıldı. Devam etmek için Ledger’ınızda %1$s uygulamasını açın.</string>
+    <string name="ledger_sync_finishing_wait">Ledger, %1$s senkronizasyonunu tamamlıyor. İşleminiz otomatik olarak devam edecek.</string>
+    <string name="ledger_device_request_wait">Ledger’ınızda %1$s isteğini onaylayın. İşleminiz otomatik olarak devam edecek.</string>
+    <string name="ledger_confirm_opening_app">Ledger’ınızda %1$s uygulamasının açılmasını onaylayın</string>
     <string name="trezor_not_initialized_title">Cihaz kurulmadı</string>
     <string name="trezor_not_initialized_description">Bu Trezor henüz kurulmadı. Kurulumu cihazda tamamlayın ve yeniden bağlayın.</string>
     <string name="trezor_not_initialized_cta">Kurulum kılavuzu</string>
     <string name="trezor_connect_failed">Trezor\u0027a bağlanılamadı.</string>
+    <string name="hardware_connect_device_to_sync">Senkronize etmek için cihazı bağlayın</string>
     <string name="Button_Activate">Etkinleştir</string>
     <string name="activation_required_dialog_description">%1$s almak için tokeni etkinleştirmeniz gerekir. Stellar ağı her token için bir güven hattı (trustline) kurulmasını gerektirir. Bu olmadan cüzdanınız %2$s alamaz — işlem reddedilir ve fonlar teslim edilmez.</string>
     <string name="activate_you_activate">Etkinleştirdiğiniz</string>
@@ -580,6 +613,7 @@
 
     <string name="connect">Bağlan</string>
     <string name="connect_trezor_to_add_message">Token eklemek için Trezor\u0027u bağlamanız gerekir</string>
+    <string name="connect_ledger_to_add_message">Token eklemek için Ledger\u0027ı bağlamanız gerekir</string>
     <!--EthereumTransaction-->
     <string name="EthereumTransaction_Warning_Title">Uyarı</string>
     <string name="EthereumTransaction_Error_Title">Hata</string>
@@ -1240,6 +1274,7 @@
     <string name="ManageAccounts_ImportWallet">Geri Yükle</string>
     <string name="ManageAccounts_WatchAddress">Adresi İzle</string>
     <string name="add_via_trezor">Trezor ile ekle</string>
+    <string name="add_via_ledger">Ledger ile ekle</string>
     <!-- Import Wallet -->
     <string name="ImportWallet_BackupFile">Dosyadan</string>
     <string name="ImportWallet_BackupFile_Description">Bir yedek dosyadan içe aktar.</string>
@@ -2167,19 +2202,22 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="adding_tokens">Tokenler ekleniyor</string>
     <string name="scan_to_add_message">Token eklemek için kartı taramanız gerekir</string>
     <string name="error_hardware_wallet_some_tokens_not_found">Bazı tokenler eklenemedi</string>
+    <string name="error_hardware_wallet_token_unavailable">%1$s üzerinde kullanılamaz. Bunu kurtarma ifadesi olan bir cüzdanda kullanabilirsiniz</string>
     <string name="send_error_address_unavailable">Adres kullanılamıyor</string>
     <string name="send_error_amount_unavailable">Tutar kullanılamıyor</string>
     <string name="send_error_fee_rate_unavailable">Ücret oranı kullanılamıyor</string>
     <string name="send_error_balance_unavailable">Bakiye kullanılamıyor</string>
     <string name="litecoin_mweb_invalid_amount">Geçersiz Litecoin MWEB tutarı</string>
     <string name="litecoin_hardware_extended_public_key_required">Donanım Litecoin cüzdanı genişletilmiş açık anahtar gerektirir</string>
-    <string name="send_trezor_mweb_not_supported">Trezor MWEB\u0027i desteklemiyor. Litecoin\u0027i normal (MWEB olmayan) bir adrese gönderin.</string>
-    <string name="send_trezor_time_lock_not_supported">Trezor zaman kilitli işlemleri desteklemiyor.</string>
+    <string name="send_hardware_mweb_not_supported">Bu donanım cüzdanı MWEB\u0027i desteklemiyor. Litecoin\u0027i normal (MWEB olmayan) bir adrese gönderin.</string>
+    <string name="send_hardware_time_lock_not_supported">Bu donanım cüzdanı zaman kilitli işlemleri desteklemiyor.</string>
     <string name="send_trezor_zcash_memo_not_supported">Trezor, Zcash işlemine not (memo) ekleyemez. Devam etmek için notu kaldırın.</string>
     <string name="send_memo_too_long">Not çok uzun: %1$d / %2$d bayt</string>
     <string name="send_trezor_zcash_transparent_only">Trezor, Zcash\u0027i yalnızca şeffaf adreslere gönderebilir.</string>
     <string name="send_trezor_zcash_unified_no_transparent_receiver">Bu unified adresin şeffaf bir alıcısı yok, bu yüzden Trezor ona transfer gönderemez.</string>
     <string name="send_trezor_zcash_firmware_required">%1$s, unified Zcash adreslerine gönderim yapmak için %2$s veya daha yeni bir üretici yazılımı gerektirir. Cihazı güncelleyip tekrar deneyin — üretici yazılımı sürümü bir sonraki Zcash işleminizde yeniden kontrol edilecek.</string>
+    <string name="send_ledger_zcash_sapling_not_supported">Ledger, Sapling adreslerine Zcash gönderemez. Bir unified adres veya şeffaf bir adres kullanın.</string>
+    <string name="send_ledger_zcash_transaction_too_large">Bu işlem Ledger için çok büyük. Daha küçük bir tutar gönderin.</string>
     <string name="send_failed_offline_prompt_title">İşlem gönderilmedi</string>
     <string name="send_failed_offline_prompt_message">İşlemi çevrimdışı imzalayıp daha sonra göndermek ister misiniz?</string>
 

@@ -15,6 +15,7 @@ import cash.p.terminal.modules.btcblockchainsettings.BtcBlockchainSettingsPage
 import cash.p.terminal.modules.evmnetwork.EvmNetworkPage
 import cash.p.terminal.navigation.HSBottomSheet
 import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.navigateUpFrom
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.resources.BalanceSyncError_ButtonChangeSource
 import cash.p.terminal.resources.BalanceSyncError_ButtonReport
@@ -48,25 +49,39 @@ class SyncErrorSheet(val input: Input) : HSBottomSheet() {
 
     @Composable
     override fun GetContent(navigation: HSNavigation) {
-        SyncErrorScreen(navigation, input.wallet, input.errorMessage ?: "", input.isBlockedByProvider)
+        SyncErrorScreen(
+            navigation,
+            input.wallet,
+            input.errorMessage ?: "",
+            input.isBlockedByProvider,
+            input.isDeviceError,
+        )
     }
 
     @CommonParcelize
     data class Input(
         val wallet: Wallet,
         val errorMessage: String?,
-        val isBlockedByProvider: Boolean
+        val isBlockedByProvider: Boolean,
+        val isDeviceError: Boolean
     ) : CommonParcelable
 }
 
 fun HSNavigation.showSyncErrorDialog(
     wallet: Wallet,
     errorMessage: String?,
-    isBlockedByProvider: Boolean
+    isBlockedByProvider: Boolean,
+    isDeviceError: Boolean
 ) {
     if (lastOrNull() is SyncErrorSheet) return
 
-    slideFromBottom(SyncErrorSheet(SyncErrorSheet.Input(wallet, errorMessage, isBlockedByProvider)))
+    slideFromBottom(SyncErrorSheet(SyncErrorSheet.Input(wallet, errorMessage, isBlockedByProvider, isDeviceError)))
+}
+
+/** The sheet holds a copy of the error, so it closes once its wallet no longer shows one. */
+internal fun HSNavigation.closeSyncErrorDialogUnlessFailing(failingWallets: Collection<Wallet>) {
+    val sheet = lastOrNull() as? SyncErrorSheet ?: return
+    if (sheet.input.wallet !in failingWallets) navigateUpFrom(sheet)
 }
 
 internal fun syncErrorDescriptionRes(
@@ -85,7 +100,8 @@ private fun SyncErrorScreen(
     navigation: HSNavigation,
     wallet: Wallet,
     error: String,
-    isBlockedByProvider: Boolean
+    isBlockedByProvider: Boolean,
+    isDeviceError: Boolean
 ) {
     val viewModel = koinViewModel<SyncErrorViewModel> { parametersOf(wallet) }
 
@@ -94,14 +110,18 @@ private fun SyncErrorScreen(
     val sendMail = rememberMailComposer()
     val emailCopiedText = stringResource(Res.string.Hud_Text_EmailAddressCopied)
 
-    val errorDescription = annotatedStringResource(
-        syncErrorDescriptionRes(
-            isMonero = wallet.token.isMonero(),
-            isEvm = wallet.token.blockchainType.isEvm,
-            isBlockedByProvider = isBlockedByProvider,
-            sourceChangeable = viewModel.sourceChangeable
+    val errorDescription = if (isDeviceError) {
+        AnnotatedString(error)
+    } else {
+        annotatedStringResource(
+            syncErrorDescriptionRes(
+                isMonero = wallet.token.isMonero(),
+                isEvm = wallet.token.blockchainType.isEvm,
+                isBlockedByProvider = isBlockedByProvider,
+                sourceChangeable = viewModel.sourceChangeable
+            )
         )
-    )
+    }
 
     SyncErrorContent(
         coinCode = wallet.coin.code,

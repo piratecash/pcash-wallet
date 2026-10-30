@@ -30,7 +30,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.stellar.sdk.KeyPair
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -41,6 +40,7 @@ class StellarKitManager(
     private val backgroundManager: IBackgroundManager,
     private val hardwarePublicKeyStorage: IHardwarePublicKeyStorage,
     private val hardwareSigners: StellarHardwareSigners,
+    private val deviceSigners: DeviceSignerFactory,
     private val platformContexts: KitPlatformContexts,
     private val backgroundKeepAliveManager: BackgroundKeepAliveManager,
     private val networkErrorTracker: NetworkErrorTracker,
@@ -88,8 +88,8 @@ class StellarKitManager(
                         createKitInstance(accountType, account, prepareDatabase(account))
                     }
 
-                    is AccountType.TrezorDevice -> {
-                        createTrezorKitInstance(account, prepareDatabase(account))
+                    is AccountType.HardwareDevice -> {
+                        createDeviceKitInstance(account, accountType, prepareDatabase(account))
                     }
 
                     is AccountType.BitcoinAddress,
@@ -126,16 +126,15 @@ class StellarKitManager(
         return databaseKey
     }
 
-    private fun createTrezorKitInstance(account: Account, databaseKey: ByteArray): StellarKitWrapper {
+    private fun createDeviceKitInstance(
+        account: Account,
+        accountType: AccountType.HardwareDevice,
+        databaseKey: ByteArray,
+    ): StellarKitWrapper {
         val key = runBlocking {
             hardwarePublicKeyStorage.getKeyByBlockchain(account.id, BlockchainType.Stellar)
-        } ?: throw UnsupportedException("Trezor does not have a key for Stellar")
-        val publicKeyBytes = KeyPair.fromAccountId(key.key.value).publicKey
-        val signer = hardwareSigners.trezorSigner(
-            publicKey = publicKeyBytes,
-            derivationPath = key.derivationPath,
-            networkPassphrase = org.stellar.sdk.Network.PUBLIC.networkPassphrase
-        )
+        } ?: throw UnsupportedException("Hardware device does not have a key for Stellar")
+        val signer = deviceSigners.stellar(account, accountType, key)
         val kit = StellarKit.getInstance(
             signer = signer,
             network = Network.MainNet,
@@ -300,10 +299,10 @@ class StellarKitManager(
             StellarKit.getAccountId(StellarWallet.Hardware(signer.publicKey))
         }
 
-        is AccountType.TrezorDevice -> {
+        is AccountType.HardwareDevice -> {
             val key = runBlocking {
                 hardwarePublicKeyStorage.getKeyByBlockchain(account.id, BlockchainType.Stellar)
-            } ?: throw UnsupportedException("Trezor does not have a key for Stellar")
+            } ?: throw UnsupportedException("Hardware device does not have a key for Stellar")
             key.key.value
         }
 
