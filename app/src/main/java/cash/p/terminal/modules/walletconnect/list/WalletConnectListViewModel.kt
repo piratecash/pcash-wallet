@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.reown.android.CoreClient
 import com.reown.walletkit.client.Wallet
 import com.reown.walletkit.client.WalletKit
 import cash.p.terminal.core.managers.EvmBlockchainManager
@@ -27,13 +26,13 @@ import cash.p.terminal.core.App
 class WalletConnectListViewModel(
     private val wcSessionManager: WCSessionManager,
     private val evmBlockchainManager: EvmBlockchainManager,
+    deepLinkUri: String?,
 ) : ViewModel() {
     enum class ConnectionResult {
         Success, Error
     }
 
     private var pendingRequestCountMap = mutableMapOf<String, Int>()
-    private var pairingsNumber = 0
     private var showError: String? = null
     private var _refreshFlow: MutableSharedFlow<Unit> =
         MutableSharedFlow(replay = 0, extraBufferCapacity = 1, BufferOverflow.DROP_OLDEST)
@@ -49,23 +48,12 @@ class WalletConnectListViewModel(
         private set
 
     init {
-        syncPairingCount()
+        deepLinkUri?.let(::setConnectionUri)
         syncPendingRequestsCountMap()
 
         viewModelScope.launch {
             WCDelegate.pendingRequestEvents.collect {
                 syncPendingRequestsCountMap()
-            }
-        }
-        viewModelScope.launch {
-            WCDelegate.pairingEvents.collect {
-                syncPairingCount()
-            }
-        }
-
-        viewModelScope.launch {
-            WCDelegate.walletEvents.collect {
-                syncPairingCount()
             }
         }
     }
@@ -123,7 +111,6 @@ class WalletConnectListViewModel(
     private fun getUiState(): WalletConnectListUiState {
         return WalletConnectListUiState(
             sessionViewItems = getSessions(wcSessionManager.sessions),
-            pairingsNumber = pairingsNumber,
         )
     }
 
@@ -141,13 +128,6 @@ class WalletConnectListViewModel(
         return sessionItems
     }
 
-    private fun syncPairingCount() {
-        viewModelScope.launch(Dispatchers.IO) {
-            pairingsNumber = getPairingCount()
-            _refreshFlow.tryEmit(Unit)
-        }
-    }
-
     private fun syncPendingRequestsCountMap() {
         viewModelScope.launch(Dispatchers.IO) {
             wcSessionManager.sessions.forEach { session ->
@@ -157,14 +137,9 @@ class WalletConnectListViewModel(
             _refreshFlow.tryEmit(Unit)
         }
     }
-
-    private fun getPairingCount(): Int {
-        return CoreClient.Pairing.getPairings().size
-    }
 }
 
 data class WalletConnectListUiState(
     val sessionViewItems: List<WalletConnectListModule.SessionViewItem> = emptyList(),
-    val pairingsNumber: Int = 0,
     val showError: String? = null,
 )

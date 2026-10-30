@@ -559,12 +559,7 @@
     <string name="WalletConnect_PendingRequests">Ожидающие запросы</string>
     <string name="WalletConnect_ActiveWallet">Активный кошелек</string>
     <string name="WalletConnect_Unnamed">Без имени</string>
-    <string name="WalletConnect_Pairings">Подключения</string>
-    <string name="WalletConnect_PairedDApps">Подключенные dApps</string>
     <string name="delete_all">Удалить всё</string>
-    <string name="WalletConnect_Pairings_ConfirmationDeleteAll">Вы хотите удалить все подключенные dApps?</string>
-    <string name="WalletConnect_Pairings_Delete">Удалить</string>
-    <string name="WalletConnect_DeleteAllPairs">Удалить все подключения</string>
     <!--EthereumTransaction-->
     <string name="save">Сохранить</string>
     <string name="EthereumTransaction_Warning_Title">Внимание</string>

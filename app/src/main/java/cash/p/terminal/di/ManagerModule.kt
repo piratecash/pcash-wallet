@@ -209,7 +209,6 @@ import cash.p.terminal.modules.coin.overview.MarketFeatureConfig
 import cash.p.terminal.modules.walletconnect.WCSessionManager
 import cash.p.terminal.modules.walletconnect.handler.WCHandlerEvm
 import cash.p.terminal.modules.walletconnect.stellar.WCHandlerStellar
-import cash.p.terminal.modules.walletconnect.storage.WCPairingMetadataStorage
 import cash.p.terminal.modules.walletconnect.storage.WCSessionStorage
 import cash.p.terminal.network.data.AppHeadersProvider
 import cash.p.terminal.network.pirate.di.PREMIUM_API_BASE_URL_QUALIFIER
@@ -384,7 +383,6 @@ val managerModule = module {
     singleOf(::RateAppManager) bind IRateAppManager::class
     singleOf(::ReleaseNotesManager)
     singleOf(::WCSessionStorage)
-    singleOf(::WCPairingMetadataStorage)
     single {
         WCManager(accountManager = get()).also {
             it.addWcHandler(WCHandlerEvm(get(), get()))

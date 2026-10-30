@@ -6,13 +6,14 @@ import cash.p.terminal.core.App
 
 object WalletConnectListModule {
 
-    class Factory : ViewModelProvider.Factory {
+    class Factory(private val deepLinkUri: String?) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
 
             return WalletConnectListViewModel(
                 App.wcSessionManager,
                 App.evmBlockchainManager,
+                deepLinkUri,
             ) as T
         }
     }

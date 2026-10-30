@@ -572,12 +572,7 @@
     <string name="WalletConnect_PendingRequests">Demandes en attente</string>
     <string name="WalletConnect_ActiveWallet">Portefeuille actif</string>
     <string name="WalletConnect_Unnamed">Sans nom</string>
-    <string name="WalletConnect_Pairings">Appairages</string>
-    <string name="WalletConnect_PairedDApps">dApps appairées</string>
     <string name="delete_all">Tout supprimer</string>
-    <string name="WalletConnect_Pairings_ConfirmationDeleteAll">Voulez-vous supprimer toutes les dApps appairées ?</string>
-    <string name="WalletConnect_Pairings_Delete">Supprimer</string>
-    <string name="WalletConnect_DeleteAllPairs">Supprimer toutes les paires</string>
 
     <string name="connect">Connecter</string>
     <string name="connect_trezor_to_add_message">Vous devez connecter Trezor pour ajouter des jetons</string>

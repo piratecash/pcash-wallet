@@ -318,7 +318,6 @@
     <ID>LongMethod:TonConnectSendRequestViewModel.kt$TonConnectSendRequestViewModel$private suspend fun prepareEnv()</ID>
     <ID>LongMethod:TransactionAutoHideBlock.kt$@Composable internal fun TransactionAutoHideBlock( transactionAutoHideEnabled: Boolean, displayLevel: TransactionDisplayLevel, transactionAutoHideSeparatePinExists: Boolean, onTransactionAutoHideEnabledChange: (Boolean) -&gt; Unit, onPinClicked: () -&gt; Unit, onDisablePinClicked: () -&gt; Unit, onChangeDisplayClicked: () -&gt; Unit )</ID>
     <ID>LongMethod:TweetsPageResponse.kt$TweetsPageResponse$fun tweets(user: TwitterUser): List&lt;Tweet&gt;</ID>
-    <ID>LongMethod:WCPairingsPage.kt$@Composable fun WCPairingsScreen(navigation: HSNavigation)</ID>
     <ID>LongMethod:WCRequestPage.kt$WCRequestPage$@Composable fun WcRequestEvm(navigation: HSNavigation)</ID>
     <ID>LongMethod:WCSendEthScreen.kt$@Composable fun WCSendEthRequestScreen( navigation: HSNavigation, logger: AppLogger, blockchainType: BlockchainType, transaction: WalletConnectTransaction, peerName: String, )</ID>
     <ID>LongMethod:WCSessionCell.kt$@Composable fun WCSessionCell( shape: Shape, showDivider: Boolean = false, session: WalletConnectListModule.SessionViewItem, navigation: HSNavigation, )</ID>
@@ -430,7 +429,6 @@
     <ID>ModifierMissing:CellLink.kt$CellLink</ID>
     <ID>ModifierMissing:CellTweet.kt$CellTweet</ID>
     <ID>ModifierMissing:CoinTweetsScreen.kt$CoinTweetsScreen</ID>
-    <ID>ModifierMissing:ConfirmDeleteAllPairingsSheet.kt$ConfirmDeleteAllScreen</ID>
     <ID>ModifierMissing:DoubleText.kt$DoubleText</ID>
     <ID>ModifierMissing:GuidesPage.kt$GuidesScreen</ID>
     <ID>ModifierMissing:HeaderCell.kt$HeaderCell</ID>
@@ -468,8 +466,6 @@
     <ID>ModifierMissing:TonConnectSessionList.kt$TonConnectSessionList</ID>
     <ID>ModifierMissing:TorBlock.kt$TorBlock</ID>
     <ID>ModifierMissing:WCErrorNoAccountSheet.kt$WalletConnectErrorNoAccount</ID>
-    <ID>ModifierMissing:WCPairingsPage.kt$Pairing</ID>
-    <ID>ModifierMissing:WCPairingsPage.kt$WCPairingsScreen</ID>
     <ID>ModifierMissing:WCRequestPage.kt$ActionButtons</ID>
     <ID>ModifierMissing:WCRequestPage.kt$WCNewSignRequestScreen</ID>
     <ID>ModifierMissing:WCRequestPage.kt$WCRequestPage$WcRequestEvm</ID>
@@ -667,7 +663,6 @@
     <ID>ViewModelInjection:TonConnectSendRequestScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:UtxoExpertModeScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:WCEvmTransactionSettingsPage.kt$viewModel</ID>
-    <ID>ViewModelInjection:WCPairingsPage.kt$viewModel</ID>
     <ID>ViewModelInjection:WCSendEthScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:WCSessionScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:WCSignEthereumTransactionRequestScreen.kt$viewModel</ID>

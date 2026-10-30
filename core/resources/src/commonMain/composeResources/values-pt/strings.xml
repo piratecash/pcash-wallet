@@ -576,12 +576,7 @@
     <string name="WalletConnect_PendingRequests">Pedidos pendentes</string>
     <string name="WalletConnect_ActiveWallet">Carteira ativa</string>
     <string name="WalletConnect_Unnamed">Sem nome</string>
-    <string name="WalletConnect_Pairings">Pareamento</string>
-    <string name="WalletConnect_PairedDApps">dApps pareados</string>
     <string name="delete_all">Excluir Tudo</string>
-    <string name="WalletConnect_Pairings_ConfirmationDeleteAll">Você deseja excluir todos os dApps pareados?</string>
-    <string name="WalletConnect_Pairings_Delete">Deletar</string>
-    <string name="WalletConnect_DeleteAllPairs">Deletar todos pareados</string>
 
     <string name="connect">Conectar</string>
     <string name="connect_trezor_to_add_message">Você precisa conectar o Trezor para adicionar tokens</string>

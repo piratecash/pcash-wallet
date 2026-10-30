@@ -576,12 +576,7 @@
     <string name="WalletConnect_PendingRequests">Bekleyen istekler</string>
     <string name="WalletConnect_ActiveWallet">Aktif cüzdan</string>
     <string name="WalletConnect_Unnamed">İsimsiz</string>
-    <string name="WalletConnect_Pairings">Eşleştirmeler</string>
-    <string name="WalletConnect_PairedDApps">Eşleştirilmiş dApps</string>
     <string name="delete_all">Tümünü sil</string>
-    <string name="WalletConnect_Pairings_ConfirmationDeleteAll">Eşleştirilmiş tüm dApps\u0027leri silmek istiyor musunuz?</string>
-    <string name="WalletConnect_Pairings_Delete">Sil</string>
-    <string name="WalletConnect_DeleteAllPairs">Hepsini sil</string>
 
     <string name="connect">Bağlan</string>
     <string name="connect_trezor_to_add_message">Token eklemek için Trezor\u0027u bağlamanız gerekir</string>

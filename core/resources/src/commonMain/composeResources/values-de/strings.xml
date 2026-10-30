@@ -570,12 +570,7 @@
     <string name="WalletConnect_PendingRequests">Ausstehende Anfragen</string>
     <string name="WalletConnect_ActiveWallet">Aktive Wallet</string>
     <string name="WalletConnect_Unnamed">Unbenannt</string>
-    <string name="WalletConnect_Pairings">Kopplungen</string>
-    <string name="WalletConnect_PairedDApps">Gekoppelte dApps</string>
     <string name="delete_all">Alle löschen</string>
-    <string name="WalletConnect_Pairings_ConfirmationDeleteAll">Möchten Sie alle gekoppelten dApps löschen?</string>
-    <string name="WalletConnect_Pairings_Delete">Löschen</string>
-    <string name="WalletConnect_DeleteAllPairs">Alle Paare löschen</string>
 
     <string name="connect">Verbinden</string>
     <string name="connect_trezor_to_add_message">Sie müssen Trezor verbinden, um Token hinzuzufügen</string>

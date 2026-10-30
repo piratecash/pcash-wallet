@@ -576,12 +576,7 @@
     <string name="WalletConnect_PendingRequests">보류 중인 요청</string>
     <string name="WalletConnect_ActiveWallet">활성 지갑</string>
     <string name="WalletConnect_Unnamed">이름 없음</string>
-    <string name="WalletConnect_Pairings">페어링</string>
-    <string name="WalletConnect_PairedDApps">페어링된 dApp</string>
     <string name="delete_all">모두 삭제</string>
-    <string name="WalletConnect_Pairings_ConfirmationDeleteAll">페어링된 모든 dApp을 삭제하시겠습니까?</string>
-    <string name="WalletConnect_Pairings_Delete">삭제</string>
-    <string name="WalletConnect_DeleteAllPairs">모든 쌍 삭제</string>
 
     <string name="connect">연결</string>
     <string name="connect_trezor_to_add_message">토큰을 추가하려면 Trezor를 연결해야 합니다</string>
