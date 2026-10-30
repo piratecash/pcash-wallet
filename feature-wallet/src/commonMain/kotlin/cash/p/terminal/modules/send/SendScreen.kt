@@ -1,0 +1,77 @@
+package cash.p.terminal.modules.send
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.Send_DialogProceed
+import cash.p.terminal.ui.compose.components.SuggestionsBarHeight
+import cash.p.terminal.strings.helpers.TranslatableString
+import cash.p.terminal.ui_compose.components.AppBar
+import cash.p.terminal.ui_compose.components.HsBackButton
+import cash.p.terminal.ui_compose.components.MenuItem
+import cash.p.terminal.ui_compose.components.rememberHudMessenger
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+
+@Composable
+fun SendScreen(
+    title: String,
+    proceedEnabled: Boolean,
+    onCloseClick: () -> Unit,
+    onSendClick: () -> Unit,
+    proceedTitle: TranslatableString = TranslatableString.ResString(Res.string.Send_DialogProceed),
+    bottomOverlay: @Composable (BoxScope.() -> Unit)? = null,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
+        AppBar(
+            title = title,
+            navigationIcon = {
+                HsBackButton(onClick = onCloseClick)
+            },
+            menuItems = listOf(
+                MenuItem(
+                    title = proceedTitle,
+                    tint = ComposeAppTheme.colors.brandDefault,
+                    enabled = proceedEnabled,
+                    onClick = onSendClick
+                )
+            )
+        )
+
+        Box(modifier = Modifier.weight(1f)) {
+            val bottomPadding = if (bottomOverlay != null) SuggestionsBarHeight else 0.dp
+            Column(
+                modifier = Modifier
+                    .imePadding()
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = bottomPadding)
+            ) {
+                content.invoke(this)
+            }
+            bottomOverlay?.invoke(this)
+        }
+    }
+}
+
+/**
+ * Toggling the balance on a send screen always pairs the state change with haptic feedback.
+ * Shared so every send screen, BEAM included, gets the same pair.
+ */
+@Composable
+fun rememberBalanceToggle(toggle: () -> Unit): () -> Unit {
+    val hud = rememberHudMessenger()
+    return {
+        hud.vibrate()
+        toggle()
+    }
+}

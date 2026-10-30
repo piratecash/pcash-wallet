@@ -25,15 +25,10 @@ fun SwapProviderTransaction.toStatusUrl(): Pair<String, String>? = when (provide
     SwapProvider.UNSTOPPABLE -> null
 }
 
-/** Unstoppable sub-providers are listed by the swap module of the platform. */
+/** Unstoppable sub-providers are listed by the swap module. */
 interface UnstoppableProviderTitles {
     /** Falls back to [apiId] for a sub-provider the platform does not list. */
     fun title(apiId: String?): String?
-}
-
-/** Where no swap module lists the sub-providers, the stored id is shown as is. */
-object RawUnstoppableProviderTitles : UnstoppableProviderTitles {
-    override fun title(apiId: String?): String? = apiId
 }
 
 fun UnstoppableProviderTitles.swapProviderDisplayTitle(provider: SwapProvider, subProviderId: String?): String = when {

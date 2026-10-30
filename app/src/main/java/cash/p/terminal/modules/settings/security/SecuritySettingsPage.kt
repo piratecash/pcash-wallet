@@ -60,6 +60,7 @@ import cash.p.terminal.navigation.rememberResultLauncher
 import cash.p.terminal.navigation.slideFromBottom
 import cash.p.terminal.ui_compose.components.HsSwitch
 import io.horizontalsystems.core.ui.dialogs.ConfirmationDialogSheet
+import cash.p.terminal.resources.ic_tor_connection_24
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HsBackButton
@@ -203,7 +204,7 @@ private fun HSNavigation.showAppRestartAlert(context: Context, torViewModel: Sec
 
     slideFromBottom(
         ConfirmationDialogSheet(
-            icon = R.drawable.ic_tor_connection_24,
+            icon = Res.drawable.ic_tor_connection_24,
             title = context.getString(R.string.Tor_Alert_Title),
             warningTitle = warningTitle,
             warningText = context.getString(R.string.SettingsSecurity_AppRestartWarning),

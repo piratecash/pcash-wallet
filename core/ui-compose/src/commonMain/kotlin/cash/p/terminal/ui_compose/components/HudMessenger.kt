@@ -13,6 +13,9 @@ interface HudMessenger {
     fun showWarning(text: String, duration: SnackbarDuration = SnackbarDuration.SHORT)
     fun showPremium(text: String, duration: SnackbarDuration)
     fun vibrate()
+
+    /** Hides the HUD this messenger showed last, if it is still on screen. */
+    fun dismiss()
 }
 
 val LocalHudMessenger = staticCompositionLocalOf<HudMessenger> {

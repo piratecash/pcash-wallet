@@ -9,10 +9,7 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.core.content.IntentCompat
 import cash.p.terminal.ui_compose.parcelable
-import java.math.BigDecimal
-import java.math.BigInteger
 import java.util.Locale
-import kotlin.math.absoluteValue
 
 fun View.hideKeyboard(context: Context) {
     val imm = context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -64,16 +61,3 @@ inline fun <reified T : Parcelable> Bundle.getInputX(): T? {
 
 inline fun <reified T : Parcelable> Intent.parcelable(key: String): T? =
     IntentCompat.getParcelableExtra(this, key, T::class.java)
-
-fun BigDecimal.scaleUp(scale: Int): BigInteger {
-    val exponent = scale - scale()
-
-    return if (exponent >= 0) {
-        unscaledValue() * BigInteger.TEN.pow(exponent)
-    } else {
-        unscaledValue() / BigInteger.TEN.pow(exponent.absoluteValue)
-    }
-}
-
-fun String.toBigDecimalOrNullExt(): BigDecimal? =
-    toBigDecimalOrNull() ?: replace(',', '.').toBigDecimalOrNull()

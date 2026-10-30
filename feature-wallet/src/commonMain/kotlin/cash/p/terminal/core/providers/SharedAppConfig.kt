@@ -17,6 +17,7 @@ object SharedAppConfig {
     const val alphaAmlBaseUrl = "https://api.alpha-aml.com"
     const val reportEmail = "i@p.cash"
     const val isSwapEnabled = true
+    const val fiatDecimal: Int = 2
 
     val chainalysisApiKey by lazy { EncodedSecrets.CHAINALYSIS_API_KEY }
     val hashDitApiKey by lazy { EncodedSecrets.HASH_DIT_API_KEY }

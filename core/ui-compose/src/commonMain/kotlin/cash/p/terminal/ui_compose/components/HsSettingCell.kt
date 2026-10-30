@@ -18,6 +18,13 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import androidx.compose.material3.Text
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_arrow_right
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun HsSettingCell(
@@ -42,6 +49,79 @@ fun HsSettingCell(
         SettingCellValue(counterBadge, value, onClick != null)
         SettingCellNewBadge(newBadgeText)
         SettingCellTrailingIcons(alertPainter, arrowPainter)
+    }
+}
+
+@Composable
+fun HsSettingCell(
+    title: StringResource,
+    icon: DrawableResource? = null,
+    iconTint: Color? = null,
+    value: String? = null,
+    onClick: (() -> Unit)? = null,
+    enabled: Boolean = true,
+) = EnableableSettingCell(stringResource(title), icon?.let { painterResource(it) }, iconTint, value, onClick, enabled)
+
+@Composable
+internal fun EnableableSettingCell(
+    title: String,
+    iconPainter: Painter?,
+    iconTint: Color?,
+    value: String?,
+    onClick: (() -> Unit)?,
+    enabled: Boolean,
+) {
+    val primaryColor = if (enabled) ComposeAppTheme.colors.textPrimary else ComposeAppTheme.colors.textDisabled
+    val secondaryColor = if (enabled) ComposeAppTheme.colors.textSecondary else ComposeAppTheme.colors.textDisabled
+    val iconColor = if (enabled) {
+        iconTint ?: ComposeAppTheme.colors.iconSecondary
+    } else {
+        ComposeAppTheme.colors.iconDisabled
+    }
+
+    RowUniversal(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        onClick = onClick,
+        enabled = enabled,
+    ) {
+        iconPainter?.let {
+            Icon(
+                modifier = Modifier.size(24.dp),
+                painter = it,
+                contentDescription = null,
+                tint = iconColor,
+            )
+        }
+        Text(
+            text = title,
+            color = primaryColor,
+            style = ComposeAppTheme.typography.body,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(start = if (iconPainter != null) 16.dp else 0.dp, end = 16.dp),
+        )
+        Spacer(Modifier.weight(1f))
+
+        if (value != null) {
+            Text(
+                text = value,
+                color = secondaryColor,
+                style = ComposeAppTheme.typography.subhead1,
+                maxLines = 1,
+                modifier = Modifier.padding(
+                    horizontal = if (onClick != null) 8.dp else 0.dp
+                ),
+            )
+        }
+
+        if (onClick != null) {
+            Icon(
+                modifier = Modifier.size(20.dp),
+                painter = painterResource(Res.drawable.ic_arrow_right),
+                contentDescription = null,
+                tint = iconColor,
+            )
+        }
     }
 }
 

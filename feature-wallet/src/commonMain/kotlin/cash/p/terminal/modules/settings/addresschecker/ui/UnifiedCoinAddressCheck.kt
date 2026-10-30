@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cash.p.terminal.core.adapters.stellar.StellarAssetAdapter
+import cash.p.terminal.modules.send.address.AddressValidationError
 import cash.p.terminal.modules.send.address.ui.CheckAddressInput
 import cash.p.terminal.modules.settings.addresschecker.CheckState
 import cash.p.terminal.modules.settings.addresschecker.IssueType
@@ -300,19 +301,21 @@ private fun ValidationError(addressValidationError: Throwable) {
         modifier = Modifier.padding(horizontal = 16.dp),
         icon = Res.drawable.ic_attention_20,
         title = stringResource(Res.string.SwapSettings_Error_InvalidAddress),
-        text = addressValidationError.getErrorMessage()
+        text = addressValidationError.addressErrorMessage()
+            ?: addressValidationError.message
             ?: stringResource(Res.string.SettingsAddressChecker_InvalidAddress)
     )
     VSpacer(32.dp)
 }
 
 @Composable
-private fun Throwable.getErrorMessage() = when (this) {
+fun Throwable.addressErrorMessage(): String? = when (this) {
     is StellarAssetAdapter.NoTrustlineError -> {
         stringResource(Res.string.Error_AssetNotEnabled).format(code)
     }
 
-    else -> this.message
+    is AddressValidationError -> message
+    else -> null
 }
 
 @Composable

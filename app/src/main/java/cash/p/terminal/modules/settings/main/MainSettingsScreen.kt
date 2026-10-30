@@ -1,10 +1,7 @@
 package cash.p.terminal.modules.settings.main
 
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column
@@ -17,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,6 +33,7 @@ import cash.p.terminal.modules.multiswap.providersettings.SwapProvidersSettingsP
 import cash.p.terminal.modules.premium.about.AboutPremiumPage
 import cash.p.terminal.modules.premium.settings.PremiumSettingsPage
 import cash.p.terminal.modules.send.offline.OfflineBroadcastPage
+import cash.p.terminal.modules.send.offline.rememberImportTransactionFile
 import cash.p.terminal.modules.settings.about.AboutPage
 import cash.p.terminal.modules.settings.about.ContactOptionsSheet
 import cash.p.terminal.modules.settings.addresschecker.AddressCheckerPage
@@ -64,10 +61,7 @@ import cash.p.terminal.ui.helpers.LinkHelper
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellSingleLineLawrenceSection
 import cash.p.terminal.ui_compose.components.HsSettingCell as SharedHsSettingCell
-import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
-import io.horizontalsystems.core.IPinComponent
-import io.horizontalsystems.core.launchExternalActivity
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -96,32 +90,13 @@ fun SettingsScreen(
 ) {
     PageResumeEffect(onResume = viewModel::refresh, onPause = {})
     val context = LocalContext.current
-    val view = LocalView.current
-    val pinComponent: IPinComponent = koinInject()
     val rawTxScanTitle = stringResource(R.string.offline_broadcast_title)
     val walletConnectTitle = stringResource(R.string.WalletConnect_Title)
     val tonConnectTitle = stringResource(R.string.TonConnect_Title)
     val offlineBroadcastScanner = navigation.rememberQrScannerLauncher(koinInject()) { scannedText ->
         navigation.slideFromRight(OfflineBroadcastPage(OfflineBroadcastPage.Input(initialInput = scannedText)))
     }
-    val transactionFileLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocument()
-    ) { uri ->
-        uri?.let {
-            navigation.slideFromRight(
-                OfflineBroadcastPage(OfflineBroadcastPage.Input(fileUri = it.toString()))
-            )
-        }
-    }
-    val importTransactionFile = {
-        try {
-            pinComponent.launchExternalActivity {
-                transactionFileLauncher.launch(arrayOf("text/plain", "application/octet-stream"))
-            }
-        } catch (_: ActivityNotFoundException) {
-            HudHelper.showErrorMessage(view, R.string.offline_broadcast_file_read_failed)
-        }
-    }
+    val importTransactionFile = rememberImportTransactionFile(navigation)
 
     Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {

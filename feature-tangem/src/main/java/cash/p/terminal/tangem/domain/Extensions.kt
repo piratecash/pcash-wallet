@@ -11,6 +11,8 @@ import java.math.BigInteger
 
 fun Throwable.isHardwareWalletUserCancelled(): Boolean = this is TangemSdkError.UserCancelled
 
+fun Throwable.isTangemSdkError(): Boolean = this is TangemSdkError
+
 internal fun ECDSASignature.canonicalise(): ECDSASignature {
     val sValue = BigInteger(1, s)
     return if (sValue > HALF_CURVE_ORDER) {

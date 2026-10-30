@@ -30,7 +30,7 @@ import io.horizontalsystems.core.Translator
 import cash.p.terminal.ui_compose.ColorName
 import cash.p.terminal.strings.helpers.shorten
 import cash.p.terminal.wallet.Account
-import cash.p.terminal.entities.RawUnstoppableProviderTitles
+import cash.p.terminal.modules.multiswap.providers.AndroidUnstoppableProviderTitles
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.Coin
@@ -129,7 +129,7 @@ class TransactionViewItemFactoryCacheTest {
             marketKit = marketKit,
             localStorage = localStorage,
             poisonAddressManager = poisonAddressManager,
-            unstoppableProviderTitles = RawUnstoppableProviderTitles,
+            unstoppableProviderTitles = AndroidUnstoppableProviderTitles(),
         )
     }
 

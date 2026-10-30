@@ -139,6 +139,7 @@ class SendTonViewModelTest : KoinTest {
         modules(
             module {
                 single<IConnectivityManager> { mockConnectivityManager() }
+                single<UptimeProvider> { mockk(relaxed = true) }
                 single<IBalanceHiddenManager> { balanceHiddenManager }
                 single<MarketKitWrapper> { marketKit }
                 single { poisonAddressManager }

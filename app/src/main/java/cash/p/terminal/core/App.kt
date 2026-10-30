@@ -8,33 +8,27 @@ import androidx.appcompat.app.AppCompatDelegate
 import cash.p.terminal.BuildConfig
 import cash.p.terminal.core.di.appModule
 import cash.p.terminal.core.factories.AccountFactory
-import cash.p.terminal.core.managers.AdapterManager
 import cash.p.terminal.core.notifications.TransactionNotificationCoordinator
 import cash.p.terminal.core.notifications.TransactionNotificationManager
 import cash.p.terminal.core.managers.AppVersionManager
 import cash.p.terminal.core.managers.BalanceHiddenManager
 import cash.p.terminal.core.managers.BaseTokenManager
-import cash.p.terminal.core.managers.BtcBlockchainManager
 import cash.p.terminal.core.managers.ConnectivityManager
 import cash.p.terminal.core.managers.DefaultUserManager
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.EvmLabelManager
-import cash.p.terminal.core.managers.EvmSyncSourceManager
 import cash.p.terminal.core.managers.LanguageManager
 import cash.p.terminal.core.managers.PriceManager
 import cash.p.terminal.core.managers.ReleaseNotesManager
 import cash.p.terminal.core.managers.TokenAutoEnableManager
 import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.core.managers.TonKitManager
-import cash.p.terminal.core.managers.TransactionAdapterManager
 import cash.p.terminal.core.managers.WalletServicesStarter
-import cash.p.terminal.core.managers.TronKitManager
 import cash.p.terminal.core.managers.WalletActivator
 import cash.p.terminal.core.managers.WordsManager
 import cash.p.terminal.core.managers.ZcashBirthdayProvider
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.core.providers.SharedAppConfig
-import cash.p.terminal.core.providers.FeeRateProvider
 import cash.p.terminal.core.storage.AppDatabase
 import cash.p.terminal.core.storage.BlockchainSettingsStorage
 import cash.p.terminal.core.storage.EvmSyncSourceStorage
@@ -47,8 +41,6 @@ import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.modules.walletconnect.WCSessionManager
 import cash.p.terminal.strings.helpers.LocaleHelper
 import cash.p.terminal.wallet.IAccountManager
-import cash.p.terminal.wallet.IAdapterManager
-import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.SubscriptionManager
 import cash.p.terminal.wallet.entities.TokenQuery
@@ -95,7 +87,6 @@ import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.logger.AppLog
 import io.horizontalsystems.core.security.KeyStoreManager
 import io.horizontalsystems.ethereumkit.core.EthereumKit
-import io.reactivex.plugins.RxJavaPlugins
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -117,7 +108,6 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
     companion object : ICoreApp by CoreApp {
         var sqlCipherLoadFailed = false
 
-        val feeRateProvider: FeeRateProvider by inject(FeeRateProvider::class.java)
         val localStorage: ILocalStorage by inject(ILocalStorage::class.java)
         val marketStorage: IMarketStorage by inject(IMarketStorage::class.java)
         val torKitManager: ITorManager by inject(ITorManager::class.java)
@@ -126,13 +116,9 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
 
         val blockchainSettingsStorage: BlockchainSettingsStorage by inject(BlockchainSettingsStorage::class.java)
         val evmSyncSourceStorage: EvmSyncSourceStorage by inject(EvmSyncSourceStorage::class.java)
-        val btcBlockchainManager: BtcBlockchainManager by inject(BtcBlockchainManager::class.java)
         val wordsManager: WordsManager by inject(WordsManager::class.java)
         val networkManager: INetworkManager by inject(INetworkManager::class.java)
-        val adapterManager: IAdapterManager by inject(AdapterManager::class.java)
 
-        val transactionAdapterManager: TransactionAdapterManager by inject(TransactionAdapterManager::class.java)
-        val walletManager: IWalletManager by inject(IWalletManager::class.java)
         val walletActivator: WalletActivator by inject(WalletActivator::class.java)
         val tokenAutoEnableManager: TokenAutoEnableManager by inject(TokenAutoEnableManager::class.java)
         val accountManager: IAccountManager by inject(IAccountManager::class.java)
@@ -142,7 +128,6 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
 
         val connectivityManager: ConnectivityManager by inject(ConnectivityManager::class.java)
         val appDatabase: AppDatabase by inject(AppDatabase::class.java)
-        val tronKitManager: TronKitManager by inject(TronKitManager::class.java)
         val tonKitManager: TonKitManager by inject(TonKitManager::class.java)
         val numberFormatter: IAppNumberFormatter by inject(IAppNumberFormatter::class.java)
         val rateAppManager: IRateAppManager by inject(IRateAppManager::class.java)
@@ -154,7 +139,6 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
         val marketKit: MarketKitWrapper by inject(MarketKitWrapper::class.java)
         val priceManager: PriceManager by inject(PriceManager::class.java)
         val releaseNotesManager: ReleaseNotesManager by inject(ReleaseNotesManager::class.java)
-        val evmSyncSourceManager: EvmSyncSourceManager by inject(EvmSyncSourceManager::class.java)
         val evmBlockchainManager: EvmBlockchainManager by inject(EvmBlockchainManager::class.java)
         val evmLabelManager: EvmLabelManager by inject(EvmLabelManager::class.java)
         val balanceHiddenManager: BalanceHiddenManager by inject(IBalanceHiddenManager::class.java)
@@ -199,18 +183,7 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
             Logger.getLogger("").level = Level.SEVERE
         }
 
-        RxJavaPlugins.setErrorHandler { e: Throwable? ->
-            Log.w("RxJava ErrorHandler", e)
-            e?.let {
-                if (localStorage.shareCrashDataEnabled) {
-                    FirebaseCrashlytics.getInstance().recordException(e)
-                }
-            }
-        }
-
-        RxJavaPlugins.setErrorHandler { e: Throwable? ->
-            Timber.tag("RxJava ErrorHandler").e(e ?: return@setErrorHandler)
-        }
+        installRxErrorHandler(get())
 
         // Eager and in this order: construction registers lifecycle callbacks, loads the keystore, starts auto-lock.
         get<IPinSettingsStorage>()

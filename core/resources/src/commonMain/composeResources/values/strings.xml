@@ -458,7 +458,7 @@
 
     <!--Send-->
     <string name="Send_EnterAddress">Enter Address</string>
-    <string name="Send_Title">Send %s</string>
+    <string name="Send_Title">Send %1$s</string>
 
     <string name="Send_Hint_Address">Address or Domain</string>
 
@@ -544,7 +544,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="ScanQr_CameraPermissionDeniedText">Access to your camera for this app was denied, you can go to settings and allow access</string>
     <string name="ScanQr_GoToSettings">Go to Settings</string>
     <string name="scan_qr_camera_initialization_failed">Camera is not available. Please try again or use a different device.</string>
-    <string name="qr_scanner_title_address">%s address</string>
+    <string name="qr_scanner_title_address">%1$s address</string>
     <string name="qr_scanner_title_smart_scan">SMART SCAN</string>
     <string name="choose_from_photos">Choose from Photos</string>
     <string name="image_decode_failed">Could not read a QR code from the selected image</string>
@@ -630,23 +630,23 @@ Proceed only if you\u0027re sure.</string>
     <string name="FeeInfo_TronResourcesConsumed_Description">Bandwidth is the unit that measures the size of the transaction bytes stored in the blockchain database. The larger the transaction, the more bandwidth resources will be consumed.\n\nEnergy is the unit that measures the amount of computation required by the TRON virtual machine to perform specific operations on the TRON network.\n\nSince smart contract transactions require computing resources to execute, each smart contract transaction requires to pay for the energy fee.</string>
 
     <!--Network Fee Warning-->
-    <string name="network_fee_warning_title">%s Network Fee</string>
+    <string name="network_fee_warning_title">%1$s Network Fee</string>
     <string name="token_balance_need_native_coin_title">You need %1$s to use %2$s</string>
     <string name="token_balance_need_native_coin_body">%2$s runs on %3$s.\nNetwork fee is paid in %1$s.\nYour %1$s balance: %4$s</string>
     <string name="network_fee_warning_body_protocol">The %1$s network protocol states that at least %2$s is required to pay the network fee for this transaction.</string>
-    <string name="network_fee_warning_body_balance">You have less than %s in your balance.</string>
-    <string name="network_fee_warning_body_protocol_bold">at least %s</string>
-    <string name="network_fee_warning_body_balance_bold">less than %s</string>
+    <string name="network_fee_warning_body_balance">You have less than %1$s in your balance.</string>
+    <string name="network_fee_warning_body_protocol_bold">at least %1$s</string>
+    <string name="network_fee_warning_body_balance_bold">less than %1$s</string>
     <string name="network_fee_warning_body_case_not_completed_prefix">but </string>
     <string name="network_fee_warning_body_case_not_sent_prefix">and </string>
     <string name="network_fee_warning_body_risk">With this balance, there is a risk that the actual fee may be higher than expected.</string>
     <string name="network_fee_warning_body_risk_bold">be higher than expected</string>
     <string name="network_fee_warning_body_case_intro">In this case:</string>
-    <string name="network_fee_warning_body_case_debited">%s will be debited from your balance,</string>
+    <string name="network_fee_warning_body_case_debited">%1$s will be debited from your balance,</string>
     <string name="network_fee_warning_body_case_not_completed">the transaction may not be completed,</string>
     <string name="network_fee_warning_body_case_not_sent">the coins will not be sent to the recipient.</string>
     <string name="network_fee_warning_body_confirm_intro">By continuing, you confirm that:</string>
-    <string name="network_fee_warning_body_confirm_understand">understand the specifics of how the %s network works,</string>
+    <string name="network_fee_warning_body_confirm_understand">understand the specifics of how the %1$s network works,</string>
     <string name="network_fee_warning_body_confirm_risk">are aware of the risk of losing commission,</string>
     <string name="network_fee_warning_body_confirm_accept">accept the possible consequences of an unsuccessful transaction.</string>
     <string name="network_fee_warning_points_header">Points to agree with:</string>
@@ -781,17 +781,17 @@ Proceed only if you\u0027re sure.</string>
     <string name="Swap">Swap</string>
     <string name="Swap_FromAmountTitle">You Pay</string>
     <string name="Swap_ToAmountTitle">You Get</string>
-    <string name="Swap_FiatPriceImpact" translatable="false">(%s%%)</string>
-    <string name="Swap_Percent" translatable="false">%s%%</string>
+    <string name="Swap_FiatPriceImpact" translatable="false">(%1$s%)</string>
+    <string name="Swap_Percent" translatable="false">%1$s%</string>
     <string name="Swap_TokenSelectorTitle">Select</string>
     <string name="Swap_Allowance">Allowance</string>
     <string name="Swap_Price">Price</string>
     <string name="Swap_AvailableBalance">Available Balance</string>
-    <string name="swap_insufficient_fee_balance">The current %s balance is lower than the amount required to process this transaction, including the transaction fee.</string>
-    <string name="fee_warning_low_balance">Balance is lower than necessary. You might pay up to %s in fees.</string>
+    <string name="swap_insufficient_fee_balance">The current %1$s balance is lower than the amount required to process this transaction, including the transaction fee.</string>
+    <string name="fee_warning_low_balance">Balance is lower than necessary. You might pay up to %1$s in fees.</string>
     <string name="swap_balance_for_fees">Balance for Fees</string>
     <string name="Swap_PriceImpact">Price Impact</string>
-    <string name="Swap_PriceImpactTooHigh">P.CASH has disabled swap action for this trade because you\u0027re getting an extremely unfavorable price. This is due to extremely low liquidity.\nIf you still want to swap please use %s website instead.</string>
+    <string name="Swap_PriceImpactTooHigh">P.CASH has disabled swap action for this trade because you\u0027re getting an extremely unfavorable price. This is due to extremely low liquidity.\nIf you still want to swap please use %1$s website instead.</string>
     <string name="Swap_PriceImpactWarning">Important! You\u0027re getting an extremely unfavorable price. This is due to extremely low liquidity.</string>
     <string name="Swap_MinimumReceived">Guaranteed Amount</string>
     <string name="Swap_Slippage">Slippage</string>
@@ -799,7 +799,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="Swap_ErrorNoProviders">No Providers</string>
     <string name="Swap_ErrorNoQuote">No Quote</string>
     <string name="Swap_ErrorInsufficientBalance">Insufficient balance</string>
-    <string name="swap_out_of_min_amount">Out of min amount %s</string>
+    <string name="swap_out_of_min_amount">Out of min amount %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">High price impact</string>
     <string name="Swap_ErrorWalletSyncing">Wallet is Syncing</string>
     <string name="Swap_ErrorWalletNotSynced">Wallet Not Synced</string>
@@ -845,7 +845,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="Swap_YouPay">You Pay</string>
     <string name="Swap_YouGet">You Get</string>
     <string name="Swap_Confirm_Title">Confirm</string>
-    <string name="SwapConfirm_QuoteExpiresIn">Quote expires in %d</string>
+    <string name="SwapConfirm_QuoteExpiresIn">Quote expires in %1$d</string>
     <string name="SwapConfirm_QuoteExpired">Quote expired</string>
     <string name="SwapConfirm_QuoteIsInvalid">Quote is invalid</string>
     <string name="SwapConfirm_FetchingFinalQuote">Fetching final quote</string>
@@ -903,7 +903,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="activate_insufficient_balance_description">You don’t have enough XLM balance to activate this token.</string>
 
     <!--Approve-->
-    <string name="Approve_RevokeAndApproveInfo">You can exchange %s, or you need to revoke and approve the new amount</string>
+    <string name="Approve_RevokeAndApproveInfo">You can exchange %1$s, or you need to revoke and approve the new amount</string>
     <string name="Approve_Spender">Spender</string>
     <string name="Approve_YouApprove">You Approve</string>
     <string name="Approve_YouRevoke">You Revoke</string>
@@ -1410,6 +1410,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="offline_transaction_signed_transaction_unavailable">Signed transaction is no longer available. Sign it again.</string>
     <string name="offline_broadcast_title">Send RAW TX</string>
     <string name="offline_broadcast_import_file">Import transaction file</string>
+    <string name="offline_broadcast_input_hint">Paste a signed RAW or P.cash transaction</string>
     <string name="offline_broadcast_file_read_failed">Couldn\u0027t read the transaction file. Check the file and try again.</string>
     <string name="offline_broadcast_invalid_input">Couldn\u0027t recognize the transaction. Check the format and try again.</string>
     <string name="offline_broadcast_check_title">Check transaction</string>
@@ -2588,15 +2589,15 @@ Proceed only if you\u0027re sure.</string>
 
     <!--Multi-Swap-->
     <string name="multi_swap_completed">Swap completed</string>
-    <string name="multi_swap_via">Swap via %s</string>
-    <string name="multi_swap_completed_via">Completed via %s</string>
+    <string name="multi_swap_via">Swap via %1$s</string>
+    <string name="multi_swap_completed_via">Completed via %1$s</string>
     <string name="multi_swap_no_providers">No providers available</string>
     <string name="multi_swap_finding_best_provider">Finding best provider…</string>
     <string name="multi_swap_continue">Continue swap</string>
     <string name="multi_swap_route_explanation">To get the best rate, a route through %2$s is used. The swap will be completed in two consecutive steps: first %1$s → %2$s, then %2$s → %3$s.</string>
     <string name="multi_swap_route_title">Swap route</string>
     <string name="multi_swap_execution_title">Swap</string>
-    <string name="multi_swap_step">%d step</string>
+    <string name="multi_swap_step">%1$d step</string>
     <string name="multi_swap_understood_continue">Got it, continue</string>
     <string name="multi_swap_unfinished">Unfinished swap</string>
     <string name="multi_swap_unfinished_plural">Unfinished swaps (%d)</string>
@@ -2749,4 +2750,6 @@ Proceed only if you\u0027re sure.</string>
     <string name="desktop_change_password_corrupted">The key file is damaged: once the app is locked you will not be able to sign in. Save a backup of every recovery phrase.</string>
     <string name="desktop_change_password_success">Password changed</string>
     <string name="desktop_security_lock_now">Lock now</string>
+    <string name="desktop_transfer_password">Password before sending</string>
+    <string name="desktop_transfer_password_description">The app password is asked before every transfer, protecting your assets if someone gets access to your computer while the app is unlocked.</string>
 </resources>

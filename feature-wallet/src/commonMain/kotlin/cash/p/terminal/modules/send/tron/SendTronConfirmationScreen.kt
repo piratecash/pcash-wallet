@@ -1,0 +1,469 @@
+package cash.p.terminal.modules.send.tron
+
+import cash.p.terminal.resources.ic_arrow_up_right_12
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import cash.p.terminal.core.HSCaution
+import cash.p.terminal.modules.amount.AmountInputModeViewModel
+
+import cash.p.terminal.modules.fee.FeeInfoSection
+import cash.p.terminal.modules.fee.HSFeeRaw
+import cash.p.terminal.modules.send.ConfirmAmountCell
+import cash.p.terminal.modules.send.MemoCell
+import cash.p.terminal.modules.send.SendFailedOfflineSignPrompt
+import cash.p.terminal.modules.send.SendPage
+import cash.p.terminal.modules.send.SendResult
+import cash.p.terminal.modules.send.fee.NetworkFeeWarningOverlay
+import cash.p.terminal.modules.send.offline.OfflineSignableConfirmationHost
+import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.ui.compose.components.SectionTitleCell
+import cash.p.terminal.ui.compose.components.TransactionInfoAddressCell
+import cash.p.terminal.ui.compose.components.TransactionInfoContactCell
+import cash.p.terminal.ui_compose.components.AppBar
+import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
+import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
+import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
+import cash.p.terminal.ui_compose.components.HSpacer
+import cash.p.terminal.ui_compose.components.HsBackButton
+import cash.p.terminal.ui_compose.components.HsIconButton
+import cash.p.terminal.ui_compose.components.rememberHudMessenger
+import io.horizontalsystems.core.Translator
+import cash.p.terminal.ui_compose.components.InfoBottomSheet
+import cash.p.terminal.ui_compose.components.RowUniversal
+import cash.p.terminal.ui_compose.components.SnackbarDuration
+import cash.p.terminal.ui_compose.components.TextImportantError
+import cash.p.terminal.ui_compose.components.TextImportantWarning
+import cash.p.terminal.ui_compose.components.VSpacer
+import cash.p.terminal.ui_compose.components.subhead1_leah
+import cash.p.terminal.ui_compose.components.subhead2_grey
+import cash.p.terminal.ui_compose.theme.ComposeAppTheme
+import kotlinx.coroutines.delay
+import kotlin.reflect.KClass
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_attention_20
+import cash.p.terminal.resources.Alert_TitleWarning
+import cash.p.terminal.resources.Button_Retry
+import cash.p.terminal.resources.Error
+import cash.p.terminal.resources.FeeInfo_TronActivationFee_Description
+import cash.p.terminal.resources.FeeInfo_TronActivationFee_Title
+import cash.p.terminal.resources.FeeInfo_TronFee_Title
+import cash.p.terminal.resources.FeeInfo_TronResourcesConsumed_Description
+import cash.p.terminal.resources.FeeInfo_TronResourcesConsumed_Title
+import cash.p.terminal.resources.Send_Confirmation_Send_Button
+import cash.p.terminal.resources.Send_Confirmation_Title
+import cash.p.terminal.resources.Send_Confirmation_To
+import cash.p.terminal.resources.Send_Confirmation_YouSend
+import cash.p.terminal.resources.Send_Sending
+import cash.p.terminal.resources.Send_Success
+import cash.p.terminal.resources.ic_info_20
+import cash.p.terminal.resources.send_confirmation_sync_error_warning
+import cash.p.terminal.resources.send_confirmation_syncing_warning
+import cash.p.terminal.core.getKoinInstance
+import io.horizontalsystems.core.IAppNumberFormatter
+import cash.p.terminal.modules.send.rememberBalanceToggle
+
+@Composable
+fun SendTronConfirmationScreen(
+    navigation: HSNavigation,
+    sendViewModel: SendTronViewModel,
+    amountInputModeViewModel: AmountInputModeViewModel,
+    sendEntryPoint: KClass<out HSPage>?
+) {
+    OfflineSignableConfirmationHost(
+        navigation = navigation,
+        sendViewModel = sendViewModel,
+        sourceChangeable = false,
+        onChangeSourceClick = {},
+    ) { onRequestOfflineSign ->
+        TronOnlineConfirmation(
+            navigation = navigation,
+            sendViewModel = sendViewModel,
+            amountInputModeViewModel = amountInputModeViewModel,
+            sendEntryPoint = sendEntryPoint,
+            onRequestOfflineSign = onRequestOfflineSign,
+        )
+    }
+}
+
+@Composable
+private fun TronOnlineConfirmation(
+    navigation: HSNavigation,
+    sendViewModel: SendTronViewModel,
+    amountInputModeViewModel: AmountInputModeViewModel,
+    sendEntryPoint: KClass<out HSPage>?,
+    onRequestOfflineSign: (() -> Unit)?,
+) {
+    val closeUntil = sendEntryPoint ?: SendPage::class
+    val confirmationData = sendViewModel.confirmationData ?: return
+
+    val uiState = sendViewModel.uiState
+    val sendEnabled = uiState.sendEnabled
+    val feeViewState = uiState.feeViewState
+    val cautions = uiState.cautions
+
+    val coinMaxAllowedDecimals = sendViewModel.coinMaxAllowedDecimals
+    val feeCoinMaxAllowedDecimals = sendViewModel.feeTokenMaxAllowedDecimals
+    val amountInputType = amountInputModeViewModel.inputType
+    val rate = sendViewModel.coinRate
+    val feeCoinRate = sendViewModel.feeCoinRate
+    val sendResult = sendViewModel.sendResult
+    val coin = confirmationData.coin
+    val blockchainType = sendViewModel.blockchainType
+    val feeCoin = confirmationData.feeCoin
+    val amount = confirmationData.amount
+    val address = confirmationData.address
+    val contact = confirmationData.contact
+    val fee = confirmationData.fee
+    val activationFee = confirmationData.activationFee
+    val resourcesConsumed = confirmationData.resourcesConsumed
+    val memo = confirmationData.memo
+
+    val hud = rememberHudMessenger()
+    when (sendResult) {
+        SendResult.Sending -> {
+            hud.showInProgress(Translator.getString(Res.string.Send_Sending), SnackbarDuration.INDEFINITE)
+        }
+
+        is SendResult.Sent -> {
+            hud.showSuccess(Translator.getString(Res.string.Send_Success), SnackbarDuration.MEDIUM)
+        }
+
+        is SendResult.Failed -> {
+            hud.showError(sendResult.caution.getString())
+        }
+
+        is SendResult.SentButQueued,
+        null -> Unit
+    }
+
+    LaunchedEffect(sendResult) {
+        if (sendResult is SendResult.Sent) {
+            delay(1200)
+            navigation.removeLastUntil(closeUntil, true)
+        }
+    }
+
+    LifecycleEventEffect(event = Lifecycle.Event.ON_RESUME) {
+        //additional close for cases when user closes app immediately after sending
+        if (sendResult is SendResult.Sent) {
+            navigation.removeLastUntil(closeUntil, true)
+        }
+    }
+
+    Column(Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
+        AppBar(
+            title = stringResource(Res.string.Send_Confirmation_Title),
+            navigationIcon = {
+                HsBackButton(onClick = navigation::navigateUpSafely)
+            },
+            menuItems = listOf()
+        )
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = 106.dp)
+            ) {
+                Spacer(modifier = Modifier.height(12.dp))
+                val topSectionItems = buildList<@Composable () -> Unit> {
+                    add {
+                        SectionTitleCell(
+                            stringResource(Res.string.Send_Confirmation_YouSend),
+                            coin.name,
+                            Res.drawable.ic_arrow_up_right_12
+                        )
+                    }
+                    add {
+                        val coinAmount = getKoinInstance<IAppNumberFormatter>().formatCoinFull(
+                            amount,
+                            coin.code,
+                            coinMaxAllowedDecimals
+                        )
+
+                        val currencyAmount = rate?.let { rate ->
+                            rate.copy(value = amount.times(rate.value))
+                                .getFormattedFull()
+                        }
+
+                        ConfirmAmountCell(currencyAmount, coinAmount, coin)
+                    }
+                    add {
+                        TransactionInfoAddressCell(
+                            title = stringResource(Res.string.Send_Confirmation_To),
+                            value = address.hex,
+                            showAdd = contact == null,
+                            blockchainType = blockchainType,
+                            navigation = navigation,
+                            onCopy = {
+                            },
+                            onAddToExisting = {
+                            },
+                            onAddToNew = {
+                            }
+                        )
+                    }
+                    contact?.let {
+                        add {
+                            TransactionInfoContactCell(name = contact.name)
+                        }
+                    }
+                }
+
+                CellUniversalLawrenceSection(topSectionItems)
+
+                VSpacer(height = 16.dp)
+
+                val feePrimary = if (fee != null) {
+                    getKoinInstance<IAppNumberFormatter>().formatCoinFull(fee, feeCoin.code, feeCoinMaxAllowedDecimals)
+                } else {
+                    "---"
+                }
+                val feeSecondary = if (fee != null && feeCoinRate != null) {
+                    feeCoinRate.copy(value = fee.times(feeCoinRate.value)).getFormattedFull()
+                } else {
+                    ""
+                }
+
+                FeeInfoSection(
+                    tokenIn = sendViewModel.wallet.token,
+                    displayBalance = sendViewModel.displayBalance,
+                    balanceHidden = sendViewModel.balanceHidden,
+                    feeToken = sendViewModel.feeToken,
+                    feeCoinBalance = sendViewModel.feeCoinBalance,
+                    feePrimary = feePrimary,
+                    feeSecondary = feeSecondary,
+                    insufficientFeeBalance = sendViewModel.isInsufficientFeeBalance(fee),
+                    onBalanceClicked = rememberBalanceToggle(sendViewModel::toggleHideBalance),
+                    feeTitle = stringResource(Res.string.FeeInfo_TronFee_Title),
+                    feeWarningData = sendViewModel.inlineFeeWarningData,
+                )
+
+                val additionalItems = buildList<@Composable () -> Unit> {
+                    activationFee?.let {
+                        add {
+                            HSFeeRaw(
+                                title = stringResource(Res.string.FeeInfo_TronActivationFee_Title),
+                                info = stringResource(Res.string.FeeInfo_TronActivationFee_Description),
+                                coinCode = feeCoin.code,
+                                coinDecimal = feeCoinMaxAllowedDecimals,
+                                fee = it,
+                                amountInputType = amountInputType,
+                                rate = feeCoinRate,
+                                navigation = navigation
+                            )
+                        }
+                    }
+                    resourcesConsumed?.let {
+                        add {
+                            ResourcesConsumed(
+                                title = stringResource(Res.string.FeeInfo_TronResourcesConsumed_Title),
+                                value = it,
+                                info = stringResource(Res.string.FeeInfo_TronResourcesConsumed_Description),
+                            )
+                        }
+                    }
+                    if (!memo.isNullOrBlank()) {
+                        add {
+                            MemoCell(memo)
+                        }
+                    }
+                }
+                if (additionalItems.isNotEmpty()) {
+                    VSpacer(height = 12.dp)
+                    CellUniversalLawrenceSection(additionalItems)
+                }
+
+                if (cautions.isNotEmpty()) {
+                    Cautions(cautions)
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .padding(start = 16.dp, end = 16.dp)
+                    .navigationBarsPadding()
+                    .padding(bottom = 16.dp)
+            ) {
+                when {
+                    sendViewModel.hasAdapterError -> {
+                        TextImportantWarning(
+                            modifier = Modifier.padding(bottom = 12.dp),
+                            text = stringResource(Res.string.send_confirmation_sync_error_warning)
+                        )
+                        ButtonPrimaryDefault(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp),
+                            title = stringResource(Res.string.Button_Retry),
+                            onClick = sendViewModel::retryAdapterSync
+                        )
+                    }
+                    !sendViewModel.isSynced -> {
+                        TextImportantWarning(
+                            modifier = Modifier.padding(bottom = 12.dp),
+                            text = stringResource(Res.string.send_confirmation_syncing_warning)
+                        )
+                    }
+                }
+                SendButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    sendResult = sendResult,
+                    onClickSend = sendViewModel::onClickSendWithWarningCheck,
+                    enabled = sendEnabled && sendViewModel.isEffectivelySynced
+                )
+            }
+
+            NetworkFeeWarningOverlay(
+                feeWarningData = sendViewModel.feeWarningData,
+                onConfirm = sendViewModel::onFeeWarningConfirmed,
+                onCancel = sendViewModel::onFeeWarningCancelled,
+            )
+        }
+    }
+
+    SendFailedOfflineSignPrompt(sendResult = sendResult, onSignOffline = onRequestOfflineSign)
+}
+
+@Composable
+private fun SendButton(
+    modifier: Modifier,
+    sendResult: SendResult?,
+    onClickSend: () -> Unit,
+    enabled: Boolean
+) {
+    when (sendResult) {
+        SendResult.Sending -> {
+            ButtonPrimaryYellow(
+                modifier = modifier,
+                title = stringResource(Res.string.Send_Sending),
+                onClick = { },
+                enabled = false
+            )
+        }
+
+        SendResult.Sent() -> {
+            ButtonPrimaryYellow(
+                modifier = modifier,
+                title = stringResource(Res.string.Send_Success),
+                onClick = { },
+                enabled = false
+            )
+        }
+
+        else -> {
+            ButtonPrimaryYellow(
+                modifier = modifier,
+                title = stringResource(Res.string.Send_Confirmation_Send_Button),
+                onClick = onClickSend,
+                enabled = enabled
+            )
+        }
+    }
+}
+
+@Composable
+private fun ResourcesConsumed(
+    title: String,
+    value: String,
+    info: String
+) {
+    var showInfoDialog by remember { mutableStateOf(false) }
+
+    RowUniversal(
+        modifier = Modifier.padding(horizontal = 16.dp),
+    ) {
+        subhead2_grey(text = title)
+        Spacer(modifier = Modifier.width(8.dp))
+        HsIconButton(
+            modifier = Modifier.size(20.dp),
+            onClick = { showInfoDialog = true }
+        ) {
+            Image(
+                painter = painterResource(Res.drawable.ic_info_20),
+                contentDescription = null
+            )
+        }
+
+        HSpacer(16.dp)
+        subhead1_leah(
+            modifier = Modifier.weight(1f),
+            text = value,
+            textAlign = TextAlign.Right
+        )
+    }
+
+    if (showInfoDialog) {
+        InfoBottomSheet(
+            title = title,
+            text = info,
+            onDismiss = { showInfoDialog = false }
+        )
+    }
+}
+
+@Composable
+private fun Cautions(cautions: List<HSCaution>) {
+    Spacer(modifier = Modifier.height(32.dp))
+
+    val modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp)
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        cautions.forEach { caution ->
+
+            when (caution.type) {
+                HSCaution.Type.Error -> {
+                    TextImportantError(
+                        modifier = modifier,
+                        text = caution.getString(),
+                        title = stringResource(Res.string.Error),
+                        icon = Res.drawable.ic_attention_20
+                    )
+                }
+
+                HSCaution.Type.Warning -> {
+                    TextImportantWarning(
+                        modifier = modifier,
+                        text = caution.getString(),
+                        title = stringResource(Res.string.Alert_TitleWarning),
+                        icon = Res.drawable.ic_attention_20
+                    )
+                }
+            }
+        }
+    }
+}

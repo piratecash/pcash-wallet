@@ -6,9 +6,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.core.tryOrNull
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
@@ -21,6 +29,7 @@ import io.github.alexzhirkevich.qrose.options.QrLogoShape
 import io.github.alexzhirkevich.qrose.options.QrPixelShape
 import io.github.alexzhirkevich.qrose.options.roundCorners
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
+import kotlin.math.roundToInt
 
 object PcashQrCodeDefaults {
     val Size = 300.dp
@@ -142,4 +151,46 @@ internal fun qrModuleCount(content: String): Int? {
     return tryOrNull {
         Encoder.encode(content, PcashQrCodeDefaults.EncoderErrorCorrectionLevel).matrix?.width?.takeIf { it > 0 }
     }
+}
+
+fun createPcashQrCodeBitmap(
+    content: String,
+    painter: Painter,
+    density: Density,
+): ImageBitmap {
+    val quietZone = calculatePcashQrQuietZonePx(content, density)
+    val bitmapSize = PcashQrCodeDefaults.SavedBitmapSize + quietZone * 2
+    val bitmap = ImageBitmap(bitmapSize, bitmapSize)
+    val canvas = Canvas(bitmap)
+    val drawScope = CanvasDrawScope()
+
+    drawScope.draw(
+        density = density,
+        layoutDirection = LayoutDirection.Ltr,
+        canvas = canvas,
+        size = Size(bitmapSize.toFloat(), bitmapSize.toFloat()),
+    ) {
+        drawRect(Color.White)
+        translate(left = quietZone.toFloat(), top = quietZone.toFloat()) {
+            with(painter) {
+                draw(
+                    size = Size(
+                        PcashQrCodeDefaults.SavedBitmapSize.toFloat(),
+                        PcashQrCodeDefaults.SavedBitmapSize.toFloat()
+                    )
+                )
+            }
+        }
+    }
+
+    return bitmap
+}
+
+private fun calculatePcashQrQuietZonePx(content: String, density: Density): Int {
+    val defaultQuietZone = with(density) { PcashQrCodeDefaults.QuietZone.toPx() }
+    val modules = qrModuleCount(content) ?: return defaultQuietZone.roundToInt()
+    val moduleSize = PcashQrCodeDefaults.SavedBitmapSize.toFloat() / modules
+    return (moduleSize * PcashQrCodeDefaults.QuietZoneModules)
+        .coerceAtLeast(defaultQuietZone)
+        .roundToInt()
 }

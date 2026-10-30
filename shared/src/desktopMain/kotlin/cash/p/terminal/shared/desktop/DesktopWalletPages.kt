@@ -1,25 +1,21 @@
 package cash.p.terminal.shared.desktop
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberUpdatedState
-import cash.p.terminal.core.managers.EvmKitWrapper
+import cash.p.terminal.core.TransactionSettingsStorage
 import cash.p.terminal.feature.wallet.AppRestarter
 import cash.p.terminal.feature.wallet.FaqTopic
 import cash.p.terminal.feature.wallet.SecretActionAuthorizer
 import cash.p.terminal.feature.wallet.WalletPlatformPages
 import cash.p.terminal.feature.wallet.WalletSendPages
 import cash.p.terminal.modules.backuplocal.BackupLocalPage
-import cash.p.terminal.modules.balance.OpenSendTokenSelect
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusPage
 import cash.p.terminal.modules.coin.CoinPage
 import cash.p.terminal.modules.createaccount.CreateAccountPage
 import cash.p.terminal.modules.manageaccount.backupkey.BackupKeyPage
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
+import cash.p.terminal.modules.multiswap.SwapPage
+import cash.p.terminal.modules.multiswap.exchanges.MultiSwapExchangesPage
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
-import cash.p.terminal.modules.sendtokenselect.PrefilledData
-import cash.p.terminal.modules.transactionInfo.options.SpeedUpCancelType
 import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.BackupKeyInput
 import cash.p.terminal.navigation.HSNavigation
@@ -30,21 +26,16 @@ import cash.p.terminal.shared.desktop.lock.ConfirmPasswordPage
 import cash.p.terminal.shared.main.DesktopMainPage
 import cash.p.terminal.ui_compose.CoinFragmentInput
 import cash.p.terminal.ui_compose.components.UrlOpener
-import cash.p.terminal.ui_compose.components.rememberHudMessenger
-import cash.p.terminal.ui_compose.components.showNotSupportedOnPlatform
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Token
-import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.navigation.WalletPages
 import io.horizontalsystems.core.entities.Blockchain
-import io.horizontalsystems.core.entities.BlockchainType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlin.reflect.KClass
 
-/** The desktop pages of the wallet screens: no camera, no swap, no hardware wallets (entries hidden or HUD). */
+/** The desktop pages of the wallet screens: no camera, no hardware wallets, no app icons (entries hidden). */
 class DesktopWalletPages(private val urlOpener: UrlOpener) :
     AppPages, WalletPages, WalletPlatformPages, WalletSendPages {
     override fun coin(coinUid: String): HSPage = CoinPage(CoinFragmentInput(coinUid))
@@ -56,7 +47,7 @@ class DesktopWalletPages(private val urlOpener: UrlOpener) :
     override fun qrScanner(input: QrScannerInput): HSPage =
         throw UnsupportedOperationException("No QR scanner on desktop: isQrScannerAvailable hides its entries")
 
-    override fun swap(tokenOut: Token): HSPage? = null
+    override fun swap(tokenOut: Token): HSPage = SwapPage(tokenOut = tokenOut)
 
     override val isQrScannerAvailable = false
     override fun hardwareWallet(input: ManageAccountsModule.Input?): HSPage? = null
@@ -75,48 +66,15 @@ class DesktopWalletPages(private val urlOpener: UrlOpener) :
     override suspend fun forgotAccessCode(cardId: String) = Unit
 
     override val mainPage = DesktopMainPage::class
-    override fun speedUpCancel(
-        blockchainType: BlockchainType,
-        type: SpeedUpCancelType,
-        transactionHash: String,
-        evmKitWrapper: EvmKitWrapper,
-    ): HSPage? = null
-
-    override fun resendBitcoin(type: SpeedUpCancelType): HSPage? = null
-    override fun sendTokenSelect(openSend: OpenSendTokenSelect?): HSPage? = null
-    override fun send(
-        wallet: Wallet,
-        title: String,
-        sendEntryPoint: KClass<out HSPage>,
-        prefilledData: PrefilledData,
-    ): HSPage? = null
-
-    override fun swapFrom(tokenIn: Token?): HSPage? = null
-    override fun multiSwapExchanges(pendingMultiSwapId: String?): HSPage? = null
-    override fun offlineBroadcast(initialInput: String): HSPage? = null
-
-    @Composable
-    override fun ZcashMigration(wallet: Wallet, onClose: () -> Unit) {
-        val hud = rememberHudMessenger()
-        val currentOnClose by rememberUpdatedState(onClose)
-        LaunchedEffect(wallet) {
-            hud.showNotSupportedOnPlatform()
-            currentOnClose()
-        }
-    }
-    override fun activateToken(wallet: Wallet): HSPage? = null
-
-    override fun confirmation(
-        title: String,
-        warningText: String,
-        actionButtonTitle: String,
-        transparentButtonTitle: String,
-        onConfirm: () -> Unit,
-    ): HSPage? = null
+    override fun swapFrom(tokenIn: Token?): HSPage = SwapPage(tokenIn = tokenIn)
+    override fun multiSwapExchanges(pendingMultiSwapId: String?): HSPage =
+        MultiSwapExchangesPage(pendingMultiSwapId)
 }
 
 /** Desktop always has a password, so it is asked again before every secret (Android asks for a set PIN). */
-class DesktopSecretActionAuthorizer : SecretActionAuthorizer {
+class DesktopSecretActionAuthorizer(
+    private val settings: TransactionSettingsStorage,
+) : SecretActionAuthorizer {
     @Composable
     override fun <A> rememberAuthorization(navigation: HSNavigation, action: (A) -> Unit): (A) -> Unit {
         val launcher = navigation.rememberResultLauncher<ConfirmPasswordPage.Result, A> { result, arg ->
@@ -129,6 +87,12 @@ class DesktopSecretActionAuthorizer : SecretActionAuthorizer {
     override fun rememberHiddenTransactionsAuthorization(navigation: HSNavigation, action: () -> Unit): () -> Unit {
         val authorized = rememberAuthorization<Unit>(navigation) { action() }
         return { authorized(Unit) }
+    }
+
+    @Composable
+    override fun <A> rememberTransferAuthorization(navigation: HSNavigation, action: (A) -> Unit): (A) -> Unit {
+        val authorized = rememberAuthorization(navigation, action)
+        return { arg -> if (settings.transferPasscodeEnabled) authorized(arg) else action(arg) }
     }
 }
 

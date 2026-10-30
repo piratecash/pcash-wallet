@@ -35,6 +35,7 @@ import cash.p.terminal.wallet.AccountDeletionBlockedException
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IDeletedWalletChecker
 import cash.p.terminal.wallet.IHardwarePublicKeyStorage
+import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.HardwarePublicKey
 import cash.p.terminal.wallet.entities.TokenQuery
@@ -84,6 +85,7 @@ object DesktopNoHardwareWallets : IHardwarePublicKeyStorage, HardwareWalletToken
 
     override suspend fun getAllPublicKeys(accountId: String): List<HardwarePublicKey> = emptyList()
     override fun isSupported(blockchainType: BlockchainType, tokenType: TokenType) = false
+    override fun isSupported(account: Account, token: Token) = !account.isHardwareWalletAccount
 }
 
 object DesktopNoHardwareKeyProvisioner : HardwareWalletKeyProvisioner {

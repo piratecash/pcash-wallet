@@ -9,15 +9,10 @@ import android.net.Uri
 import android.os.Build
 import android.os.Parcelable
 import android.provider.DocumentsContract
-import androidx.compose.ui.platform.Clipboard
-import cash.p.terminal.R
 import cash.p.terminal.modules.main.MainActivity
 import cash.p.terminal.modules.main.MainModule
 import cash.p.terminal.wallet.entities.FullCoin
-import io.horizontalsystems.hodler.LockTimeInterval
 import kotlin.system.exitProcess
-import kotlinx.coroutines.delay
-import java.math.BigDecimal
 import java.util.Locale
 import java.util.Optional
 
@@ -57,34 +52,6 @@ fun List<FullCoin>.sortedByFilter(filter: String): List<FullCoin> {
 // Intent & Parcelable Enum
 fun Intent.putParcelableExtra(key: String, value: Parcelable) {
     putExtra(key, value)
-}
-
-fun LockTimeInterval?.stringResId(): Int {
-    return when (this) {
-        LockTimeInterval.hour -> R.string.Send_LockTime_Hour
-        LockTimeInterval.month -> R.string.Send_LockTime_Month
-        LockTimeInterval.halfYear -> R.string.Send_LockTime_HalfYear
-        LockTimeInterval.year -> R.string.Send_LockTime_Year
-        null -> R.string.Send_LockTime_Off
-    }
-}
-
-suspend fun <T> retryWhen(
-    times: Int,
-    predicate: suspend (cause: Throwable) -> Boolean,
-    block: suspend () -> T
-): T {
-    repeat(times - 1) {
-        try {
-            return block()
-        } catch (e: Throwable) {
-            if (!predicate(e)) {
-                throw e
-            }
-        }
-        delay(1000)
-    }
-    return block()
 }
 
 fun Context.findActivity(): Activity? = when (this) {
@@ -129,28 +96,11 @@ private fun ContentResolver.isVirtualDocument(uri: Uri): Boolean {
     }
 }
 
-fun String?.extractBigDecimal(): BigDecimal? =
-    if (this == null) {
-        null
-    } else {
-        "\\d+\\.\\d+".toRegex().find(this)?.value?.toBigDecimal()
-    }
-
 fun Context.hasNFC(): Boolean {
     val pm = getSystemService(Context.NFC_SERVICE) as android.nfc.NfcManager
     return pm.defaultAdapter?.isEnabled == true
 }
 
-
-suspend fun Clipboard.getText(): String? {
-    val clip = this.getClipEntry()?.clipData
-    return if (clip != null && clip.itemCount > 0) {
-        val item = clip.getItemAt(0)
-        item.text.toString().takeIf { it.isNotBlank() }
-    } else {
-        null
-    }
-}
 
 /**
  * Restarts the app by launching MainActivity with clear flags.
