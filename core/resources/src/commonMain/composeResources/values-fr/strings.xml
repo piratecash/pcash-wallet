@@ -439,6 +439,12 @@
     <string name="scan_qr_camera_initialization_failed">La caméra n\u0027est pas disponible. Veuillez réessayer ou utiliser un autre appareil.</string>
     <string name="qr_scanner_title_address">Adresse %s</string>
     <string name="qr_scanner_title_smart_scan">SCAN INTELLIGENT</string>
+    <string name="qr_scanner_open_image">Ouvrir une image</string>
+    <string name="qr_scanner_select_camera">Caméra</string>
+    <string name="qr_scanner_no_camera">Caméra introuvable ou accès refusé</string>
+    <string name="qr_scanner_no_camera_hint_macos">Autorisez l’accès à la caméra dans Réglages Système → Confidentialité et sécurité → Caméra, puis réessayez.</string>
+    <string name="qr_scanner_no_camera_hint_windows">Autorisez l’accès à la caméra dans Paramètres → Confidentialité et sécurité → Caméra, puis réessayez.</string>
+    <string name="qr_scanner_no_camera_hint_linux">Vérifiez qu’une caméra est connectée (/dev/video*) et que votre utilisateur appartient au groupe video, puis réessayez.</string>
     <string name="choose_from_photos">Choisir depuis les photos</string>
     <string name="image_decode_failed">Impossible de lire un code QR à partir de l\u0027image sélectionnée</string>
     <string name="Send_Error_UnsupportedAddress">Time lock ne fonctionne qu\u0027avec les adresses P2PKH (commençant par 1)</string>

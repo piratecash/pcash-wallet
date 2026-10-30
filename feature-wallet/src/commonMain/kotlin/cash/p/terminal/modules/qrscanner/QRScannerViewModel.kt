@@ -1,12 +1,11 @@
 package cash.p.terminal.modules.qrscanner
 
-import android.net.Uri
-import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cash.p.terminal.R
 import cash.p.terminal.qr.multipart.FeedResult
 import cash.p.terminal.qr.multipart.MultipartQrScanSession
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.image_decode_failed
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,6 +13,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
 
 class QRScannerViewModel(
     private val qrCodeImageDecoder: QrCodeImageDecoder,
@@ -38,18 +38,19 @@ class QRScannerViewModel(
 
     fun onTextPasted(text: String) = emitOnce(text)
 
-    fun onImagePicked(uri: Uri) {
+    fun onImagePicked(imageRef: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isDecodingFromImage = true, errorMessageRes = null) }
 
-            qrCodeImageDecoder.decode(uri).onSuccess { decoded ->
+            val decoded = qrCodeImageDecoder.decode(imageRef)
+            if (decoded != null) {
                 _uiState.update { state -> state.copy(isDecodingFromImage = false) }
                 emitOnce(decoded)
-            }.onFailure {
+            } else {
                 _uiState.update { state ->
                     state.copy(
                         isDecodingFromImage = false,
-                        errorMessageRes = R.string.image_decode_failed
+                        errorMessageRes = Res.string.image_decode_failed
                     )
                 }
             }
@@ -69,5 +70,5 @@ class QRScannerViewModel(
 
 data class QRScannerUiState(
     val isDecodingFromImage: Boolean = false,
-    @StringRes val errorMessageRes: Int? = null,
+    val errorMessageRes: StringResource? = null,
 )

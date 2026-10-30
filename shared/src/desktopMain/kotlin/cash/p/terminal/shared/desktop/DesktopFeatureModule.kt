@@ -21,6 +21,11 @@ import cash.p.terminal.shared.desktop.lock.CreatePasswordViewModel
 import cash.p.terminal.shared.desktop.lock.DesktopInactivityLock
 import cash.p.terminal.shared.desktop.lock.ForgotPasswordViewModel
 import cash.p.terminal.shared.desktop.lock.UnlockViewModel
+import cash.p.terminal.modules.qrscanner.QrCodeImageDecoder
+import cash.p.terminal.shared.desktop.qrscanner.DesktopQrCodeImageDecoder
+import cash.p.terminal.shared.desktop.qrscanner.DesktopQrScannerViewModel
+import cash.p.terminal.shared.desktop.qrscanner.DesktopWebcamSession
+import cash.p.terminal.shared.desktop.qrscanner.DesktopWebcamSettings
 import cash.p.terminal.shared.desktop.settings.DesktopAutoLockIntervalsViewModel
 import cash.p.terminal.shared.desktop.settings.DesktopLanguageSettingsViewModel
 import cash.p.terminal.shared.desktop.settings.DesktopSecurityViewModel
@@ -61,6 +66,7 @@ import io.horizontalsystems.core.IEncryptionManager
 import io.horizontalsystems.core.ILanguageManager
 import io.horizontalsystems.core.ILockoutStorage
 import io.horizontalsystems.core.MarketSettingsStore
+import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
@@ -107,6 +113,9 @@ val desktopFeatureModule = module {
     singleOf(::DesktopSecretFieldsEncryption) bind IEncryptionManager::class
     singleOf(::DesktopInactivityLock)
     singleOf(::DesktopSettingsPages) bind SettingsPages::class
+    singleOf(::DesktopQrCodeImageDecoder) bind QrCodeImageDecoder::class
+    singleOf(::DesktopWebcamSettings)
+    factoryOf(::DesktopWebcamSession)
 
     viewModelOf(::CreatePasswordViewModel)
     viewModelOf(::UnlockViewModel)
@@ -116,6 +125,7 @@ val desktopFeatureModule = module {
     viewModelOf(::DesktopSecurityViewModel)
     viewModelOf(::DesktopAutoLockIntervalsViewModel)
     viewModelOf(::DesktopLanguageSettingsViewModel)
+    viewModelOf(::DesktopQrScannerViewModel)
 
     singleOf(::DesktopMarketPages) bind MarketPages::class
     singleOf(::DesktopHudMessenger) bind HudMessenger::class

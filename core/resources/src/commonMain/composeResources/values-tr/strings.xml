@@ -439,6 +439,12 @@
     <string name="scan_qr_camera_initialization_failed">Kamera kullanılamıyor. Lütfen tekrar deneyin veya farklı bir cihaz kullanın.</string>
     <string name="qr_scanner_title_address">%s adresi</string>
     <string name="qr_scanner_title_smart_scan">AKILLI TARAMA</string>
+    <string name="qr_scanner_open_image">Resim Aç</string>
+    <string name="qr_scanner_select_camera">Kamera</string>
+    <string name="qr_scanner_no_camera">Kamera bulunamadı veya erişim reddedildi</string>
+    <string name="qr_scanner_no_camera_hint_macos">Sistem Ayarları → Gizlilik ve Güvenlik → Kamera bölümünden kamera erişimine izin verin, sonra tekrar deneyin.</string>
+    <string name="qr_scanner_no_camera_hint_windows">Ayarlar → Gizlilik ve güvenlik → Kamera bölümünden kamera erişimine izin verin, sonra tekrar deneyin.</string>
+    <string name="qr_scanner_no_camera_hint_linux">Bir kameranın bağlı olduğundan (/dev/video*) ve kullanıcınızın video grubunda olduğundan emin olun, sonra tekrar deneyin.</string>
     <string name="choose_from_photos">Fotoğraflardan seç</string>
     <string name="image_decode_failed">Seçilen görüntüden bir QR kodu okunamadı</string>
     <string name="Send_Error_UnsupportedAddress">Zaman kilitleme sadece BIP44 (1 ile başlayan) adresleriyle çalışır</string>

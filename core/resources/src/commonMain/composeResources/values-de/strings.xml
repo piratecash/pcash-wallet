@@ -437,6 +437,12 @@
     <string name="scan_qr_camera_initialization_failed">Kamera nicht verfügbar. Bitte versuchen Sie es erneut oder verwenden Sie ein anderes Gerät.</string>
     <string name="qr_scanner_title_address">%s-Adresse</string>
     <string name="qr_scanner_title_smart_scan">SMART-SCAN</string>
+    <string name="qr_scanner_open_image">Bild öffnen</string>
+    <string name="qr_scanner_select_camera">Kamera</string>
+    <string name="qr_scanner_no_camera">Kamera nicht gefunden oder Zugriff verweigert</string>
+    <string name="qr_scanner_no_camera_hint_macos">Erlauben Sie den Kamerazugriff in den Systemeinstellungen → Datenschutz &amp; Sicherheit → Kamera und versuchen Sie es erneut.</string>
+    <string name="qr_scanner_no_camera_hint_windows">Erlauben Sie den Kamerazugriff in den Einstellungen → Datenschutz &amp; Sicherheit → Kamera und versuchen Sie es erneut.</string>
+    <string name="qr_scanner_no_camera_hint_linux">Stellen Sie sicher, dass eine Kamera angeschlossen ist (/dev/video*) und Ihr Benutzer der Gruppe video angehört, und versuchen Sie es erneut.</string>
     <string name="choose_from_photos">Aus Fotos auswählen</string>
     <string name="image_decode_failed">Der QR-Code im ausgewählten Bild konnte nicht gelesen werden</string>
     <string name="Send_Error_UnsupportedAddress">Zeitsperre funktioniert nur mit P2PKH-Adressen (beginnend mit 1) </string>

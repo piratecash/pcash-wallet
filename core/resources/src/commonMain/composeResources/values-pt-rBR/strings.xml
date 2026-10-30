@@ -439,6 +439,12 @@
     <string name="scan_qr_camera_initialization_failed">Câmera não disponível. Por favor, tente novamente ou use outro dispositivo.</string>
     <string name="qr_scanner_title_address">Endereço %s</string>
     <string name="qr_scanner_title_smart_scan">SCAN INTELIGENTE</string>
+    <string name="qr_scanner_open_image">Abrir imagem</string>
+    <string name="qr_scanner_select_camera">Câmera</string>
+    <string name="qr_scanner_no_camera">Câmera não encontrada ou acesso negado</string>
+    <string name="qr_scanner_no_camera_hint_macos">Permita o acesso à câmera em Configurações do Sistema → Privacidade e Segurança → Câmera e tente novamente.</string>
+    <string name="qr_scanner_no_camera_hint_windows">Permita o acesso à câmera em Configurações → Privacidade e segurança → Câmera e tente novamente.</string>
+    <string name="qr_scanner_no_camera_hint_linux">Verifique se há uma câmera conectada (/dev/video*) e se o seu usuário pertence ao grupo video, e tente novamente.</string>
     <string name="choose_from_photos">Escolher das fotos</string>
     <string name="image_decode_failed">Não foi possível ler um código QR da imagem selecionada</string>
     <string name="Send_Error_UnsupportedAddress">O bloqueio de tempo funciona apenas ao enviar para endereços de pagamento começando com 1... (também conhecidos como endereços BIP44)</string>

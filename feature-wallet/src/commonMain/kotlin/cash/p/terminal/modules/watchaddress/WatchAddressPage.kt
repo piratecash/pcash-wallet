@@ -1,7 +1,6 @@
 package cash.p.terminal.modules.watchaddress
 
 
-import cash.p.terminal.feature.wallet.qrScannerAvailable
 import org.jetbrains.compose.resources.getString
 import cash.p.terminal.ui_compose.components.rememberHudMessenger
 import org.koin.compose.viewmodel.koinViewModel
@@ -152,8 +151,7 @@ fun WatchAddressScreen(navigation: HSNavigation, popUpToInclusiveId: KClass<out 
                 modifier = Modifier.padding(horizontal = 16.dp),
                 initial = viewModel.enteredInput,
                 hint = stringResource(Res.string.Watch_Address_Hint),
-                qrScannerEnabled = qrScannerAvailable(),
-                navigation = navigation,
+                qrScannerNavigation = navigation,
                 qrScannerTitle = stringResource(Res.string.qr_scanner_title_smart_scan),
                 state = uiState.inputState,
                 onValueChange = {

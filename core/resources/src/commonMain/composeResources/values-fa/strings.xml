@@ -439,6 +439,12 @@
     <string name="scan_qr_camera_initialization_failed">دوربین در دسترس نیست. لطفاً دوباره امتحان کنید یا از دستگاه دیگری استفاده کنید.</string>
     <string name="qr_scanner_title_address">آدرس %s</string>
     <string name="qr_scanner_title_smart_scan">اسکن هوشمند</string>
+    <string name="qr_scanner_open_image">باز کردن تصویر</string>
+    <string name="qr_scanner_select_camera">دوربین</string>
+    <string name="qr_scanner_no_camera">دوربین پیدا نشد یا دسترسی رد شد</string>
+    <string name="qr_scanner_no_camera_hint_macos">دسترسی دوربین را در تنظیمات سیستم → حریم خصوصی و امنیت → دوربین فعال کنید و دوباره تلاش کنید.</string>
+    <string name="qr_scanner_no_camera_hint_windows">دسترسی دوربین را در تنظیمات → حریم خصوصی و امنیت → دوربین فعال کنید و دوباره تلاش کنید.</string>
+    <string name="qr_scanner_no_camera_hint_linux">اطمینان حاصل کنید دوربینی متصل است (/dev/video*) و کاربر شما در گروه video قرار دارد، سپس دوباره تلاش کنید.</string>
     <string name="choose_from_photos">انتخاب از عکس‌ها</string>
     <string name="image_decode_failed">خواندن کد QR از تصویر انتخاب‌شده امکان‌پذیر نبود</string>
     <string name="Send_Error_UnsupportedAddress">Time locking works only when sending to payment addresses starting with 1... (aka BIP44 addresses)</string>

@@ -97,9 +97,10 @@ object DesktopNoHardwareScanToAdd : ScanToAddUseCase {
         false
 }
 
-/** No scanner, dApp connections or store rating on desktop; the app content is not composed while locked. */
+/** No dApp connections or store rating on desktop; the app content is not composed while locked. */
 object DesktopBalancePlatformActions : BalancePlatformActions {
     override val appLocked: StateFlow<Boolean> = MutableStateFlow(false)
+    override val connectionsSupported = false
 
     override fun openConnectionLink(
         text: String,

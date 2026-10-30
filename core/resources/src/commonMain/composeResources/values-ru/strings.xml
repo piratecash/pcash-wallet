@@ -427,6 +427,12 @@
     <string name="scan_qr_camera_initialization_failed">Камера недоступна. Попробуйте еще раз или используйте другое устройство.</string>
     <string name="qr_scanner_title_address">Адрес %s</string>
     <string name="qr_scanner_title_smart_scan">УМНОЕ СКАНИРОВАНИЕ</string>
+    <string name="qr_scanner_open_image">Открыть изображение</string>
+    <string name="qr_scanner_select_camera">Камера</string>
+    <string name="qr_scanner_no_camera">Камера не найдена или доступ запрещён</string>
+    <string name="qr_scanner_no_camera_hint_macos">Разрешите доступ к камере в Системных настройках → Конфиденциальность и безопасность → Камера, затем попробуйте снова.</string>
+    <string name="qr_scanner_no_camera_hint_windows">Разрешите доступ к камере в Параметрах → Конфиденциальность и защита → Камера, затем попробуйте снова.</string>
+    <string name="qr_scanner_no_camera_hint_linux">Убедитесь, что камера подключена (/dev/video*) и ваш пользователь состоит в группе video, затем попробуйте снова.</string>
     <string name="choose_from_photos">Выбрать из фото</string>
     <string name="image_decode_failed">Не удалось распознать QR-код на выбранном изображении</string>
     <string name="Send_Error_UnsupportedAddress">TimeLock работает только при отправке на платёжные адреса, начинающиеся с 1... (также известных как BIP44 адреса)</string>

@@ -8,7 +8,6 @@ import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import cash.p.terminal.feature.wallet.qrScannerAvailable
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.navigateUpFrom
 import cash.p.terminal.navigation.navigateUpSafely
@@ -47,8 +46,7 @@ internal fun AddRpcScreen(
         HeaderText(stringResource(Res.string.AddEvmSyncSource_RpcUrl))
         FormsInput(
             modifier = Modifier.padding(horizontal = 16.dp),
-            qrScannerEnabled = qrScannerAvailable(),
-            navigation = navigation,
+            qrScannerNavigation = navigation,
             qrScannerTitle = stringResource(Res.string.AddEvmSyncSource_RpcUrl),
             onValueChange = viewModel::onEnterRpcUrl,
             hint = "",
@@ -59,8 +57,7 @@ internal fun AddRpcScreen(
         HeaderText(stringResource(Res.string.AddEvmSyncSource_BasicAuthentication))
         FormsInput(
             modifier = Modifier.padding(horizontal = 16.dp),
-            qrScannerEnabled = qrScannerAvailable(),
-            navigation = navigation,
+            qrScannerNavigation = navigation,
             qrScannerTitle = stringResource(Res.string.AddEvmSyncSource_BasicAuthentication),
             onValueChange = viewModel::onEnterBasicAuth,
             hint = ""

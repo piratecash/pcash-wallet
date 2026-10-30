@@ -67,7 +67,6 @@ class AppPagesImpl(
     override fun nftCollection(collectionUid: String, blockchainUid: String): HSPage =
         NftCollectionPage(NftCollectionPage.Input(collectionUid, blockchainUid))
 
-    override val isQrScannerAvailable = true
     override fun hardwareWallet(input: ManageAccountsModule.Input?): HSPage = HardwareWalletPage(input)
     override fun resetToFactory(account: Account): HSPage =
         ResetToFactorySettingsPage(ResetToFactorySettingsPage.Input(account))
