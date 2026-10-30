@@ -30,7 +30,7 @@ import kotlin.test.assertEquals
 class DesktopMarkdownAssetPageDesktopTest {
 
     private val page = DesktopMarkdownAssetPage(FaqTopic.PrivateKeys.assetPrefix)
-    private val navigation = HSNavigation(NavBackStack<HSPage>(DesktopMainPage("test"), page))
+    private val navigation = HSNavigation(NavBackStack<HSPage>(DesktopMainPage(), page))
     private val systemLocale = Locale.getDefault()
 
     @BeforeTest

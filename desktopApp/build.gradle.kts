@@ -102,6 +102,27 @@ tasks.withType<AbstractJPackageTask>().configureEach {
     dependsOn(verifyNativeResources)
 }
 
+val androidBuildGradle = rootProject.file("app/build.gradle")
+val desktopBuildInfoDir = layout.buildDirectory.dir("generated/desktopBuildInfo")
+
+// The desktop shows and reports the version of the Android app it is built from.
+val generateDesktopBuildInfo = tasks.register("generateDesktopBuildInfo") {
+    inputs.file(androidBuildGradle)
+    outputs.dir(desktopBuildInfoDir)
+    doLast {
+        val versionName = Regex("""versionName\s+"([^"]+)"""").find(androidBuildGradle.readText())?.groupValues?.get(1)
+            ?: throw GradleException("versionName is not found in ${androidBuildGradle.path}")
+        val packageDir = desktopBuildInfoDir.get().dir("cash/p/terminal/desktop").asFile.apply { mkdirs() }
+        File(packageDir, "DesktopBuildInfo.kt").writeText(
+            "package cash.p.terminal.desktop\n\ninternal const val APP_VERSION_NAME = \"$versionName\"\n"
+        )
+    }
+}
+
+kotlin.sourceSets.named("main") {
+    kotlin.srcDir(generateDesktopBuildInfo.map { desktopBuildInfoDir })
+}
+
 compose.desktop {
     application {
         mainClass = "cash.p.terminal.desktop.MainKt"

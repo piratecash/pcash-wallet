@@ -44,7 +44,7 @@ import org.koin.compose.koinInject
  * above the two, so unlocking returns to the screen the user left.
  */
 @Composable
-fun DesktopRoot(appVersion: String, wipeFailed: Boolean, modifier: Modifier = Modifier) {
+fun DesktopRoot(wipeFailed: Boolean, modifier: Modifier = Modifier) {
     val vault = koinInject<DesktopVault>()
     val languageManager = koinInject<DesktopLanguageManager>()
     val vaultState by vault.state.collectAsStateWithLifecycle()
@@ -57,7 +57,7 @@ fun DesktopRoot(appVersion: String, wipeFailed: Boolean, modifier: Modifier = Mo
         vaultState = vaultState,
         localeTag = localeTag,
         appGeneration = appGeneration,
-        rootPage = { DesktopMainPage(appVersion) },
+        rootPage = { DesktopMainPage() },
         appContent = { navigation -> PcashApp(navigation) },
         wipeFailed = wipeFailed,
         modifier = modifier,

@@ -13,6 +13,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import cash.p.terminal.feature.market.di.marketFeatureModule
 import cash.p.terminal.modules.chart.ChartIndicatorStorage
+import cash.p.terminal.shared.desktop.DesktopAppVersion
 import cash.p.terminal.shared.desktop.DesktopChartIndicatorStorage
 import cash.p.terminal.shared.desktop.desktopFeatureModule
 import cash.p.terminal.network.binance.api.BinanceApi
@@ -122,6 +123,7 @@ internal object DesktopTestGraph {
         single<PiratePlaceRepository> { mockk(relaxed = true) }
         single<GetZcashHeightUseCase> { mockk(relaxed = true) }
         single<AppHeadersProvider> { mockk(relaxed = true) }
+        single { DesktopAppVersion("1.0.0") }
         single<EvmLabelApi> { mockk { coEvery { updatesStatus() } throws IOException("No network in tests") } }
     }
 

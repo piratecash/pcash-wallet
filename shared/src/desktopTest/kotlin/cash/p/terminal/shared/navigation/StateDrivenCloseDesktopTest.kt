@@ -85,7 +85,7 @@ class StateDrivenCloseDesktopTest {
     }
 
     private fun ComposeUiTest.showPageOverParent(page: HSPage): HSNavigation {
-        val navigation = HSNavigation(NavBackStack<HSPage>(DesktopMainPage("test"), parent, page))
+        val navigation = HSNavigation(NavBackStack<HSPage>(DesktopMainPage(), parent, page))
         setContent { TestWindowHost { ComposeAppTheme { PcashApp(remember { navigation }) } } }
         return navigation
     }

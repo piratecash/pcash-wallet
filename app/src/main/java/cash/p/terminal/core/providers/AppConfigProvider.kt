@@ -17,17 +17,17 @@ object AppConfigProvider : AddressResolutionConfig {
     val isDebug by lazy { BuildConfig.DEBUG }
     val appGitHash by lazy { BuildConfig.GIT_HASH }
     val appGitBranch by lazy { BuildConfig.GIT_BRANCH }
-    val companyWebPageLink by lazy { Translator.getString(R.string.companyWebPageLink) }
-    val appWebPageLink by lazy { Translator.getString(R.string.appWebPageLink) }
-    val analyticsLink by lazy { Translator.getString(R.string.analyticsLink) }
-    val appGithubLink by lazy { Translator.getString(R.string.appGithubLink) }
+    val companyWebPageLink = SharedAppConfig.companyWebPageLink
+    val appWebPageLink = SharedAppConfig.appWebPageLink
+    val analyticsLink = SharedAppConfig.analyticsLink
+    val appGithubLink = SharedAppConfig.appGithubLink
     val githubApiBaseUrl by lazy { Translator.getString(R.string.githubApiBaseUrl) }
     val githubRawBaseUrl by lazy { Translator.getString(R.string.githubRawBaseUrl) }
     val githubApiProxyBaseUrl by lazy { Translator.getString(R.string.githubApiProxyBaseUrl) }
     val githubRawProxyBaseUrl by lazy { Translator.getString(R.string.githubRawProxyBaseUrl) }
-    val appTwitterLink by lazy { Translator.getString(R.string.appTwitterLink) }
-    val appTelegramLink by lazy { Translator.getString(R.string.appTelegramLink) }
-    val appRedditLink by lazy { Translator.getString(R.string.appRedditLink) }
+    val appTwitterLink = SharedAppConfig.appTwitterLink
+    val appTelegramLink = SharedAppConfig.appTelegramLink
+    val appRedditLink = SharedAppConfig.appRedditLink
     const val walletConnectUrl = "relay.walletconnect.com"
     val walletConnectProjectId by lazy { EncodedSecrets.WALLET_CONNECT_V2_KEY }
     val walletConnectAppMetaDataName by lazy { Translator.getString(R.string.walletConnectAppMetaDataName) }
