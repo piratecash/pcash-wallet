@@ -36,7 +36,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
-import java.util.concurrent.Executors
 
 class TokenTransactionsService(
     private val wallet: Wallet,
@@ -472,8 +471,6 @@ class TokenTransactionsService(
         }
     }
 
-    private val executorService = Executors.newCachedThreadPool()
-
     fun refreshList() {
         // Original behavior:
         // - forceLoadData=true: copy items (new references), then emit
@@ -504,13 +501,13 @@ class TokenTransactionsService(
     }
 
     fun loadNext() {
-        executorService.submit {
+        coroutineScope.launch {
             transactionRecordRepository.loadNext()
         }
     }
 
     fun fetchRateIfNeeded(recordUid: String) {
-        executorService.submit {
+        coroutineScope.launch {
             _transactionItems.value.find { it.record.uid == recordUid }?.let { transactionItem ->
                 if (transactionItem.currencyValue == null) {
                     transactionItem.record.mainValue?.coin?.uid?.let { coinUid ->
@@ -536,7 +533,6 @@ class TokenTransactionsService(
         rateRepository.clear()
         transactionSyncStateRepository.clear()
         coroutineScope.cancel()
-        executorService.shutdown()
     }
 
     private companion object {
