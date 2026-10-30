@@ -2188,8 +2188,7 @@ class TokenBalanceViewModelTest : KoinTest {
         return TransactionItem(
             record = record,
             currencyValue = null,
-            lastBlockInfo = null,
-            nftMetadata = emptyMap()
+            lastBlockInfo = null
         )
     }
 

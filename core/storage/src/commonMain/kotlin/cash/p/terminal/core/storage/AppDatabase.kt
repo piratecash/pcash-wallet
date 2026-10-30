@@ -29,10 +29,6 @@ import cash.p.terminal.entities.SyncerState
 import cash.p.terminal.entities.TokenAutoEnabledBlockchain
 import cash.p.terminal.entities.UserDeletedWallet
 import cash.p.terminal.entities.ZcashSingleUseAddress
-import cash.p.terminal.entities.nft.NftAssetBriefMetadataRecord
-import cash.p.terminal.entities.nft.NftAssetRecord
-import cash.p.terminal.entities.nft.NftCollectionRecord
-import cash.p.terminal.entities.nft.NftMetadataSyncRecord
 import cash.p.terminal.modules.chart.ChartIndicatorSetting
 import cash.p.terminal.modules.chart.ChartIndicatorSettingsDao
 import cash.p.terminal.modules.pin.core.Pin
@@ -48,7 +44,7 @@ import io.horizontalsystems.core.storage.LogsDao
 const val APP_DATABASE_NAME = "db_p_cash"
 
 @Database(
-    version = 122,
+    version = 123,
     exportSchema = false,
     entities = [
         EnabledWallet::class,
@@ -61,10 +57,6 @@ const val APP_DATABASE_NAME = "db_p_cash"
         WalletConnectV2Session::class,
         RestoreSettingRecord::class,
         ActiveAccount::class,
-        NftCollectionRecord::class,
-        NftAssetRecord::class,
-        NftMetadataSyncRecord::class,
-        NftAssetBriefMetadataRecord::class,
         AddressLabel::class,
         EvmMethodLabel::class,
         SyncerState::class,
@@ -102,7 +94,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun logsDao(): LogsDao
     abstract fun marketFavoritesDao(): MarketFavoritesDao
     abstract fun wcSessionDao(): WCSessionDao
-    abstract fun nftDao(): NftDao
     abstract fun addressLabelDao(): AddressLabelDao
     abstract fun evmMethodLabelDao(): EvmMethodLabelDao
     abstract fun syncerStateDao(): SyncerStateDao

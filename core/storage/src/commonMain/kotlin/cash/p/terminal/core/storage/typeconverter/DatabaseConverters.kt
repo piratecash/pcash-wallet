@@ -3,7 +3,6 @@ package cash.p.terminal.core.storage.typeconverter
 import androidx.room.TypeConverter
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.entities.AddressLabelSource
-import cash.p.terminal.entities.nft.NftUid
 import cash.p.terminal.wallet.entities.HardwarePublicKeyType
 import cash.p.terminal.wallet.entities.SecretList
 import cash.p.terminal.wallet.entities.SecretString
@@ -124,16 +123,6 @@ class DatabaseConverters {
     @TypeConverter
     fun toBlockchainType(string: String): BlockchainType {
         return BlockchainType.Companion.fromUid(string)
-    }
-
-    @TypeConverter
-    fun fromNftUid(nftUid: NftUid): String {
-        return nftUid.uid
-    }
-
-    @TypeConverter
-    fun toNftUid(string: String): NftUid {
-        return NftUid.Companion.fromUid(string)
     }
 
     @TypeConverter

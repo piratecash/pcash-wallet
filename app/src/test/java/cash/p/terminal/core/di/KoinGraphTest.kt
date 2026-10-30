@@ -139,8 +139,6 @@ import cash.p.terminal.modules.market.platform.PlatformChartService
 import cash.p.terminal.modules.market.metricspage.MetricsPageChartService
 import cash.p.terminal.modules.market.metricspage.MetricsPageViewModel
 import cash.p.terminal.modules.market.topcoins.MarketTopCoinsViewModel
-import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsService
-import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsViewModel
 import cash.p.terminal.modules.market.tvl.TvlChartService
 import cash.p.terminal.modules.market.tvl.TvlChartViewModel
 import cash.p.terminal.modules.market.tvl.TvlService
@@ -315,7 +313,6 @@ class KoinGraphTest : KoinTest {
     private fun marketMetricsInjections() = arrayOf(
         definition<TvlViewModel>(TvlService::class, TvlViewItemFactory::class),
         definition<TvlChartViewModel>(TvlChartService::class, ChartCurrencyValueFormatterShortened::class),
-        definition<TopNftCollectionsViewModel>(TopNftCollectionsService::class),
         definition<MetricsPageViewModel>(MetricsType::class),
         definition<MetricsPageChartService>(MetricsType::class),
     )

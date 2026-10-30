@@ -5,7 +5,6 @@ import cash.p.terminal.core.managers.SpamManager
 import cash.p.terminal.core.managers.TransactionAdapterManager
 import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.modules.transactions.ITransactionRecordRepository
-import cash.p.terminal.modules.transactions.NftMetadataService
 import cash.p.terminal.modules.transactions.RecordsBatch
 import cash.p.terminal.modules.transactions.SearchScanState
 import cash.p.terminal.modules.transactions.TransactionSyncStateRepository
@@ -46,7 +45,6 @@ class TokenTransactionsServiceSearchTest : KoinTest {
     private val rateRepository = mockk<TransactionsRateRepository>(relaxed = true)
     private val syncStateRepository = mockk<TransactionSyncStateRepository>(relaxed = true)
     private val adapterManager = mockk<TransactionAdapterManager>(relaxed = true)
-    private val nftMetadataService = mockk<NftMetadataService>(relaxed = true)
     private val spamManager = mockk<SpamManager>(relaxed = true)
     private val wallet = mockk<Wallet>(relaxed = true)
 
@@ -66,7 +64,6 @@ class TokenTransactionsServiceSearchTest : KoinTest {
         every { rateRepository.getHistoricalRate(any()) } returns null
         every { syncStateRepository.lastBlockInfoFlow } returns MutableSharedFlow()
         every { syncStateRepository.syncingFlow } returns MutableStateFlow(false)
-        every { nftMetadataService.assetsBriefMetadataFlow } returns MutableStateFlow(emptyMap())
         every { spamManager.shouldHide(any()) } returns false
     }
 
@@ -89,7 +86,6 @@ class TokenTransactionsServiceSearchTest : KoinTest {
             rateRepository = rateRepository,
             transactionSyncStateRepository = syncStateRepository,
             transactionAdapterManager = adapterManager,
-            nftMetadataService = nftMetadataService,
             spamManager = spamManager,
         )
         service.start()

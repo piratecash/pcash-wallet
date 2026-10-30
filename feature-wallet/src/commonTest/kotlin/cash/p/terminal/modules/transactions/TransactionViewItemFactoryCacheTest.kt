@@ -158,7 +158,6 @@ class TransactionViewItemFactoryCacheTest {
             record = initialRecord,
             currencyValue = null,
             lastBlockInfo = null,
-            nftMetadata = emptyMap(),
         )
         val updatedItem = initialItem.withUpdatedListData(
             record = updatedRecord,
@@ -182,7 +181,6 @@ class TransactionViewItemFactoryCacheTest {
             record = record,
             currencyValue = null,
             lastBlockInfo = null,
-            nftMetadata = emptyMap(),
         )
         val detailsItem = initialItem.copy(
             changeNowTransactionId = "tx-id",
@@ -860,6 +858,5 @@ class TransactionViewItemFactoryCacheTest {
         record = record,
         currencyValue = null,
         lastBlockInfo = lastBlockInfo,
-        nftMetadata = emptyMap(),
     )
 }

@@ -84,6 +84,28 @@ class DesktopStorageSessionTest {
     }
 
     @Test
+    fun open_version122DatabaseWithNftTables_dropsNftTablesAndKeepsAccount() = runTest {
+        val keys = mutableListOf<ByteArray>()
+        val keyCapturingVault = fixture.vault(driverFactory = object : SqlCipherDriverFactory {
+            override fun create(key: ByteArray): SqlCipherDriver =
+                DefaultSqlCipherDriverFactory().create(key).also { keys += key.copyOf() }
+        })
+        startEncryptionGraph(keyCapturingVault)
+        keyCapturingVault.create(password())
+        assertIs<DesktopVaultState.Unlocked>(keyCapturingVault.state.value).session.database
+            .accountsDao().insert(accountRecord())
+        keyCapturingVault.close()
+        downgradeToVersion122WithNftTables(appDatabaseKey = keys.first())
+
+        keyCapturingVault.unlock(password())
+        val database = assertIs<DesktopVaultState.Unlocked>(keyCapturingVault.state.value).session.database
+
+        assertEquals(listOf("account-1"), database.accountsDao().getIds())
+        keyCapturingVault.close()
+        assertEquals(0L, countNftTables(appDatabaseKey = keys.first()))
+    }
+
+    @Test
     fun open_driverCannotOpenTheFile_closesDriverKeysAndVaultSession() =
         assertOpenFailureCleansUp(IOException("no space left on device"))
 
@@ -143,6 +165,30 @@ class DesktopStorageSessionTest {
             }
         }
 
+    private fun downgradeToVersion122WithNftTables(appDatabaseKey: ByteArray) =
+        SqlCipherDriver(appDatabaseKey).use { driver ->
+            driver.open(fixture.files.databaseFile.absolutePath).use { connection ->
+                // Column layout is irrelevant: the migration drops the tables by name.
+                NFT_TABLES.forEach { table ->
+                    connection.execSQL("CREATE TABLE `$table` (`id` TEXT NOT NULL)")
+                    connection.execSQL("INSERT INTO `$table` VALUES ('row')")
+                }
+                connection.execSQL("PRAGMA user_version = 122")
+            }
+        }
+
+    private fun countNftTables(appDatabaseKey: ByteArray): Long =
+        SqlCipherDriver(appDatabaseKey).use { driver ->
+            driver.open(fixture.files.databaseFile.absolutePath).use { connection ->
+                connection.prepare(
+                    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name LIKE 'Nft%'"
+                ).use { statement ->
+                    statement.step()
+                    statement.getLong(0)
+                }
+            }
+        }
+
     private fun accountRecord() = AccountRecord(
         id = "account-1",
         name = "Main",
@@ -160,13 +206,17 @@ class DesktopStorageSessionTest {
         override fun create(key: ByteArray): SqlCipherDriver = driver
     }
 
-    private fun startEncryptionGraph() {
+    private fun startEncryptionGraph(encryptingVault: DesktopVault = vault) {
         startKoin {
-            modules(module { single<IEncryptionManager> { DesktopSecretFieldsEncryption(vault) } })
+            modules(module { single<IEncryptionManager> { DesktopSecretFieldsEncryption(encryptingVault) } })
         }
     }
 
     private companion object {
         const val KEY_SIZE = 32
+
+        val NFT_TABLES = listOf(
+            "NftCollectionRecord", "NftAssetRecord", "NftMetadataSyncRecord", "NftAssetBriefMetadataRecord",
+        )
     }
 }

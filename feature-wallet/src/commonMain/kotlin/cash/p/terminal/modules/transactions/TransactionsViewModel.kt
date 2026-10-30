@@ -19,8 +19,6 @@ import cash.p.terminal.core.usecase.UpdateSwapProviderTransactionsStatusUseCase
 import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.SwapProviderTransaction
 import cash.p.terminal.entities.toStatusUrl
-import cash.p.terminal.entities.nft.NftAssetBriefMetadata
-import cash.p.terminal.entities.nft.NftUid
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewMode
 import cash.p.terminal.modules.contacts.ContactsRepository
@@ -638,7 +636,6 @@ class TransactionsViewModel(
                     record = it,
                     currencyValue = null,
                     lastBlockInfo = null,
-                    nftMetadata = emptyMap(),
                 )
             }
             ?: return null
@@ -685,7 +682,6 @@ data class TransactionItem(
     val record: TransactionRecord,
     val currencyValue: CurrencyValue?,
     val lastBlockInfo: LastBlockInfo?,
-    val nftMetadata: Map<NftUid, NftAssetBriefMetadata>,
     val changeNowTransactionId: String? = null,
     val transactionStatusUrl: Pair<String, String>? = null,
     val walletUid: String? = null,
@@ -696,12 +692,10 @@ data class TransactionItem(
         record: TransactionRecord = this.record,
         currencyValue: CurrencyValue? = this.currencyValue,
         lastBlockInfo: LastBlockInfo? = this.lastBlockInfo,
-        nftMetadata: Map<NftUid, NftAssetBriefMetadata> = this.nftMetadata,
     ): TransactionItem = copy(
         record = record,
         currencyValue = currencyValue,
         lastBlockInfo = lastBlockInfo,
-        nftMetadata = nftMetadata,
         cacheVersion = nextVersion(),
     )
 

@@ -5,7 +5,6 @@ import cash.p.terminal.resources.the_open_network_jetton
 import cash.p.terminal.wallet.alternativeImageUrl
 import cash.p.terminal.core.iconPlaceholder
 import cash.p.terminal.wallet.imageUrl
-import cash.p.terminal.entities.nft.NftUid
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.badge
 import cash.p.terminal.wallet.entities.Coin
@@ -29,9 +28,6 @@ sealed interface TransactionValue {
     val isMaxValue: Boolean
     val abs: TransactionValue
     val formattedString: String
-
-    val nftUid: NftUid?
-        get() = null
 
     data class JettonValue(
         val name: String,
@@ -136,7 +132,7 @@ sealed interface TransactionValue {
     }
 
     data class NftValue(
-        override val nftUid: NftUid,
+        val mintAddress: String,
         val value: BigDecimal,
         val tokenName: String?,
         val tokenSymbol: String?
@@ -148,7 +144,7 @@ sealed interface TransactionValue {
         override val alternativeCoinIconUrl = null
         override val coinIconPlaceholder: DrawableResource? = null
         override val fullName: String
-            get() = "${tokenName ?: ""} #${nftUid.tokenId}"
+            get() = "${tokenName ?: ""} #$mintAddress"
         override val coinCode: String
             get() = tokenSymbol ?: "NFT"
         override val decimalValue: BigDecimal = value

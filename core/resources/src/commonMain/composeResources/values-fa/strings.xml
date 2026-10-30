@@ -401,7 +401,6 @@
     <string name="Balance_ReceiveHint_Search">Search</string>
     <!--Send NFT-->
     <string name="SendNft_Title">ارسال</string>
-    <string name="SendNft_Error_NotEnoughtBalance">Not Enough Balance</string>
     <!--Send-->
     <string name="Send_Title">ارسال %s</string>
     <string name="Send_Hint_Address">آدرس یا دامنه</string>
@@ -1796,62 +1795,6 @@
     <string name="notification_permission_revoked_title">اعلان‌ها در دسترس نیست</string>
     <string name="notification_permission_revoked_message">مجوز اعلان داده نشده است. برای باز کردن تنظیمات ضربه بزنید.</string>
 
-    <string name="Nfts_PriceType_Days_7">7 دی اوت</string>
-    <string name="Nfts_PriceType_Days_30">30 دی اوت</string>
-    <string name="Nfts_PriceType_LastSale">آخرین فروش</string>
-    <string name="Nfts_Asset_OnSale">فروش ویژه</string>
-    <string name="Nfts_Asset_OnAuction">در حراج</string>
-    <string name="Nfts_Asset_OnSaleUntil">تا %s</string>
-    <string name="Nfts_Empty">شما NFT در کیف پول خود ندارید</string>
-    <string name="Nfts_PriceMode">حالت قیمت</string>
-    <string name="NftAsset_Overview">نمای کلی</string>
-    <string name="NftAsset_Activity">فعالیت</string>
-    <string name="NftAsset_Action_Share">به اشتراك گذاشتن</string>
-    <string name="NftAsset_Action_Save">ذخیره</string>
-    <string name="NftAsset_Price_Purchase">مبلغ خرید</string>
-    <string name="NftAsset_Price_Average7d">7 دی اوت</string>
-    <string name="NftAsset_Price_Average30d">30 دی اوت</string>
-    <string name="NftAsset_Price_Floor">قیمت طبقه</string>
-    <string name="NftAsset_Price_BuyNow">هم اکنون خریداری کنید</string>
-    <string name="NftAsset_Price_MinimumBid">حداقل پیشنهاد</string>
-    <string name="NftAsset_Price_BestOffer">بهترین پیشنهاد</string>
-    <string name="NftAsset_Properties">ویژگی‌ها</string>
-    <string name="NftAsset_Description">توضیحات</string>
-    <string name="NftAsset_Details">جزئیات</string>
-    <string name="NftAsset_Links">لینک‌ ها</string>
-    <string name="NftAsset_ContractAddress">آدرس قرارداد</string>
-    <string name="NftAsset_TokenId">شناسه توکن</string>
-    <string name="NftAsset_TokenStandard">استانداردهای توکن</string>
-    <string name="NftAsset_Blockchain">زنجیره بلوکی</string>
-    <string name="NftAsset_Links_Website">وب سایت پروژه</string>
-    <string name="PoweredBy_OpenSeaAPI">پشتیبانی شده توسط OpenSea API</string>
-    <string name="Nft_TopCollections">مجموعه های برتر NFT</string>
-    <string name="Nft_TopCollections_Description">مجموعه های NFT پیشرو بر اساس حجم معاملات.</string>
-    <!-- NFT Collection -->
-    <string name="NftCollection_Overview">نمای کلی</string>
-    <string name="NftCollection_Items">قلم</string>
-    <string name="NftCollection_Activity">فعالیت</string>
-    <string name="NftCollection_Owners">ویژگی</string>
-    <string name="NftCollection_TodaysSales">Today\u0027s Sellers</string>
-    <string name="NftCollection_TodaysSalesCount">%s NFT</string>
-    <string name="NftCollection_Royalty">Royalty</string>
-    <string name="NftCollection_InceptionDate">Inception Date</string>
-    <!-- NFT Collection Events -->
-    <string name="NftCollection_EventType_SelectorTitle">نوع رویداد را انتخاب کنید</string>
-    <string name="NftCollection_EventType_All">همه</string>
-    <string name="NftCollection_EventType_List">لیست</string>
-    <string name="NftCollection_EventType_Sale">فروش</string>
-    <string name="NftCollection_EventType_Cancelled">انصراف</string>
-    <string name="NftCollection_EventType_BidEntered">پیشنهاد وارد شد</string>
-    <string name="NftCollection_EventType_BidWithdrawn">مناقصه پس گرفته شد</string>
-    <string name="NftCollection_EventType_Transfer">انتقال</string>
-    <string name="NftCollection_EventType_OfferEntered">Offer Entered</string>
-    <string name="NftCollection_EventType_Approve">تایید</string>
-    <string name="NftCollection_EventType_Custom">شخصی سازی</string>
-    <string name="NftCollection_EventType_Payout">پرداخت</string>
-    <string name="NftCollection_EventType_BulkCancel">Bulk Cancel</string>
-    <string name="NftCollection_EventType_Mint">نعناع</string>
-    <string name="NftCollection_EventType_Unknown">ناشناخته</string>
     <!--Rate list-->
     <string name="RateList_TopGainers">Gainers</string>
     <string name="RateList_TopLosers">Losers</string>
@@ -1875,7 +1818,6 @@
     <string name="Hud_Text_Activate">Activate</string>
     <!--Widget-->
     <string name="WidgetList_Config_Title">انتخاب نوع</string>
-    <string name="NftAssetActivity_Empty">No item activity yet</string>
     <string name="Widget_EnableAutostartWarning">To make sure that this widget works properly, you should enable Autostart.</string>
     <!--Alert-->
     <string name="alert_keys_invalidated_title">خطای کلید اصلی اندروید</string>

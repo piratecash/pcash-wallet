@@ -5,7 +5,6 @@ import io.horizontalsystems.core.IBackgroundManager
 import io.horizontalsystems.erc20kit.core.Erc20Kit
 import io.horizontalsystems.ethereumkit.core.EthereumKit
 import io.horizontalsystems.merkleiokit.MerkleTransactionAdapter
-import io.horizontalsystems.nftkit.core.NftKit
 import io.horizontalsystems.core.entities.BlockchainType
 import cash.p.terminal.wallet.MarketKitWrapper
 
@@ -73,7 +72,6 @@ class EvmBlockchainManager(
             EthereumKit.clear(context, chain, accountId)
             Erc20Kit.clear(context, chain, accountId)
             MerkleTransactionAdapter.clear(context, chain, accountId)
-            NftKit.clear(context, chain, accountId)
         }
         databaseKeys.remove(accountId)
     }

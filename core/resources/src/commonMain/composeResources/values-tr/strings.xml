@@ -401,7 +401,6 @@
     <string name="Balance_ReceiveHint_Search">Ara</string>
     <!--Send NFT-->
     <string name="SendNft_Title">Gönder</string>
-    <string name="SendNft_Error_NotEnoughtBalance">Yetersiz bakiye</string>
     <!--Send-->
     <string name="Send_Title">%s gönder</string>
     <string name="Send_Hint_Address">Adres veya Domain</string>
@@ -1793,62 +1792,6 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="notification_permission_revoked_title">Bildirimler Kullanılamıyor</string>
     <string name="notification_permission_revoked_message">Bildirim izni verilmedi. Ayarları açmak için dokunun.</string>
 
-    <string name="Nfts_PriceType_Days_7">Ortalama 7G</string>
-    <string name="Nfts_PriceType_Days_30">Ortalama 30G</string>
-    <string name="Nfts_PriceType_LastSale">Son İndirim</string>
-    <string name="Nfts_Asset_OnSale">İndirimde</string>
-    <string name="Nfts_Asset_OnAuction">Müzayedede</string>
-    <string name="Nfts_Asset_OnSaleUntil">%s kadar</string>
-    <string name="Nfts_Empty">Cüzdanınızda NFT yok</string>
-    <string name="Nfts_PriceMode">Fiyat Modu</string>
-    <string name="NftAsset_Overview">İzleme</string>
-    <string name="NftAsset_Activity">Aktivite</string>
-    <string name="NftAsset_Action_Share">Paylaş</string>
-    <string name="NftAsset_Action_Save">Kaydet</string>
-    <string name="NftAsset_Price_Purchase">Paket Fiyatı</string>
-    <string name="NftAsset_Price_Average7d">Ortalama 7G</string>
-    <string name="NftAsset_Price_Average30d">Ortalama 30G</string>
-    <string name="NftAsset_Price_Floor">Taban Fiyatı</string>
-    <string name="NftAsset_Price_BuyNow">Şimdi Al</string>
-    <string name="NftAsset_Price_MinimumBid">Minimum Teklif</string>
-    <string name="NftAsset_Price_BestOffer">En İyi Teklif</string>
-    <string name="NftAsset_Properties">Özellikler</string>
-    <string name="NftAsset_Description">Açıklama</string>
-    <string name="NftAsset_Details">Ayrıntılar</string>
-    <string name="NftAsset_Links">Bağlantılar</string>
-    <string name="NftAsset_ContractAddress">Sözleşme Adresi</string>
-    <string name="NftAsset_TokenId">Token Kimliği</string>
-    <string name="NftAsset_TokenStandard">Token Standardı</string>
-    <string name="NftAsset_Blockchain">Blockchains</string>
-    <string name="NftAsset_Links_Website">Web sitesi</string>
-    <string name="PoweredBy_OpenSeaAPI">OpenSea API tarafından desteklenmektedir</string>
-    <string name="Nft_TopCollections">En İyi NFT Koleksiyonları</string>
-    <string name="Nft_TopCollections_Description">İşlem hacmine göre önde gelen NFT koleksiyonları.</string>
-    <!-- NFT Collection -->
-    <string name="NftCollection_Overview">İzleme</string>
-    <string name="NftCollection_Items">Ögeler</string>
-    <string name="NftCollection_Activity">Aktivite</string>
-    <string name="NftCollection_Owners">Sahip</string>
-    <string name="NftCollection_TodaysSales">Bugünün Satıcıları</string>
-    <string name="NftCollection_TodaysSalesCount">%s NFT</string>
-    <string name="NftCollection_Royalty">Royalty</string>
-    <string name="NftCollection_InceptionDate">Başlangıç ​​tarihi</string>
-    <!-- NFT Collection Events -->
-    <string name="NftCollection_EventType_SelectorTitle">Etkinlik Türü Seç</string>
-    <string name="NftCollection_EventType_All">Hepsi</string>
-    <string name="NftCollection_EventType_List">Liste</string>
-    <string name="NftCollection_EventType_Sale">İndirim</string>
-    <string name="NftCollection_EventType_Cancelled">İptal</string>
-    <string name="NftCollection_EventType_BidEntered">Teklif Girildi</string>
-    <string name="NftCollection_EventType_BidWithdrawn">Teklif Geri Çekildi</string>
-    <string name="NftCollection_EventType_Transfer">Aktar</string>
-    <string name="NftCollection_EventType_OfferEntered">Son Teklif Girildi</string>
-    <string name="NftCollection_EventType_Approve">Onayla</string>
-    <string name="NftCollection_EventType_Custom">Özel</string>
-    <string name="NftCollection_EventType_Payout">Ödeme</string>
-    <string name="NftCollection_EventType_BulkCancel">Toplu İptal</string>
-    <string name="NftCollection_EventType_Mint">Mint</string>
-    <string name="NftCollection_EventType_Unknown">Bilinmeyen</string>
     <!--Rate list-->
     <string name="RateList_TopGainers">Gainers</string>
     <string name="RateList_TopLosers">Losers</string>
@@ -1872,7 +1815,6 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="Hud_Text_Activate">Activate</string>
     <!--Widget-->
     <string name="WidgetList_Config_Title">Türü Seç</string>
-    <string name="NftAssetActivity_Empty">Henüz öğe etkinliği yok</string>
     <string name="Widget_EnableAutostartWarning">To make sure that this widget works properly, you should enable Autostart.</string>
     <!--Alert-->
     <string name="alert_keys_invalidated_title">Android anahtar deposu hatası</string>

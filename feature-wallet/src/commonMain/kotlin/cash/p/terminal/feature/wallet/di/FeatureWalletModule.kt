@@ -107,8 +107,6 @@ import cash.p.terminal.core.managers.BeamSessionFactory
 import cash.p.terminal.core.managers.BeamSessionOwner
 import cash.p.terminal.core.managers.BeamStorageLocator
 import cash.p.terminal.wallet.AccountDeletionPreflight
-import cash.p.terminal.core.managers.NftAdapterManager
-import cash.p.terminal.core.managers.NftMetadataSyncer
 import cash.p.terminal.core.managers.SpamManager
 import cash.p.terminal.core.managers.TransactionAdapterManager
 import cash.p.terminal.core.managers.WalletServicesStarter
@@ -142,7 +140,6 @@ import cash.p.terminal.core.managers.EvmSignerFactory
 import cash.p.terminal.data.repository.EvmTransactionRepository
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.core.managers.NetworkErrorTracker
-import cash.p.terminal.core.managers.NftMetadataManager
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.OfflineSignedTransactionRepository
 import cash.p.terminal.core.managers.OfflineTransactionPayloadEncoder
@@ -161,7 +158,6 @@ import cash.p.terminal.core.providers.FeeRateProvider
 import cash.p.terminal.core.providers.PendingAccountProvider
 import cash.p.terminal.core.providers.PendingAccountProviderImpl
 import cash.p.terminal.core.storage.LocallyCreatedTransactionStorage
-import cash.p.terminal.core.storage.NftStorage
 import cash.p.terminal.core.storage.OfflineModeStorage
 import cash.p.terminal.core.storage.PendingTransactionStorage
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
@@ -222,7 +218,6 @@ import cash.p.terminal.modules.receive.viewmodels.ReceiveTokenSelectViewModel
 import cash.p.terminal.modules.transactionInfo.transactionInfoViewModel
 import cash.p.terminal.modules.transactions.CheckAmlIncomingTransactionUseCase
 import cash.p.terminal.modules.transactions.ITransactionRecordRepository
-import cash.p.terminal.modules.transactions.NftMetadataService
 import cash.p.terminal.modules.transactions.SelectContactViewModel
 import cash.p.terminal.modules.transactions.TransactionFilterService
 import cash.p.terminal.modules.transactions.TransactionItem
@@ -336,8 +331,6 @@ val featureWalletModule = module {
     singleOf(::SpamAddressStorage)
     singleOf(::SpamManager)
     singleOf(::AddressCheckManager)
-    singleOf(::NftAdapterManager)
-    singleOf(::NftMetadataSyncer)
     singleOf(::OfflineOperationGate)
     singleOf(::BackgroundKeepAliveManager)
     singleOf(::NetworkErrorTracker)
@@ -357,7 +350,6 @@ val featureWalletModule = module {
     singleOf(::EvmSignerFactory)
     factoryOf(::EvmAccountManagerFactory)
     factoryOf(::EvmTransactionRepository)
-    singleOf(::NftMetadataManager)
     singleOf(::PoisonAddressManager)
     singleOf(::BalanceHiddenManager) bind IBalanceHiddenManager::class
     singleOf(::BaseTokenManager)
@@ -383,7 +375,6 @@ val featureWalletModule = module {
     singleOf(::UserDeletedWalletManager) bind IDeletedWalletRestorer::class
     singleOf(::PendingTransactionStorage)
     singleOf(::LocallyCreatedTransactionStorage)
-    factoryOf(::NftStorage)
     single { EvmLabelApi(get(), get<MarketApiConfig>().baseUrl) }
     single { HashDitApi(get(), SharedAppConfig.hashDitBaseUrl, SharedAppConfig.hashDitApiKey) }
     single { ChainalysisApi(get(), SharedAppConfig.chainalysisBaseUrl, SharedAppConfig.chainalysisApiKey) }
@@ -519,7 +510,6 @@ val featureWalletModule = module {
     // Per-screen: the token screen owns its repository and clear()s it, so a shared instance
     // would let one closing screen cancel the sync monitoring of another still open.
     factoryOf(::TransactionSyncStateRepository)
-    factoryOf(::NftMetadataService)
     factoryOf(::TransactionsService)
     factoryOf(::TransactionFilterService)
     viewModelOf(::TransactionsViewModel)

@@ -102,7 +102,7 @@ class EvmTransactionRecord(
                             value.tokenDecimals == value2.tokenDecimals
 
                 value is TransactionValue.NftValue && value2 is TransactionValue.NftValue ->
-                    value.nftUid == value2.nftUid
+                    value.mintAddress == value2.mintAddress
 
                 else ->
                     false

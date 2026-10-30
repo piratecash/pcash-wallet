@@ -13,7 +13,6 @@ import cash.p.terminal.modules.coin.CoinPage
 import cash.p.terminal.modules.market.platform.MarketPlatformPage
 import cash.p.terminal.modules.market.topplatforms.Platform
 import cash.p.terminal.modules.multiswap.SwapPage
-import cash.p.terminal.modules.nft.collection.NftCollectionPage
 import cash.p.terminal.modules.softwareupdate.AppUpdateChecker
 import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.modules.walletconnect.WCSessionManager
@@ -213,14 +212,8 @@ class MainViewModelTest {
     }
 
     @Test
-    fun handleDeepLink_nftCollection_opensNftCollectionPageFromRight() = runTest(dispatcher) {
-        val deeplinkPage = resolveDeepLink("pcash://nft-collection?uid=punks&blockchainTypeUid=ethereum")
-
-        assertEquals(false, deeplinkPage?.fromBottom)
-        assertEquals(
-            NftCollectionPage.Input("punks", "ethereum"),
-            assertIs<NftCollectionPage>(deeplinkPage?.page).input,
-        )
+    fun handleDeepLink_nftCollection_opensNoPage() = runTest(dispatcher) {
+        assertNull(resolveDeepLink("pcash://nft-collection?uid=punks&blockchainTypeUid=ethereum"))
     }
 
     @Test

@@ -1,9 +1,7 @@
 package cash.p.terminal.ui_compose.components
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -11,9 +9,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.coin_placeholder
-import cash.p.terminal.resources.ic_platform_placeholder_24
 import org.jetbrains.compose.resources.DrawableResource
-import androidx.compose.ui.unit.dp
 import coil3.compose.rememberAsyncImagePainter
 
 @Composable
@@ -66,37 +62,6 @@ fun HsImage(
             painter = placeholderPainter(fallback),
             contentDescription = null,
             modifier = modifier,
-            colorFilter = colorFilter
-        )
-    }
-}
-
-@Composable
-fun NftIcon(
-    modifier: Modifier = Modifier,
-    iconUrl: String?,
-    placeholder: DrawableResource? = null,
-    colorFilter: ColorFilter? = null
-) {
-    val fallback = placeholder ?: Res.drawable.ic_platform_placeholder_24
-    when {
-        iconUrl != null -> Image(
-            painter = rememberAsyncImagePainter(
-                model = iconUrl,
-                error = placeholderPainter(fallback)
-            ),
-            contentDescription = null,
-            modifier = modifier
-                .clip(RoundedCornerShape(8.dp))
-                .size(32.dp),
-            colorFilter = colorFilter,
-            contentScale = ContentScale.Crop
-        )
-
-        else -> Image(
-            painter = placeholderPainter(fallback),
-            contentDescription = null,
-            modifier = modifier.size(32.dp),
             colorFilter = colorFilter
         )
     }

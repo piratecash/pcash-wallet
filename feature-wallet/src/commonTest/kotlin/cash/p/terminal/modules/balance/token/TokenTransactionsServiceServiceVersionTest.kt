@@ -7,7 +7,6 @@ import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.modules.transactions.FilterTransactionType
 import cash.p.terminal.modules.transactions.HistoricalRateKey
 import cash.p.terminal.modules.transactions.ITransactionRecordRepository
-import cash.p.terminal.modules.transactions.NftMetadataService
 import cash.p.terminal.modules.transactions.RecordsBatch
 import cash.p.terminal.modules.transactions.TransactionSyncStateRepository
 import cash.p.terminal.modules.transactions.TransactionsRateRepository
@@ -46,7 +45,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * Proves the serviceVersion guard in [TokenTransactionsService] is necessary.
  *
  * Reproduces the race: a batch emitted for filter A is being processed by
- * handleUpdatedRecords() (blocked on the synchronous NFT-metadata read) when the user
+ * handleUpdatedRecords() (blocked in the spam check that precedes publishing) when the user
  * switches the filter. setTransactionType() bumps serviceVersion and clears the list.
  * When the stale batch resumes, the guard must discard it instead of writing filter-A
  * records over the freshly cleared list.
@@ -63,7 +62,6 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
     private val rateRepository = mockk<TransactionsRateRepository>(relaxed = true)
     private val syncStateRepository = mockk<TransactionSyncStateRepository>(relaxed = true)
     private val adapterManager = mockk<TransactionAdapterManager>(relaxed = true)
-    private val nftMetadataService = mockk<NftMetadataService>(relaxed = true)
     private val spamManager = mockk<SpamManager>(relaxed = true)
     private val wallet = mockk<Wallet>(relaxed = true)
     private val koinAdapterManager = mockk<IAdapterManager>(relaxed = true)
@@ -94,7 +92,6 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
         // emptyMap never contains wallet.transactionSource -> handleInitialization() never runs
         every { adapterManager.adaptersReadyFlow } returns MutableStateFlow(emptyMap())
         every { adapterManager.initializationFlow } returns initializationFlow
-        every { nftMetadataService.assetsBriefMetadataFlow } returns MutableStateFlow(emptyMap())
         every { spamManager.shouldHide(any()) } returns false
     }
 
@@ -111,17 +108,17 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
         val recordA = mockRecord("a1", sourceA)
         val recordB = mockRecord("b1", sourceB)
 
-        val metadataReached = CountDownLatch(1)
+        val spamCheckReached = CountDownLatch(1)
         val proceed = CountDownLatch(1)
         val batchBReached = CountDownLatch(1)
-        var metadataCall = 0
+        var spamCheckCall = 0
 
-        every { nftMetadataService.assetsBriefMetadata(any()) } answers {
-            if (metadataCall++ == 0) {
-                metadataReached.countDown()
+        every { spamManager.shouldHide(any()) } answers {
+            if (spamCheckCall++ == 0) {
+                spamCheckReached.countDown()
                 proceed.await(5, TimeUnit.SECONDS)
             }
-            emptyMap()
+            false
         }
 
         val getLastBlockSources = Collections.synchronizedList(mutableListOf<TransactionSource>())
@@ -137,7 +134,6 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
             rateRepository = rateRepository,
             transactionSyncStateRepository = syncStateRepository,
             transactionAdapterManager = adapterManager,
-            nftMetadataService = nftMetadataService,
             spamManager = spamManager,
         )
         service.start()
@@ -145,11 +141,11 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
         // Ensure the itemsFlow collector is subscribed before emitting (replay = 0)
         waitUntil { repositoryItemsFlow.subscriptionCount.value >= 1 }
 
-        // Batch A arrives and blocks inside handleUpdatedRecords on the metadata read
+        // Batch A arrives and blocks inside handleUpdatedRecords on the spam check
         repositoryItemsFlow.emit(RecordsBatch(listOf(recordA)))
         assertTrue(
-            "handleUpdatedRecords did not reach the metadata read",
-            metadataReached.await(5, TimeUnit.SECONDS)
+            "handleUpdatedRecords did not reach the spam check",
+            spamCheckReached.await(5, TimeUnit.SECONDS)
         )
 
         // User switches filter while batch A is mid-flight: bumps serviceVersion, clears list
@@ -186,7 +182,6 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
             rateRepository = rateRepository,
             transactionSyncStateRepository = syncStateRepository,
             transactionAdapterManager = adapterManager,
-            nftMetadataService = nftMetadataService,
             spamManager = spamManager,
         )
 
@@ -227,7 +222,6 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
             rateRepository = rateRepository,
             transactionSyncStateRepository = syncStateRepository,
             transactionAdapterManager = adapterManager,
-            nftMetadataService = nftMetadataService,
             spamManager = spamManager,
         )
 
@@ -279,7 +273,6 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
             rateRepository = rateRepository,
             transactionSyncStateRepository = syncStateRepository,
             transactionAdapterManager = adapterManager,
-            nftMetadataService = nftMetadataService,
             spamManager = spamManager,
         )
         service.start()
@@ -328,7 +321,6 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
             rateRepository = rateRepository,
             transactionSyncStateRepository = syncStateRepository,
             transactionAdapterManager = adapterManager,
-            nftMetadataService = nftMetadataService,
             spamManager = spamManager,
         )
 
@@ -389,7 +381,6 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
             rateRepository = rateRepository,
             transactionSyncStateRepository = syncStateRepository,
             transactionAdapterManager = adapterManager,
-            nftMetadataService = nftMetadataService,
             spamManager = spamManager,
         )
         service.start()
@@ -589,7 +580,6 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
             rateRepository = rateRepository,
             transactionSyncStateRepository = syncStateRepository,
             transactionAdapterManager = adapterManager,
-            nftMetadataService = nftMetadataService,
             spamManager = spamManager,
         )
 
@@ -630,7 +620,6 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
             rateRepository = rateRepository,
             transactionSyncStateRepository = syncStateRepository,
             transactionAdapterManager = adapterManager,
-            nftMetadataService = nftMetadataService,
             spamManager = spamManager,
         )
         service.start()
@@ -857,7 +846,6 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
         rateRepository = rateRepository,
         transactionSyncStateRepository = syncStateRepository,
         transactionAdapterManager = adapterManager,
-        nftMetadataService = nftMetadataService,
         spamManager = spamManager,
     )
 

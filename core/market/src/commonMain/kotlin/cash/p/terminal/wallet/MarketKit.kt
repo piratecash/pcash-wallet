@@ -10,7 +10,6 @@ import cash.p.terminal.wallet.managers.CoinPriceManager
 import cash.p.terminal.wallet.managers.CoinPriceSyncManager
 import cash.p.terminal.wallet.managers.GlobalMarketInfoManager
 import cash.p.terminal.wallet.managers.MarketOverviewManager
-import cash.p.terminal.wallet.managers.NftManager
 import cash.p.terminal.wallet.managers.PostManager
 import cash.p.terminal.wallet.managers.VirtualCoinMapper
 import cash.p.terminal.wallet.models.Analytics
@@ -33,7 +32,6 @@ import cash.p.terminal.wallet.models.MarketInfo
 import cash.p.terminal.wallet.models.MarketInfoOverview
 import cash.p.terminal.wallet.models.MarketOverview
 import cash.p.terminal.wallet.models.MarketTicker
-import cash.p.terminal.wallet.models.NftTopCollection
 import cash.p.terminal.wallet.models.Post
 import cash.p.terminal.wallet.models.RankMultiValue
 import cash.p.terminal.wallet.models.RankValue
@@ -45,7 +43,6 @@ import cash.p.terminal.wallet.models.TopPlatform
 import cash.p.terminal.wallet.models.TopPlatformMarketCapPoint
 import cash.p.terminal.wallet.providers.CoinPriceSchedulerFactory
 import cash.p.terminal.wallet.providers.CryptoCompareProvider
-import cash.p.terminal.wallet.providers.HsNftProvider
 import cash.p.terminal.wallet.providers.HsProvider
 import cash.p.terminal.wallet.storage.CoinHistoricalPriceStorage
 import cash.p.terminal.wallet.storage.CoinPriceStorage
@@ -71,7 +68,6 @@ import java.math.BigDecimal
 import java.util.Date
 
 class MarketKit(
-    private val nftManager: NftManager,
     private val marketOverviewManager: MarketOverviewManager,
     private val coinManager: CoinManager,
     private val coinSyncer: CoinSyncer,
@@ -550,10 +546,6 @@ class MarketKit(
             .map { coinManager.getMarketInfos(it) }
     }
 
-    // NFT
-
-    suspend fun nftTopCollections(): List<NftTopCollection> = nftManager.topCollections()
-
     // Auth
 
     fun authGetSignMessage(address: String): Single<String> {
@@ -600,11 +592,9 @@ class MarketKit(
         fun getInstance(config: MarketApiConfig): MarketKit {
             val marketDatabase: MarketDatabase = get(MarketDatabase::class.java)
             val hsProvider = HsProvider(config.baseUrl, config.apiKey)
-            val hsNftProvider = HsNftProvider(config.baseUrl, config.apiKey)
             val coinStorage = CoinStorage(marketDatabase)
             val coinManager = CoinManager(coinStorage)
-            val nftManager = NftManager(coinManager, hsNftProvider)
-            val marketOverviewManager = MarketOverviewManager(nftManager, hsProvider)
+            val marketOverviewManager = MarketOverviewManager(hsProvider)
             val virtualCoinMapper: VirtualCoinMapper = get(VirtualCoinMapper::class.java)
             val coinsListRepository: CoinsListRepository = get(CoinsListRepository::class.java)
             val coinSyncer = CoinSyncer(
@@ -630,7 +620,6 @@ class MarketKit(
                 GlobalMarketInfoManager(hsProvider, globalMarketInfoStorage)
 
             return MarketKit(
-                nftManager,
                 marketOverviewManager,
                 coinManager,
                 coinSyncer,

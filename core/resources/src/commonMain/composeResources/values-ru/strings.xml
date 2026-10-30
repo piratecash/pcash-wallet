@@ -388,7 +388,6 @@
     <!--Send NFT-->
     <string name="Info_Reserved_Title">Зарезервировано</string>
     <string name="SendNft_Title">Отправить</string>
-    <string name="SendNft_Error_NotEnoughtBalance">Недостаточно средств</string>
     <!--Send-->
     <string name="Send_EnterAddress">Укажите адрес</string>
     <string name="Send_Title">Отправить %s</string>
@@ -1693,62 +1692,6 @@
     <string name="SubscriptionInfo_PersonalSupport_Info">Свяжитесь с нашей командой напрямую через Telegram для получения личной помощи.</string>
     <string name="SubscriptionInfo_GetPremium">Получите премиум</string>
     <string name="SubscriptionInfo_HavePremium">У меня уже есть премиум</string>
-    <string name="Nfts_PriceType_Days_7">7Д сред.</string>
-    <string name="Nfts_PriceType_Days_30">30Д сред.</string>
-    <string name="Nfts_PriceType_LastSale">Последняя продажа</string>
-    <string name="Nfts_Asset_OnSale">В продаже</string>
-    <string name="Nfts_Asset_OnAuction">На аукционе</string>
-    <string name="Nfts_Asset_OnSaleUntil">до %s</string>
-    <string name="Nfts_Empty">У вас нет NFT в вашем кошельке</string>
-    <string name="Nfts_PriceMode">Режим цены</string>
-    <string name="NftAsset_Overview">Обзор</string>
-    <string name="NftAsset_Activity">Активность</string>
-    <string name="NftAsset_Action_Share">Поделиться</string>
-    <string name="NftAsset_Action_Save">Сохранить</string>
-    <string name="NftAsset_Price_Purchase">Покупная цена</string>
-    <string name="NftAsset_Price_Average7d">Средн. 7Д</string>
-    <string name="NftAsset_Price_Average30d">Сред. 30Д</string>
-    <string name="NftAsset_Price_Floor">Минимальная цена</string>
-    <string name="NftAsset_Price_BuyNow">Купить сейчас</string>
-    <string name="NftAsset_Price_MinimumBid">Мин. cтавка</string>
-    <string name="NftAsset_Price_BestOffer">Лучшее предложение</string>
-    <string name="NftAsset_Properties">Параметры</string>
-    <string name="NftAsset_Description">Описание</string>
-    <string name="NftAsset_Details">Детали</string>
-    <string name="NftAsset_Links">Ссылки</string>
-    <string name="NftAsset_ContractAddress">Адрес контракта</string>
-    <string name="NftAsset_TokenId">ID токена</string>
-    <string name="NftAsset_TokenStandard">Стандарт токена</string>
-    <string name="NftAsset_Blockchain">Блокчейн</string>
-    <string name="NftAsset_Links_Website">Веб-сайт</string>
-    <string name="PoweredBy_OpenSeaAPI">При поддержке OpenSea API</string>
-    <string name="Nft_TopCollections">Топ NFT коллекции</string>
-    <string name="Nft_TopCollections_Description">Ведущие коллекции NFT по объему торгов.</string>
-    <!-- NFT Collection -->
-    <string name="NftCollection_Overview">Обзор</string>
-    <string name="NftCollection_Items">Элементы</string>
-    <string name="NftCollection_Activity">Активность</string>
-    <string name="NftCollection_Owners">Владельцы</string>
-    <string name="NftCollection_TodaysSales">Продажи за сегодня</string>
-    <string name="NftCollection_TodaysSalesCount">%s NFT</string>
-    <string name="NftCollection_Royalty">Вознаграждение</string>
-    <string name="NftCollection_InceptionDate">Дата старта</string>
-    <!-- NFT Collection Events -->
-    <string name="NftCollection_EventType_SelectorTitle">Выберите тип события</string>
-    <string name="NftCollection_EventType_All">Все</string>
-    <string name="NftCollection_EventType_List">Залистить</string>
-    <string name="NftCollection_EventType_Sale">Продажа</string>
-    <string name="NftCollection_EventType_Cancelled">Отменить</string>
-    <string name="NftCollection_EventType_BidEntered">Ставка внесена</string>
-    <string name="NftCollection_EventType_BidWithdrawn">Отзыв cтавки</string>
-    <string name="NftCollection_EventType_Transfer">Перевод</string>
-    <string name="NftCollection_EventType_OfferEntered">Предложение включено</string>
-    <string name="NftCollection_EventType_Approve">Разрешение</string>
-    <string name="NftCollection_EventType_Custom">Индивидуальная</string>
-    <string name="NftCollection_EventType_Payout">Выплата</string>
-    <string name="NftCollection_EventType_BulkCancel">Массовая отмена</string>
-    <string name="NftCollection_EventType_Mint">Минт</string>
-    <string name="NftCollection_EventType_Unknown">Неизвестная</string>
     <!--Rate list-->
     <string name="RateList_TopGainers">Растущие активы</string>
     <string name="RateList_TopLosers">Падающие активы</string>
@@ -1773,7 +1716,6 @@
     <string name="Hud_Text_Activate">Активировать</string>
     <!--Widget-->
     <string name="WidgetList_Config_Title">Выбрать тип</string>
-    <string name="NftAssetActivity_Empty">Нет активности</string>
     <string name="Widget_EnableAutostartWarning">Чтобы убедиться, что этот виджет работает правильно, необходимо включить автозапуск.</string>
     <!--Alert-->
     <string name="alert_keys_invalidated_title">Ошибка Android Keystore</string>
@@ -1906,7 +1848,6 @@
     <string name="week_period">Неделя</string>
     <string name="month_period">Месяц</string>
     <string name="year_period">Год</string>
-    <string name="unknown_send_error">Неизвестная ошибка отправки</string>
     <string name="native_library_error_title">Невозможно запустить</string>
     <string name="native_library_error_message">Не удалось загрузить необходимый компонент. Пожалуйста, попробуйте переустановить приложение из Play Store.</string>
     <string name="native_library_error_close">Закрыть</string>

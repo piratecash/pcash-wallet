@@ -80,6 +80,7 @@ import cash.p.terminal.resources.beam_history_waiting_for_sender
 import cash.p.terminal.resources.duration_short_hours
 import cash.p.terminal.resources.duration_short_minutes
 import cash.p.terminal.resources.duration_short_seconds
+import cash.p.terminal.resources.icon_24_nft_placeholder
 import cash.p.terminal.resources.swap_duration
 import cash.p.terminal.resources.swap_duration_approximate
 import cash.p.terminal.resources.transaction_swap_status_confirming
@@ -221,6 +222,20 @@ class TransactionInfoViewItemFactoryTest {
         assertEquals(BRIDGE_ADDRESS, address.value)
         assertEquals(false, address.showAdd)
         assertEquals(true, address.title.endsWith(" · Token Bridge"))
+    }
+
+    @Test
+    fun getReceiveSectionItems_solanaNftWithoutName_showsMintWithPlaceholder() {
+        val amount = solanaNftAmount(tokenName = null)
+
+        assertEquals("#NFT_MINT", amount.nftName)
+        assertNull(amount.iconUrl)
+        assertEquals(Res.drawable.icon_24_nft_placeholder, amount.iconPlaceholder)
+    }
+
+    @Test
+    fun getReceiveSectionItems_solanaNftWithName_showsName() {
+        assertEquals("Mad Lad", solanaNftAmount(tokenName = "Mad Lad").nftName)
     }
 
     @Test
@@ -737,10 +752,24 @@ class TransactionInfoViewItemFactoryTest {
         lastBlockInfo = null,
         explorerData = emptyList(),
         rates = emptyMap(),
-        nftMetadata = emptyMap(),
         hideAmount = false,
         offlineStatus = offlineStatus,
     )
+
+    private fun solanaNftAmount(tokenName: String?): TransactionInfoViewItem.NftAmount =
+        TransactionViewItemFactoryHelper.getReceiveSectionItems(
+            value = TransactionValue.NftValue(
+                mintAddress = "NFT_MINT",
+                value = BigDecimal.ONE,
+                tokenName = tokenName,
+                tokenSymbol = null,
+            ),
+            fromAddress = "SENDER_ADDRESS",
+            toAddress = null,
+            coinPrice = null,
+            hideAmount = false,
+            blockchainType = BlockchainType.Solana,
+        ).filterIsInstance<TransactionInfoViewItem.NftAmount>().single()
 
     private fun tokenValue(
         code: String = "COSA",

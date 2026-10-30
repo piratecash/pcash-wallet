@@ -44,7 +44,6 @@ class ResolveTransactionItemUseCase(
             record = record,
             currencyValue = null,
             lastBlockInfo = null,
-            nftMetadata = emptyMap(),
         )
         val swapTx = swapProviderTransactionsStorage.getByOutgoingRecordUid(recordUid)
             ?: swapProviderTransactionsStorage.getByIncomingRecordUid(recordUid)

@@ -85,7 +85,6 @@
     <string name="Idle" translatable="false">-</string>
     <string name="Any">Any</string>
     <string name="SyncError">Sync error. Try Again</string>
-    <string name="unknown_send_error">Unknown send error</string>
     <string name="native_library_error_title">Unable to Start</string>
     <string name="native_library_error_message">A required component failed to load. Please try reinstalling the app from the Play Store.</string>
     <string name="native_library_error_close">Close</string>
@@ -454,7 +453,6 @@
 
     <!--Send NFT-->
     <string name="SendNft_Title">Send</string>
-    <string name="SendNft_Error_NotEnoughtBalance">Not Enough Balance</string>
 
     <!--Send-->
     <string name="Send_EnterAddress">Enter Address</string>
@@ -2136,69 +2134,10 @@ Proceed only if you\u0027re sure.</string>
     <string name="SubscriptionInfo_GetPremium">Get Premium</string>
     <string name="SubscriptionInfo_HavePremium">I already have Premium</string>
 
-    <string name="Nfts_Title" translatable="false">NFTs</string>
-    <string name="Nfts_PriceType_Days_7">7D avg.</string>
-    <string name="Nfts_PriceType_Days_30">30D avg.</string>
-    <string name="Nfts_PriceType_LastSale">Last Sale</string>
-    <string name="Nfts_Asset_OnSale">On Sale</string>
-    <string name="Nfts_Asset_OnAuction">On Auction</string>
-    <string name="Nfts_Asset_OnSaleUntil">until %s</string>
-    <string name="Nfts_Empty">You don\u0027t have an NFT in your wallet</string>
-    <string name="Nfts_PriceMode">Price Mode</string>
 
-    <string name="NftAsset_Overview">Overview</string>
-    <string name="NftAsset_Activity">Activity</string>
-    <string name="NftAsset_Action_Share">Share</string>
-    <string name="NftAsset_Action_Save">Save</string>
-    <string name="NftAsset_Price_Purchase">Purchase Price</string>
-    <string name="NftAsset_Price_Average7d">7D Average</string>
-    <string name="NftAsset_Price_Average30d">30D Average</string>
-    <string name="NftAsset_Price_Floor">Floor Price</string>
-    <string name="NftAsset_Price_BuyNow">Buy Now</string>
-    <string name="NftAsset_Price_MinimumBid">Minimum Bid</string>
-    <string name="NftAsset_Price_BestOffer">Best Offer</string>
-    <string name="NftAsset_Properties">Properties</string>
-    <string name="NftAsset_Description">Description</string>
-    <string name="NftAsset_Details">Details</string>
-    <string name="NftAsset_Links">Links</string>
-    <string name="NftAsset_ContractAddress">Contract Address</string>
-    <string name="NftAsset_TokenId">Token ID</string>
-    <string name="NftAsset_TokenStandard">Token Standard</string>
-    <string name="NftAsset_Blockchain">Blockchain</string>
-    <string name="NftAsset_Links_Website">Website</string>
-    <string name="NftAsset_Links_Discord" translatable="false">Discord</string>
-    <string name="NftAsset_Links_Twitter" translatable="false">Twitter</string>
-    <string name="PoweredBy_OpenSeaAPI">Powered by OpenSea API</string>
 
-    <string name="Nft_TopCollections">Top NFT Collections</string>
-    <string name="Nft_TopCollections_Description">Leading NFT collections by trading volume.</string>
 
-    <!-- NFT Collection -->
-    <string name="NftCollection_Overview">Overview</string>
-    <string name="NftCollection_Items">Items</string>
-    <string name="NftCollection_Activity">Activity</string>
-    <string name="NftCollection_Owners">Owners</string>
-    <string name="NftCollection_TodaysSales">Today\u0027s Sellers</string>
-    <string name="NftCollection_TodaysSalesCount">%s NFT</string>
-    <string name="NftCollection_Royalty">Royalty</string>
-    <string name="NftCollection_InceptionDate">Inception Date</string>
 
-    <!-- NFT Collection Events -->
-    <string name="NftCollection_EventType_SelectorTitle">Select Event Type</string>
-    <string name="NftCollection_EventType_All">All</string>
-    <string name="NftCollection_EventType_List">List</string>
-    <string name="NftCollection_EventType_Sale">Sale</string>
-    <string name="NftCollection_EventType_Cancelled">Cancel</string>
-    <string name="NftCollection_EventType_BidEntered">Bid Entered</string>
-    <string name="NftCollection_EventType_BidWithdrawn">Bid Withdrawn</string>
-    <string name="NftCollection_EventType_Transfer">Transfer</string>
-    <string name="NftCollection_EventType_OfferEntered">Offer Entered</string>
-    <string name="NftCollection_EventType_Approve">Approve</string>
-    <string name="NftCollection_EventType_Custom">Custom</string>
-    <string name="NftCollection_EventType_Payout">Payout</string>
-    <string name="NftCollection_EventType_BulkCancel">Bulk Cancel</string>
-    <string name="NftCollection_EventType_Mint">Mint</string>
-    <string name="NftCollection_EventType_Unknown">Unknown</string>
 
     <!--Rate list-->
     <string name="RateList_TopGainers">Gainers</string>
@@ -2230,7 +2169,6 @@ Proceed only if you\u0027re sure.</string>
 
     <!--Widget-->
     <string name="WidgetList_Config_Title">Choose Type</string>
-    <string name="NftAssetActivity_Empty">No item activity yet</string>
     <string name="Widget_EnableAutostartWarning">To make sure that this widget works properly, you should enable Autostart.</string>
 
     <!--Alert-->

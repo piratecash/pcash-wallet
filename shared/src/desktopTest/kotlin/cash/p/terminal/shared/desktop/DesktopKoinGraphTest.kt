@@ -188,8 +188,6 @@ import cash.p.terminal.modules.market.platform.MarketPlatformCoinsRepository
 import cash.p.terminal.modules.market.platform.MarketPlatformViewModel
 import cash.p.terminal.modules.market.platform.PlatformChartService
 import cash.p.terminal.modules.market.topcoins.MarketTopCoinsViewModel
-import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsService
-import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsViewModel
 import cash.p.terminal.modules.market.topplatforms.Platform
 import cash.p.terminal.modules.market.tvl.TvlChartService
 import cash.p.terminal.modules.market.tvl.TvlChartViewModel
@@ -417,7 +415,6 @@ class DesktopKoinGraphTest {
         definition<PlatformChartService>(Platform::class),
         definition<TvlViewModel>(TvlService::class, TvlViewItemFactory::class),
         definition<TvlChartViewModel>(TvlChartService::class, ChartCurrencyValueFormatterShortened::class),
-        definition<TopNftCollectionsViewModel>(TopNftCollectionsService::class),
         definition<MetricsPageViewModel>(MetricsType::class),
         definition<MetricsPageChartService>(MetricsType::class),
     )

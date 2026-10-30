@@ -17,7 +17,6 @@ import io.horizontalsystems.ethereumkit.core.EthereumKit
 import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.Chain
 import io.horizontalsystems.merkleiokit.MerkleTransactionAdapter
-import io.horizontalsystems.nftkit.core.NftKit
 import io.horizontalsystems.oneinchkit.OneInchKit
 import io.horizontalsystems.uniswapkit.UniswapKit
 import io.horizontalsystems.uniswapkit.UniswapV3Kit
@@ -110,7 +109,6 @@ class EvmKitManagerLifecycleTest {
             EthereumKit.migrateDatabase(context, Chain.Ethereum, ACCOUNT_ID, databaseKey)
             Erc20Kit.migrateDatabases(context, Chain.Ethereum, ACCOUNT_ID, databaseKey)
             MerkleTransactionAdapter.migrateDatabase(context, Chain.Ethereum, ACCOUNT_ID, databaseKey)
-            NftKit.migrateDatabase(context, Chain.Ethereum, ACCOUNT_ID, databaseKey)
             EthereumKit.getInstance(
                 context, any<Address>(), Chain.Ethereum, any(), any(), ACCOUNT_ID, databaseKey,
                 any(), any(), any(),
@@ -257,13 +255,12 @@ class EvmKitManagerLifecycleTest {
     }
 
     private fun mockKitCompanions() {
-        mockkObject(EthereumKit, Erc20Kit, MerkleTransactionAdapter, NftKit, UniswapKit, UniswapV3Kit, OneInchKit)
+        mockkObject(EthereumKit, Erc20Kit, MerkleTransactionAdapter, UniswapKit, UniswapV3Kit, OneInchKit)
         mockkObject(SharedAppConfig)
         every { SharedAppConfig.merkleIoKey } returns "merkle-key"
         coEvery { EthereumKit.migrateDatabase(any(), any(), any(), any()) } returns mockk()
         coEvery { Erc20Kit.migrateDatabases(any(), any(), any(), any()) } returns mockk()
         coEvery { MerkleTransactionAdapter.migrateDatabase(any(), any(), any(), any()) } returns mockk()
-        coEvery { NftKit.migrateDatabase(any(), any(), any(), any()) } returns mockk()
         coEvery {
             EthereumKit.getInstance(any(), any<Address>(), any(), any(), any(), any(), any(), any(), any(), any())
         } returns evmKit

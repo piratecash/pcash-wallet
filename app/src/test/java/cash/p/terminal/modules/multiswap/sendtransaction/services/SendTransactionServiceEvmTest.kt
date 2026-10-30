@@ -166,7 +166,6 @@ class SendTransactionServiceEvmTest : KoinTest {
         mockkObject(App)
         val evmKitWrapper = EvmKitWrapper(
             evmKit = evmKit,
-            nftKit = null,
             blockchainType = BlockchainType.BinanceSmartChain,
             signer = signer,
             merkleTransactionAdapter = null,

@@ -7,13 +7,10 @@ import cash.p.terminal.core.adapters.EvmTransactionsAdapter
 import io.horizontalsystems.core.entities.CurrencyValue
 import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.SwapDuration
-import cash.p.terminal.entities.nft.NftAssetBriefMetadata
-import cash.p.terminal.entities.nft.NftUid
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.offline.walletFor
 import cash.p.terminal.modules.transactions.AmlStatus
 import cash.p.terminal.modules.transactions.poison_status.PoisonStatus
-import cash.p.terminal.modules.transactions.NftMetadataService
 import cash.p.terminal.modules.transactions.TransactionItem
 import cash.p.terminal.modules.transactions.TransactionStatus
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
@@ -51,7 +48,6 @@ data class TransactionInfoItem(
     val lastBlockInfo: LastBlockInfo?,
     val explorerData: List<TransactionInfoModule.ExplorerData>,
     val rates: Map<String, CurrencyValue>,
-    val nftMetadata: Map<NftUid, NftAssetBriefMetadata>,
     val hideAmount: Boolean,
     val transactionStatusUrl: Pair<String, String>? = null,
     // Swap provider amount fields
@@ -98,7 +94,6 @@ fun Scope.transactionInfoViewModel(transactionItem: TransactionItem): Transactio
         adapter = adapter,
         marketKit = get(),
         currencyManager = get(),
-        nftMetadataService = NftMetadataService(get()),
         updateSwapProviderTransactionsStatusUseCase = get(),
         swapProviderTransactionsStorage = get(),
         dispatcherProvider = get(),

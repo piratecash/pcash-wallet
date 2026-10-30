@@ -17,7 +17,6 @@ import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
 import cash.p.terminal.entities.transactionrecords.beam.BeamTransactionRecord
 import cash.p.terminal.entities.transactionrecords.thorchain.ThorchainTransactionRecord
-import cash.p.terminal.modules.transactions.NftMetadataService
 import cash.p.terminal.modules.transactions.TransactionStatus
 import cash.p.terminal.modules.transactions.beamHistoryRecord
 import cash.p.terminal.modules.transactions.poison_status.PoisonStatus
@@ -78,7 +77,6 @@ class TransactionInfoServiceTest : KoinTest {
     private val adapter = mockk<ITransactionsAdapter>(relaxed = true)
     private val marketKit = mockk<MarketKitWrapper>(relaxed = true)
     private val currencyManager = mockk<CurrencyManager>(relaxed = true)
-    private val nftMetadataService = mockk<NftMetadataService>(relaxed = true)
     private val updateSwapProviderTransactionsStatusUseCase =
         mockk<UpdateSwapProviderTransactionsStatusUseCase>(relaxed = true)
     private val swapProviderTransactionsStorage =
@@ -124,7 +122,6 @@ class TransactionInfoServiceTest : KoinTest {
         every {
             adapter.getTransactionRecordsFlow(any(), any(), any())
         } returns MutableStateFlow(emptyList())
-        every { nftMetadataService.assetsBriefMetadataFlow } returns MutableStateFlow(emptyMap())
         every { swapProviderTransactionsStorage.observeByDate(any()) } returns emptyFlow()
         val hiddenFlow = MutableStateFlow(false)
         every { balanceHiddenManager.transactionInfoHiddenFlow(any()) } returns hiddenFlow
@@ -173,7 +170,6 @@ class TransactionInfoServiceTest : KoinTest {
         adapter = adapter,
         marketKit = marketKit,
         currencyManager = currencyManager,
-        nftMetadataService = nftMetadataService,
         updateSwapProviderTransactionsStatusUseCase = updateSwapProviderTransactionsStatusUseCase,
         swapProviderTransactionsStorage = swapProviderTransactionsStorage,
         dispatcherProvider = dispatcherProvider,

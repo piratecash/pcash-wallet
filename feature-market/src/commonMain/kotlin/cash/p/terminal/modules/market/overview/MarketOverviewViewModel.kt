@@ -2,14 +2,11 @@ package cash.p.terminal.modules.market.overview
 
 import cash.p.terminal.resources.MarketTopPlatforms_Title
 import cash.p.terminal.resources.Market_Overview_Sectors
-import cash.p.terminal.resources.Nft_TopCollections
 import cash.p.terminal.resources.ic_blocks_20
 import cash.p.terminal.resources.ic_categories_20
-import cash.p.terminal.resources.ic_top_nft_collections_20
 import cash.p.terminal.resources.MarketTopPlatforms_Protocols
 import cash.p.terminal.resources.Res
 import androidx.lifecycle.viewModelScope
-import cash.p.terminal.entities.CoinValue
 import io.horizontalsystems.core.entities.Currency
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.modules.market.MarketField
@@ -19,18 +16,14 @@ import cash.p.terminal.modules.market.TimeDuration
 import cash.p.terminal.modules.market.TopMarket
 import cash.p.terminal.modules.market.overview.MarketOverviewModule.MarketMetrics
 import cash.p.terminal.modules.market.overview.MarketOverviewModule.MarketMetricsPoint
-import cash.p.terminal.modules.market.overview.MarketOverviewModule.TopNftCollectionsBoard
 import cash.p.terminal.modules.market.overview.MarketOverviewModule.TopPlatformsBoard
 import cash.p.terminal.modules.market.overview.MarketOverviewModule.TopSectorsBoard
 import cash.p.terminal.modules.market.overview.TopSectorsRepository.Companion.getCategoryMarketData
 import cash.p.terminal.modules.market.search.MarketSearchModule.DiscoveryItem.Category
-import cash.p.terminal.modules.market.topnftcollections.TopNftCollectionsViewItemFactory
 import cash.p.terminal.modules.market.topplatforms.TopPlatformItem
 import cash.p.terminal.modules.market.topplatforms.TopPlatformViewItem
 import cash.p.terminal.modules.market.topplatforms.TopPlatformsRepository
 import cash.p.terminal.modules.metricchart.MetricsType
-import cash.p.terminal.modules.nft.NftCollectionItem
-import cash.p.terminal.modules.nft.nftCollectionItem
 import cash.p.terminal.ui_compose.Select
 import cash.p.terminal.ui.extensions.MetricData
 import io.horizontalsystems.core.CurrencyManager
@@ -40,9 +33,7 @@ import io.horizontalsystems.core.ViewModelUiState
 import io.horizontalsystems.chartview.ChartData
 import io.horizontalsystems.chartview.models.ChartPoint
 import cash.p.terminal.wallet.models.GlobalMarketPoint
-import io.horizontalsystems.core.models.HsTimePeriod
 import cash.p.terminal.wallet.models.MarketOverview
-import cash.p.terminal.wallet.models.NftPrice
 import cash.p.terminal.wallet.models.TopMovers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
@@ -52,7 +43,6 @@ import java.math.BigDecimal
 
 class MarketOverviewViewModel(
     private val service: MarketOverviewService,
-    private val topNftCollectionsViewItemFactory: TopNftCollectionsViewItemFactory,
     private val currencyManager: CurrencyManager,
     private val numberFormatter: IAppNumberFormatter
 ) : ViewModelUiState<MarketOverviewModule.UiState>() {
@@ -61,16 +51,10 @@ class MarketOverviewViewModel(
     private var viewItem: MarketOverviewModule.ViewItem? = null
     private var isRefreshing = false
 
-    val topNftCollectionsParams: Pair<SortingField, TimeDuration>
-        get() = Pair(topNftsSortingField, topNftsTimeDuration)
-
     var gainersTopMarket: TopMarket = TopMarket.Top100
         private set
     var losersTopMarket: TopMarket = TopMarket.Top100
         private set
-    var topNftsTimeDuration: TimeDuration = TimeDuration.SevenDay
-        private set
-    val topNftsSortingField: SortingField = SortingField.HighestVolume
     var topPlatformsTimeDuration: TimeDuration = TimeDuration.SevenDay
         private set
 
@@ -142,21 +126,12 @@ class MarketOverviewViewModel(
             Category(category, getCategoryMarketData(category, baseCurrency, numberFormatter))
         }
 
-        val timePeriod = when (topNftsTimeDuration) {
-            TimeDuration.OneDay -> HsTimePeriod.Day1
-            TimeDuration.SevenDay -> HsTimePeriod.Week1
-            TimeDuration.ThirtyDay -> HsTimePeriod.Month1
-        }
-        val nftCollectionItems =
-            marketOverview.nftCollections.getOrElse(timePeriod) { listOf() }.map { it.nftCollectionItem }
-
 //        val topGainersBoard = getBoard(ListType.TopGainers, topMovers)
 //        val topLosersBoard = getBoard(ListType.TopLosers, topMovers)
 
         return MarketOverviewModule.ViewItem(
             marketMetrics = getMarketMetrics(marketOverview.globalMarketPoints, baseCurrency),
 //            boards = listOf(topGainersBoard, topLosersBoard),
-            topNftCollectionsBoard = topNftCollectionsBoard(nftCollectionItems),
             topSectorsBoard = topSectorsBoard(coinCategoryItems),
             topPlatformsBoard = topPlatformsBoard(topPlatformItems),
             topMarketPairs = marketOverview.topPairs.map {
@@ -170,16 +145,6 @@ class MarketOverviewViewModel(
             title = Res.string.Market_Overview_Sectors,
             iconRes = Res.drawable.ic_categories_20,
             items = items
-        )
-
-    private fun topNftCollectionsBoard(items: List<NftCollectionItem>) =
-        TopNftCollectionsBoard(
-            title = Res.string.Nft_TopCollections,
-            iconRes = Res.drawable.ic_top_nft_collections_20,
-            timeDurationSelect = Select(topNftsTimeDuration, service.timeDurationOptions),
-            collections = items.mapIndexed { index, collection ->
-                topNftCollectionsViewItemFactory.viewItem(collection, topNftsTimeDuration, index + 1)
-            }
         )
 
     private fun topPlatformsBoard(items: List<TopPlatformItem>) =
@@ -342,11 +307,6 @@ class MarketOverviewViewModel(
         }
     }
 
-    fun onSelectTopNftsTimeDuration(timeDuration: TimeDuration) {
-        topNftsTimeDuration = timeDuration
-        syncViewItems()
-    }
-
     fun onSelectTopPlatformsTimeDuration(timeDuration: TimeDuration) {
         topPlatformsTimeDuration = timeDuration
         syncViewItems()
@@ -376,6 +336,3 @@ class MarketOverviewViewModel(
         service.stop()
     }
 }
-
-val NftPrice.coinValue: CoinValue
-    get() = CoinValue(token, value)

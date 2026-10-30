@@ -401,7 +401,6 @@
     <string name="Balance_ReceiveHint_Search">검색</string>
     <!--Send NFT-->
     <string name="SendNft_Title">전송</string>
-    <string name="SendNft_Error_NotEnoughtBalance">잔고 부족</string>
     <!--Send-->
     <string name="Send_Title">전송 %s</string>
     <string name="Send_Hint_Address">주소 또는 도메인</string>
@@ -1791,62 +1790,6 @@
     <string name="notification_permission_revoked_title">알림 사용 불가</string>
     <string name="notification_permission_revoked_message">알림 권한이 부여되지 않았습니다. 설정을 열려면 탭하세요.</string>
 
-    <string name="Nfts_PriceType_Days_7">평균 7일</string>
-    <string name="Nfts_PriceType_Days_30">평균 30일</string>
-    <string name="Nfts_PriceType_LastSale">마지막 판매</string>
-    <string name="Nfts_Asset_OnSale">할인 중</string>
-    <string name="Nfts_Asset_OnAuction">판매중</string>
-    <string name="Nfts_Asset_OnSaleUntil">%s 까지</string>
-    <string name="Nfts_Empty">지갑에 NFT가 없습니다.</string>
-    <string name="Nfts_PriceMode">가격 모드</string>
-    <string name="NftAsset_Overview">개요</string>
-    <string name="NftAsset_Activity">활동</string>
-    <string name="NftAsset_Action_Share">공유</string>
-    <string name="NftAsset_Action_Save">저장</string>
-    <string name="NftAsset_Price_Purchase">구매 가격</string>
-    <string name="NftAsset_Price_Average7d">평균 7일</string>
-    <string name="NftAsset_Price_Average30d">평균 30일</string>
-    <string name="NftAsset_Price_Floor">바닥 가격</string>
-    <string name="NftAsset_Price_BuyNow">지금 구매</string>
-    <string name="NftAsset_Price_MinimumBid">최저 매수가</string>
-    <string name="NftAsset_Price_BestOffer">최고 제안</string>
-    <string name="NftAsset_Properties">속성</string>
-    <string name="NftAsset_Description">설명</string>
-    <string name="NftAsset_Details">상세 정보</string>
-    <string name="NftAsset_Links">링크</string>
-    <string name="NftAsset_ContractAddress">계약 주소</string>
-    <string name="NftAsset_TokenId">토큰 ID</string>
-    <string name="NftAsset_TokenStandard">토큰 표준</string>
-    <string name="NftAsset_Blockchain">블록 체인</string>
-    <string name="NftAsset_Links_Website">웹사이트</string>
-    <string name="PoweredBy_OpenSeaAPI">OpenSea API 제공</string>
-    <string name="Nft_TopCollections">주요 NFT 컬렉션</string>
-    <string name="Nft_TopCollections_Description">거래량에 따른 주요 NFT 컬렉션.</string>
-    <!-- NFT Collection -->
-    <string name="NftCollection_Overview">개요</string>
-    <string name="NftCollection_Items">항목</string>
-    <string name="NftCollection_Activity">활동</string>
-    <string name="NftCollection_Owners">소유자</string>
-    <string name="NftCollection_TodaysSales">오늘의 판매자</string>
-    <string name="NftCollection_TodaysSalesCount">%s NFT</string>
-    <string name="NftCollection_Royalty">고귀함</string>
-    <string name="NftCollection_InceptionDate">개시일</string>
-    <!-- NFT Collection Events -->
-    <string name="NftCollection_EventType_SelectorTitle">이벤트 유형 선택</string>
-    <string name="NftCollection_EventType_All">모든</string>
-    <string name="NftCollection_EventType_List">목록</string>
-    <string name="NftCollection_EventType_Sale">판매</string>
-    <string name="NftCollection_EventType_Cancelled">취소</string>
-    <string name="NftCollection_EventType_BidEntered">입력된 입찰가</string>
-    <string name="NftCollection_EventType_BidWithdrawn">입찰 철회</string>
-    <string name="NftCollection_EventType_Transfer">전송</string>
-    <string name="NftCollection_EventType_OfferEntered">입력된 제안</string>
-    <string name="NftCollection_EventType_Approve">승인</string>
-    <string name="NftCollection_EventType_Custom">사용자 지정</string>
-    <string name="NftCollection_EventType_Payout">지불</string>
-    <string name="NftCollection_EventType_BulkCancel">대량 취소</string>
-    <string name="NftCollection_EventType_Mint">민트</string>
-    <string name="NftCollection_EventType_Unknown">알 수 없음</string>
     <!--Rate list-->
     <string name="RateList_TopGainers">이득자</string>
     <string name="RateList_TopLosers">해자</string>
@@ -1870,7 +1813,6 @@
     <string name="Hud_Text_Activate">활성화</string>
     <!--Widget-->
     <string name="WidgetList_Config_Title">유형 선택</string>
-    <string name="NftAssetActivity_Empty">아직 항목 활동이 없습니다</string>
     <string name="Widget_EnableAutostartWarning">이 위젯이 올바르게 작동하려면 Autostart를 활성화해야 합니다.</string>
     <!--Alert-->
     <string name="alert_keys_invalidated_title">안드로이드 키 저장소 에러</string>

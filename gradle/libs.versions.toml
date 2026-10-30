@@ -257,7 +257,6 @@ ethereum-kit = { group = "com.github.piratecash.ethereum-kit-android", name = "e
 ethereum-kit-erc20 = { group = "com.github.piratecash.ethereum-kit-android", name = "erc20kit", version.ref = "piratecash-ethereum" }
 ethereum-kit-uniswap = { group = "com.github.piratecash.ethereum-kit-android", name = "uniswapkit", version.ref = "piratecash-ethereum" }
 ethereum-kit-oneinch = { group = "com.github.piratecash.ethereum-kit-android", name = "oneinchkit", version.ref = "piratecash-ethereum" }
-ethereum-kit-nft = { group = "com.github.piratecash.ethereum-kit-android", name = "nftkit", version.ref = "piratecash-ethereum" }
 ethereum-kit-merkleio = { group = "com.github.piratecash.ethereum-kit-android", name = "merkleiokit", version.ref = "piratecash-ethereum" }
 tron-kit = { group = "com.github.piratecash.tron-kit-android", name = "tronkit", version.ref = "piratecash-tron" }
 tangem-sdk = { group = "com.github.piratecash", name = "tangem-sdk-android", version.ref = "tangem-sdk" }

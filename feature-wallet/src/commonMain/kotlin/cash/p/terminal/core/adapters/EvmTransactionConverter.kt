@@ -6,7 +6,6 @@ import cash.p.terminal.core.managers.SpamTransferDetector
 import cash.p.terminal.core.tokenIconPlaceholder
 import cash.p.terminal.data.repository.EvmTransactionRepository
 import cash.p.terminal.entities.TransactionValue
-import cash.p.terminal.entities.nft.NftUid
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
 import cash.p.terminal.entities.transactionrecords.evm.TransferEvent
@@ -27,10 +26,6 @@ import io.horizontalsystems.ethereumkit.models.InternalTransaction
 import io.horizontalsystems.ethereumkit.models.Transaction
 import io.horizontalsystems.ethereumkit.core.storage.TransactionSyncSourceStorage
 import io.horizontalsystems.merkleiokit.MerkleTransactionAdapter
-import io.horizontalsystems.nftkit.decorations.OutgoingEip1155Decoration
-import io.horizontalsystems.nftkit.decorations.OutgoingEip721Decoration
-import io.horizontalsystems.nftkit.events.Eip1155TransferEventInstance
-import io.horizontalsystems.nftkit.events.Eip721TransferEventInstance
 import io.horizontalsystems.oneinchkit.decorations.OneInchDecoration
 import io.horizontalsystems.oneinchkit.decorations.OneInchSwapDecoration
 import io.horizontalsystems.oneinchkit.decorations.OneInchUnknownDecoration
@@ -217,48 +212,6 @@ class EvmTransactionConverter(
                 )
             }
 
-            is OutgoingEip721Decoration -> {
-                EvmTransactionRecord(
-                    transaction = transaction, token = baseToken, source = source,
-                    to = decoration.to.eip55,
-                    value = TransactionValue.NftValue(
-                        nftUid = NftUid.Evm(
-                            source.blockchain.type,
-                            decoration.contractAddress.hex,
-                            decoration.tokenId.toString()
-                        ),
-                        value = BigDecimal.valueOf(-1),
-                        tokenName = decoration.tokenInfo?.tokenName,
-                        tokenSymbol = decoration.tokenInfo?.tokenSymbol
-                    ),
-                    sentToSelf = decoration.sentToSelf,
-                    transactionRecordType = TransactionRecordType.EVM_OUTGOING,
-                    protected = isProtected,
-                    syncSource = syncSource
-                )
-            }
-
-            is OutgoingEip1155Decoration -> {
-                EvmTransactionRecord(
-                    transaction = transaction, token = baseToken, source = source,
-                    to = decoration.to.eip55,
-                    value = TransactionValue.NftValue(
-                        nftUid = NftUid.Evm(
-                            source.blockchain.type,
-                            decoration.contractAddress.hex,
-                            decoration.tokenId.toString()
-                        ),
-                        value = convertAmount(decoration.value, 0, true),
-                        tokenName = decoration.tokenInfo?.tokenName,
-                        tokenSymbol = decoration.tokenInfo?.tokenSymbol
-                    ),
-                    sentToSelf = decoration.sentToSelf,
-                    transactionRecordType = TransactionRecordType.EVM_OUTGOING,
-                    protected = isProtected,
-                    syncSource = syncSource
-                )
-            }
-
             is UnknownTransactionDecoration -> {
                 val address = evmTransactionRepository.receiveAddress
 
@@ -270,18 +223,6 @@ class EvmTransactionConverter(
                 val incomingEip20Transfers =
                     eip20Transfers.filter { it.to == address && it.from != address }
                 val outgoingEip20Transfers = eip20Transfers.filter { it.from == address }
-
-                val eip721Transfers =
-                    decoration.eventInstances.mapNotNull { it as? Eip721TransferEventInstance }
-                val incomingEip721Transfers =
-                    eip721Transfers.filter { it.to == address && it.from != address }
-                val outgoingEip721Transfers = eip721Transfers.filter { it.from == address }
-
-                val eip1155Transfers =
-                    decoration.eventInstances.mapNotNull { it as? Eip1155TransferEventInstance }
-                val incomingEip1155Transfers =
-                    eip1155Transfers.filter { it.to == address && it.from != address }
-                val outgoingEip1155Transfers = eip1155Transfers.filter { it.from == address }
 
                 val contractAddress = transaction.to
                 val value = transaction.value
@@ -309,12 +250,8 @@ class EvmTransactionConverter(
 
                 if (transactionRecordType != null) {
                     val incomingEvents = getInternalEvents(internalTransactions) +
-                            getIncomingEip20Events(incomingEip20Transfers) +
-                            getIncomingEip721Events(incomingEip721Transfers) +
-                            getIncomingEip1155Events(incomingEip1155Transfers)
-                    var outgoingEvents = getOutgoingEip20Events(outgoingEip20Transfers) +
-                            getOutgoingEip721Events(outgoingEip721Transfers) +
-                            getOutgoingEip1155Events(outgoingEip1155Transfers)
+                            getIncomingEip20Events(incomingEip20Transfers)
+                    var outgoingEvents = getOutgoingEip20Events(outgoingEip20Transfers)
                     val isSpam: Boolean
                     val contractAddressEip55: String?
                     val method: String?
@@ -554,77 +491,5 @@ class EvmTransactionConverter(
 
         return events
     }
-
-    private fun getIncomingEip721Events(incomingTransfers: List<Eip721TransferEventInstance>): List<TransferEvent> =
-        incomingTransfers.map { transfer ->
-            TransferEvent(
-                transfer.from.eip55,
-                transfer.to.eip55,
-                TransactionValue.NftValue(
-                    nftUid = NftUid.Evm(
-                        source.blockchain.type,
-                        transfer.contractAddress.hex,
-                        transfer.tokenId.toString()
-                    ),
-                    value = BigDecimal.valueOf(1),
-                    tokenName = transfer.tokenInfo?.tokenName,
-                    tokenSymbol = transfer.tokenInfo?.tokenSymbol
-                )
-            )
-        }
-
-    private fun getOutgoingEip721Events(outgoingTransfers: List<Eip721TransferEventInstance>): List<TransferEvent> =
-        outgoingTransfers.map { transfer ->
-            TransferEvent(
-                address = transfer.to.eip55,
-                addressForIncomingAddress = null,
-                value = TransactionValue.NftValue(
-                    nftUid = NftUid.Evm(
-                        source.blockchain.type,
-                        transfer.contractAddress.hex,
-                        transfer.tokenId.toString()
-                    ),
-                    value = BigDecimal.valueOf(-1),
-                    tokenName = transfer.tokenInfo?.tokenName,
-                    tokenSymbol = transfer.tokenInfo?.tokenSymbol
-                )
-            )
-        }
-
-    private fun getIncomingEip1155Events(incomingTransfers: List<Eip1155TransferEventInstance>): List<TransferEvent> =
-        incomingTransfers.map { transfer ->
-            TransferEvent(
-                transfer.from.eip55,
-                transfer.to.eip55,
-                TransactionValue.NftValue(
-                    nftUid = NftUid.Evm(
-                        source.blockchain.type,
-                        transfer.contractAddress.hex,
-                        transfer.tokenId.toString()
-                    ),
-                    value = convertAmount(transfer.value, 0, false),
-                    tokenName = transfer.tokenInfo?.tokenName,
-                    tokenSymbol = transfer.tokenInfo?.tokenSymbol
-                )
-            )
-        }
-
-    private fun getOutgoingEip1155Events(outgoingTransfers: List<Eip1155TransferEventInstance>): List<TransferEvent> =
-        outgoingTransfers.map { transfer ->
-            TransferEvent(
-                address = transfer.to.eip55,
-                addressForIncomingAddress = null,
-                value = TransactionValue.NftValue(
-                    nftUid = NftUid.Evm(
-                        source.blockchain.type,
-                        transfer.contractAddress.hex,
-                        transfer.tokenId.toString()
-                    ),
-                    value = convertAmount(transfer.value, 0, true),
-                    tokenName = transfer.tokenInfo?.tokenName,
-                    tokenSymbol = transfer.tokenInfo?.tokenSymbol
-                )
-            )
-        }
 
 }

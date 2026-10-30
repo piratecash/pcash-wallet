@@ -67,6 +67,8 @@ internal object SolanaTransactionConverterTestFixture {
         incoming: Boolean,
         amount: BigDecimal,
         decimals: Int = 6,
+        isNft: Boolean = false,
+        name: String? = null,
     ): FullTransaction {
         val transaction = Transaction(
             hash = hash,
@@ -83,7 +85,7 @@ internal object SolanaTransactionConverterTestFixture {
                 incoming = incoming,
                 amount = amount
             ),
-            mintAccount = MintAccount(address = mint, decimals = decimals, isNft = false)
+            mintAccount = MintAccount(address = mint, decimals = decimals, isNft = isNft, name = name)
         )
         return FullTransaction(transaction, listOf(tokenTransfer))
     }
