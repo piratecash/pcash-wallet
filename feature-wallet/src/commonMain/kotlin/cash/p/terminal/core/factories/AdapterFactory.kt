@@ -64,6 +64,7 @@ import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.EvmLabelManager
 import cash.p.terminal.core.managers.EvmSyncSourceManager
 import cash.p.terminal.core.managers.MoneroKitManager
+import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.SolanaKitManager
 import cash.p.terminal.core.managers.StackingManager
@@ -132,6 +133,7 @@ class AdapterFactory(
     private val kermit = Logger.withTag("AdapterFactory")
     private val bitcoinKitDatabaseManager by lazy { getKoinInstance<BitcoinKitDatabaseManager>() }
     private val beamSessionOwner by lazy { getKoinInstance<BeamSessionOwner>() }
+    private val offlineModeManager by lazy { getKoinInstance<OfflineModeManager>() }
     private val beamMutex = Mutex()
     private var beamAdapter: Pair<Wallet, BeamAdapter>? = null
 
@@ -652,7 +654,7 @@ class AdapterFactory(
 
     suspend fun moneroTransactionsAdapter(source: TransactionSource): ITransactionsAdapter? {
         val moneroKitWrapper = moneroKitManager.getMoneroKitWrapper(source.account)
-        return MoneroTransactionsAdapter(moneroKitWrapper, source)
+        return MoneroTransactionsAdapter(moneroKitWrapper, source, offlineModeManager)
     }
 
     fun tonTransactionConverter(
