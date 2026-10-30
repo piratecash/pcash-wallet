@@ -621,7 +621,7 @@
     <string name="Swap_ErrorNoProviders">ارائه‌دهنده‌ای موجود نیست</string>
     <string name="Swap_ErrorNoQuote">No Quote</string>
     <string name="Swap_ErrorInsufficientBalance">موجودی ناکافی</string>
-    <string name="swap_out_of_min_amount">کمتر از حداقل مبلغ %s</string>
+    <string name="swap_out_of_min_amount">کمتر از حداقل مبلغ %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">تأثیر بالای قیمت</string>
     <string name="Swap_ErrorWalletSyncing">کیف پول در حال همگام‌سازی است</string>
     <string name="Swap_ErrorWalletNotSynced">کیف پول همگام‌سازی نشده</string>
@@ -2141,15 +2141,15 @@
     <string name="scan_card_to_add">اسکن کارت برای افزودن توکن</string>
     <!--Multi-Swap-->
     <string name="multi_swap_completed">مبادله انجام شد</string>
-    <string name="multi_swap_via">مبادله از طریق %s</string>
-    <string name="multi_swap_completed_via">انجام‌شده از طریق %s</string>
+    <string name="multi_swap_via">مبادله از طریق %1$s</string>
+    <string name="multi_swap_completed_via">انجام‌شده از طریق %1$s</string>
     <string name="multi_swap_no_providers">هیچ ارائه‌دهنده‌ای موجود نیست</string>
     <string name="multi_swap_finding_best_provider">جستجوی بهترین ارائه‌دهنده…</string>
     <string name="multi_swap_continue">ادامه مبادله</string>
     <string name="multi_swap_route_explanation">برای دریافت بهترین نرخ، از مسیری از طریق %2$s استفاده می‌شود. مبادله در دو مرحلهٔ پیاپی انجام می‌شود: ابتدا %1$s → %2$s، سپس %2$s → %3$s.</string>
     <string name="multi_swap_route_title">مسیر مبادله</string>
     <string name="multi_swap_execution_title">مبادله</string>
-    <string name="multi_swap_step">مرحلهٔ %d</string>
+    <string name="multi_swap_step">مرحلهٔ %1$d</string>
     <string name="multi_swap_understood_continue">متوجه شدم، ادامه</string>
     <string name="multi_swap_unfinished">مبادله ناتمام</string>
     <string name="multi_swap_unfinished_plural">مبادلات ناتمام (%d)</string>
@@ -2327,4 +2327,20 @@
     <string name="desktop_change_password_corrupted">فایل کلید آسیب دیده است: پس از قفل شدن برنامه نمی‌توانید وارد شوید. از هر عبارت بازیابی یک نسخه پشتیبان ذخیره کنید.</string>
     <string name="desktop_change_password_success">رمز عبور تغییر یافت</string>
     <string name="desktop_security_lock_now">اکنون قفل کن</string>
+    <string name="swap_progress_title">پیشرفت سواپ</string>
+    <string name="swap_progress_step_of">مرحله %1$d از %2$d</string>
+    <string name="swap_progress_step_header">مرحله %1$d · %2$s</string>
+    <string name="swap_progress_leg_send">در حال ارسال %1$s</string>
+    <string name="swap_progress_leg_receive">در حال دریافت %1$s</string>
+    <string name="swap_progress_leg_swap">در حال سواپ %1$s به %2$s</string>
+    <string name="swap_progress_leg_transfer">انتقال %1$s</string>
+    <string name="swap_progress_action_required_aml">ارائه‌دهنده سواپ را برای بررسی AML متوقف کرده است.</string>
+    <string name="swap_progress_action_required_frozen">ارائه‌دهنده سواپ را مسدود کرده است.</string>
+    <string name="swap_progress_action_required_overdue">واریز پس از انقضای قیمت‌گذاری انجام شد.</string>
+    <string name="swap_progress_action_required_default">سواپ متوقف شده و نیاز به اقدام شما دارد.</string>
+    <string name="swap_progress_contact_support">در ادامه با پشتیبانی ارائه‌دهنده تماس بگیرید.</string>
+    <string name="swap_support_telegram">پشتیبانی %1$s · تلگرام</string>
+    <string name="swap_support_email">پشتیبانی %1$s · ایمیل</string>
+    <string name="swap_support_email_deposit_tx">تراکنش واریز: %1$s</string>
+    <string name="swap_support_email_deposit_address">آدرس واریز: %1$s</string>
 </resources>

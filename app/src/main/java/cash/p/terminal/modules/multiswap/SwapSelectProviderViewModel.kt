@@ -1,10 +1,8 @@
 package cash.p.terminal.modules.multiswap
 
-import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import cash.p.terminal.R
 import cash.p.terminal.core.App
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.tryOrNull
@@ -17,6 +15,10 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.math.RoundingMode
+import cash.p.terminal.resources.Res
+import org.jetbrains.compose.resources.StringResource
+import cash.p.terminal.resources.swap_sort_best_rate
+import cash.p.terminal.resources.swap_sort_best_time
 
 class SwapSelectProviderViewModel(
     private var quotes: List<SwapProviderQuote>,
@@ -222,7 +224,7 @@ data class QuoteViewItem(
     val estimationTime: Long?
 )
 
-enum class ProviderSortType(@StringRes val titleRes: Int) {
-    BestPrice(R.string.swap_sort_best_rate),
-    BestTime(R.string.swap_sort_best_time),
+enum class ProviderSortType(val titleRes: StringResource) {
+    BestPrice(Res.string.swap_sort_best_rate),
+    BestTime(Res.string.swap_sort_best_time),
 }

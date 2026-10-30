@@ -42,8 +42,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextRange
@@ -56,7 +54,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import cash.p.terminal.R
 import cash.p.terminal.entities.CoinValue
 import cash.p.terminal.modules.multiswap.action.ActionCreate
 import cash.p.terminal.modules.multiswap.action.ISwapProviderAction
@@ -130,6 +127,42 @@ import cash.p.terminal.modules.offline.OfflineOperationGate
 import androidx.annotation.Keep
 import kotlin.reflect.KClass
 import cash.p.terminal.resources.ic_attention_20
+import cash.p.terminal.resources.CoinPlatforms_Native
+import cash.p.terminal.resources.Hud_Text_NoInternet
+import cash.p.terminal.resources.Swap
+import cash.p.terminal.resources.SwapInfo_PriceImpactDescription
+import cash.p.terminal.resources.SwapInfo_PriceImpactTitle
+import cash.p.terminal.resources.Swap_EnterAmount
+import cash.p.terminal.resources.Swap_ErrorHighPriceImpact
+import cash.p.terminal.resources.Swap_ErrorInsufficientBalance
+import cash.p.terminal.resources.Swap_ErrorNoProviders
+import cash.p.terminal.resources.Swap_ErrorNoQuote
+import cash.p.terminal.resources.Swap_ErrorWalletNotSynced
+import cash.p.terminal.resources.Swap_ErrorWalletSyncing
+import cash.p.terminal.resources.Swap_FiatPriceImpact
+import cash.p.terminal.resources.Swap_Percent
+import cash.p.terminal.resources.Swap_Price
+import cash.p.terminal.resources.Swap_PriceImpact
+import cash.p.terminal.resources.Swap_PriceImpactTooHigh
+import cash.p.terminal.resources.Swap_Proceed
+import cash.p.terminal.resources.Swap_Quoting
+import cash.p.terminal.resources.Swap_SelectTokenIn
+import cash.p.terminal.resources.Swap_SelectTokenOut
+import cash.p.terminal.resources.Swap_TokenSelectorTitle
+import cash.p.terminal.resources.Swap_YouGet
+import cash.p.terminal.resources.Swap_YouPay
+import cash.p.terminal.resources.estimated_fee
+import cash.p.terminal.resources.ic_arrow_big_down_20
+import cash.p.terminal.resources.ic_arrow_right
+import cash.p.terminal.resources.ic_arrow_swap3_20
+import cash.p.terminal.resources.ic_info_20
+import cash.p.terminal.resources.swap_estimated_amount_warning
+import cash.p.terminal.resources.swap_no_enabled_providers
+import cash.p.terminal.resources.swap_no_providers_for_this_amount
+import cash.p.terminal.resources.swap_out_of_min_amount
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 class SwapPage(val tokenIn: Token? = null, val tokenOut: Token? = null) : HSPage() {
     @Composable
@@ -166,7 +199,7 @@ private class SwapSelectCoinPage(private val direction: SwapCoinDirection) : HSP
         SwapSelectCoinScreen(
             navigation = navigation,
             token = otherToken,
-            title = stringResource(id = titleResId)
+            title = stringResource(titleResId)
         ) { token ->
             // Only the spent side is gated: an offline output token cannot move funds.
             val offlineWallet = if (direction == SwapCoinDirection.From) {
@@ -374,9 +407,9 @@ private fun SwapUiState.otherToken(direction: SwapCoinDirection): Token? = when 
     SwapCoinDirection.To -> tokenIn
 }
 
-private fun SwapCoinDirection.titleResId(): Int = when (this) {
-    SwapCoinDirection.From -> R.string.Swap_YouPay
-    SwapCoinDirection.To -> R.string.Swap_YouGet
+private fun SwapCoinDirection.titleResId(): StringResource = when (this) {
+    SwapCoinDirection.From -> Res.string.Swap_YouPay
+    SwapCoinDirection.To -> Res.string.Swap_YouGet
 }
 
 private fun buildMultiSwapLeg1Info(viewModel: SwapViewModel): MultiSwapLegInfo? {
@@ -575,7 +608,7 @@ private fun SwapScreenInner(
 @Composable
 private fun SwapAppBar(uiState: SwapUiState, controller: SwapScreenController) {
     AppBar(
-        title = stringResource(R.string.Swap),
+        title = stringResource(Res.string.Swap),
         navigationIcon = { HsBackButton(onClick = controller::close) },
         menuItems = buildList {
             controller.timeRemainingProgress?.let { add(MenuItemTimeoutIndicator(it)) }
@@ -625,7 +658,7 @@ private fun SwapStepButton(
 ) {
     when (val currentStep = uiState.currentStep) {
         is SwapStep.InputRequired -> DisabledSwapButton(inputRequiredTitle(currentStep.inputType))
-        SwapStep.Quoting -> DisabledSwapButton(stringResource(R.string.Swap_Quoting), loading = true)
+        SwapStep.Quoting -> DisabledSwapButton(stringResource(Res.string.Swap_Quoting), loading = true)
         is SwapStep.Error -> DisabledSwapButton(swapErrorText(currentStep.error))
         is SwapStep.ActionRequired -> {
             val action = currentStep.action
@@ -638,7 +671,7 @@ private fun SwapStepButton(
         }
         SwapStep.Proceed -> ButtonPrimaryYellow(
             modifier = swapButtonModifier(),
-            title = stringResource(R.string.Swap_Proceed),
+            title = stringResource(Res.string.Swap_Proceed),
             enabled = !uiState.insufficientFeeBalance,
             onClick = controller::proceed,
         )
@@ -662,25 +695,25 @@ private fun swapButtonModifier(): Modifier =
 @Composable
 private fun inputRequiredTitle(inputType: InputType): String = stringResource(
     when (inputType) {
-        InputType.TokenIn -> R.string.Swap_SelectTokenIn
-        InputType.TokenOut -> R.string.Swap_SelectTokenOut
-        InputType.Amount -> R.string.Swap_EnterAmount
+        InputType.TokenIn -> Res.string.Swap_SelectTokenIn
+        InputType.TokenOut -> Res.string.Swap_SelectTokenOut
+        InputType.Amount -> Res.string.Swap_EnterAmount
     }
 )
 
 @Composable
 private fun swapErrorText(error: Throwable): String = when (error) {
-    SwapError.InsufficientBalanceFrom -> stringResource(R.string.Swap_ErrorInsufficientBalance)
-    is NoSupportedSwapProvider -> stringResource(R.string.Swap_ErrorNoProviders)
-    is NoEnabledSwapProvider -> stringResource(R.string.swap_no_enabled_providers)
-    is NoExactOutSwapProvider -> stringResource(R.string.Swap_ErrorNoQuote)
-    is SwapRouteNotFound -> stringResource(R.string.Swap_ErrorNoQuote)
-    is SwapDepositTooSmall -> stringResource(R.string.swap_out_of_min_amount, error.minValue.toPlainString())
-    is SwapAmountOutOfRange -> stringResource(R.string.swap_no_providers_for_this_amount)
-    is PriceImpactTooHigh -> stringResource(R.string.Swap_ErrorHighPriceImpact)
-    is UnknownHostException -> stringResource(R.string.Hud_Text_NoInternet)
-    is WalletSyncing -> stringResource(R.string.Swap_ErrorWalletSyncing)
-    is WalletNotSynced -> stringResource(R.string.Swap_ErrorWalletNotSynced)
+    SwapError.InsufficientBalanceFrom -> stringResource(Res.string.Swap_ErrorInsufficientBalance)
+    is NoSupportedSwapProvider -> stringResource(Res.string.Swap_ErrorNoProviders)
+    is NoEnabledSwapProvider -> stringResource(Res.string.swap_no_enabled_providers)
+    is NoExactOutSwapProvider -> stringResource(Res.string.Swap_ErrorNoQuote)
+    is SwapRouteNotFound -> stringResource(Res.string.Swap_ErrorNoQuote)
+    is SwapDepositTooSmall -> stringResource(Res.string.swap_out_of_min_amount, error.minValue.toPlainString())
+    is SwapAmountOutOfRange -> stringResource(Res.string.swap_no_providers_for_this_amount)
+    is PriceImpactTooHigh -> stringResource(Res.string.Swap_ErrorHighPriceImpact)
+    is UnknownHostException -> stringResource(Res.string.Hud_Text_NoInternet)
+    is WalletSyncing -> stringResource(Res.string.Swap_ErrorWalletSyncing)
+    is WalletNotSynced -> stringResource(Res.string.Swap_ErrorWalletNotSynced)
     else -> error.message ?: error.javaClass.simpleName
 }
 
@@ -704,7 +737,7 @@ private fun SwapFeeInfo(uiState: SwapUiState, controller: SwapScreenController) 
         }.orEmpty(),
         insufficientFeeBalance = uiState.insufficientFeeBalance,
         onBalanceClicked = controller::toggleBalance,
-        feeTitle = stringResource(R.string.estimated_fee),
+        feeTitle = stringResource(Res.string.estimated_fee),
     )
 }
 
@@ -745,7 +778,7 @@ private fun SwapWarnings(uiState: SwapUiState) {
             VSpacer(height = 12.dp)
             TextImportantWarning(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                text = stringResource(R.string.swap_estimated_amount_warning),
+                text = stringResource(Res.string.swap_estimated_amount_warning),
                 icon = Res.drawable.ic_attention_20,
             )
         }
@@ -761,8 +794,8 @@ private fun SwapStepWarning(uiState: SwapUiState) {
         TextImportantError(
             modifier = Modifier.padding(horizontal = 16.dp),
             icon = Res.drawable.ic_attention_20,
-            title = stringResource(R.string.Swap_PriceImpact),
-            text = stringResource(R.string.Swap_PriceImpactTooHigh, uiState.error.providerTitle.orEmpty()),
+            title = stringResource(Res.string.Swap_PriceImpact),
+            text = stringResource(Res.string.Swap_PriceImpactTooHigh, uiState.error.providerTitle.orEmpty()),
         )
     } else {
         action?.getDescription()?.let {
@@ -823,14 +856,14 @@ fun PriceImpactField(
 ) {
     if (priceImpact == null || priceImpactLevel == null) return
 
-    val infoTitle = stringResource(id = R.string.SwapInfo_PriceImpactTitle)
-    val infoText = stringResource(id = R.string.SwapInfo_PriceImpactDescription)
+    val infoTitle = stringResource(Res.string.SwapInfo_PriceImpactTitle)
+    val infoText = stringResource(Res.string.SwapInfo_PriceImpactDescription)
     var showInfoDialog by remember { mutableStateOf(false) }
 
     QuoteInfoRow(
         borderTop = borderTop,
         title = {
-            subhead2_grey(text = stringResource(R.string.Swap_PriceImpact))
+            subhead2_grey(text = stringResource(Res.string.Swap_PriceImpact))
 
             Image(
                 modifier = Modifier
@@ -840,14 +873,14 @@ fun PriceImpactField(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
                     ),
-                painter = painterResource(id = R.drawable.ic_info_20),
+                painter = painterResource(Res.drawable.ic_info_20),
                 contentDescription = ""
             )
         },
         value = {
             Text(
                 text = stringResource(
-                    R.string.Swap_Percent,
+                    Res.string.Swap_Percent,
                     priceImpact.toPlainString()
                 ),
                 style = ComposeAppTheme.typography.subhead2,
@@ -906,7 +939,7 @@ private fun ProviderField(
         }
         HSpacer(width = 8.dp)
         Icon(
-            painter = painterResource(R.drawable.ic_arrow_right),
+            painter = painterResource(Res.drawable.ic_arrow_right),
             contentDescription = null,
             tint = ComposeAppTheme.colors.iconSecondary
         )
@@ -929,7 +962,7 @@ fun PriceField(
     QuoteInfoRow(
         borderTop = borderTop,
         title = {
-            subhead2_grey(text = stringResource(R.string.Swap_Price))
+            subhead2_grey(text = stringResource(Res.string.Swap_Price))
         },
         value = {
             Row(
@@ -952,7 +985,7 @@ fun PriceField(
                 )
                 HSpacer(width = 8.dp)
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_arrow_swap3_20),
+                    painter = painterResource(Res.drawable.ic_arrow_swap3_20),
                     contentDescription = "invert price",
                     tint = ComposeAppTheme.colors.iconSecondary
                 )
@@ -1016,7 +1049,7 @@ private fun SwapCoinInputIn(
         Column(modifier = Modifier.weight(1f)) {
             AmountInput(
                 value = uiState.amountIn,
-                accessibilityLabel = stringResource(R.string.Swap_YouPay),
+                accessibilityLabel = stringResource(Res.string.Swap_YouPay),
                 onValueChange = controller::enterAmount,
                 onFocusChange = { onFocusChange(SwapInputFocus.AmountIn, it) },
             )
@@ -1050,7 +1083,7 @@ private fun SwapCoinInputTo(
         Column(modifier = Modifier.weight(1f)) {
             AmountInput(
                 value = state.amount,
-                accessibilityLabel = stringResource(R.string.Swap_YouGet),
+                accessibilityLabel = stringResource(Res.string.Swap_YouGet),
                 onValueChange = onAmountChange,
                 onFocusChange = { onFocusChange(SwapInputFocus.AmountOut, it) },
             )
@@ -1069,7 +1102,7 @@ private fun SwapCoinInputTo(
                     HSpacer(width = 4.dp)
                     Text(
                         text = stringResource(
-                            R.string.Swap_FiatPriceImpact,
+                            Res.string.Swap_FiatPriceImpact,
                             diff.toPlainString()
                         ),
                         style = ComposeAppTheme.typography.body,
@@ -1180,11 +1213,11 @@ private fun CoinSelector(
                     subhead1_leah(text = token.coin.code)
                     VSpacer(height = 1.dp)
                     micro_grey(
-                        text = token.badge ?: stringResource(id = R.string.CoinPlatforms_Native)
+                        text = token.badge ?: stringResource(Res.string.CoinPlatforms_Native)
                     )
                 }
             } else {
-                subhead1_brand(text = stringResource(R.string.Swap_TokenSelectorTitle))
+                subhead1_brand(text = stringResource(Res.string.Swap_TokenSelectorTitle))
             }
         },
         onClickSelect = onClickCoin
@@ -1269,7 +1302,7 @@ private fun Selector(
         text.invoke(this)
         HSpacer(width = 8.dp)
         Icon(
-            painter = painterResource(R.drawable.ic_arrow_big_down_20),
+            painter = painterResource(Res.drawable.ic_arrow_big_down_20),
             contentDescription = "",
             tint = ComposeAppTheme.colors.iconSecondary
         )

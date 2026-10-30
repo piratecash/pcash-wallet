@@ -786,8 +786,8 @@ Proceed only if you\u0027re sure.</string>
     <string name="Swap">Swap</string>
     <string name="Swap_FromAmountTitle">You Pay</string>
     <string name="Swap_ToAmountTitle">You Get</string>
-    <string name="Swap_FiatPriceImpact" translatable="false">(%s%%)</string>
-    <string name="Swap_Percent" translatable="false">%s%%</string>
+    <string name="Swap_FiatPriceImpact" translatable="false">(%1$s%)</string>
+    <string name="Swap_Percent" translatable="false">%1$s%</string>
     <string name="Swap_TokenSelectorTitle">Select</string>
     <string name="Swap_Allowance">Allowance</string>
     <string name="Swap_Price">Price</string>
@@ -796,7 +796,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="fee_warning_low_balance">Balance is lower than necessary. You might pay up to %s in fees.</string>
     <string name="swap_balance_for_fees">Balance for Fees</string>
     <string name="Swap_PriceImpact">Price Impact</string>
-    <string name="Swap_PriceImpactTooHigh">P.CASH has disabled swap action for this trade because you\u0027re getting an extremely unfavorable price. This is due to extremely low liquidity.\nIf you still want to swap please use %s website instead.</string>
+    <string name="Swap_PriceImpactTooHigh">P.CASH has disabled swap action for this trade because you\u0027re getting an extremely unfavorable price. This is due to extremely low liquidity.\nIf you still want to swap please use %1$s website instead.</string>
     <string name="Swap_PriceImpactWarning">Important! You\u0027re getting an extremely unfavorable price. This is due to extremely low liquidity.</string>
     <string name="Swap_MinimumReceived">Guaranteed Amount</string>
     <string name="Swap_Slippage">Slippage</string>
@@ -804,7 +804,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="Swap_ErrorNoProviders">No Providers</string>
     <string name="Swap_ErrorNoQuote">No Quote</string>
     <string name="Swap_ErrorInsufficientBalance">Insufficient balance</string>
-    <string name="swap_out_of_min_amount">Out of min amount %s</string>
+    <string name="swap_out_of_min_amount">Out of min amount %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">High price impact</string>
     <string name="Swap_ErrorWalletSyncing">Wallet is Syncing</string>
     <string name="Swap_ErrorWalletNotSynced">Wallet Not Synced</string>
@@ -2593,15 +2593,15 @@ Proceed only if you\u0027re sure.</string>
 
     <!--Multi-Swap-->
     <string name="multi_swap_completed">Swap completed</string>
-    <string name="multi_swap_via">Swap via %s</string>
-    <string name="multi_swap_completed_via">Completed via %s</string>
+    <string name="multi_swap_via">Swap via %1$s</string>
+    <string name="multi_swap_completed_via">Completed via %1$s</string>
     <string name="multi_swap_no_providers">No providers available</string>
     <string name="multi_swap_finding_best_provider">Finding best provider…</string>
     <string name="multi_swap_continue">Continue swap</string>
     <string name="multi_swap_route_explanation">To get the best rate, a route through %2$s is used. The swap will be completed in two consecutive steps: first %1$s → %2$s, then %2$s → %3$s.</string>
     <string name="multi_swap_route_title">Swap route</string>
     <string name="multi_swap_execution_title">Swap</string>
-    <string name="multi_swap_step">%d step</string>
+    <string name="multi_swap_step">%1$d step</string>
     <string name="multi_swap_understood_continue">Got it, continue</string>
     <string name="multi_swap_unfinished">Unfinished swap</string>
     <string name="multi_swap_unfinished_plural">Unfinished swaps (%d)</string>
@@ -2754,4 +2754,20 @@ Proceed only if you\u0027re sure.</string>
     <string name="desktop_change_password_corrupted">The key file is damaged: once the app is locked you will not be able to sign in. Save a backup of every recovery phrase.</string>
     <string name="desktop_change_password_success">Password changed</string>
     <string name="desktop_security_lock_now">Lock now</string>
+    <string name="swap_progress_title">Swap progress</string>
+    <string name="swap_progress_step_of">Step %1$d of %2$d</string>
+    <string name="swap_progress_step_header">Step %1$d · %2$s</string>
+    <string name="swap_progress_leg_send">Sending %1$s</string>
+    <string name="swap_progress_leg_receive">Receiving %1$s</string>
+    <string name="swap_progress_leg_swap">Swapping %1$s to %2$s</string>
+    <string name="swap_progress_leg_transfer">Transfer %1$s</string>
+    <string name="swap_progress_action_required_aml">The provider paused the swap for an AML check.</string>
+    <string name="swap_progress_action_required_frozen">The provider has frozen the swap.</string>
+    <string name="swap_progress_action_required_overdue">The deposit arrived after the quote expired.</string>
+    <string name="swap_progress_action_required_default">The swap is paused and needs your action.</string>
+    <string name="swap_progress_contact_support">Contact the provider’s support below.</string>
+    <string name="swap_support_telegram">%1$s support · Telegram</string>
+    <string name="swap_support_email">%1$s support · Email</string>
+    <string name="swap_support_email_deposit_tx">Deposit transaction: %1$s</string>
+    <string name="swap_support_email_deposit_address">Deposit address: %1$s</string>
 </resources>

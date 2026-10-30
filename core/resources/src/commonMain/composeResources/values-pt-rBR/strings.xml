@@ -621,7 +621,7 @@
     <string name="Swap_ErrorNoProviders">Sem provedores</string>
     <string name="Swap_ErrorNoQuote">Sem ofertas</string>
     <string name="Swap_ErrorInsufficientBalance">Saldo insuficiente</string>
-    <string name="swap_out_of_min_amount">Abaixo do valor mínimo %s</string>
+    <string name="swap_out_of_min_amount">Abaixo do valor mínimo %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">Alto impacto no preço</string>
     <string name="Swap_ErrorWalletSyncing">Carteira está Sincronizando</string>
     <string name="Swap_ErrorWalletNotSynced">Carteira não sincronizada</string>
@@ -2137,15 +2137,15 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="scan_tangem_card">Escanear cartão Tangem</string>
     <!--Multi-Swap-->
     <string name="multi_swap_completed">Troca concluída</string>
-    <string name="multi_swap_via">Troca via %s</string>
-    <string name="multi_swap_completed_via">Concluído via %s</string>
+    <string name="multi_swap_via">Troca via %1$s</string>
+    <string name="multi_swap_completed_via">Concluído via %1$s</string>
     <string name="multi_swap_no_providers">Nenhum provedor disponível</string>
     <string name="multi_swap_finding_best_provider">Procurando o melhor provedor…</string>
     <string name="multi_swap_continue">Continuar troca</string>
     <string name="multi_swap_route_explanation">Para obter a melhor taxa, é usada uma rota via %2$s. A troca será realizada em duas etapas consecutivas: primeiro %1$s → %2$s, depois %2$s → %3$s.</string>
     <string name="multi_swap_route_title">Rota de troca</string>
     <string name="multi_swap_execution_title">Troca</string>
-    <string name="multi_swap_step">Passo %d</string>
+    <string name="multi_swap_step">Passo %1$d</string>
     <string name="multi_swap_understood_continue">Entendi, continuar</string>
     <string name="multi_swap_unfinished">Troca não finalizada</string>
     <string name="multi_swap_unfinished_plural">Trocas não finalizadas (%d)</string>
@@ -2324,4 +2324,20 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="desktop_change_password_corrupted">O arquivo de chave está danificado: depois que o app for bloqueado, você não conseguirá entrar. Salve um backup de cada frase de recuperação.</string>
     <string name="desktop_change_password_success">Senha alterada</string>
     <string name="desktop_security_lock_now">Bloquear agora</string>
+    <string name="swap_progress_title">Progresso do swap</string>
+    <string name="swap_progress_step_of">Etapa %1$d de %2$d</string>
+    <string name="swap_progress_step_header">Etapa %1$d · %2$s</string>
+    <string name="swap_progress_leg_send">Enviando %1$s</string>
+    <string name="swap_progress_leg_receive">Recebendo %1$s</string>
+    <string name="swap_progress_leg_swap">Trocando %1$s por %2$s</string>
+    <string name="swap_progress_leg_transfer">Transferência de %1$s</string>
+    <string name="swap_progress_action_required_aml">O provedor pausou o swap para uma verificação AML.</string>
+    <string name="swap_progress_action_required_frozen">O provedor congelou o swap.</string>
+    <string name="swap_progress_action_required_overdue">O depósito chegou após a expiração da cotação.</string>
+    <string name="swap_progress_action_required_default">O swap está pausado e requer sua ação.</string>
+    <string name="swap_progress_contact_support">Entre em contato com o suporte do provedor abaixo.</string>
+    <string name="swap_support_telegram">Suporte %1$s · Telegram</string>
+    <string name="swap_support_email">Suporte %1$s · E-mail</string>
+    <string name="swap_support_email_deposit_tx">Transação de depósito: %1$s</string>
+    <string name="swap_support_email_deposit_address">Endereço de depósito: %1$s</string>
 </resources>

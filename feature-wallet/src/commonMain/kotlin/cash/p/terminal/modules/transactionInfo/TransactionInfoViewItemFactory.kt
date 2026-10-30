@@ -29,8 +29,12 @@ import cash.p.terminal.entities.transactionrecords.tron.TronTransactionRecord
 import cash.p.terminal.modules.transactionInfo.TransactionInfoViewItem.SentToSelf
 import cash.p.terminal.modules.transactionInfo.TransactionInfoViewItem.SpeedUpCancel
 import cash.p.terminal.modules.transactionInfo.TransactionInfoViewItem.Transaction
+import cash.p.terminal.modules.swapprogress.supportSectionItems
 import cash.p.terminal.modules.transactionInfo.TransactionViewItemFactoryHelper.getSwapEventSectionItems
+import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.modules.transactions.TransactionStatus
+import cash.p.terminal.modules.transactions.toUniversalStatus
+import cash.p.terminal.ui.compose.components.statusTitle
 import cash.p.terminal.modules.transactions.TransactionViewItem
 import io.horizontalsystems.core.Translator
 import cash.p.terminal.ui_compose.ColorName
@@ -46,7 +50,10 @@ import cash.p.terminal.resources.Transactions_OperationType_ChangeTrust
 import cash.p.terminal.resources.Transactions_OperationType_CreateAccount
 import cash.p.terminal.resources.beam_cancel_description
 import cash.p.terminal.resources.ic_migrate_24
+import cash.p.terminal.resources.Transactions_Completed
 import cash.p.terminal.resources.swap_duration
+import cash.p.terminal.resources.swap_progress_step_of
+import cash.p.terminal.resources.swap_progress_title
 import cash.p.terminal.resources.transactions_migrate
 import cash.p.terminal.resources.transactions_migrate_to_ironwood
 
@@ -57,6 +64,7 @@ class TransactionInfoViewItemFactory(
     private val evmKitWrapper: EvmKitWrapper?,
     private val platformOperationSupport: PlatformOperationSupport,
     private val unstoppableProviderTitles: UnstoppableProviderTitles,
+    private val walletUid: String? = null,
 ) {
     fun getViewItemSections(transactionItem: TransactionInfoItem): List<List<TransactionInfoViewItem>> {
         val transaction = transactionItem.record
@@ -827,6 +835,7 @@ class TransactionInfoViewItemFactory(
                         }
                     )
                 )
+                unstoppableSwapProgressItem(transactionItem)?.let { itemSections.add(listOf(it)) }
             }
         }
 
@@ -886,11 +895,14 @@ class TransactionInfoViewItemFactory(
             }
         }
         itemSections.addAll(beamCancelSections(transaction))
-        if (transactionItem.record.transactionHash.isNotEmpty() && transactionItem.explorerData.isNotEmpty()) {
-            val explorerItems = TransactionViewItemFactoryHelper.getExplorerSectionItems(transactionItem.explorerData)
-            if (explorerItems.isNotEmpty()) {
-                itemSections.add(explorerItems)
-            }
+        val explorerItems = if (transactionItem.record.transactionHash.isNotEmpty()) {
+            TransactionViewItemFactoryHelper.getExplorerSectionItems(transactionItem.explorerData)
+        } else {
+            emptyList()
+        }
+        val linkItems = explorerItems + unstoppableSupportItems(transactionItem)
+        if (linkItems.isNotEmpty()) {
+            itemSections.add(linkItems)
         }
         transactionItem.transactionStatusUrl?.let {
             itemSections.add(
@@ -904,6 +916,37 @@ class TransactionInfoViewItemFactory(
         }
 
         return itemSections
+    }
+
+    private fun unstoppableSwapProgressItem(transactionItem: TransactionInfoItem): TransactionInfoViewItem? {
+        val swapDate = transactionItem.swapDate
+        if (transactionItem.swapProvider != SwapProvider.UNSTOPPABLE || swapDate == null) return null
+        val progress = transactionItem.swapProgress
+        val value = when {
+            // Finished swaps are not tracked from details, so show the stored status until steps arrive.
+            progress == null -> transactionItem.swapTransactionStatus
+                ?.let { Translator.getString(statusTitle(it.toUniversalStatus())) }
+            progress.allCompleted -> Translator.getString(Res.string.Transactions_Completed)
+            else -> Translator.getString(Res.string.swap_progress_step_of, progress.currentStep, progress.totalSteps)
+        }
+        return TransactionInfoViewItem.SwapProgress(
+            title = Translator.getString(Res.string.swap_progress_title),
+            value = value,
+            swapDate = swapDate,
+            transactionUid = transactionItem.record.uid,
+            walletUid = walletUid,
+        )
+    }
+
+    private fun unstoppableSupportItems(transactionItem: TransactionInfoItem): List<TransactionInfoViewItem> {
+        if (transactionItem.swapProvider != SwapProvider.UNSTOPPABLE || transactionItem.swapDate == null) {
+            return emptyList()
+        }
+        return supportSectionItems(
+            providerTitle = unstoppableProviderTitles.title(transactionItem.swapSubProviderId).orEmpty(),
+            contacts = transactionItem.swapSupportContacts,
+            emailBody = "",
+        )
     }
 
     /** BEAM core cancels only an own transfer that is still waiting for its peer. */

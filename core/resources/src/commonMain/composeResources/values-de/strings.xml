@@ -615,7 +615,7 @@
     <string name="Swap_ErrorNoProviders">Keine Anbieter</string>
     <string name="Swap_ErrorNoQuote">Keine Angebote</string>
     <string name="Swap_ErrorInsufficientBalance">Ungenügendes Guthaben</string>
-    <string name="swap_out_of_min_amount">Unter Mindestbetrag %s</string>
+    <string name="swap_out_of_min_amount">Unter Mindestbetrag %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">Hohe Preisauswirkung</string>
     <string name="Swap_ErrorWalletSyncing">Wallet wird synchronisiert</string>
     <string name="Swap_ErrorWalletNotSynced">Wallet nicht synchronisiert</string>
@@ -2129,15 +2129,15 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="scan_card_to_add">Karte scannen, um Token hinzuzufügen</string>
     <!--Multi-Swap-->
     <string name="multi_swap_completed">Tausch abgeschlossen</string>
-    <string name="multi_swap_via">Tausch über %s</string>
-    <string name="multi_swap_completed_via">Abgeschlossen über %s</string>
+    <string name="multi_swap_via">Tausch über %1$s</string>
+    <string name="multi_swap_completed_via">Abgeschlossen über %1$s</string>
     <string name="multi_swap_no_providers">Keine Anbieter verfügbar</string>
     <string name="multi_swap_finding_best_provider">Besten Anbieter suchen…</string>
     <string name="multi_swap_continue">Tausch fortsetzen</string>
     <string name="multi_swap_route_explanation">Für den besten Kurs wird eine Route über %2$s verwendet. Der Tausch erfolgt in zwei Schritten: zuerst %1$s → %2$s, dann %2$s → %3$s.</string>
     <string name="multi_swap_route_title">Tauschroute</string>
     <string name="multi_swap_execution_title">Tausch</string>
-    <string name="multi_swap_step">%d. Schritt</string>
+    <string name="multi_swap_step">%1$d. Schritt</string>
     <string name="multi_swap_understood_continue">Verstanden, weiter</string>
     <string name="multi_swap_unfinished">Unvollständiger Tausch</string>
     <string name="multi_swap_unfinished_plural">Unvollständige Tausche (%d)</string>
@@ -2315,4 +2315,20 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="desktop_change_password_corrupted">Die Schlüsseldatei ist beschädigt: Sobald die App gesperrt ist, können Sie sich nicht mehr anmelden. Speichern Sie eine Sicherungskopie jeder Wiederherstellungsphrase.</string>
     <string name="desktop_change_password_success">Passwort geändert</string>
     <string name="desktop_security_lock_now">Jetzt sperren</string>
+    <string name="swap_progress_title">Swap-Fortschritt</string>
+    <string name="swap_progress_step_of">Schritt %1$d von %2$d</string>
+    <string name="swap_progress_step_header">Schritt %1$d · %2$s</string>
+    <string name="swap_progress_leg_send">%1$s wird gesendet</string>
+    <string name="swap_progress_leg_receive">%1$s wird empfangen</string>
+    <string name="swap_progress_leg_swap">%1$s wird in %2$s getauscht</string>
+    <string name="swap_progress_leg_transfer">Überweisung %1$s</string>
+    <string name="swap_progress_action_required_aml">Der Anbieter hat den Swap für eine AML-Prüfung pausiert.</string>
+    <string name="swap_progress_action_required_frozen">Der Anbieter hat den Swap eingefroren.</string>
+    <string name="swap_progress_action_required_overdue">Die Einzahlung ist nach Ablauf des Angebots eingegangen.</string>
+    <string name="swap_progress_action_required_default">Der Swap ist pausiert und erfordert Ihr Eingreifen.</string>
+    <string name="swap_progress_contact_support">Wenden Sie sich unten an den Support des Anbieters.</string>
+    <string name="swap_support_telegram">%1$s-Support · Telegram</string>
+    <string name="swap_support_email">%1$s-Support · E-Mail</string>
+    <string name="swap_support_email_deposit_tx">Einzahlungstransaktion: %1$s</string>
+    <string name="swap_support_email_deposit_address">Einzahlungsadresse: %1$s</string>
 </resources>

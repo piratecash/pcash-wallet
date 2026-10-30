@@ -40,7 +40,11 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.navigation.viewModelStoreOwnerForPage
+import cash.p.terminal.modules.swapprogress.UnstoppableSwapProgressPage
+import cash.p.terminal.modules.syncerror.rememberSupportMailAction
 import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.ic_arrow_swap3_20
+import cash.p.terminal.resources.ic_support_24
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.ic_close_24
 import org.koin.compose.koinInject
@@ -56,6 +60,7 @@ import cash.p.terminal.ui.compose.components.TransactionInfoBtcLockCell
 import cash.p.terminal.ui.compose.components.TransactionInfoContactCell
 import cash.p.terminal.ui.compose.components.TransactionInfoDoubleSpendCell
 import cash.p.terminal.ui.compose.components.TransactionInfoExplorerCell
+import cash.p.terminal.ui.compose.components.TransactionInfoLinkCell
 import cash.p.terminal.ui.compose.components.TransactionInfoOfflineStatusCell
 import cash.p.terminal.ui.compose.components.TransactionInfoRawTransaction
 import cash.p.terminal.ui.compose.components.TransactionInfoAmlCheckCell
@@ -326,6 +331,16 @@ private fun TransactionInfo(
 }
 
 @Composable
+private fun SupportEmailCell(item: TransactionInfoViewItem.SupportEmail) {
+    val sendSupportMail = rememberSupportMailAction()
+    TransactionInfoLinkCell(
+        title = item.title,
+        iconResId = Res.drawable.ic_support_24,
+        onClick = { sendSupportMail(item.email, item.body) },
+    )
+}
+
+@Composable
 private fun BeamCancelCell(
     viewItem: TransactionInfoViewItem.BeamCancel,
     navigation: HSNavigation,
@@ -561,6 +576,25 @@ fun TransactionInfoSection(
                                     iconResId = viewItem.iconResId,
                                 )
                             }
+                        }
+                    }
+
+                    is TransactionInfoViewItem.SupportEmail -> {
+                        add { SupportEmailCell(viewItem) }
+                    }
+
+                    is TransactionInfoViewItem.SwapProgress -> {
+                        add {
+                            TransactionInfoLinkCell(
+                                title = viewItem.title,
+                                iconResId = Res.drawable.ic_arrow_swap3_20,
+                                value = viewItem.value,
+                                onClick = {
+                                    navigation.slideFromRight(
+                                        UnstoppableSwapProgressPage(viewItem.swapDate, viewItem.transactionUid, viewItem.walletUid)
+                                    )
+                                },
+                            )
                         }
                     }
 

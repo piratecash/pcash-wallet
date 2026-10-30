@@ -3,6 +3,8 @@ package cash.p.terminal.network.unstoppable.domain.repository
 import cash.p.terminal.network.unstoppable.domain.entity.UnstoppableProviderInfo
 import cash.p.terminal.network.unstoppable.domain.entity.UnstoppableProviderTokens
 import cash.p.terminal.network.unstoppable.domain.entity.UnstoppableRoute
+import cash.p.terminal.network.unstoppable.domain.entity.UnstoppableTrack
+import kotlinx.coroutines.flow.Flow
 import java.math.BigDecimal
 
 interface UnstoppableRepository {
@@ -30,4 +32,9 @@ interface UnstoppableRepository {
     suspend fun getTokens(providerApiId: String): UnstoppableProviderTokens
 
     suspend fun getProviders(): List<UnstoppableProviderInfo>
+
+    suspend fun track(uuid: String, inboundTxHash: String?): UnstoppableTrack
+
+    /** Last successfully fetched track for [uuid], kept in memory. */
+    fun observeTrack(uuid: String): Flow<UnstoppableTrack?>
 }

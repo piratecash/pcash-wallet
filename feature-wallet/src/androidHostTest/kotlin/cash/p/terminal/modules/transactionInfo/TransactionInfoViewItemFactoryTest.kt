@@ -9,6 +9,8 @@ import cash.p.terminal.entities.LastBlockInfo
 import cash.p.terminal.entities.SwapDuration
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.transactions.TransactionStatus
+import cash.p.terminal.modules.swapprogress.SupportContact
+import cash.p.terminal.modules.swapprogress.SwapProgressSummary
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.modules.transactions.beamHistoryRecord
 import cash.p.terminal.modules.transactions.beamInteractiveHistoryRecord
@@ -64,6 +66,7 @@ import cash.p.terminal.resources.TransactionInfo_Fee
 import cash.p.terminal.resources.TransactionInfo_From
 import cash.p.terminal.resources.TransactionInfo_Status
 import cash.p.terminal.resources.TransactionInfo_To
+import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.resources.Transactions_Completed
 import cash.p.terminal.resources.Transactions_Failed
 import cash.p.terminal.resources.Transactions_Pending
@@ -80,6 +83,7 @@ import cash.p.terminal.resources.beam_history_waiting_for_sender
 import cash.p.terminal.resources.duration_short_hours
 import cash.p.terminal.resources.duration_short_minutes
 import cash.p.terminal.resources.duration_short_seconds
+import cash.p.terminal.resources.ic_support_24
 import cash.p.terminal.resources.swap_duration
 import cash.p.terminal.resources.swap_duration_approximate
 import cash.p.terminal.resources.transaction_swap_status_confirming
@@ -634,6 +638,108 @@ class TransactionInfoViewItemFactoryTest {
     fun getViewItemSections_swapWithoutDuration_hasNoSwapDurationRow() {
         assertNull(swapDurationRow(null))
     }
+
+    @Test
+    fun getViewItemSections_unstoppableSwapWithProgress_showsStepOfRow() {
+        val row = unstoppableItems(swapProgress = SwapProgressSummary(2, 3, allCompleted = false))
+            .filterIsInstance<TransactionInfoViewItem.SwapProgress>().single()
+
+        assertEquals("string:swap_progress_step_of:2, 3", row.value)
+        assertEquals(1000L, row.swapDate)
+    }
+
+    @Test
+    fun getViewItemSections_unstoppableSwap_progressRowCarriesRecordAndWalletUid() {
+        val row = unstoppableItems().filterIsInstance<TransactionInfoViewItem.SwapProgress>().single()
+
+        assertEquals("offline-signed:hash", row.transactionUid)
+        assertEquals("wallet-1", row.walletUid)
+    }
+
+    @Test
+    fun getViewItemSections_unstoppableSwapAllCompleted_showsCompletedText() {
+        val row = unstoppableItems(swapProgress = SwapProgressSummary(3, 3, allCompleted = true))
+            .filterIsInstance<TransactionInfoViewItem.SwapProgress>().single()
+
+        assertEquals(Translator.getString(Res.string.Transactions_Completed), row.value)
+    }
+
+    @Test
+    fun getViewItemSections_unstoppableSwapWithoutProgress_showsStoredSwapStatus() {
+        val row = unstoppableItems(swapProgress = null, swapStatus = TransactionStatusEnum.FINISHED)
+            .filterIsInstance<TransactionInfoViewItem.SwapProgress>().single()
+
+        assertEquals(Translator.getString(Res.string.Transactions_Completed), row.value)
+    }
+
+    @Test
+    fun getViewItemSections_unstoppableSwapWithoutProgressOrStatus_showsRowWithoutValue() {
+        val row = unstoppableItems(swapProgress = null)
+            .filterIsInstance<TransactionInfoViewItem.SwapProgress>().single()
+
+        assertNull(row.value)
+    }
+
+    @Test
+    fun getViewItemSections_unstoppableSwapWithContacts_showsTelegramAndEmailRows() {
+        val items = unstoppableItems(
+            contacts = listOf(SupportContact.Telegram("https://t.me/pegasus"), SupportContact.Email("a@b.io")),
+        )
+
+        val telegram = items.filterIsInstance<TransactionInfoViewItem.Explorer>().single()
+        assertEquals("https://t.me/pegasus", telegram.url)
+        assertEquals(Res.drawable.ic_support_24, telegram.iconResId)
+        assertEquals("a@b.io", items.filterIsInstance<TransactionInfoViewItem.SupportEmail>().single().email)
+    }
+
+    @Test
+    fun getViewItemSections_unstoppableSwapWithoutContacts_hasNoSupportRows() {
+        val items = unstoppableItems(contacts = emptyList())
+
+        assertEquals(emptyList<TransactionInfoViewItem.SupportEmail>(), items.filterIsInstance<TransactionInfoViewItem.SupportEmail>())
+        assertEquals(emptyList<TransactionInfoViewItem.Explorer>(), items.filterIsInstance<TransactionInfoViewItem.Explorer>())
+    }
+
+    @Test
+    fun getViewItemSections_changeNowSwapWithProgressAndContacts_hasNeither() {
+        val items = unstoppableItems(
+            provider = SwapProvider.CHANGENOW,
+            swapProgress = SwapProgressSummary(1, 2, allCompleted = false),
+            contacts = listOf(SupportContact.Email("a@b.io")),
+        )
+
+        assertEquals(emptyList<TransactionInfoViewItem.SwapProgress>(), items.filterIsInstance<TransactionInfoViewItem.SwapProgress>())
+        assertEquals(emptyList<TransactionInfoViewItem.SupportEmail>(), items.filterIsInstance<TransactionInfoViewItem.SupportEmail>())
+    }
+
+    private fun unstoppableItems(
+        provider: SwapProvider = SwapProvider.UNSTOPPABLE,
+        swapProgress: SwapProgressSummary? = null,
+        contacts: List<SupportContact> = emptyList(),
+        swapStatus: TransactionStatusEnum? = null,
+    ): List<TransactionInfoViewItem> =
+        TransactionInfoViewItemFactory(
+            offlineOperationGate = mockk(relaxed = true),
+            wallet = null,
+            blockchainType = BlockchainType.Bitcoin,
+            evmKitWrapper = null,
+            platformOperationSupport = allOperationsSupported,
+            unstoppableProviderTitles = mockk(relaxed = true) { every { title(any()) } returns "Pegasus" },
+            walletUid = "wallet-1",
+        ).getViewItemSections(
+            transactionInfoItem(pendingRecord(toAddress = "")).copy(
+                swapAmountOut = BigDecimal.TEN,
+                swapAmountIn = BigDecimal.ONE,
+                swapCoinCodeOut = "ETH",
+                swapCoinCodeIn = "BTC",
+                swapProvider = provider,
+                swapSubProviderId = "PEGASUS",
+                swapDate = 1000L,
+                swapProgress = swapProgress,
+                swapSupportContacts = contacts,
+                swapTransactionStatus = swapStatus,
+            )
+        ).flatten()
 
     private fun stubDurationPatterns() {
         stubPattern(Res.string.duration_short_hours, "%1\$dh")

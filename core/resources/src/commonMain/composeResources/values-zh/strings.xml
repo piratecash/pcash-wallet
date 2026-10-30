@@ -617,7 +617,7 @@
     <string name="Swap_ErrorNoProviders">没有提供者</string>
     <string name="Swap_ErrorNoQuote">没有报价</string>
     <string name="Swap_ErrorInsufficientBalance">余额不足</string>
-    <string name="swap_out_of_min_amount">低于最小金额 %s</string>
+    <string name="swap_out_of_min_amount">低于最小金额 %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">高价格影响</string>
     <string name="Swap_ErrorWalletSyncing">正在同步钱包</string>
     <string name="Swap_ErrorWalletNotSynced">钱包未同步</string>
@@ -2122,15 +2122,15 @@
     <string name="scan_card_to_add">扫描卡片以添加代币</string>
     <!--Multi-Swap-->
     <string name="multi_swap_completed">兑换完成</string>
-    <string name="multi_swap_via">通过 %s 兑换</string>
-    <string name="multi_swap_completed_via">通过 %s 完成</string>
+    <string name="multi_swap_via">通过 %1$s 兑换</string>
+    <string name="multi_swap_completed_via">通过 %1$s 完成</string>
     <string name="multi_swap_no_providers">没有可用的提供商</string>
     <string name="multi_swap_finding_best_provider">正在查找最佳提供商…</string>
     <string name="multi_swap_continue">继续兑换</string>
     <string name="multi_swap_route_explanation">为获得最优汇率，将使用经由 %2$s 的路径。兑换将分两步连续完成：先 %1$s → %2$s，再 %2$s → %3$s。</string>
     <string name="multi_swap_route_title">兑换路径</string>
     <string name="multi_swap_execution_title">兑换</string>
-    <string name="multi_swap_step">第 %d 步</string>
+    <string name="multi_swap_step">第 %1$d 步</string>
     <string name="multi_swap_understood_continue">明白，继续</string>
     <string name="multi_swap_unfinished">未完成的兑换</string>
     <string name="multi_swap_unfinished_plural">未完成的兑换 (%d)</string>
@@ -2307,4 +2307,20 @@
     <string name="desktop_change_password_corrupted">密钥文件已损坏：应用锁定后您将无法登录。请为每个恢复短语保存备份。</string>
     <string name="desktop_change_password_success">密码已更改</string>
     <string name="desktop_security_lock_now">立即锁定</string>
+    <string name="swap_progress_title">兑换进度</string>
+    <string name="swap_progress_step_of">第 %1$d 步，共 %2$d 步</string>
+    <string name="swap_progress_step_header">第 %1$d 步 · %2$s</string>
+    <string name="swap_progress_leg_send">正在发送 %1$s</string>
+    <string name="swap_progress_leg_receive">正在接收 %1$s</string>
+    <string name="swap_progress_leg_swap">正在将 %1$s 兑换为 %2$s</string>
+    <string name="swap_progress_leg_transfer">转账 %1$s</string>
+    <string name="swap_progress_action_required_aml">服务商因 AML 审查暂停了此次兑换。</string>
+    <string name="swap_progress_action_required_frozen">服务商已冻结此次兑换。</string>
+    <string name="swap_progress_action_required_overdue">存款在报价过期后才到账。</string>
+    <string name="swap_progress_action_required_default">兑换已暂停，需要您采取行动。</string>
+    <string name="swap_progress_contact_support">请在下方联系服务商客服。</string>
+    <string name="swap_support_telegram">%1$s 客服 · Telegram</string>
+    <string name="swap_support_email">%1$s 客服 · 邮件</string>
+    <string name="swap_support_email_deposit_tx">存款交易：%1$s</string>
+    <string name="swap_support_email_deposit_address">存款地址：%1$s</string>
 </resources>

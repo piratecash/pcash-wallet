@@ -1,32 +1,44 @@
 package cash.p.terminal.modules.multiswap.providers
 
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
-import cash.p.terminal.R
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.ic_warning_filled_24
+import cash.p.terminal.resources.radar_24
+import cash.p.terminal.resources.shield_check_filled_24
+import cash.p.terminal.resources.swap_provider_type_auto
+import cash.p.terminal.resources.swap_provider_type_auto_description
+import cash.p.terminal.resources.swap_provider_type_controlled
+import cash.p.terminal.resources.swap_provider_type_controlled_description
+import cash.p.terminal.resources.swap_provider_type_flexible
+import cash.p.terminal.resources.swap_provider_type_flexible_description
+import cash.p.terminal.resources.swap_provider_type_precheck
+import cash.p.terminal.resources.swap_provider_type_precheck_description
+import cash.p.terminal.resources.thumbsup_24
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.StringResource
 
 enum class ProviderRiskType(
-    @StringRes val titleRes: Int,
-    @StringRes val descriptionRes: Int,
-    @DrawableRes val iconRes: Int,
+    val titleRes: StringResource,
+    val descriptionRes: StringResource,
+    val iconRes: DrawableResource,
 ) {
     Auto(
-        R.string.swap_provider_type_auto,
-        R.string.swap_provider_type_auto_description,
-        R.drawable.shield_check_filled_24,
+        Res.string.swap_provider_type_auto,
+        Res.string.swap_provider_type_auto_description,
+        Res.drawable.shield_check_filled_24,
     ),
     Flexible(
-        R.string.swap_provider_type_flexible,
-        R.string.swap_provider_type_flexible_description,
-        R.drawable.thumbsup_24,
+        Res.string.swap_provider_type_flexible,
+        Res.string.swap_provider_type_flexible_description,
+        Res.drawable.thumbsup_24,
     ),
     PreCheck(
-        R.string.swap_provider_type_precheck,
-        R.string.swap_provider_type_precheck_description,
-        R.drawable.radar_24,
+        Res.string.swap_provider_type_precheck,
+        Res.string.swap_provider_type_precheck_description,
+        Res.drawable.radar_24,
     ),
     Controlled(
-        R.string.swap_provider_type_controlled,
-        R.string.swap_provider_type_controlled_description,
-        R.drawable.ic_warning_filled_24,
+        Res.string.swap_provider_type_controlled,
+        Res.string.swap_provider_type_controlled_description,
+        Res.drawable.ic_warning_filled_24,
     ),
 }

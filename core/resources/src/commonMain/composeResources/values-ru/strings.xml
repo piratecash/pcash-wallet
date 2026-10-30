@@ -602,7 +602,7 @@
     <string name="Swap_ErrorNoProviders">Нет провайдеров</string>
     <string name="Swap_ErrorNoQuote">Нет предложений</string>
     <string name="Swap_ErrorInsufficientBalance">Недостаточный баланс</string>
-    <string name="swap_out_of_min_amount">Меньше мин. суммы %s</string>
+    <string name="swap_out_of_min_amount">Меньше мин. суммы %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">Высокое отклонение цены</string>
     <string name="Swap_ErrorWalletSyncing">Синхронизация кошелька</string>
     <string name="Swap_ErrorWalletNotSynced">Кошелек не синхронизирован</string>
@@ -2332,15 +2332,15 @@
 
     <!--Multi-Swap-->
     <string name="multi_swap_completed">Обмен завершён</string>
-    <string name="multi_swap_via">Обмен через %s</string>
-    <string name="multi_swap_completed_via">Завершено через %s</string>
+    <string name="multi_swap_via">Обмен через %1$s</string>
+    <string name="multi_swap_completed_via">Завершено через %1$s</string>
     <string name="multi_swap_no_providers">Нет доступных провайдеров</string>
     <string name="multi_swap_finding_best_provider">Поиск лучшего провайдера…</string>
     <string name="multi_swap_continue">Продолжить обмен</string>
     <string name="multi_swap_route_explanation">Для получения наиболее выгодного курса используется маршрут через %2$s. Обмен будет выполнен в два последовательных шага: сначала %1$s → %2$s, затем %2$s → %3$s.</string>
     <string name="multi_swap_route_title">Маршрут обмена</string>
     <string name="multi_swap_execution_title">Обмен</string>
-    <string name="multi_swap_step">%d шаг</string>
+    <string name="multi_swap_step">%1$d шаг</string>
     <string name="multi_swap_understood_continue">Понятно, продолжить</string>
     <string name="multi_swap_unfinished">Незавершенный обмен</string>
     <string name="multi_swap_unfinished_plural">Незавершенные обмены (%d)</string>
@@ -2494,4 +2494,20 @@
     <string name="desktop_change_password_corrupted">Файл ключа повреждён: после блокировки приложения вы не сможете войти. Сохраните резервную копию каждой фразы восстановления.</string>
     <string name="desktop_change_password_success">Пароль изменён</string>
     <string name="desktop_security_lock_now">Заблокировать сейчас</string>
+    <string name="swap_progress_title">Ход обмена</string>
+    <string name="swap_progress_step_of">Шаг %1$d из %2$d</string>
+    <string name="swap_progress_step_header">%1$d шаг · %2$s</string>
+    <string name="swap_progress_leg_send">Отправка %1$s</string>
+    <string name="swap_progress_leg_receive">Получение %1$s</string>
+    <string name="swap_progress_leg_swap">Обмен %1$s на %2$s</string>
+    <string name="swap_progress_leg_transfer">Перевод %1$s</string>
+    <string name="swap_progress_action_required_aml">Провайдер приостановил обмен для AML-проверки.</string>
+    <string name="swap_progress_action_required_frozen">Провайдер заморозил обмен.</string>
+    <string name="swap_progress_action_required_overdue">Депозит поступил после истечения срока котировки.</string>
+    <string name="swap_progress_action_required_default">Обмен приостановлен и требует вашего участия.</string>
+    <string name="swap_progress_contact_support">Обратитесь в поддержку провайдера ниже.</string>
+    <string name="swap_support_telegram">Поддержка %1$s · Telegram</string>
+    <string name="swap_support_email">Поддержка %1$s · Email</string>
+    <string name="swap_support_email_deposit_tx">Транзакция депозита: %1$s</string>
+    <string name="swap_support_email_deposit_address">Адрес депозита: %1$s</string>
 </resources>

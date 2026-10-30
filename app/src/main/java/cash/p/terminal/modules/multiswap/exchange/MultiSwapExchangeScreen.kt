@@ -46,15 +46,12 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import cash.p.terminal.R
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
 import cash.p.terminal.modules.multiswap.EstimationTimeBadge
 import cash.p.terminal.modules.multiswap.PriceField
@@ -90,6 +87,31 @@ import io.horizontalsystems.core.entities.CurrencyValue
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import org.jetbrains.compose.resources.DrawableResource
+import cash.p.terminal.resources.Button_Cancel
+import cash.p.terminal.resources.Button_Close
+import cash.p.terminal.resources.Button_Delete
+import cash.p.terminal.resources.Button_Refresh
+import cash.p.terminal.resources.CoinPlatforms_Native
+import cash.p.terminal.resources.Swap
+import cash.p.terminal.resources.Swap_Quoting
+import cash.p.terminal.resources.ic_arrow_right
+import cash.p.terminal.resources.ic_attention_24
+import cash.p.terminal.resources.multi_swap_cancel_swap
+import cash.p.terminal.resources.multi_swap_cancel_swap_warning
+import cash.p.terminal.resources.multi_swap_completed_via
+import cash.p.terminal.resources.multi_swap_execution_title
+import cash.p.terminal.resources.multi_swap_finding_best_provider
+import cash.p.terminal.resources.multi_swap_no_providers
+import cash.p.terminal.resources.multi_swap_route_explanation
+import cash.p.terminal.resources.multi_swap_route_title
+import cash.p.terminal.resources.multi_swap_step
+import cash.p.terminal.resources.multi_swap_understood_continue
+import cash.p.terminal.resources.multi_swap_via
+import cash.p.terminal.resources.swap_continue_later
+import cash.p.terminal.resources.swap_you_receive
+import cash.p.terminal.resources.swap_you_send
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -103,7 +125,7 @@ internal fun MultiSwapExchangeScreen(
     onBack: () -> Unit,
     onClickProvider: () -> Unit,
     onClickLeg1: () -> Unit = {},
-    swapButtonTitle: String = stringResource(R.string.Swap),
+    swapButtonTitle: String = stringResource(Res.string.Swap),
 ) {
     var showCancelConfirmation by remember { mutableStateOf(false) }
 
@@ -123,9 +145,9 @@ internal fun MultiSwapExchangeScreen(
             AppBar(
                 title = stringResource(
                     if (uiState?.presentation == MultiSwapExchangePresentation.RouteInfo) {
-                        R.string.multi_swap_route_title
+                        Res.string.multi_swap_route_title
                     } else {
-                        R.string.multi_swap_execution_title
+                        Res.string.multi_swap_execution_title
                     }
                 ),
                 navigationIcon = { HsBackButton(onClick = onBack) },
@@ -273,7 +295,7 @@ private fun RouteInfoHeader(uiState: MultiSwapExchangeUiState) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         uiState.routeExplanationTokens.takeIf { it.size == 3 }?.let { tokens ->
             val routeExplanation = stringResource(
-                R.string.multi_swap_route_explanation,
+                Res.string.multi_swap_route_explanation,
                 tokens[0],
                 tokens[1],
                 tokens[2],
@@ -314,7 +336,7 @@ private fun RouteInfoButtons(
             SwapPrimaryButton(
                 buttonState = buttonState,
                 modifier = buttonModifier,
-                title = stringResource(R.string.multi_swap_understood_continue),
+                title = stringResource(Res.string.multi_swap_understood_continue),
                 onSwap = onContinue,
                 onRefresh = onRefresh,
                 onClose = onCancel,
@@ -324,7 +346,7 @@ private fun RouteInfoButtons(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
-                title = stringResource(R.string.Button_Cancel),
+                title = stringResource(Res.string.Button_Cancel),
                 onClick = onCancel,
             )
         }
@@ -336,7 +358,7 @@ private fun StepLabel(index: Int, visible: Boolean) {
     if (visible) {
         subhead1_grey(
             modifier = Modifier.padding(start = 16.dp, bottom = 8.dp),
-            text = stringResource(R.string.multi_swap_step, index),
+            text = stringResource(Res.string.multi_swap_step, index),
         )
     }
 }
@@ -401,7 +423,7 @@ private fun LegContent(
 ) {
     // You Send
     AmountRow(
-        title = stringResource(R.string.swap_you_send),
+        title = stringResource(Res.string.swap_you_send),
         badge = leg.badgeIn,
         amountFormatted = leg.amountInFormatted?.let { "$it ${leg.coinIn}" },
         fiatAmount = leg.fiatAmountIn,
@@ -410,7 +432,7 @@ private fun LegContent(
     )
     // You Get
     AmountRow(
-        title = stringResource(R.string.swap_you_receive),
+        title = stringResource(Res.string.swap_you_receive),
         badge = leg.badgeOut,
         amountFormatted = leg.amountOutFormatted?.let { "$it ${leg.coinOut}" },
         fiatAmount = leg.fiatAmountOut,
@@ -444,7 +466,7 @@ private fun AmountRow(
         Column {
             subhead2_leah(text = title)
             VSpacer(height = 1.dp)
-            caption_grey(text = badge ?: stringResource(R.string.CoinPlatforms_Native))
+            caption_grey(text = badge ?: stringResource(Res.string.CoinPlatforms_Native))
         }
         HFillSpacer(minWidth = 16.dp)
         Column(horizontalAlignment = Alignment.End) {
@@ -526,11 +548,11 @@ private fun Leg1Header(
         HSpacer(width = 16.dp)
         Column {
             val titleText = when {
-                providerName == null -> stringResource(R.string.Swap)
+                providerName == null -> stringResource(Res.string.Swap)
                 status == LegStatus.Completed ->
-                    stringResource(R.string.multi_swap_completed_via, providerName)
+                    stringResource(Res.string.multi_swap_completed_via, providerName)
 
-                else -> stringResource(R.string.multi_swap_via, providerName)
+                else -> stringResource(Res.string.multi_swap_via, providerName)
             }
             subhead1_leah(text = titleText)
             ProviderBadges(riskType = riskType, estimationTime = estimationTime)
@@ -577,17 +599,17 @@ private fun Leg2Header(
             }
             when {
                 providerName != null -> Column {
-                    subhead1_leah(text = stringResource(R.string.multi_swap_via, providerName))
+                    subhead1_leah(text = stringResource(Res.string.multi_swap_via, providerName))
                     ProviderBadges(riskType = riskType, estimationTime = estimationTime)
                 }
 
-                quoting -> subhead1_grey(text = stringResource(R.string.multi_swap_finding_best_provider))
-                else -> subhead1_grey(text = stringResource(R.string.multi_swap_no_providers))
+                quoting -> subhead1_grey(text = stringResource(Res.string.multi_swap_finding_best_provider))
+                else -> subhead1_grey(text = stringResource(Res.string.multi_swap_no_providers))
             }
             if (clickable) {
                 HFillSpacer(minWidth = 16.dp)
                 Icon(
-                    painter = painterResource(R.drawable.ic_arrow_right),
+                    painter = painterResource(Res.drawable.ic_arrow_right),
                     contentDescription = null,
                     tint = ComposeAppTheme.colors.iconSecondary,
                 )
@@ -627,7 +649,7 @@ private fun BottomButtons(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
-                    title = stringResource(R.string.swap_continue_later),
+                    title = stringResource(Res.string.swap_continue_later),
                     onClick = onClose,
                 )
                 VSpacer(height = 8.dp)
@@ -635,7 +657,7 @@ private fun BottomButtons(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
-                    title = stringResource(R.string.Button_Cancel),
+                    title = stringResource(Res.string.Button_Cancel),
                     textColor = ComposeAppTheme.colors.statusError,
                     onClick = onDeleteAndClose,
                 )
@@ -657,7 +679,7 @@ private fun SwapPrimaryButton(
     if (buttonState == ButtonState.Refresh) {
         ButtonPrimaryDefault(
             modifier = modifier,
-            title = stringResource(R.string.Button_Refresh),
+            title = stringResource(Res.string.Button_Refresh),
             onClick = onRefresh,
         )
         return
@@ -665,8 +687,8 @@ private fun SwapPrimaryButton(
 
     val enabled = buttonState == ButtonState.Enabled || buttonState == ButtonState.Close
     val buttonTitle = when (buttonState) {
-        ButtonState.Close -> stringResource(R.string.Button_Close)
-        ButtonState.Quoting -> stringResource(R.string.Swap_Quoting)
+        ButtonState.Close -> stringResource(Res.string.Button_Close)
+        ButtonState.Quoting -> stringResource(Res.string.Swap_Quoting)
         else -> title
     }
     val onClick: () -> Unit = when (buttonState) {
@@ -701,9 +723,9 @@ internal fun CancelSwapBottomSheet(
             .padding(horizontal = 24.dp)
 
         BottomSheetHeader(
-            iconPainter = painterResource(R.drawable.ic_attention_24),
+            iconPainter = painterResource(Res.drawable.ic_attention_24),
             iconTint = ColorFilter.tint(ComposeAppTheme.colors.statusError),
-            title = stringResource(R.string.multi_swap_cancel_swap),
+            title = stringResource(Res.string.multi_swap_cancel_swap),
             onCloseClick = {
                 scope.launch { sheetState.hide() }.invokeOnCompletion { onDismiss() }
             },
@@ -711,12 +733,12 @@ internal fun CancelSwapBottomSheet(
             VSpacer(12.dp)
             TextImportantWarning(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                text = stringResource(R.string.multi_swap_cancel_swap_warning),
+                text = stringResource(Res.string.multi_swap_cancel_swap_warning),
             )
             VSpacer(32.dp)
             ButtonPrimaryRed(
                 modifier = buttonModifier,
-                title = stringResource(R.string.Button_Delete),
+                title = stringResource(Res.string.Button_Delete),
                 onClick = {
                     scope.launch { sheetState.hide() }.invokeOnCompletion { onConfirm() }
                 },
@@ -724,7 +746,7 @@ internal fun CancelSwapBottomSheet(
             VSpacer(12.dp)
             ButtonPrimaryTransparent(
                 modifier = buttonModifier,
-                title = stringResource(R.string.Button_Cancel),
+                title = stringResource(Res.string.Button_Cancel),
                 onClick = {
                     scope.launch { sheetState.hide() }.invokeOnCompletion { onDismiss() }
                 },
