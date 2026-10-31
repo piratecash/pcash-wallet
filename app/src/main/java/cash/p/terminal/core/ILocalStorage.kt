@@ -26,7 +26,6 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurren
 
     var chartIndicatorsEnabled: Boolean
     var amountInputType: AmountInputType?
-    var authToken: String?
     val appId: String?
 
     var baseBitcoinProvider: String?
@@ -71,7 +70,6 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurren
     var marketFavoritesShowSignals: Boolean
     var marketFavoritesPeriod: TimeDuration?
     var relaunchBySettingChange: Boolean
-    var personalSupportEnabled: Boolean
     var pinRandomized: Boolean
     var utxoExpertModeEnabled: Boolean
     var rbfEnabled: Boolean

@@ -280,83 +280,6 @@ data class Analytics(
     }
 }
 
-data class AnalyticsPreview(
-    @SerializedName("cex_volume")
-    val cexVolume: VolumePreview?,
-    @SerializedName("dex_volume")
-    val dexVolume: VolumePreview?,
-    @SerializedName("dex_liquidity")
-    val dexLiquidity: LiquidityPreview?,
-    val addresses: AddressesPreview?,
-    val transactions: TransactionPreview?,
-    val revenue: RevenuePreview?,
-    val fee: FeePreview?,
-    val tvl: TvlPreview?,
-    val reports: Boolean = false,
-    @SerializedName("funds_invested")
-    val fundsInvested: Boolean = false,
-    val treasuries: Boolean = false,
-    val holders: Boolean = false,
-    @SerializedName("holders_rank")
-    val holdersRank: Boolean = false,
-    @SerializedName("holders_rating")
-    val holdersRating: Boolean = false,
-) {
-
-    data class VolumePreview(
-        @SerializedName("rank_30d")
-        val rank30d: Boolean = false,
-        val points: Boolean = false,
-        val rating: Boolean = false,
-    )
-
-    data class LiquidityPreview(
-        val rank: Boolean = false,
-        val points: Boolean = false,
-        val rating: Boolean = false,
-    )
-
-    data class AddressesPreview(
-        @SerializedName("rank_30d")
-        val rank30d: Boolean = false,
-        @SerializedName("count_30d")
-        val count30d: Boolean = false,
-        val points: Boolean = false,
-        val rating: Boolean = false,
-    )
-
-    data class TransactionPreview(
-        @SerializedName("rank_30d")
-        val rank30d: Boolean = false,
-        @SerializedName("volume_30d")
-        val volume30d: Boolean = false,
-        val points: Boolean = false,
-        val rating: Boolean = false,
-    )
-
-    data class RevenuePreview(
-        @SerializedName("rank_30d")
-        val rank30d: Boolean = false,
-        @SerializedName("value_30d")
-        val value30d: Boolean = false,
-        val rating: Boolean = false,
-    )
-
-    data class FeePreview(
-        @SerializedName("rank_30d")
-        val rank30d: Boolean = false,
-        @SerializedName("value_30d")
-        val value30d: Boolean = false,
-        val rating: Boolean = false,
-    )
-
-    data class TvlPreview(
-        val rank: Boolean = false,
-        val ratio: Boolean = false,
-        val points: Boolean = false,
-    )
-}
-
 data class RankMultiValue(
     val uid: String,
     @SerializedName("value_1d")
@@ -370,11 +293,6 @@ data class RankMultiValue(
 data class RankValue(
     val uid: String,
     val value: BigDecimal?,
-)
-
-data class SubscriptionResponse(
-    val address: String,
-    val deadline: Long
 )
 
 data class BlockchainIssues(

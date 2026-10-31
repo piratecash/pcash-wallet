@@ -107,7 +107,7 @@ val marketFeatureModule = module {
     viewModel { params -> ChartViewModel(params.get(), params.get(), get(), get()) }
     viewModel { params ->
         val service = CoinService(params.get<FullCoin>(), get(), get())
-        CoinViewModel(service, listOf(service), get(), get())
+        CoinViewModel(service, listOf(service), get())
     }
     viewModel { params ->
         val service = CoinOverviewService(
@@ -118,7 +118,7 @@ val marketFeatureModule = module {
     }
     viewModel { params ->
         val fullCoin = params.get<FullCoin>()
-        val service = CoinAnalyticsService(fullCoin, get(), get(), get(), get())
+        val service = CoinAnalyticsService(fullCoin, get(), get())
         CoinAnalyticsViewModel(service, get(), get(), fullCoin.coin.code, get())
     }
     viewModel { params -> CoinAuditsViewModel(params.get(), get()) }

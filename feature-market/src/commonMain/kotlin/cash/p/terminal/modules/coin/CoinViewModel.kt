@@ -9,7 +9,6 @@ import cash.p.terminal.wallet.Clearable
 import cash.p.terminal.resources.Hud_Added_To_Watchlist
 import cash.p.terminal.resources.Hud_Removed_from_Watchlist
 import cash.p.terminal.resources.Res
-import cash.p.terminal.wallet.SubscriptionManager
 import io.horizontalsystems.core.MarketSettingsStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -20,7 +19,6 @@ class CoinViewModel(
     private val service: CoinService,
     private val clearables: List<Clearable>,
     settings: MarketSettingsStore,
-    private val subscriptionManager: SubscriptionManager
 ) : ViewModel() {
 
     val tabs: Array<CoinModule.Tab> = CoinModule.Tab.entries
@@ -38,8 +36,6 @@ class CoinViewModel(
         private set
     var successMessage by mutableStateOf<StringResource?>(null)
         private set
-
-    private var subscriptionInfoShown: Boolean = false
 
     init {
         viewModelScope.launch {
@@ -66,14 +62,6 @@ class CoinViewModel(
 
     fun onSuccessMessageShown() {
         successMessage = null
-    }
-
-    fun shouldShowSubscriptionInfo():Boolean {
-        return !subscriptionManager.hasSubscription() && !subscriptionInfoShown
-    }
-
-    fun subscriptionInfoShown() {
-        subscriptionInfoShown = true
     }
 
 }

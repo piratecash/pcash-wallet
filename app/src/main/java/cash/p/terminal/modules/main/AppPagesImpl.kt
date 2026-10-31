@@ -29,7 +29,6 @@ import cash.p.terminal.modules.send.offline.OfflineBroadcastPage
 import cash.p.terminal.modules.sendtokenselect.PrefilledData
 import cash.p.terminal.modules.sendtokenselect.SendTokenSelectPage
 import cash.p.terminal.modules.settings.appearance.AppIconPage
-import cash.p.terminal.modules.subscription.SubscriptionInfoPage
 import cash.p.terminal.modules.transactionInfo.options.SpeedUpCancelType
 import cash.p.terminal.modules.transactionInfo.options.TransactionSpeedUpCancelPage
 import cash.p.terminal.modules.transactionInfo.resendbitcoin.ResendBitcoinPage
@@ -63,7 +62,6 @@ class AppPagesImpl(
     override fun swap(tokenOut: Token): HSPage = SwapPage(tokenOut = tokenOut)
     override fun backupLocal(account: Account): HSPage = BackupLocalPage(account)
     override fun markdown(url: String): HSPage = MarkdownPage(MarkdownPage.Input(url, true))
-    override fun subscriptionInfo(): HSPage = SubscriptionInfoPage()
     override fun nftCollection(collectionUid: String, blockchainUid: String): HSPage =
         NftCollectionPage(NftCollectionPage.Input(collectionUid, blockchainUid))
 

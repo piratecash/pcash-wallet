@@ -13,7 +13,7 @@ import org.junit.Test
 class MarketKitWrapperTest {
 
     private val tonW5NativeQuery = TokenQuery(BlockchainType.Ton, TokenType.TonW5Native)
-    private val wrapper = spyk(MarketKitWrapper(mockk(), mockk(), mockk()))
+    private val wrapper = spyk(MarketKitWrapper(mockk(), mockk()))
 
     @Test
     fun isTonW5NativeTokenMissing_w5NativeStored_returnsFalse() {

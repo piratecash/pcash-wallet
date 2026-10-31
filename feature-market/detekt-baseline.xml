@@ -17,7 +17,6 @@
     <ID>ComposableParamOrder:MarketFiltersPage.kt$AdvancedSearchSwitch</ID>
     <ID>ComposableParamOrder:MarketFiltersPage.kt$SingleSelectBottomSheetContent</ID>
     <ID>ComposableParamOrder:SearchBar.kt$SearchBar</ID>
-    <ID>CyclomaticComplexMethod:CoinAnalyticsViewModel.kt$CoinAnalyticsViewModel$private fun getPreviewViewItems(analyticsPreview: AnalyticsPreview): List&lt;PreviewBlockViewItem&gt;</ID>
     <ID>CyclomaticComplexMethod:CoinAnalyticsViewModel.kt$CoinAnalyticsViewModel$private fun getViewItems(analytics: Analytics): List&lt;BlockViewItem&gt;</ID>
     <ID>CyclomaticComplexMethod:CoinOverviewScreen.kt$@Composable fun CoinOverviewScreen( fullCoin: FullCoin, navigation: HSNavigation )</ID>
     <ID>CyclomaticComplexMethod:CoinOverviewViewModel.kt$CoinOverviewViewModel$private fun getTokenVariants( fullCoin: FullCoin, account: Account?, activeWallets: List&lt;Wallet&gt; ): TokenVariants?</ID>
@@ -30,7 +29,6 @@
     <ID>LambdaParameterInRestartableEffect:LazyListState.kt$onLoadMore</ID>
     <ID>LargeClass:CoinAnalyticsViewModel.kt$CoinAnalyticsViewModel : ViewModelUiState</ID>
     <ID>LongMethod:CoinAnalyticsScreen.kt$@Composable private fun AnalyticsBlock( block: CoinAnalyticsModule.BlockViewItem, navigation: HSNavigation, )</ID>
-    <ID>LongMethod:CoinAnalyticsViewModel.kt$CoinAnalyticsViewModel$private fun getPreviewViewItems(analyticsPreview: AnalyticsPreview): List&lt;PreviewBlockViewItem&gt;</ID>
     <ID>LongMethod:CoinAnalyticsViewModel.kt$CoinAnalyticsViewModel$private fun getViewItems(analytics: Analytics): List&lt;BlockViewItem&gt;</ID>
     <ID>LongMethod:CoinListComponents.kt$@Composable fun CategoryCard( type: DiscoveryItem, onClick: () -&gt; Unit )</ID>
     <ID>LongMethod:CoinListComponents.kt$@Composable fun CoinList( listState: LazyListState = rememberLazyListState(), items: List&lt;MarketViewItem&gt;, scrollToTop: Boolean, onAddFavorite: (String) -&gt; Unit, onRemoveFavorite: (String) -&gt; Unit, onCoinClick: (String) -&gt; Unit, userScrollEnabled: Boolean = true, preItems: LazyListScope.() -&gt; Unit )</ID>

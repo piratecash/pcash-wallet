@@ -40,21 +40,21 @@ private fun HoldersBlockLockedPreview() {
                     title = BoxItem.Title(TranslatableString.PlainString("Blockchain 1")),
                     value = BoxItem.Value(stringResource(Res.string.CoinAnalytics_ThreeDots)),
                     showRightArrow = true,
-                    cellAction = CoinAnalyticsModule.ActionType.Preview,
+                    cellAction = null,
                     onActionClick = {}
                 )
                 AnalyticsFooterCell(
                     title = BoxItem.Title(TranslatableString.PlainString("Blockchain 2")),
                     value = BoxItem.Value(stringResource(Res.string.CoinAnalytics_ThreeDots)),
                     showRightArrow = true,
-                    cellAction = CoinAnalyticsModule.ActionType.Preview,
+                    cellAction = null,
                     onActionClick = {}
                 )
                 AnalyticsFooterCell(
                     title = BoxItem.Title(TranslatableString.PlainString("Blockchain 3")),
                     value = BoxItem.Value(stringResource(Res.string.CoinAnalytics_ThreeDots)),
                     showRightArrow = true,
-                    cellAction = CoinAnalyticsModule.ActionType.Preview,
+                    cellAction = null,
                     onActionClick = {}
                 )
             }
@@ -84,7 +84,7 @@ private fun AnalyticsBarChartDisabledPreview() {
                     title = BoxItem.Title(TranslatableString.PlainString("30-Day Rank")),
                     value = BoxItem.Value("•••"),
                     showRightArrow = true,
-                    cellAction = CoinAnalyticsModule.ActionType.Preview,
+                    cellAction = null,
                     onActionClick = {}
                 )
             }
@@ -115,7 +115,7 @@ private fun AnalyticsLineChartDisabledPreview() {
                     title = BoxItem.Title(TranslatableString.PlainString("30-Day Rank")),
                     value = BoxItem.Value("#19"),
                     showRightArrow = true,
-                    cellAction = CoinAnalyticsModule.ActionType.Preview,
+                    cellAction = null,
                     onActionClick = {}
                 )
             }
@@ -152,14 +152,14 @@ private fun HoldersBlockPreview() {
                     title = BoxItem.Title(TranslatableString.PlainString("Chain 1")),
                     value = BoxItem.Value("•••"),
                     showRightArrow = true,
-                    cellAction = CoinAnalyticsModule.ActionType.Preview,
+                    cellAction = null,
                     onActionClick = {}
                 )
                 AnalyticsFooterCell(
                     title = BoxItem.Title(TranslatableString.PlainString("Chain 2")),
                     value = BoxItem.Value("•••"),
                     showRightArrow = true,
-                    cellAction = CoinAnalyticsModule.ActionType.Preview,
+                    cellAction = null,
                     onActionClick = {}
                 )
             }
