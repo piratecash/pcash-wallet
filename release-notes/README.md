@@ -2,7 +2,7 @@
 
 ## Русский
 
-Актуальные release notes для ветки `1.0.x` остаются в основных файлах changelog:
+Актуальные release notes для ветки `1.1.x` остаются в основных файлах changelog:
 
 - Русский: [changelog_ru.md](../changelog_ru.md)
 - Английский: [changelog_en.md](../changelog_en.md)
@@ -12,8 +12,19 @@
 Соглашение по именованию: файлы вида `0.53.x.md` или `1.0.x.md` обозначают архив ветки релизов, а не строгий semver-wildcard.
 Суффикс `x` используется как обозначение семейства релизов внутри одной ветки.
 
+### Нумерация версий начиная с `1.x.x`
+
+Версии используют формат `major.minor.versionCode`:
+
+- `major` — глобальные изменения приложения;
+- `minor` — минорные функциональные изменения и улучшения;
+- `versionCode` — код сборки Android, совпадающий с третьим компонентом версии.
+
+Например, в версии `1.1.261`: `1` — глобальная версия, `1` — минорная версия, `261` — `versionCode`.
+
 | Ветка релизов | Русский | Английский |
 | --- | --- | --- |
+| `1.0.x` | [ru/1.0.x.md](./ru/1.0.x.md) | [en/1.0.x.md](./en/1.0.x.md) |
 | `0.61.x` | [ru/0.61.x.md](./ru/0.61.x.md) | [en/0.61.x.md](./en/0.61.x.md) |
 | `0.60.x` | [ru/0.60.x.md](./ru/0.60.x.md) | [en/0.60.x.md](./en/0.60.x.md) |
 | `0.59.x` | [ru/0.59.x.md](./ru/0.59.x.md) | [en/0.59.x.md](./en/0.59.x.md) |
@@ -37,7 +48,7 @@
 
 ## English
 
-Current `1.0.x` release notes remain in the root changelog files:
+Current `1.1.x` release notes remain in the root changelog files:
 
 - Russian: [changelog_ru.md](../changelog_ru.md)
 - English: [changelog_en.md](../changelog_en.md)
@@ -47,8 +58,19 @@ Archived release notes by release branch:
 Naming convention: files such as `0.53.x.md` or `1.0.x.md` represent a release branch archive, not a strict semantic-version wildcard.
 The `x` suffix is used to group all release notes that belong to the same branch family.
 
+### Version numbering starting with `1.x.x`
+
+Versions use the `major.minor.versionCode` format:
+
+- `major` represents global application changes;
+- `minor` represents smaller feature changes and improvements;
+- `versionCode` is the Android build code and matches the third version component.
+
+For example, in version `1.1.261`: `1` is the major version, `1` is the minor version, and `261` is the `versionCode`.
+
 | Release branch | Russian | English |
 | --- | --- | --- |
+| `1.0.x` | [ru/1.0.x.md](./ru/1.0.x.md) | [en/1.0.x.md](./en/1.0.x.md) |
 | `0.61.x` | [ru/0.61.x.md](./ru/0.61.x.md) | [en/0.61.x.md](./en/0.61.x.md) |
 | `0.60.x` | [ru/0.60.x.md](./ru/0.60.x.md) | [en/0.60.x.md](./en/0.60.x.md) |
 | `0.59.x` | [ru/0.59.x.md](./ru/0.59.x.md) | [en/0.59.x.md](./en/0.59.x.md) |
@@ -81,7 +103,7 @@ The `x` suffix is used to group all release notes that belong to the same branch
 5. Обновите вводный текст в этом файле, если изменилась текущая активная ветка релизов.
 6. Используйте то же соглашение по именованию: `{major}.{minor}.x.md` означает ветку релизов, а не обязательное наличие каждой patch-версии внутри файла.
 
-Пример: когда ветка `1.0.x` станет архивной, её нужно вынести в `release-notes/ru/1.0.x.md` и `release-notes/en/1.0.x.md`, затем добавить `1.0.x` в таблицу архива.
+Пример: когда ветка `1.1.x` станет архивной, её нужно вынести в `release-notes/ru/1.1.x.md` и `release-notes/en/1.1.x.md`, затем добавить `1.1.x` в таблицу архива.
 
 ## How to archive the next release branch
 
@@ -94,4 +116,4 @@ When the current release branch is no longer the active one, follow these steps:
 5. Update the introductory text in this file if the current active release branch has changed.
 6. Keep the same naming convention: `{major}.{minor}.x.md` represents a release branch, not a requirement that every patch version exists in that file.
 
-Example: when `1.0.x` becomes archival, move it to `release-notes/ru/1.0.x.md` and `release-notes/en/1.0.x.md`, then add `1.0.x` to the archive table.
+Example: when `1.1.x` becomes archival, move it to `release-notes/ru/1.1.x.md` and `release-notes/en/1.1.x.md`, then add `1.1.x` to the archive table.

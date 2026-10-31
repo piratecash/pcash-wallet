@@ -82,8 +82,8 @@ android {
         compileSdk compile_sdk_version
         minSdkVersion min_sdk_version
         targetSdkVersion target_sdk_version
-        versionCode 260
-        versionName "1.0.260"
+        versionCode 261
+        versionName "1.1.261"
         buildConfigField "String", "GIT_HASH", "\"${getGitVersionSuffix()}\""
         buildConfigField "String", "GIT_BRANCH", "\"${gitBranchProvider.getOrElse("unknown")}\""
         // True only for the disposable baseline-profile generation build type (see baselinegen).
