@@ -153,21 +153,6 @@ object CoinAnalyticsModule {
         class IconTitle(val image: ImageSource, val text: TranslatableString) : BoxItem()
         class Value(val text: String) : BoxItem()
         class OverallScoreValue(val score: OverallScore) : BoxItem()
-        object Dots : BoxItem()
-    }
-
-    data class PreviewBlockViewItem(
-        val title: StringResource?,
-        val info: AnalyticInfo?,
-        val chartType: PreviewChartType?,
-        val footerItems: List<FooterType>,
-        val sectionTitle: StringResource? = null,
-        val showValueDots: Boolean = true,
-        val showFooterDivider: Boolean = true,
-    )
-
-    enum class PreviewChartType {
-        Line, Bars, StackedBars
     }
 
     enum class AnalyticInfo(val title: StringResource) {
@@ -222,13 +207,11 @@ object CoinAnalyticsModule {
     )
 
     sealed class AnalyticsViewItem {
-        class Preview(val blocks: List<PreviewBlockViewItem>) : AnalyticsViewItem()
         class Analytics(val blocks: List<BlockViewItem>) : AnalyticsViewItem()
         object NoData : AnalyticsViewItem()
     }
 
     sealed class ActionType {
-        object Preview : ActionType()
         object OpenTvl : ActionType()
         class OpenOverallScoreInfo(val scoreCategory: ScoreCategory) : ActionType()
         class OpenRank(val type: RankType) : ActionType()

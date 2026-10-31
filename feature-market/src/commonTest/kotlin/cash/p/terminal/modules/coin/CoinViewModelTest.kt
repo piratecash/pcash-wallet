@@ -4,7 +4,6 @@ import cash.p.terminal.resources.Hud_Added_To_Watchlist
 import cash.p.terminal.resources.Hud_Removed_from_Watchlist
 import cash.p.terminal.resources.Res
 import cash.p.terminal.wallet.Clearable
-import cash.p.terminal.wallet.SubscriptionManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.FullCoin
 import cash.p.terminal.wallet.entities.TokenQuery
@@ -38,13 +37,11 @@ class CoinViewModelTest {
     private val settings = mockk<MarketSettingsStore> {
         every { marketsTabEnabled } returns true
     }
-    private val subscriptionManager = mockk<SubscriptionManager>()
 
     @Before
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         every { service.fullCoin } returns fullCoinWith(TokenQuery(BlockchainType.Bitcoin, TokenType.Native))
-        every { subscriptionManager.hasSubscription() } returns false
     }
 
     @After
@@ -56,7 +53,7 @@ class CoinViewModelTest {
         every { tokens } returns listOf(mockk<Token> { every { this@mockk.tokenQuery } returns tokenQuery })
     }
 
-    private fun viewModel() = CoinViewModel(service, listOf<Clearable>(service), settings, subscriptionManager)
+    private fun viewModel() = CoinViewModel(service, listOf<Clearable>(service), settings)
 
     @Test
     fun tabs_coinWithAnalytics_includeDetails() {
@@ -118,22 +115,5 @@ class CoinViewModelTest {
         every { settings.marketsTabEnabled } returns false
 
         assertFalse(viewModel().isWatchlistEnabled)
-    }
-
-    @Test
-    fun shouldShowSubscriptionInfo_noSubscription_isTrueUntilShown() {
-        val viewModel = viewModel()
-        assertTrue(viewModel.shouldShowSubscriptionInfo())
-
-        viewModel.subscriptionInfoShown()
-
-        assertFalse(viewModel.shouldShowSubscriptionInfo())
-    }
-
-    @Test
-    fun shouldShowSubscriptionInfo_hasSubscription_isFalse() {
-        every { subscriptionManager.hasSubscription() } returns true
-
-        assertFalse(viewModel().shouldShowSubscriptionInfo())
     }
 }

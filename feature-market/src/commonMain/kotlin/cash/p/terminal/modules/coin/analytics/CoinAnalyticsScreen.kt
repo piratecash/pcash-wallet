@@ -12,14 +12,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import cash.p.terminal.resources.CoinAnalytics_ProjectNoAnalyticData
-import cash.p.terminal.resources.CoinAnalytics_ThreeDots
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.SyncError
 import cash.p.terminal.resources.ic_not_available
@@ -43,15 +40,12 @@ import cash.p.terminal.modules.info.CoinAnalyticsInfoPage
 import cash.p.terminal.modules.info.OverallScoreInfoPage
 import cash.p.terminal.modules.market.tvl.TvlPage
 import cash.p.terminal.modules.metricchart.ProChartSheet
-import cash.p.terminal.modules.market.MarketPages
 import io.horizontalsystems.core.Translator
 import cash.p.terminal.ui_compose.components.HSSwipeRefresh
 import cash.p.terminal.ui_compose.components.InfoText
 import cash.p.terminal.ui_compose.components.Subhead1
 import cash.p.terminal.ui.compose.components.ListEmptyView
 import cash.p.terminal.ui.compose.components.ListErrorView
-import cash.p.terminal.ui.compose.components.StackBarSlice
-import cash.p.terminal.ui.compose.components.StackedBarChart
 import cash.p.terminal.ui_compose.components.VSpacer
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.subhead1_lucian
@@ -87,13 +81,6 @@ fun CoinAnalyticsScreen(
                             )
                         }
 
-                        is AnalyticsViewItem.Preview -> {
-                            AnalyticsDataPreview(
-                                previewBlocks = item.blocks,
-                                navigation = navigation
-                            )
-                        }
-
                         is AnalyticsViewItem.Analytics -> {
                             AnalyticsData(
                                 item.blocks,
@@ -126,21 +113,6 @@ private fun AnalyticsData(
                 block,
                 navigation,
             )
-        }
-        item {
-            Spacer(modifier = Modifier.height(32.dp))
-        }
-    }
-}
-
-@Composable
-private fun AnalyticsDataPreview(
-    previewBlocks: List<CoinAnalyticsModule.PreviewBlockViewItem>,
-    navigation: HSNavigation,
-) {
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        items(previewBlocks) { block ->
-            AnalyticsPreviewBlock(block, navigation)
         }
         item {
             Spacer(modifier = Modifier.height(32.dp))
@@ -223,7 +195,6 @@ private fun FooterCell(
     index: Int,
     navigation: HSNavigation
 ) {
-    val marketPages = koinInject<MarketPages>()
     when (item) {
         is CoinAnalyticsModule.FooterType.FooterItem -> {
             AnalyticsFooterCell(
@@ -232,14 +203,14 @@ private fun FooterCell(
                 showTopDivider = index != 0,
                 showRightArrow = item.action != null,
                 cellAction = item.action,
-                onActionClick = { handleActionClick(it, navigation, marketPages) }
+                onActionClick = { handleActionClick(it, navigation) }
             )
         }
 
         is CoinAnalyticsModule.FooterType.DetectorFooterItem -> {
             Column(
                 modifier = Modifier.clickable {
-                    item.action?.let { handleActionClick(it, navigation, marketPages) }
+                    item.action?.let { handleActionClick(it, navigation) }
                 }
             ) {
                 AnalyticsFooterCell(
@@ -285,71 +256,9 @@ private fun FooterCell(
     }
 }
 
-@Composable
-private fun AnalyticsPreviewBlock(
-    block: CoinAnalyticsModule.PreviewBlockViewItem,
-    navigation: HSNavigation
-) {
-    AnalyticsContainer(
-        showFooterDivider = block.showFooterDivider,
-        sectionTitle = block.sectionTitle?.let {
-            {
-                body_leah(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    text = stringResource(it)
-                )
-            }
-        },
-        titleRow = {
-            block.title?.let {
-                AnalyticsBlockHeader(
-                    title = stringResource(it),
-                    onInfoClick = block.info?.let { info ->
-                        {
-                            navigation.slideFromRight(CoinAnalyticsInfoPage(info))
-                        }
-                    }
-                )
-            }
-        },
-        bottomRows = {
-            block.footerItems.forEachIndexed { index, item ->
-                FooterCell(item, index, navigation)
-            }
-        }
-    ) {
-        if (block.showValueDots) {
-            AnalyticsContentNumber(
-                number = stringResource(Res.string.CoinAnalytics_ThreeDots),
-            )
-        }
-        block.chartType?.let { chartType ->
-            VSpacer(12.dp)
-            if (chartType == CoinAnalyticsModule.PreviewChartType.StackedBars) {
-                val lockedSlices = listOf(
-                    StackBarSlice(value = 50.34f, color = Color(0xBF808085)),
-                    StackBarSlice(value = 37.75f, color = Color(0x80808085)),
-                    StackBarSlice(value = 11.9f, color = Color(0x40808085)),
-                )
-                StackedBarChart(lockedSlices, modifier = Modifier.padding(horizontal = 16.dp))
-            } else {
-                AnalyticsChart(
-                    CoinAnalyticsModule.zigzagPlaceholderAnalyticChart(
-                        chartType == CoinAnalyticsModule.PreviewChartType.Line
-                    ),
-                )
-            }
-        }
-        if (block.showValueDots || block.chartType != null) {
-            VSpacer(12.dp)
-        }
-    }
-}
-
 private fun handleActionClick(
     action: CoinAnalyticsModule.ActionType,
     navigation: HSNavigation,
-    marketPages: MarketPages
 ) {
     when (action) {
         is CoinAnalyticsModule.ActionType.OpenTokenHolders -> {
@@ -384,10 +293,6 @@ private fun handleActionClick(
 
         CoinAnalyticsModule.ActionType.OpenTvl -> {
             navigation.slideFromBottom(TvlPage())
-        }
-
-        CoinAnalyticsModule.ActionType.Preview -> {
-            marketPages.subscriptionInfo()?.let { navigation.slideFromBottom(it) }
         }
 
         is CoinAnalyticsModule.ActionType.OpenDetectorsDetails -> {

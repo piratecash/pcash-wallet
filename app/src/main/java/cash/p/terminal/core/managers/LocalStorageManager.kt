@@ -50,7 +50,6 @@ class LocalStorageManager(
     private val THIRD_KEYBOARD_WARNING_MSG = "third_keyboard_warning_msg"
     private val SEND_INPUT_TYPE = "send_input_type"
     private val BASE_CURRENCY_CODE = "base_currency_code"
-    private val AUTH_TOKEN = "auth_token"
     private val FAILED_ATTEMPTS = "failed_attempts"
     private val LOCKOUT_TIMESTAMP = "lockout_timestamp"
     private val BASE_BITCOIN_PROVIDER = "base_bitcoin_provider"
@@ -99,7 +98,6 @@ class LocalStorageManager(
     private val TRANSACTION_HIDE_SECRET_PIN = "transaction_hide_secret_pin"
     private val NON_RECOMMENDED_ACCOUNT_ALERT_DISMISSED_ACCOUNTS =
         "non_recommended_account_alert_dismissed_accounts"
-    private val PERSONAL_SUPPORT_ENABLED = "personal_support_enabled"
     private val APP_ID = "app_id"
     private val APP_AUTO_LOCK_INTERVAL = "app_auto_lock_interval"
     private val HIDE_SUSPICIOUS_TX = "hide_suspicious_tx"
@@ -165,12 +163,6 @@ class LocalStorageManager(
         get() = preferences.getString(BASE_CURRENCY_CODE, null)
         set(value) {
             preferences.edit().putString(BASE_CURRENCY_CODE, value).apply()
-        }
-
-    override var authToken: String?
-        get() = preferences.getString(AUTH_TOKEN, null)
-        set(value) {
-            preferences.edit().putString(AUTH_TOKEN, value).apply()
         }
 
     override val appId: String?
@@ -637,12 +629,6 @@ class LocalStorageManager(
         }
 
     override val balanceTabButtonsEnabledFlow = MutableStateFlow(balanceTabButtonsEnabled)
-
-    override var personalSupportEnabled: Boolean
-        get() = preferences.getBoolean(PERSONAL_SUPPORT_ENABLED, false)
-        set(enabled) {
-            preferences.edit().putBoolean(PERSONAL_SUPPORT_ENABLED, enabled).apply()
-        }
 
     override var hideSuspiciousTransactions: Boolean
         get() = preferences.getBoolean(HIDE_SUSPICIOUS_TX, true)
