@@ -1598,6 +1598,71 @@ class MoneroKitWrapperRefreshTest {
     }
 
     @Test
+    fun refresh_ledgerWalletBehindNodeThreePasses_keepsSyncedState() = runTest {
+        val events = mutableListOf<String>()
+        val userOperations = LedgerUserOperations()
+        val notices = collectNotices(userOperations)
+        val wrapper = behindNodeLedgerWrapper(LedgerScan(events), userOperations)
+        events.clear()
+
+        syncPasses(wrapper, 3)
+
+        assertEquals(AdapterState.Synced, wrapper.syncState.value)
+        assertSame(MoneroSpendReadiness.Ready, wrapper.spendReadiness.value)
+        assertEquals(List(3) { "refresh@100" }, events)
+        assertEquals(emptyList<String>(), notices)
+    }
+
+    @Test
+    fun refresh_ledgerWalletBehindNodeFourPasses_showsNodeNotSynchronizedError() = runTest {
+        val wrapper = behindNodeLedgerWrapper(LedgerScan(mutableListOf()))
+
+        syncPasses(wrapper, 4)
+
+        val error = (wrapper.syncState.value as AdapterState.NotSynced).error as HardwareWalletOperationException
+        assertSame(HardwareWalletErrorCode.Network, error.error)
+    }
+
+    @Test
+    fun refresh_ledgerRescanPendingWhileNodeBehind_showsErrorAtOnce() = runTest {
+        val settings = ledgerBirthday()
+        val wrapper = behindNodeLedgerWrapper(LedgerScan(mutableListOf()))
+        settings.birthdayHeight = 60
+
+        syncPasses(wrapper, 1)
+
+        val error = (wrapper.syncState.value as AdapterState.NotSynced).error as HardwareWalletOperationException
+        assertSame(HardwareWalletErrorCode.Network, error.error)
+        assertSame(MoneroSpendReadiness.Syncing, wrapper.spendReadiness.value)
+    }
+
+    @Test
+    fun refresh_ledgerWalletCaughtUpBetweenLags_resetsStreak() = runTest {
+        val scan = LedgerScan(mutableListOf())
+        val wrapper = behindNodeLedgerWrapper(scan)
+        syncPasses(wrapper, 3)
+        scan.daemonSynced = true
+        syncPasses(wrapper, 1)
+        scan.daemonSynced = false
+
+        syncPasses(wrapper, 3)
+
+        assertEquals(AdapterState.Synced, wrapper.syncState.value)
+    }
+
+    @Test
+    fun refresh_ledgerWalletBehindNodeAroundYieldedPass_countsOnlyConsecutiveLags() = runTest {
+        val userOperations = LedgerUserOperations()
+        val wrapper = behindNodeLedgerWrapper(LedgerScan(mutableListOf()), userOperations)
+        syncPasses(wrapper, 3)
+        userOperations.run { syncPasses(wrapper, 1) }
+
+        syncPasses(wrapper, 1)
+
+        assertEquals(AdapterState.Synced, wrapper.syncState.value)
+    }
+
+    @Test
     fun refresh_ledgerProxyScan_publishesBlocksRemainedOnSyncState() = runTest {
         val scan = LedgerScan(mutableListOf())
         // The node's height is still unknown when the scan starts.
@@ -3707,6 +3772,20 @@ class MoneroKitWrapperRefreshTest {
                 result
             }
         }
+    }
+
+    /** Synced to the tip once; then the node reports a higher target, so every later pass ends behind it. */
+    private suspend fun behindNodeLedgerWrapper(
+        scan: LedgerScan,
+        userOperations: LedgerUserOperations = LedgerUserOperations(),
+    ): MoneroKitWrapper = scanningLedgerWrapper(scan, userOperations = userOperations).also {
+        syncPasses(it, 1)
+        scan.daemonSynced = false
+    }
+
+    private suspend fun syncPasses(wrapper: MoneroKitWrapper, passes: Int) = repeat(passes) {
+        wrapper.refresh()
+        awaitProxySync(wrapper)
     }
 
     private fun proxySync(wrapper: MoneroKitWrapper): Job? = privateField(wrapper, "proxySync").get(wrapper) as Job?

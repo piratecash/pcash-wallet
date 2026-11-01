@@ -440,6 +440,9 @@ class MoneroKitManager(
 // A Monero block takes about two minutes; this keeps a connected Ledger well within one block.
 private val LEDGER_SYNC_INTERVAL = 30.seconds
 
+// Four 30 s passes outlast one ~2 min Monero block, so a node merely a block ahead never shows as an error.
+private const val NODE_BEHIND_PASSES_BEFORE_SHOWN = 4
+
 private val waitingForLedgerState = AdapterState.Syncing(substatus = AdapterState.Substatus.WaitingForLedger)
 
 /** wallet_api reports success without scanning while its node lags behind, so only heights prove a sync. */
@@ -583,6 +586,9 @@ private data class MoneroWalletCredentials(
 
 /** Keeps the message `isNoInternetException()` and the NotSynced presentation rely on. */
 internal class MoneroNodeUnreachableException : Exception("No internet connection")
+
+internal class MoneroNodeBehindException(walletHeight: Long, daemonHeight: Long, targetHeight: Long) :
+    Exception("Monero wallet at $walletHeight is behind node $daemonHeight (target $targetHeight)")
 
 private const val CONTROLLED_REFRESH_FINALIZATION_TIMEOUT_MILLIS = 30_000L
 
@@ -808,6 +814,8 @@ class MoneroKitWrapper(
     private var proxySyncEarlyEnd: ProxySyncEarlyEnd? = null
     @Volatile
     private var checkpointRequested = false
+    // Consecutive Ledger sync passes that ended behind the node; touched only under lifecycleMutex.
+    private var nodeBehindStreak = 0
     // A device failure may have corrupted the open wallet's memory, so it must never be stored.
     @Volatile
     private var walletTainted = false
@@ -1212,6 +1220,7 @@ class MoneroKitWrapper(
 
     /** A failed sync leaves an open wallet NotSynced until the next trigger; a put-off one keeps the state it found. */
     private suspend fun syncProxyWallet() {
+        val lagPassesBefore = nodeBehindStreak.also { nodeBehindStreak = 0 }
         val stateBefore = _syncState.value
         var deviceFailed = false
         var reachedDevice = false
@@ -1230,7 +1239,7 @@ class MoneroKitWrapper(
             }
         } catch (error: Exception) {
             val putOffState = if (reachedDevice && failedState != null) waitingForLedgerState else stateBefore
-            if (deviceFailed) closeAfterDeviceFailure(error) else onProxySyncFailed(error, putOffState)
+            if (deviceFailed) closeAfterDeviceFailure(error) else onProxySyncFailed(error, putOffState, lagPassesBefore)
         } finally {
             if (!reachedDevice) failedState?.let { _syncState.compareAndSet(waitingForLedgerState, it) }
         }
@@ -1247,7 +1256,7 @@ class MoneroKitWrapper(
         logger.warning("sync: Ledger failed mid-sync, wallet closed unsaved", error)
     }
 
-    private fun onProxySyncFailed(error: Exception, stateBefore: AdapterState) {
+    private fun onProxySyncFailed(error: Exception, stateBefore: AdapterState, lagPassesBefore: Int) {
         // An interruption's cancel may replace the session's own result, so it is a put-off too.
         if (error is CancellationException || error is LedgerSessionDeferredException ||
             error is LedgerSessionYieldedException
@@ -1256,7 +1265,14 @@ class MoneroKitWrapper(
             if (error is CancellationException) throw error
             return
         }
-        publishProxySyncFailure(error)
+        if (error is MoneroNodeBehindException) {
+            nodeBehindStreak = lagPassesBefore + 1
+            if (nodeBehindStreak < NODE_BEHIND_PASSES_BEFORE_SHOWN) {
+                onProxySyncPutOff(error, stateBefore)
+                return
+            }
+        }
+        publishProxySyncFailure(if (error is MoneroNodeBehindException) nodeNotSynchronizedError() else error)
         logger.warning("sync: Ledger wallet failed to sync", error)
     }
 
@@ -1314,7 +1330,13 @@ class MoneroKitWrapper(
             if (!wallet.refresh()) throw wallet.fullStatus.hardwareFailure()
         }
         val height = wallet.blockChainHeight
-        if (!moneroScanReachedDaemon(height, wallet.daemonBlockChainHeight, wallet.daemonBlockChainTargetHeight)) {
+        val daemonHeight = wallet.daemonBlockChainHeight
+        val targetHeight = wallet.daemonBlockChainTargetHeight
+        if (!moneroScanReachedDaemon(height, daemonHeight, targetHeight)) {
+            // A pending rescan keeps showing as an error until it is stored: the old cache must not look spendable.
+            if (proxySyncEarlyEnd == null && !restoreHeightUnstored) {
+                throw MoneroNodeBehindException(height, daemonHeight, targetHeight)
+            }
             storeEarlyEnd(wallet)
             // A checkpoint goes on in the same session; the birthday is read again, so a new rescan height applies.
             return refreshProxyWalletLeaseOwned()
@@ -1395,8 +1417,11 @@ class MoneroKitWrapper(
     // The latched request, not the current user state: an operation that already ended still caused the stop.
     internal fun incompleteProxySyncError(): Exception = when (proxySyncEarlyEnd) {
         ProxySyncEarlyEnd.UserYield, ProxySyncEarlyEnd.Interruption -> LedgerSessionYieldedException()
-        else -> HardwareWalletOperationException(HardwareWalletErrorCode.Network, "Monero node is not synchronized")
+        else -> nodeNotSynchronizedError()
     }
+
+    private fun nodeNotSynchronizedError() =
+        HardwareWalletOperationException(HardwareWalletErrorCode.Network, "Monero node is not synchronized")
 
     private fun resumeInitialHardwareCatchUp() {
         controlledLiveRefreshPending = false
