@@ -1272,6 +1272,8 @@
     <string name="ManageAccount_BirthdayHeight">%s Geburtstagshöhe</string>
     <string name="ManageAccount_NWords">%s Wörter</string>
     <string name="ManageAccount_NWordsWithPassphrase">%s Wörter mit Passphrase</string>
+    <string name="ManageAccount_NWordsShamir">%1$d Wörter (Shamir)</string>
+    <string name="ManageAccount_NWordsShamirWithPassphrase">%1$d Wörter (Shamir) mit Passphrase</string>
     <string name="ManageAccount_SwitchWallet_Title">Wallet wechseln</string>
     <string name="ManageAccount_Wallets">Wallets</string>
     <string name="ManageAccount_WatchAddresses">Watch-Adresse</string>
@@ -1326,6 +1328,8 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <!-- Passphrase Terms -->
     <string name="passphrase_terms_title">Passphrase-Bedingungen</string>
     <string name="passphrase_terms_warning">Bevor Sie die Passphrase (BIP-39 Passphrase) aktivieren, bestätigen Sie bitte, dass Sie Folgendes verstehen:</string>
+    <string name="passphrase_terms_warning_shamir">Bevor Sie die Passphrase aktivieren, bestätigen Sie bitte, dass Sie Folgendes verstehen:</string>
+    <string name="passphrase_terms_restore_shamir">Ich verstehe, dass &lt;b>eine solche Brieftasche nur in Anwendungen wiederhergestellt werden kann, die Shamir Backup (SLIP-39) mit Passphrase unterstützen&lt;/b>, und die meisten Anwendungen &lt;b>diese Funktion nicht unterstützen&lt;/b>.</string>
     <string name="passphrase_terms_term1">Ich verstehe, dass ich für den Zugriff auf die Mittel die Passphrase genau so eingeben muss, wie sie erstellt wurde, mit denselben Zeichen, Leerzeichen und Groß-/Kleinschreibung.</string>
     <string name="passphrase_terms_term2">Ich verstehe, dass wenn die Passphrase verloren geht oder falsch eingegeben wird, ich meine Brieftasche nicht wiederherstellen kann ohne ihren genauen Wert.</string>
     <string name="passphrase_terms_term3">Ich verstehe, dass bei der Wiederherstellung einer Brieftasche mit einer falschen Passphrase die Anwendung keinen Fehler anzeigt, sondern eine neue (leere) Brieftasche erstellt.</string>
@@ -2310,4 +2314,95 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="desktop_change_password_corrupted">Die Schlüsseldatei ist beschädigt: Sobald die App gesperrt ist, können Sie sich nicht mehr anmelden. Speichern Sie eine Sicherungskopie jeder Wiederherstellungsphrase.</string>
     <string name="desktop_change_password_success">Passwort geändert</string>
     <string name="desktop_security_lock_now">Jetzt sperren</string>
+
+    <!-- Shamir backup restore -->
+    <string name="import_wallet_shamir">Shamir-Backup</string>
+    <string name="import_wallet_shamir_description">Wallet aus mehreren Shamir-Teilen (SLIP-39) wiederherstellen</string>
+    <string name="shamir_backup_title">Shamir Backup</string>
+    <string name="shamir_restore_title">Wiederherstellung</string>
+    <string name="shamir_restore_enter_first">Geben Sie die Wörter des ersten Teils ein</string>
+    <string name="shamir_restore_part_input">Teil %1$d — Wörter eingeben</string>
+    <string name="shamir_restore_part">Teil %1$d</string>
+    <string name="shamir_restore_scheme_auto">Das Wiederherstellungsschema wird nach Eingabe des ersten Teils automatisch erkannt.</string>
+    <string name="shamir_restore_accepted">%1$d von %2$d akzeptiert</string>
+    <string name="shamir_restore_circle_accepted">akzeptiert</string>
+    <string name="shamir_restore_circle_required">erforderlich</string>
+    <string name="shamir_restore_groups">Gruppen: %1$d von %2$d</string>
+    <string name="shamir_restore_group_progress">Gruppe %1$d: %2$d von %3$d</string>
+    <string name="shamir_restore_enough">Genügend Teile für die Wiederherstellung.</string>
+    <string name="shamir_error_invalid_words">Einige Wörter stehen nicht in der SLIP-39-Wortliste</string>
+    <string name="shamir_error_word_count">Ein Teil muss 20 oder 33 Wörter enthalten</string>
+    <string name="shamir_error_invalid_share">Ungültiger Teil. Prüfen Sie die Wörter und ihre Reihenfolge</string>
+    <string name="shamir_error_other_set">Dieser Teil stammt aus einem anderen Satz</string>
+    <string name="shamir_error_duplicate">Dieser Teil wurde bereits eingegeben</string>
+    <string name="shamir_error_mixed_sets">Die Teile stammen nicht aus einem Satz — geben Sie sie erneut ein</string>
+    <string name="shamir_error_passphrase_chars">Nur lateinische Buchstaben, Ziffern und Standardzeichen sind erlaubt</string>
+    <plurals name="shamir_restore_required">
+        <item quantity="one">%1$d Teil erforderlich</item>
+        <item quantity="other">%1$d Teile erforderlich</item>
+    </plurals>
+
+    <!-- Word check -->
+    <string name="word_check_title">Bestätigen Sie, dass Sie es richtig notiert haben</string>
+    <string name="word_check_select_word">Wählen Sie das Wort</string>
+    <string name="word_check_position">Nr. %1$d</string>
+    <plurals name="word_check_correct_remaining">
+        <item quantity="one">Richtig! Noch %1$d Wort</item>
+        <item quantity="other">Richtig! Noch %1$d Wörter</item>
+    </plurals>
+
+    <!-- Shamir backup creation -->
+    <string name="shamir_intro_title">Sicherer als eine einzelne Seed-Phrase</string>
+    <string name="shamir_intro_description">Der Schlüssel wird in mehrere Teile aufgeteilt. Zur Wiederherstellung wird nur ein Teil davon benötigt.</string>
+    <string name="shamir_intro_holder_you">bei Ihnen</string>
+    <string name="shamir_intro_holder_home">zu Hause</string>
+    <string name="shamir_intro_holder_friend">bei einem Freund</string>
+    <string name="shamir_intro_any">Beliebige %1$s stellen die Wallet wieder her</string>
+    <string name="shamir_intro_stolen">Ein einzelner gestohlener Teil ist nutzlos</string>
+    <string name="shamir_intro_lost">Der Verlust eines Teils sperrt Sie nicht aus</string>
+    <string name="shamir_intro_people">Teile können bei verschiedenen Personen aufbewahrt werden</string>
+    <string name="shamir_create">Shamir Backup erstellen</string>
+    <string name="shamir_step">Schritt %1$d von %2$d · %3$s</string>
+    <string name="shamir_step_scheme">Schema wählen</string>
+    <string name="shamir_step_warnings">Bitte sorgfältig lesen</string>
+    <string name="shamir_step_shares">Alle Teile notieren</string>
+    <string name="shamir_scheme_fraction">%1$d von %2$d</string>
+    <string name="shamir_scheme_total_header">Wie viele Teile erstellen</string>
+    <string name="shamir_scheme_total">Teile insgesamt</string>
+    <string name="shamir_scheme_threshold_header">Mindestanzahl Teile für den Zugriff</string>
+    <string name="shamir_scheme_threshold">Zur Wiederherstellung nötig</string>
+    <string name="shamir_scheme_title">Schema %1$s</string>
+    <plurals name="shamir_scheme_any_parts">
+        <item quantity="one">%1$d beliebiger Teil stellt die Wallet wieder her</item>
+        <item quantity="other">%1$d beliebige Teile stellen die Wallet wieder her</item>
+    </plurals>
+    <string name="shamir_scheme_can_lose">Verlierbar: %1$d</string>
+    <string name="shamir_scheme_none_lose">Keiner darf verloren gehen</string>
+    <string name="shamir_scheme_presets">Beliebte Schemata:</string>
+    <string name="shamir_warning_title">Bevor Sie notieren</string>
+    <plurals name="shamir_warning_description">
+        <item quantity="one">Gleich erscheint %1$d Teil. Notieren Sie jeden einzeln.</item>
+        <item quantity="other">Gleich erscheinen %1$d Teile. Notieren Sie jeden einzeln.</item>
+    </plurals>
+    <string name="shamir_warning_one_place">Bewahren Sie nicht alle Teile an einem Ort auf</string>
+    <string name="shamir_warning_no_photos">Fotografieren Sie die Teile nicht</string>
+    <string name="shamir_warning_separate_paper">Notieren Sie jeden Teil auf einem eigenen Blatt Papier</string>
+    <string name="shamir_warning_different_places">Bewahren Sie sie an verschiedenen physischen Orten auf</string>
+    <string name="shamir_warning_old_sets">Wenn Sie einen neuen Satz erstellen, funktionieren die alten Teile weiterhin</string>
+    <string name="shamir_warning_passphrase">Die Teile enthalten die Passphrase dieser Wallet nicht. Ohne sie lässt sich die Wallet nicht wiederherstellen – bewahren Sie sie separat auf.</string>
+    <string name="shamir_warning_not_shown_again">Die Teile werden nicht erneut angezeigt. Stellen Sie sicher, dass Sie bereit sind, sie zu notieren.</string>
+    <string name="shamir_show_shares">Teile anzeigen</string>
+    <plurals name="shamir_shares_banner">
+        <item quantity="one">Schema %1$s – %2$d beliebiger Teil stellt die Wallet wieder her</item>
+        <item quantity="other">Schema %1$s – %2$d beliebige Teile stellen die Wallet wieder her</item>
+    </plurals>
+    <string name="shamir_share_title">Teil %1$d von %2$d</string>
+    <string name="shamir_share_written">Ich habe diesen Teil notiert</string>
+    <string name="shamir_share_confirm">Teil %1$d bestätigen</string>
+    <string name="shamir_share_saved">Gespeichert</string>
+    <string name="shamir_write_all">Zuerst alle Teile notieren</string>
+    <string name="shamir_done_banner">Bewahren Sie die Teile an verschiedenen Orten auf.</string>
+    <string name="shamir_check_title">Prüfung von Teil %1$d</string>
+    <string name="shamir_check_description">Wählen Sie die Wörter aus Teil %1$d nach den angezeigten Nummern</string>
+    <string name="shamir_info_description">Shamir Backup (SLIP-39) teilt den Wallet-Schlüssel in mehrere Teile zu je 20 Wörtern. Zur Wiederherstellung benötigen Sie die festgelegte Anzahl an Teilen, zum Beispiel beliebige 2 von 3. Weniger Teile verraten nichts über den Schlüssel. Die Teile funktionieren in Wallets mit SLIP-39-Unterstützung, etwa Trezor. Hat die Wallet ein Passwort, wird es zur Wiederherstellung ebenfalls benötigt.</string>
 </resources>

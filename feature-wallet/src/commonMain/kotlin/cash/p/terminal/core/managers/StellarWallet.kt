@@ -1,10 +1,11 @@
 package cash.p.terminal.core.managers
 
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import io.horizontalsystems.stellarkit.StellarWallet
 
 fun AccountType.toStellarWallet() = when (this) {
-    is AccountType.Mnemonic -> StellarWallet.Seed(seed)
+    is SeedAccountType -> StellarWallet.Seed(seed)
     is AccountType.StellarAddress -> StellarWallet.WatchOnly(address)
     is AccountType.StellarSecretKey -> StellarWallet.SecretKey(key)
     else -> throw IllegalArgumentException(

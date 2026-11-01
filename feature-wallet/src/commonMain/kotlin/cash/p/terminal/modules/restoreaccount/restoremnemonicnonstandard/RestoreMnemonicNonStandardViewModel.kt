@@ -19,8 +19,8 @@ import cash.p.terminal.resources.Restore_InvalidChecksum
 class RestoreMnemonicNonStandardViewModel(
     accountFactory: IAccountFactory,
     private val wordsManager: WordsManager,
-    private val thirdKeyboardStorage: IThirdKeyboard,
-) : ViewModelUiState<RestoreMnemonicNonStandardUiState>() {
+    thirdKeyboardStorage: IThirdKeyboard,
+) : ViewModelUiState<RestoreMnemonicNonStandardUiState>(), IThirdKeyboard by thirdKeyboardStorage {
 
     val mnemonicLanguages = Language.entries.toList()
 
@@ -42,9 +42,6 @@ class RestoreMnemonicNonStandardViewModel(
     var accountName: String = defaultName
         get() = field.ifBlank { defaultName }
         private set
-
-    val isThirdPartyKeyboardAllowed: Boolean
-        get() = thirdKeyboardStorage.isThirdPartyKeyboardAllowed
 
     override fun createState() = RestoreMnemonicNonStandardUiState(
         passphraseEnabled = passphraseEnabled,
@@ -151,10 +148,6 @@ class RestoreMnemonicNonStandardViewModel(
         accountType = null
 
         emitState()
-    }
-
-    fun onAllowThirdPartyKeyboard() {
-        thirdKeyboardStorage.isThirdPartyKeyboardAllowed = true
     }
 
     private fun wordItems(text: String): List<RestoreMnemonicModule.WordItem> {

@@ -17,9 +17,9 @@ import cash.p.terminal.modules.multiswap.action.ISwapProviderAction
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.swap_reapprove_required
 import cash.p.terminal.strings.helpers.TranslatableString
-import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IReceiveAdapter
 import cash.p.terminal.wallet.NoActiveAccount
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.isLitecoinMweb
@@ -89,7 +89,7 @@ object SwapHelper {
 
                 BlockchainType.Thorchain,
                 BlockchainType.Mayachain -> {
-                    if (account.type !is AccountType.Mnemonic) throw SwapError.NoDestinationAddress()
+                    if (account.type !is SeedAccountType) throw SwapError.NoDestinationAddress()
                     val thorchainKitManagers: ThorchainKitManagers by inject(ThorchainKitManagers::class.java)
                     thorchainKitManagers.forType(blockchainType).getAddress(account)
                 }

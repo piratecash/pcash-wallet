@@ -18,6 +18,7 @@ class AccountsStorage(private val databaseProvider: AppDatabaseProvider) : IAcco
         // account type codes stored in db
         private const val MNEMONIC = "mnemonic"
         private const val MNEMONIC_MONERO = "mnemonic_monero"
+        private const val SLIP39 = "slip39"
         private const val PRIVATE_KEY = "private_key"
         private const val SECRET_KEY = "secret_key"
         private const val ADDRESS = "address"
@@ -72,6 +73,12 @@ class AccountsStorage(private val databaseProvider: AppDatabaseProvider) : IAcco
                 MNEMONIC -> AccountType.Mnemonic(
                     words = record.words!!.list,
                     passphrase = record.passphrase?.value ?: ""
+                )
+
+                SLIP39 -> AccountType.Slip39(
+                    words = requireNotNull(record.words).list,
+                    passphrase = record.passphrase?.value.orEmpty(),
+                    seed = requireNotNull(record.key).value.hexToByteArray()
                 )
 
                 MNEMONIC_MONERO -> {
@@ -190,6 +197,14 @@ class AccountsStorage(private val databaseProvider: AppDatabaseProvider) : IAcco
                 words = SecretList((account.type as AccountType.Mnemonic).words)
                 passphrase = SecretString((account.type as AccountType.Mnemonic).passphrase)
                 accountType = MNEMONIC
+            }
+
+            is AccountType.Slip39 -> {
+                val slip39 = account.type as AccountType.Slip39
+                words = SecretList(slip39.words)
+                passphrase = SecretString(slip39.passphrase)
+                key = SecretString(slip39.seed.toHexString())
+                accountType = SLIP39
             }
 
             is AccountType.MnemonicMonero -> {

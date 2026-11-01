@@ -4,9 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.passphrase_terms_checkboxes
+import cash.p.terminal.resources.passphrase_terms_warning
 import cash.p.terminal.ui_compose.entities.TermItem
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import org.jetbrains.compose.resources.stringArrayResource
+import org.jetbrains.compose.resources.stringResource
 
 @Preview
 @Composable
@@ -26,6 +28,7 @@ private fun PassphraseTermsScreenPreview() {
                 agreeEnabled = false,
                 alreadyAgreed = false
             ),
+            warning = stringResource(Res.string.passphrase_terms_warning),
             onCheckboxToggle = {},
             onAgreeClick = {},
             onBackClick = {}
@@ -51,6 +54,7 @@ private fun PassphraseTermsScreenAlreadyAgreedPreview() {
                 agreeEnabled = true,
                 alreadyAgreed = true
             ),
+            warning = stringResource(Res.string.passphrase_terms_warning),
             onCheckboxToggle = {},
             onAgreeClick = {},
             onBackClick = {}

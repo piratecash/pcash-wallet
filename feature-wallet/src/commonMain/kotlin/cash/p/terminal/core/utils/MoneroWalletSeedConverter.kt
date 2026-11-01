@@ -3,8 +3,12 @@ package cash.p.terminal.core.utils
 import androidx.annotation.VisibleForTesting
 import cash.p.terminal.core.toFixedSize
 import cash.p.terminal.core.toRawHexString
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.MnemonicSeed
+import cash.p.terminal.wallet.SeedAccountType
 import com.m2049r.xmrwallet.util.ledger.Monero
+import io.horizontalsystems.hdwalletkit.Curve
+import io.horizontalsystems.hdwalletkit.HDWallet
 import org.bitcoinj.crypto.DeterministicKey
 import org.bitcoinj.crypto.HDKeyDerivation
 import org.bitcoinj.crypto.HDPath.parsePath
@@ -23,6 +27,7 @@ object MoneroWalletSeedConverter {
     private const val WORDS_PER_GROUP = 3
     private const val BYTES_PER_GROUP = 4
     private const val MAX_UINT32 = 0xFFFFFFFFL
+    private const val MONERO_COIN_TYPE = 128
 
     private val ed25519CurveOrder =
         BigInteger("1000000000000000000000000000000014DEF9DEA2F79CD65812631A5CF5D3ED", 16)
@@ -43,9 +48,23 @@ object MoneroWalletSeedConverter {
     ): List<String> {
         val seed = MnemonicSeed.derive(words, passphrase)
         val bip32Seed = derivePath(seed, "m/44'/128'/$accountIndex'/0/0")
-        val spendKey = reduceECKey(bip32Seed.privKeyBytes.toFixedSize(32))
-        return encodePhrase(spendKey)
+        return legacySeedOf(bip32Seed.privKeyBytes)
     }
+
+    /** The 25-word seed a seed account restores its Monero wallet from. */
+    fun getLegacySeed(accountType: SeedAccountType): List<String> = when (accountType) {
+        is AccountType.Mnemonic -> getLegacySeedFromBip39(accountType.words, accountType.passphrase)
+        is AccountType.Slip39 -> getLegacySeedFromSeed(accountType.seed)
+    }
+
+    /** Trezor's scheme for a raw BIP-32 seed: SLIP-10 ed25519 key at m/44'/128'/account'. */
+    fun getLegacySeedFromSeed(seed: ByteArray, accountIndex: Int = 0): List<String> {
+        val keySeed = HDWallet(seed, MONERO_COIN_TYPE, HDWallet.Purpose.BIP44, Curve.Ed25519).privateKey(accountIndex)
+        return legacySeedOf(keySeed.privKeyBytes)
+    }
+
+    private fun legacySeedOf(privateKey: ByteArray): List<String> =
+        encodePhrase(reduceECKey(privateKey.toFixedSize(32)))
 
     /**
      * Derive the Monero secret keys from a 25-word legacy (Electrum) seed. Both reductions

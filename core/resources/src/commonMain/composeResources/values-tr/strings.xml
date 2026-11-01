@@ -1282,6 +1282,8 @@
     <string name="ManageAccount_BirthdayHeight">%s Oluşturulma Günü Üst Sınırı</string>
     <string name="ManageAccount_NWords">%s kelime</string>
     <string name="ManageAccount_NWordsWithPassphrase">%s parolalı kelime</string>
+    <string name="ManageAccount_NWordsShamir">%1$d kelime (Shamir)</string>
+    <string name="ManageAccount_NWordsShamirWithPassphrase">%1$d parolalı kelime (Shamir)</string>
     <string name="ManageAccount_SwitchWallet_Title">Cüzdan Değiştir</string>
     <string name="ManageAccount_Wallets">Cüzdanlar</string>
     <string name="ManageAccount_WatchAddresses">Adresi İzle</string>
@@ -1336,6 +1338,8 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <!-- Passphrase Terms -->
     <string name="passphrase_terms_title">Parola Koşulları</string>
     <string name="passphrase_terms_warning">Parolayı (BIP-39 Passphrase) etkinleştirmeden önce aşağıdakileri anladığınızı lütfen onaylayın:</string>
+    <string name="passphrase_terms_warning_shamir">Parolayı etkinleştirmeden önce aşağıdakileri anladığınızı lütfen onaylayın:</string>
+    <string name="passphrase_terms_restore_shamir">&lt;b>Bu tür bir cüzdanın yalnızca Shamir Backup (SLIP-39) standardını parola ile destekleyen uygulamalarda geri yüklenebileceğini&lt;/b> ve çoğu uygulamanın &lt;b>bu özelliği desteklemediğini&lt;/b> anlıyorum.</string>
     <string name="passphrase_terms_term1">Fonlara erişmek için parolayı oluşturulduğu şekliyle, aynı karakterler, boşluklar ve büyük/küçük harflerle girmem gerektiğini anlıyorum.</string>
     <string name="passphrase_terms_term2">Parola kaybolursa veya yanlış girilirse, tam değeri olmadan cüzdanımı kurtaramayacağımı anlıyorum.</string>
     <string name="passphrase_terms_term3">Yanlış bir parola ile cüzdan geri yüklenirken uygulamanın hata göstermeyeceğini, bunun yerine yeni bir (boş) cüzdan oluşturacağını anlıyorum.</string>
@@ -2319,4 +2323,95 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="desktop_change_password_corrupted">Anahtar dosyası zarar görmüş: uygulama kilitlendiğinde oturum açamayacaksınız. Her kurtarma ifadesinin bir yedeğini kaydedin.</string>
     <string name="desktop_change_password_success">Şifre değiştirildi</string>
     <string name="desktop_security_lock_now">Şimdi kilitle</string>
+
+    <!-- Shamir backup restore -->
+    <string name="import_wallet_shamir">Shamir yedeği</string>
+    <string name="import_wallet_shamir_description">Cüzdanı birkaç Shamir (SLIP-39) parçasından geri yükle</string>
+    <string name="shamir_backup_title">Shamir Backup</string>
+    <string name="shamir_restore_title">Geri yükleme</string>
+    <string name="shamir_restore_enter_first">İlk parçanın kelimelerini girin</string>
+    <string name="shamir_restore_part_input">Parça %1$d — kelimeleri girin</string>
+    <string name="shamir_restore_part">Parça %1$d</string>
+    <string name="shamir_restore_scheme_auto">Geri yükleme şeması ilk parça girildikten sonra otomatik olarak belirlenecek.</string>
+    <string name="shamir_restore_accepted">%2$d parçadan %1$d kabul edildi</string>
+    <string name="shamir_restore_circle_accepted">kabul edildi</string>
+    <string name="shamir_restore_circle_required">gerekli</string>
+    <string name="shamir_restore_groups">Gruplar: %2$d grupta %1$d</string>
+    <string name="shamir_restore_group_progress">Grup %1$d: %3$d parçadan %2$d</string>
+    <string name="shamir_restore_enough">Geri yükleme için yeterli parça var.</string>
+    <string name="shamir_error_invalid_words">Bazı kelimeler SLIP-39 kelime listesinde yok</string>
+    <string name="shamir_error_word_count">Bir parça 20 veya 33 kelime içermelidir</string>
+    <string name="shamir_error_invalid_share">Geçersiz parça. Kelimeleri ve sıralarını kontrol edin</string>
+    <string name="shamir_error_other_set">Bu parça başka bir sete ait</string>
+    <string name="shamir_error_duplicate">Bu parça zaten girildi</string>
+    <string name="shamir_error_mixed_sets">Parçalar aynı setten değil — parçaları yeniden girin</string>
+    <string name="shamir_error_passphrase_chars">Yalnızca Latin harfleri, rakamlar ve standart semboller kullanılabilir</string>
+    <plurals name="shamir_restore_required">
+        <item quantity="one">%1$d parça gerekli</item>
+        <item quantity="other">%1$d parça gerekli</item>
+    </plurals>
+
+    <!-- Word check -->
+    <string name="word_check_title">Doğru yazdığınızı onaylayın</string>
+    <string name="word_check_select_word">Kelimeyi seçin</string>
+    <string name="word_check_position">%1$d. kelime</string>
+    <plurals name="word_check_correct_remaining">
+        <item quantity="one">Doğru! %1$d kelime kaldı</item>
+        <item quantity="other">Doğru! %1$d kelime kaldı</item>
+    </plurals>
+
+    <!-- Shamir backup creation -->
+    <string name="shamir_intro_title">Tek bir seed ifadesinden daha güvenli</string>
+    <string name="shamir_intro_description">Anahtar birkaç parçaya bölünür. Geri yüklemek için yalnızca bazıları gerekir.</string>
+    <string name="shamir_intro_holder_you">sizde</string>
+    <string name="shamir_intro_holder_home">evde</string>
+    <string name="shamir_intro_holder_friend">bir arkadaşta</string>
+    <string name="shamir_intro_any">Herhangi %1$s parça cüzdanı geri yükler</string>
+    <string name="shamir_intro_stolen">Çalınan tek bir parça işe yaramaz</string>
+    <string name="shamir_intro_lost">Bir parçayı kaybetmek erişimi kaybettirmez</string>
+    <string name="shamir_intro_people">Parçalar farklı kişilerde saklanabilir</string>
+    <string name="shamir_create">Shamir Backup oluştur</string>
+    <string name="shamir_step">Adım %1$d/%2$d · %3$s</string>
+    <string name="shamir_step_scheme">Bir şema seçin</string>
+    <string name="shamir_step_warnings">Dikkatle okuyun</string>
+    <string name="shamir_step_shares">Tüm parçaları yazın</string>
+    <string name="shamir_scheme_fraction">%1$d/%2$d</string>
+    <string name="shamir_scheme_total_header">Kaç parça oluşturulsun</string>
+    <string name="shamir_scheme_total">Toplam parça</string>
+    <string name="shamir_scheme_threshold_header">Erişim için en az parça</string>
+    <string name="shamir_scheme_threshold">Geri yükleme için gerekli</string>
+    <string name="shamir_scheme_title">Şema %1$s</string>
+    <plurals name="shamir_scheme_any_parts">
+        <item quantity="one">Herhangi %1$d parça cüzdanı geri yükler</item>
+        <item quantity="other">Herhangi %1$d parça cüzdanı geri yükler</item>
+    </plurals>
+    <string name="shamir_scheme_can_lose">Kaybedilebilir: %1$d</string>
+    <string name="shamir_scheme_none_lose">Hiçbiri kaybedilemez</string>
+    <string name="shamir_scheme_presets">Popüler şemalar:</string>
+    <string name="shamir_warning_title">Yazmadan önce</string>
+    <plurals name="shamir_warning_description">
+        <item quantity="one">Şimdi %1$d parça görünecek. Her birini ayrı ayrı yazın.</item>
+        <item quantity="other">Şimdi %1$d parça görünecek. Her birini ayrı ayrı yazın.</item>
+    </plurals>
+    <string name="shamir_warning_one_place">Tüm parçaları tek bir yerde saklamayın</string>
+    <string name="shamir_warning_no_photos">Parçaların fotoğrafını çekmeyin</string>
+    <string name="shamir_warning_separate_paper">Her parçayı ayrı bir kâğıda yazın</string>
+    <string name="shamir_warning_different_places">Farklı fiziksel yerlerde saklayın</string>
+    <string name="shamir_warning_old_sets">Yeni bir set oluşturursanız eski parçalar çalışmaya devam eder</string>
+    <string name="shamir_warning_passphrase">Parçalar bu cüzdanın parolasını (passphrase) içermez. O olmadan cüzdan geri yüklenemez — ayrıca saklayın.</string>
+    <string name="shamir_warning_not_shown_again">Parçalar bir daha gösterilmeyecek. Yazmaya hazır olduğunuzdan emin olun.</string>
+    <string name="shamir_show_shares">Parçaları göster</string>
+    <plurals name="shamir_shares_banner">
+        <item quantity="one">Şema %1$s — herhangi %2$d parça cüzdanı geri yükler</item>
+        <item quantity="other">Şema %1$s — herhangi %2$d parça cüzdanı geri yükler</item>
+    </plurals>
+    <string name="shamir_share_title">Parça %1$d/%2$d</string>
+    <string name="shamir_share_written">Bu parçayı yazdım</string>
+    <string name="shamir_share_confirm">%1$d. parçayı onayla</string>
+    <string name="shamir_share_saved">Kaydedildi</string>
+    <string name="shamir_write_all">Önce tüm parçaları yazın</string>
+    <string name="shamir_done_banner">Parçaları farklı yerlerde saklayın.</string>
+    <string name="shamir_check_title">%1$d. parça kontrolü</string>
+    <string name="shamir_check_description">%1$d. parçadaki kelimeleri gösterdiğimiz numaralara göre seçin</string>
+    <string name="shamir_info_description">Shamir Backup (SLIP-39), cüzdan anahtarını 20 kelimelik birkaç parçaya böler. Geri yüklemek için belirlenen sayıda parça gerekir, örneğin 3 parçadan herhangi 2’si. Daha az parça anahtar hakkında hiçbir şey açığa çıkarmaz. Parçalar, Trezor gibi SLIP-39 destekleyen cüzdanlarda çalışır. Cüzdanın parolası varsa geri yükleme için o da gerekir.</string>
 </resources>

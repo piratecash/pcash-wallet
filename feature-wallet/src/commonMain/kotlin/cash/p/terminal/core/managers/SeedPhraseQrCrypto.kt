@@ -1,6 +1,8 @@
 package cash.p.terminal.core.managers
 
 import androidx.annotation.VisibleForTesting
+import cash.p.terminal.core.tryOrNull
+import cash.p.terminal.wallet.slip39.Slip39Shamir
 import cash.p.terminal.core.decodeBase64Lenient
 import cash.p.terminal.core.encodeBase64
 import io.horizontalsystems.hdwalletkit.Language
@@ -38,14 +40,16 @@ class SeedPhraseQrCrypto(
      * @param height Monero restore height. Required for 25-word Monero seeds, null otherwise.
      * @param language BIP39 wordlist language hint. Optional — improves decoder UX
      *  by avoiding autodetect when the producer already knows the language.
+     * @param kind Account kind marker: null for BIP39/Monero words, [KIND_SLIP39] for a 1-of-1 SLIP-39 share.
      */
     fun encrypt(
         words: List<String>,
         passphrase: String,
         height: Long? = null,
-        language: Language? = null
+        language: Language? = null,
+        kind: String? = null
     ): String {
-        val plaintext = buildJsonPlaintext(words, passphrase, height, language)
+        val plaintext = buildJsonPlaintext(words, passphrase, height, language, kind)
         return encryptString(plaintext)
     }
 
@@ -130,13 +134,15 @@ class SeedPhraseQrCrypto(
         words: List<String>,
         passphrase: String,
         height: Long?,
-        language: Language?
+        language: Language?,
+        kind: String?
     ): String {
         val payload = JsonPayloadV2(
             words = words,
             passphrase = passphrase.takeIf { it.isNotEmpty() },
             height = height,
-            language = language?.name
+            language = language?.name,
+            kind = kind
         )
         return jsonCodec.encodeToString(payload)
     }
@@ -152,7 +158,8 @@ class SeedPhraseQrCrypto(
             words = payload.words,
             passphrase = payload.passphrase.orEmpty(),
             height = payload.height,
-            language = payload.language?.toLanguageOrNull()
+            language = payload.language?.toLanguageOrNull(),
+            kind = payload.kind
         )
         return seed.takeIf { it.isStructurallyValid() }
     }
@@ -187,7 +194,13 @@ class SeedPhraseQrCrypto(
         return plaintext.take(idx) to height
     }
 
-    private fun DecryptedSeed.isStructurallyValid(): Boolean {
+    private fun DecryptedSeed.isStructurallyValid(): Boolean = when (kind) {
+        null -> hasValidWordCount()
+        KIND_SLIP39 -> tryOrNull { Slip39Shamir.parseShare(words.joinToString(" ")) }?.isSingleShare == true
+        else -> false
+    }
+
+    private fun DecryptedSeed.hasValidWordCount(): Boolean {
         if (words.size !in VALID_WORD_COUNTS) return false
         // 25-word seeds are Monero — they must carry a height.
         if (words.size == MONERO_WORD_COUNT && height == null) return false
@@ -237,7 +250,8 @@ class SeedPhraseQrCrypto(
         val words: List<String>,
         val passphrase: String,
         val height: Long?,        // Non-null for 25-word Monero seeds
-        val language: Language?   // Non-null only when the producer included a hint
+        val language: Language?,  // Non-null only when the producer included a hint
+        val kind: String? = null  // null = BIP39/Monero words, KIND_SLIP39 = 1-of-1 SLIP-39 share
     )
 
     @Serializable
@@ -246,11 +260,13 @@ class SeedPhraseQrCrypto(
         @SerialName("words") val words: List<String>,
         @SerialName("passphrase") val passphrase: String? = null,
         @SerialName("height") val height: Long? = null,
-        @SerialName("language") val language: String? = null
+        @SerialName("language") val language: String? = null,
+        @SerialName("kind") val kind: String? = null
     )
 
     companion object {
         const val QR_PREFIX = "seed:"
+        const val KIND_SLIP39 = "slip39"
 
         private const val KEY_SIZE = 16  // AES-128
         private const val IV_SIZE = 16

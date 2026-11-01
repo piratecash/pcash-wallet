@@ -66,6 +66,7 @@ import cash.p.terminal.wallet.PassphraseValidator
 import cash.p.terminal.core.IRandomProvider
 import cash.p.terminal.modules.manageaccount.recoveryphrase.RecoveryPhrasePage
 import cash.p.terminal.modules.manageaccount.recoveryphrase.RecoveryPhraseViewModel
+import cash.p.terminal.modules.manageaccount.shamirbackup.ShamirBackupViewModel
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.modules.multiswap.TimerService
 import io.horizontalsystems.ethereumkit.models.RpcSource
@@ -161,6 +162,7 @@ import org.koin.test.verify.injectedParameters
 import org.koin.test.verify.verify
 import org.junit.Test
 import java.io.File
+import java.security.SecureRandom
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.KVisibility
@@ -286,6 +288,7 @@ class KoinGraphTest : KoinTest {
         definition<WatchAddressViewModel>(AddressParserChain::class),
         definition<SelectBlockchainsViewModel>(AccountType::class),
         definition<BackupConfirmKeyViewModel>(IRandomProvider::class),
+        definition<ShamirBackupViewModel>(String::class, IRandomProvider::class, SecureRandom::class),
         definition<RecoveryPhraseViewModel>(RecoveryPhrasePage.RecoveryPhraseType::class),
         definition<SelectBackupItemsViewModel>(BackupViewItemFactory::class),
         definition<BackupLocalPasswordViewModel>(BackupType::class, PassphraseValidator::class),

@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cash.p.terminal.core.WalletOnboardingStorage
 import cash.p.terminal.core.IAccountFactory
+import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.managers.CurationResult
 import cash.p.terminal.core.managers.DeclinedToken
 import cash.p.terminal.core.managers.RestoreSettingsManager
@@ -29,6 +30,7 @@ import cash.p.terminal.wallet.AccountType.MayachainAddress
 import cash.p.terminal.wallet.AccountType.TrezorDevice
 import cash.p.terminal.wallet.AccountType.Mnemonic
 import cash.p.terminal.wallet.AccountType.MnemonicMonero
+import cash.p.terminal.wallet.AccountType.Slip39
 import cash.p.terminal.wallet.AccountType.SolanaAddress
 import cash.p.terminal.wallet.AccountType.StellarAddress
 import cash.p.terminal.wallet.AccountType.StellarSecretKey
@@ -42,6 +44,9 @@ import cash.p.terminal.wallet.IEnabledWalletStorage
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.PassphraseValidator
+import cash.p.terminal.wallet.SeedAccountType
+import cash.p.terminal.wallet.slip39.Slip39AccountTypeFactory
+import cash.p.terminal.wallet.slip39.Slip39Shamir
 import cash.p.terminal.wallet.entities.EnabledWallet
 import cash.p.terminal.wallet.entities.TokenQuery
 import kotlinx.coroutines.CancellationException
@@ -54,6 +59,7 @@ import cash.p.terminal.resources.CreateWallet_Error_InvalidConfirmation
 import cash.p.terminal.resources.CreateWallet_Error_PassphraseForbiddenSymbols
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.copy_wallet_suffix
+import cash.p.terminal.resources.shamir_error_passphrase_chars
 import cash.p.terminal.resources.error_while_duplicating_wallect
 import cash.p.terminal.resources.unsupported_duplicate_wallet
 
@@ -69,15 +75,24 @@ class DuplicateWalletViewModel(
     private val marketKit: MarketKitWrapper,
 ) : ViewModel(), DeclinedTokensReviewHost {
 
+    private val slip39AccountTypeFactory: Slip39AccountTypeFactory by lazy { getKoinInstance() }
     private val passphraseValidator = PassphraseValidator()
-    private val passcodeOld = (accountToCopy.type as? Mnemonic)?.passphrase.orEmpty()
+    private val passcodeOld = when (val type = accountToCopy.type) {
+        is Mnemonic -> type.passphrase
+        is Slip39 -> type.passphrase
+        else -> ""
+    }
     private var passphrase = passcodeOld
     private var passphraseConfirmation = passcodeOld
     private var pendingAccount: Account? = null
 
+    // Set from the accepted tap until the copy fails or its review is dismissed; a success closes the screen.
+    @Volatile
+    private var creating = false
+
     var uiState by mutableStateOf(
         DuplicateWalletUiState(
-            passphraseAvailable = accountToCopy.type is Mnemonic,
+            passphraseAvailable = accountToCopy.type is SeedAccountType,
             passphraseEnabled = passcodeOld.isNotEmpty(),
             passcodeOld = passcodeOld,
             accountName = accountFactory.getUniqueName(
@@ -114,16 +129,19 @@ class DuplicateWalletViewModel(
     }
 
     fun onChangePassphrase(v: String) {
-        if (passphraseValidator.containsValidCharacters(v)) {
+        val forbiddenSymbolsError = if (accountToCopy.type is Slip39) {
+            Res.string.shamir_error_passphrase_chars.takeUnless { Slip39Shamir.isValidPassphrase(v) }
+        } else {
+            Res.string.CreateWallet_Error_PassphraseForbiddenSymbols.takeUnless {
+                passphraseValidator.containsValidCharacters(v)
+            }
+        }
+        if (forbiddenSymbolsError == null) {
             uiState = uiState.copy(passphraseState = null)
             passphrase = v
         } else {
             uiState = uiState.copy(
-                passphraseState = DataState.Error(
-                    Exception(
-                        Translator.getString(Res.string.CreateWallet_Error_PassphraseForbiddenSymbols)
-                    )
-                )
+                passphraseState = DataState.Error(Exception(Translator.getString(forbiddenSymbolsError)))
             )
         }
         updateCreateButtonState()
@@ -169,32 +187,32 @@ class DuplicateWalletViewModel(
         )
     }
 
-    private fun isCreateButtonEnabled(): Boolean = uiState.accountName.isNotBlank() &&
+    private fun isCreateButtonEnabled(): Boolean = !creating && uiState.accountName.isNotBlank() &&
             (!uiState.passphraseEnabled || (passphrase == passphraseConfirmation))
 
+    private fun endCreation(error: String? = null) {
+        creating = false
+        uiState = uiState.copy(error = error, createButtonEnabled = isCreateButtonEnabled())
+    }
+
     fun createAccount() {
+        if (creating || (uiState.passphraseEnabled && passphraseIsInvalid())) return
+        creating = true
+        uiState = uiState.copy(
+            error = null,
+            createButtonEnabled = false
+        )
         viewModelScope.launch {
-            if (uiState.passphraseEnabled && passphraseIsInvalid()) return@launch
-
-            uiState = uiState.copy(
-                error = null,
-                createButtonEnabled = false
-            )
-
+            val newPassphrase = if (uiState.passphraseEnabled) passphrase else ""
             val typeToCopy = accountToCopy.type
             val type = when (typeToCopy) {
-                is Mnemonic -> Mnemonic(
-                    words = typeToCopy.words,
-                    passphrase = if (uiState.passphraseEnabled) passphrase else ""
-                )
+                is Mnemonic -> Mnemonic(words = typeToCopy.words, passphrase = newPassphrase)
+                is Slip39 -> slip39AccountTypeFactory.create(typeToCopy.words, newPassphrase)
 
                 is MnemonicMonero -> {
                     val createdType = moneroWalletUseCase.copyWalletFiles(typeToCopy)
                     if (createdType == null) {
-                        uiState = uiState.copy(
-                            error = Translator.getString(Res.string.error_while_duplicating_wallect),
-                            createButtonEnabled = true
-                        )
+                        endCreation(Translator.getString(Res.string.error_while_duplicating_wallect))
                         return@launch
                     } else {
                         createdType
@@ -289,10 +307,7 @@ class DuplicateWalletViewModel(
     } catch (e: CancellationException) {
         throw e
     } catch (e: Exception) {
-        uiState = uiState.copy(
-            error = Translator.getString(Res.string.error_while_duplicating_wallect),
-            createButtonEnabled = true,
-        )
+        endCreation(Translator.getString(Res.string.error_while_duplicating_wallect))
         false
     }
 
@@ -319,10 +334,7 @@ class DuplicateWalletViewModel(
         throw e
     } catch (e: Exception) {
         Logger.withTag("DuplicateWalletViewModel").e(e) { "Failed to look up curated tokens to copy" }
-        uiState = uiState.copy(
-            error = e.message,
-            createButtonEnabled = true
-        )
+        endCreation(e.message)
         null
     }
 
@@ -345,8 +357,9 @@ class DuplicateWalletViewModel(
     }
 
     override fun onDismissTokenReview() {
-        uiState = uiState.copy(tokenReview = null, createButtonEnabled = true)
+        uiState = uiState.copy(tokenReview = null)
         pendingAccount = null
+        endCreation()
     }
 }
 
