@@ -1,5 +1,5 @@
 ## 🚀 Version 1.1.261 Update
-_Release date: October 31, 2026_
+_Release date: November 1, 2026_
 
 ### ✨ New Features
 
@@ -11,8 +11,19 @@ _Release date: October 31, 2026_
 
 ### ⚙️ Improvements
 
-- **Improved blockchain data updates**
-  New TON transactions appear automatically, Stellar refreshes after the connection is restored, and BEAM synchronization resumes after the device wakes up.
+- **Refined the redesigned app interface**
+  Colors and the main balance screen are now consistent across light and dark themes.
+
+- **Clarified Zcash login notification text**
+  Labels and descriptions now explain the feature and notification conditions more clearly.
+
+- **Added the ability to disable Zcash login notifications**
+
+- **BEAM synchronization now resumes automatically after the device wakes up**
+
+- **New TON transactions now appear without a manual refresh**
+
+- **Stellar now refreshes balances and transaction history after the internet connection is restored**
 
 - **Improved two-step swaps**
   The second step can now be signed on the same screen as soon as the first step is complete.
@@ -26,11 +37,20 @@ _Release date: October 31, 2026_
 
 ### 🐛 Fixes
 
-- **Improved app stability on Android 13 and Android 16**
-  Fixed crashes on the key storage protection screen and when opening or returning to the app on some Xiaomi devices.
+- **Fixed WalletConnect session handling when deleting a wallet**
+  Sessions from a deleted wallet are no longer reassigned to another wallet. Temporary service connections were removed, and an error after connecting through a browser link was fixed.
 
-- **Fixed QR code flows**
-  Resolved a crash after enabling Premium from the scanner, preserved scanned results when returning to a screen, and removed a brief freeze during the first scan.
+- **Fixed a rare crash when leaving the asset screen**
+  The app no longer closes when navigating back while the transaction list is scrolling or updating.
+
+- **Fixed a crash on Android 13 when opening the key storage protection screen**
+
+- **Fixed a crash when opening or returning to the app on some Xiaomi devices running Android 16**
+
+- **Fixed returning from the QR scanner and enabling Premium**
+  Resolved a crash after enabling Premium from the scanner and preserved scanned results when returning to a screen.
+
+- **Removed a brief interface freeze during the first QR code scan**
 
 - **Fixed values in Changelly swap details**
   The actual amount, exchange rate, and price impact are now displayed correctly.
