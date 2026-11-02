@@ -2317,4 +2317,5 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="desktop_change_password_corrupted">Le fichier de clé est endommagé : une fois l\u0027application verrouillée, vous ne pourrez plus vous connecter. Enregistrez une sauvegarde de chaque phrase de récupération.</string>
     <string name="desktop_change_password_success">Mot de passe modifié</string>
     <string name="desktop_security_lock_now">Verrouiller maintenant</string>
+    <string name="evm_node_request_failed">Le nœud du réseau n\'a pas pu traiter la requête. Réessayez ou choisissez une autre source dans les paramètres de la Blockchain.\n\nRéponse du nœud : %1$s</string>
 </resources>

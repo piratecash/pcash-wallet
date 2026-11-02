@@ -2319,4 +2319,5 @@
     <string name="desktop_change_password_corrupted">O arquivo de chave está danificado: depois de a app ser bloqueada, não poderá entrar. Guarde uma cópia de segurança de cada frase de recuperação.</string>
     <string name="desktop_change_password_success">Senha alterada</string>
     <string name="desktop_security_lock_now">Bloquear agora</string>
+    <string name="evm_node_request_failed">O nó da rede não conseguiu processar o pedido. Tente novamente ou escolha outra fonte nas configurações da Blockchain.\n\nResposta do nó: %1$s</string>
 </resources>

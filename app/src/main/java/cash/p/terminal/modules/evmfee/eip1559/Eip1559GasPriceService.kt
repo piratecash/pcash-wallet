@@ -16,8 +16,12 @@ import io.horizontalsystems.ethereumkit.core.eip1559.FeeHistory
 import io.horizontalsystems.ethereumkit.models.DefaultBlockParameter
 import io.horizontalsystems.ethereumkit.models.GasPrice
 import io.reactivex.Flowable
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.rx2.await
@@ -33,6 +37,7 @@ class Eip1559GasPriceService(
 ) : IEvmGasPriceService() {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
+    private var syncJob: Job? = null
 
     companion object {
         /** Headroom for baseFee growth between the fee estimate and the broadcast. */
@@ -77,7 +82,7 @@ class Eip1559GasPriceService(
 
         coroutineScope.launch {
             refreshSignalFlowable.asFlow().collect {
-                syncRecommended()
+                launchSyncRecommended()
             }
         }
     }
@@ -88,9 +93,7 @@ class Eip1559GasPriceService(
         val recommendedGasPrice = recommendedGasPrice
 
         if (recommendedGasPrice == null) {
-            coroutineScope.launch {
-                syncRecommended()
-            }
+            launchSyncRecommended()
         } else {
             state = DataState.Success(
                 GasPriceInfo(
@@ -104,6 +107,16 @@ class Eip1559GasPriceService(
 
             emitState()
         }
+    }
+
+    // An Error state carries no price any more, so the recommended one is the only value to recover to.
+    override fun retry() {
+        if (state !is DataState.Error) return
+
+        recommendedGasPriceSelected = true
+        state = DataState.Loading
+        emitState()
+        launchSyncRecommended()
     }
 
     fun setGasPrice(maxFee: Long, priorityFee: Long) {
@@ -156,12 +169,22 @@ class Eip1559GasPriceService(
         )
     }
 
+    // A newer fetch supersedes the previous one, so a slower stale result cannot overwrite it.
+    private fun launchSyncRecommended() {
+        syncJob?.cancel()
+        syncJob = coroutineScope.launch { syncRecommended() }
+    }
+
     private suspend fun syncRecommended() {
         try {
             val feeHistory =
                 gasProvider.feeHistorySingle(BLOCKS_COUNT, DefaultBlockParameter.Latest, REWARD_PERCENTILE).await()
+            currentCoroutineContext().ensureActive()
             handle(feeHistory)
+        } catch (e: CancellationException) {
+            throw e
         } catch (error: Throwable) {
+            currentCoroutineContext().ensureActive()
             handle(error)
         }
     }

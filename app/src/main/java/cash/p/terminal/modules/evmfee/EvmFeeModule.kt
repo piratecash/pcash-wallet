@@ -61,11 +61,13 @@ interface IEvmFeeService {
 
     fun clear()
     fun reset()
+    suspend fun retry()
 }
 
 abstract class IEvmGasPriceService : ServiceState<DataState<GasPriceInfo>>() {
     abstract fun setRecommended()
     abstract fun start()
+    abstract fun retry()
 }
 
 abstract class FeeSettingsError : Throwable() {

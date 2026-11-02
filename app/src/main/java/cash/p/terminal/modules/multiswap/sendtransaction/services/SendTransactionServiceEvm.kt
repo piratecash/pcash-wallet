@@ -144,6 +144,7 @@ internal class SendTransactionServiceEvm(
     private var cautions: List<CautionViewItem> = listOf()
     private var sendable = false
     private var loading = true
+    private var retryAvailable = false
     private var fields = listOf<DataField>()
 
     override fun createState() = SendTransactionServiceState(
@@ -155,7 +156,8 @@ internal class SendTransactionServiceEvm(
         sendable = sendable,
         loading = loading,
         fields = fields,
-        extraFees = extraFees
+        extraFees = extraFees,
+        retryAvailable = retryAvailable
     )
 
     override fun start(coroutineScope: CoroutineScope) {
@@ -206,6 +208,7 @@ internal class SendTransactionServiceEvm(
         // A late estimate for replaced data must neither become sendable nor discard the current one.
         if (transactionState is DataState.Success && !transactionState.data.isForRequestedData()) return
         loading = transactionState.loading
+        retryAvailable = transactionState is DataState.Error
         transaction = transactionState.dataOrNull
         feeAmountData = transaction?.let {
             baseCoinService.amountData(
@@ -269,6 +272,8 @@ internal class SendTransactionServiceEvm(
         setExtraFeesMap(data.feesMap)
     }
 
+    suspend fun retry() = settingsService.retry()
+
     override suspend fun sendTransaction(mevProtectionEnabled: Boolean): SendTransactionResult {
         val transaction = requireValidTransaction()
 
@@ -278,6 +283,7 @@ internal class SendTransactionServiceEvm(
         val nonce = transaction.nonce
 
         var pendingTxId: String? = null
+        var signedNonce: Long? = null
         try {
             sendAmount?.let { amount ->
                 val sdkBalance = adapterManager.getBalanceAdapterForWallet(wallet)
@@ -304,6 +310,7 @@ internal class SendTransactionServiceEvm(
                 nonce,
                 mevProtectionEnabled
             )
+            signedNonce = prepared.rawTransaction.nonce
             // A lost RPC response still leaves the transaction on-chain, so mark it while the
             // hash is already final. The broadcast result may identify another transaction.
             markTransactionCreated(prepared.hash)
@@ -314,6 +321,9 @@ internal class SendTransactionServiceEvm(
 
             return SendTransactionResult.Evm(fullTransaction)
         } catch (e: Throwable) {
+            // The signed transaction may have reached the network: a re-confirm must reuse its nonce.
+            // Pin it first so a failing cleanup below cannot skip it.
+            signedNonce?.let(nonceService::fixNonce)
             pendingTxId?.let { pendingRegistrar.deleteFailed(it) }
             throw e
         }

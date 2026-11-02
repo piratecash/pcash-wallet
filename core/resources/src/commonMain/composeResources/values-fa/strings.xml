@@ -2322,4 +2322,5 @@
     <string name="desktop_change_password_corrupted">فایل کلید آسیب دیده است: پس از قفل شدن برنامه نمی‌توانید وارد شوید. از هر عبارت بازیابی یک نسخه پشتیبان ذخیره کنید.</string>
     <string name="desktop_change_password_success">رمز عبور تغییر یافت</string>
     <string name="desktop_security_lock_now">اکنون قفل کن</string>
+    <string name="evm_node_request_failed">گره شبکه نتوانست درخواست را پردازش کند. دوباره تلاش کنید یا در تنظیمات بلاک‌چین منبع دیگری انتخاب کنید.\n\nپاسخ گره: %1$s</string>
 </resources>

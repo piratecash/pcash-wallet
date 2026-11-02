@@ -2319,4 +2319,5 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="desktop_change_password_corrupted">Anahtar dosyası zarar görmüş: uygulama kilitlendiğinde oturum açamayacaksınız. Her kurtarma ifadesinin bir yedeğini kaydedin.</string>
     <string name="desktop_change_password_success">Şifre değiştirildi</string>
     <string name="desktop_security_lock_now">Şimdi kilitle</string>
+    <string name="evm_node_request_failed">Ağ düğümü isteği işleyemedi. Tekrar deneyin veya Blockchain Ayarları\'ndan başka bir kaynak seçin.\n\nDüğüm yanıtı: %1$s</string>
 </resources>

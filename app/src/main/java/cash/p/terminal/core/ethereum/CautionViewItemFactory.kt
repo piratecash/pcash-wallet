@@ -7,8 +7,13 @@ import cash.p.terminal.core.convertedError
 import cash.p.terminal.modules.evmfee.CalculateWarning
 import cash.p.terminal.modules.evmfee.FeeSettingsError
 import cash.p.terminal.modules.evmfee.FeeSettingsWarning
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.evm_node_request_failed
+import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.strings.helpers.Translator
 import io.horizontalsystems.core.IAppNumberFormatter
+import java.io.IOException
+import retrofit2.HttpException
 
 class CautionViewItemFactory(
     private val baseCoinService: EvmCoinService,
@@ -140,11 +145,18 @@ class CautionViewItemFactory(
                     Translator.getString(R.string.source_blocked_by_provider_error)
                 )
             }
+            is EvmError.RpcError, is IOException, is HttpException -> Pair(
+                Translator.getString(R.string.EthereumTransaction_Error_Title),
+                TranslatableString.ResString(Res.string.evm_node_request_failed, convertedError.detail).toString()
+            )
             else -> {
                 Pair(
                     Translator.getString(R.string.EthereumTransaction_Error_Title),
-                    convertedError.message ?: convertedError.javaClass.simpleName
+                    convertedError.detail
                 )
             }
         }
+
+    private val Throwable.detail: String
+        get() = message ?: javaClass.simpleName
 }

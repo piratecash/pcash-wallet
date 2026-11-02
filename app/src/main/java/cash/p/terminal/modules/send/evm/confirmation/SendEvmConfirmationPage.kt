@@ -19,7 +19,7 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.trezor.domain.TrezorCancelledException
-import cash.p.terminal.core.App
+import cash.p.terminal.core.ethereum.evmSendErrorMessage
 import cash.p.terminal.modules.confirm.ConfirmTransactionScreen
 import cash.p.terminal.modules.send.evm.SendEvmData
 import cash.p.terminal.modules.send.evm.SendEvmModule
@@ -30,7 +30,6 @@ import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.components.SnackbarDuration
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.logger.AppLogger
-import io.horizontalsystems.ethereumkit.api.jsonrpc.JsonRpc
 import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.TransactionData
 import kotlinx.coroutines.delay
@@ -132,12 +131,7 @@ private fun SendEvmConfirmationScreen(
                                 currentSnackbar?.dismiss()
                             } else {
                                 logger.warning("failed", t)
-                                val errorMsg = if (t is JsonRpc.ResponseError.RpcError) {
-                                    t.error.message
-                                } else {
-                                    t.message ?: App.instance.getString(R.string.unknown_send_error)
-                                }
-                                HudHelper.showErrorMessage(view, errorMsg)
+                                HudHelper.showErrorMessage(view, t.evmSendErrorMessage())
                             }
                         }
 
