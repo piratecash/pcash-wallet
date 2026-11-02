@@ -1623,6 +1623,23 @@ class MoneroKitWrapperRefreshTest {
     }
 
     @Test
+    fun refresh_queuedBehindRelease_neitherOpensNorTouchesDevice() = runTest {
+        withTrezorWalletFiles {
+            val trezor = TrezorWallet()
+            trezor.results += passResult(TREZOR_TIP)
+            val lifecycleMutex = privateField(trezor.wrapper, "lifecycleMutex").get(trezor.wrapper) as Mutex
+            lifecycleMutex.lock()
+            val release = async(start = CoroutineStart.UNDISPATCHED) { trezor.wrapper.release() }
+            val queuedPass = async(start = CoroutineStart.UNDISPATCHED) { trezor.wrapper.refresh() }
+            lifecycleMutex.unlock()
+            listOf(release, queuedPass).awaitAll()
+
+            assertTrue(trezor.events.none { it in setOf("execute", "executeYielding", "open") })
+            assertTrue(trezor.requests.isEmpty())
+        }
+    }
+
+    @Test
     fun syncUnattended_queuedBeforeWaitingPause_runsNoDeviceWork() = runTest {
         val trezor = TrezorWallet()
 

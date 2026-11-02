@@ -178,16 +178,17 @@ class MoneroKitManager(
                 withContext(NonCancellable) {
                     try {
                         partial?.stop()
+                        retryOnLifecycleEvent =
+                            accountType is AccountType.TrezorDevice &&
+                                partial?.isRestartableAfterFailedStart == true &&
+                                e.isRetryableTrezorStartupFailure()
+                        // Adapters reach the published wrapper without accountMutex, so a pass may already be queued on it.
+                        if (!retryOnLifecycleEvent) partial?.release()
                         cleanupSucceeded = true
                     } catch (stopError: Throwable) {
                         e.addSuppressed(stopError)
                     }
                 }
-                retryOnLifecycleEvent =
-                    cleanupSucceeded &&
-                        accountType is AccountType.TrezorDevice &&
-                        partial?.isRestartableAfterFailedStart == true &&
-                        e.isRetryableTrezorStartupFailure()
                 if (cleanupSucceeded && !retryOnLifecycleEvent) {
                     moneroKitWrapper = null
                     MoneroHttpClient.eventListenerFactory = null
@@ -286,7 +287,7 @@ class MoneroKitManager(
         lifecycleJobs.clear()
         val wrapper = moneroKitWrapper
         try {
-            withContext(NonCancellable) { wrapper?.stop() }
+            withContext(NonCancellable) { wrapper?.release() }
         } catch (error: Throwable) {
             currentAccount?.let(::subscribeToEvents)
             throw error
@@ -715,6 +716,8 @@ class MoneroKitWrapper(
     private var isStarted = false
     @Volatile
     private var nativeCloseSequence = 0
+    // Written under lifecycleMutex: the manager has dropped this wrapper.
+    private var released = false
     private var isPaused = false
     // The owner's offline-mode decision; unlike isPaused it outlives a closed wallet. Written under lifecycleMutex.
     @Volatile
@@ -1120,7 +1123,7 @@ class MoneroKitWrapper(
 
     /** The one decision whether a Trezor pass may open the wallet or touch the device; call under lifecycleMutex. */
     private fun admitsTrezorPass(attended: Boolean, cue: Long? = null): Boolean {
-        val lifecycleAllows = backgroundManager.inForeground && !networkPaused
+        val lifecycleAllows = !released && backgroundManager.inForeground && !networkPaused
         // A wallet open from disk, or one a failed close kept, has no online session to advance.
         val walletAllows = !(isStarted && isPaused)
         // An unattended pass holds the lock until its first batch ends, so a waiting interruption goes first.
@@ -1608,6 +1611,12 @@ class MoneroKitWrapper(
 
     suspend fun stop(saveWallet: Boolean = true) = withInterruptingLock {
         stopInternal(saveWallet)
+    }
+
+    // The wallet service is shared across accounts, so a pass queued before this must not reach it afterwards.
+    suspend fun release() = withInterruptingLock {
+        stopInternal()
+        released = true
     }
 
     /** A running Trezor pass ends at its next batch boundary and stores its progress before [block] runs. */

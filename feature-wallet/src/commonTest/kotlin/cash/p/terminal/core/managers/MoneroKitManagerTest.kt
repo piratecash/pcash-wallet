@@ -373,7 +373,7 @@ class MoneroKitManagerTest {
 
         // stopKit() must null the wrapper so a later poller restart cannot reuse it with a null factory.
         assertNull(manager.moneroKitWrapper)
-        coVerify { mockWrapper.stop(any()) }
+        coVerify { mockWrapper.release() }
     }
 
     @Test
@@ -382,7 +382,7 @@ class MoneroKitManagerTest {
         val closeFailure = IllegalStateException("close failed")
         setField(manager, "currentAccount", account)
         (fieldValue(manager, "useCount") as AtomicInteger).set(1)
-        coEvery { mockWrapper.stop(any()) } throws closeFailure
+        coEvery { mockWrapper.release() } throws closeFailure
 
         val actual = assertFailsWith<IllegalStateException> {
             manager.unlink(account)
@@ -909,6 +909,7 @@ class MoneroKitManagerTest {
         assertSame(initial, manager.moneroKitWrapper)
         assertSame(initial, retained)
         coVerify(exactly = 1) { wrapper.start() }
+        coVerify(exactly = 0) { wrapper.release() }
     }
 
     @Test
@@ -967,6 +968,7 @@ class MoneroKitManagerTest {
 
         assertSame(startupFailure, actual)
         assertNull(manager.moneroKitWrapper)
+        coVerify(exactly = 1) { wrapper.release() }
     }
 
     // The foreground state collector also calls into the wrapper on subscription, so the recorded
