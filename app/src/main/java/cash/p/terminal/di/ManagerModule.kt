@@ -111,6 +111,8 @@ import cash.p.terminal.core.managers.MoneroDeviceWalletFileStore
 import cash.p.terminal.core.managers.MoneroDeviceWalletProvisioner
 import cash.p.terminal.core.managers.MoneroTrezorReadiness
 import cash.p.terminal.core.managers.MoneroTrezorOperationGateway
+import cash.p.terminal.core.managers.TrezorAttachments
+import cash.p.terminal.core.managers.UsbTrezorAttachments
 import cash.p.terminal.core.managers.MoneroHardwareGateway
 import cash.p.terminal.core.managers.RateAppManager
 import cash.p.terminal.core.managers.RecentAddressManager
@@ -400,6 +402,7 @@ val managerModule = module {
 
     singleOf(::DefaultMoneroNativeWalletRuntime) bind MoneroNativeWalletRuntime::class
     singleOf(::MoneroTrezorOperationGateway) bind MoneroHardwareGateway::class
+    singleOf(::UsbTrezorAttachments) bind TrezorAttachments::class
     singleOf(::MoneroTrezorReadiness)
     singleOf(::DefaultMoneroDeviceWalletNative) bind MoneroDeviceWalletNative::class
     single { MoneroDeviceWalletFileStore.create(get()) }

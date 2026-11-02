@@ -8,31 +8,55 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.AdapterState
+import cash.p.terminal.wallet.Wallet as WalletMember
+import cash.p.terminal.wallet.entities.SecretString
+import cash.p.terminal.core.storage.MoneroFileDao
+import cash.p.terminal.entities.MoneroFileRecord
 import com.m2049r.xmrwallet.model.Wallet
 import com.m2049r.xmrwallet.model.Wallet.ConnectionStatus
-import com.m2049r.xmrwallet.offline.RawMoneroBroadcastResult
 import com.m2049r.xmrwallet.service.DaemonConnectResult
 import com.m2049r.xmrwallet.service.LocalOpenResult
 import com.m2049r.xmrwallet.service.MoneroWalletService
+import com.piratecash.monero.MoneroNative
 import com.piratecash.monero.signer.ExternalSignerRegistration
+import com.piratecash.monero.signer.HardwareKeyImageRefreshResult
 import com.piratecash.monero.signer.HardwareWalletErrorCode
 import com.piratecash.monero.signer.HardwareWalletOperationException
+import io.horizontalsystems.core.IBackgroundManager
 import io.horizontalsystems.core.entities.BlockchainType
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkClass
+import io.mockk.mockkStatic
+import io.mockk.runs
 import io.mockk.spyk
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import io.mockk.verifyOrder
 import java.io.File
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.TestTimeSource
+import kotlin.time.TimeSource
+import net.bytebuddy.ByteBuddy
+import net.bytebuddy.description.method.MethodDescription
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy
+import net.bytebuddy.dynamic.scaffold.subclass.ConstructorStrategy
+import net.bytebuddy.implementation.StubMethod
+import net.bytebuddy.matcher.ElementMatchers.isNative
+import net.bytebuddy.matcher.ElementMatchers.isPublic
+import net.bytebuddy.matcher.ElementMatchers.isStatic
+import net.bytebuddy.matcher.ElementMatchers.not
 import java.lang.reflect.InvocationTargetException
 import java.math.BigDecimal
 import java.util.concurrent.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -56,6 +80,10 @@ import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.After
 import org.junit.Test
+import kotlin.test.assertFailsWith
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MoneroKitWrapperRefreshTest {
@@ -131,14 +159,34 @@ class MoneroKitWrapperRefreshTest {
     fun getBalance_duringStop_returnsNull() = runTest {
         val service = mockService()
         val wrapper = createWrapper(service)
-        val balancesReadDuringStop = mutableListOf<Long?>()
-        every { service.stop(any()) } answers {
-            balancesReadDuringStop += wrapper.getBalance()
-            true
-        }
+        val balancesReadDuringStop = recordBalanceReadsDuringStop(service, wrapper)
         setStarted(wrapper)
 
         wrapper.stop()
+
+        assertEquals(listOf<Long?>(null), balancesReadDuringStop)
+    }
+
+    @Test
+    fun getBalance_duringControlledRefreshAbort_returnsNull() {
+        val service = closingWalletService()
+        val wrapper = createWrapper(service, trezorAccount)
+        val balancesReadDuringStop = recordBalanceReadsDuringStop(service, wrapper)
+        setStarted(wrapper)
+
+        invokeAbortControlledHardwareWallet(wrapper, IllegalStateException("device detached"))
+
+        assertEquals(listOf<Long?>(null), balancesReadDuringStop)
+    }
+
+    @Test
+    fun getBalance_duringFailedStartCleanup_returnsNull() {
+        val service = closingWalletService()
+        val wrapper = createWrapper(service, trezorAccount)
+        val balancesReadDuringStop = recordBalanceReadsDuringStop(service, wrapper)
+        setStarted(wrapper)
+
+        runCatching { invokeHandleStartFailure(wrapper, IllegalStateException("start failed")) }
 
         assertEquals(listOf<Long?>(null), balancesReadDuringStop)
     }
@@ -310,7 +358,7 @@ class MoneroKitWrapperRefreshTest {
         privateField(wrapper, "openedWithoutNode").getBoolean(wrapper)
 
     @Test
-    fun refreshHardwareKeyImagesWithProgress_reportsNativeProgressAndClearsObserver() {
+    fun refreshHardwareKeyImagesWithProgress_reportsNativeProgressPerBlockAndClearsObserver() {
         val events = mutableListOf<String>()
         val states = mutableListOf<AdapterState>()
         val service = mockService()
@@ -332,6 +380,7 @@ class MoneroKitWrapperRefreshTest {
                 fallbackCalls += 1
                 1_000
             },
+            onNewBlock = { events += "block" },
         ) {
             events += "refresh"
             progressObserver?.let { observer ->
@@ -351,7 +400,7 @@ class MoneroKitWrapperRefreshTest {
             states,
         )
         assertEquals(1, fallbackCalls)
-        assertEquals(listOf("fallback", "register", "refresh", "clear"), events)
+        assertEquals(listOf("fallback", "register", "refresh", "block", "block", "clear"), events)
     }
 
     @Test
@@ -369,6 +418,7 @@ class MoneroKitWrapperRefreshTest {
             wrapper.refreshHardwareKeyImagesWithProgress(
                 cachedTotalHeight = 1_000,
                 fallbackTotalHeight = { error("fallback should not be called") },
+                onNewBlock = {},
             ) {
                 events += "refresh"
                 throw error
@@ -383,7 +433,7 @@ class MoneroKitWrapperRefreshTest {
     }
 
     @Test
-    fun rescan_hardwareGatewayWaiting_publishesSyncingBeforeNativeCallback() = runTest {
+    fun rescan_hardwareGatewayWaiting_publishesSyncingAndIgnoresNativeCallback() = runTest {
         val service = mockService()
         val wrapper = createWrapper(service, trezorAccount)
         setStarted(wrapper)
@@ -402,10 +452,6 @@ class MoneroKitWrapperRefreshTest {
             verify(exactly = 1) { restoreSettingsManager.savePendingMoneroRescan(trezorAccount, 42) }
             wrapper.onRefreshed(wallet = null, full = true)
             assertTrue(wrapper.syncState.value is AdapterState.Syncing)
-            privateField(wrapper, "controlledLiveRefreshPending").set(wrapper, true)
-            privateField(wrapper, "controlledLiveRefreshCommitted").set(wrapper, true)
-            wrapper.onRefreshed(wallet = null, full = true)
-            assertSame(AdapterState.Synced, wrapper.syncState.value)
             rescan.cancelAndJoin()
         } finally {
             mutex.unlock()
@@ -676,7 +722,7 @@ class MoneroKitWrapperRefreshTest {
     }
 
     @Test
-    fun abortControlledHardwareWallet_leavesRetryableKeyImageSyncReadiness() {
+    fun abortControlledHardwareWallet_readyWallet_marksReconciliationFailed() {
         val wrapper = createWrapper(mockService(), trezorAccount)
         setStarted(wrapper)
         invokeActivateReconciliationSession(wrapper)
@@ -684,7 +730,7 @@ class MoneroKitWrapperRefreshTest {
 
         invokeAbortControlledHardwareWallet(wrapper, IllegalStateException("refresh failed"))
 
-        assertSame(MoneroSpendReadiness.NeedsKeyImageSync, wrapper.spendReadiness.value)
+        assertSame(MoneroSpendReadiness.ReconciliationFailed, wrapper.spendReadiness.value)
     }
 
     @Test
@@ -700,7 +746,7 @@ class MoneroKitWrapperRefreshTest {
         assertTrue(sessionDuringStart != null)
         assertFalse(privateField(wrapper, "startInProgress").getBoolean(wrapper))
         assertTrue(privateField(wrapper, "isStarted").getBoolean(wrapper))
-        assertTrue(privateField(wrapper, "isPaused").getBoolean(wrapper))
+        assertFalse(privateField(wrapper, "isPaused").getBoolean(wrapper))
     }
 
     @Test
@@ -734,180 +780,6 @@ class MoneroKitWrapperRefreshTest {
     }
 
     @Test
-    fun controlledRefreshFinalization_missingCallback_isRetryableHardwareFailure() = runTest {
-        val failure = runCatching {
-            awaitControlledRefreshFinalization(CompletableDeferred(), timeoutMillis = 1)
-        }.exceptionOrNull()
-
-        assertTrue(failure is HardwareWalletOperationException)
-    }
-
-    @Test
-    fun hardwareStartupRecovery_explicitColdRecoveryPending_resumesExplicitRecovery() {
-        assertSame(
-            HardwareStartupRecovery.ExplicitColdRecovery,
-            hardwareStartupRecovery(MoneroSpentReconciliationState.ExplicitColdRecoveryPending),
-        )
-    }
-
-    @Test
-    fun startAccountService_initialCatchUp_releasesGatewayBeforeOrdinaryResume() = runTest {
-        val events = mutableListOf<String>()
-        val service = mockService()
-        val status = mockk<Wallet.Status>(relaxed = true)
-        val gateway = mockk<MoneroHardwareGateway>()
-        val wrapper = spyk(createWrapper(service, trezorAccount, gateway = gateway))
-        every { restoreSettingsManager.moneroSpentReconciliationState(trezorAccount) } returns
-            MoneroSpentReconciliationState.LiveRefreshPending
-        every { status.isOk } returns true
-        every { service.startPaused("wallet", "password") } answers {
-            events += "start_paused"
-            status
-        }
-        every { service.resume(wrapper) } answers {
-            events += "resume"
-            true
-        }
-        coEvery { gateway.execute<Any?>(trezorAccount, any()) } coAnswers {
-            events += "gateway_enter"
-            try {
-                secondArg<(String) -> Any?>().invoke("wallet-key")
-            } finally {
-                events += "gateway_exit"
-            }
-        }
-
-        wrapper.startAccountService("wallet", "password", fixIfCorruptedFile = true)
-
-        assertEquals(listOf("gateway_enter", "start_paused", "gateway_exit", "resume"), events)
-        verify(exactly = 0) { wrapper.refreshHardwareKeyImagesLeaseOwned(any(), any()) }
-        verify(exactly = 1) {
-            restoreSettingsManager.saveMoneroSpentReconciliationState(
-                trezorAccount,
-                MoneroSpentReconciliationState.LiveRefreshPending,
-            )
-        }
-        assertSame(MoneroSpendReadiness.Syncing, wrapper.spendReadiness.value)
-        assertFalse(privateField(wrapper, "controlledLiveRefreshPending").getBoolean(wrapper))
-        assertFalse(privateField(wrapper, "controlledLiveRefreshCommitted").getBoolean(wrapper))
-    }
-
-    @Test
-    fun startAccountService_readyWallet_refreshesWhileGatewayOwned() = runTest {
-        val events = mutableListOf<String>()
-        val service = mockService()
-        val status = mockk<Wallet.Status>(relaxed = true)
-        val gateway = mockk<MoneroHardwareGateway>()
-        val wrapper = spyk(createWrapper(service, trezorAccount, gateway = gateway))
-        every { restoreSettingsManager.moneroSpentReconciliationState(trezorAccount) } returns
-            MoneroSpentReconciliationState.Ready
-        every { status.isOk } returns true
-        every { service.startPaused("wallet", "password") } answers {
-            events += "start_paused"
-            status
-        }
-        every { wrapper.refreshHardwareKeyImagesLeaseOwned(any(), any()) } answers {
-            events += "controlled_refresh"
-        }
-        coEvery { gateway.execute<Any?>(trezorAccount, any()) } coAnswers {
-            events += "gateway_enter"
-            try {
-                secondArg<(String) -> Any?>().invoke("wallet-key")
-            } finally {
-                events += "gateway_exit"
-            }
-        }
-
-        wrapper.startAccountService("wallet", "password", fixIfCorruptedFile = true)
-
-        assertEquals(listOf("gateway_enter", "start_paused", "controlled_refresh", "gateway_exit"), events)
-        verify(exactly = 1) { wrapper.refreshHardwareKeyImagesLeaseOwned(any(), any()) }
-        verify(exactly = 0) { service.resume(wrapper) }
-        verify(exactly = 1) {
-            restoreSettingsManager.saveMoneroSpentReconciliationState(
-                trezorAccount,
-                MoneroSpentReconciliationState.LiveRefreshPending,
-            )
-        }
-        assertTrue(privateField(wrapper, "controlledLiveRefreshPending").getBoolean(wrapper))
-        assertTrue(privateField(wrapper, "controlledLiveRefreshCommitted").getBoolean(wrapper))
-    }
-
-    @Test
-    fun startAccountService_migrationReplayFailure_remainsPendingAndRetries() = runTest {
-        val service = mockService()
-        val status = mockk<Wallet.Status>(relaxed = true)
-        val gateway = mockk<MoneroHardwareGateway>()
-        val wrapper = spyk(createWrapper(service, trezorAccount, gateway = gateway))
-        val events = mutableListOf<String>()
-        var refreshAttempts = 0
-        every { restoreSettingsManager.moneroSpentReconciliationState(trezorAccount) } returns
-            MoneroSpentReconciliationState.MigrationReplayRequired
-        every { status.isOk } returns true
-        every { service.startPaused("wallet", "password") } returns status
-        every { wrapper.refreshHardwareKeyImagesLeaseOwned(any(), any()) } answers {
-            events += "refresh"
-            if (refreshAttempts++ == 0) error("refresh failed")
-        }
-        coEvery { gateway.execute<Any?>(trezorAccount, any()) } coAnswers {
-            events += "gateway"
-            secondArg<(String) -> Any?>().invoke("wallet-key")
-        }
-        every {
-            restoreSettingsManager.saveMoneroSpentReconciliationState(
-                trezorAccount,
-                MoneroSpentReconciliationState.MigrationReplayPending,
-            )
-        } answers { events += "pending" }
-
-        assertTrue(
-            runCatching {
-                wrapper.startAccountService("wallet", "password", fixIfCorruptedFile = true)
-            }.isFailure,
-        )
-        wrapper.startAccountService("wallet", "password", fixIfCorruptedFile = true)
-
-        assertEquals(
-            listOf("pending", "gateway", "refresh", "pending", "gateway", "refresh"),
-            events,
-        )
-        verify(exactly = 0) {
-            restoreSettingsManager.saveMoneroSpentReconciliationState(
-                trezorAccount,
-                MoneroSpentReconciliationState.Ready,
-            )
-        }
-    }
-
-    @Test
-    fun normalizedLiveRefreshState_durableRecoveryObligationsAreNeverDowngraded() {
-        assertSame(
-            MoneroSpentReconciliationState.MigrationReplayPending,
-            MoneroSpentReconciliationState.MigrationReplayPending.normalizedLiveRefreshState(),
-        )
-        assertSame(
-            MoneroSpentReconciliationState.ExplicitColdRecoveryPending,
-            MoneroSpentReconciliationState.ExplicitColdRecoveryPending.normalizedLiveRefreshState(),
-        )
-    }
-
-    @Test
-    fun explicitColdRecovery_doesNotRequireControlledLiveRefreshFinalization() {
-        assertFalse(
-            MoneroSpentReconciliationState.ExplicitColdRecoveryPending
-                .requiresControlledRefreshFinalization(),
-        )
-        assertTrue(
-            MoneroSpentReconciliationState.LiveRefreshPending
-                .requiresControlledRefreshFinalization(),
-        )
-        assertTrue(
-            MoneroSpentReconciliationState.MigrationReplayPending
-                .requiresControlledRefreshFinalization(),
-        )
-    }
-
-    @Test
     fun reconciliationFailure_remainsActionableForTrezorPreparation() {
         assertTrue(MoneroSpendReadiness.ReconciliationFailed.requiresTrezorPreparation())
         assertTrue(MoneroSpendReadiness.NeedsKeyImageSync.requiresTrezorPreparation())
@@ -915,19 +787,6 @@ class MoneroKitWrapperRefreshTest {
         assertFalse(MoneroSpendReadiness.CheckingKeyImages.requiresTrezorPreparation())
         assertFalse(MoneroSpendReadiness.ReconcilingSpentStatus.requiresTrezorPreparation())
         assertFalse(MoneroSpendReadiness.Ready.requiresTrezorPreparation())
-    }
-
-    @Test
-    fun handleStartFailure_explicitColdRecovery_clearsSessionMarkerBeforeRetry() {
-        val wrapper = createWrapper(mockService(), trezorAccount)
-        invokeActivateReconciliationSession(wrapper)
-        setExplicitColdRecoveryPending(wrapper, true)
-
-        runCatching {
-            invokeHandleStartFailure(wrapper, IllegalStateException("cold recovery failed"))
-        }
-
-        assertFalse(explicitColdRecoveryPending(wrapper))
     }
 
     @Test
@@ -1049,21 +908,9 @@ class MoneroKitWrapperRefreshTest {
     }
 
     @Test
-    fun completedSubmittedRawTransaction_resumeFailureFailsClosedButPreservesResult() {
-        val wrapper = createWrapper(mockService(), trezorAccount)
-        val result = RawMoneroBroadcastResult.Submitted("tx-id")
-        val failure = IllegalStateException("resume failed")
-        setSpendReadiness(wrapper, MoneroSpendReadiness.Ready)
-        val actual = wrapper.completeHardwareOperation(result, failure, true)
-        assertSame(result, actual)
-        assertSame(failure, (wrapper.syncState.value as AdapterState.NotSynced).error)
-        assertSame(MoneroSpendReadiness.Syncing, wrapper.spendReadiness.value)
-    }
-
-    @Test
     fun stop_callbackDuringNativeClose_cannotRecreateReconciliationWork() = runTest {
         val service = mockService()
-        val wrapper = createWrapper(service, trezorAccount)
+        val wrapper = createWrapper(service)
         var callbackAccepted: Boolean? = null
         every { service.stop(true) } answers {
             callbackAccepted = wrapper.onRefreshed(wallet = null, full = true)
@@ -1071,40 +918,12 @@ class MoneroKitWrapperRefreshTest {
         }
         setStarted(wrapper)
         setSyncState(wrapper, AdapterState.Synced)
-        setSpendReadiness(wrapper, MoneroSpendReadiness.Ready)
         invokeActivateReconciliationSession(wrapper)
 
         wrapper.stop()
 
         assertFalse(callbackAccepted ?: true)
-        assertSame(MoneroSpendReadiness.Syncing, wrapper.spendReadiness.value)
         assertFalse(privateField(wrapper, "isStarted").getBoolean(wrapper))
-    }
-
-    @Test
-    fun reconciliationReadiness_legacyAndPendingNeverExposeReady() {
-        assertFalse(
-            canExposeMoneroSpendReady(
-                hardwareWallet = true,
-                health = healthyWalletHealth(),
-                hasUnknownKeyImages = false,
-                durableState = MoneroSpentReconciliationState.LiveRefreshPending,
-            ),
-        )
-        assertTrue(
-            canExposeMoneroSpendReady(
-                hardwareWallet = true,
-                health = healthyWalletHealth(),
-                hasUnknownKeyImages = false,
-                durableState = MoneroSpentReconciliationState.Ready,
-            ),
-        )
-    }
-
-    @Test
-    fun reconciliationCallback_matchingIsGenerationBased() {
-        assertFalse(isMatchingReconciliationCallback(4, 3))
-        assertTrue(isMatchingReconciliationCallback(4, 4))
     }
 
     @Test
@@ -1183,217 +1002,9 @@ class MoneroKitWrapperRefreshTest {
     }
 
     @Test
-    fun reconciliationCallback_failedNativeStatusIsConsumedFailClosed() {
-        val callbackIsSuccessful = canFinalizeSpentReconciliation(
-            healthyWalletHealth(nativeStatusIsOk = false),
-        )
-
-        assertEquals(
-            ReconciliationCallbackDisposition.FailClosed,
-            reconciliationCallbackDisposition(
-                awaitingGeneration = 4,
-                callbackGeneration = 4,
-                callbackIsSuccessful = callbackIsSuccessful,
-            ),
-        )
-    }
-
-    @Test
-    fun reconciliationCallback_requiresSuccessfulNativeStatusConnectionAndSynchronization() {
-        assertFalse(
-            canFinalizeSpentReconciliation(
-                healthyWalletHealth(nativeStatusIsOk = false),
-            ),
-        )
-        assertFalse(
-            canFinalizeSpentReconciliation(
-                healthyWalletHealth(serviceConnectionIsConnected = false),
-            ),
-        )
-        assertFalse(
-            canFinalizeSpentReconciliation(
-                healthyWalletHealth(walletIsSynchronized = false),
-            ),
-        )
-        assertTrue(
-            canFinalizeSpentReconciliation(
-                healthyWalletHealth(),
-            ),
-        )
-    }
-
-    @Test
-    fun coldKeyImageSync_trustedAndUntrustedResultsTakeDifferentSafePaths() {
-        assertEquals(
-            ColdKeyImageSyncNextStep.TrustedReady,
-            coldKeyImageSyncNextStep(
-                spentStatusVerified = true,
-                hasUnknownKeyImages = false,
-            ),
-        )
-        assertEquals(
-            ColdKeyImageSyncNextStep.PreserveKeyImagesRescan,
-            coldKeyImageSyncNextStep(
-                spentStatusVerified = false,
-                hasUnknownKeyImages = false,
-            ),
-        )
-    }
-
-    @Test
-    fun coldKeyImageSync_trustedResultWithUnknownKeyImagesRemainsFailClosed() {
-        assertEquals(
-            ColdKeyImageSyncNextStep.NeedsKeyImageSync,
-            coldKeyImageSyncNextStep(
-                spentStatusVerified = true,
-                hasUnknownKeyImages = true,
-            ),
-        )
-    }
-
-    @Test
-    fun trustedKeyImageSyncFinalization_onlyReadyCanAuthorizeSpending() {
-        assertSame(
-            TrustedKeyImageSyncFinalizationOutcome.Ready,
-            trustedKeyImageSyncFinalizationOutcome(
-                health = healthyWalletHealth(),
-                hasUnknownKeyImages = false,
-                syncState = AdapterState.Synced,
-            ),
-        )
-        assertSame(
-            TrustedKeyImageSyncFinalizationOutcome.ReconciliationFailed,
-            trustedKeyImageSyncFinalizationOutcome(
-                health = healthyWalletHealth(nativeStatusIsOk = false),
-                hasUnknownKeyImages = false,
-                syncState = AdapterState.Synced,
-            ),
-        )
-        assertSame(
-            TrustedKeyImageSyncFinalizationOutcome.ReconciliationFailed,
-            trustedKeyImageSyncFinalizationOutcome(
-                health = healthyWalletHealth(),
-                hasUnknownKeyImages = false,
-                syncState = AdapterState.Syncing(),
-            ),
-        )
-        assertSame(
-            TrustedKeyImageSyncFinalizationOutcome.NeedsKeyImageSync,
-            trustedKeyImageSyncFinalizationOutcome(
-                health = healthyWalletHealth(nativeStatusIsOk = false),
-                hasUnknownKeyImages = true,
-                syncState = AdapterState.Syncing(),
-            ),
-        )
-    }
-
-    @Test
-    fun spentStatusRequestRetry_isWiredToTerminalFailure() {
-        val wrapper = createWrapper(mockService(), trezorAccount)
-        invokeActivateReconciliationSession(wrapper)
-        val session = activeReconciliationSession(wrapper)
-
-        wrapper.applySpentStatusRequestResult(session, MoneroSpentStatusRequestResult.Retry)
-
-        assertSame(MoneroSpendReadiness.ReconciliationFailed, wrapper.spendReadiness.value)
-    }
-
-    @Test
-    fun spentStatusRequestNeedsKeyImageSync_isTerminalAndClearsOperation() {
-        val wrapper = createWrapper(mockService(), trezorAccount)
-        invokeActivateReconciliationSession(wrapper)
-        val session = activeReconciliationSession(wrapper)
-        val reconciler = privateField(wrapper, "spentStatusReconciler")
-            .get(wrapper) as MoneroSpentStatusReconciler
-        assertTrue(reconciler.beginRecovery(session) != null)
-
-        wrapper.applySpentStatusRequestResult(session, MoneroSpentStatusRequestResult.NeedsKeyImageSync)
-
-        assertSame(MoneroSpendReadiness.NeedsKeyImageSync, wrapper.spendReadiness.value)
-        assertFalse(reconciler.hasActiveOperation(session))
-    }
-
-    @Test
-    fun terminalReadiness_clearsOnlyItsMatchingKeyImageSyncMarker() {
-        val wrapper = createWrapper(mockService(), trezorAccount)
-        invokeActivateReconciliationSession(wrapper)
-        val session = activeReconciliationSession(wrapper)
-
-        listOf(
-            MoneroSpendReadiness.Ready,
-            MoneroSpendReadiness.NeedsKeyImageSync,
-            MoneroSpendReadiness.ReconciliationFailed,
-        ).forEach { terminalReadiness ->
-                setKeyImageSyncSession(wrapper, session)
-                invokeSetSpendReadinessForSession(wrapper, session, terminalReadiness)
-
-                assertSame(terminalReadiness, wrapper.spendReadiness.value)
-                assertEquals(null, keyImageSyncSession(wrapper))
-            }
-
-        invokeActivateReconciliationSession(wrapper)
-        val newerSession = activeReconciliationSession(wrapper)
-        setKeyImageSyncSession(wrapper, newerSession)
-
-        invokeSetSpendReadinessForSession(wrapper, session, MoneroSpendReadiness.Ready)
-
-        assertEquals(newerSession, keyImageSyncSession(wrapper))
-    }
-
-    @Test
-    fun postSyncReadinessFailure_isTerminalWhenKeyImageSyncWasBegun() {
-        val wrapper = createWrapper(mockService(), trezorAccount)
-        invokeActivateReconciliationSession(wrapper)
-        val session = activeReconciliationSession(wrapper)
-        setKeyImageSyncSession(wrapper, session)
-
-        invokeFailClosedAfterPostSyncError(wrapper, session, IllegalStateException("probe failed"))
-
-        assertSame(MoneroSpendReadiness.ReconciliationFailed, wrapper.spendReadiness.value)
-        assertEquals(null, keyImageSyncSession(wrapper))
-    }
-
-    @Test
-    fun keyImageSync_preservingRescanProgress_keepsAwaitedReconciliationAlive() {
-        val wrapper = createWrapper(mockService(), trezorAccount)
-        invokeActivateReconciliationSession(wrapper)
-        val reconciler = privateField(wrapper, "spentStatusReconciler")
-            .get(wrapper) as MoneroSpentStatusReconciler
-        val session = checkNotNull(reconciler.activeSession())
-        val generation = checkNotNull(reconciler.beginRequest(session))
-        assertTrue(reconciler.markAwaitingCallback(session, generation))
-        setKeyImageSyncSession(wrapper, session)
-        setSyncState(wrapper, AdapterState.Syncing())
-
-        assertTrue(
-            wrapper.applyHardwareReadinessSnapshot(
-                session = session,
-                health = healthyWalletHealth(walletIsSynchronized = false),
-                hasUnknownKeyImages = null,
-            ),
-        )
-
-        assertSame(MoneroSpendReadiness.ReconcilingSpentStatus, wrapper.spendReadiness.value)
-        assertTrue(reconciler.hasActiveOperation(session))
-        assertEquals(generation, reconciler.awaitingCallbackGeneration(session))
-        assertEquals(session, keyImageSyncSession(wrapper))
-
-        setSyncState(wrapper, AdapterState.Synced)
-        assertFalse(
-            wrapper.applyHardwareReadinessSnapshot(
-                session = session,
-                health = healthyWalletHealth(),
-                hasUnknownKeyImages = false,
-            ),
-        )
-        assertEquals(generation, reconciler.awaitingCallbackGeneration(session))
-    }
-
-    @Test
     fun onRefreshed_staleWalletProvenanceLeavesCurrentSessionUntouched() {
         val wrapper = createWrapper(
             service = mockService(),
-            account = trezorAccount,
             healthReader = fakeHealthReader(healthyWalletHealth(callbackWalletIsCurrent = false)),
         )
         setStarted(wrapper)
@@ -1420,120 +1031,10 @@ class MoneroKitWrapperRefreshTest {
     }
 
     @Test
-    fun refreshCallbackReturn_hardwareTerminalPathsAreHandledButRetryablePathsAreNot() {
-        assertTrue(
-            isRefreshCallbackFullyHandled(
-                hardwareAccount = true,
-                hasActiveReconciliationOperation = false,
-                spendReadiness = MoneroSpendReadiness.Ready,
-            ),
-        )
-        assertTrue(
-            isRefreshCallbackFullyHandled(
-                hardwareAccount = true,
-                hasActiveReconciliationOperation = false,
-                spendReadiness = MoneroSpendReadiness.NeedsKeyImageSync,
-            ),
-        )
-        assertTrue(
-            isRefreshCallbackFullyHandled(
-                hardwareAccount = true,
-                hasActiveReconciliationOperation = false,
-                spendReadiness = MoneroSpendReadiness.ReconciliationFailed,
-            ),
-        )
-        assertFalse(
-            isRefreshCallbackFullyHandled(
-                hardwareAccount = true,
-                hasActiveReconciliationOperation = false,
-                spendReadiness = MoneroSpendReadiness.ReconcilingSpentStatus,
-            ),
-        )
-        assertFalse(
-            isRefreshCallbackFullyHandled(
-                hardwareAccount = true,
-                hasActiveReconciliationOperation = true,
-                spendReadiness = MoneroSpendReadiness.Ready,
-            ),
-        )
-    }
-
-    @Test
-    fun reconciliationFailure_isTerminalFailClosedReadiness() {
-        val wrapper = createWrapper(mockService(), trezorAccount)
-        invokeActivateReconciliationSession(wrapper)
-        val reconciler = privateField(wrapper, "spentStatusReconciler")
-            .get(wrapper) as MoneroSpentStatusReconciler
-        val session = checkNotNull(reconciler.activeSession())
-
-        invokeFailClosedAfterReconciliationError(wrapper, session, IllegalStateException("store failed"))
-
-        assertSame(MoneroSpendReadiness.ReconciliationFailed, wrapper.spendReadiness.value)
-        assertFalse(reconciler.hasActiveOperation(session))
-        assertFalse(
-            isHardwareSpendLifecycleReady(
-                syncState = AdapterState.Synced,
-                durableState = MoneroSpentReconciliationState.LiveRefreshPending,
-                spendReadiness = wrapper.spendReadiness.value,
-            ),
-        )
-    }
-
-    @Test
-    fun onRefreshed_awaitedConnectedNativeStatusFailure_remainsRetryable() {
-        val service = mockService()
-        val nativeStatusError = "rescan blockchain failed"
-        var health = healthyWalletHealth(
-            nativeStatusIsOk = false,
-            nativeStatusError = nativeStatusError,
-        )
-        val wrapper = createWrapper(
-            service = service,
-            account = trezorAccount,
-            healthReader = object : MoneroWalletHealthReader {
-                override fun snapshot(callbackWallet: Wallet?) = health
-            },
-        )
-        setStarted(wrapper)
-        invokeActivateReconciliationSession(wrapper)
-        val reconciler = privateField(wrapper, "spentStatusReconciler")
-            .get(wrapper) as MoneroSpentStatusReconciler
-        val session = checkNotNull(reconciler.activeSession())
-        setKeyImageSyncSession(wrapper, session)
-        val generation = checkNotNull(reconciler.beginRequest(session))
-        assertTrue(reconciler.markAwaitingCallback(session, generation))
-
-        assertFalse(wrapper.onRefreshed(wallet = null, full = true))
-
-        assertTrue(wrapper.syncState.value is AdapterState.Syncing)
-        assertSame(MoneroSpendReadiness.ReconcilingSpentStatus, wrapper.spendReadiness.value)
-        assertTrue(reconciler.hasActiveOperation(session))
-        assertEquals(generation, reconciler.awaitingCallbackGeneration(session))
-        assertEquals(session, keyImageSyncSession(wrapper))
-        verify(exactly = 0) {
-            restoreSettingsManager.saveMoneroSpentReconciliationState(
-                trezorAccount,
-                MoneroSpentReconciliationState.Ready,
-            )
-        }
-
-        health = healthyWalletHealth()
-        assertSame(
-            ReconciliationCallbackDisposition.Finalize,
-            reconciler.callbackDisposition(
-                session = session,
-                generation = generation,
-                callbackIsSuccessful = canFinalizeSpentReconciliation(health),
-            ),
-        )
-    }
-
-    @Test
     fun onRefreshed_unsynchronizedNativeStatusFailure_preservesNativeError() {
         val nativeStatusError = "rescan blockchain failed"
         val wrapper = createWrapper(
             service = mockService(),
-            account = trezorAccount,
             healthReader = fakeHealthReader(
                 healthyWalletHealth(
                     nativeStatusIsOk = false,
@@ -1552,10 +1053,9 @@ class MoneroKitWrapperRefreshTest {
     }
 
     @Test
-    fun onRefreshed_connectedSynchronizedNativeStatusFailure_keepsSyncPresentationFailClosed() {
+    fun onRefreshed_connectedSynchronizedNativeStatusFailure_publishesNativeError() {
         val wrapper = createWrapper(
             service = mockService(),
-            account = trezorAccount,
             healthReader = fakeHealthReader(
                 healthyWalletHealth(
                     nativeStatusIsOk = false,
@@ -1566,69 +1066,16 @@ class MoneroKitWrapperRefreshTest {
         setStarted(wrapper)
         invokeActivateReconciliationSession(wrapper)
 
-        assertFalse(wrapper.onRefreshed(wallet = null, full = true))
+        wrapper.onRefreshed(wallet = null, full = true)
 
         val state = wrapper.syncState.value as? AdapterState.NotSynced
         assertEquals("Device state not initialized", state?.error?.message)
-        assertSame(MoneroSpendReadiness.Syncing, wrapper.spendReadiness.value)
-        verify(exactly = 0) {
-            restoreSettingsManager.saveMoneroSpentReconciliationState(
-                trezorAccount,
-                MoneroSpentReconciliationState.Ready,
-            )
-        }
     }
 
     @Test
-    fun terminalReady_transientUnhealthyThenHealthyCallback_canRestoreDurableReady() {
+    fun onRefreshed_hardwareWallet_leavesStateToDevicePasses() {
         val wrapper = createWrapper(
             service = mockService(),
-            account = trezorAccount,
-        )
-        every {
-            restoreSettingsManager.moneroSpentReconciliationState(trezorAccount)
-        } returns MoneroSpentReconciliationState.Ready
-        invokeActivateReconciliationSession(wrapper)
-        val session = activeReconciliationSession(wrapper)
-        setKeyImageSyncSession(wrapper, session)
-        invokeSetSpendReadinessForSession(wrapper, session, MoneroSpendReadiness.Ready)
-        setSyncState(wrapper, AdapterState.Synced)
-
-        wrapper.applyHardwareReadinessSnapshot(
-            session,
-            healthyWalletHealth(nativeStatusIsOk = false),
-            hasUnknownKeyImages = null,
-        )
-        assertSame(MoneroSpendReadiness.Syncing, wrapper.spendReadiness.value)
-
-        setSyncState(wrapper, AdapterState.Synced)
-        wrapper.applyHardwareReadinessSnapshot(
-            session,
-            healthyWalletHealth(),
-            hasUnknownKeyImages = false,
-        )
-
-        assertSame(MoneroSpendReadiness.Ready, wrapper.spendReadiness.value)
-    }
-
-    @Test
-    fun lifecycleActivationAndDeactivation_invalidateKeyImageSyncMarker() {
-        val wrapper = createWrapper(mockService(), trezorAccount)
-        invokeActivateReconciliationSession(wrapper)
-        setKeyImageSyncSession(wrapper, activeReconciliationSession(wrapper))
-
-        invokeDeactivateReconciliationSession(wrapper)
-        assertEquals(null, keyImageSyncSession(wrapper))
-
-        invokeActivateReconciliationSession(wrapper)
-        assertEquals(null, keyImageSyncSession(wrapper))
-    }
-
-    @Test
-    fun onRefreshed_activeHardwareSessionWithNativeWrongVersion_failsClosedWithoutReadyPersistence() {
-        val service = mockService()
-        val wrapper = createWrapper(
-            service = service,
             account = trezorAccount,
             healthReader = fakeHealthReader(
                 healthyWalletHealth(
@@ -1639,18 +1086,13 @@ class MoneroKitWrapperRefreshTest {
         )
         setStarted(wrapper)
         invokeActivateReconciliationSession(wrapper)
+        setSyncState(wrapper, AdapterState.Synced)
         setSpendReadiness(wrapper, MoneroSpendReadiness.Ready)
 
-        assertFalse(wrapper.onRefreshed(wallet = null, full = true))
+        assertTrue(wrapper.onRefreshed(wallet = null, full = true))
 
-        assertTrue(wrapper.syncState.value is AdapterState.NotSynced)
-        assertSame(MoneroSpendReadiness.Syncing, wrapper.spendReadiness.value)
-        verify(exactly = 0) {
-            restoreSettingsManager.saveMoneroSpentReconciliationState(
-                trezorAccount,
-                MoneroSpentReconciliationState.Ready,
-            )
-        }
+        assertSame(AdapterState.Synced, wrapper.syncState.value)
+        assertSame(MoneroSpendReadiness.Ready, wrapper.spendReadiness.value)
     }
 
     // recordNativeConnectionError is exercised directly (not through onRefreshed/statusInfo) because
@@ -1795,8 +1237,640 @@ class MoneroKitWrapperRefreshTest {
         assertTrue(merged.keys.any { it.startsWith("Recent Network Error") })
     }
 
+    @Test
+    fun refresh_trezorPassReachesTip_publishesReadyWithoutNativeResume() = runTest {
+        val trezor = TrezorWallet(durableState = MoneroSpentReconciliationState.LiveRefreshPending)
+        trezor.results += passResult(TREZOR_TIP)
+
+        trezor.wrapper.refresh()
+
+        assertEquals(
+            listOf(HardwareKeyImageRefreshResult.Request(CONTINUE, startProtocolEagerly = true, TREZOR_RESTORE)),
+            trezor.requests,
+        )
+        assertEquals(
+            listOf("execute", "store", "setSynchronized", "durable=Ready", "refreshHistory", "release"),
+            trezor.events,
+        )
+        assertSame(AdapterState.Synced, trezor.wrapper.syncState.value)
+        assertSame(MoneroSpendReadiness.Ready, trezor.wrapper.spendReadiness.value)
+        verify(exactly = 0) { trezor.service.resume(any()) }
+    }
+
+    @Test
+    fun syncUnattended_nodeBehind_showsErrorOnlyAfterFourPasses() = runTest {
+        val trezor = TrezorWallet()
+        trezor.daemonTargetHeight = TREZOR_TIP + 10
+        repeat(4) { trezor.results += passResult(TREZOR_TIP) }
+
+        repeat(3) {
+            trezor.wrapper.syncUnattended()
+            assertFalse(trezor.wrapper.syncState.value is AdapterState.NotSynced)
+        }
+        trezor.wrapper.syncUnattended()
+
+        assertTrue(trezor.wrapper.syncState.value is AdapterState.NotSynced)
+        assertSame(MoneroSpendReadiness.Syncing, trezor.wrapper.spendReadiness.value)
+        assertTrue(trezor.requests.none { it.startProtocolEagerly })
+        assertEquals(4, trezor.events.count { it == "executeYielding" })
+        assertFalse("setSynchronized" in trezor.events)
+    }
+
+    @Test
+    fun refresh_incompletePass_storesCheckpointAndNextPassContinues() = runTest {
+        val trezor = TrezorWallet(durableState = MoneroSpentReconciliationState.LiveRefreshPending)
+        trezor.results += passResult(TREZOR_TIP - 50, completed = false)
+        trezor.results += passResult(TREZOR_TIP)
+
+        trezor.wrapper.refresh()
+
+        assertTrue("store" in trezor.events)
+        assertTrue(trezor.wrapper.syncState.value is AdapterState.Syncing)
+        assertSame(MoneroSpendReadiness.Syncing, trezor.wrapper.spendReadiness.value)
+        assertSame(MoneroSpentReconciliationState.LiveRefreshPending, trezor.durableState)
+
+        trezor.wrapper.refresh()
+
+        assertEquals(CONTINUE, trezor.requests[1].mode)
+        assertSame(AdapterState.Synced, trezor.wrapper.syncState.value)
+    }
+
+    @Test
+    fun refresh_unchangedCompletedPass_isNotStoredAgainButDetachedSuffixIs() = runTest {
+        val trezor = TrezorWallet()
+        trezor.results += passResult(TREZOR_TIP)
+        trezor.results += passResult(TREZOR_TIP)
+        trezor.results += passResult(TREZOR_TIP, suffixDetached = true)
+
+        repeat(3) { trezor.wrapper.refresh() }
+
+        assertEquals(2, trezor.events.count { it == "store" })
+    }
+
+    @Test
+    fun refresh_migrationReplayStoppedEarly_resetsAndKeepsLiveRefreshPending() = runTest {
+        val trezor = TrezorWallet(durableState = MoneroSpentReconciliationState.MigrationReplayRequired)
+        trezor.results += passResult(TREZOR_TIP - 50, completed = false)
+
+        trezor.wrapper.refresh()
+
+        assertEquals(RESET, trezor.requests.single().mode)
+        assertTrue("storeKeys" in trezor.events)
+        assertSame(MoneroSpentReconciliationState.LiveRefreshPending, trezor.durableState)
+        verifyOrder {
+            restoreSettingsManager.savePendingMoneroRescan(trezorAccount, TREZOR_RESTORE)
+            restoreSettingsManager.clearPendingMoneroRescan(trezorAccount)
+        }
+    }
+
+    @Test
+    fun syncKeyImages_readyWallet_rescansFromRestoreHeightUnderDevice() = runTest {
+        val trezor = TrezorWallet()
+        trezor.results += passResult(TREZOR_TIP)
+
+        trezor.wrapper.syncKeyImages()
+
+        assertEquals(RESET, trezor.requests.single().mode)
+        assertTrue(trezor.requests.single().startProtocolEagerly)
+        assertTrue("storeKeys" in trezor.events)
+        assertSame(MoneroSpentReconciliationState.Ready, trezor.durableState)
+    }
+
+    @Test
+    fun syncUnattended_userOperationWaiting_stopsAtEveryBlockAndStoresBeforeRelease() = runTest {
+        val trezor = TrezorWallet()
+        trezor.userOperationWaiting = true
+        trezor.onPass = { observer ->
+            observer(TREZOR_TIP - 60)
+            observer(TREZOR_TIP - 50)
+        }
+        trezor.results += passResult(TREZOR_TIP - 50, completed = false)
+
+        trezor.wrapper.syncUnattended()
+
+        assertEquals(listOf("executeYielding", "stop", "stop", "store", "release"), trezor.events)
+        assertSame(MoneroSpendReadiness.Syncing, trezor.wrapper.spendReadiness.value)
+    }
+
+    @Test
+    fun refresh_duringUnattendedPass_endsItEarlyThenRunsAttendedPass() = runTest {
+        val trezor = TrezorWallet()
+        trezor.results += passResult(TREZOR_TIP - 50, completed = false)
+        trezor.results += passResult(TREZOR_TIP)
+        var attended: Job? = null
+        trezor.onPass = { observer ->
+            trezor.onPass = {}
+            attended = launch(start = CoroutineStart.UNDISPATCHED) { trezor.wrapper.refresh() }
+            observer(TREZOR_TIP - 50)
+        }
+
+        trezor.wrapper.syncUnattended()
+        checkNotNull(attended).join()
+
+        assertEquals(listOf(false, true), trezor.requests.map { it.startProtocolEagerly })
+        assertEquals(
+            listOf("executeYielding", "stop", "store", "release", "execute"),
+            trezor.events.take(5),
+        )
+        assertSame(AdapterState.Synced, trezor.wrapper.syncState.value)
+    }
+
+    @Test
+    fun syncUnattended_checkpointDue_storesAndContinuesInSameDeviceSession() = runTest {
+        val time = TestTimeSource()
+        val trezor = TrezorWallet(timeSource = time)
+        trezor.results += passResult(TREZOR_TIP - 50, completed = false)
+        trezor.results += passResult(TREZOR_TIP)
+        trezor.onPass = { observer ->
+            trezor.onPass = {}
+            time += 3.minutes
+            observer(TREZOR_TIP - 50)
+        }
+
+        trezor.wrapper.syncUnattended()
+
+        assertEquals(listOf(CONTINUE, CONTINUE), trezor.requests.map { it.mode })
+        assertEquals(
+            listOf("executeYielding", "stop", "store", "store", "setSynchronized", "refreshHistory", "release"),
+            trezor.events,
+        )
+        assertSame(AdapterState.Synced, trezor.wrapper.syncState.value)
+    }
+
+    @Test
+    fun syncUnattended_deviceDetachedDuringPass_endsAtNextBlockWithoutContinuing() = runTest {
+        val time = TestTimeSource()
+        val trezor = TrezorWallet(timeSource = time)
+        trezor.results += passResult(TREZOR_TIP - 50, completed = false)
+        trezor.results += passResult(TREZOR_TIP)
+        trezor.onPass = { observer ->
+            trezor.wrapper.onTrezorDetached()
+            time += 3.minutes
+            observer(TREZOR_TIP - 50)
+        }
+
+        trezor.wrapper.syncUnattended()
+
+        assertEquals(1, trezor.requests.size)
+        assertEquals(listOf("executeYielding", "stop"), trezor.events.take(2))
+        assertFalse("execute" in trezor.events)
+        val error = (trezor.wrapper.syncState.value as AdapterState.NotSynced).error
+        assertEquals(HardwareWalletErrorCode.DeviceNotFound, (error as HardwareWalletOperationException).error)
+    }
+
+    @Test
+    fun syncUnattended_detachedWhileIdleThenReattached_runsWholePass() = runTest {
+        val trezor = TrezorWallet()
+        trezor.results += passResult(TREZOR_TIP)
+        trezor.onPass = { observer -> observer(TREZOR_TIP - 50) }
+        trezor.wrapper.onTrezorDetached()
+
+        trezor.wrapper.syncUnattended()
+
+        assertFalse("stop" in trezor.events)
+        assertSame(AdapterState.Synced, trezor.wrapper.syncState.value)
+    }
+
+    @Test
+    fun syncUnattended_appBackgroundedDuringPass_endsAtNextBlockWithStore() = runTest {
+        val time = TestTimeSource()
+        val trezor = TrezorWallet(timeSource = time)
+        trezor.results += passResult(TREZOR_TIP - 50, completed = false)
+        trezor.results += passResult(TREZOR_TIP)
+        trezor.onPass = { observer ->
+            trezor.inForeground = false
+            time += 3.minutes
+            observer(TREZOR_TIP - 50)
+        }
+
+        trezor.wrapper.syncUnattended()
+
+        assertEquals(1, trezor.requests.size)
+        assertEquals(listOf("executeYielding", "stop", "store", "release"), trezor.events)
+        assertTrue(trezor.wrapper.syncState.value is AdapterState.Syncing)
+    }
+
+    @Test
+    fun displayAddressOnDevice_duringUnattendedPass_endsPassAndRunsBeforeNextPass() = runTest {
+        val trezor = TrezorWallet()
+        trezor.results += passResult(TREZOR_TIP - 50, completed = false)
+        trezor.results += passResult(TREZOR_TIP)
+        var display: Job? = null
+        trezor.onPass = { observer ->
+            trezor.onPass = {}
+            display = launch(start = CoroutineStart.UNDISPATCHED) { trezor.wrapper.displayAddressOnDevice(0) }
+            observer(TREZOR_TIP - 50)
+        }
+
+        trezor.wrapper.syncUnattended()
+        trezor.wrapper.syncUnattended()
+        checkNotNull(display).join()
+
+        assertEquals(
+            listOf(
+                "executeYielding", "stop", "store", "release",
+                "execute", "showAddress", "release",
+                "executeYielding",
+            ),
+            trezor.events.take(8),
+        )
+    }
+
+    @Test
+    fun rescan_duringUnattendedPass_endsPassAtNextBlock() = runTest {
+        val trezor = TrezorWallet()
+        trezor.results += passResult(TREZOR_TIP - 50, completed = false)
+        trezor.results += passResult(TREZOR_TIP)
+        var rescan: Job? = null
+        trezor.onPass = { observer ->
+            trezor.onPass = {}
+            rescan = launch(start = CoroutineStart.UNDISPATCHED) { trezor.wrapper.rescan(42) }
+            observer(TREZOR_TIP - 50)
+        }
+
+        trezor.wrapper.syncUnattended()
+        checkNotNull(rescan).join()
+
+        assertEquals(listOf("executeYielding", "stop", "store", "release", "execute"), trezor.events.take(5))
+    }
+
+    @Test
+    fun syncKeyImages_whileContinuePassCompletes_runsItsOwnResetPass() = runTest {
+        val trezor = TrezorWallet()
+        trezor.results += passResult(TREZOR_TIP)
+        trezor.results += passResult(TREZOR_TIP)
+        var recovery: Job? = null
+        trezor.onPass = {
+            trezor.onPass = {}
+            recovery = launch(start = CoroutineStart.UNDISPATCHED) { trezor.wrapper.syncKeyImages() }
+        }
+
+        trezor.wrapper.refresh()
+        checkNotNull(recovery).join()
+
+        assertEquals(listOf(CONTINUE, RESET), trezor.requests.map { it.mode })
+        assertTrue("storeKeys" in trezor.events)
+        assertTrue("durable=ExplicitColdRecoveryPending" in trezor.events)
+        assertSame(MoneroSpentReconciliationState.Ready, trezor.durableState)
+    }
+
+    @Test
+    fun refresh_attendedPassWithCheckedProtocol_marksLiveRefreshConfirmed() = runTest {
+        val trezor = TrezorWallet()
+        repeat(2) { trezor.results += passResult(TREZOR_TIP, protocolStarted = true) }
+
+        trezor.wrapper.syncUnattended()
+        assertFalse("confirmed" in trezor.events)
+        trezor.wrapper.refresh()
+
+        assertEquals(1, trezor.events.count { it == "confirmed" })
+    }
+
+    @Test
+    fun refresh_deviceFailureDuringPass_closesWalletUnsavedAndNeedsPreparation() = runTest {
+        val trezor = TrezorWallet()
+        val failure = HardwareWalletOperationException(HardwareWalletErrorCode.Disconnected, "unplugged")
+        trezor.passFailure = failure
+
+        trezor.wrapper.refresh()
+
+        assertTrue("close(save=false)" in trezor.events)
+        assertFalse("store" in trezor.events)
+        assertFalse(privateField(trezor.wrapper, "isStarted").getBoolean(trezor.wrapper))
+        assertSame(failure, (trezor.wrapper.syncState.value as AdapterState.NotSynced).error)
+        assertSame(MoneroSpendReadiness.ReconciliationFailed, trezor.wrapper.spendReadiness.value)
+    }
+
+    @Test
+    fun resumeNetwork_offlineAfterRestartWithEmptyCache_bringsWalletOnlineThroughAttendedPass() = runTest {
+        withTrezorWalletFiles {
+            val trezor = TrezorWallet()
+            trezor.cacheConfirmed = false
+            trezor.wrapper.pause()
+            trezor.results += passResult(TREZOR_TIP, protocolStarted = true)
+
+            assertTrue(trezor.wrapper.resumeNetwork())
+
+            assertEquals(listOf("close(save=false)", "selectDaemon", "execute", "open"), trezor.events.take(4))
+            assertTrue("confirmed" in trezor.events)
+            assertTrue(trezor.wrapper.isNetworkOnline)
+        }
+    }
+
+    @Test
+    fun resumeNetwork_offlineRequestedWhileDeviceConfirms_neverGoesOnline() = runTest {
+        withTrezorWalletFiles {
+            val trezor = TrezorWallet()
+            trezor.cacheConfirmed = false
+            trezor.wrapper.pause()
+            trezor.results += passResult(TREZOR_TIP, protocolStarted = true)
+            val deviceConfirmed = CompletableDeferred<Unit>()
+            trezor.holdAttendedSession = deviceConfirmed
+            val moneroKitManager = mockk<MoneroKitManager>(relaxed = true) {
+                every { currentAccount } returns trezorAccount
+                every { moneroKitWrapper } returns trezor.wrapper
+                coEvery { pauseNetwork(trezorAccount) } coAnswers { trezor.wrapper.pause() }
+            }
+            val controller = offlineNetworkController(moneroKitManager)
+            val member = mockk<WalletMember> {
+                every { account } returns trezorAccount
+                every { token.blockchainType } returns BlockchainType.Monero
+            }
+
+            assertTrue(trezor.wrapper.resumeNetwork())
+            val eventsBeforeOffline = trezor.events.size
+            val offline = async(start = CoroutineStart.UNDISPATCHED) { controller.pause(member) }
+            deviceConfirmed.complete(Unit)
+            offline.await()
+
+            val eventsAfterOffline = trezor.events.drop(eventsBeforeOffline)
+            assertFalse("open" in eventsAfterOffline)
+            assertFalse("selectDaemon" in eventsAfterOffline)
+            assertTrue(trezor.requests.isEmpty())
+            assertFalse(privateField(trezor.wrapper, "isStarted").getBoolean(trezor.wrapper))
+            assertTrue(controller.isOffline(member))
+        }
+    }
+
+    private fun offlineNetworkController(moneroKitManager: MoneroKitManager) = OfflineNetworkController(
+        adapterManager = mockk(relaxed = true),
+        evmBlockchainManager = mockk(relaxed = true),
+        solanaKitManager = mockk(relaxed = true),
+        tronKitManager = mockk(relaxed = true),
+        tonKitManager = mockk(relaxed = true),
+        stellarKitManager = mockk(relaxed = true),
+        moneroKitManager = moneroKitManager,
+        thorchainKitManagers = mockk(relaxed = true),
+    )
+
+    @Test
+    fun refresh_queuedBehindUnattendedPassThenBackgroundedAndStopped_neitherOpensNorTouchesDevice() = runTest {
+        withTrezorWalletFiles {
+            val trezor = TrezorWallet()
+            val unattendedHeld = CompletableDeferred<Unit>()
+            trezor.holdYieldingSession = unattendedHeld
+            trezor.results += passResult(TREZOR_TIP)
+            val unattended = async(start = CoroutineStart.UNDISPATCHED) { trezor.wrapper.syncUnattended() }
+            val attended = async(start = CoroutineStart.UNDISPATCHED) { trezor.wrapper.refresh() }
+            trezor.inForeground = false
+            val stop = async(start = CoroutineStart.UNDISPATCHED) { trezor.wrapper.stop() }
+
+            unattendedHeld.complete(Unit)
+            listOf(unattended, stop, attended).forEach { it.await() }
+
+            assertEquals(listOf("executeYielding", "close(save=true)"), trezor.events.filterNot { it.isPassDetail() })
+        }
+    }
+
+    @Test
+    fun syncUnattended_queuedBeforeWaitingPause_runsNoDeviceWork() = runTest {
+        val trezor = TrezorWallet()
+
+        runQueuedBeforeWaitingPause(trezor) { trezor.wrapper.syncUnattended() }
+
+        assertFalse("executeYielding" in trezor.events)
+        assertTrue(trezor.requests.isEmpty())
+    }
+
+    @Test
+    fun refresh_queuedBeforeWaitingPause_stillReachesDevice() = runTest {
+        val trezor = TrezorWallet()
+        trezor.results += passResult(TREZOR_TIP)
+
+        runQueuedBeforeWaitingPause(trezor) { trezor.wrapper.refresh() }
+
+        assertTrue("execute" in trezor.events)
+    }
+
+    // The pass queues on the lifecycle lock first, then pause() starts waiting behind it.
+    private suspend fun TestScope.runQueuedBeforeWaitingPause(trezor: TrezorWallet, pass: suspend () -> Unit) {
+        val lifecycleMutex = privateField(trezor.wrapper, "lifecycleMutex").get(trezor.wrapper) as Mutex
+        lifecycleMutex.lock()
+        val queuedPass = async(start = CoroutineStart.UNDISPATCHED) { pass() }
+        val pause = async(start = CoroutineStart.UNDISPATCHED) { trezor.wrapper.pause() }
+        lifecycleMutex.unlock()
+        listOf(queuedPass, pause).awaitAll()
+    }
+
+    @Test
+    fun syncUnattended_inBackground_neitherOpensNorTouchesDevice() = runTest {
+        val trezor = TrezorWallet()
+        trezor.inForeground = false
+
+        trezor.wrapper.syncUnattended()
+
+        assertTrue(trezor.events.isEmpty())
+        assertTrue(trezor.requests.isEmpty())
+    }
+
+    @Test
+    fun syncAskingDevice_attendedPassFinishedSinceCue_doesNotAskAgain() = runTest {
+        val trezor = TrezorWallet()
+        trezor.cacheConfirmed = false
+        val userAnswers = CompletableDeferred<Unit>()
+        trezor.holdAttendedSession = userAnswers
+        val foregroundCue = trezor.wrapper.attendedPassesFinished
+        val foreground = launch { trezor.wrapper.askDevice(foregroundCue) }
+        runCurrent()
+        val attachCue = trezor.wrapper.attendedPassesFinished
+
+        trezor.gatewayFailure = userRejected()
+        userAnswers.complete(Unit)
+        foreground.join()
+        trezor.wrapper.syncAskingDevice(attachCue)
+
+        assertEquals(1, trezor.attendedAttempts)
+    }
+
+    @Test
+    fun syncAskingDevice_cueAfterFinishedAttendedPass_asksDevice() = runTest {
+        val trezor = TrezorWallet()
+        trezor.cacheConfirmed = false
+        trezor.gatewayFailure = userRejected()
+        trezor.wrapper.askDevice(trezor.wrapper.attendedPassesFinished)
+
+        assertFailsWith<HardwareWalletOperationException> {
+            trezor.wrapper.syncAskingDevice(trezor.wrapper.attendedPassesFinished)
+        }
+
+        assertEquals(2, trezor.attendedAttempts)
+    }
+
+    @Test
+    fun refresh_failedStartRetainedWallet_runsNoPass() = runTest {
+        val trezor = TrezorWallet()
+        setStarted(trezor.wrapper)
+        privateField(trezor.wrapper, "isPaused").set(trezor.wrapper, true)
+
+        trezor.wrapper.refresh()
+
+        assertTrue(trezor.requests.isEmpty())
+        assertTrue(trezor.events.none { it.startsWith("execute") })
+    }
+
+    @Test
+    fun refresh_networkPausedAndWalletClosed_runsNoPass() = runTest {
+        withTrezorWalletFiles {
+            val trezor = TrezorWallet()
+            trezor.wrapper.pause()
+            trezor.wrapper.stop()
+            trezor.events.clear()
+
+            trezor.wrapper.refresh()
+
+            assertTrue(trezor.events.isEmpty())
+            assertTrue(trezor.requests.isEmpty())
+        }
+    }
+
+    @Test
+    fun syncKeyImages_restoreHeightZero_resetsFromBlockOne() = runTest {
+        val trezor = TrezorWallet(restoreHeight = 0)
+        trezor.results += passResult(TREZOR_TIP)
+
+        trezor.wrapper.syncKeyImages()
+
+        assertEquals(RESET, trezor.requests.single().mode)
+        assertEquals(1L, trezor.requests.single().restoreHeight)
+        verify { restoreSettingsManager.savePendingMoneroRescan(trezorAccount, 1L) }
+    }
+
+    @Test
+    fun syncUnattended_restoreHeightZeroNoPendingState_continues() = runTest {
+        val trezor = TrezorWallet(restoreHeight = 0)
+        trezor.results += passResult(TREZOR_TIP)
+
+        trezor.wrapper.syncUnattended()
+
+        assertEquals(CONTINUE, trezor.requests.single().mode)
+    }
+
+    @Test
+    fun send_hardwareSendSucceeds_publishesHistoryWithoutDevicePass() = runTest {
+        val trezor = TrezorWallet()
+        trezor.results += passResult(TREZOR_TIP)
+        trezor.wrapper.syncUnattended()
+        every { trezor.service.sendTransaction(null) } returns "tx-hash"
+        var updates = 0
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            trezor.wrapper.transactionsStateUpdatedFlow.collect { updates++ }
+        }
+        trezor.events.clear()
+
+        val txId = trezor.wrapper.send(BigDecimal.ONE, "address", null)
+
+        assertEquals("tx-hash", txId)
+        assertEquals(listOf("execute", "release", "refreshHistory"), trezor.events)
+        assertEquals(1, updates)
+    }
+
+    @Test
+    fun syncUnattended_sessionNotConfirmedOnDevice_keepsWalletOpenAndNeedsPreparation() = runTest {
+        val trezor = TrezorWallet()
+        val failure = HardwareWalletOperationException(
+            HardwareWalletErrorCode.PendingDeviceVerification,
+            "Trezor session must be confirmed on the device",
+        )
+        trezor.gatewayFailure = failure
+
+        trezor.wrapper.syncUnattended()
+
+        assertTrue(trezor.requests.isEmpty())
+        assertFalse(trezor.events.any { it.startsWith("close") })
+        assertTrue(privateField(trezor.wrapper, "isStarted").getBoolean(trezor.wrapper))
+        assertSame(failure, (trezor.wrapper.syncState.value as AdapterState.NotSynced).error)
+        assertSame(MoneroSpendReadiness.ReconciliationFailed, trezor.wrapper.spendReadiness.value)
+    }
+
+    @Test
+    fun controlledRefreshCoordinator_attendedDuringUnattended_waitsThenRunsOwnOperation() = runTest {
+        val coordinator = controlledRefreshCoordinator()
+        val unattendedGate = CompletableDeferred<Unit>()
+        var attendedRuns = 0
+        val unattended = async(start = CoroutineStart.UNDISPATCHED) {
+            coordinator.execute(testControlledRefreshOperation(refresh = { unattendedGate.await() }))
+        }
+        val attended = async(start = CoroutineStart.UNDISPATCHED) {
+            coordinator.execute(testControlledRefreshOperation(attended = true, refresh = { attendedRuns += 1 }))
+        }
+
+        assertEquals(0, attendedRuns)
+        unattendedGate.complete(Unit)
+        unattended.await()
+        attended.await()
+
+        assertEquals(1, attendedRuns)
+    }
+
+    @Test
+    fun controlledRefreshCoordinator_resetDuringNonResetRun_waitsThenRunsOwnOperation() = runTest {
+        val coordinator = controlledRefreshCoordinator()
+        val continueGate = CompletableDeferred<Unit>()
+        var resetRuns = 0
+        val running = async(start = CoroutineStart.UNDISPATCHED) {
+            coordinator.execute(testControlledRefreshOperation(attended = true, refresh = { continueGate.await() }))
+        }
+        val reset = async(start = CoroutineStart.UNDISPATCHED) {
+            coordinator.execute(
+                testControlledRefreshOperation(attended = true, resets = true, refresh = { resetRuns += 1 }),
+            )
+        }
+
+        assertEquals(0, resetRuns)
+        continueGate.complete(Unit)
+        running.await()
+        reset.await()
+
+        assertEquals(1, resetRuns)
+    }
+
+    @Test
+    fun controlledRefreshCoordinator_attendedDuringAttended_joinsRunningOperation() = runTest {
+        val coordinator = controlledRefreshCoordinator()
+        val gate = CompletableDeferred<Unit>()
+        var runs = 0
+        val operation = { testControlledRefreshOperation(attended = true, refresh = { runs += 1; gate.await() }) }
+        val first = async(start = CoroutineStart.UNDISPATCHED) { coordinator.execute(operation()) }
+        val second = async(start = CoroutineStart.UNDISPATCHED) { coordinator.execute(operation()) }
+
+        gate.complete(Unit)
+        first.await()
+        second.await()
+
+        assertEquals(1, runs)
+    }
+
+    @Test
+    fun needsStore_passOutcome_storesOnlyWhatChanged() {
+        assertFalse(passResult(TREZOR_TIP).needsStore(CONTINUE, storedChainHeight = TREZOR_TIP))
+        assertTrue(passResult(TREZOR_TIP).needsStore(CONTINUE, storedChainHeight = TREZOR_TIP - 1))
+        assertTrue(passResult(TREZOR_TIP).needsStore(CONTINUE, storedChainHeight = null))
+        assertTrue(passResult(TREZOR_TIP, suffixDetached = true).needsStore(CONTINUE, TREZOR_TIP))
+        assertTrue(passResult(TREZOR_TIP).needsStore(RESET, TREZOR_TIP))
+        assertTrue(passResult(TREZOR_TIP, completed = false).needsStore(CONTINUE, TREZOR_TIP))
+    }
+
     private fun mockService(): MoneroWalletService {
         return mockk(relaxed = true)
+    }
+
+    // The kit's native call gate reads 0 while the wallet is closing.
+    private fun closingWalletService(): MoneroWalletService = mockService().also { service ->
+        val wallet = nativeWallet()
+        every { wallet.balance } returns 0L
+        every { service.wallet } returns wallet
+    }
+
+    private fun recordBalanceReadsDuringStop(
+        service: MoneroWalletService,
+        wrapper: MoneroKitWrapper,
+    ): List<Long?> {
+        val balances = mutableListOf<Long?>()
+        every { service.stop(any()) } answers {
+            balances += wrapper.getBalance()
+            true
+        }
+        return balances
     }
 
     private fun connectivity(connected: Boolean): IConnectivityManager = mockk {
@@ -1811,6 +1885,8 @@ class MoneroKitWrapperRefreshTest {
         gateway: MoneroHardwareGateway = mockk(relaxed = true),
         healthReader: MoneroWalletHealthReader = fakeHealthReader(healthyWalletHealth()),
         daemonSelector: MoneroDaemonSelector = mockk(relaxed = true),
+        timeSource: TimeSource = TimeSource.Monotonic,
+        backgroundManager: IBackgroundManager = mockk { every { inForeground } returns true },
     ): MoneroKitWrapper {
         return MoneroKitWrapper(
             moneroWalletService = service,
@@ -1822,6 +1898,8 @@ class MoneroKitWrapperRefreshTest {
             connectivityManager = connectivityManager,
             walletHealthReader = healthReader,
             daemonSelector = daemonSelector,
+            timeSource = timeSource,
+            backgroundManager = backgroundManager,
         )
     }
 
@@ -1908,71 +1986,15 @@ class MoneroKitWrapperRefreshTest {
             .invoke(wrapper)
     }
 
-    private fun invokeDeactivateReconciliationSession(wrapper: MoneroKitWrapper) {
-        MoneroKitWrapper::class.java.getDeclaredMethod("deactivateReconciliationSession")
-            .apply { isAccessible = true }
-            .invoke(wrapper)
-    }
-
-    private fun invokeSetSpendReadinessForSession(
-        wrapper: MoneroKitWrapper,
-        session: Long,
-        readiness: MoneroSpendReadiness,
-    ) {
-        MoneroKitWrapper::class.java.getDeclaredMethod(
-            "setSpendReadinessForSession",
-            Long::class.javaPrimitiveType,
-            MoneroSpendReadiness::class.java,
-        ).apply { isAccessible = true }.invoke(wrapper, session, readiness)
-    }
-
-    private fun invokeFailClosedAfterReconciliationError(
-        wrapper: MoneroKitWrapper,
-        session: Long,
-        error: Throwable,
-    ) {
-        MoneroKitWrapper::class.java.getDeclaredMethod(
-            "failClosedAfterReconciliationError",
-            Long::class.javaPrimitiveType,
-            Throwable::class.java,
-        ).apply { isAccessible = true }.invoke(wrapper, session, error)
-    }
-
-    private fun invokeFailClosedAfterPostSyncError(
-        wrapper: MoneroKitWrapper,
-        session: Long,
-        error: Throwable,
-    ) {
-        MoneroKitWrapper::class.java.getDeclaredMethod(
-            "failClosedAfterPostSyncError",
-            Long::class.javaPrimitiveType,
-            Throwable::class.java,
-        ).apply { isAccessible = true }.invoke(wrapper, session, error)
-    }
-
     private fun activeReconciliationSession(wrapper: MoneroKitWrapper): Long {
         val reconciler = privateField(wrapper, "spentStatusReconciler")
             .get(wrapper) as MoneroSpentStatusReconciler
         return checkNotNull(reconciler.activeSession())
     }
 
-    private fun setKeyImageSyncSession(wrapper: MoneroKitWrapper, session: Long) {
-        privateField(wrapper, "keyImageSyncSession").set(wrapper, session)
-    }
-
-    private fun keyImageSyncSession(wrapper: MoneroKitWrapper): Long? =
-        privateField(wrapper, "keyImageSyncSession").get(wrapper) as Long?
-
     private fun setStarted(wrapper: MoneroKitWrapper) {
         privateField(wrapper, "isStarted").set(wrapper, true)
     }
-
-    private fun setExplicitColdRecoveryPending(wrapper: MoneroKitWrapper, pending: Boolean) {
-        privateField(wrapper, "explicitColdRecoveryPending").set(wrapper, pending)
-    }
-
-    private fun explicitColdRecoveryPending(wrapper: MoneroKitWrapper): Boolean =
-        privateField(wrapper, "explicitColdRecoveryPending").getBoolean(wrapper)
 
     @Suppress("UNCHECKED_CAST")
     private fun setSyncState(wrapper: MoneroKitWrapper, state: AdapterState) {
@@ -1995,7 +2017,12 @@ class MoneroKitWrapperRefreshTest {
         refresh: suspend (ControlledHardwareRefreshAborter) -> Unit = {},
         finalize: suspend () -> Unit = {},
         abort: (Throwable) -> Unit = {},
+        attended: Boolean = false,
+        resets: Boolean = false,
     ): ControlledHardwareRefreshOperation = object : ControlledHardwareRefreshOperation {
+        override val attended = attended
+        override val resets = resets
+
         override suspend fun run(aborter: ControlledHardwareRefreshAborter) {
             try {
                 refresh(aborter)
@@ -2024,9 +2051,177 @@ class MoneroKitWrapperRefreshTest {
             isAccessible = true
         }.get(coordinator) as Mutex
 
+    private fun userRejected() = HardwareWalletOperationException(HardwareWalletErrorCode.Cancelled, "rejected")
+
     private fun privateField(wrapper: MoneroKitWrapper, name: String) =
         wrapper.javaClass.getDeclaredField(name).apply {
             isAccessible = true
         }
 
+    private fun passResult(
+        finalHeight: Long,
+        completed: Boolean = true,
+        suffixDetached: Boolean = false,
+        protocolStarted: Boolean = false,
+    ) = HardwareKeyImageRefreshResult(
+        startHeight = 0,
+        finalHeight = finalHeight,
+        suffixDetached = suffixDetached,
+        protocolStarted = protocolStarted,
+        finalAckChecked = protocolStarted,
+        unknownKeyImagesRemain = false,
+        completed = completed,
+    )
+
+    private fun String.isPassDetail() = this in setOf("store", "release", "setSynchronized", "refreshHistory") ||
+        startsWith("durable=")
+
+    // Opening a closed wallet resolves its files through Koin.
+    private suspend fun withTrezorWalletFiles(block: suspend () -> Unit) {
+        val fileDao = mockk<MoneroFileDao> {
+            coEvery { getAssociatedRecord(trezorAccount.id) } returns
+                MoneroFileRecord(trezorAccount.id, SecretString("trezor-wallet"), SecretString("password"))
+        }
+        startKoin { modules(module { single { fileDao } }) }
+        try {
+            block()
+        } finally {
+            stopKoin()
+        }
+    }
+
+    /** An open Trezor wallet; each device pass returns the next of [results]. */
+    private inner class TrezorWallet(
+        var durableState: MoneroSpentReconciliationState = MoneroSpentReconciliationState.Ready,
+        timeSource: TimeSource = TimeSource.Monotonic,
+        restoreHeight: Long = TREZOR_RESTORE,
+    ) {
+        val events = mutableListOf<String>()
+        val requests = mutableListOf<HardwareKeyImageRefreshResult.Request>()
+        val results = ArrayDeque<HardwareKeyImageRefreshResult>()
+        var daemonTargetHeight = TREZOR_TIP
+        var userOperationWaiting = false
+        var passFailure: Throwable? = null
+        var inForeground = true
+        var gatewayFailure: Throwable? = null
+        // False models a restarted app: the gateway's in-memory session cache is empty.
+        var cacheConfirmed = true
+        var holdYieldingSession: CompletableDeferred<Unit>? = null
+        // Models the attended pass waiting for the user to confirm on the device.
+        var holdAttendedSession: CompletableDeferred<Unit>? = null
+        var attendedAttempts = 0
+        private var walletOpen = true
+        // Runs on the refresh thread with the block observer, before the pass returns.
+        var onPass: ((Long) -> Unit) -> Unit = {}
+        val service = mockService()
+        private val wallet = nativeWallet()
+        private var blockObserver: (Long) -> Unit = {}
+        private val gateway = object : MoneroHardwareGateway {
+            override suspend fun <T> execute(account: Account, block: (String) -> T): T {
+                attendedAttempts++
+                holdAttendedSession?.await()
+                return session("execute", block)
+            }
+
+            override suspend fun <T> executeYielding(account: Account, block: (String) -> T): T {
+                holdYieldingSession?.await()
+                if (!cacheConfirmed) {
+                    throw HardwareWalletOperationException(HardwareWalletErrorCode.PendingDeviceVerification, "unconfirmed")
+                }
+                return session("executeYielding", block)
+            }
+
+            override val isUserOperationWaiting: Boolean get() = userOperationWaiting
+
+            override fun markLiveRefreshConfirmed(account: Account) {
+                cacheConfirmed = true
+                events += "confirmed"
+            }
+
+            private fun <T> session(kind: String, block: (String) -> T): T {
+                gatewayFailure?.let { throw it }
+                events += kind
+                return block("wallet-key").also { events += "release" }
+            }
+        }
+        val wrapper = createWrapper(
+            service,
+            trezorAccount,
+            gateway = gateway,
+            timeSource = timeSource,
+            backgroundManager = mockk { every { this@mockk.inForeground } answers { this@TrezorWallet.inForeground } },
+            daemonSelector = mockk { coEvery { selectDaemon() } answers { events += "selectDaemon" } },
+        )
+
+        init {
+            every { wallet.restoreHeight } returns restoreHeight
+            every { wallet.daemonBlockChainHeight } returns TREZOR_TIP
+            every { wallet.daemonBlockChainTargetHeight } answers { daemonTargetHeight }
+            every { wallet.refreshWithHardwareKeyImages(any()) } answers {
+                requests += firstArg<HardwareKeyImageRefreshResult.Request>()
+                passFailure?.let { throw it }
+                onPass(blockObserver)
+                results.removeFirst()
+            }
+            every { wallet.requestControlledRefreshStop() } answers { events += "stop" }
+            every { wallet.storeSafe() } answers { events += "store"; MONERO_STORE_OK }
+            every { wallet.storeWithKeysSafe() } answers { events += "storeKeys"; MONERO_STORE_OK }
+            every { wallet.setSynchronized() } answers { events += "setSynchronized" }
+            every { wallet.refreshHistory() } answers { events += "refreshHistory" }
+            every { wallet.deviceShowAddress(0, any(), "") } answers { events += "showAddress" }
+            every { service.wallet } answers { wallet.takeIf { walletOpen } }
+            every { service.startPaused(any(), any()) } answers {
+                events += "open"
+                walletOpen = true
+                mockk<Wallet.Status> {
+                    every { isOk } returns true
+                    every { connectionStatus } returns null
+                    every { errorString } returns null
+                }
+            }
+            every { service.daemonHeight } returns TREZOR_TIP
+            every { service.setControlledRefreshProgressObserver(any()) } answers { blockObserver = firstArg() }
+            every { service.stop(any()) } answers {
+                events += "close(save=${firstArg<Boolean>()})"
+                walletOpen = false
+                true
+            }
+            every { restoreSettingsManager.settings(trezorAccount, BlockchainType.Monero) } returns
+                RestoreSettings().apply { birthdayHeight = restoreHeight }
+            every { restoreSettingsManager.pendingMoneroRescanHeight(trezorAccount) } returns null
+            every { restoreSettingsManager.moneroSpentReconciliationState(trezorAccount) } answers { durableState }
+            every { restoreSettingsManager.saveMoneroSpentReconciliationState(trezorAccount, any()) } answers {
+                durableState = secondArg()
+                events += "durable=$durableState"
+            }
+            setStarted(wrapper)
+            invokeActivateReconciliationSession(wrapper)
+        }
+    }
+
+    private companion object {
+        const val TREZOR_TIP = 1_000L
+        const val TREZOR_RESTORE = 100L
+        val CONTINUE = HardwareKeyImageRefreshResult.Mode.Continue
+        val RESET = HardwareKeyImageRefreshResult.Mode.ResetToRestoreHeight
+
+        // MockK cannot stub native methods, so it mocks a subclass that overrides them with plain ones.
+        // Wallet's static initializer loads the native library, which host tests do not have.
+        fun nativeWallet(): Wallet {
+            mockkStatic(MoneroNative::class)
+            try {
+                every { MoneroNative.load() } just runs
+                val overridable = ByteBuddy()
+                    .subclass(Wallet::class.java, ConstructorStrategy.Default.NO_CONSTRUCTORS)
+                    .method(isNative<MethodDescription>().and(isPublic()).and(not(isStatic())))
+                    .intercept(StubMethod.INSTANCE)
+                    .make()
+                    .load(Wallet::class.java.classLoader, ClassLoadingStrategy.Default.WRAPPER)
+                    .loaded
+                return mockkClass(overridable.kotlin, relaxed = true)
+            } finally {
+                unmockkStatic(MoneroNative::class)
+            }
+        }
+    }
 }

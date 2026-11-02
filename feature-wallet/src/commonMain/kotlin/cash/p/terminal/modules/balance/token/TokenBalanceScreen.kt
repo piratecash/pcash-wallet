@@ -80,6 +80,7 @@ import cash.p.terminal.modules.premium.settings.PremiumSettingsPage
 import cash.p.terminal.modules.receive.ReceivePage
 import cash.p.terminal.modules.send.SendResult
 import cash.p.terminal.modules.sendtokenselect.PrefilledData
+import cash.p.terminal.modules.syncerror.closeSyncErrorDialogUnlessFailing
 import cash.p.terminal.modules.syncerror.showSyncErrorDialog
 import cash.p.terminal.modules.transactionInfo.TransactionInfoPage
 import cash.p.terminal.modules.transactions.AmlCheckInfoBottomSheet
@@ -377,6 +378,8 @@ internal fun TokenBalanceScreenContent(
             )
         ) {
             onSyncErrorClick(viewItem)
+        } else if (!failedIconVisible) {
+            navigation.closeSyncErrorDialogUnlessFailing(emptyList())
         }
     }
 
@@ -570,6 +573,7 @@ internal fun TokenBalanceScreenContent(
                                 },
                                 onRetry = onRefresh,
                                 showRetry = notSyncedRetryVisible,
+                                hasTransactions = transactionItems.hasTransactions(),
                             )
                         }
                     }
@@ -1237,6 +1241,7 @@ internal fun TokenNotSyncedSection(
     onBlockchainStatusClick: () -> Unit,
     onRetry: () -> Unit,
     showRetry: Boolean,
+    hasTransactions: Boolean,
 ) {
     Column {
         BlockchainStatusButton(onClick = onBlockchainStatusClick)
@@ -1250,7 +1255,9 @@ internal fun TokenNotSyncedSection(
             textColor = ComposeAppTheme.colors.textPrimary,
             iconColor = ComposeAppTheme.colors.iconSecondary,
         ) {
-            subhead2_grey(text = stringResource(Res.string.token_not_synced_description))
+            if (hasTransactions) {
+                subhead2_grey(text = stringResource(Res.string.token_not_synced_description))
+            }
             if (showRetry) {
                 TokenNotSyncedRetryButton(onRetry = onRetry)
             }
@@ -1338,7 +1345,10 @@ internal fun shouldShowNotSyncedSection(
     transactions: Map<String, List<TransactionViewItem>>?,
 ): Boolean =
     shouldShowNotSyncedRetry(failedIconVisible, loadFailed) ||
-        (syncing && transactions?.values?.any { it.isNotEmpty() } == true)
+        (syncing && transactions.hasTransactions())
+
+private fun Map<String, List<TransactionViewItem>>?.hasTransactions(): Boolean =
+    this?.values?.any { it.isNotEmpty() } == true
 
 internal enum class TransactionsPlaceholder { SearchInProgress, SearchEmpty, WaitForSync, EmptyList, None }
 
@@ -1373,7 +1383,12 @@ private fun onSyncErrorClicked(
             val wallet = syncErrorDetails.wallet
             val errorMessage = syncErrorDetails.errorMessage
 
-            navigation.showSyncErrorDialog(wallet, errorMessage, syncErrorDetails.isBlockedByProvider)
+            navigation.showSyncErrorDialog(
+                wallet,
+                errorMessage,
+                syncErrorDetails.isBlockedByProvider,
+                syncErrorDetails.isDeviceError
+            )
         }
 
         is BalanceViewModel.SyncError.NetworkNotAvailable -> Unit // We already show this at bottom panel

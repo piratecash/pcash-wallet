@@ -36,6 +36,7 @@ import cash.p.terminal.core.managers.SolanaRpcSourceManager
 import cash.p.terminal.core.managers.StellarKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.TonKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.TronKitDatabaseKeyProvider
+import cash.p.terminal.core.managers.TrezorAttachments
 import cash.p.terminal.core.providers.AddressResolutionConfig
 import cash.p.terminal.core.providers.ZcashFallbackAddressProvider
 import cash.p.terminal.core.NonFatalReporter
@@ -92,6 +93,7 @@ import com.m2049r.xmrwallet.service.MoneroWalletService
 import io.horizontalsystems.core.ISystemInfoManager
 import io.horizontalsystems.core.IThirdKeyboard
 import io.horizontalsystems.hdwalletkit.Mnemonic
+import kotlinx.coroutines.flow.emptyFlow
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
@@ -146,6 +148,7 @@ internal val desktopWalletModule = module {
     single<TonHardwareSigners> { DesktopNoHardwareSigners }
     single<ZcashHardwareSigners> { DesktopNoHardwareSigners }
     single<MoneroHardwareGateway> { DesktopNoHardwareSigners }
+    single<TrezorAttachments> { DesktopNoTrezorAttachments }
     single<PlatformAccountDataCleaner> { DesktopPlatformAccountDataCleaner }
     single<PinStateInfo> { DesktopPinStateInfo }
     single<DeleteContactsPinSettings> { DesktopDeleteContactsPinSettings }
@@ -180,4 +183,10 @@ internal val desktopWalletModule = module {
     single<NonFatalReporter> { DesktopNonFatalReporter }
     // The TON fallback address provider stays in the Android app; desktop has none for TON.
     single<FallbackAddressProvider> { get<ZcashFallbackAddressProvider>() }
+}
+
+/** Desktop has no Trezor accounts, so nothing is ever plugged in for them. */
+private object DesktopNoTrezorAttachments : TrezorAttachments {
+    override val attached = emptyFlow<Unit>()
+    override val detached = emptyFlow<Unit>()
 }
