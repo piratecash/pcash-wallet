@@ -1,5 +1,6 @@
 package cash.p.terminal.core
 
+import cash.p.terminal.modules.amount.AmountInputType
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewMode
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.displayoptions.DisplayPricePeriod
@@ -32,6 +33,12 @@ interface TransactionSettingsStorage {
     var addressPoisoningViewMode: AddressPoisoningViewMode
     var recipientAddressBaseCheckEnabled: Boolean
     var recipientAddressContractCheckEnabled: Boolean
+    var amountInputType: AmountInputType?
+    var rbfEnabled: Boolean
+    var utxoExpertModeEnabled: Boolean
+    val utxoExpertModeEnabledFlow: StateFlow<Boolean>
+    var swapMevProtectionEnabled: Boolean
+    var transferPasscodeEnabled: Boolean
 }
 
 interface NetworkSettingsStorage {

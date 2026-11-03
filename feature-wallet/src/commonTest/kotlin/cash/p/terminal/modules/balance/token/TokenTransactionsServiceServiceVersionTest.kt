@@ -3,7 +3,9 @@ package cash.p.terminal.modules.balance.token
 import cash.p.terminal.core.ITransactionsAdapter
 import cash.p.terminal.core.managers.SpamManager
 import cash.p.terminal.core.managers.TransactionAdapterManager
+import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.modules.transactions.FilterTransactionType
+import cash.p.terminal.modules.transactions.HistoricalRateKey
 import cash.p.terminal.modules.transactions.ITransactionRecordRepository
 import cash.p.terminal.modules.transactions.NftMetadataService
 import cash.p.terminal.modules.transactions.RecordsBatch
@@ -11,6 +13,7 @@ import cash.p.terminal.modules.transactions.TransactionSyncStateRepository
 import cash.p.terminal.modules.transactions.TransactionsRateRepository
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Wallet
+import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.transaction.TransactionSource
 import io.mockk.coEvery
 import io.mockk.every
@@ -803,6 +806,49 @@ class TokenTransactionsServiceServiceVersionTest : KoinTest {
         assertFalse(service.recordsLoadFailedFlow.value)
         assertFalse(service.recordsLoadedFlow.value)
 
+        service.clear()
+    }
+
+    @Test
+    fun fetchRateIfNeeded_afterClear_doesNotThrowAndFetchesNothing() {
+        val service = createService()
+        service.clear()
+
+        service.fetchRateIfNeeded("r1")
+        Thread.sleep(SETTLE_MS)
+
+        verify(exactly = 0) { rateRepository.fetchHistoricalRate(any()) }
+    }
+
+    @Test
+    fun loadNext_afterClear_doesNotThrowAndLoadsNothing() {
+        val service = createService()
+        service.clear()
+
+        service.loadNext()
+        Thread.sleep(SETTLE_MS)
+
+        verify(exactly = 0) { repository.loadNext() }
+    }
+
+    @Test
+    fun fetchRateIfNeeded_itemWithoutRate_fetchesHistoricalRate() = runBlocking {
+        val source = mockk<TransactionSource>(relaxed = true)
+        val coin = mockk<Coin> { every { uid } returns "bitcoin" }
+        val record = mockRecord("r1", source)
+        every { record.timestamp } returns 1_700_000_000L
+        every { record.mainValue } returns mockk<TransactionValue>(relaxed = true) {
+            every { this@mockk.coin } returns coin
+        }
+        val service = startAndAwaitSubscription()
+        repositoryItemsFlow.emit(RecordsBatch(listOf(record)))
+        waitUntil { service.getTransactionItem("r1") != null }
+
+        service.fetchRateIfNeeded("r1")
+
+        verify(timeout = ADAPTER_WAIT_MS) {
+            rateRepository.fetchHistoricalRate(HistoricalRateKey("bitcoin", 1_700_000_000L))
+        }
         service.clear()
     }
 

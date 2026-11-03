@@ -8,9 +8,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: set up JDK 21
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v6
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -57,7 +57,7 @@ jobs:
             | awk '/certificate SHA-256 digest:/ { print $NF; exit }')"
           test "$ACTUAL_CERT_SHA256" = "374992632abe227755163b21d0eec1e109767054ebb956bda9a7b79709a4eec2"
       - name: Archive QA APK and R8 metadata
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: qa-r8-${{ github.run_id }}-${{ github.run_attempt }}
           path: |

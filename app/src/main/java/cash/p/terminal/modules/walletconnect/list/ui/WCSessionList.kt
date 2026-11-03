@@ -1,16 +1,11 @@
 package cash.p.terminal.modules.walletconnect.list.ui
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -27,19 +22,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.R
-import cash.p.terminal.modules.walletconnect.pairing.WCPairingsPage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.modules.walletconnect.list.WalletConnectListModule
 import cash.p.terminal.modules.walletconnect.list.WalletConnectListUiState
 import cash.p.terminal.modules.walletconnect.list.WalletConnectListViewModel
-import cash.p.terminal.ui_compose.components.CellSingleLineLawrenceSection
 import cash.p.terminal.ui_compose.components.DraggableCardSimple
 import cash.p.terminal.ui_compose.components.HsIconButton
-import cash.p.terminal.ui_compose.components.body_leah
-import cash.p.terminal.ui_compose.components.subhead1_grey
 import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.components.getShape
 import cash.p.terminal.ui_compose.components.showDivider
@@ -75,33 +65,6 @@ fun WCSessionList(
         )
         item {
             if (uiState.sessionViewItems.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(32.dp))
-            }
-        }
-
-        val pairingsNumber = uiState.pairingsNumber
-        if (pairingsNumber > 0) {
-            item {
-                CellSingleLineLawrenceSection {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clickable {
-                                navigation.slideFromRight(WCPairingsPage())
-                            }
-                            .padding(horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        body_leah(text = stringResource(R.string.WalletConnect_Pairings))
-                        Spacer(modifier = Modifier.weight(1f))
-                        subhead1_grey(text = pairingsNumber.toString())
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_arrow_right),
-                            contentDescription = null
-                        )
-                    }
-                }
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }
