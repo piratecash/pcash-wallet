@@ -51,6 +51,7 @@ import cash.p.terminal.ui.compose.components.PriceWithToggleCell
 import cash.p.terminal.ui.compose.components.SectionTitleCell
 import cash.p.terminal.ui.compose.components.TransactionAmountCell
 import cash.p.terminal.ui.compose.components.TransactionInfoAddressCell
+import cash.p.terminal.ui.compose.components.TransactionInfoAwaitingSwapResultCell
 import cash.p.terminal.ui.compose.components.TransactionInfoBeamCancelCell
 import cash.p.terminal.ui.compose.components.TransactionInfoBtcLockCell
 import cash.p.terminal.ui.compose.components.TransactionInfoContactCell
@@ -435,6 +436,10 @@ fun TransactionInfoSection(
                                 viewItem.badge,
                             )
                         }
+                    }
+
+                    is TransactionInfoViewItem.AwaitingSwapResult -> {
+                        add { TransactionInfoAwaitingSwapResultCell(title = viewItem.title) }
                     }
 
                     is TransactionInfoViewItem.Value -> {

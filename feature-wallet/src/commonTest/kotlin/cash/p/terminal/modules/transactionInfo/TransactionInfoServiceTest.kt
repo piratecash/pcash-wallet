@@ -44,6 +44,7 @@ import io.mockk.spyk
 import io.mockk.unmockkAll
 import io.reactivex.subjects.PublishSubject
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertNull
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -273,6 +274,24 @@ class TransactionInfoServiceTest : KoinTest {
 
         val item = service.transactionInfoItemFlow.first()
         assertEquals(TransactionStatus.Completed, item.externalStatus)
+    }
+
+    @Test
+    fun start_storedZeroAmountOutRealAndRefreshFails_emitsNullSwapAmountOutReal() = runTest(dispatcher) {
+        val swap = createFinishedSwapTransaction().copy(
+            status = TransactionStatusEnum.EXCHANGING.name.lowercase(),
+            amountOutReal = BigDecimal.ZERO,
+        )
+        coEvery { swapProviderTransactionsStorage.getTransaction("cn-tx-1") } returns swap
+        coEvery {
+            updateSwapProviderTransactionsStatusUseCase.updateTransactionStatusByDate(1000L)
+        } returns null
+
+        val service = createService(userSwapTransactionId = "cn-tx-1")
+        backgroundScope.launch { service.start() }
+        advanceUntilIdle()
+
+        assertNull(service.transactionInfoItemFlow.first().swapAmountOutReal)
     }
 
     @Test

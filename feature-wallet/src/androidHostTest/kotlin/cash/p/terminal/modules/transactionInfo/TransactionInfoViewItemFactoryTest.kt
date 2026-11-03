@@ -51,6 +51,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -60,8 +61,11 @@ import org.robolectric.annotation.Config
 import java.math.BigDecimal
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.Swap_ErrorInsufficientBalance
+import cash.p.terminal.resources.TransactionInfo_ExecutedRate
 import cash.p.terminal.resources.TransactionInfo_Fee
 import cash.p.terminal.resources.TransactionInfo_From
+import cash.p.terminal.resources.TransactionInfo_Price
+import cash.p.terminal.resources.TransactionInfo_PriceImpact
 import cash.p.terminal.resources.TransactionInfo_Status
 import cash.p.terminal.resources.TransactionInfo_To
 import cash.p.terminal.resources.Transactions_Completed
@@ -82,6 +86,7 @@ import cash.p.terminal.resources.duration_short_minutes
 import cash.p.terminal.resources.duration_short_seconds
 import cash.p.terminal.resources.swap_duration
 import cash.p.terminal.resources.swap_duration_approximate
+import cash.p.terminal.resources.transaction_info_executed_amount
 import cash.p.terminal.resources.transaction_swap_status_confirming
 import cash.p.terminal.resources.transaction_swap_status_unknown
 
@@ -635,6 +640,46 @@ class TransactionInfoViewItemFactoryTest {
         assertNull(swapDurationRow(null))
     }
 
+    @Test
+    fun getViewItemSections_swapInProgressWithoutRealAmount_showsAwaitingRows() {
+        val items = swapItems(externalStatus = TransactionStatus.Processing(0.5f))
+
+        val awaitingTitles = items.filterIsInstance<TransactionInfoViewItem.AwaitingSwapResult>().map { it.title }
+        assertEquals(
+            listOf(
+                Res.string.transaction_info_executed_amount,
+                Res.string.TransactionInfo_PriceImpact,
+                Res.string.TransactionInfo_ExecutedRate,
+                Res.string.TransactionInfo_Price,
+            ).map { Translator.getString(it) },
+            awaitingTitles
+        )
+        assertTrue(awaitingTitles.none { title -> items.hasRealRow(title) })
+    }
+
+    @Test
+    fun getViewItemSections_swapFinishedWithoutRealAmount_hidesResultRows() {
+        val items = swapItems(externalStatus = TransactionStatus.Completed)
+
+        assertTrue(items.filterIsInstance<TransactionInfoViewItem.AwaitingSwapResult>().isEmpty())
+        assertTrue(items.none { it is TransactionInfoViewItem.ValueColored || it is TransactionInfoViewItem.PriceWithToggle })
+    }
+
+    @Test
+    fun getViewItemSections_swapInProgressWithRealAmount_showsRealRows() {
+        val items = swapItems(externalStatus = TransactionStatus.Pending, amountOutReal = BigDecimal("9"))
+
+        assertTrue(items.filterIsInstance<TransactionInfoViewItem.AwaitingSwapResult>().isEmpty())
+        assertTrue(items.any { it is TransactionInfoViewItem.ValueColored })
+    }
+
+    private fun List<TransactionInfoViewItem>.hasRealRow(title: String) = any {
+        (it is TransactionInfoViewItem.Value && it.title == title) ||
+            (it is TransactionInfoViewItem.ValueClickable && it.title == title) ||
+            (it is TransactionInfoViewItem.ValueColored && it.title == title) ||
+            (it is TransactionInfoViewItem.PriceWithToggle && it.title == title)
+    }
+
     private fun stubDurationPatterns() {
         stubPattern(Res.string.duration_short_hours, "%1\$dh")
         stubPattern(Res.string.duration_short_minutes, "%1\$dm")
@@ -650,7 +695,11 @@ class TransactionInfoViewItemFactoryTest {
             .filterIsInstance<TransactionInfoViewItem.Value>()
             .singleOrNull { it.title == Translator.getString(Res.string.swap_duration) }
 
-    private fun swapItems(swapDuration: SwapDuration?): List<TransactionInfoViewItem> =
+    private fun swapItems(
+        swapDuration: SwapDuration? = null,
+        externalStatus: TransactionStatus? = null,
+        amountOutReal: BigDecimal? = null,
+    ): List<TransactionInfoViewItem> =
         TransactionInfoViewItemFactory(
             offlineOperationGate = mockk(relaxed = true),
             wallet = null,
@@ -666,6 +715,8 @@ class TransactionInfoViewItemFactoryTest {
                 swapCoinCodeIn = "BTC",
                 swapProvider = SwapProvider.CHANGENOW,
                 swapDuration = swapDuration,
+                externalStatus = externalStatus,
+                swapAmountOutReal = amountOutReal,
             )
         ).flatten()
 

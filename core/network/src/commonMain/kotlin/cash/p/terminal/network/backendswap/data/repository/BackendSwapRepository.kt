@@ -13,7 +13,6 @@ import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.network.swaprepository.SwapProviderStatusRequest
 import cash.p.terminal.network.swaprepository.SwapProviderTransactionStatusRepository
 import cash.p.terminal.network.swaprepository.SwapProviderTransactionStatusResult
-import java.math.BigDecimal
 
 class BackendSwapRepository internal constructor(
     private val backendSwapApi: BackendSwapApi,
@@ -44,7 +43,7 @@ class BackendSwapRepository internal constructor(
         val swap = backendSwapApi.getSwap(request.transactionId, walletAddress)
         return SwapProviderTransactionStatusResult(
             status = swap.status.toBackendSwapTransactionStatus(),
-            amountOutReal = swap.amountToActual?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO },
+            amountOutReal = swap.amountToActual?.toBigDecimalOrNull(),
         )
     }
 

@@ -773,6 +773,7 @@
     <string name="TransactionInfo_HistoricalRate">نرخ تاريخي</string>
     <string name="TransactionInfo_AnnouncedAmount">مبلغ اعلام شده</string>
     <string name="transaction_info_executed_amount">مبلغ اجرا شده</string>
+    <string name="swap_result_pending_info">مقدار پس از تکمیل جایگزینی در دسترس خواهد بود</string>
     <string name="TransactionInfo_PriceImpact">تأثیر قیمت</string>
     <string name="swap_duration">مدت جایگزینی</string>
     <string name="swap_duration_approximate">~%1$s</string>

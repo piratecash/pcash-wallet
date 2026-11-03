@@ -37,10 +37,14 @@ import cash.p.terminal.ui_compose.ColorName
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.entities.BlockchainType
 import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.TransactionInfo_ExecutedRate
+import cash.p.terminal.resources.TransactionInfo_Price
+import cash.p.terminal.resources.TransactionInfo_PriceImpact
 import cash.p.terminal.resources.TransactionInfo_SpamWarning
 import cash.p.terminal.resources.TransactionInfo_SpeedUpDescription
 import cash.p.terminal.resources.TransactionInfo_To
 import cash.p.terminal.resources.Transactions_ContractCall
+import cash.p.terminal.resources.transaction_info_executed_amount
 import cash.p.terminal.resources.Transactions_OperationType
 import cash.p.terminal.resources.Transactions_OperationType_ChangeTrust
 import cash.p.terminal.resources.Transactions_OperationType_CreateAccount
@@ -771,6 +775,9 @@ class TransactionInfoViewItemFactory(
             else -> {}
         }
 
+        val awaitingSwapResult = transactionItem.swapAmountOutReal == null &&
+                (status == TransactionStatus.Pending || status is TransactionStatus.Processing)
+
         // Add swap provider amount comparison section if available
         if (transactionItem.swapAmountOut != null &&
             transactionItem.swapCoinCodeOut != null &&
@@ -785,7 +792,7 @@ class TransactionInfoViewItemFactory(
                     coinCodeOut = transactionItem.swapCoinCodeOut,
                     coinCodeIn = transactionItem.swapCoinCodeIn,
                     hideAmount = transactionItem.hideAmount
-                )
+                ) + if (awaitingSwapResult) awaitingSwapResultItems() else emptyList()
             )
 
             transactionItem.swapProvider?.let { provider ->
@@ -819,6 +826,9 @@ class TransactionInfoViewItemFactory(
                             transactionItem.swapSubProviderId,
                         ),
                     ) + listOfNotNull(
+                        TransactionInfoViewItem.AwaitingSwapResult(
+                            Translator.getString(Res.string.TransactionInfo_Price)
+                        ).takeIf { awaitingSwapResult },
                         transactionItem.swapDuration?.let { duration ->
                             TransactionInfoViewItem.Value(
                                 Translator.getString(Res.string.swap_duration),
@@ -905,6 +915,12 @@ class TransactionInfoViewItemFactory(
 
         return itemSections
     }
+
+    private fun awaitingSwapResultItems() = listOf(
+        Res.string.transaction_info_executed_amount,
+        Res.string.TransactionInfo_PriceImpact,
+        Res.string.TransactionInfo_ExecutedRate,
+    ).map { TransactionInfoViewItem.AwaitingSwapResult(Translator.getString(it)) }
 
     /** BEAM core cancels only an own transfer that is still waiting for its peer. */
     private fun beamCancelSections(transaction: TransactionRecord): List<List<TransactionInfoViewItem>> {

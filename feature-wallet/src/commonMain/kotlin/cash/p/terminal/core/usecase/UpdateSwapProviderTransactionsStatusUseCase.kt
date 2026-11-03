@@ -2,6 +2,7 @@ package cash.p.terminal.core.usecase
 
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.entities.SwapProviderTransaction
+import cash.p.terminal.modules.transactions.positiveOrNull
 import cash.p.terminal.network.changenow.domain.entity.TransactionStatusEnum
 import cash.p.terminal.network.changenow.domain.entity.toStatus
 import cash.p.terminal.network.swaprepository.SwapProvider
@@ -91,16 +92,17 @@ class UpdateSwapProviderTransactionsStatusUseCase(
         result: SwapProviderTransactionStatusResult
     ): Boolean {
         val statusChanged = result.status.name.lowercase() != transaction.status
+        val amountOutReal = result.amountOutReal.positiveOrNull() ?: transaction.amountOutReal.positiveOrNull()
         // Don't consider amountOutReal changed if already matched (has actual blockchain amount)
         val amountOutRealChanged = transaction.incomingRecordUid == null &&
-                result.amountOutReal != null && result.amountOutReal != transaction.amountOutReal
+                amountOutReal != transaction.amountOutReal
         val finishedAtChanged = result.finishedAt != null && result.finishedAt != transaction.finishedAt
 
         return if (statusChanged || amountOutRealChanged || finishedAtChanged) {
             swapProviderTransactionsStorage.updateStatusFields(
                 date = transaction.date,
                 status = result.status.name.lowercase(),
-                amountOutReal = result.amountOutReal ?: transaction.amountOutReal,
+                amountOutReal = amountOutReal,
                 finishedAt = result.finishedAt ?: transaction.finishedAt
             )
             true

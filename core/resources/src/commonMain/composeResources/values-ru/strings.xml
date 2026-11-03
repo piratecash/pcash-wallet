@@ -778,6 +778,7 @@
     <string name="TransactionInfo_HistoricalRate">Исторический курс</string>
     <string name="TransactionInfo_AnnouncedAmount">Объявленная сумма</string>
     <string name="transaction_info_executed_amount">Реальная сумма</string>
+    <string name="swap_result_pending_info">Значение будет доступно после завершения обмена</string>
     <string name="TransactionInfo_PriceImpact">Влияние на цену</string>
     <string name="swap_duration">Время обмена</string>
     <string name="swap_duration_approximate">~%1$s</string>

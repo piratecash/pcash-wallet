@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -75,6 +76,7 @@ import cash.p.terminal.ui_compose.components.HSpacer
 import cash.p.terminal.ui_compose.components.HsCheckbox
 import cash.p.terminal.ui_compose.components.HsIconButton
 import cash.p.terminal.ui_compose.components.HsImage
+import cash.p.terminal.ui_compose.components.InfoBottomSheet
 import cash.p.terminal.ui_compose.components.RowUniversal
 import cash.p.terminal.ui_compose.components.SectionUniversalLawrence
 import cash.p.terminal.modules.transactions.poison_status.CopyWarningBottomSheet
@@ -123,6 +125,7 @@ import cash.p.terminal.resources.Transactions_Completed
 import cash.p.terminal.resources.Transactions_Failed
 import cash.p.terminal.resources.Transactions_Pending
 import cash.p.terminal.resources.Transactions_Processing
+import cash.p.terminal.resources.swap_result_pending_info
 import cash.p.terminal.resources.alpha_aml_title
 import cash.p.terminal.resources.beam_cancel_transaction
 import cash.p.terminal.resources.ic_arrow_medium2_up_24
@@ -671,6 +674,55 @@ fun TransactionInfoStatusCell(
                 HSCircularProgressIndicator(progress = status.progress, size = 20.dp)
             }
         }
+    }
+}
+
+@Composable
+fun TransactionInfoAwaitingSwapResultCell(title: String, modifier: Modifier = Modifier) {
+    var showInfo by remember { mutableStateOf(false) }
+    RowUniversal(
+        modifier = modifier.padding(horizontal = 16.dp),
+    ) {
+        subhead2_grey(text = title)
+        Spacer(modifier = Modifier.width(8.dp))
+        HsIconButton(
+            modifier = Modifier.size(20.dp),
+            onClick = { showInfo = true }
+        ) {
+            Image(
+                painter = painterResource(Res.drawable.ic_info_20),
+                contentDescription = null
+            )
+        }
+        Spacer(
+            Modifier
+                .weight(1f)
+                .defaultMinSize(minWidth = 8.dp)
+        )
+        subhead2_grey(
+            text = stringResource(Res.string.Transactions_Processing),
+            modifier = Modifier.padding(end = 8.dp)
+        )
+        HSCircularProgressIndicator(
+            progress = 0.15f,
+            size = 16.dp,
+            color = ComposeAppTheme.colors.textDisabled
+        )
+    }
+    if (showInfo) {
+        InfoBottomSheet(
+            title = title,
+            text = stringResource(Res.string.swap_result_pending_info),
+            onDismiss = { showInfo = false }
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun TransactionInfoAwaitingSwapResultCellPreview() {
+    ComposeAppTheme {
+        TransactionInfoAwaitingSwapResultCell(title = "Executed Amount")
     }
 }
 
