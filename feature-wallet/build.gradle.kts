@@ -106,6 +106,7 @@ kotlin {
                 // AdapterFactory takes StackingManager in its public constructor.
                 api(project(":feature-stacking"))
                 implementation(project(":components:chartview"))
+                implementation(project(":core:qr-multipart"))
 
                 implementation(libs.compose.multiplatform.runtime)
                 implementation(libs.compose.multiplatform.ui)
@@ -208,6 +209,7 @@ kotlin {
             dependencies {
                 runtimeOnly(libs.secp256k1.jni.jvm)
                 runtimeOnly(compose.desktop.currentOs)
+                implementation(compose.desktop.uiTestJUnit4)
             }
         }
         getByName("androidHostTest") {
@@ -228,4 +230,9 @@ kotlin {
 // clearAllStubsFromMemory() after each test and drop this block (see the note next to mockk in libs.versions.toml).
 tasks.withType<Test>().configureEach {
     maxHeapSize = "2g"
+}
+
+// The relocated send tests use the same fork interval as the app unit tests.
+tasks.withType<Test>().matching { it.name == "testAndroidHostTest" }.configureEach {
+    forkEvery = 80
 }

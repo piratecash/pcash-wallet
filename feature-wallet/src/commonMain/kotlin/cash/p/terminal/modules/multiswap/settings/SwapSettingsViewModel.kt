@@ -1,0 +1,46 @@
+package cash.p.terminal.modules.multiswap.settings
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import io.horizontalsystems.core.ViewModelUiState
+import kotlin.reflect.KClass
+import androidx.lifecycle.viewmodel.CreationExtras
+
+class SwapSettingsViewModel(settings: Map<String, Any?>) : ViewModelUiState<SwapSettingsUiState>() {
+    private var errors = mutableMapOf<String, Throwable>()
+    private val settings = settings.toMutableMap()
+
+    override fun createState() = SwapSettingsUiState(
+        applyEnabled = errors.isEmpty(),
+        settings = settings.toMap(),
+    )
+
+    fun onSettingError(id: String, error: Throwable?) {
+        if (error == null) {
+            errors.remove(id)
+        } else {
+            errors[id] = error
+        }
+
+        emitState()
+    }
+
+    fun onSettingEnter(id: String, value: Any?) {
+        settings[id] = value
+        emitState()
+    }
+
+    fun getSettings() = settings
+
+    class Factory(private val settings: Map<String, Any?>) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T {
+            return SwapSettingsViewModel(settings) as T
+        }
+    }
+}
+
+data class SwapSettingsUiState(
+    val applyEnabled: Boolean,
+    val settings: Map<String, Any?>
+)

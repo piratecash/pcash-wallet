@@ -12,7 +12,9 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Density
 import kotlinx.coroutines.flow.first
 import kotlin.time.TimeSource
@@ -53,5 +55,17 @@ fun <T> rememberDebouncedAction(
                 actionState(param)
             }
         }
+    }
+}
+
+fun TextFieldValue.withLeadingZeroIfDecimal(): TextFieldValue {
+    val text = this.text
+    return if (text.startsWith(",") || text.startsWith(".")) {
+        copy(
+            text = "0$text",
+            selection = TextRange(selection.start + 1, selection.end + 1)
+        )
+    } else {
+        this
     }
 }

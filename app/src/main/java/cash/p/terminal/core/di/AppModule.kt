@@ -4,7 +4,6 @@ import cash.p.terminal.di.managerModule
 import cash.p.terminal.feature.market.di.marketFeatureModule
 import cash.p.terminal.feature.wallet.di.featureWalletModule
 import cash.p.terminal.di.storageModule
-import cash.p.terminal.di.swapProvidersModule
 import cash.p.terminal.di.viewModelModule
 import cash.p.terminal.feature.logging.di.featureLoggingModule
 import cash.p.terminal.ledger.di.featureLedgerModule
@@ -34,7 +33,6 @@ val appModule = module {
         ledgerUsbModule,
         ledgerConnectorModule,
         networkModule,
-        swapProvidersModule,
         useCaseModule,
         appUpdateModule,
         featurePremiumModule,

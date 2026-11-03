@@ -1,14 +1,10 @@
 package cash.p.terminal.modules.main
 
-import androidx.compose.runtime.Composable
-import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.core.managers.FaqManager
 import cash.p.terminal.feature.wallet.FaqTopic
 import cash.p.terminal.feature.wallet.WalletPlatformPages
 import cash.p.terminal.feature.wallet.WalletSendPages
-import cash.p.terminal.modules.activatetoken.ActivateTokenPage
 import cash.p.terminal.modules.backuplocal.BackupLocalPage
-import cash.p.terminal.modules.balance.OpenSendTokenSelect
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusPage
 import cash.p.terminal.modules.coin.CoinPage
 import cash.p.terminal.modules.createaccount.CreateAccountPage
@@ -24,16 +20,8 @@ import cash.p.terminal.modules.nft.collection.NftCollectionPage
 import cash.p.terminal.modules.qrscanner.QRScannerPage
 import cash.p.terminal.modules.resettofactorysettings.ResetToFactorySettingsPage
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
-import cash.p.terminal.modules.send.SendPage
-import cash.p.terminal.modules.send.offline.OfflineBroadcastPage
-import cash.p.terminal.modules.sendtokenselect.PrefilledData
-import cash.p.terminal.modules.sendtokenselect.SendTokenSelectPage
 import cash.p.terminal.modules.settings.appearance.AppIconPage
 import cash.p.terminal.modules.subscription.SubscriptionInfoPage
-import cash.p.terminal.modules.transactionInfo.options.SpeedUpCancelType
-import cash.p.terminal.modules.transactionInfo.options.TransactionSpeedUpCancelPage
-import cash.p.terminal.modules.transactionInfo.resendbitcoin.ResendBitcoinPage
-import cash.p.terminal.modules.zcashmigration.ZcashMigrationFlow
 import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.BackupKeyInput
 import cash.p.terminal.navigation.HSNavigation
@@ -44,13 +32,9 @@ import cash.p.terminal.tangem.ui.accesscoderecovery.AccessCodeRecoverySheet
 import cash.p.terminal.ui_compose.CoinFragmentInput
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Token
-import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.navigation.WalletPages
 import com.tangem.common.doOnSuccess
 import io.horizontalsystems.core.entities.Blockchain
-import io.horizontalsystems.core.ui.dialogs.ConfirmationDialogSheet
-import io.horizontalsystems.core.entities.BlockchainType
-import kotlin.reflect.KClass
 
 class AppPagesImpl(
     private val tangemSdkManager: TangemSdkManager,
@@ -79,56 +63,9 @@ class AppPagesImpl(
         navigation.openMarkdownOrWeblink(url)
 
     override val mainPage = MainPage::class
-    override fun speedUpCancel(
-        blockchainType: BlockchainType,
-        type: SpeedUpCancelType,
-        transactionHash: String,
-        evmKitWrapper: EvmKitWrapper,
-    ): HSPage = TransactionSpeedUpCancelPage(
-        TransactionSpeedUpCancelPage.Input(blockchainType, type, transactionHash),
-        evmKitWrapper
-    )
-
-    override fun resendBitcoin(type: SpeedUpCancelType): HSPage = ResendBitcoinPage(ResendBitcoinPage.Input(type))
-    override fun sendTokenSelect(openSend: OpenSendTokenSelect?): HSPage = SendTokenSelectPage(
-        openSend?.let { SendTokenSelectPage.Input(it.blockchainTypes, it.tokenTypes, it.prefilledData) }
-    )
-
-    override fun send(
-        wallet: Wallet,
-        title: String,
-        sendEntryPoint: KClass<out HSPage>,
-        prefilledData: PrefilledData,
-    ): HSPage = SendPage(SendPage.Input(wallet, title, sendEntryPoint, prefilledData))
-
     override fun swapFrom(tokenIn: Token?): HSPage = SwapPage(tokenIn = tokenIn)
     override fun multiSwapExchanges(pendingMultiSwapId: String?): HSPage =
         MultiSwapExchangesPage(pendingMultiSwapId)
-
-    override fun offlineBroadcast(initialInput: String): HSPage =
-        OfflineBroadcastPage(OfflineBroadcastPage.Input(initialInput = initialInput))
-
-    @Composable
-    override fun ZcashMigration(wallet: Wallet, onClose: () -> Unit) = ZcashMigrationFlow(wallet, onClose)
-    override fun activateToken(wallet: Wallet): HSPage = ActivateTokenPage(wallet)
-
-    override fun confirmation(
-        title: String,
-        warningText: String,
-        actionButtonTitle: String,
-        transparentButtonTitle: String,
-        onConfirm: () -> Unit,
-    ): HSPage = ConfirmationDialogSheet(
-        title = title,
-        icon = null,
-        warningTitle = null,
-        warningText = warningText,
-        actionButtonTitle = actionButtonTitle,
-        transparentButtonTitle = transparentButtonTitle,
-        listener = object : ConfirmationDialogSheet.Listener {
-            override fun onActionButtonClick() = onConfirm()
-        },
-    )
 
     override suspend fun accessCodeRecovery(): HSPage? {
         var page: HSPage? = null

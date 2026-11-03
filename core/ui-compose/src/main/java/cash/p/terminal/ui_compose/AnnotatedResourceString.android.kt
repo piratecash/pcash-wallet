@@ -82,9 +82,4 @@ actual fun annotatedStringResource(resource: StringResource): AnnotatedString {
 fun annotatedHtmlStringResource(
     @StringRes id: Int,
     linkStyle: SpanStyle? = null,
-): AnnotatedString {
-    val text = stringResource(id)
-    return remember(text, linkStyle) {
-        AnnotatedResourceString.htmlToAnnotatedString(text, linkStyle = linkStyle)
-    }
-}
+): AnnotatedString = rememberHtmlAnnotatedString(stringResource(id), linkStyle)

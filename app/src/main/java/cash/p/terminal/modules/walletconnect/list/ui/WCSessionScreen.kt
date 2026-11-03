@@ -59,7 +59,7 @@ fun WCSessionsScreen(
     val coroutineScope = rememberCoroutineScope()
 
     val viewModel = viewModel<WalletConnectListViewModel>(
-        factory = WalletConnectListModule.Factory()
+        factory = WalletConnectListModule.Factory(deepLinkUri)
     )
 
     val uiState by viewModel.uiState.collectAsState(initial = WalletConnectListUiState())
@@ -76,12 +76,6 @@ fun WCSessionsScreen(
         }
 
         else -> Unit
-    }
-
-    LaunchedEffect(Unit) {
-        if (deepLinkUri != null) {
-            viewModel.setConnectionUri(deepLinkUri)
-        }
     }
 
     LifecycleEventEffect(event = Lifecycle.Event.ON_RESUME) {
@@ -140,7 +134,7 @@ fun WCSessionsScreen(
                     .padding(innerPaddings)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    if (uiState.sessionViewItems.isEmpty() && uiState.pairingsNumber == 0) {
+                    if (uiState.sessionViewItems.isEmpty()) {
                         ListEmptyView(
                             text = stringResource(R.string.WalletConnect_NoConnection),
                             icon = R.drawable.ic_wallet_connet_48

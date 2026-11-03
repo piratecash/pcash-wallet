@@ -50,6 +50,8 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.horizontalsystems.core.IPinComponent
+import cash.p.terminal.modules.send.offline.AndroidOfflineTransactionFiles
+import cash.p.terminal.modules.send.offline.OfflineTransactionFiles
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -100,6 +102,10 @@ class SettingsActionHandlerTest {
                 module {
                     single { mockk<IPinComponent>(relaxed = true) }
                     single { appPages }
+                    single<OfflineTransactionFiles> {
+                        val context = ApplicationProvider.getApplicationContext<Application>()
+                        AndroidOfflineTransactionFiles(context, mockk(), get(), mockk())
+                    }
                 }
             )
         }
