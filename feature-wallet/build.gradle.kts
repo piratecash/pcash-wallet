@@ -222,3 +222,10 @@ kotlin {
         }
     }
 }
+
+// Workaround for https://github.com/mockk/mockk/issues/1566: MockK <= 1.14.11 never frees regular mocks, so the
+// suite outgrows the 512 MB default heap. After upgrading to a release with mockk#1567, release the stubs with
+// clearAllStubsFromMemory() after each test and drop this block (see the note next to mockk in libs.versions.toml).
+tasks.withType<Test>().configureEach {
+    maxHeapSize = "2g"
+}

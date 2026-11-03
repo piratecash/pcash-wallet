@@ -37,6 +37,8 @@ composeResources = "1.12.1"
 composeMaterial3 = "1.12.0-alpha03"
 leakcanaryAndroid = "3.0-alpha-9"
 material = "1.13.0"
+# On upgrade past 1.14.11: mockk#1567 lets clearAllStubsFromMemory() free mocks, so remove the maxHeapSize workaround
+# in feature-wallet/build.gradle.kts (it explains what replaces it).
 mockk = "1.14.9"
 powermockApiMockito2 = "2.0.9"
 powermockModuleJunit4 = "2.0.9"
