@@ -6,9 +6,11 @@ import cash.p.terminal.core.managers.EvmKitManager
 import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
 import cash.p.terminal.core.managers.PendingTransactionRegistrar
+import cash.p.terminal.modules.evmfee.FeeSettingsError
 import cash.p.terminal.modules.evmfee.GasData
 import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionData
 import cash.p.terminal.modules.offline.OfflineOperationGate
+import cash.p.terminal.modules.send.evm.settings.SendEvmNonceService
 import cash.p.terminal.modules.send.evm.settings.SendEvmSettingsService
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.MarketKitWrapper
@@ -25,6 +27,7 @@ import cash.p.terminal.ui_compose.entities.DataState
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import io.horizontalsystems.core.CurrencyManager
 import io.horizontalsystems.core.IAppNumberFormatter
+import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.ethereumkit.core.EthereumKit
@@ -44,6 +47,7 @@ import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.spyk
 import io.mockk.unmockkAll
 import io.reactivex.Single
@@ -57,9 +61,11 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertThrows
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -68,6 +74,7 @@ import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import java.io.IOException
+import java.lang.reflect.Field
 import java.math.BigDecimal
 import java.math.BigInteger
 
@@ -213,6 +220,64 @@ class SendTransactionServiceEvmTest : KoinTest {
     }
 
     @Test
+    fun sendTransaction_broadcastFails_pinsSignedNonce() = runTest(dispatcher) {
+        assertEquals(rawTransaction.nonce, nonceAfterFailedSendAndReset())
+    }
+
+    @Test
+    fun sendTransaction_broadcastAndCleanupFail_pinsSignedNonce() = runTest(dispatcher) {
+        coEvery { pendingRegistrar.deleteFailed(any()) } throws IOException("database busy")
+
+        assertEquals(rawTransaction.nonce, nonceAfterFailedSendAndReset())
+    }
+
+    private suspend fun nonceAfterFailedSendAndReset(): Long? {
+        every { evmKit.send(rawTransaction, signature) } returns Single.error(IOException("timeout"))
+        every { evmKit.getNonce(any()) } returns Single.just(rawTransaction.nonce + 1)
+        val service = createService()
+
+        try {
+            service.send()
+            fail("Broadcast must fail")
+        } catch (expected: IOException) {
+        }
+        val nonceService = (service.getPrivateField("nonceService\$delegate") as Lazy<*>).value
+            as SendEvmNonceService
+        nonceService.reset()
+
+        return nonceService.state.dataOrNull?.nonce
+    }
+
+    @Test
+    fun handleTransactionState_error_retryAvailable() = runTest(dispatcher) {
+        mockTranslators()
+        val service = createRequestingService()
+        service.setSendTransactionData(SendTransactionData.Evm(transactionData, null))
+
+        service.handleTransactionState(DataState.Error(IOException("timeout")))
+
+        assertTrue(service.stateFlow.value.retryAvailable)
+    }
+
+    @Test
+    fun handleTransactionState_successWithInsufficientBalance_retryNotAvailable() = runTest(dispatcher) {
+        mockTranslators()
+        val service = createRequestingService()
+        service.setSendTransactionData(SendTransactionData.Evm(transactionData, null))
+        service.handleTransactionState(DataState.Error(IOException("timeout")))
+
+        service.handleTransactionState(
+            DataState.Success(
+                settingsTransaction(estimatedFor = transactionData)
+                    .copy(errors = listOf(FeeSettingsError.InsufficientBalance(BigInteger.ONE)))
+            )
+        )
+
+        assertFalse(service.stateFlow.value.sendable)
+        assertFalse(service.stateFlow.value.retryAvailable)
+    }
+
+    @Test
     fun send_broadcastReturnsDifferentTransaction_marksSignedHash() = runTest(dispatcher) {
         // The SDK resolves the broadcast result through an unordered `hash IN (...)` query and takes
         // the first row, so it can hand back a different transaction than the one just submitted.
@@ -306,6 +371,11 @@ class SendTransactionServiceEvmTest : KoinTest {
         assertSame(replacementData, service.offlineSignRequest().transactionData)
     }
 
+    private fun mockTranslators() {
+        mockkObject(Translator)
+        every { Translator.getString(any(), *anyVararg()) } returns "text"
+    }
+
     private fun createRequestingService(): SendTransactionServiceEvm {
         every { evmKit.chain } returns Chain.BinanceSmartChain
         return SendTransactionServiceEvm(bnbToken)
@@ -344,14 +414,17 @@ class SendTransactionServiceEvmTest : KoinTest {
         return service
     }
 
-    private fun Any.setPrivateField(name: String, value: Any?) {
+    private fun Any.setPrivateField(name: String, value: Any?) = privateField(name).set(this, value)
+
+    private fun Any.getPrivateField(name: String): Any? = privateField(name).get(this)
+
+    private fun Any.privateField(name: String): Field {
         var type: Class<*>? = javaClass
         while (type != null) {
             val field = type.declaredFields.firstOrNull { it.name == name }
             if (field != null) {
                 field.isAccessible = true
-                field.set(this, value)
-                return
+                return field
             }
             type = type.superclass
         }

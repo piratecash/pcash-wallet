@@ -7,6 +7,7 @@ import cash.p.terminal.modules.evmfee.GasPriceInfo
 import cash.p.terminal.modules.evmfee.IEvmGasPriceService
 import io.horizontalsystems.ethereumkit.core.LegacyGasPriceProvider
 import io.horizontalsystems.ethereumkit.models.GasPrice
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -22,6 +23,7 @@ class LegacyGasPriceService(
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
     private var setGasPriceJob: Job? = null
     private var recommendedGasPrice: Long? = null
+    private var lastRequestedGasPrice: Long? = null
 
     private val overpricingBound = Bound.Multiplied(BigDecimal(1.5))
     private val riskOfStuckBound = Bound.Multiplied(BigDecimal(0.9))
@@ -59,7 +61,12 @@ class LegacyGasPriceService(
         setGasPriceInternal(value)
     }
 
+    override fun retry() {
+        if (state is DataState.Error) setGasPriceInternal(lastRequestedGasPrice)
+    }
+
     private fun setGasPriceInternal(value: Long?) {
+        lastRequestedGasPrice = value
         state = DataState.Loading
         emitState()
 
@@ -98,6 +105,9 @@ class LegacyGasPriceService(
 
                 state = DataState.Success(gasPriceInfo)
                 emitState()
+            } catch (e: CancellationException) {
+                // A superseded request must not show an error that offers a retry.
+                throw e
             } catch (e: Throwable) {
                 state = DataState.Error(e)
                 emitState()
