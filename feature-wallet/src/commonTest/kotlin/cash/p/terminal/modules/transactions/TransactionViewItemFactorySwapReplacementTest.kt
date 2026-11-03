@@ -10,12 +10,12 @@ import cash.p.terminal.core.managers.PoisonAddressManager
 import cash.p.terminal.core.storage.PendingMultiSwapStorage
 import cash.p.terminal.core.storage.SwapProviderTransactionsStorage
 import cash.p.terminal.core.usecase.RelinkSwapToReplacementUseCase
-import cash.p.terminal.entities.RawUnstoppableProviderTitles
 import cash.p.terminal.entities.SwapProviderTransaction
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewMode
+import cash.p.terminal.modules.multiswap.providers.AndroidUnstoppableProviderTitles
 import cash.p.terminal.modules.transactions.poison_status.PoisonStatus
 import cash.p.terminal.network.swaprepository.SwapProvider
 import cash.p.terminal.wallet.WalletFactory
@@ -104,7 +104,7 @@ class TransactionViewItemFactorySwapReplacementTest {
             marketKit = mockk(relaxed = true),
             localStorage = settingsStorage,
             poisonAddressManager = poisonAddressManager,
-            unstoppableProviderTitles = RawUnstoppableProviderTitles,
+            unstoppableProviderTitles = AndroidUnstoppableProviderTitles(),
         )
     }
 

@@ -33,6 +33,7 @@ kotlin {
                 api(project(":core:common"))
                 api(project(":core:wallet"))
                 api(project(":core:storage"))
+                implementation(project(":core:ui-compose"))
                 api(libs.mockk)
                 api(libs.kotlinx.coroutines.core)
 
