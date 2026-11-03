@@ -114,6 +114,51 @@ class EvmSyncSourceManagerTest {
     }
 
     @Test
+    fun defaultSyncSources_ethereum_primaryFirstThenFallbacks() {
+        mockkObject(EvmExplorerApiKeys)
+        every { addressResolutionConfig.blocksDecodedEthereumRpc } returns BLOCKS_DECODED_RPC
+        every { EvmExplorerApiKeys.etherscan } returns emptyList()
+        try {
+            val sources = manager.defaultSyncSources(BlockchainType.Ethereum)
+
+            assertEquals(listOf("BlocksDecoded", "PublicNode"), sources.map { it.name })
+            assertEquals(
+                listOf(BLOCKS_DECODED_RPC, DRPC_URL, TENDERLY_URL),
+                (sources[0].rpcSource as RpcSource.Http).uris.map { it.toString() }
+            )
+            assertEquals(
+                listOf(PUBLIC_NODE_URL, DRPC_URL, TENDERLY_URL),
+                (sources[1].rpcSource as RpcSource.Http).uris.map { it.toString() }
+            )
+        } finally {
+            unmockkObject(EvmExplorerApiKeys)
+        }
+    }
+
+    @Test
+    fun getSyncSource_savedPublicNodeUrl_resolvesPublicNodeWithFallbacks() {
+        mockkObject(EvmExplorerApiKeys)
+        every { addressResolutionConfig.blocksDecodedEthereumRpc } returns BLOCKS_DECODED_RPC
+        every { EvmExplorerApiKeys.etherscan } returns emptyList()
+        val settingsStorage = mockk<BlockchainSettingsStorage> {
+            every { evmSyncSourceUrl(BlockchainType.Ethereum) } returns PUBLIC_NODE_URL
+        }
+        val evmSyncSourceStorage = mockk<EvmSyncSourceStorage> {
+            every { evmSyncSources(BlockchainType.Ethereum) } returns emptyList()
+        }
+        try {
+            val source = EvmSyncSourceManager(settingsStorage, evmSyncSourceStorage, addressResolutionConfig)
+                .getSyncSource(BlockchainType.Ethereum)
+
+            assertEquals("PublicNode", source.name)
+            assertEquals(PUBLIC_NODE_URL, source.uri.toString())
+            assertEquals(3, (source.rpcSource as RpcSource.Http).uris.size)
+        } finally {
+            unmockkObject(EvmExplorerApiKeys)
+        }
+    }
+
+    @Test
     fun customSyncSources_malformedUnsupportedRecord_returnsValidRecord() {
         mockkObject(EvmExplorerApiKeys)
         every { EvmExplorerApiKeys.etherscan } returns emptyList()
@@ -153,6 +198,9 @@ class EvmSyncSourceManagerTest {
 
     private companion object {
         const val BLOCKS_DECODED_RPC = "https://api-dev.blocksdecoded.com/v1/ethereum-rpc/mainnet"
+        const val PUBLIC_NODE_URL = "https://ethereum-rpc.publicnode.com"
+        const val DRPC_URL = "https://eth.drpc.org"
+        const val TENDERLY_URL = "https://gateway.tenderly.co/public/mainnet"
         const val MALFORMED_URL = "ftp://bad host"
         const val VALID_URL = "https://rpc.example.com"
     }

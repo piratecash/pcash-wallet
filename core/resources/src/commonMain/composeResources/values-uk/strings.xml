@@ -2467,6 +2467,7 @@
     <string name="desktop_change_password_corrupted">Файл ключа пошкоджено: після блокування застосунку ви не зможете увійти. Збережіть резервну копію кожної фрази відновлення.</string>
     <string name="desktop_change_password_success">Пароль змінено</string>
     <string name="desktop_security_lock_now">Заблокувати зараз</string>
+    <string name="evm_node_request_failed">Вузол мережі не зміг виконати запит. Повторіть спробу або виберіть інше джерело в налаштуваннях блокчейну.\n\nВідповідь вузла: %1$s</string>
     <string name="desktop_transfer_password">Пароль перед надсиланням</string>
     <string name="desktop_transfer_password_description">Перед кожним надсиланням запитується пароль застосунку. Це захистить ваші кошти, якщо хтось отримає доступ до комп’ютера з розблокованим застосунком.</string>
 </resources>
