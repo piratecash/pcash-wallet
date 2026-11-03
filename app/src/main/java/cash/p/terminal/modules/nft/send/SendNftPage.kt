@@ -18,7 +18,7 @@ import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.entities.nft.EvmNftRecord
 import cash.p.terminal.entities.nft.NftKey
 import cash.p.terminal.entities.nft.NftUid
-import cash.p.terminal.modules.address.AddressInputModule
+import cash.p.terminal.modules.address.NFT_ADDRESS_VIEW_MODEL
 import cash.p.terminal.modules.address.AddressParserViewModel
 import cash.p.terminal.modules.address.AddressViewModel
 import cash.p.terminal.modules.send.evm.SendEvmAddressService
@@ -32,6 +32,9 @@ import cash.p.terminal.ui.compose.components.ScreenMessageWithAction
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.nftkit.models.NftType
 import kotlinx.parcelize.Parcelize
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
+import org.koin.core.qualifier.named
 
 class SendNftPage(val input: Input) : HSPage() {
 
@@ -50,9 +53,9 @@ class SendNftPage(val input: Input) : HSPage() {
         when (factory?.evmNftRecord?.nftType) {
             NftType.Eip721 -> {
                 val eip721ViewModel = viewModel<SendEip721ViewModel>(factory = factory)
-                val addressViewModel = viewModel<AddressViewModel>(
-                    factory = AddressInputModule.FactoryNft(factory.nftUid.blockchainType)
-                )
+                val addressViewModel = koinViewModel<AddressViewModel>(named(NFT_ADDRESS_VIEW_MODEL)) {
+                    parametersOf(factory.nftUid.blockchainType)
+                }
                 val addressParserViewModel = viewModel<AddressParserViewModel>(factory = factory)
                 SendEip721Screen(
                     navigation = navigation,
@@ -65,9 +68,9 @@ class SendNftPage(val input: Input) : HSPage() {
 
             NftType.Eip1155 -> {
                 val eip1155ViewModel = viewModel<SendEip1155ViewModel>(factory = factory)
-                val addressViewModel = viewModel<AddressViewModel>(
-                    factory = AddressInputModule.FactoryNft(factory.nftUid.blockchainType)
-                )
+                val addressViewModel = koinViewModel<AddressViewModel>(named(NFT_ADDRESS_VIEW_MODEL)) {
+                    parametersOf(factory.nftUid.blockchainType)
+                }
                 val addressParserViewModel = viewModel<AddressParserViewModel>(factory = factory)
                 SendEip1155Screen(
                     navigation = navigation,

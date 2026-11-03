@@ -1,6 +1,7 @@
 package cash.p.terminal.shared.desktop
 
 import cash.p.terminal.entities.AppVersion
+import cash.p.terminal.modules.amount.AmountInputType
 import io.horizontalsystems.core.DesktopSettingsStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +27,47 @@ class DesktopWalletSettingsStorageTest {
     fun tearDown() {
         scope.cancel()
         directory.deleteRecursively()
+    }
+
+    @Test
+    fun sendSettings_nothingStored_returnTheAndroidDefaults() {
+        assertNull(storage.amountInputType)
+        assertTrue(storage.rbfEnabled)
+        assertFalse(storage.utxoExpertModeEnabled)
+        assertFalse(storage.utxoExpertModeEnabledFlow.value)
+        assertFalse(storage.swapMevProtectionEnabled)
+        assertFalse(storage.transferPasscodeEnabled)
+    }
+
+    @Test
+    fun sendSettings_written_areReadBackAndTheFlowFollows() {
+        storage.amountInputType = AmountInputType.CURRENCY
+        storage.rbfEnabled = false
+        storage.utxoExpertModeEnabled = true
+        storage.swapMevProtectionEnabled = true
+        storage.transferPasscodeEnabled = true
+
+        assertEquals(AmountInputType.CURRENCY, storage.amountInputType)
+        assertFalse(storage.rbfEnabled)
+        assertTrue(storage.utxoExpertModeEnabled)
+        assertTrue(storage.utxoExpertModeEnabledFlow.value)
+        assertTrue(storage.swapMevProtectionEnabled)
+        assertTrue(storage.transferPasscodeEnabled)
+
+        storage.amountInputType = null
+        assertNull(storage.amountInputType)
+    }
+
+    @Test
+    fun swapProviders_written_areReadBack() {
+        assertEquals(emptySet(), storage.disabledProviderIds)
+        assertNull(storage.backendProviders)
+
+        storage.disabledProviderIds = setOf("oneinch", "changenow")
+        storage.backendProviders = """[{"name":"changelly"}]"""
+
+        assertEquals(setOf("oneinch", "changenow"), storage.disabledProviderIds)
+        assertEquals("""[{"name":"changelly"}]""", storage.backendProviders)
     }
 
     @Test

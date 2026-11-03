@@ -18,6 +18,8 @@ import cash.p.terminal.resources.Settings_AutoLock
 import cash.p.terminal.resources.Settings_SecurityCenter
 import cash.p.terminal.resources.desktop_change_password_title
 import cash.p.terminal.resources.desktop_security_lock_now
+import cash.p.terminal.resources.desktop_transfer_password
+import cash.p.terminal.resources.desktop_transfer_password_description
 import cash.p.terminal.resources.ic_arrow_right
 import cash.p.terminal.shared.desktop.lock.ChangePasswordPage
 import cash.p.terminal.ui_compose.components.AppBar
@@ -42,9 +44,9 @@ class DesktopSecurityPage : HSPage() {
         // The interval is chosen on another page, so it is re-read when this one comes back.
         PageResumeEffect(onResume = viewModel::onResume, onPause = {})
         DesktopSecurityContent(
-            autoLockInterval = viewModel.autoLockInterval,
-            balanceAutoHideEnabled = viewModel.balanceAutoHideEnabled,
+            uiState = viewModel.uiState,
             onBalanceAutoHideChange = viewModel::onBalanceAutoHideChange,
+            onTransferPasswordChange = viewModel::onTransferPasswordChange,
             onAutoLockClick = { navigation.slideFromRight(DesktopAutoLockIntervalsPage()) },
             onChangePasswordClick = { navigation.slideFromRight(ChangePasswordPage()) },
             onLockClick = viewModel::onLockClick,
@@ -55,9 +57,9 @@ class DesktopSecurityPage : HSPage() {
 
 @Composable
 internal fun DesktopSecurityContent(
-    autoLockInterval: AutoLockInterval,
-    balanceAutoHideEnabled: Boolean,
+    uiState: DesktopSecurityUiState,
     onBalanceAutoHideChange: (Boolean) -> Unit,
+    onTransferPasswordChange: (Boolean) -> Unit,
     onAutoLockClick: () -> Unit,
     onChangePasswordClick: () -> Unit,
     onLockClick: () -> Unit,
@@ -80,7 +82,7 @@ internal fun DesktopSecurityContent(
                         HsSettingCell(
                             title = stringResource(Res.string.Settings_AutoLock),
                             arrowPainter = painterResource(Res.drawable.ic_arrow_right),
-                            value = stringResource(autoLockInterval.title),
+                            value = stringResource(uiState.autoLockInterval.title),
                             onClick = onAutoLockClick,
                         )
                     },
@@ -101,16 +103,38 @@ internal fun DesktopSecurityContent(
                 )
             )
             VSpacer(32.dp)
-            SectionUniversalLawrence {
-                SwitchWithText(
-                    text = stringResource(Res.string.Appearance_BalanceAutoHide),
-                    checked = balanceAutoHideEnabled,
-                    onCheckedChange = onBalanceAutoHideChange,
-                )
-            }
-            InfoText(text = stringResource(Res.string.Appearance_BalanceAutoHide_Description))
+            SwitchSection(
+                title = stringResource(Res.string.Appearance_BalanceAutoHide),
+                description = stringResource(Res.string.Appearance_BalanceAutoHide_Description),
+                checked = uiState.balanceAutoHideEnabled,
+                onCheckedChange = onBalanceAutoHideChange,
+            )
+            VSpacer(20.dp)
+            SwitchSection(
+                title = stringResource(Res.string.desktop_transfer_password),
+                description = stringResource(Res.string.desktop_transfer_password_description),
+                checked = uiState.transferPasswordEnabled,
+                onCheckedChange = onTransferPasswordChange,
+            )
         }
     }
+}
+
+@Composable
+private fun SwitchSection(
+    title: String,
+    description: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    SectionUniversalLawrence {
+        SwitchWithText(
+            text = title,
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+        )
+    }
+    InfoText(text = description)
 }
 
 @Preview
@@ -118,9 +142,13 @@ internal fun DesktopSecurityContent(
 private fun DesktopSecurityContentPreview() {
     ComposeAppTheme {
         DesktopSecurityContent(
-            autoLockInterval = AutoLockInterval.AFTER_1_MIN,
-            balanceAutoHideEnabled = true,
+            uiState = DesktopSecurityUiState(
+                autoLockInterval = AutoLockInterval.AFTER_1_MIN,
+                balanceAutoHideEnabled = true,
+                transferPasswordEnabled = false,
+            ),
             onBalanceAutoHideChange = {},
+            onTransferPasswordChange = {},
             onAutoLockClick = {},
             onChangePasswordClick = {},
             onLockClick = {},

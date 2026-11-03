@@ -9,9 +9,11 @@ import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.entities.AppVersion
 import cash.p.terminal.entities.decodeAppVersions
 import cash.p.terminal.entities.encodeToJson
+import cash.p.terminal.modules.amount.AmountInputType
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewMode
 import cash.p.terminal.modules.displayoptions.DisplayDiffOptionType
 import cash.p.terminal.modules.displayoptions.DisplayPricePeriod
+import cash.p.terminal.modules.multiswap.providers.SwapProvidersStorage
 import cash.p.terminal.wallet.BalanceSortType
 import cash.p.terminal.wallet.entities.EncryptedString
 import cash.p.terminal.wallet.managers.TransactionDisplayLevel
@@ -20,8 +22,12 @@ import kotlinx.coroutines.flow.StateFlow
 
 /** Same defaults as Android `LocalStorageManager`; the PIN arrives already encrypted. Tor is Android-only. */
 class DesktopWalletSettingsStorage(private val store: DesktopSettingsStore) :
-    BalanceSettingsStorage, TransactionSettingsStorage, NetworkSettingsStorage, ReleaseNotesStorage,
-    AppVersionStorage {
+    BalanceSettingsStorage,
+    TransactionSettingsStorage,
+    NetworkSettingsStorage,
+    ReleaseNotesStorage,
+    AppVersionStorage,
+    SwapProvidersStorage {
 
     override var sortType: BalanceSortType
         get() = BalanceSortType.getTypeFromString(store.string(SORT_TYPE) ?: BalanceSortType.Value.getAsString())
@@ -93,6 +99,28 @@ class DesktopWalletSettingsStorage(private val store: DesktopSettingsStore) :
         get() = store.flag(RECIPIENT_ADDRESS_CONTRACT_CHECK) ?: true
         set(value) = store.setFlag(RECIPIENT_ADDRESS_CONTRACT_CHECK, value)
 
+    override var amountInputType: AmountInputType?
+        get() = store.string(AMOUNT_INPUT_TYPE).toEnumOrNull()
+        set(value) = store.setString(AMOUNT_INPUT_TYPE, value?.name)
+
+    override var rbfEnabled: Boolean
+        get() = store.flag(RBF_ENABLED) ?: true
+        set(value) = store.setFlag(RBF_ENABLED, value)
+
+    override val utxoExpertModeEnabledFlow: StateFlow<Boolean> = store.flagFlow(UTXO_EXPERT_MODE, default = false)
+
+    override var utxoExpertModeEnabled: Boolean
+        get() = utxoExpertModeEnabledFlow.value
+        set(value) = store.setFlag(UTXO_EXPERT_MODE, value)
+
+    override var swapMevProtectionEnabled: Boolean
+        get() = store.flag(SWAP_MEV_PROTECTION) ?: false
+        set(value) = store.setFlag(SWAP_MEV_PROTECTION, value)
+
+    override var transferPasscodeEnabled: Boolean
+        get() = store.flag(TRANSFER_PASSCODE) ?: false
+        set(value) = store.setFlag(TRANSFER_PASSCODE, value)
+
     override val torEnabled: Boolean = false
 
     override var zcashIronwoodMigrationTxIds: Set<String>
@@ -118,6 +146,14 @@ class DesktopWalletSettingsStorage(private val store: DesktopSettingsStore) :
     override var appVersions: List<AppVersion>
         get() = store.string(APP_VERSIONS)?.let { tryOrNull { it.decodeAppVersions() } }.orEmpty()
         set(value) = store.setString(APP_VERSIONS, value.encodeToJson())
+
+    override var disabledProviderIds: Set<String>
+        get() = stringSet(DISABLED_SWAP_PROVIDERS)
+        set(value) = setStringSet(DISABLED_SWAP_PROVIDERS, value)
+
+    override var backendProviders: String?
+        get() = store.string(BACKEND_SWAP_PROVIDERS)
+        set(value) = store.setString(BACKEND_SWAP_PROVIDERS, value)
 
     override fun isNetworkFeeWarningDismissed(blockchainTypeUid: String): Boolean =
         store.flag(networkFeeWarningKey(blockchainTypeUid)) ?: false
@@ -154,11 +190,18 @@ class DesktopWalletSettingsStorage(private val store: DesktopSettingsStore) :
         const val ADDRESS_POISONING_VIEW_MODE = "addressPoisoningViewMode"
         const val RECIPIENT_ADDRESS_BASE_CHECK = "recipientAddressBaseCheckEnabled"
         const val RECIPIENT_ADDRESS_CONTRACT_CHECK = "recipientAddressContractCheckEnabled"
+        const val AMOUNT_INPUT_TYPE = "amountInputType"
+        const val RBF_ENABLED = "rbfEnabled"
+        const val UTXO_EXPERT_MODE = "utxoExpertModeEnabled"
+        const val SWAP_MEV_PROTECTION = "swapMevProtectionEnabled"
+        const val TRANSFER_PASSCODE = "transferPasscodeEnabled"
         const val ZCASH_IRONWOOD_TX_IDS = "zcashIronwoodMigrationTxIds"
         const val ZCASH_ACCOUNT_IDS = "zcashAccountIds"
         const val MONERO_SKIP_NEW_ADDRESS_CONFIRM = "moneroSkipNewAddressConfirm"
         const val CHANGELOG_SHOWN_FOR_APP_VERSION = "changelogShownForAppVersion"
         const val SHOW_CHANGELOG_AFTER_UPDATE = "showChangelogAfterUpdate"
         const val NETWORK_FEE_WARNING_PREFIX = "networkFeeWarningDismissed_"
+        const val DISABLED_SWAP_PROVIDERS = "disabledSwapProviders"
+        const val BACKEND_SWAP_PROVIDERS = "backendSwapProviders"
     }
 }

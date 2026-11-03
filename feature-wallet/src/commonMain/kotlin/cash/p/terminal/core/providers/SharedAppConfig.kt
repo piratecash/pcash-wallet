@@ -17,6 +17,7 @@ object SharedAppConfig {
     const val alphaAmlBaseUrl = "https://api.alpha-aml.com"
     const val reportEmail = "i@p.cash"
     const val isSwapEnabled = true
+    const val fiatDecimal: Int = 2
 
     const val companyWebPageLink = "https://p.cash/"
     const val appWebPageLink = "https://p.cash/#MOBILE_APPS"

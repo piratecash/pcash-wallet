@@ -31,6 +31,7 @@ import cash.p.terminal.modules.balance.ui.BalanceScreen
 import cash.p.terminal.modules.basecurrency.BaseCurrencySettingsPage
 import cash.p.terminal.modules.blockchainsettings.BlockchainSettingsPage
 import cash.p.terminal.modules.contacts.ContactsPage
+import cash.p.terminal.modules.multiswap.providersettings.SwapProvidersSettingsPage
 import cash.p.terminal.modules.contacts.Mode
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.manageaccounts.ManageAccountsPage
@@ -38,8 +39,11 @@ import cash.p.terminal.modules.market.MarketScreen
 import cash.p.terminal.modules.premium.about.AboutPremiumPage
 import cash.p.terminal.modules.releasenotes.ReleaseNotesPage
 import cash.p.terminal.modules.premium.settings.PremiumSettingsPage
+import cash.p.terminal.modules.send.offline.OfflineBroadcastInputPage
+import cash.p.terminal.modules.send.offline.rememberImportTransactionFile
 import cash.p.terminal.modules.settings.addresschecker.AddressCheckerPage
 import cash.p.terminal.modules.settings.appearance.AppearancePage
+import cash.p.terminal.modules.settings.donate.DonateTokenSelectPage
 import cash.p.terminal.modules.transactions.TransactionsScreen
 import cash.p.terminal.modules.transactions.TransactionsViewModel
 import cash.p.terminal.navigation.HSNavigation
@@ -165,6 +169,7 @@ private fun SettingsPane(navigation: HSNavigation) {
     val appVersion = koinInject<ISystemInfoManager>().appVersionDisplay
     val urlOpener = LocalUrlOpener.current
     val shareApp = rememberShareAppToClipboard(uiState.appWebPageLink)
+    val importTransactionFile = rememberImportTransactionFile(navigation)
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -196,13 +201,26 @@ private fun SettingsPane(navigation: HSNavigation) {
                     SettingsAction.Contacts -> navigation.slideFromRight(ContactsPage(ContactsPage.Input(Mode.Full)))
                     SettingsAction.AddressChecker -> navigation.slideFromRight(AddressCheckerPage())
                     SettingsAction.PremiumSettings -> navigation.slideFromRight(PremiumSettingsPage())
-                    else -> openAboutSetting(action, navigation, urlOpener, shareApp)
+                    SettingsAction.Donate -> navigation.slideFromRight(DonateTokenSelectPage())
+                    else -> {
+                        navigation.openWalletSetting(action, importTransactionFile)
+                        openAboutSetting(action, navigation, urlOpener, shareApp)
+                    }
                 }
             },
             alertPainter = settingsAlertPainter(),
             hiddenActions = DESKTOP_HIDDEN_SETTINGS,
             modifier = Modifier.weight(1f),
         )
+    }
+}
+
+private fun HSNavigation.openWalletSetting(action: SettingsAction, importTransactionFile: () -> Unit) {
+    when (action) {
+        SettingsAction.SwapProviders -> slideFromRight(SwapProvidersSettingsPage())
+        SettingsAction.OfflineBroadcast -> slideFromRight(OfflineBroadcastInputPage())
+        SettingsAction.ImportTransactionFile -> importTransactionFile()
+        else -> Unit
     }
 }
 

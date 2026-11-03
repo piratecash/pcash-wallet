@@ -80,7 +80,6 @@ class PcashAppDesktopTest {
         assertTrue(axisSpread(wideCenters, vertical = true) > axisSpread(wideCenters, vertical = false))
 
         onNodeWithContentDescription("Settings").performClick()
-        onNodeWithText("Donate").performClick()
         onNodeWithText("P.CASH 1.0.0").performScrollTo().assertExists()
         val company = onNodeWithText("PirateCash and Cosanta Foundation")
         company.performScrollTo().assertExists()
