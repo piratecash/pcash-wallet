@@ -8,22 +8,25 @@ import kotlinx.coroutines.flow.asSharedFlow
 
 abstract class ServiceState<T> {
 
-    private val _stateFlow by lazy {
-        MutableSharedFlow<T>(
-            replay = 1,
-            onBufferOverflow = BufferOverflow.DROP_OLDEST
-        ).also {
-            // Emit initial state to avoid exception in ServiceStateFlow.value
-            it.tryEmit(createState())
-        }
-    }
+    private val _stateFlow = MutableSharedFlow<T>(
+        replay = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+
+    // Emit initial state to avoid exception in ServiceStateFlow.value. The flow itself is not lazy:
+    // createState may run an event loop (runBlocking) that re-enters this initializer on the same thread.
+    private val initialStatePublished by lazy { _stateFlow.tryEmit(createState()) }
 
     val stateFlow: ServiceStateFlow<T>
-        get() = ServiceStateFlow(_stateFlow.asSharedFlow())
+        get() {
+            initialStatePublished
+            return ServiceStateFlow(_stateFlow.asSharedFlow())
+        }
 
     protected abstract fun createState(): T
 
     protected fun emitState() {
+        initialStatePublished
         _stateFlow.tryEmit(createState())
     }
 }

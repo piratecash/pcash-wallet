@@ -6,7 +6,6 @@
     <ID>AppSingletonAccess:AddressInputModule.kt$AddressInputModule.FactoryNft$App.contactsRepository</ID>
     <ID>AppSingletonAccess:AddressInputModule.kt$AddressInputModule.FactoryToken$App.contactsRepository</ID>
     <ID>AppSingletonAccess:AddressValidatorFactory.kt$AddressValidatorFactory$App.adapterManager</ID>
-    <ID>AppSingletonAccess:AllBridgeProvider.kt$AllBridgeProvider$App.marketKit</ID>
     <ID>AppSingletonAccess:AmountInputModeModule.kt$AmountInputModeModule.Factory$App.currencyManager</ID>
     <ID>AppSingletonAccess:AmountInputModeModule.kt$AmountInputModeModule.Factory$App.localStorage</ID>
     <ID>AppSingletonAccess:AmountInputModeModule.kt$AmountInputModeModule.Factory$App.marketKit</ID>
@@ -15,7 +14,6 @@
     <ID>AppSingletonAccess:AutoLockModule.kt$AutoLockModule.Factory$App.localStorage</ID>
     <ID>AppSingletonAccess:BackupConfirmKeyModule.kt$BackupConfirmKeyModule.Factory$App.accountManager</ID>
     <ID>AppSingletonAccess:BaseActivity.kt$BaseActivity$App.sqlCipherLoadFailed</ID>
-    <ID>AppSingletonAccess:BaseThorChainProvider.kt$BaseThorChainProvider$App.marketKit</ID>
     <ID>AppSingletonAccess:BaseThorChainProviderTest.kt$BaseThorChainProviderTest$App.marketKit</ID>
     <ID>AppSingletonAccess:BeamSwapDispatchTest.kt$BeamSwapDispatchTest$App.currencyManager</ID>
     <ID>AppSingletonAccess:BlockchainSettingsModule.kt$BlockchainSettingsModule.Factory$App.btcBlockchainManager</ID>
@@ -27,27 +25,13 @@
     <ID>AppSingletonAccess:CoinTweetsModule.kt$CoinTweetsModule.Factory$App.marketKit</ID>
     <ID>AppSingletonAccess:CreateHardwareWalletUseCase.kt$CreateHardwareWalletUseCase$App.accountFactory</ID>
     <ID>AppSingletonAccess:CreateHardwareWalletUseCase.kt$CreateHardwareWalletUseCase$App.walletActivator</ID>
-    <ID>AppSingletonAccess:DataFieldRecipientExtended.kt$DataFieldRecipientExtended$App.contactsRepository</ID>
-    <ID>AppSingletonAccess:DataFieldSlippage.kt$DataFieldSlippage$App.numberFormatter</ID>
     <ID>AppSingletonAccess:Eip1559FeeSettingsViewModel.kt$Eip1559FeeSettingsViewModel$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:Eip20ApproveViewModel.kt$Eip20ApproveViewModel.Factory$App.adapterManager</ID>
-    <ID>AppSingletonAccess:Eip20ApproveViewModel.kt$Eip20ApproveViewModel.Factory$App.contactsRepository</ID>
-    <ID>AppSingletonAccess:Eip20ApproveViewModel.kt$Eip20ApproveViewModel.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:Eip20RevokeConfirmViewModel.kt$Eip20RevokeConfirmViewModel.Factory$App.adapterManager</ID>
-    <ID>AppSingletonAccess:Eip20RevokeConfirmViewModel.kt$Eip20RevokeConfirmViewModel.Factory$App.contactsRepository</ID>
-    <ID>AppSingletonAccess:Eip20RevokeConfirmViewModel.kt$Eip20RevokeConfirmViewModel.Factory$App.currencyManager</ID>
     <ID>AppSingletonAccess:EnterAddressValidator.kt$MemoAddressValidator$App.adapterManager</ID>
-    <ID>AppSingletonAccess:EvmBlockchainHelper.kt$EvmBlockchainHelper$App.evmBlockchainManager</ID>
-    <ID>AppSingletonAccess:EvmBlockchainHelper.kt$EvmBlockchainHelper$App.evmSyncSourceManager</ID>
     <ID>AppSingletonAccess:EvmNetworkModule.kt$EvmNetworkModule.Factory$App.evmSyncSourceManager</ID>
-    <ID>AppSingletonAccess:EvmSwapHelper.kt$EvmSwapHelper$App.adapterManager</ID>
     <ID>AppSingletonAccess:EvmSwapHelperTest.kt$EvmSwapHelperTest$App.adapterManager</ID>
-    <ID>AppSingletonAccess:EvmSwapProvider.kt$EvmSwapProvider$App.adapterManager</ID>
     <ID>AppSingletonAccess:FeeRateProviderFactory.kt$FeeRateProviderFactory$App.feeRateProvider</ID>
     <ID>AppSingletonAccess:HSFeeInput.kt$App.numberFormatter</ID>
     <ID>AppSingletonAccess:HardwareWalletViewModel.kt$HardwareWalletViewModel$App.accountFactory</ID>
-    <ID>AppSingletonAccess:ISendTransactionService.kt$ISendTransactionService$App.currencyManager</ID>
-    <ID>AppSingletonAccess:ISendTransactionService.kt$ISendTransactionService$App.marketKit</ID>
     <ID>AppSingletonAccess:LanguageSettingsModule.kt$LanguageSettingsModule.Factory$App.languageManager</ID>
     <ID>AppSingletonAccess:LanguageSettingsModule.kt$LanguageSettingsModule.Factory$App.localStorage</ID>
     <ID>AppSingletonAccess:LegacyFeeSettingsViewModel.kt$LegacyFeeSettingsViewModel$App.numberFormatter</ID>
@@ -84,11 +68,6 @@
     <ID>AppSingletonAccess:PinSetModule.kt$PinSetModule.Factory$App.pinComponent</ID>
     <ID>AppSingletonAccess:ReleaseNotesViewModel.kt$ReleaseNotesViewModel$App.connectivityManager</ID>
     <ID>AppSingletonAccess:ReleaseNotesViewModel.kt$ReleaseNotesViewModel$App.releaseNotesManager</ID>
-    <ID>AppSingletonAccess:ResendBitcoinModule.kt$ResendBitcoinModule.Factory$App.contactsRepository</ID>
-    <ID>AppSingletonAccess:ResendBitcoinModule.kt$ResendBitcoinModule.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:ResendBitcoinModule.kt$ResendBitcoinModule.Factory$App.marketKit</ID>
-    <ID>AppSingletonAccess:ResendBitcoinModule.kt$ResendBitcoinModule.Factory$App.transactionAdapterManager</ID>
-    <ID>AppSingletonAccess:ResendBitcoinPage.kt$ResendBitcoinPage$App.numberFormatter</ID>
     <ID>AppSingletonAccess:RootedDeviceModule.kt$RootedDeviceModule.Factory$App.localStorage</ID>
     <ID>AppSingletonAccess:SecurityTorSettingsModule.kt$SecurityTorSettingsModule.Factory$App.pinComponent</ID>
     <ID>AppSingletonAccess:SecurityTorSettingsModule.kt$SecurityTorSettingsModule.Factory$App.torKitManager</ID>
@@ -97,7 +76,6 @@
     <ID>AppSingletonAccess:SelectBlockchainsModule.kt$SelectBlockchainsModule.Factory$App.evmBlockchainManager</ID>
     <ID>AppSingletonAccess:SelectBlockchainsModule.kt$SelectBlockchainsModule.Factory$App.marketKit</ID>
     <ID>AppSingletonAccess:SelectBlockchainsModule.kt$SelectBlockchainsModule.Factory$App.walletActivator</ID>
-    <ID>AppSingletonAccess:SelectSwapCoinDialogScreen.kt$App.numberFormatter</ID>
     <ID>AppSingletonAccess:SendBitcoinModule.kt$SendBitcoinModule.Factory$App.btcBlockchainManager</ID>
     <ID>AppSingletonAccess:SendBitcoinModule.kt$SendBitcoinModule.Factory$App.contactsRepository</ID>
     <ID>AppSingletonAccess:SendBitcoinModule.kt$SendBitcoinModule.Factory$App.currencyManager</ID>
@@ -136,21 +114,12 @@
     <ID>AppSingletonAccess:SendTonModule.kt$SendTonModule.Factory$App.marketKit</ID>
     <ID>AppSingletonAccess:SendTransactionServiceBeamTest.kt$SendTransactionServiceBeamTest$App.currencyManager</ID>
     <ID>AppSingletonAccess:SendTransactionServiceBeamTest.kt$SendTransactionServiceBeamTest$App.marketKit</ID>
-    <ID>AppSingletonAccess:SendTransactionServiceBitcoin.kt$SendTransactionServiceBitcoin$App.currencyManager</ID>
-    <ID>AppSingletonAccess:SendTransactionServiceEvm.kt$SendTransactionServiceEvm$App.coinManager</ID>
-    <ID>AppSingletonAccess:SendTransactionServiceEvm.kt$SendTransactionServiceEvm$App.currencyManager</ID>
-    <ID>AppSingletonAccess:SendTransactionServiceEvm.kt$SendTransactionServiceEvm$App.evmBlockchainManager</ID>
-    <ID>AppSingletonAccess:SendTransactionServiceEvm.kt$SendTransactionServiceEvm$App.marketKit</ID>
     <ID>AppSingletonAccess:SendTransactionServiceEvmTest.kt$SendTransactionServiceEvmTest$App.coinManager</ID>
     <ID>AppSingletonAccess:SendTransactionServiceEvmTest.kt$SendTransactionServiceEvmTest$App.currencyManager</ID>
     <ID>AppSingletonAccess:SendTransactionServiceEvmTest.kt$SendTransactionServiceEvmTest$App.evmBlockchainManager</ID>
     <ID>AppSingletonAccess:SendTransactionServiceEvmTest.kt$SendTransactionServiceEvmTest$App.marketKit</ID>
-    <ID>AppSingletonAccess:SendTransactionServiceMonero.kt$SendTransactionServiceMonero$App.currencyManager</ID>
-    <ID>AppSingletonAccess:SendTransactionServiceMonero.kt$SendTransactionServiceMonero$App.marketKit</ID>
     <ID>AppSingletonAccess:SendTransactionServiceMoneroTest.kt$SendTransactionServiceMoneroTest$App.currencyManager</ID>
     <ID>AppSingletonAccess:SendTransactionServiceMoneroTest.kt$SendTransactionServiceMoneroTest$App.marketKit</ID>
-    <ID>AppSingletonAccess:SendTransactionServiceSolana.kt$SendTransactionServiceSolana$App.currencyManager</ID>
-    <ID>AppSingletonAccess:SendTransactionServiceSolana.kt$SendTransactionServiceSolana$App.marketKit</ID>
     <ID>AppSingletonAccess:SendTransactionServiceSolanaTest.kt$SendTransactionServiceSolanaTest$App.coinManager</ID>
     <ID>AppSingletonAccess:SendTransactionServiceSolanaTest.kt$SendTransactionServiceSolanaTest$App.currencyManager</ID>
     <ID>AppSingletonAccess:SendTransactionServiceSolanaTest.kt$SendTransactionServiceSolanaTest$App.marketKit</ID>
@@ -158,16 +127,8 @@
     <ID>AppSingletonAccess:SendTransactionServiceStellarTest.kt$SendTransactionServiceStellarTest$App.marketKit</ID>
     <ID>AppSingletonAccess:SendTransactionServiceThorchainTest.kt$SendTransactionServiceThorchainTest$App.currencyManager</ID>
     <ID>AppSingletonAccess:SendTransactionServiceThorchainTest.kt$SendTransactionServiceThorchainTest$App.marketKit</ID>
-    <ID>AppSingletonAccess:SendTransactionServiceTon.kt$SendTransactionServiceTon$App.currencyManager</ID>
-    <ID>AppSingletonAccess:SendTransactionServiceTon.kt$SendTransactionServiceTon$App.marketKit</ID>
-    <ID>AppSingletonAccess:SendTransactionServiceTonSwap.kt$SendTransactionServiceTonSwap$App.currencyManager</ID>
-    <ID>AppSingletonAccess:SendTransactionServiceTonSwap.kt$SendTransactionServiceTonSwap$App.marketKit</ID>
     <ID>AppSingletonAccess:SendTransactionServiceTonSwapTest.kt$SendTransactionServiceTonSwapTest$App.currencyManager</ID>
     <ID>AppSingletonAccess:SendTransactionServiceTonSwapTest.kt$SendTransactionServiceTonSwapTest$App.marketKit</ID>
-    <ID>AppSingletonAccess:SendTransactionServiceTron.kt$SendTransactionServiceTron$App.currencyManager</ID>
-    <ID>AppSingletonAccess:SendTransactionServiceTron.kt$SendTransactionServiceTron$App.marketKit</ID>
-    <ID>AppSingletonAccess:SendTransactionServiceZCash.kt$SendTransactionServiceZCash$App.currencyManager</ID>
-    <ID>AppSingletonAccess:SendTransactionServiceZCash.kt$SendTransactionServiceZCash$App.marketKit</ID>
     <ID>AppSingletonAccess:SendTransactionServiceZCashTest.kt$SendTransactionServiceZCashTest$App.currencyManager</ID>
     <ID>AppSingletonAccess:SendTransactionServiceZCashTest.kt$SendTransactionServiceZCashTest$App.marketKit</ID>
     <ID>AppSingletonAccess:SendTronConfirmationScreen.kt$App.numberFormatter</ID>
@@ -181,32 +142,15 @@
     <ID>AppSingletonAccess:SendZCashModule.kt$SendZCashModule.Factory$App.marketKit</ID>
     <ID>AppSingletonAccess:SetDuressPinSelectAccountsViewModel.kt$SetDuressPinSelectAccountsViewModel.Factory$App.accountManager</ID>
     <ID>AppSingletonAccess:SetDuressPinViewModel.kt$SetDuressPinViewModel.Factory$App.userManager</ID>
-    <ID>AppSingletonAccess:SwapConfirmViewModel.kt$SwapConfirmViewModel.Companion.&lt;no name provided&gt;$App.adapterManager</ID>
-    <ID>AppSingletonAccess:SwapConfirmViewModel.kt$SwapConfirmViewModel.Companion.&lt;no name provided&gt;$App.currencyManager</ID>
-    <ID>AppSingletonAccess:SwapConfirmViewModel.kt$SwapConfirmViewModel.Companion.&lt;no name provided&gt;$App.walletManager</ID>
-    <ID>AppSingletonAccess:SwapHelper.kt$SwapHelper$App.accountManager</ID>
-    <ID>AppSingletonAccess:SwapHelper.kt$SwapHelper$App.adapterManager</ID>
-    <ID>AppSingletonAccess:SwapHelper.kt$SwapHelper$App.evmBlockchainManager</ID>
-    <ID>AppSingletonAccess:SwapHelper.kt$SwapHelper$App.tronKitManager</ID>
     <ID>AppSingletonAccess:SwapHelperTest.kt$SwapHelperTest$App.accountManager</ID>
     <ID>AppSingletonAccess:SwapHelperTest.kt$SwapHelperTest$App.adapterManager</ID>
     <ID>AppSingletonAccess:SwapHelperTest.kt$SwapHelperTest$App.evmBlockchainManager</ID>
-    <ID>AppSingletonAccess:SwapPage.kt$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:SwapSelectCoinViewModel.kt$SwapSelectCoinViewModel$App.adapterManager</ID>
-    <ID>AppSingletonAccess:SwapSelectCoinViewModel.kt$SwapSelectCoinViewModel$App.currencyManager</ID>
-    <ID>AppSingletonAccess:SwapSelectCoinViewModel.kt$SwapSelectCoinViewModel$App.marketKit</ID>
-    <ID>AppSingletonAccess:SwapSelectCoinViewModel.kt$SwapSelectCoinViewModel$App.walletManager</ID>
     <ID>AppSingletonAccess:SwapSelectCoinViewModelTest.kt$SwapSelectCoinViewModelTest$App.adapterManager</ID>
     <ID>AppSingletonAccess:SwapSelectCoinViewModelTest.kt$SwapSelectCoinViewModelTest$App.currencyManager</ID>
     <ID>AppSingletonAccess:SwapSelectCoinViewModelTest.kt$SwapSelectCoinViewModelTest$App.marketKit</ID>
     <ID>AppSingletonAccess:SwapSelectCoinViewModelTest.kt$SwapSelectCoinViewModelTest$App.walletManager</ID>
-    <ID>AppSingletonAccess:SwapSelectProviderViewModel.kt$SwapSelectProviderViewModel$App.currencyManager</ID>
-    <ID>AppSingletonAccess:SwapSelectProviderViewModel.kt$SwapSelectProviderViewModel$App.numberFormatter</ID>
     <ID>AppSingletonAccess:SwapSelectProviderViewModelTest.kt$SwapSelectProviderViewModelTest$App.currencyManager</ID>
     <ID>AppSingletonAccess:SwapSelectProviderViewModelTest.kt$SwapSelectProviderViewModelTest$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:SwapViewModel.kt$SwapViewModel.Factory$App.adapterManager</ID>
-    <ID>AppSingletonAccess:SwapViewModel.kt$SwapViewModel.Factory$App.connectivityManager</ID>
-    <ID>AppSingletonAccess:SwapViewModel.kt$SwapViewModel.Factory$App.currencyManager</ID>
     <ID>AppSingletonAccess:TokenSelectViewModel.kt$TokenSelectViewModel.FactoryForSend$App.balanceHiddenManager</ID>
     <ID>AppSingletonAccess:TokenSelectViewModel.kt$TokenSelectViewModel.FactoryForSend$App.currencyManager</ID>
     <ID>AppSingletonAccess:TokenSelectViewModel.kt$TokenSelectViewModel.FactoryForSend$App.marketKit</ID>
@@ -216,12 +160,6 @@
     <ID>AppSingletonAccess:TransactionInfoHelper.kt$TransactionInfoHelper$App.contactsRepository</ID>
     <ID>AppSingletonAccess:TransactionInfoHelper.kt$TransactionInfoHelper$App.currencyManager</ID>
     <ID>AppSingletonAccess:TransactionInfoHelper.kt$TransactionInfoHelper$App.marketKit</ID>
-    <ID>AppSingletonAccess:TransactionSpeedUpCancelViewModel.kt$TransactionSpeedUpCancelViewModel.Factory$App.coinManager</ID>
-    <ID>AppSingletonAccess:TransactionSpeedUpCancelViewModel.kt$TransactionSpeedUpCancelViewModel.Factory$App.contactsRepository</ID>
-    <ID>AppSingletonAccess:TransactionSpeedUpCancelViewModel.kt$TransactionSpeedUpCancelViewModel.Factory$App.currencyManager</ID>
-    <ID>AppSingletonAccess:TransactionSpeedUpCancelViewModel.kt$TransactionSpeedUpCancelViewModel.Factory$App.evmBlockchainManager</ID>
-    <ID>AppSingletonAccess:TransactionSpeedUpCancelViewModel.kt$TransactionSpeedUpCancelViewModel.Factory$App.evmLabelManager</ID>
-    <ID>AppSingletonAccess:TransactionSpeedUpCancelViewModel.kt$TransactionSpeedUpCancelViewModel.Factory$App.marketKit</ID>
     <ID>AppSingletonAccess:UnlinkAccountModule.kt$UnlinkAccountModule.Factory$App.accountManager</ID>
     <ID>AppSingletonAccess:UtxoExpertModeViewModel.kt$UtxoExpertModeModule.Factory$App.currencyManager</ID>
     <ID>AppSingletonAccess:UtxoExpertModeViewModel.kt$UtxoExpertModeModule.Factory$App.marketKit</ID>
@@ -252,69 +190,31 @@
     <ID>AppSingletonAccess:WalletConnectListModule.kt$WalletConnectListModule.Factory$App.evmBlockchainManager</ID>
     <ID>AppSingletonAccess:WalletConnectListModule.kt$WalletConnectListModule.Factory$App.wcSessionManager</ID>
     <ID>AppSingletonAccess:WalletConnectListViewModel.kt$WalletConnectListViewModel$App.wcManager</ID>
-    <ID>ComplexCondition:Exceptions.kt$errorBody?.contains("Try to leave the buffer of ETH for gas") == true || errorBody?.contains("you may not have enough ETH balance for gas fee") == true || errorBody?.contains("Not enough ETH balance") == true || errorBody?.contains("insufficient funds for transfer") == true</ID>
-    <ID>ComplexCondition:MultiSwapExchangeScreen.kt$tokenIn != null &amp;&amp; tokenOut != null &amp;&amp; amountIn != null &amp;&amp; amountOut != null</ID>
     <ID>ComplexCondition:PinManager.kt$PinManager$level &lt; 0 || level == PinLevels.SECURE_RESET || PinLevels.isLogLoggingLevel(level) || PinLevels.isDeleteContactsLevel(level)</ID>
     <ID>ComplexCondition:QrCodeImageDecoder.kt$QrCodeImageDecoder$imageWidth &lt;= 0 || imageHeight &lt;= 0 || (imageWidth &lt;= requiredDimension &amp;&amp; imageHeight &lt;= requiredDimension)</ID>
     <ID>ComplexCondition:SystemInfoManager.kt$SystemInfoManager$branch.isNotEmpty() &amp;&amp; branch != "master" &amp;&amp; branch != "f-droid" &amp;&amp; branch != "unknown"</ID>
     <ID>ComposableNaming:MainSettingsScreen.kt$previewSettingsScreen</ID>
     <ID>ComposableParamOrder:BlockchainSettingsPage.kt$BlockchainSettingsBlock</ID>
-    <ID>ComposableParamOrder:ConfirmTransactionScreen.kt$ConfirmTransactionScreen</ID>
     <ID>ComposableParamOrder:EvmNetworkPage.kt$RpcCell</ID>
-    <ID>ComposableParamOrder:FormsInputAddress.kt$FormsInputAddress</ID>
-    <ID>ComposableParamOrder:HSAddressInput.kt$HSAddressInput</ID>
-    <ID>ComposableParamOrder:HSAmountInput.kt$HSAmountInput</ID>
-    <ID>ComposableParamOrder:HSFeeInput.kt$HSFeeRaw</ID>
     <ID>ComposableParamOrder:HeaderCell.kt$HeaderCell</ID>
     <ID>ComposableParamOrder:NftAssetPage.kt$ChipVerticalGrid</ID>
-    <ID>ComposableParamOrder:OfflineBroadcastScreen.kt$BlockchainPicker</ID>
     <ID>ComposableParamOrder:PinNumpad.kt$ImageKey</ID>
     <ID>ComposableParamOrder:PinNumpad.kt$PinNumpad</ID>
     <ID>ComposableParamOrder:PinTopBlock.kt$PinTopBlock</ID>
-    <ID>ComposableParamOrder:QuoteInfoRow.kt$QuoteInfoRow</ID>
-    <ID>ComposableParamOrder:SearchBarV2.kt$SearchBarV2</ID>
     <ID>ComposableParamOrder:SemiCircleChart.kt$SemiCircleChart</ID>
-    <ID>ComposableParamOrder:SuggestionsBar.kt$SuggestionsBar</ID>
-    <ID>ComposableParamOrder:SwapConfirmScreen.kt$TokenRow</ID>
-    <ID>ComposableParamOrder:SwapConfirmScreen.kt$TokenRowPure</ID>
-    <ID>ComposableParamOrder:SwapConfirmScreen.kt$TokenRowUnlimited</ID>
-    <ID>ComposableParamOrder:SwapDirectionIndicator.kt$SwapDirectionIndicatorContent</ID>
-    <ID>ComposableParamOrder:SwapSettingsComponents.kt$InputWithButtons</ID>
-    <ID>ComposableParamOrder:TokenSelectScreen.kt$TokenSelectScreen</ID>
     <ID>ComposableParamOrder:TonConnectSessionList.kt$TCSessionCell</ID>
     <ID>ComposableParamOrder:WCSessionCell.kt$WCSessionCell</ID>
-    <ID>ConstructorParameterNaming:BaseThorChainProvider.kt$ThornodeAPI.Response.QuoteSwap$val dust_threshold: String?</ID>
-    <ID>ConstructorParameterNaming:BaseThorChainProvider.kt$ThornodeAPI.Response.QuoteSwap$val expected_amount_out: BigDecimal</ID>
-    <ID>ConstructorParameterNaming:BaseThorChainProvider.kt$ThornodeAPI.Response.QuoteSwap$val inbound_address: String?</ID>
-    <ID>ConstructorParameterNaming:BaseThorChainProvider.kt$ThornodeAPI.Response.QuoteSwap$val recommended_gas_rate: String?</ID>
-    <ID>ConstructorParameterNaming:BaseThorChainProvider.kt$ThornodeAPI.Response.QuoteSwap$val total_swap_seconds: Long? = null</ID>
     <ID>ContentSlotReused:CrossSlide.kt$content</ID>
-    <ID>ContentSlotReused:TokenSelectScreen.kt$header</ID>
-    <ID>ContentTrailingLambda:OfflineTransactionTransferScreen.kt$content</ID>
-    <ID>CyclomaticComplexMethod:AddressEnterBottomSheet.kt$@Composable fun InfoBlock(checkType: AddressCheckType)</ID>
-    <ID>CyclomaticComplexMethod:FormsInputAddress.kt$@Composable fun FormsInputAddress( modifier: Modifier = Modifier, value: String, hint: String, state: DataState&lt;Address&gt;? = null, showStateIcon: Boolean = true, textPreprocessor: TextPreprocessor = TextPreprocessorImpl, navigation: HSNavigation, chooseContactEnable: Boolean, blockchainType: BlockchainType?, onQrScanClick: () -&gt; Unit, onValueChange: (String) -&gt; Unit, isPoisonAddress: Boolean = false, )</ID>
-    <ID>CyclomaticComplexMethod:HSAmountInput.kt$@Composable fun HSAmountInput( modifier: Modifier = Modifier, focusRequester: FocusRequester = remember { FocusRequester() }, availableBalance: BigDecimal, caution: HSCaution? = null, coinCode: String, coinDecimal: Int, fiatDecimal: Int, onClickHint: () -&gt; Unit, onValueChange: (BigDecimal?) -&gt; Unit, inputType: AmountInputType, rate: CurrencyValue?, amountUnique: AmountUnique? = null, percentageAmountUnique: AmountUnique? = null, pasteEnabled: Boolean = true )</ID>
     <ID>CyclomaticComplexMethod:MainActivity.kt$MainActivity$override fun onCreate(savedInstanceState: Bundle?)</ID>
     <ID>CyclomaticComplexMethod:MainPage.kt$@Composable private fun MainScreen( transactionsViewModel: TransactionsViewModel, navigation: HSNavigation, intentLiveData: Intent?, intentHandled: () -&gt; Unit, viewModel: MainViewModel = koinViewModel() )</ID>
     <ID>CyclomaticComplexMethod:Migration_45_46.kt$CoinType$override fun toString()</ID>
     <ID>CyclomaticComplexMethod:Migration_45_46.kt$CoinType.Companion$fun fromId(id: String): CoinType</ID>
     <ID>CyclomaticComplexMethod:Migration_45_46.kt$Migration_45_46$private fun getTokenQueryForCoinId(coinId: String)</ID>
-    <ID>CyclomaticComplexMethod:MultiSwapExchangeViewModel.kt$MultiSwapExchangeViewModel$private suspend fun mapToUiState(swap: PendingMultiSwap): MultiSwapExchangeUiState</ID>
     <ID>CyclomaticComplexMethod:NftAssetPage.kt$@Composable private fun AssetContent( painter: AsyncImagePainter, viewItem: NftAssetViewModel.ViewItem?, nftUid: NftUid, navigation: HSNavigation, coroutineScope: CoroutineScope, )</ID>
     <ID>CyclomaticComplexMethod:NftCollectionEventsViewModel.kt$NftEventTypeWrapper.Companion$fun title(eventType: EventType): TranslatableString</ID>
     <ID>CyclomaticComplexMethod:PinSetViewModel.kt$PinSetViewModel$fun onKeyClick(number: Int)</ID>
     <ID>CyclomaticComplexMethod:PushNotificationsPage.kt$PushNotificationsPage$@Composable override fun GetContent(navigation: HSNavigation)</ID>
-    <ID>CyclomaticComplexMethod:QuickexProvider.kt$QuickexProvider$private fun getQuickexNetwork(token: Token): String?</ID>
-    <ID>CyclomaticComplexMethod:SendConfirmationScreen.kt$@Composable fun SendConfirmationScreen( navigation: HSNavigation, coinMaxAllowedDecimals: Int, feeCoinMaxAllowedDecimals: Int, rate: CurrencyValue?, feeCoinRate: CurrencyValue?, sendResult: SendResult?, blockchainType: BlockchainType, coin: Coin, feeCoin: Coin, amount: BigDecimal, address: Address, contact: Contact?, fee: BigDecimal?, lockTimeInterval: LockTimeInterval?, memo: String?, rbfEnabled: Boolean?, onClickSend: () -&gt; Unit, sendEntryPoint: KClass&lt;out HSPage&gt;?, isSynced: Boolean, hasAdapterError: Boolean, onRetrySync: () -&gt; Unit, sendEnabled: Boolean = isSynced, onSignOfflineOnFailure: (() -&gt; Unit)? = null, sendToken: Token? = null, feeToken: Token? = null, feeCoinBalance: BigDecimal? = null, displayBalance: BigDecimal? = null, insufficientFeeBalance: Boolean = false, balanceHidden: Boolean = false, onBalanceClicked: () -&gt; Unit = {}, feeWarningData: NetworkFeeWarningData? = null, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, )</ID>
-    <ID>CyclomaticComplexMethod:SendEvmTransactionView.kt$@Composable fun SectionView(viewItems: List&lt;ViewItem&gt;, navigation: HSNavigation)</ID>
-    <ID>CyclomaticComplexMethod:SendPage.kt$SendPage$@Composable override fun GetContent(navigation: HSNavigation)</ID>
     <ID>CyclomaticComplexMethod:SendSmsNotificationScreen.kt$@Composable fun SendSmsNotificationScreen( navigation: HSNavigation, appPages: AppPages, uiState: SendSmsNotificationUiState, onEnabledChange: (Boolean) -&gt; Unit, onAccountSelected: (Account) -&gt; Unit, onAddressChanged: (String) -&gt; Unit, onMemoChanged: (String) -&gt; Unit, onSaveClick: () -&gt; Unit, onTestSmsClick: () -&gt; Unit, onSaveSuccessShown: () -&gt; Unit, onTestResultShown: () -&gt; Unit, onCancelTest: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
-    <ID>CyclomaticComplexMethod:SendTransactionServiceFactory.kt$SendTransactionServiceFactory$fun create(token: Token): ISendTransactionService&lt;*&gt;</ID>
-    <ID>CyclomaticComplexMethod:SendTronConfirmationScreen.kt$@Composable private fun TronOnlineConfirmation( navigation: HSNavigation, sendViewModel: SendTronViewModel, amountInputModeViewModel: AmountInputModeViewModel, sendEntryPoint: KClass&lt;out HSPage&gt;?, onRequestOfflineSign: (() -&gt; Unit)?, )</ID>
-    <ID>CyclomaticComplexMethod:SendTronFeeService.kt$SendTronFeeService$private suspend fun refreshFees( createdTransaction: CreatedTransaction? = null )</ID>
-    <ID>CyclomaticComplexMethod:SwapHelper.kt$SwapHelper$suspend fun getReceiveAddressForToken(token: Token): String</ID>
-    <ID>CyclomaticComplexMethod:SwapQuoteService.kt$SwapQuoteService$private fun runQuotation(clearQuotes: Boolean = false)</ID>
-    <ID>CyclomaticComplexMethod:SwapSelectCoinViewModel.kt$SwapSelectCoinViewModel$private suspend fun reloadItems()</ID>
     <ID>CyclomaticComplexMethod:TonConnectNewScreen.kt$@Composable fun TonConnectNewScreen( navigation: HSNavigation, uri: String, onResult: (Boolean) -&gt; Unit, )</ID>
     <ID>CyclomaticComplexMethod:TonConnectSendRequestViewModel.kt$TonConnectSendRequestViewModel$private suspend fun prepareEnv()</ID>
     <ID>CyclomaticComplexMethod:TweetsPageResponse.kt$TweetsPageResponse$fun tweets(user: TwitterUser): List&lt;Tweet&gt;</ID>
@@ -344,11 +244,8 @@
     <ID>FunctionNaming:SendEvmTransactionView.kt$@Preview @Composable private fun Preview_TitleValue()</ID>
     <ID>FunctionNaming:SendEvmTransactionView.kt$@Preview @Composable private fun Preview_TitleValueHex()</ID>
     <ID>InstanceOfCheckForException:ActivateSubscriptionViewModel.kt$ActivateSubscriptionViewModel$e is UnknownHostException</ID>
-    <ID>InstanceOfCheckForException:EvmFeeService.kt$EvmFeeService$error is io.horizontalsystems.ethereumkit.api.jsonrpc.JsonRpc.ResponseError.RpcError</ID>
     <ID>InstanceOfCheckForException:MarketWidgetManager.kt$MarketWidgetManager$exception is UnknownHostException</ID>
     <ID>InstanceOfCheckForException:SendBitcoinViewModel.kt$SendBitcoinViewModel$e is TangemSdkError</ID>
-    <ID>InstanceOfCheckForException:SendEvmConfirmationPage.kt$t is JsonRpc.ResponseError.RpcError</ID>
-    <ID>InstanceOfCheckForException:SendTonFeeService.kt$SendTonFeeService$e is ClientException</ID>
     <ID>InvalidPackageDeclaration:BalancePresenterTest.kt$package cash.p.terminal.modules.balance</ID>
     <ID>InvalidPackageDeclaration:BalanceSorterTest.kt$package cash.p.terminal.modules.balance</ID>
     <ID>InvalidPackageDeclaration:BalanceViewItemFactoryTest.kt$package cash.p.terminal.modules.balance</ID>
@@ -359,15 +256,10 @@
     <ID>InvalidPackageDeclaration:RxBaseTest.kt$package cash.p.terminal.modules</ID>
     <ID>InvalidPackageDeclaration:TransactionViewItemFactoryTest.kt$package cash.p.terminal.core.factories</ID>
     <ID>InvalidPackageDeclaration:VersionTest.kt$package cash.p.terminal.core.managers</ID>
-    <ID>LambdaParameterEventTrailing:OfflineBroadcastScreen.kt$onSelectBlockchain</ID>
-    <ID>LambdaParameterEventTrailing:ResendBitcoinPage.kt$ResendBitcoinPage$onClickSend</ID>
-    <ID>LambdaParameterEventTrailing:SwapDirectionIndicator.kt$onClick</ID>
-    <ID>LambdaParameterEventTrailing:SwapSettingsComponents.kt$onValueChange</ID>
     <ID>LambdaParameterInRestartableEffect:HardwareWalletPage.kt$onFinish</ID>
     <ID>LambdaParameterInRestartableEffect:MainPage.kt$intentHandled</ID>
     <ID>LambdaParameterInRestartableEffect:QRScannerScreen.kt$onErrorMessageConsumed</ID>
     <ID>LambdaParameterInRestartableEffect:QRScannerScreen.kt$onScan</ID>
-    <ID>LambdaParameterInRestartableEffect:SwapSelectProviderScreen.kt$onClickClose</ID>
     <ID>LargeClass:LocalStorageManager.kt$LocalStorageManager : ILocalStorageIPinSettingsStorageILockoutStorageIThirdKeyboardIMarketStorageIUniqueCodeStorage</ID>
     <ID>LargeClass:MultiSwapExchangeViewModelTest.kt$MultiSwapExchangeViewModelTest</ID>
     <ID>LargeClass:OfflineBroadcastViewModelTest.kt$OfflineBroadcastViewModelTest</ID>
@@ -376,40 +268,21 @@
     <ID>LargeClass:TransactionMonitorTest.kt$TransactionMonitorTest</ID>
     <ID>LongMethod:AboutPage.kt$@Composable private fun SettingSections( viewModel: AboutViewModel, navigation: HSNavigation )</ID>
     <ID>LongMethod:ActivateSubscriptionPage.kt$@Composable fun ActivateSubscriptionScreen(navigation: HSNavigation)</ID>
-    <ID>LongMethod:ActivateTokenPage.kt$@Composable fun ActivateTokenScreen( navigation: HSNavigation, wallet: Wallet, onResult: (ActivateTokenResult) -&gt; Unit, )</ID>
-    <ID>LongMethod:AddressEnterBottomSheet.kt$@Composable fun InfoBlock(checkType: AddressCheckType)</ID>
-    <ID>LongMethod:AddressInputModule.kt$AddressInputModule.FactoryToken$@Suppress("UNCHECKED_CAST") override fun &lt;T : ViewModel&gt; create(modelClass: Class&lt;T&gt;): T</ID>
     <ID>LongMethod:AdvancedSecurityScreen.kt$@Composable internal fun AdvancedSecurityScreen( uiState: AdvancedSecurityUiState, onCreateHiddenWalletClick: () -&gt; Unit, onSecureResetToggle: (Boolean) -&gt; Unit, onDeleteContactsToggle: (Boolean) -&gt; Unit, onCalculatorPinClick: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
-    <ID>LongMethod:AllBridgeProvider.kt$AllBridgeProvider$override suspend fun fetchQuote( tokenIn: Token, tokenOut: Token, amountIn: BigDecimal, settings: Map&lt;String, Any?&gt;, ): ISwapQuote</ID>
-    <ID>LongMethod:AllBridgeProvider.kt$AllBridgeProvider$private suspend fun getSendTransactionData( tokenIn: Token, tokenOut: Token, amountIn: BigDecimal, expectedAmountOutMin: BigDecimal, recipient: cash.p.terminal.entities.Address?, ): SendTransactionData</ID>
     <ID>LongMethod:AppStatusScreen.kt$@Composable fun AppStatusScreen( navigation: HSNavigation )</ID>
     <ID>LongMethod:AppearanceScreen.kt$@Composable internal fun AppearanceScreen( uiState: AppearanceUIState, onThemeSelect: (ThemeType) -&gt; Unit, onLaunchScreenSelect: (LaunchPage) -&gt; Unit, onBalanceViewTypeSelect: (BalanceViewType) -&gt; Unit, onPriceChangeIntervalSelect: (PriceChangeInterval) -&gt; Unit, onMarketTabsHiddenChange: (Boolean) -&gt; Unit, onBalanceTabButtonsHiddenChange: (Boolean) -&gt; Unit, onAppIconClick: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
     <ID>LongMethod:BackupV4DecryptionTest.kt$BackupV4DecryptionTest$@Test fun `backup with hardware_card type is parsed correctly`()</ID>
-    <ID>LongMethod:BaseThorChainProvider.kt$BaseThorChainProvider$private fun getSendTransactionData( tokenIn: Token, amountIn: BigDecimal, quoteSwap: Response.QuoteSwap, tokenOut: Token, ): SendTransactionData</ID>
     <ID>LongMethod:BtcBlockchainSettingsScreen.kt$@Composable internal fun BtcBlockchainSettingsScreen( uiState: BtcBlockchainSettingsUIState, onSaveClick: () -&gt; Unit, onSelectRestoreMode: (BtcBlockchainSettingsModule.ViewItem) -&gt; Unit, onCustomPeersChange: (String) -&gt; Unit, navigation: HSNavigation, onBlockchainStatusClick: () -&gt; Unit, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, )</ID>
     <ID>LongMethod:CardTabs.kt$@Composable fun &lt;T&gt; CardTabs( tabItems: List&lt;TabItem&lt;T&gt;&gt;, edgePadding: Dp = TabRowDefaults.ScrollableTabRowPadding, darkTheme: Boolean = isSystemInDarkTheme(), onClick: (T?) -&gt; Unit, )</ID>
-    <ID>LongMethod:ChangeNowProvider.kt$ChangeNowProvider$override suspend fun fetchFinalQuote( tokenIn: Token, tokenOut: Token, amountIn: BigDecimal, swapSettings: Map&lt;String, Any?&gt;, sendTransactionSettings: SendTransactionSettings?, swapQuote: ISwapQuote ): ISwapFinalQuote</ID>
     <ID>LongMethod:CoinTweetsScreen.kt$@Composable fun CoinTweetsScreen( fullCoin: FullCoin )</ID>
-    <ID>LongMethod:Composables.kt$@Composable fun Eip1559FeeSettings( viewModel: Eip1559FeeSettingsViewModel )</ID>
-    <ID>LongMethod:Composables.kt$@Composable private fun NumberInputWithButtons( value: BigDecimal, decimals: Int, borderColor: Color, onValueChange: (BigDecimal) -&gt; Unit, onClickIncrement: () -&gt; Unit, onClickDecrement: () -&gt; Unit )</ID>
-    <ID>LongMethod:Eip20ApprovePage.kt$@Composable fun Eip20ApproveScreen(navigation: HSNavigation, input: Eip20ApprovePage.Input)</ID>
-    <ID>LongMethod:Eip20RevokeConfirmPage.kt$@Composable fun Eip20RevokeScreen( navigation: HSNavigation, input: Eip20RevokeConfirmPage.Input, onResult: (Eip20RevokeConfirmPage.Result) -&gt; Unit, )</ID>
     <ID>LongMethod:EvmNetworkPage.kt$@Composable private fun EvmNetworkScreen( navigation: HSNavigation, blockchain: Blockchain, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, onBackPress: () -&gt; Unit, )</ID>
     <ID>LongMethod:EvmSyncSourceManager.kt$EvmSyncSourceManager$fun defaultSyncSources(blockchainType: BlockchainType): List&lt;EvmSyncSource&gt;</ID>
-    <ID>LongMethod:ExolixProvider.kt$ExolixProvider$override suspend fun fetchFinalQuote( tokenIn: Token, tokenOut: Token, amountIn: BigDecimal, swapSettings: Map&lt;String, Any?&gt;, sendTransactionSettings: SendTransactionSettings?, swapQuote: ISwapQuote ): ISwapFinalQuote</ID>
-    <ID>LongMethod:FeeCell.kt$@Composable fun FeeCell( title: String, info: String, value: FeeItem?, viewState: ViewState?, )</ID>
-    <ID>LongMethod:FormsInputAddress.kt$@Composable fun FormsInputAddress( modifier: Modifier = Modifier, value: String, hint: String, state: DataState&lt;Address&gt;? = null, showStateIcon: Boolean = true, textPreprocessor: TextPreprocessor = TextPreprocessorImpl, navigation: HSNavigation, chooseContactEnable: Boolean, blockchainType: BlockchainType?, onQrScanClick: () -&gt; Unit, onValueChange: (String) -&gt; Unit, isPoisonAddress: Boolean = false, )</ID>
     <ID>LongMethod:GuidesPage.kt$@Composable fun GuidesScreen(navigation: HSNavigation)</ID>
-    <ID>LongMethod:HSAmountInput.kt$@Composable fun HSAmountInput( modifier: Modifier = Modifier, focusRequester: FocusRequester = remember { FocusRequester() }, availableBalance: BigDecimal, caution: HSCaution? = null, coinCode: String, coinDecimal: Int, fiatDecimal: Int, onClickHint: () -&gt; Unit, onValueChange: (BigDecimal?) -&gt; Unit, inputType: AmountInputType, rate: CurrencyValue?, amountUnique: AmountUnique? = null, percentageAmountUnique: AmountUnique? = null, pasteEnabled: Boolean = true )</ID>
     <ID>LongMethod:HardwareWalletPage.kt$@Composable internal fun HardwareWalletScreen( navigation: HSNavigation, onScanCard: () -&gt; Unit, onConnectTrezor: () -&gt; Unit, onFinish: () -&gt; Unit, viewModel: HardwareWalletViewModel )</ID>
     <ID>LongMethod:MainActivity.kt$MainActivity$override fun onCreate(savedInstanceState: Bundle?)</ID>
     <ID>LongMethod:MainPage.kt$@Composable private fun MainScreen( transactionsViewModel: TransactionsViewModel, navigation: HSNavigation, intentLiveData: Intent?, intentHandled: () -&gt; Unit, viewModel: MainViewModel = koinViewModel() )</ID>
     <ID>LongMethod:MarketWidget.kt$MarketWidget$@Composable private fun Content(context: Context)</ID>
     <ID>LongMethod:MarketWidgetConfigurationActivity.kt$MarketWidgetConfigurationActivity$override fun onCreate(savedInstanceState: Bundle?)</ID>
-    <ID>LongMethod:MultiSwapExchangeScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable internal fun MultiSwapExchangeScreen( uiState: MultiSwapExchangeUiState?, timeRemainingProgress: () -&gt; Float?, onSwap: () -&gt; Unit, onRefresh: () -&gt; Unit, onContinueLater: () -&gt; Unit, onDeleteAndClose: () -&gt; Unit, onBack: () -&gt; Unit, onClickProvider: () -&gt; Unit, onClickLeg1: () -&gt; Unit = {}, swapButtonTitle: String = stringResource(R.string.Swap), )</ID>
-    <ID>LongMethod:MultiSwapExchangeViewModel.kt$MultiSwapExchangeViewModel$private suspend fun mapToUiState(swap: PendingMultiSwap): MultiSwapExchangeUiState</ID>
-    <ID>LongMethod:NetworkFeeWarningScreen.kt$@Composable private fun NetworkFeeWarningContent( networkName: String, feeAmount: String, balanceThreshold: String, feeCoinCode: String, onConfirm: () -&gt; Unit, onCancel: () -&gt; Unit, )</ID>
-    <ID>LongMethod:NetworkFeeWarningScreen.kt$@Composable private fun buildWarningText( networkName: String, feeAmount: String, balanceThreshold: String, feeCoinCode: String, ): AnnotatedString</ID>
     <ID>LongMethod:NftAssetPage.kt$@Composable private fun AssetContent( painter: AsyncImagePainter, viewItem: NftAssetViewModel.ViewItem?, nftUid: NftUid, navigation: HSNavigation, coroutineScope: CoroutineScope, )</ID>
     <ID>LongMethod:NftCollectionEventsScreen.kt$@Composable private fun ContractBottomSheet( contractSelect: SelectOptional&lt;ContractInfo&gt;?, onSelect: (ContractInfo) -&gt; Unit, onClose: (() -&gt; Unit) )</ID>
     <ID>LongMethod:NftCollectionEventsScreen.kt$@OptIn(ExperimentalMaterialApi::class) @Composable fun NftEvents( viewModel: NftCollectionEventsViewModel, navigation: HSNavigation?, hideEventIcon: Boolean = false, )</ID>
@@ -426,102 +299,46 @@
     <ID>LongMethod:PushNotificationsScreen.kt$@Suppress("LongParameterList") @Composable internal fun PushNotificationsScreen( uiState: PushNotificationsUiState, onShowNotificationsToggle: (Boolean) -&gt; Unit, onBlockchainNotificationsToggle: (String, Boolean) -&gt; Unit, onPollingIntervalChange: (PollingInterval) -&gt; Unit, onShowBlockchainNameToggle: (Boolean) -&gt; Unit, onShowCoinAmountToggle: (Boolean) -&gt; Unit, onShowFiatAmountToggle: (Boolean) -&gt; Unit, onClose: () -&gt; Unit, noNotificationPermission: Boolean = false, onPermissionWarningClick: () -&gt; Unit = {}, )</ID>
     <ID>LongMethod:QRScannerScreen.kt$@Composable private fun ScannerOverlay()</ID>
     <ID>LongMethod:QRScannerScreen.kt$@Composable private fun ScannerView(onScan: (String) -&gt; Unit)</ID>
-    <ID>LongMethod:QuickexProvider.kt$QuickexProvider$override suspend fun fetchFinalQuote( tokenIn: Token, tokenOut: Token, amountIn: BigDecimal, swapSettings: Map&lt;String, Any?&gt;, sendTransactionSettings: SendTransactionSettings?, swapQuote: ISwapQuote ): ISwapFinalQuote</ID>
-    <ID>LongMethod:QuickexProvider.kt$QuickexProvider$override suspend fun fetchQuote( tokenIn: Token, tokenOut: Token, amountIn: BigDecimal, settings: Map&lt;String, Any?&gt; ): ISwapQuote</ID>
-    <ID>LongMethod:ReceiveStellarAssetScreen.kt$@Composable fun ReceiveStellarAssetScreen( navigation: HSNavigation, wallet: Wallet, receiveEntryPoint: KClass&lt;out HSPage&gt;?, viewModel: ReceiveStellarAssetViewModel = viewModel( factory = ReceiveStellarAssetViewModel.Factory(wallet) ), )</ID>
     <ID>LongMethod:ReleaseNotesPage.kt$@Composable fun ReleaseNotesScreen( closeablePopup: Boolean, uiState: ReleaseNotesUiState, onCloseClick: () -&gt; Unit, onRetryClick: () -&gt; Unit, onWhatsNewShown: () -&gt; Unit, onShowChangelogToggle: () -&gt; Unit, onUrlClick: (String) -&gt; Unit = {} )</ID>
-    <ID>LongMethod:ResendBitcoinPage.kt$ResendBitcoinPage$@Composable private fun ResendBitcoinScreen( navigation: HSNavigation, resendViewModel: ResendBitcoinViewModel )</ID>
     <ID>LongMethod:ResetToFactorySettingsPage.kt$@Composable private fun ResetToFactorySettingsScreen( uiState: ResetToFactorySettingsViewUIState, navigation: HSNavigation, onResetCardClick: () -&gt; Unit )</ID>
-    <ID>LongMethod:SearchBarV2.kt$@OptIn(ExperimentalMaterial3Api::class) @ExperimentalAnimationApi @Composable fun SearchBarV2( title: String, searchHintText: String = "", searchOnlyMode: Boolean = false, searchModeInitial: Boolean = false, focusRequester: FocusRequester = remember { FocusRequester() }, menuItems: List&lt;MenuItem&gt; = listOf(), onClose: () -&gt; Unit, onSearchTextChanged: (String) -&gt; Unit = {}, )</ID>
-    <ID>LongMethod:SecurityCheckPage.kt$@Composable fun AddressCheck( addressValidationInProgress: Boolean, addressValidationError: Throwable?, checkResults: Map&lt;AddressCheckType, AddressCheckData&gt;, onClick: (type: AddressCheckType) -&gt; Unit )</ID>
-    <ID>LongMethod:SecurityCheckPage.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun SecurityCheckScreen( navigation: HSNavigation, input: SecurityCheckPage.SecurityCheckInput )</ID>
-    <ID>LongMethod:SecurityCheckViewModel.kt$SecurityCheckViewModel$private suspend fun processAddress(addressText: String)</ID>
     <ID>LongMethod:SecuritySettingsPage.kt$@Composable private fun SecurityCenterScreen( securitySettingsViewModel: SecuritySettingsViewModel, uiState: SecuritySettingsUiState, torViewModel: SecurityTorSettingsViewModel, navigation: HSNavigation, onTransactionAutoHideEnabledChange: (Boolean) -&gt; Unit, onSetTransactionAutoHidePinClicked: () -&gt; Unit, onDisableTransactionAutoHidePinClicked: () -&gt; Unit, onChangeDisplayClicked: () -&gt; Unit, onTransferPasscodeEnabledChange: (Boolean) -&gt; Unit, showAppRestartAlert: () -&gt; Unit, restartApp: () -&gt; Unit, onEnableSaveAccessCodeForHardwareWallet: (Boolean) -&gt; Unit, onSystemPinRequiredChange: (Boolean) -&gt; Unit, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, )</ID>
     <ID>LongMethod:SecuritySettingsPage.kt$SecuritySettingsPage$@Composable override fun GetContent(navigation: HSNavigation)</ID>
-    <ID>LongMethod:SelectSwapCoinDialogScreen.kt$@Composable private fun CoinBalanceRow( coinItem: CoinBalanceItem, onClickItem: (CoinBalanceItem) -&gt; Unit )</ID>
-    <ID>LongMethod:SendBitcoinScreen.kt$@Composable internal fun SendBitcoinScreen( title: String, navigation: HSNavigation, viewModel: SendBitcoinViewModel, amountInputModeViewModel: AmountInputModeViewModel, prefilledData: PrefilledData?, addressCheckerControl: AddressCheckerControl, onNextClick: (ProceedActionData) -&gt; Unit, )</ID>
-    <ID>LongMethod:SendBtcAdvancedSettingsScreen.kt$@Composable fun SendBtcAdvancedSettingsScreen( navigation: HSNavigation, sendBitcoinViewModel: SendBitcoinViewModel, amountInputType: AmountInputType, )</ID>
-    <ID>LongMethod:SendConfirmationPage.kt$SendConfirmationPage$@Composable override fun GetContent(navigation: HSNavigation)</ID>
-    <ID>LongMethod:SendConfirmationScreen.kt$@Composable fun SendConfirmationScreen( navigation: HSNavigation, coinMaxAllowedDecimals: Int, feeCoinMaxAllowedDecimals: Int, rate: CurrencyValue?, feeCoinRate: CurrencyValue?, sendResult: SendResult?, blockchainType: BlockchainType, coin: Coin, feeCoin: Coin, amount: BigDecimal, address: Address, contact: Contact?, fee: BigDecimal?, lockTimeInterval: LockTimeInterval?, memo: String?, rbfEnabled: Boolean?, onClickSend: () -&gt; Unit, sendEntryPoint: KClass&lt;out HSPage&gt;?, isSynced: Boolean, hasAdapterError: Boolean, onRetrySync: () -&gt; Unit, sendEnabled: Boolean = isSynced, onSignOfflineOnFailure: (() -&gt; Unit)? = null, sendToken: Token? = null, feeToken: Token? = null, feeCoinBalance: BigDecimal? = null, displayBalance: BigDecimal? = null, insufficientFeeBalance: Boolean = false, balanceHidden: Boolean = false, onBalanceClicked: () -&gt; Unit = {}, feeWarningData: NetworkFeeWarningData? = null, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, )</ID>
     <ID>LongMethod:SendEip1155Screen.kt$@Composable fun SendEip1155Screen( navigation: HSNavigation, viewModel: SendEip1155ViewModel, addressViewModel: AddressViewModel, addressParserViewModel: AddressParserViewModel, sendEntryPoint: KClass&lt;out HSPage&gt;, )</ID>
     <ID>LongMethod:SendEip1155Screen.kt$@Composable private fun ItemCountInput( initial: Int = 1, state: DataState&lt;Any&gt;? = null, onValueChange: (Int) -&gt; Unit, )</ID>
     <ID>LongMethod:SendEip721Screen.kt$@Composable fun SendEip721Screen( navigation: HSNavigation, viewModel: SendEip721ViewModel, addressViewModel: AddressViewModel, addressParserViewModel: AddressParserViewModel, sendEntryPoint: KClass&lt;out HSPage&gt;, )</ID>
-    <ID>LongMethod:SendEvmConfirmationPage.kt$@Composable private fun SendEvmConfirmationScreen( navigation: HSNavigation, input: SendEvmConfirmationPage.Input )</ID>
-    <ID>LongMethod:SendEvmScreen.kt$@Composable private fun SendEvmScreen( title: String, navigation: HSNavigation, viewModel: SendEvmViewModel, amountInputModeViewModel: AmountInputModeViewModel, wallet: Wallet, amount: BigDecimal?, addressCheckerControl: AddressCheckerControl, actions: SendEvmScreenActions, )</ID>
-    <ID>LongMethod:SendEvmTransactionViewItemFactory.kt$SendEvmTransactionViewItemFactory$private fun getUniswapViewItems( amountIn: SwapDecoration.Amount, amountOut: SwapDecoration.Amount, tokenIn: SwapDecoration.Token, tokenOut: SwapDecoration.Token, recipient: Address? ): List&lt;SectionViewItem&gt;?</ID>
-    <ID>LongMethod:SendPage.kt$SendPage$@Composable override fun GetContent(navigation: HSNavigation)</ID>
     <ID>LongMethod:SendSmsNotificationScreen.kt$@Composable fun SendSmsNotificationScreen( navigation: HSNavigation, appPages: AppPages, uiState: SendSmsNotificationUiState, onEnabledChange: (Boolean) -&gt; Unit, onAccountSelected: (Account) -&gt; Unit, onAddressChanged: (String) -&gt; Unit, onMemoChanged: (String) -&gt; Unit, onSaveClick: () -&gt; Unit, onTestSmsClick: () -&gt; Unit, onSaveSuccessShown: () -&gt; Unit, onTestResultShown: () -&gt; Unit, onCancelTest: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
-    <ID>LongMethod:SendTransactionServiceBitcoin.kt$@Composable fun SendBtcFeeSettingsScreen( navigation: HSNavigation, viewModel: SendBtcSettingsViewModel )</ID>
-    <ID>LongMethod:SendTransactionServiceFactory.kt$SendTransactionServiceFactory$fun create(token: Token): ISendTransactionService&lt;*&gt;</ID>
-    <ID>LongMethod:SendTronConfirmationScreen.kt$@Composable private fun TronOnlineConfirmation( navigation: HSNavigation, sendViewModel: SendTronViewModel, amountInputModeViewModel: AmountInputModeViewModel, sendEntryPoint: KClass&lt;out HSPage&gt;?, onRequestOfflineSign: (() -&gt; Unit)?, )</ID>
-    <ID>LongMethod:SendZCashScreen.kt$@Composable private fun SendZCashScreen( title: String, navigation: HSNavigation, viewModel: SendZCashViewModel, amountInputModeViewModel: AmountInputModeViewModel, prefilledData: PrefilledData?, addressCheckerControl: AddressCheckerControl, onNextClick: (ProceedActionData) -&gt; Unit, onOfflineSignClick: () -&gt; Unit, )</ID>
     <ID>LongMethod:SetDuressPinIntroPage.kt$@Composable fun SetDuressPinIntroScreen(navigation: HSNavigation)</ID>
     <ID>LongMethod:SetDuressPinSelectAccountsPage.kt$@Composable fun SetDuressPinSelectAccountsScreen( regularAccounts: List&lt;Account&gt;, watchAccounts: List&lt;Account&gt;, navigation: HSNavigation )</ID>
-    <ID>LongMethod:SwapPage.kt$@Composable private fun SwapMainScreen( navigation: HSNavigation, viewModel: SwapViewModel )</ID>
-    <ID>LongMethod:SwapQuoteService.kt$SwapQuoteService$private fun runQuotation(clearQuotes: Boolean = false)</ID>
-    <ID>LongMethod:SwapSelectCoinViewModel.kt$SwapSelectCoinViewModel$private suspend fun reloadItems()</ID>
-    <ID>LongMethod:SwapSelectProviderScreen.kt$@Composable fun SwapSelectProviderScreen( onClickClose: () -&gt; Unit, onClickSettings: () -&gt; Unit, quotes: List&lt;QuoteViewItem&gt;, currentQuote: SwapProviderQuote?, mandatoryProviderIds: Set&lt;String&gt;, disabledProviderIds: Set&lt;String&gt;, sortType: ProviderSortType, onSortTypeChange: (ProviderSortType) -&gt; Unit, onToggleProvider: (providerId: String, disabled: Boolean) -&gt; Unit, swapRates: () -&gt; Unit, onSelectQuote: (SwapProviderQuote) -&gt; Unit, )</ID>
-    <ID>LongMethod:SwapSelectProviderScreen.kt$@Composable private fun ProviderItem( borderColor: Color, onSelectQuote: (SwapProviderQuote) -&gt; Unit, viewItem: QuoteViewItem, swapRates: () -&gt; Unit, disabled: Boolean , )</ID>
-    <ID>LongMethod:SwapSettingsComponents.kt$@Composable fun InputWithButtons( modifier: Modifier = Modifier, hint: String? = null, initial: String? = null, buttons: List&lt;InputButton&gt;, state: DataState&lt;Any&gt;? = null, onValueChange: (String) -&gt; Unit, )</ID>
-    <ID>LongMethod:SwapSettingsScreen.kt$@Composable fun SwapSettingsScreen( navigation: HSNavigation, swapViewModel: SwapViewModel )</ID>
     <ID>LongMethod:SystemPinBlock.kt$@Composable fun SystemPinBlock( isPinRequired: Boolean, enabled: Boolean, showInfoBlock: Boolean = true, onPinRequiredChange: (Boolean) -&gt; Unit, )</ID>
     <ID>LongMethod:TokenBalanceModule.kt$TokenBalanceModule.Factory$@Suppress("UNCHECKED_CAST") override fun &lt;T : ViewModel&gt; create(modelClass: Class&lt;T&gt;): T</ID>
-    <ID>LongMethod:TokenSelectScreen.kt$@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class) @Composable internal fun TokenSelectScreen( navigation: HSNavigation, title: String, uiState: TokenSelectUiState, searchHintText: String = "", onClickItem: (BalanceViewItem2) -&gt; Unit, onBalanceClick: (BalanceViewItem2) -&gt; Unit, updateFilter: (String) -&gt; Unit, emptyItemsText: String, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, header: @Composable (() -&gt; Unit)? = null )</ID>
     <ID>LongMethod:TonConnectMainScreen.kt$@Composable fun TonConnectMainScreen( viewModel: TonConnectListViewModel, navigation: HSNavigation, deepLinkUri: String?, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, )</ID>
     <ID>LongMethod:TonConnectNewScreen.kt$@Composable fun TonConnectNewScreen( navigation: HSNavigation, uri: String, onResult: (Boolean) -&gt; Unit, )</ID>
     <ID>LongMethod:TonConnectSendRequestScreen.kt$@Composable fun TonConnectRequestActionSection( action: TonTransactionRecord.Action, transactionInfoHelper: TransactionInfoHelper, navigation: HSNavigation, )</ID>
     <ID>LongMethod:TonConnectSendRequestScreen.kt$@Composable fun TonConnectSendRequestScreen( navigation: HSNavigation, viewModel: TonConnectSendRequestViewModel, )</ID>
     <ID>LongMethod:TonConnectSendRequestViewModel.kt$TonConnectSendRequestViewModel$private suspend fun prepareEnv()</ID>
     <ID>LongMethod:TransactionAutoHideBlock.kt$@Composable internal fun TransactionAutoHideBlock( transactionAutoHideEnabled: Boolean, displayLevel: TransactionDisplayLevel, transactionAutoHideSeparatePinExists: Boolean, onTransactionAutoHideEnabledChange: (Boolean) -&gt; Unit, onPinClicked: () -&gt; Unit, onDisablePinClicked: () -&gt; Unit, onChangeDisplayClicked: () -&gt; Unit )</ID>
-    <ID>LongMethod:TransactionSpeedUpCancelPage.kt$@Composable private fun TransactionSpeedUpCancelScreen( navigation: HSNavigation, page: TransactionSpeedUpCancelPage, input: TransactionSpeedUpCancelPage.Input, evmKitWrapper: EvmKitWrapper, )</ID>
     <ID>LongMethod:TweetsPageResponse.kt$TweetsPageResponse$fun tweets(user: TwitterUser): List&lt;Tweet&gt;</ID>
-    <ID>LongMethod:UtxoExpertModeScreen.kt$@Composable fun UtxoExpertModeScreen( adapter: ISendBitcoinAdapter, token: Token, customUnspentOutputs: List&lt;UnspentOutputInfo&gt;?, updateUnspentOutputs: (List&lt;UnspentOutputInfo&gt;) -&gt; Unit, onBackClick: () -&gt; Unit )</ID>
     <ID>LongMethod:WCRequestPage.kt$WCRequestPage$@Composable fun WcRequestEvm(navigation: HSNavigation)</ID>
     <ID>LongMethod:WCSendEthScreen.kt$@Composable fun WCSendEthRequestScreen( navigation: HSNavigation, logger: AppLogger, blockchainType: BlockchainType, transaction: WalletConnectTransaction, peerName: String, )</ID>
     <ID>LongMethod:WCSessionCell.kt$@Composable fun WCSessionCell( shape: Shape, showDivider: Boolean = false, session: WalletConnectListModule.SessionViewItem, navigation: HSNavigation, )</ID>
     <ID>LongMethod:WCSessionPage.kt$@Composable private fun ColumnScope.WCSessionListContent( navigation: HSNavigation, viewModel: WCSessionViewModel )</ID>
     <ID>LongMethod:WCSessionScreen.kt$@Composable fun WCSessionsScreen( navigation: HSNavigation, deepLinkUri: String?, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, )</ID>
     <ID>LongMethod:WcRequestScreen.kt$@Composable fun WcRequestScreen( navigation: HSNavigation, sessionRequest: Wallet.Model.SessionRequest, wcAction: AbstractWCAction )</ID>
-    <ID>LongParameterList:AllBridgeProvider.kt$AllBridgeAPI$( @Query("amount") amount: BigInteger, @Query("sender") sender: String, @Query("recipient") recipient: String, @Query("sourceToken") sourceToken: String, @Query("destinationToken") destinationToken: String, @Query("messenger") messenger: String = "ALLBRIDGE", @Query("feePaymentMethod") feePaymentMethod: String, @Query("solanaTxFeeParams") solanaTxFeeParams: String?, @Query("solanaTxFeeValue") solanaTxFeeValue: String? )</ID>
-    <ID>LongParameterList:AllBridgeProvider.kt$AllBridgeAPI$( @Query("amount") amount: BigInteger, @Query("sender") sender: String, @Query("recipient") recipient: String, @Query("sourceToken") sourceToken: String, @Query("destinationToken") destinationToken: String, @Query("minimumReceiveAmount") minimumReceiveAmount: BigInteger, @Query("solanaTxFeeParams") solanaTxFeeParams: String?, @Query("solanaTxFeeValue") solanaTxFeeValue: String? )</ID>
     <ID>LongParameterList:AndroidAppSettingsBackup.kt$AndroidAppSettingsBackup$( private val localStorage: ILocalStorage, private val languageManager: LanguageManager, private val blockchainSettingsStorage: BlockchainSettingsStorage, private val evmBlockchainManager: EvmBlockchainManager, private val balanceViewTypeManager: BalanceViewTypeManager, private val appIconService: AppIconService, private val themeService: ThemeService, private val chartIndicatorManager: ChartIndicatorManager, private val chartIndicatorSettingsDao: ChartIndicatorSettingsDao, private val balanceHiddenManager: BalanceHiddenManager, private val baseTokenManager: BaseTokenManager, private val launchScreenService: LaunchScreenService, private val currencyManager: CurrencyManager, private val btcBlockchainManager: BtcBlockchainManager, private val evmSyncSourceManager: EvmSyncSourceManager, private val evmSyncSourceStorage: EvmSyncSourceStorage, private val solanaRpcSourceManager: SolanaRpcSourceManager, private val contactsRepository: ContactsRepository )</ID>
     <ID>LongParameterList:AppStatusViewModel.kt$AppStatusViewModel$( private val context: Context, private val systemInfoManager: ISystemInfoManager, private val localStorage: ILocalStorage, private val uniqueCodeStorage: IUniqueCodeStorage, private val accountManager: IAccountManager, private val walletManager: IWalletManager, private val adapterManager: IAdapterManager, private val marketKit: MarketKitWrapper, private val evmBlockchainManager: EvmBlockchainManager, private val moneroKitManager: MoneroKitManager, private val stellarKitManager: StellarKitManager, private val thorchainKitManagers: ThorchainKitManagers, private val tronKitManager: TronKitManager, private val tonKitManager: TonKitManager, private val solanaKitManager: SolanaKitManager, private val btcBlockchainManager: BtcBlockchainManager, private val checkPremiumUseCase: CheckPremiumUseCase, private val networkErrorTracker: NetworkErrorTracker, private val dispatcherProvider: DispatcherProvider, private val statusReportFile: StatusReportFile, )</ID>
     <ID>LongParameterList:AppearanceScreen.kt$( uiState: AppearanceUIState, onThemeSelect: (ThemeType) -&gt; Unit, onLaunchScreenSelect: (LaunchPage) -&gt; Unit, onBalanceViewTypeSelect: (BalanceViewType) -&gt; Unit, onPriceChangeIntervalSelect: (PriceChangeInterval) -&gt; Unit, onMarketTabsHiddenChange: (Boolean) -&gt; Unit, onBalanceTabButtonsHiddenChange: (Boolean) -&gt; Unit, onAppIconClick: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
     <ID>LongParameterList:BackupProvider.kt$BackupProvider$( localStorage: ILocalStorage, languageManager: LanguageManager, walletStorage: IEnabledWalletStorage, settingsManager: RestoreSettingsManager, accountManager: IAccountManager, accountFactory: IAccountFactory, walletManager: IWalletManager, restoreSettingsManager: RestoreSettingsManager, blockchainSettingsStorage: BlockchainSettingsStorage, evmBlockchainManager: EvmBlockchainManager, marketFavoritesManager: MarketFavoritesManager, balanceViewTypeManager: BalanceViewTypeManager, appIconService: AppIconService, themeService: ThemeService, chartIndicatorManager: ChartIndicatorManager, chartIndicatorSettingsDao: ChartIndicatorSettingsDao, balanceHiddenManager: BalanceHiddenManager, baseTokenManager: BaseTokenManager, launchScreenService: LaunchScreenService, currencyManager: CurrencyManager, btcBlockchainManager: BtcBlockchainManager, evmSyncSourceManager: EvmSyncSourceManager, evmSyncSourceStorage: EvmSyncSourceStorage, solanaRpcSourceManager: SolanaRpcSourceManager, contactsRepository: ContactsRepository )</ID>
-    <ID>LongParameterList:BaseThorChainProvider.kt$ThornodeAPI$( @Query("from_asset") fromAsset: String, @Query("to_asset") toAsset: String, @Query("amount") amount: Long, @Query("destination") destination: String, @Query("affiliate") affiliate: String?, @Query("affiliate_bps") affiliateBps: Int?, @Query("streaming_interval") streamingInterval: Long, @Query("streaming_quantity") streamingQuantity: Long, @Query("tolerance_bps") toleranceBps: Long?, )</ID>
     <ID>LongParameterList:ChecklistTermsScreen.kt$( title: String, terms: List&lt;TermItem&gt;, buttonTitle: String, buttonEnabled: Boolean, onCheckboxToggle: (Int) -&gt; Unit, onAgreeClick: () -&gt; Unit, onNavigateBack: () -&gt; Unit, warningContent: @Composable () -&gt; Unit, checkboxesEnabled: Boolean = true, )</ID>
-    <ID>LongParameterList:Composables.kt$( title: String, info: String, value: BigDecimal, decimals: Int, borderColor: Color, onValueChange: (BigDecimal) -&gt; Unit, onClickIncrement: () -&gt; Unit, onClickDecrement: () -&gt; Unit, )</ID>
-    <ID>LongParameterList:Composables.kt$( title: String, info: String, value: BigDecimal, decimals: Int, caution: HSCaution?, navigation: HSNavigation, onValueChange: (BigDecimal) -&gt; Unit, onClickIncrement: () -&gt; Unit, onClickDecrement: () -&gt; Unit )</ID>
-    <ID>LongParameterList:Composables.kt$( title: String, info: String, value: BigDecimal, decimals: Int, warnings: List&lt;Warning&gt;, errors: List&lt;Throwable&gt;, onValueChange: (BigDecimal) -&gt; Unit, onClickIncrement: () -&gt; Unit, onClickDecrement: () -&gt; Unit )</ID>
     <ID>LongParameterList:CreateTrezorWalletUseCase.kt$CreateTrezorWalletUseCase$( private val trezorClient: ITrezorClient, private val accountManager: IAccountManager, private val accountsStorage: IAccountsStorage, private val hardwarePublicKeyStorage: IHardwarePublicKeyStorage, private val dispatcherProvider: DispatcherProvider, private val accountFactory: IAccountFactory, private val walletActivator: WalletActivator, private val moneroReadiness: MoneroTrezorReadiness, private val moneroProvisioner: MoneroDeviceWalletProvisioner, private val restoreSettingsManager: RestoreSettingsManager, )</ID>
-    <ID>LongParameterList:FeeInfoSection.kt$( tokenIn: Token?, displayBalance: BigDecimal?, balanceHidden: Boolean, feeToken: Token?, feeCoinBalance: BigDecimal?, feePrimary: String, feeSecondary: String, insufficientFeeBalance: Boolean, onBalanceClicked: () -&gt; Unit, feeTitle: String? = null, feeLoading: Boolean = false, feeWarningData: NetworkFeeWarningData? = null, )</ID>
-    <ID>LongParameterList:HSAmountInput.kt$( modifier: Modifier = Modifier, focusRequester: FocusRequester = remember { FocusRequester() }, availableBalance: BigDecimal, caution: HSCaution? = null, coinCode: String, coinDecimal: Int, fiatDecimal: Int, onClickHint: () -&gt; Unit, onValueChange: (BigDecimal?) -&gt; Unit, inputType: AmountInputType, rate: CurrencyValue?, amountUnique: AmountUnique? = null, percentageAmountUnique: AmountUnique? = null, pasteEnabled: Boolean = true )</ID>
-    <ID>LongParameterList:ISwapQuote.kt$SwapQuoteThorChain$( override val amountOut: BigDecimal, override val priceImpact: BigDecimal?, override val fields: List&lt;DataField&gt;, override val settings: List&lt;ISwapSetting&gt;, override val tokenIn: Token, override val tokenOut: Token, override val amountIn: BigDecimal, override val actionRequired: ISwapProviderAction?, override val cautions: List&lt;HSCaution&gt;, val slippageThreshold: BigDecimal, override val estimationTime: Long? = null, )</ID>
     <ID>LongParameterList:MainActivityViewModel.kt$MainActivityViewModel$( private val userManager: DefaultUserManager, private val accountManager: IAccountManager, private val systemInfoManager: ISystemInfoManager, private val localStorage: ILocalStorage, private val checkPremiumUseCase: CheckPremiumUseCase, private val calculatorModeService: CalculatorModeService, private val dispatcherProvider: DispatcherProvider, pinComponent: IPinComponent, private val keyStoreManager: IKeyStoreManager, private val tonConnectManager: TonConnectManager, private val loginRecordRepository: ILoginRecordRepository, )</ID>
     <ID>LongParameterList:MainSettingsScreen.kt$( action: SettingsAction, navigation: HSNavigation, offlineBroadcastScanner: QrScannerLauncher, viewModel: MainSettingsViewModel, context: Context, rawTxScanTitle: String, walletConnectTitle: String, tonConnectTitle: String, importTransactionFile: () -&gt; Unit, )</ID>
     <ID>LongParameterList:MainSettingsViewModel.kt$MainSettingsViewModel$( private val backupManager: IBackupManager, private val systemInfoManager: ISystemInfoManager, private val termsManager: ITermsManager, private val pinComponent: IPinComponent, private val wcSessionManager: WCSessionManager, private val wcManager: WCManager, private val accountManager: IAccountManager, private val languageManager: LanguageManager, private val currencyManager: CurrencyManager, appUpdateChecker: AppUpdateChecker, private val localStorage: ILocalStorage, private val logLoginAttemptUseCase: LogLoginAttemptUseCase, )</ID>
     <ID>LongParameterList:MainViewModel.kt$MainViewModel$( private val pinComponent: IPinComponent, rateAppManager: IRateAppManager, private val backupManager: IBackupManager, private val termsManager: ITermsManager, private val accountManager: IAccountManager, private val releaseNotesManager: ReleaseNotesManager, private val localStorage: ILocalStorage, wcSessionManager: WCSessionManager, private val wcManager: WCManager, private val logLoginAttemptUseCase: LogLoginAttemptUseCase, private val deeplinkParser: DeeplinkParser )</ID>
-    <ID>LongParameterList:MultiSwapExchangeScreen.kt$( uiState: MultiSwapExchangeUiState?, timeRemainingProgress: () -&gt; Float?, onSwap: () -&gt; Unit, onRefresh: () -&gt; Unit, onContinueLater: () -&gt; Unit, onDeleteAndClose: () -&gt; Unit, onBack: () -&gt; Unit, onClickProvider: () -&gt; Unit, onClickLeg1: () -&gt; Unit = {}, swapButtonTitle: String = stringResource(R.string.Swap), )</ID>
-    <ID>LongParameterList:MultiSwapExchangeViewModel.kt$MultiSwapExchangeViewModel$( private val pendingMultiSwapId: String, private val pendingMultiSwapStorage: PendingMultiSwapStorage, private val marketKit: MarketKitWrapper, private val numberFormatter: IAppNumberFormatter, private val onChainMonitor: MultiSwapOnChainMonitor, private val swapQuoteService: SwapQuoteService, private val swapProvidersRepository: SwapProvidersRepository, private val fetchSwapQuotesUseCase: FetchSwapQuotesUseCase, private val timerService: TimerService, private val syncPendingMultiSwapUseCase: SyncPendingMultiSwapUseCase, private val assetFiatRateService: AssetFiatRateService, currencyManager: CurrencyManager, adapterManager: IAdapterManager, private val balanceHiddenManager: IBalanceHiddenManager, private val walletManager: IWalletManager, private val walletUseCase: WalletUseCase, private val accountManager: IAccountManager, private val syncIntervalMs: Long = SYNC_INTERVAL_MS, )</ID>
-    <ID>LongParameterList:OfflineBroadcastViewModel.kt$OfflineBroadcastViewModel$( private val payloadEncoder: OfflineTransactionPayloadEncoder, private val offlineSignedTransactionRepository: OfflineSignedTransactionRepository, private val accountManager: IAccountManager, private val adapterManager: IAdapterManager, private val walletUseCase: WalletUseCase, private val marketKit: MarketKitWrapper, private val offlineBroadcastTokenResolver: OfflineBroadcastTokenResolver, private val pendingRegistrar: PendingTransactionRegistrar, private val dispatcherProvider: DispatcherProvider, private val beamRelay: BeamOfflineTransactionRelay, )</ID>
     <ID>LongParameterList:SecuritySettingsPage.kt$( securitySettingsViewModel: SecuritySettingsViewModel, uiState: SecuritySettingsUiState, torViewModel: SecurityTorSettingsViewModel, navigation: HSNavigation, onTransactionAutoHideEnabledChange: (Boolean) -&gt; Unit, onSetTransactionAutoHidePinClicked: () -&gt; Unit, onDisableTransactionAutoHidePinClicked: () -&gt; Unit, onChangeDisplayClicked: () -&gt; Unit, onTransferPasscodeEnabledChange: (Boolean) -&gt; Unit, showAppRestartAlert: () -&gt; Unit, restartApp: () -&gt; Unit, onEnableSaveAccessCodeForHardwareWallet: (Boolean) -&gt; Unit, onSystemPinRequiredChange: (Boolean) -&gt; Unit, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, )</ID>
-    <ID>LongParameterList:SendBitcoinViewModel.kt$SendBitcoinViewModel$( val adapter: ISendBitcoinAdapter, wallet: Wallet, private val feeRateService: SendBitcoinFeeRateService, private val feeService: SendBitcoinFeeService, private val amountService: SendBitcoinAmountService, private val addressService: SendBitcoinAddressService, private val pluginService: SendBitcoinPluginService, xRateService: XRateService, private val btcBlockchainManager: BtcBlockchainManager, private val contactsRepo: ContactsRepository, private val showAddressInput: Boolean, private val localStorage: ILocalStorage, private val address: Address?, private val pendingRegistrar: PendingTransactionRegistrar, private val adapterManager: IAdapterManager, private val dispatcherProvider: DispatcherProvider )</ID>
-    <ID>LongParameterList:SendConfirmationScreen.kt$( navigation: HSNavigation, coinMaxAllowedDecimals: Int, feeCoinMaxAllowedDecimals: Int, rate: CurrencyValue?, feeCoinRate: CurrencyValue?, sendResult: SendResult?, blockchainType: BlockchainType, coin: Coin, feeCoin: Coin, amount: BigDecimal, address: Address, contact: Contact?, fee: BigDecimal?, lockTimeInterval: LockTimeInterval?, memo: String?, rbfEnabled: Boolean?, onClickSend: () -&gt; Unit, sendEntryPoint: KClass&lt;out HSPage&gt;?, isSynced: Boolean, hasAdapterError: Boolean, onRetrySync: () -&gt; Unit, sendEnabled: Boolean = isSynced, onSignOfflineOnFailure: (() -&gt; Unit)? = null, sendToken: Token? = null, feeToken: Token? = null, feeCoinBalance: BigDecimal? = null, displayBalance: BigDecimal? = null, insufficientFeeBalance: Boolean = false, balanceHidden: Boolean = false, onBalanceClicked: () -&gt; Unit = {}, feeWarningData: NetworkFeeWarningData? = null, windowInsets: WindowInsets = NavigationBarDefaults.windowInsets, )</ID>
-    <ID>LongParameterList:SendEvmScreen.kt$( title: String, navigation: HSNavigation, viewModel: SendEvmViewModel, amountInputModeViewModel: AmountInputModeViewModel, wallet: Wallet, amount: BigDecimal?, addressCheckerControl: AddressCheckerControl, actions: SendEvmScreenActions, )</ID>
-    <ID>LongParameterList:SendEvmScreen.kt$( title: String, navigation: HSNavigation, viewModel: SendEvmViewModel, amountInputModeViewModel: AmountInputModeViewModel, wallet: Wallet, amount: BigDecimal?, addressCheckerControl: AddressCheckerControl, onNextClick: (ProceedActionData) -&gt; Unit, )</ID>
-    <ID>LongParameterList:SendEvmViewModel.kt$SendEvmViewModel$( wallet: Wallet, sendToken: Token, val adapter: ISendEthereumAdapter, private val sendTransactionService: SendTransactionServiceEvm, xRateService: XRateService, private val amountService: SendAmountService, private val addressService: SendEvmAddressService, override val coinMaxAllowedDecimals: Int, private val showAddressInput: Boolean, address: Address?, adapterManager: IAdapterManager, private val dispatcherProvider: DispatcherProvider, )</ID>
-    <ID>LongParameterList:SendMoneroViewModel.kt$SendMoneroViewModel$( wallet: Wallet, val sendToken: Token, val adapter: ISendMoneroAdapter, xRateService: XRateService, private val amountService: SendAmountService, private val addressService: SendMoneroAddressService, override val coinMaxAllowedDecimals: Int, private val showAddressInput: Boolean, private val contactsRepo: ContactsRepository, private val connectivityManager: ConnectivityManager, private val address: Address?, private val adapterManager: IAdapterManager, private val dispatcherProvider: DispatcherProvider, private val offlineTransactionPayloadEncoder: OfflineTransactionPayloadEncoder, private val offlineSignedTransactionRepository: OfflineSignedTransactionRepository, )</ID>
     <ID>LongParameterList:SendSmsNotificationScreen.kt$( navigation: HSNavigation, appPages: AppPages, uiState: SendSmsNotificationUiState, onEnabledChange: (Boolean) -&gt; Unit, onAccountSelected: (Account) -&gt; Unit, onAddressChanged: (String) -&gt; Unit, onMemoChanged: (String) -&gt; Unit, onSaveClick: () -&gt; Unit, onTestSmsClick: () -&gt; Unit, onSaveSuccessShown: () -&gt; Unit, onTestResultShown: () -&gt; Unit, onCancelTest: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
-    <ID>LongParameterList:SendZCashScreen.kt$( title: String, navigation: HSNavigation, viewModel: SendZCashViewModel, amountInputModeViewModel: AmountInputModeViewModel, prefilledData: PrefilledData?, addressCheckerControl: AddressCheckerControl, onNextClick: (ProceedActionData) -&gt; Unit, onOfflineSignClick: () -&gt; Unit, )</ID>
     <ID>LongParameterList:SendZecOnDuressUseCase.kt$SendZecOnDuressUseCase$( private val smsNotificationSettings: ISmsNotificationSettings, private val accountsStorage: IAccountsStorage, private val walletManager: IWalletManager, private val dispatcherProvider: DispatcherProvider, private val adapterFactory: AdapterFactory, private val adapterManager: IAdapterManager, private val coinManager: ICoinManager, private val walletFactory: WalletFactory, private val accountManager: IAccountManager, private val offlineModeUseCase: OfflineModeUseCase, )</ID>
-    <ID>LongParameterList:SwapConfirmScreen.kt$( fiatAmount: BigDecimal?, borderTop: Boolean = true, currency: Currency, title: String, amountColor: Color, imageUrl: String?, alternativeImageUrl: String?, imagePlaceholder: DrawableResource?, badge: String?, amountFormatted: String?, )</ID>
-    <ID>LongParameterList:SwapSelectProviderScreen.kt$( onClickClose: () -&gt; Unit, onClickSettings: () -&gt; Unit, quotes: List&lt;QuoteViewItem&gt;, currentQuote: SwapProviderQuote?, mandatoryProviderIds: Set&lt;String&gt;, disabledProviderIds: Set&lt;String&gt;, sortType: ProviderSortType, onSortTypeChange: (ProviderSortType) -&gt; Unit, onToggleProvider: (providerId: String, disabled: Boolean) -&gt; Unit, swapRates: () -&gt; Unit, onSelectQuote: (SwapProviderQuote) -&gt; Unit, )</ID>
-    <ID>LongParameterList:SwapSelectProviderScreen.kt$( viewItem: QuoteViewItem, borderColor: Color, swipeEnabled: Boolean, disabled: Boolean, revealed: Boolean, onReveal: () -&gt; Unit, onConceal: () -&gt; Unit, onSelectQuote: (SwapProviderQuote) -&gt; Unit, swapRates: () -&gt; Unit, onToggle: () -&gt; Unit, )</ID>
-    <ID>LongParameterList:SwapViewModel.kt$SwapViewModel$( private val quoteService: SwapQuoteService, private val balanceService: TokenBalanceService, private val priceImpactService: PriceImpactService, currencyManager: CurrencyManager, private val fiatServiceIn: FiatService, private val fiatServiceOut: FiatService, private val timerService: TimerService, private val networkAvailabilityService: NetworkAvailabilityService, private val marketKit: MarketKitWrapper, tokenIn: Token?, tokenOut: Token? )</ID>
     <ID>LongParameterList:TransferCoinSection.kt$( amountTitle: String, transactionValue: TransactionValue, coinAmountColor: AmountColor, coinAmountSign: AmountSign, addressTitle: String, address: String, comment: String?, navigation: HSNavigation, transactionInfoHelper: TransactionInfoHelper, blockchainType: BlockchainType, )</ID>
-    <ID>LongParameterList:UtxoExpertModeScreen.kt$( id: String, selected: Boolean, showTopBorder: Boolean, title: String, subtitle: String, value: String, subValue: String?, onItemClicked: (String) -&gt; Unit, topRoundedCorners: Boolean, bottomRoundedCorners: Boolean )</ID>
     <ID>LoopWithTooManyJumpStatements:NftHoldingsService.kt$NftHoldingsService$for</ID>
-    <ID>Material2:AddressEnterBottomSheet.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:AmountCell.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:BlockchainSettingsPage.kt$import androidx.compose.material.Surface</ID>
     <ID>Material2:BtcBlockchainSettingsScreen.kt$import androidx.compose.material.Surface</ID>
@@ -533,13 +350,7 @@
     <ID>Material2:DoubleText.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:EvmNetworkPage.kt$import androidx.compose.material.Divider</ID>
     <ID>Material2:EvmNetworkPage.kt$import androidx.compose.material.Surface</ID>
-    <ID>Material2:FeeCell.kt$import androidx.compose.material.CircularProgressIndicator</ID>
-    <ID>Material2:FeeCell.kt$import androidx.compose.material.Text</ID>
-    <ID>Material2:FormsInputAddress.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:GuidesPage.kt$import androidx.compose.material.Divider</ID>
-    <ID>Material2:HSAmountInput.kt$import androidx.compose.material.Divider</ID>
-    <ID>Material2:HSAmountInput.kt$import androidx.compose.material.Text</ID>
-    <ID>Material2:HSRow.kt$import androidx.compose.material.Divider</ID>
     <ID>Material2:HsBottomNavigation.kt$import androidx.compose.material.ripple</ID>
     <ID>Material2:HsSlider.kt$import androidx.compose.material.Slider</ID>
     <ID>Material2:HsSlider.kt$import androidx.compose.material.SliderDefaults</ID>
@@ -551,23 +362,11 @@
     <ID>Material2:NftPreview.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:PrivacyScreen.kt$import androidx.compose.material.Divider</ID>
     <ID>Material2:PrivacyScreen.kt$import androidx.compose.material.Text</ID>
-    <ID>Material2:SearchBarV2.kt$import androidx.compose.material.OutlinedTextField</ID>
-    <ID>Material2:SearchBarV2.kt$import androidx.compose.material.Text</ID>
-    <ID>Material2:SearchBarV2.kt$import androidx.compose.material.TextFieldDefaults</ID>
-    <ID>Material2:SelectSwapCoinDialogScreen.kt$import androidx.compose.material.CircularProgressIndicator</ID>
-    <ID>Material2:SendBtcAdvancedSettingsScreen.kt$import androidx.compose.material.ModalBottomSheetValue</ID>
-    <ID>Material2:SendBtcAdvancedSettingsScreen.kt$import androidx.compose.material.rememberModalBottomSheetState</ID>
-    <ID>Material2:SendEvmTransactionView.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:SetDuressPinIntroPage.kt$import androidx.compose.material.Divider</ID>
     <ID>Material2:SolanaNetworkPage.kt$import androidx.compose.material.Surface</ID>
     <ID>Material2:SubscriptionInfoPage.kt$import androidx.compose.material.Surface</ID>
-    <ID>Material2:SuggestionsBar.kt$import androidx.compose.material.Text</ID>
-    <ID>Material2:SwapDirectionIndicator.kt$import androidx.compose.material.ripple</ID>
-    <ID>Material2:SwapSettingsComponents.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:TonConnectMainScreen.kt$import androidx.compose.material.ModalBottomSheetValue</ID>
     <ID>Material2:TonConnectMainScreen.kt$import androidx.compose.material.rememberModalBottomSheetState</ID>
-    <ID>Material2:TransactionInputSortModeInfoSceen.kt$import androidx.compose.material.Surface</ID>
-    <ID>Material2:UtxoExpertModeScreen.kt$import androidx.compose.material.Divider</ID>
     <ID>Material2:WCSessionCell.kt$import androidx.compose.material.Divider</ID>
     <ID>Material2:WCSessionPage.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:WCSessionScreen.kt$import androidx.compose.material.ModalBottomSheetValue</ID>
@@ -575,7 +374,6 @@
     <ID>Material2:WcRequestScreen.kt$import androidx.compose.material.Scaffold</ID>
     <ID>MaxLineLength:EthCoinFragmentInputParserTest.kt$EthCoinFragmentInputParserTest$input = "0x23b872dd00000000000000000000000077fae6ac54240057b443a4d007627710f4e9c12e000000000000000000000000a49e44aa6f7c1752e95e6de0f2043df04bb3f63200000000000000000000000000000000000000000000000000000001cfb778b8"</ID>
     <ID>MaxLineLength:EthCoinFragmentInputParserTest.kt$EthCoinFragmentInputParserTest$input = "0xa9059cbb0000000000000000000000005d5724e56ea3cc75352339635960d07c1503f75e00000000000000000000000000000000000000000000003635c9adc5dea00000"</ID>
-    <ID>MaxLineLength:EvmRollupGasDataService.kt$EvmRollupGasDataService$override</ID>
     <ID>MaxLineLength:MarketWidgetState.kt$MarketWidgetItem$return "( title: $title, subtitle: $subtitle, label: $label, value: $value, diff: $diff, imageRemoteUrl: $imageRemoteUrl, imageLocalPath: $imageLocalPath )"</ID>
     <ID>MaxLineLength:Migration_32_33.kt$Migration_32_33$db.execSQL("UPDATE `EnabledWallet` SET `coinSettingsId` = 'bitcoinCashCoinType:type145' WHERE `coinId` IN ('bitcoinCash') AND `coinSettingsId` = ''")</ID>
     <ID>MaxLineLength:Migration_32_33.kt$Migration_32_33$db.execSQL("UPDATE `EnabledWallet` SET `coinSettingsId` = 'derivation:bip49' WHERE `coinId` IN ('bitcoin', 'litecoin') AND `coinSettingsId` = ''")</ID>
@@ -617,43 +415,22 @@
     <ID>MaxLineLength:TonHelperKtTest.kt$TonHelperKtTest$val expected = "te6ccgEBAwEA1QABZAHzg10AAAAAAAAAY0EeGjAIACE+JdUq+wPWHEaGeeZ6wHj2SzKrIOfTGgf/k9ACJZzRAQHhZmTeKoAP6ZxKQPdW/xM2p3lmkZQttRYkrIZ8YCdnNxI1l0bkedAAQnxLqlX2B6w4jQzzzPWA8eyWZVZBz6Y0D/8noARLOaIACE+JdUq+wPWHEaGeeZ6wHj2SzKrIOfTGgf/k9ACJZzQAAAAAAAACaUACAFNCm5JwCAAhPiXVKvsD1hxGhnnmesB49ksyqyDn0xoH/5PQAiWc0AAABRA="</ID>
     <ID>MaxLineLength:TonHelperKtTest.kt$TonHelperKtTest$val expected = "te6ccgEBAwEA9gABZAHzg10AAAAAAAAAKkC+vCAIACE+JdUq+wPWHEaGeeZ6wHj2SzKrIOfTGgf/k9ACJZzRAQHhZmTeKoAP6ZxKQPdW/xM2p3lmkZQttRYkrIZ8YCdnNxI1l0bkedAAQnxLqlX2B6w4jQzzzPWA8eyWZVZBz6Y0D/8noARLOaIACE+JdUq+wPWHEaGeeZ6wHj2SzKrIOfTGgf/k9ACJZzQAAAAAAAABwkACAJVC+vCACAAhPiXVKvsD1hxGhnnmesB49ksyqyDn0xoH/5PQAiWc0AAABUABCfEuqVfYHrDiNDPPM9YDx7JZlVkHPpjQP/yegBEs5og="</ID>
     <ID>MaxLineLength:TonHelperKtTest.kt$TonHelperKtTest$val expected = "te6ccgECAwEAARoAAawPin6lAAAAAAAAAE1CPDRgCAAhPiXVKvsD1hxGhnnmesB49ksyqyDn0xoH/5PQAiWc0QAEJ8S6pV9gesOI0M88z1gPHslmVWQc+mNA//J6AESzmgQXcQEB4WZk3iqAAhPiXVKvsD1hxGhnnmesB49ksyqyDn0xoH/5PQAiWc0QAEJ8S6pV9gesOI0M88z1gPHslmVWQc+mNA//J6AESzmiAAhPiXVKvsD1hxGhnnmesB49ksyqyDn0xoH/5PQAiWc0AAAAAAAAAcJAAgCVQL68IAgAIT4l1Sr7A9YcRoZ55nrAePZLMqsg59MaB/+T0AIlnNAAABlAAQnxLqlX2B6w4jQzzzPWA8eyWZVZBz6Y0D/8noARLOaI"</ID>
-    <ID>MaxLineLength:UtxoExpertModeViewModel.kt$UtxoExpertModeViewModel$private fun getUnspentId(unspentOutputInfo: UnspentOutputInfo)</ID>
     <ID>MayBeConst:AppConfigProvider.kt$AppConfigProvider$val fiatDecimal: Int = 2</ID>
     <ID>MemberNameEqualsClassName:T.kt$T$fun t(reset: Boolean = false)</ID>
-    <ID>ModifierComposed:Shake.kt$shake</ID>
     <ID>ModifierMissing:ActionRow.kt$ActionsRow</ID>
     <ID>ModifierMissing:ActivateSubscriptionPage.kt$ActivateSubscriptionScreen</ID>
-    <ID>ModifierMissing:ActivateTokenPage.kt$ActivateTokenScreen</ID>
     <ID>ModifierMissing:AddRpcScreen.kt$AddRpcScreen</ID>
     <ID>ModifierMissing:AdditionalDataCell2.kt$AdditionalDataCell2</ID>
     <ID>ModifierMissing:AddressCell.kt$AddressCell</ID>
-    <ID>ModifierMissing:AddressEnterBottomSheet.kt$AddressEnterInfoBottomSheet</ID>
-    <ID>ModifierMissing:AddressEnterBottomSheet.kt$InfoBlock</ID>
     <ID>ModifierMissing:AmountCell.kt$AmountCell</ID>
     <ID>ModifierMissing:AppStatusScreen.kt$AppStatusScreen</ID>
     <ID>ModifierMissing:BlockchainSettingsPage.kt$BlockchainSettingsBlock</ID>
     <ID>ModifierMissing:CardTabs.kt$CardTabs</ID>
-    <ID>ModifierMissing:CardsSwapInfo.kt$CardsSwapInfo</ID>
     <ID>ModifierMissing:CellLink.kt$CellLink</ID>
     <ID>ModifierMissing:CellTweet.kt$CellTweet</ID>
     <ID>ModifierMissing:CoinTweetsScreen.kt$CoinTweetsScreen</ID>
-    <ID>ModifierMissing:Composables.kt$Cautions</ID>
-    <ID>ModifierMissing:Composables.kt$Eip1559FeeSettings</ID>
-    <ID>ModifierMissing:Composables.kt$FeeInfoCell</ID>
-    <ID>ModifierMissing:Composables.kt$LegacyFeeSettings</ID>
-    <ID>ModifierMissing:ConfirmTransactionScreen.kt$ConfirmTransactionScreen</ID>
-    <ID>ModifierMissing:DataFieldFee.kt$DataFieldFee</ID>
-    <ID>ModifierMissing:DonateAddressesPage.kt$DonateScreen</ID>
     <ID>ModifierMissing:DoubleText.kt$DoubleText</ID>
-    <ID>ModifierMissing:Eip20ApprovePage.kt$Eip20ApproveScreen</ID>
-    <ID>ModifierMissing:Eip20RevokeConfirmPage.kt$Eip20RevokeScreen</ID>
-    <ID>ModifierMissing:FeeCell.kt$FeeCell</ID>
-    <ID>ModifierMissing:FeeInfoSection.kt$FeeInfoSection</ID>
     <ID>ModifierMissing:GuidesPage.kt$GuidesScreen</ID>
-    <ID>ModifierMissing:HSAddressCell.kt$HSAddressCell</ID>
-    <ID>ModifierMissing:HSHodlerInput.kt$HSHodler</ID>
-    <ID>ModifierMissing:HSHodlerInput.kt$HSHodlerInput</ID>
-    <ID>ModifierMissing:HSMemoInput.kt$HSMemoInput</ID>
     <ID>ModifierMissing:HeaderCell.kt$HeaderCell</ID>
     <ID>ModifierMissing:HsSlider.kt$HsSlider</ID>
     <ID>ModifierMissing:MainSettingsScreen.kt$SettingsScreen</ID>
@@ -672,45 +449,14 @@
     <ID>ModifierMissing:PinUnlockView.kt$PinUnlock</ID>
     <ID>ModifierMissing:PrivacyScreen.kt$PrivacyScreen</ID>
     <ID>ModifierMissing:QRScannerScreen.kt$QRScannerScreen</ID>
-    <ID>ModifierMissing:QuoteInfoRow.kt$QuoteInfoRow</ID>
     <ID>ModifierMissing:ReleaseNotesPage.kt$ReleaseNotesScreen</ID>
     <ID>ModifierMissing:RootedDeviceScreen.kt$RootedDeviceScreen</ID>
-    <ID>ModifierMissing:SearchBarV2.kt$SearchBarV2</ID>
-    <ID>ModifierMissing:SecurityCheckPage.kt$AddressCheck</ID>
-    <ID>ModifierMissing:SecurityCheckPage.kt$CheckLocked</ID>
-    <ID>ModifierMissing:SecurityCheckPage.kt$CheckValue</ID>
-    <ID>ModifierMissing:SecurityCheckPage.kt$SecurityCheckScreen</ID>
     <ID>ModifierMissing:SecuritySettingsPage.kt$SecurityCenterCell</ID>
-    <ID>ModifierMissing:SelectSwapCoinDialogScreen.kt$SelectSwapCoinDialogScreen</ID>
-    <ID>ModifierMissing:SendBitcoinScreen.kt$UtxoCell</ID>
-    <ID>ModifierMissing:SendBtcAdvancedSettingsScreen.kt$RbfSwitch</ID>
-    <ID>ModifierMissing:SendBtcAdvancedSettingsScreen.kt$SendBtcAdvancedSettingsScreen</ID>
-    <ID>ModifierMissing:SendBtcAdvancedSettingsScreen.kt$UtxoSwitch</ID>
-    <ID>ModifierMissing:SendConfirmationScreen.kt$ConfirmAmountCell</ID>
-    <ID>ModifierMissing:SendConfirmationScreen.kt$MemoCell</ID>
-    <ID>ModifierMissing:SendConfirmationScreen.kt$SendConfirmationScreen</ID>
     <ID>ModifierMissing:SendEip1155Screen.kt$SendEip1155Screen</ID>
     <ID>ModifierMissing:SendEip721Screen.kt$SendEip721Screen</ID>
-    <ID>ModifierMissing:SendEvmTransactionView.kt$SendEvmTransactionView</ID>
-    <ID>ModifierMissing:SendEvmTransactionView.kt$TitleValue</ID>
-    <ID>ModifierMissing:SendScreen.kt$SendScreen</ID>
     <ID>ModifierMissing:SendSmsNotificationScreen.kt$SendSmsNotificationScreen</ID>
-    <ID>ModifierMissing:SendSuggestionsBar.kt$SendSuggestionsBar</ID>
-    <ID>ModifierMissing:SendTransactionServiceBitcoin.kt$SendBtcFeeSettingsScreen</ID>
-    <ID>ModifierMissing:SendTransactionServiceEvm.kt$SendEvmFeeSettingsScreen</ID>
-    <ID>ModifierMissing:SendTronScreen.kt$SendTronScreen</ID>
     <ID>ModifierMissing:SetDuressPinIntroPage.kt$SetDuressPinIntroScreen</ID>
     <ID>ModifierMissing:SetDuressPinSelectAccountsPage.kt$SetDuressPinSelectAccountsScreen</ID>
-    <ID>ModifierMissing:SwapConfirmScreen.kt$TokenRowPure</ID>
-    <ID>ModifierMissing:SwapConfirmScreen.kt$TokenRowUnlimited</ID>
-    <ID>ModifierMissing:SwapPage.kt$PriceField</ID>
-    <ID>ModifierMissing:SwapPage.kt$PriceImpactField</ID>
-    <ID>ModifierMissing:SwapProviderField.kt$SwapProviderField</ID>
-    <ID>ModifierMissing:SwapSelectProviderScreen.kt$SwapSelectProviderScreen</ID>
-    <ID>ModifierMissing:SwapSettingsComponents.kt$RecipientAddress</ID>
-    <ID>ModifierMissing:SwapSettingsComponents.kt$SlippageAmount</ID>
-    <ID>ModifierMissing:SwapSettingsComponents.kt$TransactionDeadlineInput</ID>
-    <ID>ModifierMissing:SwapSettingsScreen.kt$SwapSettingsScreen</ID>
     <ID>ModifierMissing:SystemPinBlock.kt$SystemPinBlock</ID>
     <ID>ModifierMissing:TitleAndValueCell.kt$TitleAndValueCell</ID>
     <ID>ModifierMissing:TonConnectMainScreen.kt$TonConnectMainScreen</ID>
@@ -719,8 +465,6 @@
     <ID>ModifierMissing:TonConnectSessionList.kt$TCSessionCell</ID>
     <ID>ModifierMissing:TonConnectSessionList.kt$TonConnectSessionList</ID>
     <ID>ModifierMissing:TorBlock.kt$TorBlock</ID>
-    <ID>ModifierMissing:TransactionInputSortModeInfoSceen.kt$BtcTransactionInputSortInfoScreen</ID>
-    <ID>ModifierMissing:UtxoExpertModeScreen.kt$UtxoExpertModeScreen</ID>
     <ID>ModifierMissing:WCErrorNoAccountSheet.kt$WalletConnectErrorNoAccount</ID>
     <ID>ModifierMissing:WCRequestPage.kt$ActionButtons</ID>
     <ID>ModifierMissing:WCRequestPage.kt$WCNewSignRequestScreen</ID>
@@ -739,27 +483,13 @@
     <ID>ModifierMissing:WCSessionScreen.kt$WCSessionsScreen</ID>
     <ID>ModifierMissing:WCSignEthereumTransactionRequestScreen.kt$WCSignEthereumTransactionRequestScreen</ID>
     <ID>ModifierMissing:WcRequestScreen.kt$WcRequestScreen</ID>
-    <ID>ModifierNotUsedAtRoot:HSRow.kt$modifier = modifier</ID>
-    <ID>ModifierWithoutDefault:ResendBitcoinPage.kt$ResendBitcoinPage$modifier</ID>
-    <ID>ModifierWithoutDefault:SecurityCheckPage.kt$modifier</ID>
-    <ID>ModifierWithoutDefault:SendBtcAdvancedSettingsScreen.kt$modifier</ID>
-    <ID>ModifierWithoutDefault:SendConfirmationScreen.kt$modifier</ID>
-    <ID>ModifierWithoutDefault:SendTronConfirmationScreen.kt$modifier</ID>
-    <ID>ModifierWithoutDefault:SwapSelectProviderScreen.kt$modifier</ID>
     <ID>MultipleEmitters:AboutPage.kt$SettingSections</ID>
     <ID>MultipleEmitters:AppIconScreen.kt$AppIconContent</ID>
     <ID>MultipleEmitters:BlockchainSettingsPage.kt$BlockchainSettingsBlock</ID>
-    <ID>MultipleEmitters:DonateTokenSelectPage.kt$DonateHeader</ID>
-    <ID>MultipleEmitters:DonateTokenSelectPage.kt$GetAddressCell</ID>
-    <ID>MultipleEmitters:FeeInfoSection.kt$FeeInfoSection</ID>
     <ID>MultipleEmitters:MainPage.kt$MainScreen</ID>
-    <ID>MultipleEmitters:SecurityCheckPage.kt$AddressCheck</ID>
     <ID>MultipleEmitters:SendEip1155Screen.kt$ItemCountInput</ID>
-    <ID>MultipleEmitters:SendTronConfirmationScreen.kt$Cautions</ID>
     <ID>MutableStateAutoboxing:CardTabs.kt$mutableStateOf(0)</ID>
-    <ID>NestedBlockDepth:AllBridgeProvider.kt$AllBridgeProvider$override suspend fun start()</ID>
     <ID>NestedBlockDepth:CoreUtils.kt$ProcessUtils$@Throws(IOException::class) fun findProcessId(processName: String): Int</ID>
-    <ID>NestedBlockDepth:EvmFeeService.kt$EvmFeeService$private suspend fun gasDataSingle( gasPrice: GasPrice, gasPriceDefault: GasPrice, stubAmount: BigInteger? = null, transactionData: TransactionData ): GasData</ID>
     <ID>NestedBlockDepth:Migration_40_41.kt$Migration_40_41$override fun migrate(db: SupportSQLiteDatabase)</ID>
     <ID>NestedBlockDepth:NativeLoader.kt$NativeLoader$fun loadNativeBinary( appNativeDir: File, appSourceDir: File, libName: String, destLocalFile: File? ): File?</ID>
     <ID>NestedBlockDepth:NestedScrollableHost.kt$NestedScrollableHost$private fun handleInterceptTouchEvent(e: MotionEvent)</ID>
@@ -767,7 +497,6 @@
     <ID>NestedBlockDepth:TorOperator.kt$TorOperator$fun start()</ID>
     <ID>ParameterNaming:DisplayTransactionsScreen.kt$onBackPressed</ID>
     <ID>ParameterNaming:DisplayTransactionsScreen.kt$onItemSelected</ID>
-    <ID>ParameterNaming:FeeInfoSection.kt$onBalanceClicked</ID>
     <ID>ParameterNaming:HardwareWalletBiometricBlock.kt$onValueChanged</ID>
     <ID>ParameterNaming:KeyStoreActivity.kt$onTermsAccepted</ID>
     <ID>ParameterNaming:NftCollectionAssetsScreen.kt$onBottomReached</ID>
@@ -775,12 +504,9 @@
     <ID>ParameterNaming:QRScannerScreen.kt$onGalleryImagePicked</ID>
     <ID>ParameterNaming:ReleaseNotesPage.kt$onWhatsNewShown</ID>
     <ID>ParameterNaming:RootedDeviceScreen.kt$onIgnoreWarningClicked</ID>
-    <ID>ParameterNaming:SearchBarV2.kt$onSearchTextChanged</ID>
     <ID>ParameterNaming:SecuritySettingsPage.kt$onChangeDisplayClicked</ID>
     <ID>ParameterNaming:SecuritySettingsPage.kt$onDisableTransactionAutoHidePinClicked</ID>
     <ID>ParameterNaming:SecuritySettingsPage.kt$onSetTransactionAutoHidePinClicked</ID>
-    <ID>ParameterNaming:SelectSwapCoinDialogScreen.kt$onSearchTextChanged</ID>
-    <ID>ParameterNaming:SendConfirmationScreen.kt$onBalanceClicked</ID>
     <ID>ParameterNaming:SendSmsNotificationScreen.kt$onAccountSelected</ID>
     <ID>ParameterNaming:SendSmsNotificationScreen.kt$onAddressChanged</ID>
     <ID>ParameterNaming:SendSmsNotificationScreen.kt$onMemoChanged</ID>
@@ -789,12 +515,10 @@
     <ID>ParameterNaming:TransactionAutoHideBlock.kt$onChangeDisplayClicked</ID>
     <ID>ParameterNaming:TransactionAutoHideBlock.kt$onDisablePinClicked</ID>
     <ID>ParameterNaming:TransactionAutoHideBlock.kt$onPinClicked</ID>
-    <ID>ParameterNaming:UtxoExpertModeScreen.kt$onItemClicked</ID>
     <ID>PreviewPublic:AppStatusScreen.kt$StatusBlockPreview</ID>
     <ID>PreviewPublic:BiometricDisabledDialog.kt$Preview_BiometricDisabledDialog</ID>
     <ID>PreviewPublic:CardTabs.kt$PreviewCardTabs</ID>
     <ID>PreviewPublic:CellTweet.kt$CellTweetPreview</ID>
-    <ID>PreviewPublic:DataFieldRecipientExtended.kt$DataFieldRecipientExtendedPreview</ID>
     <ID>PreviewPublic:DonateAddressesPage.kt$DonateScreenPreview</ID>
     <ID>PreviewPublic:PinNumpad.kt$Preview_Pin</ID>
     <ID>PreviewPublic:PinNumpad.kt$Preview_PinLocked</ID>
@@ -805,30 +529,16 @@
     <ID>PreviewPublic:RootedDeviceScreen.kt$Preview_RootedDeviceScreen</ID>
     <ID>PreviewPublic:SemiCircleChart.kt$SemiCircleChartPreview</ID>
     <ID>PreviewPublic:WCSessionError.kt$PreviewWCSessionsEmpty</ID>
-    <ID>PrintStackTrace:SendEvmNonceService.kt$SendEvmNonceService$e</ID>
-    <ID>PrintStackTrace:SendTransactionServiceFactory.kt$SendTransactionServiceFactory$e</ID>
-    <ID>PrintStackTrace:SwapTransactionServiceFactory.kt$SwapTransactionServiceFactory$e</ID>
     <ID>ReturnCount:SendNftPage.kt$private fun getFactory(nftUidString: String): SendNftModule.Factory?</ID>
     <ID>ReturnCount:TonConnectSendRequestViewModel.kt$TonConnectSendRequestViewModel$private suspend fun prepareEnv()</ID>
     <ID>ReturnCount:TorOperator.kt$TorOperator$@Throws(Exception::class) private fun runTorShellCmd(fileTor: File, fileTorrc: File): Boolean</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:ActivateSubscriptionViewModel.kt$ActivateSubscriptionViewModel$IllegalStateException()</ID>
-    <ID>ThrowingExceptionsWithoutMessageOrCause:BaseThorChainProvider.kt$BaseThorChainProvider$IllegalArgumentException()</ID>
-    <ID>ThrowingExceptionsWithoutMessageOrCause:EvmFeeModule.kt$EvmFeeModule.Factory$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:NestedScrollableHost.kt$NestedScrollableHost$IllegalArgumentException()</ID>
-    <ID>ThrowingExceptionsWithoutMessageOrCause:SecurityCheckViewModel.kt$SecurityCheckViewModel$Exception()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:SendEvmModule.kt$SendEvmModule.Factory$IllegalArgumentException()</ID>
-    <ID>ThrowingExceptionsWithoutMessageOrCause:SendEvmViewModel.kt$SendEvmViewModel$IllegalArgumentException()</ID>
-    <ID>ThrowingExceptionsWithoutMessageOrCause:SendMemoModule.kt$SendMemoModule.Factory$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:SendMoneroModule.kt$SendMoneroModule.Factory$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:SendNftModule.kt$SendNftModule.Factory$IllegalArgumentException()</ID>
-    <ID>ThrowingExceptionsWithoutMessageOrCause:SendSolanaModule.kt$SendSolanaModule.Factory$IllegalArgumentException()</ID>
-    <ID>ThrowingExceptionsWithoutMessageOrCause:SendTonModule.kt$SendTonModule.Factory$IllegalArgumentException()</ID>
-    <ID>ThrowingExceptionsWithoutMessageOrCause:SendTronModule.kt$SendTronModule.Factory$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:WCRequestEvmViewModel.kt$WCRequestEvmViewModel$IllegalArgumentException()</ID>
-    <ID>ThrowsCount:ChangeNowProvider.kt$ChangeNowProvider$private suspend fun getExchangeAmountOrThrow( tickerFrom: String, tickerTo: String, amountIn: BigDecimal ): ExchangeAmount</ID>
     <ID>ThrowsCount:MainActivityViewModel.kt$MainActivityViewModel$fun validate()</ID>
-    <ID>ThrowsCount:QuickexProvider.kt$QuickexProvider$private suspend fun getExchangeAmountOrThrow( tickerFrom: String, networkFrom: String, tickerTo: String, networkTo: String, amountIn: BigDecimal ): BigDecimal?</ID>
-    <ID>ThrowsCount:SwapHelper.kt$SwapHelper$suspend fun getReceiveAddressForToken(token: Token): String</ID>
     <ID>ThrowsCount:WCManager.kt$WCManager$fun validate(requiredNamespaces: Map&lt;String, Wallet.Model.Namespace.Proposal&gt;)</ID>
     <ID>ThrowsCount:WCRequestEvmViewModel.kt$WCRequestEvmViewModel$suspend fun allow()</ID>
     <ID>TooGenericExceptionThrown:CoreUtils.kt$ProcessUtils$throw Exception("Cannot kill: " + fileProcBin.absolutePath)</ID>
@@ -839,13 +549,11 @@
     <ID>TooGenericExceptionThrown:WCRequestEvmViewModel.kt$WCRequestEvmViewModel$throw Exception("Invalid Data")</ID>
     <ID>TooGenericExceptionThrown:WCRequestEvmViewModel.kt$WCRequestEvmViewModel$throw Exception("Unsupported Chain")</ID>
     <ID>TooManyFunctions:Extensions.kt$cash.p.terminal.core.Extensions.kt</ID>
-    <ID>TooManyFunctions:SwapViewModel.kt$SwapViewModel : ViewModelUiState</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:ActivateSubscriptionViewModel.kt$ActivateSubscriptionViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.Hud_Text_NoInternet)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:AddRpcViewModel.kt$AddRpcViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.AddEvmSyncSource_Error_InvalidUrl)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:AddRpcViewModel.kt$AddRpcViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.AddEvmSyncSource_Warning_UrlExists)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:BiometricDisabledDialog.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { BiometricDisabledDialog({}) }</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:CellTweet.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { CellTweet( TweetViewItem( title = "Super", subtitle = "@super", titleImageUrl = "", text = "Some special!!! Unbelievable...", attachments = listOf(), date = "Nov 12, 12:39", referencedTweet = null, entities = listOf(), url = "" ) ) { } }</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:DataFieldRecipientExtended.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { DataFieldRecipientExtended( Address("0x1234567890abcdef1234567890abcdef12345678"), BlockchainType.Bitcoin ).GetContent(navigation = navigation, borderTop = true) }</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:Eip1559FeeSettingsViewModel.kt$Eip1559FeeSettingsViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.NotAvailable)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:EvmNetworkViewModel.kt$EvmNetworkViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.NetworkSettings_SwithesAutomatically)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:Exceptions.kt$NoDataException$cash.p.terminal.strings.helpers.Translator.getString(R.string.CoinPage_NoData)</ID>
@@ -863,18 +571,11 @@
     <ID>UnnecessaryFullyQualifiedNameRule:SendEvmTransactionViewItemFactory.kt$SendEvmTransactionViewItemFactory$cash.p.terminal.strings.helpers.Translator.getString(R.string.Swap_ToAmountTitle)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:SendSolanaAddressService.kt$SendSolanaAddressService$cash.p.terminal.strings.helpers.Translator.getString(R.string.SwapSettings_Error_InvalidAddress)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:SendTonAddressService.kt$SendTonAddressService$cash.p.terminal.strings.helpers.Translator.getString(R.string.SwapSettings_Error_InvalidAddress)</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:SwapSlippageViewModel.kt$SwapSlippageViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.SwapSettings_Warning_UnusualSlippage)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:WCErrorNoAccountSheet.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { WalletConnectErrorNoAccount({}) }</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:WCSessionError.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { WCSessionError("Error text", HSNavigation(NavBackStack())) }</ID>
     <ID>UnusedImports:HiddenWalletAccountVisibilityTest.kt$import cash.p.terminal.core.storage.UserDeletedWalletDao</ID>
     <ID>UnusedImports:MultiSwapExchangeViewModelTest.kt$import io.mockk.slot</ID>
-    <ID>UnusedImports:SendTransactionServiceSolana.kt$import cash.p.terminal.wallet.getMaxSendableBalance</ID>
-    <ID>UnusedParameter:Composables.kt$navigation: HSNavigation</ID>
-    <ID>UnusedParameter:DonateAddressesPage.kt$chainUid: String</ID>
-    <ID>UnusedParameter:EvmSwapHelper.kt$EvmSwapHelper$proxyAddress: String</ID>
-    <ID>UnusedParameter:HSFeeInput.kt$navigation: HSNavigation</ID>
     <ID>UnusedParameter:MarketWidget.kt$MarketWidget$deeplinkScheme: String</ID>
-    <ID>UnusedParameter:MultiSwapExchangeScreen.kt$leg: LegUiState</ID>
     <ID>UnusedParameter:NftPreview.kt$onSale: Boolean</ID>
     <ID>UnusedPrivateMember:CrossSlide.kt$@Composable private fun CrossSlideExample()</ID>
     <ID>UnusedPrivateMember:GeneralTermsScreen.kt$@Preview(showBackground = true) @Composable private fun Preview_GeneralTermsDialog()</ID>
@@ -885,7 +586,6 @@
     <ID>UnusedPrivateMember:MainSettingsScreen.kt$@Preview @Composable private fun previewSettingsScreen()</ID>
     <ID>UnusedPrivateMember:NftCollectionAssetsService.kt$NftCollectionAssetsService$private fun handle( assets: List&lt;NftAssetMetadata&gt;, paginationData: PaginationData? ): Result&lt;List&lt;Item&gt;&gt;</ID>
     <ID>UnusedPrivateMember:RateAppDialog.kt$@Preview @Composable private fun Preview_RateApp()</ID>
-    <ID>UnusedPrivateMember:SendEvmTransactionView.kt$@Composable private fun NonceView(nonceViewModel: SendEvmNonceViewModel)</ID>
     <ID>UnusedPrivateMember:SendEvmTransactionView.kt$@Preview @Composable private fun Preview_Amount()</ID>
     <ID>UnusedPrivateMember:SendEvmTransactionView.kt$@Preview @Composable private fun Preview_AmountMulti()</ID>
     <ID>UnusedPrivateMember:SendEvmTransactionView.kt$@Preview @Composable private fun Preview_Subhead()</ID>
@@ -898,25 +598,10 @@
     <ID>UnusedPrivateProperty:SendTransactionServiceSolanaTest.kt$SendTransactionServiceSolanaTest$val solanaKitManager = mockk&lt;SolanaKitManager&gt;(relaxed = true) { every { this@mockk.solanaKitWrapper } returns solanaKitWrapper }</ID>
     <ID>UnusedPrivateProperty:WalletConnectListViewModel.kt$WalletConnectListViewModel$private val evmBlockchainManager: EvmBlockchainManager</ID>
     <ID>UseCheckOrError:ActivateSubscriptionViewModel.kt$ActivateSubscriptionViewModel$throw IllegalStateException()</ID>
-    <ID>UseCheckOrError:ChangeNowProvider.kt$ChangeNowProvider$throw IllegalStateException("ChangeNowProvider: amount is not found")</ID>
-    <ID>UseCheckOrError:ChangeNowProvider.kt$ChangeNowProvider$throw IllegalStateException("ChangeNowProvider: ticker for $tokenIn is not found")</ID>
-    <ID>UseCheckOrError:ChangeNowProvider.kt$ChangeNowProvider$throw IllegalStateException("ChangeNowProvider: ticker for $tokenOut is not found")</ID>
-    <ID>UseCheckOrError:EvmBlockchainHelper.kt$EvmBlockchainHelper$throw IllegalStateException("No HTTP RPC Source for blockchain $blockchainType")</ID>
-    <ID>UseCheckOrError:ISendTransactionService.kt$ISendTransactionService$throw IllegalStateException("Adapter not available for ${token.coin.code}")</ID>
     <ID>UseCheckOrError:MarketWidgetRepository.kt$MarketWidgetRepository$throw IllegalStateException("Manual sorting should be handled separately")</ID>
     <ID>UseCheckOrError:NavController.kt$throw IllegalStateException("Unsupported pin type for ensurePinSet: $pinType")</ID>
     <ID>UseCheckOrError:NftAssetPage.kt$throw IllegalStateException("No URL!")</ID>
-    <ID>UseCheckOrError:OffChainSwapProviderSupport.kt$OffChainSwapProviderSupport$throw IllegalStateException("Can't find ZCASH transparent wallet")</ID>
-    <ID>UseCheckOrError:OffChainSwapProviderSupport.kt$OffChainSwapProviderSupport$throw IllegalStateException("Ethereum adapter not found")</ID>
-    <ID>UseCheckOrError:OneInchProvider.kt$OneInchProvider$throw IllegalStateException("Unsupported tokenType: $tokenType")</ID>
     <ID>UseCheckOrError:PinComponent.kt$PinComponent$throw IllegalStateException("Cannot create duress PIN: too many duress levels")</ID>
-    <ID>UseCheckOrError:QuickexProvider.kt$QuickexProvider$throw IllegalStateException("QuickexProvider: amount is not found")</ID>
-    <ID>UseCheckOrError:SendTransactionServiceFactory.kt$SendTransactionServiceFactory$throw IllegalStateException("No active account")</ID>
-    <ID>UseCheckOrError:SendTransactionServiceMonero.kt$SendTransactionServiceMonero$throw IllegalStateException("Balance unavailable")</ID>
-    <ID>UseCheckOrError:SendTransactionServiceStellar.kt$SendTransactionServiceStellar$throw IllegalStateException("Transaction data not set")</ID>
-    <ID>UseCheckOrError:SendTransactionServiceTon.kt$SendTransactionServiceTon$throw IllegalStateException("Balance unavailable")</ID>
-    <ID>UseCheckOrError:SendTransactionServiceTonSwap.kt$SendTransactionServiceTonSwap$throw IllegalStateException("Balance unavailable")</ID>
-    <ID>UseCheckOrError:StonFiProvider.kt$StonFiProvider$throw cause ?: IllegalStateException("Failed to simulate swap on STON.fi")</ID>
     <ID>UseRequire:PreferencesExtensions.kt$&lt;no name provided&gt;$throw IllegalArgumentException("Unsupported type ${T::class}")</ID>
     <ID>UseRequire:WCRequestEvmViewModel.kt$WCRequestEvmViewModel$throw IllegalArgumentException()</ID>
     <ID>UtilityClassWithPublicConstructor:NetworkUtils.kt$NetworkUtils</ID>
@@ -940,46 +625,17 @@
     <ID>ViewModelForwarding:SecuritySettingsPage.kt$DuressPasscodeBlock( securitySettingsViewModel, navigation )</ID>
     <ID>ViewModelForwarding:SecuritySettingsPage.kt$PasscodeBlock( securitySettingsViewModel, navigation )</ID>
     <ID>ViewModelForwarding:SecuritySettingsPage.kt$TorBlock( torViewModel, showAppRestartAlert, )</ID>
-    <ID>ViewModelForwarding:SendBitcoinConfirmationScreen.kt$BitcoinOnlineConfirmation( navigation = navigation, sendViewModel = sendViewModel, sendEntryPoint = sendEntryPoint, onRequestOfflineSign = onRequestOfflineSign, )</ID>
-    <ID>ViewModelForwarding:SendBitcoinConfirmationScreen.kt$LifecycleResumeEffect(sendViewModel) { if (refresh) { confirmationData = sendViewModel.getConfirmationData() } onPauseOrDispose { refresh = true } }</ID>
-    <ID>ViewModelForwarding:SendBitcoinConfirmationScreen.kt$OfflineSignableConfirmationHost( navigation = navigation, sendViewModel = sendViewModel, sourceChangeable = syncErrorViewModel.sourceChangeable, onChangeSourceClick = { navigation.openBitcoinSourceSettings(syncErrorViewModel.blockchainWrapper) }, ) { onRequestOfflineSign -&gt; BitcoinOnlineConfirmation( navigation = navigation, sendViewModel = sendViewModel, sendEntryPoint = sendEntryPoint, onRequestOfflineSign = onRequestOfflineSign, ) }</ID>
     <ID>ViewModelForwarding:SendEip1155Screen.kt$HSAddressInput( modifier = Modifier.padding(horizontal = 16.dp), viewModel = addressViewModel, inputState = addressViewModel.inputState.collectAsStateWithLifecycle().value, address = addressViewModel.address.collectAsStateWithLifecycle().value, value = addressViewModel.value.collectAsStateWithLifecycle().value, error = viewModel.uiState.addressError, textPreprocessor = addressParserViewModel, navigation = navigation, onValueChange = { address -&gt; viewModel.onEnterAddress(address) }, )</ID>
     <ID>ViewModelForwarding:SendEip721Screen.kt$HSAddressInput( modifier = Modifier.padding(horizontal = 16.dp), viewModel = addressViewModel, inputState = addressViewModel.inputState.collectAsStateWithLifecycle().value, address = addressViewModel.address.collectAsStateWithLifecycle().value, value = addressViewModel.value.collectAsStateWithLifecycle().value, error = viewModel.uiState.addressError, textPreprocessor = addressParserViewModel, navigation = navigation, onValueChange = { address -&gt; viewModel.onEnterAddress(address) }, )</ID>
-    <ID>ViewModelForwarding:SendEvmConfirmationScreen.kt$EvmOnlineConfirmation( navigation = navigation, sendViewModel = sendViewModel, sendEntryPoint = sendEntryPoint, onRequestOfflineSign = onRequestOfflineSign, )</ID>
-    <ID>ViewModelForwarding:SendEvmConfirmationScreen.kt$LifecycleResumeEffect(sendViewModel) { if (refresh) { confirmationData = sendViewModel.getConfirmationData() } onPauseOrDispose { refresh = true } }</ID>
-    <ID>ViewModelForwarding:SendEvmConfirmationScreen.kt$OfflineSignableConfirmationHost( navigation = navigation, sendViewModel = sendViewModel, sourceChangeable = false, onChangeSourceClick = {}, ) { onRequestOfflineSign -&gt; EvmOnlineConfirmation( navigation = navigation, sendViewModel = sendViewModel, sendEntryPoint = sendEntryPoint, onRequestOfflineSign = onRequestOfflineSign, ) }</ID>
-    <ID>ViewModelForwarding:SendEvmScreen.kt$SendEvmScreen( title = title, navigation = navigation, viewModel = viewModel, amountInputModeViewModel = amountInputModeViewModel, wallet = wallet, amount = amount, addressCheckerControl = addressCheckerControl, actions = SendEvmScreenActions( onNextClick = onNextClick, onOfflineSignClick = { navigation.slideFromRight(OfflineSignPage(SendEvmViewModel::class)) }, ), )</ID>
-    <ID>ViewModelForwarding:SendMemoConfirmationScreen.kt$MemoOnlineConfirmation( navigation = navigation, sendViewModel = sendViewModel, sendEntryPoint = sendEntryPoint, onRequestOfflineSign = onRequestOfflineSign, )</ID>
-    <ID>ViewModelForwarding:SendMemoConfirmationScreen.kt$OfflineSignableConfirmationHost( navigation = navigation, sendViewModel = sendViewModel, sourceChangeable = false, onChangeSourceClick = {}, ) { onRequestOfflineSign -&gt; MemoOnlineConfirmation( navigation = navigation, sendViewModel = sendViewModel, sendEntryPoint = sendEntryPoint, onRequestOfflineSign = onRequestOfflineSign, ) }</ID>
-    <ID>ViewModelForwarding:SendMoneroConfirmationScreen.kt$LifecycleResumeEffect(sendViewModel) { if (refresh) { confirmationData = sendViewModel.getConfirmationData() } onPauseOrDispose { refresh = true } }</ID>
-    <ID>ViewModelForwarding:SendMoneroConfirmationScreen.kt$MoneroOnlineConfirmation( navigation = navigation, sendViewModel = sendViewModel, sendEntryPoint = sendEntryPoint, onRequestOfflineSign = onRequestOfflineSign, )</ID>
-    <ID>ViewModelForwarding:SendMoneroConfirmationScreen.kt$OfflineSignableConfirmationHost( navigation = navigation, sendViewModel = sendViewModel, sourceChangeable = false, onChangeSourceClick = {}, ) { onRequestOfflineSign -&gt; MoneroOnlineConfirmation( navigation = navigation, sendViewModel = sendViewModel, sendEntryPoint = sendEntryPoint, onRequestOfflineSign = onRequestOfflineSign, ) }</ID>
-    <ID>ViewModelForwarding:SendSolanaConfirmationScreen.kt$OfflineSignableConfirmationHost( navigation = navigation, sendViewModel = sendViewModel, sourceChangeable = false, onChangeSourceClick = {}, ) { onRequestOfflineSign -&gt; SolanaOnlineConfirmation( navigation = navigation, sendViewModel = sendViewModel, sendEntryPoint = sendEntryPoint, onRequestOfflineSign = onRequestOfflineSign, ) }</ID>
-    <ID>ViewModelForwarding:SendSolanaConfirmationScreen.kt$SolanaOnlineConfirmation( navigation = navigation, sendViewModel = sendViewModel, sendEntryPoint = sendEntryPoint, onRequestOfflineSign = onRequestOfflineSign, )</ID>
-    <ID>ViewModelForwarding:SendTonConfirmationScreen.kt$OfflineSignableConfirmationHost( navigation = navigation, sendViewModel = sendViewModel, sourceChangeable = false, onChangeSourceClick = {}, ) { onRequestOfflineSign -&gt; TonOnlineConfirmation( navigation = navigation, sendViewModel = sendViewModel, sendEntryPoint = sendEntryPoint, onRequestOfflineSign = onRequestOfflineSign, ) }</ID>
-    <ID>ViewModelForwarding:SendTonConfirmationScreen.kt$TonOnlineConfirmation( navigation = navigation, sendViewModel = sendViewModel, sendEntryPoint = sendEntryPoint, onRequestOfflineSign = onRequestOfflineSign, )</ID>
-    <ID>ViewModelForwarding:SendTransactionServiceEvm.kt$Eip1559FeeSettings(feeSettingsViewModel)</ID>
-    <ID>ViewModelForwarding:SendTransactionServiceEvm.kt$LegacyFeeSettings(feeSettingsViewModel)</ID>
-    <ID>ViewModelForwarding:SendTronConfirmationScreen.kt$OfflineSignableConfirmationHost( navigation = navigation, sendViewModel = sendViewModel, sourceChangeable = false, onChangeSourceClick = {}, ) { onRequestOfflineSign -&gt; TronOnlineConfirmation( navigation = navigation, sendViewModel = sendViewModel, amountInputModeViewModel = amountInputModeViewModel, sendEntryPoint = sendEntryPoint, onRequestOfflineSign = onRequestOfflineSign, ) }</ID>
-    <ID>ViewModelForwarding:SendTronConfirmationScreen.kt$TronOnlineConfirmation( navigation = navigation, sendViewModel = sendViewModel, amountInputModeViewModel = amountInputModeViewModel, sendEntryPoint = sendEntryPoint, onRequestOfflineSign = onRequestOfflineSign, )</ID>
-    <ID>ViewModelForwarding:SendZCashConfirmationScreen.kt$LifecycleResumeEffect(sendViewModel) { if (refresh) { confirmationData = sendViewModel.getConfirmationData() } onPauseOrDispose { refresh = true } }</ID>
-    <ID>ViewModelForwarding:SendZCashConfirmationScreen.kt$OfflineSignableConfirmationHost( navigation = navigation, sendViewModel = sendViewModel, sourceChangeable = false, onChangeSourceClick = {}, ) { onRequestOfflineSign -&gt; ZCashOnlineConfirmation( navigation = navigation, sendViewModel = sendViewModel, sendEntryPoint = sendEntryPoint, onRequestOfflineSign = onRequestOfflineSign, ) }</ID>
-    <ID>ViewModelForwarding:SendZCashConfirmationScreen.kt$ZCashOnlineConfirmation( navigation = navigation, sendViewModel = sendViewModel, sendEntryPoint = sendEntryPoint, onRequestOfflineSign = onRequestOfflineSign, )</ID>
-    <ID>ViewModelForwarding:SendZCashScreen.kt$SendZCashScreen( title = title, navigation = navigation, viewModel = viewModel, amountInputModeViewModel = amountInputModeViewModel, prefilledData = prefilledData, addressCheckerControl = addressCheckerControl, onNextClick = onNextClick, onOfflineSignClick = { navigation.slideFromRight(OfflineSignPage(SendZCashViewModel::class)) }, )</ID>
     <ID>ViewModelForwarding:SolanaNetworkPage.kt$SolanaNetworkList(viewModel, navigation)</ID>
     <ID>ViewModelForwarding:WCSessionPage.kt$ActionButtons(viewModel, it)</ID>
     <ID>ViewModelForwarding:WCSessionPage.kt$WCSessionListContent(navigation, viewModel)</ID>
-    <ID>ViewModelInjection:ActivateTokenPage.kt$viewModel</ID>
     <ID>ViewModelInjection:AddRpcScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:BalanceForAccount.kt$viewModel</ID>
-    <ID>ViewModelInjection:BeamSendScreen.kt$addressViewModel</ID>
     <ID>ViewModelInjection:CoinTweetsScreen.kt$viewModel</ID>
-    <ID>ViewModelInjection:Eip20ApprovePage.kt$viewModel</ID>
-    <ID>ViewModelInjection:Eip20RevokeConfirmPage.kt$viewModel</ID>
     <ID>ViewModelInjection:EvmNetworkPage.kt$viewModel</ID>
     <ID>ViewModelInjection:HSAddressInput.kt$viewModel</ID>
     <ID>ViewModelInjection:HSAmountInput.kt$viewModel</ID>
-    <ID>ViewModelInjection:MultiSwapExchangesPage.kt$transactionsViewModel</ID>
     <ID>ViewModelInjection:NftAssetPage.kt$viewModel</ID>
     <ID>ViewModelInjection:NftCollectionAssetsScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:NftCollectionEventsScreen.kt$viewModel</ID>
@@ -1003,14 +659,8 @@
     <ID>ViewModelInjection:SendTonScreen.kt$paymentAddressViewModel</ID>
     <ID>ViewModelInjection:SendTronScreen.kt$paymentAddressViewModel</ID>
     <ID>ViewModelInjection:SendZCashScreen.kt$paymentAddressViewModel</ID>
-    <ID>ViewModelInjection:SwapPage.kt$manageWalletsViewModel</ID>
-    <ID>ViewModelInjection:SwapPage.kt$restoreSettingsViewModel</ID>
-    <ID>ViewModelInjection:SwapPage.kt$viewModel</ID>
-    <ID>ViewModelInjection:SwapSettingsScreen.kt$viewModel</ID>
-    <ID>ViewModelInjection:SwapTransactionSettingsScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:TonConnectNewScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:TonConnectSendRequestScreen.kt$viewModel</ID>
-    <ID>ViewModelInjection:TransactionSpeedUpCancelPage.kt$viewModel</ID>
     <ID>ViewModelInjection:UtxoExpertModeScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:WCEvmTransactionSettingsPage.kt$viewModel</ID>
     <ID>ViewModelInjection:WCSendEthScreen.kt$viewModel</ID>

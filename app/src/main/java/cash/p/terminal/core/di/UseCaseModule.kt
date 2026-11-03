@@ -8,8 +8,6 @@ import cash.p.terminal.core.usecase.CheckGooglePlayUpdateUseCase
 import cash.p.terminal.core.usecase.CreateHardwareWalletUseCase
 import cash.p.terminal.core.usecase.CreateTrezorWalletUseCase
 import cash.p.terminal.core.usecase.GetMoneroWalletFilesNameUseCase
-import cash.p.terminal.core.usecase.FetchSwapQuotesUseCase
-import cash.p.terminal.core.usecase.IterativeExactOutSearch
 import cash.p.terminal.core.usecase.MoneroRestoreHeightResolver
 import cash.p.terminal.core.usecase.MoneroWalletStorage
 import cash.p.terminal.domain.usecase.ClearLegacyZcashDataUseCase
@@ -32,8 +30,6 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val useCaseModule = module {
-    factoryOf(::FetchSwapQuotesUseCase)
-    factoryOf(::IterativeExactOutSearch)
     factoryOf(::MoneroRestoreHeightResolver) bind TrezorMoneroRestoreHeightResolver::class
     factoryOf(::AndroidMoneroWalletStorage) bind MoneroWalletStorage::class
     singleOf(::AddMoneroToTrezorAccountUseCase)
