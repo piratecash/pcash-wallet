@@ -1,9 +1,7 @@
 package cash.p.terminal.screenshots
 
 import android.app.Application
-import cash.p.terminal.modules.multiswap.SwapOutputInputExactInPreview
-import cash.p.terminal.modules.multiswap.SwapOutputInputExactOutPreview
-import cash.p.terminal.modules.multiswap.SwapOutputInputNoPriceImpactPreview
+import cash.p.terminal.modules.multiswap.SwapOutputInputPreview
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import com.github.takahirom.roborazzi.captureRoboImage
 import org.junit.Test
@@ -11,6 +9,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
+import java.math.BigDecimal
 
 /**
  * Local-only design check. Run with:
@@ -30,7 +29,11 @@ class SwapOutputPreviewScreenshotTest {
         captureRoboImage(
             filePath = "build/outputs/roborazzi/SwapOutputInputExactInPreview.png",
         ) {
-            SwapOutputInputExactInPreview()
+            SwapOutputInputPreview(
+                amount = BigDecimal("0.12345678"),
+                fiatAmount = BigDecimal("20"),
+                fiatPriceImpact = BigDecimal("-1.62"),
+            )
         }
     }
 
@@ -39,7 +42,11 @@ class SwapOutputPreviewScreenshotTest {
         captureRoboImage(
             filePath = "build/outputs/roborazzi/SwapOutputInputExactOutPreview.png",
         ) {
-            SwapOutputInputExactOutPreview()
+            SwapOutputInputPreview(
+                amount = BigDecimal("100"),
+                fiatAmount = BigDecimal("123456789.12"),
+                fiatPriceImpact = BigDecimal("1.23"),
+            )
         }
     }
 
@@ -48,7 +55,11 @@ class SwapOutputPreviewScreenshotTest {
         captureRoboImage(
             filePath = "build/outputs/roborazzi/SwapOutputInputNoPriceImpactPreview.png",
         ) {
-            SwapOutputInputNoPriceImpactPreview()
+            SwapOutputInputPreview(
+                amount = BigDecimal("100"),
+                fiatAmount = null,
+                fiatPriceImpact = null,
+            )
         }
     }
 }

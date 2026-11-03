@@ -1,0 +1,308 @@
+package cash.p.terminal.modules.send
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewModelScope
+import cash.p.terminal.core.INativeBalanceProvider
+import cash.p.terminal.core.getFeeTokenBalance
+import cash.p.terminal.core.isNative
+import io.horizontalsystems.core.entities.CurrencyValue
+import cash.p.terminal.modules.send.fee.NetworkFeeWarningData
+import cash.p.terminal.modules.send.fee.buildNetworkFeeWarningData
+import cash.p.terminal.modules.send.fee.feePrimaryText
+import cash.p.terminal.modules.send.fee.feeSecondaryText
+import cash.p.terminal.wallet.AdapterState
+import cash.p.terminal.wallet.isAdapterStopped
+import cash.p.terminal.wallet.IAdapterManager
+import cash.p.terminal.wallet.IBalanceAdapter
+import cash.p.terminal.wallet.MarketKitWrapper
+import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.Wallet
+import cash.p.terminal.wallet.tokenQueryId
+import cash.p.terminal.wallet.entities.nativeTokenQuery
+import cash.p.terminal.core.managers.PoisonAddressManager
+import cash.p.terminal.core.managers.LocallyCreatedTransactionRepository
+import cash.p.terminal.wallet.managers.IBalanceHiddenManager
+import cash.p.terminal.manager.IConnectivityManager
+import cash.p.terminal.modules.offline.OfflineOperationGate
+import cash.p.terminal.modules.pin.core.UptimeProvider
+import cash.p.terminal.modules.send.offline.isWithinSyncGrace
+import io.horizontalsystems.core.ViewModelUiState
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
+import org.koin.java.KoinJavaComponent.inject
+import java.math.BigDecimal
+
+private const val SYNC_GRACE_MS = 60 * 1000L
+
+abstract class BaseSendViewModel<T>(
+    val wallet: Wallet,
+    adapterManager: IAdapterManager
+) : ViewModelUiState<T>() {
+    private val _adapterManager = adapterManager
+    private val marketKit: MarketKitWrapper by inject(MarketKitWrapper::class.java)
+    private val balanceHiddenManager: IBalanceHiddenManager by inject(IBalanceHiddenManager::class.java)
+    private val poisonAddressManager: PoisonAddressManager by inject(PoisonAddressManager::class.java)
+    protected val locallyCreatedTransactionRepository: LocallyCreatedTransactionRepository by inject(
+        LocallyCreatedTransactionRepository::class.java
+    )
+    private val connectivityManager: IConnectivityManager by inject(IConnectivityManager::class.java)
+    private val offlineOperationGate: OfflineOperationGate by inject(OfflineOperationGate::class.java)
+    private val uptimeProvider: UptimeProvider by inject(UptimeProvider::class.java)
+
+    var isSynced by mutableStateOf(true)
+        private set
+
+    var hasAdapterError by mutableStateOf(false)
+        private set
+    var syncRetrying by mutableStateOf(false)
+        private set
+    private var autoRetried = false
+
+    // "Recently good" (synced && connected) grace: keeps the Send button enabled and suppresses the
+    // offline blocker through a brief network/sync blip, bounded to SYNC_GRACE_MS by a reactive timer.
+    var syncGraceActive by mutableStateOf(false)
+        private set
+    private var lastGoodElapsed: Long? = null
+    private var wasGood = false
+    private var graceTimerJob: Job? = null
+
+    val isEffectivelySynced: Boolean
+        get() = ((isSynced && connectivityManager.isConnected.value) || syncGraceActive) &&
+            !offlineOperationGate.isBlocked(wallet)
+
+    /** Observable connectivity, so send flows can react to reconnection. */
+    protected val isConnectedFlow: StateFlow<Boolean>
+        get() = connectivityManager.isConnected
+
+    /** Monotonic clock; overridable in tests to control the grace window deterministically. */
+    protected open val elapsedRealtimeMs: Long
+        get() = uptimeProvider.uptime
+
+    private fun recomputeGrace() {
+        if (isSynced && connectivityManager.isConnected.value) {
+            graceTimerJob?.cancel()
+            graceTimerJob = null
+            lastGoodElapsed = elapsedRealtimeMs
+            syncGraceActive = true
+            wasGood = true
+            return
+        }
+        if (wasGood) {
+            // The grace window starts when the good state ends, not at the last emission — a quiet
+            // synced period must not shorten it.
+            lastGoodElapsed = elapsedRealtimeMs
+            wasGood = false
+        }
+        val last = lastGoodElapsed
+        val within = isWithinSyncGrace(last, elapsedRealtimeMs, SYNC_GRACE_MS)
+        if (!within) {
+            graceTimerJob?.cancel()
+            graceTimerJob = null
+            syncGraceActive = false
+            return
+        }
+        if (graceTimerJob?.isActive != true) {
+            syncGraceActive = true
+            val remaining = SYNC_GRACE_MS - (elapsedRealtimeMs - (last ?: 0L))
+            graceTimerJob = viewModelScope.launch {
+                delay(remaining)
+                syncGraceActive = false
+            }
+        }
+    }
+
+    /** The grace bridges blips; an adapter that is gone must not be bridged, now or on a later reconnect. */
+    private fun forgetGoodState() {
+        graceTimerJob?.cancel()
+        graceTimerJob = null
+        syncGraceActive = false
+        wasGood = false
+        lastGoodElapsed = null
+    }
+
+    open val feeToken: Token? by lazy {
+        val token = wallet.token
+        if (token.type.isNative) {
+            token
+        } else {
+            marketKit.token(token.nativeTokenQuery) ?: token
+        }
+    }
+
+    var feeCoinBalance: BigDecimal? by mutableStateOf(null)
+        private set
+
+    var feeWarningData by mutableStateOf<NetworkFeeWarningData?>(null)
+        private set
+
+    var balanceHidden by mutableStateOf(balanceHiddenManager.isWalletBalanceHidden(wallet.tokenQueryId))
+        private set
+
+    var riskAccepted by mutableStateOf(false)
+        private set
+
+    fun onRiskAcceptedChange(accepted: Boolean) {
+        riskAccepted = accepted
+        emitState()
+    }
+
+    protected fun resetRiskAccepted() {
+        riskAccepted = false
+    }
+
+    protected fun isAddressSuspicious(address: String?): Boolean {
+        return poisonAddressManager.isAddressSuspicious(address, wallet.token.blockchainType, wallet.account.id)
+    }
+
+    protected fun onSendSuccess(address: String?) {
+        address?.let {
+            poisonAddressManager.saveKnownAddress(it, wallet.token.blockchainType, wallet.account.id)
+        }
+    }
+
+    val displayBalance: BigDecimal?
+        get() = _adapterManager.getAdjustedBalanceDataForToken(wallet.token)?.available
+
+    fun toggleHideBalance() = balanceHiddenManager.toggleWalletBalanceHidden(wallet.tokenQueryId)
+
+    protected open fun getEstimatedFee(): BigDecimal? = null
+    protected open fun onSendRequested() {}
+
+    private fun currentFeeWarningData(): NetworkFeeWarningData? {
+        val ft = feeToken ?: return null
+        return buildNetworkFeeWarningData(
+            blockchainType = wallet.token.blockchainType,
+            tokenType = wallet.token.type,
+            feeTokenBalance = feeCoinBalance,
+            estimatedFee = getEstimatedFee(),
+            feeToken = ft,
+        )
+    }
+
+    val inlineFeeWarningData: NetworkFeeWarningData?
+        get() = currentFeeWarningData()
+
+    fun onClickSendWithWarningCheck() {
+        val data = currentFeeWarningData()
+        if (data != null) {
+            feeWarningData = data
+            return
+        }
+        onSendRequested()
+    }
+
+    fun onFeeWarningConfirmed() {
+        feeWarningData = null
+        onSendRequested()
+    }
+
+    fun onFeeWarningCancelled() {
+        feeWarningData = null
+    }
+
+    private fun resolveFeeBalanceAdapter(): IBalanceAdapter? {
+        if (wallet.token.type.isNative) return null
+        return feeToken?.let { _adapterManager.getAdapterForToken<IBalanceAdapter>(it) }
+    }
+
+    private fun resolveFeeCoinBalance(ft: Token): BigDecimal? {
+        return _adapterManager.getFeeTokenBalance(ft, wallet.token)
+    }
+
+    fun isInsufficientFeeBalance(fee: BigDecimal?): Boolean {
+        return hasInsufficientFeeTokenBalance(
+            token = wallet.token,
+            fee = fee,
+            feeTokenBalance = feeCoinBalance,
+        )
+    }
+
+    fun formatFeePrimary(fee: BigDecimal?): String = feePrimaryText(feeToken, fee)
+
+    fun formatFeeSecondary(fee: BigDecimal?, rate: CurrencyValue?): String = feeSecondaryText(fee, rate)
+
+    private fun handleAdapterState(state: AdapterState) {
+        isSynced = state is AdapterState.Synced
+        when (state) {
+            is AdapterState.Synced -> {
+                hasAdapterError = false
+                syncRetrying = false
+                autoRetried = false
+            }
+            is AdapterState.NotSynced -> {
+                syncRetrying = false
+                if (state.isAdapterStopped) forgetGoodState()
+                if (!autoRetried) {
+                    autoRetried = true
+                    _adapterManager.refreshByWallet(wallet)
+                } else {
+                    hasAdapterError = true
+                }
+            }
+            else -> {
+                hasAdapterError = false
+                syncRetrying = true
+            }
+        }
+        recomputeGrace()
+    }
+
+    fun retryAdapterSync() {
+        syncRetrying = true
+        _adapterManager.refreshByWallet(wallet)
+    }
+
+    init {
+        _adapterManager.getBalanceAdapterForWallet(wallet)?.let { adapter ->
+            handleAdapterState(adapter.balanceState)
+            viewModelScope.launch {
+                adapter.balanceStateUpdatedFlow.collect {
+                    handleAdapterState(adapter.balanceState)
+                }
+            }
+        }
+
+        // Bound the sync grace off connectivity too: losing the network while the adapter is still
+        // stale-Synced must start the bounded expiry timer (Codex). isConnected is a StateFlow, so the
+        // collector fires with the current value immediately.
+        viewModelScope.launch {
+            connectivityManager.isConnected.collect {
+                recomputeGrace()
+            }
+        }
+
+        // feeToken may be overridden in subclasses whose property initializers
+        // run after base init. yield() suspends so the constructor finishes first.
+        viewModelScope.launch {
+            yield()
+            val ft = feeToken
+            if (!wallet.token.type.isNative && ft != null) {
+                feeCoinBalance = resolveFeeCoinBalance(ft)
+                val feeAdapter = resolveFeeBalanceAdapter()
+                val updateFlow = feeAdapter?.balanceUpdatedFlow
+                    ?: (_adapterManager.getBalanceAdapterForWallet(wallet) as? INativeBalanceProvider)
+                        ?.nativeBalanceUpdatedFlow
+                updateFlow?.collect {
+                    feeCoinBalance = resolveFeeCoinBalance(ft)
+                }
+                return@launch
+            }
+            val adapter = resolveFeeBalanceAdapter()
+            feeCoinBalance = adapter?.balanceData?.total
+            adapter?.balanceUpdatedFlow?.collect {
+                feeCoinBalance = adapter.balanceData.total
+            }
+        }
+
+        viewModelScope.launch {
+            balanceHiddenManager.anyWalletVisibilityChangedFlow.collect {
+                balanceHidden = balanceHiddenManager.isWalletBalanceHidden(wallet.tokenQueryId)
+            }
+        }
+    }
+}
