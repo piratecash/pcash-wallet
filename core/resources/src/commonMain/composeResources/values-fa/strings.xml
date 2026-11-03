@@ -2339,6 +2339,7 @@
     <string name="swap_support_email">پشتیبانی %1$s · ایمیل</string>
     <string name="swap_support_email_deposit_tx">تراکنش واریز: %1$s</string>
     <string name="swap_support_email_deposit_address">آدرس واریز: %1$s</string>
+    <string name="evm_node_request_failed">گره شبکه نتوانست درخواست را پردازش کند. دوباره تلاش کنید یا در تنظیمات بلاک‌چین منبع دیگری انتخاب کنید.\n\nپاسخ گره: %1$s</string>
     <string name="desktop_transfer_password">رمز عبور پیش از ارسال</string>
     <string name="desktop_transfer_password_description">پیش از هر ارسال، رمز عبور برنامه درخواست می‌شود تا اگر کسی هنگام باز بودن قفل برنامه به رایانهٔ شما دسترسی پیدا کند، دارایی‌هایتان محافظت شوند.</string>
 </resources>

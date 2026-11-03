@@ -2328,6 +2328,7 @@
     <string name="swap_support_email">%1$s 지원 · 이메일</string>
     <string name="swap_support_email_deposit_tx">입금 거래: %1$s</string>
     <string name="swap_support_email_deposit_address">입금 주소: %1$s</string>
+    <string name="evm_node_request_failed">네트워크 노드가 요청을 처리하지 못했습니다. 다시 시도하거나 블록 체인 설정에서 다른 소스를 선택하세요.\n\n노드 응답: %1$s</string>
     <string name="desktop_transfer_password">보내기 전 비밀번호</string>
     <string name="desktop_transfer_password_description">자산을 보낼 때마다 앱 비밀번호를 요청하여, 앱이 잠금 해제된 상태에서 누군가 컴퓨터에 접근하더라도 자산을 보호합니다.</string>
 </resources>

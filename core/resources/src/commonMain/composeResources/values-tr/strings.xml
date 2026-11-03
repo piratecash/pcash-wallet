@@ -2336,6 +2336,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="swap_support_email">%1$s desteği · E-posta</string>
     <string name="swap_support_email_deposit_tx">Para yatırma işlemi: %1$s</string>
     <string name="swap_support_email_deposit_address">Para yatırma adresi: %1$s</string>
+    <string name="evm_node_request_failed">Ağ düğümü isteği işleyemedi. Tekrar deneyin veya Blockchain Ayarları\'ndan başka bir kaynak seçin.\n\nDüğüm yanıtı: %1$s</string>
     <string name="desktop_transfer_password">Göndermeden önce şifre</string>
     <string name="desktop_transfer_password_description">Her gönderimden önce uygulama şifresi istenir. Böylece uygulamanın kilidi açıkken biri bilgisayarınıza erişirse varlıklarınız korunur.</string>
 </resources>

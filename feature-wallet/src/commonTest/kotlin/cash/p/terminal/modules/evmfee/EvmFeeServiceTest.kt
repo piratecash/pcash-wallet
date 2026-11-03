@@ -8,6 +8,7 @@ import io.horizontalsystems.ethereumkit.models.GasPrice
 import io.horizontalsystems.ethereumkit.models.TransactionData
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import io.reactivex.Single
 import io.reactivex.SingleEmitter
 import io.reactivex.subjects.SingleSubject
@@ -22,6 +23,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.io.IOException
 import java.math.BigInteger
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -136,6 +138,35 @@ class EvmFeeServiceTest {
         assertEquals(DataState.Loading, loading)
     }
 
+    @Test
+    fun retry_estimateFailed_emitsLoadingThenSuccess() = runBlocking {
+        val retriedEstimate = PendingEstimate()
+        every { gasDataService.estimatedGasDataAsync(any(), dataA, any(), any()) } returnsMany listOf(
+            Single.error(IOException("timeout")),
+            retriedEstimate.single
+        )
+        service.start()
+        withTimeout(TIMEOUT_MS) { service.transactionStatusFlow.first { it is DataState.Error } }
+
+        service.retry()
+
+        assertEquals(DataState.Loading, service.transactionStatusFlow.replayCache.last())
+        retriedEstimate.complete(gasData())
+        awaitSendableTransactionFor(dataA)
+    }
+
+    @Test
+    fun retry_gasPriceFailed_retriesGasPriceOnly() = runBlocking {
+        gasPriceService.update(DataState.Error(IOException("timeout")))
+        service.start()
+        withTimeout(TIMEOUT_MS) { service.transactionStatusFlow.first { it is DataState.Error } }
+
+        service.retry()
+
+        assertEquals(1, gasPriceService.retryCount)
+        verify(exactly = 0) { gasDataService.estimatedGasDataAsync(any(), any(), any(), any()) }
+    }
+
     private suspend fun startWithSendableA() {
         service.start()
         estimateA.complete(gasData())
@@ -159,6 +190,13 @@ class EvmFeeServiceTest {
         override fun createState() = state
         override fun setRecommended() = Unit
         override fun start() = Unit
+
+        var retryCount = 0
+            private set
+
+        override fun retry() {
+            retryCount++
+        }
 
         fun update(state: DataState<GasPriceInfo>) {
             this.state = state

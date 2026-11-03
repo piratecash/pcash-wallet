@@ -2481,6 +2481,7 @@
     <string name="swap_support_email">Підтримка %1$s · Email</string>
     <string name="swap_support_email_deposit_tx">Транзакція депозиту: %1$s</string>
     <string name="swap_support_email_deposit_address">Адреса депозиту: %1$s</string>
+    <string name="evm_node_request_failed">Вузол мережі не зміг виконати запит. Повторіть спробу або виберіть інше джерело в налаштуваннях блокчейну.\n\nВідповідь вузла: %1$s</string>
     <string name="desktop_transfer_password">Пароль перед надсиланням</string>
     <string name="desktop_transfer_password_description">Перед кожним надсиланням запитується пароль застосунку. Це захистить ваші кошти, якщо хтось отримає доступ до комп’ютера з розблокованим застосунком.</string>
 </resources>

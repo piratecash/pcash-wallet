@@ -2319,6 +2319,7 @@
     <string name="swap_support_email">%1$s 客服 · 邮件</string>
     <string name="swap_support_email_deposit_tx">存款交易：%1$s</string>
     <string name="swap_support_email_deposit_address">存款地址：%1$s</string>
+    <string name="evm_node_request_failed">网络节点无法处理该请求。请重试，或在区块链设置中选择其他来源。\n\n节点响应：%1$s</string>
     <string name="desktop_transfer_password">发送前输入密码</string>
     <string name="desktop_transfer_password_description">每次发送前都会要求输入应用密码，即使有人在应用未锁定时使用您的电脑，也能保护您的资产。</string>
 </resources>

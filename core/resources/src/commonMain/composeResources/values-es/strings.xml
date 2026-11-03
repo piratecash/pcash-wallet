@@ -2328,6 +2328,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="swap_support_email">Soporte de %1$s · Correo</string>
     <string name="swap_support_email_deposit_tx">Transacción de depósito: %1$s</string>
     <string name="swap_support_email_deposit_address">Dirección de depósito: %1$s</string>
+    <string name="evm_node_request_failed">El nodo de la red no pudo procesar la solicitud. Inténtalo de nuevo o elige otra fuente en la configuración de Blockchain.\n\nRespuesta del nodo: %1$s</string>
     <string name="desktop_transfer_password">Contraseña antes de enviar</string>
     <string name="desktop_transfer_password_description">Se solicita la contraseña de la aplicación antes de cada envío, lo que protege tus activos si alguien accede a tu ordenador con la aplicación desbloqueada.</string>
 </resources>

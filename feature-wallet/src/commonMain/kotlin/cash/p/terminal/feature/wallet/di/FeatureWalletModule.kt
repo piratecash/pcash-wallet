@@ -10,6 +10,7 @@ import cash.p.terminal.core.managers.BackupManager
 import cash.p.terminal.core.managers.ChainAccountManagersStarter
 import cash.p.terminal.core.managers.DefaultUserManager
 import cash.p.terminal.core.managers.LitecoinBirthdayProvider
+import cash.p.terminal.core.managers.LitecoinKitPool
 import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.SeedPhraseQrCrypto
 import cash.p.terminal.core.managers.StellarAccountManager
@@ -399,6 +400,7 @@ val featureWalletModule = module {
     singleOf(::BitcoinKitConnectionManager) bind IConnectionManager::class
     singleOf(::DefaultBitcoinKitDatabaseOperations) bind BitcoinKitDatabaseOperations::class
     singleOf(::BitcoinKitDatabaseManager)
+    singleOf(::LitecoinKitPool)
     factoryOf(::SolanaWalletManager)
     singleOf(::SolanaKitManager)
     singleOf(::StellarKitManager)

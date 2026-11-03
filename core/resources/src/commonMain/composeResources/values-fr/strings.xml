@@ -2334,6 +2334,7 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="swap_support_email">Support %1$s · E-mail</string>
     <string name="swap_support_email_deposit_tx">Transaction de dépôt : %1$s</string>
     <string name="swap_support_email_deposit_address">Adresse de dépôt : %1$s</string>
+    <string name="evm_node_request_failed">Le nœud du réseau n\'a pas pu traiter la requête. Réessayez ou choisissez une autre source dans les paramètres de la Blockchain.\n\nRéponse du nœud : %1$s</string>
     <string name="desktop_transfer_password">Mot de passe avant l\u0027envoi</string>
     <string name="desktop_transfer_password_description">Le mot de passe de l\u0027application est demandé avant chaque envoi, ce qui protège vos actifs si quelqu\u0027un accède à votre ordinateur pendant que l\u0027application est déverrouillée.</string>
 </resources>
