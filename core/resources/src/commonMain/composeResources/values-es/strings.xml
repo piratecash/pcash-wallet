@@ -2412,6 +2412,7 @@ La aplicación le permite crear una copia de seguridad con una contraseña senci
     <string name="shamir_check_title">Verificación de la parte %1$d</string>
     <string name="shamir_check_description">Elige las palabras de la parte %1$d según los números que indiquemos</string>
     <string name="shamir_info_description">Shamir Backup (SLIP-39) divide la clave de la billetera en varias partes de 20 palabras. Para restaurarla necesitas el número de partes establecido, por ejemplo 2 cualesquiera de 3. Con menos partes no se revela nada sobre la clave. Las partes funcionan en billeteras compatibles con SLIP-39, como Trezor. Si la billetera tiene frase de contraseña, también la necesitarás para restaurarla.</string>
+    <string name="evm_node_request_failed">El nodo de la red no pudo procesar la solicitud. Inténtalo de nuevo o elige otra fuente en la configuración de Blockchain.\n\nRespuesta del nodo: %1$s</string>
     <string name="desktop_transfer_password">Contraseña antes de enviar</string>
     <string name="desktop_transfer_password_description">Se solicita la contraseña de la aplicación antes de cada envío, lo que protege tus activos si alguien accede a tu ordenador con la aplicación desbloqueada.</string>
 </resources>

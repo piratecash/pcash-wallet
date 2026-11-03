@@ -2402,6 +2402,7 @@
     <string name="shamir_check_title">조각 %1$d 검증</string>
     <string name="shamir_check_description">표시된 번호에 맞게 조각 %1$d의 단어를 고르세요</string>
     <string name="shamir_info_description">Shamir Backup(SLIP-39)은 지갑 키를 20개 단어로 된 여러 조각으로 나눕니다. 복원하려면 정해진 수의 조각이 필요합니다(예: 3개 중 아무 2개). 그보다 적은 조각으로는 키에 대해 아무것도 알 수 없습니다. 조각은 Trezor처럼 SLIP-39를 지원하는 지갑에서 사용할 수 있습니다. 지갑에 암호문구가 있다면 복원할 때 함께 필요합니다.</string>
+    <string name="evm_node_request_failed">네트워크 노드가 요청을 처리하지 못했습니다. 다시 시도하거나 블록 체인 설정에서 다른 소스를 선택하세요.\n\n노드 응답: %1$s</string>
     <string name="desktop_transfer_password">보내기 전 비밀번호</string>
     <string name="desktop_transfer_password_description">자산을 보낼 때마다 앱 비밀번호를 요청하여, 앱이 잠금 해제된 상태에서 누군가 컴퓨터에 접근하더라도 자산을 보호합니다.</string>
 </resources>

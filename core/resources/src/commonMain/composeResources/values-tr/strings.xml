@@ -2415,6 +2415,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="shamir_check_title">%1$d. parça kontrolü</string>
     <string name="shamir_check_description">%1$d. parçadaki kelimeleri gösterdiğimiz numaralara göre seçin</string>
     <string name="shamir_info_description">Shamir Backup (SLIP-39), cüzdan anahtarını 20 kelimelik birkaç parçaya böler. Geri yüklemek için belirlenen sayıda parça gerekir, örneğin 3 parçadan herhangi 2’si. Daha az parça anahtar hakkında hiçbir şey açığa çıkarmaz. Parçalar, Trezor gibi SLIP-39 destekleyen cüzdanlarda çalışır. Cüzdanın parolası varsa geri yükleme için o da gerekir.</string>
+    <string name="evm_node_request_failed">Ağ düğümü isteği işleyemedi. Tekrar deneyin veya Blockchain Ayarları\'ndan başka bir kaynak seçin.\n\nDüğüm yanıtı: %1$s</string>
     <string name="desktop_transfer_password">Göndermeden önce şifre</string>
     <string name="desktop_transfer_password_description">Her gönderimden önce uygulama şifresi istenir. Böylece uygulamanın kilidi açıkken biri bilgisayarınıza erişirse varlıklarınız korunur.</string>
 </resources>

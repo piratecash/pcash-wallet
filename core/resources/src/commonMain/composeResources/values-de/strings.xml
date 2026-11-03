@@ -2406,6 +2406,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="shamir_check_title">Prüfung von Teil %1$d</string>
     <string name="shamir_check_description">Wählen Sie die Wörter aus Teil %1$d nach den angezeigten Nummern</string>
     <string name="shamir_info_description">Shamir Backup (SLIP-39) teilt den Wallet-Schlüssel in mehrere Teile zu je 20 Wörtern. Zur Wiederherstellung benötigen Sie die festgelegte Anzahl an Teilen, zum Beispiel beliebige 2 von 3. Weniger Teile verraten nichts über den Schlüssel. Die Teile funktionieren in Wallets mit SLIP-39-Unterstützung, etwa Trezor. Hat die Wallet ein Passwort, wird es zur Wiederherstellung ebenfalls benötigt.</string>
+    <string name="evm_node_request_failed">Der Netzwerkknoten konnte die Anfrage nicht verarbeiten. Versuchen Sie es erneut oder wählen Sie in den Blockchain-Einstellungen eine andere Quelle.\n\nAntwort des Knotens: %1$s</string>
     <string name="desktop_transfer_password">Passwort vor dem Senden</string>
     <string name="desktop_transfer_password_description">Vor jeder Überweisung wird das App-Passwort abgefragt. Das schützt Ihre Guthaben, falls jemand bei entsperrter App Zugriff auf Ihren Computer erhält.</string>
 </resources>

@@ -173,4 +173,5 @@ data class SendTransactionServiceState(
     val fields: List<DataField>,
     val extraFees: Map<FeeType, SendModule.AmountData> = emptyMap(),
     val moneroSpendReadiness: MoneroSpendReadiness? = null,
+    val retryAvailable: Boolean = false,
 )

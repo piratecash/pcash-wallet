@@ -2418,6 +2418,7 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="shamir_check_title">Vérification de la part %1$d</string>
     <string name="shamir_check_description">Choisissez les mots de la part %1$d selon les numéros indiqués</string>
     <string name="shamir_info_description">Shamir Backup (SLIP-39) divise la clé du portefeuille en plusieurs parts de 20 mots. Pour le restaurer, il faut le nombre de parts défini, par exemple 2 parts quelconques sur 3. Un nombre inférieur de parts ne révèle rien de la clé. Les parts fonctionnent dans les portefeuilles compatibles SLIP-39, comme Trezor. Si le portefeuille a une phrase d’authentification, elle sera aussi nécessaire pour le restaurer.</string>
+    <string name="evm_node_request_failed">Le nœud du réseau n\'a pas pu traiter la requête. Réessayez ou choisissez une autre source dans les paramètres de la Blockchain.\n\nRéponse du nœud : %1$s</string>
     <string name="desktop_transfer_password">Mot de passe avant l\u0027envoi</string>
     <string name="desktop_transfer_password_description">Le mot de passe de l\u0027application est demandé avant chaque envoi, ce qui protège vos actifs si quelqu\u0027un accède à votre ordinateur pendant que l\u0027application est déverrouillée.</string>
 </resources>

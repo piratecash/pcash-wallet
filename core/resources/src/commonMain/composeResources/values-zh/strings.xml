@@ -2393,6 +2393,7 @@
     <string name="shamir_check_title">检查分片 %1$d</string>
     <string name="shamir_check_description">按我们给出的编号选择分片 %1$d 中的单词</string>
     <string name="shamir_info_description">Shamir Backup（SLIP-39）将钱包密钥拆分为多个分片，每个分片 20 个单词。恢复时需要设定数量的分片，例如 3 个中的任意 2 个。少于该数量的分片不会泄露任何密钥信息。这些分片可用于支持 SLIP-39 的钱包，例如 Trezor。如果钱包设置了密码，恢复时也需要它。</string>
+    <string name="evm_node_request_failed">网络节点无法处理该请求。请重试，或在区块链设置中选择其他来源。\n\n节点响应：%1$s</string>
     <string name="desktop_transfer_password">发送前输入密码</string>
     <string name="desktop_transfer_password_description">每次发送前都会要求输入应用密码，即使有人在应用未锁定时使用您的电脑，也能保护您的资产。</string>
 </resources>

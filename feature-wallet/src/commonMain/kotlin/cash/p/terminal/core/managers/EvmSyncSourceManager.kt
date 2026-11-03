@@ -18,6 +18,11 @@ import java.net.URI
 
 const val ROBINHOOD_RPC_URL = "https://rpc.mainnet.chain.robinhood.com"
 
+private val ETHEREUM_FALLBACK_RPCS = arrayOf(
+    "https://eth.drpc.org",
+    "https://gateway.tenderly.co/public/mainnet",
+)
+
 class EvmSyncSourceManager(
     private val blockchainSettingsStorage: BlockchainSettingsStorage,
     private val evmSyncSourceStorage: EvmSyncSourceStorage,
@@ -61,8 +66,8 @@ class EvmSyncSourceManager(
     private fun defaultRpcSources(blockchainType: BlockchainType): List<Pair<String, RpcSource>> =
         when (blockchainType) {
             BlockchainType.Ethereum -> listOf(
-                "BlocksDecoded" to httpRpc(addressResolutionConfig.blocksDecodedEthereumRpc),
-                "PublicNode" to httpRpc("https://ethereum-rpc.publicnode.com"),
+                "BlocksDecoded" to httpRpc(addressResolutionConfig.blocksDecodedEthereumRpc, *ETHEREUM_FALLBACK_RPCS),
+                "PublicNode" to httpRpc("https://ethereum-rpc.publicnode.com", *ETHEREUM_FALLBACK_RPCS),
             )
 
             BlockchainType.BinanceSmartChain -> listOf(
@@ -116,7 +121,8 @@ class EvmSyncSourceManager(
             else -> listOf()
         }
 
-    private fun httpRpc(url: String) = RpcSource.Http(listOf(URI(url)), null)
+    private fun httpRpc(url: String, vararg fallbackUrls: String) =
+        RpcSource.Http((listOf(url) + fallbackUrls).map(::URI), null)
 
     fun customSyncSources(blockchainType: BlockchainType): List<EvmSyncSource> {
         val records = evmSyncSourceStorage.evmSyncSources(blockchainType)

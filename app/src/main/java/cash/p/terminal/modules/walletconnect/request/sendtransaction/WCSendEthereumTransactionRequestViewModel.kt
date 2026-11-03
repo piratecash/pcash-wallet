@@ -69,7 +69,8 @@ internal class WCSendEthereumTransactionRequestViewModel(
         cautions = sendTransactionState.cautions,
         sendEnabled = sendTransactionState.sendable,
         transactionFields = sendTransactionState.fields,
-        sectionViewItems = getSectionViewItems()
+        sectionViewItems = getSectionViewItems(),
+        retryAvailable = sendTransactionState.retryAvailable
     )
 
     private fun getSectionViewItems(): List<SectionViewItem> {
@@ -116,6 +117,10 @@ internal class WCSendEthereumTransactionRequestViewModel(
         }
     }
 
+    fun retry() {
+        viewModelScope.launch { sendTransactionService.retry() }
+    }
+
     fun reject() {
         WCDelegate.sessionRequestEvent?.let { sessionRequest ->
             WCDelegate.rejectRequest(sessionRequest.topic, sessionRequest.request.id)
@@ -159,5 +164,6 @@ data class WCSendEthereumTransactionRequestUiState(
     val cautions: List<CautionViewItem>,
     val sendEnabled: Boolean,
     val transactionFields: List<DataField>,
-    val sectionViewItems: List<SectionViewItem>
+    val sectionViewItems: List<SectionViewItem>,
+    val retryAvailable: Boolean
 )

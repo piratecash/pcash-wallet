@@ -2420,6 +2420,7 @@ O aplicativo permite que você crie um backup com uma senha simples para sua con
     <string name="shamir_check_title">Verificação da parte %1$d</string>
     <string name="shamir_check_description">Escolha as palavras da parte %1$d pelos números que indicarmos</string>
     <string name="shamir_info_description">O Shamir Backup (SLIP-39) divide a chave da carteira em várias partes de 20 palavras. Para restaurar, você precisa do número de partes definido, por exemplo quaisquer 2 de 3. Menos partes não revelam nada sobre a chave. As partes funcionam em carteiras compatíveis com SLIP-39, como a Trezor. Se a carteira tiver senha, você também vai precisar dela para restaurar.</string>
+    <string name="evm_node_request_failed">O nó da rede não conseguiu processar a solicitação. Tente novamente ou escolha outra fonte nas configurações da Blockchain.\n\nResposta do nó: %1$s</string>
     <string name="desktop_transfer_password">Senha antes de enviar</string>
     <string name="desktop_transfer_password_description">A senha do aplicativo é solicitada antes de cada envio, protegendo seus ativos caso alguém acesse seu computador com o aplicativo desbloqueado.</string>
 </resources>

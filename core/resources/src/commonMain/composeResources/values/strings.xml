@@ -2845,6 +2845,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="shamir_check_title">Part %1$d Check</string>
     <string name="shamir_check_description">Pick the words of part %1$d by the numbers we show</string>
     <string name="shamir_info_description">Shamir Backup (SLIP-39) splits the wallet key into several parts of 20 words. To restore the wallet you need the set number of parts, for example any 2 of 3. Fewer parts reveal nothing about the key. The parts work in wallets that support SLIP-39, such as Trezor. If the wallet has a passphrase, you will also need it to restore.</string>
+    <string name="evm_node_request_failed">The network node could not process the request. Try again or choose another source in Blockchain settings.\n\nNode response: %1$s</string>
     <string name="desktop_transfer_password">Password before sending</string>
     <string name="desktop_transfer_password_description">The app password is asked before every transfer, protecting your assets if someone gets access to your computer while the app is unlocked.</string>
 </resources>
