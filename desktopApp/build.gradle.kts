@@ -29,6 +29,7 @@ dependencies {
     implementation(project(":core:vault"))
     implementation(project(":core:common"))
     implementation(project(":feature-market"))
+    implementation(project(":feature-wallet"))
     implementation(libs.ethereum.kit)
     implementation(libs.bitcoin.kit.sqlcipher.driver)
     implementation(libs.bitcoin.dashlib.native)

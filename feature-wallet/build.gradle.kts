@@ -208,6 +208,7 @@ kotlin {
             dependencies {
                 runtimeOnly(libs.secp256k1.jni.jvm)
                 runtimeOnly(compose.desktop.currentOs)
+                implementation(compose.desktop.uiTestJUnit4)
             }
         }
         getByName("androidHostTest") {
@@ -221,4 +222,10 @@ kotlin {
             }
         }
     }
+}
+
+// The relocated send tests outgrow the default 512 MB test heap; same settings as the app unit tests.
+tasks.withType<Test>().matching { it.name == "testAndroidHostTest" }.configureEach {
+    maxHeapSize = "2g"
+    forkEvery = 80
 }
