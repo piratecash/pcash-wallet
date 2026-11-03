@@ -7,10 +7,10 @@ import cash.p.terminal.core.managers.AddressLabelManager
 import cash.p.terminal.core.managers.AddressMetadataManager
 import cash.p.terminal.core.managers.BalanceHiddenManager
 import cash.p.terminal.core.managers.PoisonAddressManager
-import cash.p.terminal.entities.RawUnstoppableProviderTitles
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.modules.balance.token.addresspoisoning.AddressPoisoningViewMode
 import cash.p.terminal.modules.contacts.ContactsRepository
+import cash.p.terminal.modules.multiswap.providers.AndroidUnstoppableProviderTitles
 import cash.p.terminal.modules.transactions.poison_status.PoisonStatus
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.icon_24_nft_placeholder
@@ -66,7 +66,7 @@ class TransactionViewItemFactoryNftTest {
             marketKit = mockk(relaxed = true),
             localStorage = localStorage,
             poisonAddressManager = poisonAddressManager,
-            unstoppableProviderTitles = RawUnstoppableProviderTitles,
+            unstoppableProviderTitles = AndroidUnstoppableProviderTitles(),
         )
     }
 

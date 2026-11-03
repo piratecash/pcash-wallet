@@ -15,13 +15,10 @@ import cash.p.terminal.core.storage.HardwarePublicKeyStorage
 import cash.p.terminal.core.storage.RestoreSettingsStorage
 import cash.p.terminal.core.storage.StaticAppDatabaseProvider
 import cash.p.terminal.modules.pin.core.PinDbStorage
-import cash.p.terminal.modules.send.address.AddressCheckerControl
-import cash.p.terminal.modules.send.address.AddressCheckerControlImpl
 import cash.p.terminal.wallet.IAccountsStorage
 import cash.p.terminal.wallet.IEnabledWalletStorage
 import cash.p.terminal.wallet.IHardwarePublicKeyStorage
 import io.horizontalsystems.core.IAppNumberFormatter
-import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
@@ -38,7 +35,6 @@ val storageModule = module {
     singleOf(::EvmSyncSourceStorage)
 
 
-    factoryOf(::AddressCheckerControlImpl) bind AddressCheckerControl::class
 
     single { get<AppDatabase>().addressLabelDao() }
     single { get<AppDatabase>().evmMethodLabelDao() }

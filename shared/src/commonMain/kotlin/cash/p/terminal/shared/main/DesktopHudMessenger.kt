@@ -12,11 +12,12 @@ data class HudMessage(val text: String, val variant: AppSnackbarVariant, val ico
 
 /** Collects messages for the snackbar overlay of [DesktopNavHost]. */
 class DesktopHudMessenger : HudMessenger {
-    private val _messages = MutableSharedFlow<HudMessage>(
+    private val _messages = MutableSharedFlow<HudMessage?>(
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
-    val messages: SharedFlow<HudMessage> = _messages
+    /** `null` hides the current message. */
+    val messages: SharedFlow<HudMessage?> = _messages
 
     override fun showSuccess(text: String, duration: SnackbarDuration) = show(text, AppSnackbarVariant.Success)
 
@@ -34,6 +35,10 @@ class DesktopHudMessenger : HudMessenger {
     override fun showPremium(text: String, duration: SnackbarDuration) = show(text, AppSnackbarVariant.Premium)
 
     override fun vibrate() = Unit
+
+    override fun dismiss() {
+        _messages.tryEmit(null)
+    }
 
     private fun show(text: String, variant: AppSnackbarVariant, icon: DrawableResource? = null) {
         _messages.tryEmit(HudMessage(text, variant, icon))
