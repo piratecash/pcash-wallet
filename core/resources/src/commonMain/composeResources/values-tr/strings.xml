@@ -747,6 +747,10 @@
     <string name="Transactions_Unknown">Bilinmeyen İşlem</string>
     <string name="Transactions_TonTransaction">Ton Transaction</string>
     <string name="Transactions_Unknown_Description">İşlem çözümlenemiyor</string>
+    <string name="transactions_account_delegation">Hesap yetkilendirmesi</string>
+    <string name="transactions_account_delegated_to">%1$s sözleşmesine</string>
+    <string name="transactions_account_delegation_revoke">Yetkilendirme iptali</string>
+    <string name="transactions_account_delegation_warning_short">Hesap bir sözleşme tarafından kontrol ediliyor</string>
     <string name="Transactions_Multiple">Çoklu</string>
     <string name="Transactions_Filter">Filtre</string>
     <string name="Transactions_Filter_HideSuspiciousTx">Şüpheli İşlemleri Gizle</string>
@@ -770,6 +774,9 @@
     <string name="TransactionInfo_LockedUntil">Şu zamana kadar kitlendi %s</string>
     <string name="TransactionInfo_UnlockedAt">Kilid açıldı %s</string>
     <string name="TransactionInfo_RecipientHash">Alıcı</string>
+    <string name="transaction_info_initiator">Başlatan</string>
+    <string name="transaction_info_delegation_contract">Yetkilendirme sözleşmesi</string>
+    <string name="transaction_info_delegation_warning">Şu anda hesabınızı bu sözleşme kontrol ediyor. Bu sözleşme hesaptaki fonları kullanabilir. Bu yetkilendirmeyi onaylamadıysanız fonlarınızı başka bir cüzdana taşıyın.</string>
     <string name="TransactionInfo_HistoricalRate">Geçmiş Kur</string>
     <string name="TransactionInfo_AnnouncedAmount">Duyurulan miktar</string>
     <string name="transaction_info_executed_amount">Gerçekleşen miktar</string>

@@ -731,6 +731,10 @@
     <string name="Transactions_TonTransaction">Ton транзакція</string>
     <string name="Transactions_StellarTransaction">Транзакція Stellar</string>
     <string name="Transactions_Unknown_Description">Транзакція не може бути оброблена</string>
+    <string name="transactions_account_delegation">Делегування акаунта</string>
+    <string name="transactions_account_delegated_to">контракту %1$s</string>
+    <string name="transactions_account_delegation_revoke">Відкликання делегування</string>
+    <string name="transactions_account_delegation_warning_short">Акаунтом керує контракт</string>
     <string name="Transactions_Multiple">Безліч</string>
     <string name="Transactions_Filter">Фільтр</string>
     <string name="Transactions_Filter_HideSuspiciousTx">Приховати підозрілі транзакції</string>
@@ -754,6 +758,9 @@
     <string name="TransactionInfo_LockedUntil">Заблоковано до %s</string>
     <string name="TransactionInfo_UnlockedAt">Розблоковано %s</string>
     <string name="TransactionInfo_RecipientHash">Одержувач</string>
+    <string name="transaction_info_initiator">Ініціатор</string>
+    <string name="transaction_info_delegation_contract">Контракт делегування</string>
+    <string name="transaction_info_delegation_warning">Зараз вашим акаунтом керує цей контракт. Він може розпоряджатися коштами акаунта. Якщо ви не підтверджували делегування, перенесіть кошти на інший гаманець.</string>
     <string name="TransactionInfo_HistoricalRate">Історичний курс</string>
     <string name="TransactionInfo_AnnouncedAmount">Оголошена сума</string>
     <string name="transaction_info_executed_amount">Виконана сума</string>

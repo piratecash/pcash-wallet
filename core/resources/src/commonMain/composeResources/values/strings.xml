@@ -978,6 +978,10 @@ Proceed only if you\u0027re sure.</string>
     <string name="Transactions_TonTransaction">Ton Transaction</string>
     <string name="Transactions_StellarTransaction">Stellar Transaction</string>
     <string name="Transactions_Unknown_Description">Transaction can not be parsed</string>
+    <string name="transactions_account_delegation">Account delegation</string>
+    <string name="transactions_account_delegated_to">to contract %1$s</string>
+    <string name="transactions_account_delegation_revoke">Delegation revoke</string>
+    <string name="transactions_account_delegation_warning_short">Account controlled by a contract</string>
     <string name="Transactions_Multiple">Multiple</string>
     <string name="Transactions_Filter">Filter</string>
     <string name="Transactions_Filter_HideSuspiciousTx">Hide suspicious tx</string>
@@ -1003,6 +1007,9 @@ Proceed only if you\u0027re sure.</string>
     <string name="TransactionInfo_LockedUntil">Locked until %s</string>
     <string name="TransactionInfo_UnlockedAt">Unlocked at %s</string>
     <string name="TransactionInfo_RecipientHash">Recipient</string>
+    <string name="transaction_info_initiator">Initiator</string>
+    <string name="transaction_info_delegation_contract">Delegation contract</string>
+    <string name="transaction_info_delegation_warning">This contract currently controls your account. It can dispose of the account\u0027s funds. If you did not approve the delegation, move your funds to another wallet.</string>
     <string name="TransactionInfo_HistoricalRate">Historical Rate</string>
     <string name="TransactionInfo_Fee">Fee</string>
     <string name="TransactionInfo_FeeEstimated">Fee (est.)</string>

@@ -747,6 +747,10 @@
     <string name="Transactions_Unknown">معامله ناشناخته</string>
     <string name="Transactions_TonTransaction">Ton Transaction</string>
     <string name="Transactions_Unknown_Description">Transaction can not be parsed</string>
+    <string name="transactions_account_delegation">تفویض اختیار حساب</string>
+    <string name="transactions_account_delegated_to">به قرارداد %1$s</string>
+    <string name="transactions_account_delegation_revoke">لغو تفویض اختیار</string>
+    <string name="transactions_account_delegation_warning_short">حساب توسط یک قرارداد کنترل می‌شود</string>
     <string name="Transactions_Multiple">چندگانه</string>
     <string name="Transactions_Filter">Filter</string>
     <string name="Transactions_Filter_HideSuspiciousTx">پنهان کردن تراکنش‌های مشکوک</string>
@@ -770,6 +774,9 @@
     <string name="TransactionInfo_LockedUntil">قفل شده تا %s</string>
     <string name="TransactionInfo_UnlockedAt">باز شده در %s</string>
     <string name="TransactionInfo_RecipientHash">گیرنده</string>
+    <string name="transaction_info_initiator">آغازگر</string>
+    <string name="transaction_info_delegation_contract">قرارداد تفویض اختیار</string>
+    <string name="transaction_info_delegation_warning">در حال حاضر این قرارداد حساب شما را کنترل می‌کند. این قرارداد می‌تواند وجوه حساب را تصرف کند. اگر این تفویض اختیار را تایید نکرده‌اید، وجوه خود را به کیف پول دیگری منتقل کنید.</string>
     <string name="TransactionInfo_HistoricalRate">نرخ تاريخي</string>
     <string name="TransactionInfo_AnnouncedAmount">مبلغ اعلام شده</string>
     <string name="transaction_info_executed_amount">مبلغ اجرا شده</string>

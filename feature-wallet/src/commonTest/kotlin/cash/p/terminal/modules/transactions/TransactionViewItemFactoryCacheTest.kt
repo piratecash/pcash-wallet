@@ -41,6 +41,9 @@ import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.helpers.DateHelper
+import io.horizontalsystems.ethereumkit.core.EthereumKit
+import io.horizontalsystems.ethereumkit.models.AccountDelegation
+import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.Transaction
 import io.horizontalsystems.solanakit.models.Transaction as SolanaKitTransaction
 import io.mockk.coEvery
@@ -62,16 +65,27 @@ import org.junit.Test
 import java.math.BigDecimal
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.Transactions_From
+import cash.p.terminal.resources.Transactions_Multiple
 import cash.p.terminal.resources.Transactions_Receive
 import cash.p.terminal.resources.Transactions_Send
 import cash.p.terminal.resources.Transactions_To
 import cash.p.terminal.resources.ic_migrate_24
 import cash.p.terminal.resources.transaction_swap_status_confirming
+import cash.p.terminal.resources.transactions_account_delegated_to
+import cash.p.terminal.resources.transactions_account_delegation
+import cash.p.terminal.resources.transactions_account_delegation_revoke
+import cash.p.terminal.resources.transactions_account_delegation_warning_short
 import cash.p.terminal.resources.transactions_migrate_to_ironwood
 
 class TransactionViewItemFactoryCacheTest {
 
     private companion object {
+        init {
+            // CryptoUtils.sha3 needs ETH-KECCAK-256 from BouncyCastle, registered at runtime
+            // by EthereumKit; delegation records compute Address.eip55 via it.
+            EthereumKit.init()
+        }
+
         const val PENDING_UID = "4392cdda-870d-46d7-8cc8-c06ac0be4bd3"
         const val TX_HASH = "0e850ae3cb3963672d2880a4940172732ccab477f0ea3fc93a8914e912c670ad"
         const val PENDING_TIMESTAMP = 1_779_766_789L
@@ -80,6 +94,8 @@ class TransactionViewItemFactoryCacheTest {
         const val MIGRATION_SUBTITLE = "To Ironwood pool"
 
         val ZEC_AMOUNT: BigDecimal = BigDecimal("0.01285429")
+        val DELEGATE_ADDRESS = Address("0x64fc23203fcc4bcf09fc4b30669131333ba7936b")
+        val ZERO_ADDRESS = Address("0x" + "0".repeat(40))
     }
 
     private val addressLabelManager = mockk<AddressLabelManager>()
@@ -317,6 +333,81 @@ class TransactionViewItemFactoryCacheTest {
         verify(exactly = 1) {
             swapProviderTransactionsStorage.syncReceivedAt(swap.date, record.uid, record.timestamp * 1_000)
         }
+    }
+
+    @Test
+    fun convertToViewItemCached_externalCallOutgoingOnlySingleRecipient_showsSendToRecipient() = runTest {
+        stubSendStrings()
+        val record = createExternalContractCallOutgoingRecord(BigDecimal("280"))
+
+        val viewItem = factory.convertToViewItemCached(createTransactionItem(record))
+
+        assertEquals("Send", viewItem.title)
+        assertEquals("to ${BRIDGE_ADDRESS.shorten()}", viewItem.subtitle)
+    }
+
+    @Test
+    fun convertToViewItemCached_externalCallOutgoingOnlyMultipleRecipients_showsSendMultiple() = runTest {
+        stubSendStrings()
+        val record = createExternalContractCallOutgoingRecord(BigDecimal("280"), BigDecimal("0.01842"))
+
+        val viewItem = factory.convertToViewItemCached(createTransactionItem(record))
+
+        assertEquals("Send", viewItem.title)
+        assertEquals("Multiple", viewItem.subtitle)
+        assertEquals("-COSA:280.01842", viewItem.primaryValue?.value)
+    }
+
+    @Test
+    fun convertToViewItemCached_accountDelegationActive_showsWarningStatus() = runTest {
+        stubDelegationStrings()
+        val record = createDelegationRecord(delegate = DELEGATE_ADDRESS, isActive = true)
+
+        val viewItem = factory.convertToViewItemCached(createTransactionItem(record))
+
+        assertEquals("Account delegation", viewItem.title)
+        assertEquals("to ${DELEGATE_ADDRESS.eip55.shorten()}", viewItem.subtitle)
+        assertNull(viewItem.primaryValue)
+        assertEquals("Account controlled by a contract", viewItem.statusValue?.value)
+        assertEquals(ColorName.Warning, viewItem.statusValue?.color)
+    }
+
+    @Test
+    fun convertToViewItemCached_accountDelegationNotActive_hasNoStatus() = runTest {
+        stubDelegationStrings()
+        val record = createDelegationRecord(delegate = DELEGATE_ADDRESS, isActive = false)
+
+        val viewItem = factory.convertToViewItemCached(createTransactionItem(record))
+
+        assertEquals("Account delegation", viewItem.title)
+        assertNull(viewItem.statusValue)
+    }
+
+    @Test
+    fun convertToViewItemCached_accountDelegationRevoked_showsRevokeRowWithoutStatus() = runTest {
+        stubDelegationStrings()
+        val record = createDelegationRecord(delegate = ZERO_ADDRESS, isActive = false)
+
+        val viewItem = factory.convertToViewItemCached(createTransactionItem(record))
+
+        assertEquals("Delegation revoke", viewItem.title)
+        assertEquals("---", viewItem.subtitle)
+        assertNull(viewItem.statusValue)
+    }
+
+    @Test
+    fun convertToViewItemCached_sameTxDifferentDelegationActive_recomputesStatus() = runTest {
+        stubDelegationStrings()
+        val initialRecord = createDelegationRecord(delegate = DELEGATE_ADDRESS, isActive = false)
+        val updatedRecord = createDelegationRecord(delegate = DELEGATE_ADDRESS, isActive = true)
+        val initialItem = createTransactionItem(initialRecord)
+        val updatedItem = initialItem.withUpdatedListData(record = updatedRecord)
+
+        val initialViewItem = factory.convertToViewItemCached(initialItem)
+        val updatedViewItem = factory.convertToViewItemCached(updatedItem)
+
+        assertNull(initialViewItem.statusValue)
+        assertEquals("Account controlled by a contract", updatedViewItem.statusValue?.value)
     }
 
     @Test
@@ -689,16 +780,69 @@ class TransactionViewItemFactoryCacheTest {
         outgoingEvents = emptyList(),
     )
 
+    private fun stubSendStrings() {
+        every { Translator.getString(Res.string.Transactions_Send) } returns "Send"
+        every { Translator.getString(Res.string.Transactions_Multiple) } returns "Multiple"
+        every { Translator.getString(Res.string.Transactions_To, any()) } answers
+            { "to ${arg<Array<*>>(1).single()}" }
+    }
+
+    private fun createExternalContractCallOutgoingRecord(vararg amounts: BigDecimal) = EvmTransactionRecord(
+        transaction = createEvmTransaction("evm-external-contract-call-outgoing"),
+        token = mockk(relaxed = true),
+        source = createBscSource(),
+        protected = false,
+        transactionRecordType = TransactionRecordType.EVM_EXTERNAL_CONTRACT_CALL,
+        incomingEvents = emptyList(),
+        outgoingEvents = amounts.mapIndexed { index, amount ->
+            TransferEvent(
+                address = if (index == 0) BRIDGE_ADDRESS else RECIPIENT_ADDRESS,
+                addressForIncomingAddress = null,
+                value = TransactionValue.TokenValue(
+                    tokenName = "Cosanta",
+                    tokenCode = "COSA",
+                    tokenDecimals = 8,
+                    value = amount.negate(),
+                ),
+            )
+        },
+    )
+
     private fun createEvmTransaction(
         uid: String,
         blockNumber: Long? = null,
+        accountDelegation: AccountDelegation? = null,
     ) = mockk<Transaction>(relaxed = true) {
         every { hashString } returns uid
         every { transactionIndex } returns 0
         every { this@mockk.blockNumber } returns blockNumber
         every { timestamp } returns 1_000L
         every { isFailed } returns false
+        every { this@mockk.accountDelegation } returns accountDelegation
     }
+
+    private fun stubDelegationStrings() {
+        every { Translator.getString(Res.string.transactions_account_delegation) } returns "Account delegation"
+        every {
+            Translator.getString(Res.string.transactions_account_delegation_revoke)
+        } returns "Delegation revoke"
+        every {
+            Translator.getString(Res.string.transactions_account_delegation_warning_short)
+        } returns "Account controlled by a contract"
+        every { Translator.getString(Res.string.transactions_account_delegated_to, any()) } answers
+            { "to ${arg<Array<*>>(1).single()}" }
+    }
+
+    private fun createDelegationRecord(delegate: Address, isActive: Boolean) = EvmTransactionRecord(
+        transaction = createEvmTransaction(
+            uid = "evm-delegation-$delegate",
+            accountDelegation = AccountDelegation(delegate = delegate, isActive = isActive),
+        ),
+        token = mockk(relaxed = true),
+        source = createBscSource(),
+        protected = false,
+        transactionRecordType = TransactionRecordType.EVM_ACCOUNT_DELEGATION,
+    )
 
     private fun createMoneroIncomingRecord(
         confirmations: Long,

@@ -232,6 +232,7 @@ class PendingTransactionMatcher {
             TransactionRecordType.SOLANA_UNKNOWN,
             TransactionRecordType.BITCOIN_INCOMING,
             TransactionRecordType.EVM,
+            TransactionRecordType.EVM_ACCOUNT_DELEGATION,
             TransactionRecordType.EVM_APPROVE,
             TransactionRecordType.EVM_CONTRACT_CALL,
             TransactionRecordType.EVM_CONTRACT_CREATION,

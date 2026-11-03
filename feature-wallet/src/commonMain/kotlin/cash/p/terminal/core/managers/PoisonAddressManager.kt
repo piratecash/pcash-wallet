@@ -199,6 +199,7 @@ class PoisonAddressManager(
             TransactionRecordType.SOLANA_UNKNOWN,
             TransactionRecordType.BITCOIN_INCOMING,
             TransactionRecordType.EVM,
+            TransactionRecordType.EVM_ACCOUNT_DELEGATION,
             TransactionRecordType.EVM_INCOMING,
             TransactionRecordType.EVM_EXTERNAL_CONTRACT_CALL,
             TransactionRecordType.TRON,

@@ -743,6 +743,10 @@
     <string name="Transactions_Unknown">Transaction inconnue</string>
     <string name="Transactions_TonTransaction">Ton Transaction</string>
     <string name="Transactions_Unknown_Description">La transaction ne peut pas être analysée</string>
+    <string name="transactions_account_delegation">Délégation de compte</string>
+    <string name="transactions_account_delegated_to">au contrat %1$s</string>
+    <string name="transactions_account_delegation_revoke">Révocation de la délégation</string>
+    <string name="transactions_account_delegation_warning_short">Le compte est contrôlé par un contrat</string>
     <string name="Transactions_Multiple">Multiples</string>
     <string name="Transactions_Filter">Filtre</string>
     <string name="Transactions_Filter_HideSuspiciousTx">Masquer les transactions suspectes</string>
@@ -766,6 +770,9 @@
     <string name="TransactionInfo_LockedUntil">Verrouillé jusqu\u0027au %s</string>
     <string name="TransactionInfo_UnlockedAt">Déverrouillé à %s</string>
     <string name="TransactionInfo_RecipientHash">Destinataire</string>
+    <string name="transaction_info_initiator">Initiateur</string>
+    <string name="transaction_info_delegation_contract">Contrat de délégation</string>
+    <string name="transaction_info_delegation_warning">Ce contrat contrôle actuellement votre compte. Il peut disposer des fonds du compte. Si vous n\u0027avez pas approuvé cette délégation, transférez vos fonds vers un autre portefeuille.</string>
     <string name="TransactionInfo_HistoricalRate">Taux historique</string>
     <string name="TransactionInfo_AnnouncedAmount">Montant annoncé</string>
     <string name="transaction_info_executed_amount">Montant exécuté</string>
