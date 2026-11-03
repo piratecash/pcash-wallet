@@ -403,7 +403,7 @@
     <string name="SendNft_Title">Envoyer</string>
     <string name="SendNft_Error_NotEnoughtBalance">Solde insuffisant</string>
     <!--Send-->
-    <string name="Send_Title">Envoyer %s</string>
+    <string name="Send_Title">Envoyer %1$s</string>
     <string name="Send_Hint_Address">Adresse ou domaine</string>
     <string name="Send_Fee">Frais</string>
     <string name="Send_Fee_Info">Les blockchains requièrent que les usagers paient des frais de réseau lorsqu\u0027ils envoient des transactions. Ces frais sont plus élevés lorsque de nombreuses transactions empruntent le réseau.</string>
@@ -437,7 +437,7 @@
     <string name="ScanQr_CameraPermissionDeniedText">L\u0027accès à votre caméra pour cette application a été refusé, vous pouvez aller dans les paramètres et autoriser l\u0027accès</string>
     <string name="ScanQr_GoToSettings">Accéder aux paramètres</string>
     <string name="scan_qr_camera_initialization_failed">La caméra n\u0027est pas disponible. Veuillez réessayer ou utiliser un autre appareil.</string>
-    <string name="qr_scanner_title_address">Adresse %s</string>
+    <string name="qr_scanner_title_address">Adresse %1$s</string>
     <string name="qr_scanner_title_smart_scan">SCAN INTELLIGENT</string>
     <string name="choose_from_photos">Choisir depuis les photos</string>
     <string name="image_decode_failed">Impossible de lire un code QR à partir de l\u0027image sélectionnée</string>
@@ -504,23 +504,23 @@
     <string name="FeeInfo_TronResourcesConsumed_Description">La bande passante est l\u0027unité qui mesure la taille des octets de transaction stockés dans la base de données blockchain. Plus la transaction est grande, plus la bande passante sera consommée.\n\nL\u0027énergie est l\u0027unité qui mesure le montant de calcul requis par la machine virtuelle TRON pour effectuer des opérations spécifiques sur le réseau TRON.\n\nÉtant donné que les transactions de contrats intelligents nécessitent des ressources informatiques pour être exécutées, chaque transaction de contrat intelligent nécessite le paiement de frais d\u0027énergie.</string>
 
     <!--Network Fee Warning-->
-    <string name="network_fee_warning_title">Frais de réseau %s</string>
+    <string name="network_fee_warning_title">Frais de réseau %1$s</string>
     <string name="token_balance_need_native_coin_title">Vous avez besoin de %1$s pour utiliser %2$s</string>
     <string name="token_balance_need_native_coin_body">%2$s fonctionne sur %3$s.\nLes frais de réseau sont payés en %1$s.\nVotre solde %1$s : %4$s</string>
     <string name="network_fee_warning_body_protocol">Le protocole du réseau %1$s stipule qu\u0027au moins %2$s est nécessaire pour payer les frais de réseau de cette transaction.</string>
-    <string name="network_fee_warning_body_balance">Vous avez moins de %s dans votre solde.</string>
-    <string name="network_fee_warning_body_protocol_bold">au moins %s</string>
-    <string name="network_fee_warning_body_balance_bold">moins de %s</string>
+    <string name="network_fee_warning_body_balance">Vous avez moins de %1$s dans votre solde.</string>
+    <string name="network_fee_warning_body_protocol_bold">au moins %1$s</string>
+    <string name="network_fee_warning_body_balance_bold">moins de %1$s</string>
     <string name="network_fee_warning_body_case_not_completed_prefix">mais </string>
     <string name="network_fee_warning_body_case_not_sent_prefix">et </string>
     <string name="network_fee_warning_body_risk">Avec ce solde, il existe un risque que les frais réels soient plus élevés que prévu.</string>
     <string name="network_fee_warning_body_risk_bold">plus élevés que prévu</string>
     <string name="network_fee_warning_body_case_intro">Dans ce cas :</string>
-    <string name="network_fee_warning_body_case_debited">%s seront débités de votre solde,</string>
+    <string name="network_fee_warning_body_case_debited">%1$s seront débités de votre solde,</string>
     <string name="network_fee_warning_body_case_not_completed">la transaction pourrait ne pas être finalisée,</string>
     <string name="network_fee_warning_body_case_not_sent">les fonds ne seront pas envoyés au destinataire.</string>
     <string name="network_fee_warning_body_confirm_intro">En continuant, vous confirmez que vous :</string>
-    <string name="network_fee_warning_body_confirm_understand">comprenez les spécificités du fonctionnement du réseau %s,</string>
+    <string name="network_fee_warning_body_confirm_understand">comprenez les spécificités du fonctionnement du réseau %1$s,</string>
     <string name="network_fee_warning_body_confirm_risk">êtes conscient du risque de perte de commission,</string>
     <string name="network_fee_warning_body_confirm_accept">acceptez les conséquences possibles d\u0027une transaction échouée.</string>
     <string name="network_fee_warning_points_header">Points à accepter :</string>
@@ -598,8 +598,8 @@
     <string name="Swap_Allowance">Allocation</string>
     <string name="Swap_Price">Prix</string>
     <string name="Swap_AvailableBalance">Solde disponible</string>
-    <string name="swap_insufficient_fee_balance">Le solde actuel de %s est inférieur au montant requis pour traiter cette transaction, y compris les frais.</string>
-    <string name="fee_warning_low_balance">Le solde est inférieur au niveau nécessaire. Les frais pourraient atteindre %s.</string>
+    <string name="swap_insufficient_fee_balance">Le solde actuel de %1$s est inférieur au montant requis pour traiter cette transaction, y compris les frais.</string>
+    <string name="fee_warning_low_balance">Le solde est inférieur au niveau nécessaire. Les frais pourraient atteindre %1$s.</string>
     <string name="swap_balance_for_fees">Solde pour les frais</string>
     <string name="fee">Frais</string>
     <string name="estimated_fee">Frais estimés</string>
@@ -612,7 +612,7 @@
     <string name="Swap_ErrorNoProviders">Aucun fournisseur</string>
     <string name="Swap_ErrorNoQuote">No Quotes</string>
     <string name="Swap_ErrorInsufficientBalance">Solde insuffisant</string>
-    <string name="swap_out_of_min_amount">En dessous du montant minimum %s</string>
+    <string name="swap_out_of_min_amount">En dessous du montant minimum %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">Impact élevé sur les prix</string>
     <string name="Swap_ErrorWalletSyncing">Le portefeuille est en cours de synchronisation</string>
     <string name="Swap_ErrorWalletNotSynced">Portefeuille non synchronisé</string>
@@ -639,7 +639,7 @@
     <string name="Swap_YouPay">Vous payez</string>
     <string name="Swap_YouGet">Vous recevez</string>
     <string name="Swap_Confirm_Title">Confirmer</string>
-    <string name="SwapConfirm_QuoteExpiresIn">Le devis expire dans %d</string>
+    <string name="SwapConfirm_QuoteExpiresIn">Le devis expire dans %1$d</string>
     <string name="SwapConfirm_QuoteExpired">Devis expiré</string>
     <string name="SwapConfirm_QuoteIsInvalid">Devis invalide</string>
     <string name="SwapConfirm_FetchingFinalQuote">Récupération du devis final</string>
@@ -678,7 +678,7 @@
     <string name="swap_no_providers_for_this_amount">Aucun fournisseur pour ce montant</string>
 
     <!--Approve-->
-    <string name="Approve_RevokeAndApproveInfo">Vous pouvez échanger %s, ou vous devez révoquer et approuver le nouveau montant</string>
+    <string name="Approve_RevokeAndApproveInfo">Vous pouvez échanger %1$s, ou vous devez révoquer et approuver le nouveau montant</string>
     <string name="Approve_Spender">Dépendant</string>
     <string name="Approve_YouApprove">Vous approuvez</string>
     <string name="Approve_YouRevoke">Vous révoquez</string>
@@ -1075,6 +1075,7 @@
     <string name="offline_transaction_signed_transaction_unavailable">La transaction signée n’est plus disponible. Signez-la à nouveau.</string>
     <string name="offline_broadcast_title">Envoyer une TX RAW</string>
     <string name="offline_broadcast_import_file">Importer un fichier de transaction</string>
+    <string name="offline_broadcast_input_hint">Collez une transaction RAW ou P.cash signée</string>
     <string name="offline_broadcast_file_read_failed">Impossible de lire le fichier de transaction. Vérifiez le fichier et réessayez.</string>
     <string name="offline_broadcast_invalid_input">Impossible de reconnaître la transaction. Vérifiez le format et réessayez.</string>
     <string name="offline_broadcast_check_title">Vérifier la transaction</string>
@@ -2130,15 +2131,15 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="scan_card_to_add">Scanner la carte pour ajouter un jeton</string>
     <!--Multi-Swap-->
     <string name="multi_swap_completed">Échange terminé</string>
-    <string name="multi_swap_via">Échange via %s</string>
-    <string name="multi_swap_completed_via">Terminé via %s</string>
+    <string name="multi_swap_via">Échange via %1$s</string>
+    <string name="multi_swap_completed_via">Terminé via %1$s</string>
     <string name="multi_swap_no_providers">Aucun fournisseur disponible</string>
     <string name="multi_swap_finding_best_provider">Recherche du meilleur fournisseur…</string>
     <string name="multi_swap_continue">Continuer l\u0027échange</string>
     <string name="multi_swap_route_explanation">Pour obtenir le meilleur taux, un itinéraire via %2$s est utilisé. L\u0027échange sera effectué en deux étapes successives : d\u0027abord %1$s → %2$s, puis %2$s → %3$s.</string>
     <string name="multi_swap_route_title">Itinéraire d\u0027échange</string>
     <string name="multi_swap_execution_title">Échange</string>
-    <string name="multi_swap_step">Étape %d</string>
+    <string name="multi_swap_step">Étape %1$d</string>
     <string name="multi_swap_understood_continue">Compris, continuer</string>
     <string name="multi_swap_unfinished">Échange non terminé</string>
     <string name="multi_swap_unfinished_plural">Échanges non terminés (%d)</string>
@@ -2317,4 +2318,6 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="desktop_change_password_corrupted">Le fichier de clé est endommagé : une fois l\u0027application verrouillée, vous ne pourrez plus vous connecter. Enregistrez une sauvegarde de chaque phrase de récupération.</string>
     <string name="desktop_change_password_success">Mot de passe modifié</string>
     <string name="desktop_security_lock_now">Verrouiller maintenant</string>
+    <string name="desktop_transfer_password">Mot de passe avant l\u0027envoi</string>
+    <string name="desktop_transfer_password_description">Le mot de passe de l\u0027application est demandé avant chaque envoi, ce qui protège vos actifs si quelqu\u0027un accède à votre ordinateur pendant que l\u0027application est déverrouillée.</string>
 </resources>

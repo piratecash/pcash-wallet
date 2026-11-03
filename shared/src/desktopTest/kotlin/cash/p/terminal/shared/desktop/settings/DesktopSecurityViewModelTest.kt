@@ -1,6 +1,7 @@
 package cash.p.terminal.shared.desktop.settings
 
 import cash.p.terminal.core.TestDispatcherProvider
+import cash.p.terminal.shared.desktop.DesktopWalletSettingsStorage
 import cash.p.terminal.shared.desktop.balanceHiddenManager
 import io.horizontalsystems.core.DesktopSettingsStore
 import io.mockk.mockk
@@ -32,7 +33,7 @@ class DesktopSecurityViewModelTest {
     fun onBalanceAutoHideChange_enabled_isOnWhenScreenReopens() {
         viewModel().onBalanceAutoHideChange(true)
 
-        assertTrue(viewModel().balanceAutoHideEnabled)
+        assertTrue(viewModel().uiState.balanceAutoHideEnabled)
     }
 
     @Test
@@ -41,12 +42,20 @@ class DesktopSecurityViewModelTest {
 
         viewModel().onBalanceAutoHideChange(false)
 
-        assertFalse(viewModel().balanceAutoHideEnabled)
+        assertFalse(viewModel().uiState.balanceAutoHideEnabled)
+    }
+
+    @Test
+    fun onTransferPasswordChange_enabled_isOnWhenScreenReopens() {
+        viewModel().onTransferPasswordChange(true)
+
+        assertTrue(viewModel().uiState.transferPasswordEnabled)
     }
 
     private fun viewModel() = DesktopSecurityViewModel(
         vault = mockk(),
         settingsStore = settingsStore,
         balanceHiddenManager = balanceHiddenManager(settingsStore, dispatcherProvider),
+        transactionSettings = DesktopWalletSettingsStorage(settingsStore),
     )
 }

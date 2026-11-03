@@ -403,7 +403,7 @@
     <string name="SendNft_Title">전송</string>
     <string name="SendNft_Error_NotEnoughtBalance">잔고 부족</string>
     <!--Send-->
-    <string name="Send_Title">전송 %s</string>
+    <string name="Send_Title">전송 %1$s</string>
     <string name="Send_Hint_Address">주소 또는 도메인</string>
     <string name="Send_Fee">수수료</string>
     <string name="Send_Fee_Info">블록체인은 사용자가 거래를 보낼 때 네트워크 수수료를 지불해야 합니다. 이 수수료는 네트워크에서 많은 거래가 발생할 때 더 높아집니다.</string>
@@ -437,7 +437,7 @@
     <string name="ScanQr_CameraPermissionDeniedText">이 앱의 카메라에 대한 액세스가 거부되었습니다. 설정으로 이동하여 액세스를 허용 할 수 있습니다.</string>
     <string name="ScanQr_GoToSettings">설정으로 가기</string>
     <string name="scan_qr_camera_initialization_failed">카메라를 사용할 수 없습니다. 다시 시도하거나 다른 기기를 사용해 주세요.</string>
-    <string name="qr_scanner_title_address">%s 주소</string>
+    <string name="qr_scanner_title_address">%1$s 주소</string>
     <string name="qr_scanner_title_smart_scan">스마트 스캔</string>
     <string name="choose_from_photos">사진에서 선택</string>
     <string name="image_decode_failed">선택한 이미지에서 QR 코드를 읽을 수 없습니다</string>
@@ -508,23 +508,23 @@
     <string name="FeeInfo_TronResourcesConsumed_Description">Bandwidth 은 블록체인 데이터베이스에 저장된 트랜잭션 바이트 크기를 측정하는 단위입니다. 거래가 클수록 대역폭 자원이 더 많이 사용됩니다.\n\nEnergy 는 TRON 가상 머신이 TRON 네트워크에서 특정 작업을 수행하기 위해 필요한 계산 양을 측정하는 단위입니다. \n\n스마트 계약 트랜잭션은 실행에 계산 자원이 필요하기 때문에 각 스마트 계약 트랜잭션에는 energy 수수료를 지불해야합니다.</string>
 
     <!--Network Fee Warning-->
-    <string name="network_fee_warning_title">%s 네트워크 수수료</string>
+    <string name="network_fee_warning_title">%1$s 네트워크 수수료</string>
     <string name="token_balance_need_native_coin_title">%2$s을(를) 사용하려면 %1$s이(가) 필요합니다</string>
     <string name="token_balance_need_native_coin_body">%2$s은(는) %3$s에서 작동합니다.\n네트워크 수수료는 %1$s로 지불됩니다.\n귀하의 %1$s 잔액: %4$s</string>
     <string name="network_fee_warning_body_protocol">%1$s 네트워크 프로토콜에 따르면 이 거래의 네트워크 수수료를 지불하려면 최소 %2$s이(가) 필요합니다.</string>
-    <string name="network_fee_warning_body_balance">잔액이 %s 미만입니다.</string>
-    <string name="network_fee_warning_body_protocol_bold">최소 %s</string>
-    <string name="network_fee_warning_body_balance_bold">%s 미만</string>
+    <string name="network_fee_warning_body_balance">잔액이 %1$s 미만입니다.</string>
+    <string name="network_fee_warning_body_protocol_bold">최소 %1$s</string>
+    <string name="network_fee_warning_body_balance_bold">%1$s 미만</string>
     <string name="network_fee_warning_body_case_not_completed_prefix"></string>
     <string name="network_fee_warning_body_case_not_sent_prefix"></string>
     <string name="network_fee_warning_body_risk">이 잔액으로는 실제 수수료가 예상보다 높아질 수 있는 위험이 있습니다.</string>
     <string name="network_fee_warning_body_risk_bold">예상보다 높아질 수 있는</string>
     <string name="network_fee_warning_body_case_intro">이 경우:</string>
-    <string name="network_fee_warning_body_case_debited">%s이(가) 잔액에서 차감되지만,</string>
+    <string name="network_fee_warning_body_case_debited">%1$s이(가) 잔액에서 차감되지만,</string>
     <string name="network_fee_warning_body_case_not_completed">거래가 완료되지 않을 수 있으며,</string>
     <string name="network_fee_warning_body_case_not_sent">코인이 수신자에게 전송되지 않을 수 있습니다.</string>
     <string name="network_fee_warning_body_confirm_intro">계속 진행하시면 다음을 확인하는 것입니다:</string>
-    <string name="network_fee_warning_body_confirm_understand">%s 네트워크의 작동 방식에 대한 세부 사항을 이해하고 있으며,</string>
+    <string name="network_fee_warning_body_confirm_understand">%1$s 네트워크의 작동 방식에 대한 세부 사항을 이해하고 있으며,</string>
     <string name="network_fee_warning_body_confirm_risk">수수료 손실 위험을 인지하고 있으며,</string>
     <string name="network_fee_warning_body_confirm_accept">거래 실패로 인한 결과를 수용합니다.</string>
     <string name="network_fee_warning_points_header">동의할 사항:</string>
@@ -602,8 +602,8 @@
     <string name="Swap_Allowance">허용량</string>
     <string name="Swap_Price">금액</string>
     <string name="Swap_AvailableBalance">사용 가능한 잔액</string>
-    <string name="swap_insufficient_fee_balance">현재 %s 잔액이 거래 수수료를 포함하여 이 거래를 처리하는 데 필요한 금액보다 부족합니다.</string>
-    <string name="fee_warning_low_balance">잔액이 필요 수준보다 낮습니다. 수수료가 최대 %s까지 발생할 수 있습니다.</string>
+    <string name="swap_insufficient_fee_balance">현재 %1$s 잔액이 거래 수수료를 포함하여 이 거래를 처리하는 데 필요한 금액보다 부족합니다.</string>
+    <string name="fee_warning_low_balance">잔액이 필요 수준보다 낮습니다. 수수료가 최대 %1$s까지 발생할 수 있습니다.</string>
     <string name="swap_balance_for_fees">수수료용 잔액</string>
     <string name="fee">수수료</string>
     <string name="estimated_fee">예상 수수료</string>
@@ -616,7 +616,7 @@
     <string name="Swap_ErrorNoProviders">제공자 없음</string>
     <string name="Swap_ErrorNoQuote">제안이 없습니다</string>
     <string name="Swap_ErrorInsufficientBalance">잔액이 부족합니다</string>
-    <string name="swap_out_of_min_amount">최소 금액 미만 %s</string>
+    <string name="swap_out_of_min_amount">최소 금액 미만 %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">높은 가격 영향</string>
     <string name="Swap_ErrorWalletSyncing">지갑 동기화 중</string>
     <string name="Swap_ErrorWalletNotSynced">지갑이 동기화되지 않음</string>
@@ -643,7 +643,7 @@
     <string name="Swap_YouPay">지불하기</string>
     <string name="Swap_YouGet">얻기</string>
     <string name="Swap_Confirm_Title">확인</string>
-    <string name="SwapConfirm_QuoteExpiresIn">견적이 %d 후 만료됩니다</string>
+    <string name="SwapConfirm_QuoteExpiresIn">견적이 %1$d 후 만료됩니다</string>
     <string name="SwapConfirm_QuoteExpired">견적이 만료되었습니다</string>
     <string name="SwapConfirm_QuoteIsInvalid">견적이 유효하지 않습니다</string>
     <string name="SwapConfirm_FetchingFinalQuote">최종 견적을 가져오는 중</string>
@@ -682,7 +682,7 @@
     <string name="swap_no_providers_for_this_amount">이 금액에 대한 제공자가 없습니다</string>
 
     <!--Approve-->
-    <string name="Approve_RevokeAndApproveInfo">%s을(를) 교환하거나 새 금액을 취소하고 승인해야 합니다.</string>
+    <string name="Approve_RevokeAndApproveInfo">%1$s을(를) 교환하거나 새 금액을 취소하고 승인해야 합니다.</string>
     <string name="Approve_Spender">스펜더</string>
     <string name="Approve_YouApprove">승인합니다</string>
     <string name="Approve_YouRevoke">당신은 취소</string>
@@ -1078,6 +1078,7 @@
     <string name="offline_transaction_signed_transaction_unavailable">서명된 트랜잭션을 더 이상 사용할 수 없습니다. 다시 서명하세요.</string>
     <string name="offline_broadcast_title">RAW TX 보내기</string>
     <string name="offline_broadcast_import_file">거래 파일 가져오기</string>
+    <string name="offline_broadcast_input_hint">서명된 RAW 또는 P.cash 트랜잭션을 붙여넣으세요</string>
     <string name="offline_broadcast_file_read_failed">거래 파일을 읽을 수 없습니다. 파일을 확인하고 다시 시도하세요.</string>
     <string name="offline_broadcast_invalid_input">트랜잭션을 인식할 수 없습니다. 형식을 확인하고 다시 시도하세요.</string>
     <string name="offline_broadcast_check_title">거래 확인</string>
@@ -2126,15 +2127,15 @@
     <string name="scan_card_to_add">토큰을 추가하려면 카드를 스캔하세요</string>
     <!--Multi-Swap-->
     <string name="multi_swap_completed">교환 완료</string>
-    <string name="multi_swap_via">%s에서 교환</string>
-    <string name="multi_swap_completed_via">%s에서 완료</string>
+    <string name="multi_swap_via">%1$s에서 교환</string>
+    <string name="multi_swap_completed_via">%1$s에서 완료</string>
     <string name="multi_swap_no_providers">사용 가능한 공급자 없음</string>
     <string name="multi_swap_finding_best_provider">최적의 공급자 검색 중…</string>
     <string name="multi_swap_continue">교환 계속하기</string>
     <string name="multi_swap_route_explanation">최적의 환율을 위해 %2$s 경유 경로를 사용합니다. 스왑은 두 단계로 진행됩니다. 먼저 %1$s → %2$s, 다음 %2$s → %3$s.</string>
     <string name="multi_swap_route_title">스왑 경로</string>
     <string name="multi_swap_execution_title">스왑</string>
-    <string name="multi_swap_step">%d단계</string>
+    <string name="multi_swap_step">%1$d단계</string>
     <string name="multi_swap_understood_continue">확인, 계속</string>
     <string name="multi_swap_unfinished">미완료 교환</string>
     <string name="multi_swap_unfinished_plural">미완료 교환 (%d)</string>
@@ -2311,4 +2312,6 @@
     <string name="desktop_change_password_corrupted">키 파일이 손상되었습니다. 앱이 잠기면 로그인할 수 없게 됩니다. 모든 복구 문구의 백업을 저장하세요.</string>
     <string name="desktop_change_password_success">비밀번호가 변경되었습니다</string>
     <string name="desktop_security_lock_now">지금 잠금</string>
+    <string name="desktop_transfer_password">보내기 전 비밀번호</string>
+    <string name="desktop_transfer_password_description">자산을 보낼 때마다 앱 비밀번호를 요청하여, 앱이 잠금 해제된 상태에서 누군가 컴퓨터에 접근하더라도 자산을 보호합니다.</string>
 </resources>

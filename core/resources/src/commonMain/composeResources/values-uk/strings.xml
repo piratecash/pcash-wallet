@@ -387,7 +387,7 @@
     <string name="SendNft_Error_NotEnoughtBalance">Недостатньо коштів</string>
     <!--Send-->
     <string name="Send_EnterAddress">Вкажіть адресу</string>
-    <string name="Send_Title">Надіслати %s</string>
+    <string name="Send_Title">Надіслати %1$s</string>
     <string name="Send_Hint_Address">Адреса або домен</string>
     <string name="Send_Fee">Комісія</string>
     <string name="Send_Fee_Info">Блокчейн вимагає від користувачів оплати мережевих зборів при надсиланні транзакцій. Ці збори вищі, коли в мережі відбувається багато транзакцій.</string>
@@ -421,7 +421,7 @@
     <string name="ScanQr_CameraPermissionDeniedText">Доступ до камери для цього застосунку заборонено, ви можете перейти в налаштування та дозволити доступ</string>
     <string name="ScanQr_GoToSettings">Перейти в налаштування</string>
     <string name="scan_qr_camera_initialization_failed">Камера недоступна. Будь ласка, спробуйте ще раз або скористайтеся іншим пристроєм.</string>
-    <string name="qr_scanner_title_address">Адреса %s</string>
+    <string name="qr_scanner_title_address">Адреса %1$s</string>
     <string name="qr_scanner_title_smart_scan">РОЗУМНЕ СКАНУВАННЯ</string>
     <string name="choose_from_photos">Вибрати з фото</string>
     <string name="image_decode_failed">Не вдалося зчитати QR-код із вибраного зображення</string>
@@ -488,23 +488,23 @@
     <string name="FeeInfo_TronResourcesConsumed_Description">Bandwidth - це одиниця, яка вимірює розмір байт транзакції, що зберігаються в базі даних блокчейну. Чим більша транзакція, тим більше bandwidth буде споживатися.\n\nEnergy — це одиниця, що вимірює кількість обчислень, необхідних віртуальній машині TRON для виконання конкретних операцій у мережі TRON.\n\nОскільки транзакції смарт-контракту вимагають виконання обчислювальних ресурсів, кожна угода за контрактом вимагає оплати energy комісії.</string>
 
     <!--Network Fee Warning-->
-    <string name="network_fee_warning_title">Комісія мережі %s</string>
+    <string name="network_fee_warning_title">Комісія мережі %1$s</string>
     <string name="token_balance_need_native_coin_title">Вам потрібен %1$s для використання %2$s</string>
     <string name="token_balance_need_native_coin_body">%2$s працює на %3$s.\nКомісія мережі сплачується в %1$s.\nВаш баланс %1$s: %4$s</string>
     <string name="network_fee_warning_body_protocol">Протокол мережі %1$s передбачає, що для сплати комісії мережі за цю транзакцію необхідно щонайменше %2$s.</string>
-    <string name="network_fee_warning_body_balance">На вашому балансі менше ніж %s.</string>
-    <string name="network_fee_warning_body_protocol_bold">щонайменше %s</string>
-    <string name="network_fee_warning_body_balance_bold">менше ніж %s</string>
+    <string name="network_fee_warning_body_balance">На вашому балансі менше ніж %1$s.</string>
+    <string name="network_fee_warning_body_protocol_bold">щонайменше %1$s</string>
+    <string name="network_fee_warning_body_balance_bold">менше ніж %1$s</string>
     <string name="network_fee_warning_body_case_not_completed_prefix">але </string>
     <string name="network_fee_warning_body_case_not_sent_prefix">і </string>
     <string name="network_fee_warning_body_risk">За такого балансу існує ризик, що фактична комісія може бути вищою за очікувану.</string>
     <string name="network_fee_warning_body_risk_bold">бути вищою за очікувану</string>
     <string name="network_fee_warning_body_case_intro">У такому випадку:</string>
-    <string name="network_fee_warning_body_case_debited">%s буде списано з вашого балансу,</string>
+    <string name="network_fee_warning_body_case_debited">%1$s буде списано з вашого балансу,</string>
     <string name="network_fee_warning_body_case_not_completed">транзакція може не бути завершена,</string>
     <string name="network_fee_warning_body_case_not_sent">монети не буде надіслано отримувачу.</string>
     <string name="network_fee_warning_body_confirm_intro">Продовжуючи, ви підтверджуєте, що:</string>
-    <string name="network_fee_warning_body_confirm_understand">розумієте особливості роботи мережі %s,</string>
+    <string name="network_fee_warning_body_confirm_understand">розумієте особливості роботи мережі %1$s,</string>
     <string name="network_fee_warning_body_confirm_risk">усвідомлюєте ризик втрати комісії,</string>
     <string name="network_fee_warning_body_confirm_accept">приймаєте можливі наслідки невдалої транзакції.</string>
     <string name="network_fee_warning_points_header">Пункти для погодження:</string>
@@ -580,8 +580,8 @@
     <string name="Swap_Allowance">Дозвіл</string>
     <string name="Swap_Price">Ціна</string>
     <string name="Swap_AvailableBalance">Доступний баланс</string>
-    <string name="swap_insufficient_fee_balance">Поточний баланс %s нижчий за суму, необхідну для проведення цієї транзакції, включаючи комісію.</string>
-    <string name="fee_warning_low_balance">Баланс нижчий за необхідний рівень. Комісія може становити до %s.</string>
+    <string name="swap_insufficient_fee_balance">Поточний баланс %1$s нижчий за суму, необхідну для проведення цієї транзакції, включаючи комісію.</string>
+    <string name="fee_warning_low_balance">Баланс нижчий за необхідний рівень. Комісія може становити до %1$s.</string>
     <string name="swap_balance_for_fees">Баланс для комісій</string>
     <string name="fee">Комісія</string>
     <string name="estimated_fee">Орієнтовна комісія</string>
@@ -594,7 +594,7 @@
     <string name="Swap_ErrorNoProviders">Немає провайдерів</string>
     <string name="Swap_ErrorNoQuote">Немає пропозицій</string>
     <string name="Swap_ErrorInsufficientBalance">Недостатній баланс</string>
-    <string name="swap_out_of_min_amount">Менше мін. суми %s</string>
+    <string name="swap_out_of_min_amount">Менше мін. суми %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">Високе відхилення ціни</string>
     <string name="Swap_ErrorWalletSyncing">Синхронізація гаманця</string>
     <string name="Swap_ErrorWalletNotSynced">Гаманець не синхронізовано</string>
@@ -621,7 +621,7 @@
     <string name="Swap_YouPay">Ви платите</string>
     <string name="Swap_YouGet">Ви отримаєте</string>
     <string name="Swap_Confirm_Title">Підтвердити</string>
-    <string name="SwapConfirm_QuoteExpiresIn">Котирування закінчується через %d</string>
+    <string name="SwapConfirm_QuoteExpiresIn">Котирування закінчується через %1$d</string>
     <string name="SwapConfirm_QuoteExpired">Термін дії котирування минув</string>
     <string name="SwapConfirm_QuoteIsInvalid">Котирування недійсне</string>
     <string name="SwapConfirm_FetchingFinalQuote">Отримання котирування</string>
@@ -663,7 +663,7 @@
     <!-- Swap Confirmation -->
     <string name="activate_insufficient_balance_description">У вас недостатньо балансу XLM для активації цього токена.</string>
     <!--Approve-->
-    <string name="Approve_RevokeAndApproveInfo">Ви можете обміняти %s, або ви повинні скасувати і схвалити нову суму</string>
+    <string name="Approve_RevokeAndApproveInfo">Ви можете обміняти %1$s, або ви повинні скасувати і схвалити нову суму</string>
     <string name="Approve_Spender">Покупець</string>
     <string name="Approve_YouApprove">Ви дозволяєте</string>
     <string name="Approve_YouRevoke">Ви скасовуєте</string>
@@ -1066,6 +1066,7 @@
     <string name="offline_transaction_signed_transaction_unavailable">Підписана транзакція більше недоступна. Підпишіть її ще раз.</string>
     <string name="offline_broadcast_title">Надсилання RAW TX</string>
     <string name="offline_broadcast_import_file">Імпортувати файл транзакції</string>
+    <string name="offline_broadcast_input_hint">Вставте підписану RAW- або P.cash-транзакцію</string>
     <string name="offline_broadcast_file_read_failed">Не вдалося прочитати файл транзакції. Перевірте файл і спробуйте ще раз.</string>
     <string name="offline_broadcast_invalid_input">Не вдалося розпізнати транзакцію. Перевірте формат і спробуйте ще раз.</string>
     <string name="offline_broadcast_check_title">Перевірка транзакції</string>
@@ -2287,15 +2288,15 @@
     <string name="native_library_error_close">Закрити</string>
     <!--Multi-Swap-->
     <string name="multi_swap_completed">Обмін завершено</string>
-    <string name="multi_swap_via">Обмін через %s</string>
-    <string name="multi_swap_completed_via">Завершено через %s</string>
+    <string name="multi_swap_via">Обмін через %1$s</string>
+    <string name="multi_swap_completed_via">Завершено через %1$s</string>
     <string name="multi_swap_no_providers">Немає доступних провайдерів</string>
     <string name="multi_swap_finding_best_provider">Пошук найкращого провайдера…</string>
     <string name="multi_swap_continue">Продовжити обмін</string>
     <string name="multi_swap_route_explanation">Для отримання найвигіднішого курсу використовується маршрут через %2$s. Обмін буде виконано у два послідовні кроки: спочатку %1$s → %2$s, потім %2$s → %3$s.</string>
     <string name="multi_swap_route_title">Маршрут обміну</string>
     <string name="multi_swap_execution_title">Обмін</string>
-    <string name="multi_swap_step">Крок %d</string>
+    <string name="multi_swap_step">Крок %1$d</string>
     <string name="multi_swap_understood_continue">Зрозуміло, продовжити</string>
     <string name="multi_swap_unfinished">Незавершений обмін</string>
     <string name="multi_swap_unfinished_plural">Незавершені обміни (%d)</string>
@@ -2464,4 +2465,6 @@
     <string name="desktop_change_password_corrupted">Файл ключа пошкоджено: після блокування застосунку ви не зможете увійти. Збережіть резервну копію кожної фрази відновлення.</string>
     <string name="desktop_change_password_success">Пароль змінено</string>
     <string name="desktop_security_lock_now">Заблокувати зараз</string>
+    <string name="desktop_transfer_password">Пароль перед надсиланням</string>
+    <string name="desktop_transfer_password_description">Перед кожним надсиланням запитується пароль застосунку. Це захистить ваші кошти, якщо хтось отримає доступ до комп’ютера з розблокованим застосунком.</string>
 </resources>
