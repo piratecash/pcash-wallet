@@ -46,7 +46,6 @@ import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.PassphraseValidator
 import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.slip39.Slip39AccountTypeFactory
-import cash.p.terminal.wallet.slip39.Slip39Shamir
 import cash.p.terminal.wallet.entities.EnabledWallet
 import cash.p.terminal.wallet.entities.TokenQuery
 import kotlinx.coroutines.CancellationException
@@ -56,10 +55,8 @@ import kotlinx.coroutines.withContext
 import co.touchlab.kermit.Logger
 import cash.p.terminal.resources.CreateWallet_Error_EmptyPassphrase
 import cash.p.terminal.resources.CreateWallet_Error_InvalidConfirmation
-import cash.p.terminal.resources.CreateWallet_Error_PassphraseForbiddenSymbols
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.copy_wallet_suffix
-import cash.p.terminal.resources.shamir_error_passphrase_chars
 import cash.p.terminal.resources.error_while_duplicating_wallect
 import cash.p.terminal.resources.unsupported_duplicate_wallet
 
@@ -129,13 +126,8 @@ class DuplicateWalletViewModel(
     }
 
     fun onChangePassphrase(v: String) {
-        val forbiddenSymbolsError = if (accountToCopy.type is Slip39) {
-            Res.string.shamir_error_passphrase_chars.takeUnless { Slip39Shamir.isValidPassphrase(v) }
-        } else {
-            Res.string.CreateWallet_Error_PassphraseForbiddenSymbols.takeUnless {
-                passphraseValidator.containsValidCharacters(v)
-            }
-        }
+        val forbiddenSymbolsError =
+            passphraseValidator.forbiddenCharactersError(v, slip39 = accountToCopy.type is Slip39)
         if (forbiddenSymbolsError == null) {
             uiState = uiState.copy(passphraseState = null)
             passphrase = v

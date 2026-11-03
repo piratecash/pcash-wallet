@@ -19,7 +19,23 @@ sealed class Slip39Exception(message: String) : Exception(message) {
     class InvalidDigest : Slip39Exception("SLIP-39 digest mismatch")
 }
 
+enum class Slip39SecretSize(val bytes: Int) {
+    Bits128(16), Bits256(32);
+
+    val wordCount: Int get() = Slip39Share.wordCountFor(bytes)
+}
+
 object Slip39Shamir {
+
+    fun randomIdentifier(random: SecureRandom): Int = random.nextInt(IDENTIFIER_BOUND)
+
+    /** A new extendable set; its master secret is decrypt(passphrase) of this random ciphertext. */
+    fun generate(size: Slip39SecretSize, random: SecureRandom): EncryptedMasterSecret = EncryptedMasterSecret(
+        identifier = randomIdentifier(random),
+        extendable = true,
+        iterationExponent = DEFAULT_ITERATION_EXPONENT,
+        ciphertext = random.bytes(size.bytes),
+    )
 
     fun parseShare(mnemonic: String): Slip39Share = Slip39Share.decode(mnemonic)
 
@@ -151,6 +167,8 @@ object Slip39Shamir {
         }
     }
 
+    private const val IDENTIFIER_BOUND = 1 shl 15
+    private const val DEFAULT_ITERATION_EXPONENT = 1
     private const val MAX_SHARE_COUNT = 16
     private const val DIGEST_LENGTH_BYTES = 4
     private const val DIGEST_INDEX = 254

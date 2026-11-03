@@ -3,8 +3,16 @@ package cash.p.terminal.wallet.slip39
 import cash.p.terminal.wallet.AccountType
 import io.horizontalsystems.core.DispatcherProvider
 import kotlinx.coroutines.withContext
+import java.security.SecureRandom
 
 class Slip39AccountTypeFactory(private val dispatcherProvider: DispatcherProvider) {
+
+    private val random = SecureRandom()
+
+    suspend fun createNew(size: Slip39SecretSize, passphrase: String): AccountType.Slip39 {
+        val share = Slip39Shamir.split(Slip39Shamir.generate(size, random), threshold = 1, count = 1, random).single()
+        return create(share, passphrase)
+    }
 
     /** Decryption cost grows with the share's iteration exponent, so it never runs on the caller's thread. */
     suspend fun create(canonicalShare: List<String>, passphrase: String): AccountType.Slip39 =

@@ -98,15 +98,11 @@ class ShamirBackupViewModel(
         val secret = Slip39Shamir.combine(listOf(Slip39Shamir.parseShare(accountWords.joinToString(" "))))
         if (!secret.extendable) return secret
         return EncryptedMasterSecret(
-            identifier = random.nextInt(IDENTIFIER_BOUND),
+            identifier = Slip39Shamir.randomIdentifier(random),
             extendable = true,
             iterationExponent = secret.iterationExponent,
             ciphertext = secret.ciphertext,
         )
-    }
-
-    private companion object {
-        const val IDENTIFIER_BOUND = 1 shl 15
     }
 }
 
