@@ -4,6 +4,7 @@ import cash.p.terminal.modules.evmfee.GasPriceInfo
 import cash.p.terminal.ui_compose.entities.DataState
 import io.horizontalsystems.ethereumkit.core.eip1559.Eip1559GasPriceProvider
 import io.horizontalsystems.ethereumkit.core.eip1559.FeeHistory
+import io.horizontalsystems.ethereumkit.models.GasPrice
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -87,6 +88,20 @@ class Eip1559GasPriceServiceTest {
 
         assertTrue(states.none { it is DataState.Error })
         assertEquals(RECOMMENDED_MAX_FEE, service.stateFlow.value.dataOrNull?.gasPrice?.max)
+    }
+
+    @Test
+    fun start_withInitialGasPrice_keepsDappMaxFeeAndPriorityFee() {
+        val dappGasPrice = GasPrice.Eip1559(maxFeePerGas = 1_500_000_000, maxPriorityFeePerGas = 1_000_000_000)
+        val service = Eip1559GasPriceService(gasProvider, Flowable.empty(), initialGasPrice = dappGasPrice)
+
+        service.start()
+
+        val state = service.stateFlow.value
+        val gasPrice = state.dataOrNull?.gasPrice as? GasPrice.Eip1559
+        assertTrue(state is DataState.Success)
+        assertEquals(dappGasPrice.maxFeePerGas, gasPrice?.maxFeePerGas)
+        assertEquals(dappGasPrice.maxPriorityFeePerGas, gasPrice?.maxPriorityFeePerGas)
     }
 
     private fun stubFetches(vararg fetches: Single<FeeHistory>) {
