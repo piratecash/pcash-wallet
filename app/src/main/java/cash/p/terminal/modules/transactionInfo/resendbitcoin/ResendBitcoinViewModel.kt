@@ -8,6 +8,7 @@ import cash.p.terminal.core.IFeeRateProvider
 import cash.p.terminal.core.LocalizedException
 import cash.p.terminal.core.adapters.BitcoinBaseAdapter
 import cash.p.terminal.core.providers.AppConfigProvider
+import cash.p.terminal.core.usecase.RecordBitcoinReplacementUseCase
 import cash.p.terminal.entities.Address
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.modules.contacts.ContactsRepository
@@ -50,6 +51,7 @@ class ResendBitcoinViewModel(
     private val xRateService: XRateService,
     private val contactsRepo: ContactsRepository,
     private val offlineOperationGate: OfflineOperationGate,
+    private val recordBitcoinReplacement: RecordBitcoinReplacementUseCase,
 ) : ViewModelUiState<ResendBitcoinUiState>() {
 
     private val titleResId: Int
@@ -230,6 +232,7 @@ class ResendBitcoinViewModel(
             emitState()
 
             val fullTransaction = adapter.send(replacementTransaction)
+            recordBitcoinReplacement(adapter.wallet.account.id, blockchainType.uid, transactionRecord, fullTransaction)
             val txHash = fullTransaction.header.uid
 
             val isQueued = adapter.isTransactionInSendQueue(txHash)

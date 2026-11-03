@@ -38,7 +38,8 @@ object ResendBitcoinModule {
                 xRateService = XRateService(App.marketKit, App.currencyManager.baseCurrency),
                 feeRateProvider =  FeeRateProviderFactory.provider(adapter.wallet.token.blockchainType)!!,
                 contactsRepo = App.contactsRepository,
-                offlineOperationGate = getKoinInstance()
+                offlineOperationGate = getKoinInstance(),
+                recordBitcoinReplacement = getKoinInstance()
             ) as T
         }
     }

@@ -3,6 +3,7 @@ package cash.p.terminal.core.adapters
 import cash.p.terminal.core.BroadcastRawTransactionStatus
 import cash.p.terminal.core.IFeeRateProvider
 import cash.p.terminal.core.LocalizedException
+import cash.p.terminal.core.TransactionSettingsStorage
 import cash.p.terminal.core.OfflineBitcoinSignRequest
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.TransactionExplorerData
@@ -81,15 +82,31 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import java.math.BigDecimal
 import kotlin.test.assertFailsWith
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class LitecoinAdapterTest {
+
+    @Before
+    fun startReplacementRegistry() {
+        val storage = mockk<TransactionSettingsStorage> { every { bitcoinReplacementLinks } returns emptySet() }
+        startKoin { modules(module { single { BitcoinReplacementRegistry(storage) } }) }
+    }
+
+    @After
+    fun stopReplacementRegistry() {
+        stopKoin()
+    }
 
     private val kit = mockk<LitecoinKit>(relaxed = true)
     private val backgroundManager = mockk<IBackgroundManager>(relaxed = true)

@@ -32,6 +32,9 @@ interface TransactionSettingsStorage {
     var addressPoisoningViewMode: AddressPoisoningViewMode
     var recipientAddressBaseCheckEnabled: Boolean
     var recipientAddressContractCheckEnabled: Boolean
+
+    /** Speed-up links written by `BitcoinReplacementRegistry`; the encoding is owned by it. */
+    var bitcoinReplacementLinks: Set<String>
 }
 
 interface NetworkSettingsStorage {

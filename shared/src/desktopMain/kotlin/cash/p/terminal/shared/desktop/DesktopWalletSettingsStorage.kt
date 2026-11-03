@@ -86,6 +86,10 @@ class DesktopWalletSettingsStorage(private val store: DesktopSettingsStore) :
         get() = store.flag(RECIPIENT_ADDRESS_CONTRACT_CHECK) ?: true
         set(value) = store.setFlag(RECIPIENT_ADDRESS_CONTRACT_CHECK, value)
 
+    override var bitcoinReplacementLinks: Set<String>
+        get() = stringSet(BITCOIN_REPLACEMENT_LINKS)
+        set(value) = setStringSet(BITCOIN_REPLACEMENT_LINKS, value)
+
     override val torEnabled: Boolean = false
 
     override var zcashIronwoodMigrationTxIds: Set<String>
@@ -134,6 +138,7 @@ class DesktopWalletSettingsStorage(private val store: DesktopSettingsStore) :
         const val ADDRESS_POISONING_VIEW_MODE = "addressPoisoningViewMode"
         const val RECIPIENT_ADDRESS_BASE_CHECK = "recipientAddressBaseCheckEnabled"
         const val RECIPIENT_ADDRESS_CONTRACT_CHECK = "recipientAddressContractCheckEnabled"
+        const val BITCOIN_REPLACEMENT_LINKS = "bitcoinReplacementLinks"
         const val ZCASH_IRONWOOD_TX_IDS = "zcashIronwoodMigrationTxIds"
         const val ZCASH_ACCOUNT_IDS = "zcashAccountIds"
         const val MONERO_SKIP_NEW_ADDRESS_CONFIRM = "moneroSkipNewAddressConfirm"
