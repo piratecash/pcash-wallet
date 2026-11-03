@@ -2,12 +2,14 @@ package cash.p.terminal.feature.wallet
 
 import androidx.compose.runtime.Composable
 import cash.p.terminal.core.getKoinInstance
+import cash.p.terminal.modules.activatetoken.ActivateTokenPage
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.entities.Blockchain
+import io.horizontalsystems.core.ui.dialogs.ConfirmationDialogSheet
 import org.koin.compose.koinInject
 import kotlin.reflect.KClass
 
@@ -43,7 +45,7 @@ interface WalletPlatformPages {
     val mainPage: KClass<out HSPage>
 
     /** Reports [ActivateTokenResult]. */
-    fun activateToken(wallet: Wallet): HSPage?
+    fun activateToken(wallet: Wallet): HSPage? = ActivateTokenPage(wallet)
 
     /** A warning sheet; [onConfirm] runs when its action button is tapped. */
     fun confirmation(
@@ -52,7 +54,17 @@ interface WalletPlatformPages {
         actionButtonTitle: String,
         transparentButtonTitle: String,
         onConfirm: () -> Unit,
-    ): HSPage?
+    ): HSPage? = ConfirmationDialogSheet(
+        title = title,
+        icon = null,
+        warningTitle = null,
+        warningText = warningText,
+        actionButtonTitle = actionButtonTitle,
+        transparentButtonTitle = transparentButtonTitle,
+        listener = object : ConfirmationDialogSheet.Listener {
+            override fun onActionButtonClick() = onConfirm()
+        },
+    )
 }
 
 data class ActivateTokenResult(val activated: Boolean)
