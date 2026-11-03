@@ -1,0 +1,76 @@
+package cash.p.terminal.core.factories
+
+import cash.p.terminal.core.getKoinInstance
+import cash.p.terminal.modules.send.address.BitcoinAddressValidator
+import cash.p.terminal.modules.send.address.EnterAddressValidator
+import cash.p.terminal.modules.send.address.EvmAddressValidator
+import cash.p.terminal.modules.send.address.MemoAddressValidator
+import cash.p.terminal.modules.send.address.MoneroAddressValidator
+import cash.p.terminal.modules.send.address.SolanaAddressValidator
+import cash.p.terminal.modules.send.address.TonAddressValidator
+import cash.p.terminal.modules.send.address.TronAddressValidator
+import cash.p.terminal.modules.send.address.ZcashAddressValidator
+import cash.p.terminal.wallet.Token
+import cash.p.terminal.modules.send.beam.BeamRecipient
+import io.horizontalsystems.core.entities.BlockchainType
+
+object AddressValidatorFactory {
+
+    fun get(token: Token): EnterAddressValidator {
+        return when (token.blockchainType) {
+            BlockchainType.Bitcoin,
+            BlockchainType.BitcoinCash,
+            BlockchainType.ECash,
+            BlockchainType.Litecoin,
+            BlockchainType.Cosanta,
+            BlockchainType.Dogecoin,
+            BlockchainType.PirateCash,
+            BlockchainType.Dash -> {
+                BitcoinAddressValidator(token, getKoinInstance())
+            }
+
+            BlockchainType.Zcash -> {
+                ZcashAddressValidator(token, getKoinInstance())
+            }
+
+            BlockchainType.Ethereum,
+            BlockchainType.BinanceSmartChain,
+            BlockchainType.Polygon,
+            BlockchainType.Avalanche,
+            BlockchainType.Optimism,
+            BlockchainType.Base,
+            BlockchainType.ZkSync,
+            BlockchainType.RobinhoodChain,
+            BlockchainType.Gnosis,
+            BlockchainType.Fantom,
+            BlockchainType.ArbitrumOne -> {
+                EvmAddressValidator()
+            }
+
+            BlockchainType.Solana -> {
+                SolanaAddressValidator()
+            }
+
+            BlockchainType.Tron -> {
+                TronAddressValidator(token, getKoinInstance())
+            }
+
+            BlockchainType.Ton -> {
+                TonAddressValidator()
+            }
+
+            is BlockchainType.Stellar,
+            BlockchainType.Thorchain,
+            BlockchainType.Mayachain -> {
+                MemoAddressValidator(token)
+            }
+
+            BlockchainType.Monero -> MoneroAddressValidator()
+
+            BlockchainType.Beam -> BeamRecipient
+            is BlockchainType.Unsupported -> error("Unsupported blockchain type: ${token.blockchainType}")
+
+        }
+    }
+
+}
