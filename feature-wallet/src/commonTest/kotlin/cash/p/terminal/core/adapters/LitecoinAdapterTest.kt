@@ -7,6 +7,7 @@ import cash.p.terminal.core.OfflineBitcoinSignRequest
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.TransactionExplorerData
 import cash.p.terminal.core.UnsupportedAccountException
+import cash.p.terminal.core.managers.LitecoinKitPool
 import cash.p.terminal.entities.TransactionDataSortMode
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
@@ -91,17 +92,61 @@ import kotlin.test.assertFailsWith
 @OptIn(ExperimentalCoroutinesApi::class)
 class LitecoinAdapterTest {
 
-    private val kit = mockk<LitecoinKit>(relaxed = true)
+    private val kit = mockk<LitecoinKit>(relaxed = true) {
+        every { syncState } returns BitcoinCore.KitState.NotSynced(BitcoinCore.StateError.NotStarted())
+    }
+    private val kitPool = mockk<LitecoinKitPool>(relaxed = true)
     private val backgroundManager = mockk<IBackgroundManager>(relaxed = true)
     private val feeRateProvider = mockk<IFeeRateProvider>(relaxed = true)
 
     @Test
-    fun stop_litecoinAdapter_disposesKit() {
+    fun stop_litecoinAdapter_removesListenerAndReleasesKit() {
         val adapter = createPublicAdapter()
 
         adapter.stop()
 
-        verify(exactly = 1) { kit.dispose() }
+        verify(exactly = 1) { kit.removeListener(adapter) }
+        verify(exactly = 1) { kitPool.release(kit) }
+        verify(exactly = 0) { kit.dispose() }
+    }
+
+    @Test
+    fun init_sharedKitAlreadySynced_reportsSynced() {
+        every { kit.syncState } returns BitcoinCore.KitState.Synced
+
+        val adapter = createPublicAdapter()
+
+        assertEquals(AdapterState.Synced, adapter.balanceState)
+    }
+
+    @Test
+    fun init_kitStateChangesDuringReplay_reportsLatestState() {
+        // The second read models a kit callback that lands while the first snapshot is applied.
+        every { kit.syncState } returnsMany listOf(
+            BitcoinCore.KitState.Syncing(0.5),
+            BitcoinCore.KitState.Synced,
+        )
+
+        val adapter = createPublicAdapter()
+
+        assertEquals(AdapterState.Synced, adapter.balanceState)
+    }
+
+    @Test
+    fun init_kitNotStarted_staysConnecting() {
+        val adapter = createPublicAdapter()
+
+        assertEquals(AdapterState.Connecting, adapter.balanceState)
+    }
+
+    @Test
+    fun init_sharedKitFailedWithNetworkError_reportsNotSynced() {
+        val error = BitcoinCore.StateError.NoInternet()
+        every { kit.syncState } returns BitcoinCore.KitState.NotSynced(error)
+
+        val adapter = createPublicAdapter()
+
+        assertEquals(AdapterState.NotSynced(error), adapter.balanceState)
     }
 
     // Right after broadcasting an MWEB transaction the SDK marks the spent UTXOs as
@@ -2345,6 +2390,7 @@ class LitecoinAdapterTest {
             backgroundManager = backgroundManager,
             wallet = wallet(TokenType.Mweb),
             mode = LitecoinAdapter.Mode.Mweb,
+            kitPool = kitPool,
             dispatcherProvider = dispatcherProvider,
             feeRateProvider = feeRateProvider
         )
@@ -2367,6 +2413,7 @@ class LitecoinAdapterTest {
             backgroundManager = backgroundManager,
             wallet = wallet(TokenType.Derived(TokenType.Derivation.Bip84), account),
             mode = LitecoinAdapter.Mode.Public(TokenType.Derivation.Bip84),
+            kitPool = kitPool,
             dispatcherProvider = dispatcherProvider,
             feeRateProvider = feeRateProvider
         )

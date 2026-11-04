@@ -9,6 +9,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cash.p.terminal.R
+import cash.p.terminal.core.ethereum.evmSendErrorMessage
 import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.modules.confirm.ConfirmTransactionScreen
 import cash.p.terminal.modules.send.signingErrorText
@@ -71,7 +72,7 @@ fun WCSignEthereumTransactionRequestScreen(
                             delay(1200)
                         } catch (t: Throwable) {
                             logger.warning("failed", t)
-                            t.signingErrorText(t.javaClass.simpleName)?.let { HudHelper.showErrorMessage(view, it) }
+                            t.signingErrorText(t.evmSendErrorMessage())?.let { HudHelper.showErrorMessage(view, it) }
                         }
 
                         navigation.navigateUp()

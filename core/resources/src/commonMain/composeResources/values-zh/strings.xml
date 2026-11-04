@@ -2341,6 +2341,7 @@
     <string name="desktop_change_password_corrupted">密钥文件已损坏：应用锁定后您将无法登录。请为每个恢复短语保存备份。</string>
     <string name="desktop_change_password_success">密码已更改</string>
     <string name="desktop_security_lock_now">立即锁定</string>
+    <string name="evm_node_request_failed">网络节点无法处理该请求。请重试，或在区块链设置中选择其他来源。\n\n节点响应：%1$s</string>
     <string name="desktop_transfer_password">发送前输入密码</string>
     <string name="desktop_transfer_password_description">每次发送前都会要求输入应用密码，即使有人在应用未锁定时使用您的电脑，也能保护您的资产。</string>
 </resources>

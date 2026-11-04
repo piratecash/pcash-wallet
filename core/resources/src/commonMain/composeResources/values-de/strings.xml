@@ -2349,6 +2349,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="desktop_change_password_corrupted">Die Schlüsseldatei ist beschädigt: Sobald die App gesperrt ist, können Sie sich nicht mehr anmelden. Speichern Sie eine Sicherungskopie jeder Wiederherstellungsphrase.</string>
     <string name="desktop_change_password_success">Passwort geändert</string>
     <string name="desktop_security_lock_now">Jetzt sperren</string>
+    <string name="evm_node_request_failed">Der Netzwerkknoten konnte die Anfrage nicht verarbeiten. Versuchen Sie es erneut oder wählen Sie in den Blockchain-Einstellungen eine andere Quelle.\n\nAntwort des Knotens: %1$s</string>
     <string name="desktop_transfer_password">Passwort vor dem Senden</string>
     <string name="desktop_transfer_password_description">Vor jeder Überweisung wird das App-Passwort abgefragt. Das schützt Ihre Guthaben, falls jemand bei entsperrter App Zugriff auf Ihren Computer erhält.</string>
 </resources>

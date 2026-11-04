@@ -17,6 +17,7 @@ import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.modules.send.hardwareWalletErrorMessage
 import cash.p.terminal.modules.send.isHardwareWalletCancelled
+import cash.p.terminal.core.ethereum.evmSendErrorMessage
 import cash.p.terminal.modules.confirm.ConfirmTransactionScreen
 import cash.p.terminal.modules.send.evm.SendEvmData
 import cash.p.terminal.modules.send.evm.SendEvmModule
@@ -27,7 +28,6 @@ import cash.p.terminal.ui_compose.components.rememberHudMessenger
 import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.logger.AppLogger
-import io.horizontalsystems.ethereumkit.api.jsonrpc.JsonRpc
 import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.TransactionData
 import kotlinx.coroutines.delay
@@ -37,7 +37,6 @@ import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.Hud_Text_Done
 import cash.p.terminal.resources.Send_Confirmation_Send_Button
 import cash.p.terminal.resources.Send_Sending
-import cash.p.terminal.resources.unknown_send_error
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -125,13 +124,7 @@ private fun SendEvmConfirmationScreen(
                                 hud.dismiss()
                             } else {
                                 logger.warning("failed", t)
-                                val errorMsg = t.hardwareWalletErrorMessage()
-                                    ?: if (t is JsonRpc.ResponseError.RpcError) {
-                                        t.error.message
-                                    } else {
-                                        t.message ?: Translator.getString(Res.string.unknown_send_error)
-                                    }
-                                hud.showError(errorMsg)
+                                hud.showError(t.hardwareWalletErrorMessage() ?: t.evmSendErrorMessage())
                             }
                         }
 
