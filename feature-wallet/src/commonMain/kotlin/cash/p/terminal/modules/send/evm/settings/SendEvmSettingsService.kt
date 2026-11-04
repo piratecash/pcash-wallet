@@ -87,6 +87,11 @@ class SendEvmSettingsService(
         nonceService.reset()
     }
 
+    suspend fun retry() {
+        if (feeState is DataState.Error) feeService.retry()
+        if (nonceService.state is DataState.Error) nonceService.retry()
+    }
+
     data class Transaction(
         val transactionData: TransactionData,
         val gasData: GasData,

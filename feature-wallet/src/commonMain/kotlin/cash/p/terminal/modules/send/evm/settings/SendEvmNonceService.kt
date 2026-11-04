@@ -54,6 +54,14 @@ class SendEvmNonceService(
         setRecommended()
     }
 
+    suspend fun retry() {
+        if (state !is DataState.Error) return
+
+        state = DataState.Loading
+        // start() awaits a blocking getNonce.
+        withContext(Dispatchers.IO) { start() }
+    }
+
     fun setNonce(nonce: Long) {
         sync(nonce)
     }

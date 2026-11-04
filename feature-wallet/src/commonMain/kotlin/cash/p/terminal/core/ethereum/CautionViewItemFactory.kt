@@ -21,6 +21,7 @@ import cash.p.terminal.resources.EthereumTransaction_Error_LowerThanBaseGasLimit
 import cash.p.terminal.resources.EthereumTransaction_Error_LowerThanBaseGasLimit_Title
 import cash.p.terminal.resources.EthereumTransaction_Error_Title
 import cash.p.terminal.resources.EthereumTransaction_Warning_Title
+import cash.p.terminal.resources.evm_node_request_failed
 import cash.p.terminal.resources.FeeSettings_Overpricing
 import cash.p.terminal.resources.FeeSettings_Overpricing_Title
 import cash.p.terminal.resources.FeeSettings_RiskOfGettingStuck
@@ -31,6 +32,8 @@ import cash.p.terminal.resources.SendEvmSettings_Error_NonceUsed
 import cash.p.terminal.resources.SendEvmSettings_Error_NonceUsed_Title
 import cash.p.terminal.resources.source_blocked_by_provider_error
 import cash.p.terminal.resources.warning_inaccurate_commission
+import java.io.IOException
+import retrofit2.HttpException
 
 class CautionViewItemFactory(
     private val baseCoinService: EvmCoinService,
@@ -162,11 +165,18 @@ class CautionViewItemFactory(
                     Translator.getString(Res.string.source_blocked_by_provider_error)
                 )
             }
+            is EvmError.RpcError, is IOException, is HttpException -> Pair(
+                Translator.getString(Res.string.EthereumTransaction_Error_Title),
+                Translator.getString(Res.string.evm_node_request_failed, convertedError.detail)
+            )
             else -> {
                 Pair(
                     Translator.getString(Res.string.EthereumTransaction_Error_Title),
-                    convertedError.message ?: convertedError.javaClass.simpleName
+                    convertedError.detail
                 )
             }
         }
+
+    private val Throwable.detail: String
+        get() = message ?: javaClass.simpleName
 }

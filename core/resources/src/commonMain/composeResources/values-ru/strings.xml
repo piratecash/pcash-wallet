@@ -1849,6 +1849,7 @@
     <string name="week_period">Неделя</string>
     <string name="month_period">Месяц</string>
     <string name="year_period">Год</string>
+    <string name="unknown_send_error">Неизвестная ошибка отправки</string>
     <string name="native_library_error_title">Невозможно запустить</string>
     <string name="native_library_error_message">Не удалось загрузить необходимый компонент. Пожалуйста, попробуйте переустановить приложение из Play Store.</string>
     <string name="native_library_error_close">Закрыть</string>
@@ -2431,6 +2432,7 @@
     <string name="desktop_change_password_corrupted">Файл ключа повреждён: после блокировки приложения вы не сможете войти. Сохраните резервную копию каждой фразы восстановления.</string>
     <string name="desktop_change_password_success">Пароль изменён</string>
     <string name="desktop_security_lock_now">Заблокировать сейчас</string>
+    <string name="evm_node_request_failed">Узел сети не смог выполнить запрос. Повторите попытку или выберите другой источник в настройках блокчейна.\n\nОтвет узла: %1$s</string>
     <string name="desktop_transfer_password">Пароль перед отправкой</string>
     <string name="desktop_transfer_password_description">Перед каждой отправкой запрашивается пароль приложения. Это защитит ваши средства, если кто-то получит доступ к компьютеру с разблокированным приложением.</string>
 </resources>

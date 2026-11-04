@@ -85,6 +85,7 @@
     <string name="Idle" translatable="false">-</string>
     <string name="Any">Any</string>
     <string name="SyncError">Sync error. Try Again</string>
+    <string name="unknown_send_error">Unknown send error</string>
     <string name="native_library_error_title">Unable to Start</string>
     <string name="native_library_error_message">A required component failed to load. Please try reinstalling the app from the Play Store.</string>
     <string name="native_library_error_close">Close</string>
@@ -2688,6 +2689,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="desktop_change_password_corrupted">The key file is damaged: once the app is locked you will not be able to sign in. Save a backup of every recovery phrase.</string>
     <string name="desktop_change_password_success">Password changed</string>
     <string name="desktop_security_lock_now">Lock now</string>
+    <string name="evm_node_request_failed">The network node could not process the request. Try again or choose another source in Blockchain settings.\n\nNode response: %1$s</string>
     <string name="desktop_transfer_password">Password before sending</string>
     <string name="desktop_transfer_password_description">The app password is asked before every transfer, protecting your assets if someone gets access to your computer while the app is unlocked.</string>
 </resources>
