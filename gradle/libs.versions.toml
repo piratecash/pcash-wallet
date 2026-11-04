@@ -1,6 +1,5 @@
 [versions]
 activityCompose = "1.13.0"
-androidShell = "1.0.0"
 biometric = "1.1.0"
 circleindicator = "2.1.6"
 browser = "1.10.0"
@@ -74,7 +73,7 @@ tonKotlin = "0.5.0" # updated for ktor 3.x compatibility
 orgJson = "20250517"
 piratecash-ton = "v2.0.0-pcash.13"
 beam-sdk = "v0.3.1"
-piratecash-bitcoin = "v0.1.0-pcash.41"
+piratecash-bitcoin = "v0.1.0-pcash.42"
 hd-wallet-kit = "1.0.1"
 stellar-kit = "v2.0.0-pcash.4"
 thorchain-kit = "1.2.0"
@@ -82,7 +81,7 @@ trezor-kit = "1.4.1"
 piratecash-ethereum = "v1.0.0-pcash.9"
 
 piratecash-solana = "v2.0.0-pcash.6"
-monero-kit-android = "v0.18.3.4-pcash.23"
+monero-kit-android = "v0.18.3.4-pcash.25"
 netcipher = "2.1.0"
 solanakt = "v1.0.0-pcash.5"
 piratecash-tron = "v2.0.0-pcash.1"
@@ -115,11 +114,10 @@ zxing = "3.5.4"
 accompanist-permissions = "0.37.3"
 lint = "32.1.0"
 
-tor-android = "0.4.9.5.1"
+tor-android = "0.4.9.11"
 
 [libraries]
 android-bom = { module = "com.reown:android-bom", version.ref = "reownBom" }
-android-shell = { module = "com.jaredrummler:android-shell", version.ref = "androidShell" }
 androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
 androidx-browser = { module = "androidx.browser:browser", version.ref = "browser" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }

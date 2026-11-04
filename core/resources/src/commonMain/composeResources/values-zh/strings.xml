@@ -1425,6 +1425,7 @@
     <string name="Tor_Connection_Disable">禁用Tor</string>
     <string name="Tor_Alert_Title">互联网</string>
     <string name="TorPage_Connecting">토르 연결 중…</string>
+    <string name="TorPage_ConnectingProgress">正在连接 Tor… %1$d%</string>
     <string name="TorPage_Failed">Tor 연결 실패</string>
     <string name="Tor_TorIsActive">Tor 已激活</string>
     <!--Coin Page-->

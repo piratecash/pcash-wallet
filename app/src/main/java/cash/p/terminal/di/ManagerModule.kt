@@ -127,6 +127,9 @@ import cash.p.terminal.core.managers.TonConnectManager
 import cash.p.terminal.core.managers.TonKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.AndroidTonKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.TorManager
+import cash.p.terminal.core.tor.TorServiceGateway
+import cash.p.terminal.core.tor.TorSyncCoordinator
+import cash.p.terminal.core.tor.TorSyncState
 import cash.p.terminal.core.managers.TronKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.AndroidTronKitDatabaseKeyProvider
 import cash.p.terminal.core.INetworkManager
@@ -439,7 +442,12 @@ val managerModule = module {
     singleOf(::BalanceViewTypeManager)
     singleOf(::DeviceFlipDetector)
     singleOf(::BalanceHideOnFlipManager) { createdAtStart() } bind BalanceHideOnFlipHandler::class
-    singleOf(::TorManager) bind ITorManager::class
+    singleOf(::TorServiceGateway)
+    singleOf(::TorManager) { createdAtStart() } bind ITorManager::class
+    // Lazy wallet stack: eager creation would open the wallet databases on the main thread inside startKoin
+    single(createdAtStart = true) {
+        TorSyncCoordinator(get(), lazy { get() }, lazy { get() }, lazy { get() }, get())
+    } bind TorSyncState::class
     single {
         KeyStoreCleaner(get(), get(), get(), get(), lazy { get<IAccountCleaner>() }, lazy { get<TonConnectManager>() })
     } bind IKeyStoreCleaner::class

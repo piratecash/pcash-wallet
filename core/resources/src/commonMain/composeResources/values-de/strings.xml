@@ -1425,6 +1425,7 @@ Die App ermöglicht es Ihnen, aus Bequemlichkeit ein Backup mit einem einfachen 
     <string name="Tor_Connection_Disable">Tor deaktivieren</string>
     <string name="Tor_Alert_Title">Internet</string>
     <string name="TorPage_Connecting">Tor wird verbunden…</string>
+    <string name="TorPage_ConnectingProgress">Tor wird verbunden… %1$d%</string>
     <string name="TorPage_Failed">Fehler beim Verbinden von Tor</string>
     <string name="Tor_TorIsActive">Tor ist aktiv</string>
     <!--Coin Page-->

@@ -1872,6 +1872,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="Tor_Connection_Disable">Disable Tor</string>
     <string name="Tor_Alert_Title">Internet</string>
     <string name="TorPage_Connecting">Connecting Tor…</string>
+    <string name="TorPage_ConnectingProgress">Connecting Tor… %1$d%</string>
     <string name="TorPage_Failed">Failed to Connect Tor</string>
     <string name="Tor_TorIsActive">Tor is active</string>
 

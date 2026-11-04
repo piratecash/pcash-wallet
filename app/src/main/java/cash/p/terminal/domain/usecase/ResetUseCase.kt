@@ -4,7 +4,7 @@ import android.content.Context
 import cash.p.terminal.core.managers.KeyStoreCleaner
 import cash.p.terminal.core.ILocalStorage
 import cash.p.terminal.core.storage.AppDatabase
-import cash.p.terminal.core.tor.torcore.TorConstants
+import cash.p.terminal.core.tor.TorServiceGateway
 import cash.p.terminal.modules.contacts.ContactsRepository
 import cash.p.terminal.modules.settings.appearance.AppIconService
 import cash.p.terminal.modules.walletconnect.WCDelegate
@@ -103,8 +103,9 @@ class ResetUseCase(
         }.onFailure { Timber.w(it, "Failed clearing contacts") }
 
         runCatching {
-            context.getDir(TorConstants.DIRECTORY_TOR_DATA, Context.MODE_PRIVATE)
-                .deleteRecursively()
+            listOf(TorServiceGateway.TOR_SERVICE_DIR, TorServiceGateway.LEGACY_DATA_DIR).forEach {
+                context.getDir(it, Context.MODE_PRIVATE).deleteRecursively()
+            }
         }.onFailure { Timber.w(it, "Failed clearing Tor data") }
 
         runCatching {

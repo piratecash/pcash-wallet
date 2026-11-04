@@ -9,7 +9,6 @@ import io.horizontalsystems.core.logger.AppLogger
 import cash.p.terminal.core.ITorManager
 import io.horizontalsystems.core.IPinComponent
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx2.await
 
 class SecurityTorSettingsViewModel(
     private val torManager: ITorManager,
@@ -40,11 +39,12 @@ class SecurityTorSettingsViewModel(
             torManager.setTorAsDisabled()
             viewModelScope.launch {
                 try {
-                    torManager.stop().await()
-                    pinComponent.updateLastExitDateBeforeRestart()
-                    restartApp = true
+                    torManager.stop()
                 } catch (e: Throwable) {
                     logger.warning("Tor exception", e)
+                } finally {
+                    pinComponent.updateLastExitDateBeforeRestart()
+                    restartApp = true
                 }
             }
         }

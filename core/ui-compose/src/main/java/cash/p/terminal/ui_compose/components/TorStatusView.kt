@@ -16,7 +16,6 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,14 +27,19 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.toUpperCase
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cash.p.terminal.manager.ITorConnectionStatusUseCase
 import cash.p.terminal.manager.ITorConnectionStatusUseCase.RestartResult
 import cash.p.terminal.manager.TorViewState
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.TorPage_ConnectingProgress
 import cash.p.terminal.ui_compose.R
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource as cmpStringResource
 import org.koin.compose.koinInject
 
 @Composable
@@ -44,8 +48,8 @@ internal actual fun TorStatusView(
 ) {
     val torConnectionUseCase: ITorConnectionStatusUseCase = koinInject()
 
-    val torViewState by torConnectionUseCase.torViewState.collectAsState(
-        initial = TorViewState(
+    val torViewState by torConnectionUseCase.torViewState.collectAsStateWithLifecycle(
+        initialValue = TorViewState(
             stateText = R.string.TorPage_Connecting,
             showRetryButton = false,
             torIsActive = false,
@@ -109,17 +113,7 @@ internal actual fun TorStatusView(
                     .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = stringResource(torViewState.stateText),
-                    maxLines = 1,
-                    modifier = Modifier.weight(1f),
-                    style = ComposeAppTheme.typography.subhead2,
-                    color = if (torViewState.showRetryButton) {
-                        ComposeAppTheme.colors.statusError
-                    } else {
-                        ComposeAppTheme.colors.textPrimary
-                    },
-                )
+                TorStateText(torViewState, Modifier.weight(1f))
 
                 if (torViewState.showRetryButton) {
                     ButtonSecondaryTransparent(
@@ -154,5 +148,41 @@ internal actual fun TorStatusView(
         if (torViewState.torIsActive) {
             showNetworkError = false
         }
+    }
+}
+
+@Composable
+private fun TorStateText(viewState: TorViewState, modifier: Modifier = Modifier) {
+    val progress = viewState.bootstrapProgress
+    Text(
+        text = if (progress != null) {
+            cmpStringResource(Res.string.TorPage_ConnectingProgress, progress)
+        } else {
+            stringResource(viewState.stateText)
+        },
+        maxLines = 1,
+        modifier = modifier,
+        style = ComposeAppTheme.typography.subhead2,
+        color = if (viewState.showRetryButton) {
+            ComposeAppTheme.colors.statusError
+        } else {
+            ComposeAppTheme.colors.textPrimary
+        },
+    )
+}
+
+@Preview
+@Composable
+private fun TorStateTextProgressPreview() {
+    ComposeAppTheme {
+        TorStateText(
+            TorViewState(
+                stateText = R.string.TorPage_Connecting,
+                showRetryButton = false,
+                torIsActive = false,
+                showNetworkConnectionError = false,
+                bootstrapProgress = 45,
+            )
+        )
     }
 }
