@@ -6,6 +6,8 @@ import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.HardwarePublicKey
 import cash.p.terminal.wallet.entities.HardwarePublicKeyType
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.TonAsset
+import cash.p.terminal.wallet.entities.tonAsset
 import cash.p.terminal.wallet.policy.HardwareWalletTokenPolicy
 import cash.p.terminal.wallet.transaction.TransactionSource
 import io.horizontalsystems.core.entities.Blockchain
@@ -27,8 +29,9 @@ data class Wallet internal constructor(
     val decimal
         get() = token.decimals
 
+    /** A watched TON address may be any wallet version, so its native coin shows no version badge. */
     val badge
-        get() = token.badge
+        get() = if (account.type is AccountType.TonAddress && token.tonAsset is TonAsset.Native) null else token.badge
 
     val transactionSource get() = TransactionSource(token.blockchain, account, token.type.meta)
 

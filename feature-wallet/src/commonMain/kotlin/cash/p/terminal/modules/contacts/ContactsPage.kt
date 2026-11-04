@@ -15,6 +15,8 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpFrom
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.navigation.viewModelStoreOwnerForPage
 import cash.p.terminal.wallet.MarketKitWrapper
 import io.horizontalsystems.core.common.CommonParcelable
@@ -127,6 +129,10 @@ private fun ContactContent(
     newAddress: ContactAddress?,
 ) {
     val viewModel = koinViewModel<ContactViewModel> { parametersOf(contact, newAddress) }
+    val addressEditor = navigation.rememberResultLauncher<ContactAddressResult> { result ->
+        result.addedAddress?.let(viewModel::setAddress)
+        result.deletedAddress?.let(viewModel::deleteAddress)
+    }
     ContactScreen(
         viewModel = viewModel,
         onNavigateToBack = {
@@ -137,16 +143,13 @@ private fun ContactContent(
             }
         },
         onNavigateToAddress = { address ->
-            navigation.slideFromRightForResult<ContactAddressResult>(
+            addressEditor.slideFromRight(
                 ContactAddressPage(
                     contactUid = viewModel.contact.uid,
                     contactAddress = address,
                     definedAddresses = viewModel.uiState.addressViewItems.map { it.contactAddress },
                 )
-            ) { result ->
-                result.addedAddress?.let(viewModel::setAddress)
-                result.deletedAddress?.let(viewModel::deleteAddress)
-            }
+            )
         }
     )
 }

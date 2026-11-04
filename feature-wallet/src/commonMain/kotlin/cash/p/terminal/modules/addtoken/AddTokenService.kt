@@ -4,12 +4,20 @@ import cash.p.terminal.core.ICoinManager
 import cash.p.terminal.core.managers.EvmSyncSourceManager
 import cash.p.terminal.core.managers.UserDeletedWalletManager
 import cash.p.terminal.core.order
+import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.WalletFactory
+import cash.p.terminal.wallet.customCoinUid
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.TonAsset
+import cash.p.terminal.wallet.entities.TonWalletVersion
+import cash.p.terminal.wallet.entities.tokenQuery
+import cash.p.terminal.wallet.entities.tonAsset
+import cash.p.terminal.wallet.entities.withVersion
 import cash.p.terminal.wallet.useCases.GetHardwarePublicKeyForWalletUseCase
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
@@ -91,17 +99,32 @@ class AddTokenService(
     suspend fun addToken(token: TokenInfo) = withContext(Dispatchers.IO) {
         val account = accountManager.activeAccount ?: return@withContext
 
+        val tokens = listOfNotNull(token.token, tonW5Twin(token.token))
+        val wallets = tokens.mapNotNull { createWallet(account, it) }
+        if (wallets.isNotEmpty()) walletManager.save(wallets)
+    }
+
+    private suspend fun createWallet(account: Account, token: Token): Wallet? {
         // Clear deletion flag so previously deleted token can reappear
-        userDeletedWalletManager.unmarkAsDeleted(account.id, token.token.tokenQuery.id)
+        userDeletedWalletManager.unmarkAsDeleted(account.id, token.tokenQuery.id)
 
         val hardwarePublicKey = getHardwarePublicKeyForWalletUseCase(
                 account,
-                token.token.blockchainType,
-                token.token.type
+                token.blockchainType,
+                token.type
             )
-        walletFactory.create(token.token, account, hardwarePublicKey)?.let {
-            walletManager.save(listOf(it))
-        }
+        return walletFactory.create(token, account, hardwarePublicKey)
+    }
+
+    /** Each TON wallet version holds its own jetton wallets, so an account using W5 gets the jetton there too. */
+    private fun tonW5Twin(token: Token): Token? {
+        val jetton = (token.tonAsset as? TonAsset.Jetton)?.takeIf { it.version == TonWalletVersion.V4R2 } ?: return null
+        val usesW5 = walletManager.activeWallets.any { it.token.tonAsset == TonAsset.Native(TonWalletVersion.W5) }
+        if (!usesW5) return null
+
+        val twinQuery = jetton.withVersion(TonWalletVersion.W5).tokenQuery
+        return coinManager.getToken(twinQuery)
+            ?: token.copy(coin = token.coin.copy(uid = twinQuery.customCoinUid), type = twinQuery.tokenType)
     }
 
     sealed class TokenError : Exception() {

@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.core.adapters.zcash.ZcashPrivateKeyType
-import cash.p.terminal.feature.wallet.authorizeSecretAction
+import cash.p.terminal.feature.wallet.rememberSecretAction
 import cash.p.terminal.modules.manageaccount.generalprivatekey.GeneralPrivateKeyPage
 import cash.p.terminal.modules.manageaccount.zcashkeys.ZcashKeysScreen
 import cash.p.terminal.modules.manageaccount.zcashkeys.ZcashKeysViewModel
@@ -73,12 +73,11 @@ internal class ZcashKeysPage(private val account: Account) : HSPage() {
             if (uiState.closeScreen) navigation.navigateUpFrom(this@ZcashKeysPage)
         }
         PageResumeEffect(onResume = {}, onPause = viewModel::cancelReveal)
+        val reveal = navigation.rememberSecretAction<ZcashPrivateKeyType>(viewModel::reveal)
 
         ZcashKeysScreen(
             uiState = uiState,
-            onReveal = { type ->
-                navigation.authorizeSecretAction { viewModel.reveal(type) }
-            },
+            onReveal = reveal,
             onShowKey = {
                 uiState.revealed?.let { revealed ->
                     val title = when (revealed.type) {
@@ -104,6 +103,7 @@ fun ManageAccountScreen(
     onZcashKeysClick: () -> Unit,
 ) {
     val viewModel = koinViewModel<PrivateKeysViewModel> { parametersOf(account) }
+    val openAuthorized = navigation.rememberSecretAction<HSPage>(navigation::slideFromRight)
 
     Scaffold(
         containerColor = ComposeAppTheme.colors.backgroundBase,
@@ -127,11 +127,7 @@ fun ManageAccountScreen(
                     title = stringResource(Res.string.PrivateKeys_EvmPrivateKey),
                     description = stringResource(Res.string.PrivateKeys_EvmPrivateKeyDescription)
                 ) {
-                    navigation.authorizeSecretAction {
-                        navigation.slideFromRight(
-                            EvmPrivateKeyPage(EvmPrivateKeyPage.Input(key))
-                        )
-                    }
+                    openAuthorized(EvmPrivateKeyPage(EvmPrivateKeyPage.Input(key)))
                 }
             }
             viewModel.viewState.stellarSecretKey?.let { key ->
@@ -139,11 +135,7 @@ fun ManageAccountScreen(
                     title = stringResource(Res.string.PrivateKeys_StellarSecretKey),
                     description = stringResource(Res.string.PrivateKeys_StellarSecretKeyDescription)
                 ) {
-                    navigation.authorizeSecretAction {
-                        navigation.slideFromRight(
-                            StellarSecretKeyPage(StellarSecretKeyPage.Input(key))
-                        )
-                    }
+                    openAuthorized(StellarSecretKeyPage(StellarSecretKeyPage.Input(key)))
                 }
             }
             viewModel.viewState.bip32RootKey?.let { key ->
@@ -151,16 +143,7 @@ fun ManageAccountScreen(
                     title = stringResource(Res.string.PrivateKeys_Bip32RootKey),
                     description = stringResource(Res.string.PrivateKeys_Bip32RootKeyDescription),
                 ) {
-                    navigation.authorizeSecretAction {
-                        navigation.slideFromRight(
-                            ShowExtendedKeyPage(
-                                ShowExtendedKeyPage.Input(
-                                    key.hdKey,
-                                    key.displayKeyType
-                                )
-                            )
-                        )
-                    }
+                    openAuthorized(ShowExtendedKeyPage(ShowExtendedKeyPage.Input(key.hdKey, key.displayKeyType)))
                 }
             }
             viewModel.viewState.accountExtendedPrivateKey?.let { key ->
@@ -168,11 +151,7 @@ fun ManageAccountScreen(
                     title = stringResource(Res.string.PrivateKeys_AccountExtendedPrivateKey),
                     description = stringResource(Res.string.PrivateKeys_AccountExtendedPrivateKeyDescription),
                 ) {
-                    navigation.authorizeSecretAction {
-                        navigation.slideFromRight(
-                            ShowExtendedKeyPage(ShowExtendedKeyPage.Input(key.hdKey, key.displayKeyType))
-                        )
-                    }
+                    openAuthorized(ShowExtendedKeyPage(ShowExtendedKeyPage.Input(key.hdKey, key.displayKeyType)))
                 }
             }
             if (viewModel.viewState.hasZcashKeys) {

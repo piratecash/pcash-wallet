@@ -52,8 +52,8 @@ class BlockchainTokensViewModel(
             allowEmpty = request.allowEmpty,
             viewItems = request.tokens.map { token ->
                 BottomSheetSelectorViewItem(
-                    title = token.type.title.ifEmpty { token.coin.name },
-                    subtitle = token.type.description.ifEmpty { token.blockchainType.title },
+                    title = token.title.ifEmpty { token.coin.name },
+                    subtitle = token.description.ifEmpty { token.blockchainType.title },
                 )
             }
         )

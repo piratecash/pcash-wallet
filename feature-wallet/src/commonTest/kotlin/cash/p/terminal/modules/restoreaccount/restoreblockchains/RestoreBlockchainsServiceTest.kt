@@ -59,6 +59,7 @@ class RestoreBlockchainsServiceTest : KoinTest {
 
     private val account = account()
     private val zcashTokens = zcashTokens()
+    private val tonTokens = tonTokens()
 
     // Unconfined dispatcher makes the service subscribe to the settings observable inside its
     // constructor, so emissions below are never dropped by the PublishSubject.
@@ -130,11 +131,23 @@ class RestoreBlockchainsServiceTest : KoinTest {
         )
     }
 
+    @Test
+    fun enable_ton_offersBothVersionsAndPreselectsOnlyV4R2() {
+        val service = service()
+        val request = blockchainTokensService.requestObservable.test()
+
+        service.enable(tonTokens.first().blockchain)
+
+        val shown = request.values().single()
+        assertEquals(listOf(TokenType.Native, TokenType.TonW5Native), shown.tokens.map { it.type })
+        assertEquals(listOf(TokenType.Native), shown.enabledTokens.map { it.type })
+    }
+
     private fun service(): RestoreBlockchainsService {
         every { restoreSettingsService.approveSettingsObservable } returns approveSettingsSubject
         every { restoreSettingsService.rejectApproveSettingsObservable } returns rejectSettingsSubject
         every { marketKit.tokens(any<List<TokenQuery>>()) } answers {
-            zcashTokens.filter { it.tokenQuery in firstArg<List<TokenQuery>>() }
+            (zcashTokens + tonTokens.reversed()).filter { it.tokenQuery in firstArg<List<TokenQuery>>() }
         }
         every {
             accountFactory.account(
@@ -177,6 +190,14 @@ class RestoreBlockchainsServiceTest : KoinTest {
                 type = TokenType.AddressSpecTyped(it),
                 decimals = 8
             )
+        }
+    }
+
+    private fun tonTokens(): List<Token> {
+        val coin = Coin(uid = "the-open-network", name = "Toncoin", code = "TON")
+        val blockchain = Blockchain(BlockchainType.Ton, "TON", null)
+        return listOf(TokenType.Native, TokenType.TonW5Native).map {
+            Token(coin = coin, blockchain = blockchain, type = it, decimals = 9)
         }
     }
 

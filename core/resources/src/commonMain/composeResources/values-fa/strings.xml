@@ -403,7 +403,7 @@
     <string name="SendNft_Title">ارسال</string>
     <string name="SendNft_Error_NotEnoughtBalance">Not Enough Balance</string>
     <!--Send-->
-    <string name="Send_Title">ارسال %s</string>
+    <string name="Send_Title">ارسال %1$s</string>
     <string name="Send_Hint_Address">آدرس یا دامنه</string>
     <string name="Send_Fee">هزينه</string>
     <string name="Send_Fee_Info">Blockchains require users to pay network fees when sending transactions. The fees are higher when a lot of transactions are taking place on the network.</string>
@@ -437,7 +437,7 @@
     <string name="ScanQr_CameraPermissionDeniedText">Access to your camera for this app was denied, you can go to settings and allow access</string>
     <string name="ScanQr_GoToSettings">برو به تنظیمات</string>
     <string name="scan_qr_camera_initialization_failed">دوربین در دسترس نیست. لطفاً دوباره امتحان کنید یا از دستگاه دیگری استفاده کنید.</string>
-    <string name="qr_scanner_title_address">آدرس %s</string>
+    <string name="qr_scanner_title_address">آدرس %1$s</string>
     <string name="qr_scanner_title_smart_scan">اسکن هوشمند</string>
     <string name="choose_from_photos">انتخاب از عکس‌ها</string>
     <string name="image_decode_failed">خواندن کد QR از تصویر انتخاب‌شده امکان‌پذیر نبود</string>
@@ -508,23 +508,23 @@
     <string name="FeeInfo_TronResourcesConsumed_Description">Bandwidth is the unit that measures the size of the transaction bytes stored in the blockchain database. The larger the transaction, the more bandwidth resources will be consumed.\n\nEnergy is the unit that measures the amount of computation required by the TRON virtual machine to perform specific operations on the TRON network.\n\nSince smart contract transactions require computing resources to execute, each smart contract transaction requires to pay for the energy fee.</string>
 
     <!--Network Fee Warning-->
-    <string name="network_fee_warning_title">کارمزد شبکه %s</string>
+    <string name="network_fee_warning_title">کارمزد شبکه %1$s</string>
     <string name="token_balance_need_native_coin_title">برای استفاده از %2$s به %1$s نیاز دارید</string>
     <string name="token_balance_need_native_coin_body">%2$s روی %3$s اجرا می‌شود.\nکارمزد شبکه با %1$s پرداخت می‌شود.\nموجودی %1$s شما: %4$s</string>
     <string name="network_fee_warning_body_protocol">پروتکل شبکه %1$s مقرر می‌کند که حداقل %2$s برای پرداخت کارمزد شبکه این تراکنش لازم است.</string>
-    <string name="network_fee_warning_body_balance">موجودی شما کمتر از %s است.</string>
-    <string name="network_fee_warning_body_protocol_bold">حداقل %s</string>
-    <string name="network_fee_warning_body_balance_bold">کمتر از %s</string>
+    <string name="network_fee_warning_body_balance">موجودی شما کمتر از %1$s است.</string>
+    <string name="network_fee_warning_body_protocol_bold">حداقل %1$s</string>
+    <string name="network_fee_warning_body_balance_bold">کمتر از %1$s</string>
     <string name="network_fee_warning_body_case_not_completed_prefix">اما </string>
     <string name="network_fee_warning_body_case_not_sent_prefix">و </string>
     <string name="network_fee_warning_body_risk">با این موجودی، خطر آن وجود دارد که کارمزد واقعی بیشتر از حد انتظار باشد.</string>
     <string name="network_fee_warning_body_risk_bold">بیشتر از حد انتظار</string>
     <string name="network_fee_warning_body_case_intro">در این صورت:</string>
-    <string name="network_fee_warning_body_case_debited">%s از موجودی شما کسر خواهد شد،</string>
+    <string name="network_fee_warning_body_case_debited">%1$s از موجودی شما کسر خواهد شد،</string>
     <string name="network_fee_warning_body_case_not_completed">ممکن است تراکنش تکمیل نشود،</string>
     <string name="network_fee_warning_body_case_not_sent">سکه‌ها به گیرنده ارسال نخواهند شد.</string>
     <string name="network_fee_warning_body_confirm_intro">با ادامه دادن، شما تایید می‌کنید که:</string>
-    <string name="network_fee_warning_body_confirm_understand">جزئیات نحوه عملکرد شبکه %s را درک می‌کنید،</string>
+    <string name="network_fee_warning_body_confirm_understand">جزئیات نحوه عملکرد شبکه %1$s را درک می‌کنید،</string>
     <string name="network_fee_warning_body_confirm_risk">از خطر از دست دادن کارمزد آگاه هستید،</string>
     <string name="network_fee_warning_body_confirm_accept">عواقب احتمالی یک تراکنش ناموفق را می‌پذیرید.</string>
     <string name="network_fee_warning_points_header">موارد قابل پذیرش:</string>
@@ -544,6 +544,9 @@
     <string name="TonConnect_Unnamed">بدون نام</string>
     <string name="TonConnect_Wallet">کیف پول</string>
     <string name="TonConnect_ChooseWallet">انتخاب کیف پول</string>
+    <string name="ton_wallet_version_v4r2_description">آدرس کیف پول TON نسخه v4R2. به‌طور پیش‌فرض استفاده می‌شود.</string>
+    <string name="ton_wallet_version_w5_description">کیف پول TON نسخه W5. آدرس و موجودی جدا از همان عبارت.</string>
+    <string name="tonconnect_wallet_version">نسخه کیف پول</string>
     <string name="manifest_loading">در حال بارگذاری مانیفست…</string>
     <string name="account_not_supported_by">نوع کیف پول فعلی شما %1$s از %2$s پشتیبانی نمی‌کند</string>
     <!--WalletConnect-->
@@ -575,12 +578,7 @@
     <string name="connect">اتصال</string>
     <string name="connect_trezor_to_add_message">برای افزودن توکن‌ها باید Trezor را متصل کنید</string>
     <string name="WalletConnect_Unnamed">بدون نام</string>
-    <string name="WalletConnect_Pairings">جفت‌سازی‌ها</string>
-    <string name="WalletConnect_PairedDApps">dAppهای جفت‌شده</string>
     <string name="delete_all">حذف همه</string>
-    <string name="WalletConnect_Pairings_ConfirmationDeleteAll">آیا می‌خواهید همه dAppهای جفت‌شده را حذف کنید؟</string>
-    <string name="WalletConnect_Pairings_Delete">حذف</string>
-    <string name="WalletConnect_DeleteAllPairs">حذف همه جفت‌سازی‌ها</string>
 
     <!--EthereumTransaction-->
     <string name="EthereumTransaction_Warning_Title">هشدار</string>
@@ -604,8 +602,8 @@
     <string name="Swap_Allowance">کمک هزینه</string>
     <string name="Swap_Price">قیمت</string>
     <string name="Swap_AvailableBalance">موجودی در دسترس</string>
-    <string name="swap_insufficient_fee_balance">موجودی فعلی %s کمتر از مبلغ مورد نیاز برای پردازش این تراکنش، شامل کارمزد تراکنش، است.</string>
-    <string name="fee_warning_low_balance">موجودی کمتر از حد لازم است. ممکن است تا %s کارمزد پرداخت کنید.</string>
+    <string name="swap_insufficient_fee_balance">موجودی فعلی %1$s کمتر از مبلغ مورد نیاز برای پردازش این تراکنش، شامل کارمزد تراکنش، است.</string>
+    <string name="fee_warning_low_balance">موجودی کمتر از حد لازم است. ممکن است تا %1$s کارمزد پرداخت کنید.</string>
     <string name="swap_balance_for_fees">موجودی برای کارمزدها</string>
     <string name="fee">کارمزد</string>
     <string name="estimated_fee">کارمزد تخمینی</string>
@@ -618,7 +616,7 @@
     <string name="Swap_ErrorNoProviders">ارائه‌دهنده‌ای موجود نیست</string>
     <string name="Swap_ErrorNoQuote">No Quote</string>
     <string name="Swap_ErrorInsufficientBalance">موجودی ناکافی</string>
-    <string name="swap_out_of_min_amount">کمتر از حداقل مبلغ %s</string>
+    <string name="swap_out_of_min_amount">کمتر از حداقل مبلغ %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">تأثیر بالای قیمت</string>
     <string name="Swap_ErrorWalletSyncing">کیف پول در حال همگام‌سازی است</string>
     <string name="Swap_ErrorWalletNotSynced">کیف پول همگام‌سازی نشده</string>
@@ -645,7 +643,7 @@
     <string name="Swap_YouPay">شما می پردازید</string>
     <string name="Swap_YouGet">شما دریافت می کنید</string>
     <string name="Swap_Confirm_Title">تاييد</string>
-    <string name="SwapConfirm_QuoteExpiresIn">قیمت پیشنهادی در %d منقضی می‌شود</string>
+    <string name="SwapConfirm_QuoteExpiresIn">قیمت پیشنهادی در %1$d منقضی می‌شود</string>
     <string name="SwapConfirm_QuoteExpired">قیمت پیشنهادی منقضی شده است</string>
     <string name="SwapConfirm_QuoteIsInvalid">قیمت پیشنهادی نامعتبر است</string>
     <string name="SwapConfirm_FetchingFinalQuote">Fetching final quote</string>
@@ -684,7 +682,7 @@
     <string name="swap_no_providers_for_this_amount">هیچ ارائه‌دهنده‌ای برای این مبلغ وجود ندارد</string>
 
     <!--Approve-->
-    <string name="Approve_RevokeAndApproveInfo">You can exchange %s, or you need to revoke and approve the new amount</string>
+    <string name="Approve_RevokeAndApproveInfo">You can exchange %1$s, or you need to revoke and approve the new amount</string>
     <string name="Approve_Spender">خرج کننده</string>
     <string name="Approve_YouApprove">شما تایید کردید</string>
     <string name="Approve_YouRevoke">You Revoke</string>
@@ -776,6 +774,8 @@
     <string name="TransactionInfo_AnnouncedAmount">مبلغ اعلام شده</string>
     <string name="transaction_info_executed_amount">مبلغ اجرا شده</string>
     <string name="TransactionInfo_PriceImpact">تأثیر قیمت</string>
+    <string name="swap_duration">مدت جایگزینی</string>
+    <string name="swap_duration_approximate">~%1$s</string>
     <string name="TransactionInfo_ExecutedRate">نرخ اجرا شده</string>
     <string name="TransactionInfo_Fee">قیمت</string>
     <string name="TransactionInfo_FeeEstimated">قیمت (تخمینی)</string>
@@ -1078,6 +1078,7 @@
     <string name="offline_transaction_signed_transaction_unavailable">تراکنش امضاشده دیگر در دسترس نیست. دوباره آن را امضا کنید.</string>
     <string name="offline_broadcast_title">ارسال RAW TX</string>
     <string name="offline_broadcast_import_file">وارد کردن فایل تراکنش</string>
+    <string name="offline_broadcast_input_hint">یک تراکنش امضاشده RAW یا P.cash را جای‌گذاری کنید</string>
     <string name="offline_broadcast_file_read_failed">خواندن فایل تراکنش ممکن نشد. فایل را بررسی و دوباره تلاش کنید.</string>
     <string name="offline_broadcast_invalid_input">تراکنش شناسایی نشد. قالب را بررسی کنید و دوباره تلاش کنید.</string>
     <string name="offline_broadcast_check_title">بررسی تراکنش</string>
@@ -2080,8 +2081,9 @@
     <string name="image_saved_to_gallery">تصویر در گالری ذخیره شد</string>
     <string name="auth_detail_save_failed">ذخیره تصویر ناموفق بود</string>
     <string name="auth_info_no_records">هنوز رکوردی از مجوزها ثبت نشده است</string>
-    <string name="send_sms_via_zec_title">ارسال پیامک از طریق ZEC</string>
-    <string name="send_sms_via_zec_info">این حالت به شما امکان می‌دهد به دوستان نزدیک یا وکیل خود اطلاع دهید که مجبور به باز کردن برنامه شده‌اید. این حالت در صورتی کار می‌کند که ZEC در کیف پول خود داشته باشید. اگر ندارید، برنامه آن را اضافه خواهد کرد.</string>
+    <string name="send_sms_via_zec_title">اعلان ورود</string>
+    <string name="send_sms_enabled">ارسال اعلان</string>
+    <string name="send_sms_via_zec_info">به یک فرد مورد اعتماد اطلاع می‌دهد که شما مجبور به باز کردن برنامه شده‌اید.\n\nچه زمانی: فقط زمانی که برنامه با وارد کردن رمز حالت Duress باز قفل شود. ورود عادی، رمز اشتباه یا باز کردن قفل با بیومتریک چیزی ارسال نمی‌کند.\n\nچه چیزی: یک تراکنش 0.0001 ZEC (به‌علاوه کارمزد شبکه) از کیف پول انتخاب‌شده به آدرس محافظت‌شده (shielded) Zcash گیرنده، همراه با پیام شما در memo. این یک پیامک نیست: گیرنده پیام را در کیف پول Zcash خود می‌خواند و نیازی به شماره تلفن نیست.\n\nزمان رسیدن: به‌طور خودکار در پس‌زمینه بلافاصله پس از ورود ارسال می‌شود و معمولاً در عرض چند دقیقه به گیرنده می‌رسد؛ ممکن است کیف پول ابتدا نیاز به همگام‌سازی داشته باشد که می‌تواند بیشتر طول بکشد.\n\nهزینه: هر اعلان 0.0001 ZEC به‌علاوه کارمزد هزینه دارد. اگر کیف پول در آن لحظه ZEC کافی نداشته باشد، اعلان ارسال نمی‌شود و دوباره تلاش نمی‌شود — برای بررسی عملکرد از دکمه آزمایشی استفاده کنید.\n\nمی‌توانید اعلان‌ها را با کلید بالای این صفحه خاموش کنید.</string>
     <string name="send_sms_wallet_balance_hint">مطمئن شوید که مبلغ مورد نیاز در کیف پول انتخاب شده موجود است.</string>
     <string name="send_sms_syncing">در حال همگام‌سازی برای ارسال…</string>
     <string name="send_sms_test_success">پیام شما با موفقیت ارسال شد.</string>
@@ -2092,7 +2094,8 @@
     <string name="choose_wallet">انتخاب کیف پول</string>
     <string name="choose_wallet_none">هیچکدام</string>
     <string name="required_coins_for_transaction">سکه‌های مورد نیاز برای تراکنش</string>
-    <string name="test_sms">تست پیامک</string>
+    <string name="send_sms_address_hint">آدرس محافظت‌شده (shielded) Zcash (که با z یا u شروع می‌شود) کیف پول گیرنده را وارد کنید. پیام در کیف پول Zcash او نمایش داده می‌شود.</string>
+    <string name="test_sms">ارسال اعلان آزمایشی</string>
     <string name="no_zec_wallets_available">کیف پولی با توکن ZEC یافت نشد</string>
     <!-- Connect Mini App -->
     <string name="connect_mini_app_title">اتصال مینی اپلیکیشن</string>
@@ -2134,15 +2137,15 @@
     <string name="scan_card_to_add">اسکن کارت برای افزودن توکن</string>
     <!--Multi-Swap-->
     <string name="multi_swap_completed">مبادله انجام شد</string>
-    <string name="multi_swap_via">مبادله از طریق %s</string>
-    <string name="multi_swap_completed_via">انجام‌شده از طریق %s</string>
+    <string name="multi_swap_via">مبادله از طریق %1$s</string>
+    <string name="multi_swap_completed_via">انجام‌شده از طریق %1$s</string>
     <string name="multi_swap_no_providers">هیچ ارائه‌دهنده‌ای موجود نیست</string>
     <string name="multi_swap_finding_best_provider">جستجوی بهترین ارائه‌دهنده…</string>
     <string name="multi_swap_continue">ادامه مبادله</string>
     <string name="multi_swap_route_explanation">برای دریافت بهترین نرخ، از مسیری از طریق %2$s استفاده می‌شود. مبادله در دو مرحلهٔ پیاپی انجام می‌شود: ابتدا %1$s → %2$s، سپس %2$s → %3$s.</string>
     <string name="multi_swap_route_title">مسیر مبادله</string>
     <string name="multi_swap_execution_title">مبادله</string>
-    <string name="multi_swap_step">مرحلهٔ %d</string>
+    <string name="multi_swap_step">مرحلهٔ %1$d</string>
     <string name="multi_swap_understood_continue">متوجه شدم، ادامه</string>
     <string name="multi_swap_unfinished">مبادله ناتمام</string>
     <string name="multi_swap_unfinished_plural">مبادلات ناتمام (%d)</string>
@@ -2156,39 +2159,6 @@
     <string name="multi_swap_cancel_swap">لغو تبادل</string>
     <string name="multi_swap_cancel_swap_warning">اولین تبادل قبلاً انجام شده است. سکه‌های واسطه در کیف پول شما هستند و متعلق به شما باقی می‌مانند. فقط مرحله دوم تبادل لغو خواهد شد.</string>
     <string name="swap_leg_title">مبادله %d</string>
-    <!--PayCore-->
-    <string name="paycore_verify_phone">تأیید تلفن</string>
-    <string name="paycore_verifying">در حال تأیید…</string>
-    <string name="paycore_service_fee">کارمزد خدمات</string>
-    <string name="paycore_network">شبکه</string>
-    <string name="paycore_verification_title">PayCore</string>
-    <string name="paycore_verification_phone_placeholder">(___)___-__-__</string>
-    <string name="paycore_verification_continue">ادامه</string>
-    <string name="paycore_verification_processing">در حال پردازش…</string>
-    <string name="settings_contact_us_pcash_support">پشتیبانی P.Cash</string>
-    <string name="settings_contact_us_paycore_support">پشتیبانی Paycore</string>
-    <string name="paycore_verification_not_verified">شماره تأیید نشده است</string>
-    <string name="paycore_verification_pass_kyc">انجام KYC</string>
-    <string name="paycore_verification_verified_title">تأیید شما کامل شد</string>
-    <string name="paycore_verification_warning_title">هشدار</string>
-    <string name="paycore_verification_warning_text">انتقال وجوه فقط از حساب متعلق به شما، با شماره تلفن و هویت تأیید شده مجاز است.</string>
-    <string name="paycore_verification_warning_detail">انتقال از حساب‌های دیگر اعتبار نخواهد داشت، وجوه ارسالی از بین خواهد رفت!</string>
-    <string name="paycore_verification_back">بازگشت</string>
-    <string name="paycore_verification_error">ورود ناموفق بود. شماره تلفن را بررسی کنید و دوباره تلاش کنید.</string>
-    <string name="paycore_generic_error">انجام عملیات ناموفق بود. لطفاً بعداً دوباره تلاش کنید یا با پشتیبانی تماس بگیرید.</string>
-    <string name="paycore_verification_retry">تلاش مجدد</string>
-    <string name="paycore_verification_phone_label">شماره تلفن:</string>
-    <string name="paycore_verification_contact_support">بازیابی خودکار ناموفق بود. لطفاً با پشتیبانی تماس بگیرید.</string>
-    <string name="paycore_verification_support_line"><![CDATA[پشتیبانی فنی ۲۴/۷: <a href="mailto:support@paycore.pw">support@paycore.pw</a>, <a href="https://t.me/paycore_supp">@paycore_supp</a>]]></string>
-    <string name="paycore_service">سرویس</string>
-    <string name="paycore_support">پشتیبانی PayCore</string>
-    <string name="paycore_section_currency">ارز</string>
-    <string name="paycore_section_crypto">رمزارزها</string>
-    <string name="paycore_select_bank">انتخاب بانک</string>
-    <string name="paycore_select_bank_error">باز کردن انتخاب بانک ناموفق بود. لطفاً بعداً دوباره امتحان کنید.</string>
-    <string name="paycore_banks_unavailable">بانک‌ها موقتاً در دسترس نیستند. لطفاً بعداً دوباره امتحان کنید.</string>
-    <string name="paycore_delete_restricted_warning">این تراکنش قابل حذف نیست زیرا توسط یک سرویس شخص ثالث پردازش می‌شود.</string>
-    <string name="paycore_delete_to_complete_select_bank">برای تکمیل سواپ، یک بانک انتخاب کنید.</string>
     <string name="swap_provider_type_info_title">انواع ارائه‌دهندگان مبادله</string>
     <string name="swap_provider_type_info_description">برچسب‌های زیر نحوه عملکرد انواع مختلف ارائه‌دهندگان مبادله را توضیح می‌دهند. آن‌ها به شما کمک می‌کنند تا بفهمید مبادله چگونه انجام می‌شود و چه بررسی‌ها یا شرایط اضافی ممکن است اعمال شود.</string>
     <string name="swap_provider_type_auto_description">اجرای خودکار مبادله. اگر مبادله قابل تکمیل نباشد، معمولاً وجوه به‌طور خودکار و بدون نیاز به هیچ اقدامی از سوی کاربر بازگردانده می‌شوند.</string>
@@ -2316,7 +2286,6 @@
     <string name="beam_recovery_required_title">بازیابی لازم است</string>
     <string name="beam_recovery_required_description">بازنشانی خودکار برای محافظت از داده‌های کیف پول BEAM شما مسدود شده است. داده‌ها حفظ شده‌اند، اما دسترسی به کیف پول قبلی تضمین نمی‌شود. بازیابی با عبارت بازیابی باید یک کیف پول جداگانه ایجاد کند.</string>
     <string name="beam_offline_context_unavailable">زمینهٔ امضای آفلاین در دسترس نیست. ابتدا این کیف پول را آنلاین همگام‌سازی کنید.</string>
-    <string name="beam_wallet_state_stopped">کیف پول BEAM متوقف شد</string>
     <string name="beam_wallet_state_offline">کیف پول BEAM آفلاین است</string>
     <string name="beam_wallet_state_closed">کیف پول BEAM بسته شد</string>
     <string name="beam_wallet_operation_failed">عملیات کیف پول BEAM ناموفق بود</string>
@@ -2354,4 +2323,7 @@
     <string name="desktop_change_password_corrupted">فایل کلید آسیب دیده است: پس از قفل شدن برنامه نمی‌توانید وارد شوید. از هر عبارت بازیابی یک نسخه پشتیبان ذخیره کنید.</string>
     <string name="desktop_change_password_success">رمز عبور تغییر یافت</string>
     <string name="desktop_security_lock_now">اکنون قفل کن</string>
+    <string name="evm_node_request_failed">گره شبکه نتوانست درخواست را پردازش کند. دوباره تلاش کنید یا در تنظیمات بلاک‌چین منبع دیگری انتخاب کنید.\n\nپاسخ گره: %1$s</string>
+    <string name="desktop_transfer_password">رمز عبور پیش از ارسال</string>
+    <string name="desktop_transfer_password_description">پیش از هر ارسال، رمز عبور برنامه درخواست می‌شود تا اگر کسی هنگام باز بودن قفل برنامه به رایانهٔ شما دسترسی پیدا کند، دارایی‌هایتان محافظت شوند.</string>
 </resources>

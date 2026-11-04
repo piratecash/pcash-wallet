@@ -1,0 +1,142 @@
+package cash.p.terminal.modules.multiswap.sendtransaction
+
+import co.touchlab.kermit.Logger
+import cash.p.terminal.core.UnsupportedException
+import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceBeam
+import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceBitcoin
+import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceEvm
+import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceStellar
+import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceSolana
+import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceThorchain
+import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceTon
+import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceTron
+import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceMonero
+import cash.p.terminal.modules.multiswap.sendtransaction.services.SendTransactionServiceZCash
+import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.entities.TokenType
+import io.horizontalsystems.core.entities.BlockchainType
+import org.koin.java.KoinJavaComponent.inject
+import kotlin.getValue
+
+private val logger = Logger.withTag("SendTransactionServiceFactory")
+
+object SendTransactionServiceFactory {
+    fun create(token: Token): ISendTransactionService<*> = try {
+        logger.d { "create: $token" }
+        when (val tokenType = token.type) {
+            is TokenType.Derived -> {
+                when (token.blockchainType) {
+                    BlockchainType.Bitcoin -> {
+                        SendTransactionServiceBitcoin(token)
+                    }
+
+                    BlockchainType.Litecoin -> {
+                        SendTransactionServiceBitcoin(token)
+                    }
+
+                    else -> throw UnsupportedException("Unsupported token type: $tokenType")
+                }
+            }
+
+            is TokenType.AddressTyped -> {
+                if (token.blockchainType == BlockchainType.BitcoinCash) {
+                    SendTransactionServiceBitcoin(token)
+                } else throw UnsupportedException("Unsupported token type: $tokenType")
+            }
+
+            is TokenType.AddressSpecTyped -> {
+                if (token.blockchainType == BlockchainType.Zcash) {
+                    SendTransactionServiceZCash(token)
+                } else throw UnsupportedException("Unsupported token type: $tokenType")
+            }
+
+            TokenType.Mweb -> {
+                if (token.blockchainType == BlockchainType.Litecoin) {
+                    SendTransactionServiceBitcoin(token)
+                } else throw UnsupportedException("Unsupported token type: $tokenType")
+            }
+
+            TokenType.Native -> when (token.blockchainType) {
+                BlockchainType.Dash,
+                BlockchainType.Dogecoin,
+                BlockchainType.ECash -> {
+                    SendTransactionServiceBitcoin(token)
+                }
+
+                BlockchainType.Zcash -> {
+                    SendTransactionServiceZCash(token)
+                }
+
+                BlockchainType.Ethereum,
+                BlockchainType.BinanceSmartChain,
+                BlockchainType.Polygon,
+                BlockchainType.Avalanche,
+                BlockchainType.Optimism,
+                BlockchainType.Base,
+                BlockchainType.ZkSync,
+                BlockchainType.RobinhoodChain,
+                BlockchainType.Gnosis,
+                BlockchainType.Fantom,
+                BlockchainType.ArbitrumOne -> {
+                    SendTransactionServiceEvm(token)
+                }
+
+                BlockchainType.Solana -> {
+                    SendTransactionServiceSolana(token)
+                }
+
+                BlockchainType.Tron -> {
+                    SendTransactionServiceTron(token)
+                }
+
+                BlockchainType.Stellar -> stellarService(token)
+
+                BlockchainType.Ton -> {
+                    SendTransactionServiceTon(token)
+                }
+
+                BlockchainType.Monero -> {
+                    SendTransactionServiceMonero(token)
+                }
+
+                BlockchainType.Thorchain,
+                BlockchainType.Mayachain -> SendTransactionServiceThorchain(token)
+
+                BlockchainType.Beam -> {
+                    SendTransactionServiceBeam(token)
+                }
+
+                else -> throw UnsupportedException("Unsupported token type: $tokenType")
+            }
+
+            is TokenType.Eip20 -> {
+                if (token.blockchainType == BlockchainType.Tron) {
+                    SendTransactionServiceTron(token)
+                } else {
+                    SendTransactionServiceEvm(token)
+                }
+            }
+
+            is TokenType.Spl -> SendTransactionServiceSolana(token)
+            TokenType.TonW5Native,
+            is TokenType.Jetton,
+            is TokenType.TonW5Jetton -> SendTransactionServiceTon(token)
+            is TokenType.ThorchainAsset -> SendTransactionServiceThorchain(token)
+
+            is TokenType.Asset -> stellarService(token)
+
+            is TokenType.Trc10,
+            is TokenType.Unsupported -> throw UnsupportedException("Unsupported token type: $tokenType")
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        throw UnsupportedException(e.message ?: "")
+    }
+
+    private fun stellarService(token: Token): SendTransactionServiceStellar {
+        val accountManager: IAccountManager by inject(IAccountManager::class.java)
+        val activeAccount = accountManager.activeAccount ?: throw IllegalStateException("No active account")
+        return SendTransactionServiceStellar(account = activeAccount, token = token)
+    }
+}

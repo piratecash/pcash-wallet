@@ -8,7 +8,6 @@ import cash.p.terminal.core.managers.LanguageManager
 import cash.p.terminal.core.providers.AppConfigProvider
 import cash.p.terminal.modules.softwareupdate.AppUpdateChecker
 import cash.p.terminal.feature.logging.domain.usecase.LogLoginAttemptUseCase
-import cash.p.terminal.modules.paycore.PayCoreFeatureToggle
 import cash.p.terminal.shared.settings.CounterType
 import cash.p.terminal.shared.settings.MainSettingUiState
 import cash.p.terminal.modules.walletconnect.WCManager
@@ -38,7 +37,6 @@ class MainSettingsViewModel(
     appUpdateChecker: AppUpdateChecker,
     private val localStorage: ILocalStorage,
     private val logLoginAttemptUseCase: LogLoginAttemptUseCase,
-    private val payCoreFeatureToggle: PayCoreFeatureToggle,
 ) : ViewModelUiState<MainSettingUiState>() {
 
     val appVersion: String get() = systemInfoManager.appVersionDisplay
@@ -146,7 +144,6 @@ class MainSettingsViewModel(
             aboutAppShowAlert = !termsManager.allTermsAccepted,
             wcCounterType = wcCounterType,
             premiumSettingsShowAlert = premiumSettingsShowAlert,
-            isPayCoreEnabled = payCoreFeatureToggle.isEnabled()
         )
     }
 

@@ -42,6 +42,7 @@ class SwapProviderTransactionsStorage(
         token: Token,
         address: String,
         statusesExcluded: List<String>,
+        providersExcluded: List<SwapProvider>,
         limit: Int
     ) = dao.getAll(
         tokenQueryId = token.tokenQuery.id,
@@ -49,16 +50,19 @@ class SwapProviderTransactionsStorage(
         blockchainType = token.blockchainType.uid,
         address = address,
         statusesExcluded = statusesExcluded,
+        providersExcluded = providersExcluded,
         limit = limit
     )
 
     fun getAllUnfinishedByAccount(
         accountId: String,
         statusesExcluded: List<String>,
+        providersExcluded: List<SwapProvider>,
         limit: Int
     ) = dao.getAllUnfinishedByAccount(
         accountId = accountId,
         statusesExcluded = statusesExcluded,
+        providersExcluded = providersExcluded,
         limit = limit
     )
 
@@ -161,6 +165,9 @@ class SwapProviderTransactionsStorage(
 
     fun setIncomingRecordUid(date: Long, incomingRecordUid: String, amountOutReal: BigDecimal) =
         dao.setIncomingRecordUid(date, incomingRecordUid, amountOutReal)
+
+    fun syncReceivedAt(date: Long, incomingRecordUid: String, receivedAt: Long) =
+        dao.syncReceivedAt(date, incomingRecordUid, receivedAt)
 
     fun setOutgoingRecordUid(date: Long, outgoingRecordUid: String) =
         dao.setOutgoingRecordUid(date, outgoingRecordUid)

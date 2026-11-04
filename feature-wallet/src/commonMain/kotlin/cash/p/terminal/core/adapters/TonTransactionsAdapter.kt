@@ -15,7 +15,8 @@ import cash.p.terminal.modules.transactions.FilterTransactionType.Outgoing
 import cash.p.terminal.modules.transactions.FilterTransactionType.Swap
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.Token
-import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.TonAsset
+import cash.p.terminal.wallet.entities.tonAsset
 import io.horizontalsystems.tonkit.Address
 import io.horizontalsystems.tonkit.models.Tag
 import io.horizontalsystems.tonkit.models.TagQuery
@@ -65,17 +66,13 @@ class TonTransactionsAdapter(
         transactionType: FilterTransactionType,
         address: String?
     ): TagQuery {
-        var platform: Tag.Platform? = null
-        var jettonAddress: Address? = null
-
-        val tokenType = token?.type
-
-        if (tokenType == TokenType.Native) {
-            platform = Tag.Platform.Native
-        } else if (tokenType is TokenType.Jetton) {
-            platform = Tag.Platform.Jetton
-            jettonAddress = tryOrNull { Address.parse(tokenType.address) }
+        val tonAsset = token?.tonAsset
+        val platform = when (tonAsset) {
+            is TonAsset.Native -> Tag.Platform.Native
+            is TonAsset.Jetton -> Tag.Platform.Jetton
+            null -> null
         }
+        val jettonAddress = (tonAsset as? TonAsset.Jetton)?.let { tryOrNull { Address.parse(it.masterAddress) } }
 
         val tagType = when (transactionType) {
             All -> null

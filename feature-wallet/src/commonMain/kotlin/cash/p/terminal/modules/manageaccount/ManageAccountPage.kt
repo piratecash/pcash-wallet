@@ -10,7 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
-import cash.p.terminal.feature.wallet.authorizeSecretAction
+import cash.p.terminal.feature.wallet.rememberSecretAction
 import cash.p.terminal.modules.manageaccount.generalprivatekey.GeneralPrivateKeyPage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
@@ -44,6 +44,9 @@ class ManageAccountPage(val input: Input) : HSPage() {
 private fun ManageAccountContent(navigation: HSNavigation, input: ManageAccountPage.Input) {
     val hudMessenger = rememberHudMessenger()
     val coroutineScope = rememberCoroutineScope()
+    val openKey = navigation.rememberSecretAction<GeneralPrivateKeyPage.Input> {
+        navigation.slideFromRight(GeneralPrivateKeyPage(it))
+    }
     val lifecycleOwner = LocalLifecycleOwner.current
     val accountManager: IAccountManager by lazy { getKoinInstance<IAccountManager>() }
     val account = remember { accountManager.account(input.accountId) }
@@ -73,7 +76,7 @@ private fun ManageAccountContent(navigation: HSNavigation, input: ManageAccountP
         onActionClick = { action ->
             when (action) {
                 ManageAccountModule.KeyAction.ViewKey -> openMoneroKey(
-                    navigation = navigation,
+                    openKey = openKey,
                     hudMessenger = hudMessenger,
                     coroutineScope = coroutineScope,
                     key = viewModel.getMoneroViewKey(),
@@ -81,7 +84,7 @@ private fun ManageAccountContent(navigation: HSNavigation, input: ManageAccountP
                 )
 
                 ManageAccountModule.KeyAction.SpendKey -> openMoneroKey(
-                    navigation = navigation,
+                    openKey = openKey,
                     hudMessenger = hudMessenger,
                     coroutineScope = coroutineScope,
                     key = viewModel.getMoneroSpendKey(),
@@ -95,7 +98,7 @@ private fun ManageAccountContent(navigation: HSNavigation, input: ManageAccountP
 }
 
 private fun openMoneroKey(
-    navigation: HSNavigation,
+    openKey: (GeneralPrivateKeyPage.Input) -> Unit,
     hudMessenger: HudMessenger,
     coroutineScope: CoroutineScope,
     key: String?,
@@ -105,8 +108,5 @@ private fun openMoneroKey(
         hudMessenger.showError(getString(Res.string.monero_keys_unavailable))
         return@launch
     }
-    val title = getString(titleRes)
-    navigation.authorizeSecretAction {
-        navigation.slideFromRight(GeneralPrivateKeyPage(GeneralPrivateKeyPage.Input(key, title)))
-    }
+    openKey(GeneralPrivateKeyPage.Input(key, getString(titleRes)))
 }

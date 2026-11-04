@@ -82,14 +82,13 @@ android {
         compileSdk compile_sdk_version
         minSdkVersion min_sdk_version
         targetSdkVersion target_sdk_version
-        versionCode 260
-        versionName "1.0.260"
+        versionCode 261
+        versionName "1.1.261"
         buildConfigField "String", "GIT_HASH", "\"${getGitVersionSuffix()}\""
         buildConfigField "String", "GIT_BRANCH", "\"${gitBranchProvider.getOrElse("unknown")}\""
         // True only for the disposable baseline-profile generation build type (see baselinegen).
         buildConfigField "boolean", "BASELINE_PROFILE_MODE", "false"
         buildConfigField "boolean", "DIAGNOSTIC_LOGGING", "false"
-        buildConfigField "boolean", "PAYCORE_ENABLED", "true"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         ksp {
@@ -112,7 +111,6 @@ android {
         resValue "string", "appTwitterLink", "https://twitter.com/PirateCash_NET"
         resValue "string", "appTelegramLink", "https://t.me/pcash"
         resValue "string", "appRedditLink", "https://www.reddit.com/r/PirateCash/"
-        resValue "string", "payCoreSupportEmail", "support@paycore.pw"
         resValue "string", "walletConnectAppMetaDataName", "pcash"
         resValue "string", "walletConnectAppMetaDataUrl", "p.cash"
         resValue "string", "walletConnectAppMetaDataIcon", "https://raw.githubusercontent.com/piratecash/pcash-wallet-ios/master/UnstoppableWallet/UnstoppableWallet/AppIcon.xcassets/AppIcon.appiconset/p.cash_1024.png"
@@ -473,7 +471,7 @@ dependencies {
     implementation libs.resolution.java
 
     // Ethereum Name Service
-    implementation libs.web3j.core
+    implementation libs.web3j.crypto
 
     implementation libs.twitter.text
 
@@ -572,6 +570,13 @@ dependencies {
     implementation libs.google.play.app.update.ktx
 
     implementation libs.tangem.sdk
+
+    components {
+        // spongycastle's POM leaks junit 4.12 into runtime, which pins the androidTest classpath against androidx.test's 4.13.2.
+        withModule("com.madgag.spongycastle:prov") {
+            allVariants { withDependencies { removeAll { it.group == "junit" } } }
+        }
+    }
 }
 
 configurations.all {

@@ -31,9 +31,8 @@ import cash.p.terminal.core.Caution
 import cash.p.terminal.core.managers.FaqManager
 import cash.p.terminal.modules.contacts.screen.ConfirmationBottomSheet
 import cash.p.terminal.modules.evmfee.ButtonsGroupWithShade
-import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.navigateUpSafely
-import cash.p.terminal.navigation.openQrScanner
+import cash.p.terminal.navigation.rememberQrScannerLauncher
 import cash.p.terminal.modules.walletconnect.list.WalletConnectListModule
 import cash.p.terminal.modules.walletconnect.list.WalletConnectListUiState
 import cash.p.terminal.modules.walletconnect.list.WalletConnectListViewModel
@@ -60,7 +59,7 @@ fun WCSessionsScreen(
     val coroutineScope = rememberCoroutineScope()
 
     val viewModel = viewModel<WalletConnectListViewModel>(
-        factory = WalletConnectListModule.Factory()
+        factory = WalletConnectListModule.Factory(deepLinkUri)
     )
 
     val uiState by viewModel.uiState.collectAsState(initial = WalletConnectListUiState())
@@ -79,18 +78,12 @@ fun WCSessionsScreen(
         else -> Unit
     }
 
-    LaunchedEffect(Unit) {
-        if (deepLinkUri != null) {
-            viewModel.setConnectionUri(deepLinkUri)
-        }
-    }
-
     LifecycleEventEffect(event = Lifecycle.Event.ON_RESUME) {
         viewModel.refreshList()
     }
 
     val scannerTitle = stringResource(R.string.WalletConnect_Title)
-    val appPages: AppPages = koinInject()
+    val qrScanner = navigation.rememberQrScannerLauncher(koinInject(), viewModel::setConnectionUri)
 
     AppModalBottomSheetLayout(
         sheetState = invalidUrlBottomSheetState,
@@ -106,13 +99,7 @@ fun WCSessionsScreen(
                 onConfirm = {
                     coroutineScope.launch {
                         invalidUrlBottomSheetState.hide()
-                        navigation.openQrScanner(
-                            appPages = appPages,
-                            title = scannerTitle,
-                            showPasteButton = true
-                        ) { scannedText ->
-                            viewModel.setConnectionUri(scannedText)
-                        }
+                        qrScanner.open(scannerTitle, showPasteButton = true)
                     }
                 },
                 onClose = {
@@ -147,7 +134,7 @@ fun WCSessionsScreen(
                     .padding(innerPaddings)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    if (uiState.sessionViewItems.isEmpty() && uiState.pairingsNumber == 0) {
+                    if (uiState.sessionViewItems.isEmpty()) {
                         ListEmptyView(
                             text = stringResource(R.string.WalletConnect_NoConnection),
                             icon = R.drawable.ic_wallet_connet_48
@@ -165,15 +152,7 @@ fun WCSessionsScreen(
                             .padding(start = 16.dp, end = 16.dp)
                             .fillMaxWidth(),
                         title = stringResource(R.string.WalletConnect_NewConnect),
-                        onClick = {
-                            navigation.openQrScanner(
-                                appPages = appPages,
-                                title = scannerTitle,
-                                showPasteButton = true
-                            ) { scannedText ->
-                                viewModel.setConnectionUri(scannedText)
-                            }
-                        }
+                        onClick = { qrScanner.open(scannerTitle, showPasteButton = true) }
                     )
                 }
             }

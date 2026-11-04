@@ -27,7 +27,6 @@ import cash.p.terminal.resources.beam_sync_network_error
 import cash.p.terminal.resources.beam_wallet_operation_failed
 import cash.p.terminal.resources.beam_wallet_state_closed
 import cash.p.terminal.resources.beam_wallet_state_offline
-import cash.p.terminal.resources.beam_wallet_state_stopped
 import cash.p.terminal.resources.beam_wallet_stop_failed
 import io.horizontalsystems.core.Translator
 import cash.p.terminal.wallet.AdapterState
@@ -498,7 +497,8 @@ private fun BeamWalletState.toAdapterState(): AdapterState = when (this) {
     is BeamWalletState.Syncing -> syncing(currentHeight, targetHeight, syncDone, syncTotal)
     is BeamWalletState.Restoring -> progress.toAdapterState()
     BeamWalletState.Closed -> unavailable(Translator.getString(Res.string.beam_wallet_state_closed))
-    BeamWalletState.Stopped -> unavailable(Translator.getString(Res.string.beam_wallet_state_stopped))
+    // Every stop is planned; a failed start keeps its own error in observeSdkState.
+    BeamWalletState.Stopped -> AdapterState.Paused
     is BeamWalletState.Offline -> unavailable(Translator.getString(Res.string.beam_wallet_state_offline))
     is BeamWalletState.Error -> failure.toSafeAdapterState()
 }

@@ -216,6 +216,59 @@ class AddressUriParserTest {
         assertEquals("one+two", parsed.value<String>(AddressUri.Field.Message))
     }
     @Test
+    fun parse_tonNativeQr_acceptedOnNativeScreenOfEitherVersion() {
+        listOf(TokenType.Native, TokenType.TonW5Native).forEach { screenType ->
+            assertTrue(tonParse(screenType, TON_NATIVE_QR) is AddressUriResult.Uri)
+            assertTrue(tonParse(screenType, "ton://transfer/UQaddress?amount=1500000000") is AddressUriResult.Uri)
+        }
+    }
+
+    @Test
+    fun parse_tonJettonQr_acceptedOnlyOnSameJettonOfEitherVersion() {
+        listOf(TokenType.Jetton(MASTER), TokenType.TonW5Jetton(MASTER)).forEach { screenType ->
+            assertTrue(tonParse(screenType, TON_JETTON_QR) is AddressUriResult.Uri)
+        }
+        listOf(
+            TokenType.Jetton(OTHER_MASTER),
+            TokenType.TonW5Jetton(OTHER_MASTER),
+            TokenType.Native,
+            TokenType.TonW5Native,
+        ).forEach { screenType ->
+            assertTrue(tonParse(screenType, TON_JETTON_QR) is AddressUriResult.InvalidTokenType)
+        }
+    }
+
+    @Test
+    fun parse_tonNativeQr_rejectedOnJettonScreenOfEitherVersion() {
+        listOf(TokenType.Jetton(MASTER), TokenType.TonW5Jetton(MASTER)).forEach { screenType ->
+            assertTrue(tonParse(screenType, TON_NATIVE_QR) is AddressUriResult.InvalidTokenType)
+        }
+    }
+
+    @Test
+    fun parse_appGeneratedErc20Qr_acceptedOnlyOnThatTokenScreen() {
+        val qr = "ethereum:0xaddress?value=1&blockchain_uid=ethereum&token_uid=eip20:0xtoken"
+        val tokenScreen = AddressUriParser(BlockchainType.Ethereum, TokenType.Eip20("0xtoken"))
+
+        assertTrue(tokenScreen.parse(qr) is AddressUriResult.Uri)
+        assertTrue(parser(BlockchainType.Ethereum).parse(qr) is AddressUriResult.InvalidTokenType)
+    }
+
+    @Test
+    fun parse_mwebTokenUidOnLitecoinBip84Screen_returnsInvalidTokenType() {
+        val parser = AddressUriParser(BlockchainType.Litecoin, TokenType.Derived(TokenType.Derivation.Bip84))
+
+        assertTrue(parser.parse("litecoin:ltc1qaddress?amount=1&token_uid=mweb") is AddressUriResult.InvalidTokenType)
+    }
+
+    @Test
+    fun parse_uriWithoutTokenUidOnBitcoinDerivedScreen_accepted() {
+        val parser = AddressUriParser(BlockchainType.Bitcoin, TokenType.Derived(TokenType.Derivation.Bip84))
+
+        assertTrue(parser.parse("bitcoin:1address?amount=1") is AddressUriResult.Uri)
+    }
+
+    @Test
     fun parse_blockchainAndTokenUidMismatch_returnsCorrespondingError() {
         val parser = parser(BlockchainType.Bitcoin)
         assertTrue(parser.parse("bitcoin:1address?blockchain_uid=dash") is AddressUriResult.InvalidBlockchainType)
@@ -281,6 +334,17 @@ class AddressUriParserTest {
     }
 
     private fun parser(type: BlockchainType) = AddressUriParser(type, TokenType.Native)
+
+    private fun tonParse(screenType: TokenType, uri: String) =
+        AddressUriParser(BlockchainType.Ton, screenType).parse(uri)
+
+    private companion object {
+        const val MASTER = "EQmaster"
+        const val OTHER_MASTER = "EQother"
+        const val TON_NATIVE_QR = "toncoin:UQaddress?amount=1&blockchain_uid=the-open-network&token_uid=native"
+        const val TON_JETTON_QR =
+            "toncoin:UQaddress?amount=1&blockchain_uid=the-open-network&token_uid=the-open-network:$MASTER"
+    }
 
     private fun encodeMemo(bytes: ByteArray): String = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
 

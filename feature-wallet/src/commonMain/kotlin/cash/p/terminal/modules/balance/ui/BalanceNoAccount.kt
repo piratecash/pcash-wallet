@@ -23,12 +23,13 @@ import androidx.compose.ui.platform.testTag
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
-import cash.p.terminal.core.navigateWithTermsAccepted
+import cash.p.terminal.core.rememberTermsAcceptedAction
 import cash.p.terminal.modules.createaccount.CreateAccountPage
 import cash.p.terminal.feature.wallet.WalletPlatformPages
 import cash.p.terminal.modules.importwallet.ImportWalletPage
 import cash.p.terminal.modules.watchaddress.WatchAddressPage
 import cash.p.terminal.navigation.HSNavigation
+import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefault
 import cash.p.terminal.ui_compose.components.ButtonPrimaryTransparent
 import cash.p.terminal.ui_compose.components.ButtonPrimaryYellow
@@ -48,6 +49,7 @@ fun BalanceNoAccount(
 ) {
     val walletPlatformPages = koinInject<WalletPlatformPages>()
     val hardwareWalletAvailable = remember { walletPlatformPages.hardwareWallet(null) != null }
+    val openAfterTerms = navigation.rememberTermsAcceptedAction<HSPage>(navigation::slideFromRight)
     Column(
         modifier = Modifier
             .padding(bottom = paddingValuesParent.calculateBottomPadding())
@@ -79,11 +81,7 @@ fun BalanceNoAccount(
                 .padding(horizontal = 48.dp)
                 .testTag("onboarding_create_wallet"),
             title = stringResource(Res.string.ManageAccounts_CreateNewWallet),
-            onClick = {
-                navigation.navigateWithTermsAccepted {
-                    navigation.slideFromRight(CreateAccountPage(null))
-                }
-            }
+            onClick = { openAfterTerms(CreateAccountPage(null)) }
         )
         Spacer(modifier = Modifier.height(16.dp))
         ButtonPrimaryDefault(
@@ -91,11 +89,7 @@ fun BalanceNoAccount(
                 .fillMaxWidth()
                 .padding(horizontal = 48.dp),
             title = stringResource(Res.string.ManageAccounts_ImportWallet),
-            onClick = {
-                navigation.navigateWithTermsAccepted {
-                    navigation.slideFromRight(ImportWalletPage(null))
-                }
-            }
+            onClick = { openAfterTerms(ImportWalletPage(null)) }
         )
         if (hardwareWalletAvailable) {
             Spacer(modifier = Modifier.height(16.dp))
@@ -104,11 +98,7 @@ fun BalanceNoAccount(
                     .fillMaxWidth()
                     .padding(horizontal = 48.dp),
                 title = stringResource(Res.string.hardware_wallet),
-                onClick = {
-                    navigation.navigateWithTermsAccepted {
-                        walletPlatformPages.hardwareWallet(null)?.let { navigation.slideFromRight(it) }
-                    }
-                }
+                onClick = { walletPlatformPages.hardwareWallet(null)?.let(openAfterTerms) }
             )
         }
         Spacer(modifier = Modifier.height(16.dp))

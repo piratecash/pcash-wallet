@@ -27,6 +27,19 @@ internal class ConfirmPage : TestPage()
 internal class RiskyAddressSheet : TestSheet()
 internal class OptionsSheet : TestSheet()
 
+/** Remembers one launcher at its root and hands every delivered result to [onResult]. */
+internal class LauncherPage(
+    bottomSheet: Boolean = false,
+    private val onResult: (Any) -> Unit,
+) : HSPage(bottomSheet = bottomSheet) {
+    lateinit var launcher: ResultLauncher<Unit>
+
+    @Composable
+    override fun GetContent(navigation: HSNavigation) {
+        launcher = navigation.rememberResultLauncher<Any>(onResult)
+    }
+}
+
 /** Calls navigateUpSafely once [closeRequested] is set, like a state-driven close. */
 internal class SelfClosingPage(bottomSheet: Boolean = false) : HSPage(bottomSheet = bottomSheet) {
     var closeRequested by mutableStateOf(false)

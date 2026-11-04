@@ -184,7 +184,7 @@ class RestoreBlockchainsService(
             blockchainTokensService.approveTokens(
                 blockchain,
                 tokens,
-                tokens.filter { it.type.isDefault })
+                tokens.filter { it.isDefault })
         }
     }
 

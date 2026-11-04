@@ -62,7 +62,6 @@ class SettingsContentDesktopTest {
             aboutAppShowAlert = true,
             wcCounterType = CounterType.PendingRequestCounter(7),
             premiumSettingsShowAlert = true,
-            isPayCoreEnabled = true,
         )
     }
 }

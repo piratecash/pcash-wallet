@@ -49,6 +49,8 @@ class GetHardwarePublicKeyForWalletUseCaseTest {
         listOf(
             BlockchainType.Solana to TokenType.Spl("spl-mint"),
             BlockchainType.Ton to TokenType.Jetton("jetton-master"),
+            BlockchainType.Ton to TokenType.TonW5Native,
+            BlockchainType.Ton to TokenType.TonW5Jetton("jetton-master"),
             BlockchainType.Stellar to TokenType.Asset("USDC", "issuer"),
         ).forEach { (blockchainType, tokenType) ->
             val chainKey = key(blockchainType, TokenType.Native)

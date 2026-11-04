@@ -10,6 +10,13 @@ import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.ActiveAccountState
 import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.IWalletManager
+import cash.p.terminal.wallet.IEnabledWalletStorage
+import cash.p.terminal.wallet.entities.EnabledWallet
+import cash.p.terminal.wallet.entities.TokenQuery
+import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.TonWalletVersion
+import io.horizontalsystems.core.entities.BlockchainType
 import com.tonapps.wallet.data.tonconnect.entities.DAppManifestEntity
 import com.tonapps.wallet.data.tonconnect.entities.DAppPayloadEntity
 import com.tonapps.wallet.data.tonconnect.entities.DAppRequestEntity
@@ -22,6 +29,7 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
+import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -56,6 +64,8 @@ class TonConnectNewViewModelTest {
     private val tonConnectManager = mockk<TonConnectManager>(relaxed = true)
     private val hardwarePublicKeyStorage = mockk<HardwarePublicKeyStorage>(relaxed = true)
     private val accountManager = mockk<IAccountManager>(relaxed = true)
+    private val walletManager = mockk<IWalletManager>(relaxed = true)
+    private val enabledWalletStorage = mockk<IEnabledWalletStorage>(relaxed = true)
 
     @Before
     fun setUp() {
@@ -64,6 +74,8 @@ class TonConnectNewViewModelTest {
             tonConnectManager,
             hardwarePublicKeyStorage,
             accountManager,
+            walletManager,
+            enabledWalletStorage,
         )
 
         stopKoin()
@@ -72,12 +84,15 @@ class TonConnectNewViewModelTest {
                 module {
                     single { hardwarePublicKeyStorage }
                     single<IAccountManager> { accountManager }
+                    single<IWalletManager> { walletManager }
+                    single<IEnabledWalletStorage> { enabledWalletStorage }
                     single<DispatcherProvider> { testDispatcherProvider }
                 }
             )
         }
 
         coEvery { tonConnectManager.kit() } returns tonConnectKit
+        every { enabledWalletStorage.enabledWallets(any<String>()) } returns emptyList()
         request = requestStub("https://ton.dapp/manifest.json")
         mockkObject(TonConnectKit.Companion)
         every { TonConnectKit.readData(URI) } returns request
@@ -112,7 +127,7 @@ class TonConnectNewViewModelTest {
         setAccounts(listOf(tonAccount), tonAccount)
         mockkStatic("cash.p.terminal.core.managers.TonKitManagerKt")
         every {
-            any<Account>().toTonWalletFullAccess(any(), any())
+            any<Account>().toTonWalletFullAccess(any(), any(), any())
         } returns mockk(relaxed = true)
         coEvery { tonConnectKit.getManifest(request.payload.manifestUrl) } returns manifest()
 
@@ -233,7 +248,7 @@ class TonConnectNewViewModelTest {
         val manifest = manifest()
         mockkStatic("cash.p.terminal.core.managers.TonKitManagerKt")
         every {
-            any<Account>().toTonWalletFullAccess(any(), any())
+            any<Account>().toTonWalletFullAccess(any(), any(), any())
         } returns mockk(relaxed = true)
         coEvery { tonConnectKit.getManifest(request.payload.manifestUrl) } returns manifest
         coEvery { tonConnectKit.connect(any(), any(), any(), any()) } returns mockk(relaxed = true)
@@ -260,7 +275,7 @@ class TonConnectNewViewModelTest {
         val manifest = manifest()
         mockkStatic("cash.p.terminal.core.managers.TonKitManagerKt")
         every {
-            any<Account>().toTonWalletFullAccess(any(), any())
+            any<Account>().toTonWalletFullAccess(any(), any(), any())
         } returns mockk(relaxed = true)
         coEvery { tonConnectKit.getManifest(request.payload.manifestUrl) } returns manifest
         coEvery { tonConnectKit.connect(any(), any(), any(), any()) } coAnswers {
@@ -288,7 +303,7 @@ class TonConnectNewViewModelTest {
         val manifest = manifest()
         mockkStatic("cash.p.terminal.core.managers.TonKitManagerKt")
         every {
-            any<Account>().toTonWalletFullAccess(any(), any())
+            any<Account>().toTonWalletFullAccess(any(), any(), any())
         } returns mockk(relaxed = true)
         coEvery { tonConnectKit.getManifest(request.payload.manifestUrl) } returns manifest
         coEvery {
@@ -313,7 +328,7 @@ class TonConnectNewViewModelTest {
         val manifest = manifest()
         mockkStatic("cash.p.terminal.core.managers.TonKitManagerKt")
         every {
-            any<Account>().toTonWalletFullAccess(any(), any())
+            any<Account>().toTonWalletFullAccess(any(), any(), any())
         } returns mockk(relaxed = true)
         coEvery { tonConnectKit.getManifest(request.payload.manifestUrl) } returns manifest
         coEvery {
@@ -340,6 +355,96 @@ class TonConnectNewViewModelTest {
 
         assertNull(viewModel.uiState.toast)
     }
+
+    @Test
+    fun init_accountWithoutW5Wallet_hidesWalletVersionChoice() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-v4-only")
+        setAccounts(listOf(tonAccount), tonAccount)
+        every { enabledWalletStorage.enabledWallets(tonAccount.id) } returns
+            listOf(enabledWallet(TokenType.Jetton(MASTER)))
+
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.walletVersions.isEmpty())
+        assertEquals(TonWalletVersion.V4R2, viewModel.uiState.walletVersion)
+    }
+
+    @Test
+    fun init_accountWithW5JettonWallet_offersBothVersionsWithV4r2Selected() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-w5")
+        setAccounts(listOf(tonAccount), tonAccount)
+        every { enabledWalletStorage.enabledWallets(tonAccount.id) } returns
+            listOf(enabledWallet(TokenType.TonW5Jetton(MASTER)))
+
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
+        advanceUntilIdle()
+
+        assertEquals(listOf(TonWalletVersion.V4R2, TonWalletVersion.W5), viewModel.uiState.walletVersions)
+        assertEquals(TonWalletVersion.V4R2, viewModel.uiState.walletVersion)
+    }
+
+    @Test
+    fun onSelectAccount_previousAccountChoseW5_resetsToV4r2() = runTest(dispatcher) {
+        val w5Account = tonAccount("ton-w5-first")
+        val v4Account = tonAccount("ton-v4-second")
+        setAccounts(listOf(w5Account, v4Account), w5Account)
+        every { enabledWalletStorage.enabledWallets(w5Account.id) } returns
+            listOf(enabledWallet(TokenType.TonW5Native))
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
+        advanceUntilIdle()
+        viewModel.onSelectWalletVersion(TonWalletVersion.W5)
+
+        viewModel.onSelectAccount(v4Account)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.walletVersions.isEmpty())
+        assertEquals(TonWalletVersion.V4R2, viewModel.uiState.walletVersion)
+    }
+
+    @Test
+    fun onSelectAccount_nonActiveAccount_doesNotRebuildWalletManagerMap() = runTest(dispatcher) {
+        val active = tonAccount("ton-active")
+        val other = tonAccount("ton-other")
+        setAccounts(listOf(active, other), active)
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
+        advanceUntilIdle()
+
+        viewModel.onSelectAccount(other)
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { walletManager.getWallets(any()) }
+    }
+
+    @Test
+    fun connect_w5Selected_connectsW5WalletUnderW5WalletId() = runTest(dispatcher) {
+        val tonAccount = tonAccount("ton-connect-w5")
+        setAccounts(listOf(tonAccount), tonAccount)
+        every { enabledWalletStorage.enabledWallets(tonAccount.id) } returns
+            listOf(enabledWallet(TokenType.TonW5Native))
+        val manifest = manifest()
+        mockkStatic("cash.p.terminal.core.managers.TonKitManagerKt")
+        every {
+            any<Account>().toTonWalletFullAccess(any(), any(), any())
+        } returns mockk(relaxed = true)
+        coEvery { tonConnectKit.getManifest(request.payload.manifestUrl) } returns manifest
+        coEvery { tonConnectKit.connect(any(), any(), any(), any()) } returns mockk(relaxed = true)
+        val viewModel = TonConnectNewViewModel(URI, tonConnectManager)
+        advanceUntilIdle()
+
+        viewModel.onSelectWalletVersion(TonWalletVersion.W5)
+        viewModel.connect()
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { tonConnectKit.connect(request, manifest, "${tonAccount.id}-w5", any()) }
+        verify { tonAccount.toTonWalletFullAccess(TonWalletVersion.W5, any(), any()) }
+    }
+
+    private fun enabledWallet(type: TokenType) = EnabledWallet(
+        tokenQueryId = TokenQuery(BlockchainType.Ton, type).id,
+        accountId = "account",
+        coinImage = null,
+    )
 
     private fun setAccounts(accounts: List<Account>, active: Account?) {
         every { accountManager.accounts } returns accounts
@@ -485,5 +590,6 @@ class TonConnectNewViewModelTest {
     private companion object {
         const val URI = "tc://?v=2&id=request-id&r=%7B%7D"
         const val MALFORMED_URI = "tc://?v=2"
+        const val MASTER = "EQmaster"
     }
 }

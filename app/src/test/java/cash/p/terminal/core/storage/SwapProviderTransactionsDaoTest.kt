@@ -6,6 +6,7 @@ import androidx.test.core.app.ApplicationProvider
 import cash.p.terminal.entities.SwapProviderTransaction
 import cash.p.terminal.network.swaprepository.SwapProvider
 import io.horizontalsystems.core.entities.BlockchainType
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -145,6 +146,94 @@ class SwapProviderTransactionsDaoTest {
         assertNull(byAddressAndAmount(amount = 18159.2))
     }
 
+    @Test
+    fun syncReceivedAt_linkedRecord_writesTimestamp() = runTest {
+        dao.insert(linkedSwap(incomingRecordUid = INCOMING_UID))
+
+        dao.syncReceivedAt(date = 1_000L, incomingRecordUid = INCOMING_UID, receivedAt = 5_000L)
+
+        assertEquals(5_000L, dao.getByDate(1_000L)?.receivedAt)
+    }
+
+    @Test
+    fun syncReceivedAt_differentIncomingRecord_doesNotWrite() = runTest {
+        dao.insert(linkedSwap(incomingRecordUid = "other-uid"))
+
+        dao.syncReceivedAt(date = 1_000L, incomingRecordUid = INCOMING_UID, receivedAt = 5_000L)
+
+        assertNull(dao.getByDate(1_000L)?.receivedAt)
+    }
+
+    @Test
+    fun syncReceivedAt_changedTimestamp_overwrites() = runTest {
+        dao.insert(linkedSwap(incomingRecordUid = INCOMING_UID))
+        dao.syncReceivedAt(date = 1_000L, incomingRecordUid = INCOMING_UID, receivedAt = 5_000L)
+
+        dao.syncReceivedAt(date = 1_000L, incomingRecordUid = INCOMING_UID, receivedAt = 6_000L)
+
+        assertEquals(6_000L, dao.getByDate(1_000L)?.receivedAt)
+    }
+
+    @Test
+    fun observeAllByAccount_finishedPayCoreRow_isReturnedWithPayCoreProvider() = runTest {
+        dao.insert(swap(date = 1_000L, provider = SwapProvider.PAYCORE, coinUidIn = "rub"))
+
+        val row = dao.observeAllByAccount(ACCOUNT_ID, limit = 10).first().single()
+
+        assertEquals(SwapProvider.PAYCORE, row.provider)
+        assertEquals("rub", row.coinUidIn)
+    }
+
+    @Test
+    fun getByDate_finishedPayCoreRow_isReturnedWithPayCoreProvider() = runTest {
+        dao.insert(swap(date = 1_000L, provider = SwapProvider.PAYCORE, coinUidIn = "rub"))
+
+        assertEquals(SwapProvider.PAYCORE, dao.getByDate(1_000L)?.provider)
+    }
+
+    @Test
+    fun getAllUnfinishedByAccount_newerPayCoreRowsExcluded_olderLiveProviderRowStillReturned() = runTest {
+        insertPayCoreRowsNewerThanChangeNowRow()
+
+        val rows = dao.getAllUnfinishedByAccount(
+            accountId = ACCOUNT_ID,
+            statusesExcluded = SwapProviderTransaction.FINISHED_STATUSES,
+            providersExcluded = listOf(SwapProvider.PAYCORE),
+            limit = 10,
+        )
+
+        assertEquals(listOf(SwapProvider.CHANGENOW), rows.map { it.provider })
+    }
+
+    @Test
+    fun getAll_newerPayCoreRowsExcluded_olderLiveProviderRowStillReturned() = runTest {
+        insertPayCoreRowsNewerThanChangeNowRow()
+
+        val rows = dao.getAll(
+            tokenQueryId = "ethereum|native",
+            coinUid = "ethereum",
+            blockchainType = BlockchainType.Ethereum.uid,
+            address = "0xIn",
+            statusesExcluded = SwapProviderTransaction.FINISHED_STATUSES,
+            providersExcluded = listOf(SwapProvider.PAYCORE),
+            limit = 10,
+        )
+
+        assertEquals(listOf(SwapProvider.CHANGENOW), rows.map { it.provider })
+    }
+
+    private fun insertPayCoreRowsNewerThanChangeNowRow() {
+        dao.insert(swap(date = 1_000L, status = "waiting"))
+        repeat(10) { dao.insert(swap(date = 2_000L + it, status = "waiting", provider = SwapProvider.PAYCORE)) }
+    }
+
+    private fun linkedSwap(incomingRecordUid: String) = swap(
+        date = 1_000L,
+        amountOut = BigDecimal("0.02013"),
+        amountOutReal = BigDecimal("0.02011"),
+        incomingRecordUid = incomingRecordUid,
+    )
+
     private fun byAddressAndAmount(amount: Double) = dao.getByAddressAndAmount(
         address = "t1AddressOut",
         tokenQueryId = "zcash|native",
@@ -173,16 +262,19 @@ class SwapProviderTransactionsDaoTest {
 
     private fun swap(
         date: Long,
-        amountOut: BigDecimal,
-        amountOutReal: BigDecimal?,
+        amountOut: BigDecimal = BigDecimal.ONE,
+        amountOutReal: BigDecimal? = null,
         incomingRecordUid: String? = null,
+        provider: SwapProvider = SwapProvider.CHANGENOW,
+        coinUidIn: String = "ethereum",
+        status: String = "finished",
     ) = SwapProviderTransaction(
         date = date,
         outgoingRecordUid = null,
         transactionId = "tx-$date",
-        status = "finished",
-        provider = SwapProvider.CHANGENOW,
-        coinUidIn = "ethereum",
+        status = status,
+        provider = provider,
+        coinUidIn = coinUidIn,
         blockchainTypeIn = BlockchainType.Ethereum.uid,
         amountIn = BigDecimal("1"),
         addressIn = "0xIn",
@@ -198,6 +290,7 @@ class SwapProviderTransactionsDaoTest {
     private companion object {
         const val COIN_UID = "zcash"
         const val ACCOUNT_ID = "test-account"
+        const val INCOMING_UID = "incoming-uid"
         val BLOCKCHAIN_TYPE = BlockchainType.Zcash.uid
     }
 }

@@ -23,10 +23,10 @@ import androidx.compose.ui.graphics.painter.Painter
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
-import cash.p.terminal.feature.wallet.authorizeSecretAction
+import cash.p.terminal.feature.wallet.rememberSecretAction
 import cash.p.terminal.feature.wallet.FaqTopic
 import cash.p.terminal.feature.wallet.openFaq
-import cash.p.terminal.core.premiumAction
+import cash.p.terminal.core.rememberPremiumAction
 import cash.p.terminal.modules.balance.HeaderNote
 import cash.p.terminal.modules.balance.ui.NoteError
 import cash.p.terminal.modules.balance.ui.NoteWarning
@@ -50,6 +50,8 @@ import cash.p.terminal.ui_compose.components.HsSettingCell
 import cash.p.terminal.modules.unlinkaccount.UnlinkAccountSheet
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromBottom
 import cash.p.terminal.resources.ManageAccount_Save
 import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
@@ -117,6 +119,8 @@ internal fun ManageAccountScreen(
 ) {
     val topPage = navigation.lastOrNull()
     val currentOnCloseClicked by rememberUpdatedState(onCloseClicked)
+    val openAuthorized = navigation.rememberSecretAction<HSPage>(navigation::slideFromRight)
+    val openSheetAuthorized = navigation.rememberSecretAction<HSPage>(navigation::slideFromBottom)
     if (shouldCloseManageAccount(viewState.closeScreen, topPage)) {
         LaunchedEffect(viewState.closeScreen, topPage) {
             navigation.removeLastUntil(ManageAccountPage::class, inclusive = true)
@@ -212,7 +216,7 @@ internal fun ManageAccountScreen(
                 BackupActions(
                     viewState.backupActions,
                     account,
-                    navigation
+                    openSheetAuthorized
                 )
             }
 
@@ -227,18 +231,16 @@ internal fun ManageAccountScreen(
                                 navigation.slideFromBottom(DuplicateWalletInfoSheet())
                             },
                             onClick = {
-                                navigation.authorizeSecretAction {
-                                    navigation.slideFromRight(
-                                        RestoreAccountPage(
-                                            ManageAccountsModule.Input(
-                                                popOffOnSuccess = ManageAccountsPage::class,
-                                                popOffInclusive = true,
-                                                defaultRoute = RestoreAccountPage.ROUTE_DUPLICATE,
-                                                accountId = account.id
-                                            )
+                                openAuthorized(
+                                    RestoreAccountPage(
+                                        ManageAccountsModule.Input(
+                                            popOffOnSuccess = ManageAccountsPage::class,
+                                            popOffInclusive = true,
+                                            defaultRoute = RestoreAccountPage.ROUTE_DUPLICATE,
+                                            accountId = account.id
                                         )
                                     )
-                                }
+                                )
                             }
                         )
                     })
@@ -262,11 +264,10 @@ internal fun ManageAccountScreen(
 internal fun shouldCloseManageAccount(closeScreen: Boolean, topPage: HSPage?): Boolean =
     closeScreen && topPage is ManageAccountPage
 
-private fun HSNavigation.openResetToFactory(page: HSPage?, onReset: () -> Unit) {
-    page ?: return
-    slideFromBottomForResult<ResetToFactoryResult>(page) {
-        if (it.success) onReset()
-    }
+@Composable
+private fun HSNavigation.rememberOpenResetToFactory(onReset: () -> Unit): (HSPage?) -> Unit {
+    val launcher = rememberResultLauncher<ResetToFactoryResult> { if (it.success) onReset() }
+    return { page -> page?.let { launcher.slideFromBottom(it) } }
 }
 
 @Composable
@@ -277,6 +278,10 @@ private fun KeyActions(
     navigation: HSNavigation
 ) {
     val walletPlatformPages = koinInject<WalletPlatformPages>()
+    val openAuthorized = navigation.rememberSecretAction<HSPage>(navigation::slideFromRight)
+    val openPremium = navigation.rememberPremiumAction<HSPage>(navigation::slideFromRight)
+    val openPremiumAuthorized = navigation.rememberSecretAction(openPremium)
+    val openResetToFactory = navigation.rememberOpenResetToFactory { onActionClick(KeyAction.ResetToFactorySettings) }
     val actionItems = mutableListOf<@Composable () -> Unit>()
 
     viewState.keyActions.forEach { keyAction ->
@@ -287,16 +292,14 @@ private fun KeyActions(
                         title = stringResource(Res.string.RecoveryPhrase_Title),
                         icon = painterResource(Res.drawable.icon_paper_contract_20)
                     ) {
-                        navigation.authorizeSecretAction {
-                            navigation.slideFromRight(
-                                RecoveryPhrasePage(
-                                    RecoveryPhrasePage.Input(
-                                        account = account,
-                                        recoveryPhraseType = RecoveryPhrasePage.RecoveryPhraseType.Mnemonic
-                                    )
+                        openAuthorized(
+                            RecoveryPhrasePage(
+                                RecoveryPhrasePage.Input(
+                                    account = account,
+                                    recoveryPhraseType = RecoveryPhrasePage.RecoveryPhraseType.Mnemonic
                                 )
                             )
-                        }
+                        )
                     }
                 }
             }
@@ -308,18 +311,14 @@ private fun KeyActions(
                         icon = painterResource(Res.drawable.icon_paper_contract_20),
                         iconTint = ComposeAppTheme.colors.statusWarning
                     ) {
-                        navigation.authorizeSecretAction {
-                            navigation.premiumAction {
-                                navigation.slideFromRight(
-                                    RecoveryPhrasePage(
-                                        RecoveryPhrasePage.Input(
-                                            account = account,
-                                            recoveryPhraseType = RecoveryPhrasePage.RecoveryPhraseType.Monero
-                                        )
-                                    )
+                        openPremiumAuthorized(
+                            RecoveryPhrasePage(
+                                RecoveryPhrasePage.Input(
+                                    account = account,
+                                    recoveryPhraseType = RecoveryPhrasePage.RecoveryPhraseType.Monero
                                 )
-                            }
-                        }
+                            )
+                        )
                     }
                 }
             }
@@ -352,9 +351,7 @@ private fun KeyActions(
                         title = stringResource(Res.string.reset_to_factory_settings),
                         icon = painterResource(Res.drawable.ic_delete_20)
                     ) {
-                        navigation.openResetToFactory(walletPlatformPages.resetToFactory(account)) {
-                            onActionClick(keyAction)
-                        }
+                        openResetToFactory(walletPlatformPages.resetToFactory(account))
                     }
                 }
             }
@@ -426,7 +423,7 @@ private fun KeyActions(
 private fun BackupActions(
     backupActions: List<BackupItem>,
     account: Account,
-    navigation: HSNavigation
+    openAuthorized: (HSPage) -> Unit
 ) {
     val walletPages = koinInject<WalletPages>()
     val actionItems = mutableListOf<@Composable () -> Unit>()
@@ -442,11 +439,7 @@ private fun BackupActions(
                         attention = action.showAttention,
                         completed = action.completed
                     ) {
-                        navigation.authorizeSecretAction {
-                            navigation.slideFromBottom(
-                                BackupKeyPage(BackupKeyInput(account.id))
-                            )
-                        }
+                        openAuthorized(BackupKeyPage(BackupKeyInput(account.id)))
                     }
                 }
             }
@@ -458,9 +451,7 @@ private fun BackupActions(
                         icon = painterResource(Res.drawable.ic_file_24),
                         attention = action.showAttention
                     ) {
-                        navigation.authorizeSecretAction {
-                            navigation.slideFromBottom(walletPages.backupLocal(account))
-                        }
+                        openAuthorized(walletPages.backupLocal(account))
                     }
                 }
             }

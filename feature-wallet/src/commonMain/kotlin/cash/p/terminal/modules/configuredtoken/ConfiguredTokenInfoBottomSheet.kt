@@ -82,8 +82,17 @@ private fun ConfiguredTokenInfoContent(tokenInfoType: ConfiguredTokenInfoType?) 
         ConfiguredTokenInfoType.Bch -> BchInfo()
         is ConfiguredTokenInfoType.Bips -> BipsInfo(tokenInfoType)
         is ConfiguredTokenInfoType.BirthdayHeight -> BirthdayHeightInfo(tokenInfoType)
+        is ConfiguredTokenInfoType.Description -> DescriptionInfo(tokenInfoType.text)
         null -> Unit
     }
+}
+
+@Composable
+private fun DescriptionInfo(text: String) {
+    body_leah(
+        text = text,
+        modifier = Modifier.padding(start = 32.dp, top = 12.dp, end = 32.dp, bottom = 24.dp)
+    )
 }
 
 @Composable

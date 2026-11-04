@@ -52,7 +52,7 @@ class ViewModelStoreOwnerForPageTest {
                     rememberSharedViewModelStoreNavEntryDecorator(),
                 ),
                 entryProvider = { key ->
-                    NavEntry(key, key.contentKey(), key.metadata()) { key.GetContent(navigation) }
+                    NavEntry(key, key.contentKey(), key.metadata()) { key.Content(navigation) }
                 },
             )
         }

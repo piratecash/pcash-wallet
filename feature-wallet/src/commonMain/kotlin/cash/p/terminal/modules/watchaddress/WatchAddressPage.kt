@@ -24,6 +24,8 @@ import cash.p.terminal.modules.zcashconfigure.ZcashConfigurePage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromBottom
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.Watch_Address_Watch
 import cash.p.terminal.strings.helpers.TranslatableString
@@ -64,6 +66,9 @@ fun WatchAddressScreen(navigation: HSNavigation, popUpToInclusiveId: KClass<out 
     val submitType = uiState.submitButtonType
     val accountType = uiState.accountType
     val accountName = uiState.accountName
+    val zcashConfigureLauncher = navigation.rememberResultLauncher<ZcashConfigurePage.Result> { result ->
+        viewModel.onZcashHeightEntered(result.config)
+    }
 
     LaunchedEffect(accountCreated) {
         if (accountCreated) {
@@ -77,11 +82,7 @@ fun WatchAddressScreen(navigation: HSNavigation, popUpToInclusiveId: KClass<out 
         if (!uiState.zcashHeightRequested) return@LaunchedEffect
 
         viewModel.zcashHeightRequestOpened()
-        navigation.slideFromBottomForResult<ZcashConfigurePage.Result>(
-            ZcashConfigurePage(ZcashConfigurePage.Input(initialConfig = null))
-        ) { result ->
-            viewModel.onZcashHeightEntered(result.config)
-        }
+        zcashConfigureLauncher.slideFromBottom(ZcashConfigurePage(ZcashConfigurePage.Input(initialConfig = null)))
     }
 
     if (accountType != null) {

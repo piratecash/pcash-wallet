@@ -14,6 +14,7 @@ class AndroidPlatformAccountDataCleaner(
                 smsNotificationSettings.setSmsNotificationAccountId(level, null)
                 smsNotificationSettings.setSmsNotificationAddress(level, null)
                 smsNotificationSettings.setSmsNotificationMemo(level, null)
+                smsNotificationSettings.setSmsNotificationEnabled(level, false)
             }
         }
     }

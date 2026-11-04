@@ -28,7 +28,6 @@ io.horizontalsystems.piratecashkit.TestNetPirateCash
 # Enum arguments of typed navigation routes, resolved by serial name.
 cash.p.terminal.modules.multiswap.SwapAmountDirection
 cash.p.terminal.modules.multiswap.SwapCoinDirection
-cash.p.terminal.modules.paycore.PayCoreTicker
 
 # The class name is the SharedPreferences filename holding the selected language.
 cash.p.terminal.strings.helpers.LocaleHelper

@@ -1,10 +1,7 @@
 package cash.p.terminal.modules.settings.main
 
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column
@@ -17,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,9 +33,9 @@ import cash.p.terminal.modules.multiswap.providersettings.SwapProvidersSettingsP
 import cash.p.terminal.modules.premium.about.AboutPremiumPage
 import cash.p.terminal.modules.premium.settings.PremiumSettingsPage
 import cash.p.terminal.modules.send.offline.OfflineBroadcastPage
+import cash.p.terminal.modules.send.offline.rememberImportTransactionFile
 import cash.p.terminal.modules.settings.about.AboutPage
 import cash.p.terminal.modules.settings.about.ContactOptionsSheet
-import cash.p.terminal.modules.settings.about.ContactUsPage
 import cash.p.terminal.modules.settings.addresschecker.AddressCheckerPage
 import cash.p.terminal.modules.settings.advancedsecurity.AdvancedSecurityPage
 import cash.p.terminal.modules.settings.appearance.AppearancePage
@@ -52,11 +48,11 @@ import cash.p.terminal.modules.walletconnect.AccountTypeNotSupportedSheet
 import cash.p.terminal.modules.walletconnect.WCErrorNoAccountSheet
 import cash.p.terminal.modules.walletconnect.WCManager
 import cash.p.terminal.modules.walletconnect.list.WCListPage
-import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.PageResumeEffect
-import cash.p.terminal.navigation.openQrScanner
+import cash.p.terminal.navigation.QrScannerLauncher
+import cash.p.terminal.navigation.rememberQrScannerLauncher
 import cash.p.terminal.strings.helpers.Translator
 import cash.p.terminal.shared.settings.SettingsAction
 import cash.p.terminal.shared.settings.SettingsContent
@@ -65,10 +61,7 @@ import cash.p.terminal.ui.helpers.LinkHelper
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellSingleLineLawrenceSection
 import cash.p.terminal.ui_compose.components.HsSettingCell as SharedHsSettingCell
-import cash.p.terminal.ui_compose.components.HudHelper
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
-import io.horizontalsystems.core.IPinComponent
-import io.horizontalsystems.core.launchExternalActivity
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -97,30 +90,13 @@ fun SettingsScreen(
 ) {
     PageResumeEffect(onResume = viewModel::refresh, onPause = {})
     val context = LocalContext.current
-    val appPages: AppPages = koinInject()
-    val view = LocalView.current
-    val pinComponent: IPinComponent = koinInject()
     val rawTxScanTitle = stringResource(R.string.offline_broadcast_title)
     val walletConnectTitle = stringResource(R.string.WalletConnect_Title)
     val tonConnectTitle = stringResource(R.string.TonConnect_Title)
-    val transactionFileLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocument()
-    ) { uri ->
-        uri?.let {
-            navigation.slideFromRight(
-                OfflineBroadcastPage(OfflineBroadcastPage.Input(fileUri = it.toString()))
-            )
-        }
+    val offlineBroadcastScanner = navigation.rememberQrScannerLauncher(koinInject()) { scannedText ->
+        navigation.slideFromRight(OfflineBroadcastPage(OfflineBroadcastPage.Input(initialInput = scannedText)))
     }
-    val importTransactionFile = {
-        try {
-            pinComponent.launchExternalActivity {
-                transactionFileLauncher.launch(arrayOf("text/plain", "application/octet-stream"))
-            }
-        } catch (_: ActivityNotFoundException) {
-            HudHelper.showErrorMessage(view, R.string.offline_broadcast_file_read_failed)
-        }
-    }
+    val importTransactionFile = rememberImportTransactionFile(navigation)
 
     Surface(color = ComposeAppTheme.colors.backgroundBase) {
         Column {
@@ -132,7 +108,7 @@ fun SettingsScreen(
                     handleSettingsAction(
                         action = action,
                         navigation = navigation,
-                        appPages = appPages,
+                        offlineBroadcastScanner = offlineBroadcastScanner,
                         viewModel = viewModel,
                         context = context,
                         rawTxScanTitle = rawTxScanTitle,
@@ -151,7 +127,7 @@ fun SettingsScreen(
 internal fun handleSettingsAction(
     action: SettingsAction,
     navigation: HSNavigation,
-    appPages: AppPages,
+    offlineBroadcastScanner: QrScannerLauncher,
     viewModel: MainSettingsViewModel,
     context: Context,
     rawTxScanTitle: String,
@@ -179,12 +155,12 @@ internal fun handleSettingsAction(
             tonConnectTitle,
         )
         SettingsAction.Contacts -> navigation.slideFromRight(ContactsPage(ContactsPage.Input(Mode.Full)))
-        SettingsAction.OfflineBroadcast -> openOfflineBroadcastScanner(navigation, appPages, rawTxScanTitle)
+        SettingsAction.OfflineBroadcast -> offlineBroadcastScanner.open(rawTxScanTitle, showPasteButton = true)
         SettingsAction.ImportTransactionFile -> importTransactionFile()
         SettingsAction.AboutPremium -> navigation.slideFromBottom(AboutPremiumPage(null))
         SettingsAction.RateApp -> RateAppManager.openPlayMarket(context)
         SettingsAction.ShareApp -> shareAppLink(viewModel.uiState.appWebPageLink, context)
-        is SettingsAction.Contact -> navigation.slideFromContact(action.isPayCoreEnabled)
+        SettingsAction.Contact -> navigation.slideFromBottom(ContactOptionsSheet(null))
         SettingsAction.CompanyWebsite -> LinkHelper.openLinkInAppBrowser(context, viewModel.companyWebPage)
         else -> Unit
     }
@@ -235,30 +211,6 @@ private fun openTonConnect(
                 )
             )
         )
-    }
-}
-
-private fun openOfflineBroadcastScanner(
-    navigation: HSNavigation,
-    appPages: AppPages,
-    rawTxScanTitle: String,
-) {
-    navigation.openQrScanner(
-        appPages = appPages,
-        title = rawTxScanTitle,
-        showPasteButton = true,
-    ) { scannedText ->
-        navigation.slideFromRight(
-            OfflineBroadcastPage(OfflineBroadcastPage.Input(initialInput = scannedText))
-        )
-    }
-}
-
-private fun HSNavigation.slideFromContact(isPayCoreEnabled: Boolean) {
-    if (isPayCoreEnabled) {
-        slideFromRight(ContactUsPage())
-    } else {
-        slideFromBottom(ContactOptionsSheet(null))
     }
 }
 

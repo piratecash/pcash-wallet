@@ -1,7 +1,10 @@
 package cash.p.terminal.tangem.domain.sdk
 
+import android.app.Activity
 import android.app.Application
+import android.app.PendingIntent
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.nfc.NfcAdapter
 import androidx.fragment.app.FragmentActivity
@@ -34,6 +37,9 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.Implementation
+import org.robolectric.annotation.Implements
+import org.robolectric.shadows.ShadowNfcAdapter
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = Application::class)
@@ -155,6 +161,26 @@ class CardSdkProviderTest {
         assertSame(activity, shadow.disabledActivity)
     }
 
+    @Config(application = Application::class, shadows = [ThrowingEnableForegroundDispatchShadow::class])
+    @Test
+    fun observerOnResume_nfcServiceThrows_doesNotCrash() {
+        val activity = Robolectric.buildActivity(FragmentActivity::class.java).setup().get()
+        every { sdkInitializer.create(activity) } returns mockComponents()
+
+        CardSdkProvider(backgroundManager, sdkInitializer).register(activity)
+    }
+
+    @Config(application = Application::class, shadows = [ThrowingDisableForegroundDispatchShadow::class])
+    @Test
+    fun observerOnPause_nfcServiceThrows_doesNotCrash() {
+        val controller = Robolectric.buildActivity(FragmentActivity::class.java).setup()
+        val activity = controller.get()
+        every { sdkInitializer.create(activity) } returns mockComponents()
+        CardSdkProvider(backgroundManager, sdkInitializer).register(activity)
+
+        controller.pause()
+    }
+
     private fun mockActivity(): FragmentActivity {
         val lifecycleMock: Lifecycle = mockk(relaxed = true)
         return mockk<FragmentActivity>(relaxed = true).apply {
@@ -176,5 +202,26 @@ class CardSdkProviderTest {
             authenticationManager = authenticationManager,
             sdk = sdk,
         )
+    }
+}
+
+@Implements(NfcAdapter::class)
+class ThrowingEnableForegroundDispatchShadow : ShadowNfcAdapter() {
+    @Implementation
+    override fun enableForegroundDispatch(
+        activity: Activity,
+        intent: PendingIntent,
+        filters: Array<IntentFilter>?,
+        techLists: Array<Array<String>>?,
+    ) {
+        throw NullPointerException("simulated vendor NFC service failure")
+    }
+}
+
+@Implements(NfcAdapter::class)
+class ThrowingDisableForegroundDispatchShadow : ShadowNfcAdapter() {
+    @Implementation
+    override fun disableForegroundDispatch(activity: Activity) {
+        throw NullPointerException("simulated vendor NFC service failure")
     }
 }

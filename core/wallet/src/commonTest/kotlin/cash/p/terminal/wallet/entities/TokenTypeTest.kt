@@ -1,5 +1,6 @@
 package cash.p.terminal.wallet.entities
 
+import cash.p.terminal.wallet.meta
 import cash.p.terminal.wallet.protocolType
 import io.horizontalsystems.core.entities.BlockchainType
 import kotlin.test.Test
@@ -118,5 +119,55 @@ class TokenTypeTest {
             TokenType.Unsupported(type = "thorchain", reference = ""),
             TokenType.fromType("thorchain"),
         )
+    }
+
+    @Test
+    fun id_tonW5Native_roundTripsThroughFromId() {
+        assertEquals("ton_w5_native", TokenType.TonW5Native.id)
+        assertEquals(TokenType.Value(type = "ton_w5_native", reference = ""), TokenType.TonW5Native.values)
+        assertEquals(TokenType.TonW5Native, TokenType.fromId("ton_w5_native"))
+        assertEquals(TokenType.TonW5Native, TokenType.fromType("ton_w5_native", ""))
+    }
+
+    @Test
+    fun id_tonW5Jetton_roundTripsThroughFromId() {
+        val tokenType = TokenType.TonW5Jetton(JETTON_MASTER)
+
+        assertEquals("ton_w5_jetton:$JETTON_MASTER", tokenType.id)
+        assertEquals(TokenType.Value(type = "ton_w5_jetton", reference = JETTON_MASTER), tokenType.values)
+        assertEquals(tokenType, TokenType.fromId(tokenType.id))
+        assertEquals(tokenType, TokenType.fromType("ton_w5_jetton", JETTON_MASTER))
+    }
+
+    @Test
+    fun fromType_tonW5JettonBlankReference_returnsUnsupportedTokenType() {
+        assertEquals(TokenType.Unsupported(type = "ton_w5_jetton", reference = ""), TokenType.fromType("ton_w5_jetton"))
+    }
+
+    @Test
+    fun id_tonV4R2Types_unchanged() {
+        assertEquals("native", TokenType.Native.id)
+        assertEquals("the-open-network:$JETTON_MASTER", TokenType.Jetton(JETTON_MASTER).id)
+        assertEquals(TokenType.Jetton(JETTON_MASTER), TokenType.fromId("the-open-network:$JETTON_MASTER"))
+    }
+
+    @Test
+    fun protocolType_tonAssets_showVersionExceptV4R2Jetton() {
+        assertEquals("V4R2", TokenQuery(BlockchainType.Ton, TokenType.Native).protocolType)
+        assertEquals("W5", TokenQuery(BlockchainType.Ton, TokenType.TonW5Native).protocolType)
+        assertEquals("JETTON", TokenQuery(BlockchainType.Ton, TokenType.Jetton(JETTON_MASTER)).protocolType)
+        assertEquals("JETTON W5", TokenQuery(BlockchainType.Ton, TokenType.TonW5Jetton(JETTON_MASTER)).protocolType)
+    }
+
+    @Test
+    fun meta_tonTypes_w5SeparatedFromV4R2() {
+        assertEquals(null, TokenType.Native.meta)
+        assertEquals(null, TokenType.Jetton(JETTON_MASTER).meta)
+        assertEquals("w5", TokenType.TonW5Native.meta)
+        assertEquals("w5", TokenType.TonW5Jetton(JETTON_MASTER).meta)
+    }
+
+    private companion object {
+        const val JETTON_MASTER = "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
     }
 }

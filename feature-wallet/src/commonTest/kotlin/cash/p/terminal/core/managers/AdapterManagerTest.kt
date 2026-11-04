@@ -91,7 +91,9 @@ class AdapterManagerTest {
                 every { kitStoppedObservable } returns Observable.never()
             },
             tronKitManager = mockk(relaxed = true),
-            tonKitManager = mockk(relaxed = true),
+            tonKitManager = mockk(relaxed = true) {
+                every { startedKitsFlow } returns MutableStateFlow(emptyMap())
+            },
             moneroKitManager = mockk(relaxed = true) {
                 every { kitStoppedObservable } returns Observable.never()
             },

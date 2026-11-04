@@ -103,7 +103,7 @@ class ReceiveTokenSelectViewModel(
 
         return when {
             activeWallets.isEmpty() -> {
-                eligibleTokens.find { it.type.isDefault }?.let { single(it) }
+                eligibleTokens.find { it.isDefault }?.let { single(it) }
             }
 
             activeWallets.size == 1 -> {

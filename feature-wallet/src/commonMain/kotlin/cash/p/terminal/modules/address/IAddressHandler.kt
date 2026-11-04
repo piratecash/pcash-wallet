@@ -9,6 +9,7 @@ import io.horizontalsystems.bitcoincore.utils.Base58AddressConverter
 import io.horizontalsystems.bitcoincore.utils.CashAddressConverter
 import io.horizontalsystems.bitcoincore.utils.SegwitAddressConverter
 import io.horizontalsystems.ethereumkit.core.AddressValidator
+import io.horizontalsystems.ethereumkit.ens.EnsResolver
 import io.horizontalsystems.core.entities.BlockchainType
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
@@ -16,7 +17,6 @@ import com.m2049r.xmrwallet.model.Wallet
 import io.horizontalsystems.stellarkit.StellarKit
 import io.horizontalsystems.tonkit.core.TonKit
 import io.horizontalsystems.tronkit.account.AddressHandler
-import org.web3j.ens.EnsResolver
 
 interface IAddressHandler {
     val blockchainType: BlockchainType
@@ -31,10 +31,8 @@ class AddressHandlerEns(
     private val cache = mutableMapOf<String, Address>()
 
     override fun isSupported(value: String): Boolean {
-        if (!EnsResolver.isValidEnsName(value)) return false
-
         try {
-            cache[value] = Address(ensResolver.resolve(value), value, blockchainType)
+            cache[value] = Address(ensResolver.resolve(value).blockingGet().eip55, value, blockchainType)
             return true
         } catch (e: Exception) {
             return false

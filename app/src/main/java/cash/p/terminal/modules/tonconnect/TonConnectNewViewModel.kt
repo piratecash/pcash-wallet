@@ -3,20 +3,27 @@ package cash.p.terminal.modules.tonconnect
 import androidx.lifecycle.viewModelScope
 import io.horizontalsystems.core.DispatcherProvider
 import cash.p.terminal.core.managers.TonConnectManager
+import cash.p.terminal.core.managers.TonConnectWalletId
 import cash.p.terminal.core.managers.toTonWalletFullAccess
+import cash.p.terminal.wallet.entities.TonWalletVersion
 import cash.p.terminal.core.storage.HardwarePublicKeyStorage
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.ActiveAccountState
 import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.IEnabledWalletStorage
+import cash.p.terminal.wallet.entities.TokenQuery
+import cash.p.terminal.wallet.entities.tonAsset
 import cash.p.terminal.wallet.supportsTonConnect
 import com.tonapps.wallet.data.tonconnect.entities.DAppManifestEntity
 import com.tonapps.wallet.data.tonconnect.entities.DAppRequestEntity
 import io.horizontalsystems.core.ViewModelUiState
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.tonkit.tonconnect.TonConnectKit
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent.inject
 
 class TonConnectNewViewModel(
@@ -28,11 +35,15 @@ class TonConnectNewViewModel(
         HardwarePublicKeyStorage::class.java
     )
     private val accountManager: IAccountManager by inject(IAccountManager::class.java)
+    private val enabledWalletStorage: IEnabledWalletStorage by inject(IEnabledWalletStorage::class.java)
     private val dispatchers: DispatcherProvider by inject(DispatcherProvider::class.java)
 
     private var manifest: DAppManifestEntity? = null
     private var accounts: List<Account> = listOf()
     private var account: Account? = null
+    private var walletVersions: List<TonWalletVersion> = emptyList()
+    private var walletVersion = TonWalletVersion.V4R2
+    private var walletVersionsJob: Job? = null
     private var connecting = false
     private var finish = false
     private var error: Throwable? = null
@@ -50,6 +61,8 @@ class TonConnectNewViewModel(
         manifest = manifest,
         accounts = accounts,
         account = account,
+        walletVersions = walletVersions,
+        walletVersion = walletVersion,
         connecting = connecting,
         finish = finish,
         error = error,
@@ -82,7 +95,28 @@ class TonConnectNewViewModel(
             error = NoTonAccountError()
         }
 
+        refreshWalletVersions()
+    }
+
+    /** The version choice is offered only to an account that already uses W5 for some token. */
+    private fun refreshWalletVersions() {
+        walletVersionsJob?.cancel()
+        walletVersions = emptyList()
+        walletVersion = TonWalletVersion.V4R2
         emitState()
+
+        val account = account ?: return
+        walletVersionsJob = viewModelScope.launch {
+            val usesW5 = withContext(dispatchers.io) {
+                enabledWalletStorage.enabledWallets(account.id).any {
+                    TokenQuery.fromId(it.tokenQueryId)?.tonAsset?.version == TonWalletVersion.W5
+                }
+            }
+            if (usesW5) {
+                walletVersions = TonWalletVersion.entries
+                emitState()
+            }
+        }
     }
 
     private fun loadManifest(url: String) {
@@ -109,6 +143,11 @@ class TonConnectNewViewModel(
 
     fun onSelectAccount(account: Account) {
         this.account = account
+        refreshWalletVersions()
+    }
+
+    fun onSelectWalletVersion(version: TonWalletVersion) {
+        walletVersion = version
         emitState()
     }
 
@@ -123,12 +162,14 @@ class TonConnectNewViewModel(
                 val requestEntity = checkNotNull(requestEntity) { "Invalid TON Connect request" }
                 val manifest = manifest ?: throw NoManifestError()
                 val account = account ?: throw IllegalArgumentException("Empty account")
+                val version = walletVersion
 
                 tonConnectManager.kit().connect(
                     requestEntity,
                     manifest,
-                    account.id,
+                    TonConnectWalletId(account.id, version).value,
                     account.toTonWalletFullAccess(
+                        version,
                         hardwarePublicKeyStorage,
                         BlockchainType.Ton,
                     )
@@ -168,6 +209,8 @@ data class TonConnectNewUiState(
     val manifest: DAppManifestEntity?,
     val accounts: List<Account>,
     val account: Account?,
+    val walletVersions: List<TonWalletVersion>,
+    val walletVersion: TonWalletVersion,
     val connecting: Boolean,
     val finish: Boolean,
     val error: Throwable?,

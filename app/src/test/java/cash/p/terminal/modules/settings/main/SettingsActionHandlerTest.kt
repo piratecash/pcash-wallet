@@ -22,7 +22,6 @@ import cash.p.terminal.modules.multiswap.providersettings.SwapProvidersSettingsP
 import cash.p.terminal.modules.premium.settings.PremiumSettingsPage
 import cash.p.terminal.modules.settings.about.AboutPage
 import cash.p.terminal.modules.settings.about.ContactOptionsSheet
-import cash.p.terminal.modules.settings.about.ContactUsPage
 import cash.p.terminal.modules.settings.addresschecker.AddressCheckerPage
 import cash.p.terminal.modules.settings.advancedsecurity.AdvancedSecurityPage
 import cash.p.terminal.modules.settings.appearance.AppearancePage
@@ -40,6 +39,8 @@ import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.LocalHostLifecycleOwner
 import cash.p.terminal.navigation.NavigationType
 import cash.p.terminal.navigation.QrScannerInput
+import cash.p.terminal.navigation.QrScannerLauncher
+import cash.p.terminal.navigation.rememberQrScannerLauncher
 import cash.p.terminal.shared.settings.SettingsAction
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Account
@@ -49,6 +50,8 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.horizontalsystems.core.IPinComponent
+import cash.p.terminal.modules.send.offline.AndroidOfflineTransactionFiles
+import cash.p.terminal.modules.send.offline.OfflineTransactionFiles
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -79,6 +82,11 @@ class SettingsActionHandlerTest {
     private var walletConnectSupport: WCManager.SupportState = WCManager.SupportState.Supported
     private var tonConnectSupported = true
     private var importTransactionFileCalls = 0
+    private val offlineBroadcastScanner: QrScannerLauncher by lazy {
+        lateinit var launcher: QrScannerLauncher
+        compose.setContent { launcher = navigation.rememberQrScannerLauncher(appPages) {} }
+        launcher
+    }
     private val viewModel = mockk<MainSettingsViewModel>(relaxed = true) {
         every { uiState } returns settingsContentTestState
         every { appVersion } returns "1.2.3"
@@ -94,6 +102,10 @@ class SettingsActionHandlerTest {
                 module {
                     single { mockk<IPinComponent>(relaxed = true) }
                     single { appPages }
+                    single<OfflineTransactionFiles> {
+                        val context = ApplicationProvider.getApplicationContext<Application>()
+                        AndroidOfflineTransactionFiles(context, mockk(), get(), mockk())
+                    }
                 }
             )
         }
@@ -204,13 +216,12 @@ class SettingsActionHandlerTest {
     }
 
     @Test
-    fun handleSettingsAction_contactPayCoreState_opensMatchingDestination() {
-        handle(SettingsAction.Contact(true))
-        handle(SettingsAction.Contact(false))
+    fun handleSettingsAction_contact_opensContactOptionsSheetWithDefaultInput() {
+        handle(SettingsAction.Contact)
 
         val pages = openedPages()
-        assertEquals(listOf(ContactUsPage::class, ContactOptionsSheet::class), pages.map { it::class })
-        assertNull((pages[1] as ContactOptionsSheet).input)
+        assertEquals(listOf(ContactOptionsSheet::class), pages.map { it::class })
+        assertNull((pages.single() as ContactOptionsSheet).input)
     }
 
     private fun openedPages(): List<HSPage> = navigation.backStack.drop(1)
@@ -219,7 +230,7 @@ class SettingsActionHandlerTest {
         handleSettingsAction(
             action,
             navigation,
-            appPages,
+            offlineBroadcastScanner,
             viewModel,
             context,
             rawTxScanTitle = "Raw transaction",

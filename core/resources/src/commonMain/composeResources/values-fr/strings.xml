@@ -403,7 +403,7 @@
     <string name="SendNft_Title">Envoyer</string>
     <string name="SendNft_Error_NotEnoughtBalance">Solde insuffisant</string>
     <!--Send-->
-    <string name="Send_Title">Envoyer %s</string>
+    <string name="Send_Title">Envoyer %1$s</string>
     <string name="Send_Hint_Address">Adresse ou domaine</string>
     <string name="Send_Fee">Frais</string>
     <string name="Send_Fee_Info">Les blockchains requièrent que les usagers paient des frais de réseau lorsqu\u0027ils envoient des transactions. Ces frais sont plus élevés lorsque de nombreuses transactions empruntent le réseau.</string>
@@ -437,7 +437,7 @@
     <string name="ScanQr_CameraPermissionDeniedText">L\u0027accès à votre caméra pour cette application a été refusé, vous pouvez aller dans les paramètres et autoriser l\u0027accès</string>
     <string name="ScanQr_GoToSettings">Accéder aux paramètres</string>
     <string name="scan_qr_camera_initialization_failed">La caméra n\u0027est pas disponible. Veuillez réessayer ou utiliser un autre appareil.</string>
-    <string name="qr_scanner_title_address">Adresse %s</string>
+    <string name="qr_scanner_title_address">Adresse %1$s</string>
     <string name="qr_scanner_title_smart_scan">SCAN INTELLIGENT</string>
     <string name="choose_from_photos">Choisir depuis les photos</string>
     <string name="image_decode_failed">Impossible de lire un code QR à partir de l\u0027image sélectionnée</string>
@@ -504,23 +504,23 @@
     <string name="FeeInfo_TronResourcesConsumed_Description">La bande passante est l\u0027unité qui mesure la taille des octets de transaction stockés dans la base de données blockchain. Plus la transaction est grande, plus la bande passante sera consommée.\n\nL\u0027énergie est l\u0027unité qui mesure le montant de calcul requis par la machine virtuelle TRON pour effectuer des opérations spécifiques sur le réseau TRON.\n\nÉtant donné que les transactions de contrats intelligents nécessitent des ressources informatiques pour être exécutées, chaque transaction de contrat intelligent nécessite le paiement de frais d\u0027énergie.</string>
 
     <!--Network Fee Warning-->
-    <string name="network_fee_warning_title">Frais de réseau %s</string>
+    <string name="network_fee_warning_title">Frais de réseau %1$s</string>
     <string name="token_balance_need_native_coin_title">Vous avez besoin de %1$s pour utiliser %2$s</string>
     <string name="token_balance_need_native_coin_body">%2$s fonctionne sur %3$s.\nLes frais de réseau sont payés en %1$s.\nVotre solde %1$s : %4$s</string>
     <string name="network_fee_warning_body_protocol">Le protocole du réseau %1$s stipule qu\u0027au moins %2$s est nécessaire pour payer les frais de réseau de cette transaction.</string>
-    <string name="network_fee_warning_body_balance">Vous avez moins de %s dans votre solde.</string>
-    <string name="network_fee_warning_body_protocol_bold">au moins %s</string>
-    <string name="network_fee_warning_body_balance_bold">moins de %s</string>
+    <string name="network_fee_warning_body_balance">Vous avez moins de %1$s dans votre solde.</string>
+    <string name="network_fee_warning_body_protocol_bold">au moins %1$s</string>
+    <string name="network_fee_warning_body_balance_bold">moins de %1$s</string>
     <string name="network_fee_warning_body_case_not_completed_prefix">mais </string>
     <string name="network_fee_warning_body_case_not_sent_prefix">et </string>
     <string name="network_fee_warning_body_risk">Avec ce solde, il existe un risque que les frais réels soient plus élevés que prévu.</string>
     <string name="network_fee_warning_body_risk_bold">plus élevés que prévu</string>
     <string name="network_fee_warning_body_case_intro">Dans ce cas :</string>
-    <string name="network_fee_warning_body_case_debited">%s seront débités de votre solde,</string>
+    <string name="network_fee_warning_body_case_debited">%1$s seront débités de votre solde,</string>
     <string name="network_fee_warning_body_case_not_completed">la transaction pourrait ne pas être finalisée,</string>
     <string name="network_fee_warning_body_case_not_sent">les fonds ne seront pas envoyés au destinataire.</string>
     <string name="network_fee_warning_body_confirm_intro">En continuant, vous confirmez que vous :</string>
-    <string name="network_fee_warning_body_confirm_understand">comprenez les spécificités du fonctionnement du réseau %s,</string>
+    <string name="network_fee_warning_body_confirm_understand">comprenez les spécificités du fonctionnement du réseau %1$s,</string>
     <string name="network_fee_warning_body_confirm_risk">êtes conscient du risque de perte de commission,</string>
     <string name="network_fee_warning_body_confirm_accept">acceptez les conséquences possibles d\u0027une transaction échouée.</string>
     <string name="network_fee_warning_points_header">Points à accepter :</string>
@@ -540,6 +540,9 @@
     <string name="TonConnect_Unnamed">Sans nom</string>
     <string name="TonConnect_Wallet">Portefeuille</string>
     <string name="TonConnect_ChooseWallet">Choisir un portefeuille</string>
+    <string name="ton_wallet_version_v4r2_description">Adresse de portefeuille TON de version v4R2. Utilisée par défaut.</string>
+    <string name="ton_wallet_version_w5_description">Portefeuille TON version W5. Une adresse et un solde distincts à partir de la même phrase.</string>
+    <string name="tonconnect_wallet_version">Version du portefeuille</string>
     <string name="manifest_loading">Chargement du manifeste…</string>
     <string name="account_not_supported_by">Votre type de portefeuille actuel %1$s ne prend pas en charge %2$s</string>
     <!--WalletConnect-->
@@ -569,12 +572,7 @@
     <string name="WalletConnect_PendingRequests">Demandes en attente</string>
     <string name="WalletConnect_ActiveWallet">Portefeuille actif</string>
     <string name="WalletConnect_Unnamed">Sans nom</string>
-    <string name="WalletConnect_Pairings">Appairages</string>
-    <string name="WalletConnect_PairedDApps">dApps appairées</string>
     <string name="delete_all">Tout supprimer</string>
-    <string name="WalletConnect_Pairings_ConfirmationDeleteAll">Voulez-vous supprimer toutes les dApps appairées ?</string>
-    <string name="WalletConnect_Pairings_Delete">Supprimer</string>
-    <string name="WalletConnect_DeleteAllPairs">Supprimer toutes les paires</string>
 
     <string name="connect">Connecter</string>
     <string name="connect_trezor_to_add_message">Vous devez connecter Trezor pour ajouter des jetons</string>
@@ -600,8 +598,8 @@
     <string name="Swap_Allowance">Allocation</string>
     <string name="Swap_Price">Prix</string>
     <string name="Swap_AvailableBalance">Solde disponible</string>
-    <string name="swap_insufficient_fee_balance">Le solde actuel de %s est inférieur au montant requis pour traiter cette transaction, y compris les frais.</string>
-    <string name="fee_warning_low_balance">Le solde est inférieur au niveau nécessaire. Les frais pourraient atteindre %s.</string>
+    <string name="swap_insufficient_fee_balance">Le solde actuel de %1$s est inférieur au montant requis pour traiter cette transaction, y compris les frais.</string>
+    <string name="fee_warning_low_balance">Le solde est inférieur au niveau nécessaire. Les frais pourraient atteindre %1$s.</string>
     <string name="swap_balance_for_fees">Solde pour les frais</string>
     <string name="fee">Frais</string>
     <string name="estimated_fee">Frais estimés</string>
@@ -614,7 +612,7 @@
     <string name="Swap_ErrorNoProviders">Aucun fournisseur</string>
     <string name="Swap_ErrorNoQuote">No Quotes</string>
     <string name="Swap_ErrorInsufficientBalance">Solde insuffisant</string>
-    <string name="swap_out_of_min_amount">En dessous du montant minimum %s</string>
+    <string name="swap_out_of_min_amount">En dessous du montant minimum %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">Impact élevé sur les prix</string>
     <string name="Swap_ErrorWalletSyncing">Le portefeuille est en cours de synchronisation</string>
     <string name="Swap_ErrorWalletNotSynced">Portefeuille non synchronisé</string>
@@ -641,7 +639,7 @@
     <string name="Swap_YouPay">Vous payez</string>
     <string name="Swap_YouGet">Vous recevez</string>
     <string name="Swap_Confirm_Title">Confirmer</string>
-    <string name="SwapConfirm_QuoteExpiresIn">Le devis expire dans %d</string>
+    <string name="SwapConfirm_QuoteExpiresIn">Le devis expire dans %1$d</string>
     <string name="SwapConfirm_QuoteExpired">Devis expiré</string>
     <string name="SwapConfirm_QuoteIsInvalid">Devis invalide</string>
     <string name="SwapConfirm_FetchingFinalQuote">Récupération du devis final</string>
@@ -680,7 +678,7 @@
     <string name="swap_no_providers_for_this_amount">Aucun fournisseur pour ce montant</string>
 
     <!--Approve-->
-    <string name="Approve_RevokeAndApproveInfo">Vous pouvez échanger %s, ou vous devez révoquer et approuver le nouveau montant</string>
+    <string name="Approve_RevokeAndApproveInfo">Vous pouvez échanger %1$s, ou vous devez révoquer et approuver le nouveau montant</string>
     <string name="Approve_Spender">Dépendant</string>
     <string name="Approve_YouApprove">Vous approuvez</string>
     <string name="Approve_YouRevoke">Vous révoquez</string>
@@ -772,6 +770,8 @@
     <string name="TransactionInfo_AnnouncedAmount">Montant annoncé</string>
     <string name="transaction_info_executed_amount">Montant exécuté</string>
     <string name="TransactionInfo_PriceImpact">Impact sur le prix</string>
+    <string name="swap_duration">Durée de l’échange</string>
+    <string name="swap_duration_approximate">~%1$s</string>
     <string name="TransactionInfo_ExecutedRate">Taux exécuté</string>
     <string name="TransactionInfo_Fee">Frais</string>
     <string name="TransactionInfo_FeeEstimated">Frais (est.)</string>
@@ -1075,6 +1075,7 @@
     <string name="offline_transaction_signed_transaction_unavailable">La transaction signée n’est plus disponible. Signez-la à nouveau.</string>
     <string name="offline_broadcast_title">Envoyer une TX RAW</string>
     <string name="offline_broadcast_import_file">Importer un fichier de transaction</string>
+    <string name="offline_broadcast_input_hint">Collez une transaction RAW ou P.cash signée</string>
     <string name="offline_broadcast_file_read_failed">Impossible de lire le fichier de transaction. Vérifiez le fichier et réessayez.</string>
     <string name="offline_broadcast_invalid_input">Impossible de reconnaître la transaction. Vérifiez le format et réessayez.</string>
     <string name="offline_broadcast_check_title">Vérifier la transaction</string>
@@ -2075,8 +2076,9 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="image_saved_to_gallery">Image enregistrée dans la galerie</string>
     <string name="auth_detail_save_failed">Échec de l\u0027enregistrement de l\u0027image</string>
     <string name="auth_info_no_records">Aucun enregistrement d\u0027autorisation pour le moment</string>
-    <string name="send_sms_via_zec_title">Envoyer un SMS via ZEC</string>
-    <string name="send_sms_via_zec_info">Ce mode vous permet de notifier vos amis proches ou votre avocat que vous avez été contraint d\u0027ouvrir l\u0027application. Ce mode fonctionne si vous avez du ZEC dans votre portefeuille. Sinon, l\u0027application l\u0027ajoutera.</string>
+    <string name="send_sms_via_zec_title">Notification de connexion</string>
+    <string name="send_sms_enabled">Envoyer la notification</string>
+    <string name="send_sms_via_zec_info">Notifie une personne de confiance que vous avez été contraint d\u0027ouvrir l\u0027application.\n\nQuand : uniquement lorsque l\u0027application est déverrouillée en saisissant le code du Mode de Duress. Une connexion normale, un code incorrect ou un déverrouillage par biométrie n\u0027envoie rien.\n\nQuoi : une transaction de 0.0001 ZEC (plus les frais de réseau) depuis le portefeuille choisi vers l\u0027adresse Zcash protégée (shielded) du destinataire, avec votre message dans le memo. Ce n\u0027est pas un SMS : le destinataire lit le message dans son portefeuille Zcash, aucun numéro de téléphone n\u0027est nécessaire.\n\nQuand elle arrive : elle est envoyée automatiquement en arrière-plan juste après la connexion et atteint généralement le destinataire en quelques minutes ; le portefeuille peut d\u0027abord devoir se synchroniser, ce qui peut prendre plus de temps.\n\nCoût : chaque notification coûte 0.0001 ZEC plus les frais. Si le portefeuille ne dispose pas de suffisamment de ZEC à ce moment-là, la notification n\u0027est pas envoyée et n\u0027est pas réessayée — utilisez le bouton de test pour vérifier que cela fonctionne.\n\nVous pouvez désactiver les notifications avec l\u0027interrupteur en haut de cet écran.</string>
     <string name="send_sms_wallet_balance_hint">Assurez-vous d\u0027avoir le montant requis dans le portefeuille sélectionné.</string>
     <string name="send_sms_syncing">Synchronisation pour envoi…</string>
     <string name="send_sms_test_success">Votre message a été envoyé avec succès.</string>
@@ -2087,7 +2089,8 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="choose_wallet">Choisir le portefeuille</string>
     <string name="choose_wallet_none">Aucun</string>
     <string name="required_coins_for_transaction">Jetons requis pour la transaction</string>
-    <string name="test_sms">Tester SMS</string>
+    <string name="send_sms_address_hint">Saisissez l\u0027adresse Zcash protégée (shielded, commence par z ou u) du portefeuille du destinataire. Le message apparaîtra dans son portefeuille Zcash.</string>
+    <string name="test_sms">Envoyer une notification de test</string>
     <string name="no_zec_wallets_available">Aucun portefeuille avec des tokens ZEC trouvé</string>
     <!-- Connect Mini App -->
     <string name="connect_mini_app_title">Connecter Mini App</string>
@@ -2128,15 +2131,15 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="scan_card_to_add">Scanner la carte pour ajouter un jeton</string>
     <!--Multi-Swap-->
     <string name="multi_swap_completed">Échange terminé</string>
-    <string name="multi_swap_via">Échange via %s</string>
-    <string name="multi_swap_completed_via">Terminé via %s</string>
+    <string name="multi_swap_via">Échange via %1$s</string>
+    <string name="multi_swap_completed_via">Terminé via %1$s</string>
     <string name="multi_swap_no_providers">Aucun fournisseur disponible</string>
     <string name="multi_swap_finding_best_provider">Recherche du meilleur fournisseur…</string>
     <string name="multi_swap_continue">Continuer l\u0027échange</string>
     <string name="multi_swap_route_explanation">Pour obtenir le meilleur taux, un itinéraire via %2$s est utilisé. L\u0027échange sera effectué en deux étapes successives : d\u0027abord %1$s → %2$s, puis %2$s → %3$s.</string>
     <string name="multi_swap_route_title">Itinéraire d\u0027échange</string>
     <string name="multi_swap_execution_title">Échange</string>
-    <string name="multi_swap_step">Étape %d</string>
+    <string name="multi_swap_step">Étape %1$d</string>
     <string name="multi_swap_understood_continue">Compris, continuer</string>
     <string name="multi_swap_unfinished">Échange non terminé</string>
     <string name="multi_swap_unfinished_plural">Échanges non terminés (%d)</string>
@@ -2150,39 +2153,6 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="multi_swap_cancel_swap">Annuler l\u0027échange</string>
     <string name="multi_swap_cancel_swap_warning">Le premier échange a déjà été effectué. Les jetons intermédiaires sont dans votre portefeuille et resteront les vôtres. Seule la deuxième étape de l\u0027échange sera annulée.</string>
     <string name="swap_leg_title">Échange %d</string>
-    <!--PayCore-->
-    <string name="paycore_verify_phone">Vérifier le téléphone</string>
-    <string name="paycore_verifying">Vérification…</string>
-    <string name="paycore_service_fee">Frais de service</string>
-    <string name="paycore_network">Réseau</string>
-    <string name="paycore_verification_title">PayCore</string>
-    <string name="paycore_verification_phone_placeholder">(___)___-__-__</string>
-    <string name="paycore_verification_continue">Continuer</string>
-    <string name="paycore_verification_processing">En cours de traitement…</string>
-    <string name="settings_contact_us_pcash_support">Support P.Cash</string>
-    <string name="settings_contact_us_paycore_support">Support Paycore</string>
-    <string name="paycore_verification_not_verified">Numéro non vérifié</string>
-    <string name="paycore_verification_pass_kyc">Effectuer le KYC</string>
-    <string name="paycore_verification_verified_title">Votre vérification est terminée</string>
-    <string name="paycore_verification_warning_title">ATTENTION</string>
-    <string name="paycore_verification_warning_text">LE TRANSFERT DE FONDS EST AUTORISÉ EXCLUSIVEMENT DEPUIS LE COMPTE VOUS APPARTENANT, AVEC UN NUMÉRO DE TÉLÉPHONE ET UNE IDENTITÉ VÉRIFIÉS.</string>
-    <string name="paycore_verification_warning_detail">Les transferts depuis d\u0027autres comptes ne seront pas crédités, les fonds envoyés seront perdus !</string>
-    <string name="paycore_verification_back">Retour</string>
-    <string name="paycore_verification_error">La connexion a échoué. Vérifiez le numéro de téléphone et réessayez.</string>
-    <string name="paycore_generic_error">L\u0027opération a échoué. Veuillez réessayer plus tard ou contacter le support.</string>
-    <string name="paycore_verification_retry">Réessayer</string>
-    <string name="paycore_verification_phone_label">Numéro de téléphone :</string>
-    <string name="paycore_verification_contact_support">La récupération automatique a échoué. Veuillez contacter l\u0027assistance.</string>
-    <string name="paycore_verification_support_line"><![CDATA[Assistance technique 24/7 : <a href="mailto:support@paycore.pw">support@paycore.pw</a>, <a href="https://t.me/paycore_supp">@paycore_supp</a>]]></string>
-    <string name="paycore_service">Service</string>
-    <string name="paycore_support">Assistance PayCore</string>
-    <string name="paycore_section_currency">Devise</string>
-    <string name="paycore_section_crypto">Cryptomonnaies</string>
-    <string name="paycore_select_bank">Sélectionner une banque</string>
-    <string name="paycore_select_bank_error">Impossible d\u0027ouvrir la sélection de banque. Réessayez plus tard.</string>
-    <string name="paycore_banks_unavailable">Les banques sont temporairement indisponibles. Réessayez plus tard.</string>
-    <string name="paycore_delete_restricted_warning">Cette transaction ne peut pas être supprimée car elle est traitée par un service tiers.</string>
-    <string name="paycore_delete_to_complete_select_bank">Sélectionnez une banque pour finaliser le swap.</string>
     <string name="swap_provider_type_info_title">Types de fournisseurs d\u0027échange</string>
     <string name="swap_provider_type_info_description">Les libellés ci-dessous expliquent le fonctionnement des différents types de fournisseurs d\u0027échange. Ils vous aident à comprendre comment l\u0027échange sera exécuté et quelles vérifications ou conditions supplémentaires peuvent s\u0027appliquer.</string>
     <string name="swap_provider_type_auto_description">Exécution automatique de l\u0027échange. Si l\u0027échange ne peut pas être finalisé, les fonds sont généralement remboursés automatiquement, sans aucune action de la part de l\u0027utilisateur.</string>
@@ -2311,7 +2281,6 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="beam_recovery_required_title">Récupération nécessaire</string>
     <string name="beam_recovery_required_description">La réinitialisation automatique est bloquée pour protéger les données de votre portefeuille BEAM. Les données sont conservées, mais l’accès à l’ancien portefeuille ne peut pas être garanti. La restauration avec votre phrase de récupération doit créer un portefeuille distinct.</string>
     <string name="beam_offline_context_unavailable">Le contexte de signature hors ligne est indisponible. Synchronisez ce portefeuille en ligne au préalable.</string>
-    <string name="beam_wallet_state_stopped">Portefeuille BEAM arrêté</string>
     <string name="beam_wallet_state_offline">Portefeuille BEAM hors ligne</string>
     <string name="beam_wallet_state_closed">Portefeuille BEAM fermé</string>
     <string name="beam_wallet_operation_failed">Échec de l’opération du portefeuille BEAM</string>
@@ -2349,4 +2318,7 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="desktop_change_password_corrupted">Le fichier de clé est endommagé : une fois l\u0027application verrouillée, vous ne pourrez plus vous connecter. Enregistrez une sauvegarde de chaque phrase de récupération.</string>
     <string name="desktop_change_password_success">Mot de passe modifié</string>
     <string name="desktop_security_lock_now">Verrouiller maintenant</string>
+    <string name="evm_node_request_failed">Le nœud du réseau n\'a pas pu traiter la requête. Réessayez ou choisissez une autre source dans les paramètres de la Blockchain.\n\nRéponse du nœud : %1$s</string>
+    <string name="desktop_transfer_password">Mot de passe avant l\u0027envoi</string>
+    <string name="desktop_transfer_password_description">Le mot de passe de l\u0027application est demandé avant chaque envoi, ce qui protège vos actifs si quelqu\u0027un accède à votre ordinateur pendant que l\u0027application est déverrouillée.</string>
 </resources>

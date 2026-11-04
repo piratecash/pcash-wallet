@@ -6,15 +6,20 @@ import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.MarketKitWrapper
 import cash.p.terminal.wallet.entities.TokenQuery
+import cash.p.terminal.wallet.entities.TonWalletVersion
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.core.logger.AppLogger
 import io.horizontalsystems.tonkit.models.Event
 import io.horizontalsystems.tonkit.models.Jetton
+import io.horizontalsystems.tonkit.models.SyncState
+import io.horizontalsystems.tonkit.models.Tag
 import io.horizontalsystems.tonkit.models.TagQuery
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 
@@ -31,41 +36,65 @@ class TonAccountManager(
     private val singleDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val singleDispatcherCoroutineScope = CoroutineScope(singleDispatcher)
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
-    private var transactionSubscriptionJob: Job? = null
+
+    // Confined to singleDispatcher.
+    private val subscriptions = mutableMapOf<TonWalletVersion, Subscription>()
 
     fun start() {
         singleDispatcherCoroutineScope.launch {
-            tonKitManager.kitStartedFlow.collect { started ->
-                handleStarted(started)
+            tonKitManager.startedKitsFlow.collect { wrappers ->
+                handleStarted(wrappers)
             }
         }
     }
 
-    private suspend fun handleStarted(started: Boolean) {
+    private fun handleStarted(wrappers: Map<TonWalletVersion, TonKitWrapper>) {
         try {
-            if (started) {
-                subscribeToTransactions()
-            } else {
-                stop()
+            cancelReplacedSubscriptions(wrappers)
+            wrappers.filterKeys { it !in subscriptions }.forEach { (version, wrapper) ->
+                subscribeToTransactions(wrapper)?.let { subscriptions[version] = it }
             }
         } catch (exception: Exception) {
             logger.warning("error", exception)
         }
     }
 
-    private fun stop() {
-        transactionSubscriptionJob?.cancel()
+    private fun cancelReplacedSubscriptions(wrappers: Map<TonWalletVersion, TonKitWrapper>) {
+        val replaced = subscriptions.filter { (version, subscription) -> wrappers[version] !== subscription.wrapper }
+        replaced.values.forEach { it.job.cancel() }
+        subscriptions.keys.removeAll(replaced.keys)
     }
 
-    private suspend fun subscribeToTransactions() {
-        val tonKitWrapper = tonKitManager.tonKitWrapper ?: return
-        val account = accountManager.activeAccount ?: return
+    private fun subscribeToTransactions(tonKitWrapper: TonKitWrapper): Subscription? {
+        val account = accountManager.activeAccount ?: return null
 
-        transactionSubscriptionJob = coroutineScope.launch {
+        val job = coroutineScope.launch {
+            if (tonKitWrapper.version.discoversWholeHistory) {
+                launch { handleStoredJettonEvents(account, tonKitWrapper) }
+            }
             tonKitWrapper.tonKit.eventFlow(TagQuery(null, null, null, null))
                 .collect { (events, initial) ->
                     handle(events, account, tonKitWrapper, initial)
                 }
+        }
+        return Subscription(tonKitWrapper, job)
+    }
+
+    // The event flow does not replay, so history the kit synced before we subscribed is read from its DB.
+    private suspend fun handleStoredJettonEvents(account: Account, tonKitWrapper: TonKitWrapper) {
+        val tonKit = tonKitWrapper.tonKit
+        try {
+            tonKit.eventSyncStateFlow.first { it is SyncState.Synced }
+            var beforeLt: Long? = null
+            do {
+                val events = tonKit.events(jettonEventsQuery, beforeLt, STORED_EVENTS_PAGE_SIZE)
+                handle(events, account, tonKitWrapper, initial = true)
+                beforeLt = events.lastOrNull()?.lt
+            } while (events.size == STORED_EVENTS_PAGE_SIZE)
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            logger.warning("stored jetton events scan failed", exception)
         }
     }
 
@@ -77,9 +106,9 @@ class TonAccountManager(
     ) {
         val shouldAutoEnableTokens = tokenAutoEnableManager.isAutoEnabled(account, blockchainType)
 
-        if (initial && account.origin == AccountOrigin.Restored && !account.isWatchAccount && !shouldAutoEnableTokens) {
-            return
-        }
+        val skipsInitialBatch = !tonKitWrapper.version.discoversWholeHistory &&
+            isRestoredWithoutAutoEnable(account, shouldAutoEnableTokens)
+        if (initial && skipsInitialBatch) return
 
         val address = tonKitWrapper.tonKit.receiveAddress
 
@@ -105,15 +134,15 @@ class TonAccountManager(
             }
         }
 
-        handle(jettons, account)
+        handle(jettons, account, tonKitWrapper.version)
     }
 
-    internal suspend fun handle(jettons: Set<Jetton>, account: Account) {
+    internal suspend fun handle(jettons: Set<Jetton>, account: Account, version: TonWalletVersion) {
         if (jettons.isEmpty()) return
 
         val existingTokenTypeIds = walletManager.activeWallets.map { it.token.type.id }
         val newJettonTypes = jettons
-            .map { it.tokenType }
+            .map { it.tokenType(version) }
             .filter { it.id !in existingTokenTypeIds }
 
         if (newJettonTypes.isEmpty()) return
@@ -139,4 +168,21 @@ class TonAccountManager(
 
         walletManager.saveEnabledWallets(enabledWallets)
     }
+
+    private fun isRestoredWithoutAutoEnable(account: Account, autoEnabled: Boolean) =
+        account.origin == AccountOrigin.Restored && !account.isWatchAccount && !autoEnabled
+
+    private class Subscription(val wrapper: TonKitWrapper, val job: Job)
+
+    private companion object {
+        const val STORED_EVENTS_PAGE_SIZE = 100
+        val jettonEventsQuery = TagQuery(null, Tag.Platform.Jetton, null, null)
+    }
 }
+
+/** Enabling W5 is an explicit user action, so the jettons its whole history holds are always discovered. */
+private val TonWalletVersion.discoversWholeHistory: Boolean
+    get() = when (this) {
+        TonWalletVersion.V4R2 -> false
+        TonWalletVersion.W5 -> true
+    }

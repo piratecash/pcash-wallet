@@ -24,6 +24,6 @@ sealed interface SettingsAction {
     data object AboutApp : SettingsAction
     data object RateApp : SettingsAction
     data object ShareApp : SettingsAction
-    data class Contact(val isPayCoreEnabled: Boolean) : SettingsAction
+    data object Contact : SettingsAction
     data object CompanyWebsite : SettingsAction
 }

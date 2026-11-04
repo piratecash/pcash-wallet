@@ -4,18 +4,20 @@ import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import cash.p.terminal.R
-import cash.p.terminal.core.authorizedAction
-import cash.p.terminal.core.authorizedDeleteContactsPasscodeAction
-import cash.p.terminal.core.ensurePinSet
 import cash.p.terminal.core.fullRestart
 import cash.p.terminal.core.getKoinInstance
-import cash.p.terminal.core.premiumAction
+import cash.p.terminal.core.rememberAuthorizedAction
+import cash.p.terminal.core.rememberAuthorizedDeleteContactsPasscodeAction
+import cash.p.terminal.core.rememberEnsurePinSet
+import cash.p.terminal.core.rememberPremiumAction
 import cash.p.terminal.core.slideToDeleteContactsTerms
+import cash.p.terminal.modules.calculator.rememberEnableCalculatorMode
 import cash.p.terminal.modules.calculator.autolock.CalculatorAutoLockScreen
 import cash.p.terminal.modules.calculator.autolock.CalculatorAutoLockViewModel
 import cash.p.terminal.modules.calculator.domain.CalculatorModeService
 import cash.p.terminal.modules.calculator.pinsettings.CalculatorPinSettingsScreen
 import cash.p.terminal.modules.calculator.pinsettings.CalculatorPinSettingsViewModel
+import cash.p.terminal.modules.pin.PinType
 import cash.p.terminal.modules.pin.hiddenwallet.SetHiddenWalletPinPage
 import cash.p.terminal.modules.settings.advancedsecurity.securereset.SecureResetTermsScreen
 import cash.p.terminal.modules.settings.advancedsecurity.securereset.SecureResetTermsViewModel
@@ -25,46 +27,38 @@ import cash.p.terminal.modules.settings.advancedsecurity.terms.HiddenWalletTerms
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.viewModelStoreOwnerForPage
-import io.horizontalsystems.core.IPinComponent
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.navigation.slideFromRightSafely
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.PinSet_Title
 
 class AdvancedSecurityPage : HSPage() {
 
     @Composable
     override fun GetContent(navigation: HSNavigation) {
         val viewModel: AdvancedSecurityViewModel = koinViewModel()
+        val openHiddenWalletTerms = navigation.rememberPremiumAction {
+            navigation.slideFromRightSafely(HiddenWalletTermsPage())
+        }
+        val openSecureResetTerms = navigation.rememberPremiumAction {
+            navigation.slideFromRightSafely(SecureResetTermsPage())
+        }
+        val disableSecureReset =
+            navigation.rememberAuthorizedAction(input = null, action = viewModel::onSecureResetDisabled)
+        val openDeleteContactsTerms = navigation.rememberPremiumAction(navigation::slideToDeleteContactsTerms)
+        val disableDeleteContacts =
+            navigation.rememberAuthorizedDeleteContactsPasscodeAction(viewModel::onDeleteContactsDisabled)
 
         AdvancedSecurityScreen(
             uiState = viewModel.uiState,
-            onCreateHiddenWalletClick = {
-                navigation.premiumAction {
-                    navigation.slideFromRightSafely(HiddenWalletTermsPage())
-                }
-            },
+            onCreateHiddenWalletClick = openHiddenWalletTerms,
             onSecureResetToggle = { enabled ->
-                if (enabled) {
-                    navigation.premiumAction {
-                        navigation.slideFromRightSafely(SecureResetTermsPage())
-                    }
-                } else {
-                    navigation.authorizedAction {
-                        viewModel.onSecureResetDisabled()
-                    }
-                }
+                if (enabled) openSecureResetTerms() else disableSecureReset()
             },
             onDeleteContactsToggle = { enabled ->
-                if (enabled) {
-                    navigation.premiumAction {
-                        navigation.slideToDeleteContactsTerms()
-                    }
-                } else {
-                    navigation.authorizedDeleteContactsPasscodeAction {
-                        viewModel.onDeleteContactsDisabled()
-                    }
-                }
+                if (enabled) openDeleteContactsTerms() else disableDeleteContacts()
             },
             onCalculatorPinClick = {
                 navigation.slideFromRight(CalculatorPinPage())
@@ -86,15 +80,14 @@ class HiddenWalletTermsPage : HSPage() {
             parametersOf(termTitles)
         }
         val uiState = viewModel.uiState
+        val openSetHiddenWalletPin = navigation.rememberEnsurePinSet(Res.string.PinSet_Title, PinType.REGULAR) {
+            navigation.slideFromRight(SetHiddenWalletPinPage())
+        }
 
         HiddenWalletTermsScreen(
             uiState = uiState,
             onCheckboxToggle = viewModel::toggleCheckbox,
-            onAgreeClick = {
-                navigation.ensurePinSet(R.string.PinSet_Title) {
-                    navigation.slideFromRight(SetHiddenWalletPinPage())
-                }
-            },
+            onAgreeClick = openSetHiddenWalletPin,
             onNavigateBack = navigation::navigateUpSafely
         )
     }
@@ -114,16 +107,15 @@ class SecureResetTermsPage : HSPage() {
             parametersOf(termTitles)
         }
         val uiState = termsViewModel.uiState
+        val openSetSecureResetPin = navigation.rememberEnsurePinSet(Res.string.PinSet_Title, PinType.REGULAR) {
+            navigation.slideFromRight(SetSecureResetPinPage())
+            viewModel.onSecureResetEnabled()
+        }
 
         SecureResetTermsScreen(
             uiState = uiState,
             onCheckboxToggle = termsViewModel::toggleCheckbox,
-            onAgreeClick = {
-                navigation.ensurePinSet(R.string.PinSet_Title) {
-                    navigation.slideFromRight(SetSecureResetPinPage())
-                    viewModel.onSecureResetEnabled()
-                }
-            },
+            onAgreeClick = openSetSecureResetPin,
             onNavigateBack = navigation::navigateUpSafely
         )
     }
@@ -135,27 +127,15 @@ class CalculatorPinPage : HSPage() {
     override fun GetContent(navigation: HSNavigation) {
         val pinViewModel: CalculatorPinSettingsViewModel = koinViewModel()
         val activity = LocalActivity.current
+        val enableCalculatorMode = navigation.rememberEnableCalculatorMode()
+        val disableCalculatorMode = navigation.rememberAuthorizedAction(input = null) {
+            getKoinInstance<CalculatorModeService>().disable()
+            activity?.fullRestart()
+        }
         CalculatorPinSettingsScreen(
             uiState = pinViewModel.uiState,
             onToggleCalculator = { enabled, disablePushNotifications ->
-                val calculatorModeService = getKoinInstance<CalculatorModeService>()
-                if (enabled) {
-                    val pinExistedBefore = getKoinInstance<IPinComponent>().isPinSet
-                    navigation.premiumAction {
-                        navigation.ensurePinSet(R.string.PinSet_Title) {
-                            calculatorModeService.enable(
-                                pinExistedBefore = pinExistedBefore,
-                                disablePushNotifications = disablePushNotifications,
-                            )
-                            activity?.fullRestart()
-                        }
-                    }
-                } else {
-                    navigation.authorizedAction {
-                        calculatorModeService.disable()
-                        activity?.fullRestart()
-                    }
-                }
+                if (enabled) enableCalculatorMode(disablePushNotifications) else disableCalculatorMode()
             },
             onAutoLockClick = {
                 navigation.slideFromRight(CalculatorAutoLockPage())

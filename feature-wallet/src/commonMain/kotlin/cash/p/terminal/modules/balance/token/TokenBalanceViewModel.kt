@@ -83,8 +83,8 @@ import cash.p.terminal.wallet.balance.BalanceItem
 import cash.p.terminal.wallet.balance.BalanceViewType
 import cash.p.terminal.wallet.balance.DeemedValue
 import cash.p.terminal.wallet.canSwap
-import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.nativeTokenQuery
 import cash.p.terminal.wallet.favorites.MarketFavoritesManager
 import cash.p.terminal.wallet.isBackedUpOrNotRequired
 import cash.p.terminal.wallet.isCosanta
@@ -731,9 +731,7 @@ class TokenBalanceViewModel(
             return
         }
         val blockchainType = wallet.token.blockchainType
-        val nativeToken = marketKit.token(
-            TokenQuery(blockchainType, TokenType.Native)
-        ) ?: return
+        val nativeToken = marketKit.token(wallet.token.nativeTokenQuery) ?: return
         val nativeBalance = nativeBalanceProvider?.nativeBalanceData?.total ?: BigDecimal.ZERO
         val threshold = getWarningThreshold(blockchainType)
         val hasEnoughBalance = if (threshold != null) {

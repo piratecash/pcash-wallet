@@ -467,6 +467,7 @@ class TransactionInfoService(
                 swapSubProviderId = swapTransaction.subProviderId,
                 swapTransactionId = swapTransaction.transactionId,
                 swapTransactionStatus = swapStatus,
+                swapDuration = swapTransaction.swapDuration(),
                 externalStatus = swapStatus.toUniversalStatus(),
             )
         }

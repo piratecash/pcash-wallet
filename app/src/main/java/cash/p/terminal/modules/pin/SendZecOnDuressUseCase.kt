@@ -100,6 +100,7 @@ class SendZecOnDuressUseCase(
         if (userLevel <= 0) return
 
         val previousLevel = userLevel - 1
+        if (!smsNotificationSettings.getSmsNotificationEnabled(previousLevel)) return
         val accountId = smsNotificationSettings.getSmsNotificationAccountId(previousLevel) ?: return
         val address = smsNotificationSettings.getSmsNotificationAddress(previousLevel) ?: return
         val memo = smsNotificationSettings.getSmsNotificationMemo(previousLevel) ?: ""

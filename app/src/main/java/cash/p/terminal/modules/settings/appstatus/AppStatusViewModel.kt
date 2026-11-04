@@ -17,7 +17,6 @@ import cash.p.terminal.core.managers.ThorchainKitManagers
 import cash.p.terminal.core.managers.TonKitManager
 import cash.p.terminal.core.managers.TronKitManager
 import cash.p.terminal.core.providers.AppConfigProvider
-import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.feature.miniapp.domain.storage.IUniqueCodeStorage
 import cash.p.terminal.modules.blockchainstatus.BlockchainStatusProvider
 import cash.p.terminal.modules.blockchainstatus.BtcBlockchainStatusProvider
@@ -414,7 +413,7 @@ class AppStatusViewModel(
         val memory = am.memoryClass
         val largeMemory = am.largeMemoryClass
         val isLowRam = am.isLowRamDevice
-        val perf = tryOrNull { Build.VERSION.MEDIA_PERFORMANCE_CLASS }
+        val perf = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Build.VERSION.MEDIA_PERFORMANCE_CLASS else null
 
         val classLevel = when {
             perf == null -> "Unknown"

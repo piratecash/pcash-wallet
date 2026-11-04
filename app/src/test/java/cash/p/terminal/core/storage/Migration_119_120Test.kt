@@ -29,6 +29,7 @@ class Migration_119_120Test {
         buildAppDatabase(context).run {
             openHelper.writableDatabase.run {
                 execSQL("DROP TABLE StackingCache")
+                execSQL("ALTER TABLE SwapProviderTransaction DROP COLUMN receivedAt")
                 version = 119
             }
             close()

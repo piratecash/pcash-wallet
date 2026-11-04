@@ -84,13 +84,13 @@ class EvmAdapterSyncStateTest {
     // --- Standard native sync state transitions ---
 
     @Test
-    fun balanceState_notStarted_returnsConnecting() {
+    fun balanceState_notStarted_returnsPaused() {
         val adapter = createAdapter(
             syncState = SyncState.NotSynced(SyncError.NotStarted()),
             txSyncState = SyncState.NotSynced(SyncError.NotStarted()),
         )
 
-        assertEquals(AdapterState.Connecting, adapter.balanceState)
+        assertEquals(AdapterState.Paused, adapter.balanceState)
     }
 
     @Test
@@ -169,12 +169,12 @@ class EvmAdapterSyncStateTest {
     }
 
     @Test
-    fun transactionsSyncState_txNotStarted_returnsSynced() {
+    fun transactionsSyncState_txNotStarted_returnsPaused() {
         val adapter = createAdapter(
             txSyncState = SyncState.NotSynced(SyncError.NotStarted()),
         )
 
-        assertEquals(AdapterState.Synced, adapter.transactionsSyncState)
+        assertEquals(AdapterState.Paused, adapter.transactionsSyncState)
     }
 
     @Test

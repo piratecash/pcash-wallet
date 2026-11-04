@@ -387,7 +387,7 @@
     <string name="SendNft_Error_NotEnoughtBalance">Недостатньо коштів</string>
     <!--Send-->
     <string name="Send_EnterAddress">Вкажіть адресу</string>
-    <string name="Send_Title">Надіслати %s</string>
+    <string name="Send_Title">Надіслати %1$s</string>
     <string name="Send_Hint_Address">Адреса або домен</string>
     <string name="Send_Fee">Комісія</string>
     <string name="Send_Fee_Info">Блокчейн вимагає від користувачів оплати мережевих зборів при надсиланні транзакцій. Ці збори вищі, коли в мережі відбувається багато транзакцій.</string>
@@ -421,7 +421,7 @@
     <string name="ScanQr_CameraPermissionDeniedText">Доступ до камери для цього застосунку заборонено, ви можете перейти в налаштування та дозволити доступ</string>
     <string name="ScanQr_GoToSettings">Перейти в налаштування</string>
     <string name="scan_qr_camera_initialization_failed">Камера недоступна. Будь ласка, спробуйте ще раз або скористайтеся іншим пристроєм.</string>
-    <string name="qr_scanner_title_address">Адреса %s</string>
+    <string name="qr_scanner_title_address">Адреса %1$s</string>
     <string name="qr_scanner_title_smart_scan">РОЗУМНЕ СКАНУВАННЯ</string>
     <string name="choose_from_photos">Вибрати з фото</string>
     <string name="image_decode_failed">Не вдалося зчитати QR-код із вибраного зображення</string>
@@ -488,23 +488,23 @@
     <string name="FeeInfo_TronResourcesConsumed_Description">Bandwidth - це одиниця, яка вимірює розмір байт транзакції, що зберігаються в базі даних блокчейну. Чим більша транзакція, тим більше bandwidth буде споживатися.\n\nEnergy — це одиниця, що вимірює кількість обчислень, необхідних віртуальній машині TRON для виконання конкретних операцій у мережі TRON.\n\nОскільки транзакції смарт-контракту вимагають виконання обчислювальних ресурсів, кожна угода за контрактом вимагає оплати energy комісії.</string>
 
     <!--Network Fee Warning-->
-    <string name="network_fee_warning_title">Комісія мережі %s</string>
+    <string name="network_fee_warning_title">Комісія мережі %1$s</string>
     <string name="token_balance_need_native_coin_title">Вам потрібен %1$s для використання %2$s</string>
     <string name="token_balance_need_native_coin_body">%2$s працює на %3$s.\nКомісія мережі сплачується в %1$s.\nВаш баланс %1$s: %4$s</string>
     <string name="network_fee_warning_body_protocol">Протокол мережі %1$s передбачає, що для сплати комісії мережі за цю транзакцію необхідно щонайменше %2$s.</string>
-    <string name="network_fee_warning_body_balance">На вашому балансі менше ніж %s.</string>
-    <string name="network_fee_warning_body_protocol_bold">щонайменше %s</string>
-    <string name="network_fee_warning_body_balance_bold">менше ніж %s</string>
+    <string name="network_fee_warning_body_balance">На вашому балансі менше ніж %1$s.</string>
+    <string name="network_fee_warning_body_protocol_bold">щонайменше %1$s</string>
+    <string name="network_fee_warning_body_balance_bold">менше ніж %1$s</string>
     <string name="network_fee_warning_body_case_not_completed_prefix">але </string>
     <string name="network_fee_warning_body_case_not_sent_prefix">і </string>
     <string name="network_fee_warning_body_risk">За такого балансу існує ризик, що фактична комісія може бути вищою за очікувану.</string>
     <string name="network_fee_warning_body_risk_bold">бути вищою за очікувану</string>
     <string name="network_fee_warning_body_case_intro">У такому випадку:</string>
-    <string name="network_fee_warning_body_case_debited">%s буде списано з вашого балансу,</string>
+    <string name="network_fee_warning_body_case_debited">%1$s буде списано з вашого балансу,</string>
     <string name="network_fee_warning_body_case_not_completed">транзакція може не бути завершена,</string>
     <string name="network_fee_warning_body_case_not_sent">монети не буде надіслано отримувачу.</string>
     <string name="network_fee_warning_body_confirm_intro">Продовжуючи, ви підтверджуєте, що:</string>
-    <string name="network_fee_warning_body_confirm_understand">розумієте особливості роботи мережі %s,</string>
+    <string name="network_fee_warning_body_confirm_understand">розумієте особливості роботи мережі %1$s,</string>
     <string name="network_fee_warning_body_confirm_risk">усвідомлюєте ризик втрати комісії,</string>
     <string name="network_fee_warning_body_confirm_accept">приймаєте можливі наслідки невдалої транзакції.</string>
     <string name="network_fee_warning_points_header">Пункти для погодження:</string>
@@ -524,6 +524,9 @@
     <string name="TonConnect_Unnamed">Без назви</string>
     <string name="TonConnect_Wallet">Гаманець</string>
     <string name="TonConnect_ChooseWallet">Виберіть гаманець</string>
+    <string name="ton_wallet_version_v4r2_description">Адреса гаманця TON версії v4R2. Використовується за замовчуванням.</string>
+    <string name="ton_wallet_version_w5_description">Гаманець TON версії W5. Окрема адреса та баланс з тієї самої фрази.</string>
+    <string name="tonconnect_wallet_version">Версія гаманця</string>
     <string name="manifest_loading">Завантаження маніфесту…</string>
     <string name="account_not_supported_by">Ваш поточний тип гаманця %1$s не підтримує %2$s</string>
     <!--WalletConnect-->
@@ -553,12 +556,7 @@
     <string name="WalletConnect_PendingRequests">Очікуючі запити</string>
     <string name="WalletConnect_ActiveWallet">Активний гаманець</string>
     <string name="WalletConnect_Unnamed">Без назви</string>
-    <string name="WalletConnect_Pairings">Підключення</string>
-    <string name="WalletConnect_PairedDApps">Підключені dApps</string>
     <string name="delete_all">Видалити все</string>
-    <string name="WalletConnect_Pairings_ConfirmationDeleteAll">Ви хочете видалити всі підключені dApps?</string>
-    <string name="WalletConnect_Pairings_Delete">Видалити</string>
-    <string name="WalletConnect_DeleteAllPairs">Видалити всі підключення</string>
     <!--EthereumTransaction-->
     <string name="save">Зберегти</string>
     <string name="EthereumTransaction_Warning_Title">Увага</string>
@@ -582,8 +580,8 @@
     <string name="Swap_Allowance">Дозвіл</string>
     <string name="Swap_Price">Ціна</string>
     <string name="Swap_AvailableBalance">Доступний баланс</string>
-    <string name="swap_insufficient_fee_balance">Поточний баланс %s нижчий за суму, необхідну для проведення цієї транзакції, включаючи комісію.</string>
-    <string name="fee_warning_low_balance">Баланс нижчий за необхідний рівень. Комісія може становити до %s.</string>
+    <string name="swap_insufficient_fee_balance">Поточний баланс %1$s нижчий за суму, необхідну для проведення цієї транзакції, включаючи комісію.</string>
+    <string name="fee_warning_low_balance">Баланс нижчий за необхідний рівень. Комісія може становити до %1$s.</string>
     <string name="swap_balance_for_fees">Баланс для комісій</string>
     <string name="fee">Комісія</string>
     <string name="estimated_fee">Орієнтовна комісія</string>
@@ -596,7 +594,7 @@
     <string name="Swap_ErrorNoProviders">Немає провайдерів</string>
     <string name="Swap_ErrorNoQuote">Немає пропозицій</string>
     <string name="Swap_ErrorInsufficientBalance">Недостатній баланс</string>
-    <string name="swap_out_of_min_amount">Менше мін. суми %s</string>
+    <string name="swap_out_of_min_amount">Менше мін. суми %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">Високе відхилення ціни</string>
     <string name="Swap_ErrorWalletSyncing">Синхронізація гаманця</string>
     <string name="Swap_ErrorWalletNotSynced">Гаманець не синхронізовано</string>
@@ -623,7 +621,7 @@
     <string name="Swap_YouPay">Ви платите</string>
     <string name="Swap_YouGet">Ви отримаєте</string>
     <string name="Swap_Confirm_Title">Підтвердити</string>
-    <string name="SwapConfirm_QuoteExpiresIn">Котирування закінчується через %d</string>
+    <string name="SwapConfirm_QuoteExpiresIn">Котирування закінчується через %1$d</string>
     <string name="SwapConfirm_QuoteExpired">Термін дії котирування минув</string>
     <string name="SwapConfirm_QuoteIsInvalid">Котирування недійсне</string>
     <string name="SwapConfirm_FetchingFinalQuote">Отримання котирування</string>
@@ -665,7 +663,7 @@
     <!-- Swap Confirmation -->
     <string name="activate_insufficient_balance_description">У вас недостатньо балансу XLM для активації цього токена.</string>
     <!--Approve-->
-    <string name="Approve_RevokeAndApproveInfo">Ви можете обміняти %s, або ви повинні скасувати і схвалити нову суму</string>
+    <string name="Approve_RevokeAndApproveInfo">Ви можете обміняти %1$s, або ви повинні скасувати і схвалити нову суму</string>
     <string name="Approve_Spender">Покупець</string>
     <string name="Approve_YouApprove">Ви дозволяєте</string>
     <string name="Approve_YouRevoke">Ви скасовуєте</string>
@@ -760,6 +758,8 @@
     <string name="TransactionInfo_AnnouncedAmount">Оголошена сума</string>
     <string name="transaction_info_executed_amount">Виконана сума</string>
     <string name="TransactionInfo_PriceImpact">Вплив на ціну</string>
+    <string name="swap_duration">Час обміну</string>
+    <string name="swap_duration_approximate">~%1$s</string>
     <string name="TransactionInfo_ExecutedRate">Виконаний курс</string>
     <string name="TransactionInfo_Fee">Комісія</string>
     <string name="TransactionInfo_FeeEstimated">Комісія (прибл.)</string>
@@ -1066,6 +1066,7 @@
     <string name="offline_transaction_signed_transaction_unavailable">Підписана транзакція більше недоступна. Підпишіть її ще раз.</string>
     <string name="offline_broadcast_title">Надсилання RAW TX</string>
     <string name="offline_broadcast_import_file">Імпортувати файл транзакції</string>
+    <string name="offline_broadcast_input_hint">Вставте підписану RAW- або P.cash-транзакцію</string>
     <string name="offline_broadcast_file_read_failed">Не вдалося прочитати файл транзакції. Перевірте файл і спробуйте ще раз.</string>
     <string name="offline_broadcast_invalid_input">Не вдалося розпізнати транзакцію. Перевірте формат і спробуйте ще раз.</string>
     <string name="offline_broadcast_check_title">Перевірка транзакції</string>
@@ -2234,8 +2235,9 @@
     <string name="image_saved_to_gallery">Зображення збережено в галерею</string>
     <string name="auth_detail_save_failed">Не вдалося зберегти зображення</string>
     <string name="auth_info_no_records">Записів про авторизацію ще немає</string>
-    <string name="send_sms_via_zec_title">Надіслати SMS через ZEC</string>
-    <string name="send_sms_via_zec_info">Цей режим дозволяє повідомити ваших близьких друзів або адвоката про те, що вас змусили відкрити додаток. Цей режим працює, якщо у вас є ZEC в гаманці. Якщо немає, додаток додасть його.</string>
+    <string name="send_sms_via_zec_title">Сповіщення про вхід</string>
+    <string name="send_sms_enabled">Надсилати сповіщення</string>
+    <string name="send_sms_via_zec_info">Повідомляє довірену особу про те, що вас змусили відкрити застосунок.\n\nКоли: лише коли застосунок розблоковується введенням пароля Режиму Duress. Звичайний вхід, неправильний пароль або розблокування за біометрією нічого не надсилають.\n\nЩо: транзакція на 0.0001 ZEC (плюс мережева комісія) з обраного кошелька на захищену (shielded) адресу Zcash отримувача з вашим повідомленням у полі memo. Це не SMS: отримувач читає повідомлення у своєму Zcash-кошельку, номер телефону не потрібен.\n\nКоли надійде: надсилається автоматично у фоновому режимі одразу після входу і зазвичай доходить до отримувача протягом кількох хвилин; кошельку може знадобитися синхронізація, через що це може зайняти більше часу.\n\nВартість: кожне сповіщення коштує 0.0001 ZEC плюс комісія. Якщо в кошельку на цей момент не вистачає ZEC, сповіщення не надсилається і повторно не надсилається — скористайтеся кнопкою тесту, щоб перевірити роботу.\n\nВимкнути сповіщення можна перемикачем у верхній частині цього екрана.</string>
     <string name="send_sms_wallet_balance_hint">Переконайтеся, що на вибраному гаманці є необхідна сума.</string>
     <string name="send_sms_syncing">Синхронізація для відправки…</string>
     <string name="send_sms_test_success">Ваше повідомлення успішно надіслано.</string>
@@ -2246,7 +2248,8 @@
     <string name="choose_wallet">Обрати гаманець</string>
     <string name="choose_wallet_none">Не обрано</string>
     <string name="required_coins_for_transaction">Необхідно монет для транзакції</string>
-    <string name="test_sms">Тест SMS</string>
+    <string name="send_sms_address_hint">Введіть захищену (shielded) адресу Zcash (починається на z або u) кошелька отримувача. Повідомлення з\u0027явиться в його Zcash-кошельку.</string>
+    <string name="test_sms">Надіслати тестове сповіщення</string>
     <string name="no_zec_wallets_available">Гаманці з токеном ZEC не знайдено</string>
     <!-- Connect Mini App -->
     <string name="connect_mini_app_title">Підключити міні-застосунок</string>
@@ -2285,15 +2288,15 @@
     <string name="native_library_error_close">Закрити</string>
     <!--Multi-Swap-->
     <string name="multi_swap_completed">Обмін завершено</string>
-    <string name="multi_swap_via">Обмін через %s</string>
-    <string name="multi_swap_completed_via">Завершено через %s</string>
+    <string name="multi_swap_via">Обмін через %1$s</string>
+    <string name="multi_swap_completed_via">Завершено через %1$s</string>
     <string name="multi_swap_no_providers">Немає доступних провайдерів</string>
     <string name="multi_swap_finding_best_provider">Пошук найкращого провайдера…</string>
     <string name="multi_swap_continue">Продовжити обмін</string>
     <string name="multi_swap_route_explanation">Для отримання найвигіднішого курсу використовується маршрут через %2$s. Обмін буде виконано у два послідовні кроки: спочатку %1$s → %2$s, потім %2$s → %3$s.</string>
     <string name="multi_swap_route_title">Маршрут обміну</string>
     <string name="multi_swap_execution_title">Обмін</string>
-    <string name="multi_swap_step">Крок %d</string>
+    <string name="multi_swap_step">Крок %1$d</string>
     <string name="multi_swap_understood_continue">Зрозуміло, продовжити</string>
     <string name="multi_swap_unfinished">Незавершений обмін</string>
     <string name="multi_swap_unfinished_plural">Незавершені обміни (%d)</string>
@@ -2307,39 +2310,6 @@
     <string name="multi_swap_cancel_swap">Скасувати обмін</string>
     <string name="multi_swap_cancel_swap_warning">Перший обмін вже завершено. Проміжні монети знаходяться у вашому гаманці та залишаться вашими. Буде скасовано лише другий крок обміну.</string>
     <string name="swap_leg_title">Обмін %d</string>
-    <!--PayCore-->
-    <string name="paycore_verify_phone">Підтвердити телефон</string>
-    <string name="paycore_verifying">Перевірка…</string>
-    <string name="paycore_service_fee">Комісія за послугу</string>
-    <string name="paycore_network">Мережа</string>
-    <string name="paycore_verification_title">PayCore</string>
-    <string name="paycore_verification_phone_placeholder">(___)___-__-__</string>
-    <string name="paycore_verification_continue">Продовжити</string>
-    <string name="paycore_verification_processing">В обробці…</string>
-    <string name="settings_contact_us_pcash_support">P.Cash Підтримка</string>
-    <string name="settings_contact_us_paycore_support">Paycore Підтримка</string>
-    <string name="paycore_verification_not_verified">Номер не верифіковано</string>
-    <string name="paycore_verification_pass_kyc">Пройти KYC</string>
-    <string name="paycore_verification_verified_title">Вашу верифікацію пройдено</string>
-    <string name="paycore_verification_warning_title">УВАГА</string>
-    <string name="paycore_verification_warning_text">ДОЗВОЛЕНО ПЕРЕКАЗ ГРОШОВИХ КОШТІВ ВИКЛЮЧНО З РАХУНКУ, ЩО НАЛЕЖИТЬ ВАМ, З ВЕРИФІКОВАНИМ НОМЕРОМ ТЕЛЕФОНУ ТА ОСОБОЮ.</string>
-    <string name="paycore_verification_warning_detail">Перекази з інших рахунків не зараховуються, відправлені кошти будуть втрачені!</string>
-    <string name="paycore_verification_back">Назад</string>
-    <string name="paycore_verification_error">Не вдалося завершити вхід. Перевірте номер телефону та спробуйте ще раз.</string>
-    <string name="paycore_generic_error">Не вдалося виконати операцію. Спробуйте пізніше або зверніться до підтримки.</string>
-    <string name="paycore_verification_retry">Повторити</string>
-    <string name="paycore_verification_phone_label">Номер телефону:</string>
-    <string name="paycore_verification_contact_support">Автоматичне відновлення не вдалося. Зверніться до служби підтримки.</string>
-    <string name="paycore_verification_support_line"><![CDATA[Технічна підтримка 24/7: <a href="mailto:support@paycore.pw">support@paycore.pw</a>, <a href="https://t.me/paycore_supp">@paycore_supp</a>]]></string>
-    <string name="paycore_service">Сервіс</string>
-    <string name="paycore_support">Підтримка PayCore</string>
-    <string name="paycore_section_currency">Валюта</string>
-    <string name="paycore_section_crypto">Криптовалюти</string>
-    <string name="paycore_select_bank">Виберіть банк</string>
-    <string name="paycore_select_bank_error">Не вдалося відкрити вибір банку. Спробуйте пізніше.</string>
-    <string name="paycore_banks_unavailable">Банки тимчасово недоступні. Спробуйте пізніше.</string>
-    <string name="paycore_delete_restricted_warning">Цю транзакцію не можна видалити, оскільки вона виконується стороннім сервісом.</string>
-    <string name="paycore_delete_to_complete_select_bank">Для завершення обміну виберіть банк.</string>
     <string name="swap_provider_type_info_title">Типи обмінних провайдерів</string>
     <string name="swap_provider_type_info_description">Нижче наведено особливості роботи різних типів обмінних провайдерів. Ці позначки допомагають зрозуміти, як виконуватиметься обмін і які додаткові перевірки чи умови можуть застосовуватися.</string>
     <string name="swap_provider_type_auto_description">Автоматичне виконання обміну. Якщо обмін не може бути завершений, кошти зазвичай повертаються автоматично без додаткових дій з боку користувача.</string>
@@ -2458,7 +2428,6 @@
     <string name="beam_recovery_required_title">Потрібне відновлення</string>
     <string name="beam_recovery_required_description">Автоматичне скидання заблоковано для захисту даних гаманця BEAM. Дані збережено, але доступ до старого гаманця не гарантовано. Відновлення за секретною фразою має створювати окремий гаманець.</string>
     <string name="beam_offline_context_unavailable">Контекст для офлайн-підпису недоступний. Спочатку синхронізуйте цей гаманець із мережею.</string>
-    <string name="beam_wallet_state_stopped">Гаманець BEAM зупинено</string>
     <string name="beam_wallet_state_offline">Гаманець BEAM офлайн</string>
     <string name="beam_wallet_state_closed">Гаманець BEAM закрито</string>
     <string name="beam_wallet_operation_failed">Помилка операції гаманця BEAM</string>
@@ -2496,4 +2465,7 @@
     <string name="desktop_change_password_corrupted">Файл ключа пошкоджено: після блокування застосунку ви не зможете увійти. Збережіть резервну копію кожної фрази відновлення.</string>
     <string name="desktop_change_password_success">Пароль змінено</string>
     <string name="desktop_security_lock_now">Заблокувати зараз</string>
+    <string name="evm_node_request_failed">Вузол мережі не зміг виконати запит. Повторіть спробу або виберіть інше джерело в налаштуваннях блокчейну.\n\nВідповідь вузла: %1$s</string>
+    <string name="desktop_transfer_password">Пароль перед надсиланням</string>
+    <string name="desktop_transfer_password_description">Перед кожним надсиланням запитується пароль застосунку. Це захистить ваші кошти, якщо хтось отримає доступ до комп’ютера з розблокованим застосунком.</string>
 </resources>

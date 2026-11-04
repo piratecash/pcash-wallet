@@ -3,9 +3,12 @@ package cash.p.terminal.core.utils
 import cash.p.terminal.core.IAddressParser
 import cash.p.terminal.core.factories.removeScheme
 import cash.p.terminal.core.factories.uriScheme
+import cash.p.terminal.core.isNative
 import cash.p.terminal.core.supported
 import cash.p.terminal.core.tryOrNull
+import cash.p.terminal.core.versionFreeTokenType
 import cash.p.terminal.entities.AddressUri
+import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
 import io.horizontalsystems.core.entities.BlockchainType
 import java.math.BigDecimal
@@ -50,7 +53,9 @@ class AddressUriParser(
     override fun parse(addressUri: String): AddressUriResult {
         val source = parseSource(addressUri) ?: return AddressUriResult.WrongUri
         val scheme = source.scheme ?: contextualScheme() ?: return AddressUriResult.NoUri
-        contextResult(scheme, source.scheme != null)?.let { return it }
+        if (blockchainType != null && !scheme.equals(contextualScheme(), ignoreCase = true)) {
+            return AddressUriResult.InvalidBlockchainType
+        }
 
         val parameters = parseQueryParameters(source.parameterPart) ?: return AddressUriResult.WrongUri
         if (parameters.isUnsafeFor(scheme)) return AddressUriResult.WrongUri
@@ -75,14 +80,6 @@ class AddressUriParser(
 
     private fun contextualScheme(): String? = blockchainType?.uriScheme ?: blockchainType?.uid
 
-    private fun contextResult(scheme: String, hasExplicitScheme: Boolean): AddressUriResult? {
-        if (blockchainType != null && !scheme.equals(contextualScheme(), ignoreCase = true)) {
-            return AddressUriResult.InvalidBlockchainType
-        }
-
-        return nativeTokenRequestResult(scheme, hasExplicitScheme)
-    }
-
     private fun List<Pair<String, String?>>.isUnsafeFor(scheme: String): Boolean {
         return hasUnsupportedRequiredParameter(scheme) || hasIndexedZcashPayment(scheme) ||
                 hasSolanaSplToken(scheme) || hasInvalidZcashMemo(scheme)
@@ -105,6 +102,7 @@ class AddressUriParser(
             return AddressUriResult.WrongUri
         }
         if (source.isTonTransfer) parsedUri.normalizeTonTransfer(parameters)
+        nativeTokenRequestResult(parsedUri, hasExplicitScheme = source.scheme != null)?.let { return it }
         uidMismatchResult(parsedUri)?.let { return it }
         parsedUri.address = fullAddress(scheme, source.address, parsedUri.value(AddressUri.Field.BlockchainUid))
         return AddressUriResult.Uri(parsedUri)
@@ -169,16 +167,24 @@ class AddressUriParser(
             }
         }
         addressUri.value<String>(AddressUri.Field.TokenUid)?.let { uid ->
-            if (tokenType?.id != null && tokenType.id.lowercase() != uid.lowercase()) {
+            val expectedUid = expectedTokenUid()
+            if (expectedUid != null && !expectedUid.equals(uid, ignoreCase = true)) {
                 return AddressUriResult.InvalidTokenType
             }
         }
         return null
     }
 
-    private fun nativeTokenRequestResult(scheme: String, hasExplicitScheme: Boolean): AddressUriResult? {
-        if (!hasExplicitScheme || blockchainType == null || scheme !in NATIVE_TOKEN_SCHEMES) return null
-        return AddressUriResult.InvalidTokenType.takeIf { tokenType != TokenType.Native }
+    private fun expectedTokenUid(): String? {
+        val type = tokenType ?: return null
+        return blockchainType?.let { TokenQuery(it, type).versionFreeTokenType.id } ?: type.id
+    }
+
+    /** A native-scheme URI that names no token is a request for the native coin. */
+    private fun nativeTokenRequestResult(addressUri: AddressUri, hasExplicitScheme: Boolean): AddressUriResult? {
+        if (!hasExplicitScheme || blockchainType == null || addressUri.scheme !in NATIVE_TOKEN_SCHEMES) return null
+        if (addressUri.value<String>(AddressUri.Field.TokenUid) != null) return null
+        return AddressUriResult.InvalidTokenType.takeIf { tokenType?.isNative != true }
     }
 
     private fun fieldFor(scheme: String, key: String): AddressUri.Field? {

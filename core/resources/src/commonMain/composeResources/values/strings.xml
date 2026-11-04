@@ -458,7 +458,7 @@
 
     <!--Send-->
     <string name="Send_EnterAddress">Enter Address</string>
-    <string name="Send_Title">Send %s</string>
+    <string name="Send_Title">Send %1$s</string>
 
     <string name="Send_Hint_Address">Address or Domain</string>
 
@@ -544,7 +544,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="ScanQr_CameraPermissionDeniedText">Access to your camera for this app was denied, you can go to settings and allow access</string>
     <string name="ScanQr_GoToSettings">Go to Settings</string>
     <string name="scan_qr_camera_initialization_failed">Camera is not available. Please try again or use a different device.</string>
-    <string name="qr_scanner_title_address">%s address</string>
+    <string name="qr_scanner_title_address">%1$s address</string>
     <string name="qr_scanner_title_smart_scan">SMART SCAN</string>
     <string name="choose_from_photos">Choose from Photos</string>
     <string name="image_decode_failed">Could not read a QR code from the selected image</string>
@@ -630,23 +630,23 @@ Proceed only if you\u0027re sure.</string>
     <string name="FeeInfo_TronResourcesConsumed_Description">Bandwidth is the unit that measures the size of the transaction bytes stored in the blockchain database. The larger the transaction, the more bandwidth resources will be consumed.\n\nEnergy is the unit that measures the amount of computation required by the TRON virtual machine to perform specific operations on the TRON network.\n\nSince smart contract transactions require computing resources to execute, each smart contract transaction requires to pay for the energy fee.</string>
 
     <!--Network Fee Warning-->
-    <string name="network_fee_warning_title">%s Network Fee</string>
+    <string name="network_fee_warning_title">%1$s Network Fee</string>
     <string name="token_balance_need_native_coin_title">You need %1$s to use %2$s</string>
     <string name="token_balance_need_native_coin_body">%2$s runs on %3$s.\nNetwork fee is paid in %1$s.\nYour %1$s balance: %4$s</string>
     <string name="network_fee_warning_body_protocol">The %1$s network protocol states that at least %2$s is required to pay the network fee for this transaction.</string>
-    <string name="network_fee_warning_body_balance">You have less than %s in your balance.</string>
-    <string name="network_fee_warning_body_protocol_bold">at least %s</string>
-    <string name="network_fee_warning_body_balance_bold">less than %s</string>
+    <string name="network_fee_warning_body_balance">You have less than %1$s in your balance.</string>
+    <string name="network_fee_warning_body_protocol_bold">at least %1$s</string>
+    <string name="network_fee_warning_body_balance_bold">less than %1$s</string>
     <string name="network_fee_warning_body_case_not_completed_prefix">but </string>
     <string name="network_fee_warning_body_case_not_sent_prefix">and </string>
     <string name="network_fee_warning_body_risk">With this balance, there is a risk that the actual fee may be higher than expected.</string>
     <string name="network_fee_warning_body_risk_bold">be higher than expected</string>
     <string name="network_fee_warning_body_case_intro">In this case:</string>
-    <string name="network_fee_warning_body_case_debited">%s will be debited from your balance,</string>
+    <string name="network_fee_warning_body_case_debited">%1$s will be debited from your balance,</string>
     <string name="network_fee_warning_body_case_not_completed">the transaction may not be completed,</string>
     <string name="network_fee_warning_body_case_not_sent">the coins will not be sent to the recipient.</string>
     <string name="network_fee_warning_body_confirm_intro">By continuing, you confirm that:</string>
-    <string name="network_fee_warning_body_confirm_understand">understand the specifics of how the %s network works,</string>
+    <string name="network_fee_warning_body_confirm_understand">understand the specifics of how the %1$s network works,</string>
     <string name="network_fee_warning_body_confirm_risk">are aware of the risk of losing commission,</string>
     <string name="network_fee_warning_body_confirm_accept">accept the possible consequences of an unsuccessful transaction.</string>
     <string name="network_fee_warning_points_header">Points to agree with:</string>
@@ -669,6 +669,9 @@ Proceed only if you\u0027re sure.</string>
     <string name="TonConnect_Url" translatable="false">URL</string>
     <string name="TonConnect_Wallet">Wallet</string>
     <string name="TonConnect_ChooseWallet">Choose a Wallet</string>
+    <string name="ton_wallet_version_v4r2_description">TON wallet address of version v4R2. Used by default.</string>
+    <string name="ton_wallet_version_w5_description">TON wallet version W5. A separate address and balance from the same phrase.</string>
+    <string name="tonconnect_wallet_version">Wallet version</string>
     <string name="manifest_loading">Loading manifest…</string>
     <string name="account_not_supported_by">Your current wallet type %1$s does not support %2$s</string>
 
@@ -702,12 +705,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="WalletConnect_PendingRequests">Pending Requests</string>
     <string name="WalletConnect_ActiveWallet">Active Wallet</string>
     <string name="WalletConnect_Unnamed">Unnamed</string>
-    <string name="WalletConnect_Pairings">Pairings</string>
-    <string name="WalletConnect_PairedDApps">Paired dApps</string>
     <string name="delete_all">Delete All</string>
-    <string name="WalletConnect_Pairings_ConfirmationDeleteAll">Do you want to delete all paired dApps?</string>
-    <string name="WalletConnect_Pairings_Delete">Delete</string>
-    <string name="WalletConnect_DeleteAllPairs">Delete All Pairs</string>
     <string name="WalletConnect_info"># What are the risks when using WalletConnect?\n\nIt should be noted that WalletConnect merely acts as a bridge between the DeFi service website and the user\u0027s wallet (for example P.CASH).\n\nWhen a user initiates any action on the DeFi service website requiring a transfer of funds, P.CASH wallet presents a user with the confirmation window to approve/deny the respective transaction. The P.CASH wallet has little means to know the context of the transaction and merely acts as an instrument to allow/deny the transaction.\n\nIt\u0027s important to use a DeFi website provided by reliable entities. If a bad actor overtakes the website of the service, it\u0027s potentially possible for a user to be presented with a confirmation window going beyond the intents of the user without realising it. Therefore, only use well-regarded and widely used DeFi services.</string>
 
     <string name="scan">Scan</string>
@@ -783,17 +781,17 @@ Proceed only if you\u0027re sure.</string>
     <string name="Swap">Swap</string>
     <string name="Swap_FromAmountTitle">You Pay</string>
     <string name="Swap_ToAmountTitle">You Get</string>
-    <string name="Swap_FiatPriceImpact" translatable="false">(%s%%)</string>
-    <string name="Swap_Percent" translatable="false">%s%%</string>
+    <string name="Swap_FiatPriceImpact" translatable="false">(%1$s%)</string>
+    <string name="Swap_Percent" translatable="false">%1$s%</string>
     <string name="Swap_TokenSelectorTitle">Select</string>
     <string name="Swap_Allowance">Allowance</string>
     <string name="Swap_Price">Price</string>
     <string name="Swap_AvailableBalance">Available Balance</string>
-    <string name="swap_insufficient_fee_balance">The current %s balance is lower than the amount required to process this transaction, including the transaction fee.</string>
-    <string name="fee_warning_low_balance">Balance is lower than necessary. You might pay up to %s in fees.</string>
+    <string name="swap_insufficient_fee_balance">The current %1$s balance is lower than the amount required to process this transaction, including the transaction fee.</string>
+    <string name="fee_warning_low_balance">Balance is lower than necessary. You might pay up to %1$s in fees.</string>
     <string name="swap_balance_for_fees">Balance for Fees</string>
     <string name="Swap_PriceImpact">Price Impact</string>
-    <string name="Swap_PriceImpactTooHigh">P.CASH has disabled swap action for this trade because you\u0027re getting an extremely unfavorable price. This is due to extremely low liquidity.\nIf you still want to swap please use %s website instead.</string>
+    <string name="Swap_PriceImpactTooHigh">P.CASH has disabled swap action for this trade because you\u0027re getting an extremely unfavorable price. This is due to extremely low liquidity.\nIf you still want to swap please use %1$s website instead.</string>
     <string name="Swap_PriceImpactWarning">Important! You\u0027re getting an extremely unfavorable price. This is due to extremely low liquidity.</string>
     <string name="Swap_MinimumReceived">Guaranteed Amount</string>
     <string name="Swap_Slippage">Slippage</string>
@@ -801,7 +799,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="Swap_ErrorNoProviders">No Providers</string>
     <string name="Swap_ErrorNoQuote">No Quote</string>
     <string name="Swap_ErrorInsufficientBalance">Insufficient balance</string>
-    <string name="swap_out_of_min_amount">Out of min amount %s</string>
+    <string name="swap_out_of_min_amount">Out of min amount %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">High price impact</string>
     <string name="Swap_ErrorWalletSyncing">Wallet is Syncing</string>
     <string name="Swap_ErrorWalletNotSynced">Wallet Not Synced</string>
@@ -847,7 +845,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="Swap_YouPay">You Pay</string>
     <string name="Swap_YouGet">You Get</string>
     <string name="Swap_Confirm_Title">Confirm</string>
-    <string name="SwapConfirm_QuoteExpiresIn">Quote expires in %d</string>
+    <string name="SwapConfirm_QuoteExpiresIn">Quote expires in %1$d</string>
     <string name="SwapConfirm_QuoteExpired">Quote expired</string>
     <string name="SwapConfirm_QuoteIsInvalid">Quote is invalid</string>
     <string name="SwapConfirm_FetchingFinalQuote">Fetching final quote</string>
@@ -905,7 +903,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="activate_insufficient_balance_description">You don’t have enough XLM balance to activate this token.</string>
 
     <!--Approve-->
-    <string name="Approve_RevokeAndApproveInfo">You can exchange %s, or you need to revoke and approve the new amount</string>
+    <string name="Approve_RevokeAndApproveInfo">You can exchange %1$s, or you need to revoke and approve the new amount</string>
     <string name="Approve_Spender">Spender</string>
     <string name="Approve_YouApprove">You Approve</string>
     <string name="Approve_YouRevoke">You Revoke</string>
@@ -1015,6 +1013,8 @@ Proceed only if you\u0027re sure.</string>
     <string name="TransactionInfo_AnnouncedAmount">Announced Amount</string>
     <string name="transaction_info_executed_amount">Executed Amount</string>
     <string name="TransactionInfo_PriceImpact">Price Impact</string>
+    <string name="swap_duration">Swap time</string>
+    <string name="swap_duration_approximate">~%1$s</string>
     <string name="TransactionInfo_ExecutedRate">Executed Rate</string>
     <string name="TransactionInfo_YouGot">You Got</string>
     <string name="TransactionInfo_YouSent">You Sent</string>
@@ -1410,6 +1410,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="offline_transaction_signed_transaction_unavailable">Signed transaction is no longer available. Sign it again.</string>
     <string name="offline_broadcast_title">Send RAW TX</string>
     <string name="offline_broadcast_import_file">Import transaction file</string>
+    <string name="offline_broadcast_input_hint">Paste a signed RAW or P.cash transaction</string>
     <string name="offline_broadcast_file_read_failed">Couldn\u0027t read the transaction file. Check the file and try again.</string>
     <string name="offline_broadcast_invalid_input">Couldn\u0027t recognize the transaction. Check the format and try again.</string>
     <string name="offline_broadcast_check_title">Check transaction</string>
@@ -2513,8 +2514,9 @@ Proceed only if you\u0027re sure.</string>
     <string name="notification_permission_revoked_message">Notification permission is not granted. Tap to open settings.</string>
 
     <!-- SMS Notification via ZEC -->
-    <string name="send_sms_via_zec_title">Send SMS via ZEC</string>
-    <string name="send_sms_via_zec_info">This mode allows you to notify your close friends or lawyer that you have been forced to open the app. This mode works if you have ZEC in your wallet. If you don\u0027t, the app will add it.</string>
+    <string name="send_sms_via_zec_title">Login notification</string>
+    <string name="send_sms_enabled">Send notification</string>
+    <string name="send_sms_via_zec_info">Notifies a trusted person that you were forced to open the app.\n\nWhen: only when the app is unlocked by entering the Duress Mode passcode. A normal login, a wrong passcode or unlocking with biometrics sends nothing.\n\nWhat: a 0.0001 ZEC transaction (plus network fee) from the chosen wallet to the recipient\u0027s shielded Zcash address, with your message in the memo. It is not an SMS: the recipient reads the message in their Zcash wallet, no phone number is needed.\n\nWhen it arrives: it is sent automatically in the background right after login and usually reaches the recipient within a few minutes; the wallet may need to sync first, which can take longer.\n\nCost: each notification costs 0.0001 ZEC plus the fee. If the wallet does not have enough ZEC at that moment, the notification is not sent and is not retried — use the test button to check that it works.\n\nYou can turn notifications off with the switch at the top of this screen.</string>
     <string name="send_sms_wallet_balance_hint">Make sure you have the required amount in the selected wallet.</string>
     <string name="send_sms_syncing">Syncing to send…</string>
     <string name="send_sms_test_success">Your message has been successfully sent.</string>
@@ -2525,8 +2527,8 @@ Proceed only if you\u0027re sure.</string>
     <string name="choose_wallet">Choose Wallet</string>
     <string name="choose_wallet_none">None</string>
     <string name="required_coins_for_transaction">Required coins for transaction</string>
-    <string name="send_sms_address_hint">Please specify the address where the message should be sent.</string>
-    <string name="test_sms">Test SMS</string>
+    <string name="send_sms_address_hint">Enter the shielded Zcash address (starts with z or u) of the recipient\u0027s wallet. The message will appear in their Zcash wallet.</string>
+    <string name="test_sms">Send test notification</string>
     <string name="no_zec_wallets_available">No wallets with ZEC tokens found</string>
 
     <plurals name="options_count">
@@ -2587,53 +2589,19 @@ Proceed only if you\u0027re sure.</string>
 
     <!--Multi-Swap-->
     <string name="multi_swap_completed">Swap completed</string>
-    <string name="multi_swap_via">Swap via %s</string>
-    <string name="multi_swap_completed_via">Completed via %s</string>
+    <string name="multi_swap_via">Swap via %1$s</string>
+    <string name="multi_swap_completed_via">Completed via %1$s</string>
     <string name="multi_swap_no_providers">No providers available</string>
     <string name="multi_swap_finding_best_provider">Finding best provider…</string>
     <string name="multi_swap_continue">Continue swap</string>
     <string name="multi_swap_route_explanation">To get the best rate, a route through %2$s is used. The swap will be completed in two consecutive steps: first %1$s → %2$s, then %2$s → %3$s.</string>
     <string name="multi_swap_route_title">Swap route</string>
     <string name="multi_swap_execution_title">Swap</string>
-    <string name="multi_swap_step">%d step</string>
+    <string name="multi_swap_step">%1$d step</string>
     <string name="multi_swap_understood_continue">Got it, continue</string>
     <string name="multi_swap_unfinished">Unfinished swap</string>
     <string name="multi_swap_unfinished_plural">Unfinished swaps (%d)</string>
 
-    <!--PayCore-->
-    <string name="paycore_verify_phone">Verify Phone</string>
-    <string name="paycore_verifying">Verifying…</string>
-    <string name="paycore_service_fee">Service Fee</string>
-    <string name="paycore_network">Network</string>
-    <string name="paycore_verification_title">PayCore</string>
-    <string name="paycore_verification_phone_placeholder">(___)___-__-__</string>
-    <string name="paycore_verification_continue">Continue</string>
-    <string name="paycore_verification_processing">Processing…</string>
-    <string name="settings_contact_us_pcash_support">P.Cash Support</string>
-    <string name="settings_contact_us_paycore_support">Paycore Support</string>
-    <string name="paycore_verification_not_verified">Number not verified</string>
-    <string name="paycore_verification_pass_kyc">Complete KYC</string>
-    <string name="paycore_kyc_title" translatable="false">KYC</string>
-    <string name="paycore_verification_verified_title">Your verification is complete</string>
-    <string name="paycore_verification_warning_title">WARNING</string>
-    <string name="paycore_verification_warning_text">FUND TRANSFERS ARE PERMITTED EXCLUSIVELY FROM THE ACCOUNT BELONGING TO YOU, WITH A VERIFIED PHONE NUMBER AND IDENTITY.</string>
-    <string name="paycore_verification_warning_detail">Transfers from other accounts will not be credited, sent funds will be lost!</string>
-    <string name="paycore_verification_back">Back</string>
-    <string name="paycore_verification_error">Failed to complete login. Check the phone number and try again.</string>
-    <string name="paycore_generic_error">Failed to complete the operation. Please try again later or contact support.</string>
-    <string name="paycore_verification_retry">Retry</string>
-    <string name="paycore_verification_phone_label">Phone number:</string>
-    <string name="paycore_verification_contact_support">Automatic recovery failed. Please contact support.</string>
-    <string name="paycore_verification_support_line"><![CDATA[24/7 technical support: <a href="mailto:support@paycore.pw">support@paycore.pw</a>, <a href="https://t.me/paycore_supp">@paycore_supp</a>]]></string>
-    <string name="paycore_service">Service</string>
-    <string name="paycore_support">PayCore Support</string>
-    <string name="paycore_section_currency">Currency</string>
-    <string name="paycore_section_crypto">Cryptocurrencies</string>
-    <string name="paycore_select_bank">Select bank</string>
-    <string name="paycore_select_bank_error">Failed to open bank selection. Try again later.</string>
-    <string name="paycore_banks_unavailable">Banks are temporarily unavailable. Try again later.</string>
-    <string name="paycore_delete_restricted_warning">This transaction cannot be deleted because it is processed by a third-party service.</string>
-    <string name="paycore_delete_to_complete_select_bank">Select a bank to complete the swap.</string>
     <string name="duration_short_hours">%1$dh</string>
     <string name="duration_short_minutes">%1$dm</string>
     <string name="duration_short_seconds">%1$ds</string>
@@ -2745,7 +2713,6 @@ Proceed only if you\u0027re sure.</string>
     <string name="beam_recovery_required_title">Recovery required</string>
     <string name="beam_recovery_required_description">Automatic reset is blocked to protect your BEAM wallet data. The stored data has been kept, but access to the old wallet cannot be guaranteed. Restoring from your recovery phrase must create a separate wallet.</string>
     <string name="beam_offline_context_unavailable">Offline signing context is unavailable. Synchronize this wallet online first.</string>
-    <string name="beam_wallet_state_stopped">BEAM wallet stopped</string>
     <string name="beam_wallet_state_offline">BEAM wallet offline</string>
     <string name="beam_wallet_state_closed">BEAM wallet closed</string>
     <string name="beam_wallet_operation_failed">BEAM wallet operation failed</string>
@@ -2783,4 +2750,7 @@ Proceed only if you\u0027re sure.</string>
     <string name="desktop_change_password_corrupted">The key file is damaged: once the app is locked you will not be able to sign in. Save a backup of every recovery phrase.</string>
     <string name="desktop_change_password_success">Password changed</string>
     <string name="desktop_security_lock_now">Lock now</string>
+    <string name="evm_node_request_failed">The network node could not process the request. Try again or choose another source in Blockchain settings.\n\nNode response: %1$s</string>
+    <string name="desktop_transfer_password">Password before sending</string>
+    <string name="desktop_transfer_password_description">The app password is asked before every transfer, protecting your assets if someone gets access to your computer while the app is unlocked.</string>
 </resources>

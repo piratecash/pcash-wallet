@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringArrayResource
 import cash.p.terminal.R
-import cash.p.terminal.core.ensurePinSet
+import cash.p.terminal.core.rememberEnsurePinSet
 import cash.p.terminal.modules.pin.PinType
 import cash.p.terminal.modules.pin.SetPinPage
 import cash.p.terminal.navigation.HSNavigation
@@ -14,6 +14,11 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import cash.p.terminal.navigation.navigateUpFrom
 import cash.p.terminal.navigation.navigateUpSafely
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromRight
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.PinSet_Info
+import cash.p.terminal.resources.pin_set_for_delete_all_contacts
 
 class DeleteContactsTermsPage : HSPage() {
 
@@ -24,25 +29,25 @@ class DeleteContactsTermsPage : HSPage() {
         val viewModel: DeleteContactsTermsViewModel = koinViewModel {
             parametersOf(termTitles)
         }
+        val deleteContactsPinSet = navigation.rememberResultLauncher<SetPinPage.Result> {
+            HudHelper.showSuccessMessage(view, R.string.Hud_Text_Created)
+            navigation.navigateUpFrom(this@DeleteContactsTermsPage)
+        }
+        val openSetDeleteContactsPin = navigation.rememberEnsurePinSet(Res.string.PinSet_Info, PinType.REGULAR) {
+            deleteContactsPinSet.slideFromRight(
+                SetPinPage(
+                    SetPinPage.Input(
+                        description = Res.string.pin_set_for_delete_all_contacts,
+                        pinType = PinType.DELETE_CONTACTS
+                    )
+                )
+            )
+        }
 
         DeleteContactsTermsScreen(
             uiState = viewModel.uiState,
             onCheckboxToggle = viewModel::toggleCheckbox,
-            onAgreeClick = {
-                navigation.ensurePinSet(R.string.PinSet_Info) {
-                    navigation.slideFromRightForResult<SetPinPage.Result>(
-                        SetPinPage(
-                            SetPinPage.Input(
-                                descriptionResId = R.string.pin_set_for_delete_all_contacts,
-                                pinType = PinType.DELETE_CONTACTS
-                            )
-                        )
-                    ) {
-                        HudHelper.showSuccessMessage(view, R.string.Hud_Text_Created)
-                        navigation.navigateUpFrom(this@DeleteContactsTermsPage)
-                    }
-                }
-            },
+            onAgreeClick = openSetDeleteContactsPin,
             onNavigateBack = navigation::navigateUpSafely
         )
     }

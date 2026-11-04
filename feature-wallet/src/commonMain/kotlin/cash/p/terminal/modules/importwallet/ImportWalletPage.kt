@@ -16,14 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.core.Caution
-import cash.p.terminal.core.navigateWithTermsAccepted
+import cash.p.terminal.core.rememberTermsAcceptedAction
 import cash.p.terminal.feature.wallet.BackupFileLauncher
 import cash.p.terminal.feature.wallet.qrScannerAvailable
-import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
-import cash.p.terminal.navigation.openQrScanner
+import cash.p.terminal.navigation.rememberQrScannerLauncher
 import cash.p.terminal.modules.contacts.screen.ConfirmationBottomSheet
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
@@ -87,42 +86,39 @@ private fun ImportWalletScreen(
     val hudMessenger = rememberHudMessenger()
     val viewModel = koinViewModel<ImportWalletViewModel>()
     val scannerTitle = stringResource(Res.string.ManageAccounts_ImportWallet)
-    val appPages: AppPages = koinInject()
+    val openAfterTerms = navigation.rememberTermsAcceptedAction<HSPage>(navigation::slideFromBottom)
+    val qrScanner = navigation.rememberQrScannerLauncher(koinInject(), viewModel::handleScannedData)
 
     // Handle one-shot navigation events from ViewModel
     LaunchedEffect(Unit) {
         viewModel.navigationEvents.collect { event ->
             when (event) {
                 is ImportWalletViewModel.NavigationEvent.OpenRestoreFromQr -> {
-                    navigation.navigateWithTermsAccepted {
-                        navigation.slideFromBottom(
-                            RestoreAccountPage(
-                                ManageAccountsModule.Input(
-                                    popOffOnSuccess = popUpToInclusiveId,
-                                    popOffInclusive = inclusive,
-                                    prefillWords = event.words,
-                                    prefillPassphrase = event.passphrase,
-                                    prefillMoneroHeight = event.moneroHeight,
-                                    prefillMnemonicLanguageName = event.language?.name
-                                )
+                    openAfterTerms(
+                        RestoreAccountPage(
+                            ManageAccountsModule.Input(
+                                popOffOnSuccess = popUpToInclusiveId,
+                                popOffInclusive = inclusive,
+                                prefillWords = event.words,
+                                prefillPassphrase = event.passphrase,
+                                prefillMoneroHeight = event.moneroHeight,
+                                prefillMnemonicLanguageName = event.language?.name
                             )
                         )
-                    }
+                    )
                 }
 
                 is ImportWalletViewModel.NavigationEvent.OpenRestoreLocal -> {
-                    navigation.navigateWithTermsAccepted {
-                        navigation.slideFromBottom(
-                            RestoreLocalPage(
-                                RestoreLocalPage.Input(
-                                    popUpToInclusiveId,
-                                    inclusive,
-                                    event.backupFilePath,
-                                    event.fileName
-                                )
+                    openAfterTerms(
+                        RestoreLocalPage(
+                            RestoreLocalPage.Input(
+                                popUpToInclusiveId,
+                                inclusive,
+                                event.backupFilePath,
+                                event.fileName
                             )
                         )
-                    }
+                    )
                 }
             }
         }
@@ -189,11 +185,7 @@ private fun ImportWalletScreen(
                     description = stringResource(Res.string.ImportWallet_RecoveryPhrase_Description),
                     icon = Res.drawable.ic_edit_24,
                     onClick = {
-                        navigation.navigateWithTermsAccepted {
-                            navigation.slideFromBottom(
-                                RestoreAccountPage(ManageAccountsModule.Input(popUpToInclusiveId, inclusive))
-                            )
-                        }
+                        openAfterTerms(RestoreAccountPage(ManageAccountsModule.Input(popUpToInclusiveId, inclusive)))
                     }
                 )
                 VSpacer(12.dp)
@@ -209,15 +201,7 @@ private fun ImportWalletScreen(
                         title = stringResource(Res.string.import_wallet_from_qr),
                         description = stringResource(Res.string.import_wallet_from_qr_description),
                         icon = Res.drawable.ic_qr_scan_24,
-                        onClick = {
-                            navigation.openQrScanner(
-                                appPages = appPages,
-                                title = scannerTitle,
-                                showPasteButton = false
-                            ) { scannedText ->
-                                viewModel.handleScannedData(scannedText)
-                            }
-                        }
+                        onClick = { qrScanner.open(scannerTitle) }
                     )
                 }
                 VSpacer(12.dp)

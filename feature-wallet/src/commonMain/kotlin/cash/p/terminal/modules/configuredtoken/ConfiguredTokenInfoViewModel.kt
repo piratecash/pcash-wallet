@@ -2,6 +2,7 @@ package cash.p.terminal.modules.configuredtoken
 
 import androidx.lifecycle.ViewModel
 import cash.p.terminal.core.assetUrl
+import cash.p.terminal.core.description
 import cash.p.terminal.core.eip20TokenUrl
 import cash.p.terminal.core.iconPlaceholder
 import cash.p.terminal.core.jettonUrl
@@ -44,13 +45,8 @@ class ConfiguredTokenInfoViewModel(
                 )
             }
 
-            is TokenType.Jetton -> {
-                Contract(
-                    type.address,
-                    token.blockchain.type.imageUrl,
-                    token.blockchain.jettonUrl(type.address)
-                )
-            }
+            is TokenType.Jetton -> jettonContract(token, type.address)
+            is TokenType.TonW5Jetton -> jettonContract(token, type.address)
 
             is TokenType.Asset -> {
                 Contract(
@@ -73,6 +69,7 @@ class ConfiguredTokenInfoViewModel(
             }
 
             TokenType.Native -> null
+            TokenType.TonW5Native -> ConfiguredTokenInfoType.Description(token.description)
             is TokenType.AddressSpecTyped -> when (token.blockchainType) {
                 BlockchainType.Zcash -> {
                     BirthdayHeight(getBirthdayHeight(token))
@@ -97,6 +94,12 @@ class ConfiguredTokenInfoViewModel(
             tokenInfoType = type
         )
     }
+
+    private fun jettonContract(token: Token, address: String) = Contract(
+        address,
+        token.blockchain.type.imageUrl,
+        token.blockchain.jettonUrl(address)
+    )
 
     private fun getBirthdayHeight(token: Token): Long? {
         val account = accountManager.activeAccount ?: return null
@@ -126,4 +129,5 @@ sealed class ConfiguredTokenInfoType {
     ) : ConfiguredTokenInfoType()
     object Bch : ConfiguredTokenInfoType()
     data class BirthdayHeight(val height: Long?) : ConfiguredTokenInfoType()
+    data class Description(val text: String) : ConfiguredTokenInfoType()
 }

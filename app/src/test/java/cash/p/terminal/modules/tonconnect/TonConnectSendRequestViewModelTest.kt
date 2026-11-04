@@ -11,12 +11,14 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.entities.TonWalletVersion
 import com.tonapps.blockchain.ton.TonNetwork
 import com.tonapps.wallet.data.core.entity.RawMessageEntity
 import com.tonapps.wallet.data.core.entity.SendRequestEntity
 import io.horizontalsystems.sqlcipher.room.DatabaseKeyMismatchException
 import io.horizontalsystems.sqlcipher.room.InsufficientDatabaseMigrationSpaceException
 import io.horizontalsystems.tonkit.core.TonKit
+import io.horizontalsystems.tonkit.core.TonWallet
 import io.horizontalsystems.tonkit.core.TransactionSigner
 import io.horizontalsystems.tonkit.models.SignTransaction
 import io.horizontalsystems.tonkit.tonconnect.TonConnectKit
@@ -79,7 +81,7 @@ class TonConnectSendRequestViewModelTest {
             })
         }
         mockkStatic("cash.p.terminal.core.managers.TonKitManagerKt")
-        every { any<Account>().toTonWalletFullAccess(any(), any()) } returns mockk(relaxed = true)
+        every { any<Account>().toTonWalletFullAccess(any(), any(), any()) } returns mockk(relaxed = true)
     }
 
     @After
@@ -91,7 +93,7 @@ class TonConnectSendRequestViewModelTest {
 
     @Test
     fun prepareEnv_migrationLacksSpace_showsKitUnavailableWithoutConfirm() = testScope.runTest {
-        coEvery { tonKitManager.getNonActiveTonKitWrapper(account, any()) } throws
+        coEvery { tonKitManager.getNonActiveTonKitWrapper(account, TonWalletVersion.V4R2, any()) } throws
             InsufficientDatabaseMigrationSpaceException(requiredBytes = 2, availableBytes = 1)
 
         val viewModel = createViewModel()
@@ -103,7 +105,7 @@ class TonConnectSendRequestViewModelTest {
 
     @Test
     fun prepareEnv_databaseKeyMismatch_showsKitUnavailableWithoutConfirm() = testScope.runTest {
-        coEvery { tonKitManager.getNonActiveTonKitWrapper(account, any()) } throws
+        coEvery { tonKitManager.getNonActiveTonKitWrapper(account, TonWalletVersion.V4R2, any()) } throws
             DatabaseKeyMismatchException("account-id-MainNet", IllegalStateException("wrong key"))
 
         val viewModel = createViewModel()
@@ -115,7 +117,7 @@ class TonConnectSendRequestViewModelTest {
 
     @Test
     fun reject_tonConnectKitUnavailable_doesNotCrash() = testScope.runTest {
-        coEvery { tonKitManager.getNonActiveTonKitWrapper(account, any()) } throws
+        coEvery { tonKitManager.getNonActiveTonKitWrapper(account, TonWalletVersion.V4R2, any()) } throws
             InsufficientDatabaseMigrationSpaceException(requiredBytes = 2, availableBytes = 1)
         val viewModel = createViewModel()
         advanceUntilIdle()
@@ -129,11 +131,12 @@ class TonConnectSendRequestViewModelTest {
 
     @Test
     fun confirm_tonConnectKitUnavailable_doesNotCrashOrReportSuccess() = testScope.runTest {
-        coEvery { tonKitManager.getNonActiveTonKitWrapper(account, any()) } returns
-            TonKitWrapper(tonKit, mockk(relaxed = true))
+        coEvery { tonKitManager.getNonActiveTonKitWrapper(account, TonWalletVersion.V4R2, any()) } returns
+            TonKitWrapper(tonKit, mockk(relaxed = true), TonWalletVersion.V4R2)
         // Stops prepareEnv before the coin lookup; confirm stays available.
-        coEvery { transactionSigner.getDetails(any(), any()) } throws IllegalStateException("no details")
-        coEvery { transactionSigner.sign(any(), any()) } returns "boc"
+        coEvery { transactionSigner.getDetails(any(), any<TonWallet.FullAccess>()) } throws
+            IllegalStateException("no details")
+        coEvery { transactionSigner.sign(any(), any<TonWallet.FullAccess>()) } returns "boc"
         val viewModel = createViewModel()
         advanceUntilIdle()
         coEvery { tonConnectManager.kit() } throws IllegalStateException("TON Connect unavailable")
@@ -145,20 +148,43 @@ class TonConnectSendRequestViewModelTest {
         assertFalse(viewModel.uiState.success)
     }
 
-    private fun createViewModel() = TonConnectSendRequestViewModel(
-        signTransaction = SignTransaction(sendRequest(), mockk(relaxed = true) { every { accountId } returns "" }),
+    @Test
+    fun confirm_w5Session_signsAndSendsWithW5WalletAndKit() = testScope.runTest {
+        val w5Wallet = mockk<TonWallet.FullAccess>(relaxed = true)
+        every { account.toTonWalletFullAccess(TonWalletVersion.W5, any(), any()) } returns w5Wallet
+        coEvery { tonKitManager.getNonActiveTonKitWrapper(account, TonWalletVersion.W5, any()) } returns
+            TonKitWrapper(tonKit, w5Wallet, TonWalletVersion.W5)
+        // Stops prepareEnv before the coin lookup; confirm stays available.
+        coEvery { transactionSigner.getDetails(any(), any<TonWallet.FullAccess>()) } throws
+            IllegalStateException("no details")
+        coEvery { transactionSigner.sign(any(), w5Wallet) } returns "boc"
+        val viewModel = createViewModel(walletId = "$ACCOUNT_ID-w5")
+        advanceUntilIdle()
+
+        viewModel.confirm()
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { transactionSigner.sign(any(), w5Wallet) }
+        coVerify(exactly = 1) { tonKit.send("boc") }
+    }
+
+    private fun createViewModel(walletId: String = ACCOUNT_ID) = TonConnectSendRequestViewModel(
+        signTransaction = SignTransaction(
+            sendRequest(walletId),
+            mockk(relaxed = true) { every { accountId } returns "" },
+        ),
         accountManager = accountManager,
         tonConnectManager = tonConnectManager,
         tonKitManager = tonKitManager,
         dispatcherProvider = TestDispatcherProvider(dispatcher, testScope),
     )
 
-    private fun sendRequest() = mockk<SendRequestEntity> {
+    private fun sendRequest(walletId: String) = mockk<SendRequestEntity> {
         every { network } returns TonNetwork.MAINNET
         every { fromAccountId } returns null
         every { validUntil } returns System.currentTimeMillis() / 1000 + VALID_FOR_SECONDS
         every { messages } returns listOf(RawMessageEntity(RECIPIENT, 1, null, ""))
-        every { dAppId } returns "$ACCOUNT_ID:https://dapp.example"
+        every { dAppId } returns "$walletId:https://dapp.example"
     }
 
     private companion object {

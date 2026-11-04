@@ -1,0 +1,79 @@
+package cash.p.terminal.modules.send.tron
+
+import cash.p.terminal.core.ISendTronAdapter
+import cash.p.terminal.core.tryOrNull
+import cash.p.terminal.entities.Address
+import io.horizontalsystems.core.Translator
+import cash.p.terminal.ui_compose.entities.FormsInputStateWarning
+import cash.p.terminal.wallet.Token
+import cash.p.terminal.wallet.entities.TokenType
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import io.horizontalsystems.tronkit.models.Address as TronAddress
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.SwapSettings_Error_InvalidAddress
+import cash.p.terminal.resources.Tron_SelfSendTrxNotAllowed
+
+class SendTronAddressService(
+    private val adapter: ISendTronAdapter,
+    private val token: Token,
+) {
+    private var address: Address? = null
+    private var addressError: Throwable? = null
+    private var tronAddress: TronAddress? = null
+
+    private val _stateFlow = MutableStateFlow(
+        State(
+            address = address,
+            tronAddress = tronAddress,
+            addressError = addressError,
+            canBeSend = tronAddress != null && (addressError == null || addressError is FormsInputStateWarning)
+        )
+    )
+    val stateFlow = _stateFlow.asStateFlow()
+
+    fun setAddress(address: Address?) {
+        this.address = address
+
+        validateAddress()
+
+        emitState()
+    }
+
+    private fun validateAddress() {
+        addressError = null
+        tronAddress = null
+        val address = this.address ?: return
+
+        val validAddress = tryOrNull { TronAddress.fromBase58(address.hex) }
+        if (validAddress == null) {
+            addressError = Throwable(Translator.getString(Res.string.SwapSettings_Error_InvalidAddress))
+            return
+        }
+
+        if (token.type == TokenType.Native && adapter.isOwnAddress(validAddress)) {
+            addressError = Throwable(Translator.getString(Res.string.Tron_SelfSendTrxNotAllowed))
+        }
+
+        tronAddress = validAddress
+    }
+
+    private fun emitState() {
+        _stateFlow.update {
+            State(
+                address = address,
+                tronAddress = tronAddress,
+                addressError = addressError,
+                canBeSend = tronAddress != null && (addressError == null || addressError is FormsInputStateWarning)
+            )
+        }
+    }
+
+    data class State(
+        val address: Address?,
+        val tronAddress: TronAddress?,
+        val addressError: Throwable?,
+        val canBeSend: Boolean
+    )
+}

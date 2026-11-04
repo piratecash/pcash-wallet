@@ -27,6 +27,14 @@ internal fun initialCoinsFile(): File {
  * references. Requires a Robolectric test runner for the native SQLite engine.
  */
 internal fun validateDumpSql(dump: String) {
+    withDumpDatabase(dump) { database ->
+        assertRowCountsMatchInserts(database, dump)
+        assertNoForeignKeyViolations(database)
+    }
+}
+
+/** Loads [dump] into a fresh in-memory SQLite database. Requires a Robolectric test runner. */
+internal fun <T> withDumpDatabase(dump: String, block: (SQLiteDatabase) -> T): T {
     val statements = dump.lines().filter { it.isNotBlank() }
 
     val database = SQLiteDatabase.create(null)
@@ -39,8 +47,7 @@ internal fun validateDumpSql(dump: String) {
             database.endTransaction()
         }
 
-        assertRowCountsMatchInserts(database, dump)
-        assertNoForeignKeyViolations(database)
+        return block(database)
     } finally {
         database.close()
     }

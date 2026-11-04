@@ -13,7 +13,7 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.navigation.slideFromRightSafely
-import cash.p.terminal.core.premiumAction
+import cash.p.terminal.core.rememberPremiumAction
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HsBackButton
@@ -39,28 +39,20 @@ class PremiumSettingsPage : HSPage() {
     @Composable
     override fun GetContent(navigation: HSNavigation) {
         val viewModel: PremiumSettingsViewModel = koinViewModel()
+        val platformSettings = viewModel.platformSettings
+        val openLoginLogging = platformSettings?.rememberLoginLoggingAction(navigation)
+        val openAuthorizationInfo = platformSettings?.rememberAuthorizationInfoAction(navigation)
+        val openPushNotifications = platformSettings?.let { settings ->
+            navigation.rememberPremiumAction { navigation.slideFromRightSafely(settings.pushNotificationsPage()) }
+        }
 
         PremiumSettingsScreen(
             uiState = viewModel.uiState,
-            onCheckAddressContractClick = {
-                navigation.premiumAction {
-                    viewModel.setAddressContractChecking(it)
-                }
-            },
-            onAmlCheckReceivedClick = {
-                navigation.premiumAction {
-                    viewModel.setAmlCheckReceivedEnabled(it)
-                }
-            },
-            onLoginLoggingClick = { viewModel.platformSettings?.openLoginLogging(navigation) },
-            onAuthorizationInfoClick = { viewModel.platformSettings?.openAuthorizationInfo(navigation) },
-            onPushNotificationsClick = {
-                viewModel.platformSettings?.let { settings ->
-                    navigation.premiumAction {
-                        navigation.slideFromRightSafely(settings.pushNotificationsPage())
-                    }
-                }
-            },
+            onCheckAddressContractClick = navigation.rememberPremiumAction(viewModel::setAddressContractChecking),
+            onAmlCheckReceivedClick = navigation.rememberPremiumAction(viewModel::setAmlCheckReceivedEnabled),
+            onLoginLoggingClick = { openLoginLogging?.invoke() },
+            onAuthorizationInfoClick = { openAuthorizationInfo?.invoke() },
+            onPushNotificationsClick = { openPushNotifications?.invoke() },
             onClose = { navigation.navigateUpSafely() }
         )
     }

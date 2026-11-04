@@ -138,6 +138,7 @@ class DesktopStorageSessionTest {
         SqlCipherDriver(appDatabaseKey).use { driver ->
             driver.open(fixture.files.databaseFile.absolutePath).use { connection ->
                 connection.execSQL("DROP TABLE StackingCache")
+                connection.execSQL("ALTER TABLE SwapProviderTransaction DROP COLUMN receivedAt")
                 connection.execSQL("PRAGMA user_version = 118")
             }
         }

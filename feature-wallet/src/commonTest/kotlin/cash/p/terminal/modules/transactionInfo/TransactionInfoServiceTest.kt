@@ -295,6 +295,23 @@ class TransactionInfoServiceTest : KoinTest {
     }
 
     @Test
+    fun start_payCoreSwapWithRubSide_firstEmissionHasRubCoinCode() = runTest(dispatcher) {
+        val swap = createFinishedSwapTransaction().copy(provider = SwapProvider.PAYCORE, coinUidIn = "rub")
+        coEvery { swapProviderTransactionsStorage.getTransaction("cn-tx-1") } returns swap
+        coEvery {
+            updateSwapProviderTransactionsStatusUseCase.updateTransactionStatusByDate(1000L)
+        } returns TransactionStatusEnum.FINISHED
+
+        val service = createService(userSwapTransactionId = "cn-tx-1")
+        backgroundScope.launch { service.start() }
+        advanceUntilIdle()
+
+        val item = service.transactionInfoItemFlow.first()
+        assertEquals("RUB", item.swapCoinCodeIn)
+        assertEquals(SwapProvider.PAYCORE, item.swapProvider)
+    }
+
+    @Test
     fun blockUpdate_completedSwap_doesNotRefetchStatus() = runTest(dispatcher) {
         val swap = createFinishedSwapTransaction()
         coEvery { swapProviderTransactionsStorage.getTransaction("cn-tx-1") } returns swap

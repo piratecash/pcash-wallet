@@ -403,7 +403,7 @@
     <string name="SendNft_Title">Gönder</string>
     <string name="SendNft_Error_NotEnoughtBalance">Yetersiz bakiye</string>
     <!--Send-->
-    <string name="Send_Title">%s gönder</string>
+    <string name="Send_Title">%1$s gönder</string>
     <string name="Send_Hint_Address">Adres veya Domain</string>
     <string name="Send_Fee">Masraf</string>
     <string name="Send_Fee_Info">Blok zincirleri, kullanıcıların işlem yaparken ağ ücreti ödemesini gerektirir. Ağda çok sayıda işlem gerçekleştiğinde ücretler daha yüksektir.</string>
@@ -437,7 +437,7 @@
     <string name="ScanQr_CameraPermissionDeniedText">Bu uygulama için kameranıza erişim reddedildi, ayarlara gidip erişime izin verebilirsiniz</string>
     <string name="ScanQr_GoToSettings">Ayarlara gidin</string>
     <string name="scan_qr_camera_initialization_failed">Kamera kullanılamıyor. Lütfen tekrar deneyin veya farklı bir cihaz kullanın.</string>
-    <string name="qr_scanner_title_address">%s adresi</string>
+    <string name="qr_scanner_title_address">%1$s adresi</string>
     <string name="qr_scanner_title_smart_scan">AKILLI TARAMA</string>
     <string name="choose_from_photos">Fotoğraflardan seç</string>
     <string name="image_decode_failed">Seçilen görüntüden bir QR kodu okunamadı</string>
@@ -508,23 +508,23 @@
     <string name="FeeInfo_TronResourcesConsumed_Description">Band Width, blockchain veritabanında saklanan işlem baytlarının boyutunu ölçen birimdir. İşlem ne kadar büyük olursa, o kadar fazla bant genişliği kaynağı tüketilir.\n\nEnergy, TRON sanal makinesinin TRON ağında belirli işlemleri gerçekleştirmek için ihtiyaç duyduğu hesaplama miktarını ölçen birimdir.\n\nAkıllı sözleşmeden beri işlemlerin yürütülmesi için bilgi işlem kaynakları gerekir, her akıllı sözleşme işleminin energy ücretini ödemesi gerekir.</string>
 
     <!--Network Fee Warning-->
-    <string name="network_fee_warning_title">%s Ağ Komisyonu</string>
+    <string name="network_fee_warning_title">%1$s Ağ Komisyonu</string>
     <string name="token_balance_need_native_coin_title">%2$s kullanmak için %1$s gereklidir</string>
     <string name="token_balance_need_native_coin_body">%2$s, %3$s üzerinde çalışır.\nAğ ücreti %1$s ile ödenir.\n%1$s bakiyeniz: %4$s</string>
     <string name="network_fee_warning_body_protocol">%1$s ağ protokolü, bu işlemin ağ komisyonunu ödemek için en az %2$s gerektiğini belirtmektedir.</string>
-    <string name="network_fee_warning_body_balance">Bakiyenizde %s tutarından az bulunmaktadır.</string>
-    <string name="network_fee_warning_body_protocol_bold">en az %s</string>
-    <string name="network_fee_warning_body_balance_bold">%s tutarından az</string>
+    <string name="network_fee_warning_body_balance">Bakiyenizde %1$s tutarından az bulunmaktadır.</string>
+    <string name="network_fee_warning_body_protocol_bold">en az %1$s</string>
+    <string name="network_fee_warning_body_balance_bold">%1$s tutarından az</string>
     <string name="network_fee_warning_body_case_not_completed_prefix">ancak </string>
     <string name="network_fee_warning_body_case_not_sent_prefix">ve </string>
     <string name="network_fee_warning_body_risk">Bu bakiyeyle, gerçek komisyonun beklenenden yüksek olma riski bulunmaktadır.</string>
     <string name="network_fee_warning_body_risk_bold">beklenenden yüksek olma</string>
     <string name="network_fee_warning_body_case_intro">Bu durumda:</string>
-    <string name="network_fee_warning_body_case_debited">bakiyenizden %s düşülecek,</string>
+    <string name="network_fee_warning_body_case_debited">bakiyenizden %1$s düşülecek,</string>
     <string name="network_fee_warning_body_case_not_completed">işlem tamamlanmayabilir,</string>
     <string name="network_fee_warning_body_case_not_sent">paralar alıcıya gönderilmeyecektir.</string>
     <string name="network_fee_warning_body_confirm_intro">Devam ederek şunları onaylarsınız:</string>
-    <string name="network_fee_warning_body_confirm_understand">%s ağının işleyiş özelliklerini anlıyorsunuz,</string>
+    <string name="network_fee_warning_body_confirm_understand">%1$s ağının işleyiş özelliklerini anlıyorsunuz,</string>
     <string name="network_fee_warning_body_confirm_risk">komisyon kaybı riskinin farkındasınız,</string>
     <string name="network_fee_warning_body_confirm_accept">başarısız bir işlemin olası sonuçlarını kabul ediyorsunuz.</string>
     <string name="network_fee_warning_points_header">Kabul edilecek maddeler:</string>
@@ -544,6 +544,9 @@
     <string name="TonConnect_Unnamed">İsimsiz</string>
     <string name="TonConnect_Wallet">Cüzdan</string>
     <string name="TonConnect_ChooseWallet">Cüzdan Seçin</string>
+    <string name="ton_wallet_version_v4r2_description">v4R2 sürümüne ait TON cüzdan adresi. Varsayılan olarak kullanılır.</string>
+    <string name="ton_wallet_version_w5_description">W5 sürümü TON cüzdanı. Aynı ifadeden ayrı bir adres ve bakiye.</string>
+    <string name="tonconnect_wallet_version">Cüzdan sürümü</string>
     <string name="manifest_loading">Manifest yükleniyor…</string>
     <string name="account_not_supported_by">Mevcut cüzdan türünüz %1$s, %2$s\u0027i desteklemiyor</string>
     <!--WalletConnect-->
@@ -573,12 +576,7 @@
     <string name="WalletConnect_PendingRequests">Bekleyen istekler</string>
     <string name="WalletConnect_ActiveWallet">Aktif cüzdan</string>
     <string name="WalletConnect_Unnamed">İsimsiz</string>
-    <string name="WalletConnect_Pairings">Eşleştirmeler</string>
-    <string name="WalletConnect_PairedDApps">Eşleştirilmiş dApps</string>
     <string name="delete_all">Tümünü sil</string>
-    <string name="WalletConnect_Pairings_ConfirmationDeleteAll">Eşleştirilmiş tüm dApps\u0027leri silmek istiyor musunuz?</string>
-    <string name="WalletConnect_Pairings_Delete">Sil</string>
-    <string name="WalletConnect_DeleteAllPairs">Hepsini sil</string>
 
     <string name="connect">Bağlan</string>
     <string name="connect_trezor_to_add_message">Token eklemek için Trezor\u0027u bağlamanız gerekir</string>
@@ -604,8 +602,8 @@
     <string name="Swap_Allowance">Ödenek</string>
     <string name="Swap_Price">Fiyat</string>
     <string name="Swap_AvailableBalance">Mevcut Bakiye</string>
-    <string name="swap_insufficient_fee_balance">Mevcut %s bakiyesi, işlem ücreti dahil bu işlemi gerçekleştirmek için gereken tutardan düşüktür.</string>
-    <string name="fee_warning_low_balance">Bakiye gerekli seviyenin altında. Ücretler %s\u0027ye kadar çıkabilir.</string>
+    <string name="swap_insufficient_fee_balance">Mevcut %1$s bakiyesi, işlem ücreti dahil bu işlemi gerçekleştirmek için gereken tutardan düşüktür.</string>
+    <string name="fee_warning_low_balance">Bakiye gerekli seviyenin altında. Ücretler %1$s\u0027ye kadar çıkabilir.</string>
     <string name="swap_balance_for_fees">Ücretler için bakiye</string>
     <string name="fee">Ücret</string>
     <string name="estimated_fee">Tahmini ücret</string>
@@ -618,7 +616,7 @@
     <string name="Swap_ErrorNoProviders">Sağlayıcı Yok</string>
     <string name="Swap_ErrorNoQuote">Teklif Yok</string>
     <string name="Swap_ErrorInsufficientBalance">Yetersiz bakiye</string>
-    <string name="swap_out_of_min_amount">Minimum tutarın altında %s</string>
+    <string name="swap_out_of_min_amount">Minimum tutarın altında %1$s</string>
     <string name="Swap_ErrorHighPriceImpact">Yüksek fiyat etkisi</string>
     <string name="Swap_ErrorWalletSyncing">Cüzdan senkronize ediliyor</string>
     <string name="Swap_ErrorWalletNotSynced">Cüzdan Senkronize Edilmedi</string>
@@ -645,7 +643,7 @@
     <string name="Swap_YouPay">Ödediğiniz</string>
     <string name="Swap_YouGet">Kazandığınız</string>
     <string name="Swap_Confirm_Title">Onayla</string>
-    <string name="SwapConfirm_QuoteExpiresIn">Teklif %d içinde sona eriyor</string>
+    <string name="SwapConfirm_QuoteExpiresIn">Teklif %1$d içinde sona eriyor</string>
     <string name="SwapConfirm_QuoteExpired">Alıntı süresi doldu</string>
     <string name="SwapConfirm_QuoteIsInvalid">Teklif geçersiz</string>
     <string name="SwapConfirm_FetchingFinalQuote">Son teklifi alınıyor</string>
@@ -684,7 +682,7 @@
     <string name="swap_no_providers_for_this_amount">Bu miktar için sağlayıcı yok</string>
 
     <!--Approve-->
-    <string name="Approve_RevokeAndApproveInfo">%s alışverişi yapabilir veya yeni tutarı iptal edip onaylamanız gerekir</string>
+    <string name="Approve_RevokeAndApproveInfo">%1$s alışverişi yapabilir veya yeni tutarı iptal edip onaylamanız gerekir</string>
     <string name="Approve_Spender">Harcayan</string>
     <string name="Approve_YouApprove">Sen Onaylıyorsun</string>
     <string name="Approve_YouRevoke">Sen iptal et</string>
@@ -776,6 +774,8 @@
     <string name="TransactionInfo_AnnouncedAmount">Duyurulan miktar</string>
     <string name="transaction_info_executed_amount">Gerçekleşen miktar</string>
     <string name="TransactionInfo_PriceImpact">Fiyat etkisi</string>
+    <string name="swap_duration">Takas süresi</string>
+    <string name="swap_duration_approximate">~%1$s</string>
     <string name="TransactionInfo_ExecutedRate">Gerçekleşen kur</string>
     <string name="TransactionInfo_Fee">Masraf</string>
     <string name="TransactionInfo_FeeEstimated">Ücret (tahmini)</string>
@@ -1079,6 +1079,7 @@
     <string name="offline_transaction_signed_transaction_unavailable">İmzalanmış işlem artık kullanılamıyor. Tekrar imzalayın.</string>
     <string name="offline_broadcast_title">RAW TX gönder</string>
     <string name="offline_broadcast_import_file">İşlem dosyasını içe aktar</string>
+    <string name="offline_broadcast_input_hint">İmzalı bir RAW veya P.cash işlemi yapıştırın</string>
     <string name="offline_broadcast_file_read_failed">İşlem dosyası okunamadı. Dosyayı kontrol edip tekrar deneyin.</string>
     <string name="offline_broadcast_invalid_input">İşlem tanınamadı. Biçimi kontrol edip tekrar deneyin.</string>
     <string name="offline_broadcast_check_title">İşlemi kontrol et</string>
@@ -2077,8 +2078,9 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="image_saved_to_gallery">Görsel galeriye kaydedildi</string>
     <string name="auth_detail_save_failed">Görsel kaydedilemedi</string>
     <string name="auth_info_no_records">Henüz yetkilendirme kaydı yok</string>
-    <string name="send_sms_via_zec_title">ZEC ile SMS Gönder</string>
-    <string name="send_sms_via_zec_info">Bu mod, uygulamayı zorla açtığınızı yakın arkadaşlarınıza veya avukatınıza bildirmenizi sağlar. Bu mod, cüzdanınızda ZEC varsa çalışır. Yoksa uygulama ekleyecektir.</string>
+    <string name="send_sms_via_zec_title">Giriş bildirimi</string>
+    <string name="send_sms_enabled">Bildirim Gönder</string>
+    <string name="send_sms_via_zec_info">Güvendiğiniz bir kişiye uygulamayı zorla açtığınızı bildirir.\n\nNe zaman: yalnızca uygulama Duress Modu şifresi girilerek kilidi açıldığında gönderilir. Normal bir giriş, yanlış şifre veya biyometrik kilit açma hiçbir şey göndermez.\n\nNe: seçilen cüzdandan alıcının korumalı (shielded) Zcash adresine, memo alanında mesajınızla birlikte 0.0001 ZEC (artı ağ ücreti) tutarında bir işlem. Bu bir SMS değildir: alıcı mesajı kendi Zcash cüzdanında okur, telefon numarasına ihtiyaç yoktur.\n\nNe zaman ulaşır: giriş yapıldıktan hemen sonra arka planda otomatik olarak gönderilir ve genellikle alıcıya birkaç dakika içinde ulaşır; cüzdanın önce senkronize olması gerekebilir, bu da daha uzun sürebilir.\n\nMaliyet: her bildirim 0.0001 ZEC artı ücrete mal olur. Cüzdanda o anda yeterli ZEC yoksa bildirim gönderilmez ve yeniden denenmez — çalıştığını kontrol etmek için test düğmesini kullanın.\n\nBildirimleri bu ekranın üst kısmındaki anahtarla kapatabilirsiniz.</string>
     <string name="send_sms_wallet_balance_hint">Seçili cüzdanda gerekli miktarın olduğundan emin olun.</string>
     <string name="send_sms_syncing">Göndermek için senkronize ediliyor…</string>
     <string name="send_sms_test_success">Mesajınız başarıyla gönderildi.</string>
@@ -2089,7 +2091,8 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="choose_wallet">Cüzdan Seç</string>
     <string name="choose_wallet_none">Yok</string>
     <string name="required_coins_for_transaction">İşlem için gerekli coinler</string>
-    <string name="test_sms">SMS Test Et</string>
+    <string name="send_sms_address_hint">Alıcının cüzdanının korumalı (shielded) Zcash adresini (z veya u ile başlar) girin. Mesaj alıcının Zcash cüzdanında görünecektir.</string>
+    <string name="test_sms">Test Bildirimi Gönder</string>
     <string name="no_zec_wallets_available">ZEC tokeni olan cüzdan bulunamadı</string>
     <!-- Connect Mini App -->
     <string name="connect_mini_app_title">Mini Uygulamayı Bağla</string>
@@ -2131,15 +2134,15 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="scan_card_to_add">Token eklemek için kartı tarayın</string>
     <!--Multi-Swap-->
     <string name="multi_swap_completed">Takas tamamlandı</string>
-    <string name="multi_swap_via">%s üzerinden takas</string>
-    <string name="multi_swap_completed_via">%s üzerinden tamamlandı</string>
+    <string name="multi_swap_via">%1$s üzerinden takas</string>
+    <string name="multi_swap_completed_via">%1$s üzerinden tamamlandı</string>
     <string name="multi_swap_no_providers">Kullanılabilir sağlayıcı yok</string>
     <string name="multi_swap_finding_best_provider">En iyi sağlayıcı aranıyor…</string>
     <string name="multi_swap_continue">Takasa devam et</string>
     <string name="multi_swap_route_explanation">En iyi kur için %2$s üzerinden bir rota kullanılır. Takas iki ardışık adımda tamamlanır: önce %1$s → %2$s, ardından %2$s → %3$s.</string>
     <string name="multi_swap_route_title">Takas rotası</string>
     <string name="multi_swap_execution_title">Takas</string>
-    <string name="multi_swap_step">%d. adım</string>
+    <string name="multi_swap_step">%1$d. adım</string>
     <string name="multi_swap_understood_continue">Anladım, devam et</string>
     <string name="multi_swap_unfinished">Tamamlanmamış takas</string>
     <string name="multi_swap_unfinished_plural">Tamamlanmamış takaslar (%d)</string>
@@ -2153,39 +2156,6 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="multi_swap_cancel_swap">Takası iptal et</string>
     <string name="multi_swap_cancel_swap_warning">İlk takas zaten tamamlandı. Ara paralar cüzdanınızda ve size ait kalmaya devam edecek. Yalnızca takasın ikinci adımı iptal edilecek.</string>
     <string name="swap_leg_title">Takas %d</string>
-    <!--PayCore-->
-    <string name="paycore_verify_phone">Telefonu doğrula</string>
-    <string name="paycore_verifying">Doğrulanıyor…</string>
-    <string name="paycore_service_fee">Hizmet ücreti</string>
-    <string name="paycore_network">Ağ</string>
-    <string name="paycore_verification_title">PayCore</string>
-    <string name="paycore_verification_phone_placeholder">(___)___-__-__</string>
-    <string name="paycore_verification_continue">Devam et</string>
-    <string name="paycore_verification_processing">İşleniyor…</string>
-    <string name="settings_contact_us_pcash_support">P.Cash Destek</string>
-    <string name="settings_contact_us_paycore_support">Paycore Destek</string>
-    <string name="paycore_verification_not_verified">Numara doğrulanmadı</string>
-    <string name="paycore_verification_pass_kyc">KYC tamamla</string>
-    <string name="paycore_verification_verified_title">Doğrulamanız tamamlandı</string>
-    <string name="paycore_verification_warning_title">DİKKAT</string>
-    <string name="paycore_verification_warning_text">PARA TRANSFERİ YALNIZCA DOĞRULANMIŞ TELEFON NUMARASI VE KİMLİĞİ OLAN SİZE AİT HESAPTAN İZİN VERİLMEKTEDİR.</string>
-    <string name="paycore_verification_warning_detail">Diğer hesaplardan yapılan transferler alınmayacak, gönderilen fonlar kaybolacaktır!</string>
-    <string name="paycore_verification_back">Geri</string>
-    <string name="paycore_verification_error">Giriş tamamlanamadı. Telefon numarasını kontrol edip tekrar deneyin.</string>
-    <string name="paycore_generic_error">İşlem tamamlanamadı. Lütfen daha sonra tekrar deneyin veya destek ekibiyle iletişime geçin.</string>
-    <string name="paycore_verification_retry">Yeniden dene</string>
-    <string name="paycore_verification_phone_label">Telefon numarası:</string>
-    <string name="paycore_verification_contact_support">Otomatik kurtarma başarısız oldu. Lütfen destek ile iletişime geçin.</string>
-    <string name="paycore_verification_support_line"><![CDATA[7/24 teknik destek: <a href="mailto:support@paycore.pw">support@paycore.pw</a>, <a href="https://t.me/paycore_supp">@paycore_supp</a>]]></string>
-    <string name="paycore_service">Hizmet</string>
-    <string name="paycore_support">PayCore desteği</string>
-    <string name="paycore_section_currency">Para Birimi</string>
-    <string name="paycore_section_crypto">Kripto Paralar</string>
-    <string name="paycore_select_bank">Banka seç</string>
-    <string name="paycore_select_bank_error">Banka seçimi açılamadı. Lütfen daha sonra tekrar deneyin.</string>
-    <string name="paycore_banks_unavailable">Bankalar geçici olarak kullanılamıyor. Lütfen daha sonra tekrar deneyin.</string>
-    <string name="paycore_delete_restricted_warning">Bu işlem üçüncü taraf bir hizmet tarafından gerçekleştirildiği için silinemez.</string>
-    <string name="paycore_delete_to_complete_select_bank">Swap’i tamamlamak için bir banka seçin.</string>
     <string name="swap_provider_type_info_title">Takas sağlayıcı türleri</string>
     <string name="swap_provider_type_info_description">Aşağıdaki etiketler, farklı takas sağlayıcı türlerinin nasıl çalıştığını açıklar. Takasın nasıl gerçekleştirileceğini ve hangi ek kontrollerin veya koşulların geçerli olabileceğini anlamanıza yardımcı olur.</string>
     <string name="swap_provider_type_auto_description">Takas otomatik olarak yürütülür. Takas tamamlanamazsa, fonlar genellikle kullanıcının herhangi bir işlem yapmasına gerek kalmadan otomatik olarak iade edilir.</string>
@@ -2313,7 +2283,6 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="beam_recovery_required_title">Kurtarma gerekli</string>
     <string name="beam_recovery_required_description">BEAM cüzdan verilerinizi korumak için otomatik sıfırlama engellendi. Veriler saklandı, ancak eski cüzdana erişim garanti edilemez. Kurtarma ifadenizle geri yükleme işlemi ayrı bir cüzdan oluşturmalıdır.</string>
     <string name="beam_offline_context_unavailable">Çevrimdışı imzalama bağlamı kullanılamıyor. Önce bu cüzdanı çevrimiçi eşitleyin.</string>
-    <string name="beam_wallet_state_stopped">BEAM cüzdanı durduruldu</string>
     <string name="beam_wallet_state_offline">BEAM cüzdanı çevrimdışı</string>
     <string name="beam_wallet_state_closed">BEAM cüzdanı kapatıldı</string>
     <string name="beam_wallet_operation_failed">BEAM cüzdanı işlemi başarısız oldu</string>
@@ -2351,4 +2320,7 @@ Uygulama, kolaylık sağlaması için basit bir şifreyle yedek oluşturmanıza 
     <string name="desktop_change_password_corrupted">Anahtar dosyası zarar görmüş: uygulama kilitlendiğinde oturum açamayacaksınız. Her kurtarma ifadesinin bir yedeğini kaydedin.</string>
     <string name="desktop_change_password_success">Şifre değiştirildi</string>
     <string name="desktop_security_lock_now">Şimdi kilitle</string>
+    <string name="evm_node_request_failed">Ağ düğümü isteği işleyemedi. Tekrar deneyin veya Blockchain Ayarları\'ndan başka bir kaynak seçin.\n\nDüğüm yanıtı: %1$s</string>
+    <string name="desktop_transfer_password">Göndermeden önce şifre</string>
+    <string name="desktop_transfer_password_description">Her gönderimden önce uygulama şifresi istenir. Böylece uygulamanın kilidi açıkken biri bilgisayarınıza erişirse varlıklarınız korunur.</string>
 </resources>

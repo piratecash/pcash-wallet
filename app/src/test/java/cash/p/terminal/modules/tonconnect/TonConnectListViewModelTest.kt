@@ -56,7 +56,7 @@ class TonConnectListViewModelTest {
 
         // The screen renders any error as an invalid-URI sheet, which would mislead here.
         assertNull(viewModel.uiState.error)
-        assertEquals(mapOf(ACCOUNT_NAME to listOf(dapp)), viewModel.uiState.dapps)
+        assertEquals(mapOf(ACCOUNT_NAME to listOf(TonConnectSession(dapp, WALLET_ID, null))), viewModel.uiState.dapps)
     }
 
     @Test
@@ -68,8 +68,29 @@ class TonConnectListViewModelTest {
         val viewModel = TonConnectListViewModel(accountManager, tonConnectManager)
         advanceUntilIdle()
 
-        assertEquals(mapOf(ACCOUNT_NAME to listOf(dapp)), viewModel.uiState.dapps)
+        assertEquals(mapOf(ACCOUNT_NAME to listOf(TonConnectSession(dapp, WALLET_ID, null))), viewModel.uiState.dapps)
         coVerify(exactly = 1) { tonConnectManager.kit() }
+    }
+
+    @Test
+    fun init_w5Session_groupedUnderAccountAndLabelledW5() = runTest(dispatcher) {
+        val v4r2Dapp = mockk<DAppEntity> { every { walletId } returns WALLET_ID }
+        val w5Dapp = mockk<DAppEntity> { every { walletId } returns "$WALLET_ID-w5" }
+        coEvery { tonConnectManager.kit() } returns mockk<TonConnectKit>()
+        every { tonConnectManager.getDApps() } returns flowOf(listOf(v4r2Dapp, w5Dapp))
+
+        val viewModel = TonConnectListViewModel(accountManager, tonConnectManager)
+        advanceUntilIdle()
+
+        assertEquals(
+            mapOf(
+                ACCOUNT_NAME to listOf(
+                    TonConnectSession(v4r2Dapp, WALLET_ID, null),
+                    TonConnectSession(w5Dapp, WALLET_ID, "W5"),
+                )
+            ),
+            viewModel.uiState.dapps,
+        )
     }
 
     private companion object {

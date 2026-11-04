@@ -19,6 +19,7 @@ class SendSmsNotificationPage : HSPage() {
             navigation = navigation,
             appPages = appPages,
             uiState = smsViewModel.uiState,
+            onEnabledChange = smsViewModel::onEnabledChange,
             onAccountSelected = smsViewModel::onAccountSelected,
             onAddressChanged = smsViewModel::onAddressChanged,
             onMemoChanged = smsViewModel::onMemoChanged,

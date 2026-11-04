@@ -70,6 +70,21 @@ class Eip20AdapterSyncStateTest {
     }
 
     @Test
+    fun balanceState_eip20NotStarted_returnsPaused() {
+        val adapter = createAdapter(eip20SyncState = SyncState.NotSynced(SyncError.NotStarted()))
+
+        assertEquals(AdapterState.Paused, adapter.balanceState)
+    }
+
+    @Test
+    fun balanceState_eip20NoNetwork_returnsNotSynced() {
+        val error = SyncError.NoNetworkConnection()
+        val adapter = createAdapter(eip20SyncState = SyncState.NotSynced(error))
+
+        assertEquals(error, (adapter.balanceState as AdapterState.NotSynced).error)
+    }
+
+    @Test
     fun balanceState_eip20SyncedWhileHistoricalScanning_returnsSyncedNotOverlayed() {
         val adapter = createAdapter(
             eip20SyncState = SyncState.Synced(),
@@ -155,13 +170,13 @@ class Eip20AdapterSyncStateTest {
     }
 
     @Test
-    fun transactionsSyncState_evmTxNotStarted_returnsSynced() {
+    fun transactionsSyncState_evmTxNotStarted_returnsPaused() {
         val adapter = createAdapter(
             eip20SyncState = SyncState.Synced(),
             evmTxSyncState = SyncState.NotSynced(SyncError.NotStarted()),
         )
 
-        assertEquals(AdapterState.Synced, adapter.transactionsSyncState)
+        assertEquals(AdapterState.Paused, adapter.transactionsSyncState)
     }
 
     @Test

@@ -11,8 +11,7 @@ import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.wallet.IAdapterManager
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
-import cash.p.terminal.wallet.entities.TokenQuery
-import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.nativeTokenQuery
 import io.horizontalsystems.core.ViewModelUiState
 import io.horizontalsystems.core.entities.Currency
 import io.horizontalsystems.core.entities.CurrencyValue
@@ -99,8 +98,7 @@ class ActivateTokenViewModel(
 }
 
 fun Scope.activateTokenViewModel(wallet: Wallet): ActivateTokenViewModel {
-    val feeTokenQuery = TokenQuery(wallet.token.blockchainType, TokenType.Native)
-    val feeToken = requireNotNull(get<ICoinManager>().getToken(feeTokenQuery))
+    val feeToken = requireNotNull(get<ICoinManager>().getToken(wallet.token.nativeTokenQuery))
     val currencyManager = get<CurrencyManager>()
     return ActivateTokenViewModel(
         wallet = wallet,

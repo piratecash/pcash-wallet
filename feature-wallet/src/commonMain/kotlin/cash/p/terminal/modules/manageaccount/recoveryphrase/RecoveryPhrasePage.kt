@@ -20,9 +20,12 @@ import androidx.compose.ui.unit.dp
 import cash.p.terminal.feature.wallet.FaqTopic
 import cash.p.terminal.feature.wallet.openFaq
 import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesModule
+import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesModule.SafetyRulesMode
 import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesPage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
+import cash.p.terminal.navigation.rememberResultLauncher
+import cash.p.terminal.navigation.slideFromBottom
 import cash.p.terminal.modules.manageaccount.ui.ActionButton
 import cash.p.terminal.modules.manageaccount.ui.PassphraseCell
 import cash.p.terminal.modules.manageaccount.ui.SeedPhraseList
@@ -100,26 +103,21 @@ private fun RecoveryPhraseScreen(
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
 
-    // Function to navigate to safety rules and handle result for reveal
-    fun navigateToSafetyRulesForReveal(onAgreed: () -> Unit) {
-        navigation.slideFromBottomForResult<SafetyRulesPage.Result>(
-            SafetyRulesPage(SafetyRulesModule.Input(SafetyRulesModule.SafetyRulesMode.AGREE))
-        ) { result ->
-            if (result == SafetyRulesPage.Result.AGREED) {
-                onAgreed()
-            }
-        }
+    fun revealQr() {
+        qrHidden = false
+        coroutineScope.launch { scrollState.animateScrollTo(scrollState.maxValue) }
     }
 
-    // Function to navigate to safety rules for copy confirmation
-    fun navigateToSafetyRulesForCopy() {
-        navigation.slideFromBottomForResult<SafetyRulesPage.Result>(
-            SafetyRulesPage(SafetyRulesModule.Input(SafetyRulesModule.SafetyRulesMode.COPY_CONFIRM))
-        ) { result ->
-            if (result == SafetyRulesPage.Result.RISK_IT) {
-                copyWithHud(viewModel.words.joinToString(" "))
-            }
-        }
+    val agreeToRevealPhrase = navigation.rememberSafetyRules(SafetyRulesMode.AGREE, SafetyRulesPage.Result.AGREED) {
+        phraseHidden = false
+    }
+    val agreeToRevealQr = navigation.rememberSafetyRules(
+        SafetyRulesMode.AGREE,
+        SafetyRulesPage.Result.AGREED,
+        ::revealQr
+    )
+    val confirmCopy = navigation.rememberSafetyRules(SafetyRulesMode.COPY_CONFIRM, SafetyRulesPage.Result.RISK_IT) {
+        copyWithHud(viewModel.words.joinToString(" "))
     }
 
     // Show error if QR generation failed
@@ -188,7 +186,7 @@ private fun RecoveryPhraseScreen(
                         phraseHidden = false
                     } else {
                         // Need to show safety rules first
-                        navigateToSafetyRulesForReveal { phraseHidden = false }
+                        agreeToRevealPhrase()
                     }
                 }
                 viewModel.passphrase?.let { passphrase ->
@@ -211,22 +209,27 @@ private fun RecoveryPhraseScreen(
                             qrHidden = true
                         } else if (viewModel.safetyRulesAgreed) {
                             // Already agreed to safety rules - just reveal
-                            qrHidden = false
-                            coroutineScope.launch { scrollState.animateScrollTo(scrollState.maxValue) }
+                            revealQr()
                         } else {
                             // Need to show safety rules first
-                            navigateToSafetyRulesForReveal {
-                                qrHidden = false
-                                coroutineScope.launch { scrollState.animateScrollTo(scrollState.maxValue) }
-                            }
+                            agreeToRevealQr()
                         }
                     }
                 )
                 VSpacer(24.dp)
             }
-            ActionButton(Res.string.Alert_Copy) {
-                navigateToSafetyRulesForCopy()
-            }
+            ActionButton(Res.string.Alert_Copy, onClick = confirmCopy)
         }
     }
+}
+
+/** [onAccept] runs only when the user answers [accepted]. */
+@Composable
+private fun HSNavigation.rememberSafetyRules(
+    mode: SafetyRulesMode,
+    accepted: SafetyRulesPage.Result,
+    onAccept: () -> Unit,
+): () -> Unit {
+    val launcher = rememberResultLauncher<SafetyRulesPage.Result> { if (it == accepted) onAccept() }
+    return { launcher.slideFromBottom(SafetyRulesPage(SafetyRulesModule.Input(mode))) }
 }

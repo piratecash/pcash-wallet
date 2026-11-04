@@ -1,7 +1,6 @@
 package cash.p.terminal.modules.premium.settings
 
 import androidx.compose.runtime.Composable
-import cash.p.terminal.R
 import cash.p.terminal.feature.logging.settings.LoggingSettingsScreen
 import cash.p.terminal.feature.logging.settings.LoggingSettingsViewModel
 import cash.p.terminal.modules.pin.ConfirmPinPage
@@ -11,68 +10,60 @@ import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.navigation.slideFromRightSafely
-import cash.p.terminal.core.authorizedAction
-import cash.p.terminal.core.authorizedDeleteContactsPasscodeAction
-import cash.p.terminal.core.ensurePinSet
-import cash.p.terminal.core.ensurePinSetPremiumAction
-import cash.p.terminal.core.premiumAction
+import cash.p.terminal.core.rememberAuthorizedAction
+import cash.p.terminal.core.rememberAuthorizedDeleteContactsPasscodeAction
+import cash.p.terminal.core.rememberEnsurePinSet
+import cash.p.terminal.core.rememberEnsurePinSetPremiumAction
+import cash.p.terminal.core.rememberPremiumAction
 import cash.p.terminal.core.slideToDeleteContactsTerms
 import org.koin.compose.viewmodel.koinViewModel
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.confirm_pin_to_disable_login_logging_passcode
+import cash.p.terminal.resources.pin_set_for_login_logging
+import cash.p.terminal.resources.pin_set_for_login_logging_passcode
 
 class LoginLoggingPage : HSPage() {
 
     @Composable
     override fun GetContent(navigation: HSNavigation) {
         val loggingSettingsViewModel: LoggingSettingsViewModel = koinViewModel()
+        val openDeleteContactsTerms = navigation.rememberPremiumAction(navigation::slideToDeleteContactsTerms)
+        val disableDeleteContactsPin = navigation.rememberAuthorizedDeleteContactsPasscodeAction(
+            loggingSettingsViewModel::disableDeleteContactsPin
+        )
+        val openSendLoginNotification = navigation.rememberPremiumAction(
+            navigation.rememberEnsurePinSet(Res.string.pin_set_for_login_logging, PinType.REGULAR) {
+                navigation.slideFromRightSafely(SendSmsNotificationPage())
+            }
+        )
 
         LoggingSettingsScreen(
             uiState = loggingSettingsViewModel.uiState,
-            onLogSuccessfulLoginsToggle = navigation.ensurePinSetPremiumAction(
-                descriptionResId = R.string.pin_set_for_login_logging,
-                setter = loggingSettingsViewModel::setLogSuccessfulLoginsEnabled
+            onLogSuccessfulLoginsToggle = navigation.rememberLoginLoggingToggle(
+                loggingSettingsViewModel::setLogSuccessfulLoginsEnabled
             ),
-            onSelfieOnSuccessfulLoginToggle = navigation.ensurePinSetPremiumAction(
-                descriptionResId = R.string.pin_set_for_login_logging,
-                setter = loggingSettingsViewModel::setSelfieOnSuccessfulLoginEnabled
+            onSelfieOnSuccessfulLoginToggle = navigation.rememberLoginLoggingToggle(
+                loggingSettingsViewModel::setSelfieOnSuccessfulLoginEnabled
             ),
-            onLogUnsuccessfulLoginsToggle = navigation.ensurePinSetPremiumAction(
-                descriptionResId = R.string.pin_set_for_login_logging,
-                setter = loggingSettingsViewModel::setLogUnsuccessfulLoginsEnabled
+            onLogUnsuccessfulLoginsToggle = navigation.rememberLoginLoggingToggle(
+                loggingSettingsViewModel::setLogUnsuccessfulLoginsEnabled
             ),
-            onSelfieOnUnsuccessfulLoginToggle = navigation.ensurePinSetPremiumAction(
-                descriptionResId = R.string.pin_set_for_login_logging,
-                setter = loggingSettingsViewModel::setSelfieOnUnsuccessfulLoginEnabled
+            onSelfieOnUnsuccessfulLoginToggle = navigation.rememberLoginLoggingToggle(
+                loggingSettingsViewModel::setSelfieOnUnsuccessfulLoginEnabled
             ),
-            onLogIntoDuressModeToggle = navigation.ensurePinSetPremiumAction(
-                descriptionResId = R.string.pin_set_for_login_logging,
-                setter = loggingSettingsViewModel::setLogIntoDuressModeEnabled
+            onLogIntoDuressModeToggle = navigation.rememberLoginLoggingToggle(
+                loggingSettingsViewModel::setLogIntoDuressModeEnabled
             ),
-            onSelfieOnDuressLoginToggle = navigation.ensurePinSetPremiumAction(
-                descriptionResId = R.string.pin_set_for_login_logging,
-                setter = loggingSettingsViewModel::onSelfieOnDuressLoginEnabled
+            onSelfieOnDuressLoginToggle = navigation.rememberLoginLoggingToggle(
+                loggingSettingsViewModel::onSelfieOnDuressLoginEnabled
             ),
-            onPasscodeToggle = passcodeToggleAction(navigation, loggingSettingsViewModel),
+            onPasscodeToggle = rememberPasscodeToggleAction(navigation, loggingSettingsViewModel),
             onDeleteAllContactsPasscodeToggle = { enabled ->
-                if (enabled) {
-                    navigation.premiumAction {
-                        navigation.slideToDeleteContactsTerms()
-                    }
-                } else {
-                    navigation.authorizedDeleteContactsPasscodeAction {
-                        loggingSettingsViewModel.disableDeleteContactsPin()
-                    }
-                }
+                if (enabled) openDeleteContactsTerms() else disableDeleteContactsPin()
             },
-            onSendLoginNotificationClick = {
-                navigation.premiumAction {
-                    navigation.ensurePinSet(R.string.pin_set_for_login_logging) {
-                        navigation.slideFromRightSafely(SendSmsNotificationPage())
-                    }
-                }
-            },
-            onDeleteAllAuthDataOnDuressToggle = navigation.ensurePinSetPremiumAction(
-                descriptionResId = R.string.pin_set_for_login_logging,
-                setter = loggingSettingsViewModel::setDeleteAllAuthDataOnDuressEnabled
+            onSendLoginNotificationClick = openSendLoginNotification,
+            onDeleteAllAuthDataOnDuressToggle = navigation.rememberLoginLoggingToggle(
+                loggingSettingsViewModel::setDeleteAllAuthDataOnDuressEnabled
             ),
             onAutoDeletePeriodChanged = loggingSettingsViewModel::setAutoDeletePeriod,
             onDeleteAllLogs = loggingSettingsViewModel::deleteAllLogs,
@@ -80,23 +71,28 @@ class LoginLoggingPage : HSPage() {
         )
     }
 
-    private fun passcodeToggleAction(
+    @Composable
+    private fun HSNavigation.rememberLoginLoggingToggle(setter: (Boolean) -> Unit): (Boolean) -> Unit =
+        rememberEnsurePinSetPremiumAction(Res.string.pin_set_for_login_logging, PinType.REGULAR, setter)
+
+    @Composable
+    private fun rememberPasscodeToggleAction(
         navigation: HSNavigation,
         loggingSettingsViewModel: LoggingSettingsViewModel,
-    ): (Boolean) -> Unit = navigation.ensurePinSetPremiumAction(
-        descriptionResId = R.string.pin_set_for_login_logging_passcode,
-        pinType = PinType.LOG_LOGGING
-    ) { enabled ->
-        if (!enabled) {
-            navigation.authorizedAction(
-                ConfirmPinPage.InputConfirm(
-                    descriptionResId = R.string.confirm_pin_to_disable_login_logging_passcode,
-                    pinType = PinType.LOG_LOGGING
-                )
-            ) {
-                loggingSettingsViewModel.disablePasscodeLoggingPin()
-            }
+    ): (Boolean) -> Unit {
+        val disablePasscode = navigation.rememberAuthorizedAction(
+            ConfirmPinPage.InputConfirm(
+                description = Res.string.confirm_pin_to_disable_login_logging_passcode,
+                pinType = PinType.LOG_LOGGING
+            ),
+            loggingSettingsViewModel::disablePasscodeLoggingPin
+        )
+        return navigation.rememberEnsurePinSetPremiumAction(
+            description = Res.string.pin_set_for_login_logging_passcode,
+            pinType = PinType.LOG_LOGGING
+        ) { enabled ->
+            if (!enabled) disablePasscode()
+            loggingSettingsViewModel.updatePasscodeLoggingState()
         }
-        loggingSettingsViewModel.updatePasscodeLoggingState()
     }
 }

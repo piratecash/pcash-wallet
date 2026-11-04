@@ -18,7 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import cash.p.terminal.core.premiumAction
+import cash.p.terminal.core.rememberPremiumAction
 import cash.p.terminal.feature.wallet.BackupFileLauncher
 import cash.p.terminal.ui_compose.components.ButtonsGroupWithShade
 import cash.p.terminal.navigation.HSNavigation
@@ -77,6 +77,7 @@ fun LocalBackupPasswordScreen(
 
     // Show duress toggle only for full backup (single wallet = one password)
     val showDuressToggle = backupType is BackupType.FullBackup
+    val enableDuressBackup = navigation.rememberPremiumAction { viewModel.onDuressBackupToggle(true) }
 
     val saveBackupFile = koinInject<BackupFileLauncher>().rememberSaveBackupFile(
         bytes = uiState.backupData,
@@ -147,12 +148,7 @@ fun LocalBackupPasswordScreen(
                         enabled = uiState.duressBackupEnabled,
                         available = uiState.duressBackupAvailable && uiState.pinEnabled,
                         onInfoClick = { showDuressInfoSheet = true },
-                        onToggleClick = {
-                            // Check premium and then verify PIN
-                            navigation.premiumAction {
-                                viewModel.onDuressBackupToggle(true)
-                            }
-                        },
+                        onToggleClick = enableDuressBackup,
                         onToggleOff = {
                             viewModel.onDuressBackupToggle(false)
                         },

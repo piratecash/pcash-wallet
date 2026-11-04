@@ -1,6 +1,5 @@
 package cash.p.terminal.modules.multiswap.providers.backendswap
 
-import androidx.annotation.DrawableRes
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.ic_changelly
 import cash.p.terminal.resources.ic_swap_24
@@ -17,6 +16,5 @@ object BackendSwapBranding {
     fun title(providerName: String): String =
         brands[providerName]?.title ?: providerName.replaceFirstChar { it.titlecase() }
 
-    @DrawableRes
     fun icon(providerName: String): DrawableResource = brands[providerName]?.icon ?: Res.drawable.ic_swap_24
 }

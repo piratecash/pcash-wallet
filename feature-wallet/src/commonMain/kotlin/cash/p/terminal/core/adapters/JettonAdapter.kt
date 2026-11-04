@@ -13,8 +13,7 @@ import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.BalanceData
-import cash.p.terminal.wallet.entities.TokenQuery
-import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.nativeTokenQuery
 import io.horizontalsystems.tonkit.Address
 import io.horizontalsystems.tonkit.FriendlyAddress
 import io.reactivex.BackpressureStrategy
@@ -59,7 +58,7 @@ class JettonAdapter(
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
 
     private val nativeToken: Token =
-        requireNotNull(coinManager.getToken(TokenQuery(wallet.token.blockchainType, TokenType.Native)))
+        requireNotNull(coinManager.getToken(wallet.token.nativeTokenQuery))
 
     override fun attachLocalData() {
         coroutineScope.launch {

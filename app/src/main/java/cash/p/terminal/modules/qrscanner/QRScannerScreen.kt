@@ -70,7 +70,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation3.runtime.NavBackStack
 import cash.p.terminal.R
 import cash.p.terminal.core.getKoinInstance
-import cash.p.terminal.core.premiumAction
+import cash.p.terminal.core.rememberPremiumAction
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.ui.helpers.TextHelper
 import cash.p.terminal.ui_compose.components.ButtonPrimaryDefaultWithIcon
@@ -134,6 +134,7 @@ fun QRScannerScreen(
             galleryLauncher.launch(GALLERY_MIME_TYPE)
         }
     }
+    val openGalleryWithPremium = navigation.rememberPremiumAction(openGallery)
 
     if (showPermissionNeededDialog) {
         PermissionNeededDialog(
@@ -221,9 +222,7 @@ fun QRScannerScreen(
                             .padding(top = 8.dp),
                         title = stringResource(R.string.choose_from_photos),
                         enabled = !uiState.isDecodingFromImage,
-                        onClick = {
-                            navigation.premiumAction(openGallery)
-                        }
+                        onClick = openGalleryWithPremium
                     )
                 }
 

@@ -17,7 +17,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
-import cash.p.terminal.core.navigateWithTermsAccepted
+import cash.p.terminal.core.rememberTermsAcceptedAction
 import cash.p.terminal.modules.backupalert.BackupAlert
 import cash.p.terminal.modules.createaccount.CreateAccountPage
 import cash.p.terminal.feature.wallet.WalletPlatformPages
@@ -79,6 +79,7 @@ fun ManageAccountsScreen(navigation: HSNavigation, mode: ManageAccountsModule.Mo
 
     val viewModel: ManageAccountsViewModel = koinViewModel { parametersOf(mode) }
     val walletPlatformPages = koinInject<WalletPlatformPages>()
+    val openAfterTerms = navigation.rememberTermsAcceptedAction<HSPage>(navigation::slideFromRight)
 
     val finish = viewModel.finish
 
@@ -159,16 +160,14 @@ fun ManageAccountsScreen(navigation: HSNavigation, mode: ManageAccountsModule.Mo
                             Res.drawable.ic_plus,
                             Res.string.ManageAccounts_CreateNewWallet
                         ) {
-                            navigation.navigateWithTermsAccepted {
-                                navigation.slideFromRight(
-                                    CreateAccountPage(
-                                        CreateAccountPage.Input(
-                                            popOffOnSuccess = args.popOffOnSuccess,
-                                            popOffInclusive = args.popOffInclusive
-                                        )
+                            openAfterTerms(
+                                CreateAccountPage(
+                                    CreateAccountPage.Input(
+                                        popOffOnSuccess = args.popOffOnSuccess,
+                                        popOffInclusive = args.popOffInclusive
                                     )
                                 )
-                            }
+                            )
                         })
                     add(
                         ActionViewItem(

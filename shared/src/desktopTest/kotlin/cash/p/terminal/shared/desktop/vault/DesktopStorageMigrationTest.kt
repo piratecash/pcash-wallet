@@ -28,7 +28,10 @@ class DesktopStorageMigrationTest {
         vault.create(password())
         val database = assertIs<DesktopVaultState.Unlocked>(vault.state.value).session.database
         database.swapProviderTransactionsDao().insert(zeroAmountSwap())
-        database.useWriterConnection { it.execSQL("PRAGMA user_version = 118") }
+        database.useWriterConnection {
+            it.execSQL("ALTER TABLE SwapProviderTransaction DROP COLUMN receivedAt")
+            it.execSQL("PRAGMA user_version = 118")
+        }
         vault.close()
 
         assertEquals(UnlockOutcome.Success, vault.unlock(password()))
@@ -37,6 +40,7 @@ class DesktopStorageMigrationTest {
         val row = reopened.swapProviderTransactionsDao().getByDate(SWAP_DATE)
         assertEquals(SWAP_DATE, row?.date)
         assertNull(row?.amountOutReal)
+        assertNull(row?.receivedAt)
         vault.close()
     }
 

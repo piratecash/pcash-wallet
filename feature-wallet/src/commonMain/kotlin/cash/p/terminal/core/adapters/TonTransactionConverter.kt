@@ -5,9 +5,9 @@ import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.ton.TonTransactionRecord
 import cash.p.terminal.modules.transactions.TransactionStatus
 import cash.p.terminal.wallet.Token
-import io.horizontalsystems.core.entities.BlockchainType
-import cash.p.terminal.wallet.entities.TokenQuery
-import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.entities.TonAsset
+import cash.p.terminal.wallet.entities.TonWalletVersion
+import cash.p.terminal.wallet.entities.tokenQuery
 import cash.p.terminal.wallet.transaction.TransactionSource
 import io.horizontalsystems.tonkit.Address
 import io.horizontalsystems.tonkit.models.AccountAddress
@@ -21,7 +21,8 @@ class TonTransactionConverter(
     private val address: Address,
     private val coinManager: ICoinManager,
     private val source: TransactionSource,
-    private val baseToken: Token
+    private val baseToken: Token,
+    private val walletVersion: TonWalletVersion,
 ) {
 
     fun createTransactionRecord(event: Event): TonTransactionRecord {
@@ -65,7 +66,7 @@ class TonTransactionConverter(
     }
 
     private fun jettonValue(jetton: Jetton, value: BigInteger, negative: Boolean): TransactionValue {
-        val query = TokenQuery(BlockchainType.Ton, TokenType.Jetton(jetton.address.toUserFriendly(bounceable = true)))
+        val query = TonAsset.Jetton(jetton.address.toUserFriendly(bounceable = true), walletVersion).tokenQuery
 
         val token = coinManager.getToken(query)
 

@@ -3,7 +3,9 @@ package cash.p.terminal.modules.tonconnect
 import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
 import cash.p.terminal.core.managers.TonConnectManager
+import cash.p.terminal.core.managers.TonConnectWalletId
 import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.entities.TonWalletVersion
 import com.tonapps.wallet.data.tonconnect.entities.DAppEntity
 import io.horizontalsystems.core.ViewModelUiState
 import io.horizontalsystems.tonkit.tonconnect.TonConnectKit
@@ -17,7 +19,7 @@ class TonConnectListViewModel(
     private val tonConnectManager: TonConnectManager,
 ) : ViewModelUiState<TonConnectListUiState>() {
 
-    private var dapps: Map<String, List<DAppEntity>> = emptyMap()
+    private var dapps: Map<String, List<TonConnectSession>> = emptyMap()
     private var dAppRequestUri: String? = null
     private var error: Throwable? = null
 
@@ -35,15 +37,17 @@ class TonConnectListViewModel(
         viewModelScope.launch {
             launch { requestKit() }
             tonConnectManager.getDApps().collect {
-                dapps = it.groupBy { entity ->
-                    accountNamesById.getOrDefault(
-                        entity.walletId,
-                        entity.walletId
-                    )
+                dapps = it.map(::session).groupBy { session ->
+                    accountNamesById.getOrDefault(session.accountId, session.accountId)
                 }
                 emitState()
             }
         }
+    }
+
+    private fun session(dapp: DAppEntity): TonConnectSession {
+        val walletId = TonConnectWalletId.parse(dapp.walletId)
+        return TonConnectSession(dapp, walletId.accountId, walletId.version.sessionLabel)
     }
 
     // The manager builds the kit lazily; without a request here a failed startup attempt is never retried.
@@ -91,8 +95,21 @@ class TonConnectListViewModel(
 }
 
 
+/** V4R2 sessions stay unlabelled, as they were before W5 support. */
+private val TonWalletVersion.sessionLabel: String?
+    get() = when (this) {
+        TonWalletVersion.V4R2 -> null
+        TonWalletVersion.W5 -> title
+    }
+
+data class TonConnectSession(
+    val dapp: DAppEntity,
+    val accountId: String,
+    val walletVersionLabel: String?,
+)
+
 data class TonConnectListUiState(
-    val dapps: Map<String, List<DAppEntity>>,
+    val dapps: Map<String, List<TonConnectSession>>,
     val dAppRequestUri: String?,
     val error: Throwable?
 )

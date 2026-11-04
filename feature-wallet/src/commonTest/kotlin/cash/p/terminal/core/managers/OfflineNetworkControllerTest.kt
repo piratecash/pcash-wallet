@@ -192,7 +192,7 @@ class OfflineNetworkControllerTest {
     fun pause_tonMember_delegatesToTonKitManager() = runTest {
         val member = wallet(BlockchainType.Ton)
         adapterFor(member)
-        setOnline({ tonKitManager.currentAccount }, { tonKitManager.tonKitWrapper?.networkStarted })
+        every { tonKitManager.isNetworkStarted(account) } returns true
 
         controller.pause(member)
 

@@ -17,6 +17,9 @@ interface ISmsNotificationSettings {
     fun getSmsNotificationMemo(level: Int): String?
     fun setSmsNotificationMemo(level: Int, memo: String?)
 
+    fun getSmsNotificationEnabled(level: Int): Boolean
+    fun setSmsNotificationEnabled(level: Int, enabled: Boolean)
+
     companion object {
         val AMOUNT_TO_SEND_ZEC: BigDecimal = BigDecimal("0.0001")
     }

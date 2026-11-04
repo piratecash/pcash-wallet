@@ -3,11 +3,13 @@ package cash.p.terminal.core.adapters
 import cash.p.beam.BeamAddress
 import cash.p.beam.BeamAddressType
 import cash.p.beam.BeamBalance
+import cash.p.beam.BeamFailure
 import cash.p.beam.BeamNetwork
 import cash.p.beam.BeamWalletSession
 import cash.p.beam.BeamWalletState
 import cash.p.terminal.core.managers.BeamSessionOwner
 import cash.p.terminal.wallet.AdapterState
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.CoroutineDispatcher
@@ -17,6 +19,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.math.BigDecimal
 
@@ -161,6 +164,38 @@ class BeamAdapterBalanceTest {
             val state = adapter.balanceState as AdapterState.Syncing
             assertEquals(25.0, requireNotNull(state.progress), 0.0001)
             assertEquals(750L, state.blocksRemained)
+        } finally {
+            adapter.close()
+        }
+    }
+
+    @Test
+    fun balanceState_stoppedWithoutStartupFailure_returnsPaused() = runTest {
+        val adapter = adapter(StandardTestDispatcher(testScheduler))
+        try {
+            assertEquals(AdapterState.Paused, adapter.balanceState)
+            adapter.attachLocalData()
+            sdkState.value = BeamWalletState.Ready(100)
+            runCurrent()
+            sdkState.value = BeamWalletState.Stopped
+            runCurrent()
+            assertEquals(AdapterState.Paused, adapter.balanceState)
+        } finally {
+            adapter.close()
+        }
+    }
+
+    @Test
+    fun balanceState_stoppedAfterStartupFailure_keepsStartupError() = runTest {
+        sdkState.value = BeamWalletState.Ready(100)
+        coEvery { owner.start(session) } throws BeamFailure.Download("private-download-detail")
+        val adapter = adapter(StandardTestDispatcher(testScheduler))
+        try {
+            adapter.start()
+            runCurrent()
+            sdkState.value = BeamWalletState.Stopped
+            runCurrent()
+            assertTrue(adapter.balanceState is AdapterState.NotSynced)
         } finally {
             adapter.close()
         }

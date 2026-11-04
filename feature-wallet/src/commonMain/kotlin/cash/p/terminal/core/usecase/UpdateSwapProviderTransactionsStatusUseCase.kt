@@ -33,6 +33,7 @@ class UpdateSwapProviderTransactionsStatusUseCase(
                 token = token,
                 address = address,
                 statusesExcluded = SwapProviderTransaction.FINISHED_STATUSES,
+                providersExcluded = NOT_POLLED_PROVIDERS,
                 limit = STATUS_CHECK_LIMIT
             )
         )
@@ -43,6 +44,7 @@ class UpdateSwapProviderTransactionsStatusUseCase(
             swapProviderTransactionsStorage.getAllUnfinishedByAccount(
                 accountId = accountId,
                 statusesExcluded = SwapProviderTransaction.FINISHED_STATUSES,
+                providersExcluded = NOT_POLLED_PROVIDERS,
                 limit = STATUS_CHECK_LIMIT
             )
         )
@@ -142,5 +144,8 @@ class UpdateSwapProviderTransactionsStatusUseCase(
 
     private companion object {
         const val STATUS_CHECK_LIMIT = 10
+
+        // Provider discontinued: its unfinished rows must not take poll slots from live providers.
+        val NOT_POLLED_PROVIDERS = listOf(SwapProvider.PAYCORE)
     }
 }

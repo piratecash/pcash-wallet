@@ -80,12 +80,11 @@ class SafeNavigationInNavDisplayTest {
 
     @Test
     fun navigateUpFrom_resultCallbackAfterFullScreenCalleeCloses_closesCaller() {
-        val caller = SendPage()
+        lateinit var caller: LauncherPage
+        caller = LauncherPage { navigation.navigateUpFrom(caller) }
         val callee = PinPage()
         push(caller)
-        composeRule.runOnIdle {
-            navigation.slideFromRightForResult<String>(callee) { navigation.navigateUpFrom(caller) }
-        }
+        composeRule.runOnIdle { caller.launcher.slideFromRight(callee) }
         composeRule.waitForIdle()
 
         composeRule.runOnIdle {
@@ -100,12 +99,9 @@ class SafeNavigationInNavDisplayTest {
     @Test
     fun removeLastUntil_resultCallbackFromSheet_closesSheetAndCaller() {
         val sheet = RiskyAddressSheet()
-        push(SendPage())
-        composeRule.runOnIdle {
-            navigation.slideFromBottomForResult<String>(sheet) {
-                navigation.removeLastUntil(SendPage::class, inclusive = true)
-            }
-        }
+        val caller = LauncherPage { navigation.removeLastUntil(LauncherPage::class, inclusive = true) }
+        push(caller)
+        composeRule.runOnIdle { caller.launcher.slideFromBottom(sheet) }
         composeRule.waitForIdle()
 
         composeRule.runOnIdle {

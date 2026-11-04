@@ -48,9 +48,8 @@ import cash.p.terminal.resources.ic_check_20
 import cash.p.terminal.resources.ic_delete_20
 import cash.p.terminal.resources.ic_qr_scan_20
 import cash.p.terminal.resources.qr_scanner_title_smart_scan
-import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.HSNavigation
-import cash.p.terminal.navigation.openQrScanner
+import cash.p.terminal.navigation.rememberQrScannerLauncher
 import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
 import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
 import cash.p.terminal.ui_compose.components.HSCircularProgressIndicator
@@ -134,6 +133,16 @@ fun FormsInput(
                 if (incoming != textState.text) {
                     textState = TextFieldValue(incoming, TextRange(incoming.length))
                 }
+            }
+
+            // After LaunchedEffect(initial): on re-entry the initial sync must not overwrite a buffered scan.
+            val qrScanner = navigation?.rememberQrScannerLauncher(koinInject()) { scannedText ->
+                val textProcessed = textPreprocessor.process(scannedText)
+                textState = TextFieldValue(
+                    text = textProcessed,
+                    selection = TextRange(textProcessed.length)
+                )
+                onValueChange(textProcessed)
             }
 
             prefix?.let {
@@ -242,20 +251,12 @@ fun FormsInput(
             } else {
                 if (qrScannerEnabled) {
                     val scannerTitle = qrScannerTitle ?: stringResource(Res.string.qr_scanner_title_smart_scan)
-                    val appPages: AppPages = koinInject()
                     ButtonSecondaryCircle(
                         modifier = Modifier.padding(end = if (pasteEnabled) 8.dp else 16.dp),
                         icon = Res.drawable.ic_qr_scan_20,
                         onClick = {
                             coroutineScope.launchAfterClearingFocus(focusManager) {
-                                checkNotNull(navigation).openQrScanner(appPages, scannerTitle) { scannedText ->
-                                    val textProcessed = textPreprocessor.process(scannedText)
-                                    textState = TextFieldValue(
-                                        text = textProcessed,
-                                        selection = TextRange(textProcessed.length)
-                                    )
-                                    onValueChange(textProcessed)
-                                }
+                                checkNotNull(qrScanner).open(scannerTitle)
                             }
                         }
                     )
@@ -359,6 +360,16 @@ fun FormsInputMultiline(
                 }
             }
 
+            // After LaunchedEffect(initial): on re-entry the initial sync must not overwrite a buffered scan.
+            val qrScanner = navigation?.rememberQrScannerLauncher(koinInject()) { scannedText ->
+                val textProcessed = textPreprocessor.process(scannedText)
+                textState = textState.copy(
+                    text = textProcessed,
+                    selection = TextRange(textProcessed.length)
+                )
+                onValueChange.invoke(textProcessed)
+            }
+
             Spacer(modifier = Modifier.height(12.dp))
 
             BasicTextField(
@@ -456,20 +467,12 @@ fun FormsInputMultiline(
                 } else {
                     if (qrScannerEnabled) {
                         val scannerTitle = qrScannerTitle ?: stringResource(Res.string.qr_scanner_title_smart_scan)
-                        val appPages: AppPages = koinInject()
                         ButtonSecondaryCircle(
                             modifier = Modifier.padding(end = if (pasteEnabled) 8.dp else 16.dp),
                             icon = Res.drawable.ic_qr_scan_20,
                             onClick = {
                                 coroutineScope.launchAfterClearingFocus(focusManager) {
-                                    checkNotNull(navigation).openQrScanner(appPages, scannerTitle) { scannedText ->
-                                        val textProcessed = textPreprocessor.process(scannedText)
-                                        textState = textState.copy(
-                                            text = textProcessed,
-                                            selection = TextRange(textProcessed.length)
-                                        )
-                                        onValueChange.invoke(textProcessed)
-                                    }
+                                    checkNotNull(qrScanner).open(scannerTitle)
                                     onScanQR?.invoke()
                                 }
                             }

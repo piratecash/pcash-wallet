@@ -54,6 +54,12 @@ sealed class TokenType : CommonParcelable {
     data class Jetton(val address: String) : TokenType()
 
     @CommonParcelize
+    object TonW5Native : TokenType()
+
+    @CommonParcelize
+    data class TonW5Jetton(val address: String) : TokenType()
+
+    @CommonParcelize
     data class Asset(val code: String, val issuer: String) : TokenType()
 
     @CommonParcelize
@@ -71,6 +77,8 @@ sealed class TokenType : CommonParcelable {
                 is Trc10 -> listOf("trc10", assetId)
                 is Spl -> listOf("spl", address)
                 is Jetton -> listOf("the-open-network", address)
+                TonW5Native -> listOf("ton_w5_native")
+                is TonW5Jetton -> listOf("ton_w5_jetton", address)
                 is Asset -> listOf("stellar", "$code-$issuer")
                 is ThorchainAsset -> listOf("thorchain", denom)
                 is AddressTyped -> listOf("address_type", type.name.lowercase())
@@ -93,6 +101,8 @@ sealed class TokenType : CommonParcelable {
             is Trc10 -> Value("trc10", assetId)
             is Spl -> Value("spl", address)
             is Jetton -> Value("the-open-network", address)
+            TonW5Native -> Value("ton_w5_native", "")
+            is TonW5Jetton -> Value("ton_w5_jetton", address)
             is Asset -> Value("stellar", "$code-$issuer")
             is ThorchainAsset -> Value("thorchain", denom)
             is AddressTyped -> Value("address_type", type.name)
@@ -112,6 +122,7 @@ sealed class TokenType : CommonParcelable {
             when (type) {
                 "native" -> return Native
                 "mweb" -> return Mweb
+                "ton_w5_native" -> return TonW5Native
 
                 "eip20" -> {
                     if (reference.isNotBlank()) {
@@ -132,6 +143,8 @@ sealed class TokenType : CommonParcelable {
                         return Jetton(reference)
                     }
                 }
+
+                "ton_w5_jetton" -> if (reference.isNotBlank()) return TonW5Jetton(reference)
 
                 "stellar" -> {
                     if (reference.isNotBlank()) {

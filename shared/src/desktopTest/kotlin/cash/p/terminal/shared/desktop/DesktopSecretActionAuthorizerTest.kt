@@ -1,5 +1,11 @@
 package cash.p.terminal.shared.desktop
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasSetTextAction
@@ -8,6 +14,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.navigation3.runtime.NavBackStack
+import cash.p.terminal.core.TransactionSettingsStorage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.shared.TestWindowHost
@@ -16,9 +23,13 @@ import cash.p.terminal.shared.desktop.lock.ConfirmPasswordPage
 import cash.p.terminal.shared.desktop.lock.ConfirmPasswordViewModel
 import cash.p.terminal.shared.desktop.vault.DesktopVault
 import cash.p.terminal.shared.desktop.vault.UnlockOutcome
+import cash.p.terminal.shared.main.DesktopHudMessenger
+import cash.p.terminal.shared.main.DesktopNavHost
+import cash.p.terminal.ui_compose.components.UrlOpener
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import io.horizontalsystems.core.ICurrentDateProvider
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -41,7 +52,11 @@ import kotlin.test.assertIs
 class DesktopSecretActionAuthorizerTest {
 
     private val navigation = HSNavigation(NavBackStack<HSPage>(BlankPage()))
-    private var actions = 0
+    private val arguments = mutableListOf<String>()
+    private var transferPasswordEnabled = false
+    private val authorizer = DesktopSecretActionAuthorizer(
+        mockk<TransactionSettingsStorage> { every { transferPasscodeEnabled } answers { transferPasswordEnabled } }
+    )
     private val systemLocale: Locale = Locale.getDefault()
 
     @AfterTest
@@ -52,63 +67,149 @@ class DesktopSecretActionAuthorizerTest {
     }
 
     @Test
-    fun authorize_passwordConfirmed_runsTheActionOnce() {
-        val page = authorize()
-
-        navigation.setResult(page, ConfirmPasswordPage.Result(success = true))
-        navigation.navigateUp()
-
-        assertEquals(1, actions)
-    }
-
-    @Test
-    fun authorize_confirmationCancelled_doesNotRunTheAction() {
-        authorize()
-
-        navigation.navigateUp()
-
-        assertEquals(0, actions)
-    }
-
-    @Test
-    fun authorize_passwordAcceptedOnThePage_runsTheActionAndClosesIt() = runDesktopComposeUiTest {
+    fun rememberAuthorization_passwordAcceptedOnThePage_runsTheActionAndClosesIt() = runDesktopComposeUiTest {
         val check = submitPasswordOnThePage()
 
         check.complete(UnlockOutcome.Success)
         waitForIdle()
 
-        assertEquals(1, actions)
-        assertIs<BlankPage>(navigation.lastOrNull())
+        assertEquals(listOf(ARGUMENT), arguments)
+        assertIs<AuthorizationCallerPage>(navigation.lastOrNull())
     }
 
     @Test
-    fun authorize_cancelledWhileThePasswordIsChecked_doesNotRunTheAction() = runDesktopComposeUiTest {
+    fun rememberAuthorization_cancelledWhileThePasswordIsChecked_doesNotRunTheAction() = runDesktopComposeUiTest {
         val check = submitPasswordOnThePage()
 
         runOnIdle { navigation.navigateUp() }
         check.complete(UnlockOutcome.Success)
         waitForIdle()
 
-        assertEquals(0, actions)
+        assertEquals(emptyList(), arguments)
+    }
+
+    @Test
+    fun rememberAuthorization_passwordConfirmed_runsTheActionOnceWithItsArgument() = runDesktopComposeUiTest {
+        val page = rememberAuthorizationAndLaunch()
+
+        runOnIdle {
+            navigation.setResult(page, ConfirmPasswordPage.Result(success = true))
+            navigation.navigateUp()
+        }
+        waitForIdle()
+
+        assertEquals(listOf(ARGUMENT), arguments)
+    }
+
+    @Test
+    fun rememberAuthorization_confirmationCancelled_doesNotRunTheAction() = runDesktopComposeUiTest {
+        rememberAuthorizationAndLaunch()
+
+        runOnIdle { navigation.navigateUp() }
+        waitForIdle()
+
+        assertEquals(emptyList(), arguments)
+    }
+
+    /** Hosts a caller that remembers the authorization and launches it with [ARGUMENT]. */
+    private fun ComposeUiTest.rememberAuthorizationAndLaunch(transfer: Boolean = false): ConfirmPasswordPage {
+        launchAuthorization(transfer)
+        assertEquals(emptyList(), arguments)
+        return assertIs<ConfirmPasswordPage>(navigation.lastOrNull())
+    }
+
+    private fun ComposeUiTest.launchAuthorization(transfer: Boolean) {
+        startConfirmPasswordGraph(CompletableDeferred())
+        val caller = AuthorizationCallerPage(transfer)
+        navigation.slideFromRight(caller)
+        setContent {
+            TestWindowHost {
+                ComposeAppTheme {
+                    DesktopNavHost(navigation, remember { DesktopHudMessenger() }, NoUrlOpener)
+                }
+            }
+        }
+        runOnIdle { caller.authorize(ARGUMENT) }
+        waitForIdle()
+    }
+
+    private inner class AuthorizationCallerPage(private val transfer: Boolean = false) : HSPage() {
+        lateinit var authorize: (String) -> Unit
+
+        @Composable
+        override fun GetContent(navigation: HSNavigation) {
+            val record: (String) -> Unit = { arguments += it }
+            val authorization = if (transfer) {
+                authorizer.rememberTransferAuthorization(navigation, record)
+            } else {
+                authorizer.rememberAuthorization(navigation, record)
+            }
+            SideEffect { authorize = authorization }
+        }
+    }
+
+    private object NoUrlOpener : UrlOpener {
+        override fun open(url: String) = Unit
+    }
+
+    @Test
+    fun rememberTransferAuthorization_passwordNotRequired_runsTheActionWithoutThePasswordPage() =
+        runDesktopComposeUiTest {
+            launchAuthorization(transfer = true)
+
+            assertEquals(listOf(ARGUMENT), arguments)
+            assertIs<AuthorizationCallerPage>(navigation.lastOrNull())
+        }
+
+    @Test
+    fun rememberTransferAuthorization_passwordRequiredAndConfirmed_runsTheActionOnce() = runDesktopComposeUiTest {
+        transferPasswordEnabled = true
+        val page = rememberAuthorizationAndLaunch(transfer = true)
+
+        runOnIdle {
+            navigation.setResult(page, ConfirmPasswordPage.Result(success = true))
+            navigation.navigateUp()
+        }
+        waitForIdle()
+
+        assertEquals(listOf(ARGUMENT), arguments)
+    }
+
+    @Test
+    fun rememberTransferAuthorization_passwordRequiredAndCancelled_doesNotRunTheAction() = runDesktopComposeUiTest {
+        transferPasswordEnabled = true
+        rememberAuthorizationAndLaunch(transfer = true)
+
+        runOnIdle { navigation.navigateUp() }
+        waitForIdle()
+
+        assertEquals(emptyList(), arguments)
     }
 
     /** Leaves the check pending until the returned deferred completes. */
     private fun ComposeUiTest.submitPasswordOnThePage(): CompletableDeferred<UnlockOutcome> {
         val check = CompletableDeferred<UnlockOutcome>()
         startConfirmPasswordGraph(check)
-        val page = authorize()
+        val caller = AuthorizationCallerPage()
+        navigation.slideFromRight(caller)
+        var page by mutableStateOf<HSPage?>(null)
         // The page stays composed after its pop, as it does while animating out.
-        setContent { TestWindowHost { ComposeAppTheme { page.GetContent(navigation) } } }
+        setContent {
+            TestWindowHost {
+                ComposeAppTheme {
+                    caller.Content(navigation)
+                    page?.Content(navigation)
+                }
+            }
+        }
+        runOnIdle {
+            caller.authorize(ARGUMENT)
+            page = assertIs<ConfirmPasswordPage>(navigation.lastOrNull())
+        }
         onNode(hasSetTextAction()).performTextInput(PASSWORD)
         onNodeWithText(CONFIRM).performClick()
         waitForIdle()
         return check
-    }
-
-    private fun authorize(): ConfirmPasswordPage {
-        DesktopSecretActionAuthorizer().authorize(navigation) { actions++ }
-        assertEquals(0, actions)
-        return assertIs<ConfirmPasswordPage>(navigation.lastOrNull())
     }
 
     private fun startConfirmPasswordGraph(check: CompletableDeferred<UnlockOutcome>) {
@@ -137,5 +238,6 @@ class DesktopSecretActionAuthorizerTest {
     private companion object {
         const val PASSWORD = "Correct-horse1"
         const val CONFIRM = "Confirm"
+        const val ARGUMENT = "argument"
     }
 }

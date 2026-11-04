@@ -133,15 +133,23 @@ class CardSdkProvider(
                 Intent(activity, activity.javaClass).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
                 PendingIntent.FLAG_MUTABLE
             )
-            NfcAdapter.getDefaultAdapter(activity)
-                ?.enableForegroundDispatch(activity, pendingIntent, null, null)
+            updateForegroundDispatch(activity) { enableForegroundDispatch(activity, pendingIntent, null, null) }
         }
 
         override fun onPause(owner: LifecycleOwner) {
             val activity = holder?.activity ?: return
             if (activity !== owner) return
 
-            NfcAdapter.getDefaultAdapter(activity)?.disableForegroundDispatch(activity)
+            updateForegroundDispatch(activity) { disableForegroundDispatch(activity) }
+        }
+
+        // The system NFC service can fail in its own process; dispatch is only a fallback.
+        private inline fun updateForegroundDispatch(activity: FragmentActivity, action: NfcAdapter.() -> Unit) {
+            try {
+                NfcAdapter.getDefaultAdapter(activity)?.action()
+            } catch (e: RuntimeException) {
+                logger.w(e) { "NFC foreground dispatch update failed" }
+            }
         }
 
         override fun onDestroy(owner: LifecycleOwner) {
