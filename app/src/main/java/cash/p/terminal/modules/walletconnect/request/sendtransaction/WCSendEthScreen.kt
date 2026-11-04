@@ -82,7 +82,8 @@ fun WCSendEthRequestScreen(
                     onClick = {
                         coroutineScope.launch {
                             buttonEnabled = false
-                            HudHelper.showInProcessMessage(view, sendingText, SnackbarDuration.INDEFINITE)
+                            val sendingHud =
+                                HudHelper.showInProcessMessage(view, sendingText, SnackbarDuration.INDEFINITE)
 
                             try {
                                 logger.info("click confirm button")
@@ -95,7 +96,12 @@ fun WCSendEthRequestScreen(
                             } catch (t: Throwable) {
                                 // The request stays pending: the user can confirm again or reject it.
                                 logger.warning("failed", t)
-                                t.signingErrorText(t.evmSendErrorMessage())?.let { HudHelper.showErrorMessage(view, it) }
+                                val errorText = t.signingErrorText(t.evmSendErrorMessage())
+                                if (errorText != null) {
+                                    HudHelper.showErrorMessage(view, errorText)
+                                } else {
+                                    sendingHud?.dismiss()
+                                }
                                 buttonEnabled = true
                             }
                         }
