@@ -24,13 +24,13 @@ import cash.p.terminal.modules.multiswap.sendtransaction.SendTransactionSettings
 import cash.p.terminal.modules.multiswap.ui.DataField
 import cash.p.terminal.modules.send.SendModule
 import cash.p.terminal.modules.send.SendResult
+import cash.p.terminal.modules.send.fee.requiredBalanceCaution
 import cash.p.terminal.modules.send.ton.FeeStatus
 import cash.p.terminal.modules.send.ton.SendTonAddressService
 import cash.p.terminal.modules.send.ton.SendTonAmountService
 import cash.p.terminal.modules.send.ton.SendTonFeeService
 import cash.p.terminal.modules.xrate.XRateService
 import cash.p.terminal.resources.Res
-import cash.p.terminal.resources.check_fee_warning
 import cash.p.terminal.resources.not_enough_ton_for_fee
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.Token
@@ -231,32 +231,20 @@ class SendTransactionServiceTon(
     }
 
     private fun checkFeeBalance(feeState: SendTonFeeService.State) {
-        if (feeState.feeStatus !is FeeStatus.Success) {
-            feeCaution = null
-            hasEnoughFeeAmount = true
-        }
-        val fee = (feeState.feeStatus as? FeeStatus.Success)?.fee ?: return
         val availableBalance = adapterManager.getFeeTokenBalance(feeToken, token)
-        if (availableBalance != null) {
-            feeCaution = if (availableBalance < fee) {
-                val formattedBalance = numberFormatter.formatCoinFull(
-                    availableBalance,
-                    null,
-                    feeToken.decimals
-                )
-                createCaution(LocalizedException(Res.string.not_enough_ton_for_fee, formattedBalance))
-            } else {
-                null
-            }
-            hasEnoughFeeAmount = feeCaution == null
-        } else {
-            val neededFee = fee.stripTrailingZeros()
-                .toPlainString() + " " + feeToken.coin.code
-            feeCaution = createCaution(
-                LocalizedException(Res.string.check_fee_warning, neededFee),
-                type = CautionViewItem.Type.Warning
-            )
+        feeCaution = when (val feeStatus = feeState.feeStatus) {
+            is FeeStatus.Success -> requiredBalanceCaution(availableBalance, feeStatus.requiredTon, feeToken)
+            FeeStatus.NoEnoughBalance -> notEnoughTonCaution(availableBalance ?: BigDecimal.ZERO)
+            null -> null
         }
+        // Without a current estimate the required TON is unknown, so sending stays blocked.
+        hasEnoughFeeAmount = feeState.feeStatus is FeeStatus.Success &&
+            feeCaution?.type != CautionViewItem.Type.Error
+    }
+
+    private fun notEnoughTonCaution(availableBalance: BigDecimal): CautionViewItem {
+        val formattedBalance = numberFormatter.formatCoinFull(availableBalance, null, feeToken.decimals)
+        return createCaution(LocalizedException(Res.string.not_enough_ton_for_fee, formattedBalance))
     }
 
     override fun hasSettings() = false

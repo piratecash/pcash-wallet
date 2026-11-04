@@ -599,6 +599,7 @@
     <string name="Swap_Price">价格</string>
     <string name="Swap_AvailableBalance">可用余额</string>
     <string name="swap_insufficient_fee_balance">当前 %1$s 余额低于处理此交易所需的金额（包括交易手续费）。</string>
+    <string name="insufficient_balance_required_available">%1$s 不足。此交易需要至少 %2$s（包含网络手续费），当前可用 %3$s。</string>
     <string name="fee_warning_low_balance">余额低于所需水平。手续费可能高达 %1$s。</string>
     <string name="swap_balance_for_fees">手续费余额</string>
     <string name="fee">手续费</string>

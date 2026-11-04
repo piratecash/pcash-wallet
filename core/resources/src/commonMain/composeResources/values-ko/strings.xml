@@ -603,6 +603,7 @@
     <string name="Swap_Price">금액</string>
     <string name="Swap_AvailableBalance">사용 가능한 잔액</string>
     <string name="swap_insufficient_fee_balance">현재 %1$s 잔액이 거래 수수료를 포함하여 이 거래를 처리하는 데 필요한 금액보다 부족합니다.</string>
+    <string name="insufficient_balance_required_available">%1$s이(가) 부족합니다. 이 거래에는 네트워크 수수료를 포함하여 최소 %2$s이(가) 필요하며, 사용 가능한 금액은 %3$s입니다.</string>
     <string name="fee_warning_low_balance">잔액이 필요 수준보다 낮습니다. 수수료가 최대 %1$s까지 발생할 수 있습니다.</string>
     <string name="swap_balance_for_fees">수수료용 잔액</string>
     <string name="fee">수수료</string>

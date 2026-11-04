@@ -3,6 +3,7 @@ package cash.p.terminal.modules.send.ton
 import cash.p.terminal.core.ISendTonAdapter
 import io.horizontalsystems.tonkit.FriendlyAddress
 import io.tonapi.infrastructure.ClientException
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -52,12 +53,14 @@ class SendTonFeeService(
                 ensureActive()
                 try {
                     val estimated = adapter.estimateFee(amount, address, memo)
-                    fee = FeeStatus.Success(estimated)
-                    quote = TonFeeQuote(estimated, amount, address, memo)
+                    fee = FeeStatus.Success(estimated.fee, estimated.requiredTon)
+                    quote = TonFeeQuote(estimated.fee, amount, address, memo)
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Throwable) {
-                    if (e is ClientException) {
-                        fee = FeeStatus.NoEnoughBalance
-                    }
+                    // A success computed for the previous inputs must not stay usable for the current ones.
+                    fee = if (e is ClientException) FeeStatus.NoEnoughBalance else null
+                    quote = null
                     e.printStackTrace()
                     delay(500)
                     refreshFeeAndEmitState()
