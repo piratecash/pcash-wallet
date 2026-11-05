@@ -1,6 +1,7 @@
 package cash.p.terminal.core.utils
 
 import cash.p.terminal.core.toRawHexString
+import cash.p.terminal.wallet.MnemonicSeed
 import cash.p.terminal.wallet.normalizeNFKD
 import com.m2049r.xmrwallet.util.ledger.Monero
 import cash.p.terminal.core.hexToByteArray
@@ -33,6 +34,27 @@ class MoneroWalletSeedConverterTest {
         val legacySeed1 =
             MoneroWalletSeedConverter.getLegacySeedFromBip39(bip39Seed, accountIndex = 1)
         assertEquals(expectedLegacySeed1, legacySeed1)
+    }
+
+    @Test
+    fun getLegacySeedFromSeed_trezorMnemonic12_matchesTrezorWatchKeys() {
+        val seed = MnemonicSeed.derive(
+            "alcohol woman abuse must during monitor noble actual mixed trade anger aisle".split(" ")
+        )
+
+        val viewKeys = (0..2).map { account ->
+            val legacySeed = MoneroWalletSeedConverter.getLegacySeedFromSeed(seed, accountIndex = account)
+            MoneroWalletSeedConverter.getSecretKeys(legacySeed).viewKey
+        }
+
+        assertEquals(
+            listOf(
+                "8722520a581e2a50cc1adab4a1692401effd37b0d63b9d9b60fd7f34ea2b950e",
+                "1f70b7d9e86c11b7a5bee883b75c43d6be189c8f812726ea1ecd94b06bb7db04",
+                "e0671fbed2c9231fe4f286962862813a4a4d153c793bf5d0e3742119723f3000",
+            ),
+            viewKeys
+        )
     }
 
     @Test

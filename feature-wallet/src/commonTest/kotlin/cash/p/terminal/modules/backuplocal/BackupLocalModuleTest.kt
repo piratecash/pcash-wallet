@@ -1,6 +1,7 @@
 package cash.p.terminal.modules.backuplocal
 
 import cash.p.terminal.core.hexToByteArray
+import cash.p.terminal.modules.restoreaccount.restoreshamir.Slip39TestShares
 import cash.p.terminal.wallet.AccountType
 import com.google.gson.GsonBuilder
 import io.horizontalsystems.ethereumkit.core.EthereumKit
@@ -13,6 +14,9 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import java.math.BigInteger
 
 class BackupLocalModuleTest {
@@ -380,6 +384,52 @@ class BackupLocalModuleTest {
 
         assertEquals(expectedTypeString, typeString)
         assertEquals(original, BackupLocalModule.getAccountTypeFromData(typeString, data))
+    }
+
+    // endregion
+
+    // region SLIP-39
+
+    @Test
+    fun getAccountTypeFromData_slip39RoundTrip_restoresSameShareAndSeed() = withSlip39Factory {
+        val original = Slip39TestShares.slip39Type(passphrase = "TREZOR")
+
+        assertRoundTrip(original, "slip39")
+    }
+
+    @Test
+    fun getAccountTypeFromData_slip39SpacesOnlyPassphrase_restoresSamePassphraseAndSeed() = withSlip39Factory {
+        val original = Slip39TestShares.slip39Type(passphrase = "   ")
+
+        assertRoundTrip(original, "slip39")
+    }
+
+    @Test
+    fun getAccountTypeFromData_slip39ShareOfLargerSet_returnsNull()= withSlip39Factory {
+        val data = Slip39TestShares.BASIC_20_3OF6[0].toByteArray(Charsets.UTF_8)
+
+        assertNull(BackupLocalModule.getAccountTypeFromData("slip39", data))
+    }
+
+    @Test
+    fun getAccountTypeFromData_slip39InvalidShare_returnsNull() = withSlip39Factory {
+        val data = Slip39TestShares.BASIC_20_3OF6_CANONICAL.reversed().joinToString(" ").toByteArray(Charsets.UTF_8)
+
+        assertNull(BackupLocalModule.getAccountTypeFromData("slip39", data))
+    }
+
+    @Test
+    fun getAccountTypeFromData_unknownType_returnsNull() = runBlockingSuspend {
+        assertNull(BackupLocalModule.getAccountTypeFromData("future_type", "payload".toByteArray(Charsets.UTF_8)))
+    }
+
+    private fun withSlip39Factory(block: suspend () -> Unit) {
+        startKoin { modules(module { single { Slip39TestShares.slip39Factory() } }) }
+        try {
+            runBlockingSuspend(block)
+        } finally {
+            stopKoin()
+        }
     }
 
     // endregion

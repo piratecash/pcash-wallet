@@ -13,11 +13,17 @@ object SpamTransferDetector {
         val spamTokenSenders = mutableListOf<String>()
         val nativeSenders = mutableListOf<String>()
         var totalNativeTransactionValue: TransactionValue? = null
+        var hasOwnNativeDebit = false
 
         events.forEach { event ->
             val value = event.value
             val address = event.address
             if (value is TransactionValue.CoinValue && value.token.type == TokenType.Native) {
+                // Debiting the user's own coin needs their signature: such a transaction is not dust.
+                if (value.value.signum() < 0) {
+                    hasOwnNativeDebit = true
+                    return@forEach
+                }
                 val totalNativeValue =
                     totalNativeTransactionValue?.decimalValue ?: BigDecimal.ZERO
                 totalNativeTransactionValue = TransactionValue.CoinValue(
@@ -31,6 +37,8 @@ object SpamTransferDetector {
                 }
             }
         }
+
+        if (hasOwnNativeDebit) return spamTokenSenders
 
         if (totalNativeTransactionValue != null && isSpam(
                 totalNativeTransactionValue

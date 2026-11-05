@@ -1,6 +1,6 @@
-Güçlü, gözetimsiz (non-custodial) çoklu cüzdan: Bitcoin (BTC), Ethereum (ETH), Binance Smart Chain (BNB), Dogecoin (DOGE), Toncoin (TON), Solana (SOL), Avalanche, DASH, Monero (XMR) ve zCash (ZEC) için; NFT’leri ve çok çeşitli diğer varlıkları da destekler.
+Güçlü, gözetimsiz (non-custodial) çoklu cüzdan: Bitcoin (BTC), Ethereum (ETH), Binance Smart Chain (BNB), Dogecoin (DOGE), Toncoin (TON), Solana (SOL), Avalanche, DASH, Monero (XMR), BEAM ve zCash (ZEC) için; NFT’leri ve çok çeşitli diğer varlıkları da destekler.
 
-Artık Tangem donanım cüzdan desteği ile — özel anahtarlar güvenli bir şekilde doğrudan kart üzerinde üretilir ve saklanır, hiçbir zaman açığa çıkmaz veya başka yerde kaydedilmez. Yazmanız veya saklamanız gereken bir seed phrase yoktur, bu da saldırganların varlıklarınızı çalmasını neredeyse imkânsız hale getirir.
+Artık Tangem donanım cüzdan desteği ile — özel anahtarlar güvenli bir şekilde doğrudan kart üzerinde üretilir ve saklanır, hiçbir zaman açığa çıkmaz veya başka yerde kaydedilmez. Yazmanız veya saklamanız gereken bir seed phrase yoktur, bu da saldırganların varlıklarınızı çalmasını neredeyse imkânsız hale getirir. Güvenli işlem imzalama için Trezor donanım cüzdanları da desteklenir.
 
 Yerleşik zincir içi DEX, kripto ve NFT piyasaları için kurumsal düzeyde analiz, gelişmiş gizlilik araçları ve kullanıcı odaklı bir arayüz içerir.
 

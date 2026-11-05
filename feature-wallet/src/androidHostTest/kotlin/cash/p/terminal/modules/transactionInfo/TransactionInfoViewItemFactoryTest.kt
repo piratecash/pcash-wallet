@@ -19,6 +19,7 @@ import cash.p.terminal.core.managers.EvmKitWrapper
 import cash.p.terminal.entities.transactionrecords.TransactionRecordType
 import cash.p.terminal.entities.transactionrecords.bitcoin.BitcoinTransactionRecord
 import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
+import cash.p.terminal.entities.transactionrecords.evm.TransferEvent
 import cash.p.terminal.entities.TransactionValue
 import cash.p.terminal.entities.transactionrecords.PendingTransactionRecord
 import cash.p.terminal.entities.transactionrecords.thorchain.ThorchainTransactionRecord
@@ -38,6 +39,9 @@ import io.horizontalsystems.core.CoreApp
 import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
+import io.horizontalsystems.ethereumkit.core.EthereumKit
+import io.horizontalsystems.ethereumkit.models.AccountDelegation
+import io.horizontalsystems.ethereumkit.models.Address
 import io.horizontalsystems.ethereumkit.models.Transaction as EvmKitTransaction
 import io.horizontalsystems.thorchainkit.models.Transaction
 import io.mockk.every
@@ -52,6 +56,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -83,14 +88,24 @@ import cash.p.terminal.resources.duration_short_minutes
 import cash.p.terminal.resources.duration_short_seconds
 import cash.p.terminal.resources.swap_duration
 import cash.p.terminal.resources.swap_duration_approximate
+import cash.p.terminal.resources.transaction_info_delegation_contract
+import cash.p.terminal.resources.transaction_info_delegation_warning
+import cash.p.terminal.resources.transaction_info_initiator
 import cash.p.terminal.resources.transaction_info_replaced_by_transaction
 import cash.p.terminal.resources.transaction_info_replaces_transaction
 import cash.p.terminal.resources.transaction_swap_status_confirming
 import cash.p.terminal.resources.transaction_swap_status_unknown
+import cash.p.terminal.resources.transactions_account_delegation_revoke
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = TestCoreApp::class)
 class TransactionInfoViewItemFactoryTest {
+
+    init {
+        // CryptoUtils.sha3 needs ETH-KECCAK-256 from BouncyCastle, registered at runtime
+        // by EthereumKit; delegation records compute Address.eip55 via it.
+        EthereumKit.init()
+    }
 
     private val addressLabelManager = mockk<AddressLabelManager>(relaxed = true)
     private val contactsRepository = mockk<ContactsRepository>(relaxed = true)
@@ -307,6 +322,201 @@ class TransactionInfoViewItemFactoryTest {
 
         // only the date row
         assertEquals(1, values.size)
+    }
+
+    @Test
+    fun getStatusSectionItems_foreignEvmRecord_showsInitiatorAddress() {
+        val items = evmStatusItems(foreignEvmRecord(foreign = true, initiator = RELAYER_ADDRESS))
+
+        val initiator = items.filterIsInstance<TransactionInfoViewItem.Address>().single {
+            it.title == Translator.getString(Res.string.transaction_info_initiator)
+        }
+        assertEquals(RELAYER_ADDRESS, initiator.value)
+        assertTrue(initiator.collapseAddress)
+        assertEquals(
+            false,
+            items.filterIsInstance<TransactionInfoViewItem.Value>()
+                .any { it.title == Translator.getString(Res.string.TransactionInfo_Fee) }
+        )
+    }
+
+    @Test
+    fun getStatusSectionItems_ownEvmRecord_hasNoInitiatorRow() {
+        val items = evmStatusItems(foreignEvmRecord(foreign = false, initiator = null))
+
+        assertEquals(
+            false,
+            items.filterIsInstance<TransactionInfoViewItem.Address>()
+                .any { it.title == Translator.getString(Res.string.transaction_info_initiator) }
+        )
+    }
+
+    @Test
+    fun getViewItemSections_delegationActive_showsWarningSectionAndCollapsedContractRow() {
+        val sections = evmViewItemSectionList(
+            delegationRecord(delegate = DELEGATE_ADDRESS, isActive = true)
+        )
+
+        // The page draws a WarningMessage only when it is the sole item of its section.
+        val warning = sections.single { it.any { item -> item is TransactionInfoViewItem.WarningMessage } }
+        assertEquals(
+            Translator.getString(Res.string.transaction_info_delegation_warning),
+            (warning.single() as TransactionInfoViewItem.WarningMessage).message,
+        )
+        val contractRow = sections.flatten().filterIsInstance<TransactionInfoViewItem.Address>().single {
+            it.title == Translator.getString(Res.string.transaction_info_delegation_contract)
+        }
+        assertEquals(Address(DELEGATE_ADDRESS).eip55, contractRow.value)
+        assertTrue(contractRow.collapseAddress)
+    }
+
+    @Test
+    fun getViewItemSections_delegationNotActive_showsContractRowWithoutWarning() {
+        val items = evmViewItemSections(
+            delegationRecord(delegate = DELEGATE_ADDRESS, isActive = false)
+        )
+
+        assertEquals(emptyList<Any>(), items.filterIsInstance<TransactionInfoViewItem.WarningMessage>())
+        assertEquals(
+            1,
+            items.filterIsInstance<TransactionInfoViewItem.Address>()
+                .count { it.title == Translator.getString(Res.string.transaction_info_delegation_contract) }
+        )
+    }
+
+    @Test
+    fun getViewItemSections_delegationRevoked_showsDescriptionOnly() {
+        val items = evmViewItemSections(
+            delegationRecord(delegate = ZERO_ADDRESS, isActive = false)
+        )
+
+        assertEquals(emptyList<Any>(), items.filterIsInstance<TransactionInfoViewItem.WarningMessage>())
+        assertEquals(emptyList<Any>(), items.filterIsInstance<TransactionInfoViewItem.Address>())
+        assertEquals(
+            Translator.getString(Res.string.transactions_account_delegation_revoke),
+            items.filterIsInstance<TransactionInfoViewItem.Description>().single().text,
+        )
+    }
+
+    @Test
+    fun getViewItemSections_sponsoredCallWithDelegation_showsTransferAndDelegationSections() {
+        val items = evmViewItemSections(
+            sponsoredCallRecordWithDelegation(delegate = DELEGATE_ADDRESS, isActive = true)
+        )
+
+        assertEquals(
+            1,
+            items.filterIsInstance<TransactionInfoViewItem.Amount>().size
+        )
+        assertEquals(
+            1,
+            items.filterIsInstance<TransactionInfoViewItem.WarningMessage>().size
+        )
+        assertEquals(
+            1,
+            items.filterIsInstance<TransactionInfoViewItem.Address>()
+                .count { it.title == Translator.getString(Res.string.transaction_info_delegation_contract) }
+        )
+    }
+
+    private fun evmViewItemSections(record: EvmTransactionRecord): List<TransactionInfoViewItem> =
+        evmViewItemSectionList(record).flatten()
+
+    private fun evmViewItemSectionList(record: EvmTransactionRecord): List<List<TransactionInfoViewItem>> =
+        TransactionInfoViewItemFactory(
+            offlineOperationGate = mockk(relaxed = true),
+            wallet = null,
+            blockchainType = BlockchainType.BinanceSmartChain,
+            evmKitWrapper = null,
+            platformOperationSupport = allOperationsSupported,
+            unstoppableProviderTitles = mockk(relaxed = true),
+        ).getViewItemSections(transactionInfoItem(record))
+
+    private fun delegationRecord(delegate: String, isActive: Boolean): EvmTransactionRecord {
+        every { addressLabelManager.label(BlockchainType.BinanceSmartChain, Address(delegate).eip55) } returns null
+        return EvmTransactionRecord(
+            transaction = mockk<EvmKitTransaction>(relaxed = true) {
+                every { hashString } returns "0xdelegation-$delegate-$isActive"
+                every { timestamp } returns 1_000L
+                every { isFailed } returns false
+                every { accountDelegation } returns AccountDelegation(Address(delegate), isActive)
+            },
+            token = mockk<Token>(relaxed = true),
+            source = mockk<TransactionSource>(relaxed = true) {
+                every { blockchain } returns mockk(relaxed = true) {
+                    every { type } returns BlockchainType.BinanceSmartChain
+                }
+            },
+            protected = false,
+            transactionRecordType = TransactionRecordType.EVM_ACCOUNT_DELEGATION,
+        )
+    }
+
+    private fun sponsoredCallRecordWithDelegation(delegate: String, isActive: Boolean): EvmTransactionRecord {
+        every { addressLabelManager.label(BlockchainType.BinanceSmartChain, Address(delegate).eip55) } returns null
+        return EvmTransactionRecord(
+            transaction = mockk<EvmKitTransaction>(relaxed = true) {
+                every { hashString } returns "0xsponsored-$delegate-$isActive"
+                every { timestamp } returns 1_000L
+                every { isFailed } returns false
+                every { accountDelegation } returns AccountDelegation(Address(delegate), isActive)
+            },
+            token = mockk<Token>(relaxed = true),
+            source = mockk<TransactionSource>(relaxed = true) {
+                every { blockchain } returns mockk(relaxed = true) {
+                    every { type } returns BlockchainType.BinanceSmartChain
+                }
+            },
+            protected = false,
+            transactionRecordType = TransactionRecordType.EVM_EXTERNAL_CONTRACT_CALL,
+            incomingEvents = emptyList(),
+            outgoingEvents = listOf(
+                TransferEvent(
+                    address = BRIDGE_ADDRESS,
+                    addressForIncomingAddress = null,
+                    value = TransactionValue.TokenValue(
+                        tokenName = "Cosanta",
+                        tokenCode = "COSA",
+                        tokenDecimals = 8,
+                        value = BigDecimal("-1"),
+                    ),
+                )
+            ),
+        )
+    }
+
+    private fun evmStatusItems(record: EvmTransactionRecord) =
+        TransactionViewItemFactoryHelper.getStatusSectionItems(
+            transaction = record,
+            status = TransactionStatus.Completed,
+            rates = emptyMap(),
+            blockchainType = BlockchainType.BinanceSmartChain,
+            hideSensitiveInfo = false,
+        )
+
+    private fun foreignEvmRecord(foreign: Boolean, initiator: String?): EvmTransactionRecord {
+        every { addressLabelManager.label(BlockchainType.BinanceSmartChain, RELAYER_ADDRESS) } returns null
+        return EvmTransactionRecord(
+            transaction = mockk<EvmKitTransaction>(relaxed = true) {
+                every { hashString } returns "0xabc"
+                every { transactionIndex } returns 1
+                every { blockNumber } returns 100L
+                every { timestamp } returns 1_000L
+                every { isFailed } returns false
+            },
+            token = mockk<Token>(relaxed = true),
+            source = mockk<TransactionSource>(relaxed = true) {
+                every { blockchain } returns mockk(relaxed = true) {
+                    every { type } returns BlockchainType.BinanceSmartChain
+                }
+            },
+            protected = false,
+            transactionRecordType = TransactionRecordType.EVM_EXTERNAL_CONTRACT_CALL,
+            incomingEvents = emptyList(),
+            outgoingEvents = emptyList(),
+            foreignTransaction = foreign,
+            initiator = initiator,
+        )
     }
 
     private fun thorchainStatusItems(fee: TransactionValue?) =
@@ -860,6 +1070,9 @@ class TransactionInfoViewItemFactoryTest {
     )
 
     private companion object {
+        const val RELAYER_ADDRESS = "0x1111111111111111111111111111111111111111"
         const val BRIDGE_ADDRESS = "0x579fedB9253ccA1b3114d5e2fA44F8158d61e436"
+        const val DELEGATE_ADDRESS = "0x64fc23203fcc4bcf09fc4b30669131333ba7936b"
+        val ZERO_ADDRESS = "0x" + "0".repeat(40)
     }
 }

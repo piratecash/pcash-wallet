@@ -747,6 +747,10 @@
     <string name="Transactions_Unknown">알 수 없는 트랜잭션</string>
     <string name="Transactions_TonTransaction">Ton Transaction</string>
     <string name="Transactions_Unknown_Description">트랜잭션을 구문 분석할 수 없습니다</string>
+    <string name="transactions_account_delegation">계정 위임</string>
+    <string name="transactions_account_delegated_to">컨트랙트 %1$s(으)로</string>
+    <string name="transactions_account_delegation_revoke">위임 철회</string>
+    <string name="transactions_account_delegation_warning_short">계정이 컨트랙트에 의해 제어되고 있습니다</string>
     <string name="Transactions_Multiple">다수</string>
     <string name="Transactions_Filter">필터</string>
     <string name="Transactions_Filter_HideSuspiciousTx">의심스러운 거래 숨기기</string>
@@ -772,6 +776,9 @@
     <string name="TransactionInfo_LockedUntil">까지 잠그기 %s</string>
     <string name="TransactionInfo_UnlockedAt">%s에서 잠금 해제됨</string>
     <string name="TransactionInfo_RecipientHash">수령인</string>
+    <string name="transaction_info_initiator">개시자</string>
+    <string name="transaction_info_delegation_contract">위임 컨트랙트</string>
+    <string name="transaction_info_delegation_warning">현재 이 컨트랙트가 귀하의 계정을 제어하고 있습니다. 이 컨트랙트는 계정의 자금을 처분할 수 있습니다. 위임을 승인하지 않았다면 자금을 다른 지갑으로 옮기세요.</string>
     <string name="TransactionInfo_HistoricalRate">과거 환율</string>
     <string name="TransactionInfo_AnnouncedAmount">공시 금액</string>
     <string name="transaction_info_executed_amount">체결 금액</string>
@@ -931,16 +938,6 @@
     <string name="telegram_link">https://t.me/PirateCash_ENG</string>
     <string name="Settings_JoinUs">저희를 팔로우하세요</string>
     <string name="Settings_JoinUs_Description">소셜 미디어에서 저희를 팔로우하고 프로젝트의 최신 소식, 업데이트 및 다가오는 기능을 가장 먼저 확인하세요!</string>
-    <string name="Settings_PersonalSupport">개인 지원</string>
-    <string name="Settings_PersonalSupport_EnterTelegramAccountDescription">Telegram 계정 이름을 입력하여 저희 팀과 개인 지원 채팅을 시작하세요. 문제가 확인되는 즉시 연락을 드리고 문제 해결을 시작하겠습니다.</string>
-    <string name="Settings_PersonalSupport_YouAlreadyRequestedSupportDescription">이미 비공개 채팅을 요청하셨습니다. Telegram에서 찾아보세요.</string>
-    <string name="Settings_PersonalSupport_Account">계정</string>
-    <string name="Settings_PersonalSupport_UsernameHint">\u0040username</string>
-    <string name="Settings_PersonalSupport_Requested">신청 완료</string>
-    <string name="Settings_PersonalSupport_Request">요청</string>
-    <string name="Settings_PersonalSupport_NewRequest">요청</string>
-    <string name="Settings_PersonalSupport_Requestfailed">요청 실패</string>
-    <string name="Settings_PersonalSupport_OpenTelegram">오픈 텔레그램</string>
     <string name="Settings_Donate_Info">함께, 여러분의 지원으로 우리는 이 앱을 더 좋게 만들 수 있습니다!</string>
     <string name="Settings_Donate">후원하기</string>
     <string name="settings_mini_app">미니 앱</string>
@@ -1284,6 +1281,8 @@
     <string name="ManageAccount_BirthdayHeight">생일 높이 %s</string>
     <string name="ManageAccount_NWords">%s 단어</string>
     <string name="ManageAccount_NWordsWithPassphrase">암호 문구로 이루어진 %s 단어</string>
+    <string name="ManageAccount_NWordsShamir">%1$d 단어 (Shamir)</string>
+    <string name="ManageAccount_NWordsShamirWithPassphrase">암호 문구가 있는 %1$d 단어 (Shamir)</string>
     <string name="ManageAccount_SwitchWallet_Title">지갑 변경</string>
     <string name="ManageAccount_Wallets">지갑</string>
     <string name="ManageAccount_WatchAddresses">관찰 주소</string>
@@ -1338,6 +1337,8 @@
     <!-- Passphrase Terms -->
     <string name="passphrase_terms_title">암호문 약관</string>
     <string name="passphrase_terms_warning">암호문 (BIP-39 Passphrase) 활성화 전에 다음 사항을 이해하셨는지 확인해 주세요:</string>
+    <string name="passphrase_terms_warning_shamir">암호문 활성화 전에 다음 사항을 이해하셨는지 확인해 주세요:</string>
+    <string name="passphrase_terms_restore_shamir">&lt;b>이러한 지갑은 Shamir Backup (SLIP-39)과 암호문을 지원하는 앱에서만 복원 가능&lt;/b>하며, 대부분의 앱은 &lt;b>이 기능을 지원하지 않음&lt;/b>을 이해합니다.</string>
     <string name="passphrase_terms_term1">자금에 접근하려면 암호문을 생성할 때와 정확히 동일한 문자, 공백, 대소문자로 입력해야 함을 이해합니다.</string>
     <string name="passphrase_terms_term2">암호문을 분실하거나 잘못 입력하면 정확한 값 없이는 지갑을 복구할 수 없음을 이해합니다.</string>
     <string name="passphrase_terms_term3">잘못된 암호문으로 지갑을 복원할 경우 앱은 오류를 표시하지 않고 새로운 (빈) 지갑을 생성함을 이해합니다.</string>
@@ -1655,19 +1656,6 @@
     <string name="Detectors_TokenDetectors">토큰 탐지기</string>
     <string name="Detectors_GeneralDetectors">일반 탐지기</string>
     <string name="Detectors_IssuesCount">문제점 %d</string>
-    <string name="ActivateSubscription_Title">활성화</string>
-    <string name="ActivateSubscription_Wallet">지갑</string>
-    <string name="ActivateSubscription_Address">주소</string>
-    <string name="ActivateSubscription_NoSubscriptionError">귀하의 월렛 주소는 프리미엄 기능을 구독하지 않았습니다. 구독을 활성화하려면 구매해야 합니다.</string>
-    <string name="SubscriptionInfo_Title">Premium Features</string>
-    <string name="SubscriptionInfo_Analytics_Title">Cryptocurrency Analytics</string>
-    <string name="SubscriptionInfo_Analytics_Info">Access comprehensive market and on-chain stats about each token.</string>
-    <string name="SubscriptionInfo_Indicators_Title">Price Trend Indicators</string>
-    <string name="SubscriptionInfo_Indicators_Info">Discover uptrending tokens based on technical analysis indicators.</string>
-    <string name="SubscriptionInfo_PersonalSupport_Title">개인 지원</string>
-    <string name="SubscriptionInfo_PersonalSupport_Info">Contact our team directly over Telegram for personal assistance.</string>
-    <string name="SubscriptionInfo_GetPremium">Get Premium</string>
-    <string name="SubscriptionInfo_HavePremium">I already have Premium</string>
     <string name="premium_title">프리미엄</string>
     <string name="about_premium">프리미엄 소개</string>
     <string name="premium_settings">프리미엄 설정</string>
@@ -2314,6 +2302,92 @@
     <string name="desktop_change_password_corrupted">키 파일이 손상되었습니다. 앱이 잠기면 로그인할 수 없게 됩니다. 모든 복구 문구의 백업을 저장하세요.</string>
     <string name="desktop_change_password_success">비밀번호가 변경되었습니다</string>
     <string name="desktop_security_lock_now">지금 잠금</string>
+
+    <!-- Shamir backup restore -->
+    <string name="import_wallet_shamir">Shamir 백업</string>
+    <string name="import_wallet_shamir_description">여러 개의 Shamir(SLIP-39) 조각으로 지갑 복원</string>
+    <string name="shamir_backup_title">Shamir Backup</string>
+    <string name="shamir_restore_title">복원</string>
+    <string name="shamir_restore_enter_first">첫 번째 조각의 단어를 입력하세요</string>
+    <string name="shamir_restore_part_input">조각 %1$d — 단어를 입력하세요</string>
+    <string name="shamir_restore_part">조각 %1$d</string>
+    <string name="shamir_restore_scheme_auto">첫 번째 조각을 입력하면 복원 방식이 자동으로 결정됩니다.</string>
+    <string name="shamir_restore_accepted">%2$d개 중 %1$d개 수락됨</string>
+    <string name="shamir_restore_circle_accepted">수락됨</string>
+    <string name="shamir_restore_circle_required">필요</string>
+    <string name="shamir_restore_groups">그룹: %2$d개 중 %1$d개</string>
+    <string name="shamir_restore_group_progress">그룹 %1$d: %3$d개 중 %2$d개</string>
+    <string name="shamir_restore_enough">복원에 충분한 조각이 있습니다.</string>
+    <string name="shamir_error_invalid_words">일부 단어가 SLIP-39 단어 목록에 없습니다</string>
+    <string name="shamir_error_word_count">조각은 20개 또는 33개의 단어로 구성되어야 합니다</string>
+    <string name="shamir_error_invalid_share">잘못된 조각입니다. 단어와 순서를 확인하세요</string>
+    <string name="shamir_error_other_set">이 조각은 다른 세트에 속합니다</string>
+    <string name="shamir_error_duplicate">이미 입력한 조각입니다</string>
+    <string name="shamir_error_mixed_sets">조각들이 같은 세트가 아닙니다 — 다시 입력하세요</string>
+    <string name="shamir_error_passphrase_chars">라틴 문자, 숫자, 표준 기호만 사용할 수 있습니다</string>
+    <plurals name="shamir_restore_required">
+        <item quantity="other">조각 %1$d개 필요</item>
+    </plurals>
+
+    <!-- Word check -->
+    <string name="word_check_title">올바르게 적었는지 확인하세요</string>
+    <string name="word_check_select_word">단어를 선택하세요</string>
+    <string name="word_check_position">%1$d번</string>
+    <plurals name="word_check_correct_remaining">
+        <item quantity="other">정답입니다! %1$d개 단어가 남았습니다</item>
+    </plurals>
+
+    <!-- Shamir backup creation -->
+    <string name="shamir_intro_title">단일 시드 문구보다 안전합니다</string>
+    <string name="shamir_intro_description">키가 여러 조각으로 나뉩니다. 복원에는 그중 일부만 필요합니다.</string>
+    <string name="shamir_intro_holder_you">본인</string>
+    <string name="shamir_intro_holder_home">집</string>
+    <string name="shamir_intro_holder_friend">친구</string>
+    <string name="shamir_intro_any">%1$s 조각만 있으면 지갑을 복원할 수 있습니다</string>
+    <string name="shamir_intro_stolen">조각 하나를 도난당해도 쓸모가 없습니다</string>
+    <string name="shamir_intro_lost">조각 하나를 잃어도 접근할 수 있습니다</string>
+    <string name="shamir_intro_people">여러 사람에게 나눠 보관할 수 있습니다</string>
+    <string name="shamir_create">Shamir Backup 만들기</string>
+    <string name="shamir_step">%2$d단계 중 %1$d단계 · %3$s</string>
+    <string name="shamir_step_scheme">구성 선택</string>
+    <string name="shamir_step_warnings">꼭 읽어 주세요</string>
+    <string name="shamir_step_shares">모든 조각 적기</string>
+    <string name="shamir_scheme_fraction">%2$d개 중 %1$d개</string>
+    <string name="shamir_scheme_total_header">만들 조각 수</string>
+    <string name="shamir_scheme_total">전체 조각</string>
+    <string name="shamir_scheme_threshold_header">접근에 필요한 최소 조각</string>
+    <string name="shamir_scheme_threshold">복원에 필요</string>
+    <string name="shamir_scheme_title">구성: %1$s</string>
+    <plurals name="shamir_scheme_any_parts">
+        <item quantity="other">아무 조각 %1$d개로 지갑을 복원할 수 있습니다</item>
+    </plurals>
+    <string name="shamir_scheme_can_lose">잃어도 되는 조각: %1$d개</string>
+    <string name="shamir_scheme_none_lose">하나도 잃으면 안 됩니다</string>
+    <string name="shamir_scheme_presets">인기 구성:</string>
+    <string name="shamir_warning_title">적기 전에</string>
+    <plurals name="shamir_warning_description">
+        <item quantity="other">이제 조각 %1$d개가 표시됩니다. 각 조각을 따로 적으세요.</item>
+    </plurals>
+    <string name="shamir_warning_one_place">모든 조각을 한곳에 보관하지 마세요</string>
+    <string name="shamir_warning_no_photos">조각을 사진으로 찍지 마세요</string>
+    <string name="shamir_warning_separate_paper">각 조각을 별도의 종이에 적으세요</string>
+    <string name="shamir_warning_different_places">서로 다른 물리적 장소에 보관하세요</string>
+    <string name="shamir_warning_old_sets">새 세트를 만들어도 기존 조각은 계속 사용할 수 있습니다</string>
+    <string name="shamir_warning_passphrase">조각에는 이 지갑의 패스프레이즈가 포함되지 않습니다. 패스프레이즈 없이는 지갑을 복원할 수 없으니 따로 보관하세요.</string>
+    <string name="shamir_warning_not_shown_again">조각은 다시 표시되지 않습니다. 적을 준비가 되었는지 확인하세요.</string>
+    <string name="shamir_show_shares">조각 보기</string>
+    <plurals name="shamir_shares_banner">
+        <item quantity="other">구성 %1$s — 아무 조각 %2$d개로 지갑을 복원할 수 있습니다</item>
+    </plurals>
+    <string name="shamir_share_title">조각 %1$d/%2$d</string>
+    <string name="shamir_share_written">이 조각을 적었습니다</string>
+    <string name="shamir_share_confirm">조각 %1$d 확인</string>
+    <string name="shamir_share_saved">저장됨</string>
+    <string name="shamir_write_all">먼저 모든 조각을 적으세요</string>
+    <string name="shamir_done_banner">조각을 서로 다른 곳에 보관하세요.</string>
+    <string name="shamir_check_title">조각 %1$d 검증</string>
+    <string name="shamir_check_description">표시된 번호에 맞게 조각 %1$d의 단어를 고르세요</string>
+    <string name="shamir_info_description">Shamir Backup(SLIP-39)은 지갑 키를 20개 단어로 된 여러 조각으로 나눕니다. 복원하려면 정해진 수의 조각이 필요합니다(예: 3개 중 아무 2개). 그보다 적은 조각으로는 키에 대해 아무것도 알 수 없습니다. 조각은 Trezor처럼 SLIP-39를 지원하는 지갑에서 사용할 수 있습니다. 지갑에 암호문구가 있다면 복원할 때 함께 필요합니다.</string>
     <string name="evm_node_request_failed">네트워크 노드가 요청을 처리하지 못했습니다. 다시 시도하거나 블록 체인 설정에서 다른 소스를 선택하세요.\n\n노드 응답: %1$s</string>
     <string name="desktop_transfer_password">보내기 전 비밀번호</string>
     <string name="desktop_transfer_password_description">자산을 보낼 때마다 앱 비밀번호를 요청하여, 앱이 잠금 해제된 상태에서 누군가 컴퓨터에 접근하더라도 자산을 보호합니다.</string>

@@ -682,8 +682,8 @@ class ZcashSession internal constructor(
             TokenType.AddressSpecType.entries.map { it.pools() }.distinct()
         const val MEMPOOL_RETRY_BASE_MS = 5_000L
         const val MEMPOOL_RETRY_MAX_MS = 60_000L
-        // Chain expiry is 40 blocks — about 50 minutes — after which the transaction can no
-        // longer be mined at all.
+        // Chain expiry is 40 blocks before NU7 and 120 after, about 50 minutes either way, after
+        // which the transaction can no longer be mined at all.
         const val UNCONFIRMED_TTL_MS = 60 * 60 * 1000L
 
         /** Consecutive-unused-index limit for the account's first, recovery-scoped walk. */

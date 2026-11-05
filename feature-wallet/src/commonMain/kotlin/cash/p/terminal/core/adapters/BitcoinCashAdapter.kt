@@ -9,6 +9,7 @@ import cash.p.terminal.wallet.entities.UsedAddress
 import cash.p.terminal.core.kitCoinType
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.bitcoincash.BitcoinCashKit
 import io.horizontalsystems.bitcoincash.BitcoinCashKit.NetworkType
@@ -127,7 +128,7 @@ class BitcoinCashAdapter(
                     )
                 }
 
-                is AccountType.Mnemonic -> {
+                is SeedAccountType -> {
                     return BitcoinCashKit(
                         dataDir = environment.dataDir,
                         databaseKey = environment.databaseKey,
@@ -220,7 +221,7 @@ class BitcoinCashAdapter(
             val networkType = NetworkType.MainNet(kitCoinType)
 
             when (accountType) {
-                is AccountType.Mnemonic -> {
+                is SeedAccountType -> {
                     val seed = accountType.seed
 
                     val address = BitcoinCashKit.firstAddress(

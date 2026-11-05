@@ -48,6 +48,7 @@ import cash.p.terminal.modules.manageaccount.dialogs.showBackupRequiredDialog
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.receive.ui.ReceiveChooseCoinPage
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
+import cash.p.terminal.modules.restoreaccount.restoreshamir.RestoreShamirPage
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.resources.AccountRecovery_MigrationRecommended
@@ -358,6 +359,10 @@ fun BalanceItems(
                 )
             )
         )
+        viewModel.onRestoreFromQrOpened()
+    }
+    uiState.openShamirRestore?.let { prefill ->
+        navigation.slideFromRight(RestoreShamirPage(RestoreShamirPage.Input(mainPage, false, prefill)))
         viewModel.onRestoreFromQrOpened()
     }
     uiState.openOfflineBroadcast?.let { input ->

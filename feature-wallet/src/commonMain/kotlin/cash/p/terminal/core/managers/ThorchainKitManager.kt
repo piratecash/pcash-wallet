@@ -5,6 +5,7 @@ import cash.p.terminal.core.onPollingStarted
 import cash.p.terminal.core.onPollingStopped
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.AdapterState
 import io.horizontalsystems.core.IBackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
@@ -247,7 +248,7 @@ class ThorchainKitManager(
     private fun clearFiles(accountId: String) = ThorchainKit.clear(platformContexts.thorchain, network, accountId)
 
     private fun kitAddress(accountType: AccountType): Address = when (accountType) {
-        is AccountType.Mnemonic -> ThorchainKit.getAddress(accountType.seed, network)
+        is SeedAccountType -> ThorchainKit.getAddress(accountType.seed, network)
         is AccountType.ThorchainAddress -> watchedAddress(accountType.address, BlockchainType.Thorchain)
         is AccountType.MayachainAddress -> watchedAddress(accountType.address, BlockchainType.Mayachain)
         else -> throw UnsupportedAccountException()
@@ -277,7 +278,7 @@ class ThorchainKitManager(
 }
 
 internal fun AccountType.thorchainSeed(): ByteArray = when (this) {
-    is AccountType.Mnemonic -> seed
+    is SeedAccountType -> seed
 
     is AccountType.BitcoinAddress,
     is AccountType.EvmAddress,

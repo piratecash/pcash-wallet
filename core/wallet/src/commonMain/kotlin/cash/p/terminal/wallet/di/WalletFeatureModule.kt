@@ -7,6 +7,7 @@ import cash.p.terminal.wallet.IWalletStorage
 import cash.p.terminal.wallet.PassphraseValidator
 import cash.p.terminal.wallet.WalletManager
 import cash.p.terminal.wallet.WalletStorage
+import cash.p.terminal.wallet.slip39.Slip39AccountTypeFactory
 import cash.p.terminal.wallet.useCases.GetHardwarePublicKeyForWalletUseCase
 import cash.p.terminal.wallet.useCases.WalletUseCase
 import org.koin.core.module.dsl.factoryOf
@@ -19,6 +20,7 @@ val walletFeatureModule = module {
     singleOf(::AccountManager) bind IAccountManager::class
     singleOf(::WalletStorage) bind IWalletStorage::class
     factoryOf(::WalletUseCase)
+    factoryOf(::Slip39AccountTypeFactory)
 
     singleOf(::GetHardwarePublicKeyForWalletUseCase)
     singleOf(::PassphraseValidator)

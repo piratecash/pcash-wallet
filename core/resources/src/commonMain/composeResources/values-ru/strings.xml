@@ -752,6 +752,10 @@
     <string name="Transactions_TonTransaction">Ton транзакция</string>
     <string name="Transactions_StellarTransaction">Транзакция Stellar</string>
     <string name="Transactions_Unknown_Description">Транзакция не может быть обработана</string>
+    <string name="transactions_account_delegation">Делегирование аккаунта</string>
+    <string name="transactions_account_delegated_to">контракту %1$s</string>
+    <string name="transactions_account_delegation_revoke">Отзыв делегирования</string>
+    <string name="transactions_account_delegation_warning_short">Аккаунтом управляет контракт</string>
     <string name="Transactions_Multiple">Множество</string>
     <string name="Transactions_Filter">Фильтр</string>
     <string name="Transactions_Filter_HideSuspiciousTx">Скрыть подозрительные транзакции</string>
@@ -777,6 +781,9 @@
     <string name="TransactionInfo_LockedUntil">Заблокировано до %s</string>
     <string name="TransactionInfo_UnlockedAt">Разблокировано %s</string>
     <string name="TransactionInfo_RecipientHash">Получатель</string>
+    <string name="transaction_info_initiator">Инициатор</string>
+    <string name="transaction_info_delegation_contract">Контракт делегирования</string>
+    <string name="transaction_info_delegation_warning">Сейчас вашим аккаунтом управляет этот контракт. Он может распоряжаться средствами аккаунта. Если вы не подтверждали делегирование, переведите средства на другой кошелёк.</string>
     <string name="TransactionInfo_HistoricalRate">Исторический курс</string>
     <string name="TransactionInfo_AnnouncedAmount">Объявленная сумма</string>
     <string name="transaction_info_executed_amount">Реальная сумма</string>
@@ -937,16 +944,6 @@
     <string name="telegram_link">https://t.me/PirateCash_RUS</string>
     <string name="Settings_JoinUs">Следите за нами</string>
     <string name="Settings_JoinUs_Description">Присоединяйтесь к нам в соцсетях, чтобы первыми узнавать о новостях, обновлениях и планах проекта!</string>
-    <string name="Settings_PersonalSupport">Персональная поддержка</string>
-    <string name="Settings_PersonalSupport_EnterTelegramAccountDescription">Введите имя вашей учетной записи Telegram, чтобы начать чат с нашей командой. Мы свяжемся с вами и начнем работать над вашей проблемой, как только увидим ее.</string>
-    <string name="Settings_PersonalSupport_YouAlreadyRequestedSupportDescription">Вы уже запросили приватный чат, найдите его в Telegram</string>
-    <string name="Settings_PersonalSupport_Account">Аккаунт</string>
-    <string name="Settings_PersonalSupport_UsernameHint">\u0040username</string>
-    <string name="Settings_PersonalSupport_Requested">Запрошено</string>
-    <string name="Settings_PersonalSupport_Request">Запрос</string>
-    <string name="Settings_PersonalSupport_NewRequest">Новый запрос</string>
-    <string name="Settings_PersonalSupport_Requestfailed">Ошибка запроса</string>
-    <string name="Settings_PersonalSupport_OpenTelegram">Открыть Telegram</string>
     <string name="Settings_Donate_Info">С вашей поддержкой мы вместе сможем сделать это приложение еще лучше!</string>
     <string name="Settings_Donate">Поддержи нас</string>
     <string name="settings_mini_app">Мини-приложение</string>
@@ -1300,6 +1297,8 @@
     <string name="ManageAccount_BirthdayHeight">%s Блок создания</string>
     <string name="ManageAccount_NWords">%s слов</string>
     <string name="ManageAccount_NWordsWithPassphrase">%s слов с кодовой фразой</string>
+    <string name="ManageAccount_NWordsShamir">%1$d слов (Shamir)</string>
+    <string name="ManageAccount_NWordsShamirWithPassphrase">%1$d слов (Shamir) с кодовой фразой</string>
     <string name="ManageAccount_SwitchWallet_Title">Переключить кошелек</string>
     <string name="ManageAccount_Wallets">Кошельки</string>
     <string name="ManageAccount_WatchAddresses">Просмотр кошелька</string>
@@ -1353,6 +1352,8 @@
     <!-- Passphrase Terms -->
     <string name="passphrase_terms_title">Условия использования кодовой фразы</string>
     <string name="passphrase_terms_warning">Перед активацией кодовой фразы (BIP-39 Passphrase), пожалуйста, подтвердите, что вы понимаете:</string>
+    <string name="passphrase_terms_warning_shamir">Перед активацией кодовой фразы, пожалуйста, подтвердите, что вы понимаете:</string>
+    <string name="passphrase_terms_restore_shamir">Я понимаю, что &lt;b>восстановить такой кошелёк можно только в приложениях, поддерживающих Shamir Backup (SLIP-39) с кодовой фразой&lt;/b>, и большинство приложений &lt;b>не поддерживает эту функцию&lt;/b>.</string>
     <string name="passphrase_terms_term1">Я понимаю, что для доступа к средствам необходимо точно ввести кодовую фразу — с теми же символами, пробелами и регистром, что при создании.</string>
     <string name="passphrase_terms_term2">Я понимаю, что если кодовая фраза будет утеряна или введена с ошибкой, я не смогу восстановить свой кошелёк без её точного значения.</string>
     <string name="passphrase_terms_term3">Я понимаю, что при восстановлении кошелька с неверной кодовой фразой приложение не покажет ошибку, а создаст новый (пустой) кошелёк.</string>
@@ -1683,19 +1684,6 @@
     <string name="Detectors_TokenDetectors">Детекторы токенов</string>
     <string name="Detectors_GeneralDetectors">Общие детекторы</string>
     <string name="Detectors_IssuesCount">Проблемы %d</string>
-    <string name="ActivateSubscription_Title">Активировать</string>
-    <string name="ActivateSubscription_Wallet">Кошелек</string>
-    <string name="ActivateSubscription_Address">Адрес</string>
-    <string name="ActivateSubscription_NoSubscriptionError">Адрес вашего кошелька не имеет подписки на премиум-функции. Вам нужно его приобрести, чтобы активировать подписку.</string>
-    <string name="SubscriptionInfo_Title">Премиум-функции</string>
-    <string name="SubscriptionInfo_Analytics_Title">Анализ криптовалют</string>
-    <string name="SubscriptionInfo_Analytics_Info">Доступ к рыночной статистике и статистике по каждому токену.</string>
-    <string name="SubscriptionInfo_Indicators_Title">Индикаторы тренд цен</string>
-    <string name="SubscriptionInfo_Indicators_Info">Откройте для себя актуальные токены на основе показателей технического анализа.</string>
-    <string name="SubscriptionInfo_PersonalSupport_Title">Персональная поддержка</string>
-    <string name="SubscriptionInfo_PersonalSupport_Info">Свяжитесь с нашей командой напрямую через Telegram для получения личной помощи.</string>
-    <string name="SubscriptionInfo_GetPremium">Получите премиум</string>
-    <string name="SubscriptionInfo_HavePremium">У меня уже есть премиум</string>
     <string name="Nfts_PriceType_Days_7">7Д сред.</string>
     <string name="Nfts_PriceType_Days_30">30Д сред.</string>
     <string name="Nfts_PriceType_LastSale">Последняя продажа</string>
@@ -2492,6 +2480,107 @@
     <string name="desktop_change_password_corrupted">Файл ключа повреждён: после блокировки приложения вы не сможете войти. Сохраните резервную копию каждой фразы восстановления.</string>
     <string name="desktop_change_password_success">Пароль изменён</string>
     <string name="desktop_security_lock_now">Заблокировать сейчас</string>
+
+    <!-- Shamir backup restore -->
+    <string name="import_wallet_shamir">Shamir Backup</string>
+    <string name="import_wallet_shamir_description">Восстановить кошелёк из нескольких частей Shamir (SLIP-39)</string>
+    <string name="shamir_backup_title">Shamir Backup</string>
+    <string name="shamir_restore_title">Восстановление</string>
+    <string name="shamir_restore_enter_first">Введите слова первой части</string>
+    <string name="shamir_restore_part_input">Часть %1$d — введите слова</string>
+    <string name="shamir_restore_part">Часть %1$d</string>
+    <string name="shamir_restore_scheme_auto">Схема восстановления определится автоматически после ввода первой части.</string>
+    <string name="shamir_restore_accepted">Принято %1$d из %2$d</string>
+    <string name="shamir_restore_circle_accepted">принята</string>
+    <string name="shamir_restore_circle_required">требуется</string>
+    <string name="shamir_restore_groups">Группы: %1$d из %2$d</string>
+    <string name="shamir_restore_group_progress">Группа %1$d: %2$d из %3$d</string>
+    <string name="shamir_restore_enough">Достаточно частей для восстановления.</string>
+    <string name="shamir_error_invalid_words">Некоторые слова не из словаря SLIP-39</string>
+    <string name="shamir_error_word_count">Часть должна содержать 20 или 33 слова</string>
+    <string name="shamir_error_invalid_share">Неверная часть. Проверьте слова и их порядок</string>
+    <string name="shamir_error_other_set">Эта часть из другого набора</string>
+    <string name="shamir_error_duplicate">Эта часть уже введена</string>
+    <string name="shamir_error_mixed_sets">Части не из одного набора — введите части заново</string>
+    <string name="shamir_error_passphrase_chars">Допустимы только латинские буквы, цифры и стандартные символы</string>
+    <plurals name="shamir_restore_required">
+        <item quantity="one">Требуется %1$d часть</item>
+        <item quantity="few">Требуется %1$d части</item>
+        <item quantity="many">Требуется %1$d частей</item>
+        <item quantity="other">Требуется %1$d части</item>
+    </plurals>
+
+    <!-- Word check -->
+    <string name="word_check_title">Подтвердите, что записали верно</string>
+    <string name="word_check_select_word">Выберите слово</string>
+    <string name="word_check_position">№%1$d</string>
+    <plurals name="word_check_correct_remaining">
+        <item quantity="one">Верно! Осталось ещё %1$d слово</item>
+        <item quantity="few">Верно! Осталось ещё %1$d слова</item>
+        <item quantity="many">Верно! Осталось ещё %1$d слов</item>
+        <item quantity="other">Верно! Осталось ещё %1$d слова</item>
+    </plurals>
+
+    <!-- Shamir backup creation -->
+    <string name="shamir_intro_title">Надёжнее одной seed-фразы</string>
+    <string name="shamir_intro_description">Ключ делится на несколько частей. Для восстановления нужна только часть из них.</string>
+    <string name="shamir_intro_holder_you">у вас</string>
+    <string name="shamir_intro_holder_home">дома</string>
+    <string name="shamir_intro_holder_friend">у друга</string>
+    <string name="shamir_intro_any">Любые %1$s восстанавливают кошелёк</string>
+    <string name="shamir_intro_stolen">Одна украденная часть бесполезна</string>
+    <string name="shamir_intro_lost">Потеря одной части не лишает доступа</string>
+    <string name="shamir_intro_people">Можно хранить у разных людей</string>
+    <string name="shamir_create">Создать Shamir Backup</string>
+    <string name="shamir_step">Шаг %1$d из %2$d · %3$s</string>
+    <string name="shamir_step_scheme">Выберите схему</string>
+    <string name="shamir_step_warnings">Важно прочитать</string>
+    <string name="shamir_step_shares">Запишите все части</string>
+    <string name="shamir_scheme_fraction">%1$d из %2$d</string>
+    <string name="shamir_scheme_total_header">Сколько частей создать</string>
+    <string name="shamir_scheme_total">Всего частей</string>
+    <string name="shamir_scheme_threshold_header">Минимум частей для доступа</string>
+    <string name="shamir_scheme_threshold">Нужно для восстановления</string>
+    <string name="shamir_scheme_title">Схема %1$s</string>
+    <plurals name="shamir_scheme_any_parts">
+        <item quantity="one">Любая %1$d часть восстановит кошелёк</item>
+        <item quantity="few">Любые %1$d части восстановят кошелёк</item>
+        <item quantity="many">Любые %1$d частей восстановят кошелёк</item>
+        <item quantity="other">Любые %1$d части восстановят кошелёк</item>
+    </plurals>
+    <string name="shamir_scheme_can_lose">%1$d можно потерять</string>
+    <string name="shamir_scheme_none_lose">Ни одну нельзя потерять</string>
+    <string name="shamir_scheme_presets">Популярные схемы:</string>
+    <string name="shamir_warning_title">Перед записью</string>
+    <plurals name="shamir_warning_description">
+        <item quantity="one">Сейчас появится %1$d часть. Запишите каждую отдельно.</item>
+        <item quantity="few">Сейчас появятся %1$d части. Запишите каждую отдельно.</item>
+        <item quantity="many">Сейчас появятся %1$d частей. Запишите каждую отдельно.</item>
+        <item quantity="other">Сейчас появятся %1$d части. Запишите каждую отдельно.</item>
+    </plurals>
+    <string name="shamir_warning_one_place">Не храните все части в одном месте</string>
+    <string name="shamir_warning_no_photos">Не фотографируйте части</string>
+    <string name="shamir_warning_separate_paper">Запишите каждую часть на отдельной бумаге</string>
+    <string name="shamir_warning_different_places">Храните в разных физических местах</string>
+    <string name="shamir_warning_old_sets">Если создадите новый набор, старые части продолжат работать</string>
+    <string name="shamir_warning_passphrase">Части не содержат пароль (passphrase) этого кошелька. Без него восстановить кошелёк не получится — храните его отдельно.</string>
+    <string name="shamir_warning_not_shown_again">Части больше не будут показаны. Убедитесь что готовы их записать.</string>
+    <string name="shamir_show_shares">Показать части</string>
+    <plurals name="shamir_shares_banner">
+        <item quantity="one">Схема %1$s — любая %2$d часть восстановит кошелёк</item>
+        <item quantity="few">Схема %1$s — любые %2$d части восстановят кошелёк</item>
+        <item quantity="many">Схема %1$s — любые %2$d частей восстановят кошелёк</item>
+        <item quantity="other">Схема %1$s — любые %2$d части восстановят кошелёк</item>
+    </plurals>
+    <string name="shamir_share_title">Часть %1$d из %2$d</string>
+    <string name="shamir_share_written">Записал(а) эту часть</string>
+    <string name="shamir_share_confirm">Подтвердить часть %1$d</string>
+    <string name="shamir_share_saved">Сохранено</string>
+    <string name="shamir_write_all">Нужно записать все части</string>
+    <string name="shamir_done_banner">Храните части в разных местах.</string>
+    <string name="shamir_check_title">Проверка части %1$d</string>
+    <string name="shamir_check_description">Выберите слова из части %1$d по номерам, которые мы укажем</string>
+    <string name="shamir_info_description">Shamir Backup (SLIP-39) делит ключ кошелька на несколько частей по 20 слов. Для восстановления нужно заданное число частей, например любые 2 из 3. Меньшее число частей ничего не говорит о ключе. Части подходят для кошельков с поддержкой SLIP-39, например Trezor. Если у кошелька есть кодовая фраза, она тоже понадобится для восстановления.</string>
     <string name="evm_node_request_failed">Узел сети не смог выполнить запрос. Повторите попытку или выберите другой источник в настройках блокчейна.\n\nОтвет узла: %1$s</string>
     <string name="desktop_transfer_password">Пароль перед отправкой</string>
     <string name="desktop_transfer_password_description">Перед каждой отправкой запрашивается пароль приложения. Это защитит ваши средства, если кто-то получит доступ к компьютеру с разблокированным приложением.</string>
