@@ -49,6 +49,28 @@ class HiddenSecretSemanticsTest {
         composeTestRule.onNodeWithText(SECRET, substring = true).assertExists()
     }
 
+    @Test
+    fun passphraseCell_spacesOnlyPassphrase_isShown() {
+        setPassphraseCell("   ")
+
+        composeTestRule.onNodeWithText(MASKED_PASSPHRASE).assertExists()
+    }
+
+    @Test
+    fun passphraseCell_emptyPassphrase_isAbsent() {
+        setPassphraseCell("")
+
+        composeTestRule.onNodeWithText(MASKED_PASSPHRASE).assertDoesNotExist()
+    }
+
+    private fun setPassphraseCell(passphrase: String) {
+        composeTestRule.setContent {
+            ComposeAppTheme {
+                PassphraseCell(passphrase = passphrase, hidden = true)
+            }
+        }
+    }
+
     private fun setSeedPhraseList(hidden: Boolean) {
         composeTestRule.setContent {
             ComposeAppTheme {
@@ -72,5 +94,6 @@ class HiddenSecretSemanticsTest {
     private companion object {
         const val SECRET = "zqxsecretword"
         const val HIDE_TEXT = "Tap to show key"
+        const val MASKED_PASSPHRASE = "*****"
     }
 }

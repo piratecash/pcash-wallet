@@ -184,6 +184,7 @@ import cash.p.terminal.modules.createaccount.passphraseterms.PassphraseTermsView
 import cash.p.terminal.modules.manageaccount.backupconfirmkey.BackupConfirmKeyViewModel
 import cash.p.terminal.modules.manageaccount.recoveryphrase.RecoveryPhrasePage
 import cash.p.terminal.modules.manageaccount.recoveryphrase.RecoveryPhraseViewModel
+import cash.p.terminal.modules.manageaccount.shamirbackup.ShamirBackupViewModel
 import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesModule
 import cash.p.terminal.modules.manageaccount.safetyrules.SafetyRulesViewModel
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
@@ -277,6 +278,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import java.io.File
+import java.security.SecureRandom
 import kotlin.test.Test
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.module
@@ -394,6 +396,7 @@ class DesktopKoinGraphTest {
                 definition<WatchAddressViewModel>(AddressParserChain::class),
                 definition<SelectBlockchainsViewModel>(AccountType::class),
                 definition<BackupConfirmKeyViewModel>(IRandomProvider::class),
+                definition<ShamirBackupViewModel>(String::class, IRandomProvider::class, SecureRandom::class),
                 definition<RecoveryPhraseViewModel>(RecoveryPhrasePage.RecoveryPhraseType::class),
                 definition<SelectBackupItemsViewModel>(BackupViewItemFactory::class),
                 definition<BackupLocalPasswordViewModel>(BackupType::class, PassphraseValidator::class),

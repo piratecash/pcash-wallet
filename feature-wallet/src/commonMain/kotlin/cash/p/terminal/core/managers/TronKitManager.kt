@@ -10,6 +10,7 @@ import cash.p.terminal.wallet.IHardwarePublicKeyStorage
 import cash.p.terminal.core.utils.TronAddressParser
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import io.horizontalsystems.core.IBackgroundManager
 import io.horizontalsystems.core.BackgroundManagerState
 import io.horizontalsystems.core.entities.BlockchainType
@@ -78,7 +79,7 @@ class TronKitManager(
             val databaseKey = tronKitDatabaseKeyProvider.awaitKey(account.id)
             TronKit.migrateDatabase(platformContexts.tron, network, account.id, databaseKey)
             this.tronKitWrapper = when (accountType) {
-                is AccountType.Mnemonic -> {
+                is SeedAccountType -> {
                     createKitInstance(accountType, account, databaseKey)
                 }
 
@@ -107,7 +108,7 @@ class TronKitManager(
         NetworkErrorEventListener.Factory(BlockchainType.Tron, account.id, networkErrorTracker)
 
     private fun createKitInstance(
-        accountType: AccountType.Mnemonic,
+        accountType: SeedAccountType,
         account: Account,
         databaseKey: ByteArray,
     ): TronKitWrapper {

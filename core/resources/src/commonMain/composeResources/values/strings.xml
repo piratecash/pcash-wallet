@@ -984,6 +984,10 @@ Proceed only if you\u0027re sure.</string>
     <string name="Transactions_TonTransaction">Ton Transaction</string>
     <string name="Transactions_StellarTransaction">Stellar Transaction</string>
     <string name="Transactions_Unknown_Description">Transaction can not be parsed</string>
+    <string name="transactions_account_delegation">Account delegation</string>
+    <string name="transactions_account_delegated_to">to contract %1$s</string>
+    <string name="transactions_account_delegation_revoke">Delegation revoke</string>
+    <string name="transactions_account_delegation_warning_short">Account controlled by a contract</string>
     <string name="Transactions_Multiple">Multiple</string>
     <string name="Transactions_Filter">Filter</string>
     <string name="Transactions_Filter_HideSuspiciousTx">Hide suspicious tx</string>
@@ -1009,6 +1013,9 @@ Proceed only if you\u0027re sure.</string>
     <string name="TransactionInfo_LockedUntil">Locked until %s</string>
     <string name="TransactionInfo_UnlockedAt">Unlocked at %s</string>
     <string name="TransactionInfo_RecipientHash">Recipient</string>
+    <string name="transaction_info_initiator">Initiator</string>
+    <string name="transaction_info_delegation_contract">Delegation contract</string>
+    <string name="transaction_info_delegation_warning">This contract currently controls your account. It can dispose of the account\u0027s funds. If you did not approve the delegation, move your funds to another wallet.</string>
     <string name="TransactionInfo_HistoricalRate">Historical Rate</string>
     <string name="TransactionInfo_Fee">Fee</string>
     <string name="TransactionInfo_FeeEstimated">Fee (est.)</string>
@@ -1210,17 +1217,6 @@ Proceed only if you\u0027re sure.</string>
     <string name="Settings_Twitter" translatable="false">Twitter</string>
     <string name="Settings_JoinUs">Follow us</string>
     <string name="Settings_JoinUs_Description">Join us on social media to be the first to discover project news, updates, and upcoming features!</string>
-
-    <string name="Settings_PersonalSupport">Personal Support</string>
-    <string name="Settings_PersonalSupport_EnterTelegramAccountDescription">Enter your Telegram account name to start a personal support chat with our team. We\u0027ll get back to you and start working on your problem as soon as we see it.</string>
-    <string name="Settings_PersonalSupport_YouAlreadyRequestedSupportDescription">You\u0027ve already requested a private chat, find it on Telegram</string>
-    <string name="Settings_PersonalSupport_Account">Account</string>
-    <string name="Settings_PersonalSupport_UsernameHint">\u0040username</string>
-    <string name="Settings_PersonalSupport_Requested">Requested</string>
-    <string name="Settings_PersonalSupport_Request">Request</string>
-    <string name="Settings_PersonalSupport_NewRequest">New Request</string>
-    <string name="Settings_PersonalSupport_Requestfailed">Request failed</string>
-    <string name="Settings_PersonalSupport_OpenTelegram">Open Telegram</string>
 
     <string name="Settings_Donate_Info">Together, with your support, we can make this app even better!</string>
     <string name="Settings_Donate">Donate</string>
@@ -1680,6 +1676,8 @@ Proceed only if you\u0027re sure.</string>
     <string name="ManageAccount_BirthdayHeight">%s Birthday Height</string>
     <string name="ManageAccount_NWords">%s words</string>
     <string name="ManageAccount_NWordsWithPassphrase">%s words with passphrase</string>
+    <string name="ManageAccount_NWordsShamir">%1$d words (Shamir)</string>
+    <string name="ManageAccount_NWordsShamirWithPassphrase">%1$d words (Shamir) with passphrase</string>
     <string name="ManageAccount_SwitchWallet_Title">Switch Wallet</string>
     <string name="ManageAccount_Wallets">Wallets</string>
     <string name="ManageAccount_WatchAddresses">Watch Wallets</string>
@@ -1738,6 +1736,8 @@ Proceed only if you\u0027re sure.</string>
     <!-- Passphrase Terms -->
     <string name="passphrase_terms_title">Passphrase Terms</string>
     <string name="passphrase_terms_warning">Before activating the passphrase (BIP-39 Passphrase), please confirm that you understand:</string>
+    <string name="passphrase_terms_warning_shamir">Before activating the passphrase, please confirm that you understand:</string>
+    <string name="passphrase_terms_restore_shamir">I understand that &lt;b>such a wallet can only be restored in applications that support Shamir Backup (SLIP-39) with a passphrase&lt;/b>, and most applications &lt;b>do not support this feature&lt;/b>.</string>
     <string name="passphrase_terms_term1">I understand that to access the funds, I must enter the passphrase exactly as it was created, with the same characters, spaces, and case.</string>
     <string name="passphrase_terms_term2">I understand that if the passphrase is lost or entered incorrectly, I will not be able to recover my wallet without its exact value.</string>
     <string name="passphrase_terms_term3">I understand that when restoring a wallet with an incorrect passphrase, the application will not display an error, but will create a new (empty) wallet.</string>
@@ -2052,9 +2052,6 @@ Proceed only if you\u0027re sure.</string>
     <string name="Coin_Analytics_30DayRank">30-Day Rank</string>
     <string name="Coin_Analytics_30DayUniqueAddress">30-Day Unique Addresses</string>
     <string name="Coin_Analytics_30DayVolume">30-Day Volume</string>
-    <string name="Coin_Analytics_Blockchain1" translatable="false">Blockchain 1</string>
-    <string name="Coin_Analytics_Blockchain2" translatable="false">Blockchain 2</string>
-    <string name="Coin_Analytics_Blockchain3" translatable="false">Blockchain 3</string>
     <string name="Coin_Analytics_OverallScore">Overall Score</string>
     <string name="Coin_Analytics_OverallScore_Excellent">Excellent</string>
     <string name="Coin_Analytics_OverallScore_Good">Good</string>
@@ -2127,21 +2124,6 @@ Proceed only if you\u0027re sure.</string>
     <string name="Detectors_TokenDetectors">Token Detectors</string>
     <string name="Detectors_GeneralDetectors">General Detectors</string>
     <string name="Detectors_IssuesCount">Issues %d</string>
-
-    <string name="ActivateSubscription_Title">Activate</string>
-    <string name="ActivateSubscription_Wallet">Wallet</string>
-    <string name="ActivateSubscription_Address">Address</string>
-    <string name="ActivateSubscription_NoSubscriptionError">Your wallet address does not have a subscription to premium features, you need to purchase it to activate the subscription.</string>
-
-    <string name="SubscriptionInfo_Title">Premium Features</string>
-    <string name="SubscriptionInfo_Analytics_Title">Cryptocurrency Analytics</string>
-    <string name="SubscriptionInfo_Analytics_Info">Access comprehensive market and on-chain stats about each token.</string>
-    <string name="SubscriptionInfo_Indicators_Title">Price Trend Indicators</string>
-    <string name="SubscriptionInfo_Indicators_Info">Discover uptrending tokens based on technical analysis indicators.</string>
-    <string name="SubscriptionInfo_PersonalSupport_Title">Personal Support</string>
-    <string name="SubscriptionInfo_PersonalSupport_Info">Contact our team directly over Telegram for personal assistance.</string>
-    <string name="SubscriptionInfo_GetPremium">Get Premium</string>
-    <string name="SubscriptionInfo_HavePremium">I already have Premium</string>
 
     <string name="Nfts_Title" translatable="false">NFTs</string>
     <string name="Nfts_PriceType_Days_7">7D avg.</string>
@@ -2756,6 +2738,97 @@ Proceed only if you\u0027re sure.</string>
     <string name="desktop_change_password_corrupted">The key file is damaged: once the app is locked you will not be able to sign in. Save a backup of every recovery phrase.</string>
     <string name="desktop_change_password_success">Password changed</string>
     <string name="desktop_security_lock_now">Lock now</string>
+
+    <!-- Shamir backup restore -->
+    <string name="import_wallet_shamir">Shamir backup</string>
+    <string name="import_wallet_shamir_description">Restore a wallet from several Shamir (SLIP-39) parts</string>
+    <string name="shamir_backup_title">Shamir Backup</string>
+    <string name="shamir_restore_title">Recovery</string>
+    <string name="shamir_restore_enter_first">Enter the words of the first part</string>
+    <string name="shamir_restore_part_input">Part %1$d — enter the words</string>
+    <string name="shamir_restore_part">Part %1$d</string>
+    <string name="shamir_restore_scheme_auto">The recovery scheme will be detected automatically after you enter the first part.</string>
+    <string name="shamir_restore_accepted">Accepted %1$d of %2$d</string>
+    <string name="shamir_restore_circle_accepted">accepted</string>
+    <string name="shamir_restore_circle_required">required</string>
+    <string name="shamir_restore_groups">Groups: %1$d of %2$d</string>
+    <string name="shamir_restore_group_progress">Group %1$d: %2$d of %3$d</string>
+    <string name="shamir_restore_enough">Enough parts to restore the wallet.</string>
+    <string name="shamir_error_invalid_words">Some words are not in the SLIP-39 word list</string>
+    <string name="shamir_error_word_count">A part must contain 20 or 33 words</string>
+    <string name="shamir_error_invalid_share">Invalid part. Check the words and their order</string>
+    <string name="shamir_error_other_set">This part is from another set</string>
+    <string name="shamir_error_duplicate">This part has already been entered</string>
+    <string name="shamir_error_mixed_sets">The parts are not from one set — enter them again</string>
+    <string name="shamir_error_passphrase_chars">Only Latin letters, digits and standard symbols are allowed</string>
+    <plurals name="shamir_restore_required">
+        <item quantity="one">%1$d part required</item>
+        <item quantity="other">%1$d parts required</item>
+    </plurals>
+
+    <!-- Word check -->
+    <string name="word_check_title">Confirm you wrote it down correctly</string>
+    <string name="word_check_select_word">Select the word</string>
+    <string name="word_check_position">#%1$d</string>
+    <plurals name="word_check_correct_remaining">
+        <item quantity="one">Correct! %1$d more word left</item>
+        <item quantity="other">Correct! %1$d more words left</item>
+    </plurals>
+
+    <!-- Shamir backup creation -->
+    <string name="shamir_intro_title">Safer than a single seed phrase</string>
+    <string name="shamir_intro_description">The key is split into several parts. Only some of them are needed to restore it.</string>
+    <string name="shamir_intro_holder_you">with you</string>
+    <string name="shamir_intro_holder_home">at home</string>
+    <string name="shamir_intro_holder_friend">with a friend</string>
+    <string name="shamir_intro_any">Any %1$s restore the wallet</string>
+    <string name="shamir_intro_stolen">A single stolen part is useless</string>
+    <string name="shamir_intro_lost">Losing one part does not lock you out</string>
+    <string name="shamir_intro_people">Parts can be kept by different people</string>
+    <string name="shamir_create">Create Shamir Backup</string>
+    <string name="shamir_step">Step %1$d of %2$d · %3$s</string>
+    <string name="shamir_step_scheme">Choose a scheme</string>
+    <string name="shamir_step_warnings">Read carefully</string>
+    <string name="shamir_step_shares">Write down all parts</string>
+    <string name="shamir_scheme_fraction">%1$d of %2$d</string>
+    <string name="shamir_scheme_total_header">How many parts to create</string>
+    <string name="shamir_scheme_total">Total parts</string>
+    <string name="shamir_scheme_threshold_header">Minimum parts for access</string>
+    <string name="shamir_scheme_threshold">Needed to restore</string>
+    <string name="shamir_scheme_title">Scheme %1$s</string>
+    <plurals name="shamir_scheme_any_parts">
+        <item quantity="one">Any %1$d part restores the wallet</item>
+        <item quantity="other">Any %1$d parts restore the wallet</item>
+    </plurals>
+    <string name="shamir_scheme_can_lose">%1$d can be lost</string>
+    <string name="shamir_scheme_none_lose">None can be lost</string>
+    <string name="shamir_scheme_presets">Popular schemes:</string>
+    <string name="shamir_warning_title">Before you write them down</string>
+    <plurals name="shamir_warning_description">
+        <item quantity="one">%1$d part will appear now. Write each one down separately.</item>
+        <item quantity="other">%1$d parts will appear now. Write each one down separately.</item>
+    </plurals>
+    <string name="shamir_warning_one_place">Do not keep all parts in one place</string>
+    <string name="shamir_warning_no_photos">Do not photograph the parts</string>
+    <string name="shamir_warning_separate_paper">Write each part on a separate sheet of paper</string>
+    <string name="shamir_warning_different_places">Keep them in different physical places</string>
+    <string name="shamir_warning_old_sets">If you create a new set, the old parts will keep working</string>
+    <string name="shamir_warning_passphrase">The parts do not contain this wallet’s passphrase. The wallet cannot be restored without it — keep it separately.</string>
+    <string name="shamir_warning_not_shown_again">The parts will not be shown again. Make sure you are ready to write them down.</string>
+    <string name="shamir_show_shares">Show Parts</string>
+    <plurals name="shamir_shares_banner">
+        <item quantity="one">Scheme %1$s — any %2$d part restores the wallet</item>
+        <item quantity="other">Scheme %1$s — any %2$d parts restore the wallet</item>
+    </plurals>
+    <string name="shamir_share_title">Part %1$d of %2$d</string>
+    <string name="shamir_share_written">I wrote down this part</string>
+    <string name="shamir_share_confirm">Confirm Part %1$d</string>
+    <string name="shamir_share_saved">Saved</string>
+    <string name="shamir_write_all">Write down all parts first</string>
+    <string name="shamir_done_banner">Keep the parts in different places.</string>
+    <string name="shamir_check_title">Part %1$d Check</string>
+    <string name="shamir_check_description">Pick the words of part %1$d by the numbers we show</string>
+    <string name="shamir_info_description">Shamir Backup (SLIP-39) splits the wallet key into several parts of 20 words. To restore the wallet you need the set number of parts, for example any 2 of 3. Fewer parts reveal nothing about the key. The parts work in wallets that support SLIP-39, such as Trezor. If the wallet has a passphrase, you will also need it to restore.</string>
     <string name="evm_node_request_failed">The network node could not process the request. Try again or choose another source in Blockchain settings.\n\nNode response: %1$s</string>
     <string name="desktop_transfer_password">Password before sending</string>
     <string name="desktop_transfer_password_description">The app password is asked before every transfer, protecting your assets if someone gets access to your computer while the app is unlocked.</string>

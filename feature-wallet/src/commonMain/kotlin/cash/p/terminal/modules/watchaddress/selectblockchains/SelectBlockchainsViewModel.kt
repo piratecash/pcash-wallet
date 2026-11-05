@@ -12,6 +12,7 @@ import cash.p.terminal.modules.restoreaccount.restoreblockchains.CoinViewItem
 import cash.p.terminal.modules.watchaddress.WatchAddressService
 import cash.p.terminal.ui_compose.components.ImageSource
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.Token
 import io.horizontalsystems.core.ViewModelUiState
 import cash.p.terminal.wallet.badge
@@ -43,7 +44,7 @@ class SelectBlockchainsViewModel(
             is AccountType.StellarAddress,
             is AccountType.ThorchainAddress,
             is AccountType.MayachainAddress,
-            is AccountType.Mnemonic,
+            is SeedAccountType,
             is AccountType.HardwareCard,
             is AccountType.TrezorDevice,
             is AccountType.MnemonicMonero,

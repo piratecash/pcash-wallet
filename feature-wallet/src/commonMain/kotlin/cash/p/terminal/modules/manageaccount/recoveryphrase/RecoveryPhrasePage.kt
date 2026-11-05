@@ -225,7 +225,7 @@ private fun RecoveryPhraseScreen(
 
 /** [onAccept] runs only when the user answers [accepted]. */
 @Composable
-private fun HSNavigation.rememberSafetyRules(
+internal fun HSNavigation.rememberSafetyRules(
     mode: SafetyRulesMode,
     accepted: SafetyRulesPage.Result,
     onAccept: () -> Unit,

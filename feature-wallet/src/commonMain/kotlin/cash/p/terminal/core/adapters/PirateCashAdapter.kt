@@ -6,6 +6,7 @@ import cash.p.terminal.core.UnsupportedAccountException
 import cash.p.terminal.core.managers.BitcoinKitEnvironment
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.UsedAddress
 import io.horizontalsystems.bitcoincore.BitcoinCore
@@ -134,7 +135,7 @@ class PirateCashAdapter(
                     )
                 }
 
-                is AccountType.Mnemonic -> {
+                is SeedAccountType -> {
                     return PirateCashKit(
                         dataDir = environment.dataDir,
                         databaseKey = environment.databaseKey,

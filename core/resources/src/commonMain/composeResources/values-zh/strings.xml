@@ -749,6 +749,10 @@
     <string name="Transactions_Unknown">未知交易</string>
     <string name="Transactions_TonTransaction">Ton Transaction</string>
     <string name="Transactions_Unknown_Description">无法解析交易</string>
+    <string name="transactions_account_delegation">账户委托</string>
+    <string name="transactions_account_delegated_to">给合约 %1$s</string>
+    <string name="transactions_account_delegation_revoke">撤销委托</string>
+    <string name="transactions_account_delegation_warning_short">账户由合约控制</string>
     <string name="Transactions_Multiple">多种</string>
     <string name="Transactions_Filter">筛选器</string>
     <string name="Transactions_Filter_HideSuspiciousTx">隐藏可疑Txs</string>
@@ -772,6 +776,9 @@
     <string name="TransactionInfo_LockedUntil">锁定至 %s</string>
     <string name="TransactionInfo_UnlockedAt">在 %s 解锁了</string>
     <string name="TransactionInfo_RecipientHash">收款人</string>
+    <string name="transaction_info_initiator">发起方</string>
+    <string name="transaction_info_delegation_contract">委托合约</string>
+    <string name="transaction_info_delegation_warning">该合约目前控制着您的账户，可以支配账户中的资金。如果您未确认过此委托，请将资金转移到其他钱包。</string>
     <string name="TransactionInfo_HistoricalRate">历史价格</string>
     <string name="TransactionInfo_AnnouncedAmount">公布金额</string>
     <string name="transaction_info_executed_amount">成交金额</string>
@@ -931,16 +938,6 @@
     <string name="telegram_link">https://t.me/PirateCash_ENG</string>
     <string name="Settings_JoinUs">关注我们</string>
     <string name="Settings_JoinUs_Description">关注我们的社交媒体，第一时间获取项目最新消息、更新和即将上线的功能！</string>
-    <string name="Settings_PersonalSupport">个人支持</string>
-    <string name="Settings_PersonalSupport_EnterTelegramAccountDescription">请输入您的 Telegram 帳號名稱，開始与我們的团队的個人支援聊天。 一旦我们看到这个问题，我们就会回到您的面前。</string>
-    <string name="Settings_PersonalSupport_YouAlreadyRequestedSupportDescription">您已经请求了一个私聊，在Telegram 上找到它</string>
-    <string name="Settings_PersonalSupport_Account">账户</string>
-    <string name="Settings_PersonalSupport_UsernameHint">\u0040username</string>
-    <string name="Settings_PersonalSupport_Requested">已申请</string>
-    <string name="Settings_PersonalSupport_Request">请求</string>
-    <string name="Settings_PersonalSupport_NewRequest">新建请求</string>
-    <string name="Settings_PersonalSupport_Requestfailed">请求失败</string>
-    <string name="Settings_PersonalSupport_OpenTelegram">打开 Telegram</string>
     <string name="Settings_Donate_Info">在你的支持下，我们可以使这个应用更好！</string>
     <string name="Settings_Donate">捐助</string>
     <string name="settings_mini_app">迷你应用</string>
@@ -1280,6 +1277,8 @@
     <string name="ManageAccount_BirthdayHeight">%s 生日高度</string>
     <string name="ManageAccount_NWords">%s 个单词</string>
     <string name="ManageAccount_NWordsWithPassphrase">%s 个单词的密码</string>
+    <string name="ManageAccount_NWordsShamir">%1$d 个单词（Shamir）</string>
+    <string name="ManageAccount_NWordsShamirWithPassphrase">%1$d 个单词（Shamir），带密码</string>
     <string name="ManageAccount_SwitchWallet_Title">切换钱包</string>
     <string name="ManageAccount_Wallets">钱包</string>
     <string name="ManageAccount_WatchAddresses">观察地址</string>
@@ -1332,6 +1331,8 @@
     <!-- Passphrase Terms -->
     <string name="passphrase_terms_title">密码短语条款</string>
     <string name="passphrase_terms_warning">在激活密码短语 (BIP-39 Passphrase) 之前，请确认您理解：</string>
+    <string name="passphrase_terms_warning_shamir">在激活密码短语之前，请确认您理解：</string>
+    <string name="passphrase_terms_restore_shamir">我理解&lt;b>这样的钱包只能在支持 Shamir Backup (SLIP-39) 和密码短语的应用程序中恢复&lt;/b>，大多数应用程序&lt;b>不支持此功能&lt;/b>。</string>
     <string name="passphrase_terms_term1">我理解要访问资金，我必须输入密码短语，与创建时完全一致，包括相同的字符、空格和大小写。</string>
     <string name="passphrase_terms_term2">我理解如果密码短语丢失或输入错误，没有其确切值我将无法恢复我的钱包。</string>
     <string name="passphrase_terms_term3">我理解使用错误的密码短语恢复钱包时，应用程序不会显示错误，而是会创建一个新的（空的）钱包。</string>
@@ -1650,19 +1651,6 @@
     <string name="Detectors_TokenDetectors">代币检测器</string>
     <string name="Detectors_GeneralDetectors">通用检测器</string>
     <string name="Detectors_IssuesCount">发布 %d</string>
-    <string name="ActivateSubscription_Title">激活</string>
-    <string name="ActivateSubscription_Wallet">钱包</string>
-    <string name="ActivateSubscription_Address">地址</string>
-    <string name="ActivateSubscription_NoSubscriptionError">您的钱包地址没有高级功能的订阅，您需要购买它才能激活订阅。</string>
-    <string name="SubscriptionInfo_Title">高级功能</string>
-    <string name="SubscriptionInfo_Analytics_Title">加密货币分析</string>
-    <string name="SubscriptionInfo_Analytics_Info">访问每个令牌的全面市场和链上的统计信息。</string>
-    <string name="SubscriptionInfo_Indicators_Title">价格趋势指标</string>
-    <string name="SubscriptionInfo_Indicators_Info">根据技术分析指标发现呈上升态的代币。</string>
-    <string name="SubscriptionInfo_PersonalSupport_Title">个人支持</string>
-    <string name="SubscriptionInfo_PersonalSupport_Info">通过 Telegram 直接联系我们的团队以获取个人帮助。</string>
-    <string name="SubscriptionInfo_GetPremium">成为付费会员</string>
-    <string name="SubscriptionInfo_HavePremium">我已经有高级版</string>
     <string name="premium_title">高级版</string>
     <string name="about_premium">关于高级版</string>
     <string name="premium_settings">高级设置</string>
@@ -2309,6 +2297,92 @@
     <string name="desktop_change_password_corrupted">密钥文件已损坏：应用锁定后您将无法登录。请为每个恢复短语保存备份。</string>
     <string name="desktop_change_password_success">密码已更改</string>
     <string name="desktop_security_lock_now">立即锁定</string>
+
+    <!-- Shamir backup restore -->
+    <string name="import_wallet_shamir">Shamir 备份</string>
+    <string name="import_wallet_shamir_description">从多个 Shamir（SLIP-39）分片恢复钱包</string>
+    <string name="shamir_backup_title">Shamir Backup</string>
+    <string name="shamir_restore_title">恢复</string>
+    <string name="shamir_restore_enter_first">输入第一个分片的单词</string>
+    <string name="shamir_restore_part_input">分片 %1$d — 输入单词</string>
+    <string name="shamir_restore_part">分片 %1$d</string>
+    <string name="shamir_restore_scheme_auto">输入第一个分片后将自动识别恢复方案。</string>
+    <string name="shamir_restore_accepted">已接受 %1$d / %2$d</string>
+    <string name="shamir_restore_circle_accepted">已接受</string>
+    <string name="shamir_restore_circle_required">需要</string>
+    <string name="shamir_restore_groups">组：%1$d / %2$d</string>
+    <string name="shamir_restore_group_progress">组 %1$d：%2$d / %3$d</string>
+    <string name="shamir_restore_enough">分片已足够恢复钱包。</string>
+    <string name="shamir_error_invalid_words">部分单词不在 SLIP-39 词表中</string>
+    <string name="shamir_error_word_count">分片必须包含 20 或 33 个单词</string>
+    <string name="shamir_error_invalid_share">分片无效。请检查单词及其顺序</string>
+    <string name="shamir_error_other_set">此分片属于另一组</string>
+    <string name="shamir_error_duplicate">此分片已输入</string>
+    <string name="shamir_error_mixed_sets">这些分片不属于同一组 — 请重新输入</string>
+    <string name="shamir_error_passphrase_chars">仅允许拉丁字母、数字和标准符号</string>
+    <plurals name="shamir_restore_required">
+        <item quantity="other">需要 %1$d 个分片</item>
+    </plurals>
+
+    <!-- Word check -->
+    <string name="word_check_title">确认您已正确记下</string>
+    <string name="word_check_select_word">选择单词</string>
+    <string name="word_check_position">第 %1$d 个</string>
+    <plurals name="word_check_correct_remaining">
+        <item quantity="other">正确！还剩 %1$d 个单词</item>
+    </plurals>
+
+    <!-- Shamir backup creation -->
+    <string name="shamir_intro_title">比单一助记词更安全</string>
+    <string name="shamir_intro_description">密钥被拆分为多个分片。恢复时只需其中一部分。</string>
+    <string name="shamir_intro_holder_you">自己</string>
+    <string name="shamir_intro_holder_home">家中</string>
+    <string name="shamir_intro_holder_friend">朋友处</string>
+    <string name="shamir_intro_any">任意 %1$s 即可恢复钱包</string>
+    <string name="shamir_intro_stolen">单个分片被盗也毫无用处</string>
+    <string name="shamir_intro_lost">丢失一个分片不会失去访问权限</string>
+    <string name="shamir_intro_people">可交由不同的人保管</string>
+    <string name="shamir_create">创建 Shamir Backup</string>
+    <string name="shamir_step">第 %1$d 步，共 %2$d 步 · %3$s</string>
+    <string name="shamir_step_scheme">选择方案</string>
+    <string name="shamir_step_warnings">请仔细阅读</string>
+    <string name="shamir_step_shares">记下所有分片</string>
+    <string name="shamir_scheme_fraction">%2$d 选 %1$d</string>
+    <string name="shamir_scheme_total_header">创建多少个分片</string>
+    <string name="shamir_scheme_total">分片总数</string>
+    <string name="shamir_scheme_threshold_header">访问所需最少分片</string>
+    <string name="shamir_scheme_threshold">恢复所需</string>
+    <string name="shamir_scheme_title">方案：%1$s</string>
+    <plurals name="shamir_scheme_any_parts">
+        <item quantity="other">任意 %1$d 个分片即可恢复钱包</item>
+    </plurals>
+    <string name="shamir_scheme_can_lose">可丢失 %1$d 个</string>
+    <string name="shamir_scheme_none_lose">不能丢失任何分片</string>
+    <string name="shamir_scheme_presets">常用方案：</string>
+    <string name="shamir_warning_title">记录之前</string>
+    <plurals name="shamir_warning_description">
+        <item quantity="other">接下来将显示 %1$d 个分片。请分别记下每一个。</item>
+    </plurals>
+    <string name="shamir_warning_one_place">不要把所有分片放在同一个地方</string>
+    <string name="shamir_warning_no_photos">不要拍摄分片</string>
+    <string name="shamir_warning_separate_paper">将每个分片分别写在不同的纸上</string>
+    <string name="shamir_warning_different_places">存放在不同的实际地点</string>
+    <string name="shamir_warning_old_sets">如果创建新的一组，旧分片仍然有效</string>
+    <string name="shamir_warning_passphrase">分片不包含此钱包的密码短语（passphrase）。没有它将无法恢复钱包——请单独保管。</string>
+    <string name="shamir_warning_not_shown_again">分片不会再次显示。请确认您已准备好记录。</string>
+    <string name="shamir_show_shares">显示分片</string>
+    <plurals name="shamir_shares_banner">
+        <item quantity="other">方案 %1$s — 任意 %2$d 个分片即可恢复钱包</item>
+    </plurals>
+    <string name="shamir_share_title">分片 %1$d / %2$d</string>
+    <string name="shamir_share_written">我已记下此分片</string>
+    <string name="shamir_share_confirm">确认分片 %1$d</string>
+    <string name="shamir_share_saved">已保存</string>
+    <string name="shamir_write_all">请先记下所有分片</string>
+    <string name="shamir_done_banner">请将分片存放在不同的地方。</string>
+    <string name="shamir_check_title">检查分片 %1$d</string>
+    <string name="shamir_check_description">按我们给出的编号选择分片 %1$d 中的单词</string>
+    <string name="shamir_info_description">Shamir Backup（SLIP-39）将钱包密钥拆分为多个分片，每个分片 20 个单词。恢复时需要设定数量的分片，例如 3 个中的任意 2 个。少于该数量的分片不会泄露任何密钥信息。这些分片可用于支持 SLIP-39 的钱包，例如 Trezor。如果钱包设置了密码，恢复时也需要它。</string>
     <string name="evm_node_request_failed">网络节点无法处理该请求。请重试，或在区块链设置中选择其他来源。\n\n节点响应：%1$s</string>
     <string name="desktop_transfer_password">发送前输入密码</string>
     <string name="desktop_transfer_password_description">每次发送前都会要求输入应用密码，即使有人在应用未锁定时使用您的电脑，也能保护您的资产。</string>

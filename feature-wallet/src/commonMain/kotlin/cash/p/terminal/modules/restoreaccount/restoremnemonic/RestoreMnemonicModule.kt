@@ -1,11 +1,13 @@
 package cash.p.terminal.modules.restoreaccount.restoremnemonic
 
+import cash.p.terminal.modules.restoreaccount.restoreshamir.ShamirPrefill
 import cash.p.terminal.wallet.AccountType
 import io.horizontalsystems.hdwalletkit.Language
 
 object RestoreMnemonicModule {
     data class UiState(
         val passphraseEnabled: Boolean,
+        val passphrase: String,
         val passphraseError: String?,
         val invalidWordRanges: List<IntRange>,
         val error: String?,
@@ -29,6 +31,7 @@ object RestoreMnemonicModule {
             val language: Language?
         ) : QrScanResult()
 
+        data class Shamir(val prefill: ShamirPrefill) : QrScanResult()
         data class PlainText(val text: String) : QrScanResult()
         data class Error(val message: String) : QrScanResult()
     }

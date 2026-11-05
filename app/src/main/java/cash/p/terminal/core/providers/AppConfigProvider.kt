@@ -19,7 +19,6 @@ object AppConfigProvider : AddressResolutionConfig {
     val appGitBranch by lazy { BuildConfig.GIT_BRANCH }
     val companyWebPageLink by lazy { Translator.getString(R.string.companyWebPageLink) }
     val appWebPageLink by lazy { Translator.getString(R.string.appWebPageLink) }
-    val analyticsLink by lazy { Translator.getString(R.string.analyticsLink) }
     val appGithubLink by lazy { Translator.getString(R.string.appGithubLink) }
     val githubApiBaseUrl by lazy { Translator.getString(R.string.githubApiBaseUrl) }
     val githubRawBaseUrl by lazy { Translator.getString(R.string.githubRawBaseUrl) }

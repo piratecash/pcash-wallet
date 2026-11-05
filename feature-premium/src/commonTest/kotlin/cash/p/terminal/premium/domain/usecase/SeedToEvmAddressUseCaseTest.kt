@@ -1,5 +1,6 @@
 package cash.p.terminal.premium.domain.usecase
 
+import cash.p.terminal.wallet.MnemonicSeed
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -20,7 +21,7 @@ class SeedToEvmAddressUseCaseTest {
                 .split(" ")
         val address = "0x7b7ebe8044d5E9452FaE1CD33304A6D2EaC6C28d".lowercase()
 
-        val result = useCase(words).lowercase()
+        val result = useCase(MnemonicSeed.derive(words)).lowercase()
 
         assertEquals(address, result)
     }
@@ -33,7 +34,7 @@ class SeedToEvmAddressUseCaseTest {
         val passphrase = "123"
         val address = "0xfAf339E255dFDA06907255c6FB43870d8D762476".lowercase()
 
-        val result = useCase(words = words, passphrase = passphrase).lowercase()
+        val result = useCase(MnemonicSeed.derive(words, passphrase)).lowercase()
 
         assertEquals(address, result)
     }
@@ -48,7 +49,7 @@ class SeedToEvmAddressUseCaseTest {
         val passphrase = "123"
         val address = "0x6311B808eD0093EBA889115aFf43d823591A420D".lowercase()
 
-        val result = useCase(words = words, passphrase = passphrase).lowercase()
+        val result = useCase(MnemonicSeed.derive(words, passphrase)).lowercase()
 
         assertEquals(address, result)
     }

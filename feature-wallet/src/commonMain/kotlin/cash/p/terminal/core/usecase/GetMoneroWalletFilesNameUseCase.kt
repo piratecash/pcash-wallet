@@ -3,6 +3,7 @@ package cash.p.terminal.core.usecase
 import cash.p.terminal.core.storage.AppDatabaseProvider
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.useCases.IGetMoneroWalletFilesNameUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -16,7 +17,7 @@ class GetMoneroWalletFilesNameUseCase(
                 (account.type as AccountType.MnemonicMonero).walletInnerName
             }
 
-            is AccountType.Mnemonic,
+            is SeedAccountType,
             is AccountType.TrezorDevice -> {
                 databases.database.moneroFileDao().getAssociatedRecord(account.id)?.fileName?.value
             }

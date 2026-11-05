@@ -27,7 +27,6 @@ import cash.p.terminal.shared.desktop.vault.DesktopVault
 import cash.p.terminal.shared.desktop.vault.DesktopVaultFiles
 import cash.p.terminal.vault.PasswordVault
 import cash.p.terminal.wallet.MarketKitWrapper
-import cash.p.terminal.wallet.SubscriptionManager
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.FullCoin
 import cash.p.terminal.wallet.favorites.MarketFavoritesManager
@@ -98,7 +97,6 @@ internal object DesktopTestGraph {
 
     private fun testModule(marketKit: MarketKitWrapper, dataDir: File) = module {
         single { marketKit }
-        single { SubscriptionManager() }
         single {
             MarketFavoritesManager(
                 PreferenceDataStoreFactory.create { File(dataDir, "favorites.preferences_pb") },

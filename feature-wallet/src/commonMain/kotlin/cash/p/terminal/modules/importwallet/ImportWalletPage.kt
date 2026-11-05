@@ -25,6 +25,7 @@ import cash.p.terminal.navigation.rememberQrScannerLauncher
 import cash.p.terminal.modules.contacts.screen.ConfirmationBottomSheet
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
+import cash.p.terminal.modules.restoreaccount.restoreshamir.RestoreShamirPage
 import cash.p.terminal.modules.restorelocal.RestoreLocalPage
 import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
@@ -48,12 +49,15 @@ import cash.p.terminal.resources.ImportWallet_BackupFile_Description
 import cash.p.terminal.resources.ImportWallet_RecoveryPhrase
 import cash.p.terminal.resources.ImportWallet_RecoveryPhrase_Description
 import cash.p.terminal.resources.ImportWallet_SelectAnotherFile
+import cash.p.terminal.resources.import_wallet_shamir
+import cash.p.terminal.resources.import_wallet_shamir_description
 import cash.p.terminal.resources.ImportWallet_WarningInvalidJson
 import cash.p.terminal.resources.ImportWallet_WarningInvalidJsonDescription
 import cash.p.terminal.resources.ManageAccounts_ImportWallet
 import cash.p.terminal.resources.ic_download_24
 import cash.p.terminal.resources.ic_edit_24
 import cash.p.terminal.resources.ic_qr_scan_24
+import cash.p.terminal.resources.ic_shield_24
 import cash.p.terminal.resources.icon_warning_2_20
 import cash.p.terminal.resources.import_wallet_from_qr
 import cash.p.terminal.resources.import_wallet_from_qr_description
@@ -104,6 +108,12 @@ private fun ImportWalletScreen(
                                 prefillMnemonicLanguageName = event.language?.name
                             )
                         )
+                    )
+                }
+
+                is ImportWalletViewModel.NavigationEvent.OpenShamirRestore -> {
+                    openAfterTerms(
+                        RestoreShamirPage(RestoreShamirPage.Input(popUpToInclusiveId, inclusive, event.prefill))
                     )
                 }
 
@@ -185,6 +195,15 @@ private fun ImportWalletScreen(
                     icon = Res.drawable.ic_edit_24,
                     onClick = {
                         openAfterTerms(RestoreAccountPage(ManageAccountsModule.Input(popUpToInclusiveId, inclusive)))
+                    }
+                )
+                VSpacer(12.dp)
+                ImportOption(
+                    title = stringResource(Res.string.import_wallet_shamir),
+                    description = stringResource(Res.string.import_wallet_shamir_description),
+                    icon = Res.drawable.ic_shield_24,
+                    onClick = {
+                        openAfterTerms(RestoreShamirPage(RestoreShamirPage.Input(popUpToInclusiveId, inclusive)))
                     }
                 )
                 VSpacer(12.dp)

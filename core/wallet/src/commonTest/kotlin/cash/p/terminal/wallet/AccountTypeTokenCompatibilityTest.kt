@@ -48,6 +48,29 @@ class AccountTypeTokenCompatibilityTest {
         }
     }
 
+    @Test
+    fun isCompatibleWith_slip39_supportsSeedChainsExceptZcashAndBeam() {
+        val slip39 = AccountType.Slip39(listOf("word"), "", ByteArray(16))
+
+        assertTrue(slip39.isCompatibleWith(BlockchainType.Thorchain, TokenType.Native))
+        assertTrue(slip39.isCompatibleWith(BlockchainType.Mayachain, TokenType.Native))
+        assertTrue(slip39.isCompatibleWith(BlockchainType.Monero, TokenType.Native))
+        assertTrue(slip39.isCompatibleWith(BlockchainType.Litecoin, TokenType.Mweb))
+        assertFalse(slip39.isCompatibleWith(BlockchainType.Bitcoin, TokenType.Mweb))
+        assertFalse(slip39.isCompatibleWith(BlockchainType.Zcash, TokenType.Native))
+        assertFalse(slip39.isCompatibleWith(BlockchainType.Beam, TokenType.Native))
+    }
+
+    @Test
+    fun isCompatibleWith_mnemonic_keepsZcashBeamAndLitecoinMweb() {
+        val mnemonic = AccountType.Mnemonic(listOf("word"), "")
+
+        assertTrue(mnemonic.isCompatibleWith(BlockchainType.Zcash, TokenType.Native))
+        assertTrue(mnemonic.isCompatibleWith(BlockchainType.Beam, TokenType.Native))
+        assertTrue(mnemonic.isCompatibleWith(BlockchainType.Litecoin, TokenType.Mweb))
+        assertFalse(mnemonic.isCompatibleWith(BlockchainType.Bitcoin, TokenType.Mweb))
+    }
+
     private val thorchainAddress = AccountType.ThorchainAddress("thor-address")
     private val mayachainAddress = AccountType.MayachainAddress("maya-address")
 
