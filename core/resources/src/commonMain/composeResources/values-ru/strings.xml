@@ -752,6 +752,10 @@
     <string name="Transactions_TonTransaction">Ton транзакция</string>
     <string name="Transactions_StellarTransaction">Транзакция Stellar</string>
     <string name="Transactions_Unknown_Description">Транзакция не может быть обработана</string>
+    <string name="transactions_account_delegation">Делегирование аккаунта</string>
+    <string name="transactions_account_delegated_to">контракту %1$s</string>
+    <string name="transactions_account_delegation_revoke">Отзыв делегирования</string>
+    <string name="transactions_account_delegation_warning_short">Аккаунтом управляет контракт</string>
     <string name="Transactions_Multiple">Множество</string>
     <string name="Transactions_Filter">Фильтр</string>
     <string name="Transactions_Filter_HideSuspiciousTx">Скрыть подозрительные транзакции</string>
@@ -775,6 +779,9 @@
     <string name="TransactionInfo_LockedUntil">Заблокировано до %s</string>
     <string name="TransactionInfo_UnlockedAt">Разблокировано %s</string>
     <string name="TransactionInfo_RecipientHash">Получатель</string>
+    <string name="transaction_info_initiator">Инициатор</string>
+    <string name="transaction_info_delegation_contract">Контракт делегирования</string>
+    <string name="transaction_info_delegation_warning">Сейчас вашим аккаунтом управляет этот контракт. Он может распоряжаться средствами аккаунта. Если вы не подтверждали делегирование, переведите средства на другой кошелёк.</string>
     <string name="TransactionInfo_HistoricalRate">Исторический курс</string>
     <string name="TransactionInfo_AnnouncedAmount">Объявленная сумма</string>
     <string name="transaction_info_executed_amount">Реальная сумма</string>

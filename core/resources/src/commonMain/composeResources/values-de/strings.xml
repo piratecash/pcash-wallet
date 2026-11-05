@@ -740,6 +740,10 @@
     <string name="Transactions_Unknown">Unbekannte Transaktion</string>
     <string name="Transactions_TonTransaction">Ton Transaction</string>
     <string name="Transactions_Unknown_Description">Transaktion kann nicht analysiert werden</string>
+    <string name="transactions_account_delegation">Kontodelegation</string>
+    <string name="transactions_account_delegated_to">an Vertrag %1$s</string>
+    <string name="transactions_account_delegation_revoke">Delegation widerrufen</string>
+    <string name="transactions_account_delegation_warning_short">Konto wird von einem Vertrag kontrolliert</string>
     <string name="Transactions_Multiple">Mehrere</string>
     <string name="Transactions_Filter">Filtern</string>
     <string name="Transactions_Filter_HideSuspiciousTx">Verdächtige tx ausblenden</string>
@@ -763,6 +767,9 @@
     <string name="TransactionInfo_LockedUntil">Gesperrt bis %s</string>
     <string name="TransactionInfo_UnlockedAt">Freigegeben am %s</string>
     <string name="TransactionInfo_RecipientHash">Empfänger</string>
+    <string name="transaction_info_initiator">Initiator</string>
+    <string name="transaction_info_delegation_contract">Delegationsvertrag</string>
+    <string name="transaction_info_delegation_warning">Dieser Vertrag kontrolliert derzeit Ihr Konto. Er kann über die Mittel des Kontos verfügen. Wenn Sie die Delegation nicht genehmigt haben, verschieben Sie Ihre Mittel in eine andere Wallet.</string>
     <string name="TransactionInfo_HistoricalRate">Historischer Rate</string>
     <string name="TransactionInfo_AnnouncedAmount">Angekündigter Betrag</string>
     <string name="transaction_info_executed_amount">Ausgeführter Betrag</string>

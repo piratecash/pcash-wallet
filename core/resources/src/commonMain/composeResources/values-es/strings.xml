@@ -742,6 +742,10 @@
     <string name="Transactions_Unknown">Transacción desconocida</string>
     <string name="Transactions_TonTransaction">Ton Transaction</string>
     <string name="Transactions_Unknown_Description">La transacción no se puede analizar</string>
+    <string name="transactions_account_delegation">Delegación de cuenta</string>
+    <string name="transactions_account_delegated_to">al contrato %1$s</string>
+    <string name="transactions_account_delegation_revoke">Revocación de delegación</string>
+    <string name="transactions_account_delegation_warning_short">La cuenta está controlada por un contrato</string>
     <string name="Transactions_Multiple">Múltiples</string>
     <string name="Transactions_Filter">Filtro</string>
     <string name="Transactions_Filter_HideSuspiciousTx">Ocultar Transacciones Sospechosas</string>
@@ -765,6 +769,9 @@
     <string name="TransactionInfo_LockedUntil">Bloqueado hasta %s</string>
     <string name="TransactionInfo_UnlockedAt">Desbloqueado en %s</string>
     <string name="TransactionInfo_RecipientHash">Destinatario</string>
+    <string name="transaction_info_initiator">Iniciador</string>
+    <string name="transaction_info_delegation_contract">Contrato de delegación</string>
+    <string name="transaction_info_delegation_warning">Este contrato controla actualmente tu cuenta. Puede disponer de los fondos de la cuenta. Si no aprobaste la delegación, transfiere tus fondos a otra billetera.</string>
     <string name="TransactionInfo_HistoricalRate">Estado histórico</string>
     <string name="TransactionInfo_AnnouncedAmount">Monto anunciado</string>
     <string name="transaction_info_executed_amount">Monto ejecutado</string>

@@ -743,6 +743,10 @@
     <string name="Transactions_Unknown">未知交易</string>
     <string name="Transactions_TonTransaction">Ton Transaction</string>
     <string name="Transactions_Unknown_Description">无法解析交易</string>
+    <string name="transactions_account_delegation">账户委托</string>
+    <string name="transactions_account_delegated_to">给合约 %1$s</string>
+    <string name="transactions_account_delegation_revoke">撤销委托</string>
+    <string name="transactions_account_delegation_warning_short">账户由合约控制</string>
     <string name="Transactions_Multiple">多种</string>
     <string name="Transactions_Filter">筛选器</string>
     <string name="Transactions_Filter_HideSuspiciousTx">隐藏可疑Txs</string>
@@ -766,6 +770,9 @@
     <string name="TransactionInfo_LockedUntil">锁定至 %s</string>
     <string name="TransactionInfo_UnlockedAt">在 %s 解锁了</string>
     <string name="TransactionInfo_RecipientHash">收款人</string>
+    <string name="transaction_info_initiator">发起方</string>
+    <string name="transaction_info_delegation_contract">委托合约</string>
+    <string name="transaction_info_delegation_warning">该合约目前控制着您的账户，可以支配账户中的资金。如果您未确认过此委托，请将资金转移到其他钱包。</string>
     <string name="TransactionInfo_HistoricalRate">历史价格</string>
     <string name="TransactionInfo_AnnouncedAmount">公布金额</string>
     <string name="transaction_info_executed_amount">成交金额</string>
