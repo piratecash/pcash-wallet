@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import cash.p.beam.BeamWalletSession
 import cash.p.beam.RestoreSource
 import cash.p.terminal.core.IAccountFactory
+import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.WalletOnboardingStorage
 import cash.p.terminal.core.managers.BeamKitDatabaseKeyProvider
 import cash.p.terminal.core.managers.DatabaseKey
@@ -15,6 +16,7 @@ import cash.p.terminal.core.managers.RestoreSettings
 import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.RestoreSettingsTestFixture
 import cash.p.terminal.core.usecase.MoneroWalletUseCase
+import cash.p.terminal.modules.restoreaccount.restoreshamir.Slip39TestShares
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -27,6 +29,7 @@ import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.EnabledWallet
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.slip39.Slip39AccountTypeFactory
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.entities.Blockchain
 import io.horizontalsystems.core.entities.BlockchainType
@@ -38,11 +41,13 @@ import io.mockk.slot
 import io.mockk.verify
 import io.mockk.verifyOrder
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
@@ -52,9 +57,13 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -82,6 +91,7 @@ class DuplicateWalletViewModelTest {
     private val marketKit: MarketKitWrapper = mockk(relaxed = true)
     private val viewModelStore = ViewModelStore()
     private var createdViewModel: DuplicateWalletViewModel? = null
+    private var slip39Factory = Slip39TestShares.slip39Factory()
 
     private val usdtQuery = TokenQuery(BlockchainType.Ethereum, TokenType.Eip20("0xusdt"))
     private val scamQuery = TokenQuery(BlockchainType.BinanceSmartChain, TokenType.Eip20("0xscam"))
@@ -103,6 +113,7 @@ class DuplicateWalletViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
+        startKoin { modules(module { single { slip39Factory } }) }
         every { accountFactory.getUniqueName(any(), any()) } answers { firstArg() }
         // Mirrors the requested type so tests can tell a same-identity copy from a different-identity one.
         every { accountFactory.account(any(), any(), any(), any(), any()) } answers {
@@ -116,12 +127,9 @@ class DuplicateWalletViewModelTest {
     @After
     fun tearDown() {
         // copyAccount uses real IO; let its parent job resume on test Main before resetting Main.
-        runBlocking {
-            withTimeout(SAVE_TIMEOUT_MS) {
-                createdViewModel?.viewModelScope?.coroutineContext?.get(Job)?.children?.forEach { it.join() }
-            }
-        }
+        createdViewModel?.awaitLaunchedWork()
         viewModelStore.clear()
+        stopKoin()
         Dispatchers.resetMain()
     }
 
@@ -479,6 +487,72 @@ class DuplicateWalletViewModelTest {
         verify(exactly = 1) { accountManager.save(any(), any()) }
     }
 
+    @Test
+    fun createAccount_slip39WithNewPassphrase_keepsShareAndDerivesDifferentSeed() {
+        sourceWallets()
+        val saved = captureSavedWallets()
+        val source = Slip39TestShares.slip39Type()
+
+        createViewModel(sourceType = source).apply {
+            onTogglePassphrase(true)
+            enterPassphrase("TREZOR")
+            createAccount()
+        }
+        awaitSaved(saved)
+
+        val created = slot<Account>()
+        verify { accountManager.save(capture(created), any()) }
+        val copy = created.captured.type as AccountType.Slip39
+        assertEquals(source.words, copy.words)
+        assertEquals("TREZOR", copy.passphrase)
+        assertFalse(copy.seed.contentEquals(source.seed))
+        verify(exactly = 0) { restoreSettingsManager.saveBeamRestoreIntent(any()) }
+    }
+
+    @Test
+    fun createAccount_tappedAgainWhileSlip39Derives_persistsOnlyFirstPassphrase() {
+        sourceWallets()
+        val derive = StandardTestDispatcher()
+        slip39Factory = Slip39AccountTypeFactory(TestDispatcherProvider(derive, CoroutineScope(derive)))
+        val saved = captureSavedWallets()
+        val viewModel = createViewModel(sourceType = Slip39TestShares.slip39Type())
+        viewModel.onTogglePassphrase(true)
+        viewModel.enterPassphrase("FIRST")
+        viewModel.createAccount()
+
+        viewModel.enterPassphrase("SECOND")
+        val enabledWhileDeriving = viewModel.uiState.createButtonEnabled
+        viewModel.createAccount()
+        derive.scheduler.advanceUntilIdle()
+        awaitSaved(saved)
+        viewModel.awaitLaunchedWork()
+
+        assertFalse(enabledWhileDeriving)
+        val created = slot<Account>()
+        verify(exactly = 1) { accountManager.save(capture(created), any()) }
+        assertEquals("FIRST", (created.captured.type as AccountType.Slip39).passphrase)
+    }
+
+    @Test
+    fun onChangePassphrase_slip39PrintableAscii_acceptsSymbolsBip39Forbids() {
+        val viewModel = createViewModel(sourceType = Slip39TestShares.slip39Type())
+
+        viewModel.onTogglePassphrase(true)
+        viewModel.onChangePassphrase("pass^word")
+
+        assertNull(viewModel.uiState.passphraseState)
+    }
+
+    @Test
+    fun onChangePassphrase_slip39NonAscii_showsError() {
+        val viewModel = createViewModel(sourceType = Slip39TestShares.slip39Type())
+
+        viewModel.onTogglePassphrase(true)
+        viewModel.onChangePassphrase("пароль")
+
+        assertNotNull(viewModel.uiState.passphraseState)
+    }
+
     // Also checks the created account's passphrase, so a false pass can't hide a silently-failed passphrase apply.
     private fun assertUnsupportedRowCopied(
         sourcePassphrase: String,
@@ -526,6 +600,10 @@ class DuplicateWalletViewModelTest {
         coVerify(exactly = 0) { sdk.openExisting(any(), any()) }
     }
 
+    private fun DuplicateWalletViewModel.awaitLaunchedWork() = runBlocking {
+        withTimeout(SAVE_TIMEOUT_MS) { viewModelScope.coroutineContext[Job]?.children?.forEach { it.join() } }
+    }
+
     private fun DuplicateWalletViewModel.enterPassphrase(value: String) {
         onChangePassphrase(value)
         onChangePassphraseConfirmation(value)
@@ -536,9 +614,10 @@ class DuplicateWalletViewModelTest {
         sourcePassphrase: String = "",
         sourceOrigin: AccountOrigin = accountToCopy.origin,
         settingsManager: RestoreSettingsManager = restoreSettingsManager,
+        sourceType: AccountType = AccountType.Mnemonic(sourceWords, sourcePassphrase),
     ) = DuplicateWalletViewModel(
         accountToCopy = accountToCopy.copy(
-            type = AccountType.Mnemonic(sourceWords, sourcePassphrase),
+            type = sourceType,
             origin = sourceOrigin,
         ),
         accountManager = accountManager,

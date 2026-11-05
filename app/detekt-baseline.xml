@@ -58,8 +58,6 @@
     <ID>AppSingletonAccess:NftHoldingsModule.kt$NftHoldingsModule.Factory$App.marketKit</ID>
     <ID>AppSingletonAccess:NftHoldingsPage.kt$App.accountManager</ID>
     <ID>AppSingletonAccess:OfflineSignScreen.kt$App.numberFormatter</ID>
-    <ID>AppSingletonAccess:PersonalSupportModule.kt$PersonalSupportModule.Factory$App.localStorage</ID>
-    <ID>AppSingletonAccess:PersonalSupportModule.kt$PersonalSupportModule.Factory$App.marketKit</ID>
     <ID>AppSingletonAccess:PinComponent.kt$PinComponent$App.localStorage</ID>
     <ID>AppSingletonAccess:PinComponentLogLoggingTest.kt$PinComponentLogLoggingTest$App.localStorage</ID>
     <ID>AppSingletonAccess:PinComponentSecureResetLevelTest.kt$PinComponentSecureResetLevelTest$App.localStorage</ID>
@@ -239,7 +237,6 @@
     <ID>FunctionNaming:SendEvmTransactionView.kt$@Preview @Composable private fun Preview_Subhead()</ID>
     <ID>FunctionNaming:SendEvmTransactionView.kt$@Preview @Composable private fun Preview_TitleValue()</ID>
     <ID>FunctionNaming:SendEvmTransactionView.kt$@Preview @Composable private fun Preview_TitleValueHex()</ID>
-    <ID>InstanceOfCheckForException:ActivateSubscriptionViewModel.kt$ActivateSubscriptionViewModel$e is UnknownHostException</ID>
     <ID>InstanceOfCheckForException:MarketWidgetManager.kt$MarketWidgetManager$exception is UnknownHostException</ID>
     <ID>InstanceOfCheckForException:SendBitcoinViewModel.kt$SendBitcoinViewModel$e is TangemSdkError</ID>
     <ID>InvalidPackageDeclaration:BalancePresenterTest.kt$package cash.p.terminal.modules.balance</ID>
@@ -262,7 +259,6 @@
     <ID>LargeClass:OfflineTransactionPayloadEncoderTest.kt$OfflineTransactionPayloadEncoderTest</ID>
     <ID>LargeClass:TokenBalanceViewModelTest.kt$TokenBalanceViewModelTest : KoinTest</ID>
     <ID>LargeClass:TransactionMonitorTest.kt$TransactionMonitorTest</ID>
-    <ID>LongMethod:ActivateSubscriptionPage.kt$@Composable fun ActivateSubscriptionScreen(navigation: HSNavigation)</ID>
     <ID>LongMethod:AdvancedSecurityScreen.kt$@Composable internal fun AdvancedSecurityScreen( uiState: AdvancedSecurityUiState, onCreateHiddenWalletClick: () -&gt; Unit, onSecureResetToggle: (Boolean) -&gt; Unit, onDeleteContactsToggle: (Boolean) -&gt; Unit, onCalculatorPinClick: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
     <ID>LongMethod:AppearanceScreen.kt$@Composable internal fun AppearanceScreen( uiState: AppearanceUIState, onThemeSelect: (ThemeType) -&gt; Unit, onLaunchScreenSelect: (LaunchPage) -&gt; Unit, onBalanceViewTypeSelect: (BalanceViewType) -&gt; Unit, onPriceChangeIntervalSelect: (PriceChangeInterval) -&gt; Unit, onMarketTabsHiddenChange: (Boolean) -&gt; Unit, onBalanceTabButtonsHiddenChange: (Boolean) -&gt; Unit, onAppIconClick: () -&gt; Unit, onClose: () -&gt; Unit )</ID>
     <ID>LongMethod:BackupV4DecryptionTest.kt$BackupV4DecryptionTest$@Test fun `backup with hardware_card type is parsed correctly`()</ID>
@@ -354,7 +350,6 @@
     <ID>Material2:NftPreview.kt$import androidx.compose.material.Text</ID>
     <ID>Material2:SetDuressPinIntroPage.kt$import androidx.compose.material.Divider</ID>
     <ID>Material2:SolanaNetworkPage.kt$import androidx.compose.material.Surface</ID>
-    <ID>Material2:SubscriptionInfoPage.kt$import androidx.compose.material.Surface</ID>
     <ID>Material2:TonConnectMainScreen.kt$import androidx.compose.material.ModalBottomSheetValue</ID>
     <ID>Material2:TonConnectMainScreen.kt$import androidx.compose.material.rememberModalBottomSheetState</ID>
     <ID>Material2:WCSessionCell.kt$import androidx.compose.material.Divider</ID>
@@ -408,7 +403,6 @@
     <ID>MayBeConst:AppConfigProvider.kt$AppConfigProvider$val fiatDecimal: Int = 2</ID>
     <ID>MemberNameEqualsClassName:T.kt$T$fun t(reset: Boolean = false)</ID>
     <ID>ModifierMissing:ActionRow.kt$ActionsRow</ID>
-    <ID>ModifierMissing:ActivateSubscriptionPage.kt$ActivateSubscriptionScreen</ID>
     <ID>ModifierMissing:AddRpcScreen.kt$AddRpcScreen</ID>
     <ID>ModifierMissing:AdditionalDataCell2.kt$AdditionalDataCell2</ID>
     <ID>ModifierMissing:AddressCell.kt$AddressCell</ID>
@@ -515,7 +509,6 @@
     <ID>ReturnCount:SendNftPage.kt$private fun getFactory(nftUidString: String): SendNftModule.Factory?</ID>
     <ID>ReturnCount:TonConnectSendRequestViewModel.kt$TonConnectSendRequestViewModel$private suspend fun prepareEnv()</ID>
     <ID>ReturnCount:TorOperator.kt$TorOperator$@Throws(Exception::class) private fun runTorShellCmd(fileTor: File, fileTorrc: File): Boolean</ID>
-    <ID>ThrowingExceptionsWithoutMessageOrCause:ActivateSubscriptionViewModel.kt$ActivateSubscriptionViewModel$IllegalStateException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:NestedScrollableHost.kt$NestedScrollableHost$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:SendEvmModule.kt$SendEvmModule.Factory$IllegalArgumentException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:SendMoneroModule.kt$SendMoneroModule.Factory$IllegalArgumentException()</ID>
@@ -527,12 +520,10 @@
     <ID>TooGenericExceptionThrown:CoreUtils.kt$ProcessUtils$throw Exception("Cannot kill: " + fileProcBin.absolutePath)</ID>
     <ID>TooGenericExceptionThrown:EvmSyncSourceManager.kt$EvmSyncSourceManager$throw Exception("Non-supported EVM blockchain")</ID>
     <ID>TooGenericExceptionThrown:NativeLoader.kt$NativeLoader$throw Exception("Unable to find file in apk:lib/$arch/$libName")</ID>
-    <ID>TooGenericExceptionThrown:PersonalSupportViewModel.kt$PersonalSupportViewModel$throw Exception("Error")</ID>
     <ID>TooGenericExceptionThrown:TorOperator.kt$TorOperator$throw Exception( "Error: " + shellResult.exitCode + " ERR=" + shellResult.getStderr() + " OUT=" + shellResult.getStdout() )</ID>
     <ID>TooGenericExceptionThrown:WCRequestEvmViewModel.kt$WCRequestEvmViewModel$throw Exception("Invalid Data")</ID>
     <ID>TooGenericExceptionThrown:WCRequestEvmViewModel.kt$WCRequestEvmViewModel$throw Exception("Unsupported Chain")</ID>
     <ID>TooManyFunctions:Extensions.kt$cash.p.terminal.core.Extensions.kt</ID>
-    <ID>UnnecessaryFullyQualifiedNameRule:ActivateSubscriptionViewModel.kt$ActivateSubscriptionViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.Hud_Text_NoInternet)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:AddRpcViewModel.kt$AddRpcViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.AddEvmSyncSource_Error_InvalidUrl)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:AddRpcViewModel.kt$AddRpcViewModel$cash.p.terminal.strings.helpers.Translator.getString(R.string.AddEvmSyncSource_Warning_UrlExists)</ID>
     <ID>UnnecessaryFullyQualifiedNameRule:BiometricDisabledDialog.kt$cash.p.terminal.ui_compose.theme.ComposeAppTheme { BiometricDisabledDialog({}) }</ID>
@@ -580,7 +571,6 @@
     <ID>UnusedPrivateProperty:NftCollectionAssetsService.kt$NftCollectionAssetsService$private val provider: INftProvider</ID>
     <ID>UnusedPrivateProperty:SendTransactionServiceSolanaTest.kt$SendTransactionServiceSolanaTest$val solanaKitManager = mockk&lt;SolanaKitManager&gt;(relaxed = true) { every { this@mockk.solanaKitWrapper } returns solanaKitWrapper }</ID>
     <ID>UnusedPrivateProperty:WalletConnectListViewModel.kt$WalletConnectListViewModel$private val evmBlockchainManager: EvmBlockchainManager</ID>
-    <ID>UseCheckOrError:ActivateSubscriptionViewModel.kt$ActivateSubscriptionViewModel$throw IllegalStateException()</ID>
     <ID>UseCheckOrError:MarketWidgetRepository.kt$MarketWidgetRepository$throw IllegalStateException("Manual sorting should be handled separately")</ID>
     <ID>UseCheckOrError:NavController.kt$throw IllegalStateException("Unsupported pin type for ensurePinSet: $pinType")</ID>
     <ID>UseCheckOrError:NftAssetPage.kt$throw IllegalStateException("No URL!")</ID>
@@ -622,7 +612,6 @@
     <ID>ViewModelInjection:NftCollectionAssetsScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:NftCollectionEventsScreen.kt$viewModel</ID>
     <ID>ViewModelInjection:NftHoldingsPage.kt$viewModel</ID>
-    <ID>ViewModelInjection:PersonalSupportPage.kt$viewModel</ID>
     <ID>ViewModelInjection:PinConfirm.kt$viewModel</ID>
     <ID>ViewModelInjection:SecurityCheckPage.kt$viewModel</ID>
     <ID>ViewModelInjection:SendBitcoinConfirmationScreen.kt$syncErrorViewModel</ID>

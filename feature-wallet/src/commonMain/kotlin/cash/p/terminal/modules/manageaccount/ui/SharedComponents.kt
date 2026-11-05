@@ -205,7 +205,7 @@ fun ConfirmCopyBottomSheet(onConfirm: () -> Unit, onCancel: () -> Unit) {
 
 @Composable
 fun PassphraseCell(passphrase: String, hidden: Boolean) {
-    if (passphrase.isNotBlank()) {
+    if (passphrase.isNotEmpty()) {
         CellSingleLineLawrenceSection(
             listOf {
                 Row(

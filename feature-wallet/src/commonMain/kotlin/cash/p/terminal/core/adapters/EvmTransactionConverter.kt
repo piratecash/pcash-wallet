@@ -12,6 +12,7 @@ import cash.p.terminal.entities.transactionrecords.evm.EvmTransactionRecord
 import cash.p.terminal.entities.transactionrecords.evm.TransferEvent
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenQuery
+import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.transaction.TransactionSource
 import io.horizontalsystems.erc20kit.decorations.ApproveEip20Decoration
 import io.horizontalsystems.erc20kit.decorations.OutgoingEip20Decoration
@@ -262,8 +263,11 @@ class EvmTransactionConverter(
             is UnknownTransactionDecoration -> {
                 val address = evmTransactionRepository.receiveAddress
 
-                val internalTransactions =
+                val incomingInternalTransactions =
                     decoration.internalTransactions.filter { it.to == address }
+                val outgoingInternalTransactions = decoration.internalTransactions.filter {
+                    it.from == address && it.to != address && it.value > BigInteger.ZERO
+                }
 
                 val eip20Transfers =
                     decoration.eventInstances.mapNotNull { it as? TransferEventInstance }
@@ -283,6 +287,17 @@ class EvmTransactionConverter(
                     eip1155Transfers.filter { it.to == address && it.from != address }
                 val outgoingEip1155Transfers = eip1155Transfers.filter { it.from == address }
 
+                val incomingEvents = getForeignValueEvents(transaction) +
+                        getInternalEvents(incomingInternalTransactions, negative = false) +
+                        getIncomingEip20Events(incomingEip20Transfers) +
+                        getIncomingEip721Events(incomingEip721Transfers) +
+                        getIncomingEip1155Events(incomingEip1155Transfers)
+                var outgoingEvents = getInternalEvents(outgoingInternalTransactions, negative = true) +
+                        getOutgoingEip20Events(outgoingEip20Transfers) +
+                        getOutgoingEip721Events(outgoingEip721Transfers) +
+                        getOutgoingEip1155Events(outgoingEip1155Transfers)
+                val hasUserTransfers = incomingEvents.isNotEmpty() || outgoingEvents.isNotEmpty()
+
                 val contractAddress = transaction.to
                 val value = transaction.value
 
@@ -291,7 +306,7 @@ class EvmTransactionConverter(
                         TransactionRecordType.EVM_CONTRACT_CALL
                     }
 
-                    transaction.from != address && transaction.to != address -> {
+                    transaction.from != address && (transaction.to != address || hasUserTransfers) -> {
                         TransactionRecordType.EVM_EXTERNAL_CONTRACT_CALL
                     }
 
@@ -308,17 +323,11 @@ class EvmTransactionConverter(
                 }
 
                 if (transactionRecordType != null) {
-                    val incomingEvents = getInternalEvents(internalTransactions) +
-                            getIncomingEip20Events(incomingEip20Transfers) +
-                            getIncomingEip721Events(incomingEip721Transfers) +
-                            getIncomingEip1155Events(incomingEip1155Transfers)
-                    var outgoingEvents = getOutgoingEip20Events(outgoingEip20Transfers) +
-                            getOutgoingEip721Events(outgoingEip721Transfers) +
-                            getOutgoingEip1155Events(outgoingEip1155Transfers)
+                    val isExternal = transactionRecordType == TransactionRecordType.EVM_EXTERNAL_CONTRACT_CALL
                     val isSpam: Boolean
                     val contractAddressEip55: String?
                     val method: String?
-                    if (transactionRecordType == TransactionRecordType.EVM_EXTERNAL_CONTRACT_CALL) {
+                    if (isExternal) {
                         isSpam = SpamTransferDetector.isSpam(incomingEvents + outgoingEvents)
                         contractAddressEip55 = null
                         method = null
@@ -341,6 +350,8 @@ class EvmTransactionConverter(
                         incomingEvents = incomingEvents,
                         outgoingEvents = outgoingEvents,
                         transactionRecordType = transactionRecordType,
+                        foreignTransaction = transaction.isForeign(),
+                        initiator = transaction.initiatorIfForeign(),
                         protected = isProtected,
                         syncSource = syncSource
                     )
@@ -352,16 +363,45 @@ class EvmTransactionConverter(
             else -> null
         }
 
-        return transactionRecord ?: EvmTransactionRecord(
-            transaction = transaction,
-            token = baseToken,
-            source = source,
-            foreignTransaction = transaction.from != evmTransactionRepository.receiveAddress,
-            transactionRecordType = TransactionRecordType.EVM,
-            protected = isProtected,
-            syncSource = syncSource
+        val record = transactionRecord ?: evmRecord(
+            transaction, TransactionRecordType.EVM, isProtected, syncSource
         )
+        if (transaction.accountDelegation != null && record.hasNoContent()) {
+            return evmRecord(transaction, TransactionRecordType.EVM_ACCOUNT_DELEGATION, isProtected, syncSource)
+        }
+        return record
     }
+
+    private fun evmRecord(
+        transaction: Transaction,
+        type: TransactionRecordType,
+        isProtected: Boolean,
+        syncSource: String?
+    ) = EvmTransactionRecord(
+        transaction = transaction,
+        token = baseToken,
+        source = source,
+        foreignTransaction = transaction.isForeign(),
+        initiator = transaction.initiatorIfForeign(),
+        transactionRecordType = type,
+        protected = isProtected,
+        syncSource = syncSource
+    )
+
+    /** Records that show nothing the user can act on: only these may be replaced by the delegation record. */
+    private fun EvmTransactionRecord.hasNoContent(): Boolean = when (transactionRecordType) {
+        TransactionRecordType.EVM -> true
+        TransactionRecordType.EVM_INCOMING,
+        TransactionRecordType.EVM_OUTGOING -> (value as? TransactionValue.CoinValue)
+            ?.takeIf { it.token.type == TokenType.Native }?.value?.signum() == 0
+        TransactionRecordType.EVM_CONTRACT_CALL ->
+            incomingEvents.isNullOrEmpty() && outgoingEvents.isNullOrEmpty()
+        else -> false
+    }
+
+    private fun Transaction.isForeign(): Boolean = from != evmTransactionRepository.receiveAddress
+
+    private fun Transaction.initiatorIfForeign(): String? = from?.takeIf { isForeign() }?.eip55
 
     /**
      * A swap output delivered to our own address is not a third-party recipient.
@@ -488,28 +528,35 @@ class EvmTransactionConverter(
         }
     }
 
-    private fun getInternalEvents(internalTransactions: List<InternalTransaction>): List<TransferEvent> {
-        val events: MutableList<TransferEvent> = mutableListOf()
-
-        for (transaction in internalTransactions) {
-            events.add(
-                TransferEvent(
-                    transaction.from.eip55,
-                    transaction.to.eip55,
-                    baseCoinValue(transaction.value, false)
-                )
-            )
+    private fun getInternalEvents(
+        internalTransactions: List<InternalTransaction>,
+        negative: Boolean
+    ): List<TransferEvent> = internalTransactions.map {
+        if (negative) {
+            TransferEvent(it.to.eip55, null, baseCoinValue(it.value, true))
+        } else {
+            TransferEvent(it.from.eip55, it.to.eip55, baseCoinValue(it.value, false))
         }
-
-        return events
     }
 
+    private val Transaction.positiveValue: BigInteger?
+        get() = value?.takeIf { it > BigInteger.ZERO }
+
     private fun getTransactionValueEvents(transaction: Transaction): List<TransferEvent> {
-        val value = transaction.value
-        if (value == null || value <= BigInteger.ZERO) return listOf()
+        val value = transaction.positiveValue ?: return listOf()
 
         return listOf(
             TransferEvent(transaction.to?.eip55, null, baseCoinValue(value, true))
+        )
+    }
+
+    /** Native value a third party sent straight to the user's own (delegated) account. */
+    private fun getForeignValueEvents(transaction: Transaction): List<TransferEvent> {
+        val value = transaction.positiveValue ?: return listOf()
+        if (!transaction.isForeign() || transaction.to != evmTransactionRepository.receiveAddress) return listOf()
+
+        return listOf(
+            TransferEvent(transaction.from?.eip55, transaction.to?.eip55, baseCoinValue(value, false))
         )
     }
 

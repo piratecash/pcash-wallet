@@ -16,6 +16,7 @@ import cash.p.terminal.core.UnsupportedAccountException
 import cash.p.terminal.core.hexToByteArray
 import cash.p.terminal.core.managers.LITECOIN_MWEB_PEG_IN_MATCH_TIMESTAMP_TOLERANCE_SECONDS
 import cash.p.terminal.core.managers.BitcoinKitEnvironment
+import cash.p.terminal.core.managers.LitecoinKitPool
 import cash.p.terminal.core.managers.LitecoinMwebRestoreHeight
 import cash.p.terminal.core.managers.RestoreSettings
 import cash.p.terminal.core.purpose
@@ -34,6 +35,7 @@ import cash.p.terminal.resources.litecoin_mweb_invalid_amount
 import cash.p.terminal.resources.send_trezor_mweb_not_supported
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
@@ -100,6 +102,7 @@ class LitecoinAdapter(
     backgroundManager: IBackgroundManager,
     wallet: Wallet,
     private val mode: Mode,
+    private val kitPool: LitecoinKitPool,
     private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider(),
     feeRateProvider: IFeeRateProvider? = null
 ) : BitcoinBaseAdapter(
@@ -107,60 +110,18 @@ class LitecoinAdapter(
 ), LitecoinKit.Listener, ISendBitcoinAdapter, IMwebAddressValidator {
 
     sealed interface Mode {
-        data class Public(val derivation: TokenType.Derivation) : Mode
-        data object Mweb : Mode
+        val purpose: HDWallet.Purpose
+
+        data class Public(val derivation: TokenType.Derivation) : Mode {
+            override val purpose: HDWallet.Purpose
+                get() = derivation.purpose
+        }
+
+        data object Mweb : Mode {
+            override val purpose: HDWallet.Purpose
+                get() = TokenType.Derivation.Bip84.purpose
+        }
     }
-
-    constructor(
-        wallet: Wallet,
-        syncMode: BitcoinCore.SyncMode,
-        backgroundManager: IBackgroundManager,
-        derivation: TokenType.Derivation,
-        environment: BitcoinKitEnvironment,
-        mwebRestoreSettings: RestoreSettings? = null,
-        dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider(),
-        feeRateProvider: IFeeRateProvider? = null
-    ) : this(
-        createKit(
-            wallet = wallet,
-            syncMode = syncMode,
-            mode = Mode.Public(derivation),
-            environment = environment,
-            dispatcherProvider = dispatcherProvider,
-            restoreSettings = mwebRestoreSettings,
-        ),
-        syncMode,
-        backgroundManager,
-        wallet,
-        mode = Mode.Public(derivation),
-        dispatcherProvider = dispatcherProvider,
-        feeRateProvider = feeRateProvider
-    )
-
-    constructor(
-        wallet: Wallet,
-        syncMode: BitcoinCore.SyncMode,
-        backgroundManager: IBackgroundManager,
-        restoreSettings: RestoreSettings,
-        environment: BitcoinKitEnvironment,
-        dispatcherProvider: DispatcherProvider,
-        feeRateProvider: IFeeRateProvider? = null
-    ) : this(
-        createKit(
-            wallet = wallet,
-            syncMode = syncMode,
-            mode = Mode.Mweb,
-            environment = environment,
-            dispatcherProvider = dispatcherProvider,
-            restoreSettings = restoreSettings,
-        ),
-        syncMode,
-        backgroundManager,
-        wallet,
-        mode = Mode.Mweb,
-        dispatcherProvider = dispatcherProvider,
-        feeRateProvider = feeRateProvider
-    )
 
     private val mwebMode: Boolean
         get() = mode == Mode.Mweb
@@ -189,7 +150,19 @@ class LitecoinAdapter(
         get() = latestMwebSyncState ?: mwebStateOrNull()?.syncState
 
     init {
-        kit.listener = this
+        kit.addListener(this)
+        replayKitState()
+    }
+
+    // A shared kit may already be running and will not re-emit its current state.
+    private fun replayKitState() {
+        var applied: BitcoinCore.KitState? = null
+        while (true) {
+            val current = kit.syncState
+            if (current == applied || current.isNotStarted()) return
+            setState(current)
+            applied = current
+        }
     }
 
     //
@@ -203,7 +176,8 @@ class LitecoinAdapter(
         stopped = true
         scope.cancel()
         ownMwebAddressFetchJob = null
-        kit.dispose()
+        kit.removeListener(this)
+        kitPool.release(kit)
     }
 
     override val receiveAddress: String
@@ -1481,7 +1455,7 @@ class LitecoinAdapter(
                 get() = wallet.account
         }
 
-        private fun createKit(
+        internal fun createKit(
             wallet: Wallet,
             syncMode: BitcoinCore.SyncMode,
             mode: Mode,
@@ -1490,12 +1464,8 @@ class LitecoinAdapter(
             restoreSettings: RestoreSettings? = null,
         ): LitecoinKit {
             val account = wallet.account
-            if (mode == Mode.Mweb && account.type !is AccountType.Mnemonic) {
+            if (mode == Mode.Mweb && account.type !is SeedAccountType) {
                 throw UnsupportedAccountException()
-            }
-            val purpose = when (mode) {
-                is Mode.Public -> mode.derivation.purpose
-                Mode.Mweb -> TokenType.Derivation.Bip84.purpose
             }
             val sharedPeerGroupHolder = LitecoinKit.getOrCreateSharedPeerGroup(
                 dataDir = environment.dataDir,
@@ -1512,7 +1482,7 @@ class LitecoinAdapter(
             val context = LitecoinKitCreateContext(
                 wallet = wallet,
                 syncMode = syncMode,
-                purpose = purpose,
+                purpose = mode.purpose,
                 sharedPeerGroupHolder = sharedPeerGroupHolder,
                 mwebConfig = mwebConfig,
                 dispatcherProvider = dispatcherProvider,
@@ -1520,7 +1490,7 @@ class LitecoinAdapter(
             )
             return when (val accountType = account.type) {
                 is AccountType.HdExtendedKey -> createExtendedKeyKit(accountType, context)
-                is AccountType.Mnemonic -> createMnemonicKit(accountType, context)
+                is SeedAccountType -> createSeedKit(accountType, context)
                 is AccountType.BitcoinAddress -> createWatchAddressKit(accountType, context)
                 is AccountType.HardwareCard -> createHardwareKit(context)
                 is AccountType.TrezorDevice -> createTrezorKit(context)
@@ -1548,8 +1518,8 @@ class LitecoinAdapter(
             )
         }
 
-        private fun createMnemonicKit(
-            accountType: AccountType.Mnemonic,
+        private fun createSeedKit(
+            accountType: SeedAccountType,
             context: LitecoinKitCreateContext
         ): LitecoinKit {
             return LitecoinKit(
@@ -1679,7 +1649,7 @@ class LitecoinAdapter(
             if (tokenType == TokenType.Mweb) throw UnsupportedAccountException()
 
             when (accountType) {
-                is AccountType.Mnemonic -> {
+                is SeedAccountType -> {
                     val seed = accountType.seed
 
                     val address = LitecoinKit.firstAddress(
@@ -1725,3 +1695,6 @@ class LitecoinAdapter(
 
     }
 }
+
+private fun BitcoinCore.KitState.isNotStarted(): Boolean =
+    this is BitcoinCore.KitState.NotSynced && exception is BitcoinCore.StateError.NotStarted

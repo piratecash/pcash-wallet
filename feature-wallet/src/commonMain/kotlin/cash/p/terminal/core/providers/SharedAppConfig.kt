@@ -21,7 +21,6 @@ object SharedAppConfig {
 
     const val companyWebPageLink = "https://p.cash/"
     const val appWebPageLink = "https://p.cash/#MOBILE_APPS"
-    const val analyticsLink = "https://p.cash/"
     const val appGithubLink = "https://github.com/piratecash/pcash-wallet"
     const val appTwitterLink = "https://twitter.com/PirateCash_NET"
     const val appTelegramLink = "https://t.me/pcash"

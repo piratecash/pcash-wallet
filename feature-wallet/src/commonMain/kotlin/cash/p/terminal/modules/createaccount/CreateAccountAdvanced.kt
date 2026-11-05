@@ -60,6 +60,7 @@ import cash.p.terminal.resources.CreateWallet_Mnemonic
 import cash.p.terminal.resources.CreateWallet_PassphraseDescription
 import cash.p.terminal.resources.Hud_Text_Created
 import cash.p.terminal.resources.ManageAccount_Name
+import cash.p.terminal.resources.ManageAccount_NWordsShamir
 import cash.p.terminal.resources.Passphrase
 import cash.p.terminal.resources.ic_arrow_right
 import cash.p.terminal.resources.ic_down_arrow_20
@@ -80,7 +81,7 @@ fun CreateAccountAdvancedScreen(
 ) {
     LaunchedEffect(Unit) {
         if (preselectMonero) {
-            viewModel.setMnemonicKind(MnemonicKind.Mnemonic25)
+            viewModel.setKind(WalletKind.Mnemonic(MnemonicKind.Mnemonic25))
         }
     }
     val hudMessenger = rememberHudMessenger()
@@ -108,15 +109,13 @@ fun CreateAccountAdvancedScreen(
         if (showMnemonicSizeSelectorDialog) {
             AppSelectorDialog(
                 title = stringResource(Res.string.CreateWallet_Mnemonic),
-                items = viewModel.mnemonicKinds.map {
-                    AppSelectorItem(it.titleLong, it == viewModel.selectedKind, it)
+                items = viewModel.walletKinds.map {
+                    AppSelectorItem(it.label(long = true), it == viewModel.selectedKind, it)
                 },
                 onDismiss = {
                     showMnemonicSizeSelectorDialog = false
                 },
-                onSelect = {
-                    viewModel.setMnemonicKind(it)
-                }
+                onSelect = viewModel::setKind
             )
         }
         if (showLanguageSelectorDialog) {
@@ -173,7 +172,7 @@ fun CreateAccountAdvancedScreen(
                         listOf(
                             {
                                 MnemonicNumberCell(
-                                    kind = viewModel.selectedKind,
+                                    kindTitle = viewModel.selectedKind.label(long = false),
                                     showMnemonicSizeSelectorDialog = {
                                         showMnemonicSizeSelectorDialog = true
                                     }
@@ -267,8 +266,14 @@ fun CreateAccountAdvancedScreen(
 }
 
 @Composable
+private fun WalletKind.label(long: Boolean): String = when (this) {
+    is WalletKind.Mnemonic -> if (long) kind.titleLong else kind.title
+    is WalletKind.Shamir -> stringResource(Res.string.ManageAccount_NWordsShamir, size.wordCount)
+}
+
+@Composable
 private fun MnemonicNumberCell(
-    kind: MnemonicKind,
+    kindTitle: String,
     showMnemonicSizeSelectorDialog: () -> Unit
 ) {
     RowUniversal(
@@ -288,7 +293,7 @@ private fun MnemonicNumberCell(
         )
         Spacer(Modifier.weight(1f))
         subhead1_grey(
-            text = kind.title,
+            text = kindTitle,
         )
         Icon(
             modifier = Modifier.padding(start = 4.dp),

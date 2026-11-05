@@ -10,6 +10,7 @@ import cash.p.terminal.core.managers.BackupManager
 import cash.p.terminal.core.managers.ChainAccountManagersStarter
 import cash.p.terminal.core.managers.DefaultUserManager
 import cash.p.terminal.core.managers.LitecoinBirthdayProvider
+import cash.p.terminal.core.managers.LitecoinKitPool
 import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.SeedPhraseQrCrypto
 import cash.p.terminal.core.managers.StellarAccountManager
@@ -61,6 +62,7 @@ import cash.p.terminal.modules.markdown.MarkdownViewModel
 import cash.p.terminal.modules.manageaccount.ManageAccountViewModel
 import cash.p.terminal.modules.manageaccount.backupconfirmkey.BackupConfirmKeyViewModel
 import cash.p.terminal.modules.manageaccount.backupkey.BackupKeyViewModel
+import cash.p.terminal.modules.manageaccount.shamirbackup.ShamirBackupViewModel
 import cash.p.terminal.modules.manageaccount.privatekeys.PrivateKeysViewModel
 import cash.p.terminal.modules.manageaccount.publickeys.PublicKeysViewModel
 import cash.p.terminal.modules.manageaccount.recoveryphrase.RecoveryPhrasePage
@@ -75,6 +77,7 @@ import cash.p.terminal.modules.mwebconfigure.MwebConfigureViewModel
 import cash.p.terminal.modules.premium.about.AboutPremiumViewModel
 import cash.p.terminal.modules.restoreaccount.duplicatewallet.DuplicateWalletViewModel
 import cash.p.terminal.modules.restoreaccount.restoremnemonic.RestoreMnemonicViewModel
+import cash.p.terminal.modules.restoreaccount.restoreshamir.RestoreShamirViewModel
 import cash.p.terminal.modules.restoreaccount.restoremnemonicnonstandard.RestoreMnemonicNonStandardViewModel
 import cash.p.terminal.modules.restoreaccount.restoreprivatekey.RestorePrivateKeyViewModel
 import cash.p.terminal.modules.restorelocal.RestoreLocalViewModel
@@ -290,6 +293,7 @@ import org.koin.core.module.dsl.viewModelOf
 import cash.p.terminal.di.swapProvidersModule
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import java.security.SecureRandom
 import cash.p.terminal.core.ISendBitcoinAdapter
 import cash.p.terminal.core.utils.AddressUriParser
 import cash.p.terminal.entities.Address
@@ -403,6 +407,7 @@ val featureWalletModule = module {
     singleOf(::BitcoinKitConnectionManager) bind IConnectionManager::class
     singleOf(::DefaultBitcoinKitDatabaseOperations) bind BitcoinKitDatabaseOperations::class
     singleOf(::BitcoinKitDatabaseManager)
+    singleOf(::LitecoinKitPool)
     factoryOf(::SolanaWalletManager)
     singleOf(::SolanaKitManager)
     singleOf(::StellarKitManager)
@@ -497,6 +502,7 @@ val featureWalletModule = module {
     viewModelOf(::BackupAlertViewModel)
     viewModelOf(::CreateAdvancedAccountViewModel)
     viewModelOf(::RestoreMnemonicViewModel)
+    viewModelOf(::RestoreShamirViewModel)
     viewModelOf(::RestoreMnemonicNonStandardViewModel)
     viewModelOf(::RestorePrivateKeyViewModel)
     viewModelOf(::MoneroConfigureViewModel)
@@ -529,6 +535,9 @@ val featureWalletModule = module {
         DuplicateWalletViewModel(accountToCopy, get(), get(), get(), get(), get(), get(), get(), get())
     }
     viewModel { (accountId: String) -> BackupKeyViewModel(accountId, get()) }
+    viewModel { (accountId: String) ->
+        ShamirBackupViewModel(accountId, get(), RandomProvider(), SecureRandom())
+    }
     viewModel { (accountId: String) -> ZcashKeysViewModel(accountId, get(), get()) }
     viewModel { (mode: ManageAccountsModule.Mode) -> ManageAccountsViewModel(get(), get(), mode) }
     viewModel { (wallet: Wallet) ->

@@ -12,6 +12,7 @@ import cash.p.terminal.core.utils.Bip39LanguageDetector
 import cash.p.terminal.core.utils.MoneroWalletSeedConverter
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.hdwalletkit.Language
 import kotlinx.coroutines.Dispatchers
@@ -27,16 +28,13 @@ class RecoveryPhraseViewModel(
 
     val safetyRulesAgreed: Boolean
         get() = localStorage.safetyRulesAgreed
-    val words: List<String>
-    private val seed: ByteArray?
-    private val moneroHeight: Long?  // Restore height for Monero accounts
-    val passphrase: String?
-    val wordsNumbered: List<RecoveryPhraseModule.WordNumbered>
 
-    // BIP39 wordlist language hint embedded in the QR. Null for Monero (separate wordlist)
-    // or when detection is ambiguous (multiple wordlists match) — autodetect on the
-    // restoring side handles the unhinted case.
-    private val languageHint: Language?
+    private val content = phraseContent(account, recoveryPhraseType)
+    val words: List<String> = content.words
+    val passphrase: String? = content.passphrase
+    val wordsNumbered: List<RecoveryPhraseModule.WordNumbered> = words.mapIndexed { index, word ->
+        RecoveryPhraseModule.WordNumbered(word, index + 1)
+    }
 
     // Cached encrypted QR content - regenerated on demand
     var encryptedSeedQrContent by mutableStateOf("")
@@ -47,54 +45,37 @@ class RecoveryPhraseViewModel(
         private set
 
     init {
-        when (account.type) {
-            is AccountType.Mnemonic -> {
-                if (recoveryPhraseType == RecoveryPhrasePage.RecoveryPhraseType.Monero) {
-                    words = MoneroWalletSeedConverter.getLegacySeedFromBip39(
-                        words = (account.type as AccountType.Mnemonic).words,
-                        passphrase = (account.type as AccountType.Mnemonic).passphrase
-                    )
-                    seed = null
-                    passphrase = null
-                    // Get Monero height from restore settings
-                    val settings = restoreSettingsManager.settings(account, BlockchainType.Monero)
-                    moneroHeight = settings.birthdayHeight
-                    languageHint = null
-                } else {
-                    words = (account.type as AccountType.Mnemonic).words
-                    seed = (account.type as AccountType.Mnemonic).seed
-                    passphrase = (account.type as AccountType.Mnemonic).passphrase
-                    moneroHeight = null
-                    languageHint = Bip39LanguageDetector.detectSingle(words)
-                }
-                wordsNumbered = words.mapIndexed { index, word ->
-                    RecoveryPhraseModule.WordNumbered(word, index + 1)
-                }
-            }
-
-            is AccountType.MnemonicMonero -> {
-                val moneroType = account.type as AccountType.MnemonicMonero
-                words = moneroType.words
-                moneroHeight = moneroType.height
-                wordsNumbered = words.mapIndexed { index, word ->
-                    RecoveryPhraseModule.WordNumbered(word, index + 1)
-                }
-                seed = null
-                passphrase = null
-                languageHint = null
-            }
-
-            else -> {
-                words = listOf()
-                seed = null
-                moneroHeight = null
-                passphrase = null
-                wordsNumbered = listOf()
-                languageHint = null
-            }
-        }
         // Generate initial encrypted QR content
         regenerateEncryptedQrContent()
+    }
+
+    private fun phraseContent(
+        account: Account,
+        recoveryPhraseType: RecoveryPhrasePage.RecoveryPhraseType
+    ): PhraseContent {
+        val type = account.type
+        if (type is SeedAccountType && recoveryPhraseType == RecoveryPhrasePage.RecoveryPhraseType.Monero) {
+            return PhraseContent(
+                words = MoneroWalletSeedConverter.getLegacySeed(type),
+                moneroHeight = restoreSettingsManager.settings(account, BlockchainType.Monero).birthdayHeight
+            )
+        }
+        return when (type) {
+            is AccountType.Mnemonic -> PhraseContent(
+                words = type.words,
+                passphrase = type.passphrase,
+                languageHint = Bip39LanguageDetector.detectSingle(type.words)
+            )
+
+            is AccountType.Slip39 -> PhraseContent(
+                words = type.words,
+                passphrase = type.passphrase,
+                kind = SeedPhraseQrCrypto.KIND_SLIP39
+            )
+
+            is AccountType.MnemonicMonero -> PhraseContent(words = type.words, moneroHeight = type.height)
+            else -> PhraseContent(words = emptyList())
+        }
     }
 
     /**
@@ -107,8 +88,9 @@ class RecoveryPhraseViewModel(
                 val encrypted = seedPhraseQrCrypto.encrypt(
                     words = words,
                     passphrase = passphrase ?: "",
-                    height = moneroHeight,
-                    language = languageHint
+                    height = content.moneroHeight,
+                    language = content.languageHint,
+                    kind = content.kind
                 )
                 encryptedSeedQrContent = encrypted
                 qrGenerationError = false
@@ -122,3 +104,15 @@ class RecoveryPhraseViewModel(
         qrGenerationError = false
     }
 }
+
+/**
+ * [languageHint] is the BIP39 wordlist embedded in the QR; null for Monero/SLIP-39 (separate wordlists)
+ * or when detection is ambiguous — autodetect on the restoring side handles the unhinted case.
+ */
+private class PhraseContent(
+    val words: List<String>,
+    val passphrase: String? = null,
+    val moneroHeight: Long? = null,
+    val languageHint: Language? = null,
+    val kind: String? = null,
+)

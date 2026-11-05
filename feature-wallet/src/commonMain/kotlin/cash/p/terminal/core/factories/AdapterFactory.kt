@@ -63,7 +63,10 @@ import cash.p.terminal.core.managers.BitcoinKitEnvironment
 import cash.p.terminal.core.managers.EvmBlockchainManager
 import cash.p.terminal.core.managers.EvmLabelManager
 import cash.p.terminal.core.managers.EvmSyncSourceManager
+import cash.p.terminal.core.managers.LitecoinKitKey
+import cash.p.terminal.core.managers.LitecoinKitPool
 import cash.p.terminal.core.managers.MoneroKitManager
+import cash.p.terminal.core.managers.RestoreSettings
 import cash.p.terminal.core.managers.RestoreSettingsManager
 import cash.p.terminal.core.managers.SolanaKitManager
 import cash.p.terminal.core.managers.StackingManager
@@ -76,6 +79,7 @@ import cash.p.terminal.data.repository.EvmTransactionRepository
 import cash.p.terminal.network.pirate.domain.repository.MasterNodesRepository
 import cash.p.terminal.premium.domain.usecase.GetBnbAddressUseCase
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.IAdapter
 import cash.p.terminal.wallet.IReceiveAdapter
 import cash.p.terminal.wallet.IWalletManager
@@ -131,6 +135,7 @@ class AdapterFactory(
     private val logger = AppLogger("adapter-factory")
     private val kermit = Logger.withTag("AdapterFactory")
     private val bitcoinKitDatabaseManager by lazy { getKoinInstance<BitcoinKitDatabaseManager>() }
+    private val litecoinKitPool by lazy { getKoinInstance<LitecoinKitPool>() }
     private val beamSessionOwner by lazy { getKoinInstance<BeamSessionOwner>() }
     private val beamMutex = Mutex()
     private var beamAdapter: Pair<Wallet, BeamAdapter>? = null
@@ -158,6 +163,35 @@ class AdapterFactory(
 
     private suspend fun bitcoinKitEnvironment(wallet: Wallet): BitcoinKitEnvironment =
         bitcoinKitDatabaseManager.prepare(wallet.account.id)
+
+    /** The public BIP84 and MWEB adapters of one account resolve to one key and so share one kit. */
+    private suspend fun createLitecoinAdapter(
+        wallet: Wallet,
+        mode: LitecoinAdapter.Mode,
+        restoreSettings: RestoreSettings?,
+    ): LitecoinAdapter {
+        val syncMode = btcBlockchainManager.syncMode(BlockchainType.Litecoin, wallet.account.origin)
+        val environment = bitcoinKitEnvironment(wallet)
+        val key = LitecoinKitKey(
+            accountId = wallet.account.id,
+            syncModeClass = syncMode::class,
+            purpose = mode.purpose,
+            mwebEnabled = mode == LitecoinAdapter.Mode.Mweb || restoreSettings != null,
+        )
+        val kit = litecoinKitPool.acquire(key) {
+            LitecoinAdapter.createKit(wallet, syncMode, mode, environment, dispatcherProvider, restoreSettings)
+        }
+        return LitecoinAdapter(
+            kit = kit,
+            syncMode = syncMode,
+            backgroundManager = backgroundManager,
+            wallet = wallet,
+            mode = mode,
+            kitPool = litecoinKitPool,
+            dispatcherProvider = dispatcherProvider,
+            feeRateProvider = LitecoinFeeRateProvider(feeRateProvider)
+        )
+    }
 
     private fun createZcashAdapter(wallet: Wallet, addressSpecTyped: AddressSpecType?) =
         ZcashAdapter(
@@ -340,23 +374,14 @@ class AdapterFactory(
                     }
 
                     BlockchainType.Litecoin -> {
-                        val syncMode = btcBlockchainManager.syncMode(
-                            BlockchainType.Litecoin,
-                            wallet.account.origin
-                        )
                         val mwebRestoreSettings = restoreSettingsManager.settings(
                             wallet.account,
                             BlockchainType.Litecoin
                         ).takeIf { litecoinMwebActive(wallet, activeLitecoinMwebAccounts) }
-                        LitecoinAdapter(
+                        createLitecoinAdapter(
                             wallet = wallet,
-                            syncMode = syncMode,
-                            backgroundManager = backgroundManager,
-                            derivation = tokenType.derivation,
-                            environment = bitcoinKitEnvironment(wallet),
-                            mwebRestoreSettings = mwebRestoreSettings,
-                            dispatcherProvider = dispatcherProvider,
-                            feeRateProvider = LitecoinFeeRateProvider(feeRateProvider)
+                            mode = LitecoinAdapter.Mode.Public(tokenType.derivation),
+                            restoreSettings = mwebRestoreSettings,
                         )
                     }
 
@@ -393,21 +418,13 @@ class AdapterFactory(
                 if (wallet.token.blockchainType != BlockchainType.Litecoin) {
                     null
                 } else {
-                    val syncMode = btcBlockchainManager.syncMode(
-                        BlockchainType.Litecoin,
-                        wallet.account.origin
-                    )
-                    LitecoinAdapter(
+                    createLitecoinAdapter(
                         wallet = wallet,
-                        syncMode = syncMode,
-                        backgroundManager = backgroundManager,
+                        mode = LitecoinAdapter.Mode.Mweb,
                         restoreSettings = restoreSettingsManager.settings(
                             wallet.account,
                             wallet.token.blockchainType
                         ),
-                        environment = bitcoinKitEnvironment(wallet),
-                        dispatcherProvider = dispatcherProvider,
-                        feeRateProvider = LitecoinFeeRateProvider(feeRateProvider)
                     )
                 }
             }
@@ -567,7 +584,7 @@ class AdapterFactory(
         wallet: Wallet,
         activeLitecoinMwebAccounts: Set<String>?,
     ): Boolean {
-        if (wallet.account.type !is AccountType.Mnemonic) return false
+        if (wallet.account.type !is SeedAccountType) return false
 
         val activeAccountIds = activeLitecoinMwebAccounts ?: walletManager.activeWallets.litecoinMwebAccountIds()
         return wallet.account.id in activeAccountIds

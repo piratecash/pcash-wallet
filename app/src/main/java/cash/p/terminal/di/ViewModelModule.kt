@@ -22,7 +22,6 @@ import cash.p.terminal.modules.settings.advancedsecurity.securereset.SecureReset
 import cash.p.terminal.modules.settings.advancedsecurity.terms.HiddenWalletTermsViewModel
 import cash.p.terminal.modules.settings.displaytransactions.DisplayTransactionsViewModel
 import cash.p.terminal.modules.settings.guides.GuidesViewModel
-import cash.p.terminal.modules.subscription.ActivateSubscriptionViewModel
 import cash.p.terminal.modules.walletconnect.request.WCRequestEvmViewModel
 import cash.p.terminal.modules.settings.main.MainSettingsViewModel
 import cash.p.terminal.modules.settings.privacy.PrivacyViewModel
@@ -51,7 +50,6 @@ val viewModelModule = module {
     viewModel { params -> VersionChangelogViewModel(params.get(), get(), get()) }
     viewModelOf(::DisplayTransactionsViewModel)
     viewModelOf(::GuidesViewModel)
-    viewModelOf(::ActivateSubscriptionViewModel)
     viewModelOf(::WCRequestEvmViewModel)
     viewModelOf(::PrivacyViewModel)
     viewModelOf(::SetDuressPinIntroViewModel)

@@ -1,6 +1,11 @@
 package cash.p.terminal.wallet
 
+import cash.p.terminal.resources.CreateWallet_Error_PassphraseForbiddenSymbols
+import cash.p.terminal.resources.Res
+import cash.p.terminal.resources.shamir_error_passphrase_chars
 import cash.p.terminal.wallet.entities.PasswordError
+import cash.p.terminal.wallet.slip39.Slip39Shamir
+import org.jetbrains.compose.resources.StringResource
 
 enum class PasswordRequirement {
     MIN_LENGTH,
@@ -34,6 +39,13 @@ class PassphraseValidator {
 
     fun containsValidCharacters(text: String?): Boolean {
         return text?.all { allowedCharacters.contains(it, ignoreCase = true) } ?: true
+    }
+
+    /** SLIP-39 allows printable ASCII only; BIP-39 uses [containsValidCharacters]. */
+    fun forbiddenCharactersError(passphrase: String, slip39: Boolean): StringResource? = if (slip39) {
+        Res.string.shamir_error_passphrase_chars.takeUnless { Slip39Shamir.isValidPassphrase(passphrase) }
+    } else {
+        Res.string.CreateWallet_Error_PassphraseForbiddenSymbols.takeUnless { containsValidCharacters(passphrase) }
     }
 
     fun unmetRequirements(password: String): List<PasswordRequirement> =

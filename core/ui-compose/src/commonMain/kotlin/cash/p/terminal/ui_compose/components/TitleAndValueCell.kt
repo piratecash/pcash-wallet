@@ -108,6 +108,12 @@ fun TitleAndValueColoredCell(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+
+            ColorName.Warning -> subhead1_warning(
+                text = value,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }

@@ -9,6 +9,7 @@ import cash.p.terminal.wallet.IHardwarePublicKeyStorage
 import org.koin.java.KoinJavaComponent.get
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.entities.HardwarePublicKeyType
 import cash.p.terminal.wallet.entities.TokenType
@@ -370,9 +371,9 @@ fun Account.toTonWallet(
     hardwarePublicKeyStorage: IHardwarePublicKeyStorage,
     blockchainType: BlockchainType?,
 ): TonWallet = when (this.type) {
-    is AccountType.Mnemonic -> {
+    is SeedAccountType -> {
         val hdWallet = HDWallet(
-            (this.type as AccountType.Mnemonic).seed,
+            (this.type as SeedAccountType).seed,
             607,
             HDWallet.Purpose.BIP44,
             Curve.Ed25519

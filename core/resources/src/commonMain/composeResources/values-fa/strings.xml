@@ -747,6 +747,10 @@
     <string name="Transactions_Unknown">معامله ناشناخته</string>
     <string name="Transactions_TonTransaction">Ton Transaction</string>
     <string name="Transactions_Unknown_Description">Transaction can not be parsed</string>
+    <string name="transactions_account_delegation">تفویض اختیار حساب</string>
+    <string name="transactions_account_delegated_to">به قرارداد %1$s</string>
+    <string name="transactions_account_delegation_revoke">لغو تفویض اختیار</string>
+    <string name="transactions_account_delegation_warning_short">حساب توسط یک قرارداد کنترل می‌شود</string>
     <string name="Transactions_Multiple">چندگانه</string>
     <string name="Transactions_Filter">Filter</string>
     <string name="Transactions_Filter_HideSuspiciousTx">پنهان کردن تراکنش‌های مشکوک</string>
@@ -770,6 +774,9 @@
     <string name="TransactionInfo_LockedUntil">قفل شده تا %s</string>
     <string name="TransactionInfo_UnlockedAt">باز شده در %s</string>
     <string name="TransactionInfo_RecipientHash">گیرنده</string>
+    <string name="transaction_info_initiator">آغازگر</string>
+    <string name="transaction_info_delegation_contract">قرارداد تفویض اختیار</string>
+    <string name="transaction_info_delegation_warning">در حال حاضر این قرارداد حساب شما را کنترل می‌کند. این قرارداد می‌تواند وجوه حساب را تصرف کند. اگر این تفویض اختیار را تایید نکرده‌اید، وجوه خود را به کیف پول دیگری منتقل کنید.</string>
     <string name="TransactionInfo_HistoricalRate">نرخ تاريخي</string>
     <string name="TransactionInfo_AnnouncedAmount">مبلغ اعلام شده</string>
     <string name="transaction_info_executed_amount">مبلغ اجرا شده</string>
@@ -929,16 +936,6 @@
     <string name="telegram_link">https://t.me/PirateCash_ENG</string>
     <string name="Settings_JoinUs">ما را دنبال کنید</string>
     <string name="Settings_JoinUs_Description">ما را در شبکه‌های اجتماعی دنبال کنید تا اولین نفری باشید که از آخرین اخبار، به‌روزرسانی‌ها و ویژگی‌های جدید پروژه باخبر می‌شوید!</string>
-    <string name="Settings_PersonalSupport">Personal Support</string>
-    <string name="Settings_PersonalSupport_EnterTelegramAccountDescription">Enter your Telegram account name to start a personal support chat with our team. We\u0027ll get back to you and start working on your problem as soon as we see it.</string>
-    <string name="Settings_PersonalSupport_YouAlreadyRequestedSupportDescription">You\u0027ve already requested a private chat, find it on Telegram</string>
-    <string name="Settings_PersonalSupport_Account">Account</string>
-    <string name="Settings_PersonalSupport_UsernameHint">\u0040username</string>
-    <string name="Settings_PersonalSupport_Requested">Requested</string>
-    <string name="Settings_PersonalSupport_Request">درخواست</string>
-    <string name="Settings_PersonalSupport_NewRequest">New Request</string>
-    <string name="Settings_PersonalSupport_Requestfailed">Request failed</string>
-    <string name="Settings_PersonalSupport_OpenTelegram">Open Telegram</string>
     <string name="Settings_Donate_Info">Together, with your support, we can make this app even better!</string>
     <string name="Settings_Donate">Donate</string>
     <string name="settings_mini_app">مینی اپ</string>
@@ -1285,6 +1282,8 @@
     <string name="ManageAccount_BirthdayHeight">%s قد تولد</string>
     <string name="ManageAccount_NWords">%s کلمه</string>
     <string name="ManageAccount_NWordsWithPassphrase">%s کلمه با عبارت عبور</string>
+    <string name="ManageAccount_NWordsShamir">%1$d کلمه (Shamir)</string>
+    <string name="ManageAccount_NWordsShamirWithPassphrase">%1$d کلمه (Shamir) با عبارت عبور</string>
     <string name="ManageAccount_SwitchWallet_Title">کیف پول را تغییر دهید</string>
     <string name="ManageAccount_Wallets">کیف پول ها</string>
     <string name="ManageAccount_WatchAddresses">مشاهده آدرس</string>
@@ -1339,6 +1338,8 @@
     <!-- Passphrase Terms -->
     <string name="passphrase_terms_title">شرایط عبارت عبور</string>
     <string name="passphrase_terms_warning">قبل از فعال‌سازی عبارت عبور (BIP-39 Passphrase)، لطفاً تأیید کنید که موارد زیر را درک می‌کنید:</string>
+    <string name="passphrase_terms_warning_shamir">قبل از فعال‌سازی عبارت عبور، لطفاً تأیید کنید که موارد زیر را درک می‌کنید:</string>
+    <string name="passphrase_terms_restore_shamir">من درک می‌کنم که &lt;b>چنین کیف پولی فقط در برنامه‌هایی که Shamir Backup (SLIP-39) با عبارت عبور را پشتیبانی می‌کنند قابل بازیابی است&lt;/b>، و بیشتر برنامه‌ها &lt;b>این ویژگی را پشتیبانی نمی‌کنند&lt;/b>.</string>
     <string name="passphrase_terms_term1">من درک می‌کنم که برای دسترسی به وجوه، باید عبارت عبور را دقیقاً همان‌طور که ایجاد شده وارد کنم، با همان کاراکترها، فاصله‌ها و بزرگ/کوچکی حروف.</string>
     <string name="passphrase_terms_term2">من درک می‌کنم که اگر عبارت عبور گم شود یا اشتباه وارد شود، بدون مقدار دقیق آن نمی‌توانم کیف پول خود را بازیابی کنم.</string>
     <string name="passphrase_terms_term3">من درک می‌کنم که هنگام بازیابی کیف پول با عبارت عبور نادرست، برنامه خطایی نشان نمی‌دهد، بلکه یک کیف پول جدید (خالی) ایجاد می‌کند.</string>
@@ -1657,19 +1658,6 @@
     <string name="Detectors_TokenDetectors">Token Detectors</string>
     <string name="Detectors_GeneralDetectors">General Detectors</string>
     <string name="Detectors_IssuesCount">Issues %d</string>
-    <string name="ActivateSubscription_Title">Activate</string>
-    <string name="ActivateSubscription_Wallet">Wallet</string>
-    <string name="ActivateSubscription_Address">آدرس</string>
-    <string name="ActivateSubscription_NoSubscriptionError">Your wallet address does not have a subscription to premium features, you need to purchase it to activate the subscription.</string>
-    <string name="SubscriptionInfo_Title">Premium Features</string>
-    <string name="SubscriptionInfo_Analytics_Title">Cryptocurrency Analytics</string>
-    <string name="SubscriptionInfo_Analytics_Info">Access comprehensive market and on-chain stats about each token.</string>
-    <string name="SubscriptionInfo_Indicators_Title">Price Trend Indicators</string>
-    <string name="SubscriptionInfo_Indicators_Info">Discover uptrending tokens based on technical analysis indicators.</string>
-    <string name="SubscriptionInfo_PersonalSupport_Title">Personal Support</string>
-    <string name="SubscriptionInfo_PersonalSupport_Info">Contact our team directly over Telegram for personal assistance.</string>
-    <string name="SubscriptionInfo_GetPremium">Get Premium</string>
-    <string name="SubscriptionInfo_HavePremium">I already have Premium</string>
     <string name="premium_title">پریمیوم</string>
     <string name="about_premium">درباره پریمیوم</string>
     <string name="premium_settings">تنظیمات پریمیوم</string>
@@ -2323,6 +2311,98 @@
     <string name="desktop_change_password_corrupted">فایل کلید آسیب دیده است: پس از قفل شدن برنامه نمی‌توانید وارد شوید. از هر عبارت بازیابی یک نسخه پشتیبان ذخیره کنید.</string>
     <string name="desktop_change_password_success">رمز عبور تغییر یافت</string>
     <string name="desktop_security_lock_now">اکنون قفل کن</string>
+
+    <!-- Shamir backup restore -->
+    <string name="import_wallet_shamir">پشتیبان Shamir</string>
+    <string name="import_wallet_shamir_description">بازیابی کیف پول از چند بخش Shamir (SLIP-39)</string>
+    <string name="shamir_backup_title">Shamir Backup</string>
+    <string name="shamir_restore_title">بازیابی</string>
+    <string name="shamir_restore_enter_first">کلمات بخش اول را وارد کنید</string>
+    <string name="shamir_restore_part_input">بخش %1$d — کلمات را وارد کنید</string>
+    <string name="shamir_restore_part">بخش %1$d</string>
+    <string name="shamir_restore_scheme_auto">طرح بازیابی پس از وارد کردن بخش اول به‌طور خودکار تشخیص داده می‌شود.</string>
+    <string name="shamir_restore_accepted">%1$d از %2$d پذیرفته شد</string>
+    <string name="shamir_restore_circle_accepted">پذیرفته شد</string>
+    <string name="shamir_restore_circle_required">لازم است</string>
+    <string name="shamir_restore_groups">گروه‌ها: %1$d از %2$d</string>
+    <string name="shamir_restore_group_progress">گروه %1$d: %2$d از %3$d</string>
+    <string name="shamir_restore_enough">بخش‌های کافی برای بازیابی وجود دارد.</string>
+    <string name="shamir_error_invalid_words">برخی کلمات در فهرست کلمات SLIP-39 نیستند</string>
+    <string name="shamir_error_word_count">هر بخش باید ۲۰ یا ۳۳ کلمه داشته باشد</string>
+    <string name="shamir_error_invalid_share">بخش نامعتبر است. کلمات و ترتیب آن‌ها را بررسی کنید</string>
+    <string name="shamir_error_other_set">این بخش از مجموعهٔ دیگری است</string>
+    <string name="shamir_error_duplicate">این بخش قبلاً وارد شده است</string>
+    <string name="shamir_error_mixed_sets">بخش‌ها از یک مجموعه نیستند — آن‌ها را دوباره وارد کنید</string>
+    <string name="shamir_error_passphrase_chars">فقط حروف لاتین، ارقام و نمادهای استاندارد مجاز است</string>
+    <plurals name="shamir_restore_required">
+        <item quantity="one">%1$d بخش لازم است</item>
+        <item quantity="other">%1$d بخش لازم است</item>
+    </plurals>
+
+    <!-- Word check -->
+    <string name="word_check_title">تأیید کنید که درست یادداشت کرده‌اید</string>
+    <string name="word_check_select_word">کلمه را انتخاب کنید</string>
+    <string name="word_check_position">شماره %1$d</string>
+    <plurals name="word_check_correct_remaining">
+        <item quantity="one">درست است! %1$d کلمه دیگر مانده</item>
+        <item quantity="other">درست است! %1$d کلمه دیگر مانده</item>
+    </plurals>
+
+    <!-- Shamir backup creation -->
+    <string name="shamir_intro_title">امن‌تر از یک عبارت بازیابی واحد</string>
+    <string name="shamir_intro_description">کلید به چند بخش تقسیم می‌شود. برای بازیابی فقط به برخی از آن‌ها نیاز است.</string>
+    <string name="shamir_intro_holder_you">نزد شما</string>
+    <string name="shamir_intro_holder_home">در خانه</string>
+    <string name="shamir_intro_holder_friend">نزد یک دوست</string>
+    <string name="shamir_intro_any">هر %1$s بخش، کیف پول را بازیابی می‌کنند</string>
+    <string name="shamir_intro_stolen">یک بخش دزدیده‌شده به‌تنهایی بی‌فایده است</string>
+    <string name="shamir_intro_lost">از دست دادن یک بخش دسترسی را از بین نمی‌برد</string>
+    <string name="shamir_intro_people">بخش‌ها را می‌توان نزد افراد مختلف نگه داشت</string>
+    <string name="shamir_create">ایجاد Shamir Backup</string>
+    <string name="shamir_step">مرحله %1$d از %2$d · %3$s</string>
+    <string name="shamir_step_scheme">یک طرح انتخاب کنید</string>
+    <string name="shamir_step_warnings">با دقت بخوانید</string>
+    <string name="shamir_step_shares">همه بخش‌ها را یادداشت کنید</string>
+    <string name="shamir_scheme_fraction">%1$d از %2$d</string>
+    <string name="shamir_scheme_total_header">چند بخش ساخته شود</string>
+    <string name="shamir_scheme_total">کل بخش‌ها</string>
+    <string name="shamir_scheme_threshold_header">حداقل بخش برای دسترسی</string>
+    <string name="shamir_scheme_threshold">لازم برای بازیابی</string>
+    <string name="shamir_scheme_title">طرح %1$s</string>
+    <plurals name="shamir_scheme_any_parts">
+        <item quantity="one">هر %1$d بخش کیف پول را بازیابی می‌کند</item>
+        <item quantity="other">هر %1$d بخش کیف پول را بازیابی می‌کند</item>
+    </plurals>
+    <string name="shamir_scheme_can_lose">قابل از دست دادن: %1$d</string>
+    <string name="shamir_scheme_none_lose">هیچ بخشی نباید از دست برود</string>
+    <string name="shamir_scheme_presets">طرح‌های رایج:</string>
+    <string name="shamir_warning_title">پیش از یادداشت</string>
+    <plurals name="shamir_warning_description">
+        <item quantity="one">اکنون %1$d بخش نمایش داده می‌شود. هر کدام را جداگانه یادداشت کنید.</item>
+        <item quantity="other">اکنون %1$d بخش نمایش داده می‌شود. هر کدام را جداگانه یادداشت کنید.</item>
+    </plurals>
+    <string name="shamir_warning_one_place">همه بخش‌ها را در یک جا نگه ندارید</string>
+    <string name="shamir_warning_no_photos">از بخش‌ها عکس نگیرید</string>
+    <string name="shamir_warning_separate_paper">هر بخش را روی کاغذ جداگانه بنویسید</string>
+    <string name="shamir_warning_different_places">در مکان‌های فیزیکی متفاوت نگه دارید</string>
+    <string name="shamir_warning_old_sets">اگر مجموعه جدیدی بسازید، بخش‌های قبلی همچنان کار می‌کنند</string>
+    <string name="shamir_warning_passphrase">بخش‌ها رمز عبور (passphrase) این کیف پول را ندارند. بدون آن کیف پول بازیابی نمی‌شود — آن را جداگانه نگه دارید.</string>
+    <string name="shamir_warning_not_shown_again">بخش‌ها دوباره نمایش داده نمی‌شوند. مطمئن شوید آماده یادداشت آن‌ها هستید.</string>
+    <string name="shamir_show_shares">نمایش بخش‌ها</string>
+    <plurals name="shamir_shares_banner">
+        <item quantity="one">طرح %1$s — هر %2$d بخش کیف پول را بازیابی می‌کند</item>
+        <item quantity="other">طرح %1$s — هر %2$d بخش کیف پول را بازیابی می‌کند</item>
+    </plurals>
+    <string name="shamir_share_title">بخش %1$d از %2$d</string>
+    <string name="shamir_share_written">این بخش را یادداشت کردم</string>
+    <string name="shamir_share_confirm">تأیید بخش %1$d</string>
+    <string name="shamir_share_saved">ذخیره شد</string>
+    <string name="shamir_write_all">ابتدا همه بخش‌ها را یادداشت کنید</string>
+    <string name="shamir_done_banner">بخش‌ها را در جاهای مختلف نگه دارید.</string>
+    <string name="shamir_check_title">بررسی بخش %1$d</string>
+    <string name="shamir_check_description">کلمات بخش %1$d را بر اساس شماره‌هایی که نشان می‌دهیم انتخاب کنید</string>
+    <string name="shamir_info_description">Shamir Backup (SLIP-39) کلید کیف پول را به چند بخش ۲۰ کلمه‌ای تقسیم می‌کند. برای بازیابی به تعداد تعیین‌شده‌ای از بخش‌ها نیاز دارید، مثلاً هر ۲ بخش از ۳ بخش. تعداد کمتر بخش‌ها هیچ اطلاعاتی درباره کلید نمی‌دهد. این بخش‌ها در کیف پول‌هایی که از SLIP-39 پشتیبانی می‌کنند، مانند Trezor، کار می‌کنند. اگر کیف پول عبارت عبور دارد، برای بازیابی به آن هم نیاز خواهید داشت.</string>
+    <string name="evm_node_request_failed">گره شبکه نتوانست درخواست را پردازش کند. دوباره تلاش کنید یا در تنظیمات بلاک‌چین منبع دیگری انتخاب کنید.\n\nپاسخ گره: %1$s</string>
     <string name="desktop_transfer_password">رمز عبور پیش از ارسال</string>
     <string name="desktop_transfer_password_description">پیش از هر ارسال، رمز عبور برنامه درخواست می‌شود تا اگر کسی هنگام باز بودن قفل برنامه به رایانهٔ شما دسترسی پیدا کند، دارایی‌هایتان محافظت شوند.</string>
 </resources>
