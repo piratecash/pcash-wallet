@@ -20,6 +20,7 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.ActiveAccountState
+import cash.p.terminal.wallet.MnemonicSeed
 import cash.p.terminal.wallet.managers.UserManager
 import cash.p.terminal.wallet.useCases.MoneroWalletFiles
 import io.mockk.coEvery
@@ -128,7 +129,8 @@ class DesktopWalletStorageTest {
         assertIs<TrialPremiumResult.DemoActive>(graph.checkPremiumUseCase.checkTrialPremiumStatus())
         graph.closeVault()
         val raw = graph.dataDirectory.rawBytes()
-        assertFalse(raw.contains(SeedToEvmAddressUseCase()(TEST_WORDS)), "the BNB address is stored in plaintext")
+        val bnbAddress = SeedToEvmAddressUseCase()(MnemonicSeed.derive(TEST_WORDS))
+        assertFalse(raw.contains(bnbAddress), "the BNB address is stored in plaintext")
         assertFalse(raw.contains(TEST_WORDS.first()), "the mnemonic is stored in plaintext")
 
         graph.vault.unlock(password())

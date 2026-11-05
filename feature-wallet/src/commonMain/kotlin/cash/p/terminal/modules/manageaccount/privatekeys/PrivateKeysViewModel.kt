@@ -13,6 +13,7 @@ import cash.p.terminal.core.toRawHexString
 import cash.p.terminal.modules.manageaccount.showextendedkey.ShowExtendedKeyModule
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.ethereumkit.core.signer.Signer
 import io.horizontalsystems.hdwalletkit.HDExtendedKey
@@ -32,7 +33,7 @@ class PrivateKeysViewModel(
     init {
 
         val ethereumPrivateKey = when (val accountType = account.type) {
-            is AccountType.Mnemonic -> {
+            is SeedAccountType -> {
                 val chain = evmBlockchainManager.getChain(BlockchainType.Ethereum)
                 Signer.privateKey(accountType.seed, chain).toPrivateKeyBytes().toRawHexString()
             }
@@ -41,11 +42,11 @@ class PrivateKeysViewModel(
             else -> null
         }
 
-        val mnemonicType = account.type as? AccountType.Mnemonic
+        val seedAccountType = account.type as? SeedAccountType
         val hdExtendedKey = (account.type as? AccountType.HdExtendedKey)?.hdExtendedKey
 
-        val bip32RootKey = if (mnemonicType != null) {
-            HDExtendedKey(mnemonicType.seed, HDWallet.Purpose.BIP44)
+        val bip32RootKey = if (seedAccountType != null) {
+            HDExtendedKey(seedAccountType.seed, HDWallet.Purpose.BIP44)
         } else if (hdExtendedKey?.derivedType == HDExtendedKey.DerivedType.Master) {
             hdExtendedKey
         } else {

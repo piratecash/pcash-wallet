@@ -2,6 +2,8 @@ package cash.p.terminal.wallet
 
 import io.horizontalsystems.core.common.CommonParcelable
 import cash.p.terminal.resources.ManageAccount_NWords
+import cash.p.terminal.resources.ManageAccount_NWordsShamir
+import cash.p.terminal.resources.ManageAccount_NWordsShamirWithPassphrase
 import cash.p.terminal.resources.ManageAccount_NWordsWithPassphrase
 import cash.p.terminal.resources.Res
 import io.horizontalsystems.core.Translator
@@ -22,6 +24,7 @@ import io.horizontalsystems.core.common.CommonIgnoredOnParcel
 import io.horizontalsystems.core.common.CommonParcelize
 import java.math.BigInteger
 import java.text.Normalizer
+import org.jetbrains.compose.resources.StringResource
 
 @CommonParcelize
 data class Account(
@@ -97,10 +100,10 @@ data class Account(
 }
 
 fun Account.canBeDuplicated(): Boolean =
-    type is AccountType.Mnemonic || type is AccountType.MnemonicMonero
+    type is SeedAccountType || type is AccountType.MnemonicMonero
 
 fun Account.supportsTonConnect(): Boolean =
-    type is AccountType.Mnemonic || type is AccountType.HardwareCard
+    type is SeedAccountType || type is AccountType.HardwareCard
 
 fun Account.isBackedUpOrNotRequired(): Boolean = hasAnyBackup || !supportsBackup
 
@@ -114,12 +117,17 @@ fun Account.eligibleForPremium(): Boolean =
 fun Account.premiumEligibility(): PremiumAccountEligibility {
     return when {
         isWatchAccount -> PremiumAccountEligibility.WATCH_ACCOUNT
-        type is AccountType.Mnemonic && !hasAnyBackup -> PremiumAccountEligibility.NO_BACKUP
-        type is AccountType.Mnemonic && hasAnyBackup -> PremiumAccountEligibility.ELIGIBLE
+        type is SeedAccountType && !hasAnyBackup -> PremiumAccountEligibility.NO_BACKUP
+        type is SeedAccountType && hasAnyBackup -> PremiumAccountEligibility.ELIGIBLE
         type is AccountType.HardwareCard -> PremiumAccountEligibility.ELIGIBLE
         type is AccountType.TrezorDevice -> PremiumAccountEligibility.ELIGIBLE
         else -> PremiumAccountEligibility.WRONG_TYPE
     }
+}
+
+/** An account backed by a BIP-32 seed. */
+sealed interface SeedAccountType {
+    val seed: ByteArray
 }
 
 @CommonParcelize
@@ -168,9 +176,9 @@ sealed class AccountType : CommonParcelable {
     }
 
     @CommonParcelize
-    data class Mnemonic(val words: List<String>, val passphrase: String) : AccountType() {
+    data class Mnemonic(val words: List<String>, val passphrase: String) : AccountType(), SeedAccountType {
         @CommonIgnoredOnParcel
-        val seed by lazy { MnemonicSeed.derive(words, passphrase) }
+        override val seed by lazy { MnemonicSeed.derive(words, passphrase) }
 
         @CommonIgnoredOnParcel
         val kind by lazy { MnemonicKind.getKind(words) }
@@ -188,6 +196,30 @@ sealed class AccountType : CommonParcelable {
         override fun toString(): String {
             return "Mnemonic(words=(${words.toMasked()}), passphrase='${passphrase.toMasked()}')"
         }
+    }
+
+    /** [words] is the canonical 1-of-1 SLIP-39 share; [seed] is its decrypted master secret. */
+    @CommonParcelize
+    data class Slip39(
+        val words: List<String>,
+        val passphrase: String,
+        override val seed: ByteArray,
+    ) : AccountType(), SeedAccountType {
+        override fun equals(other: Any?): Boolean {
+            return other is Slip39 &&
+                words == other.words &&
+                passphrase == other.passphrase &&
+                seed.contentEquals(other.seed)
+        }
+
+        override fun hashCode(): Int {
+            var result = words.hashCode()
+            result = 31 * result + passphrase.hashCode()
+            result = 31 * result + seed.contentHashCode()
+            return result
+        }
+
+        override fun toString(): String = "Slip39(wordCount=${words.size})"
     }
 
     @CommonParcelize
@@ -340,21 +372,19 @@ sealed class AccountType : CommonParcelable {
 
     val description: String
         get() = when (this) {
-            is Mnemonic -> {
-                val count = words.size
+            is Mnemonic -> wordsDescription(
+                count = words.size,
+                passphrase = passphrase,
+                plain = Res.string.ManageAccount_NWords,
+                withPassphrase = Res.string.ManageAccount_NWordsWithPassphrase
+            )
 
-                if (passphrase.isNotBlank()) {
-                    Translator.getString(
-                        Res.string.ManageAccount_NWordsWithPassphrase,
-                        count
-                    )
-                } else {
-                    Translator.getString(
-                        Res.string.ManageAccount_NWords,
-                        count
-                    )
-                }
-            }
+            is Slip39 -> wordsDescription(
+                count = words.size,
+                passphrase = passphrase,
+                plain = Res.string.ManageAccount_NWordsShamir,
+                withPassphrase = Res.string.ManageAccount_NWordsShamirWithPassphrase
+            )
 
             is BitcoinAddress -> "BTC Address"
             is EvmAddress -> "EVM Address"
@@ -391,7 +421,7 @@ sealed class AccountType : CommonParcelable {
 
     val supportedDerivations: List<Derivation>
         get() = when (this) {
-            is Mnemonic -> {
+            is SeedAccountType -> {
                 listOf(Derivation.bip44, Derivation.bip49, Derivation.bip84, Derivation.bip86)
             }
 
@@ -420,7 +450,7 @@ sealed class AccountType : CommonParcelable {
 
     val canAddTokens: Boolean
         get() = when (this) {
-            is Mnemonic, is EvmPrivateKey, is TrezorDevice, is HardwareCard -> true
+            is SeedAccountType, is EvmPrivateKey, is TrezorDevice, is HardwareCard -> true
             else -> false
         }
 
@@ -428,7 +458,7 @@ sealed class AccountType : CommonParcelable {
         get() = when (this) {
             is HardwareCard,
             is TrezorDevice,
-            is Mnemonic,
+            is SeedAccountType,
             is EvmPrivateKey -> true
 
             else -> false
@@ -452,8 +482,15 @@ sealed class AccountType : CommonParcelable {
             else -> false
         }
 
+    private fun wordsDescription(
+        count: Int,
+        passphrase: String,
+        plain: StringResource,
+        withPassphrase: StringResource
+    ): String = Translator.getString(if (passphrase.isNotBlank()) withPassphrase else plain, count)
+
     fun evmAddress(chain: Chain) = when (this) {
-        is Mnemonic -> Signer.address(seed, chain)
+        is SeedAccountType -> Signer.address(seed, chain)
         is EvmPrivateKey -> Signer.address(key)
         else -> null
     }

@@ -20,6 +20,8 @@ import cash.p.terminal.modules.restoreaccount.restoreblockchains.ManageWalletsSc
 import cash.p.terminal.modules.restoreaccount.restoremenu.RestoreMenuViewModel
 import cash.p.terminal.modules.restoreaccount.restoremnemonic.RestorePhrase
 import cash.p.terminal.modules.restoreaccount.restoremnemonicnonstandard.RestorePhraseNonStandard
+import cash.p.terminal.modules.restoreaccount.restoreshamir.RestoreShamirPage
+import cash.p.terminal.modules.restoreaccount.restoreshamir.ShamirPrefill
 import cash.p.terminal.navigation.HSNavigation
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.navigation.navigateUpFrom
@@ -28,6 +30,7 @@ import cash.p.terminal.navigation.rememberResultLauncher
 import cash.p.terminal.navigation.slideFromRight
 import cash.p.terminal.navigation.viewModelStoreOwnerForPage
 import io.horizontalsystems.core.Translator.getString
+import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -191,7 +194,11 @@ private fun DuplicateWalletContent(navigation: HSNavigation, input: ManageAccoun
         onChangePassphraseConfirmation = viewModel::onChangePassphraseConfirmation,
         onCreate = viewModel::createAccount,
         onBackClick = navigation::navigateUpSafely,
-        onOpenTerms = { passphraseTermsLauncher.slideFromRight(PassphraseTermsPage(screenshotEnabled = false)) },
+        onOpenTerms = {
+            passphraseTermsLauncher.slideFromRight(
+                PassphraseTermsPage(screenshotEnabled = false, isShamir = accountToCopy.type is AccountType.Slip39)
+            )
+        },
         onFinish = { navigation.finishRestoreAccount(input) }
     )
 
@@ -206,6 +213,14 @@ private fun ManageAccountsModule.Input?.popOffTargetInclusive(): Boolean = this?
 private fun HSNavigation.openRestoreSelectCoins(input: ManageAccountsModule.Input?) {
     slideFromRight(
         RestoreSelectCoinsPage(RestoreAccountPage::class, input.popOffTarget(), input.popOffTargetInclusive())
+    )
+}
+
+/** A Shamir share scanned inside this flow finishes where the flow's own restore would. */
+internal fun HSNavigation.openShamirRestore(prefill: ShamirPrefill) {
+    val input = backStack.filterIsInstance<RestoreAccountPage>().lastOrNull()?.input
+    slideFromRight(
+        RestoreShamirPage(RestoreShamirPage.Input(input.popOffTarget(), input.popOffTargetInclusive(), prefill))
     )
 }
 

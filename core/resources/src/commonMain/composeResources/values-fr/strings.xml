@@ -1286,6 +1286,8 @@
     <string name="ManageAccount_BirthdayHeight">Hauteur de l\u0027anniversaire %s</string>
     <string name="ManageAccount_NWords">%s mots</string>
     <string name="ManageAccount_NWordsWithPassphrase">%s mots avec phrase d\u0027authentification</string>
+    <string name="ManageAccount_NWordsShamir">%1$d mots (Shamir)</string>
+    <string name="ManageAccount_NWordsShamirWithPassphrase">%1$d mots (Shamir) avec phrase d\u0027authentification</string>
     <string name="ManageAccount_SwitchWallet_Title">Changer de portefeuille</string>
     <string name="ManageAccount_Wallets">Portefeuilles</string>
     <string name="ManageAccount_WatchAddresses">Adresse à suivre</string>
@@ -1340,6 +1342,8 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <!-- Passphrase Terms -->
     <string name="passphrase_terms_title">Conditions de la Phrase Secrète</string>
     <string name="passphrase_terms_warning">Avant d\u0027activer la phrase secrète (BIP-39 Passphrase), veuillez confirmer que vous comprenez :</string>
+    <string name="passphrase_terms_warning_shamir">Avant d\u0027activer la phrase secrète, veuillez confirmer que vous comprenez :</string>
+    <string name="passphrase_terms_restore_shamir">Je comprends que &lt;b>un tel portefeuille ne peut être restauré que dans des applications prenant en charge Shamir Backup (SLIP-39) avec phrase secrète&lt;/b>, et la plupart des applications &lt;b>ne prennent pas en charge cette fonctionnalité&lt;/b>.</string>
     <string name="passphrase_terms_term1">Je comprends que pour accéder aux fonds, je dois entrer la phrase secrète exactement comme elle a été créée, avec les mêmes caractères, espaces et casse.</string>
     <string name="passphrase_terms_term2">Je comprends que si la phrase secrète est perdue ou entrée incorrectement, je ne pourrai pas récupérer mon portefeuille sans sa valeur exacte.</string>
     <string name="passphrase_terms_term3">Je comprends que lors de la restauration d\u0027un portefeuille avec une phrase secrète incorrecte, l\u0027application n\u0027affichera pas d\u0027erreur, mais créera un nouveau portefeuille (vide).</string>
@@ -2325,6 +2329,102 @@ La aplicación permite crear una copia de seguridad con una contraseña sencilla
     <string name="desktop_change_password_corrupted">Le fichier de clé est endommagé : une fois l\u0027application verrouillée, vous ne pourrez plus vous connecter. Enregistrez une sauvegarde de chaque phrase de récupération.</string>
     <string name="desktop_change_password_success">Mot de passe modifié</string>
     <string name="desktop_security_lock_now">Verrouiller maintenant</string>
+
+    <!-- Shamir backup restore -->
+    <string name="import_wallet_shamir">Sauvegarde Shamir</string>
+    <string name="import_wallet_shamir_description">Restaurer un portefeuille à partir de plusieurs parts Shamir (SLIP-39)</string>
+    <string name="shamir_backup_title">Shamir Backup</string>
+    <string name="shamir_restore_title">Restauration</string>
+    <string name="shamir_restore_enter_first">Saisissez les mots de la première part</string>
+    <string name="shamir_restore_part_input">Part %1$d — saisissez les mots</string>
+    <string name="shamir_restore_part">Part %1$d</string>
+    <string name="shamir_restore_scheme_auto">Le schéma de restauration sera détecté automatiquement après la saisie de la première part.</string>
+    <string name="shamir_restore_accepted">%1$d acceptée(s) sur %2$d</string>
+    <string name="shamir_restore_circle_accepted">acceptée</string>
+    <string name="shamir_restore_circle_required">requise</string>
+    <string name="shamir_restore_groups">Groupes : %1$d sur %2$d</string>
+    <string name="shamir_restore_group_progress">Groupe %1$d : %2$d sur %3$d</string>
+    <string name="shamir_restore_enough">Parts suffisantes pour la restauration.</string>
+    <string name="shamir_error_invalid_words">Certains mots ne figurent pas dans la liste SLIP-39</string>
+    <string name="shamir_error_word_count">Une part doit contenir 20 ou 33 mots</string>
+    <string name="shamir_error_invalid_share">Part invalide. Vérifiez les mots et leur ordre</string>
+    <string name="shamir_error_other_set">Cette part provient d’un autre ensemble</string>
+    <string name="shamir_error_duplicate">Cette part a déjà été saisie</string>
+    <string name="shamir_error_mixed_sets">Les parts ne proviennent pas du même ensemble — saisissez-les à nouveau</string>
+    <string name="shamir_error_passphrase_chars">Seuls les lettres latines, les chiffres et les symboles standard sont autorisés</string>
+    <plurals name="shamir_restore_required">
+        <item quantity="one">%1$d part requise</item>
+        <item quantity="many">%1$d parts requises</item>
+        <item quantity="other">%1$d parts requises</item>
+    </plurals>
+
+    <!-- Word check -->
+    <string name="word_check_title">Confirmez que vous l\u0027avez noté correctement</string>
+    <string name="word_check_select_word">Sélectionnez le mot</string>
+    <string name="word_check_position">n° %1$d</string>
+    <plurals name="word_check_correct_remaining">
+        <item quantity="one">Correct ! Encore %1$d mot</item>
+        <item quantity="many">Correct ! Encore %1$d mots</item>
+        <item quantity="other">Correct ! Encore %1$d mots</item>
+    </plurals>
+
+    <!-- Shamir backup creation -->
+    <string name="shamir_intro_title">Plus sûr qu’une seule phrase de récupération</string>
+    <string name="shamir_intro_description">La clé est divisée en plusieurs parts. Seules certaines d’entre elles sont nécessaires pour la restaurer.</string>
+    <string name="shamir_intro_holder_you">chez vous</string>
+    <string name="shamir_intro_holder_home">à la maison</string>
+    <string name="shamir_intro_holder_friend">chez un ami</string>
+    <string name="shamir_intro_any">%1$s au choix restaurent le portefeuille</string>
+    <string name="shamir_intro_stolen">Une part volée seule est inutile</string>
+    <string name="shamir_intro_lost">Perdre une part ne vous prive pas de l’accès</string>
+    <string name="shamir_intro_people">Les parts peuvent être confiées à différentes personnes</string>
+    <string name="shamir_create">Créer un Shamir Backup</string>
+    <string name="shamir_step">Étape %1$d sur %2$d · %3$s</string>
+    <string name="shamir_step_scheme">Choisissez un schéma</string>
+    <string name="shamir_step_warnings">À lire attentivement</string>
+    <string name="shamir_step_shares">Notez toutes les parts</string>
+    <string name="shamir_scheme_fraction">%1$d sur %2$d</string>
+    <string name="shamir_scheme_total_header">Combien de parts créer</string>
+    <string name="shamir_scheme_total">Nombre total de parts</string>
+    <string name="shamir_scheme_threshold_header">Minimum de parts pour l’accès</string>
+    <string name="shamir_scheme_threshold">Nécessaires à la restauration</string>
+    <string name="shamir_scheme_title">Schéma %1$s</string>
+    <plurals name="shamir_scheme_any_parts">
+        <item quantity="one">%1$d part au choix restaure le portefeuille</item>
+        <item quantity="many">%1$d parts au choix restaurent le portefeuille</item>
+        <item quantity="other">%1$d parts au choix restaurent le portefeuille</item>
+    </plurals>
+    <string name="shamir_scheme_can_lose">Perte tolérée : %1$d</string>
+    <string name="shamir_scheme_none_lose">Aucune ne peut être perdue</string>
+    <string name="shamir_scheme_presets">Schémas populaires :</string>
+    <string name="shamir_warning_title">Avant de noter</string>
+    <plurals name="shamir_warning_description">
+        <item quantity="one">%1$d part va s’afficher. Notez chacune séparément.</item>
+        <item quantity="many">%1$d parts vont s’afficher. Notez chacune séparément.</item>
+        <item quantity="other">%1$d parts vont s’afficher. Notez chacune séparément.</item>
+    </plurals>
+    <string name="shamir_warning_one_place">Ne gardez pas toutes les parts au même endroit</string>
+    <string name="shamir_warning_no_photos">Ne photographiez pas les parts</string>
+    <string name="shamir_warning_separate_paper">Notez chaque part sur une feuille séparée</string>
+    <string name="shamir_warning_different_places">Conservez-les dans des lieux physiques différents</string>
+    <string name="shamir_warning_old_sets">Si vous créez un nouvel ensemble, les anciennes parts continueront de fonctionner</string>
+    <string name="shamir_warning_passphrase">Les parts ne contiennent pas la phrase secrète (passphrase) de ce portefeuille. Sans elle, il ne pourra pas être restauré : conservez-la séparément.</string>
+    <string name="shamir_warning_not_shown_again">Les parts ne seront plus affichées. Assurez-vous d’être prêt à les noter.</string>
+    <string name="shamir_show_shares">Afficher les parts</string>
+    <plurals name="shamir_shares_banner">
+        <item quantity="one">Schéma %1$s — %2$d part au choix restaure le portefeuille</item>
+        <item quantity="many">Schéma %1$s — %2$d parts au choix restaurent le portefeuille</item>
+        <item quantity="other">Schéma %1$s — %2$d parts au choix restaurent le portefeuille</item>
+    </plurals>
+    <string name="shamir_share_title">Part %1$d sur %2$d</string>
+    <string name="shamir_share_written">J’ai noté cette part</string>
+    <string name="shamir_share_confirm">Confirmer la part %1$d</string>
+    <string name="shamir_share_saved">Enregistrée</string>
+    <string name="shamir_write_all">Notez d’abord toutes les parts</string>
+    <string name="shamir_done_banner">Conservez les parts dans des endroits différents.</string>
+    <string name="shamir_check_title">Vérification de la part %1$d</string>
+    <string name="shamir_check_description">Choisissez les mots de la part %1$d selon les numéros indiqués</string>
+    <string name="shamir_info_description">Shamir Backup (SLIP-39) divise la clé du portefeuille en plusieurs parts de 20 mots. Pour le restaurer, il faut le nombre de parts défini, par exemple 2 parts quelconques sur 3. Un nombre inférieur de parts ne révèle rien de la clé. Les parts fonctionnent dans les portefeuilles compatibles SLIP-39, comme Trezor. Si le portefeuille a une phrase d’authentification, elle sera aussi nécessaire pour le restaurer.</string>
     <string name="evm_node_request_failed">Le nœud du réseau n\'a pas pu traiter la requête. Réessayez ou choisissez une autre source dans les paramètres de la Blockchain.\n\nRéponse du nœud : %1$s</string>
     <string name="desktop_transfer_password">Mot de passe avant l\u0027envoi</string>
     <string name="desktop_transfer_password_description">Le mot de passe de l\u0027application est demandé avant chaque envoi, ce qui protège vos actifs si quelqu\u0027un accède à votre ordinateur pendant que l\u0027application est déverrouillée.</string>

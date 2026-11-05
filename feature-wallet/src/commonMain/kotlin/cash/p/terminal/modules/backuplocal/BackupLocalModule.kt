@@ -4,9 +4,12 @@ import androidx.annotation.Keep
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.core.managers.RestoreSettingType
 import cash.p.terminal.core.toPrivateKeyBytes
+import cash.p.terminal.core.tryOrNull
 import cash.p.terminal.core.usecase.MoneroWalletUseCase
 import cash.p.terminal.modules.address.AddressHandlerThorchain
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.slip39.Slip39AccountTypeFactory
+import cash.p.terminal.wallet.slip39.Slip39Shamir
 import com.google.gson.annotations.SerializedName
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.hdwalletkit.Base58
@@ -90,6 +93,7 @@ object BackupLocalModule {
     /** Written by v0.60.0 only; read as a plain mnemonic, never written again. */
     private const val MNEMONIC_BIP39 = "mnemonic_bip39"
     private const val MNEMONIC_MONERO = "mnemonic_monero"
+    private const val SLIP39 = "slip39"
     private const val PRIVATE_KEY = "private_key"
     private const val SECRET_KEY = "secret_key"
     private const val ADDRESS = "evm_address"
@@ -162,6 +166,7 @@ object BackupLocalModule {
     fun getAccountTypeString(accountType: AccountType): String = when (accountType) {
         is AccountType.Mnemonic -> MNEMONIC
         is AccountType.MnemonicMonero -> MNEMONIC_MONERO
+        is AccountType.Slip39 -> SLIP39
         is AccountType.EvmPrivateKey -> PRIVATE_KEY
         is AccountType.StellarSecretKey -> SECRET_KEY
         is AccountType.EvmAddress -> ADDRESS
@@ -183,14 +188,14 @@ object BackupLocalModule {
     suspend fun getAccountTypeFromData(accountType: String, data: ByteArray): AccountType? {
         return when (accountType) {
             MNEMONIC, MNEMONIC_BIP39 -> {
-                val parts = String(data, Charsets.UTF_8).split("@", limit = 2)
+                val (phrase, passphrase) = phraseAndPassphrase(data)
                 //check for nonstandard mnemonic from iOs app
-                if (parts[0].split("&").size > 1)
+                if (phrase.split("&").size > 1)
                     throw IllegalStateException("Non standard mnemonic")
-                val words = parts[0].split(" ")
-                val passphrase = if (parts.size > 1) parts[1] else ""
-                AccountType.Mnemonic(words, passphrase)
+                AccountType.Mnemonic(phrase.split(" "), passphrase)
             }
+
+            SLIP39 -> slip39AccountType(data)
 
             MNEMONIC_MONERO -> {
                 val parts = String(data, Charsets.UTF_8).split("@", limit = 3)
@@ -231,8 +236,21 @@ object BackupLocalModule {
             ZCASH_SAPLING_KEY -> AccountType.ZCashSaplingKey(String(data, Charsets.UTF_8))
             HARDWARE_CARD -> null
 
-            else -> throw IllegalStateException("Unknown account type")
+            // A type written by a newer app version: skipped rather than aborting a full-backup restore.
+            else -> null
         }
+    }
+
+    private fun phraseAndPassphrase(data: ByteArray): Pair<String, String> {
+        val parts = String(data, Charsets.UTF_8).split("@", limit = 2)
+        return parts[0] to parts.getOrElse(1) { "" }
+    }
+
+    /** Null for anything but a valid 1-of-1 share: only that form is ever written. */
+    private suspend fun slip39AccountType(data: ByteArray): AccountType.Slip39? {
+        val (phrase, passphrase) = phraseAndPassphrase(data)
+        val share = tryOrNull { Slip39Shamir.parseShare(phrase) }?.takeIf { it.isSingleShare } ?: return null
+        return getKoinInstance<Slip39AccountTypeFactory>().create(share.words(), passphrase)
     }
 
     /** Null, not a throw: an invalid entry is skipped instead of aborting the whole full-backup restore. */
@@ -241,15 +259,9 @@ object BackupLocalModule {
             .takeIf { AddressHandlerThorchain.forBlockchainType(blockchainType).isSupported(it) }
 
     fun getDataForEncryption(accountType: AccountType): ByteArray? = when (accountType) {
-        is AccountType.Mnemonic -> {
-            val passphrasePart = if (accountType.passphrase.isNotBlank()) {
-                "@" + accountType.passphrase
-            } else {
-                ""
-            }
-            val combined = accountType.words.joinToString(" ") + passphrasePart
-            combined.toByteArray(Charsets.UTF_8)
-        }
+        // Mnemonic flows reject a blank passphrase, so a blank one was always dropped; SLIP-39 keeps it exactly.
+        is AccountType.Mnemonic -> wordsWithPassphrase(accountType.words, accountType.passphrase.ifBlank { "" })
+        is AccountType.Slip39 -> wordsWithPassphrase(accountType.words, accountType.passphrase)
 
         is AccountType.MnemonicMonero -> {
             val combined = listOf(
@@ -274,6 +286,11 @@ object BackupLocalModule {
         is AccountType.ZCashSaplingKey -> accountType.key.toByteArray(Charsets.UTF_8)
         is AccountType.HardwareCard,
         is AccountType.TrezorDevice -> null
+    }
+
+    private fun wordsWithPassphrase(words: List<String>, passphrase: String): ByteArray {
+        val passphrasePart = if (passphrase.isNotEmpty()) "@$passphrase" else ""
+        return (words.joinToString(" ") + passphrasePart).toByteArray(Charsets.UTF_8)
     }
 
     val kdfDefault = KdfParams(
