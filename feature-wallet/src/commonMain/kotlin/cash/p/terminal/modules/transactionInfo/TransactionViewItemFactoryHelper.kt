@@ -69,7 +69,6 @@ import cash.p.terminal.resources.TransactionInfo_UnlockedAt
 import cash.p.terminal.resources.Transaction_Unlimited
 import cash.p.terminal.resources.Transactions_Burn
 import cash.p.terminal.resources.Transactions_ContractCall
-import cash.p.terminal.resources.Transactions_ContractCreation
 import cash.p.terminal.resources.Transactions_Mint
 import cash.p.terminal.resources.Transactions_Receive
 import cash.p.terminal.resources.Transactions_Send
@@ -78,6 +77,7 @@ import cash.p.terminal.resources.beam_history_kernel_id
 import cash.p.terminal.resources.ic_lock_20
 import cash.p.terminal.resources.ic_unlock_20
 import cash.p.terminal.resources.transaction_info_executed_amount
+import cash.p.terminal.resources.transaction_info_initiator
 import cash.p.terminal.resources.transaction_info_sync_source
 
 object TransactionViewItemFactoryHelper {
@@ -156,11 +156,12 @@ object TransactionViewItemFactoryHelper {
         return TransactionInfoViewItem.Value(feeTitle, feeAmountString)
     }
 
-    private fun getAddressItems(
+    fun getAddressItems(
         title: String,
         address: String,
         blockchainType: BlockchainType,
         showCopyWarning: Boolean = false,
+        collapseAddress: Boolean = false,
     ): List<TransactionInfoViewItem> {
         val (contact, label) = addressMetadataManager.get(blockchainType, address)
         val addressTitle = label?.let { "$title · $it" } ?: title
@@ -173,7 +174,7 @@ object TransactionViewItemFactoryHelper {
                     contact == null && label == null,
                     blockchainType,
                     showCopyWarning = showCopyWarning,
-                    collapseAddress = label != null,
+                    collapseAddress = collapseAddress || label != null,
                 )
             )
             contact?.let { add(TransactionInfoViewItem.ContactItem(it)) }
@@ -556,15 +557,6 @@ object TransactionViewItemFactoryHelper {
         val coinUid: String,
     )
 
-    fun getContractCreationItems(transaction: EvmTransactionRecord): List<TransactionInfoViewItem> =
-        listOf(
-            TransactionInfoViewItem.Transaction(
-                Translator.getString(Res.string.Transactions_ContractCreation),
-                "",
-                TransactionViewItem.Icon.Platform.fromBlockchainType(transaction.blockchainType).iconRes
-            )
-        )
-
     fun getApproveSectionItems(
         value: TransactionValue,
         coinPrice: CurrencyValue?,
@@ -722,6 +714,17 @@ object TransactionViewItemFactoryHelper {
                 val fee = transaction.fee
                 if (!transaction.foreignTransaction && fee != null) {
                     items.add(getFeeItem(fee, rates[fee.coinUid], status))
+                }
+
+                transaction.initiator?.let { initiator ->
+                    items.addAll(
+                        getAddressItems(
+                            title = Translator.getString(Res.string.transaction_info_initiator),
+                            address = initiator,
+                            blockchainType = blockchainType,
+                            collapseAddress = true,
+                        )
+                    )
                 }
 
                 // Show sync source if available (for debugging/transparency)

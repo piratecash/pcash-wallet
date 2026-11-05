@@ -17,6 +17,7 @@ import cash.p.terminal.entities.MoneroFileRecord
 import cash.p.terminal.manager.IConnectivityManager
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.data.MnemonicKind
@@ -159,7 +160,7 @@ class MoneroKitManager(
             val accountType = account.type
             this.moneroKitWrapper = when {
                 accountType is AccountType.MnemonicMonero ||
-                        accountType is AccountType.Mnemonic ||
+                        accountType is SeedAccountType ||
                         accountType is AccountType.TrezorDevice
                     -> createKitInstance(account)
 
@@ -781,18 +782,16 @@ class MoneroKitWrapper(
     val transactionsStateUpdatedFlow = _transactionsStateUpdatedFlow.asSharedFlow()
 
 
-    private suspend fun restoreFromBip39(
+    private suspend fun restoreFromSeedAccount(
         account: Account,
         height: Long
     ) {
-        logger.info("restoreFromBip39: height=$height")
-        val accountType = account.type as? AccountType.Mnemonic
+        logger.info("restoreFromSeedAccount: height=$height")
+        val accountType = account.type as? SeedAccountType
             ?: throw UnsupportedAccountException()
-        val restoredAccount = moneroWalletUseCase.restoreFromBip39(
-            accountType.words,
-            accountType.passphrase,
-            height
-        ) ?: throw IllegalStateException("Failed to restore account from 12 words")
+        val restoredAccount = checkNotNull(moneroWalletUseCase.restoreFromSeedAccount(accountType, height)) {
+            "Failed to restore Monero wallet from seed"
+        }
         moneroFileDao.insert(
             MoneroFileRecord(
                 fileName = SecretString(restoredAccount.walletInnerName),
@@ -901,7 +900,7 @@ class MoneroKitWrapper(
     private suspend fun resolveWalletCredentials(): MoneroWalletCredentials =
         when (val accountType = account.type) {
             is AccountType.MnemonicMonero -> mnemonicMoneroCredentials(accountType)
-            is AccountType.Mnemonic -> mnemonicCredentials()
+            is SeedAccountType -> mnemonicCredentials()
             is AccountType.TrezorDevice -> trezorCredentials()
             else -> throw UnsupportedAccountException()
         }
@@ -924,14 +923,14 @@ class MoneroKitWrapper(
     }
 
     private suspend fun mnemonicCredentials(): MoneroWalletCredentials {
-        logger.info("start: using AccountType.Mnemonic")
+        logger.info("start: using seed account")
         if (moneroFileDao.getAssociatedRecord(account.id) == null) {
             logger.info("start: no associated wallet files, restoring from mnemonic")
             val restoreSettings = restoreSettingsManager.settings(account, BlockchainType.Monero)
             val height = restoreSettings.birthdayHeight
                 ?: validateMoneroHeightUseCase.getTodayHeight()
             check(height != -1L) { "Monero restore height can't be -1" }
-            restoreFromBip39(account = account, height = height)
+            restoreFromSeedAccount(account = account, height = height)
         }
         val record = requireNotNull(moneroFileDao.getAssociatedRecord(accountId = account.id)) {
             "Account does not have a valid Monero file association"

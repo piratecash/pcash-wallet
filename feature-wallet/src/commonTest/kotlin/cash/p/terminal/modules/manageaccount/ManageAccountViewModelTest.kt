@@ -6,6 +6,8 @@ import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.IWalletManager
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +25,9 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import java.math.BigInteger
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -34,13 +39,18 @@ class ManageAccountViewModelTest {
         every { accountsFlow } returns MutableSharedFlow()
     }
 
+    // Seed accounts with a backup look up enabled wallets for the Monero row.
+    private val walletManager = mockk<IWalletManager> { coEvery { getWallets(any()) } returns emptyList() }
+
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
+        startKoin { modules(module { single { walletManager } }) }
     }
 
     @After
     fun tearDown() {
+        stopKoin()
         Dispatchers.resetMain()
     }
 
@@ -119,6 +129,59 @@ class ManageAccountViewModelTest {
     }
 
     @Test
+    fun getBackupItems_slip39WithoutBackup_offersManualShamirAndLocalBackupWithAttention() {
+        val viewModel = createViewModel(account("slip39", SLIP39, isBackedUp = false))
+
+        val items = viewModel.viewState.backupActions
+        assertEquals(
+            listOf(
+                BackupItem.ManualBackup::class,
+                BackupItem.ShamirBackup::class,
+                BackupItem.LocalBackup::class,
+                BackupItem.InfoText::class
+            ),
+            items.map { it::class }
+        )
+        assertTrue(items.filterIsInstance<BackupItem.ShamirBackup>().single().showAttention)
+    }
+
+    @Test
+    fun getBackupItems_slip39BackedUp_completesManualAndClearsShamirAttention() {
+        val viewModel = createViewModel(account("slip39", SLIP39, isBackedUp = true))
+
+        val items = viewModel.viewState.backupActions
+        assertTrue(items.filterIsInstance<BackupItem.ManualBackup>().single().completed)
+        assertFalse(items.filterIsInstance<BackupItem.ShamirBackup>().single().showAttention)
+    }
+
+    @Test
+    fun getBackupItems_mnemonic_offersNoShamirBackup() {
+        val viewModel = createViewModel(
+            account("mnemonic", AccountType.Mnemonic(MNEMONIC_WORDS, ""), isBackedUp = false)
+        )
+
+        assertEquals(
+            listOf(BackupItem.ManualBackup::class, BackupItem.LocalBackup::class, BackupItem.InfoText::class),
+            viewModel.viewState.backupActions.map { it::class }
+        )
+    }
+
+    @Test
+    fun getKeyActions_slip39WithoutMonero_showsPhraseAndKeys() = runTest(dispatcher) {
+        val viewModel = createViewModel(account("slip39", SLIP39))
+        advanceUntilIdle()
+
+        assertEquals(
+            listOf(
+                ManageAccountModule.KeyAction.RecoveryPhrase,
+                ManageAccountModule.KeyAction.PrivateKeys,
+                ManageAccountModule.KeyAction.PublicKeys
+            ),
+            viewModel.viewState.keyActions
+        )
+    }
+
+    @Test
     fun getBackupItems_hardwareCard_offersNoBackup() {
         val viewModel = createViewModel(
             account("card", AccountType.HardwareCard("card", 0, "key", 0), isBackedUp = false)
@@ -151,5 +214,6 @@ class ManageAccountViewModelTest {
     private companion object {
         const val ZCASH_SPENDING_KEY = "secret-extended-key-main1qsaplingspendingkey"
         val MNEMONIC_WORDS = List(11) { "abandon" } + "about"
+        val SLIP39 = AccountType.Slip39(List(20) { "academic" }, passphrase = "", seed = ByteArray(16))
     }
 }

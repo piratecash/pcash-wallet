@@ -5,6 +5,7 @@ import co.touchlab.kermit.Logger
 import cash.p.terminal.core.utils.MoneroConfig
 import cash.p.terminal.core.utils.MoneroWalletSeedConverter
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import com.m2049r.xmrwallet.model.Wallet
 import com.m2049r.xmrwallet.model.WalletManager
 import com.m2049r.xmrwallet.service.MoneroWalletService
@@ -132,12 +133,11 @@ class MoneroWalletUseCase(
         return@withContext true
     }
 
-    suspend fun restoreFromBip39(
-        words: List<String>,
-        passphrase: String,
+    suspend fun restoreFromSeedAccount(
+        accountType: SeedAccountType,
         height: Long
     ): AccountType.MnemonicMonero? =
-        restore(MoneroWalletSeedConverter.getLegacySeedFromBip39(words, passphrase), height)
+        restore(MoneroWalletSeedConverter.getLegacySeed(accountType), height)
 
     suspend fun restore(
         words: List<String>,

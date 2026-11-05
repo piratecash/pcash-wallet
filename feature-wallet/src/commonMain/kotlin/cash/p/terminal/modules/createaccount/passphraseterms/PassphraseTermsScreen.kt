@@ -22,11 +22,11 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.resources.Button_IAgree
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.passphrase_terms_title
-import cash.p.terminal.resources.passphrase_terms_warning
 
 @Composable
 fun PassphraseTermsScreen(
     uiState: PassphraseTermsUiState,
+    warning: String,
     onCheckboxToggle: (Int) -> Unit,
     onAgreeClick: () -> Unit,
     onBackClick: () -> Unit,
@@ -56,7 +56,7 @@ fun PassphraseTermsScreen(
                     VSpacer(12.dp)
                     TextImportantWarning(
                         modifier = Modifier.padding(horizontal = 16.dp),
-                        text = stringResource(Res.string.passphrase_terms_warning)
+                        text = warning
                     )
                 }
                 VSpacer(12.dp)

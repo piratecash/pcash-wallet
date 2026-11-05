@@ -18,6 +18,7 @@ import io.horizontalsystems.ethereumkit.core.signer.Signer
 import io.horizontalsystems.ethereumkit.models.Chain
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.modules.restoreaccount.restoreshamir.Slip39TestShares
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.hdwalletkit.Language
 import io.mockk.every
@@ -252,6 +253,39 @@ class RecoveryPhraseViewModelTest {
     }
 
     @Test
+    fun init_slip39Account_qrCarriesCanonicalShareWithSlip39Kind() {
+        val type = Slip39TestShares.slip39Type(passphrase = "TREZOR")
+
+        val viewModel = createViewModel(slip39Account(type), RecoveryPhrasePage.RecoveryPhraseType.Mnemonic)
+        val decrypted = crypto.decrypt(awaitEncryptedContent(viewModel)).getOrNull()
+            ?: error("Decrypt must succeed")
+
+        assertEquals(type.words, viewModel.words)
+        assertEquals("TREZOR", viewModel.passphrase)
+        assertEquals(type.words, decrypted.words)
+        assertEquals("TREZOR", decrypted.passphrase)
+        assertEquals(SeedPhraseQrCrypto.KIND_SLIP39, decrypted.kind)
+        assertNull(decrypted.language)
+    }
+
+    @Test
+    fun init_slip39AccountAsMoneroExport_convertsSeedTo25Words() {
+        val type = Slip39TestShares.slip39Type()
+        val account = slip39Account(type)
+        every { restoreSettingsManager.settings(account, BlockchainType.Monero) } returns
+            RestoreSettings().also { it.birthdayHeight = 1_234_567L }
+
+        val viewModel = createViewModel(account, RecoveryPhrasePage.RecoveryPhraseType.Monero)
+        val decrypted = crypto.decrypt(awaitEncryptedContent(viewModel)).getOrNull()
+            ?: error("Decrypt must succeed")
+
+        assertEquals(MoneroWalletSeedConverter.getLegacySeedFromSeed(type.seed), viewModel.words)
+        assertNull(viewModel.passphrase)
+        assertEquals(1_234_567L, decrypted.height)
+        assertNull(decrypted.kind)
+    }
+
+    @Test
     fun regenerateEncryptedQrContent_producesNewCiphertextButSamePlaintext() {
         val account = mnemonicAccount(words = bip39Words.split(" "), passphrase = "p")
         every { restoreSettingsManager.settings(any(), any()) } returns RestoreSettings()
@@ -279,6 +313,23 @@ class RecoveryPhraseViewModelTest {
         assertEquals(firstDecoded.words, secondDecoded.words)
         assertEquals(firstDecoded.passphrase, secondDecoded.passphrase)
     }
+
+    private fun createViewModel(account: Account, type: RecoveryPhrasePage.RecoveryPhraseType) =
+        RecoveryPhraseViewModel(
+            account = account,
+            recoveryPhraseType = type,
+            seedPhraseQrCrypto = crypto,
+            localStorage = localStorage,
+            restoreSettingsManager = restoreSettingsManager
+        )
+
+    private fun slip39Account(type: AccountType.Slip39) = Account(
+        id = "slip39",
+        name = "Shamir",
+        type = type,
+        origin = AccountOrigin.Restored,
+        level = 0
+    )
 
     private fun mnemonicAccount(words: List<String>, passphrase: String): Account = Account(
         id = "id-${words.size}-${passphrase.length}",

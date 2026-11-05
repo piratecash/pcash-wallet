@@ -13,6 +13,8 @@ import cash.p.terminal.core.factories.uriScheme
 import cash.p.terminal.core.managers.OfflineModeManager
 import cash.p.terminal.core.managers.PriceManager
 import cash.p.terminal.core.managers.SeedPhraseQrCrypto
+import cash.p.terminal.modules.restoreaccount.restoreshamir.ShamirPrefill
+import cash.p.terminal.modules.restoreaccount.restoreshamir.toShamirPrefillOrNull
 import cash.p.terminal.core.managers.toSeedQrErrorMessage
 import cash.p.terminal.core.walletVersionQueries
 import cash.p.terminal.core.storage.PendingMultiSwapStorage
@@ -53,7 +55,6 @@ import io.horizontalsystems.core.ViewModelUiState
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.hdwalletkit.Language
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
@@ -84,6 +85,7 @@ class BalanceViewModel(
     private var showStackingForWatchAccount = false
     private var openSendTokenSelect: OpenSendTokenSelect? = null
     private var openRestoreFromQr: OpenRestoreFromQr? = null
+    private var openShamirRestore: ShamirPrefill? = null
     private var openOfflineBroadcast: String? = null
     private var errorMessage: String? = null
     private val appearanceSettings: AppearanceSettingsStore by inject(AppearanceSettingsStore::class.java)
@@ -127,7 +129,7 @@ class BalanceViewModel(
     init {
         addCloseable(service)
 
-        viewModelScope.launch(Dispatchers.Default) {
+        viewModelScope.launch(dispatcherProvider.default) {
             accountManager.activeAccountStateFlow.collect {
                 setupUI()
                 // Retracts a migration offer belonging to the previous account right away instead
@@ -136,7 +138,7 @@ class BalanceViewModel(
             }
         }
 
-        viewModelScope.launch(Dispatchers.Default) {
+        viewModelScope.launch(dispatcherProvider.default) {
             service.balanceItemsFlow
                 .collect { items ->
                     totalBalance.setTotalServiceItems(items.map(BalanceItem::toTotalServiceItem))
@@ -159,7 +161,7 @@ class BalanceViewModel(
             }
         }
 
-        viewModelScope.launch(Dispatchers.Default) {
+        viewModelScope.launch(dispatcherProvider.default) {
             merge(
                 priceManager.priceChangeIntervalFlow.map {},
                 priceManager.displayPricePeriodFlow.map {},
@@ -216,6 +218,7 @@ class BalanceViewModel(
         errorMessage = errorMessage,
         openSend = openSendTokenSelect,
         openRestoreFromQr = openRestoreFromQr,
+        openShamirRestore = openShamirRestore,
         openOfflineBroadcast = openOfflineBroadcast,
         balanceTabButtonsEnabled = balanceTabButtonsEnabled,
         sortType = sortType,
@@ -357,7 +360,7 @@ class BalanceViewModel(
             return
         }
 
-        viewModelScope.launch(Dispatchers.IO + CoroutineExceptionHandler { _, throwable ->
+        viewModelScope.launch(dispatcherProvider.io + CoroutineExceptionHandler { _, throwable ->
             logger.e(throwable) { "Error refreshing balance" }
             isRefreshing = false
             emitState()
@@ -378,7 +381,7 @@ class BalanceViewModel(
         this.sortType = sortType
         emitState()
 
-        viewModelScope.launch(Dispatchers.Default) {
+        viewModelScope.launch(dispatcherProvider.default) {
             service.sortType = sortType
         }
     }
@@ -449,8 +452,12 @@ class BalanceViewModel(
             walletConnectPairingFailed = !paired
         }
         if (connectionLink) return
+        val shamirShare = scannedText.toShamirPrefillOrNull()
         if (scannedText.startsWith(SeedPhraseQrCrypto.QR_PREFIX)) {
             handleEncryptedSeedQr(scannedText)
+        } else if (shamirShare != null) {
+            openShamirRestore = shamirShare
+            emitState()
         } else if (platformActions.isOfflineTransaction(scannedText)) {
             openOfflineBroadcast = scannedText.trim()
             emitState()
@@ -467,12 +474,15 @@ class BalanceViewModel(
     private fun handleEncryptedSeedQr(content: String) {
         seedPhraseQrCrypto.decrypt(content)
             .onSuccess { decrypted ->
-                openRestoreFromQr = OpenRestoreFromQr(
-                    words = decrypted.words,
-                    passphrase = decrypted.passphrase,
-                    moneroHeight = decrypted.height,
-                    language = decrypted.language
-                )
+                openShamirRestore = decrypted.toShamirPrefillOrNull()
+                if (openShamirRestore == null) {
+                    openRestoreFromQr = OpenRestoreFromQr(
+                        words = decrypted.words,
+                        passphrase = decrypted.passphrase,
+                        moneroHeight = decrypted.height,
+                        language = decrypted.language
+                    )
+                }
                 emitState()
             }
             .onFailure { error ->
@@ -483,6 +493,7 @@ class BalanceViewModel(
 
     fun onRestoreFromQrOpened() {
         openRestoreFromQr = null
+        openShamirRestore = null
         emitState()
     }
 
@@ -636,6 +647,7 @@ data class BalanceUiState(
     val errorMessage: String?,
     val openSend: OpenSendTokenSelect? = null,
     val openRestoreFromQr: OpenRestoreFromQr? = null,
+    val openShamirRestore: ShamirPrefill? = null,
     val openOfflineBroadcast: String? = null,
     val balanceTabButtonsEnabled: Boolean,
     val showStackingForWatchAccount: Boolean,

@@ -21,20 +21,31 @@ import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.PassphraseValidator
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.data.MnemonicKind
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
+import cash.p.terminal.wallet.isCompatibleWith
 import cash.p.terminal.wallet.normalizeNFKD
+import cash.p.terminal.wallet.slip39.Slip39AccountTypeFactory
+import cash.p.terminal.wallet.slip39.Slip39SecretSize
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.hdwalletkit.Language
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import co.touchlab.kermit.Logger
 import cash.p.terminal.core.getKoinInstance
 import cash.p.terminal.resources.CreateWallet_Error_EmptyPassphrase
 import cash.p.terminal.resources.CreateWallet_Error_InvalidConfirmation
-import cash.p.terminal.resources.CreateWallet_Error_PassphraseForbiddenSymbols
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.create_wallet_error_failed
+import org.jetbrains.compose.resources.StringResource
+
+/** What the create screen generates; BIP-39 lengths stay in [MnemonicKind], which also classifies restores. */
+sealed interface WalletKind {
+    data class Mnemonic(val kind: MnemonicKind) : WalletKind
+    data class Shamir(val size: Slip39SecretSize) : WalletKind
+}
 
 class CreateAdvancedAccountViewModel(
     private val accountFactory: IAccountFactory,
@@ -44,7 +55,8 @@ class CreateAdvancedAccountViewModel(
     private val passphraseValidator: PassphraseValidator,
     private val predefinedBlockchainSettingsProvider: PredefinedBlockchainSettingsProvider,
     private val restoreSettingsManager: RestoreSettingsManager,
-    private val localStorage: WalletOnboardingStorage
+    private val localStorage: WalletOnboardingStorage,
+    private val slip39AccountTypeFactory: Slip39AccountTypeFactory,
 ) : ViewModel() {
 
     private var passphrase = ""
@@ -56,7 +68,9 @@ class CreateAdvancedAccountViewModel(
     var loading by mutableStateOf(false)
         private set
 
-    val mnemonicKinds = MnemonicKind.entries.filter { it != MnemonicKind.Unknown }
+    val walletKinds: List<WalletKind> =
+        MnemonicKind.entries.filter { it != MnemonicKind.Unknown }.map(WalletKind::Mnemonic) +
+            Slip39SecretSize.entries.map(WalletKind::Shamir)
     val mnemonicLanguages = mnemonicLanguagesOrdered
 
     private val moneroWalletUseCase: MoneroWalletUseCase by lazy { getKoinInstance<MoneroWalletUseCase>() }
@@ -66,20 +80,23 @@ class CreateAdvancedAccountViewModel(
         get() = field.ifBlank { defaultAccountName }
         private set
 
-    var selectedKind by mutableStateOf(MnemonicKind.Mnemonic12)
+    var selectedKind by mutableStateOf<WalletKind>(WalletKind.Mnemonic(MnemonicKind.Mnemonic12))
         private set
+
+    val isShamir: Boolean
+        get() = selectedKind is WalletKind.Shamir
 
     var selectedLanguage by mutableStateOf(Language.English)
         private set
 
     val languageSelectionEnabled: Boolean
-        get() = selectedKind != MnemonicKind.Mnemonic25
+        get() = selectedKind.let { it is WalletKind.Mnemonic && it != MONERO_KIND }
 
     val displayedLanguage: Language
         get() = if (languageSelectionEnabled) selectedLanguage else Language.English
 
-    var showPassphraseBlock by mutableStateOf(true)
-        private set
+    val showPassphraseBlock: Boolean
+        get() = selectedKind != MONERO_KIND
 
     var passphraseEnabled by mutableStateOf(false)
         private set
@@ -103,12 +120,7 @@ class CreateAdvancedAccountViewModel(
 
         loading = true
 
-        val accountType =
-            if (selectedKind.wordsCount == MnemonicKind.Mnemonic25.wordsCount) {
-                moneroWalletUseCase.createNew()
-            } else {
-                mnemonicAccountType(selectedKind.wordsCount)
-            }
+        val accountType = newAccountType(selectedKind)
 
         if (accountType == null) {
             loading = false
@@ -133,17 +145,11 @@ class CreateAdvancedAccountViewModel(
         }
 
         // Prepare birthdayHeight for blockchains that require it
-        if (accountType !is AccountType.HardwareCard && accountType !is AccountType.TrezorDevice) {
-            when (accountType) {
-                is AccountType.MnemonicMonero -> {
-                    // For Monero-only accounts, height is already saved above (line 107-111)
-                }
-                else -> {
-                    // For BIP39 accounts, prepare settings for Zcash and Monero
-                    predefinedBlockchainSettingsProvider.prepareNew(account, BlockchainType.Zcash)
-                    predefinedBlockchainSettingsProvider.prepareNew(account, BlockchainType.Monero)
-                }
-            }
+        if (accountType is AccountType.Mnemonic) {
+            predefinedBlockchainSettingsProvider.prepareNew(account, BlockchainType.Zcash)
+        }
+        if (accountType is SeedAccountType) {
+            predefinedBlockchainSettingsProvider.prepareNew(account, BlockchainType.Monero)
         }
 
         activateDefaultWallets(account)
@@ -156,16 +162,8 @@ class CreateAdvancedAccountViewModel(
     }
 
     fun onChangePassphrase(v: String) {
-        if (passphraseValidator.containsValidCharacters(v)) {
-            passphraseState = null
-            passphrase = v
-        } else {
-            passphraseState = DataState.Error(
-                Exception(
-                    Translator.getString(Res.string.CreateWallet_Error_PassphraseForbiddenSymbols)
-                )
-            )
-        }
+        passphrase = v
+        passphraseState = passphraseValidator.forbiddenCharactersError(v, slip39 = isShamir)?.let(::errorState)
     }
 
     fun onChangePassphraseConfirmation(v: String) {
@@ -173,9 +171,10 @@ class CreateAdvancedAccountViewModel(
         passphraseConfirmation = v
     }
 
-    fun setMnemonicKind(kind: MnemonicKind) {
+    fun setKind(kind: WalletKind) {
         selectedKind = kind
-        showPassphraseBlock = kind != MnemonicKind.Mnemonic25
+        // Hiding the block drops its fields; a kept passphrase would be applied without being shown.
+        if (!showPassphraseBlock) setPassphraseEnabledState(false)
     }
 
     fun setMnemonicLanguage(language: Language) {
@@ -205,49 +204,58 @@ class CreateAdvancedAccountViewModel(
     }
 
     private fun passphraseIsInvalid(): Boolean {
-        if (passphraseState is DataState.Error) {
-            return true
-        }
-
-        if (passphrase.isBlank()) {
-            passphraseState = DataState.Error(
-                Exception(
-                    Translator.getString(Res.string.CreateWallet_Error_EmptyPassphrase)
-                )
-            )
+        // Re-checked against the current kind: the text may have been typed under a looser character rule.
+        val passphraseError = passphraseValidator.forbiddenCharactersError(passphrase, slip39 = isShamir)
+            ?: Res.string.CreateWallet_Error_EmptyPassphrase.takeIf { passphrase.isBlank() }
+        passphraseState = passphraseError?.let(::errorState)
+        if (passphraseError != null) {
             return true
         }
         if (passphrase != passphraseConfirmation) {
-            passphraseConfirmState = DataState.Error(
-                Exception(
-                    Translator.getString(Res.string.CreateWallet_Error_InvalidConfirmation)
-                )
-            )
+            passphraseConfirmState = errorState(Res.string.CreateWallet_Error_InvalidConfirmation)
             return true
         }
         return false
     }
 
+    private fun errorState(message: StringResource) = DataState.Error(Exception(Translator.getString(message)))
+
     private suspend fun activateDefaultWallets(account: Account) {
         val tokenQueries = if (account.type is AccountType.MnemonicMonero) {
             listOf(TokenQuery(BlockchainType.Monero, TokenType.Native))
         } else {
-            getDefaultTokens()
+            getDefaultTokens(account.type)
         }
         walletActivator.activateWalletsSuspended(account, tokenQueries)
     }
 
-    private fun getDefaultTokens() = TokenQuery.defaultTokenQueries
+    private fun getDefaultTokens(accountType: AccountType) = TokenQuery.defaultTokenQueries.filter {
+        accountType.isCompatibleWith(it.blockchainType, it.tokenType)
+    }
 
-    private fun mnemonicAccountType(wordCount: Int): AccountType? {
+    private suspend fun newAccountType(kind: WalletKind): AccountType? {
+        if (kind == MONERO_KIND) return moneroWalletUseCase.createNew()
         return try {
-            val words = wordsManager.generateWords(wordCount, selectedLanguage)
-                .map { it.normalizeNFKD() }
-            AccountType.Mnemonic(words, passphrase.normalizeNFKD())
+            when (kind) {
+                is WalletKind.Shamir -> slip39AccountTypeFactory.createNew(kind.size, passphrase.normalizeNFKD())
+                is WalletKind.Mnemonic -> mnemonicAccountType(kind.kind.wordsCount)
+            }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Throwable) {
-            Logger.withTag("CreateAdvancedAccountViewModel").e(e) { "Failed to generate mnemonic words" }
+            Logger.withTag("CreateAdvancedAccountViewModel").e(e) { "Failed to generate a new wallet" }
             error = Translator.getString(Res.string.create_wallet_error_failed)
             null
         }
+    }
+
+    private fun mnemonicAccountType(wordCount: Int): AccountType.Mnemonic {
+        val words = wordsManager.generateWords(wordCount, selectedLanguage)
+            .map { it.normalizeNFKD() }
+        return AccountType.Mnemonic(words, passphrase.normalizeNFKD())
+    }
+
+    private companion object {
+        val MONERO_KIND = WalletKind.Mnemonic(MnemonicKind.Mnemonic25)
     }
 }
