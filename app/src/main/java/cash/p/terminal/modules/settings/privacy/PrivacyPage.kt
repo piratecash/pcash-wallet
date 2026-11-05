@@ -12,8 +12,7 @@ class PrivacyPage : HSPage() {
         val viewModel: PrivacyViewModel = koinViewModel()
         PrivacyScreen(
             navigation = navigation,
-            uiState = viewModel.uiState,
-            toggleCrashData = viewModel::toggleCrashData
+            uiState = viewModel.uiState
         )
     }
 }

@@ -25,10 +25,7 @@ internal fun reportBuildInfo(appVersion: String, gitBranch: String): Map<String,
         "Build Type" to BuildConfig.BUILD_TYPE,
         "Git Branch" to gitBranch,
         "Git Hash" to BuildConfig.GIT_HASH,
-        "Mapping ID" to (
-            App.instance.getString(R.string.com_google_firebase_crashlytics_mapping_file_id)
-                .takeUnless { id -> id.all { it == '0' } } ?: "None"
-        ),
+        "Mapping ID" to "None",
         "Native ABI" to nativeAbiLabel(App.instance.applicationInfo.nativeLibraryDir, Build.SUPPORTED_ABIS.toList()),
     )
 
