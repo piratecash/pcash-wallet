@@ -23,19 +23,6 @@ def gitHashProvider = providers.exec {
     ignoreExitValue = true
 }.standardOutput.asText.map { it.trim() }
 
-def gitBranchProvider = providers.exec {
-    commandLine 'git', 'rev-parse', '--abbrev-ref', 'HEAD'
-    ignoreExitValue = true
-}.standardOutput.asText.map {
-    def branch = (it ?: "").trim()
-    (branch.isEmpty() || branch == "HEAD") ? "unknown" : branch
-}
-
-def gitDirtyProvider = providers.exec {
-    commandLine 'git', 'diff-index', '--quiet', 'HEAD', '--'
-    ignoreExitValue = true
-}.result.map { it.exitValue != 0 }
-
 def getGitVersionSuffix = { ->
     try {
         def hash = gitHashProvider.getOrElse("unknown")
@@ -81,7 +68,7 @@ android {
         versionCode 262
         versionName "1.2.262"
         buildConfigField "String", "GIT_HASH", "\"${getGitVersionSuffix()}\""
-        buildConfigField "String", "GIT_BRANCH", "\"${gitBranchProvider.getOrElse("unknown")}\""
+        buildConfigField "String", "GIT_BRANCH", "\"f-droid\""
         // True only for the disposable baseline-profile generation build type (see baselinegen).
         buildConfigField "boolean", "BASELINE_PROFILE_MODE", "false"
         buildConfigField "boolean", "DIAGNOSTIC_LOGGING", "false"
