@@ -20,6 +20,7 @@ import com.reown.walletkit.client.Wallet
 import com.reown.walletkit.client.WalletKit
 import io.horizontalsystems.core.SingleLiveEvent
 import io.horizontalsystems.core.ViewModelUiState
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -234,9 +235,14 @@ class WCSessionViewModel(
         }
 
         viewModelScope.launch {
-            reject(proposal.proposerPublicKey) {
-                sessionServiceState = Killed
+            try {
+                reject(proposal.proposerPublicKey)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (t: Throwable) {
+                // Dismiss anyway: the dApp times the proposal out by itself
             }
+            sessionServiceState = Killed
         }
     }
 
@@ -256,9 +262,13 @@ class WCSessionViewModel(
         viewModelScope.launch {
             try {
                 approve(proposal.proposerPublicKey)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: RequestNotFoundError) {
+                sessionServiceState = Invalid(e)
             } catch (t: Throwable) {
                 WCDelegate.sessionProposalEvent = null
-                showErrorLiveEvent.postValue(t.message)
+                showErrorLiveEvent.postValue(getErrorMessage(t) ?: t.message)
             }
         }
     }
@@ -282,66 +292,62 @@ class WCSessionViewModel(
     suspend fun approve(proposalPublicKey: String) {
         val accountNonNull = account ?: return
         return suspendCoroutine { continuation ->
-            if (WalletKit.getSessionProposals().isNotEmpty()) {
-                val namespaces = wcManager.getSupportedNamespaces(accountNonNull)
-                val sessionProposal: Wallet.Model.SessionProposal = try {
-                    requireNotNull(
-                        WalletKit.getSessionProposals()
-                            .find { it.proposerPublicKey == proposalPublicKey })
-                } catch (e: Exception) {
-                    continuation.resumeWithException(e)
+            val sessionProposal = findProposal(proposalPublicKey)
+            if (sessionProposal == null) {
+                continuation.resumeWithException(RequestNotFoundError)
+                WCDelegate.sessionProposalEvent = null
+                return@suspendCoroutine
+            }
+            val namespaces = wcManager.getSupportedNamespaces(accountNonNull)
+            val sessionNamespaces = WalletKit.generateApprovedNamespaces(
+                sessionProposal = sessionProposal,
+                supportedNamespaces = namespaces
+            )
+            val approveProposal = Wallet.Params.SessionApprove(
+                proposerPublicKey = sessionProposal.proposerPublicKey,
+                namespaces = sessionNamespaces
+            )
+
+            WalletKit.approveSession(
+                approveProposal,
+                onError = { error ->
+                    continuation.resumeWithException(error.throwable)
                     WCDelegate.sessionProposalEvent = null
-                    return@suspendCoroutine
-                }
-                val sessionNamespaces = WalletKit.generateApprovedNamespaces(
-                    sessionProposal = sessionProposal,
-                    supportedNamespaces = namespaces
-                )
-                val approveProposal = Wallet.Params.SessionApprove(
-                    proposerPublicKey = sessionProposal.proposerPublicKey,
-                    namespaces = sessionNamespaces
-                )
-
-                WalletKit.approveSession(
-                    approveProposal,
-                    onError = { error ->
-                        continuation.resumeWithException(error.throwable)
-                        WCDelegate.sessionProposalEvent = null
-                    },
-                    onSuccess = {
-                        continuation.resume(Unit)
-                        WCDelegate.sessionProposalEvent = null
-                    })
-            }
+                },
+                onSuccess = {
+                    continuation.resume(Unit)
+                    WCDelegate.sessionProposalEvent = null
+                })
         }
     }
 
-    suspend fun reject(proposalPublicKey: String, onSuccess: () -> Unit) {
+    suspend fun reject(proposalPublicKey: String) {
         return suspendCoroutine { continuation ->
-            if (WalletKit.getSessionProposals().isNotEmpty()) {
-                val sessionProposal: Wallet.Model.SessionProposal = requireNotNull(
-                    WalletKit.getSessionProposals()
-                        .find { it.proposerPublicKey == proposalPublicKey })
-                val rejectionReason = "Reject Session"
-                val reject = Wallet.Params.SessionReject(
-                    proposerPublicKey = sessionProposal.proposerPublicKey,
-                    reason = rejectionReason
-                )
-
-                WalletKit.rejectSession(
-                    reject,
-                    onSuccess = {
-                        continuation.resume(Unit)
-                        WCDelegate.sessionProposalEvent = null
-                        onSuccess.invoke()
-                    },
-                    onError = { error ->
-                        continuation.resumeWithException(error.throwable)
-                        WCDelegate.sessionProposalEvent = null
-                    })
+            val sessionProposal = findProposal(proposalPublicKey)
+            if (sessionProposal == null) {
+                continuation.resumeWithException(RequestNotFoundError)
+                return@suspendCoroutine
             }
+            val reject = Wallet.Params.SessionReject(
+                proposerPublicKey = sessionProposal.proposerPublicKey,
+                reason = "Reject Session"
+            )
+
+            WalletKit.rejectSession(
+                reject,
+                onSuccess = {
+                    continuation.resume(Unit)
+                    WCDelegate.sessionProposalEvent = null
+                },
+                onError = { error ->
+                    continuation.resumeWithException(error.throwable)
+                    WCDelegate.sessionProposalEvent = null
+                })
         }
     }
+
+    private fun findProposal(proposalPublicKey: String) =
+        WalletKit.getSessionProposals().find { it.proposerPublicKey == proposalPublicKey }
 
     private fun getStatus(connectionState: Boolean?): Status {
         return when (connectionState) {
@@ -406,7 +412,8 @@ class WCSessionViewModel(
         state: WCSessionServiceState
     ) {
         val error: String? = when {
-            state is Invalid && (state.error !is ValidationError) -> state.error.message
+            state is Invalid && (state.error !is ValidationError) -> getErrorMessage(state.error)
+                ?: state.error.message
                 ?: state.error::class.java.simpleName
 
             else -> null

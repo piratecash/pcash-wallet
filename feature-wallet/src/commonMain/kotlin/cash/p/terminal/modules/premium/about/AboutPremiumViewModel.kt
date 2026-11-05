@@ -15,8 +15,8 @@ import cash.p.terminal.premium.data.config.PremiumConfig
 import cash.p.terminal.premium.domain.usecase.CheckPremiumUseCase
 import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.wallet.Account
-import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.eligibleForPremium
 import cash.p.terminal.wallet.premiumEligibility
 import io.horizontalsystems.core.CurrencyManager
@@ -174,7 +174,7 @@ class AboutPremiumViewModel(
     }
 
     private fun isPremiumCandidateAccount(account: Account): Boolean {
-        return account.type is AccountType.Mnemonic && !account.isWatchAccount && account.hasAnyBackup
+        return account.type is SeedAccountType && !account.isWatchAccount && account.hasAnyBackup
     }
 
     private suspend fun getDemoDaysLeft(): Int? {

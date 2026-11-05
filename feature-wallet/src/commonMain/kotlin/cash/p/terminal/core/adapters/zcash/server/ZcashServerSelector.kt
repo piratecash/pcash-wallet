@@ -34,8 +34,9 @@ private const val BREAK_PENALTY_MS = 1_000L
 private const val HYSTERESIS = 0.7
 private const val MAIN_CHAIN = "main"
 private const val SAPLING_ACTIVATION_HEIGHT = 419_200
-private const val MAX_CATCH_UP_BLOCKS = 2
-private const val MAX_LAG_BLOCKS = 3
+// Sized for 25-second blocks from NU7: the same tolerance in time as 2 and 3 at 75 seconds.
+private const val MAX_CATCH_UP_BLOCKS = 6
+private const val MAX_LAG_BLOCKS = 9
 
 /**
  * Picks the automatic Zcash server: probes the pool, admits only servers on the right chain and

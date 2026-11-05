@@ -31,6 +31,7 @@ class EvmTransactionRecord(
     val valueOut: TransactionValue? = amountOut?.value,
     val recipient: String? = null,
     val foreignTransaction: Boolean = false,
+    val initiator: String? = null,
     val syncSource: String? = null, // Source that discovered this transaction (ETHERSCAN, ERC20_SYNCER, MERKLE, RPC)
 ) : TransactionRecord(
     uid = transaction.hashString,
@@ -70,6 +71,11 @@ class EvmTransactionRecord(
                 value
             }
         }
+
+    private val accountDelegation = transaction.accountDelegation
+    val delegatedTo: String? = accountDelegation?.delegate?.eip55
+    val delegationRevoked: Boolean = accountDelegation?.delegate?.raw?.all { it == 0.toByte() } == true
+    val delegationActive: Boolean = accountDelegation?.isActive == true
 
     val fee: TransactionValue?
 

@@ -83,6 +83,10 @@ import cash.p.terminal.resources.transaction_swap_status_sending
 import cash.p.terminal.resources.transaction_swap_status_unknown
 import cash.p.terminal.resources.transaction_swap_status_verifying
 import cash.p.terminal.resources.transaction_swap_status_waiting
+import cash.p.terminal.resources.transactions_account_delegated_to
+import cash.p.terminal.resources.transactions_account_delegation
+import cash.p.terminal.resources.transactions_account_delegation_revoke
+import cash.p.terminal.resources.transactions_account_delegation_warning_short
 import cash.p.terminal.resources.transactions_migrate
 import cash.p.terminal.resources.transactions_migrate_to_ironwood
 import cash.p.terminal.resources.transactions_swap_failed
@@ -383,15 +387,12 @@ class TransactionViewItemFactory(
                 null
             }
             transactionViewItem ?: createViewItemFromExternalContractCallTransactionRecord(
-                uid = record.uid,
+                transactionItem = transactionItem,
                 incomingValues = incomingValues,
                 outgoingValues = outgoingValues,
                 incomingEvents = incomingEvents,
-                blockchainType = record.blockchainType,
-                timestamp = record.timestamp,
-                currencyValue = transactionItem.currencyValue,
+                outgoingEvents = checkNotNull(record.outgoingEvents),
                 progress = progress,
-                spam = record.spam,
                 icon = icon
             )
         }
@@ -459,6 +460,12 @@ class TransactionViewItemFactory(
             blockchainType = record.blockchainType,
             progress = progress,
             spam = record.spam,
+            icon = icon
+        )
+
+        TransactionRecordType.EVM_ACCOUNT_DELEGATION -> createViewItemFromDelegationTransactionRecord(
+            record = record,
+            progress = progress,
             icon = icon
         )
 
@@ -1355,6 +1362,48 @@ class TransactionViewItemFactory(
         )
     }
 
+    private fun createViewItemFromDelegationTransactionRecord(
+        record: EvmTransactionRecord,
+        progress: Float?,
+        icon: TransactionViewItem.Icon?
+    ): TransactionViewItem {
+        val delegatedTo = checkNotNull(record.delegatedTo)
+
+        val title: String
+        val subtitle: String
+        var statusValue: ColoredValue? = null
+        if (record.delegationRevoked) {
+            title = Translator.getString(Res.string.transactions_account_delegation_revoke)
+            subtitle = "---"
+        } else {
+            title = Translator.getString(Res.string.transactions_account_delegation)
+            subtitle = Translator.getString(
+                Res.string.transactions_account_delegated_to,
+                mapped(delegatedTo, record.blockchainType)
+            )
+            if (record.delegationActive) {
+                statusValue = ColoredValue(
+                    Translator.getString(Res.string.transactions_account_delegation_warning_short),
+                    ColorName.Warning
+                )
+            }
+        }
+
+        return TransactionViewItem(
+            uid = record.uid,
+            progress = progress,
+            title = title,
+            subtitle = subtitle,
+            primaryValue = null,
+            secondaryValue = null,
+            date = Date(record.timestamp * 1000),
+            formattedTime = formatTime(record.timestamp),
+            spam = record.spam,
+            icon = icon ?: TransactionViewItem.Icon.Platform.fromBlockchainType(record.blockchainType),
+            statusValue = statusValue,
+        )
+    }
+
     private fun createViewItemFromContractCallTransactionRecord(
         uid: String,
         incomingValues: List<TransactionValue>,
@@ -1390,54 +1439,58 @@ class TransactionViewItemFactory(
         )
     }
 
+    private fun counterpartySubtitle(
+        events: List<TransferEvent>,
+        format: StringResource,
+        blockchainType: BlockchainType
+    ): String {
+        val addresses = events.mapNotNull { it.address }.toSet()
+        return if (addresses.size == 1) {
+            Translator.getString(format, mapped(addresses.first(), blockchainType))
+        } else {
+            Translator.getString(Res.string.Transactions_Multiple)
+        }
+    }
+
     private fun createViewItemFromExternalContractCallTransactionRecord(
-        uid: String,
+        transactionItem: TransactionItem,
         incomingValues: List<TransactionValue>,
         outgoingValues: List<TransactionValue>,
         incomingEvents: List<TransferEvent>,
-        blockchainType: BlockchainType,
-        timestamp: Long,
-        currencyValue: CurrencyValue?,
+        outgoingEvents: List<TransferEvent>,
         progress: Float?,
-        spam: Boolean,
         icon: TransactionViewItem.Icon?
     ): TransactionViewItem {
+        val record = transactionItem.record
+        val blockchainType = record.blockchainType
 
         val (primaryValue: ColoredValue?, secondaryValue: ColoredValue?) = getValues(
             incomingValues,
             outgoingValues,
-            currencyValue
+            transactionItem.currencyValue
         )
 
-        val title: String
-        val subTitle: String
-        if (outgoingValues.isEmpty()) {
-            title = Translator.getString(Res.string.Transactions_Receive)
-            val addresses = incomingEvents.mapNotNull { it.address }.toSet().toList()
+        val (title, subTitle) = when {
+            outgoingValues.isEmpty() -> Translator.getString(Res.string.Transactions_Receive) to
+                    counterpartySubtitle(incomingEvents, Res.string.Transactions_From, blockchainType)
 
-            subTitle = if (addresses.size == 1) {
-                Translator.getString(
-                    Res.string.Transactions_From, mapped(addresses.first(), blockchainType)
-                )
-            } else {
-                Translator.getString(Res.string.Transactions_Multiple)
-            }
-        } else {
-            title = Translator.getString(Res.string.Transactions_ExternalContractCall)
-            subTitle = "---"
+            incomingValues.isEmpty() -> Translator.getString(Res.string.Transactions_Send) to
+                    counterpartySubtitle(outgoingEvents, Res.string.Transactions_To, blockchainType)
+
+            else -> Translator.getString(Res.string.Transactions_ExternalContractCall) to "---"
         }
 
         return TransactionViewItem(
-            uid = uid,
+            uid = record.uid,
             progress = progress,
             title = title,
             subtitle = subTitle,
             primaryValue = primaryValue,
             secondaryValue = secondaryValue,
             showAmount = showAmount,
-            date = Date(timestamp * 1000),
-            formattedTime = formatTime(timestamp),
-            spam = spam,
+            date = Date(record.timestamp * 1000),
+            formattedTime = formatTime(record.timestamp),
+            spam = record.spam,
             icon = icon ?: iconType(blockchainType, incomingValues, outgoingValues)
         )
     }
@@ -1856,16 +1909,13 @@ class TransactionViewItemFactory(
                     null
                 }
             transactionViewItem ?: createViewItemFromExternalContractCallTransactionRecord(
-                uid = uid,
+                transactionItem = transactionItem,
                 incomingValues = incomingValues,
                 outgoingValues = outgoingValues,
                 incomingEvents = incomingEvents,
-                blockchainType = blockchainType,
-                timestamp = timestamp,
-                currencyValue = transactionItem.currencyValue,
+                outgoingEvents = outgoingEvents,
                 progress = progress,
-                icon = icon,
-                spam = spam
+                icon = icon
             )
         }
 

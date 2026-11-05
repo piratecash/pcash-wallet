@@ -24,7 +24,6 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurren
     var autoLockInterval: AutoLockInterval
 
     var chartIndicatorsEnabled: Boolean
-    var authToken: String?
     val appId: String?
 
     var baseBitcoinProvider: String?
@@ -66,7 +65,6 @@ interface ILocalStorage : ILoggingSettings, ISmsNotificationSettings, BaseCurren
     var marketFavoritesShowSignals: Boolean
     var marketFavoritesPeriod: TimeDuration?
     var relaunchBySettingChange: Boolean
-    var personalSupportEnabled: Boolean
     var pinRandomized: Boolean
     var statsLastSyncTime: Long
     var shareCrashDataEnabled: Boolean

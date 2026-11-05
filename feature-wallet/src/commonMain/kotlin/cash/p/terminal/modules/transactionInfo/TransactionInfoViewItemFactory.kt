@@ -41,12 +41,16 @@ import cash.p.terminal.resources.TransactionInfo_SpamWarning
 import cash.p.terminal.resources.TransactionInfo_SpeedUpDescription
 import cash.p.terminal.resources.TransactionInfo_To
 import cash.p.terminal.resources.Transactions_ContractCall
+import cash.p.terminal.resources.Transactions_ContractCreation
 import cash.p.terminal.resources.Transactions_OperationType
 import cash.p.terminal.resources.Transactions_OperationType_ChangeTrust
 import cash.p.terminal.resources.Transactions_OperationType_CreateAccount
 import cash.p.terminal.resources.beam_cancel_description
 import cash.p.terminal.resources.ic_migrate_24
 import cash.p.terminal.resources.swap_duration
+import cash.p.terminal.resources.transaction_info_delegation_contract
+import cash.p.terminal.resources.transaction_info_delegation_warning
+import cash.p.terminal.resources.transactions_account_delegation_revoke
 import cash.p.terminal.resources.transactions_migrate
 import cash.p.terminal.resources.transactions_migrate_to_ironwood
 
@@ -251,7 +255,7 @@ class TransactionInfoViewItemFactory(
                 when (transaction.transactionRecordType) {
                     TransactionRecordType.EVM_CONTRACT_CREATION -> {
                         itemSections.add(
-                            TransactionViewItemFactoryHelper.getContractCreationItems(
+                            getContractCreationItems(
                                 transaction
                             )
                         )
@@ -414,6 +418,17 @@ class TransactionInfoViewItemFactory(
                     }
 
                     else -> {}
+                }
+
+                transaction.delegatedTo?.let { delegatedTo ->
+                    itemSections.addAll(
+                        getDelegationSections(
+                            delegatedTo = delegatedTo,
+                            revoked = transaction.delegationRevoked,
+                            active = transaction.delegationActive,
+                            blockchainType = blockchainType,
+                        )
+                    )
                 }
             }
 
@@ -901,6 +916,48 @@ class TransactionInfoViewItemFactory(
                 TransactionInfoViewItem.Description(Translator.getString(Res.string.beam_cancel_description))
             ),
         )
+    }
+
+    private fun getContractCreationItems(transaction: EvmTransactionRecord): List<TransactionInfoViewItem> =
+        listOf(
+            TransactionInfoViewItem.Transaction(
+                Translator.getString(Res.string.Transactions_ContractCreation),
+                "",
+                TransactionViewItem.Icon.Platform.fromBlockchainType(transaction.blockchainType).iconRes
+            )
+        )
+
+    private fun getDelegationSections(
+        delegatedTo: String,
+        revoked: Boolean,
+        active: Boolean,
+        blockchainType: BlockchainType,
+    ): List<List<TransactionInfoViewItem>> {
+        if (revoked) {
+            return listOf(
+                listOf(
+                    TransactionInfoViewItem.Description(
+                        Translator.getString(Res.string.transactions_account_delegation_revoke)
+                    )
+                )
+            )
+        }
+
+        val contractSection = TransactionViewItemFactoryHelper.getAddressItems(
+            title = Translator.getString(Res.string.transaction_info_delegation_contract),
+            address = delegatedTo,
+            blockchainType = blockchainType,
+            collapseAddress = true,
+        )
+        if (!active) return listOf(contractSection)
+
+        // A WarningMessage is drawn only as the sole item of its section.
+        val warningSection = listOf(
+            TransactionInfoViewItem.WarningMessage(
+                Translator.getString(Res.string.transaction_info_delegation_warning)
+            )
+        )
+        return listOf(warningSection, contractSection)
     }
 
     private fun addMemoItem(

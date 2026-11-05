@@ -20,7 +20,6 @@ import cash.p.terminal.modules.qrscanner.QRScannerPage
 import cash.p.terminal.modules.resettofactorysettings.ResetToFactorySettingsPage
 import cash.p.terminal.modules.restoreaccount.RestoreAccountPage
 import cash.p.terminal.modules.settings.appearance.AppIconPage
-import cash.p.terminal.modules.subscription.SubscriptionInfoPage
 import cash.p.terminal.navigation.AppPages
 import cash.p.terminal.navigation.BackupKeyInput
 import cash.p.terminal.navigation.HSNavigation
@@ -46,7 +45,6 @@ class AppPagesImpl(
     override fun swap(tokenOut: Token): HSPage = SwapPage(tokenOut = tokenOut)
     override fun backupLocal(account: Account): HSPage = BackupLocalPage(account)
     override fun markdown(url: String): HSPage = MarkdownPage(MarkdownPage.Input(url, true))
-    override fun subscriptionInfo(): HSPage = SubscriptionInfoPage()
 
     override val isQrScannerAvailable = true
     override fun hardwareWallet(input: ManageAccountsModule.Input?): HSPage = HardwareWalletPage(input)

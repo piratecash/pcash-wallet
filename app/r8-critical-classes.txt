@@ -76,3 +76,6 @@ org.spongycastle.jcajce.provider.asymmetric.ec.KeyPairGeneratorSpi$ECDH
 org.spongycastle.jcajce.provider.asymmetric.ec.KeyAgreementSpi$DH
 org.spongycastle.jcajce.provider.symmetric.AES$Mappings
 org.spongycastle.jcajce.provider.symmetric.AES$ECB
+
+# Gson reflects its fields by name (EIP-7702 authorizationList in eth_getTransactionByHash); only the kit package keep rule protects it.
+io.horizontalsystems.ethereumkit.api.jsonrpc.models.RpcAuthorization

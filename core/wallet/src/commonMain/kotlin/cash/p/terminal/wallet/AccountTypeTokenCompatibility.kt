@@ -11,7 +11,7 @@ fun AccountType.isCompatibleWith(blockchainType: BlockchainType, tokenType: Toke
     if (this is AccountType.MayachainAddress) return blockchainType == BlockchainType.Mayachain
 
     if (blockchainType == BlockchainType.Thorchain || blockchainType == BlockchainType.Mayachain) {
-        return this is AccountType.Mnemonic
+        return this is SeedAccountType
     }
 
     if (blockchainType == BlockchainType.Beam) {
@@ -23,9 +23,7 @@ fun AccountType.isCompatibleWith(blockchainType: BlockchainType, tokenType: Toke
             blockchainType == BlockchainType.Monero && tokenType == TokenType.Native
         }
 
-        is AccountType.Mnemonic -> {
-            tokenType != TokenType.Mweb || blockchainType == BlockchainType.Litecoin
-        }
+        is SeedAccountType -> isSeedCompatible(blockchainType, tokenType)
 
         is AccountType.TonAddress -> isWatchedTonAddressCompatible(blockchainType, tokenType)
 
@@ -34,6 +32,13 @@ fun AccountType.isCompatibleWith(blockchainType: BlockchainType, tokenType: Toke
         }
     }
 }
+
+// Zcash derives from the BIP-39 phrase itself, which a SLIP-39 account does not have.
+private fun SeedAccountType.isSeedCompatible(blockchainType: BlockchainType, tokenType: TokenType): Boolean =
+    when (blockchainType) {
+        BlockchainType.Zcash -> this is AccountType.Mnemonic
+        else -> tokenType != TokenType.Mweb || blockchainType == BlockchainType.Litecoin
+    }
 
 /** A watched address is a single account; the app cannot derive another wallet version's address. */
 private fun isWatchedTonAddressCompatible(blockchainType: BlockchainType, tokenType: TokenType): Boolean =

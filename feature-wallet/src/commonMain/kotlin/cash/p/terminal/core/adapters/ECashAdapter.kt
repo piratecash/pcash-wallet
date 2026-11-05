@@ -7,6 +7,7 @@ import cash.p.terminal.core.managers.BitcoinKitEnvironment
 import cash.p.terminal.wallet.entities.UsedAddress
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.bitcoincore.BitcoinCore
 import io.horizontalsystems.bitcoincore.models.BalanceInfo
@@ -110,7 +111,7 @@ class ECashAdapter(
                     )
                 }
 
-                is AccountType.Mnemonic -> {
+                is SeedAccountType -> {
                     return ECashKit(
                         dataDir = environment.dataDir,
                         databaseKey = environment.databaseKey,

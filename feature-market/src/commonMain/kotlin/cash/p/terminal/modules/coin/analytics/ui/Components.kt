@@ -24,7 +24,6 @@ import androidx.compose.ui.graphics.Color
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
-import cash.p.terminal.resources.CoinAnalytics_ThreeDots
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.ic_arrow_right
 import cash.p.terminal.resources.ic_info_20
@@ -193,10 +192,6 @@ private fun BoxItemCell(
 
         is BoxItem.Value -> {
             subhead1_leah(text = boxItem.text)
-        }
-
-        BoxItem.Dots -> {
-            subhead1_leah(text = stringResource(Res.string.CoinAnalytics_ThreeDots))
         }
     }
 }
