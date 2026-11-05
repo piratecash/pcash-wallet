@@ -1,5 +1,5 @@
 ## 🚀 Version 1.1.261 Update
-_Release date: November 1, 2026_
+_Release date: November 5, 2026_
 
 ### ✨ New Features
 
@@ -10,6 +10,12 @@ _Release date: November 1, 2026_
   Receiving, sending, swaps, TON Connect, and Jetton tokens are supported for W5 wallets.
 
 ### ⚙️ Improvements
+
+- **Updated the Zcash SDK for the NU7 network upgrade**
+  Synchronization, transaction sending, history, and memos will continue to work after NU7 activation.
+
+- **Improved Ethereum RPC failure handling**
+  The app automatically uses fallback connections when the selected node is unavailable. WalletConnect operations can now retry fee loading and request submission.
 
 - **Refined the redesigned app interface**
   Colors and the main balance screen are now consistent across light and dark themes.
@@ -40,6 +46,9 @@ _Release date: November 1, 2026_
 - **Fixed WalletConnect session handling when deleting a wallet**
   Sessions from a deleted wallet are no longer reassigned to another wallet. Temporary service connections were removed, and an error after connecting through a browser link was fixed.
 
+- **Fixed a crash when rejecting a WalletConnect request**
+  Expired or repeated requests can now be closed without crashing the app or leaving the buttons unresponsive.
+
 - **Fixed a rare crash when leaving the asset screen**
   The app no longer closes when navigating back while the transaction list is scrolling or updating.
 
@@ -51,6 +60,8 @@ _Release date: November 1, 2026_
   Resolved a crash after enabling Premium from the scanner and preserved scanned results when returning to a screen.
 
 - **Removed a brief interface freeze during the first QR code scan**
+
+- **Fixed a rare crash while synchronizing Litecoin with MWEB enabled**
 
 - **Fixed values in Changelly swap details**
   The actual amount, exchange rate, and price impact are now displayed correctly.

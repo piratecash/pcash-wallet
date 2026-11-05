@@ -13,6 +13,7 @@ import cash.p.terminal.modules.manageaccount.publickeys.PublicKeysModule.ZcashVi
 import cash.p.terminal.modules.manageaccount.showextendedkey.ShowExtendedKeyModule.DisplayKeyType.AccountPublicKey
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import io.horizontalsystems.core.entities.BlockchainType
 import io.horizontalsystems.ethereumkit.core.signer.Signer
 import io.horizontalsystems.hdwalletkit.HDExtendedKey
@@ -32,7 +33,7 @@ class PublicKeysViewModel(
 
     init {
         val evmAddress: String? = when (val accountType = account.type) {
-            is AccountType.Mnemonic -> {
+            is SeedAccountType -> {
                 val chain = evmBlockchainManager.getChain(BlockchainType.Ethereum)
                 Signer.address(accountType.seed, chain).eip55
             }
@@ -47,13 +48,13 @@ class PublicKeysViewModel(
             else -> null
         }
 
-        val mnemonicType = account.type as? AccountType.Mnemonic
+        val seedAccountType = account.type as? SeedAccountType
         val hdExtendedKey = (account.type as? AccountType.HdExtendedKey)?.hdExtendedKey
         var accountPublicKey = AccountPublicKey(false)
 
-        val publicKey = if (mnemonicType != null) {
+        val publicKey = if (seedAccountType != null) {
             accountPublicKey = AccountPublicKey(true)
-            HDExtendedKey(mnemonicType.seed, HDWallet.Purpose.BIP44)
+            HDExtendedKey(seedAccountType.seed, HDWallet.Purpose.BIP44)
         } else if (hdExtendedKey?.derivedType == HDExtendedKey.DerivedType.Master) {
             accountPublicKey = AccountPublicKey(true)
             hdExtendedKey

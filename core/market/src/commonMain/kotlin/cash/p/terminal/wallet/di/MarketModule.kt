@@ -1,7 +1,6 @@
 package cash.p.terminal.wallet.di
 
 import cash.p.terminal.wallet.MarketKitWrapper
-import cash.p.terminal.wallet.SubscriptionManager
 import cash.p.terminal.wallet.favorites.MarketFavoritesManager
 import cash.p.terminal.wallet.managers.VirtualCoinMapper
 import cash.p.terminal.wallet.providers.CryptoCompareProvider
@@ -25,7 +24,6 @@ private val commonMarketModule = module {
 
     singleOf(::VirtualCoinMapper)
     singleOf(::MarketKitWrapper)
-    singleOf(::SubscriptionManager)
     factoryOf(::CryptoCompareProvider)
     factoryOf(::PirateCoinInfoMapper)
 }

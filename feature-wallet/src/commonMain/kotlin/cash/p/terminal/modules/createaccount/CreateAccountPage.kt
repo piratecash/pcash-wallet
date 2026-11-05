@@ -116,7 +116,11 @@ private fun CreateAccountAdvancedContent(navigation: HSNavigation, input: Create
         passphraseTermsAccepted = viewModel.passphraseTermsAgreed,
         onBackClick = navigation::navigateUpSafely,
         onFinish = { navigation.finishCreateAccount(input) },
-        onOpenTerms = { passphraseTermsLauncher.slideFromRight(PassphraseTermsPage(screenshotEnabled = true)) },
+        onOpenTerms = {
+            passphraseTermsLauncher.slideFromRight(
+                PassphraseTermsPage(screenshotEnabled = true, isShamir = viewModel.isShamir)
+            )
+        },
         onOpenNonEnglishMnemonicTerms = { language ->
             mnemonicTermsLauncher.slideFromRight(NonEnglishMnemonicTermsPage(language))
         }

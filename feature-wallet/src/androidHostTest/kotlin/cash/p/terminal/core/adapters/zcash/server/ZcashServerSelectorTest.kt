@@ -163,18 +163,33 @@ class ZcashServerSelectorTest {
         prober.answer(urls[0], probe(chainName = "test"))
         prober.answer(urls[1], probe(saplingActivationHeight = 1))
         prober.answer(urls[2], probe(branchIdMatches = false))
-        prober.answer(urls[3], probe(estimatedHeight = TIP + 3))
-        prober.answer(urls[4], probe(blockHeight = TIP - 4))
+        prober.answer(urls[3], probe(estimatedHeight = TIP + 7))
+        prober.answer(urls[4], probe(blockHeight = TIP - 10))
         prober.answer(CUSTOM_URL, probe(infoMs = 500))
         val selector = selector()
 
         evaluate(selector)
 
         assertEquals(CUSTOM_URL, current())
-        listOf("chain test", "sapling 1", "branch id", "catching up", "lag 4").forEachIndexed { index, reason ->
+        listOf("chain test", "sapling 1", "branch id", "catching up", "lag 10").forEachIndexed { index, reason ->
             assertTrue(selector.healthOf(urls[index]), "rejected: $reason" in selector.healthOf(urls[index]))
         }
         assertFalse("rejected" in selector.healthOf(CUSTOM_URL))
+    }
+
+    @Test
+    fun evaluate_serverAtBlockToleranceEdge_admitsIt() = runTest {
+        prober.answer(urls[0], probe(blockHeight = TIP - 9, infoMs = 50))
+        prober.answer(urls[1], probe(estimatedHeight = TIP + 6, infoMs = 60))
+        prober.answer(urls[2], probe(infoMs = 400))
+        prober.answer(urls[3], probe(infoMs = 400))
+        prober.answer(urls[4], probe(infoMs = 400))
+        val selector = selector()
+
+        evaluate(selector)
+
+        assertFalse(selector.healthOf(urls[0]), "rejected" in selector.healthOf(urls[0]))
+        assertFalse(selector.healthOf(urls[1]), "rejected" in selector.healthOf(urls[1]))
     }
 
     @Test
@@ -241,7 +256,7 @@ class ZcashServerSelectorTest {
 
     @Test
     fun evaluate_noneAdmitted_keepsTheCurrentServer() = runTest {
-        urls.forEach { prober.answer(it, probe(estimatedHeight = TIP + 5)) }
+        urls.forEach { prober.answer(it, probe(estimatedHeight = TIP + 7)) }
         val selector = selector()
 
         evaluate(selector)

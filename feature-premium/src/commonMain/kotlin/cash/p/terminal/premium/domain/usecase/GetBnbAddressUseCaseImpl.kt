@@ -5,6 +5,7 @@ import cash.p.terminal.premium.data.model.BnbPremiumAddress
 import cash.p.terminal.premium.domain.HardwareBnbAddressProvider
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -19,11 +20,8 @@ internal class GetBnbAddressUseCaseImpl(
         account: Account,
         requestScanTangemIfNotFound: Boolean
     ): String? {
-        return when (account.type) {
-            is AccountType.Mnemonic -> {
-                val mnemonicType = account.type as AccountType.Mnemonic
-                seedToEvmAddressUseCase(mnemonicType.words, mnemonicType.passphrase)
-            }
+        return when (val accountType = account.type) {
+            is SeedAccountType -> seedToEvmAddressUseCase(accountType.seed)
 
             is AccountType.TrezorDevice,
             is AccountType.HardwareCard -> {

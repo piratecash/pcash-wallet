@@ -4,6 +4,7 @@ import cash.p.terminal.tangem.common.CustomXPubKeyAddressParser
 import cash.p.terminal.tangem.domain.model.AddressBytesWithPublicKey
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.IHardwarePublicKeyStorage
 import cash.p.terminal.wallet.entities.HardwarePublicKey
 import cash.p.terminal.wallet.entities.TokenType
@@ -26,7 +27,7 @@ class EvmSignerFactory(
 
     suspend fun resolveAddress(account: Account, blockchainType: BlockchainType, chain: Chain): Address? =
         when (val type = account.type) {
-            is AccountType.Mnemonic -> Signer.address(type.seed, chain)
+            is SeedAccountType -> Signer.address(type.seed, chain)
             is AccountType.EvmPrivateKey -> Signer.address(type.key)
             is AccountType.EvmAddress -> Address(type.address)
             is AccountType.HardwareCard, is AccountType.TrezorDevice -> hardwareAddress(account.id, blockchainType)
@@ -35,7 +36,7 @@ class EvmSignerFactory(
 
     suspend fun createSigner(account: Account, blockchainType: BlockchainType, chain: Chain): Signer? =
         when (val type = account.type) {
-            is AccountType.Mnemonic -> Signer.getInstance(type.seed, chain)
+            is SeedAccountType -> Signer.getInstance(type.seed, chain)
             is AccountType.EvmPrivateKey -> Signer.getInstance(type.key, chain)
             is AccountType.HardwareCard -> hardwareKey(
                 account.id, blockchainType

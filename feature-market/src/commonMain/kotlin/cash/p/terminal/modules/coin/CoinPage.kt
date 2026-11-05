@@ -17,7 +17,6 @@ import cash.p.terminal.navigation.navigateUpSafely
 import cash.p.terminal.modules.coin.analytics.CoinAnalyticsScreen
 import cash.p.terminal.modules.coin.coinmarkets.CoinMarketsScreen
 import cash.p.terminal.modules.coin.overview.ui.CoinOverviewScreen
-import cash.p.terminal.modules.market.MarketPages
 import cash.p.terminal.resources.CoinPage_CoinNotFound
 import cash.p.terminal.resources.CoinPage_Favorite
 import cash.p.terminal.resources.CoinPage_Unfavorite
@@ -37,7 +36,6 @@ import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.ui_compose.components.LocalHudMessenger
 import cash.p.terminal.wallet.MarketKitWrapper
 import io.horizontalsystems.core.Translator
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -91,7 +89,6 @@ fun CoinTabs(
     val pagerState = rememberPagerState(initialPage = 0) { tabs.size }
     val coroutineScope = rememberCoroutineScope()
     val hudMessenger = LocalHudMessenger.current
-    val marketPages = koinInject<MarketPages>()
 
     Scaffold(
         containerColor = ComposeAppTheme.colors.backgroundBase,
@@ -140,13 +137,6 @@ fun CoinTabs(
             Tabs(tabItems, onClick = { tab ->
                 coroutineScope.launch {
                     pagerState.scrollToPage(tabs.indexOf(tab))
-
-                    if (tab == CoinModule.Tab.Details && viewModel.shouldShowSubscriptionInfo()) {
-                        viewModel.subscriptionInfoShown()
-
-                        delay(1000)
-                        marketPages.subscriptionInfo()?.let { navigation.slideFromBottom(it) }
-                    }
                 }
             })
 

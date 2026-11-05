@@ -14,7 +14,6 @@ import cash.p.terminal.wallet.managers.NftManager
 import cash.p.terminal.wallet.managers.PostManager
 import cash.p.terminal.wallet.managers.VirtualCoinMapper
 import cash.p.terminal.wallet.models.Analytics
-import cash.p.terminal.wallet.models.AnalyticsPreview
 import cash.p.terminal.wallet.models.ChartPoint
 import cash.p.terminal.wallet.models.CoinCategory
 import cash.p.terminal.wallet.models.CoinInvestment
@@ -37,7 +36,6 @@ import cash.p.terminal.wallet.models.NftTopCollection
 import cash.p.terminal.wallet.models.Post
 import cash.p.terminal.wallet.models.RankMultiValue
 import cash.p.terminal.wallet.models.RankValue
-import cash.p.terminal.wallet.models.SubscriptionResponse
 import cash.p.terminal.wallet.models.TokenHolders
 import cash.p.terminal.wallet.models.TopMovers
 import cash.p.terminal.wallet.models.TopPair
@@ -66,7 +64,6 @@ import io.reactivex.Single
 import cash.p.terminal.wallet.managers.CoinManager
 import org.koin.java.KoinJavaComponent.get
 import org.koin.java.KoinJavaComponent.inject
-import retrofit2.Response
 import java.math.BigDecimal
 import java.util.Date
 
@@ -296,11 +293,10 @@ class MarketKit(
     // Details
 
     fun tokenHoldersSingle(
-        authToken: String,
         coinUid: String,
         blockchainUid: String
     ): Single<TokenHolders> =
-        hsProvider.tokenHoldersSingle(authToken, coinUid, blockchainUid)
+        hsProvider.tokenHoldersSingle(coinUid, blockchainUid)
 
     fun treasuriesSingle(coinUid: String, currencyCode: String): Single<List<CoinTreasury>> =
         hsProvider.coinTreasuriesSingle(coinUid, currencyCode)
@@ -337,98 +333,78 @@ class MarketKit(
     }
 
     fun dexLiquiditySingle(
-        authToken: String,
         coinUid: String,
         currencyCode: String,
         timePeriod: HsTimePeriod
     ): Single<List<Analytics.VolumePoint>> =
-        hsProvider.dexLiquiditySingle(authToken, coinUid, currencyCode, timePeriod)
+        hsProvider.dexLiquiditySingle(coinUid, currencyCode, timePeriod)
 
     fun dexVolumesSingle(
-        authToken: String,
         coinUid: String,
         currencyCode: String,
         timePeriod: HsTimePeriod
     ): Single<List<Analytics.VolumePoint>> =
-        hsProvider.dexVolumesSingle(authToken, coinUid, currencyCode, timePeriod)
+        hsProvider.dexVolumesSingle(coinUid, currencyCode, timePeriod)
 
     fun transactionDataSingle(
-        authToken: String,
         coinUid: String,
         timePeriod: HsTimePeriod,
         platform: String?
     ): Single<List<Analytics.CountVolumePoint>> =
-        hsProvider.transactionDataSingle(authToken, coinUid, timePeriod, platform)
+        hsProvider.transactionDataSingle(coinUid, timePeriod, platform)
 
     fun activeAddressesSingle(
-        authToken: String,
         coinUid: String,
         timePeriod: HsTimePeriod
     ): Single<List<Analytics.CountPoint>> {
-        return hsProvider.activeAddressesSingle(authToken, coinUid, timePeriod)
-    }
-
-    fun analyticsPreviewSingle(
-        coinUid: String,
-        addresses: List<String>,
-    ): Single<AnalyticsPreview> {
-        return hsProvider.analyticsPreviewSingle(coinUid, addresses)
+        return hsProvider.activeAddressesSingle(coinUid, timePeriod)
     }
 
     fun analyticsSingle(
-        authToken: String,
         coinUid: String,
         currencyCode: String,
     ): Single<Analytics> {
-        return hsProvider.analyticsSingle(authToken, coinUid, currencyCode)
+        return hsProvider.analyticsSingle(coinUid, currencyCode)
     }
 
     fun cexVolumeRanksSingle(
-        authToken: String,
         currencyCode: String
     ): Single<List<RankMultiValue>> {
-        return hsProvider.rankMultiValueSingle(authToken, "cex_volume", currencyCode)
+        return hsProvider.rankMultiValueSingle("cex_volume", currencyCode)
     }
 
     fun dexVolumeRanksSingle(
-        authToken: String,
         currencyCode: String
     ): Single<List<RankMultiValue>> {
-        return hsProvider.rankMultiValueSingle(authToken, "dex_volume", currencyCode)
+        return hsProvider.rankMultiValueSingle("dex_volume", currencyCode)
     }
 
-    fun dexLiquidityRanksSingle(authToken: String, currencyCode: String): Single<List<RankValue>> {
-        return hsProvider.rankValueSingle(authToken, "dex_liquidity", currencyCode)
+    fun dexLiquidityRanksSingle(currencyCode: String): Single<List<RankValue>> {
+        return hsProvider.rankValueSingle("dex_liquidity", currencyCode)
     }
 
     fun activeAddressRanksSingle(
-        authToken: String,
         currencyCode: String
     ): Single<List<RankMultiValue>> {
-        return hsProvider.rankMultiValueSingle(authToken, "address", currencyCode)
+        return hsProvider.rankMultiValueSingle("address", currencyCode)
     }
 
     fun transactionCountsRanksSingle(
-        authToken: String,
         currencyCode: String
     ): Single<List<RankMultiValue>> {
-        return hsProvider.rankMultiValueSingle(authToken, "tx_count", currencyCode)
+        return hsProvider.rankMultiValueSingle("tx_count", currencyCode)
     }
 
-    fun holderRanksSingle(authToken: String, currencyCode: String): Single<List<RankValue>> {
-        return hsProvider.rankValueSingle(authToken, "holders", currencyCode)
+    fun holderRanksSingle(currencyCode: String): Single<List<RankValue>> {
+        return hsProvider.rankValueSingle("holders", currencyCode)
     }
 
-    fun revenueRanksSingle(authToken: String, currencyCode: String): Single<List<RankMultiValue>> {
-        return hsProvider.rankMultiValueSingle(authToken, "revenue", currencyCode)
+    fun revenueRanksSingle(currencyCode: String): Single<List<RankMultiValue>> {
+        return hsProvider.rankMultiValueSingle("revenue", currencyCode)
     }
 
-    fun feeRanksSingle(authToken: String, currencyCode: String): Single<List<RankMultiValue>> {
-        return hsProvider.rankMultiValueSingle(authToken, "fee", currencyCode)
-    }
-
-    fun subscriptionsSingle(addresses: List<String>): Single<List<SubscriptionResponse>> {
-        return hsProvider.subscriptionsSingle(addresses)
+    fun feeRanksSingle(currencyCode: String): Single<List<RankMultiValue>> {
+        return hsProvider.rankMultiValueSingle("fee", currencyCode)
     }
 
     // Overview
@@ -553,20 +529,6 @@ class MarketKit(
     // NFT
 
     suspend fun nftTopCollections(): List<NftTopCollection> = nftManager.topCollections()
-
-    // Auth
-
-    fun authGetSignMessage(address: String): Single<String> {
-        return hsProvider.authGetSignMessage(address)
-    }
-
-    fun authenticate(signature: String, address: String): Single<String> {
-        return hsProvider.authenticate(signature, address)
-    }
-
-    fun requestPersonalSupport(authToken: String, username: String): Single<Response<Void>> {
-        return hsProvider.requestPersonalSupport(authToken, username)
-    }
 
     //Misc
 

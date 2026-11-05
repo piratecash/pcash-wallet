@@ -1,5 +1,8 @@
 package cash.p.terminal.modules.importwallet
 
+import cash.p.terminal.modules.restoreaccount.restoreshamir.ShamirPrefill
+import java.security.SecureRandom
+import cash.p.terminal.wallet.slip39.Slip39Shamir
 import cash.p.terminal.core.TestDispatcherProvider
 import cash.p.terminal.core.managers.SeedPhraseQrCrypto
 import cash.p.terminal.core.managers.TimePasswordProvider
@@ -261,5 +264,50 @@ class ImportWalletViewModelTest {
 
     private fun validBackup(): ByteArray =
         requireNotNull(javaClass.classLoader.getResourceAsStream("backup/v4_single_password.bin")).use { it.readBytes() }
-}
 
+    @Test
+    fun handleScannedData_encryptedSlip39Qr_emitsOpenShamirRestore() = runTest(dispatcher) {
+        val viewModel = ImportWalletViewModel(crypto, dispatcherProvider)
+        val share = Slip39Shamir.split(
+            Slip39Shamir.combine(listOf(Slip39Shamir.parseShare(SLIP39_1OF1))), 1, 1, SecureRandom()
+        ).single()
+
+        viewModel.handleScannedData(crypto.encrypt(share, "TREZOR", kind = SeedPhraseQrCrypto.KIND_SLIP39))
+
+        val event = withTimeout(1_000) { viewModel.navigationEvents.first() }
+        assertEquals(
+            ImportWalletViewModel.NavigationEvent.OpenShamirRestore(ShamirPrefill(share, "TREZOR")),
+            event
+        )
+    }
+
+    @Test
+    fun handleScannedData_plainSlip39Share_emitsOpenShamirRestoreWithShare() = runTest(dispatcher) {
+        val viewModel = ImportWalletViewModel(crypto, dispatcherProvider)
+
+        viewModel.handleScannedData(" ${SLIP39_3OF6_FIRST.uppercase()} ")
+
+        val event = withTimeout(1_000) { viewModel.navigationEvents.first() }
+        assertEquals(
+            ImportWalletViewModel.NavigationEvent.OpenShamirRestore(ShamirPrefill(SLIP39_3OF6_FIRST.split(" "), "")),
+            event
+        )
+    }
+
+    @Test
+    fun handleScannedData_plainBip39Phrase_stillEmitsOpenRestoreFromQr() = runTest(dispatcher) {
+        val viewModel = ImportWalletViewModel(crypto, dispatcherProvider)
+
+        viewModel.handleScannedData(words12.joinToString(" "))
+
+        val event = withTimeout(1_000) { viewModel.navigationEvents.first() }
+        assertEquals(words12, (event as ImportWalletViewModel.NavigationEvent.OpenRestoreFromQr).words)
+    }
+
+    private companion object {
+        const val SLIP39_1OF1 =
+            "academic again academic academic academic academic academic academic academic academic academic academic academic academic academic academic academic pecan provide remember"
+        const val SLIP39_3OF6_FIRST =
+            "extra extend academic bishop cricket bundle tofu goat apart victim enlarge program behavior permit course armed jerky faint language modern"
+    }
+}
