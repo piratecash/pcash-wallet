@@ -3,6 +3,9 @@ package cash.p.terminal.modules.restoreaccount
 import android.app.Application
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
@@ -107,6 +110,24 @@ class RestorePhraseQrScanTest {
         }
     }
 
+    @Test
+    fun restorePhraseAdvanced_prefilledPassphrase_showsPassphraseInField() {
+        val caller = ScreenTestPage { navigation ->
+            RestorePhrase(
+                navigation, restoreMenuViewModel, restoreViewModel, {}, {}, {}, {},
+                advanced = true,
+                prefillWords = PHRASE.split(" "),
+                prefillPassphrase = PASSPHRASE,
+            )
+        }
+        composeRule.setContent {
+            TestNav3Host(HSNavigation(NavBackStack<HSPage>(PlainTestPage(), caller)))
+        }
+        composeRule.waitForIdle()
+
+        composeRule.onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.Password)).assert(hasText(PASSPHRASE))
+    }
+
     private fun assertScannedPhraseShown(clearFirst: Boolean, screen: @Composable (HSNavigation) -> Unit) {
         val caller = ScreenTestPage(screen)
         val navigation = HSNavigation(NavBackStack<HSPage>(PlainTestPage(), caller))
@@ -157,6 +178,7 @@ class RestorePhraseQrScanTest {
     private companion object {
         const val SCAN_OPEN_DELAY_MS = 200L
         const val PREFILLED_PHRASE = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo wrong"
+        const val PASSPHRASE = "TREZOR"
         const val PHRASE = "abandon ability able about above absent absorb abstract absurd abuse access accident"
     }
 }

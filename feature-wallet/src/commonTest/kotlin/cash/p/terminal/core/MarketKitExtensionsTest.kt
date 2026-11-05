@@ -108,6 +108,32 @@ class MarketKitExtensionsTest {
     }
 
     @Test
+    fun supports_slip39_hidesZcashAndBeamOnly() {
+        val slip39 = AccountType.Slip39(listOf("word"), "", ByteArray(16))
+
+        assertFalse(BlockchainType.Zcash.supports(slip39))
+        assertFalse(BlockchainType.Beam.supports(slip39))
+        listOf(
+            BlockchainType.Bitcoin,
+            BlockchainType.Litecoin,
+            BlockchainType.Ethereum,
+            BlockchainType.Monero,
+            BlockchainType.Thorchain,
+            BlockchainType.Mayachain,
+        ).forEach { assertTrue(it.supports(slip39), "$it") }
+    }
+
+    @Test
+    fun supports_slip39MwebToken_onlyOnLitecoin() {
+        val slip39 = AccountType.Slip39(listOf("word"), "", ByteArray(16))
+        val litecoinMweb = nativeToken(BlockchainType.Litecoin).copy(type = TokenType.Mweb)
+        val bitcoinMweb = nativeToken(BlockchainType.Bitcoin).copy(type = TokenType.Mweb)
+
+        assertTrue(litecoinMweb.supports(slip39))
+        assertFalse(bitcoinMweb.supports(slip39))
+    }
+
+    @Test
     fun supports_thorchainAddress_returnsTrueOnlyForThorchain() {
         val thorchainAddress = AccountType.ThorchainAddress("thor1watched")
 

@@ -19,6 +19,7 @@ import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IReceiveAdapter
 import cash.p.terminal.wallet.NoActiveAccount
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.isLitecoinMweb
@@ -94,7 +95,7 @@ object SwapHelper {
                 BlockchainType.Thorchain,
                 BlockchainType.Mayachain -> {
                     val type = account.type
-                    if (type !is AccountType.Mnemonic && type !is AccountType.LedgerDevice) {
+                    if (type !is SeedAccountType && type !is AccountType.LedgerDevice) {
                         throw SwapError.NoDestinationAddress()
                     }
                     val thorchainKitManagers: ThorchainKitManagers by inject(ThorchainKitManagers::class.java)

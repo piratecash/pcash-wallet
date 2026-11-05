@@ -9,6 +9,7 @@ import cash.p.terminal.core.providers.SharedAppConfig
 import cash.p.terminal.wallet.IHardwarePublicKeyStorage
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.entities.HardwarePublicKey
 import com.solana.core.PublicKey
 import io.horizontalsystems.core.IBackgroundManager
@@ -97,7 +98,7 @@ class SolanaKitManager(
     }
 
     suspend fun getAddress(account: Account): String = when (val accountType = account.type) {
-        is AccountType.Mnemonic -> Signer.address(accountType.seed)
+        is SeedAccountType -> Signer.address(accountType.seed)
         is AccountType.SolanaAddress -> accountType.address
         is AccountType.HardwareCard,
         is AccountType.HardwareDevice -> {
@@ -131,7 +132,7 @@ class SolanaKitManager(
         }
 
         val newWrapper = when (val accountType = account.type) {
-            is AccountType.Mnemonic -> {
+            is SeedAccountType -> {
                 createKitInstance(accountType, account)
             }
             is AccountType.SolanaAddress -> {
@@ -156,7 +157,7 @@ class SolanaKitManager(
     }
 
     private suspend fun createKitInstance(
-        accountType: AccountType.Mnemonic,
+        accountType: SeedAccountType,
         account: Account
     ): SolanaKitWrapper {
         val seed = accountType.seed

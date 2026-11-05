@@ -43,7 +43,6 @@ import cash.p.terminal.modules.walletconnect.WCSessionManager
 import cash.p.terminal.strings.helpers.LocaleHelper
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.MarketKitWrapper
-import cash.p.terminal.wallet.SubscriptionManager
 import cash.p.terminal.wallet.entities.TokenQuery
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.entities.TokenType.AddressSpecType
@@ -144,7 +143,6 @@ class App : CoreApp(), WorkConfiguration.Provider, SingletonImageLoader.Factory 
         val evmLabelManager: EvmLabelManager by inject(EvmLabelManager::class.java)
         val balanceHiddenManager: BalanceHiddenManager by inject(IBalanceHiddenManager::class.java)
         val contactsRepository: ContactsRepository by inject(ContactsRepository::class.java)
-        val subscriptionManager: SubscriptionManager by inject(SubscriptionManager::class.java)
         val tonConnectManager: TonConnectManager by inject(TonConnectManager::class.java)
     }
 

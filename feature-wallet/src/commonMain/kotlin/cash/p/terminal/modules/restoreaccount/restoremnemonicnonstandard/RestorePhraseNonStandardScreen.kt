@@ -68,7 +68,8 @@ import cash.p.terminal.ui_compose.components.AppBar
 import cash.p.terminal.ui_compose.components.ButtonSecondaryCircle
 import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
 import cash.p.terminal.ui_compose.components.CellSingleLineLawrenceSection
-import cash.p.terminal.ui.compose.components.CustomKeyboardWarningDialog
+import cash.p.terminal.ui.compose.components.ThirdPartyKeyboardWarning
+import cash.p.terminal.ui.compose.components.rememberThirdPartyKeyboardWarningState
 import cash.p.terminal.ui.compose.components.FormsInput
 import cash.p.terminal.ui_compose.components.FormsInputPassword
 import cash.p.terminal.ui_compose.components.HeaderText
@@ -81,8 +82,6 @@ import cash.p.terminal.ui_compose.components.body_disabled
 import cash.p.terminal.ui_compose.components.body_leah
 import cash.p.terminal.ui_compose.components.caption_lucian
 import cash.p.terminal.ui.compose.observeKeyboardState
-import cash.p.terminal.ui.compose.rememberInputMethodPicker
-import cash.p.terminal.ui.compose.rememberThirdPartyKeyboardCheck
 import cash.p.terminal.ui_compose.theme.ColoredTextStyle
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.core.launchAfterClearingFocus
@@ -110,8 +109,7 @@ fun RestorePhraseNonStandard(
     val viewModel = koinViewModel<RestoreMnemonicNonStandardViewModel>()
     val uiState = viewModel.uiState
     val hudMessenger = rememberHudMessenger()
-    val isThirdPartyKeyboard = rememberThirdPartyKeyboardCheck()
-    val showInputMethodPicker = rememberInputMethodPicker()
+    val keyboardWarning = rememberThirdPartyKeyboardWarningState(viewModel)
     val focusManager = LocalFocusManager.current
     val scannerTitle = stringResource(Res.string.Restore_RecoveryPhrase)
 
@@ -125,7 +123,6 @@ fun RestorePhraseNonStandard(
         )
         viewModel.onEnterMnemonicPhrase(scannedText, scannedText.length)
     }
-    var showCustomKeyboardDialog by remember { mutableStateOf(false) }
     var isMnemonicPhraseInputFocused by remember { mutableStateOf(false) }
     val keyboardState by observeKeyboardState()
 
@@ -196,9 +193,7 @@ fun RestorePhraseNonStandard(
                             textState = it
 
                             viewModel.onEnterMnemonicPhrase(it.text, it.selection.max)
-
-                            showCustomKeyboardDialog =
-                                !viewModel.isThirdPartyKeyboardAllowed && isThirdPartyKeyboard()
+                            keyboardWarning.onSecretInput()
                         },
                         textStyle = ColoredTextStyle(
                             color = ComposeAppTheme.colors.textPrimary,
@@ -327,21 +322,7 @@ fun RestorePhraseNonStandard(
         viewModel.onSelectCoinsShown()
     }
 
-    if (showCustomKeyboardDialog) {
-        CustomKeyboardWarningDialog(
-            onSelect = {
-                showInputMethodPicker()
-                showCustomKeyboardDialog = false
-            },
-            onSkip = {
-                viewModel.onAllowThirdPartyKeyboard()
-                showCustomKeyboardDialog = false
-            },
-            onCancel = {
-                showCustomKeyboardDialog = false
-            }
-        )
-    }
+    ThirdPartyKeyboardWarning(keyboardWarning)
 
 }
 

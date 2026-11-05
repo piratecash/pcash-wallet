@@ -5,6 +5,7 @@ import cash.p.terminal.core.managers.RestoreSettingType
 import cash.p.terminal.ledger.di.ledgerAppKeyFetchers
 import cash.p.terminal.modules.displayoptions.DisplayPricePeriod
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.Derivation
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.accountTypeDerivation
@@ -138,7 +139,7 @@ fun BlockchainType.supports(accountType: AccountType): Boolean {
         is AccountType.HardwareCard ->
             this != BlockchainType.Thorchain && this != BlockchainType.Mayachain
 
-        is AccountType.Mnemonic -> true
+        is SeedAccountType -> true
 
         is AccountType.HdExtendedKey -> {
             val coinTypes = accountType.hdExtendedKey.coinTypes
@@ -214,7 +215,7 @@ fun Token.supports(accountType: AccountType): Boolean {
         is AccountType.HdExtendedKey -> supportsHdExtendedKey(accountType)
 
         is AccountType.HardwareCard,
-        is AccountType.Mnemonic,
+        is SeedAccountType,
         is AccountType.MnemonicMonero,
         is AccountType.TonAddress -> accountType.isCompatibleWith(blockchainType, type)
 

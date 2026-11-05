@@ -10,6 +10,7 @@ import cash.p.terminal.core.order
 import cash.p.terminal.core.supports
 import cash.p.terminal.core.zcashAddressSpecs
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.Token
 import io.horizontalsystems.core.entities.BlockchainType
@@ -32,7 +33,7 @@ class WatchAddressService(
     fun tokens(accountType: AccountType): List<Token> {
         val tokenQueries = buildList {
             when (accountType) {
-                is AccountType.Mnemonic,
+                is SeedAccountType,
                 is AccountType.MnemonicMonero,
                 is AccountType.HardwareCard,
                 is AccountType.HardwareDevice,

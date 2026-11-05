@@ -5,6 +5,7 @@ import cash.p.terminal.wallet.AccountType.EvmPrivateKey
 import cash.p.terminal.wallet.AccountType.HardwareCard
 import cash.p.terminal.wallet.AccountType.Mnemonic
 import cash.p.terminal.wallet.AccountType.MnemonicMonero
+import cash.p.terminal.wallet.AccountType.Slip39
 import cash.p.terminal.wallet.AccountType.StellarAddress
 import cash.p.terminal.wallet.AccountType.TonAddress
 import cash.p.terminal.wallet.AccountType.ZCashSaplingKey
@@ -39,8 +40,9 @@ class AccountCapabilitiesTest {
     }
 
     @Test
-    fun canBeDuplicated_respectsMnemonicOnlyPolicy() {
+    fun canBeDuplicated_respectsPhraseOnlyPolicy() {
         assertTrue(accountOf(mnemonicType()).canBeDuplicated())
+        assertTrue(accountOf(Slip39(List(20) { "academic" }, passphrase = "", seed = ByteArray(16))).canBeDuplicated())
         assertTrue(accountOf(moneroMnemonicType()).canBeDuplicated())
         assertFalse(accountOf(hardwareType()).canBeDuplicated())
         assertFalse(accountOf(EvmAddress("0x02")).canBeDuplicated())

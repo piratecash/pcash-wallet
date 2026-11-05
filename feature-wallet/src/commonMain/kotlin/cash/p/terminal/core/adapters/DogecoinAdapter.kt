@@ -7,6 +7,7 @@ import cash.p.terminal.core.UnsupportedAccountException
 import cash.p.terminal.core.managers.BitcoinKitEnvironment
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.UsedAddress
 import io.horizontalsystems.bitcoincore.BitcoinCore
@@ -116,7 +117,7 @@ class DogecoinAdapter(
             val account = wallet.account
 
             when (val accountType = account.type) {
-                is AccountType.Mnemonic -> {
+                is SeedAccountType -> {
                     return DogecoinKit(
                         dataDir = environment.dataDir,
                         databaseKey = environment.databaseKey,

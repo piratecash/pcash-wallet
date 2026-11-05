@@ -17,6 +17,7 @@ import cash.p.terminal.modules.manageaccount.ManageAccountModule.KeyAction
 import cash.p.terminal.navigation.HSPage
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.IAccountManager
 import cash.p.terminal.wallet.IWalletManager
 import cash.p.terminal.wallet.canBeDuplicated
@@ -139,27 +140,26 @@ class ManageAccountViewModel(
             return listOf(BackupItem.LocalBackup(false))
         }
 
-        return if (!account.isBackedUp && !account.isFileBackedUp) {
-            listOf(
-                BackupItem.ManualBackup(true),
-                BackupItem.LocalBackup(true),
-                BackupItem.InfoText(Res.string.BackupRecoveryPhrase_BackupRequiredText),
-            )
-        } else {
-            listOf(
-                BackupItem.ManualBackup(
-                    showAttention = !account.isBackedUp,
-                    completed = account.isBackedUp
-                ),
-                BackupItem.LocalBackup(false),
-                BackupItem.InfoText(Res.string.BackupRecoveryPhrase_BackupRecomendedText),
+        val noBackup = !account.isBackedUp && !account.isFileBackedUp
+        return buildList {
+            add(BackupItem.ManualBackup(showAttention = !account.isBackedUp, completed = account.isBackedUp))
+            if (account.type is AccountType.Slip39) add(BackupItem.ShamirBackup(showAttention = !account.isBackedUp))
+            add(BackupItem.LocalBackup(showAttention = noBackup))
+            add(
+                BackupItem.InfoText(
+                    if (noBackup) {
+                        Res.string.BackupRecoveryPhrase_BackupRequiredText
+                    } else {
+                        Res.string.BackupRecoveryPhrase_BackupRecomendedText
+                    }
+                )
             )
         }
     }
 
     /** Manual backup shows words; key-based accounts have none to show. */
     private val AccountType.hasRecoveryPhrase: Boolean
-        get() = this is AccountType.Mnemonic || this is AccountType.MnemonicMonero
+        get() = this is SeedAccountType || this is AccountType.MnemonicMonero
 
     private suspend fun hasMoneroTokenEnabled(account: Account): Boolean {
         return walletManager.getWallets(account)
@@ -181,7 +181,7 @@ class ManageAccountViewModel(
             return emptyList()
         }
         return when (account.type) {
-            is AccountType.Mnemonic -> buildList {
+            is SeedAccountType -> buildList {
                 add(KeyAction.RecoveryPhrase)
                 if (hasMoneroTokenEnabled(account)) {
                     add(KeyAction.RecoveryPhraseMonero)

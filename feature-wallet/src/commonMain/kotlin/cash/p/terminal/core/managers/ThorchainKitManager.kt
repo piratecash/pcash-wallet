@@ -5,6 +5,7 @@ import cash.p.terminal.core.onPollingStarted
 import cash.p.terminal.core.onPollingStopped
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.IHardwarePublicKeyStorage
 import cash.p.terminal.wallet.entities.HardwarePublicKey
@@ -252,7 +253,7 @@ class ThorchainKitManager(
     private fun clearFiles(accountId: String) = ThorchainKit.clear(platformContexts.thorchain, network, accountId)
 
     private suspend fun kitAddress(account: Account): Address = when (val type = account.type) {
-        is AccountType.Mnemonic -> ThorchainKit.getAddress(type.seed, network)
+        is SeedAccountType -> ThorchainKit.getAddress(type.seed, network)
         is AccountType.ThorchainAddress -> watchedAddress(type.address, BlockchainType.Thorchain)
         is AccountType.MayachainAddress -> watchedAddress(type.address, BlockchainType.Mayachain)
         is AccountType.HardwareDevice -> Address.fromPublicKey(deviceKey(account).publicKey, network)
@@ -298,7 +299,7 @@ class ThorchainKitManager(
 }
 
 internal fun AccountType.thorchainSeed(): ByteArray = when (this) {
-    is AccountType.Mnemonic -> seed
+    is SeedAccountType -> seed
 
     is AccountType.BitcoinAddress,
     is AccountType.EvmAddress,

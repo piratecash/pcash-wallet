@@ -8,6 +8,7 @@ import cash.p.terminal.modules.manageaccount.recoveryphrase.RecoveryPhraseModule
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
 import cash.p.terminal.wallet.IAccountManager
+import cash.p.terminal.wallet.SeedAccountType
 
 class BackupKeyViewModel(
     accountId: String,
@@ -32,23 +33,22 @@ class BackupKeyViewModel(
         if (account == null) {
             accountNotFound = true
         } else {
-            showPassphraseBlock = account.type is AccountType.Mnemonic
+            showPassphraseBlock = account.type is SeedAccountType
 
-            when (val type = account.type) {
-                is AccountType.Mnemonic -> {
-                    wordsNumbered = type.words.mapIndexed { index, word ->
-                        RecoveryPhraseModule.WordNumbered(word, index + 1)
-                    }
-                    passphrase = type.passphrase
+            account.type.manualBackupPhrase()?.let { (words, passphrase) ->
+                wordsNumbered = words.mapIndexed { index, word ->
+                    RecoveryPhraseModule.WordNumbered(word, index + 1)
                 }
-                is AccountType.MnemonicMonero -> {
-                    wordsNumbered = type.words.mapIndexed { index, word ->
-                        RecoveryPhraseModule.WordNumbered(word, index + 1)
-                    }
-                    passphrase = type.password
-                }
-                else -> Unit
+                this.passphrase = passphrase
             }
         }
     }
+}
+
+/** The words a manual backup shows and checks, paired with the passphrase they are used with. */
+internal fun AccountType.manualBackupPhrase(): Pair<List<String>, String>? = when (this) {
+    is AccountType.Mnemonic -> words to passphrase
+    is AccountType.Slip39 -> words to passphrase
+    is AccountType.MnemonicMonero -> words to password
+    else -> null
 }

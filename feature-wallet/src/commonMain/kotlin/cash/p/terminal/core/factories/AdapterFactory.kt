@@ -81,6 +81,7 @@ import cash.p.terminal.data.repository.EvmTransactionRepository
 import cash.p.terminal.network.pirate.domain.repository.MasterNodesRepository
 import cash.p.terminal.premium.domain.usecase.GetBnbAddressUseCase
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.IAdapter
 import cash.p.terminal.wallet.IReceiveAdapter
 import cash.p.terminal.wallet.IWalletManager
@@ -585,7 +586,7 @@ class AdapterFactory(
         wallet: Wallet,
         activeLitecoinMwebAccounts: Set<String>?,
     ): Boolean {
-        if (wallet.account.type !is AccountType.Mnemonic) return false
+        if (wallet.account.type !is SeedAccountType) return false
 
         val activeAccountIds = activeLitecoinMwebAccounts ?: walletManager.activeWallets.litecoinMwebAccountIds()
         return wallet.account.id in activeAccountIds

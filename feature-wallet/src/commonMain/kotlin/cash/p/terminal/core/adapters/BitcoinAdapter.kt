@@ -7,6 +7,7 @@ import cash.p.terminal.core.managers.BitcoinKitEnvironment
 import cash.p.terminal.core.purpose
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.TokenType
 import cash.p.terminal.wallet.entities.UsedAddress
@@ -135,7 +136,7 @@ class BitcoinAdapter(
                     )
                 }
 
-                is AccountType.Mnemonic -> {
+                is SeedAccountType -> {
                     return BitcoinKit(
                         dataDir = environment.dataDir,
                         databaseKey = environment.databaseKey,
@@ -214,7 +215,7 @@ class BitcoinAdapter(
 
         fun firstAddress(accountType: AccountType, tokenType: TokenType): String {
             when (accountType) {
-                is AccountType.Mnemonic -> {
+                is SeedAccountType -> {
                     val seed = accountType.seed
 
                     val address = BitcoinKit.firstAddress(

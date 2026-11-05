@@ -29,14 +29,10 @@ import cash.p.terminal.resources.Coin_Analytics_30DayRank
 import cash.p.terminal.resources.Coin_Analytics_30DayUniqueAddress
 import cash.p.terminal.resources.Coin_Analytics_30DayVolume
 import cash.p.terminal.resources.Coin_Analytics_Audits
-import cash.p.terminal.resources.Coin_Analytics_Blockchain1
-import cash.p.terminal.resources.Coin_Analytics_Blockchain2
-import cash.p.terminal.resources.Coin_Analytics_Blockchain3
 import cash.p.terminal.resources.Coin_Analytics_OverallScore
 import cash.p.terminal.resources.Coin_Analytics_Rank
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.coin_placeholder
-import cash.p.terminal.resources.ic_platform_placeholder_24
 import io.horizontalsystems.core.DispatcherProvider
 import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.IAppNumberFormatter
@@ -51,7 +47,6 @@ import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.AnalyticChart
 import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.AnalyticInfo
 import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.AnalyticsViewItem
 import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.BlockViewItem
-import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.BoxItem
 import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.BoxItem.IconTitle
 import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.BoxItem.OverallScoreValue
 import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.BoxItem.Title
@@ -59,8 +54,6 @@ import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.BoxItem.TitleW
 import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.BoxItem.Value
 import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.ChartViewItem
 import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.FooterType.FooterItem
-import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.PreviewBlockViewItem
-import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.PreviewChartType
 import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.RankType
 import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.ScoreCategory
 import cash.p.terminal.modules.coin.audits.CoinAuditsModule
@@ -74,7 +67,6 @@ import cash.p.terminal.ui.compose.components.StackBarSlice
 import io.horizontalsystems.chartview.ChartData
 import io.horizontalsystems.chartview.ChartViewType
 import cash.p.terminal.wallet.models.Analytics
-import cash.p.terminal.wallet.models.AnalyticsPreview
 import cash.p.terminal.wallet.models.BlockchainIssues
 import cash.p.terminal.wallet.models.ChartPoint
 import cash.p.terminal.wallet.entities.Coin
@@ -99,7 +91,7 @@ class CoinAnalyticsViewModel(
 
     private var viewState: ViewState = ViewState.Loading
     private var analyticsViewItem: AnalyticsViewItem? = null
-    private var cachedAnalyticData: CoinAnalyticsService.AnalyticData? = null
+    private var cachedAnalyticData: Analytics? = null
     private var isRefreshing = false
 
     init {
@@ -150,17 +142,10 @@ class CoinAnalyticsViewModel(
         }
     }
 
-    private fun viewItem(item: CoinAnalyticsService.AnalyticData): AnalyticsViewItem {
-        if (item.analyticsPreview != null) {
-            val viewItems = getPreviewViewItems(item.analyticsPreview)
-            if (viewItems.isNotEmpty()) {
-                return AnalyticsViewItem.Preview(viewItems)
-            }
-        } else if (item.analytics != null) {
-            val viewItems = getViewItems(item.analytics)
-            if (viewItems.isNotEmpty()) {
-                return AnalyticsViewItem.Analytics(viewItems)
-            }
+    private fun viewItem(analytics: Analytics): AnalyticsViewItem {
+        val viewItems = getViewItems(analytics)
+        if (viewItems.isNotEmpty()) {
+            return AnalyticsViewItem.Analytics(viewItems)
         }
 
         return AnalyticsViewItem.NoData
@@ -701,342 +686,6 @@ class CoinAnalyticsViewModel(
     }
 
     private fun getRank(rank: Int) = "#$rank"
-
-    private fun getPreviewViewItems(analyticsPreview: AnalyticsPreview): List<PreviewBlockViewItem> {
-        val blocks = mutableListOf<PreviewBlockViewItem>()
-        analyticsPreview.cexVolume?.let { cexVolume ->
-            if (cexVolume.points || cexVolume.rank30d) {
-                val footerItems = mutableListOf<FooterItem>()
-                if (cexVolume.rating) {
-                    footerItems.add(ratingPreviewFooterItem)
-                }
-                if (cexVolume.rank30d) {
-                    footerItems.add(
-                        FooterItem(
-                            title = Title(ResString(Res.string.Coin_Analytics_30DayRank)),
-                            value = BoxItem.Dots,
-                            action = ActionType.Preview
-                        )
-                    )
-                }
-                blocks.add(
-                    PreviewBlockViewItem(
-                        title = Res.string.CoinAnalytics_CexVolume,
-                        info = AnalyticInfo.CexVolumeInfo,
-                        chartType = if (cexVolume.points) PreviewChartType.Bars else null,
-                        footerItems = footerItems,
-                        showFooterDivider = cexVolume.rank30d
-                    )
-                )
-            }
-        }
-        analyticsPreview.dexVolume?.let { dexVolume ->
-            if (dexVolume.points || dexVolume.rank30d) {
-                val footerItems = mutableListOf<FooterItem>()
-                if (dexVolume.rating) {
-                    footerItems.add(ratingPreviewFooterItem)
-                }
-                if (dexVolume.rank30d) {
-                    footerItems.add(
-                        FooterItem(
-                            title = Title(ResString(Res.string.Coin_Analytics_30DayRank)),
-                            value = BoxItem.Dots,
-                            action = ActionType.Preview
-                        )
-                    )
-                }
-                blocks.add(
-                    PreviewBlockViewItem(
-                        title = Res.string.CoinAnalytics_DexVolume,
-                        info = AnalyticInfo.DexVolumeInfo,
-                        chartType = if (dexVolume.points) PreviewChartType.Bars else null,
-                        footerItems = footerItems,
-                        showFooterDivider = dexVolume.rank30d
-                    )
-                )
-            }
-        }
-        analyticsPreview.dexLiquidity?.let { dexLiquidity ->
-            if (dexLiquidity.points || dexLiquidity.rank) {
-                val footerItems = mutableListOf<FooterItem>()
-                if (dexLiquidity.rating) {
-                    footerItems.add(ratingPreviewFooterItem)
-                }
-                if (dexLiquidity.rank) {
-                    footerItems.add(
-                        FooterItem(
-                            title = Title(ResString(Res.string.Coin_Analytics_Rank)),
-                            value = BoxItem.Dots,
-                            action = ActionType.Preview
-                        )
-                    )
-                }
-                blocks.add(
-                    PreviewBlockViewItem(
-                        title = Res.string.CoinAnalytics_DexLiquidity,
-                        info = AnalyticInfo.DexLiquidityInfo,
-                        chartType = if (dexLiquidity.points) PreviewChartType.Line else null,
-                        footerItems = footerItems,
-                        showFooterDivider = dexLiquidity.rank
-                    )
-                )
-            }
-        }
-        analyticsPreview.addresses?.let { addresses ->
-            if (addresses.points || addresses.rank30d || addresses.count30d) {
-                val footerItems = mutableListOf<FooterItem>()
-                if (addresses.rating) {
-                    footerItems.add(ratingPreviewFooterItem)
-                }
-                if (addresses.count30d) {
-                    footerItems.add(
-                        FooterItem(
-                            title = Title(ResString(Res.string.Coin_Analytics_30DayUniqueAddress)),
-                            value = BoxItem.Dots,
-                            action = null
-                        )
-                    )
-                }
-                if (addresses.rank30d) {
-                    footerItems.add(
-                        FooterItem(
-                            title = Title(ResString(Res.string.Coin_Analytics_30DayRank)),
-                            value = BoxItem.Dots,
-                            action = ActionType.Preview
-                        )
-                    )
-                }
-                blocks.add(
-                    PreviewBlockViewItem(
-                        title = Res.string.CoinAnalytics_ActiveAddresses,
-                        info = AnalyticInfo.AddressesInfo,
-                        chartType = if (addresses.points) PreviewChartType.Line else null,
-                        footerItems = footerItems,
-                        showFooterDivider = footerItems.isNotEmpty()
-                    )
-                )
-            }
-        }
-        analyticsPreview.transactions?.let { transactionPreview ->
-            if (transactionPreview.points || transactionPreview.rank30d || transactionPreview.volume30d) {
-                val footerItems = mutableListOf<FooterItem>()
-                if (transactionPreview.rank30d) {
-                    footerItems.add(
-                        FooterItem(
-                            title = Title(ResString(Res.string.Coin_Analytics_30DayRank)),
-                            value = BoxItem.Dots,
-                            action = ActionType.Preview
-                        )
-                    )
-                }
-                if (transactionPreview.volume30d) {
-                    footerItems.add(
-                        FooterItem(
-                            title = Title(ResString(Res.string.Coin_Analytics_30DayVolume)),
-                            value = BoxItem.Dots,
-                            action = null
-                        )
-                    )
-                }
-                blocks.add(
-                    PreviewBlockViewItem(
-                        title = Res.string.CoinAnalytics_TransactionCount,
-                        info = AnalyticInfo.TransactionCountInfo,
-                        chartType = if (transactionPreview.points) PreviewChartType.Bars else null,
-                        footerItems = footerItems,
-                        showFooterDivider = footerItems.isNotEmpty()
-                    )
-                )
-            }
-        }
-        if (analyticsPreview.holders) {
-            val footerItems = mutableListOf<FooterItem>()
-            if (analyticsPreview.holdersRating) {
-                footerItems.add(ratingPreviewFooterItem)
-            }
-            footerItems.addAll(
-                listOf(
-                    FooterItem(
-                        title = IconTitle(
-                            ImageSource.Local(Res.drawable.ic_platform_placeholder_24),
-                            ResString(Res.string.Coin_Analytics_Blockchain1)
-                        ),
-                        value = BoxItem.Dots,
-                        action = ActionType.Preview
-                    ),
-                    FooterItem(
-                        title = IconTitle(
-                            ImageSource.Local(Res.drawable.ic_platform_placeholder_24),
-                            ResString(Res.string.Coin_Analytics_Blockchain2)
-                        ),
-                        value = BoxItem.Dots,
-                        action = ActionType.Preview
-                    ),
-                    FooterItem(
-                        title = IconTitle(
-                            ImageSource.Local(Res.drawable.ic_platform_placeholder_24),
-                            ResString(Res.string.Coin_Analytics_Blockchain3)
-                        ),
-                        value = BoxItem.Dots,
-                        action = ActionType.Preview
-                    )
-                )
-            )
-            if (analyticsPreview.holdersRank) {
-                footerItems.add(
-                    FooterItem(
-                        title = Title(ResString(Res.string.CoinAnalytics_HoldersRank)),
-                        value = BoxItem.Dots,
-                        action = ActionType.Preview
-                    )
-                )
-            }
-            blocks.add(
-                PreviewBlockViewItem(
-                    title = Res.string.CoinAnalytics_Holders,
-                    info = AnalyticInfo.HoldersInfo,
-                    chartType = PreviewChartType.StackedBars,
-                    footerItems = footerItems,
-                )
-            )
-        }
-        analyticsPreview.fee?.let { revenue ->
-            if (revenue.value30d || revenue.rank30d) {
-                val footerItems = mutableListOf<FooterItem>()
-                if (revenue.rating) {
-                    footerItems.add(ratingPreviewFooterItem)
-                }
-                if (revenue.rank30d) {
-                    footerItems.add(
-                        FooterItem(
-                            title = Title(ResString(Res.string.Coin_Analytics_30DayRank)),
-                            value = BoxItem.Dots,
-                            action = ActionType.Preview
-                        )
-                    )
-                }
-                blocks.add(
-                    PreviewBlockViewItem(
-                        title = Res.string.CoinAnalytics_ProjectFee,
-                        info = null,
-                        chartType = null,
-                        footerItems = footerItems,
-                        showFooterDivider = revenue.rank30d
-                    )
-                )
-            }
-        }
-        analyticsPreview.revenue?.let { revenue ->
-            if (revenue.value30d || revenue.rank30d) {
-                val footerItems = mutableListOf<FooterItem>()
-                if (revenue.rating) {
-                    footerItems.add(ratingPreviewFooterItem)
-                }
-                if (revenue.rank30d) {
-                    footerItems.add(
-                        FooterItem(
-                            title = Title(ResString(Res.string.Coin_Analytics_30DayRank)),
-                            value = BoxItem.Dots,
-                            action = ActionType.Preview
-                        )
-                    )
-                }
-                blocks.add(
-                    PreviewBlockViewItem(
-                        title = Res.string.CoinAnalytics_ProjectRevenue,
-                        info = null,
-                        chartType = null,
-                        footerItems = footerItems,
-                        showFooterDivider = revenue.rank30d
-                    )
-                )
-            }
-        }
-        analyticsPreview.tvl?.let { tvl ->
-            if (tvl.points || tvl.rank || tvl.ratio) {
-                val footerItems = mutableListOf<FooterItem>()
-                if (tvl.rank) {
-                    footerItems.add(
-                        FooterItem(
-                            title = Title(ResString(Res.string.Coin_Analytics_Rank)),
-                            value = BoxItem.Dots,
-                            action = ActionType.Preview
-                        )
-                    )
-                }
-                if (tvl.ratio) {
-                    footerItems.add(
-                        FooterItem(
-                            title = Title(ResString(Res.string.CoinAnalytics_TvlRatio)),
-                            value = BoxItem.Dots,
-                            action = null
-                        )
-                    )
-                }
-                blocks.add(
-                    PreviewBlockViewItem(
-                        title = Res.string.CoinAnalytics_ProjectTvl,
-                        info = AnalyticInfo.TvlInfo,
-                        chartType = if (tvl.points) PreviewChartType.Line else null,
-                        footerItems = footerItems,
-                        showFooterDivider = footerItems.isNotEmpty()
-                    )
-                )
-            }
-        }
-        if (analyticsPreview.reports || analyticsPreview.fundsInvested || analyticsPreview.treasuries) {
-            val footerItems = mutableListOf<FooterItem>()
-            if (analyticsPreview.reports) {
-                footerItems.add(
-                    FooterItem(
-                        title = Title(ResString(Res.string.CoinAnalytics_Reports)),
-                        value = BoxItem.Dots,
-                        action = ActionType.Preview
-                    )
-                )
-            }
-            if (analyticsPreview.fundsInvested) {
-                footerItems.add(
-                    FooterItem(
-                        title = Title(ResString(Res.string.CoinAnalytics_Funding)),
-                        value = BoxItem.Dots,
-                        action = ActionType.Preview
-                    )
-                )
-            }
-            if (analyticsPreview.treasuries) {
-                footerItems.add(
-                    FooterItem(
-                        title = Title(ResString(Res.string.CoinAnalytics_Treasuries)),
-                        value = BoxItem.Dots,
-                        action = ActionType.Preview
-                    )
-                )
-            }
-            blocks.add(
-                PreviewBlockViewItem(
-                    title = null,
-                    info = null,
-                    chartType = null,
-                    footerItems = footerItems,
-                    sectionTitle = Res.string.CoinAnalytics_OtherData,
-                    showValueDots = false,
-                    showFooterDivider = false
-                )
-            )
-        }
-
-        return blocks
-    }
-
-    private val ratingPreviewFooterItem = FooterItem(
-        title = TitleWithInfo(
-            ResString(Res.string.Coin_Analytics_OverallScore),
-            ActionType.OpenOverallScoreInfo(ScoreCategory.HoldersScoreCategory)
-        ),
-        value = BoxItem.Dots,
-        action = null
-    )
 
     private fun getChartViewItem(
         values: List<ChartPoint>,

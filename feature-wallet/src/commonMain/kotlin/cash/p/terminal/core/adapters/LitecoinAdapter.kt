@@ -35,6 +35,7 @@ import cash.p.terminal.resources.litecoin_mweb_invalid_amount
 import cash.p.terminal.resources.send_hardware_mweb_not_supported
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.Token
 import cash.p.terminal.wallet.Wallet
@@ -1463,7 +1464,7 @@ class LitecoinAdapter(
             restoreSettings: RestoreSettings? = null,
         ): LitecoinKit {
             val account = wallet.account
-            if (mode == Mode.Mweb && account.type !is AccountType.Mnemonic) {
+            if (mode == Mode.Mweb && account.type !is SeedAccountType) {
                 throw UnsupportedAccountException()
             }
             val sharedPeerGroupHolder = LitecoinKit.getOrCreateSharedPeerGroup(
@@ -1489,7 +1490,7 @@ class LitecoinAdapter(
             )
             return when (val accountType = account.type) {
                 is AccountType.HdExtendedKey -> createExtendedKeyKit(accountType, context)
-                is AccountType.Mnemonic -> createMnemonicKit(accountType, context)
+                is SeedAccountType -> createSeedKit(accountType, context)
                 is AccountType.BitcoinAddress -> createWatchAddressKit(accountType, context)
                 is AccountType.HardwareCard -> createHardwareKit(context)
                 is AccountType.HardwareDevice -> createHardwareDeviceKit(context)
@@ -1517,8 +1518,8 @@ class LitecoinAdapter(
             )
         }
 
-        private fun createMnemonicKit(
-            accountType: AccountType.Mnemonic,
+        private fun createSeedKit(
+            accountType: SeedAccountType,
             context: LitecoinKitCreateContext
         ): LitecoinKit {
             return LitecoinKit(
@@ -1642,7 +1643,7 @@ class LitecoinAdapter(
             if (tokenType == TokenType.Mweb) throw UnsupportedAccountException()
 
             when (accountType) {
-                is AccountType.Mnemonic -> {
+                is SeedAccountType -> {
                     val seed = accountType.seed
 
                     val address = LitecoinKit.firstAddress(

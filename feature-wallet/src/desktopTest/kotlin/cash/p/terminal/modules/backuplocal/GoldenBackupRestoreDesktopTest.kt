@@ -8,7 +8,9 @@ import cash.p.terminal.modules.backuplocal.fullbackup.BackupSource
 import cash.p.terminal.modules.backuplocal.fullbackup.DecryptedFullBackup
 import cash.p.terminal.modules.backuplocal.fullbackup.FullBackup
 import cash.p.terminal.modules.backuplocal.fullbackup.RestoreOutcome
+import cash.p.terminal.modules.backuplocal.fullbackup.WalletBackup2
 import cash.p.terminal.modules.backuplocal.fullbackup.WalletBackupProvider
+import cash.p.terminal.modules.restoreaccount.restoreshamir.Slip39TestShares
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -77,7 +79,15 @@ class GoldenBackupRestoreDesktopTest {
         every { marketKit.tokens(any<List<TokenQuery>>()) } answers {
             firstArg<List<TokenQuery>>().mapNotNull { curated[it.id] }
         }
-        startKoin { modules(module { single { marketKit } }) }
+        every { appSettingsBackup.currentSettings(any(), any()) } returns null
+        every { appSettingsBackup.contacts } returns emptyList()
+        coEvery { marketFavoritesManager.getAll() } returns emptyList()
+        startKoin {
+            modules(module {
+                single { marketKit }
+                single { Slip39TestShares.slip39Factory() }
+            })
+        }
     }
 
     @After
@@ -149,6 +159,53 @@ class GoldenBackupRestoreDesktopTest {
         assertNull(provider.restoreFromV4BinaryBackup(resourceBytes(), "not-a-golden-password"))
     }
 
+    @Test
+    fun restoreFromV4BinaryBackup_slip39AndMnemonic_restoresBothAccounts() = runTest {
+        val slip39 = savedAccount(SLIP39_NAME, Slip39TestShares.slip39Type(passphrase = "TREZOR"))
+        val mnemonic = savedAccount(MNEMONIC_NAME, MNEMONIC)
+        every { accountManager.accounts } returns listOf(slip39, mnemonic)
+
+        val backup = provider.createFullBackupV4Binary(listOf(slip39.id, mnemonic.id), PRIMARY_PASSWORD, null, null)
+        val decrypted = assertNotNull(provider.restoreFromV4BinaryBackup(backup, PRIMARY_PASSWORD))
+
+        assertEquals(
+            setOf(SLIP39_NAME to slip39.type, MNEMONIC_NAME to MNEMONIC),
+            decrypted.accountTypes().toSet()
+        )
+        restore(decrypted)
+    }
+
+    @Test
+    fun restoreFullBackup_unknownAccountType_skipsItAndRestoresTheOtherWallet() = runTest {
+        val mnemonicBackup = walletBackup(savedAccount(MNEMONIC_NAME, MNEMONIC))
+        val fullBackup = FullBackup(
+            wallets = listOf(
+                WalletBackup2("Future", mnemonicBackup.copy(type = "future_type")),
+                WalletBackup2(MNEMONIC_NAME, mnemonicBackup),
+            ),
+            watchlist = null,
+            settings = null,
+            contacts = null,
+            timestamp = 0,
+            version = 2,
+            id = "full-backup"
+        )
+
+        val decrypted = provider.decryptedFullBackup(fullBackup, PRIMARY_PASSWORD, BackupSource.Authenticated)
+
+        assertEquals(listOf(MNEMONIC_NAME to MNEMONIC), decrypted.accountTypes())
+        restore(decrypted)
+    }
+
+    private fun savedAccount(name: String, type: AccountType) =
+        Account(name, name, type, AccountOrigin.Restored, level = 0, isBackedUp = true)
+
+    private fun walletBackup(account: Account): BackupLocalModule.WalletBackup {
+        val backupV3 = assertNotNull(provider.parseV3Backup(provider.createWalletBackup(account, PRIMARY_PASSWORD)))
+        val (innerJson, _, _) = provider.unwrapV3FormatWithKey(backupV3, PRIMARY_PASSWORD)
+        return Gson().fromJson(innerJson, BackupLocalModule.WalletBackup::class.java)
+    }
+
     private suspend fun restore(decrypted: DecryptedFullBackup): List<EnabledWallet> {
         val savedWallets = slot<List<EnabledWallet>>()
         coEvery { walletManager.saveEnabledWallets(capture(savedWallets)) } returns Unit
@@ -191,6 +248,7 @@ class GoldenBackupRestoreDesktopTest {
         const val MNEMONIC_NAME = "Golden Mnemonic"
         const val WATCH_NAME = "Golden Watch"
         const val HIDDEN_NAME = "Golden Hidden"
+        const val SLIP39_NAME = "Golden Shamir"
         const val ZCASH_BIRTHDAY = 2_500_000L
         const val ETH_QUERY_ID = "ethereum|native"
         const val USDT_QUERY_ID = "ethereum|eip20:0xdac17f958d2ee523a2206206994597c13d831ec7"

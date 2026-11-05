@@ -10,6 +10,7 @@ import cash.p.terminal.core.utils.Utils.getIpByUrl
 import cash.p.terminal.entities.transactionrecords.TransactionRecord
 import cash.p.terminal.network.pirate.domain.repository.MasterNodesRepository
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.Wallet
 import cash.p.terminal.wallet.entities.UsedAddress
 import io.horizontalsystems.bitcoincore.BitcoinCore
@@ -147,7 +148,7 @@ class DashAdapter(
                     )
                 }
 
-                is AccountType.Mnemonic -> {
+                is SeedAccountType -> {
                     DashKit(
                         dataDir = environment.dataDir,
                         databaseKey = environment.databaseKey,

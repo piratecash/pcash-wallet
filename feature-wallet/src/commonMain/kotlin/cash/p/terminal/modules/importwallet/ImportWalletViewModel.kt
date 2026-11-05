@@ -11,6 +11,8 @@ import cash.p.terminal.core.utils.Bip39LanguageDetector
 import cash.p.terminal.core.utils.MNEMONIC_WORD_REGEX
 import cash.p.terminal.core.validateAndSaveBackup
 import cash.p.terminal.feature.wallet.BackupFileSource
+import cash.p.terminal.modules.restoreaccount.restoreshamir.ShamirPrefill
+import cash.p.terminal.modules.restoreaccount.restoreshamir.toShamirPrefillOrNull
 import cash.p.terminal.resources.Res
 import cash.p.terminal.resources.seed_qr_invalid_format
 import io.horizontalsystems.core.Translator
@@ -61,11 +63,12 @@ class ImportWalletViewModel(
                     errorMessage = error.toSeedQrErrorMessage()
                 }
         } else {
+            val shamirShare = scannedText.toShamirPrefillOrNull()
             val mnemonic = scannedText.toPlainBip39Mnemonic()
-            if (mnemonic != null) {
-                openRestoreFromQr(mnemonic)
-            } else {
-                errorMessage = Translator.getString(Res.string.seed_qr_invalid_format)
+            when {
+                shamirShare != null -> openShamirRestore(shamirShare)
+                mnemonic != null -> openRestoreFromQr(mnemonic)
+                else -> errorMessage = Translator.getString(Res.string.seed_qr_invalid_format)
             }
         }
     }
@@ -75,6 +78,7 @@ class ImportWalletViewModel(
     }
 
     private fun openRestoreFromQr(seed: SeedPhraseQrCrypto.DecryptedSeed) {
+        seed.toShamirPrefillOrNull()?.let { return openShamirRestore(it) }
         viewModelScope.launch {
             _navigationEvents.send(
                 NavigationEvent.OpenRestoreFromQr(
@@ -84,6 +88,12 @@ class ImportWalletViewModel(
                     language = seed.language
                 )
             )
+        }
+    }
+
+    private fun openShamirRestore(prefill: ShamirPrefill) {
+        viewModelScope.launch {
+            _navigationEvents.send(NavigationEvent.OpenShamirRestore(prefill))
         }
     }
 
@@ -109,6 +119,8 @@ class ImportWalletViewModel(
             val moneroHeight: Long?,
             val language: Language?
         ) : NavigationEvent()
+
+        data class OpenShamirRestore(val prefill: ShamirPrefill) : NavigationEvent()
 
         data class OpenRestoreLocal(
             val backupFilePath: String,
