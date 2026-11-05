@@ -5,6 +5,5 @@ import cash.p.terminal.navigation.HSPage
 
 class DesktopMarketPages : MarketPages {
     override fun markdown(url: String): HSPage? = null
-    override fun subscriptionInfo(): HSPage? = null
     override fun nftCollection(collectionUid: String, blockchainUid: String): HSPage? = null
 }
