@@ -96,6 +96,37 @@ fun TextImportantWarning(
 }
 
 @Composable
+fun TextImportantInfo(
+    text: String,
+    modifier: Modifier = Modifier,
+) = TextImportantInfo(AnnotatedString(text), modifier)
+
+@Composable
+fun TextImportantInfo(
+    text: AnnotatedString,
+    modifier: Modifier = Modifier,
+) {
+    // The `icon` parameter belongs to the title row; here the icon sits beside the text.
+    TextImportant(
+        modifier = modifier,
+        borderColor = ComposeAppTheme.colors.textDisabled,
+        backgroundColor = ComposeAppTheme.colors.surfaceElevated,
+        textColor = ComposeAppTheme.colors.textPrimary,
+        iconColor = ComposeAppTheme.colors.iconSecondary,
+    ) {
+        Row {
+            Icon(
+                painter = painterResource(Res.drawable.ic_info_20),
+                contentDescription = null,
+                tint = ComposeAppTheme.colors.iconSecondary
+            )
+            Spacer(Modifier.width(12.dp))
+            subhead2_leah(text = text)
+        }
+    }
+}
+
+@Composable
 fun TextImportantError(
     modifier: Modifier = Modifier,
     text: String,

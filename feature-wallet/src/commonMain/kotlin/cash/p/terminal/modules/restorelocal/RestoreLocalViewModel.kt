@@ -23,6 +23,7 @@ import cash.p.terminal.modules.declinedtokens.DeclinedTokensStage
 import cash.p.terminal.modules.restorelocal.RestoreLocalModule.UiState
 import cash.p.terminal.resources.ImportBackupFile_Error_InvalidPassword
 import cash.p.terminal.resources.Res
+import cash.p.terminal.wallet.AccountType
 import io.horizontalsystems.core.Translator
 import com.google.gson.JsonParser
 import kotlinx.coroutines.Job
@@ -251,15 +252,13 @@ class RestoreLocalViewModel(
                     manualBackup = parsedWalletBackup.manualBackup
 
                     // Use cached key to avoid another Scrypt call (with kdfParams check)
-                    val type =
+                    val type = requireSupported(
                         backupProvider.accountTypeWithKey(parsedWalletBackup, cachedKey, cachedKdfParams, passphrase)
+                    )
 
                     if (parsedWalletBackup.enabledWallets.isNullOrEmpty()) {
                         showSelectCoins = type
                     } else {
-                        requireNotNull(type) {
-                            "This account type is not supported for restoration."
-                        }
                         // Same V3 ciphertext as the full-backup branch: decimals are authenticated, but a
                         // manually-added row can still need approval.
                         val outcome = backupProvider.restoreSingleWalletBackup(
@@ -387,13 +386,10 @@ class RestoreLocalViewModel(
         emitState()
         viewModelScope.launch(dispatcherProvider.io) {
             try {
-                val type = backupProvider.accountType(backup, passphrase)
+                val type = requireSupported(backupProvider.accountType(backup, passphrase))
                 if (backup.enabledWallets.isNullOrEmpty()) {
                     showSelectCoins = type
                 } else {
-                    requireNotNull(type) {
-                        "This account type is not supported for restoration."
-                    }
                     val outcome = backupProvider.restoreSingleWalletBackup(
                         type, accountName, backup, source, approved
                     )
@@ -413,6 +409,9 @@ class RestoreLocalViewModel(
             }
         }
     }
+
+    private fun requireSupported(type: AccountType?): AccountType =
+        requireNotNull(type) { "This account type is not supported for restoration." }
 
     fun onSelectCoinsShown() {
         showSelectCoins = null

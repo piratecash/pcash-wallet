@@ -9,11 +9,10 @@ import cash.p.terminal.core.usecase.MoneroWalletUseCase
 import cash.p.terminal.core.usecase.ValidateMoneroHeightUseCase
 import cash.p.terminal.core.usecase.ValidateMoneroMnemonicUseCase
 import cash.p.terminal.core.utils.Bip39LanguageDetector
-import cash.p.terminal.core.utils.MNEMONIC_WORD_REGEX
 import cash.p.terminal.core.utils.MoneroConfig
 import cash.p.terminal.modules.mnemonic.mnemonicLanguagesOrdered
+import cash.p.terminal.modules.restoreaccount.restoreshamir.toShamirPrefillOrNull
 import cash.p.terminal.modules.restoreaccount.restoremnemonic.RestoreMnemonicModule.UiState
-import cash.p.terminal.modules.restoreaccount.restoremnemonic.RestoreMnemonicModule.WordItem
 import io.horizontalsystems.core.Translator
 import cash.p.terminal.wallet.AccountOrigin
 import cash.p.terminal.wallet.AccountType
@@ -47,23 +46,20 @@ class RestoreMnemonicViewModel(
     private val walletActivator: WalletActivator,
     private val seedPhraseQrCrypto: SeedPhraseQrCrypto,
     private val accountFactory: IAccountFactory,
-    private val thirdKeyboardStorage: IThirdKeyboard
-) : ViewModelUiState<UiState>() {
+    thirdKeyboardStorage: IThirdKeyboard
+) : ViewModelUiState<UiState>(), IThirdKeyboard by thirdKeyboardStorage {
 
     val mnemonicLanguages = mnemonicLanguagesOrdered
 
     private var passphraseEnabled: Boolean = false
     private var passphrase: String = ""
     private var passphraseError: String? = null
-    private var wordItems: List<WordItem> = listOf()
-    private var invalidWordItems: List<WordItem> = listOf()
-    private var invalidWordRanges: List<IntRange> = listOf()
+    private var phraseInput = PhraseInputState()
     private var error: String? = null
     private var errorHeight: String? = null
     private var isMoneroMnemonic: Boolean = false
     private var height: String = ""
     private var accountType: AccountType? = null
-    private var wordSuggestions: RestoreMnemonicModule.WordSuggestions? = null
     private var language = Language.English
     private var text = ""
     private var cursorPosition = 0
@@ -79,19 +75,17 @@ class RestoreMnemonicViewModel(
         get() = field.ifBlank { defaultName }
         private set
 
-    val isThirdPartyKeyboardAllowed: Boolean
-        get() = thirdKeyboardStorage.isThirdPartyKeyboardAllowed
-
     override fun createState() = UiState(
         passphraseEnabled = passphraseEnabled,
+        passphrase = passphrase,
         passphraseError = passphraseError,
-        invalidWordRanges = invalidWordRanges,
+        invalidWordRanges = phraseInput.invalidWordRanges,
         error = error,
         errorHeight = errorHeight,
         height = height,
         isMoneroMnemonic = isMoneroMnemonic,
         accountType = accountType,
-        wordSuggestions = wordSuggestions,
+        wordSuggestions = phraseInput.wordSuggestions,
         language = displayedLanguage,
     )
 
@@ -102,37 +96,13 @@ class RestoreMnemonicViewModel(
     }
 
     private fun processText() {
-        wordItems = wordItems(text)
+        val wordItems = PhraseInputProcessor.wordItems(text)
 
         if (!isMoneroMnemonic && wordItems.size >= MIN_WORDS_FOR_AUTODETECT) {
             autodetectLanguage(wordItems.map { it.word })
         }
 
-        invalidWordItems =
-            wordItems.filter { !mnemonicWordList.validWord(it.word.normalizeNFKD(), false) }
-
-        val wordItemWithCursor = wordItems.find {
-            it.range.contains(cursorPosition - 1)
-        }
-
-        val invalidWordItemsExcludingCursoredPartiallyValid = when {
-            wordItemWithCursor != null && mnemonicWordList.validWord(
-                wordItemWithCursor.word.normalizeNFKD(),
-                true
-            ) -> {
-                invalidWordItems.filter { it != wordItemWithCursor }
-            }
-
-            else -> invalidWordItems
-        }
-
-        invalidWordRanges = invalidWordItemsExcludingCursoredPartiallyValid.map { it.range }
-        wordSuggestions = wordItemWithCursor?.let {
-            RestoreMnemonicModule.WordSuggestions(
-                it,
-                mnemonicWordList.fetchSuggestions(it.word.normalizeNFKD())
-            )
-        }
+        phraseInput = PhraseInputProcessor.process(wordItems, cursorPosition, mnemonicWordList)
     }
 
     fun onTogglePassphrase(enabled: Boolean) {
@@ -195,9 +165,10 @@ class RestoreMnemonicViewModel(
     }
 
     fun onProceed() = viewModelScope.launch {
+        val wordItems = phraseInput.wordItems
         when {
-            invalidWordItems.isNotEmpty() -> {
-                invalidWordRanges = invalidWordItems.map { it.range }
+            phraseInput.invalidWordItems.isNotEmpty() -> {
+                phraseInput = phraseInput.copy(invalidWordRanges = phraseInput.invalidWordItems.map { it.range })
             }
 
             isMoneroMnemonic && wordItems.size != MoneroConfig.WORD_COUNT -> {
@@ -276,23 +247,21 @@ class RestoreMnemonicViewModel(
         emitState()
     }
 
-    fun onAllowThirdPartyKeyboard() {
-        thirdKeyboardStorage.isThirdPartyKeyboardAllowed = true
-    }
-
     fun handleScannedQrData(scannedText: String): RestoreMnemonicModule.QrScanResult {
         if (!scannedText.startsWith(SeedPhraseQrCrypto.QR_PREFIX)) {
-            return RestoreMnemonicModule.QrScanResult.PlainText(scannedText)
+            return scannedText.toShamirPrefillOrNull()?.let(RestoreMnemonicModule.QrScanResult::Shamir)
+                ?: RestoreMnemonicModule.QrScanResult.PlainText(scannedText)
         }
 
         return seedPhraseQrCrypto.decrypt(scannedText).fold(
             onSuccess = { decrypted ->
-                RestoreMnemonicModule.QrScanResult.Success(
-                    words = decrypted.words,
-                    passphrase = decrypted.passphrase,
-                    moneroHeight = decrypted.height,
-                    language = decrypted.language
-                )
+                decrypted.toShamirPrefillOrNull()?.let(RestoreMnemonicModule.QrScanResult::Shamir)
+                    ?: RestoreMnemonicModule.QrScanResult.Success(
+                        words = decrypted.words,
+                        passphrase = decrypted.passphrase,
+                        moneroHeight = decrypted.height,
+                        language = decrypted.language
+                    )
             },
             onFailure = { error ->
                 RestoreMnemonicModule.QrScanResult.Error(
@@ -337,12 +306,6 @@ class RestoreMnemonicViewModel(
         }
         Bip39LanguageDetector.detectExact(words).firstOrNull()
             ?.let(::setNormalMnemonicLanguage)
-    }
-
-    private fun wordItems(text: String): List<WordItem> {
-        return MNEMONIC_WORD_REGEX.findAll(text.lowercase())
-            .map { WordItem(it.value, it.range) }
-            .toList()
     }
 
     private fun setNormalMnemonicLanguage(language: Language) {

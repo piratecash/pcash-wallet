@@ -34,6 +34,7 @@ fun AccountType.zcashAddressSpecs(): Set<AddressSpecType> = when (this) {
     is AccountType.HardwareCard,
     is AccountType.MayachainAddress,
     is AccountType.MnemonicMonero,
+    is AccountType.Slip39,
     is AccountType.SolanaAddress,
     is AccountType.StellarAddress,
     is AccountType.StellarSecretKey,

@@ -748,6 +748,10 @@
     <string name="Transactions_Unknown">Transação Desconhecida</string>
     <string name="Transactions_TonTransaction">Ton Transaction</string>
     <string name="Transactions_Unknown_Description">Transação não pôde ser analisada</string>
+    <string name="transactions_account_delegation">Delegação de conta</string>
+    <string name="transactions_account_delegated_to">ao contrato %1$s</string>
+    <string name="transactions_account_delegation_revoke">Revogação de delegação</string>
+    <string name="transactions_account_delegation_warning_short">A conta é controlada por um contrato</string>
     <string name="Transactions_Multiple">Múltiplo</string>
     <string name="Transactions_Filter">Filter</string>
     <string name="Transactions_Filter_HideSuspiciousTx">Ocultar transações suspeitas</string>
@@ -771,6 +775,9 @@
     <string name="TransactionInfo_LockedUntil">Bloqueado até %s</string>
     <string name="TransactionInfo_UnlockedAt">Desbloqueado às %s</string>
     <string name="TransactionInfo_RecipientHash">Destinatário</string>
+    <string name="transaction_info_initiator">Iniciador</string>
+    <string name="transaction_info_delegation_contract">Contrato de delegação</string>
+    <string name="transaction_info_delegation_warning">Este contrato controla atualmente a sua conta. Pode dispor dos fundos da conta. Se não aprovou esta delegação, transfira os seus fundos para outra carteira.</string>
     <string name="TransactionInfo_HistoricalRate">Dados históricos</string>
     <string name="TransactionInfo_AnnouncedAmount">Montante anunciado</string>
     <string name="transaction_info_executed_amount">Montante executado</string>
@@ -930,16 +937,6 @@
     <string name="telegram_link">https://t.me/PirateCash_ENG</string>
     <string name="Settings_JoinUs">Siga-nos</string>
     <string name="Settings_JoinUs_Description">Siga-nos nas redes sociais para ser o primeiro a conhecer as últimas novidades, atualizações e novos recursos do projeto!</string>
-    <string name="Settings_PersonalSupport">Personal Support</string>
-    <string name="Settings_PersonalSupport_EnterTelegramAccountDescription">Enter your Telegram account name to start a personal support chat with our team. We\u0027ll get back to you and start working on your problem as soon as we see it.</string>
-    <string name="Settings_PersonalSupport_YouAlreadyRequestedSupportDescription">You\u0027ve already requested a private chat, find it on Telegram</string>
-    <string name="Settings_PersonalSupport_Account">Account</string>
-    <string name="Settings_PersonalSupport_UsernameHint">\u0040username</string>
-    <string name="Settings_PersonalSupport_Requested">Requested</string>
-    <string name="Settings_PersonalSupport_Request">Request</string>
-    <string name="Settings_PersonalSupport_NewRequest">New Request</string>
-    <string name="Settings_PersonalSupport_Requestfailed">Request failed</string>
-    <string name="Settings_PersonalSupport_OpenTelegram">Open Telegram</string>
     <string name="Settings_Donate_Info">Together, with your support, we can make this app even better!</string>
     <string name="Settings_Donate">Donate</string>
     <string name="settings_mini_app">Mini App</string>
@@ -1284,6 +1281,8 @@
     <string name="ManageAccount_BirthdayHeight">%s Birthday Height</string>
     <string name="ManageAccount_NWords">%s palavras</string>
     <string name="ManageAccount_NWordsWithPassphrase">%s palavras com senha</string>
+    <string name="ManageAccount_NWordsShamir">%1$d palavras (Shamir)</string>
+    <string name="ManageAccount_NWordsShamirWithPassphrase">%1$d palavras (Shamir) com senha</string>
     <string name="ManageAccount_SwitchWallet_Title">Trocar carteira</string>
     <string name="ManageAccount_Wallets">Carteiras</string>
     <string name="ManageAccount_WatchAddresses">Observar endereços</string>
@@ -1336,6 +1335,8 @@
     <!-- Passphrase Terms -->
     <string name="passphrase_terms_title">Termos da Frase-Senha</string>
     <string name="passphrase_terms_warning">Antes de ativar a frase-senha (BIP-39 Passphrase), confirme que compreende:</string>
+    <string name="passphrase_terms_warning_shamir">Antes de ativar a frase-senha, confirme que compreende:</string>
+    <string name="passphrase_terms_restore_shamir">Compreendo que &lt;b>tal carteira só pode ser restaurada em aplicações que suportam Shamir Backup (SLIP-39) com frase-senha&lt;/b>, e a maioria das aplicações &lt;b>não suporta esta funcionalidade&lt;/b>.</string>
     <string name="passphrase_terms_term1">Compreendo que para aceder aos fundos, devo introduzir a frase-senha exatamente como foi criada, com os mesmos caracteres, espaços e maiúsculas/minúsculas.</string>
     <string name="passphrase_terms_term2">Compreendo que se a frase-senha for perdida ou introduzida incorretamente, não poderei recuperar a minha carteira sem o seu valor exato.</string>
     <string name="passphrase_terms_term3">Compreendo que ao restaurar uma carteira com uma frase-senha incorreta, a aplicação não mostrará um erro, mas criará uma nova carteira (vazia).</string>
@@ -1654,19 +1655,6 @@
     <string name="Detectors_TokenDetectors">Token Detectors</string>
     <string name="Detectors_GeneralDetectors">General Detectors</string>
     <string name="Detectors_IssuesCount">Issues %d</string>
-    <string name="ActivateSubscription_Title">Activate</string>
-    <string name="ActivateSubscription_Wallet">Wallet</string>
-    <string name="ActivateSubscription_Address">Address</string>
-    <string name="ActivateSubscription_NoSubscriptionError">Your wallet address does not have a subscription to premium features, you need to purchase it to activate the subscription.</string>
-    <string name="SubscriptionInfo_Title">Premium Features</string>
-    <string name="SubscriptionInfo_Analytics_Title">Cryptocurrency Analytics</string>
-    <string name="SubscriptionInfo_Analytics_Info">Access comprehensive market and on-chain stats about each token.</string>
-    <string name="SubscriptionInfo_Indicators_Title">Price Trend Indicators</string>
-    <string name="SubscriptionInfo_Indicators_Info">Discover uptrending tokens based on technical analysis indicators.</string>
-    <string name="SubscriptionInfo_PersonalSupport_Title">Personal Support</string>
-    <string name="SubscriptionInfo_PersonalSupport_Info">Contact our team directly over Telegram for personal assistance.</string>
-    <string name="SubscriptionInfo_GetPremium">Get Premium</string>
-    <string name="SubscriptionInfo_HavePremium">I already have Premium</string>
     <string name="premium_title">Premium</string>
     <string name="about_premium">Sobre o Premium</string>
     <string name="premium_settings">Definições Premium</string>
@@ -2321,6 +2309,102 @@
     <string name="desktop_change_password_corrupted">O arquivo de chave está danificado: depois de a app ser bloqueada, não poderá entrar. Guarde uma cópia de segurança de cada frase de recuperação.</string>
     <string name="desktop_change_password_success">Senha alterada</string>
     <string name="desktop_security_lock_now">Bloquear agora</string>
+
+    <!-- Shamir backup restore -->
+    <string name="import_wallet_shamir">Backup Shamir</string>
+    <string name="import_wallet_shamir_description">Restaurar uma carteira a partir de várias partes Shamir (SLIP-39)</string>
+    <string name="shamir_backup_title">Shamir Backup</string>
+    <string name="shamir_restore_title">Restauro</string>
+    <string name="shamir_restore_enter_first">Introduza as palavras da primeira parte</string>
+    <string name="shamir_restore_part_input">Parte %1$d — introduza as palavras</string>
+    <string name="shamir_restore_part">Parte %1$d</string>
+    <string name="shamir_restore_scheme_auto">O esquema de restauro será detetado automaticamente após introduzir a primeira parte.</string>
+    <string name="shamir_restore_accepted">Aceites %1$d de %2$d</string>
+    <string name="shamir_restore_circle_accepted">aceite</string>
+    <string name="shamir_restore_circle_required">necessária</string>
+    <string name="shamir_restore_groups">Grupos: %1$d de %2$d</string>
+    <string name="shamir_restore_group_progress">Grupo %1$d: %2$d de %3$d</string>
+    <string name="shamir_restore_enough">Partes suficientes para o restauro.</string>
+    <string name="shamir_error_invalid_words">Algumas palavras não estão na lista SLIP-39</string>
+    <string name="shamir_error_word_count">Uma parte deve conter 20 ou 33 palavras</string>
+    <string name="shamir_error_invalid_share">Parte inválida. Verifique as palavras e a sua ordem</string>
+    <string name="shamir_error_other_set">Esta parte é de outro conjunto</string>
+    <string name="shamir_error_duplicate">Esta parte já foi introduzida</string>
+    <string name="shamir_error_mixed_sets">As partes não são do mesmo conjunto — introduza-as novamente</string>
+    <string name="shamir_error_passphrase_chars">Só são permitidas letras latinas, dígitos e símbolos padrão</string>
+    <plurals name="shamir_restore_required">
+        <item quantity="one">É necessária %1$d parte</item>
+        <item quantity="many">São necessárias %1$d partes</item>
+        <item quantity="other">São necessárias %1$d partes</item>
+    </plurals>
+
+    <!-- Word check -->
+    <string name="word_check_title">Confirme que anotou corretamente</string>
+    <string name="word_check_select_word">Selecione a palavra</string>
+    <string name="word_check_position">n.º %1$d</string>
+    <plurals name="word_check_correct_remaining">
+        <item quantity="one">Correto! Falta %1$d palavra</item>
+        <item quantity="many">Correto! Faltam %1$d palavras</item>
+        <item quantity="other">Correto! Faltam %1$d palavras</item>
+    </plurals>
+
+    <!-- Shamir backup creation -->
+    <string name="shamir_intro_title">Mais seguro do que uma única frase-semente</string>
+    <string name="shamir_intro_description">A chave é dividida em várias partes. Para a restaurar, só são necessárias algumas delas.</string>
+    <string name="shamir_intro_holder_you">consigo</string>
+    <string name="shamir_intro_holder_home">em casa</string>
+    <string name="shamir_intro_holder_friend">com um amigo</string>
+    <string name="shamir_intro_any">Quaisquer %1$s restauram a carteira</string>
+    <string name="shamir_intro_stolen">Uma parte roubada sozinha é inútil</string>
+    <string name="shamir_intro_lost">Perder uma parte não lhe tira o acesso</string>
+    <string name="shamir_intro_people">As partes podem ficar com pessoas diferentes</string>
+    <string name="shamir_create">Criar Shamir Backup</string>
+    <string name="shamir_step">Passo %1$d de %2$d · %3$s</string>
+    <string name="shamir_step_scheme">Escolha um esquema</string>
+    <string name="shamir_step_warnings">Leia com atenção</string>
+    <string name="shamir_step_shares">Anote todas as partes</string>
+    <string name="shamir_scheme_fraction">%1$d de %2$d</string>
+    <string name="shamir_scheme_total_header">Quantas partes criar</string>
+    <string name="shamir_scheme_total">Total de partes</string>
+    <string name="shamir_scheme_threshold_header">Mínimo de partes para acesso</string>
+    <string name="shamir_scheme_threshold">Necessárias para restaurar</string>
+    <string name="shamir_scheme_title">Esquema %1$s</string>
+    <plurals name="shamir_scheme_any_parts">
+        <item quantity="one">Qualquer %1$d parte restaura a carteira</item>
+        <item quantity="many">Quaisquer %1$d partes restauram a carteira</item>
+        <item quantity="other">Quaisquer %1$d partes restauram a carteira</item>
+    </plurals>
+    <string name="shamir_scheme_can_lose">Pode perder: %1$d</string>
+    <string name="shamir_scheme_none_lose">Nenhuma pode ser perdida</string>
+    <string name="shamir_scheme_presets">Esquemas populares:</string>
+    <string name="shamir_warning_title">Antes de anotar</string>
+    <plurals name="shamir_warning_description">
+        <item quantity="one">Vai aparecer agora %1$d parte. Anote cada uma separadamente.</item>
+        <item quantity="many">Vão aparecer agora %1$d partes. Anote cada uma separadamente.</item>
+        <item quantity="other">Vão aparecer agora %1$d partes. Anote cada uma separadamente.</item>
+    </plurals>
+    <string name="shamir_warning_one_place">Não guarde todas as partes no mesmo lugar</string>
+    <string name="shamir_warning_no_photos">Não fotografe as partes</string>
+    <string name="shamir_warning_separate_paper">Anote cada parte numa folha de papel separada</string>
+    <string name="shamir_warning_different_places">Guarde-as em locais físicos diferentes</string>
+    <string name="shamir_warning_old_sets">Se criar um novo conjunto, as partes antigas continuarão a funcionar</string>
+    <string name="shamir_warning_passphrase">As partes não contêm a frase-passe (passphrase) desta carteira. Sem ela não será possível restaurá-la — guarde-a separadamente.</string>
+    <string name="shamir_warning_not_shown_again">As partes não voltarão a ser mostradas. Certifique-se de que está pronto para as anotar.</string>
+    <string name="shamir_show_shares">Mostrar partes</string>
+    <plurals name="shamir_shares_banner">
+        <item quantity="one">Esquema %1$s — qualquer %2$d parte restaura a carteira</item>
+        <item quantity="many">Esquema %1$s — quaisquer %2$d partes restauram a carteira</item>
+        <item quantity="other">Esquema %1$s — quaisquer %2$d partes restauram a carteira</item>
+    </plurals>
+    <string name="shamir_share_title">Parte %1$d de %2$d</string>
+    <string name="shamir_share_written">Anotei esta parte</string>
+    <string name="shamir_share_confirm">Confirmar parte %1$d</string>
+    <string name="shamir_share_saved">Guardada</string>
+    <string name="shamir_write_all">Primeiro anote todas as partes</string>
+    <string name="shamir_done_banner">Guarde as partes em locais diferentes.</string>
+    <string name="shamir_check_title">Verificação da parte %1$d</string>
+    <string name="shamir_check_description">Escolha as palavras da parte %1$d pelos números que indicarmos</string>
+    <string name="shamir_info_description">O Shamir Backup (SLIP-39) divide a chave da carteira em várias partes de 20 palavras. Para restaurar, precisa do número de partes definido, por exemplo quaisquer 2 de 3. Menos partes não revelam nada sobre a chave. As partes funcionam em carteiras compatíveis com SLIP-39, como a Trezor. Se a carteira tiver senha, também vai precisar dela para restaurar.</string>
     <string name="evm_node_request_failed">O nó da rede não conseguiu processar o pedido. Tente novamente ou escolha outra fonte nas configurações da Blockchain.\n\nResposta do nó: %1$s</string>
     <string name="desktop_transfer_password">Senha antes de enviar</string>
     <string name="desktop_transfer_password_description">A senha da aplicação é pedida antes de cada envio, protegendo os seus ativos caso alguém aceda ao seu computador com a aplicação desbloqueada.</string>

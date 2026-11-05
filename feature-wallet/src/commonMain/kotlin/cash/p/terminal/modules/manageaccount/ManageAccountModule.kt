@@ -31,6 +31,7 @@ object ManageAccountModule {
 
     sealed class BackupItem{
         class ManualBackup(val showAttention: Boolean, val completed: Boolean = false) : BackupItem()
+        class ShamirBackup(val showAttention: Boolean) : BackupItem()
         class LocalBackup(val showAttention: Boolean) : BackupItem()
         class InfoText(val textRes: StringResource) : BackupItem()
     }

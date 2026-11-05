@@ -1,5 +1,7 @@
 package cash.p.terminal.core.managers
 
+import java.security.SecureRandom
+import cash.p.terminal.wallet.slip39.Slip39Shamir
 import io.horizontalsystems.hdwalletkit.Language
 import io.horizontalsystems.hdwalletkit.Mnemonic
 import io.mockk.every
@@ -718,4 +720,57 @@ class SeedPhraseQrCryptoTest {
     private fun doublePaddedPayload(): String = (0..2).asSequence()
         .map { crypto.encrypt(words12, "p".repeat(it)) }
         .first { it.endsWith("==") }
+
+    @Test
+    fun decrypt_slip39CanonicalShare_returnsWordsPassphraseAndKind() {
+        val share = canonicalSlip39Share()
+        val encrypted = crypto.encrypt(share, "TREZOR", kind = SeedPhraseQrCrypto.KIND_SLIP39)
+
+        val decrypted = crypto.decrypt(encrypted).getOrThrow()
+
+        assertEquals(share, decrypted.words)
+        assertEquals("TREZOR", decrypted.passphrase)
+        assertEquals(SeedPhraseQrCrypto.KIND_SLIP39, decrypted.kind)
+    }
+
+    @Test
+    fun decrypt_slip39ShareOfThresholdScheme_failsAsDecryptFailed() {
+        val encrypted = crypto.encrypt(SLIP39_3OF6_FIRST.split(" "), "", kind = SeedPhraseQrCrypto.KIND_SLIP39)
+
+        assertTrue(crypto.decrypt(encrypted).exceptionOrNull() is SeedPhraseQrCrypto.QrDecodeError.DecryptFailed)
+    }
+
+    @Test
+    fun decrypt_slip39KindWithBip39Words_failsAsDecryptFailed() {
+        val encrypted = crypto.encrypt(words12, "", kind = SeedPhraseQrCrypto.KIND_SLIP39)
+
+        assertTrue(crypto.decrypt(encrypted).exceptionOrNull() is SeedPhraseQrCrypto.QrDecodeError.DecryptFailed)
+    }
+
+    @Test
+    fun decrypt_v2PayloadWithoutKind_decodesWithNullKind() {
+        val encrypted = crypto.encryptRawForTest("""{"v":2,"words":${words12.joinToString(",", "[", "]") { "\"$it\"" }}}""")
+
+        val decrypted = crypto.decrypt(encrypted).getOrThrow()
+
+        assertEquals(words12, decrypted.words)
+        assertNull(decrypted.kind)
+    }
+
+    @Test
+    fun decrypt_unknownKind_failsAsDecryptFailed() {
+        val encrypted = crypto.encrypt(words12, "", kind = "future")
+
+        assertTrue(crypto.decrypt(encrypted).exceptionOrNull() is SeedPhraseQrCrypto.QrDecodeError.DecryptFailed)
+    }
+
+    private fun canonicalSlip39Share(): List<String> =
+        Slip39Shamir.split(Slip39Shamir.combine(listOf(Slip39Shamir.parseShare(SLIP39_1OF1))), 1, 1, SecureRandom()).single()
+
+    private companion object {
+        const val SLIP39_1OF1 =
+            "academic again academic academic academic academic academic academic academic academic academic academic academic academic academic academic academic pecan provide remember"
+        const val SLIP39_3OF6_FIRST =
+            "extra extend academic bishop cricket bundle tofu goat apart victim enlarge program behavior permit course armed jerky faint language modern"
+    }
 }

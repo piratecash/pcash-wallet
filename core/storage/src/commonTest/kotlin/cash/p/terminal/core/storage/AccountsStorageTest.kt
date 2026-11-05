@@ -53,6 +53,19 @@ class AccountsStorageTest {
     }
 
     @Test
+    fun save_slip39_roundTripsWordsPassphraseAndSeed() {
+        assertRoundTrip(SLIP39_TYPE)
+    }
+
+    @Test
+    fun save_slip39_storesSeedAsHexKey() {
+        val record = savedRecord(SLIP39_TYPE)
+
+        assertEquals("slip39", record.type)
+        assertEquals("00ff10", record.key?.value)
+    }
+
+    @Test
     fun delete_databaseReplacedAfterFirstUse_writesToTheNewDatabase() {
         val newDao = mockk<AccountsDao>(relaxUnitFun = true)
         val provider = ReplaceableDatabaseProvider(databaseWith(dao))
@@ -104,5 +117,6 @@ class AccountsStorageTest {
         const val ACCOUNT_ID = "account-id"
         const val SPENDING_KEY = "secret-extended-key-main1qsaplingspendingkey"
         const val VIEWING_KEY = "zxviews1qsaplingviewingkey"
+        val SLIP39_TYPE = AccountType.Slip39(listOf("academic", "acid"), "TREZOR", byteArrayOf(0, -1, 16))
     }
 }
