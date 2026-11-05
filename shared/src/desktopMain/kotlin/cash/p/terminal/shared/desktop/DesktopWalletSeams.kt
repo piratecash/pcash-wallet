@@ -99,7 +99,7 @@ object DesktopNoHardwareScanToAdd : ScanToAddUseCase {
         false
 }
 
-/** No scanner, dApp connections or store rating on desktop; the app content is not composed while locked. */
+/** No scanner or dApp connections on desktop; the app content is not composed while locked. */
 object DesktopBalancePlatformActions : BalancePlatformActions {
     override val appLocked: StateFlow<Boolean> = MutableStateFlow(false)
 
@@ -110,8 +110,6 @@ object DesktopBalancePlatformActions : BalancePlatformActions {
     ) = false
 
     override fun isOfflineTransaction(text: String) = false
-    override fun onBalancePageActive() = Unit
-    override fun onBalancePageInactive() = Unit
 }
 
 /** Unreachable: [DesktopPlatformChainSupport] keeps hardware accounts away from the kits. */

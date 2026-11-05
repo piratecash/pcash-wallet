@@ -22,7 +22,6 @@ sealed interface SettingsAction {
     data object AdvancedSecurity : SettingsAction
     data object SoftwareUpdate : SettingsAction
     data object AboutApp : SettingsAction
-    data object RateApp : SettingsAction
     data object ShareApp : SettingsAction
     data object Contact : SettingsAction
     data object CompanyWebsite : SettingsAction

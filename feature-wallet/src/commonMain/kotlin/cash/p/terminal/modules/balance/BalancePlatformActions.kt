@@ -3,7 +3,7 @@ package cash.p.terminal.modules.balance
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 
-/** Balance-tab actions backed by services only a platform has: dApp connections, offline broadcast, rating. */
+/** Balance-tab actions backed by services only a platform has: dApp connections and offline broadcast. */
 interface BalancePlatformActions {
     /** Whether the app content is hidden behind the lock screen. */
     val appLocked: StateFlow<Boolean>
@@ -12,7 +12,4 @@ interface BalancePlatformActions {
     fun openConnectionLink(text: String, scope: CoroutineScope, onPairingResult: (paired: Boolean) -> Unit): Boolean
 
     fun isOfflineTransaction(text: String): Boolean
-
-    fun onBalancePageActive()
-    fun onBalancePageInactive()
 }

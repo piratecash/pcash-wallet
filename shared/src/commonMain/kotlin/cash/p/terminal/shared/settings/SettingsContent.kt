@@ -32,7 +32,6 @@ import cash.p.terminal.resources.Settings_Donate
 import cash.p.terminal.resources.Settings_InfoSubtitle
 import cash.p.terminal.resources.Settings_InfoTitleWithVersion
 import cash.p.terminal.resources.Settings_Language
-import cash.p.terminal.resources.Settings_RateUs
 import cash.p.terminal.resources.Settings_SecurityCenter
 import cash.p.terminal.resources.Settings_ShareThisWallet
 import cash.p.terminal.resources.Settings_TonConnect
@@ -60,7 +59,6 @@ import cash.p.terminal.resources.ic_send_24
 import cash.p.terminal.resources.ic_settings
 import cash.p.terminal.resources.ic_share_20
 import cash.p.terminal.resources.ic_shield_24
-import cash.p.terminal.resources.ic_star_20
 import cash.p.terminal.resources.ic_swap_24
 import cash.p.terminal.resources.ic_ton_connect_24
 import cash.p.terminal.resources.ic_user_20
@@ -333,13 +331,6 @@ private fun ApplicationSettingsSection(
                     icon = Res.drawable.ic_about_app_20,
                     alertPainter = alertPainter.takeIf { uiState.aboutAppShowAlert },
                     onClick = onAction.callbackFor(SettingsAction.AboutApp),
-                )
-            },
-            {
-                SettingsCell(
-                    title = Res.string.Settings_RateUs,
-                    icon = Res.drawable.ic_star_20,
-                    onClick = onAction.callbackFor(SettingsAction.RateApp),
                 )
             },
             {

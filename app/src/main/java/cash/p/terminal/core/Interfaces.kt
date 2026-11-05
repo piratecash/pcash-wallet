@@ -5,7 +5,6 @@ import cash.p.terminal.modules.market.MarketModule
 import cash.p.terminal.modules.settings.security.tor.TorStatus
 import io.reactivex.Flowable
 import io.reactivex.Single
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 interface IMarketStorage {
@@ -32,12 +31,4 @@ interface ITorManager {
     fun setTorAsDisabled()
     val isTorEnabled: Boolean
     val torStatusFlow: StateFlow<TorStatus>
-}
-
-interface IRateAppManager {
-    val showRateAppFlow: Flow<Boolean>
-
-    fun onBalancePageActive()
-    fun onBalancePageInactive()
-    fun onAppLaunch()
 }

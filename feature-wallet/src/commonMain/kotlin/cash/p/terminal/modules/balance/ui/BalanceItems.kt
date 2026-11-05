@@ -18,7 +18,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,7 +38,6 @@ import cash.p.terminal.modules.balance.AccountViewItem
 import cash.p.terminal.modules.balance.BackupRequirementState
 import cash.p.terminal.modules.balance.BalanceUiState
 import cash.p.terminal.modules.balance.BalanceViewItem2
-import cash.p.terminal.modules.balance.BalancePlatformActions
 import cash.p.terminal.modules.balance.BalanceViewModel
 import cash.p.terminal.modules.balance.HeaderNote
 import cash.p.terminal.modules.balance.TotalUIState
@@ -99,19 +97,11 @@ fun BalanceItems(
     uiState: BalanceUiState,
     totalState: TotalUIState,
 ) {
-    val platformActions: BalancePlatformActions = koinInject()
     val pages: WalletSendPages = koinInject()
     val mainPage = koinInject<WalletPlatformPages>().mainPage
     val operationSupport = koinInject<PlatformOperationSupport>()
     val swapSupported = operationSupport.supports(PlatformOperation.Swap)
     val hud = rememberHudMessenger()
-    DisposableEffect(true) {
-        platformActions.onBalancePageActive()
-        onDispose {
-            platformActions.onBalancePageInactive()
-        }
-    }
-
     var revealedCardId by remember { mutableStateOf<Int?>(null) }
 
     val onClickSyncError: (BalanceViewItem2) -> Unit = remember {
