@@ -1,7 +1,6 @@
 package cash.p.terminal.modules.coin.analytics
 
 import cash.p.terminal.core.TestDispatcherProvider
-import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.ActionType
 import cash.p.terminal.modules.coin.analytics.CoinAnalyticsModule.AnalyticsViewItem
 import cash.p.terminal.resources.CoinAnalytics_CexVolume
 import cash.p.terminal.resources.Res
@@ -10,7 +9,6 @@ import cash.p.terminal.ui_compose.entities.ViewState
 import cash.p.terminal.wallet.entities.Coin
 import cash.p.terminal.wallet.entities.FullCoin
 import cash.p.terminal.wallet.models.Analytics
-import cash.p.terminal.wallet.models.AnalyticsPreview
 import io.horizontalsystems.core.IAppNumberFormatter
 import io.horizontalsystems.core.Translator
 import io.horizontalsystems.core.entities.Currency
@@ -34,7 +32,6 @@ import kotlinx.coroutines.test.setMain
 import org.jetbrains.compose.resources.StringResource
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.math.BigDecimal
@@ -45,7 +42,7 @@ class CoinAnalyticsViewModelTest {
     private val dispatcher = UnconfinedTestDispatcher()
     private val dispatcherProvider = TestDispatcherProvider(dispatcher, TestScope(dispatcher))
 
-    private val states = MutableSharedFlow<DataState<CoinAnalyticsService.AnalyticData>>(replay = 1)
+    private val states = MutableSharedFlow<DataState<Analytics>>(replay = 1)
     private val service = mockk<CoinAnalyticsService> {
         every { fullCoin } returns FullCoin(Coin("bitcoin", "Bitcoin", "BTC"), emptyList())
         every { currency } returns Currency("USD", "$", 2)
@@ -100,7 +97,7 @@ class CoinAnalyticsViewModelTest {
             ),
         )
 
-        states.tryEmit(DataState.Success(CoinAnalyticsService.AnalyticData(analytics = analytics(cexVolume))))
+        states.tryEmit(DataState.Success(analytics(cexVolume)))
 
         val block = (viewModel.uiState.viewItem as AnalyticsViewItem.Analytics).blocks.single()
         assertEquals(ViewState.Success, viewModel.uiState.viewState)
@@ -115,33 +112,9 @@ class CoinAnalyticsViewModelTest {
     fun stateFlow_analyticsWithoutData_showsNoData() {
         val viewModel = createViewModel()
 
-        states.tryEmit(DataState.Success(CoinAnalyticsService.AnalyticData(analytics = analytics())))
+        states.tryEmit(DataState.Success(analytics()))
 
         assertEquals(AnalyticsViewItem.NoData, viewModel.uiState.viewItem)
-    }
-
-    @Test
-    fun stateFlow_preview_mapsLockedBlockWithPreviewAction() {
-        val viewModel = createViewModel()
-        val preview = AnalyticsPreview(
-            cexVolume = AnalyticsPreview.VolumePreview(rank30d = true, points = true),
-            dexVolume = null,
-            dexLiquidity = null,
-            addresses = null,
-            transactions = null,
-            revenue = null,
-            fee = null,
-            tvl = null,
-        )
-
-        states.tryEmit(DataState.Success(CoinAnalyticsService.AnalyticData(analyticsPreview = preview)))
-
-        val block = (viewModel.uiState.viewItem as AnalyticsViewItem.Preview).blocks.single()
-        val rank = block.footerItems.single() as CoinAnalyticsModule.FooterType.FooterItem
-        assertEquals(Res.string.CoinAnalytics_CexVolume, block.title)
-        assertEquals(CoinAnalyticsModule.PreviewChartType.Bars, block.chartType)
-        assertEquals(CoinAnalyticsModule.BoxItem.Dots, rank.value)
-        assertTrue(rank.action is ActionType.Preview)
     }
 
     @Test

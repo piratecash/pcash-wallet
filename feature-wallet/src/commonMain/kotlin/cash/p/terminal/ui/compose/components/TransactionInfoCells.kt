@@ -93,11 +93,13 @@ import cash.p.terminal.ui_compose.components.subhead1_brand
 import cash.p.terminal.ui_compose.components.subhead1_leah
 import cash.p.terminal.ui_compose.components.subhead1_lucian
 import cash.p.terminal.ui_compose.components.subhead1_remus
+import cash.p.terminal.ui_compose.components.subhead1_warning
 import cash.p.terminal.ui_compose.components.subhead2_grey
 import cash.p.terminal.ui_compose.components.subhead2_brand
 import cash.p.terminal.ui_compose.components.subhead2_leah
 import cash.p.terminal.ui_compose.components.subhead2_lucian
 import cash.p.terminal.ui_compose.components.subhead2_remus
+import cash.p.terminal.ui_compose.components.subhead2_warning
 import cash.p.terminal.ui_compose.theme.ComposeAppTheme
 import cash.p.terminal.wallet.Wallet
 import io.horizontalsystems.core.entities.BlockchainType
@@ -1181,6 +1183,10 @@ private fun SubHead2ColoredValue(value: ColoredValue, modifier: Modifier = Modif
         ColorName.Brand -> {
             subhead2_brand(text = value.value, modifier = modifier)
         }
+
+        ColorName.Warning -> {
+            subhead2_warning(text = value.value, modifier = modifier)
+        }
     }
 }
 
@@ -1206,6 +1212,10 @@ private fun SubHead1ColoredValue(value: ColoredValue, modifier: Modifier = Modif
 
         ColorName.Brand -> {
             subhead1_brand(text = value.value, modifier = modifier)
+        }
+
+        ColorName.Warning -> {
+            subhead1_warning(text = value.value, modifier = modifier)
         }
     }
 }

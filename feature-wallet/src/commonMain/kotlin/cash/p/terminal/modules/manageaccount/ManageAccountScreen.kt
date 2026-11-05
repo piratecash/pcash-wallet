@@ -5,7 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -17,11 +19,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cash.p.terminal.feature.wallet.rememberSecretAction
 import cash.p.terminal.feature.wallet.FaqTopic
@@ -40,6 +44,7 @@ import cash.p.terminal.modules.manageaccount.backupkey.BackupKeyPage
 import cash.p.terminal.modules.manageaccount.privatekeys.PrivateKeysPage
 import cash.p.terminal.modules.manageaccount.publickeys.PublicKeysPage
 import cash.p.terminal.modules.manageaccount.recoveryphrase.RecoveryPhrasePage
+import cash.p.terminal.modules.manageaccount.shamirbackup.ShamirBackupIntroPage
 import cash.p.terminal.navigation.BackupKeyInput
 import cash.p.terminal.modules.manageaccounts.ManageAccountsModule
 import cash.p.terminal.modules.manageaccounts.ManageAccountsPage
@@ -57,6 +62,7 @@ import cash.p.terminal.resources.Res
 import cash.p.terminal.strings.helpers.TranslatableString
 import cash.p.terminal.ui.compose.components.FormsInput
 import cash.p.terminal.ui_compose.components.AppBar
+import cash.p.terminal.ui_compose.components.BadgeText
 import cash.p.terminal.ui_compose.components.ButtonSecondaryDefault
 import cash.p.terminal.ui_compose.components.CellUniversalLawrenceSection
 import cash.p.terminal.ui_compose.components.HSpacer
@@ -77,6 +83,9 @@ import org.jetbrains.compose.resources.DrawableResource
 import cash.p.terminal.resources.AccountRecovery_MigrationRecommended
 import cash.p.terminal.resources.AccountRecovery_MigrationRequired
 import cash.p.terminal.resources.ManageAccount_LocalBackup
+import cash.p.terminal.resources.badge_new
+import cash.p.terminal.resources.shamir_backup_title
+import cash.p.terminal.resources.icon_24_lock
 import cash.p.terminal.resources.ManageAccount_Name
 import cash.p.terminal.resources.ManageAccount_RecoveryPhraseBackup
 import cash.p.terminal.resources.ManageAccount_Unlink
@@ -128,7 +137,11 @@ internal fun ManageAccountScreen(
         }
     }
 
-    Column(modifier = Modifier.background(color = ComposeAppTheme.colors.backgroundBase)) {
+    Column(
+        modifier = Modifier
+            .background(color = ComposeAppTheme.colors.backgroundBase)
+            .navigationBarsPadding()
+    ) {
         AppBar(
             title = viewState.title,
             navigationIcon = {
@@ -444,6 +457,19 @@ private fun BackupActions(
                 }
             }
 
+            is BackupItem.ShamirBackup -> {
+                actionItems.add {
+                    YellowActionItem(
+                        title = stringResource(Res.string.shamir_backup_title),
+                        icon = painterResource(Res.drawable.icon_24_lock),
+                        badge = stringResource(Res.string.badge_new).uppercase(),
+                        attention = action.showAttention
+                    ) {
+                        openAuthorized(ShamirBackupIntroPage(account.id))
+                    }
+                }
+            }
+
             is BackupItem.LocalBackup -> {
                 actionItems.add {
                     YellowActionItem(
@@ -624,6 +650,7 @@ private fun AccountActionWithInfoItem(
 private fun YellowActionItem(
     title: String,
     icon: Painter? = null,
+    badge: String? = null,
     attention: Boolean = false,
     completed: Boolean = false,
     onClick: (() -> Unit)? = null
@@ -643,11 +670,21 @@ private fun YellowActionItem(
             )
         }
 
-        Body(
-            text = title,
-            color = ComposeAppTheme.colors.statusWarning,
-            modifier = Modifier.weight(1f),
-        )
+        Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+            Body(
+                text = title,
+                color = ComposeAppTheme.colors.statusWarning,
+                modifier = Modifier.weight(1f, fill = false),
+            )
+            badge?.let {
+                HSpacer(12.dp)
+                BadgeText(
+                    text = it,
+                    background = ComposeAppTheme.colors.badgeBackground,
+                    textColor = ComposeAppTheme.colors.brandDefault
+                )
+            }
+        }
 
         if (attention) {
             Icon(
@@ -666,5 +703,37 @@ private fun YellowActionItem(
             )
             HSpacer(6.dp)
         }
+    }
+}
+
+@Preview
+@Composable
+private fun YellowActionItemPreview() {
+    ComposeAppTheme {
+        CellUniversalLawrenceSection(
+            listOf(
+                {
+                    YellowActionItem(
+                        title = stringResource(Res.string.ManageAccount_RecoveryPhraseBackup),
+                        icon = painterResource(Res.drawable.ic_edit_24),
+                        completed = true
+                    )
+                },
+                {
+                    YellowActionItem(
+                        title = stringResource(Res.string.shamir_backup_title),
+                        icon = painterResource(Res.drawable.icon_24_lock),
+                        badge = stringResource(Res.string.badge_new).uppercase(),
+                        attention = true
+                    )
+                },
+                {
+                    YellowActionItem(
+                        title = stringResource(Res.string.ManageAccount_LocalBackup),
+                        icon = painterResource(Res.drawable.ic_file_24)
+                    )
+                }
+            )
+        )
     }
 }

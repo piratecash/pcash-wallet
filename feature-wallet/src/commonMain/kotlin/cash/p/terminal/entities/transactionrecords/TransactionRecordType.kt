@@ -21,6 +21,7 @@ enum class TransactionRecordType {
     EVM_EXTERNAL_CONTRACT_CALL,
     EVM_SWAP,
     EVM_UNKNOWN_SWAP,
+    EVM_ACCOUNT_DELEGATION,
 
     TRON,
     TRON_APPROVE,

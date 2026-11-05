@@ -63,6 +63,16 @@ class EvmFeeService(
         coroutineScope.cancel()
     }
 
+    override suspend fun retry() = withContext(serialDispatcher) {
+        _transactionStatusFlow.tryEmit(DataState.Loading)
+        if (gasPriceInfoState is DataState.Error) {
+            gasPriceService.retry()
+        } else {
+            gasPriceInfoJob?.cancel()
+            sync()
+        }
+    }
+
     private fun sync() {
         when (val gasPriceInfoState = gasPriceInfoState) {
             is DataState.Error -> {

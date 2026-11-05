@@ -7,6 +7,7 @@ import cash.p.terminal.core.onPollingStopped
 import cash.p.terminal.wallet.IHardwarePublicKeyStorage
 import cash.p.terminal.wallet.Account
 import cash.p.terminal.wallet.AccountType
+import cash.p.terminal.wallet.SeedAccountType
 import cash.p.terminal.wallet.AdapterState
 import cash.p.terminal.wallet.entities.TokenType
 import io.horizontalsystems.core.IBackgroundManager
@@ -81,7 +82,7 @@ class StellarKitManager(
             if (this.stellarKitWrapper == null) {
                 val accountType = account.type
                 val wrapper = when (accountType) {
-                    is AccountType.Mnemonic,
+                    is SeedAccountType,
                     is AccountType.StellarAddress,
                     is AccountType.HardwareCard,
                     is AccountType.StellarSecretKey -> {
